@@ -23,3 +23,11 @@ http://**discordapp.com/users/birger#6875**
 
 ## More information in the notion
 https://roan-iguanadon-a58.notion.site/Open-Chat-Gpt-83dd217eeeb84907a155b8a9d716fa46
+
+## Code structure
+
+## Bot
+We have a folder named bot where code related to the bot lives.
+
+## Backend
+We have a backend folder for backend development of the api that the discord bot sends it information to.
