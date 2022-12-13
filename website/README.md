@@ -4,8 +4,8 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 This requires:
 
--  `NEXT_PUBLIC_SUPABASE_URL`: A supabase Authorization URL
--  `NEXT_PUBLIC_SUPABASE_ANON_KEY`: A public supabase key for Authorization
+- `NEXT_PUBLIC_SUPABASE_URL`: A supabase Authorization URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: A public supabase key for Authorization
 
 These can both be optained from the Supabase project settings page.
 
