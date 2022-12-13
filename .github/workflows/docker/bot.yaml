@@ -1,0 +1,14 @@
+name: (Bot) Publish Docker Image
+
+on:
+  push:
+    paths:
+      - 'bot/**'
+
+jobs:
+  build:
+    uses: ./.github/workflows/docker/build.yaml
+    with:
+      image-name: bot
+      folder: bot
+      build-args: ""
