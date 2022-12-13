@@ -1,5 +1,14 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Required Environment Variables
+
+This requires:
+
+-  `NEXT_PUBLIC_SUPABASE_URL`: A supabase Authorization URL
+-  `NEXT_PUBLIC_SUPABASE_ANON_KEY`: A public supabase key for Authorization
+
+These can both be optained from the Supabase project settings page.
+
 ## Getting Started
 
 First, run the development server:
