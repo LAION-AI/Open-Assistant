@@ -1,0 +1,50 @@
+exclude: "build|stubs"
+
+default_language_version:
+  python: python3
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-ast
+      - id: check-yaml
+      - id: check-json
+      - id: pretty-format-json
+      - id: check-case-conflict
+      - id: detect-private-key
+      - id: detect-aws-credentials
+      - id: fix-encoding-pragma
+      - id: forbid-submodules
+      - id: mixed-line-ending
+      - id: requirements-txt-fixer
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: check-byte-order-marker
+      - id: check-symlinks
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: end-of-file-fixer
+
+  - repo: https://github.com/psf/black
+    rev: 22.12.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.11.1
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.7.1
+    hooks:
+      - id: prettier
+        args: ["--write"]
