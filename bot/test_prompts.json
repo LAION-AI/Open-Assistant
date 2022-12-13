@@ -1,0 +1,10 @@
+[
+  {
+    "prompt": "tell me the name of two dogs",
+    "responses": ["Charles", "bobby"]
+  },
+  {
+    "prompt": "Name one type of cheese made in france",
+    "responses": ["Munster", "Gouda"]
+  }
+]
