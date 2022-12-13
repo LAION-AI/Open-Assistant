@@ -1,8 +1,8 @@
 # Open-Chat-GPT REST Backend
 
-## Almbeic database init
+## Alembic database init
 
-Please edit `alembic.ini` and specify your database uri in the parameter `sqlalchemy.url`.
+Please edit `alembic.ini` and specify your database URI in the parameter `sqlalchemy.url = postgresql://<username>:<password>@<host>/<database_name>`.
 
 
 ## REST Server Configuration
