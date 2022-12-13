@@ -1,5 +1,6 @@
 {
   "name": "website",
+  "homepage": "http://LAION-AI.github.io/Open-Chat-GPT",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
