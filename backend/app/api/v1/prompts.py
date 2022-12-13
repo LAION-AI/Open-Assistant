@@ -1,13 +1,12 @@
+# -*- coding: utf-8 -*-
 from typing import Any, List
-
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security.api_key import APIKey
-from sqlmodel import Session
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 
 from app import crud, schemas
 from app.api import deps
-
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security.api_key import APIKey
+from sqlmodel import Session
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
 
 router = APIRouter()
 
@@ -50,7 +49,7 @@ def create_prompt(
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Invalid labeler user name")
     if not labeler.is_enabled:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Labeler disabled")
-    
+
     item_in.labeler_id = labeler.id
     item_in.discord_username = None
     item = crud.prompt.create(db=db, obj_in=item_in)

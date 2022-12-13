@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from typing import List, Optional, Union
+
 from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
 
 

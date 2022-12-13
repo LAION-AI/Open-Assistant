@@ -1,6 +1,5 @@
-from setuptools import setup, find_packages
-from pathlib import Path
-import os
+# -*- coding: utf-8 -*-
+from setuptools import find_packages, setup
 
 if __name__ == "__main__":
     import os
@@ -8,11 +7,7 @@ if __name__ == "__main__":
     def _read_reqs(relpath):
         fullpath = os.path.join(os.path.dirname(__file__), relpath)
         with open(fullpath) as f:
-            return [
-                s.strip()
-                for s in f.readlines()
-                if (s.strip() and not s.startswith("#"))
-            ]
+            return [s.strip() for s in f.readlines() if (s.strip() and not s.startswith("#"))]
 
     REQUIREMENTS = _read_reqs("requirements.txt")
 

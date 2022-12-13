@@ -1,9 +1,9 @@
+alembic==1.8.1
 fastapi==0.88.0
+psycopg2-binary==2.9.5
 pydantic==1.9.1
+python-dotenv==0.21.0
 SQLAlchemy==1.4.41
 sqlmodel==0.0.8
 starlette==0.22.0
 uvicorn==0.20.0
-psycopg2-binary==2.9.5
-alembic==1.8.1
-python-dotenv==0.21.0

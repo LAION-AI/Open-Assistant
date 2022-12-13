@@ -1,4 +1,5 @@
 # Open-Chat-GPT
+
 Open chat gpt is a project meant to give everyone access to a great chat based large language model.
 
 We believe that by doing this we will create a revolution in innovation in language. In the same way that stable-diffusion helped the world make art and images in new ways we hope open chat gpt can help improve the world by improving language itself.
@@ -15,19 +16,26 @@ We live and collaborate the work in the LAION discord. Join us!
 
 ## How do I start helping out?
 
-Check out these pages to learn more about the project. 
+Check out these pages to learn more about the project.
 
 Ping Birger on discord if you want help to get started.
 
 http://**discordapp.com/users/birger#6875**
 
 ## More information in the notion
+
 https://roan-iguanadon-a58.notion.site/Open-Chat-Gpt-83dd217eeeb84907a155b8a9d716fa46
 
 ## Code structure
 
-## Bot
+### Pre-commit
+
+Run `pre-commit install` to install the pre-commit hooks.
+
+### Bot
+
 We have a folder named bot where code related to the bot lives.
 
-## Backend
+### Backend
+
 We have a backend folder for backend development of the api that the discord bot sends it information to.

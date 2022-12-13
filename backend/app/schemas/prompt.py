@@ -1,5 +1,7 @@
-from typing import Optional
+# -*- coding: utf-8 -*-
 from datetime import datetime
+from typing import Optional
+
 from pydantic import BaseModel
 
 

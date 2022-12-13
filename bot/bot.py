@@ -1,12 +1,14 @@
-bot_url = "https://discord.com/api/oauth2/authorize?client_id=1051614245940375683&permissions=8&scope=bot"
+# -*- coding: utf-8 -*-
 
-import discord
 import json
 import os
-import requests
 
+import discord
+import requests
 from discord import app_commands
 from dotenv import load_dotenv
+
+bot_url = "https://discord.com/api/oauth2/authorize?client_id=1051614245940375683&permissions=8&scope=bot"
 
 # Load up all the important environment variables.
 load_dotenv()
@@ -25,6 +27,7 @@ headers = {"X-API-Key": API_SERVER_KEY}
 # For testing only.
 TEST_GUILD = os.getenv("TEST_GUILD")
 
+
 # Initiate the client and command tree to create slash commands.
 class OpenChatGPTClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -40,7 +43,7 @@ class OpenChatGPTClient(discord.Client):
             await self.tree.sync(guild=guild)
         else:
             # This can take up to an hour for the commands to be registered.
-            await tree.sync()
+            await self.tree.sync()
         print("Ready!")
 
 
@@ -63,7 +66,7 @@ async def register(interaction: discord.Interaction):
         await interaction.response.send_message(f"Added you {interaction.user.name}")
     else:
         print(response)
-        await interaction.response.send_message(f"Failed to add you")
+        await interaction.response.send_message("Failed to add you")
 
 
 @client.tree.command()
@@ -74,13 +77,11 @@ async def list_participants(interaction: discord.Interaction):
         names = ",".join([labeler["display_name"] for labeler in response.json()])
         await interaction.response.send_message(f"Found these users: {names}")
     else:
-        await interaction.response.send_message(f"Failed to fetch participants")
+        await interaction.response.send_message("Failed to fetch participants")
 
 
 @client.tree.command()
-async def add_prompt(
-    interaction: discord.Interaction, prompt: str, response: str, language: str = "en"
-):
+async def add_prompt(interaction: discord.Interaction, prompt: str, response: str, language: str = "en"):
     """Uploads a single prompt to the server."""
     prompt = {
         "discord_username": f"{interaction.user.id}",
@@ -91,15 +92,13 @@ async def add_prompt(
     }
     response = requests.post(prompts_url, headers=headers, json=prompt)
     if response.status_code == 200:
-        await interaction.response.send_message(f"Added your prompt")
+        await interaction.response.send_message("Added your prompt")
     else:
-        await interaction.response.send_message(f"Failed to add the prompt")
+        await interaction.response.send_message("Failed to add the prompt")
 
 
 @client.tree.command()
-async def add_prompts_set(
-    interaction: discord.Interaction, prompts: discord.Attachment
-):
+async def add_prompts_set(interaction: discord.Interaction, prompts: discord.Attachment):
     """Uploads a batch of prompts to the server."""
     # Loading a bunch of prompts from a file can take a while.  So first defer
     # the response to ensure we're able to later tell the user what happened.
@@ -122,7 +121,7 @@ async def add_prompts_set(
             }
             response = requests.post(prompts_url, headers=headers, json=prompt)
             if response.status_code != 200:
-                await interaction.followup.send(f"Failed to upload")
+                await interaction.followup.send("Failed to upload")
                 return
             count += 1
     await interaction.followup.send(f"Loaded up {count} prompts")

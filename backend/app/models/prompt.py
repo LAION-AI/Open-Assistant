@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime
+from typing import Optional
+
 import sqlalchemy as sa
 from sqlmodel import Field, SQLModel
-from typing import Optional
 
 
 class Prompt(SQLModel, table=True):
@@ -11,5 +13,7 @@ class Prompt(SQLModel, table=True):
     prompt: str
     response: Optional[str]
     lang: Optional[str]
-    created_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()), nullable=False)
- 
+    created_date: Optional[datetime] = Field(
+        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
+        nullable=False,
+    )

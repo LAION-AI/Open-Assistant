@@ -1,13 +1,12 @@
+# -*- coding: utf-8 -*-
 from typing import Any, List
-
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security.api_key import APIKey
-from sqlmodel import Session
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 
 from app import crud, schemas
 from app.api import deps
-
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security.api_key import APIKey
+from sqlmodel import Session
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 router = APIRouter()
 

@@ -1,5 +1,7 @@
-from sqlmodel import Field, SQLModel
+# -*- coding: utf-8 -*-
 from typing import Optional
+
+from sqlmodel import Field, SQLModel
 
 
 class ServiceClient(SQLModel, table=True):

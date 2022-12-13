@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from typing import Optional
 
 from app.crud.base import CRUDBase

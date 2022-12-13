@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 from typing import Generator
-from sqlmodel import Session
-from fastapi import Security, HTTPException
-from fastapi.security.api_key import APIKeyQuery, APIKeyHeader, APIKey
+
 from app.database import engine
 from app.models import ServiceClient
-
+from fastapi import HTTPException, Security
+from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
+from sqlmodel import Session
 from starlette.status import HTTP_403_FORBIDDEN
 
 
@@ -28,16 +29,21 @@ async def get_api_key(
 
 
 def api_auth(
-    api_key: APIKey, db: Session, create: bool = False, read: bool = True, update: bool = False, delete: bool = False
+    api_key: APIKey,
+    db: Session,
+    create: bool = False,
+    read: bool = True,
+    update: bool = False,
+    delete: bool = False,
 ) -> ServiceClient:
     if api_key is not None:
         api_client = db.query(ServiceClient).filter(ServiceClient.api_key == api_key).first()
         if api_client is not None:
             if (
-                (create == False or api_client.can_append)
-                and (read == False or api_client.can_read)
-                and (update == False or api_client.can_write)
-                and (delete == False or api_client.can_delete)
+                (create is False or api_client.can_append)
+                and (read is False or api_client.can_read)
+                and (update is False or api_client.can_write)
+                and (delete is False or api_client.can_delete)
             ):
                 return api_client
 

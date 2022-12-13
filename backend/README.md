@@ -4,7 +4,6 @@
 
 Please edit `alembic.ini` and specify your database uri in the parameter `sqlalchemy.url`.
 
-
 ## REST Server Configuration
 
 Please either use environment variables or create a `.env` file in the backend root directory (in which this readme file is located) to specify the `DATABASE_URI`.
