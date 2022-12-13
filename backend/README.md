@@ -14,7 +14,8 @@ BACKEND_CORS_ORIGINS=["http://localhost", "http://localhost:4200", "http://local
 
 ## Running the REST Server locally for development
 
-Run two terminals (note the working directory for each):
+First, install the requirements in `requirements.txt`.
+Then, run two terminals (note the working directory for each):
 
 - Terminal 1, to go `backend/scripts` and run `docker-compose up`. This will start postgres.
 - Terminal 2, to go `backend` and run `scripts/run-local.sh`. This will start the REST server.
