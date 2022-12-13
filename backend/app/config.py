@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     DATABASE_URI: Optional[PostgresDsn] = None
 
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    UPDATE_ALEMBIC: bool = True
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
