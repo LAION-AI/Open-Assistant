@@ -39,3 +39,7 @@ We have a folder named bot where code related to the bot lives.
 ### Backend
 
 We have a backend folder for backend development of the api that the discord bot sends it information to.
+
+### Website
+
+We have a folder for the website, live at https://projects.laion.ai/Open-Chat-GPT/ .The website is built using Next.js
