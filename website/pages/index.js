@@ -1,22 +1,20 @@
-import { Auth, ThemeSupa } from "@supabase/auth-ui-react";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
-
-import { useState } from "react";
+import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 
 import styles from "../styles/Home.module.css";
 
+const fetcher = (url) => axios.get(url).then((res) => res.data);
+
 export default function Home() {
-  const session = useSession();
-  const supabase = useSupabaseClient();
-
-  const signinWithDiscord = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "discord",
-    });
-  };
-
+  const { data: session, status } = useSession();
+  const { data: prompts, errors } = useSWR(
+    session ? "/api/prompts" : null,
+    fetcher
+  );
   if (!session) {
     return (
       <div className={styles.App}>
@@ -28,7 +26,7 @@ export default function Home() {
             chat based large language model.
           </p>
 
-          <button onClick={signinWithDiscord}>Register</button>
+          <button onClick={signIn}>Register</button>
           <p>
             We believe that by doing this we will create a revolution in
             innovation in language. In the same way that stable-diffusion helped
@@ -57,6 +55,8 @@ export default function Home() {
       </div>
     );
   }
+
+  console.log(prompts);
   return (
     <div className={styles.App}>
       <header className={styles.AppHeader}>
@@ -65,6 +65,8 @@ export default function Home() {
         <h2>Open Chat Gpt</h2>
 
         <p>You are logged in</p>
+
+        <button onClick={signOut}>Signout</button>
       </header>
     </div>
   );
