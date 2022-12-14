@@ -6,7 +6,9 @@ import os
 import discord
 import requests
 from discord import app_commands
+from loguru import logger
 from dotenv import load_dotenv
+
 
 bot_url = "https://discord.com/api/oauth2/authorize?client_id=1051614245940375683&permissions=8&scope=bot"
 
@@ -44,7 +46,7 @@ class OpenChatGPTClient(discord.Client):
         else:
             # This can take up to an hour for the commands to be registered.
             await self.tree.sync()
-        print("Ready!")
+        logger.debug("Ready!")
 
 
 # List the set of intents needed for commands to operate properly.
@@ -105,7 +107,7 @@ async def register(interaction: discord.Interaction):
     if response.status_code == 200:
         await interaction.response.send_message(f"Added you {interaction.user.name}")
     else:
-        print(response)
+        logger.debug(response)
         await interaction.response.send_message("Failed to add you")
 
 
@@ -120,7 +122,7 @@ async def list_participants(interaction: discord.Interaction):
         await interaction.response.send_message("Failed to fetch participants")
 
 
-async def send_propmt_with_response_and_buttons(channel, username, prompt, response):
+async def send_prompt_with_response_and_button(channel, username, prompt, response):
     await channel.send(f"What do you think about the following interaction: \nprompt: {prompt} \nresponse: {response}")
     # await channel.send(f'Please click on the button that best describes your reaction to the response:')
 
@@ -143,9 +145,9 @@ async def review_prompts(interaction: discord.Interaction, number_of_prompts: in
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         prompts = response.json()
-        print("the responses are", prompts)
+        logger.debug("the responses are:", prompts)
         for prompt in prompts:
-            await send_propmt_with_response_and_buttons(
+            await send_prompt_with_response_and_button(
                 interaction.channel, interaction.user.name, prompt["prompt"], prompt["response"]
             )
     else:
@@ -164,7 +166,7 @@ async def add_prompt(interaction: discord.Interaction, prompt: str, response: st
     }
     response = requests.post(prompts_url, headers=headers, json=prompt)
     if response.status_code == 200:
-        await send_propmt_with_response_and_buttons(
+        await send_prompt_with_response_and_button(
             interaction.channel, interaction.user.name, prompt["prompt"], prompt["response"]
         )
         # send the prompt back with buttons for the user to click on
