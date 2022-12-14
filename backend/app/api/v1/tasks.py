@@ -80,7 +80,7 @@ def post_interaction(
     interaction: protocol_schema.TextReplyToPost,
 ) -> Any:
     """
-    The frontend acknowledges a task.
+    The frontend reports an interaction.
     """
     deps.api_auth(api_key, db, create=True)
 
