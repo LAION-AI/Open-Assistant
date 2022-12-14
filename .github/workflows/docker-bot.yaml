@@ -3,7 +3,7 @@ name: (Bot) Publish Docker Image
 on:
   push:
     paths:
-      - 'bot/**'
+      - "bot/**"
 
 jobs:
   build:

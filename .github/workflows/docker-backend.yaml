@@ -3,7 +3,7 @@ name: (Backend) Publish Docker Image
 on:
   push:
     paths:
-      - 'backend/**'
+      - "backend/**"
 
 jobs:
   build:
