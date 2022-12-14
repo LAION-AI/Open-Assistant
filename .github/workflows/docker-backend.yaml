@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/docker/build.yaml
+    uses: ./.github/workflows/docker-build.yaml
     with:
       image-name: backend
       folder: backend
