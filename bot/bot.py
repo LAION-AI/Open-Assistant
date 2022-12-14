@@ -6,9 +6,8 @@ import os
 import discord
 import requests
 from discord import app_commands
-from loguru import logger
 from dotenv import load_dotenv
-
+from loguru import logger
 
 bot_url = "https://discord.com/api/oauth2/authorize?client_id=1051614245940375683&permissions=8&scope=bot"
 
