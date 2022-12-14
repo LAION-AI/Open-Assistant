@@ -31,6 +31,7 @@ TEST_GUILD_LAION = os.getenv("TEST_GUILD_LAION")
 # TEST_GUILD = False
 guild_ids = [TEST_GUILD, TEST_GUILD_LAION]
 
+
 # Initiate the client and command tree to create slash commands.
 class OpenChatGPTClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -45,12 +46,11 @@ class OpenChatGPTClient(discord.Client):
                 guild = discord.Object(id=guild_id)
                 self.tree.copy_global_to(guild=guild)
                 await self.tree.sync(guild=guild)
-            
-         
+
             # guild = discord.Object(id=TEST_GUILD)
             # self.tree.copy_global_to(guild=guild)
             # await self.tree.sync(guild=guild)
-        else:   
+        else:
             # This can take up to an hour for the commands to be registered.
             await self.tree.sync()
         logger.debug("Ready!")
