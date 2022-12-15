@@ -10,7 +10,6 @@ class ServiceClient(SQLModel, table=True):
     name: str
     api_key: str
     service_admin_email: Optional[str] = None
-    api_key: str
     can_append: bool = True
     can_write: bool = False
     can_delete: bool = False
