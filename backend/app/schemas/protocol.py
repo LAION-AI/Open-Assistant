@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import Literal, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pydantic
 from pydantic import BaseModel
@@ -20,7 +20,7 @@ class GenericTaskRequest(TaskRequest):
 class Task(BaseModel):
     """A task is a unit of work that the backend gives to the frontend."""
 
-    id: UUID = pydantic.Field(default_factory=UUID)
+    id: UUID = pydantic.Field(default_factory=uuid4)
     type: str
     addressed_users: Optional[list[str]] = None
 
