@@ -1,6 +1,7 @@
 alembic==1.8.1
 fastapi==0.88.0
 loguru==0.6.0
+numpy==1.22.4
 psycopg2-binary==2.9.5
 pydantic==1.9.1
 python-dotenv==0.21.0

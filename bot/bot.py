@@ -7,6 +7,7 @@ import discord
 import requests
 from discord import app_commands
 from dotenv import load_dotenv
+from loguru import logger
 
 bot_url = "https://discord.com/api/oauth2/authorize?client_id=1051614245940375683&permissions=8&scope=bot"
 
@@ -26,6 +27,9 @@ headers = {"X-API-Key": API_SERVER_KEY}
 
 # For testing only.
 TEST_GUILD = os.getenv("TEST_GUILD")
+TEST_GUILD_LAION = os.getenv("TEST_GUILD_LAION")
+# TEST_GUILD = False
+guild_ids = [TEST_GUILD, TEST_GUILD_LAION]
 
 
 # Initiate the client and command tree to create slash commands.
@@ -38,19 +42,64 @@ class OpenChatGPTClient(discord.Client):
         if TEST_GUILD:
             # When testing the bot it's handy to run in a single server (called a
             # Guide in the API).  This is relatively fast.
-            guild = discord.Object(id=TEST_GUILD)
-            self.tree.copy_global_to(guild=guild)
-            await self.tree.sync(guild=guild)
+            for guild_id in guild_ids:
+                guild = discord.Object(id=guild_id)
+                self.tree.copy_global_to(guild=guild)
+                await self.tree.sync(guild=guild)
+
+            # guild = discord.Object(id=TEST_GUILD)
+            # self.tree.copy_global_to(guild=guild)
+            # await self.tree.sync(guild=guild)
         else:
             # This can take up to an hour for the commands to be registered.
             await self.tree.sync()
-        print("Ready!")
+        logger.debug("Ready!")
 
 
 # List the set of intents needed for commands to operate properly.
 intents = discord.Intents.default()
 intents.message_content = True
 client = OpenChatGPTClient(intents=intents)
+
+
+class LikeButton(discord.ui.Button):
+    def __init__(self, label, channel, username, prompt):
+        super().__init__(label=label, style=discord.ButtonStyle.green, emoji="👍")
+        self.channel = channel
+        self.username = username
+        self.prompt = prompt
+
+    async def callback(self, interaction):
+        # interaction holds the interaction object
+        # await interaction.response.defer()
+        await interaction.response.send_message("Thanks for your feedback. You liked this 👍 ")
+
+
+class NeutralButton(discord.ui.Button):
+    def __init__(self, label, channel, username, prompt):
+        super().__init__(label=label, style=discord.ButtonStyle.green, emoji="😐")
+        self.channel = channel
+        self.username = username
+        self.prompt = prompt
+
+    async def callback(self, interaction):
+        # interaction holds the interaction object
+        # await interaction.response.defer()
+        await interaction.response.send_message("Thanks for your feedback. You thought this was neutral 😐 ")
+
+
+class DislikeButton(discord.ui.Button):
+    def __init__(self, label, channel, username, prompt):
+        super().__init__(label=label, style=discord.ButtonStyle.green, emoji="👎")
+        self.channel = channel
+        self.username = username
+        self.prompt = prompt
+
+    async def callback(self, interaction):
+        # interaction holds the interaction object
+        # await interaction.response.defer()
+        # send the feedback to the backend #
+        await interaction.response.send_message("Thanks for your feedback. You disliked this 👎 ")
 
 
 @client.tree.command()
@@ -65,7 +114,7 @@ async def register(interaction: discord.Interaction):
     if response.status_code == 200:
         await interaction.response.send_message(f"Added you {interaction.user.name}")
     else:
-        print(response)
+        logger.debug(response)
         await interaction.response.send_message("Failed to add you")
 
 
@@ -80,6 +129,38 @@ async def list_participants(interaction: discord.Interaction):
         await interaction.response.send_message("Failed to fetch participants")
 
 
+async def send_prompt_with_response_and_button(channel, username, prompt, response):
+    await channel.send(f"What do you think about the following interaction: \nprompt: {prompt} \nresponse: {response}")
+    # await channel.send(f'Please click on the button that best describes your reaction to the response:')
+
+    # add buttons
+    view = discord.ui.View()
+    like = LikeButton(label="Like", channel=channel, username=username, prompt=prompt)
+    neutral = NeutralButton(label="Neutral", channel=channel, username=username, prompt=prompt)
+    dislike = DislikeButton(label="Dislike", channel=channel, username=username, prompt=prompt)
+
+    view.add_item(item=like)
+    view.add_item(item=neutral)
+    view.add_item(item=dislike)
+    await channel.send(view=view)
+
+
+@client.tree.command()
+async def review_prompts(interaction: discord.Interaction, number_of_prompts: int):
+    # get the prompt from the db
+    url = f"{prompts_url}?begin_id=0&limit={number_of_prompts}"
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        prompts = response.json()
+        logger.debug("the responses are:", prompts)
+        for prompt in prompts:
+            await send_prompt_with_response_and_button(
+                interaction.channel, interaction.user.name, prompt["prompt"], prompt["response"]
+            )
+    else:
+        await interaction.response.send_message("Failed to get prompts for review")
+
+
 @client.tree.command()
 async def add_prompt(interaction: discord.Interaction, prompt: str, response: str, language: str = "en"):
     """Uploads a single prompt to the server."""
@@ -92,7 +173,11 @@ async def add_prompt(interaction: discord.Interaction, prompt: str, response: st
     }
     response = requests.post(prompts_url, headers=headers, json=prompt)
     if response.status_code == 200:
-        await interaction.response.send_message("Added your prompt")
+        await send_prompt_with_response_and_button(
+            interaction.channel, interaction.user.name, prompt["prompt"], prompt["response"]
+        )
+        # send the prompt back with buttons for the user to click on
+        # await interaction.response.send_message("Added your prompt")
     else:
         await interaction.response.send_message("Failed to add the prompt")
 
