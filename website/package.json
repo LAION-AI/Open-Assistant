@@ -10,6 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next-auth/prisma-adapter": "^1.0.5",
+    "@prisma/client": "^4.7.1",
     "@supabase/auth-helpers-nextjs": "^0.5.2",
     "@supabase/auth-helpers-react": "^0.3.1",
     "@supabase/auth-ui-react": "^0.2.6",
@@ -22,5 +24,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "swr": "^2.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^4.7.1"
   }
 }
