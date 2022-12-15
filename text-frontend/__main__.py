@@ -17,8 +17,7 @@ def main(backend_url: str, api_key: str):
         return response.json()
 
     typer.echo("Requesting work...")
-    # tasks = [_post("/api/v1/tasks/", {"type": "generic"})]
-    tasks = [_post("/api/v1/tasks/", {"type": "rate_summary"})]
+    tasks = [_post("/api/v1/tasks/", {"type": "generic"})]
     while tasks:
         task = tasks.pop(0)
         match (task["type"]):
