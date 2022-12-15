@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - "bot/**"
+    tags:
+      - v*
 
 jobs:
   build:
