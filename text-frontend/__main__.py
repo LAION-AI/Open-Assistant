@@ -17,7 +17,8 @@ def main(backend_url: str, api_key: str):
         return response.json()
 
     typer.echo("Requesting work...")
-    tasks = _post("/api/v1/tasks/", {"type": "generic"})
+    # tasks = [_post("/api/v1/tasks/", {"type": "generic"})]
+    tasks = [_post("/api/v1/tasks/", {"type": "rate_summary"})]
     while tasks:
         task = tasks.pop(0)
         match (task["type"]):
@@ -31,7 +32,7 @@ def main(backend_url: str, api_key: str):
                 summary = typer.prompt("Enter your summary")
 
                 # send interaction
-                new_tasks = _post(
+                new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
                         "type": "text_reply_to_post",
@@ -41,7 +42,29 @@ def main(backend_url: str, api_key: str):
                         "user_id": "1234",
                     },
                 )
-                tasks.extend(new_tasks)
+                tasks.append(new_task)
+            case "rate_summary":
+                typer.echo("Rate the following summary:")
+                typer.echo(task["summary"])
+                typer.echo("Full text:")
+                typer.echo(task["full_text"])
+                typer.echo(f"Rating scale: {task['scale']['min']} - {task['scale']['max']}")
+
+                # acknowledge task
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "rating_created", "post_id": "1234"})
+
+                rating = typer.prompt("Enter your rating", type=int)
+                # send interaction
+                new_task = _post(
+                    "/api/v1/tasks/interaction",
+                    {
+                        "type": "post_rating",
+                        "post_id": "1234",
+                        "rating": rating,
+                        "user_id": "1234",
+                    },
+                )
+                tasks.append(new_task)
             case "task_done":
                 typer.echo("Task done!")
             case _:
