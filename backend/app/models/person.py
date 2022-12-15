@@ -10,6 +10,7 @@ from sqlmodel import Field, Index, SQLModel
 
 class Person(SQLModel, table=True):
     __tablename__ = "person"
+    __table_args__ = (Index("ix_person_username", "api_client_id", "username", unique=True),)
 
     id: Optional[UUID] = Field(
         sa_column=sa.Column(
@@ -22,5 +23,3 @@ class Person(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
     api_client_id: UUID = Field(foreign_key="api_client.id")
-
-    __table_args__ = (Index("ix_person_username", "api_client_id", "username", unique=True),)

@@ -5,8 +5,9 @@ from uuid import UUID
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
+
+from .payload_column_type import PayloadContainer, payload_column_type
 
 
 class PostReaction(SQLModel, table=True):
@@ -22,5 +23,5 @@ class PostReaction(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
     payload_type: str = Field(nullable=False, max_length=200)
-    payload: BaseModel = Field(sa_column=sa.Column(pg.JSONB, nullable=False))
+    payload: PayloadContainer = Field(sa_column=sa.Column(payload_column_type(PayloadContainer), nullable=False))
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")

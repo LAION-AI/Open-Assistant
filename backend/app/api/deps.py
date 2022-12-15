@@ -2,7 +2,7 @@
 from typing import Generator
 
 from app.database import engine
-from app.models import ServiceClient
+from app.models import ApiClient
 from fastapi import HTTPException, Security
 from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
 from sqlmodel import Session
@@ -31,20 +31,11 @@ async def get_api_key(
 def api_auth(
     api_key: APIKey,
     db: Session,
-    create: bool = False,
-    read: bool = True,
-    update: bool = False,
-    delete: bool = False,
-) -> ServiceClient:
+) -> ApiClient:
+
     if api_key is not None:
-        api_client = db.query(ServiceClient).filter(ServiceClient.api_key == api_key).first()
-        if api_client is not None:
-            if (
-                (create is False or api_client.can_append)
-                and (read is False or api_client.can_read)
-                and (update is False or api_client.can_write)
-                and (delete is False or api_client.can_delete)
-            ):
-                return api_client
+        api_client = db.query(ApiClient).filter(ApiClient.api_key == api_key).first()
+        if api_client is not None and api_client.enabled:
+            return api_client
 
     raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials")

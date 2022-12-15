@@ -23,7 +23,7 @@ def request_task(
     """
     Create new task.
     """
-    deps.api_auth(api_key, db, create=True)
+    deps.api_auth(api_key, db)
 
     # TODO: Create a task and store it in the database.
 
@@ -57,7 +57,7 @@ def acknowledge_task(
     """
     The frontend acknowledges a task.
     """
-    deps.api_auth(api_key, db, create=True)
+    deps.api_auth(api_key, db)
 
     match (response.type):
         case "post_created":
@@ -82,7 +82,7 @@ def post_interaction(
     """
     The frontend reports an interaction.
     """
-    deps.api_auth(api_key, db, create=True)
+    deps.api_auth(api_key, db)
 
     response = []
     match (interaction.type):

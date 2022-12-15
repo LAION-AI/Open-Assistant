@@ -72,7 +72,7 @@ def upgrade() -> None:
         sa.Column("id", UUID(as_uuid=True), default=uuid.uuid4, server_default=sa.text("gen_random_uuid()")),
         sa.Column("created_date", sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
         sa.Column("expiry_date", sa.DateTime(), nullable=True),
-        sa.Column("person_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("person_id", UUID(as_uuid=True), nullable=True),
         sa.Column("payload_type", sa.String(200), nullable=False),  # deserialization hint & dbg aid
         sa.Column("payload", JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column("api_client_id", UUID(as_uuid=True), nullable=False),
@@ -88,7 +88,7 @@ def upgrade() -> None:
         sa.Column("parent_id", UUID(as_uuid=True), nullable=True),  # root posts have NULL parent
         sa.Column("thread_id", UUID(as_uuid=True), nullable=False),  # id of thread root
         sa.Column("workpackage_id", UUID(as_uuid=True), nullable=True),  # workpackage id to pass to handler on reply
-        sa.Column("person_id", UUID(as_uuid=True), nullable=False),  # sender (recipients are part of payload)
+        sa.Column("person_id", UUID(as_uuid=True), nullable=True),  # sender (recipients are part of payload)
         sa.Column("api_client_id", UUID(as_uuid=True), nullable=False),
         sa.Column("role", sa.String(128), nullable=False),  # 'assistant', 'user' or something else
         sa.Column("frontend_post_id", sa.String(200), nullable=False),  # unique together with api_client_id

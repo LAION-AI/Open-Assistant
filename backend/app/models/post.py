@@ -5,8 +5,9 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from pydantic import BaseModel
 from sqlmodel import Field, Index, SQLModel
+
+from .payload_column_type import PayloadContainer, payload_column_type
 
 
 class Post(SQLModel, table=True):
@@ -21,7 +22,7 @@ class Post(SQLModel, table=True):
     parent_id: UUID = Field(nullable=True)
     thread_id: UUID = Field(nullable=False, index=True)
     workpackage_id: UUID = Field(nullable=True, index=True)
-    person_id: UUID = Field(nullable=False, foreign_key="person.id", index=True)
+    person_id: UUID = Field(nullable=True, foreign_key="person.id", index=True)
     role: str = Field(nullable=False, max_length=128)
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")
     frontend_post_id: str = Field(max_length=200, nullable=False)
@@ -29,4 +30,4 @@ class Post(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
     payload_type: str = Field(nullable=False, max_length=200)
-    payload: BaseModel = Field(sa_column=sa.Column(pg.JSONB, nullable=False))
+    payload: PayloadContainer = Field(sa_column=sa.Column(payload_column_type(PayloadContainer), nullable=False))
