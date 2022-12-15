@@ -34,7 +34,7 @@ def upgrade() -> None:
         sa.Column("api_key", sa.String(512), nullable=False),
         sa.Column("description", sa.String(256), nullable=False),
         sa.Column("admin_email", sa.String(256), nullable=True),
-        sa.Column("enabled", sa.Boolean, default=True),
+        sa.Column("enabled", sa.Boolean, default=True, nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_api_client_api_key"), "api_client", ["api_key"], unique=True)
@@ -44,6 +44,7 @@ def upgrade() -> None:
         sa.Column("id", UUID(as_uuid=True), default=uuid.uuid4, server_default=sa.text("gen_random_uuid()")),
         sa.Column("username", sa.String(128), nullable=False),  # unique in combination with api_client_id
         sa.Column("display_name", sa.String(256), nullable=False),  # cached last seen display_name
+        sa.Column("created_date", sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
         sa.Column("api_client_id", UUID(as_uuid=True), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.ForeignKeyConstraint(["api_client_id"], ["api_client.id"]),
@@ -73,7 +74,7 @@ def upgrade() -> None:
         sa.Column("expiry_date", sa.DateTime(), nullable=True),
         sa.Column("person_id", UUID(as_uuid=True), nullable=False),
         sa.Column("payload_type", sa.String(200), nullable=False),  # deserialization hint & dbg aid
-        sa.Column("payload", JSONB(), nullable=False),
+        sa.Column("payload", JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column("api_client_id", UUID(as_uuid=True), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.ForeignKeyConstraint(["person_id"], ["person.id"]),
@@ -90,10 +91,10 @@ def upgrade() -> None:
         sa.Column("person_id", UUID(as_uuid=True), nullable=False),  # sender (recipients are part of payload)
         sa.Column("api_client_id", UUID(as_uuid=True), nullable=False),
         sa.Column("role", sa.String(128), nullable=False),  # 'assistant', 'user' or something else
-        sa.Column("frontend_post_id", sa.String(200)),  # unique together with api_client_id
+        sa.Column("frontend_post_id", sa.String(200), nullable=False),  # unique together with api_client_id
         sa.Column("created_date", sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
         sa.Column("payload_type", sa.String(200), nullable=False),  # deserialization hint & dbg aid
-        sa.Column("payload", JSONB(), nullable=False),
+        sa.Column("payload", JSONB(astext_type=sa.Text()), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.ForeignKeyConstraint(["person_id"], ["person.id"]),
         sa.ForeignKeyConstraint(["api_client_id"], ["api_client.id"]),
@@ -101,7 +102,7 @@ def upgrade() -> None:
     op.create_index(op.f("ix_post_frontend_post_id"), "post", ["api_client_id", "frontend_post_id"], unique=True)
     op.create_index(op.f("ix_post_thread_id"), "post", ["thread_id"], unique=False)
     op.create_index(op.f("ix_post_workpackage_id"), "post", ["workpackage_id"], unique=False)
-    op.create_index(op.f("ix_post_person"), "post", ["person_id"], unique=False)
+    op.create_index(op.f("ix_post_person_id"), "post", ["person_id"], unique=False)
 
     op.create_table(
         "post_reaction",
@@ -109,9 +110,10 @@ def upgrade() -> None:
         sa.Column("person_id", UUID(as_uuid=True), nullable=False),  # sender (recipients are part of payload)
         sa.Column("created_date", sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
         sa.Column("payload_type", sa.String(200), nullable=False),  # deserialization hint & dbg aid
-        sa.Column("payload", sa.String(1024), nullable=False),
+        sa.Column("payload", JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column("api_client_id", UUID(as_uuid=True), nullable=False),
         sa.PrimaryKeyConstraint("post_id", "person_id"),
+        sa.ForeignKeyConstraint(["post_id"], ["post.id"]),
         sa.ForeignKeyConstraint(["person_id"], ["person.id"]),
         sa.ForeignKeyConstraint(["api_client_id"], ["api_client.id"]),
     )
@@ -120,7 +122,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_table("post_reaction")
 
-    op.drop_index("ix_post_person")
+    op.drop_index("ix_post_person_id")
     op.drop_index("ix_post_workpackage_id")
     op.drop_index("ix_post_thread_id")
     op.drop_index("ix_post_frontend_post_id")

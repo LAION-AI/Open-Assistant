@@ -14,6 +14,5 @@ class Prompt(SQLModel, table=True):
     response: Optional[str]
     lang: Optional[str]
     created_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
-        nullable=False,
+        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
