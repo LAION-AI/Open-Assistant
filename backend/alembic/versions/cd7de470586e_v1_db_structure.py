@@ -10,7 +10,7 @@ import uuid
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 # revision identifiers, used by Alembic.
 revision = "cd7de470586e"
@@ -73,7 +73,7 @@ def upgrade() -> None:
         sa.Column("expiry_date", sa.DateTime(), nullable=True),
         sa.Column("person_id", UUID(as_uuid=True), nullable=False),
         sa.Column("payload_type", sa.String(200), nullable=False),  # deserialization hint & dbg aid
-        sa.Column("payload", sa.Text, nullable=False),
+        sa.Column("payload", JSONB(), nullable=False),
         sa.Column("api_client_id", UUID(as_uuid=True), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.ForeignKeyConstraint(["person_id"], ["person.id"]),
@@ -93,7 +93,7 @@ def upgrade() -> None:
         sa.Column("frontend_post_id", sa.String(200)),  # unique together with api_client_id
         sa.Column("created_date", sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
         sa.Column("payload_type", sa.String(200), nullable=False),  # deserialization hint & dbg aid
-        sa.Column("payload", sa.Text, nullable=False),
+        sa.Column("payload", JSONB(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.ForeignKeyConstraint(["person_id"], ["person.id"]),
         sa.ForeignKeyConstraint(["api_client_id"], ["api_client.id"]),
