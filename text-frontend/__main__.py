@@ -38,7 +38,7 @@ def main(backend_url: str, api_key: str):
                         "post_id": "1234",
                         "user_post_id": "5678",
                         "text": summary,
-                        "user_id": "1234",
+                        "user": {"id": "1234", "name": "John Doe"},
                     },
                 )
                 tasks.append(new_task)
@@ -60,7 +60,7 @@ def main(backend_url: str, api_key: str):
                         "type": "post_rating",
                         "post_id": "1234",
                         "rating": rating,
-                        "user_id": "1234",
+                        "user": {"id": "1234", "name": "John Doe"},
                     },
                 )
                 tasks.append(new_task)

@@ -13,11 +13,16 @@ class TaskRequestType(str, enum.Enum):
     rate_summary = "rate_summary"
 
 
+class User(BaseModel):
+    id: str
+    name: str
+
+
 class TaskRequest(BaseModel):
     """The frontend asks the backend for a task."""
 
     type: TaskRequestType = TaskRequestType.generic
-    user_id: Optional[str] = None
+    user: Optional[User] = None
 
 
 class Task(BaseModel):
@@ -25,7 +30,7 @@ class Task(BaseModel):
 
     id: UUID = pydantic.Field(default_factory=uuid4)
     type: str
-    addressed_users: Optional[list[str]] = None
+    addressed_users: Optional[list[User]] = None
 
 
 class TaskResponse(BaseModel):
@@ -81,10 +86,10 @@ AnyTask = Union[
 
 
 class Interaction(BaseModel):
-    """An interaction is a message from the frontend to the backend."""
+    """An interaction is a user-generated action in the frontend."""
 
     type: str
-    user_id: str
+    user: User
 
 
 class TextReplyToPost(Interaction):

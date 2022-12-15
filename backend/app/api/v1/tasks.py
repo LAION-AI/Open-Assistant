@@ -39,8 +39,8 @@ def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
                 detail="Invalid request type.",
             )
     logger.info(f"Generated {task=}.")
-    if request.user_id is not None:
-        task.addressed_users = [request.user_id]
+    if request.user is not None:
+        task.addressed_users = [request.user]
 
     return task
 
@@ -112,21 +112,21 @@ def post_interaction(
     match (type(interaction)):
         case protocol_schema.TextReplyToPost:
             logger.info(
-                f"Frontend reports text reply to {interaction.post_id=} with {interaction.text=} by {interaction.user_id=}."
+                f"Frontend reports text reply to {interaction.post_id=} with {interaction.text=} by {interaction.user=}."
             )
             # here we would store the text reply in the database
             return protocol_schema.TaskDone(
                 reply_to_post_id=interaction.user_post_id,
-                addressed_users=[interaction.user_id],
+                addressed_users=[interaction.user],
             )
         case protocol_schema.PostRating:
             logger.info(
-                f"Frontend reports rating of {interaction.post_id=} with {interaction.rating=} by {interaction.user_id=}."
+                f"Frontend reports rating of {interaction.post_id=} with {interaction.rating=} by {interaction.user=}."
             )
             # here we would store the rating in the database
             return protocol_schema.TaskDone(
                 reply_to_post_id=interaction.post_id,
-                addressed_users=[interaction.user_id],
+                addressed_users=[interaction.user],
             )
         case _:
             raise HTTPException(
