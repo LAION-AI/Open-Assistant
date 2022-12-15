@@ -34,7 +34,7 @@ class TaskResponse(BaseModel):
 
 class PostCreatedTaskResponse(TaskResponse):
     type: Literal["post_created"] = "post_created"
-    post_id: UUID
+    post_id: str
 
 
 class SummarizeStoryTask(Task):
@@ -44,7 +44,7 @@ class SummarizeStoryTask(Task):
 
 class TaskDone(Task):
     type: Literal["task_done"] = "task_done"
-    reply_to_post_id: UUID
+    reply_to_post_id: str
 
 
 class Interaction(BaseModel):
@@ -58,6 +58,6 @@ class TextReplyToPost(Interaction):
     """A user has replied to a post with text."""
 
     type: Literal["text_reply_to_post"] = "text_reply_to_post"
-    post_id: UUID
-    user_post_id: UUID
+    post_id: str
+    user_post_id: str
     text: str
