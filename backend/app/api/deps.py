@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Generator
 
+from app.config import settings
 from app.database import engine
 from app.models import ServiceClient
 from fastapi import HTTPException, Security
@@ -37,6 +38,10 @@ def api_auth(
     delete: bool = False,
 ) -> ServiceClient:
     if api_key is not None:
+        if settings.ALLOW_ANY_API_KEY:
+            return ServiceClient(
+                api_key=api_key, name=api_key, can_append=True, can_read=True, can_write=True, can_delete=True
+            )
         api_client = db.query(ServiceClient).filter(ServiceClient.api_key == api_key).first()
         if api_client is not None:
             if (

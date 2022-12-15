@@ -31,9 +31,12 @@ def request_task(
         case "generic":
             # here we create a task at random (and store it in the database)
             logger.info("Frontend requested a generic task.")
-            task = protocol_schema.SummarizeStoryTask(
-                story="This is a story. A very long story. So long, it needs to be summarized.",
-            )
+            try:
+                task = protocol_schema.SummarizeStoryTask(
+                    story="This is a story. A very long story. So long, it needs to be summarized.",
+                )
+            except Exception:
+                logger.exception("Failed to create task.")
 
         case _:
             raise HTTPException(
