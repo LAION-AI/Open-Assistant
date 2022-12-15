@@ -9,7 +9,7 @@ from pydantic import BaseModel
 class TaskRequest(BaseModel):
     """The frontend asks the backend for a task."""
 
-    type: Literal
+    type: str
     user_id: Optional[str] = None
 
 
@@ -21,14 +21,14 @@ class Task(BaseModel):
     """A task is a unit of work that the backend gives to the frontend."""
 
     id: UUID = pydantic.Field(default_factory=UUID)
-    type: Literal
+    type: str
     addressed_users: Optional[list[str]] = None
 
 
 class TaskResponse(BaseModel):
     """A task response is a message from the frontend to acknowledge the given task."""
 
-    type: Literal
+    type: str
     status: Literal["success", "failure"]
 
 
@@ -50,7 +50,7 @@ class TaskDone(Task):
 class Interaction(BaseModel):
     """An interaction is a message from the frontend to the backend."""
 
-    type: Literal
+    type: str
     user_id: str
 
 
