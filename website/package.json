@@ -21,6 +21,7 @@
     "eslint-config-next": "13.0.6",
     "next": "13.0.6",
     "next-auth": "^4.18.6",
+    "nodemailer": "^6.8.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "swr": "^2.0.0"

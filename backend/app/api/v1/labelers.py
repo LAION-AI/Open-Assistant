@@ -38,8 +38,11 @@ def create_labeler(
     """
     Create new labeler.
     """
+    print("create_labelere")
     deps.api_auth(api_key, db, create=True)
+    print(item_in)
     item = crud.labeler.create(db=db, obj_in=item_in)
+    print(item)
     return item
 
 

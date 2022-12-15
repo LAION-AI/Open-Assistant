@@ -5,7 +5,6 @@ datasource db {
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["referentialActions"]
 }
 
 model Account {
@@ -41,6 +40,10 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+
+  // Records the unique user id stored in the Labeler Backend.
+  labelerId     Int?
+
   accounts      Account[]
   sessions      Session[]
 }
