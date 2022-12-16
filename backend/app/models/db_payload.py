@@ -73,6 +73,14 @@ class RankConversationRepliesPayload(TaskPayload):
 
 
 @payload_type
+class RankInitialPromptsPayload(TaskPayload):
+    """A task to rank a set of initial prompts."""
+
+    type: Literal["rank_initial_prompts"] = "rank_initial_prompts"
+    prompts: list[str]
+
+
+@payload_type
 class RankUserRepliesPayload(RankConversationRepliesPayload):
     """A task to rank a set of user replies to a conversation."""
 
