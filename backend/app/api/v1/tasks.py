@@ -4,7 +4,8 @@ from typing import Any
 from uuid import UUID
 
 from app.api import deps
-from app.prompt_repository import PromptRepository, TaskPayload
+from app.models.db_payload import TaskPayload
+from app.prompt_repository import PromptRepository
 from app.schemas import protocol as protocol_schema
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey
@@ -248,7 +249,9 @@ def post_interaction(
                 logger.info(
                     f"Frontend reports ranking of {interaction.post_id=} with {interaction.ranking=} by {interaction.user=}."
                 )
+
                 # TODO: check if the ranking is valid
+                pr.store_ranking(interaction)
                 # here we would store the ranking in the database
                 return protocol_schema.TaskDone(
                     reply_to_post_id=interaction.post_id,

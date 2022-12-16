@@ -1,67 +1,14 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Optional
 from uuid import UUID, uuid4
 
+import app.models.db_payload as db_payload
 from app.models import ApiClient, Person, Post, PostReaction, WorkPackage
-from app.models.payload_column_type import PayloadContainer, payload_type
+from app.models.payload_column_type import PayloadContainer
 from app.schemas import protocol as protocol_schema
-from pydantic import BaseModel
+from loguru import logger
 from sqlmodel import Session
-
-
-@payload_type
-class TaskPayload(BaseModel):
-    type: str
-
-
-@payload_type
-class SummarizationStoryPayload(TaskPayload):
-    type: Literal["summarize_story"] = "summarize_story"
-    story: str
-
-
-@payload_type
-class RateSummaryPayload(TaskPayload):
-    type: Literal["rate_summary"] = "rate_summary"
-    full_text: str
-    summary: str
-    scale: protocol_schema.RatingScale
-
-
-@payload_type
-class InitialPromptPayload(TaskPayload):
-    type: Literal["initial_prompt"] = "initial_prompt"
-    hint: str
-
-
-@payload_type
-class UserReplyPayload(TaskPayload):
-    type: Literal["user_reply"] = "user_reply"
-    conversation: protocol_schema.Conversation
-    hint: str | None
-
-
-@payload_type
-class AssistantReplyPayload(TaskPayload):
-    type: Literal["assistant_reply"] = "assistant_reply"
-    conversation: protocol_schema.Conversation
-
-
-@payload_type
-class PostPayload(BaseModel):
-    text: str
-
-
-@payload_type
-class ReactionPayload(BaseModel):
-    type: str
-
-
-@payload_type
-class RatingReactionPayload(ReactionPayload):
-    type: Literal["post_rating"] = "post_rating"
-    rating: str
 
 
 class PromptRepository:
@@ -181,43 +128,88 @@ class PromptRepository:
             thread_id=parent_post.thread_id,
             workpackage_id=parent_post.workpackage_id,
             role=role,
-            payload=PostPayload(text=reply.text),
+            payload=db_payload.PostPayload(text=reply.text),
         )
         return user_post
 
-    def store_rating(self, rating: protocol_schema.PostRating) -> Post:
+    def store_rating(self, rating: protocol_schema.PostRating) -> PostReaction:
         post = self.fetch_post_by_frontend_post_id(rating.post_id, fail_if_missing=True)
 
         work_package = self.fetch_workpackage_by_postid(rating.post_id)
-        work_payload: RateSummaryPayload = work_package.payload.payload
-        if type(work_payload) != RateSummaryPayload:
-            raise ValueError(f"work_package payload type mismatch: {type(work_payload)=} != {RateSummaryPayload}")
+        work_payload: db_payload.RateSummaryPayload = work_package.payload.payload
+        if type(work_payload) != db_payload.RateSummaryPayload:
+            raise ValueError(
+                f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RateSummaryPayload}"
+            )
 
         if rating.rating < work_payload.scale.min or rating.rating > work_payload.scale.max:
             raise ValueError(f"Invalid rating value: {rating.rating=} not in {work_payload.scale=}")
 
         # store reaction to post
-        reaction_payload = RatingReactionPayload(rating=rating.rating)
+        reaction_payload = db_payload.RatingReactionPayload(rating=rating.rating)
         reaction = self.insert_reaction(post.id, reaction_payload)
+        logger.info(f"Ranking {rating.rating} stored for work_package {work_package.id}.")
         return reaction
 
+    def store_ranking(self, ranking: protocol_schema.PostRanking) -> PostReaction:
+        post = self.fetch_post_by_frontend_post_id(ranking.post_id, fail_if_missing=True)
+
+        # fetch work_package
+        work_package = self.fetch_workpackage_by_postid(ranking.post_id)
+        work_payload: db_payload.RankConversationRepliesPayload = work_package.payload.payload
+
+        match type(work_payload):
+
+            case db_payload.RankUserRepliesPayload | db_payload.RankAssistantRepliesPayload:
+                # validate ranking
+                num_replies = len(work_payload.replies)
+                if sorted(ranking.ranking) != list(range(num_replies)):
+                    raise ValueError(
+                        f"Invalid ranking submitted. Each reply index must appear exactly once ({num_replies=})."
+                    )
+
+                # store reaction to post
+                reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
+                reaction = self.insert_reaction(post.id, reaction_payload)
+
+                logger.info(f"Ranking {ranking.ranking} stored for work_package {work_package.id}.")
+
+                return reaction
+
+            case _:
+                raise ValueError(
+                    f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RankConversationRepliesPayload}"
+                )
+
     def store_task(self, task: protocol_schema.Task) -> WorkPackage:
-        payload: TaskPayload
+        payload: db_payload.TaskPayload
         match type(task):
             case protocol_schema.SummarizeStoryTask:
-                payload = SummarizationStoryPayload(story=task.story)
+                payload = db_payload.SummarizationStoryPayload(story=task.story)
 
             case protocol_schema.RateSummaryTask:
-                payload = RateSummaryPayload(full_text=task.full_text, summary=task.summary, scale=task.scale)
+                payload = db_payload.RateSummaryPayload(
+                    full_text=task.full_text, summary=task.summary, scale=task.scale
+                )
 
             case protocol_schema.InitialPromptTask:
-                payload = InitialPromptPayload(hint=task.hint)
+                payload = db_payload.InitialPromptPayload(hint=task.hint)
 
             case protocol_schema.UserReplyTask:
-                payload = UserReplyPayload(conversation=task.conversation, hint=task.hint)
+                payload = db_payload.UserReplyPayload(conversation=task.conversation, hint=task.hint)
 
             case protocol_schema.AssistantReplyTask:
-                payload = AssistantReplyPayload(type=task.type, conversation=task.conversation)
+                payload = db_payload.AssistantReplyPayload(type=task.type, conversation=task.conversation)
+
+            case protocol_schema.RankUserRepliesTask:
+                payload = db_payload.RankUserRepliesPayload(
+                    tpye=task.type, conversation=task.conversation, replies=task.replies
+                )
+
+            case protocol_schema.RankAssistantRepliesTask:
+                payload = db_payload.RankAssistantRepliesPayload(
+                    tpye=task.type, conversation=task.conversation, replies=task.replies
+                )
 
             case _:
                 raise ValueError(f"Invalid task type: {type(task)=}")
@@ -226,7 +218,7 @@ class PromptRepository:
         assert wp.id == task.id
         return wp
 
-    def insert_work_package(self, payload: TaskPayload, id: UUID = None) -> WorkPackage:
+    def insert_work_package(self, payload: db_payload.TaskPayload, id: UUID = None) -> WorkPackage:
         c = PayloadContainer(payload=payload)
         wp = WorkPackage(
             id=id,
@@ -249,7 +241,7 @@ class PromptRepository:
         thread_id: UUID,
         workpackage_id: UUID,
         role: str,
-        payload: PostPayload,
+        payload: db_payload.PostPayload,
         payload_type: str = None,
     ) -> Post:
         if payload_type is None:
@@ -275,7 +267,7 @@ class PromptRepository:
         self.db.refresh(post)
         return post
 
-    def insert_reaction(self, post_id: UUID, payload: ReactionPayload) -> PostReaction:
+    def insert_reaction(self, post_id: UUID, payload: db_payload.ReactionPayload) -> PostReaction:
         if self.person_id is None:
             raise ValueError("User required")
 
