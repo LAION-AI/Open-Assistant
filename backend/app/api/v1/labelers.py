@@ -21,7 +21,7 @@ def read_labelers(
     """
     Retrieve labelers.
     """
-    deps.api_auth(api_key, db, read=True)
+    deps.api_auth(api_key, db)
     if limit > 10000:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Bad request")
     labelers = crud.labeler.get_multi(db, begin_id=begin_id, limit=limit)
@@ -38,7 +38,7 @@ def create_labeler(
     """
     Create new labeler.
     """
-    deps.api_auth(api_key, db, create=True)
+    deps.api_auth(api_key, db)
     item = crud.labeler.create(db=db, obj_in=item_in)
     return item
 
@@ -54,7 +54,7 @@ def update_labeler(
     """
     Update a labeler.
     """
-    deps.api_auth(api_key, db, update=True, read=True)
+    deps.api_auth(api_key, db)
     item = crud.labeler.get(db=db, id=id)
     if not item:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Item not found")
@@ -72,7 +72,7 @@ def read_labeler_by_username(
     """
     Get labeler by ID.
     """
-    deps.api_auth(api_key, db, read=True)
+    deps.api_auth(api_key, db)
     item = crud.labeler.get_by_discord_username(db=db, discord_username=discord_username)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -89,7 +89,7 @@ def read_labeler(
     """
     Get labeler by ID.
     """
-    deps.api_auth(api_key, db, read=True)
+    deps.api_auth(api_key, db)
     item = crud.labeler.get(db=db, id=id)
     if not item:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Item not found")
@@ -106,7 +106,7 @@ def delete_labeler(
     """
     Delete a labeler.
     """
-    deps.api_auth(api_key, db, delete=True)
+    deps.api_auth(api_key, db)
     labeler = crud.labeler.get(db=db, id=id)
     if not labeler:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Item not found")

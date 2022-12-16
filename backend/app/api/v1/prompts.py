@@ -21,7 +21,7 @@ def read_prompts(
     """
     Retrieve prompts.
     """
-    deps.api_auth(api_key, db, read=True)
+    deps.api_auth(api_key, db)
     if limit > 10000:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Bad request")
     return crud.prompt.get_multi(db, begin_id=begin_id, limit=limit)
@@ -37,7 +37,7 @@ def create_prompt(
     """
     Create new prompt.
     """
-    deps.api_auth(api_key, db, create=True)
+    deps.api_auth(api_key, db)
     if item_in.labeler_id is None:
         if item_in.discord_username is None:
             raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Bad request")
@@ -66,7 +66,7 @@ def read_prompt(
     """
     Get prompt by ID.
     """
-    deps.api_auth(api_key, db, read=True)
+    deps.api_auth(api_key, db)
     item = crud.prompt.get(db=db, id=id)
     if not item:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Item not found")
@@ -83,7 +83,7 @@ def delete_prompt(
     """
     Delete a prompt.
     """
-    deps.api_auth(api_key, db, delete=True)
+    deps.api_auth(api_key, db)
     item = crud.prompt.get(db=db, id=id)
     if not item:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Item not found")

@@ -12,8 +12,7 @@ class Labeler(SQLModel, table=True):
     display_name: str
     discord_username: str
     created_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
-        nullable=False,
+        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
     is_enabled: bool
     notes: str
