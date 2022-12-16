@@ -4,7 +4,7 @@ from typing import Any
 from uuid import UUID
 
 from app.api import deps
-from app.prompt_repository import PromptRepository
+from app.prompt_repository import PromptRepository, TaskPayload
 from app.schemas import protocol as protocol_schema
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey
@@ -116,15 +116,24 @@ def acknowledge_task(
     """
     The frontend acknowledges a task.
     """
-    deps.api_auth(api_key, db)
+    api_client = deps.api_auth(api_key, db)
+    pr = PromptRepository(db, api_client, user=None)
 
     match (type(response)):
         case protocol_schema.PostCreatedTaskResponse:
             logger.info(f"Frontend acknowledged {task_id=} and created {response.post_id=}.")
-            # here we would store the post id in the database for the task
+
+            if response.status == "success":
+                # here we store the post id in the database for the task
+                pr.bind_frontend_post_id(task_id=task_id, post_id=response.post_id)
+
         case protocol_schema.RatingCreatedTaskResponse:
             logger.info(f"Frontend acknowledged {task_id=} for {response.post_id=}.")
-            # here we would store the rating id in the database for the task
+
+            if response.status == "success":
+                # here we would store the rating id in the database for the task
+                pr.bind_frontend_post_id(task_id=task_id, post_id=response.post_id)
+
         case _:
             raise HTTPException(
                 status_code=HTTP_400_BAD_REQUEST,
@@ -144,14 +153,22 @@ def post_interaction(
     """
     The frontend reports an interaction.
     """
-    deps.api_auth(api_key, db)
+    api_client = deps.api_auth(api_key, db)
+    pr = PromptRepository(db, api_client, user=interaction.user)
 
     match (type(interaction)):
         case protocol_schema.TextReplyToPost:
             logger.info(
                 f"Frontend reports text reply to {interaction.post_id=} with {interaction.text=} by {interaction.user=}."
             )
-            # here we would store the text reply in the database
+
+            work_package = pr.fetch_workpackage_by_postid(interaction.post_id)
+            work_payload: TaskPayload = work_package.payload.payload
+            logger.info(f"found task work package in db: {work_payload}")
+
+            # here we store the text reply in the database
+            pr.store_text_reply(interaction)
+
             return protocol_schema.TaskDone(
                 reply_to_post_id=interaction.user_post_id,
                 addressed_user=interaction.user,
