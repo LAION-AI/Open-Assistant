@@ -64,6 +64,26 @@ def main(backend_url: str, api_key: str):
                     },
                 )
                 tasks.append(new_task)
+            case "initial_prompt":
+                typer.echo("Please provide an initial prompt to the assistant.")
+                if task["hint"]:
+                    typer.echo(f"Hint: {task['hint']}")
+                # acknowledge task
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": "1234"})
+                prompt = typer.prompt("Enter your prompt")
+                # send interaction
+                new_task = _post(
+                    "/api/v1/tasks/interaction",
+                    {
+                        "type": "text_reply_to_post",
+                        "post_id": "1234",
+                        "user_post_id": "5678",
+                        "text": prompt,
+                        "user": {"id": "1234", "name": "John Doe"},
+                    },
+                )
+                tasks.append(new_task)
+
             case "task_done":
                 typer.echo("Task done!")
             case _:
