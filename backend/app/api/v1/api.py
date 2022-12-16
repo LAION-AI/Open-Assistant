@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-from app.api.v1 import labelers, prompts, tasks, tasks2
+from app.api.v1 import tasks, tasks2
 from fastapi import APIRouter
 
 api_router = APIRouter()
-api_router.include_router(labelers.router, prefix="/labelers", tags=["labelers"])
-api_router.include_router(prompts.router, prefix="/prompts", tags=["prompts"])
 api_router.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
 
 api_router.include_router(tasks2.router, prefix="/task2", tags=["task2"])  # temporary
