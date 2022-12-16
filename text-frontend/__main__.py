@@ -25,7 +25,7 @@ def _render_message(message: dict) -> str:
 
 
 @app.command()
-def main(backend_url: str, api_key: str):
+def main(backend_url: str = "http://127.0.0.1:8000", api_key: str = "DUMMY_KEY"):
     """Simple REPL frontend."""
 
     def _post(path: str, json: dict) -> dict:
@@ -164,7 +164,7 @@ def main(backend_url: str, api_key: str):
                 _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
 
                 ranking_str = typer.prompt("Enter the prompt numbers in order of preference, separated by commas")
-                ranking = [int(x) for x in ranking_str.split(",")]
+                ranking = [int(x) - 1 for x in ranking_str.split(",")]
 
                 # send ranking
                 new_task = _post(
@@ -190,7 +190,7 @@ def main(backend_url: str, api_key: str):
                 _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
 
                 ranking_str = typer.prompt("Enter the reply numbers in order of preference, separated by commas")
-                ranking = [int(x) for x in ranking_str.split(",")]
+                ranking = [int(x) - 1 for x in ranking_str.split(",")]
 
                 # send ranking
                 new_task = _post(
