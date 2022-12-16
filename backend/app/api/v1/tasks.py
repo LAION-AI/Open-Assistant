@@ -88,7 +88,7 @@ def request_task(
     """
     Create new task.
     """
-    deps.api_auth(api_key, db, create=True)
+    deps.api_auth(api_key, db)
 
     try:
         task = generate_task(request)
@@ -112,7 +112,7 @@ def acknowledge_task(
     """
     The frontend acknowledges a task.
     """
-    deps.api_auth(api_key, db, create=True)
+    deps.api_auth(api_key, db)
 
     match (type(response)):
         case protocol_schema.PostCreatedTaskResponse:
@@ -140,7 +140,7 @@ def post_interaction(
     """
     The frontend reports an interaction.
     """
-    deps.api_auth(api_key, db, create=True)
+    deps.api_auth(api_key, db)
 
     match (type(interaction)):
         case protocol_schema.TextReplyToPost:
