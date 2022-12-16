@@ -148,7 +148,20 @@ def main(backend_url: str, api_key: str):
                 # acknowledge task
                 _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
 
-                typer.prompt("Enter the prompt numbers in order of preference, separated by commas")
+                ranking_str = typer.prompt("Enter the prompt numbers in order of preference, separated by commas")
+                ranking = [int(x) for x in ranking_str.split(",")]
+
+                # send ranking
+                new_task = _post(
+                    "/api/v1/tasks/interaction",
+                    {
+                        "type": "post_ranking",
+                        "post_id": POST_ID,
+                        "ranking": ranking,
+                        "user": USER,
+                    },
+                )
+                tasks.append(new_task)
 
             case "rank_user_replies" | "rank_assistant_replies":
                 typer.echo("Here is the conversation so far:")
@@ -160,7 +173,20 @@ def main(backend_url: str, api_key: str):
                 # acknowledge task
                 _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
 
-                typer.prompt("Enter the reply numbers in order of preference, separated by commas")
+                ranking_str = typer.prompt("Enter the reply numbers in order of preference, separated by commas")
+                ranking = [int(x) for x in ranking_str.split(",")]
+
+                # send ranking
+                new_task = _post(
+                    "/api/v1/tasks/interaction",
+                    {
+                        "type": "post_ranking",
+                        "post_id": POST_ID,
+                        "ranking": ranking,
+                        "user": USER,
+                    },
+                )
+                tasks.append(new_task)
 
             case "task_done":
                 if addressed_user := task["addressed_user"]:
