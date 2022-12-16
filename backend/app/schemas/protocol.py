@@ -11,6 +11,7 @@ class TaskRequestType(str, enum.Enum):
     generic = "generic"
     summarize_story = "summarize_story"
     rate_summary = "rate_summary"
+    initial_prompt = "initial_prompt"
 
 
 class User(BaseModel):
@@ -81,6 +82,15 @@ class RateSummaryTask(Task):
     scale: RatingScale = RatingScale(min=1, max=5)
 
 
+class InitialPromptTask(Task):
+    """A task to prompt the user to submit an initial prompt to the assistant."""
+
+    type: Literal["initial_prompt"] = "initial_prompt"
+    hint: str | None = (
+        None  # provide a hint to the user to guide them a bit (i.e. "Ask the assistant to summarize something.")
+    )
+
+
 class TaskDone(Task):
     """Signals to the frontend that the task is done."""
 
@@ -91,6 +101,7 @@ class TaskDone(Task):
 AnyTask = Union[
     SummarizeStoryTask,
     RateSummaryTask,
+    InitialPromptTask,
     TaskDone,
 ]
 

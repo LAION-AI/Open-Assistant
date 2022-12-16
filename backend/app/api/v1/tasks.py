@@ -33,6 +33,11 @@ def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
                 summary="This is a summary.",
                 scale=protocol_schema.RatingScale(min=1, max=5),
             )
+        case protocol_schema.TaskRequestType.initial_prompt:
+            logger.info("Generating an InitialPromptTask.")
+            task = protocol_schema.InitialPromptTask(
+                hint="Ask the assistant about a current event."  # this is optional
+            )
         case _:
             raise HTTPException(
                 status_code=HTTP_400_BAD_REQUEST,
@@ -123,6 +128,7 @@ def post_interaction(
             logger.info(
                 f"Frontend reports rating of {interaction.post_id=} with {interaction.rating=} by {interaction.user=}."
             )
+            # check if rating in range
             # here we would store the rating in the database
             return protocol_schema.TaskDone(
                 reply_to_post_id=interaction.post_id,
