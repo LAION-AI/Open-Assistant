@@ -92,7 +92,7 @@ class PromptRepository:
 
     def validate_post_id(self, post_id: str) -> None:
         if not isinstance(post_id, str):
-            raise TypeError("post_id must be string")
+            raise TypeError(f"post_id must be string, not {type(post_id)}")
         if not post_id:
             raise ValueError("post_id must not be empty")
 
@@ -106,7 +106,7 @@ class PromptRepository:
             .first()
         )
         if work_pack is None:
-            raise RuntimeError(f"WorkPackage for task {task_id} not found")
+            raise KeyError(f"WorkPackage for task {task_id} not found")
         if work_pack.expiry_date is not None and datetime.utcnow() > work_pack.expiry_date:
             raise RuntimeError("WorkPackage already expired.")
 
@@ -145,7 +145,7 @@ class PromptRepository:
             .one_or_none()
         )
         if fail_if_missing and post is None:
-            raise RuntimeError(f"Post with post_id {frontend_post_id} not found.")
+            raise KeyError(f"Post with post_id {frontend_post_id} not found.")
         return post
 
     def fetch_workpackage_by_postid(self, post_id: str) -> WorkPackage:
@@ -170,7 +170,7 @@ class PromptRepository:
         )
 
         if parent_post is None:
-            raise RuntimeError(f"Post for post_id {reply.post_id} not found.")
+            raise KeyError(f"Post for post_id {reply.post_id} not found.")
 
         # create reply post
         user_post_id = uuid4()
@@ -191,10 +191,10 @@ class PromptRepository:
         work_package = self.fetch_workpackage_by_postid(rating.post_id)
         work_payload: RateSummaryPayload = work_package.payload.payload
         if type(work_payload) != RateSummaryPayload:
-            raise RuntimeError("work_package payload type missmatch")
+            raise ValueError(f"work_package payload type mismatch: {type(work_payload)=} != {RateSummaryPayload}")
 
         if rating.rating < work_payload.scale.min or rating.rating > work_payload.scale.max:
-            raise ValueError("Invalid rating value")
+            raise ValueError(f"Invalid rating value: {rating.rating=} not in {work_payload.scale=}")
 
         # store reaction to post
         reaction_payload = RatingReactionPayload(rating=rating.rating)
@@ -220,7 +220,7 @@ class PromptRepository:
                 payload = AssistantReplyPayload(type=task.type, conversation=task.conversation)
 
             case _:
-                raise RuntimeError("Invalid task type.")
+                raise ValueError(f"Invalid task type: {type(task)=}")
 
         wp = self.insert_work_package(payload=payload, id=task.id)
         assert wp.id == task.id
@@ -277,7 +277,7 @@ class PromptRepository:
 
     def insert_reaction(self, post_id: UUID, payload: ReactionPayload) -> PostReaction:
         if self.person_id is None:
-            raise RuntimeError("User required")
+            raise ValueError("User required")
 
         container = PayloadContainer(payload=payload)
         reaction = PostReaction(
