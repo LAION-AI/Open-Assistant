@@ -14,7 +14,7 @@ payload_type_registry = {}
 P = TypeVar("P", bound=BaseModel)
 
 
-def payload_tpye(cls: Type[P]) -> Type[P]:
+def payload_type(cls: Type[P]) -> Type[P]:
     payload_type_registry[cls.__name__] = cls
     return cls
 

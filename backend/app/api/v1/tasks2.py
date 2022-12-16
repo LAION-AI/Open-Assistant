@@ -4,7 +4,7 @@ from typing import Any
 from uuid import UUID
 
 from app.api import deps
-from app.prompt_repository import PromptRepository, TaskPayload
+from app.prompt_repository import PromptRepository, RateSummaryPayload, TaskPayload
 from app.schemas import protocol as protocol_schema
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey
@@ -179,6 +179,21 @@ def post_interaction(
                 f"Frontend reports rating of {interaction.post_id=} with {interaction.rating=} by {interaction.user=}."
             )
             # check if rating in range
+
+            work_package = pr.fetch_workpackage_by_postid(interaction.post_id)
+            work_payload: RateSummaryPayload = work_package.payload.payload
+            if (
+                type(work_payload) != RateSummaryPayload
+                or interaction.rating < work_payload.scale.min
+                or interaction.rating > work_payload.scale.max
+            ):
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST,
+                    detail="Invalid response type.",
+                )
+
+            pr.store_rating(interaction)
+
             # here we would store the rating in the database
             return protocol_schema.TaskDone(
                 reply_to_post_id=interaction.post_id,

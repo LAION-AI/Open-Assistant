@@ -4,24 +4,24 @@ from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 from app.models import ApiClient, Person, Post, PostReaction, WorkPackage
-from app.models.payload_column_type import PayloadContainer, payload_tpye
+from app.models.payload_column_type import PayloadContainer, payload_type
 from app.schemas import protocol as protocol_schema
 from pydantic import BaseModel
 from sqlmodel import Session
 
 
-@payload_tpye
+@payload_type
 class TaskPayload(BaseModel):
     type: str
 
 
-@payload_tpye
+@payload_type
 class SummarizationStoryPayload(TaskPayload):
     type: Literal["summarize_story"] = "summarize_story"
     story: str
 
 
-@payload_tpye
+@payload_type
 class RateSummaryPayload(TaskPayload):
     type: Literal["rate_summary"] = "rate_summary"
     full_text: str
@@ -29,31 +29,31 @@ class RateSummaryPayload(TaskPayload):
     scale: protocol_schema.RatingScale
 
 
-@payload_tpye
+@payload_type
 class InitialPromptPayload(TaskPayload):
     type: Literal["initial_prompt"] = "initial_prompt"
     hint: str
 
 
-@payload_tpye
+@payload_type
 class UserReplyPayload(TaskPayload):
     type: Literal["user_reply"] = "user_reply"
     conversation: protocol_schema.Conversation
     hint: str | None
 
 
-@payload_tpye
+@payload_type
 class AssistantReplyPayload(TaskPayload):
     type: Literal["assistant_reply"] = "assistant_reply"
     conversation: protocol_schema.Conversation
 
 
-@payload_tpye
+@payload_type
 class ReactionPayload(BaseModel):
     type: str
 
 
-@payload_tpye
+@payload_type
 class RatingReactionPayload(ReactionPayload):
     type: Literal["post_rating"] = "post_rating"
     rating: str
