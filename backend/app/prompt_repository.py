@@ -156,7 +156,9 @@ class PromptRepository:
 
         # fetch work_package
         work_package = self.fetch_workpackage_by_postid(ranking.post_id)
-        work_payload: db_payload.RankConversationRepliesPayload = work_package.payload.payload
+        work_payload: db_payload.RankConversationRepliesPayload | db_payload.RankInitialPromptsPayload = (
+            work_package.payload.payload
+        )
 
         match type(work_payload):
 
@@ -166,6 +168,21 @@ class PromptRepository:
                 if sorted(ranking.ranking) != list(range(num_replies)):
                     raise ValueError(
                         f"Invalid ranking submitted. Each reply index must appear exactly once ({num_replies=})."
+                    )
+
+                # store reaction to post
+                reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
+                reaction = self.insert_reaction(post.id, reaction_payload)
+
+                logger.info(f"Ranking {ranking.ranking} stored for work_package {work_package.id}.")
+
+                return reaction
+
+            case db_payload.RankInitialPromptsPayload:
+                # validate ranking
+                if sorted(ranking.ranking) != list(range(num_prompts := len(work_payload.prompts))):
+                    raise ValueError(
+                        f"Invalid ranking submitted. Each reply index must appear exactly once ({num_prompts=})."
                     )
 
                 # store reaction to post
@@ -200,6 +217,9 @@ class PromptRepository:
 
             case protocol_schema.AssistantReplyTask:
                 payload = db_payload.AssistantReplyPayload(type=task.type, conversation=task.conversation)
+
+            case protocol_schema.RankInitialPromptsTask:
+                payload = db_payload.RankInitialPromptsPayload(tpye=task.type, prompts=task.prompts)
 
             case protocol_schema.RankUserRepliesTask:
                 payload = db_payload.RankUserRepliesPayload(
