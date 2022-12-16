@@ -167,7 +167,8 @@ def post_interaction(
             logger.info(f"found task work package in db: {work_payload}")
 
             # here we store the text reply in the database
-            pr.store_text_reply(interaction)
+            # ToDo: role user or agent?
+            pr.store_text_reply(interaction, role="unknown")
 
             return protocol_schema.TaskDone(
                 reply_to_post_id=interaction.user_post_id,

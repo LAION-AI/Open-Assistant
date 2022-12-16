@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
-from app.models import ApiClient, Person, Post, WorkPackage
+from app.models import ApiClient, Person, Post, PostReaction, WorkPackage
 from app.models.payload_column_type import PayloadContainer, payload_tpye
 from app.schemas import protocol as protocol_schema
 from pydantic import BaseModel
@@ -46,6 +46,17 @@ class UserReplyPayload(TaskPayload):
 class AssistantReplyPayload(TaskPayload):
     type: Literal["assistant_reply"] = "assistant_reply"
     conversation: protocol_schema.Conversation
+
+
+@payload_tpye
+class ReactionPayload(BaseModel):
+    type: str
+
+
+@payload_tpye
+class RatingReactionPayload(ReactionPayload):
+    type: Literal["post_rating"] = "post_rating"
+    rating: str
 
 
 class PromptRepository:
@@ -124,20 +135,24 @@ class PromptRepository:
             self.db.refresh(thread_root)
         return thread_root
 
-    def fetch_workpackage_by_postid(self, post_id: str) -> WorkPackage:
-        self.validate_post_id(post_id)
+    def fetch_post_by_frontend_post_id(self, frontend_post_id: str, fail_if_missing: bool = True) -> Post:
+        self.validate_post_id(frontend_post_id)
         post: Post = (
             self.db.query(Post)
-            .filter(Post.api_client_id == self.api_client.id and Post.frontend_post_id == post_id)
+            .filter(Post.api_client_id == self.api_client.id and Post.frontend_post_id == frontend_post_id)
             .one_or_none()
         )
-        if post is None:
-            raise RuntimeError(f"Post with post_id {post_id} not found.")
+        if fail_if_missing and post is None:
+            raise RuntimeError(f"Post with post_id {frontend_post_id} not found.")
+        return post
 
+    def fetch_workpackage_by_postid(self, post_id: str) -> WorkPackage:
+        self.validate_post_id(post_id)
+        post = self.fetch_post_by_frontend_post_id(post_id, fail_if_missing=True)
         work_pack = self.db.query(WorkPackage).filter(WorkPackage.id == post.workpackage_id).one()
         return work_pack
 
-    def store_text_reply(self, reply: protocol_schema.TextReplyToPost) -> Post:
+    def store_text_reply(self, reply: protocol_schema.TextReplyToPost, role: str) -> Post:
         self.validate_post_id(reply.post_id)
         self.validate_post_id(reply.user_post_id)
 
@@ -156,14 +171,14 @@ class PromptRepository:
 
         # create reply post
         user_post_id = uuid4()
-        # ToDo: role user or agent?
+
         user_post = Post(
             id=user_post_id,
             parent_id=parent_post.id,
             thread_id=parent_post.thread_id,
             workpackage_id=parent_post.workpackage_id,
             person_id=self.person_id,
-            role="unknown",
+            role=role,
             frontend_post_id=reply.user_post_id,
             api_client_id=self.api_client.id,
         )
@@ -173,7 +188,33 @@ class PromptRepository:
         return user_post
 
     def store_rating(self, rating: protocol_schema.PostRating) -> Post:
-        pass
+        post = self.fetch_post_by_frontend_post_id(rating.post_id, fail_if_missing=True)
+
+        work_package = self.fetch_workpackage_by_postid(rating.post_id)
+        work_payload: RateSummaryPayload = work_package.payload.payload
+        if type(work_payload) != RateSummaryPayload:
+            raise RuntimeError("work_package payload type missmatch")
+
+        if rating.rating < work_payload.scale.min or rating.rating > work_payload.scale.max:
+            raise ValueError("Invalid rating value")
+
+        # store reaction to post
+        reaction_payload = RatingReactionPayload(rating=rating.rating)
+        reaction = self.insert_reaction(post.id, reaction_payload)
+        return reaction
+
+    def insert_reaction(self, post_id: UUID, payload: ReactionPayload) -> PostReaction:
+        if self.person_id is None:
+            raise RuntimeError("User required")
+
+        container = PayloadContainer(payload=payload)
+        reaction = PostReaction(
+            post_id=post_id, person_id=self.person_id, payload=container, api_client_id=self.api_client.id
+        )
+        self.db.add(reaction)
+        self.db.commit()
+        self.db.refresh(reaction)
+        return reaction
 
     def store_task(self, task: protocol_schema.Task) -> WorkPackage:
         payload: TaskPayload = None
