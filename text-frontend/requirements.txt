@@ -1,0 +1,2 @@
+requests==2.18.1
+typer==0.7.0

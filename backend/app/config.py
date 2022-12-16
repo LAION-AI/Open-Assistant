@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "postgres"
     DATABASE_URI: Optional[PostgresDsn] = None
 
+    ALLOW_ANY_API_KEY: bool = False
+
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
