@@ -62,7 +62,6 @@ class Task(BaseModel):
 
     id: UUID = pydantic.Field(default_factory=uuid4)
     type: str
-    addressed_user: Optional[User] = None
 
 
 class SummarizeStoryTask(Task):
@@ -151,7 +150,6 @@ class TaskDone(Task):
     """Signals to the frontend that the task is done."""
 
     type: Literal["task_done"] = "task_done"
-    reply_to_post_id: str
 
 
 AnyTask = Union[

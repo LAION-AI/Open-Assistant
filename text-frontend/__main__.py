@@ -205,10 +205,7 @@ def main(backend_url: str, api_key: str):
                 tasks.append(new_task)
 
             case "task_done":
-                if addressed_user := task["addressed_user"]:
-                    typer.echo(f"Hey, {addressed_user['display_name']}! Thank you!")
-                else:
-                    typer.echo("Task done!")
+                typer.echo("Task done!")
             case _:
                 typer.echo(f"Unknown task type {task['type']}")
 

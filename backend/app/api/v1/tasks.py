@@ -120,8 +120,6 @@ def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
             )
 
     logger.info(f"Generated {task=}.")
-    if request.user is not None:
-        task.addressed_user = request.user
 
     return task
 
@@ -228,10 +226,7 @@ def post_interaction(
                 # ToDo: role user or agent?
                 pr.store_text_reply(interaction, role="unknown")
 
-                return protocol_schema.TaskDone(
-                    reply_to_post_id=interaction.user_post_id,
-                    addressed_user=interaction.user,
-                )
+                return protocol_schema.TaskDone()
             case protocol_schema.PostRating:
                 logger.info(
                     f"Frontend reports rating of {interaction.post_id=} with {interaction.rating=} by {interaction.user=}."
@@ -240,20 +235,14 @@ def post_interaction(
                 # here we store the rating in the database
                 pr.store_rating(interaction)
 
-                return protocol_schema.TaskDone(
-                    reply_to_post_id=interaction.post_id,
-                    addressed_user=interaction.user,
-                )
+                return protocol_schema.TaskDone()
             case protocol_schema.PostRanking:
                 logger.info(
                     f"Frontend reports ranking of {interaction.post_id=} with {interaction.ranking=} by {interaction.user=}."
                 )
                 # TODO: check if the ranking is valid
                 # here we would store the ranking in the database
-                return protocol_schema.TaskDone(
-                    reply_to_post_id=interaction.post_id,
-                    addressed_user=interaction.user,
-                )
+                return protocol_schema.TaskDone()
             case _:
                 raise HTTPException(
                     status_code=HTTP_400_BAD_REQUEST,
