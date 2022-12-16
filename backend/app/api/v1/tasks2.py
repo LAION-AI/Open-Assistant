@@ -111,7 +111,7 @@ def acknowledge_task(
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
     task_id: UUID,
-    response: protocol_schema.AnyTaskResponse,
+    ack_request: protocol_schema.TaskAck,
 ) -> Any:
     """
     The frontend acknowledges a task.
@@ -119,27 +119,31 @@ def acknowledge_task(
     api_client = deps.api_auth(api_key, db)
     pr = PromptRepository(db, api_client, user=None)
 
-    match (type(response)):
-        case protocol_schema.PostCreatedTaskResponse:
-            logger.info(f"Frontend acknowledged {task_id=} and created {response.post_id=}.")
+    logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
+    # here we store the post id in the database for the task
+    try:
+        pr.bind_frontend_post_id(task_id=task_id, post_id=ack_request.post_id)
+    except Exception as err:
+        logger.warning(err)
+        raise
+    return {}
 
-            if response.status == "success":
-                # here we store the post id in the database for the task
-                pr.bind_frontend_post_id(task_id=task_id, post_id=response.post_id)
 
-        case protocol_schema.RatingCreatedTaskResponse:
-            logger.info(f"Frontend acknowledged {task_id=} for {response.post_id=}.")
+@router.post("/{task_id}/nack")
+def acknowledge_task_failure(
+    *,
+    db: Session = Depends(deps.get_db),
+    api_key: APIKey = Depends(deps.get_api_key),
+    task_id: UUID,
+    nack_request: protocol_schema.TaskNAck,
+) -> Any:
+    """
+    The frontend reports failure to implement a task.
+    """
+    deps.api_auth(api_key, db)
 
-            if response.status == "success":
-                # here we would store the rating id in the database for the task
-                pr.bind_frontend_post_id(task_id=task_id, post_id=response.post_id)
-
-        case _:
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail="Invalid response type.",
-            )
-
+    logger.info(f"Frontend reports failure to implement task {task_id=}, {nack_request=}.")
+    # here we would store the post id in the database for the task
     return {}
 
 
