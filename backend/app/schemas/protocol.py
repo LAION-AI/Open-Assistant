@@ -34,18 +34,22 @@ class Task(BaseModel):
 
 
 class TaskResponse(BaseModel):
-    """A task response is a message from the frontend to acknowledge the given task."""
+    """A task response is a message from the frontend to acknowledge that an initial piece of work has been done on the task."""
 
     type: str
     status: Literal["success", "failure"] = "success"
 
 
 class PostCreatedTaskResponse(TaskResponse):
+    """The frontend signals to the backend that a post has been created."""
+
     type: Literal["post_created"] = "post_created"
     post_id: str
 
 
 class RatingCreatedTaskResponse(TaskResponse):
+    """The frontend signals to the backend that a rating input has been created for a given post."""
+
     type: Literal["rating_created"] = "rating_created"
     post_id: str
 
@@ -57,6 +61,8 @@ AnyTaskResponse = Union[
 
 
 class SummarizeStoryTask(Task):
+    """A task to summarize a story."""
+
     type: Literal["summarize_story"] = "summarize_story"
     story: str
 
@@ -67,6 +73,8 @@ class RatingScale(BaseModel):
 
 
 class RateSummaryTask(Task):
+    """A task to rate a summary."""
+
     type: Literal["rate_summary"] = "rate_summary"
     full_text: str
     summary: str
@@ -74,6 +82,8 @@ class RateSummaryTask(Task):
 
 
 class TaskDone(Task):
+    """Signals to the frontend that the task is done."""
+
     type: Literal["task_done"] = "task_done"
     reply_to_post_id: str
 
@@ -102,7 +112,7 @@ class TextReplyToPost(Interaction):
 
 
 class PostRating(Interaction):
-    """A user has replied to a post with text."""
+    """A user has rated a post."""
 
     type: Literal["post_rating"] = "post_rating"
     post_id: str
