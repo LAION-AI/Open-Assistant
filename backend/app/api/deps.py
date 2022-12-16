@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Generator
 from uuid import UUID
+
 from app.config import settings
 from app.database import engine
 from app.models import ApiClient
@@ -36,10 +37,7 @@ def api_auth(
 
     if api_key is not None:
         if settings.ALLOW_ANY_API_KEY:
-            return ApiClient(
-                id=UUID('00000000-1111-2222-3333-444444444444'),
-                api_key=api_key, name=api_key
-            )
+            return ApiClient(id=UUID("00000000-1111-2222-3333-444444444444"), api_key=api_key, name=api_key)
         api_client = db.query(ApiClient).filter(ApiClient.api_key == api_key).first()
         if api_client is not None and api_client.enabled:
             return api_client
