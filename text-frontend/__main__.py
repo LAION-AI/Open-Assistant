@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Simple REPL frontend."""
 
+import random
+
 import requests
 import typer
 
@@ -8,9 +10,11 @@ app = typer.Typer()
 
 
 # debug constants
-POST_ID = "1234"
-USER_POST_ID = "5678"
 USER = {"id": "1234", "display_name": "John Doe", "auth_method": "local"}
+
+
+def _random_post_id():
+    return str(random.randint(1000, 9999))
 
 
 def _render_message(message: dict) -> str:
@@ -39,17 +43,20 @@ def main(backend_url: str, api_key: str):
                 typer.echo(task["story"])
 
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
 
                 summary = typer.prompt("Enter your summary")
+
+                user_post_id = _random_post_id()
 
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
                         "type": "text_reply_to_post",
-                        "post_id": POST_ID,
-                        "user_post_id": USER_POST_ID,
+                        "post_id": post_id,
+                        "user_post_id": user_post_id,
                         "text": summary,
                         "user": USER,
                     },
@@ -63,7 +70,8 @@ def main(backend_url: str, api_key: str):
                 typer.echo(f"Rating scale: {task['scale']['min']} - {task['scale']['max']}")
 
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
 
                 rating = typer.prompt("Enter your rating", type=int)
                 # send interaction
@@ -71,7 +79,7 @@ def main(backend_url: str, api_key: str):
                     "/api/v1/tasks/interaction",
                     {
                         "type": "post_rating",
-                        "post_id": POST_ID,
+                        "post_id": post_id,
                         "rating": rating,
                         "user": USER,
                     },
@@ -82,15 +90,17 @@ def main(backend_url: str, api_key: str):
                 if task["hint"]:
                     typer.echo(f"Hint: {task['hint']}")
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
                 prompt = typer.prompt("Enter your prompt")
+                user_post_id = _random_post_id()
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
                         "type": "text_reply_to_post",
-                        "post_id": POST_ID,
-                        "user_post_id": USER_POST_ID,
+                        "post_id": post_id,
+                        "user_post_id": user_post_id,
                         "text": prompt,
                         "user": USER,
                     },
@@ -105,15 +115,17 @@ def main(backend_url: str, api_key: str):
                 if task["hint"]:
                     typer.echo(f"Hint: {task['hint']}")
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
                 reply = typer.prompt("Enter your reply")
+                user_post_id = _random_post_id()
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
                         "type": "text_reply_to_post",
-                        "post_id": POST_ID,
-                        "user_post_id": USER_POST_ID,
+                        "post_id": post_id,
+                        "user_post_id": user_post_id,
                         "text": reply,
                         "user": USER,
                     },
@@ -126,15 +138,17 @@ def main(backend_url: str, api_key: str):
                 for message in task["conversation"]["messages"]:
                     typer.echo(_render_message(message))
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
                 reply = typer.prompt("Enter your reply")
+                user_post_id = _random_post_id()
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
                         "type": "text_reply_to_post",
-                        "post_id": POST_ID,
-                        "user_post_id": USER_POST_ID,
+                        "post_id": post_id,
+                        "user_post_id": user_post_id,
                         "text": reply,
                         "user": USER,
                     },
@@ -146,7 +160,8 @@ def main(backend_url: str, api_key: str):
                 for idx, prompt in enumerate(task["prompts"], start=1):
                     typer.echo(f"{idx}: {prompt}")
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
 
                 ranking_str = typer.prompt("Enter the prompt numbers in order of preference, separated by commas")
                 ranking = [int(x) for x in ranking_str.split(",")]
@@ -156,7 +171,7 @@ def main(backend_url: str, api_key: str):
                     "/api/v1/tasks/interaction",
                     {
                         "type": "post_ranking",
-                        "post_id": POST_ID,
+                        "post_id": post_id,
                         "ranking": ranking,
                         "user": USER,
                     },
@@ -171,7 +186,8 @@ def main(backend_url: str, api_key: str):
                 for idx, reply in enumerate(task["replies"], start=1):
                     typer.echo(f"{idx}: {reply}")
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
 
                 ranking_str = typer.prompt("Enter the reply numbers in order of preference, separated by commas")
                 ranking = [int(x) for x in ranking_str.split(",")]
@@ -181,7 +197,7 @@ def main(backend_url: str, api_key: str):
                     "/api/v1/tasks/interaction",
                     {
                         "type": "post_ranking",
-                        "post_id": POST_ID,
+                        "post_id": post_id,
                         "ranking": ranking,
                         "user": USER,
                     },
