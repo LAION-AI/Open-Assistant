@@ -30,4 +30,4 @@ class Post(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
     payload_type: str = Field(nullable=False, max_length=200)
-    payload: PayloadContainer = Field(sa_column=sa.Column(payload_column_type(PayloadContainer), nullable=False))
+    payload: PayloadContainer = Field(sa_column=sa.Column(payload_column_type(PayloadContainer), nullable=True))
