@@ -1,5 +1,7 @@
 # The Prompting Guide
 
+(pull requests welcome)
+
 1. General rules
 
 - Always follow the guidelines for safe and helpful prompts
