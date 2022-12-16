@@ -202,7 +202,7 @@ class PromptRepository:
         return reaction
 
     def store_task(self, task: protocol_schema.Task) -> WorkPackage:
-        payload: TaskPayload = None
+        payload: TaskPayload
         match type(task):
             case protocol_schema.SummarizeStoryTask:
                 payload = SummarizationStoryPayload(story=task.story)
