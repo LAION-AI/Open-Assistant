@@ -220,9 +220,7 @@ class PromptRepository:
                 payload = AssistantReplyPayload(type=task.type, conversation=task.conversation)
 
             case _:
-                raise RuntimeError(
-                    detail="Invalid task type.",
-                )
+                raise RuntimeError("Invalid task type.")
 
         wp = self.insert_work_package(payload=payload, id=task.id)
         assert wp.id == task.id
