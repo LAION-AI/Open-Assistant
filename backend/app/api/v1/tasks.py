@@ -66,11 +66,58 @@ def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
                     ],
                 )
             )
+        case protocol_schema.TaskRequestType.rank_initial_prompts:
+            logger.info("Generating a RankInitialPromptsTask.")
+            task = protocol_schema.RankInitialPromptsTask(
+                prompts=[
+                    "Please write a story about a time you were happy.",
+                    "Please write a story about a time you were sad.",
+                ]
+            )
+        case protocol_schema.TaskRequestType.rank_user_replies:
+            logger.info("Generating a RankUserRepliesTask.")
+            task = protocol_schema.RankUserRepliesTask(
+                conversation=protocol_schema.Conversation(
+                    messages=[
+                        protocol_schema.ConversationMessage(
+                            text="Hey, assistant, what's going on in the world?",
+                            is_assistant=False,
+                        ),
+                        protocol_schema.ConversationMessage(
+                            text="I'm not sure I understood correctly, could you rephrase that?",
+                            is_assistant=True,
+                        ),
+                    ],
+                ),
+                replies=[
+                    "Oh come oooooon!",
+                    "What are the news?",
+                ],
+            )
+
+        case protocol_schema.TaskRequestType.rank_assistant_replies:
+            logger.info("Generating a RankAssistantRepliesTask.")
+            task = protocol_schema.RankAssistantRepliesTask(
+                conversation=protocol_schema.Conversation(
+                    messages=[
+                        protocol_schema.ConversationMessage(
+                            text="Hey, assistant, what's going on in the world?",
+                            is_assistant=False,
+                        ),
+                    ],
+                ),
+                replies=[
+                    "I'm not sure I understood correctly, could you rephrase that?",
+                    "The world is fine. All good.",
+                    "Crap is hitting the fan. Start farming.",
+                ],
+            )
         case _:
             raise HTTPException(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail="Invalid request type.",
             )
+
     logger.info(f"Generated {task=}.")
     if request.user is not None:
         task.addressed_user = request.user
@@ -107,26 +154,33 @@ def acknowledge_task(
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
     task_id: UUID,
-    response: protocol_schema.AnyTaskResponse,
+    ack_request: protocol_schema.TaskAck,
 ) -> Any:
     """
     The frontend acknowledges a task.
     """
     deps.api_auth(api_key, db)
 
-    match (type(response)):
-        case protocol_schema.PostCreatedTaskResponse:
-            logger.info(f"Frontend acknowledged {task_id=} and created {response.post_id=}.")
-            # here we would store the post id in the database for the task
-        case protocol_schema.RatingCreatedTaskResponse:
-            logger.info(f"Frontend acknowledged {task_id=} for {response.post_id=}.")
-            # here we would store the rating id in the database for the task
-        case _:
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail="Invalid response type.",
-            )
+    logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
+    # here we would store the post id in the database for the task
+    return {}
 
+
+@router.post("/{task_id}/nack")
+def acknowledge_task_failure(
+    *,
+    db: Session = Depends(deps.get_db),
+    api_key: APIKey = Depends(deps.get_api_key),
+    task_id: UUID,
+    nack_request: protocol_schema.TaskNAck,
+) -> Any:
+    """
+    The frontend reports failure to implement a task.
+    """
+    deps.api_auth(api_key, db)
+
+    logger.info(f"Frontend reports failure to implement task {task_id=}, {nack_request=}.")
+    # here we would store the post id in the database for the task
     return {}
 
 
@@ -142,7 +196,7 @@ def post_interaction(
     """
     deps.api_auth(api_key, db)
 
-    match (type(interaction)):
+    match type(interaction):
         case protocol_schema.TextReplyToPost:
             logger.info(
                 f"Frontend reports text reply to {interaction.post_id=} with {interaction.text=} by {interaction.user=}."
@@ -158,6 +212,16 @@ def post_interaction(
             )
             # check if rating in range
             # here we would store the rating in the database
+            return protocol_schema.TaskDone(
+                reply_to_post_id=interaction.post_id,
+                addressed_user=interaction.user,
+            )
+        case protocol_schema.PostRanking:
+            logger.info(
+                f"Frontend reports ranking of {interaction.post_id=} with {interaction.ranking=} by {interaction.user=}."
+            )
+            # TODO: check if the ranking is valid
+            # here we would store the ranking in the database
             return protocol_schema.TaskDone(
                 reply_to_post_id=interaction.post_id,
                 addressed_user=interaction.user,

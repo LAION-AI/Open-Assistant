@@ -45,47 +45,24 @@ class TaskRequest(BaseModel):
     user: Optional[User] = None
 
 
+class TaskAck(BaseModel):
+    """The frontend acknowledges that it has received a task and created a post."""
+
+    post_id: str
+
+
+class TaskNAck(BaseModel):
+    """The frontend acknowledges that it has received a task but cannot create a post."""
+
+    reason: str
+
+
 class Task(BaseModel):
     """A task is a unit of work that the backend gives to the frontend."""
 
     id: UUID = pydantic.Field(default_factory=uuid4)
     type: str
     addressed_user: Optional[User] = None
-
-
-class TaskResponse(BaseModel):
-    """A task response is a message from the frontend to acknowledge that an initial piece of work has been done on the task."""
-
-    type: str
-    status: Literal["success", "failure"] = "success"
-
-
-class PostCreatedTaskResponse(TaskResponse):
-    """The frontend signals to the backend that a post has been created."""
-
-    type: Literal["post_created"] = "post_created"
-    post_id: str
-
-
-class RatingCreatedTaskResponse(TaskResponse):
-    """The frontend signals to the backend that a rating input has been created for a given post."""
-
-    type: Literal["rating_created"] = "rating_created"
-    post_id: str
-
-
-class RankingCreatedTaskResponse(TaskResponse):
-    """The frontend signals to the backend that a ranking input has been created for a given post."""
-
-    type: Literal["ranking_created"] = "ranking_created"
-    post_id: str
-
-
-AnyTaskResponse = Union[
-    PostCreatedTaskResponse,
-    RatingCreatedTaskResponse,
-    RankingCreatedTaskResponse,
-]
 
 
 class SummarizeStoryTask(Task):

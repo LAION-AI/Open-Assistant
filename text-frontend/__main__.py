@@ -39,7 +39,7 @@ def main(backend_url: str, api_key: str):
                 typer.echo(task["story"])
 
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": POST_ID})
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
 
                 summary = typer.prompt("Enter your summary")
 
@@ -63,7 +63,7 @@ def main(backend_url: str, api_key: str):
                 typer.echo(f"Rating scale: {task['scale']['min']} - {task['scale']['max']}")
 
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "rating_created", "post_id": POST_ID})
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
 
                 rating = typer.prompt("Enter your rating", type=int)
                 # send interaction
@@ -82,7 +82,7 @@ def main(backend_url: str, api_key: str):
                 if task["hint"]:
                     typer.echo(f"Hint: {task['hint']}")
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": POST_ID})
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
                 prompt = typer.prompt("Enter your prompt")
                 # send interaction
                 new_task = _post(
@@ -105,7 +105,7 @@ def main(backend_url: str, api_key: str):
                 if task["hint"]:
                     typer.echo(f"Hint: {task['hint']}")
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": POST_ID})
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
                 reply = typer.prompt("Enter your reply")
                 # send interaction
                 new_task = _post(
@@ -126,7 +126,7 @@ def main(backend_url: str, api_key: str):
                 for message in task["conversation"]["messages"]:
                     typer.echo(_render_message(message))
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": POST_ID})
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
                 reply = typer.prompt("Enter your reply")
                 # send interaction
                 new_task = _post(
@@ -140,6 +140,27 @@ def main(backend_url: str, api_key: str):
                     },
                 )
                 tasks.append(new_task)
+
+            case "rank_initial_prompts":
+                typer.echo("Rank the following prompts:")
+                for idx, prompt in enumerate(task["prompts"], start=1):
+                    typer.echo(f"{idx}: {prompt}")
+                # acknowledge task
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
+
+                typer.prompt("Enter the prompt numbers in order of preference, separated by commas")
+
+            case "rank_user_replies" | "rank_assistant_replies":
+                typer.echo("Here is the conversation so far:")
+                for message in task["conversation"]["messages"]:
+                    typer.echo(_render_message(message))
+                typer.echo("Rank the following replies:")
+                for idx, reply in enumerate(task["replies"], start=1):
+                    typer.echo(f"{idx}: {reply}")
+                # acknowledge task
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": POST_ID})
+
+                typer.prompt("Enter the reply numbers in order of preference, separated by commas")
 
             case "task_done":
                 if addressed_user := task["addressed_user"]:
