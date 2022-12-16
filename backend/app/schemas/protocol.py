@@ -14,6 +14,9 @@ class TaskRequestType(str, enum.Enum):
     initial_prompt = "initial_prompt"
     user_reply = "user_reply"
     assistant_reply = "assistant_reply"
+    rank_initial_prompts = "rank_initial_prompts"
+    rank_user_replies = "rank_user_replies"
+    rank_assistant_replies = "rank_assistant_replies"
 
 
 class User(BaseModel):
@@ -71,9 +74,17 @@ class RatingCreatedTaskResponse(TaskResponse):
     post_id: str
 
 
+class RankingCreatedTaskResponse(TaskResponse):
+    """The frontend signals to the backend that a ranking input has been created for a given post."""
+
+    type: Literal["ranking_created"] = "ranking_created"
+    post_id: str
+
+
 AnyTaskResponse = Union[
     PostCreatedTaskResponse,
     RatingCreatedTaskResponse,
+    RankingCreatedTaskResponse,
 ]
 
 
@@ -89,37 +100,74 @@ class RatingScale(BaseModel):
     max: int
 
 
-class RateSummaryTask(Task):
+class AbstractRatingTask(Task):
+    """A task to rate something."""
+
+    scale: RatingScale = RatingScale(min=1, max=5)
+
+
+class RateSummaryTask(AbstractRatingTask):
     """A task to rate a summary."""
 
     type: Literal["rate_summary"] = "rate_summary"
     full_text: str
     summary: str
-    scale: RatingScale = RatingScale(min=1, max=5)
 
 
-class InitialPromptTask(Task):
+class WithHintMixin(BaseModel):
+    hint: str | None = None  # provide a hint to the user to spark their imagination
+
+
+class InitialPromptTask(Task, WithHintMixin):
     """A task to prompt the user to submit an initial prompt to the assistant."""
 
     type: Literal["initial_prompt"] = "initial_prompt"
-    hint: str | None = (
-        None  # provide a hint to the user to guide them a bit (i.e. "Ask the assistant to summarize something.")
-    )
 
 
-class UserReplyTask(Task):
+class ReplyToConversationTask(Task):
+    """A task to prompt the user to submit a reply to a conversation."""
+
+    type: Literal["reply_to_conversation"] = "reply_to_conversation"
+    conversation: Conversation  # the conversation so far
+
+
+class UserReplyTask(ReplyToConversationTask, WithHintMixin):
     """A task to prompt the user to submit a reply to the assistant."""
 
     type: Literal["user_reply"] = "user_reply"
-    conversation: Conversation  # the conversation so far
-    hint: str | None = None  # e.g. "Try to ask for clarification."
 
 
-class AssistantReplyTask(Task):
+class AssistantReplyTask(ReplyToConversationTask):
     """A task to prompt the user to act as the assistant."""
 
     type: Literal["assistant_reply"] = "assistant_reply"
+
+
+class RankInitialPromptsTask(Task):
+    """A task to rank a set of initial prompts."""
+
+    type: Literal["rank_initial_prompts"] = "rank_initial_prompts"
+    prompts: list[str]
+
+
+class RankConversationRepliesTask(Task):
+    """A task to rank a set of replies to a conversation."""
+
+    type: Literal["rank_conversation_replies"] = "rank_conversation_replies"
     conversation: Conversation  # the conversation so far
+    replies: list[str]
+
+
+class RankUserRepliesTask(RankConversationRepliesTask):
+    """A task to rank a set of user replies to a conversation."""
+
+    type: Literal["rank_user_replies"] = "rank_user_replies"
+
+
+class RankAssistantRepliesTask(RankConversationRepliesTask):
+    """A task to rank a set of assistant replies to a conversation."""
+
+    type: Literal["rank_assistant_replies"] = "rank_assistant_replies"
 
 
 class TaskDone(Task):
@@ -134,8 +182,13 @@ AnyTask = Union[
     SummarizeStoryTask,
     RateSummaryTask,
     InitialPromptTask,
+    ReplyToConversationTask,
     UserReplyTask,
     AssistantReplyTask,
+    RankInitialPromptsTask,
+    RankConversationRepliesTask,
+    RankUserRepliesTask,
+    RankAssistantRepliesTask,
 ]
 
 
@@ -163,7 +216,16 @@ class PostRating(Interaction):
     rating: int
 
 
+class PostRanking(Interaction):
+    """A user has given a ranking for a post."""
+
+    type: Literal["post_ranking"] = "post_ranking"
+    post_id: str
+    ranking: list[int]
+
+
 AnyInteraction = Union[
     TextReplyToPost,
     PostRating,
+    PostRanking,
 ]
