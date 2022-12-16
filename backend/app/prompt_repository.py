@@ -119,7 +119,7 @@ class PromptRepository:
                 Post.workpackage_id == work_pack.id,
                 Post.frontend_post_id == post_id,
                 Post.parent_id is None,
-                self.api_client == self.api_client,
+                Post.api_client_id == self.api_client.id,
             )
             .one_or_none()
         )
