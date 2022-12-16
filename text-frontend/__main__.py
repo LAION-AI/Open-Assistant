@@ -7,6 +7,19 @@ import typer
 app = typer.Typer()
 
 
+# debug constants
+POST_ID = "1234"
+USER_POST_ID = "5678"
+USER = {"id": "1234", "display_name": "John Doe", "auth_method": "local"}
+
+
+def _render_message(message: dict) -> str:
+    """Render a message to the user."""
+    if message["is_assistant"]:
+        return f"Assistant: {message['text']}"
+    return f"User: {message['text']}"
+
+
 @app.command()
 def main(backend_url: str, api_key: str):
     """Simple REPL frontend."""
@@ -17,7 +30,7 @@ def main(backend_url: str, api_key: str):
         return response.json()
 
     typer.echo("Requesting work...")
-    tasks = [_post("/api/v1/tasks/", {"type": "generic"})]
+    tasks = [_post("/api/v1/tasks/", {"type": "random"})]
     while tasks:
         task = tasks.pop(0)
         match (task["type"]):
@@ -26,7 +39,7 @@ def main(backend_url: str, api_key: str):
                 typer.echo(task["story"])
 
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": "1234"})
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": POST_ID})
 
                 summary = typer.prompt("Enter your summary")
 
@@ -35,10 +48,10 @@ def main(backend_url: str, api_key: str):
                     "/api/v1/tasks/interaction",
                     {
                         "type": "text_reply_to_post",
-                        "post_id": "1234",
-                        "user_post_id": "5678",
+                        "post_id": POST_ID,
+                        "user_post_id": USER_POST_ID,
                         "text": summary,
-                        "user": {"id": "1234", "name": "John Doe"},
+                        "user": USER,
                     },
                 )
                 tasks.append(new_task)
@@ -50,7 +63,7 @@ def main(backend_url: str, api_key: str):
                 typer.echo(f"Rating scale: {task['scale']['min']} - {task['scale']['max']}")
 
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "rating_created", "post_id": "1234"})
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "rating_created", "post_id": POST_ID})
 
                 rating = typer.prompt("Enter your rating", type=int)
                 # send interaction
@@ -58,9 +71,9 @@ def main(backend_url: str, api_key: str):
                     "/api/v1/tasks/interaction",
                     {
                         "type": "post_rating",
-                        "post_id": "1234",
+                        "post_id": POST_ID,
                         "rating": rating,
-                        "user": {"id": "1234", "name": "John Doe"},
+                        "user": USER,
                     },
                 )
                 tasks.append(new_task)
@@ -69,23 +82,70 @@ def main(backend_url: str, api_key: str):
                 if task["hint"]:
                     typer.echo(f"Hint: {task['hint']}")
                 # acknowledge task
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": "1234"})
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": POST_ID})
                 prompt = typer.prompt("Enter your prompt")
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
                         "type": "text_reply_to_post",
-                        "post_id": "1234",
-                        "user_post_id": "5678",
+                        "post_id": POST_ID,
+                        "user_post_id": USER_POST_ID,
                         "text": prompt,
-                        "user": {"id": "1234", "name": "John Doe"},
+                        "user": USER,
+                    },
+                )
+                tasks.append(new_task)
+
+            case "user_reply":
+                typer.echo("Please provide a reply to the assistant.")
+                typer.echo("Here is the conversation so far:")
+                for message in task["conversation"]["messages"]:
+                    typer.echo(_render_message(message))
+                if task["hint"]:
+                    typer.echo(f"Hint: {task['hint']}")
+                # acknowledge task
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": POST_ID})
+                reply = typer.prompt("Enter your reply")
+                # send interaction
+                new_task = _post(
+                    "/api/v1/tasks/interaction",
+                    {
+                        "type": "text_reply_to_post",
+                        "post_id": POST_ID,
+                        "user_post_id": USER_POST_ID,
+                        "text": reply,
+                        "user": USER,
+                    },
+                )
+                tasks.append(new_task)
+
+            case "assistant_reply":
+                typer.echo("Act as the assistant and reply to the user.")
+                typer.echo("Here is the conversation so far:")
+                for message in task["conversation"]["messages"]:
+                    typer.echo(_render_message(message))
+                # acknowledge task
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"type": "post_created", "post_id": POST_ID})
+                reply = typer.prompt("Enter your reply")
+                # send interaction
+                new_task = _post(
+                    "/api/v1/tasks/interaction",
+                    {
+                        "type": "text_reply_to_post",
+                        "post_id": POST_ID,
+                        "user_post_id": USER_POST_ID,
+                        "text": reply,
+                        "user": USER,
                     },
                 )
                 tasks.append(new_task)
 
             case "task_done":
-                typer.echo("Task done!")
+                if addressed_user := task["addressed_user"]:
+                    typer.echo(f"Hey, {addressed_user['display_name']}! Thank you!")
+                else:
+                    typer.echo("Task done!")
             case _:
                 typer.echo(f"Unknown task type {task['type']}")
 

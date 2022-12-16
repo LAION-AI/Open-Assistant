@@ -16,9 +16,9 @@ router = APIRouter()
 
 def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
     match (request.type):
-        case protocol_schema.TaskRequestType.generic:
-            logger.info("Frontend requested a generic task.")
-            while request.type == protocol_schema.TaskRequestType.generic:
+        case protocol_schema.TaskRequestType.random:
+            logger.info("Frontend requested a random task.")
+            while request.type == protocol_schema.TaskRequestType.random:
                 request.type = random.choice(list(protocol_schema.TaskRequestType)).value
             return generate_task(request)
         case protocol_schema.TaskRequestType.summarize_story:
@@ -38,6 +38,34 @@ def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
             task = protocol_schema.InitialPromptTask(
                 hint="Ask the assistant about a current event."  # this is optional
             )
+        case protocol_schema.TaskRequestType.user_reply:
+            logger.info("Generating a UserReplyTask.")
+            task = protocol_schema.UserReplyTask(
+                conversation=protocol_schema.Conversation(
+                    messages=[
+                        protocol_schema.ConversationMessage(
+                            text="Hey, assistant, what's going on in the world?",
+                            is_assistant=False,
+                        ),
+                        protocol_schema.ConversationMessage(
+                            text="I'm not sure I understood correctly, could you rephrase that?",
+                            is_assistant=True,
+                        ),
+                    ],
+                )
+            )
+        case protocol_schema.TaskRequestType.assistant_reply:
+            logger.info("Generating a AssistantReplyTask.")
+            task = protocol_schema.AssistantReplyTask(
+                conversation=protocol_schema.Conversation(
+                    messages=[
+                        protocol_schema.ConversationMessage(
+                            text="Hey, assistant, write me an English essay about water.",
+                            is_assistant=False,
+                        ),
+                    ],
+                )
+            )
         case _:
             raise HTTPException(
                 status_code=HTTP_400_BAD_REQUEST,
@@ -45,7 +73,7 @@ def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
             )
     logger.info(f"Generated {task=}.")
     if request.user is not None:
-        task.addressed_users = [request.user]
+        task.addressed_user = request.user
 
     return task
 
@@ -122,7 +150,7 @@ def post_interaction(
             # here we would store the text reply in the database
             return protocol_schema.TaskDone(
                 reply_to_post_id=interaction.user_post_id,
-                addressed_users=[interaction.user],
+                addressed_user=interaction.user,
             )
         case protocol_schema.PostRating:
             logger.info(
@@ -132,7 +160,7 @@ def post_interaction(
             # here we would store the rating in the database
             return protocol_schema.TaskDone(
                 reply_to_post_id=interaction.post_id,
-                addressed_users=[interaction.user],
+                addressed_user=interaction.user,
             )
         case _:
             raise HTTPException(

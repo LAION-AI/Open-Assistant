@@ -8,21 +8,37 @@ from pydantic import BaseModel
 
 
 class TaskRequestType(str, enum.Enum):
-    generic = "generic"
+    random = "random"
     summarize_story = "summarize_story"
     rate_summary = "rate_summary"
     initial_prompt = "initial_prompt"
+    user_reply = "user_reply"
+    assistant_reply = "assistant_reply"
 
 
 class User(BaseModel):
     id: str
-    name: str
+    display_name: str
+    auth_method: Literal["discord", "local"]
+
+
+class ConversationMessage(BaseModel):
+    """Represents a message in a conversation between the user and the assistant."""
+
+    text: str
+    is_assistant: bool
+
+
+class Conversation(BaseModel):
+    """Represents a conversation between the user and the assistant."""
+
+    messages: list[ConversationMessage] = []
 
 
 class TaskRequest(BaseModel):
     """The frontend asks the backend for a task."""
 
-    type: TaskRequestType = TaskRequestType.generic
+    type: TaskRequestType = TaskRequestType.random
     user: Optional[User] = None
 
 
@@ -31,7 +47,7 @@ class Task(BaseModel):
 
     id: UUID = pydantic.Field(default_factory=uuid4)
     type: str
-    addressed_users: Optional[list[User]] = None
+    addressed_user: Optional[User] = None
 
 
 class TaskResponse(BaseModel):
@@ -91,6 +107,21 @@ class InitialPromptTask(Task):
     )
 
 
+class UserReplyTask(Task):
+    """A task to prompt the user to submit a reply to the assistant."""
+
+    type: Literal["user_reply"] = "user_reply"
+    conversation: Conversation  # the conversation so far
+    hint: str | None = None  # e.g. "Try to ask for clarification."
+
+
+class AssistantReplyTask(Task):
+    """A task to prompt the user to act as the assistant."""
+
+    type: Literal["assistant_reply"] = "assistant_reply"
+    conversation: Conversation  # the conversation so far
+
+
 class TaskDone(Task):
     """Signals to the frontend that the task is done."""
 
@@ -99,10 +130,12 @@ class TaskDone(Task):
 
 
 AnyTask = Union[
+    TaskDone,
     SummarizeStoryTask,
     RateSummaryTask,
     InitialPromptTask,
-    TaskDone,
+    UserReplyTask,
+    AssistantReplyTask,
 ]
 
 
