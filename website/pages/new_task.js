@@ -16,6 +16,7 @@ async function sendRequest(url, { arg }) {
 }
 
 export default function NewPage() {
+  const [done, setDone] = useState(false);
   const responseEl = useRef(null);
   const {
     data: registeredTask,
@@ -24,13 +25,22 @@ export default function NewPage() {
   } = useSWRImmutable("/api/new_task", fetcher);
   const { trigger, isMutating } = useSWRMutation(
     "/api/update_task",
-    sendRequest
+    sendRequest,
+    {
+      onSuccess: async (data) => {
+        const newTask = await data.json();
+        console.log(newTask);
+        setDone(true);
+      },
+    }
   );
 
   const submitResponse = () => {
     trigger({
       id: registeredTask.id,
-      rating: responseEl.current.value,
+      content: {
+        rating: responseEl.current.value,
+      },
     });
   };
   if (isLoading) {
@@ -48,6 +58,7 @@ export default function NewPage() {
       </div>
       <input type="text" ref={responseEl} />
       <button onClick={submitResponse}>Submit Response</button>
+      {done && <div>Done!</div>}
     </div>
   );
 }

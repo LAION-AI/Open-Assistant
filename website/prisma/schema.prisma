@@ -61,4 +61,15 @@ model RegisteredTask {
 
   user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String
+
+  interaction  TaskInteraction[]
+}
+
+model TaskInteraction {
+  id           String @id @default(uuid())
+
+  content      Json
+
+  task         RegisteredTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId       String
 }

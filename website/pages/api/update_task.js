@@ -12,11 +12,17 @@ export default async (req, res) => {
     return;
   }
 
-  const { id, rating } = await JSON.parse(req.body);
+  const { id, content } = await JSON.parse(req.body);
 
-  const registeredTask = await prisma.registeredTask.findUnique({
-    where: { id },
-    select: { task: true },
+  const interaction = await prisma.taskInteraction.create({
+    data: {
+      content,
+      task: {
+        connect: {
+          id,
+        },
+      },
+    },
   });
 
   const interactionRes = await fetch(
@@ -28,21 +34,21 @@ export default async (req, res) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        type: "text_reply_to_post",
+        type: "post_rating",
         user: {
           id: session.user.id,
           display_name: session.user.name,
           auth_method: "local",
         },
         post_id: id,
-        user_post_id: "1234",
-        text: rating,
+        user_post_id: interaction.id,
+        ...content,
       }),
     }
   );
   console.log(interactionRes.status);
-  const interaction = await interactionRes.json();
-  console.log(interaction);
+  const newTask = await interactionRes.json();
+  console.log(newTask);
 
-  res.status(200).end();
+  res.status(200).json(newTask);
 };
