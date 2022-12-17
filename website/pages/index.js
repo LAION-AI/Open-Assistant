@@ -19,7 +19,6 @@ export default function Home() {
     return (
       <div className={styles.App}>
         <header className={styles.AppHeader}>
-          {/* <img src={logo} className="App-logo" alt="logo" /> */}
           <h2>Open Chat Gpt</h2>
           <p>
             Open chat gpt is a project meant to give everyone access to a great

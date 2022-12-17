@@ -41,11 +41,10 @@ model User {
   emailVerified DateTime?
   image         String?
 
-  // Records the unique user id stored in the Labeler Backend.
-  labelerId     Int?
-
   accounts      Account[]
   sessions      Session[]
+
+  tasks         RegisteredTask[]
 }
 
 model VerificationToken {
@@ -54,4 +53,12 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model RegisteredTask {
+  id           String @id @default(uuid())
+  task         Json
+
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
 }
