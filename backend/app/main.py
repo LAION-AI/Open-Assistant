@@ -27,7 +27,7 @@ if settings.UPDATE_ALEMBIC:
     def alembic_upgrade():
         logger.info("Attempting to upgrade alembic on startup")
         try:
-            alembic_ini_path = Path(__file__).parent.parent / "alembic.ini"
+            alembic_ini_path = Path(__file__).parent / "alembic.ini"
             alembic_cfg = alembic.config.Config(str(alembic_ini_path))
             alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URI)
             alembic.command.upgrade(alembic_cfg, "head")
