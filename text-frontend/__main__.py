@@ -25,7 +25,7 @@ def _render_message(message: dict) -> str:
 
 
 @app.command()
-def main(backend_url: str = "http://127.0.0.1:8000", api_key: str = "DUMMY_KEY"):
+def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY"):
     """Simple REPL frontend."""
 
     def _post(path: str, json: dict) -> dict:

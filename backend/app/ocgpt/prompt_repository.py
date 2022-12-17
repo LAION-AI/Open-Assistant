@@ -3,11 +3,11 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
-import app.models.db_payload as db_payload
-from app.models import ApiClient, Person, Post, PostReaction, WorkPackage
-from app.models.payload_column_type import PayloadContainer
-from app.schemas import protocol as protocol_schema
+import ocgpt.models.db_payload as db_payload
 from loguru import logger
+from ocgpt.models import ApiClient, Person, Post, PostReaction, WorkPackage
+from ocgpt.models.payload_column_type import PayloadContainer
+from ocgpt.schemas import protocol as protocol_schema
 from sqlmodel import Session
 
 

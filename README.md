@@ -20,13 +20,12 @@ All open source projects begins with people like you. Open source is the belief 
 
 Work is organized in the [project board](https://github.com/orgs/LAION-AI/projects/3).
 
-### Python Backend
-
-For a local developer setup, look into the `backend` folder to pull up a local database and backend.
+- To get started with development, if you want to work on the backend, have a look at `backend/scripts/backend-development/README.md`.
+- If you want to work on the frontend, have a look at `backend/scripts/frontend-development/README.md`.
 
 There is also a minimal implementation of a frontend in the `text-frontend` folder.
 
-We are using Python 3.10
+We are using Python 3.10 for the backend.
 
 Check out the [High-Level Protocol Architecture](https://www.notion.so/High-Level-Protocol-Architecture-6f1fd3551da74213b560ead369f132dc)
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from app.config import settings
+from ocgpt.config import settings
 from sqlmodel import create_engine
 
 if settings.DATABASE_URI is None:

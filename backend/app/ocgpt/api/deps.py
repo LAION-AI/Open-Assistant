@@ -3,12 +3,12 @@ from secrets import token_hex
 from typing import Generator
 from uuid import UUID
 
-from app.config import settings
-from app.database import engine
-from app.models import ApiClient
 from fastapi import HTTPException, Security
 from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
 from loguru import logger
+from ocgpt.config import settings
+from ocgpt.database import engine
+from ocgpt.models import ApiClient
 from sqlmodel import Session
 from starlette.status import HTTP_403_FORBIDDEN
 

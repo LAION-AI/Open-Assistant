@@ -4,9 +4,9 @@ from pathlib import Path
 import alembic.command
 import alembic.config
 import fastapi
-from app.api.v1.api import api_router
-from app.config import settings
 from loguru import logger
+from ocgpt.api.v1.api import api_router
+from ocgpt.config import settings
 from starlette.middleware.cors import CORSMiddleware
 
 app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")

@@ -3,7 +3,7 @@ from logging.config import fileConfig
 
 import sqlmodel
 from alembic import context
-from app import models  # noqa: F401
+from ocgpt import models  # noqa: F401
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
@@ -68,6 +68,8 @@ def run_migrations_online() -> None:
         context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
+            context.get_context()._ensure_version_table()
+            connection.execute("LOCK TABLE alembic_version IN ACCESS EXCLUSIVE MODE")
             context.run_migrations()
 
 

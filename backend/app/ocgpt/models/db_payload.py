@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from typing import Literal
 
-from app.models.payload_column_type import payload_type
-from app.schemas import protocol as protocol_schema
+from ocgpt.models.payload_column_type import payload_type
+from ocgpt.schemas import protocol as protocol_schema
 from pydantic import BaseModel
 
 

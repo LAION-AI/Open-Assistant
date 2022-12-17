@@ -3,13 +3,13 @@ import random
 from typing import Any
 from uuid import UUID
 
-from app.api import deps
-from app.models.db_payload import TaskPayload
-from app.prompt_repository import PromptRepository
-from app.schemas import protocol as protocol_schema
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey
 from loguru import logger
+from ocgpt.api import deps
+from ocgpt.models.db_payload import TaskPayload
+from ocgpt.prompt_repository import PromptRepository
+from ocgpt.schemas import protocol as protocol_schema
 from sqlmodel import Session
 from starlette.status import HTTP_400_BAD_REQUEST
 
