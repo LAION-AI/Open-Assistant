@@ -16,7 +16,7 @@ services:
       service: adminer
   backend:
     build: ../../backend/.
-    image: laion-ai/ocgpt-backend
+    image: ocgpt-backend
     environment:
       - POSTGRES_HOST=db
       - ALLOW_ANY_API_KEY=True
