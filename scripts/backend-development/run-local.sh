@@ -2,7 +2,7 @@
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 # switch to backend directory
-pushd "$parent_path/../../app"
+pushd "$parent_path/../../backend/app"
 
 export ALLOW_ANY_API_KEY=True
 

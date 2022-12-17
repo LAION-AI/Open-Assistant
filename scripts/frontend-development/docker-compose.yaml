@@ -15,7 +15,7 @@ services:
       file: ../backend-development/docker-compose.yaml
       service: adminer
   backend:
-    build: ../../.
+    build: ../../backend/.
     environment:
       - POSTGRES_HOST=db
       - ALLOW_ANY_API_KEY=True

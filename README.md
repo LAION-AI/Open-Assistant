@@ -20,8 +20,8 @@ All open source projects begins with people like you. Open source is the belief 
 
 Work is organized in the [project board](https://github.com/orgs/LAION-AI/projects/3).
 
-- To get started with development, if you want to work on the backend, have a look at `backend/scripts/backend-development/README.md`.
-- If you want to work on the frontend, have a look at `backend/scripts/frontend-development/README.md`.
+- To get started with development, if you want to work on the backend, have a look at `scripts/backend-development/README.md`.
+- If you want to work on the frontend, have a look at `scripts/frontend-development/README.md`.
 
 There is also a minimal implementation of a frontend in the `text-frontend` folder.
 
