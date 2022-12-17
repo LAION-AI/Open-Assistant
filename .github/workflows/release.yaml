@@ -1,0 +1,13 @@
+name: Release
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  build-backend:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      image-name: ocgpt-backend
+      folder: backend
+      build-args: ""
