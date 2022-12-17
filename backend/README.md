@@ -1,4 +1,4 @@
-# Open-Chat-GPT REST Backend
+# Open-Assistant REST Backend
 
 ## REST Server Configuration
 
@@ -8,7 +8,7 @@ Example contents of a `.env` file for the backend:
 
 ```
 DATABASE_URI="postgresql://<username>:<password>@<host>/<database_name>"
-BACKEND_CORS_ORIGINS=["http://localhost", "http://localhost:4200", "http://localhost:3000", "http://localhost:8080", "https://localhost", "https://localhost:4200", "https://localhost:3000", "https://localhost:8080", "http://dev.ocgpt.laion.ai", "https://stag.ocgpt.laion.ai", "https://ocgpt.laion.ai"]
+BACKEND_CORS_ORIGINS=["http://localhost", "http://localhost:4200", "http://localhost:3000", "http://localhost:8080", "https://localhost", "https://localhost:4200", "https://localhost:3000", "https://localhost:8080", "http://dev.oasst.laion.ai", "https://stag.oasst.laion.ai", "https://oasst.laion.ai"]
 
 ```
 

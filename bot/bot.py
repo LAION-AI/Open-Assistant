@@ -33,7 +33,7 @@ guild_ids = [TEST_GUILD, TEST_GUILD_LAION]
 
 
 # Initiate the client and command tree to create slash commands.
-class OpenChatGPTClient(discord.Client):
+class OpenAssistantClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
@@ -59,7 +59,7 @@ class OpenChatGPTClient(discord.Client):
 # List the set of intents needed for commands to operate properly.
 intents = discord.Intents.default()
 intents.message_content = True
-client = OpenChatGPTClient(intents=intents)
+client = OpenAssistantClient(intents=intents)
 
 
 class LikeButton(discord.ui.Button):

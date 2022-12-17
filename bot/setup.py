@@ -12,11 +12,11 @@ if __name__ == "__main__":
     REQUIREMENTS = _read_reqs("requirements.txt")
 
     setup(
-        name="open-chat-gpt",
+        name="open-assistant",
         packages=find_packages(),
         version="0.0.1",
         license="Apache 2.0",
-        description="A Discord Bot for collecting and ranking prompts to train an Open ChatGPT",
+        description="A Discord Bot for collecting and ranking prompts to train an Open Assistant",
         keywords=["machine learning", "natural language processing", "discord"],
         install_requires=REQUIREMENTS,
         classifiers=[

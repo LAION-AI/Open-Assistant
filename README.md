@@ -1,8 +1,8 @@
-# Open-Chat-GPT
+# Open-Assistant
 
-Open chat gpt is a project meant to give everyone access to a great chat based large language model.
+Open Assistant is a project meant to give everyone access to a great chat based large language model.
 
-We believe that by doing this we will create a revolution in innovation in language. In the same way that stable-diffusion helped the world make art and images in new ways we hope open chat gpt can help improve the world by improving language itself.
+We believe that by doing this we will create a revolution in innovation in language. In the same way that stable-diffusion helped the world make art and images in new ways we hope Open Assistant can help improve the world by improving language itself.
 
 ## How can you help?
 
@@ -14,7 +14,7 @@ All open source projects begins with people like you. Open source is the belief 
 
 [Join the LAION Discord Server!](https://discord.gg/RQFtmAmk)
 
-[Visit the Notion](https://ykilcher.com/open-chat-gpt)
+[Visit the Notion](https://ykilcher.com/open-assistant)
 
 ## Developer Setup
 

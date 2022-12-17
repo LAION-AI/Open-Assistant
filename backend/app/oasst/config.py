@@ -5,7 +5,7 @@ from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "open-chatGPT backend"
+    PROJECT_NAME: str = "open-assistant backend"
     API_V1_STR: str = "/api/v1"
 
     POSTGRES_HOST: str = "localhost"

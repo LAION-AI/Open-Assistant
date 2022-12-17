@@ -8,6 +8,6 @@ jobs:
   build-backend:
     uses: ./.github/workflows/docker-build.yaml
     with:
-      image-name: ocgpt-backend
+      image-name: oasst-backend
       folder: backend
       build-args: ""
