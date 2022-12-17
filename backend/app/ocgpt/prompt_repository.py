@@ -22,7 +22,13 @@ class PromptRepository:
         if not user:
             return None
         person: Person = (
-            self.db.query(Person).filter(Person.api_client_id == self.api_client.id, Person.username == user.id).first()
+            self.db.query(Person)
+            .filter(
+                Person.api_client_id == self.api_client.id,
+                Person.username == user.id,
+                Person.auth_method == user.auth_method,
+            )
+            .first()
         )
         if person is None:
             # user is unknown, create new record

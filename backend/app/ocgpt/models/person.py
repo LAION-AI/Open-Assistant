@@ -18,6 +18,7 @@ class Person(SQLModel, table=True):
         ),
     )
     username: str = Field(nullable=False, max_length=128)
+    auth_method: str = Field(nullable=False, max_length=128, default="local")
     display_name: str = Field(nullable=False, max_length=256)
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
