@@ -10,23 +10,35 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.7",
+    "@heroicons/react": "^2.0.13",
     "@next-auth/prisma-adapter": "^1.0.5",
     "@prisma/client": "^4.7.1",
     "@supabase/auth-helpers-nextjs": "^0.5.2",
     "@supabase/auth-helpers-react": "^0.3.1",
     "@supabase/auth-ui-react": "^0.2.6",
     "@supabase/supabase-js": "^2.1.4",
+    "@tailwindcss/forms": "^0.5.3",
+    "autoprefixer": "^10.4.13",
     "axios": "^1.2.1",
+    "clsx": "^1.2.1",
     "eslint": "8.29.0",
     "eslint-config-next": "13.0.6",
+    "focus-visible": "^5.2.0",
+    "framer-motion": "^7.10.2",
     "next": "13.0.6",
     "next-auth": "^4.18.6",
     "nodemailer": "^6.8.0",
+    "postcss-focus-visible": "^7.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "swr": "^2.0.0"
+    "swr": "^2.0.0",
+    "tailwindcss": "^3.2.4",
+    "use-debounce": "^9.0.2"
   },
   "devDependencies": {
+    "@types/node": "18.11.17",
+    "@types/react": "18.0.26",
     "prisma": "^4.7.1"
   }
 }
