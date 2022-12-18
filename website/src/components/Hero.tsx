@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Container } from "./Container";
 
 function BackgroundIllustration(props) {
-  let id = useId();
+  const id = useId();
 
   return (
     <div {...props}>
