@@ -19,9 +19,9 @@ export default function Home() {
     return (
       <div className={styles.App}>
         <header className={styles.AppHeader}>
-          <h2>Open Chat Gpt</h2>
+          <h2>Open Assistant</h2>
           <p>
-            Open chat gpt is a project meant to give everyone access to a great
+            Open Assistant is a project meant to give everyone access to a great
             chat based large language model.
           </p>
 
@@ -29,7 +29,7 @@ export default function Home() {
           <p>
             We believe that by doing this we will create a revolution in
             innovation in language. In the same way that stable-diffusion helped
-            the world make art and images in new ways we hope open chat gpt can
+            the world make art and images in new ways we hope Open Assistant can
             help improve the world by improving language itself.
           </p>
 
@@ -59,9 +59,7 @@ export default function Home() {
   return (
     <div className={styles.App}>
       <header className={styles.AppHeader}>
-        {/* <img src={logo} className="App-logo" alt="logo" /> */}
-
-        <h2>Open Chat Gpt</h2>
+        <h2>Open Assistant</h2>
 
         <p>You are logged in</p>
 

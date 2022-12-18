@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+  db:
+    extends:
+      file: ../backend-development/docker-compose.yaml
+      service: db
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+  adminer:
+    extends:
+      file: ../backend-development/docker-compose.yaml
+      service: adminer
+  backend:
+    build: ../../backend/.
+    image: oasst-backend
+    environment:
+      - POSTGRES_HOST=db
+      - ALLOW_ANY_API_KEY=True
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"

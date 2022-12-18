@@ -3,11 +3,11 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
-import app.models.db_payload as db_payload
-from app.models import ApiClient, Person, Post, PostReaction, WorkPackage
-from app.models.payload_column_type import PayloadContainer
-from app.schemas import protocol as protocol_schema
+import oasst.models.db_payload as db_payload
 from loguru import logger
+from oasst.models import ApiClient, Person, Post, PostReaction, WorkPackage
+from oasst.models.payload_column_type import PayloadContainer
+from oasst.schemas import protocol as protocol_schema
 from sqlmodel import Session
 
 
@@ -22,7 +22,13 @@ class PromptRepository:
         if not user:
             return None
         person: Person = (
-            self.db.query(Person).filter(Person.api_client_id == self.api_client.id, Person.username == user.id).first()
+            self.db.query(Person)
+            .filter(
+                Person.api_client_id == self.api_client.id,
+                Person.username == user.id,
+                Person.auth_method == user.auth_method,
+            )
+            .first()
         )
         if person is None:
             # user is unknown, create new record
