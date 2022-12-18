@@ -20,6 +20,7 @@ services:
     environment:
       - POSTGRES_HOST=db
       - ALLOW_ANY_API_KEY=True
+      - MAX_WORKERS=1
     depends_on:
       db:
         condition: service_healthy
