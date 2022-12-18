@@ -1,5 +1,5 @@
 import { unstable_getServerSession } from "next-auth/next";
-import { authOptions } from "./auth/[...nextauth]";
+import { authOptions } from "pages/api/auth/[...nextauth]";
 
 /**
  * Returns a new task created from the Task Backend.  We do a few things here:

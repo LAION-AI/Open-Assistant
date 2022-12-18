@@ -5,7 +5,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 
-import styles from "../styles/Home.module.css";
+import styles from "styles/Home.module.css";
 
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
