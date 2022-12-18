@@ -5,7 +5,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 
-import styles from "../styles/Home.module.css";
+import styles from "styles/Home.module.css";
 
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
@@ -19,7 +19,6 @@ export default function Home() {
     return (
       <div className={styles.App}>
         <header className={styles.AppHeader}>
-          {/* <img src={logo} className="App-logo" alt="logo" /> */}
           <h2>Open Assistant</h2>
           <p>
             Open Assistant is a project meant to give everyone access to a great
@@ -60,8 +59,6 @@ export default function Home() {
   return (
     <div className={styles.App}>
       <header className={styles.AppHeader}>
-        {/* <img src={logo} className="App-logo" alt="logo" /> */}
-
         <h2>Open Assistant</h2>
 
         <p>You are logged in</p>
