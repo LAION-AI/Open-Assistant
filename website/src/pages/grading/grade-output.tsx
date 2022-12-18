@@ -28,48 +28,13 @@ export default function OutputDetail(): JSX.Element {
 
                 {/* Rating buttons */}
                 <div className="flex justify-center p-6">
-                  <button
-                    type="button"
-                    className="inline-flex items-center mx-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    1
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center mx-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    2
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center mx-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    3
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center mx-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    4
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center mx-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    5
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center mx-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    6
-                  </button>
-                  <button
-                    type="button"
-                    className="nline-flex items-center mx-2 rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    7
-                  </button>
+                  <RatingButton rating={1} active={false}></RatingButton>
+                  <RatingButton rating={2} active={false}></RatingButton>
+                  <RatingButton rating={3} active={false}></RatingButton>
+                  <RatingButton rating={4} active={false}></RatingButton>
+                  <RatingButton rating={5} active={false}></RatingButton>
+                  <RatingButton rating={6} active={false}></RatingButton>
+                  <RatingButton rating={7} active={true}></RatingButton>
                 </div>
               </div>
 
@@ -129,6 +94,18 @@ export default function OutputDetail(): JSX.Element {
         </section>
       </div>
     </>
+  );
+}
+
+function RatingButton(props: { rating: number; active: boolean }): JSX.Element {
+  const activeClasses =
+    "inline-flex items-center mx-2 rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
+  const inActiveClasses =
+    "inline-flex items-center mx-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
+  return (
+    <button type="button" className={props.active ? activeClasses : inActiveClasses}>
+      {props.rating}
+    </button>
   );
 }
 
