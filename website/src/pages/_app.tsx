@@ -1,10 +1,9 @@
 import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import {useEffect, useState} from 'react';
-
+import { useEffect, useState } from "react";
 
 import "../styles/globals.css";
-import 'focus-visible'
+import "focus-visible";
 
 function MyApp({ Component, pageProps }) {
   const [supabase] = useState(() => createBrowserSupabaseClient());

@@ -1,5 +1,4 @@
-import Link from 'next/link'
-
+import Link from "next/link";
 
 function BackgroundIllustration(props) {
   return (
@@ -15,7 +14,7 @@ function BackgroundIllustration(props) {
       <circle cx={545} cy={545} r="416.5" />
       <circle cx={545} cy={545} r="352.5" />
     </svg>
-  )
+  );
 }
 
 export function AuthLayout({ title, subtitle, children }) {
@@ -43,5 +42,5 @@ export function AuthLayout({ title, subtitle, children }) {
         </div>
       </div>
     </main>
-  )
+  );
 }

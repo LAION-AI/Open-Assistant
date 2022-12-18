@@ -1,20 +1,20 @@
-import Link from 'next/link'
+import Link from "next/link";
 
-import { Container } from './Container'
+import { Container } from "./Container";
 
 const faqs = [
   [
     {
-      question: 'How far along is this project?',
+      question: "How far along is this project?",
       answer:
-        'We are in the early stages of development, working from established research in applying RLHF to large language models.',
+        "We are in the early stages of development, working from established research in applying RLHF to large language models.",
     },
   ],
   [
     {
-      question: 'Who is behind Open Assistant?',
+      question: "Who is behind Open Assistant?",
       answer:
-        'Open Assistant is a project organized by LAION and individuals around the world interested in bringing this technology to everyone.',
+        "Open Assistant is a project organized by LAION and individuals around the world interested in bringing this technology to everyone.",
     },
   ],
   [
@@ -24,7 +24,7 @@ const faqs = [
     //     'Please feel free to reach out to us on Discord. We are happy to answer any questions you may have.',
     // },
   ],
-]
+];
 
 export function Faq() {
   return (
@@ -73,5 +73,5 @@ export function Faq() {
         </ul>
       </Container>
     </section>
-  )
+  );
 }

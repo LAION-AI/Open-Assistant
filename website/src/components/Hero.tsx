@@ -1,10 +1,10 @@
-import { useId } from 'react'
-import Image from 'next/image'
+import { useId } from "react";
+import Image from "next/image";
 
-import { Container } from './Container'
+import { Container } from "./Container";
 
 function BackgroundIllustration(props) {
-  let id = useId()
+  let id = useId();
 
   return (
     <div {...props}>
@@ -69,9 +69,8 @@ function BackgroundIllustration(props) {
         </defs>
       </svg>
     </div>
-  )
+  );
 }
-
 
 export function Hero() {
   return (
@@ -90,20 +89,25 @@ export function Hero() {
             </p>
             <p className="mt-6 text-lg text-gray-600">
               In the same way that Stable Diffusion helped the world make art
-              and images in new ways, we want to improve
-              the world by providing amazing conversational AI.
+              and images in new ways, we want to improve the world by providing
+              amazing conversational AI.
             </p>
           </div>
 
           <div className="relative mt-10 sm:mt-20 lg:col-span-5 lg:row-span-2 lg:mt-0 xl:col-span-6">
             <BackgroundIllustration className="absolute left-1/2 top-4 h-[1026px] w-[1026px] -translate-x-1/3 stroke-gray-300/70 [mask-image:linear-gradient(to_bottom,white_20%,transparent_75%)] sm:top-16 sm:-translate-x-1/2 lg:-top-16 lg:ml-12 xl:-top-14 xl:ml-0" />
             <div className="-mx-4 h-[448px] px-9 [mask-image:linear-gradient(to_bottom,white_60%,transparent)] sm:mx-0 lg:absolute lg:-inset-x-10 lg:-top-10 lg:-bottom-20 lg:h-auto lg:px-0 lg:pt-10 xl:-bottom-32">
-              <Image src="/images/logos/CHAT-THOUGHT-CONVO.svg" className="mx-auto mr-6 object-fill" width="450" height="450" alt={''}/>
+              <Image
+                src="/images/logos/CHAT-THOUGHT-CONVO.svg"
+                className="mx-auto mr-6 object-fill"
+                width="450"
+                height="450"
+                alt={""}
+              />
             </div>
           </div>
-
         </div>
       </Container>
     </div>
-  )
+  );
 }
