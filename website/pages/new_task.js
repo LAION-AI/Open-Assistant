@@ -8,6 +8,10 @@ import useSWRMutation from "swr/mutation";
 
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
+/**
+ * A helper function to post updates to tasks.
+ * This ensures the content sent is serialized to JSON.
+ */
 async function sendRequest(url, { arg }) {
   return fetch(url, {
     method: "POST",
@@ -16,49 +20,79 @@ async function sendRequest(url, { arg }) {
 }
 
 export default function NewPage() {
-  const [done, setDone] = useState(false);
+  // Use an array of tasks that record the sequence of steps until a task is
+  // deemed complete.
+  const [tasks, setTasks] = useState([]);
+
+  // A quick reference to the input element.  This should be factored into the
+  // component doing the actual task rendering.
   const responseEl = useRef(null);
-  const {
-    data: registeredTask,
-    errors,
-    isLoading,
-  } = useSWRImmutable("/api/new_task", fetcher);
+
+  // Fetch the very fist task.  We can ignore everything except isLoading
+  // because the onSuccess handler will update `tasks` when ready.
+  const { isLoading } = useSWRImmutable("/api/new_task", fetcher, {
+    onSuccess: (data) => {
+      setTasks([data]);
+    },
+  });
+
+  // Every time we submit an answer to the latest task, let the backend handle
+  // all the interactions then add the resulting task to the queue.  This ends
+  // when we hit the done task.
   const { trigger, isMutating } = useSWRMutation(
     "/api/update_task",
     sendRequest,
     {
       onSuccess: async (data) => {
         const newTask = await data.json();
-        console.log(newTask);
-        setDone(true);
+        // This is the more efficient way to update a react state array.
+        setTasks((oldTasks) => [...oldTasks, newTask]);
       },
     }
   );
 
-  const submitResponse = () => {
+  // Trigger a mutation that updates the current task.  We should probably
+  // signal somewhere that this interaction is being processed.
+  const submitResponse = (t) => {
     trigger({
-      id: registeredTask.id,
+      id: t.id,
       content: {
         rating: responseEl.current.value,
       },
     });
   };
+
+  // Show something informative while loading the first task.
   if (isLoading) {
     return <div>Loading</div>;
   }
 
+  // Iterate through each of the tasks and show it's contents, get a response to it, or show the done state.
+  //
+  // Right now this just works for the rating task.
+  //
+  // Displaying and fetching results for each task type should be factored into
+  // different components that handle the presentation and response structures.
+  // The results should be packaged into a single object with all the fields
+  // sent to the backend.
   return (
     <div>
-      <div>{registeredTask.id}</div>
-      <div>{registeredTask.task.type}</div>
-      <div>{registeredTask.task.text}</div>
-      <div>{registeredTask.task.summary}</div>
-      <div>
-        {registeredTask.task.scale.min} to {registeredTask.task.scale.max}
-      </div>
-      <input type="text" ref={responseEl} />
-      <button onClick={submitResponse}>Submit Response</button>
-      {done && <div>Done!</div>}
+      {tasks.map((t) => (
+        <div key={t.id}>
+          <div>{t.task.type}</div>
+          <div>{t.task.text}</div>
+          {t.task.summary && (
+            <>
+              <div>{t.task.summary}</div>
+              <div>
+                {t.task.scale.min} to {t.task.scale.max}
+              </div>
+              <input type="text" ref={responseEl} />
+              <button onClick={() => submitResponse(t)}>Submit Response</button>
+            </>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
