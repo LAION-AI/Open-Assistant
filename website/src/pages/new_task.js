@@ -39,17 +39,13 @@ export default function NewPage() {
   // Every time we submit an answer to the latest task, let the backend handle
   // all the interactions then add the resulting task to the queue.  This ends
   // when we hit the done task.
-  const { trigger, isMutating } = useSWRMutation(
-    "/api/update_task",
-    sendRequest,
-    {
-      onSuccess: async (data) => {
-        const newTask = await data.json();
-        // This is the more efficient way to update a react state array.
-        setTasks((oldTasks) => [...oldTasks, newTask]);
-      },
-    }
-  );
+  const { trigger, isMutating } = useSWRMutation("/api/update_task", sendRequest, {
+    onSuccess: async (data) => {
+      const newTask = await data.json();
+      // This is the more efficient way to update a react state array.
+      setTasks((oldTasks) => [...oldTasks, newTask]);
+    },
+  });
 
   // Trigger a mutation that updates the current task.  We should probably
   // signal somewhere that this interaction is being processed.

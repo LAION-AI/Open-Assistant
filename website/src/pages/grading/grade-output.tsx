@@ -11,9 +11,7 @@ export default function OutputDetail(): JSX.Element {
             <div className="rounded-lg shadow-lg h-full block bg-white">
               <div className="p-6">
                 <h5 className="text-lg font-semibold mb-4">Instruction</h5>
-                <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">
-                  {SAMPLE_PROMPT}
-                </div>
+                <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">{SAMPLE_PROMPT}</div>
               </div>
             </div>
 
@@ -21,18 +19,12 @@ export default function OutputDetail(): JSX.Element {
             <div className="mt-6 lg:mt-0 rounded-lg shadow-lg h-full block bg-white">
               <div className="p-6">
                 <h5 className="text-lg font-semibold mb-4">Output</h5>
-                <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">
-                  {SAMPLE_OUTPUT}
-                </div>
+                <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">{SAMPLE_OUTPUT}</div>
               </div>
               {/* Form  wrap*/}
               <div className="p-6">
-                <h3 className="text-lg text-center font-medium leading-6 text-gray-900">
-                  Rating
-                </h3>
-                <p className="text-center mt-1 text-sm text-gray-500">
-                  (1 = worst, 7 = best)
-                </p>
+                <h3 className="text-lg text-center font-medium leading-6 text-gray-900">Rating</h3>
+                <p className="text-center mt-1 text-sm text-gray-500">(1 = worst, 7 = best)</p>
 
                 {/* Rating buttons */}
                 <div className="flex justify-center p-6">
@@ -85,12 +77,7 @@ export default function OutputDetail(): JSX.Element {
               <div className="flex justify-center px-10">
                 <ul>
                   {ANNOTATION_FLAGS.map((option, i) => {
-                    return (
-                      <AnnotationCheckboxLi
-                        option={option}
-                        key={i}
-                      ></AnnotationCheckboxLi>
-                    );
+                    return <AnnotationCheckboxLi option={option} key={i}></AnnotationCheckboxLi>;
                   })}
                 </ul>
               </div>
@@ -150,10 +137,7 @@ function AnnotationCheckboxLi(props: { option: annotationBool }): JSX.Element {
   if (props.option.additionalExplanation) {
     AdditionalExplanation = (
       <a href="#" className="group flex items-center space-x-2.5 text-sm ">
-        <QuestionMarkCircleIcon
-          className="h-5 w-5 ml-3 text-gray-400 group-hover:text-gray-500"
-          aria-hidden="true"
-        />
+        <QuestionMarkCircleIcon className="h-5 w-5 ml-3 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
       </a>
     );
   }
@@ -167,13 +151,8 @@ function AnnotationCheckboxLi(props: { option: annotationBool }): JSX.Element {
           value=""
           id={props.option.attributeName}
         />
-        <label
-          className="flex ml-1 form-check-label  hover:cursor-pointer"
-          htmlFor={props.option.attributeName}
-        >
-          <span className="text-gray-800 hover:text-blue-700">
-            {props.option.labelText}
-          </span>
+        <label className="flex ml-1 form-check-label  hover:cursor-pointer" htmlFor={props.option.attributeName}>
+          <span className="text-gray-800 hover:text-blue-700">{props.option.labelText}</span>
           {AdditionalExplanation}
         </label>
       </li>
@@ -210,8 +189,7 @@ const ANNOTATION_FLAGS: annotationBool[] = [
   },
   {
     attributeName: "encourages_violence",
-    labelText:
-      "Encourages or fails to discourage violence/abuse/terrorism/self-harm",
+    labelText: "Encourages or fails to discourage violence/abuse/terrorism/self-harm",
   },
   {
     attributeName: "denigrates_a_protected_class",
@@ -229,8 +207,7 @@ const ANNOTATION_FLAGS: annotationBool[] = [
   },
 ];
 
-const SAMPLE_PROMPT =
-  "Please make a list of aspects of a good pull request. Briefly describe each aspect.";
+const SAMPLE_PROMPT = "Please make a list of aspects of a good pull request. Briefly describe each aspect.";
 
 const SAMPLE_OUTPUT = `Here are some aspects of a good pull request, which you may use to help your pull requests be good contributions and get accepted:
 

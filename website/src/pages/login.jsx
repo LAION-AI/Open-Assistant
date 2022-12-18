@@ -14,14 +14,7 @@ export default function Login() {
       <AuthLayout title="" subtitle={<></>}>
         <form>
           <div className="space-y-6">
-            <TextField
-              label="Email address"
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-            />
+            <TextField label="Email address" id="email" name="email" type="email" autoComplete="email" required />
             <TextField
               label="Password"
               id="password"

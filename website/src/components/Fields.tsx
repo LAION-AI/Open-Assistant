@@ -5,10 +5,7 @@ const formClasses =
 
 function Label({ id, children }) {
   return (
-    <label
-      htmlFor={id}
-      className="mb-2 block text-sm font-semibold text-gray-900"
-    >
+    <label htmlFor={id} className="mb-2 block text-sm font-semibold text-gray-900">
       {children}
     </label>
   );

@@ -19,20 +19,9 @@ function BackgroundIllustration(props) {
           stroke="#D4D4D4"
           strokeOpacity="0.7"
         />
-        <path
-          d="M513 1025C230.23 1025 1 795.77 1 513"
-          stroke={`url(#${id}-gradient-1)`}
-          strokeLinecap="round"
-        />
+        <path d="M513 1025C230.23 1025 1 795.77 1 513" stroke={`url(#${id}-gradient-1)`} strokeLinecap="round" />
         <defs>
-          <linearGradient
-            id={`${id}-gradient-1`}
-            x1="1"
-            y1="513"
-            x2="1"
-            y2="1025"
-            gradientUnits="userSpaceOnUse"
-          >
+          <linearGradient id={`${id}-gradient-1`} x1="1" y1="513" x2="1" y2="1025" gradientUnits="userSpaceOnUse">
             <stop stopColor="#06b6d4" />
             <stop offset="1" stopColor="#06b6d4" stopOpacity="0" />
           </linearGradient>
@@ -49,20 +38,9 @@ function BackgroundIllustration(props) {
           stroke="#D4D4D4"
           strokeOpacity="0.7"
         />
-        <path
-          d="M913 513c0 220.914-179.086 400-400 400"
-          stroke={`url(#${id}-gradient-2)`}
-          strokeLinecap="round"
-        />
+        <path d="M913 513c0 220.914-179.086 400-400 400" stroke={`url(#${id}-gradient-2)`} strokeLinecap="round" />
         <defs>
-          <linearGradient
-            id={`${id}-gradient-2`}
-            x1="913"
-            y1="513"
-            x2="913"
-            y2="913"
-            gradientUnits="userSpaceOnUse"
-          >
+          <linearGradient id={`${id}-gradient-2`} x1="913" y1="513" x2="913" y2="913" gradientUnits="userSpaceOnUse">
             <stop stopColor="#06b6d4" />
             <stop offset="1" stopColor="#06b6d4" stopOpacity="0" />
           </linearGradient>
@@ -78,19 +56,14 @@ export function Hero() {
       <Container className="">
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
           <div className="relative z-10 mx-auto max-w-2xl lg:col-span-7 lg:max-w-none lg:pt-6 xl:col-span-6">
-            <h1 className="text-5xl mb-6 font-bold tracking-tight text-gray-900">
-              Open Assistant
-            </h1>
+            <h1 className="text-5xl mb-6 font-bold tracking-tight text-gray-900">Open Assistant</h1>
             <p className="mt-8 text-3xl inline bg-gradient-to-r from-indigo-600 via-sky-400 to-indigo-700 bg-clip-text font-display tracking-tight text-transparent">
               <b>Conversational AI for everyone.</b>
             </p>
+            <p className="mt-6 text-lg text-gray-600">We believe we can create a revolution.</p>
             <p className="mt-6 text-lg text-gray-600">
-              We believe we can create a revolution.
-            </p>
-            <p className="mt-6 text-lg text-gray-600">
-              In the same way that Stable Diffusion helped the world make art
-              and images in new ways, we want to improve the world by providing
-              amazing conversational AI.
+              In the same way that Stable Diffusion helped the world make art and images in new ways, we want to improve
+              the world by providing amazing conversational AI.
             </p>
           </div>
 
