@@ -100,10 +100,10 @@ export default function OutputDetail(): JSX.Element {
 function RatingButton(props: { rating: number; active: boolean }): JSX.Element {
   const activeClasses =
     "inline-flex items-center mx-2 rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
-  const inActiveClasses =
+  const inactiveClasses =
     "inline-flex items-center mx-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
   return (
-    <button type="button" className={props.active ? activeClasses : inActiveClasses}>
+    <button type="button" className={props.active ? activeClasses : inactiveClasses}>
       {props.rating}
     </button>
   );
