@@ -1,5 +1,4 @@
-import { Auth, ThemeSupa } from "@supabase/auth-ui-react";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSession } from "next-auth/react";
 
 import Head from "next/head";
 
@@ -12,14 +11,7 @@ import { Hero } from "../components/Hero";
 import styles from "../styles/Home.module.css";
 
 export default function Home() {
-  const session = useSession();
-  const supabase = useSupabaseClient();
-
-  const signinWithDiscord = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "discord",
-    });
-  };
+  const { data: session } = useSession();
 
   if (!session) {
     return (
