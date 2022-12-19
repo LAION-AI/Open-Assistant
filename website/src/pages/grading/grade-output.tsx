@@ -1,9 +1,11 @@
+import { HStack, Textarea } from "@chakra-ui/react";
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
-import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
+import useSWRImmutable from "swr/immutable";
 
+import RatingRadioGroup from "src/components/RatingRadioGroup";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 
@@ -11,6 +13,7 @@ const GradeOutput = () => {
   // Use an array of tasks that record the sequence of steps until a task is
   // deemed complete.
   const [tasks, setTasks] = useState([]);
+  const [rating, setRating] = useState(0);
 
   // A quick reference to the input element.  This should be factored into the
   // component doing the actual task rendering.
@@ -42,7 +45,7 @@ const GradeOutput = () => {
     trigger({
       id: t.id,
       content: {
-        rating: 2,
+        rating: rating,
       },
     });
   };
@@ -51,127 +54,97 @@ const GradeOutput = () => {
    * TODO: Make this a nicer loading screen.
    */
   if (tasks.length == 0) {
-    return (
-      <>
-        <div className=" p-6 h-full mx-auto bg-slate-100 text-gray-800"></div>
-      </>
-    );
+    return <div className=" p-6 h-full mx-auto bg-slate-100 text-gray-800"></div>;
   }
 
   return (
-    <>
-      <div className=" p-6 h-full mx-auto bg-slate-100 text-gray-800">
-        {/* Instrunction and Output panels */}
-        <section className="mb-8  lt-lg:mb-12 ">
-          <div className="grid lg:gap-x-12 lg:grid-cols-2">
-            {/* Instruction panel */}
-            <div className="rounded-lg shadow-lg h-full block bg-white">
-              <div className="p-6">
-                <h5 className="text-lg font-semibold mb-4">Instruction</h5>
-                <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">
-                  {tasks[0].task.full_text}
-                </div>
+    <div className=" p-6 h-full mx-auto bg-slate-100 text-gray-800">
+      {/* Instrunction and Output panels */}
+      <section className="mb-8  lt-lg:mb-12 ">
+        <div className="grid lg:gap-x-12 lg:grid-cols-2">
+          {/* Instruction panel */}
+          <div className="rounded-lg shadow-lg h-full block bg-white">
+            <div className="p-6">
+              <h5 className="text-lg font-semibold mb-4">Instruction</h5>
+              <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">
+                {tasks[0].task.full_text}
               </div>
             </div>
+          </div>
 
-            {/* Output panel */}
-            <div className="mt-6 lg:mt-0 rounded-lg shadow-lg h-full block bg-white">
-              <div className="p-6">
-                <h5 className="text-lg font-semibold mb-4">Output</h5>
-                <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">
-                  {tasks[0].task.summary}
-                </div>
-              </div>
-              {/* Form  wrap*/}
-              <div className="p-6">
-                <h3 className="text-lg text-center font-medium leading-6 text-gray-900">Rating</h3>
-                <p className="text-center mt-1 text-sm text-gray-500">(1 = worst, 7 = best)</p>
+          {/* Output panel */}
+          <div className="mt-6 lg:mt-0 rounded-lg shadow-lg h-full block bg-white">
+            <div className="p-6">
+              <h5 className="text-lg font-semibold mb-4">Output</h5>
+              <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">{tasks[0].task.summary}</div>
+            </div>
+            {/* Form  wrap*/}
+            <div className="p-6">
+              <h3 className="text-lg text-center font-medium leading-6 text-gray-900">Rating</h3>
+              <p className="text-center mt-1 text-sm text-gray-500">
+                ({tasks[0].task.scale.min} = worst, {tasks[0].task.scale.max} = best)
+              </p>
 
-                {/* Rating buttons */}
-                <div className="flex justify-center p-6">
-                  <RatingButton rating={1} active={false}></RatingButton>
-                  <RatingButton rating={2} active={false}></RatingButton>
-                  <RatingButton rating={3} active={false}></RatingButton>
-                  <RatingButton rating={4} active={false}></RatingButton>
-                  <RatingButton rating={5} active={false}></RatingButton>
-                  <RatingButton rating={6} active={false}></RatingButton>
-                  <RatingButton rating={7} active={true}></RatingButton>
-                </div>
-              </div>
-
-              {/* Annotation checkboxes */}
-              <div className="flex justify-center px-10">
-                <ul>
-                  {ANNOTATION_FLAGS.map((option, i) => {
-                    return <AnnotationCheckboxLi option={option} key={i}></AnnotationCheckboxLi>;
-                  })}
-                </ul>
-              </div>
+              {/* Rating buttons */}
               <div className="flex justify-center p-6">
-                <textarea
-                  id="notes"
-                  name="notes"
-                  className="mx-1 mb-1 max-w-lg shadow-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300"
-                  placeholder="Optional notes"
-                  defaultValue={""}
-                />
+                <RatingRadioGroup min={tasks[0].task.scale.min} max={tasks[0].task.scale.max} onChange={setRating} />
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* Info & controls */}
-        <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
-          <div className="flex flex-col justify-self-start text-gray-700">
-            <div>
-              <span>
-                <b>Prompt</b>
-              </span>
-              <span className="ml-2">{tasks[0].id}</span>
+            {/* Annotation checkboxes */}
+            <div className="flex justify-center px-10">
+              <ul>
+                {ANNOTATION_FLAGS.map((option, i) => {
+                  return <AnnotationCheckboxLi option={option} key={i}></AnnotationCheckboxLi>;
+                })}
+              </ul>
             </div>
-            <div>
-              <span>
-                <b>Output</b>
-              </span>
-              <span className="ml-2">{tasks.length === 2 ? tasks[1].id : "Submit your answer"}</span>
+            <div className="flex justify-center p-6">
+              <Textarea name="notes" placeholder="Optional notes" />
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Skip / Submit controls */}
-          <div className="flex justify-center ml-auto">
-            <button
-              type="button"
-              className="mr-2 inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-              Skip
-            </button>
-            <button
-              type="button"
-              onClick={() => submitResponse(tasks[0])}
-              className="nline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-              Submit
-            </button>
+      {/* Info & controls */}
+      <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
+        <div className="flex flex-col justify-self-start text-gray-700">
+          <div>
+            <span>
+              <b>Prompt</b>
+            </span>
+            <span className="ml-2">{tasks[0].id}</span>
           </div>
-        </section>
-      </div>
-    </>
+          <div>
+            <span>
+              <b>Output</b>
+            </span>
+            <span className="ml-2">{tasks.length === 2 ? tasks[1].id : "Submit your answer"}</span>
+          </div>
+        </div>
+
+        {/* Skip / Submit controls */}
+        <div className="flex justify-center ml-auto">
+          <button
+            type="button"
+            className="mr-2 inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            Skip
+          </button>
+          <button
+            type="button"
+            onClick={() => submitResponse(tasks[0])}
+            className="nline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            Submit
+          </button>
+        </div>
+      </section>
+    </div>
   );
 };
 
 export default GradeOutput;
-
-function RatingButton(props: { rating: number; active: boolean }): JSX.Element {
-  const activeClasses =
-    "inline-flex items-center mx-2 rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
-  const inactiveClasses =
-    "inline-flex items-center mx-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
-  return (
-    <button type="button" className={props.active ? activeClasses : inactiveClasses}>
-      {props.rating}
-    </button>
-  );
-}
 
 function AnnotationCheckboxLi(props: { option: annotationBool }): JSX.Element {
   let AdditionalExplanation = null;
