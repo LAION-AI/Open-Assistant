@@ -3,7 +3,7 @@ import enum
 from typing import Optional, Type
 
 import requests
-from schemas import protocol as protocol_schema
+from oasst_shared.schemas import protocol as protocol_schema
 
 
 class TaskType(str, enum.Enum):

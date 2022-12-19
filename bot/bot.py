@@ -181,8 +181,8 @@ class OpenAssistantBot:
         return msg
 
     async def next_task(self):
-        task = self.backend.fetch_task(protocol_schema.TaskRequestType.rate_summary, user=None)
-        # task = self.backend.fetch_random_task(user=None)
+        # task = self.backend.fetch_task(protocol_schema.TaskRequestType.rate_summary, user=None)
+        task = self.backend.fetch_random_task(user=None)
 
         msg: discord.Message = None
         match task.type:
@@ -202,9 +202,9 @@ class OpenAssistantBot:
                 msg = await self.generate_rank_conversation(task)
 
         if msg is not None:
-            await self.backend.ack_task(task.id, msg.id)
+            self.backend.ack_task(task.id, msg.id)
         else:
-            await self.backend.nack_task(task.id, "not supported")
+            self.backend.nack_task(task.id, "not supported")
 
     async def background_timer(self):
         while True:
@@ -212,7 +212,7 @@ class OpenAssistantBot:
                 try:
                     await self.next_task()
                 except Exception as e:
-                    print(e)
+                    print(e.with_traceback())
             await asyncio.sleep(30)
 
     def run(self):
