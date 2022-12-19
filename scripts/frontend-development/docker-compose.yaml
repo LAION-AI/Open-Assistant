@@ -15,7 +15,9 @@ services:
       file: ../backend-development/docker-compose.yaml
       service: adminer
   backend:
-    build: ../../backend/.
+    build:
+      dockerfile: docker/Dockerfile.backend
+      context: ../..
     image: oasst-backend
     environment:
       - POSTGRES_HOST=db

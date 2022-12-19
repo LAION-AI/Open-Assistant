@@ -6,10 +6,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey
 from loguru import logger
-from oasst.api import deps
-from oasst.models.db_payload import TaskPayload
-from oasst.prompt_repository import PromptRepository
-from oasst.schemas import protocol as protocol_schema
+from oasst_backend.api import deps
+from oasst_backend.models.db_payload import TaskPayload
+from oasst_backend.prompt_repository import PromptRepository
+from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
 from starlette.status import HTTP_400_BAD_REQUEST
 

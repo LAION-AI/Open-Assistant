@@ -3,7 +3,7 @@ from logging.config import fileConfig
 
 import sqlmodel
 from alembic import context
-from oasst import models  # noqa: F401
+from oasst_backend import models  # noqa: F401
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides

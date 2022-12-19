@@ -1,3 +1,4 @@
 {
-  "python.formatting.provider": "black"
+  "python.formatting.provider": "black",
+  "python.analysis.extraPaths": ["${workspaceFolder}/oasst-shared"]
 }

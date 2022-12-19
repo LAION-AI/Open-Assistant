@@ -1,215 +1,236 @@
 # -*- coding: utf-8 -*-
-
-import json
-import os
+import asyncio
+from typing import Any
 
 import discord
-import requests
-from discord import app_commands
-from dotenv import load_dotenv
-from loguru import logger
-
-bot_url = "https://discord.com/api/oauth2/authorize?client_id=1051614245940375683&permissions=8&scope=bot"
-
-# Load up all the important environment variables.
-load_dotenv()
-
-# For authentication.
-TOKEN = os.getenv("DISCORD_TOKEN")
-
-# For Backends.
-API_SERVER_URL = os.getenv("API_SERVER_URL")
-API_SERVER_KEY = os.getenv("API_SERVER_KEY")
-
-labelers_url = f"{API_SERVER_URL}/api/v1/labelers/"
-prompts_url = f"{API_SERVER_URL}/api/v1/prompts/"
-headers = {"X-API-Key": API_SERVER_KEY}
-
-# For testing only.
-TEST_GUILD = os.getenv("TEST_GUILD")
-TEST_GUILD_LAION = os.getenv("TEST_GUILD_LAION")
-# TEST_GUILD = False
-guild_ids = [TEST_GUILD, TEST_GUILD_LAION]
+from api_client import ApiClient, TaskType
+from oasst_shared.schemas import protocol as protocol_schema
 
 
-# Initiate the client and command tree to create slash commands.
-class OpenAssistantClient(discord.Client):
-    def __init__(self, *, intents: discord.Intents):
-        super().__init__(intents=intents)
-        self.tree = app_commands.CommandTree(self)
+class RatingButton(discord.ui.Button):
+    def __init__(self, label, value, response_handler):
+        super().__init__(label=label, style=discord.ButtonStyle.green)
+        self.value = value
+        self.response_handler = response_handler
+
+    async def callback(self, interaction):
+        await self.response_handler(self.value, interaction)
+
+
+def generate_rating_view(lo: int, hi: int, response_handler) -> discord.ui.View:
+    view = discord.ui.View()
+    for i in range(lo, hi + 1):
+        view.add_item(RatingButton(str(i), i, response_handler))
+    return view
+
+
+class ModifiedClient(discord.Client):
+    def __init__(self, *, intents: discord.Intents, **options: Any):
+        super().__init__(intents=intents, **options)
 
     async def setup_hook(self):
-        if TEST_GUILD:
-            # When testing the bot it's handy to run in a single server (called a
-            # Guide in the API).  This is relatively fast.
-            for guild_id in guild_ids:
-                guild = discord.Object(id=guild_id)
-                self.tree.copy_global_to(guild=guild)
-                await self.tree.sync(guild=guild)
-
-            # guild = discord.Object(id=TEST_GUILD)
-            # self.tree.copy_global_to(guild=guild)
-            # await self.tree.sync(guild=guild)
-        else:
-            # This can take up to an hour for the commands to be registered.
-            await self.tree.sync()
-        logger.debug("Ready!")
+        print("setup")
 
 
-# List the set of intents needed for commands to operate properly.
-intents = discord.Intents.default()
-intents.message_content = True
-client = OpenAssistantClient(intents=intents)
+class OpenAssistantBot:
+    def __init__(self, bot_token: str, bot_channel_name: str, backend_url: str, api_key: str):
+        intents = discord.Intents.default()
+        intents.message_content = True
+        self.bot_token = bot_token
+        client = ModifiedClient(intents=intents)
+        self.client = client
+        self.bot_channel: discord.TextChannel = None
+        self.backend = ApiClient(backend_url, api_key)
+        self.reply_handlers = {}  # handlers by msg_id
 
+        @client.event
+        async def on_ready():
+            self.bot_channel = self.get_text_channel_by_name(bot_channel_name)
 
-class LikeButton(discord.ui.Button):
-    def __init__(self, label, channel, username, prompt):
-        super().__init__(label=label, style=discord.ButtonStyle.green, emoji="👍")
-        self.channel = channel
-        self.username = username
-        self.prompt = prompt
+            client.loop.create_task(self.background_timer(), name="OpenAssistantBot.background_timer()")
+            print(f"{client.user} is now running!")
 
-    async def callback(self, interaction):
-        # interaction holds the interaction object
-        # await interaction.response.defer()
-        await interaction.response.send_message("Thanks for your feedback. You liked this 👍 ")
-
-
-class NeutralButton(discord.ui.Button):
-    def __init__(self, label, channel, username, prompt):
-        super().__init__(label=label, style=discord.ButtonStyle.green, emoji="😐")
-        self.channel = channel
-        self.username = username
-        self.prompt = prompt
-
-    async def callback(self, interaction):
-        # interaction holds the interaction object
-        # await interaction.response.defer()
-        await interaction.response.send_message("Thanks for your feedback. You thought this was neutral 😐 ")
-
-
-class DislikeButton(discord.ui.Button):
-    def __init__(self, label, channel, username, prompt):
-        super().__init__(label=label, style=discord.ButtonStyle.green, emoji="👎")
-        self.channel = channel
-        self.username = username
-        self.prompt = prompt
-
-    async def callback(self, interaction):
-        # interaction holds the interaction object
-        # await interaction.response.defer()
-        # send the feedback to the backend #
-        await interaction.response.send_message("Thanks for your feedback. You disliked this 👎 ")
-
-
-@client.tree.command()
-async def register(interaction: discord.Interaction):
-    """Registers the user for submissions."""
-    labeler = {
-        "discord_username": f"{interaction.user.id}",
-        "display_name": interaction.user.name,
-        "is_enabled": True,
-    }
-    response = requests.post(labelers_url, headers=headers, json=labeler)
-    if response.status_code == 200:
-        await interaction.response.send_message(f"Added you {interaction.user.name}")
-    else:
-        logger.debug(response)
-        await interaction.response.send_message("Failed to add you")
-
-
-@client.tree.command()
-async def list_participants(interaction: discord.Interaction):
-    """Reports the set of registered participants."""
-    response = requests.get(labelers_url, headers=headers)
-    if response.status_code == 200:
-        names = ",".join([labeler["display_name"] for labeler in response.json()])
-        await interaction.response.send_message(f"Found these users: {names}")
-    else:
-        await interaction.response.send_message("Failed to fetch participants")
-
-
-async def send_prompt_with_response_and_button(channel, username, prompt, response):
-    await channel.send(f"What do you think about the following interaction: \nprompt: {prompt} \nresponse: {response}")
-    # await channel.send(f'Please click on the button that best describes your reaction to the response:')
-
-    # add buttons
-    view = discord.ui.View()
-    like = LikeButton(label="Like", channel=channel, username=username, prompt=prompt)
-    neutral = NeutralButton(label="Neutral", channel=channel, username=username, prompt=prompt)
-    dislike = DislikeButton(label="Dislike", channel=channel, username=username, prompt=prompt)
-
-    view.add_item(item=like)
-    view.add_item(item=neutral)
-    view.add_item(item=dislike)
-    await channel.send(view=view)
-
-
-@client.tree.command()
-async def review_prompts(interaction: discord.Interaction, number_of_prompts: int):
-    # get the prompt from the db
-    url = f"{prompts_url}?begin_id=0&limit={number_of_prompts}"
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        prompts = response.json()
-        logger.debug("the responses are:", prompts)
-        for prompt in prompts:
-            await send_prompt_with_response_and_button(
-                interaction.channel, interaction.user.name, prompt["prompt"], prompt["response"]
-            )
-    else:
-        await interaction.response.send_message("Failed to get prompts for review")
-
-
-@client.tree.command()
-async def add_prompt(interaction: discord.Interaction, prompt: str, response: str, language: str = "en"):
-    """Uploads a single prompt to the server."""
-    prompt = {
-        "discord_username": f"{interaction.user.id}",
-        "labeler_id": 5,
-        "prompt": prompt,
-        "response": response,
-        "lang": language,
-    }
-    response = requests.post(prompts_url, headers=headers, json=prompt)
-    if response.status_code == 200:
-        await send_prompt_with_response_and_button(
-            interaction.channel, interaction.user.name, prompt["prompt"], prompt["response"]
-        )
-        # send the prompt back with buttons for the user to click on
-        # await interaction.response.send_message("Added your prompt")
-    else:
-        await interaction.response.send_message("Failed to add the prompt")
-
-
-@client.tree.command()
-async def add_prompts_set(interaction: discord.Interaction, prompts: discord.Attachment):
-    """Uploads a batch of prompts to the server."""
-    # Loading a bunch of prompts from a file can take a while.  So first defer
-    # the response to ensure we're able to later tell the user what happened.
-    await interaction.response.defer(ephemeral=True)
-
-    # Read the prompts and load them one by one.
-    # TODO: Upload a batch when the API supports it.
-    # TODO: Handle incorrect file types and parsing errors.
-    prompts_raw = await prompts.read()
-    prompts_loaded = json.loads(prompts_raw)
-    count = 0
-    for entry in prompts_loaded:
-        for response in entry["responses"]:
-            prompt = {
-                "discord_username": f"{interaction.user.id}",
-                "labeler_id": 5,
-                "prompt": entry["prompt"],
-                "response": response,
-                "lang": "en",
-            }
-            response = requests.post(prompts_url, headers=headers, json=prompt)
-            if response.status_code != 200:
-                await interaction.followup.send("Failed to upload")
+        @client.event
+        async def on_message(message: discord.Message):
+            # ignore own messages
+            if message.author == client.user:
                 return
-            count += 1
-    await interaction.followup.send(f"Loaded up {count} prompts")
 
+            await self.handle_message(message)
 
-client.run(TOKEN)
+    async def generate_summarize_story(self, task: protocol_schema.SummarizeStoryTask):
+        text = f"Summarize to the following story:\n{task.story}"
+        msg: discord.Message = await self.bot_channel.send(text)
+
+        async def on_reply(message: discord.Message):
+            print("on_summarize_story_reply", message)
+            await message.reply("thx, on_summarize_story_reply")
+
+        self.reply_handlers[msg.id] = on_reply
+
+        return msg
+
+    async def generate_rate_summary(self, task: protocol_schema.RateSummaryTask):
+        s = [
+            "Rate the following summary:",
+            task.summary,
+            "Full text:",
+            task.full_text,
+            f"Rating scale: {task.scale.min} - {task.scale.max}",
+        ]
+        text = "\n".join(s)
+
+        async def rating_response_handler(score, interaction: discord.Interaction):
+            print("rating_response_handler", score)
+            await interaction.response.send_message(f"got your feedback: {score}")
+
+        view = generate_rating_view(task.scale.min, task.scale.max, rating_response_handler)
+        msg: discord.Message = await self.bot_channel.send(text, view=view)
+
+        async def on_reply(message: discord.Message):
+            print("on_summary_reply", message)
+            await message.reply("thx, on_summary_reply")
+
+        self.reply_handlers[msg.id] = on_reply
+
+        return msg
+
+    async def generate_initial_prompt(self, task: protocol_schema.InitialPromptTask):
+        text = "Please provide an initial prompt to the assistant."
+        if task.hint:
+            text += f"\nHint: {task.hint}"
+        msg: discord.Message = await self.bot_channel.send(text)
+
+        async def on_reply(message: discord.Message):
+            print("on_initial_prompt_reply", message)
+            await message.reply("thx, on_initial_prompt_reply")
+
+        self.reply_handlers[msg.id] = on_reply
+
+        return msg
+
+    def _render_message(self, message: protocol_schema.ConversationMessage) -> str:
+        """Render a message to the user."""
+        if message.is_assistant:
+            return f"Assistant: {message.text}"
+        return f"User: {message.text}"
+
+    async def generate_user_reply(self, task: protocol_schema.UserReplyTask):
+        s = ["Please provide a reply to the assistant.", "Here is the conversation so far:"]
+        for message in task.conversation.messages:
+            s.append(self._render_message(message))
+        if task.hint:
+            s.append(f"Hint: {task.hint}")
+        text = "\n".join(s)
+        msg: discord.Message = await self.bot_channel.send(text)
+
+        async def on_reply(message: discord.Message):
+            print("on_user_reply_reply", message)
+            await message.reply("thx, on_user_reply_reply")
+
+        self.reply_handlers[msg.id] = on_reply
+
+        return msg
+
+    async def generate_assistant_reply(self, task: protocol_schema.AssistantReplyTask):
+        s = ["Act as the assistant and reply to the user.", "Here is the conversation so far:"]
+        for message in task.conversation.messages:
+            s.append(self._render_message(message))
+        text = "\n".join(s)
+        msg: discord.Message = await self.bot_channel.send(text)
+
+        async def on_reply(message: discord.Message):
+            print("on_assistant_reply_reply", message)
+            await message.reply("thx, on_assistant_reply_reply")
+
+        self.reply_handlers[msg.id] = on_reply
+
+        return msg
+
+    async def generate_rank_initial_prompts(self, task: protocol_schema.RankInitialPromptsTask):
+        s = ["Rank the following prompts:"]
+        for idx, prompt in enumerate(task.prompts, start=1):
+            s.append(f"{idx}: {prompt}")
+        text = "\n".join(s)
+        msg: discord.Message = await self.bot_channel.send(text)
+
+        async def on_reply(message: discord.Message):
+            print("on_rank_initial_prompts_reply", message)
+            await message.reply("thx, on_rank_initial_prompts_reply")
+
+        self.reply_handlers[msg.id] = on_reply
+
+        return msg
+
+    async def generate_rank_conversation(self, task: protocol_schema.RankConversationRepliesTask):
+        s = ["Here is the conversation so far:"]
+        for message in task.conversation.messages:
+            s.append(self._render_message(message))
+        s.append("Rank the following replies:")
+        for idx, reply in enumerate(task.replies, start=1):
+            s.append(f"{idx}: {reply}")
+        text = "\n".join(s)
+        msg: discord.Message = await self.bot_channel.send(text)
+
+        async def on_reply(message: discord.Message):
+            print("on_rrank_conversation_reply", message)
+            message
+
+        self.reply_handlers[msg.id] = on_reply
+
+        return msg
+
+    async def next_task(self):
+        task = self.backend.fetch_task(protocol_schema.TaskRequestType.rate_summary, user=None)
+        # task = self.backend.fetch_random_task(user=None)
+
+        msg: discord.Message = None
+        match task.type:
+            case TaskType.summarize_story:
+                msg = await self.generate_summarize_story(task)
+            case TaskType.rate_summary:
+                msg = await self.generate_rate_summary(task)
+            case TaskType.initial_prompt:
+                msg = await self.generate_initial_prompt(task)
+            case TaskType.user_reply:
+                msg = await self.generate_user_reply(task)
+            case TaskType.assistant_reply:
+                msg = await self.generate_assistant_reply(task)
+            case TaskType.rank_initial_prompts:
+                msg = await self.generate_rank_initial_prompts(task)
+            case TaskType.rank_user_replies | TaskType.rank_assistant_replies:
+                msg = await self.generate_rank_conversation(task)
+
+        if msg is not None:
+            await self.backend.ack_task(task.id, msg.id)
+        else:
+            await self.backend.nack_task(task.id, "not supported")
+
+    async def background_timer(self):
+        while True:
+            if self.bot_channel:
+                try:
+                    await self.next_task()
+                except Exception as e:
+                    print(e)
+            await asyncio.sleep(30)
+
+    def run(self):
+        """Run bot loop blocking."""
+        self.client.run(self.bot_token)
+
+    async def handle_message(self, message: discord.Message):
+        user_id = message.author.id
+        user_display_name = message.author.name
+
+        if message.reference:
+            handler = self.reply_handlers.get(message.reference.message_id)
+            if handler:
+                await handler(message)
+
+        print(user_id, user_display_name, message.content, type(message.content))
+
+    def get_text_channel_by_name(self, channel_name) -> discord.TextChannel:
+        for channel in self.client.get_all_channels():
+            if channel.type == discord.ChannelType.text and channel.name == channel_name:
+                return channel
