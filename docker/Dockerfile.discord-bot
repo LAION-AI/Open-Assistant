@@ -1,7 +1,7 @@
 FROM python:3.10-slim-bullseye
 RUN mkdir /app
-ADD requirements.txt /app/requirements.txt
-WORKDIR /app
+COPY ./discord-bot/requirements.txt /requirements.txt
 RUN pip install -r requirements.txt
-ADD . /app
+WORKDIR /app
+COPY ./discord-bot /app
 CMD ["python", "bot.py"]

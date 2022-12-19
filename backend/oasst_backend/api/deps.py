@@ -6,9 +6,9 @@ from uuid import UUID
 from fastapi import HTTPException, Security
 from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
 from loguru import logger
-from oasst.config import settings
-from oasst.database import engine
-from oasst.models import ApiClient
+from oasst_backend.config import settings
+from oasst_backend.database import engine
+from oasst_backend.models import ApiClient
 from sqlmodel import Session
 from starlette.status import HTTP_403_FORBIDDEN
 
