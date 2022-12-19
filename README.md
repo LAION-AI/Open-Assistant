@@ -20,6 +20,10 @@ All open source projects begins with people like you. Open source is the belief 
 
 Work is organized in the [project board](https://github.com/orgs/LAION-AI/projects/3).
 
+**Anything that is in the `Todo` column and not assigned, is up for grabs. Meaning we'd be happy if anyone did those tasks.**
+
+If you want to work on something, assign yourself to it or write a comment that you want to work on it and what you plan to do.
+
 - To get started with development, if you want to work on the backend, have a look at `scripts/backend-development/README.md`.
 - If you want to work on any frontend, have a look at `scripts/frontend-development/README.md` to make a backend available.
 
