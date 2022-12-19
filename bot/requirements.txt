@@ -1,2 +1,4 @@
 discord.py==2.1.0
+pydantic==1.9.1
 python-dotenv==0.21.0
+requests==2.28.1
