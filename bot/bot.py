@@ -4,7 +4,7 @@ from typing import Any
 
 import discord
 from api_client import ApiClient, TaskType
-from schemas import protocol as protocol_schema
+from oasst_shared.schemas import protocol as protocol_schema
 
 
 class RatingButton(discord.ui.Button):
