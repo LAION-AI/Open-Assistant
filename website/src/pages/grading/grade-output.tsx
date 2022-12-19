@@ -1,6 +1,63 @@
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
+import useSWRImmutable from "swr/immutable";
+import useSWRMutation from "swr/mutation";
 
-export default function OutputDetail(): JSX.Element {
+import fetcher from "src/lib/fetcher";
+import poster from "src/lib/poster";
+
+const GradeOutput = () => {
+  // Use an array of tasks that record the sequence of steps until a task is
+  // deemed complete.
+  const [tasks, setTasks] = useState([]);
+
+  // A quick reference to the input element.  This should be factored into the
+  // component doing the actual task rendering.
+  const responseEl = useRef(null);
+
+  // Fetch the very fist task.  We can ignore everything except isLoading
+  // because the onSuccess handler will update `tasks` when ready.
+  const { isLoading } = useSWRImmutable("/api/new_task/rate_summary", fetcher, {
+    onSuccess: (data) => {
+      console.log(data);
+      setTasks([data]);
+    },
+  });
+
+  // Every time we submit an answer to the latest task, let the backend handle
+  // all the interactions then add the resulting task to the queue.  This ends
+  // when we hit the done task.
+  const { trigger, isMutating } = useSWRMutation("/api/update_task", poster, {
+    onSuccess: async (data) => {
+      const newTask = await data.json();
+      // This is the more efficient way to update a react state array.
+      setTasks((oldTasks) => [...oldTasks, newTask]);
+    },
+  });
+
+  // Trigger a mutation that updates the current task.  We should probably
+  // signal somewhere that this interaction is being processed.
+  const submitResponse = (t) => {
+    trigger({
+      id: t.id,
+      content: {
+        rating: 2,
+      },
+    });
+  };
+
+  /**
+   * TODO: Make this a nicer loading screen.
+   */
+  if (tasks.length == 0) {
+    return (
+      <>
+        <div className=" p-6 h-full mx-auto bg-slate-100 text-gray-800"></div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className=" p-6 h-full mx-auto bg-slate-100 text-gray-800">
@@ -11,7 +68,9 @@ export default function OutputDetail(): JSX.Element {
             <div className="rounded-lg shadow-lg h-full block bg-white">
               <div className="p-6">
                 <h5 className="text-lg font-semibold mb-4">Instruction</h5>
-                <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">{SAMPLE_PROMPT}</div>
+                <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">
+                  {tasks[0].task.full_text}
+                </div>
               </div>
             </div>
 
@@ -19,7 +78,9 @@ export default function OutputDetail(): JSX.Element {
             <div className="mt-6 lg:mt-0 rounded-lg shadow-lg h-full block bg-white">
               <div className="p-6">
                 <h5 className="text-lg font-semibold mb-4">Output</h5>
-                <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">{SAMPLE_OUTPUT}</div>
+                <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">
+                  {tasks[0].task.summary}
+                </div>
               </div>
               {/* Form  wrap*/}
               <div className="p-6">
@@ -66,13 +127,13 @@ export default function OutputDetail(): JSX.Element {
               <span>
                 <b>Prompt</b>
               </span>
-              <span className="ml-2">d1fb481a-e6cd-445d-9a15-8e2add854fe1</span>
+              <span className="ml-2">{tasks[0].id}</span>
             </div>
             <div>
               <span>
                 <b>Output</b>
               </span>
-              <span className="ml-2">a5f85b0a-e11a-472c-bc73-946fdc2a6ec2</span>
+              <span className="ml-2">{tasks.length === 2 ? tasks[1].id : "Submit your answer"}</span>
             </div>
           </div>
 
@@ -86,6 +147,7 @@ export default function OutputDetail(): JSX.Element {
             </button>
             <button
               type="button"
+              onClick={() => submitResponse(tasks[0])}
               className="nline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               Submit
@@ -95,7 +157,9 @@ export default function OutputDetail(): JSX.Element {
       </div>
     </>
   );
-}
+};
+
+export default GradeOutput;
 
 function RatingButton(props: { rating: number; active: boolean }): JSX.Element {
   const activeClasses =
@@ -183,20 +247,3 @@ const ANNOTATION_FLAGS: annotationBool[] = [
     labelText: "Expresses moral judgement",
   },
 ];
-
-const SAMPLE_PROMPT = "Please make a list of aspects of a good pull request. Briefly describe each aspect.";
-
-const SAMPLE_OUTPUT = `Here are some aspects of a good pull request, which you may use to help your pull requests be good contributions and get accepted:
-
-1. Communicate:
-2. Pull request size:
-    * Summary
-    * Fix one problem
-    * Limit the scope
-    * Use commits
-3. Use coding conventions:
-4. Perform testing:
-5. Rebase onto the master branch before creating your PR
-6. Respond to reviews quickly
-7. Thank reviewers for their suggestions
-`;

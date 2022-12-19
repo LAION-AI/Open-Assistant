@@ -1,4 +1,3 @@
-import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
 import { useSession, signIn, signOut } from "next-auth/react";
@@ -6,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
-const fetcher = (url) => axios.get(url).then((res) => res.data);
+import fetcher from "src/lib/fetcher";
 
 /**
  * A helper function to post updates to tasks.
@@ -53,7 +52,7 @@ export default function NewPage() {
     trigger({
       id: t.id,
       content: {
-        rating: responseEl.current.value,
+        rating: 2,
       },
     });
   };

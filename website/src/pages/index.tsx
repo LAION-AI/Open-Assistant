@@ -1,6 +1,7 @@
 import { useSession } from "next-auth/react";
 
 import Head from "next/head";
+import Link from "next/link";
 
 import { CallToAction } from "../components/CallToAction";
 import { Faq } from "../components/Faq";
@@ -35,14 +36,23 @@ export default function Home() {
     );
   }
   return (
-    <div className={styles.App}>
-      <header className={styles.AppHeader}>
-        {/* <img src={logo} className="App-logo" alt="logo" /> */}
-
+    <>
+      <Head>
+        <title>Open Assistant</title>
+        <meta
+          name="description"
+          content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
+        />
+      </Head>
+      <Header />
+      <main>
         <h2>Open Chat Gpt</h2>
 
         <p>You are logged in</p>
-      </header>
-    </div>
+
+        <Link href="/grading/grade-output">~Rate a prompt and output now~</Link>
+      </main>
+      <Footer />
+    </>
   );
 }

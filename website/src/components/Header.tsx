@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -32,6 +33,31 @@ function MobileNavLink({ children, ...props }) {
     >
       {children}
     </Popover.Button>
+  );
+}
+
+function AccountButton() {
+  const { data: session } = useSession();
+  if (session) {
+    return (
+      <button
+        type="button"
+        onClick={() => signOut()}
+        className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+      >
+        Log out
+      </button>
+    );
+  }
+  return (
+    <Link href="/auth/signin" aria-label="Home" className="flex items-center">
+      <button
+        type="button"
+        className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+      >
+        Log in
+      </button>
+    </Link>
   );
 }
 
@@ -93,14 +119,7 @@ export function Header() {
                             <MobileNavLink href="#faqs">FAQs</MobileNavLink>
                           </div>
                           <div className="mt-8 flex flex-col gap-4">
-                            <a href="/login">
-                              <button
-                                type="button"
-                                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                              >
-                                Log in
-                              </button>
-                            </a>
+                            <AccountButton />
                           </div>
                         </Popover.Panel>
                       </>
@@ -109,14 +128,7 @@ export function Header() {
                 </>
               )}
             </Popover>
-            <a href="/login">
-              <button
-                type="button"
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              >
-                Log in
-              </button>
-            </a>
+            <AccountButton />
           </div>
         </Container>
       </nav>
