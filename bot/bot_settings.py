@@ -7,7 +7,7 @@ class BotSettings(BaseSettings):
     API_KEY: str = "any_key"
     BOT_TOKEN: str
     BOT_CHANNEL_NAME: str = "bot"
-    TEST_GUILD: str = None
+    OWNER_ID: int = None
 
 
 settings = BotSettings(_env_file=".env")

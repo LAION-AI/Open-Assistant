@@ -11,5 +11,6 @@ if __name__ == "__main__":
         bot_channel_name=settings.BOT_CHANNEL_NAME,
         backend_url=settings.BACKEND_URL,
         api_key=settings.API_KEY,
+        owner_id=settings.OWNER_ID,
     )
     bot.run()

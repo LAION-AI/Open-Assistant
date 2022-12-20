@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
-    match (request.type):
+    match request.type:
         case protocol_schema.TaskRequestType.random:
             logger.info("Frontend requested a random task.")
             while request.type == protocol_schema.TaskRequestType.random:
