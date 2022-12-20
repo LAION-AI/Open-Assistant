@@ -8,35 +8,19 @@ import prisma from "src/lib/prismadb";
 const providers = [];
 
 // Register an email magic link auth method.
-if (process.env.NODE_ENV === "production") {
-  providers.push(
-    EmailProvider({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: process.env.EMAIL_SERVER_PORT,
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
-        },
+providers.push(
+  EmailProvider({
+    server: {
+      host: process.env.EMAIL_SERVER_HOST,
+      port: process.env.EMAIL_SERVER_PORT,
+      auth: {
+        user: process.env.EMAIL_SERVER_USER,
+        pass: process.env.EMAIL_SERVER_PASSWORD,
       },
-      from: process.env.EMAIL_FROM,
-    })
-  );
-} else {
-  // Register an email magic link auth method.
-  providers.push(
-    EmailProvider({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: process.env.EMAIL_SERVER_PORT,
-      },
-      from: process.env.EMAIL_FROM,
-      async generateVerificationToken() {
-        return "1234";
-      },
-    })
-  );
-}
+    },
+    from: process.env.EMAIL_FROM,
+  })
+);
 
 if (process.env.DISCORD_CLIENT_ID) {
   providers.push(
