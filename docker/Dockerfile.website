@@ -39,11 +39,6 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 
-# Copy over the schema file so we can do a db push on startup.
-# TODO: Delete when used for real production.
-COPY ./website/prisma/schema.prisma ./
-COPY ./website/wait-for-it.sh ./
-
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
