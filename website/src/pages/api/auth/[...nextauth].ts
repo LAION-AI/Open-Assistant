@@ -7,7 +7,6 @@ import prisma from "src/lib/prismadb";
 
 const providers = [];
 
-console.log(process.env);
 // Register an email magic link auth method.
 if (process.env.NODE_ENV === "production") {
   providers.push(
