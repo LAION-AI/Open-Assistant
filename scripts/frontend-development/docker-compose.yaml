@@ -47,8 +47,9 @@ services:
     ports:
       - "8080:8080"
 
-  # This fakes and SMTP email server.  User registration emails can be found by going to
-  #   localhost:1080 and opening the emails listed.
+  # This fakes an SMTP email server used by website authentication.
+  # User registration emails can be found by going to localhost:1080 and
+  # opening the emails listed.
   maildev:
     image: maildev/maildev
     restart: always

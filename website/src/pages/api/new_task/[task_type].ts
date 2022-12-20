@@ -1,5 +1,6 @@
 import { getToken } from "next-auth/jwt";
 
+import prisma from "src/lib/prismadb";
 import { authOptions } from "src/pages/api/auth/[...nextauth]";
 
 /**
@@ -10,7 +11,7 @@ import { authOptions } from "src/pages/api/auth/[...nextauth]";
  * 3) Send and Ack to the Task Backend with our local id for the task.
  * 4) Return everything to the client.
  */
-export default async (req, res) => {
+const handler = async (req, res) => {
   const { task_type } = req.query;
 
   const token = await getToken({ req });
@@ -69,3 +70,5 @@ export default async (req, res) => {
   // Send the results to the client.
   res.status(200).json(registeredTask);
 };
+
+export default handler;

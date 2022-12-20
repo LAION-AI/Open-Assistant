@@ -1,5 +1,6 @@
 import { getToken } from "next-auth/jwt";
 
+import prisma from "src/lib/prismadb";
 import { authOptions } from "src/pages/api/auth/[...nextauth]";
 
 /**
@@ -11,7 +12,7 @@ import { authOptions } from "src/pages/api/auth/[...nextauth]";
  * 3) (TODO) Acks the new task with our local task ID to the Task Backend.
  * 4) Returns the newly created task to the client.
  */
-export default async (req, res) => {
+const handler = async (req, res) => {
   const token = await getToken({ req });
 
   // Return nothing if the user isn't registered.
@@ -76,3 +77,5 @@ export default async (req, res) => {
   // Send the next task in the sequence to the client.
   res.status(200).json(newRegisteredTask);
 };
+
+export default handler;
