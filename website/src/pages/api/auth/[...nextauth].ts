@@ -5,16 +5,12 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
 import prisma from "src/lib/prismadb";
 
-export const authOptions = {
-  // Ensure we can store user data in a database.
-  adapter: PrismaAdapter(prisma),
-  providers: [
-    // Register a Discord auth method.
-    DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET,
-    }),
-    // Register an email magic link auth method.
+const providers = [];
+
+console.log(process.env);
+// Register an email magic link auth method.
+if (process.env.NODE_ENV === "production") {
+  providers.push(
     EmailProvider({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
@@ -25,8 +21,37 @@ export const authOptions = {
         },
       },
       from: process.env.EMAIL_FROM,
-    }),
-  ],
+    })
+  );
+} else {
+  // Register an email magic link auth method.
+  providers.push(
+    EmailProvider({
+      server: {
+        host: process.env.EMAIL_SERVER_HOST,
+        port: process.env.EMAIL_SERVER_PORT,
+      },
+      from: process.env.EMAIL_FROM,
+      async generateVerificationToken() {
+        return "1234";
+      },
+    })
+  );
+}
+
+if (process.env.DISCORD_CLIENT_ID) {
+  providers.push(
+    DiscordProvider({
+      clientId: process.env.DISCORD_CLIENT_ID,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET,
+    })
+  );
+}
+
+export const authOptions = {
+  // Ensure we can store user data in a database.
+  adapter: PrismaAdapter(prisma),
+  providers,
   pages: {
     signIn: "/auth/signin",
   },

@@ -1,6 +1,7 @@
 version: "3.7"
 
 services:
+  # This DB is for the FastAPI Backend.
   db:
     extends:
       file: ../backend-development/docker-compose.yaml
@@ -10,6 +11,23 @@ services:
       interval: 2s
       timeout: 2s
       retries: 10
+
+  # This DB is for Web Authentication and data caching.
+  webdb:
+    image: postgres
+    restart: always
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
+  # This lets you manually inspect the web and backend databases.
   adminer:
     extends:
       file: ../backend-development/docker-compose.yaml
@@ -26,3 +44,15 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+
+  # This fakes and SMTP email server.  User registration emails can be found by going to
+  #   localhost:1080 and opening the emails listed.
+  maildev:
+    image: maildev/maildev
+    restart: always
+    environment:
+      - MAILDEV_WEB_PORT=1080
+      - MAILDEV_SMTP_PORT=1025
+    ports:
+      - "1080:1080"
+      - "1025:1025"
