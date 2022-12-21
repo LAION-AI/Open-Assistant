@@ -1,4 +1,4 @@
-exclude: "build|stubs"
+exclude: "build|stubs|bot/templates/.*msg"
 
 default_language_version:
   python: python3

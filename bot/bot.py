@@ -51,7 +51,9 @@ class MessageTemplates:
 
     def render(self, template_name, **kwargs):
         template = self.env.get_template(template_name)
-        return template.render(kwargs)
+        txt = template.render(kwargs)
+        logger.info(txt)
+        return txt
 
 
 class OpenAssistantBot:
@@ -86,18 +88,17 @@ class OpenAssistantBot:
         self.reply_handlers = {}  # handlers by msg_id
         self.tree = app_commands.CommandTree(self.client, fallback_to_global=True)
 
-        self.auto_archive_minutes = 60  # ToDo: add to bot config
-
         @client.event
         async def on_ready():
             self.bot_channel = self.get_text_channel_by_name(bot_channel_name)
-            client.loop.create_task(self.background_timer(), name="OpenAssistantBot.background_timer()")
             logger.info(f"{client.user} is now running!")
 
             await self.delete_all_old_bot_messages()
             if self.debug:
                 await self.post_boot_message()
             await self.post_welcome_message()
+
+            client.loop.create_task(self.background_timer(), name="OpenAssistantBot.background_timer()")
 
         @client.event
         async def on_message(message: discord.Message):
@@ -131,10 +132,13 @@ class OpenAssistantBot:
         self.ensure_bot_channel()
         return await self.bot_channel.send(content=content)
 
-    async def post_template(self, name: str, view: discord.ui.View = None, **kwargs: Any) -> discord.Message:
+    async def post_template_view(self, name: str, *, view: discord.ui.View, **kwargs: Any) -> discord.Message:
         logger.info(f"rendering {name}")
         text = self.templates.render(name, **kwargs)
         return await self.post(text, view)
+
+    async def post_template(self, name: str, **kwargs: Any) -> discord.Message:
+        return await self.post_template_view(name=name, view=None, **kwargs)
 
     async def post_boot_message(self) -> discord.Message:
         return await self.post_template(
@@ -162,9 +166,7 @@ class OpenAssistantBot:
     async def generate_summarize_story(self, task: protocol_schema.SummarizeStoryTask):
         text = f"Summarize to the following story:\n{task.story}"
         msg: discord.Message = await self.bot_channel.send(text)
-        await self.bot_channel.create_thread(
-            message=discord.Object(msg.id), name="Summaries", auto_archive_duration=self.auto_archive_minutes
-        )
+        await self.bot_channel.create_thread(message=discord.Object(msg.id), name="Summaries")
 
         async def on_reply(message: discord.Message):
             logger.info("on_summarize_story_reply", message)
@@ -180,24 +182,20 @@ class OpenAssistantBot:
             await interaction.response.send_message(f"got your feedback: {score}")
 
         view = generate_rating_view(task.scale.min, task.scale.max, rating_response_handler)
-        msg: discord.Message = await self.post_template("rate_summary", task=task, view=view)
+        msg = await self.post_template_view("task_rate_summary.msg", view=view, task=task)
 
         async def on_reply(message: discord.Message):
             logger.info("on_summary_reply", message)
-            await message.add_reaction("")
+            await message.add_reaction("✅")
 
         self.reply_handlers[msg.id] = on_reply
 
         return msg
 
     async def generate_initial_prompt(self, task: protocol_schema.InitialPromptTask):
-        text = "Please provide an initial prompt to the assistant."
-        if task.hint:
-            text += f"\nHint: {task.hint}"
-        msg: discord.Message = await self.bot_channel.send(text)
-        await self.bot_channel.create_thread(
-            message=discord.Object(msg.id), name="Prompts", auto_archive_duration=self.auto_archive_minutes
-        )
+        msg = await self.post_template("task_initial_prompt.msg", task=task)
+
+        await self.bot_channel.create_thread(message=discord.Object(msg.id), name="Prompts")
 
         async def on_reply(message: discord.Message):
             logger.info("on_initial_prompt_reply", message)
@@ -215,17 +213,8 @@ class OpenAssistantBot:
             return f":person_red_hair: User:\n**{message.text}**"
 
     async def generate_user_reply(self, task: protocol_schema.UserReplyTask):
-        s = ["Please provide a reply to the assistant.", "Here is the conversation so far:\n"]
-        for message in task.conversation.messages:
-            s.append(self._render_message(message))
-            s.append("")
-        if task.hint:
-            s.append(f"Hint: {task.hint}")
-        text = "\n".join(s)
-        msg: discord.Message = await self.bot_channel.send(text)
-        await self.bot_channel.create_thread(
-            message=discord.Object(msg.id), name="User responses", auto_archive_duration=self.auto_archive_minutes
-        )
+        msg = await self.post_template("task_user_reply.msg", task=task)
+        await self.bot_channel.create_thread(message=discord.Object(msg.id), name="User responses")
 
         async def on_reply(message: discord.Message):
             logger.info("on_user_reply_reply", message)
@@ -236,16 +225,8 @@ class OpenAssistantBot:
         return msg
 
     async def generate_assistant_reply(self, task: protocol_schema.AssistantReplyTask):
-        s = ["Act as the assistant and reply to the user.", "Here is the conversation so far\n:"]
-        for message in task.conversation.messages:
-            s.append(self._render_message(message))
-            s.append("")
-        s.append(":robot: Assistant: { human, pls help me! ... }")
-        text = "\n".join(s)
-        msg: discord.Message = await self.bot_channel.send(text)
-        await self.bot_channel.create_thread(
-            message=discord.Object(msg.id), name="Agent responses", auto_archive_duration=self.auto_archive_minutes
-        )
+        msg = await self.post_template("task_assistant_reply.msg", task=task)
+        await self.bot_channel.create_thread(message=discord.Object(msg.id), name="Agent responses")
 
         async def on_reply(message: discord.Message):
             logger.info("on_assistant_reply_reply", message)
@@ -256,16 +237,8 @@ class OpenAssistantBot:
         return msg
 
     async def generate_rank_initial_prompts(self, task: protocol_schema.RankInitialPromptsTask):
-        s = ["Rank the following prompts:"]
-        for idx, prompt in enumerate(task.prompts, start=1):
-            s.append(f"{idx}: {prompt}")
-        s.append("")
-        s.append(':scroll: Reply with the numbers of best to worst prompts separated by commas (example: "4,1,3,2").')
-        text = "\n".join(s)
-        msg: discord.Message = await self.bot_channel.send(text)
-        await self.bot_channel.create_thread(
-            message=discord.Object(msg.id), name="User responses", auto_archive_duration=self.auto_archive_minutes
-        )
+        msg = await self.post_template("task_rank_initial_prompts.msg", task=task)
+        await self.bot_channel.create_thread(message=discord.Object(msg.id), name="User responses")
 
         async def on_reply(message: discord.Message):
             logger.info("on_rank_initial_prompts_reply", message)
@@ -276,20 +249,8 @@ class OpenAssistantBot:
         return msg
 
     async def generate_rank_conversation(self, task: protocol_schema.RankConversationRepliesTask):
-        s = ["Here is the conversation so far:"]
-        for message in task.conversation.messages:
-            s.append(self._render_message(message))
-        s.append("")
-        s.append("Rank the following replies:")
-        for idx, reply in enumerate(task.replies, start=1):
-            s.append(f"{idx}: {reply}")
-        s.append("")
-        s.append(':scroll: Reply with the numbers of best to worst prompts separated by commas (example: "4,1,3,2").')
-        text = "\n".join(s)
-        msg: discord.Message = await self.bot_channel.send(text)
-        await self.bot_channel.create_thread(
-            message=discord.Object(msg.id), name="User responses", auto_archive_duration=self.auto_archive_minutes
-        )
+        msg = await self.post_template("task_rank_conversation_replies.msg", task=task)
+        await self.bot_channel.create_thread(message=discord.Object(msg.id), name="User responses")
 
         async def on_reply(message: discord.Message):
             logger.info("on_rank_conversation_reply", message)
@@ -301,8 +262,8 @@ class OpenAssistantBot:
         return msg
 
     async def next_task(self):
-        task = self.backend.fetch_task(protocol_schema.TaskRequestType.summarize_story, user=None)
-        # task = self.backend.fetch_random_task(user=None)
+        task_type = protocol_schema.TaskRequestType.random
+        task = self.backend.fetch_task(task_type, user=None)
 
         await self.print_separtor("New Task")
 
@@ -335,7 +296,7 @@ class OpenAssistantBot:
                     await self.next_task()
                 except Exception:
                     logger.exception("fetching next task failed")
-            await asyncio.sleep(60)
+            await asyncio.sleep(5)
 
     async def _sync(self, command: str, message: discord.Message):
 
