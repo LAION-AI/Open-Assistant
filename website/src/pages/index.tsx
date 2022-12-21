@@ -51,6 +51,7 @@ export default function Home() {
         <p>You are logged in</p>
 
         <Link href="/grading/grade-output">~Rate a prompt and output now~</Link>
+        <Link href="/leaderboard/score-leaderboard">~view the score leaderboard~</Link>
       </main>
       <Footer />
     </>
