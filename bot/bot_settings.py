@@ -8,6 +8,8 @@ class BotSettings(BaseSettings):
     BOT_TOKEN: str
     BOT_CHANNEL_NAME: str = "bot"
     OWNER_ID: int = None
+    TEMPLATE_DIR: str = "./templates"
+    DEBUG: bool = True
 
 
 settings = BotSettings(_env_file=".env")
