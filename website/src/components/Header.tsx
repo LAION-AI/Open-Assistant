@@ -1,10 +1,11 @@
-import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
+import { Button } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 
 import { Container } from "./Container";
-import Image from "next/image";
 import { NavLinks } from "./NavLinks";
 
 function MenuIcon(props) {
@@ -40,23 +41,14 @@ function AccountButton() {
   const { data: session } = useSession();
   if (session) {
     return (
-      <button
-        type="button"
-        onClick={() => signOut()}
-        className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-      >
+      <Button variant="outline" onClick={() => signOut()}>
         Log out
-      </button>
+      </Button>
     );
   }
   return (
     <Link href="/auth/signin" aria-label="Home" className="flex items-center">
-      <button
-        type="button"
-        className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-      >
-        Log in
-      </button>
+      <Button variant="outline">Log in</Button>
     </Link>
   );
 }
