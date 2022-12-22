@@ -86,13 +86,11 @@ class SummarizeStoryHandler(ChannelTaskBase):
     thread_name: str = "Summaries"
 
     async def send_first_message(self) -> discord.message:
-
         expiry_time = discord_timestamp(self.expiry_date, DiscordTimestampStyle.long_time)
         expiry_relatve = discord_timestamp(self.expiry_date, DiscordTimestampStyle.relative_time)
         msg = await self.bot.post_template(
             "task_summarize_story_teaser.msg", task=self.task, expiry_time=expiry_time, expiry_relatve=expiry_relatve
         )
-        self.backend.ack_task(self.task.id, str(msg.id))
         return msg
 
     async def on_thread_created(self, thread: discord.Thread) -> None:
@@ -110,7 +108,6 @@ class InitialPromptHandler(ChannelTaskBase):
 
     async def send_first_message(self) -> discord.message:
         msg = await self.bot.post_template("task_initial_prompt.msg", task=self.task)
-        self.backend.ack_task(self.task.id, str(msg.id))
         return msg
 
     async def handler_loop(self):
@@ -125,7 +122,6 @@ class UserReplyHandler(ChannelTaskBase):
 
     async def send_first_message(self) -> discord.message:
         msg = await self.bot.post_template("task_user_reply.msg", task=self.task)
-        self.backend.ack_task(self.task.id, str(msg.id))
         return msg
 
     async def handler_loop(self):
@@ -140,7 +136,6 @@ class AssistantReplyHandler(ChannelTaskBase):
 
     async def send_first_message(self) -> discord.message:
         msg = await self.bot.post_template("task_assistant_reply.msg", task=self.task)
-        self.backend.ack_task(self.task.id, str(msg.id))
         return msg
 
     async def handler_loop(self):
@@ -160,7 +155,6 @@ class RankInitialPromptsHandler(ChannelTaskBase):
 
     async def send_first_message(self) -> discord.message:
         msg = await self.bot.post_template("task_rank_initial_prompts.msg", task=self.task)
-        self.backend.ack_task(self.task.id, str(msg.id))
         return msg
 
     async def handler_loop(self):
@@ -176,7 +170,6 @@ class RankConversationsHandler(ChannelTaskBase):
 
     async def send_first_message(self) -> discord.message:
         msg = await self.bot.post_template("task_rank_conversation_replies.msg", task=self.task)
-        self.backend.ack_task(self.task.id, str(msg.id))
         return msg
 
     async def handler_loop(self):
@@ -215,7 +208,6 @@ class RateSummaryHandler(ChannelTaskBase):
 
     async def send_first_message(self) -> discord.message:
         msg = await self.bot.post("first message")
-        self.backend.ack_task(self.task.id, str(msg.id))
         return msg
 
     async def on_thread_created(self, thread: discord.Thread) -> None:
