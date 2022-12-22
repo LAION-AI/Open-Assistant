@@ -16,7 +16,7 @@ from message_templates import MessageTemplates
 from oasst_shared.schemas import protocol as protocol_schema
 from utils import get_git_head_hash, utcnow
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 BOT_NAME = "Open-Assistant Junior"
 
 
@@ -61,8 +61,8 @@ class OpenAssistantBot(BotBase):
             logger.info(f"{client.user} is now running!")
 
             await self.delete_all_old_bot_messages()
-            if self.debug:
-                await self.post_boot_message()
+            # if self.debug:
+            #    await self.post_boot_message()
             await self.post_welcome_message()
 
             client.loop.create_task(self.background_timer(), name="OpenAssistantBot.background_timer()")
@@ -125,15 +125,9 @@ class OpenAssistantBot(BotBase):
                 await msg.delete()
         logger.info("Completed deleting old bot messages.")
 
-    async def print_separtor(self, title: str) -> discord.Message:
-        msg: discord.Message = await self.bot_channel.send(f"\n:point_right:  {title}  :point_left:\n")
-        return msg
-
     async def next_task(self):
-        task_type = protocol_schema.TaskRequestType.random
+        task_type = protocol_schema.TaskRequestType.summarize_story
         task = self.backend.fetch_task(task_type, user=None)
-
-        await self.print_separtor("New Task")
 
         handler: task_handlers.ChannelTaskBase = None
         match task.type:

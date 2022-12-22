@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import discord
+from api_client import ApiClient
 from channel_handlers import ChannelHandlerBase
 from loguru import logger
 from message_templates import MessageTemplates
@@ -22,6 +23,7 @@ class ReplyHandlerInfo:
 class BotBase(ABC):
     bot_channel_name: str
     debug: bool
+    backend: ApiClient
     client: discord.Client
     loop: asyncio.BaseEventLoop
     owner_id: int

@@ -13,15 +13,13 @@ class ChannelExpiredException(Exception):
 
 class ChannelHandlerBase(ABC):
     queue: asyncio.Queue
-    completed: bool
+    completed: bool = False
     expiry_date: datetime
-    expired: bool
+    expired: bool = False
 
     def __init__(self, *, expiry_date: datetime = None):
         self.expiry_date = expiry_date
-        self.expired = False
         self.queue = asyncio.Queue()
-        self.completed = False
 
     async def read(self) -> discord.Message:
         """Call this method to read the next message from the user in the handler method."""
@@ -55,8 +53,8 @@ class ChannelHandlerBase(ABC):
 
 
 class AutoDestructThreadHandler(ChannelHandlerBase):
-    first_message: discord.Message
-    thread: discord.Thread
+    first_message: discord.Message = None
+    thread: discord.Thread = None
 
     def __init__(self, *, expiry_date: datetime = None):
         super().__init__(expiry_date=expiry_date)

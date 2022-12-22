@@ -32,7 +32,12 @@ class PromptRepository:
         )
         if person is None:
             # user is unknown, create new record
-            person = Person(username=user.id, display_name=user.display_name, api_client_id=self.api_client.id)
+            person = Person(
+                username=user.id,
+                display_name=user.display_name,
+                api_client_id=self.api_client.id,
+                auth_method=user.auth_method,
+            )
             self.db.add(person)
             self.db.commit()
             self.db.refresh(person)
