@@ -84,7 +84,8 @@ class OpenAssistantBot(BotBase):
         @self.tree.command()
         async def help(interaction: discord.Interaction):
             """Sends the user a list of all available commands"""
-            await interaction.response.send_message(f"help command by {interaction.user.name}")
+            await self.post_help(interaction.user)
+            await interaction.response.send_message(f"@{interaction.user.display_name}, I've sent you a PM.")
 
         @self.tree.command()
         async def work(interaction: discord.Interaction):
@@ -95,6 +96,10 @@ class OpenAssistantBot(BotBase):
             q = task_handlers.Questionnaire()
             await interaction.response.send_modal(q)
 
+    async def post_help(self, user: discord.abc.User) -> discord.Message:
+        is_bot_owner = user.id == self.owner_id
+        return await self.post_template("help.msg", channel=user, is_bot_owner=is_bot_owner)
+
     async def post_boot_message(self) -> discord.Message:
         return await self.post_template(
             "boot.msg", bot_name=BOT_NAME, version=__version__, git_hash=get_git_head_hash(), debug=self.debug
@@ -104,7 +109,13 @@ class OpenAssistantBot(BotBase):
         return await self.post_template("welcome.msg")
 
     async def delete_all_old_bot_messages(self) -> None:
-        logger.info("Begin deleting old bot messages.")
+        logger.info("Deleting old threads...")
+        for thread in self.bot_channel.threads:
+            if thread.owner_id == self.client.user.id:
+                await thread.delete()
+        logger.info("Completed deleting old theards.")
+
+        logger.info("Deleting old bot messages...")
         look_until = utcnow() - timedelta(days=365)
         async for msg in self.bot_channel.history(limit=None):
             msg: discord.Message
@@ -119,7 +130,7 @@ class OpenAssistantBot(BotBase):
         return msg
 
     async def next_task(self):
-        task_type = protocol_schema.TaskRequestType.rate_summary
+        task_type = protocol_schema.TaskRequestType.random
         task = self.backend.fetch_task(task_type, user=None)
 
         await self.print_separtor("New Task")
@@ -199,22 +210,47 @@ class OpenAssistantBot(BotBase):
         command_text: str = message.content
         command_text = command_text[1:]
         match command_text:
-            case "sync" | "sync.guild" | "sync.copy_global" | "sync.clear_guild" | "sync.clear_guild":
+            case "help" | "?":
+                await self.post_help(user=message.author)
+            case "sync" | "sync.guild" | "sync.copy_global" | "sync.clear_guild":
                 if is_owner:
                     await self._sync(command_text, message)
             case _:
                 await message.reply(f"unknown command: {command_text}")
 
+    def recipient_filter(self, message: discord.Message) -> bool:
+        channel = message.channel
+
+        if (
+            message.channel.type == discord.ChannelType.private
+            or message.channel.type == discord.ChannelType.private_thread
+        ):
+            return True
+
+        if (
+            message.channel.type == discord.ChannelType.text
+            or message.channel.type == discord.ChannelType.public_thread
+        ):
+            while channel:
+                if self.bot_channel and channel.id == self.bot_channel.id:
+                    return True
+                channel = channel.parent
+
+        return False
+
     async def handle_message(self, message: discord.Message):
+        if not self.recipient_filter(message):
+            return
+
         user_id = message.author.id
         user_display_name = message.author.name
 
+        logger.debug(
+            f"{message.type} {message.channel.type} from ({user_display_name}) {user_id}: {message.content} ({type(message.content)})"
+        )
+
         command_prefix = "!"
-        if (
-            message.channel.type == discord.ChannelType.private
-            and message.type == discord.MessageType.default
-            and message.content.startswith(command_prefix)
-        ):
+        if message.type == discord.MessageType.default and message.content.startswith(command_prefix):
             is_owner = self.owner_id and user_id == self.owner_id
             await self.handle_command(message, is_owner)
 
@@ -227,10 +263,6 @@ class OpenAssistantBot(BotBase):
             handler = self.reply_handlers.get(message.reference.message_id)
             if handler and not handler.handler.completed:
                 handler.handler.on_reply(message)
-
-        logger.debug(
-            f"{message.type} {message.channel.type} from ({user_display_name}) {user_id}: {message.content} ({type(message.content)})"
-        )
 
     async def remove_completed_handlers(self):
         completed = [k for k, v in self.reply_handlers.items() if v.handler is None or v.handler.completed]

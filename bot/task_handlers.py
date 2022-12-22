@@ -30,9 +30,13 @@ class ChannelTaskBase(AutoDestructThreadHandler):
         msg = await self.send_first_message()
         self.first_message = msg
         self.thread = await bot.bot_channel.create_thread(message=discord.Object(msg.id), name=self.thread_name)
+        await self.on_thread_created(self.thread)
         self.expiry_date = utcnow() + self.expires_after if self.expires_after else None
         bot.register_reply_handler(msg_id=msg.id, handler=self)
         return msg
+
+    async def on_thread_created(self, thread: discord.Thread) -> None:
+        pass
 
     @abstractmethod
     async def send_first_message(self) -> discord.message:
@@ -47,10 +51,11 @@ class SummarizeStoryHandler(ChannelTaskBase):
         return await self.bot.post_template("task_summarize_story.msg", task=self.task)
 
     async def handler_loop(self):
-        msg = await self.read()
-        print("received: ", msg, type(msg))
-        logger.info("on_summarize_story_reply")
-        await msg.add_reaction("✅")
+        while True:
+            msg = await self.read()
+            print("received: ", msg, type(msg))
+            logger.info("on_summarize_story_reply")
+            await msg.add_reaction("✅")
 
 
 class InitialPromptHandler(ChannelTaskBase):
@@ -61,9 +66,10 @@ class InitialPromptHandler(ChannelTaskBase):
         return await self.bot.post_template("task_initial_prompt.msg", task=self.task)
 
     async def handler_loop(self):
-        msg = await self.read()
-        logger.info("on_initial_prompt_reply")
-        await msg.add_reaction("✅")
+        while True:
+            msg = await self.read()
+            logger.info("on_initial_prompt_reply")
+            await msg.add_reaction("✅")
 
 
 class UserReplyHandler(ChannelTaskBase):
@@ -74,9 +80,10 @@ class UserReplyHandler(ChannelTaskBase):
         return await self.bot.post_template("task_user_reply.msg", task=self.task)
 
     async def handler_loop(self):
-        msg = await self.read()
-        logger.info("on_user_reply_reply")
-        await msg.add_reaction("✅")
+        while True:
+            msg = await self.read()
+            logger.info("on_user_reply_reply")
+            await msg.add_reaction("✅")
 
 
 class AssistantReplyHandler(ChannelTaskBase):
@@ -87,9 +94,10 @@ class AssistantReplyHandler(ChannelTaskBase):
         return await self.bot.post_template("task_assistant_reply.msg", task=self.task)
 
     async def handler_loop(self):
-        msg = await self.read()
-        logger.info("on_assistant_reply_reply")
-        await msg.add_reaction("✅")
+        while True:
+            msg = await self.read()
+            logger.info("on_assistant_reply_reply")
+            await msg.add_reaction("✅")
 
 
 class RankInitialPromptsHandler(ChannelTaskBase):
@@ -100,9 +108,10 @@ class RankInitialPromptsHandler(ChannelTaskBase):
         return await self.bot.post_template("task_rank_initial_prompts.msg", task=self.task)
 
     async def handler_loop(self):
-        msg = await self.read()
-        logger.info("on_rank_initial_prompts_reply")
-        await msg.add_reaction("✅")
+        while True:
+            msg = await self.read()
+            logger.info("on_rank_initial_prompts_reply")
+            await msg.add_reaction("✅")
 
 
 class RankConversationsHandler(ChannelTaskBase):
@@ -113,9 +122,10 @@ class RankConversationsHandler(ChannelTaskBase):
         return await self.bot.post_template("task_rank_conversation_replies.msg", task=self.task)
 
     async def handler_loop(self):
-        msg = await self.read()
-        logger.info("on_rank_conversation_reply")
-        await msg.add_reaction("✅")
+        while True:
+            msg = await self.read()
+            logger.info("on_rank_conversation_reply")
+            await msg.add_reaction("✅")
 
 
 class RatingButton(discord.ui.Button):
@@ -139,15 +149,21 @@ class RateSummaryHandler(ChannelTaskBase):
     task: protocol_schema.RateSummaryTask
     thread_name: str = "Rate"
 
-    async def send_first_message(self) -> discord.message:
-        async def rating_response_handler(score, interaction: discord.Interaction):
-            logger.info("rating_response_handler", score)
-            await interaction.response.send_message(f"got your feedback: {score}")
+    async def _rating_response_handler(self, score, interaction: discord.Interaction):
+        logger.info("rating_response_handler", score)
+        if self.thread:
+            await self.thread.send(f"{interaction.user.name} got your feedback: {score}")
+        await interaction.response.send_message(f"got your feedback: {score}")
 
-        view = generate_rating_view(self.task.scale.min, self.task.scale.max, rating_response_handler)
-        return await self.bot.post_template("task_rate_summary.msg", view=view, task=self.task)
+    async def send_first_message(self) -> discord.message:
+        return await self.bot.post("first message")
+
+    async def on_thread_created(self, thread: discord.Thread) -> None:
+        view = generate_rating_view(self.task.scale.min, self.task.scale.max, self._rating_response_handler)
+        return await self.bot.post_template("task_rate_summary.msg", view=view, channel=thread, task=self.task)
 
     async def handler_loop(self):
-        msg = await self.read()
-        logger.info("on_rate_summary_reply")
-        await msg.add_reaction("✅")
+        while True:
+            msg = await self.read()
+            logger.info("on_rate_summary_reply")
+            await msg.add_reaction("✅")

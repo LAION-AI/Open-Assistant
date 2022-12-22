@@ -66,15 +66,15 @@ class AutoDestructThreadHandler(ChannelHandlerBase):
             return await super().read()
         except ChannelExpiredException:
             await self.cleanup()
-            raise
 
     async def cleanup(self):
+        logger.debug("AutoDestructThreadHandler.cleanup")
         if self.thread:
-            logger.debug(f"[expired] deleting thread: {self.thread.name}")
+            logger.debug(f"deleting thread: {self.thread.name}")
             await self.thread.delete()
             self.thread = None
         if self.first_message:
-            logger.debug(f"[expired] deleting first_message: {self.first_message.content}")
+            logger.debug(f"deleting first_message: {self.first_message.content}")
             await self.first_message.delete()
             self.first_message = None
 
