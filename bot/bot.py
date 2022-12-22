@@ -115,7 +115,7 @@ class OpenAssistantBot(BotBase):
                 await thread.delete()
         logger.info("Completed deleting old theards.")
 
-        logger.info("Deleting old bot messages...")
+        logger.info("Deleting old messages...")
         look_until = utcnow() - timedelta(days=365)
         async for msg in self.bot_channel.history(limit=None):
             msg: discord.Message
@@ -123,10 +123,10 @@ class OpenAssistantBot(BotBase):
                 break
             if msg.author.id == self.client.user.id:
                 await msg.delete()
-        logger.info("Completed deleting old bot messages.")
+        logger.info("Completed deleting old messages.")
 
     async def next_task(self):
-        task_type = protocol_schema.TaskRequestType.summarize_story
+        task_type = protocol_schema.TaskRequestType.random
         task = self.backend.fetch_task(task_type, user=None)
 
         handler: task_handlers.ChannelTaskBase = None
@@ -166,7 +166,7 @@ class OpenAssistantBot(BotBase):
 
             if self.bot_channel:
                 if now > next_fetch_task:
-                    next_fetch_task = utcnow() + timedelta(seconds=600)
+                    next_fetch_task = utcnow() + timedelta(seconds=60)
 
                     try:
                         await self.next_task()

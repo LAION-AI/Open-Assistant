@@ -23,9 +23,15 @@ class ChannelHandlerBase(ABC):
 
     async def read(self) -> discord.Message:
         """Call this method to read the next message from the user in the handler method."""
-        msg = await self.queue.get()
-        if msg is None and self.expired:
+        if self.expired:
             raise ChannelExpiredException()
+
+        msg = await self.queue.get()
+        if msg is None:
+            if self.expired:
+                raise ChannelExpiredException()
+            else:
+                raise RuntimeError("Unexpected None message read")
         return msg
 
     def on_reply(self, message: discord.Message) -> None:
@@ -64,6 +70,7 @@ class AutoDestructThreadHandler(ChannelHandlerBase):
             return await super().read()
         except ChannelExpiredException:
             await self.cleanup()
+            raise
 
     async def cleanup(self):
         logger.debug("AutoDestructThreadHandler.cleanup")
