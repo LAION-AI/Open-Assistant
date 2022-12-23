@@ -47,7 +47,7 @@ function AccountButton() {
     );
   }
   return (
-    <Link href="/auth/signin" aria-label="Home" className="flex items-center">
+    <Link href="/auth/signup" aria-label="Home" className="flex items-center">
       <Button variant="outline">Log in</Button>
     </Link>
   );
@@ -61,7 +61,7 @@ export function Header() {
           <div className="relative z-10 flex items-center gap-16">
             <Link href="/" aria-label="Home" className="flex items-center">
               <Image
-                src="/images/logos/CHAT-THOUGHT-LOGO.svg"
+                src="/images/logos/oa-logo-1.svg"
                 className="mx-auto object-fill"
                 width="50"
                 height="50"
