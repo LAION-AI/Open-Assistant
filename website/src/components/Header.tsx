@@ -60,13 +60,7 @@ export function Header() {
         <Container className="relative z-50 flex justify-between py-8">
           <div className="relative z-10 flex items-center gap-16">
             <Link href="/" aria-label="Home" className="flex items-center">
-              <Image
-                src="/images/logos/oa-logo-1.svg"
-                className="mx-auto object-fill"
-                width="50"
-                height="50"
-                alt="logo"
-              />
+              <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
               <span className="text-2xl font-bold ml-3">Open Assistant</span>
             </Link>
             <div className="hidden lg:flex lg:gap-10">
