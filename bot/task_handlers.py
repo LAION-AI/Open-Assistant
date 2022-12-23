@@ -56,9 +56,9 @@ class ChannelTaskBase(AutoDestructThreadHandler):
 
     async def post_teaser_msg(self, template_name: str):
         expiry_time = discord_timestamp(self.expiry_date, DiscordTimestampStyle.long_time)
-        expiry_relatve = discord_timestamp(self.expiry_date, DiscordTimestampStyle.relative_time)
+        expiry_relative = discord_timestamp(self.expiry_date, DiscordTimestampStyle.relative_time)
         return await self.bot.post_template(
-            template_name, task=self.task, expiry_time=expiry_time, expiry_relatve=expiry_relatve
+            template_name, task=self.task, expiry_time=expiry_time, expiry_relative=expiry_relative
         )
 
     async def post_interaction(self, interaction: protocol_schema.Interaction) -> protocol_schema.Task:
