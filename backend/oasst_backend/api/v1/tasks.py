@@ -169,8 +169,8 @@ def acknowledge_task(
         pr = PromptRepository(db, api_client, user=None)
 
         # here we store the post id in the database for the task
-        pr.bind_frontend_post_id(task_id=task_id, post_id=ack_request.post_id)
         logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
+        pr.bind_frontend_post_id(task_id=task_id, post_id=ack_request.post_id)
 
     except Exception:
         logger.exception("Failed to acknowledge task.")
