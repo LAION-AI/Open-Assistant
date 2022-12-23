@@ -12,5 +12,7 @@ if __name__ == "__main__":
         backend_url=settings.BACKEND_URL,
         api_key=settings.API_KEY,
         owner_id=settings.OWNER_ID,
+        template_dir=settings.TEMPLATE_DIR,
+        debug=settings.DEBUG,
     )
     bot.run()
