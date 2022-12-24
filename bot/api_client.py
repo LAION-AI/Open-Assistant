@@ -69,6 +69,6 @@ class ApiClient:
         req = protocol_schema.TaskNAck(reason=reason)
         return self.post(f"/api/v1/tasks/{task_id}/nack", req.dict())
 
-    def post_interaction(self, interaction: protocol_schema.Interaction) -> protocol_schema.TaskDone:
+    def post_interaction(self, interaction: protocol_schema.Interaction) -> protocol_schema.Task:
         data = self.post("/api/v1/tasks/interaction", interaction.dict())
         return self._parse_task(data)
