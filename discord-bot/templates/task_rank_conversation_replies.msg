@@ -1,4 +1,3 @@
-Please provide a reply to the assistant.
 Here is the conversation so far:
 {% for message in task.conversation.messages %}{% if message.is_assistant %}
 :robot: Assistant:
@@ -7,6 +6,8 @@ Here is the conversation so far:
 :person_red_hair: User:
 **{{ message.text }}**"
 {% endif %}{% endfor %}
-{% if task.hint %}
-Hint: {{ task.hint }}
-{% endif %}
+Rank the following replies:
+{% for reply in task.replies %}
+{{loop.index}}: {{reply}}{% endfor %}
+
+:scroll: Reply with the numbers of best to worst prompts separated by commas (example: "4,1,3,2").

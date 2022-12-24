@@ -43,6 +43,10 @@ Install `pre-commit` and run `pre-commit install` to install the pre-commit hook
 
 In case you haven't done this, have already committed, and CI is failing, you can run `pre-commit run --all-files` to run the pre-commit hooks on all files.
 
+### Deployment
+
+Upon making a release on GitHub, all docker images are automatically built and pushed to ghcr.io. The docker images are tagged with the release version, and the `latest` tag. Further, the ansible playbook in `ansible/dev.yaml` is run to automatically deploy the built release to the dev machine.
+
 # (Older version of the readme below)
 
 ## How do I start helping out?
