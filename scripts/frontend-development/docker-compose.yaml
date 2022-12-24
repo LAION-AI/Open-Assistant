@@ -6,11 +6,6 @@ services:
     extends:
       file: ../backend-development/docker-compose.yaml
       service: db
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-      interval: 2s
-      timeout: 2s
-      retries: 10
 
   # This DB is for Web Authentication and data caching.
   webdb:
@@ -32,6 +27,7 @@ services:
     extends:
       file: ../backend-development/docker-compose.yaml
       service: adminer
+
   backend:
     build:
       dockerfile: docker/Dockerfile.backend
