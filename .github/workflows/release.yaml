@@ -9,5 +9,20 @@ jobs:
     uses: ./.github/workflows/docker-build.yaml
     with:
       image-name: oasst-backend
-      folder: backend
+      context: .
+      dockerfile: docker/Dockerfile.backend
+      build-args: ""
+  build-web:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      image-name: oasst-web
+      context: .
+      dockerfile: docker/Dockerfile.website
+      build-args: ""
+  build-bot:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      image-name: oasst-discord-bot
+      context: .
+      dockerfile: docker/Dockerfile.discord-bot
       build-args: ""

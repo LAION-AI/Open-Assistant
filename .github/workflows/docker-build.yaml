@@ -3,7 +3,10 @@ name: Build
 on:
   workflow_call:
     inputs:
-      folder:
+      dockerfile:
+        required: true
+        type: string
+      context:
         required: true
         type: string
       image-name:
@@ -48,7 +51,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v3.2.0
         with:
-          context: ${{ inputs.folder }}
+          file: ${{ inputs.dockerfile }}
+          context: ${{ inputs.context }}
           build-args: ${{ inputs.build-args }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
