@@ -1,6 +1,6 @@
-import { Box, Button, ButtonGroup, Input, Stack } from "@chakra-ui/react";
+import { Button, Input, Stack } from "@chakra-ui/react";
 import Head from "next/head";
-import { FaDiscord, FaEnvelope, FaGithub, FaMagic } from "react-icons/fa";
+import { FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
 import { useRef } from "react";
 import Link from "next/link";
@@ -8,7 +8,7 @@ import Link from "next/link";
 import { AuthLayout } from "src/components/AuthLayout";
 
 export default function Signin({ csrfToken, providers }) {
-  const { discord, email } = providers;
+  const { discord, email, github } = providers;
   const emailEl = useRef(null);
   const signinWithEmail = () => {
     signIn(email.id, { callbackUrl: "/", email: emailEl.current.value });
@@ -36,45 +36,56 @@ export default function Signin({ csrfToken, providers }) {
               </Button>
             </Stack>
           )}
-          {/* {discord && ( */}
-          <Button
-            bg="#5865F2"
-            _hover={{ bg: "#4A57E3" }}
-            _active={{
-              bg: "#454FBF",
-            }}
-            // Uses official Discord 'Blurple' colors
-            size="lg"
-            // isDisabled="true"
-            leftIcon={<FaDiscord />}
-            color="white"
-            // onClick={() => signIn(discord.id, { callbackUrl: "/" })}
-          >
-            Continue with Discord
-          </Button>
-          {/* )} */}
-          <Button
-            bg="#333333"
-            _hover={{ bg: "#181818" }}
-            _active={{
-              bg: "#101010",
-            }}
-            size={"lg"}
-            // isDisabled="true"
-            leftIcon={<FaGithub />}
-            colorScheme="blue"
-          >
-            Continue with Github
-          </Button>
+          {discord && (
+            <Button
+              bg="#5865F2"
+              _hover={{ bg: "#4A57E3" }}
+              _active={{
+                bg: "#454FBF",
+              }}
+              size="lg"
+              leftIcon={<FaDiscord />}
+              color="white"
+              onClick={() => signIn(discord, { callbackUrl: "/" })}
+              // isDisabled="false"
+            >
+              Continue with Discord
+            </Button>
+          )}
+          {github && (
+            <Button
+              bg="#333333"
+              _hover={{ bg: "#181818" }}
+              _active={{
+                bg: "#101010",
+              }}
+              size={"lg"}
+              leftIcon={<FaGithub />}
+              colorScheme="blue"
+              // isDisabled="false"
+            >
+              Continue with Github
+            </Button>
+          )}
         </Stack>
+        <div className="pt-10 text-center">
+          By signing up you agree to our <br></br>
+          <Link href="#" aria-label="Terms of Service" className="hover:underline underline-offset-4">
+            <b>Terms of Service</b>
+          </Link>{" "}
+          and{" "}
+          <Link href="#" aria-label="Terms of Use" className="hover:underline underline-offset-4">
+            <b>Privacy Policy</b>
+          </Link>
+          .
+        </div>
         <hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
-        <Link
-          href="#"
-          aria-label="Log In"
-          className="flex justify-center font-medium text-black hover:underline underline-offset-4"
-        >
-          Already have an account? Log In
-        </Link>
+        <div className="text-center">
+          Already have an account?{" "}
+          <Link href="#" aria-label="Log In" className="hover:underline underline-offset-4">
+            <b>Log In</b>
+          </Link>
+        </div>
       </AuthLayout>
     </>
   );

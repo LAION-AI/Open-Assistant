@@ -14,6 +14,9 @@ const inter = Inter({
 const theme = extendTheme({
   styles: {
     global: {
+      body: {
+        bg: "white",
+      },
       main: {
         fontFamily: "Inter",
       },

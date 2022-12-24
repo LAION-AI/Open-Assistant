@@ -38,6 +38,8 @@ export const authOptions: AuthOptions = {
   providers,
   pages: {
     signIn: "/auth/signup",
+    verifyRequest: "/auth/verify",
+    // error: "/auth/error", -Will be used later
   },
   session: {
     strategy: "jwt",
