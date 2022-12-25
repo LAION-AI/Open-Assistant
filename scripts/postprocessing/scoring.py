@@ -32,8 +32,18 @@ class Voter:
     def voter_quality(self):
         return self.num_good_votes / self.num_votes
 
-    def is_well_behaved(self, threshhold):
-        return self.voter_quality() > threshhold
+    def rank_quality(self):
+        return self.num_good_rankings / self.num_rankings
+
+    def prompt_quality(self):
+        return self.num_good_prompts / self.num_prompts
+
+    def is_well_behaved(self, threshhold_vote, threshhold_prompt, threshhold_rank):
+        return (
+            self.voter_quality() > threshhold_vote
+            and self.prompt_quality() > threshhold_prompt
+            and self.rank_quality() > threshhold_rank
+        )
 
     def total_points(self, voting_weight, prompt_weight, ranking_weight):
         return (
