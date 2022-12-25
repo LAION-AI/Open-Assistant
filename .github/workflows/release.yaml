@@ -30,6 +30,8 @@ jobs:
     needs: [build-backend, build-web, build-bot]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Run playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
