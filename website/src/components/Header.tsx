@@ -4,7 +4,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
+import { FaUser, FaSignOutAlt } from "react-icons/fa";
 
+import { Avatar } from "./Avatar";
 import { Container } from "./Container";
 import { NavLinks } from "./NavLinks";
 
@@ -40,15 +42,13 @@ function MobileNavLink({ children, ...props }) {
 function AccountButton() {
   const { data: session } = useSession();
   if (session) {
-    return (
-      <Button variant="outline" onClick={() => signOut()}>
-        Log out
-      </Button>
-    );
+    return;
   }
   return (
-    <Link href="/auth/signin" aria-label="Home" className="flex items-center">
-      <Button variant="outline">Log in</Button>
+    <Link href="/auth/signup" aria-label="Home" className="flex items-center">
+      <Button variant="outline" leftIcon={<FaUser />}>
+        Log in
+      </Button>
     </Link>
   );
 }
@@ -57,28 +57,22 @@ export function Header() {
   return (
     <header>
       <nav>
-        <Container className="relative z-50 flex justify-between py-8">
+        <Container className="relative bg-white z-10 flex justify-between py-8">
           <div className="relative z-10 flex items-center gap-16">
             <Link href="/" aria-label="Home" className="flex items-center">
-              <Image
-                src="/images/logos/CHAT-THOUGHT-LOGO.svg"
-                className="mx-auto object-fill"
-                width="50"
-                height="50"
-                alt="logo"
-              />
+              <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
               <span className="text-2xl font-bold ml-3">Open Assistant</span>
             </Link>
             <div className="hidden lg:flex lg:gap-10">
               <NavLinks />
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <Popover className="lg:hidden">
               {({ open }) => (
                 <>
                   <Popover.Button
-                    className="relative z-10 -m-2 inline-flex items-center rounded-lg stroke-gray-900 p-2 hover:bg-gray-200/50 hover:stroke-gray-600 active:stroke-gray-900 [&:not(:focus-visible)]:focus:outline-none"
+                    className="relative z-10 inline-flex items-center rounded-lg stroke-gray-900 p-2 hover:bg-gray-200/50 hover:stroke-gray-600 active:stroke-gray-900 [&:not(:focus-visible)]:focus:outline-none"
                     aria-label="Toggle site navigation"
                   >
                     {({ open }) => (open ? <ChevronUpIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />)}
@@ -92,7 +86,7 @@ export function Header() {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className="fixed inset-0 z-0 bg-gray-300/60 backdrop-blur"
+                          className="fixed inset-0 z-1 bg-gray-300/60 backdrop-blur"
                         />
                         <Popover.Panel
                           static
@@ -104,15 +98,13 @@ export function Header() {
                             y: -32,
                             transition: { duration: 0.2 },
                           }}
-                          className="absolute inset-x-0 top-0 z-0 origin-top rounded-b-2xl bg-gray-50 px-6 pb-6 pt-32 shadow-2xl shadow-gray-900/20"
+                          className="absolute inset-x-0 top-0 z-0 origin-top rounded-b-2xl bg-white px-6 pb-6 pt-32 shadow-2xl shadow-gray-900/20"
                         >
                           <div className="space-y-4">
                             <MobileNavLink href="#join-us">Join Us</MobileNavLink>
                             <MobileNavLink href="#faqs">FAQs</MobileNavLink>
                           </div>
-                          <div className="mt-8 flex flex-col gap-4">
-                            <AccountButton />
-                          </div>
+                          <div className="mt-8 flex flex-col gap-4"></div>
                         </Popover.Panel>
                       </>
                     )}
@@ -121,6 +113,7 @@ export function Header() {
               )}
             </Popover>
             <AccountButton />
+            <Avatar />
           </div>
         </Container>
       </nav>

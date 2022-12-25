@@ -37,7 +37,9 @@ export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers,
   pages: {
-    signIn: "/auth/signin",
+    signIn: "/auth/signup",
+    verifyRequest: "/auth/verify",
+    // error: "/auth/error", -Will be used later
   },
   session: {
     strategy: "jwt",
