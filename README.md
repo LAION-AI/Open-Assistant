@@ -12,7 +12,7 @@ All open source projects begins with people like you. Open source is the belief 
 
 [Fill out the contributor signup form](https://docs.google.com/forms/d/e/1FAIpQLSeuggO7UdYkBvGLEJldDvxp6DwaRbW5p7dl96UzFkZgziRTrQ/viewform)
 
-[Join the LAION Discord Server!](https://discord.gg/RQFtmAmk)
+[Join the LAION Discord Server!](https://discord.com/invite/mVcgxMPD7e)
 
 [Visit the Notion](https://ykilcher.com/open-assistant)
 
