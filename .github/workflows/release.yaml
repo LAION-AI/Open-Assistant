@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  build-backend:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      image-name: oasst-backend
+      context: .
+      dockerfile: docker/Dockerfile.backend
+      build-args: ""
+  build-web:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      image-name: oasst-web
+      context: .
+      dockerfile: docker/Dockerfile.website
+      build-args: ""
+  build-bot:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      image-name: oasst-discord-bot
+      context: .
+      dockerfile: docker/Dockerfile.discord-bot
+      build-args: ""
+  deploy-dev:
+    needs: [build-backend, build-web, build-bot]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          # Required, playbook filepath
+          playbook: dev.yaml
+          # Optional, directory where playbooks live
+          directory: ansible
+          # Optional, SSH private key
+          key: ${{secrets.DEV_NODE_PRIVATE_KEY}}
+          # Optional, literal inventory file contents
+          inventory: |
+            [dev]
+            dev01 ansible_host=${{secrets.DEV_NODE_IP}} ansible_connection=ssh ansible_user=web-team

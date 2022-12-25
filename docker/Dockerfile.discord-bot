@@ -1,0 +1,7 @@
+FROM python:3.10-slim-bullseye
+RUN mkdir /app
+COPY ./discord-bot/requirements.txt /requirements.txt
+RUN pip install -r requirements.txt
+WORKDIR /app
+COPY ./discord-bot /app
+CMD ["python", "bot.py"]
