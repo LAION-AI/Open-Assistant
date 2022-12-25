@@ -37,8 +37,8 @@ def api_auth(
     db: Session,
 ) -> ApiClient:
 
-    if api_key is not None:
-        if settings.ALLOW_ANY_API_KEY:
+    if api_key is not None or settings.DEBUG_SKIP_API_KEY_CHECK:
+        if settings.DEBUG_SKIP_API_KEY_CHECK:
             # make sure that a dummy api key exits in db (foreign key references)
             ANY_API_KEY_ID = UUID("00000000-1111-2222-3333-444444444444")
             api_client: ApiClient = db.query(ApiClient).filter(ApiClient.id == ANY_API_KEY_ID).first()

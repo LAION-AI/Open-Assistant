@@ -50,7 +50,7 @@
         network_mode: oasst
         env:
           POSTGRES_HOST: oasst-postgres
-          ALLOW_ANY_API_KEY: "true"
+          DEBUG_SKIP_API_KEY_CHECK: "true"
           MAX_WORKERS: "1"
         ports:
           - 8080:8080
