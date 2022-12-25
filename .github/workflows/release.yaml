@@ -26,3 +26,20 @@ jobs:
       context: .
       dockerfile: docker/Dockerfile.discord-bot
       build-args: ""
+  deploy-dev:
+    needs: [build-backend, build-web, build-bot]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          # Required, playbook filepath
+          playbook: dev.yaml
+          # Optional, directory where playbooks live
+          directory: ansible
+          # Optional, SSH private key
+          key: ${{secrets.DEV_NODE_PRIVATE_KEY}}
+          # Optional, literal inventory file contents
+          inventory: |
+            [dev]
+            213.173.103.235 ansible_connection=ssh ansible_user=web-team
