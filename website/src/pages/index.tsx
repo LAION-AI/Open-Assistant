@@ -2,6 +2,7 @@ import { useSession } from "next-auth/react";
 
 import Head from "next/head";
 import Link from "next/link";
+import { Button, Input, Stack } from "@chakra-ui/react";
 
 import { CallToAction } from "../components/CallToAction";
 import { Faq } from "../components/Faq";
@@ -25,7 +26,7 @@ export default function Home() {
           />
         </Head>
         <Header />
-        <main>
+        <main className="z-0">
           <Hero />
           <CallToAction />
 
@@ -45,12 +46,10 @@ export default function Home() {
         />
       </Head>
       <Header />
-      <main>
-        <h2>Open Chat Gpt</h2>
-
-        <p>You are logged in</p>
-
-        <Link href="/grading/grade-output">~Rate a prompt and output now~</Link>
+      <main className="h-3/4  z-0 bg-white flex items-center justify-center">
+        <Button size="lg" colorScheme="blue" className="drop-shadow">
+          <Link href="/grading/grade-output">Rate a prompt and output now</Link>
+        </Button>
       </main>
       <Footer />
     </>
