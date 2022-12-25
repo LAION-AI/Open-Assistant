@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""empty message
+"""Adds text labels table.
 
 Revision ID: 067c4002f2d9
 Revises: 0daec5f8135f
