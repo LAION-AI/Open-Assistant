@@ -100,7 +100,7 @@ def score_update_prompts(consensus: npt.ArrayLike, voter_data: Voter) -> Voter:
     """
     # produces the ranking of votes, e.g. for [100,300,200] it returns [0, 2, 1],
     # since 100 is the lowest, 300 the highest and 200 the middle value
-    consensus_ranking = np.argsort(np.argsort(consensus)) - len(consensus) // 2
+    consensus_ranking = np.arange(len(consensus)) - len(consensus) // 2 + 1
     delta_votes = np.sum(consensus_ranking * consensus)
     new_points = delta_votes + voter_data.prompt_points
 
