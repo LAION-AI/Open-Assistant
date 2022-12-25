@@ -146,9 +146,7 @@ def score_update_ranking(user_ranking: npt.ArrayLike, consensus_ranking: npt.Arr
     # normalize kendall-tau from [-1,1] into [0,1] range
     bubble_sort_distance = (1 + bubble_sort_distance) / 2
     new_points = bubble_sort_distance + voter_data.ranking_points
-    # it's a good ranking if the likelihood that the consensus ranking and the
-    # user ranking are related
-    new_good_rankings = int(p_value < 0.5) + voter_data.num_good_rankings
+    new_good_rankings = int(bubble_sort_distance > 0.5) + voter_data.num_good_rankings
     new_num_rankings = voter_data.num_rankings + 1
     return replace(
         voter_data,
