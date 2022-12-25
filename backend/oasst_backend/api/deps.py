@@ -37,21 +37,21 @@ def api_auth(
     db: Session,
 ) -> ApiClient:
 
-    if api_key is not None:
-        if settings.ALLOW_ANY_API_KEY:
-            # make sure that a dummy api key exits in db (foreign key references)
-            ANY_API_KEY_ID = UUID("00000000-1111-2222-3333-444444444444")
-            api_client: ApiClient = db.query(ApiClient).filter(ApiClient.id == ANY_API_KEY_ID).first()
-            if api_client is None:
-                token = token_hex(32)
-                logger.info(f"ANY_API_KEY missing, inserting api_key: {token}")
-                api_client = ApiClient(id=ANY_API_KEY_ID, api_key=token, description="ANY_API_KEY, random token")
-                db.add(api_client)
-                db.commit()
-            return api_client
+    if api_key is None and not settings.DEBUG_SKIP_API_KEY_CHECK:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials")
 
-        api_client = db.query(ApiClient).filter(ApiClient.api_key == api_key).first()
-        if api_client is not None and api_client.enabled:
-            return api_client
+    if settings.DEBUG_SKIP_API_KEY_CHECK or settings.DEBUG_ALLOW_ANY_API_KEY:
+        # make sure that a dummy api key exits in db (foreign key references)
+        ANY_API_KEY_ID = UUID("00000000-1111-2222-3333-444444444444")
+        api_client: ApiClient = db.query(ApiClient).filter(ApiClient.id == ANY_API_KEY_ID).first()
+        if api_client is None:
+            token = token_hex(32)
+            logger.info(f"ANY_API_KEY missing, inserting api_key: {token}")
+            api_client = ApiClient(id=ANY_API_KEY_ID, api_key=token, description="ANY_API_KEY, random token")
+            db.add(api_client)
+            db.commit()
+        return api_client
 
-    raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials")
+    api_client = db.query(ApiClient).filter(ApiClient.api_key == api_key).first()
+    if api_client is not None and api_client.enabled:
+        return api_client
