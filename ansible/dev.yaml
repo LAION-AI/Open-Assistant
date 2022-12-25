@@ -71,7 +71,7 @@
           EMAIL_SERVER_HOST: oasst-maildev
           EMAIL_SERVER_PORT: "25"
           EMAIL_FROM: info@example.com
-          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_URL: http://web.dev.open-assistant.io/
         ports:
           - 3000:3000
         command: bash wait-for-postgres.sh node server.js
