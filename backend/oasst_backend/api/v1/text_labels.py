@@ -17,7 +17,7 @@ class LabelTextRequest(pydantic.BaseModel):
     user: protocol_schema.User
 
 
-@router.post("/")  # work with Union once more types are added
+@router.post("/")
 def label_text(
     *,
     db: Session = Depends(deps.get_db),
