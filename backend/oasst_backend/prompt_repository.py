@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
-from oasst_backend.models import ApiClient, Person, Post, PostReaction, WorkPackage
+from oasst_backend.models import ApiClient, Person, Post, PostReaction, TextLabels, WorkPackage
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -314,3 +314,17 @@ class PromptRepository:
         self.db.commit()
         self.db.refresh(reaction)
         return reaction
+
+    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> TextLabels:
+        model = TextLabels(
+            api_client_id=self.api_client.id,
+            text=text_labels.text,
+            labels=text_labels.labels,
+        )
+        if text_labels.has_post_id:
+            self.fetch_post_by_frontend_post_id(text_labels.post_id, fail_if_missing=True)
+            model.post_id = text_labels.post_id
+        self.db.add(model)
+        self.db.commit()
+        self.db.refresh(model)
+        return model
