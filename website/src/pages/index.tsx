@@ -46,9 +46,12 @@ export default function Home() {
         />
       </Head>
       <Header />
-      <main className="h-3/4  z-0 bg-white flex items-center justify-center">
+      <main className="h-3/4  z-0 bg-white flex flex-col items-center justify-center gap-2">
         <Button size="lg" colorScheme="blue" className="drop-shadow">
           <Link href="/grading/grade-output">Rate a prompt and output now</Link>
+        </Button>
+        <Button size="lg" colorScheme="blue" className="drop-shadow">
+          <Link href="/summarize/story">Summarize a story</Link>
         </Button>
       </main>
       <Footer />
