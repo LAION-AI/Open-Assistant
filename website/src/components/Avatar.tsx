@@ -12,7 +12,6 @@ export function Avatar() {
     return <></>;
   }
   if (session && session.user) {
-    console.log(session.user);
     const displayName = session.user.name || session.user.email;
     const accountOptions = [
       {
