@@ -63,6 +63,14 @@ If you're doing active development we suggest the following workflow:
     navigate to `http://localhost:1080`. Check the email listed and click the
     log in link. You're now logged in and authenticated.
 
+### Using debug user credentials
+
+If you want to quickly test the website, you can use the debug user credentials workflow:
+
+1. Run `DEBUG_FAKE_USERS=true npm run dev` to start the website.
+1. Use the `Login` button in the top right to go to the login page.
+1. You should see a section for debug credentials. Enter any username you wish, you will be logged in as that user.
+
 ## Code Layout
 
 ### React Code
