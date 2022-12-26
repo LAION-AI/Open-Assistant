@@ -204,3 +204,51 @@ AnyInteraction = Union[
     PostRating,
     PostRanking,
 ]
+
+
+class TextLabel(str, enum.Enum):
+    """A label for a piece of text."""
+
+    spam = "spam"
+    violence = "violence"
+    sexual_content = "sexual_content"
+    toxicity = "toxicity"
+    political_content = "political_content"
+    humor = "humor"
+    sarcasm = "sarcasm"
+    hate_speech = "hate_speech"
+    profanity = "profanity"
+    ad_hominem = "ad_hominem"
+    insult = "insult"
+    threat = "threat"
+    aggressive = "aggressive"
+    misleading = "misleading"
+    helpful = "helpful"
+    formal = "formal"
+    cringe = "cringe"
+    creative = "creative"
+    beautiful = "beautiful"
+    informative = "informative"
+    based = "based"
+    slang = "slang"
+
+
+class TextLabels(BaseModel):
+    """A set of labels for a piece of text."""
+
+    text: str
+    labels: dict[TextLabel, float]
+    post_id: str | None = None
+
+    @property
+    def has_post_id(self) -> bool:
+        """Whether this TextLabels has a post_id."""
+        return bool(self.post_id)
+
+    # check that each label value is between 0 and 1
+    @pydantic.validator("labels")
+    def check_label_values(cls, v):
+        for key, value in v.items():
+            if not (0 <= value <= 1):
+                raise ValueError(f"Label values must be between 0 and 1, got {value} for {key}.")
+        return v
