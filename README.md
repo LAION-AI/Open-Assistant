@@ -60,31 +60,3 @@ In case you haven't done this, have already committed, and CI is failing, you ca
 ### Deployment
 
 Upon making a release on GitHub, all docker images are automatically built and pushed to ghcr.io. The docker images are tagged with the release version, and the `latest` tag. Further, the ansible playbook in `ansible/dev.yaml` is run to automatically deploy the built release to the dev machine.
-
-# (Older version of the readme below)
-
-## How do I start helping out?
-
-Check out these pages to learn more about the project.
-
-Ping Birger on discord if you want help to get started.
-
-http://**discordapp.com/users/birger#6875**
-
-## More information in the notion
-
-https://roan-iguanadon-a58.notion.site/Open-Chat-Gpt-83dd217eeeb84907a155b8a9d716fa46
-
-## Code structure
-
-### Bot
-
-We have a folder named bot where code related to the bot lives.
-
-### Backend
-
-We have a backend folder for backend development of the api that the discord bot sends it information to.
-
-### Website
-
-We have a folder for the website, live at https://projects.laion.ai/Open-Chat-GPT/ .The website is built using Next.js
