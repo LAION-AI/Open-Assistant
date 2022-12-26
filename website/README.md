@@ -65,9 +65,9 @@ If you're doing active development we suggest the following workflow:
 
 ### Using debug user credentials
 
-If you want to quickly test the website, you can use the debug user credentials workflow:
+Whenever the website runs in development mode, you can use the debug credentials provider to log in without fancy emails or OAuth.
 
-1. Run `DEBUG_FAKE_USERS=true npm run dev` to start the website.
+1. Development mode is automatically active when you start the website with `npm run dev`.
 1. Use the `Login` button in the top right to go to the login page.
 1. You should see a section for debug credentials. Enter any username you wish, you will be logged in as that user.
 
