@@ -13,7 +13,7 @@ export function Footer() {
             <div className="flex items-center text-gray-900">
               <Link href="/" aria-label="Home" className="flex items-center">
                 <Image
-                  src="/images/logos/CHAT-THOUGHT-LOGO.svg"
+                  src="/images/logos/logo.svg"
                   className="mx-auto object-fill"
                   width="50"
                   height="50"
