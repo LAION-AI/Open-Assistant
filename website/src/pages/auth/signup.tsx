@@ -1,17 +1,24 @@
 import { Button, Input, Stack } from "@chakra-ui/react";
 import Head from "next/head";
-import { FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
+import Link from "next/link";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
 import { useRef } from "react";
-import Link from "next/link";
+import { FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 
 import { AuthLayout } from "src/components/AuthLayout";
 
 export default function Signin({ csrfToken, providers }) {
   const { discord, email, github } = providers;
   const emailEl = useRef(null);
+
+  const signinWithDiscord = () => {
+    signIn(discord.id, { callbackUrl: "/" });
+  };
   const signinWithEmail = () => {
     signIn(email.id, { callbackUrl: "/", email: emailEl.current.value });
+  };
+  const signinWithGithub = () => {
+    signIn(github.id, { callbackUrl: "/" });
   };
 
   return (
@@ -25,13 +32,7 @@ export default function Signin({ csrfToken, providers }) {
           {email && (
             <Stack>
               <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
-              <Button
-                size={"lg"}
-                leftIcon={<FaEnvelope />}
-                colorScheme="gray"
-                onClick={signinWithEmail}
-                // isDisabled="false"
-              >
+              <Button size={"lg"} leftIcon={<FaEnvelope />} colorScheme="gray" onClick={signinWithEmail}>
                 Continue with Email
               </Button>
             </Stack>
@@ -46,8 +47,7 @@ export default function Signin({ csrfToken, providers }) {
               size="lg"
               leftIcon={<FaDiscord />}
               color="white"
-              onClick={() => signIn(discord, { callbackUrl: "/" })}
-              // isDisabled="false"
+              onClick={signinWithDiscord}
             >
               Continue with Discord
             </Button>
@@ -62,7 +62,7 @@ export default function Signin({ csrfToken, providers }) {
               size={"lg"}
               leftIcon={<FaGithub />}
               colorScheme="blue"
-              // isDisabled="false"
+              onClick={signinWithGithub}
             >
               Continue with Github
             </Button>

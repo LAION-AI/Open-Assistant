@@ -10,6 +10,7 @@ repos:
       - id: trailing-whitespace
       - id: check-ast
       - id: check-yaml
+        exclude: copilot/web/addons/*
       - id: check-json
       - id: check-case-conflict
       - id: detect-private-key
