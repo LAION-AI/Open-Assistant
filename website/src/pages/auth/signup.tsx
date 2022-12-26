@@ -19,6 +19,9 @@ export default function Signin({ csrfToken, providers }) {
     ev.preventDefault();
     signIn(credentials.id, { callbackUrl: "/", username: debugUsernameEl.current.value });
   }
+  const handleOnClickPressed = (e) => {
+    if (e.key === "Enter") signinWithEmail();
+  };
 
   return (
     <>
@@ -41,7 +44,13 @@ export default function Signin({ csrfToken, providers }) {
           )}
           {email && (
             <Stack>
-              <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
+              <Input
+                onKeyDown={handleOnClickPressed}
+                variant="outline"
+                size="lg"
+                placeholder="Email Address"
+                ref={emailEl}
+              />
               <Button
                 size={"lg"}
                 leftIcon={<FaEnvelope />}
