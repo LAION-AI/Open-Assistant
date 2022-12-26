@@ -1,0 +1,17 @@
+# The manifest for the "open-assistant-main" pipeline.
+# This YAML file defines your pipeline: the source repository it tracks and the order of the environments to deploy to.
+# For more info: https://aws.github.io/copilot-cli/docs/manifest/pipeline/
+
+name: open-assistant-main
+
+version: 1
+
+source:
+  provider: GitHub
+  properties:
+    branch: 24-web-deploy-aws
+    repository: https://github.com/LAION-AI/Open-Assistant
+
+stages:
+  - name: staging
+    test_commands: [npx prisma db push --schema website/prisma/schema.prisma]
