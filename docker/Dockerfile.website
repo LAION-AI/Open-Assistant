@@ -1,3 +1,6 @@
+# Note: node:16.18.0 works most reliably when using different platforms (namely
+# Mac M1) and avoids recent Prisma docker bugs that lead to segfaults.
+
 # Install dependencies only when needed
 FROM node:16.18.0 AS deps
 WORKDIR /app
