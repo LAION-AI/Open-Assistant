@@ -13,10 +13,11 @@ services backed by a Serverless Aurora Postgres database.
 Setup requires a few steps:
 
 ```sh
-copilot app init --domain your_domain.tls
+copilot app init --domain your_domain.com
 ```
 
-This will initialize and register a variety of URls with your domain.
+This will initialize and register a variety of URLs with your
+`your_domain.com`. Replace with a proper domain to setup SSL certificates.
 
 ```sh
 copilot env deploy
