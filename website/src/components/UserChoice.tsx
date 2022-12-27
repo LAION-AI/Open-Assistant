@@ -5,7 +5,7 @@ import Image from "next/image";
 
 const UserChoice = () => {
   return (
-    <Flex gap={10} wrap="wrap" justifyContent={"center"}>
+    <Flex gap={10} wrap="wrap" justifyContent="center">
       <Choice alt="Rate Prompts" title="Rate prompts" link="/grading/grade-output" />
       <Choice alt="Summarize Stories" title="Summarize stories" link="/summarize/story" />
     </Flex>
@@ -29,8 +29,8 @@ const Choice = (props: ChoiceProps) => {
           <Flex direction="column" alignItems="center" justifyContent="center">
             <Image
               className="transition ease-in-out duration-300 sm:grayscale hover:grayscale-0"
-              src={"/images/logos/logo.svg"}
-              alt="Green double couch with wooden legs"
+              src="/images/logos/logo.sv"
+              alt="LAION Logo"
               width={500}
               height={500}
             />
