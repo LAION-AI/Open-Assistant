@@ -11,7 +11,9 @@ import task_handlers
 from api_client import ApiClient, TaskType
 from bot_base import BotBase
 from discord import app_commands
+from discord.ext.commands import Bot
 from loguru import logger
+from events import OnReady, OnMessage
 from message_templates import MessageTemplates
 from oasst_shared.schemas import protocol as protocol_schema
 from utils import get_git_head_hash, utcnow
@@ -46,7 +48,10 @@ class OpenAssistantBot(BotBase):
         self.owner_id = owner_id
 
         self.bot_token = bot_token
-        client = discord.Client(intents=intents)
+        # Bot class inherits from discord.Client
+        # this improves code structure for bigger projects
+        bot = Bot(intents=intents)
+        client = bot # to be compatible with the old code
         self.client = client
         self.loop = client.loop
 
