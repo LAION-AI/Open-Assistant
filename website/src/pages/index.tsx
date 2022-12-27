@@ -53,6 +53,12 @@ export default function Home() {
         <Button size="lg" colorScheme="blue" className="drop-shadow">
           <Link href="/summarize/story">Summarize a story</Link>
         </Button>
+        <Button size="lg" colorScheme="blue" className="drop-shadow">
+          <Link href="/create/user_reply">Reply as a user</Link>
+        </Button>
+        <Button size="lg" colorScheme="blue" className="drop-shadow">
+          <Link href="/create/assistant_reply">Reply as the assistant</Link>
+        </Button>
       </main>
       <Footer />
     </>
