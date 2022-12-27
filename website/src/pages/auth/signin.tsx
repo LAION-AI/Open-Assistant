@@ -1,9 +1,9 @@
 import { Button, Input, Stack } from "@chakra-ui/react";
 import Head from "next/head";
-import Link from "next/link";
-import { useRef } from "react";
 import { FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
+import { useRef } from "react";
+import Link from "next/link";
 
 import { AuthLayout } from "src/components/AuthLayout";
 
@@ -13,25 +13,25 @@ export default function Signin({ csrfToken, providers }) {
   const signinWithEmail = () => {
     signIn(email.id, { callbackUrl: "/", email: emailEl.current.value });
   };
-  const signinWithDiscord = () => {
-    signIn(discord.id, { callbackUrl: "/" });
-  };
-  const signinWithGithub = () => {
-    signIn(github.id, { callbackUrl: "/" });
-  };
 
   return (
     <>
       <Head>
-        <title>Sign In - Open Assistant</title>
-        <meta name="Sign In" content="Sign in to access Open Assistant" />
+        <title>Sign Up - Open Assistant</title>
+        <meta name="Sign Up" content="Sign up to access Open Assistant" />
       </Head>
       <AuthLayout>
         <Stack spacing="2">
           {email && (
-            <Stack className="mb-4">
+            <Stack>
               <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
-              <Button size={"lg"} leftIcon={<FaEnvelope />} colorScheme="gray" onClick={signinWithEmail}>
+              <Button
+                size={"lg"}
+                leftIcon={<FaEnvelope />}
+                colorScheme="gray"
+                onClick={signinWithEmail}
+                // isDisabled="false"
+              >
                 Continue with Email
               </Button>
             </Stack>
@@ -46,7 +46,8 @@ export default function Signin({ csrfToken, providers }) {
               size="lg"
               leftIcon={<FaDiscord />}
               color="white"
-              onClick={signinWithDiscord}
+              onClick={() => signIn(discord, { callbackUrl: "/" })}
+              // isDisabled="false"
             >
               Continue with Discord
             </Button>
@@ -61,15 +62,14 @@ export default function Signin({ csrfToken, providers }) {
               size={"lg"}
               leftIcon={<FaGithub />}
               colorScheme="blue"
-              onClick={signinWithGithub}
+              // isDisabled="false"
             >
               Continue with Github
             </Button>
           )}
         </Stack>
-        <hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
-        <div className="text-center">
-          By continuing you agree to our <br></br>
+        <div className="pt-10 text-center">
+          By signing up you agree to our <br></br>
           <Link href="#" aria-label="Terms of Service" className="hover:underline underline-offset-4">
             <b>Terms of Service</b>
           </Link>{" "}
@@ -78,6 +78,13 @@ export default function Signin({ csrfToken, providers }) {
             <b>Privacy Policy</b>
           </Link>
           .
+        </div>
+        <hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
+        <div className="text-center">
+          Already have an account?{" "}
+          <Link href="#" aria-label="Log In" className="hover:underline underline-offset-4">
+            <b>Log In</b>
+          </Link>
         </div>
       </AuthLayout>
     </>
