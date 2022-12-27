@@ -12,8 +12,8 @@ export default function Signin({ csrfToken, providers }) {
   const emailEl = useRef(null);
   const debugUsernameEl = useRef(null);
 
-  const signinWithEmail = (ev : React.FormEvent) => {
-    ev.preventDefault()
+  const signinWithEmail = (ev: React.FormEvent) => {
+    ev.preventDefault();
     signIn(email.id, { callbackUrl: "/", email: emailEl.current.value });
   };
 
@@ -42,19 +42,10 @@ export default function Signin({ csrfToken, providers }) {
             </form>
           )}
           {email && (
-            <form onSubmit={signinWithEmail} >
+            <form onSubmit={signinWithEmail}>
               <Stack>
-                <Input
-                  variant="outline"
-                  size="lg"
-                  placeholder="Email Address"
-                  ref={emailEl}
-                />
-                <Button
-                  size={"lg"}
-                  leftIcon={<FaEnvelope />}
-                  colorScheme="gray"
-                >
+                <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
+                <Button size={"lg"} leftIcon={<FaEnvelope />} colorScheme="gray">
                   Continue with Email
                 </Button>
               </Stack>
