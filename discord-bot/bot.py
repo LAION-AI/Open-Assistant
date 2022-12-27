@@ -55,23 +55,9 @@ class OpenAssistantBot(BotBase):
 
         self.tree = app_commands.CommandTree(self.client, fallback_to_global=True)
 
-        @client.event
-        async def on_ready():
-            self.bot_channel = self.get_text_channel_by_name(bot_channel_name)
-            logger.info(f"{client.user} is now running!")
-
-            await self.delete_all_old_bot_messages()
-            # if self.debug:
-            #    await self.post_boot_message()
-            await self.post_welcome_message()
-
-            client.loop.create_task(self.background_timer(), name="OpenAssistantBot.background_timer()")
-
-        @client.event
-        async def on_message(message: discord.Message):
-            # ignore own messages
-            if message.author != client.user:
-                await self.handle_message(message)
+        # register events
+        bot.add_cog(OnReady(self, logger, bot_channel_name))
+        bot.add_cog(OnMessage(self, logger))
 
         @self.tree.command()
         async def tutorial(interaction: discord.Interaction):
@@ -231,32 +217,6 @@ class OpenAssistantBot(BotBase):
                 channel = channel.parent
 
         return False
-
-    async def handle_message(self, message: discord.Message):
-        if not self.recipient_filter(message):
-            return
-
-        user_id = message.author.id
-        user_display_name = message.author.name
-
-        logger.debug(
-            f"{message.type} {message.channel.type} from ({user_display_name}) {user_id}: {message.content} ({type(message.content)})"
-        )
-
-        command_prefix = "!"
-        if message.type == discord.MessageType.default and message.content.startswith(command_prefix):
-            is_owner = self.owner_id and user_id == self.owner_id
-            await self.handle_command(message, is_owner)
-
-        if isinstance(message.channel, discord.Thread):
-            handler = self.reply_handlers.get(message.channel.id)
-            if handler and not handler.handler.completed:
-                handler.handler.on_reply(message)
-
-        if message.reference:
-            handler = self.reply_handlers.get(message.reference.message_id)
-            if handler and not handler.handler.completed:
-                handler.handler.on_reply(message)
 
     async def remove_completed_handlers(self):
         completed = [k for k, v in self.reply_handlers.items() if v.handler is None or v.handler.completed]
