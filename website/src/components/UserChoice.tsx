@@ -29,7 +29,7 @@ const Choice = (props: ChoiceProps) => {
           <Flex direction="column" alignItems="center" justifyContent="center">
             <Image
               className="transition ease-in-out duration-300 sm:grayscale hover:grayscale-0"
-              src="/images/logos/logo.sv"
+              src="/images/logos/logo.svg"
               alt="LAION Logo"
               width={500}
               height={500}
