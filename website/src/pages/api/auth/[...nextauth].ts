@@ -5,7 +5,6 @@ import EmailProvider from "next-auth/providers/email";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
-import { boolean } from "boolean";
 import prisma from "src/lib/prismadb";
 
 const providers = [];
