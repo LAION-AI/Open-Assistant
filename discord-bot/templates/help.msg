@@ -10,6 +10,6 @@ Commands for bot owners:
 
 `!sync`
 `!sync.guild`
-`!sync.copy_global` 
+`!sync.copy_global`
 `!sync.clear_guild`
 {% endif %}

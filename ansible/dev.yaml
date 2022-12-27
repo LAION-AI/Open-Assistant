@@ -1,0 +1,77 @@
+# ansible playbook to set up some docker containers
+
+- name: Set up a dev node
+  hosts: dev
+  gather_facts: true
+  tasks:
+    - name: Create network
+      community.docker.docker_network:
+        name: oasst
+        state: present
+        driver: bridge
+
+    - name: Create postgres containers
+      community.docker.docker_container:
+        name: "{{ item.name }}"
+        image: postgres:15
+        state: started
+        restart_policy: always
+        network_mode: oasst
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        volumes:
+          - "{{ item.name }}:/var/lib/postgresql/data"
+        healthcheck:
+          test: ["CMD", "pg_isready", "-U", "postgres"]
+          interval: 2s
+          timeout: 2s
+          retries: 10
+      loop:
+        - name: oasst-postgres
+        - name: oasst-postgres-web
+
+    - name: Set up maildev
+      community.docker.docker_container:
+        name: oasst-maildev
+        image: maildev/maildev
+        state: started
+        restart_policy: always
+        network_mode: oasst
+
+    - name: Run the oasst oasst-backend
+      community.docker.docker_container:
+        name: oasst-backend
+        image: ghcr.io/laion-ai/open-assistant/oasst-backend
+        state: started
+        pull: true
+        restart_policy: always
+        network_mode: oasst
+        env:
+          POSTGRES_HOST: oasst-postgres
+          DEBUG_ALLOW_ANY_API_KEY: "true"
+          MAX_WORKERS: "1"
+        ports:
+          - 8080:8080
+
+    - name: Run the oasst oasst-web frontend
+      community.docker.docker_container:
+        name: oasst-web
+        image: ghcr.io/laion-ai/open-assistant/oasst-web
+        state: started
+        pull: true
+        restart_policy: always
+        network_mode: oasst
+        env:
+          FASTAPI_URL: http://oasst-backend:8080
+          FASTAPI_KEY: "123"
+          DATABASE_URL: postgres://postgres:postgres@oasst-postgres-web/postgres
+          NEXTAUTH_SECRET: O/M2uIbGj+lDD2oyNa8ax4jEOJqCPJzO53UbWShmq98=
+          EMAIL_SERVER_HOST: oasst-maildev
+          EMAIL_SERVER_PORT: "25"
+          EMAIL_FROM: info@example.com
+          NEXTAUTH_URL: http://web.dev.open-assistant.io/
+        ports:
+          - 3000:3000
+        command: bash wait-for-postgres.sh node server.js

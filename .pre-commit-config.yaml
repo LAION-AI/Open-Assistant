@@ -46,3 +46,13 @@ repos:
     hooks:
       - id: prettier
         args: ["--write"]
+
+  - repo: local
+    hooks:
+      - id: next-lint-website
+        name: Lint website
+        files: ^website/
+        types_or: [javascript, jsx, ts, tsx]
+        language: system
+        pass_filenames: false
+        entry: bash -c 'cd website && npm install && npm run lint'
