@@ -4,7 +4,6 @@ from __future__ import annotations
 import asyncio
 from datetime import timedelta
 from pathlib import Path
-from tkinter import BOTH
 from typing import Optional, Union
 
 import discord
