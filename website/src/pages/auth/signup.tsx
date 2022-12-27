@@ -16,12 +16,12 @@ export default function Signin({ csrfToken, providers }) {
   const signinWithDiscord = () => {
     signIn(discord.id, { callbackUrl: "/" });
   };
-  
+
   const signinWithEmail = (ev: React.FormEvent) => {
     ev.preventDefault();
     signIn(email.id, { callbackUrl: "/", email: emailEl.current.value });
   };
-  
+
   const signinWithGithub = () => {
     signIn(github.id, { callbackUrl: "/" });
   };
