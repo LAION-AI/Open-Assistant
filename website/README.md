@@ -105,6 +105,20 @@ When writing code for the website, we have a few best practices:
 1.  Define functional React components (with types for all properties when
     feasible).
 
+### URL Paths
+
+To use stable and consistent URL paths, we recommend the following strategy for new tasks:
+
+1.  For any task that involves writing a free-form response, put the page under
+    `website/src/pages/create` with a page name matching the task type, such as
+    `summarize_story.tsx`.
+1.  For any task that evaluates, rates, or ranks content, put the page under
+    `website/src/pages/evaluate` with a page name matching the task type such
+    as `rate_summary.tsx`.
+
+With this we'll be able to ensure these contribution pages are hidden from
+logged out users but accessible to logged in users.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
