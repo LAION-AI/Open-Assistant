@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
+from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import ApiClient, Person, Post, PostReaction, TextLabels, WorkPackage
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
@@ -17,6 +18,7 @@ class PromptRepository:
         self.api_client = api_client
         self.person = self.lookup_person(user)
         self.person_id = self.person.id if self.person else None
+        self.journal = JournalWriter(db, api_client, self.person)
 
     def lookup_person(self, user: protocol_schema.User) -> Person:
         if not user:
@@ -116,6 +118,10 @@ class PromptRepository:
         self.validate_post_id(reply.post_id)
         self.validate_post_id(reply.user_post_id)
 
+        work_package = self.fetch_workpackage_by_postid(reply.post_id)
+        work_payload: db_payload.TaskPayload = work_package.payload.payload
+        logger.info(f"found task work package in db: {work_payload}")
+
         # find post with post-id
         parent_post: Post = (
             self.db.query(Post)
@@ -141,6 +147,7 @@ class PromptRepository:
             role=role,
             payload=db_payload.PostPayload(text=reply.text),
         )
+        self.journal.log_text_reply(work_package=work_package, post_id=user_post_id, role=role, length=len(reply.text))
         return user_post
 
     def store_rating(self, rating: protocol_schema.PostRating) -> PostReaction:
@@ -159,6 +166,7 @@ class PromptRepository:
         # store reaction to post
         reaction_payload = db_payload.RatingReactionPayload(rating=rating.rating)
         reaction = self.insert_reaction(post.id, reaction_payload)
+        self.journal.log_rating(work_package, post_id=post.id, rating=rating.rating)
         logger.info(f"Ranking {rating.rating} stored for work_package {work_package.id}.")
         return reaction
 
@@ -184,6 +192,7 @@ class PromptRepository:
                 # store reaction to post
                 reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
                 reaction = self.insert_reaction(post.id, reaction_payload)
+                self.journal.log_ranking(work_package, post_id=post.id, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for work_package {work_package.id}.")
 
@@ -199,6 +208,7 @@ class PromptRepository:
                 # store reaction to post
                 reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
                 reaction = self.insert_reaction(post.id, reaction_payload)
+                self.journal.log_ranking(work_package, post_id=post.id, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for work_package {work_package.id}.")
 

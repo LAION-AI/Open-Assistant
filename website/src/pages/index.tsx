@@ -8,6 +8,7 @@ import { Faq } from "src/components/Faq";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
 import { Hero } from "src/components/Hero";
+import { TaskSelection } from "src/components/TaskSelection";
 
 const Home = () => {
   const { data: session } = useSession();
@@ -43,13 +44,8 @@ const Home = () => {
         />
       </Head>
       <Header />
-      <main className="h-3/4  z-0 bg-white flex flex-col items-center justify-center gap-2">
-        <Button size="lg" colorScheme="blue" className="drop-shadow">
-          <Link href="/evaluate/rate_summary">Rate a Summary</Link>
-        </Button>
-        <Button size="lg" colorScheme="blue" className="drop-shadow">
-          <Link href="/create/summarize_story">Summarize a story</Link>
-        </Button>
+      <main className="h-3/4 m-20 z-0 bg-white flex flex-col items-center justify-center gap-2">
+        <TaskSelection />
       </main>
       <Footer />
     </>

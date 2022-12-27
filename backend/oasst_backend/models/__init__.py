@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .api_client import ApiClient
+from .journal import Journal, JournalIntegration
 from .person import Person
 from .person_stats import PersonStats
 from .post import Post
@@ -15,4 +16,6 @@ __all__ = [
     "PostReaction",
     "WorkPackage",
     "TextLabels",
+    "Journal",
+    "JournalIntegration",
 ]
