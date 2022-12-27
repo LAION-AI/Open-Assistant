@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
-from oasst_backend.models.db_payload import TaskPayload
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -218,10 +217,6 @@ def post_interaction(
                 logger.info(
                     f"Frontend reports text reply to {interaction.post_id=} with {interaction.text=} by {interaction.user=}."
                 )
-
-                work_package = pr.fetch_workpackage_by_postid(interaction.post_id)
-                work_payload: TaskPayload = work_package.payload.payload
-                logger.info(f"found task work package in db: {work_payload}")
 
                 # here we store the text reply in the database
                 # ToDo: role user or agent?

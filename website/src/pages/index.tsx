@@ -1,16 +1,11 @@
 import { useSession } from "next-auth/react";
-
 import Head from "next/head";
-import Link from "next/link";
-import { Button, Input, Stack } from "@chakra-ui/react";
-
 import { CallToAction } from "../components/CallToAction";
 import { Faq } from "../components/Faq";
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { Hero } from "../components/Hero";
-
-import styles from "../styles/Home.module.css";
+import { TaskSelection } from "../components/TaskSelection";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -46,10 +41,8 @@ export default function Home() {
         />
       </Head>
       <Header />
-      <main className="h-3/4  z-0 bg-white flex items-center justify-center">
-        <Button size="lg" colorScheme="blue" className="drop-shadow">
-          <Link href="/grading/grade-output">Rate a prompt and output now</Link>
-        </Button>
+      <main className="h-3/4 m-20 z-0 bg-white flex flex-col items-center justify-center gap-2">
+        <TaskSelection />
       </main>
       <Footer />
     </>

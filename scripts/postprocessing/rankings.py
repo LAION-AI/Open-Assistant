@@ -68,7 +68,7 @@ def get_winner(pairs):
 def get_ranking(pairs):
     """
     Abuses concordance property to get a (not necessarily unqiue) ranking.
-    The lack of uniqueness is due to the potential existance of multiple
+    The lack of uniqueness is due to the potential existence of multiple
     equally ranked winners. We have to pick one, which is where
     the non-uniqueness comes from
     """
@@ -99,7 +99,7 @@ def ranked_pairs(ranks: List[List[int]]):
     tallies = tallies - tallies.T
     # print(tallies)
     # note: the resulting tally matrix should be skew-symmetric
-    # order by strenght of victory (using tideman's original method, don't think it would make a difference for us)
+    # order by strength of victory (using tideman's original method, don't think it would make a difference for us)
     sorted_majorities = []
     for i in range(len(ranks[0])):
         for j in range(len(ranks[i])):

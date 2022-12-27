@@ -5,6 +5,7 @@ numpy==1.22.4
 psycopg2-binary==2.9.5
 pydantic==1.9.1
 python-dotenv==0.21.0
+scipy==1.8.1
 SQLAlchemy==1.4.41
 sqlmodel==0.0.8
 starlette==0.22.0
