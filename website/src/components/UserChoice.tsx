@@ -26,9 +26,8 @@ const Choice = (props: ChoiceProps) => {
     <Link href={link}>
       <Card maxW="sm" minW="sm" minH="sm" maxH="sm">
         <CardBody width="full" height="full">
-          <Flex direction="column" alignItems="center" justifyContent="center">
+          <Flex direction="column" alignItems="center" justifyContent="center" className="transition ease-in-out duration-500 sm:grayscale hover:grayscale-0">
             <Image
-              className="transition ease-in-out duration-300 sm:grayscale hover:grayscale-0"
               src="/images/logos/logo.svg"
               alt="LAION Logo"
               width={500}
