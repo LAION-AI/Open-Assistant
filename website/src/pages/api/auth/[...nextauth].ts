@@ -34,7 +34,7 @@ if (process.env.DISCORD_CLIENT_ID) {
   );
 }
 
-if (boolean(process.env.NODE_ENV === "development")) {
+if (process.env.NODE_ENV === "development") {
   providers.push(
     CredentialsProvider({
       name: "Debug Credentials",
