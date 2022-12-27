@@ -6,9 +6,9 @@ import { NavLinks } from "./NavLinks";
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-200">
+    <footer className="border-t border-gray-200 bg-white">
       <Container className="">
-        <div className="flex flex-col items-start justify-between gap-y-12 pt-16 pb-6 lg:flex-row lg:items-center lg:py-16">
+        <div className="flex flex-col items-start justify-between gap-y-12 pt-16 pb-6 lg:flex-row lg:items-center lg:py-6">
           <div>
             <div className="flex items-center text-gray-900">
               <Link href="/" aria-label="Home" className="flex items-center">
@@ -20,7 +20,9 @@ export function Footer() {
                 <p className="mt-1 text-sm">Conversational AI for everyone.</p>
               </div>
             </div>
-            <nav className="mt-11 flex gap-8">{/* <NavLinks /> */}</nav>
+            {/* <nav className="mt-11 flex gap-8">
+              <NavLinks />
+            </nav> */}
           </div>
         </div>
       </Container>
