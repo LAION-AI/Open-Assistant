@@ -13,9 +13,16 @@ export const TaskSelection = () => {
           title="Summarize stories"
           link="/summarize/story"
         />
+        <TaskOption alt="Reply as User" img="/images/logos/logo.svg" title="Reply as User" link="/create/user_reply" />
+        <TaskOption
+          alt="Reply as Assistant"
+          img="/images/logos/logo.svg"
+          title="Reply as Assistant"
+          link="/create/assistant_reply"
+        />
       </TaskOptions>
       <TaskOptions key="evaluate" title="Evaluate">
-        <TaskOption alt="Rate Summaries" img="/images/logos/logo.svg" title="Rate Summaries" link="/summarize/story" />
+        <TaskOption alt="Rate Prompts" img="/images/logos/logo.svg" title="Rate Prompts" link="/grading/grade-output" />
       </TaskOptions>
     </Flex>
   );

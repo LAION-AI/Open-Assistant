@@ -3,7 +3,7 @@ import React from "react";
 
 export type TaskOptionsProps = {
   title: string;
-  children: JSX.Element;
+  children: JSX.Element | JSX.Element[];
 };
 
 export const TaskOptions = (props: TaskOptionsProps) => {
