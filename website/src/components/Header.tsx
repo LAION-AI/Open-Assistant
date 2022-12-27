@@ -6,7 +6,7 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
 
-import { Avatar } from "./Avatar";
+import { UserMenu } from "./UserMenu";
 import { Container } from "./Container";
 import { NavLinks } from "./NavLinks";
 
@@ -45,9 +45,9 @@ function AccountButton() {
     return;
   }
   return (
-    <Link href="/auth/signup" aria-label="Home" className="flex items-center">
+    <Link href="/auth/signin" aria-label="Home" className="flex items-center">
       <Button variant="outline" leftIcon={<FaUser />}>
-        Log in
+        Sign in
       </Button>
     </Link>
   );
@@ -113,7 +113,7 @@ export function Header() {
               )}
             </Popover>
             <AccountButton />
-            <Avatar />
+            <UserMenu />
           </div>
         </Container>
       </nav>

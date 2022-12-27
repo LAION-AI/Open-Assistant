@@ -5,7 +5,7 @@ import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaCog, FaSignOutAlt, FaGithub } from "react-icons/fa";
 
-export function Avatar() {
+export function UserMenu() {
   const { data: session } = useSession();
 
   if (!session) {
@@ -16,7 +16,7 @@ export function Avatar() {
     const accountOptions = [
       {
         name: "Account Settings",
-        href: "#",
+        href: "/account",
         desc: "Account Settings",
         icon: FaCog,
         //For future use
@@ -35,8 +35,7 @@ export function Avatar() {
                   height="40"
                   className="rounded-full"
                 ></Image>
-                <p className="hidden lg:flex">{email}</p>
-                {/* Will be changed to username once it is implemented */}
+                <p className="hidden lg:flex">{session.user.name || session.user.email}</p>
               </div>
             </Popover.Button>
             <AnimatePresence initial={false}>
@@ -72,7 +71,7 @@ export function Avatar() {
                       ))}
                       <a
                         className="flex items-center rounded-md hover:bg-gray-100 cursor-pointer"
-                        onClick={() => signOut()}
+                        onClick={() => signOut({ callbackUrl: "/" })}
                       >
                         <div className="p-4">
                           <FaSignOutAlt />
@@ -93,4 +92,4 @@ export function Avatar() {
   }
 }
 
-export default Avatar;
+export default UserMenu;
