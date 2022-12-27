@@ -13,7 +13,7 @@ export default function Error() {
       </Head>
       <Header />
       <main className="flex h-3/4 items-center justify-center overflow-hidden subpixel-antialiased text-xl">
-        "Sorry, the page you're looking for does not exist."
+        Sorry, the page you're looking for does not exist.
       </main>
       <Footer />
     </>
