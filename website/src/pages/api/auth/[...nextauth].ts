@@ -2,6 +2,7 @@ import type { AuthOptions } from "next-auth";
 import NextAuth from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
 import prisma from "src/lib/prismadb";
@@ -28,6 +29,23 @@ if (process.env.DISCORD_CLIENT_ID) {
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID,
       clientSecret: process.env.DISCORD_CLIENT_SECRET,
+    })
+  );
+}
+
+if (process.env.NODE_ENV === "development") {
+  providers.push(
+    CredentialsProvider({
+      name: "Debug Credentials",
+      credentials: {
+        username: { label: "Username", type: "text" },
+      },
+      async authorize(credentials) {
+        return {
+          id: credentials.username,
+          name: credentials.username,
+        };
+      },
     })
   );
 }

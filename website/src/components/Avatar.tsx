@@ -12,7 +12,7 @@ export function Avatar() {
     return <></>;
   }
   if (session && session.user) {
-    const email = session.user.email;
+    const displayName = session.user.name || session.user.email;
     const accountOptions = [
       {
         name: "Account Settings",
@@ -35,7 +35,7 @@ export function Avatar() {
                   height="40"
                   className="rounded-full"
                 ></Image>
-                <p className="hidden lg:flex">{email}</p>
+                <p className="hidden lg:flex">{displayName}</p>
                 {/* Will be changed to username once it is implemented */}
               </div>
             </Popover.Button>
