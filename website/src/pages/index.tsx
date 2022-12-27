@@ -5,7 +5,7 @@ import { Faq } from "../components/Faq";
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { Hero } from "../components/Hero";
-import UserChoice from "../components/UserChoice";
+import { TaskSelection } from "../components/TaskSelection";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -41,8 +41,8 @@ export default function Home() {
         />
       </Head>
       <Header />
-      <main className="h-3/4  z-0 bg-white flex flex-col items-center justify-center gap-2">
-        <UserChoice />
+      <main className="h-3/4 m-20 z-0 bg-white flex flex-col items-center justify-center gap-2">
+        <TaskSelection />
       </main>
       <Footer />
     </>
