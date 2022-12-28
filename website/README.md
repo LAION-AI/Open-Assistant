@@ -71,6 +71,12 @@ Whenever the website runs in development mode, you can use the debug credentials
 1. Use the `Login` button in the top right to go to the login page.
 1. You should see a section for debug credentials. Enter any username you wish, you will be logged in as that user.
 
+### Using Storybook
+
+To develop components using [Storybook](https://storybook.js.org/) run `npm run storybook`. Then navigate to in your browser to `http://localhost:6006`.
+
+To create a new story create a file named `[componentName].stories.js`. An example how such a story could look like, see `Header.stories.jsx`.
+
 ## Code Layout
 
 ### React Code
