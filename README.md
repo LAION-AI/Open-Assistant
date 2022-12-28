@@ -6,11 +6,10 @@ We believe that by doing this we will create a revolution in innovation in langu
 
 ## Do you want to try ?
 
-If you are interested in taking a look at the current state of the project.
-You can set up an entire stack needed to run **Open-Assistant**, including the
+If you are interested in taking a look at the current state of the project, You can set up an entire stack needed to run **Open-Assistant**, including the
 website, backend, and associated dependent services.
 
-To start the demo, run this, in root directory:
+To start the demo, Run this in the root directory of the repository:
 
 ```sh
 docker compose up --build
