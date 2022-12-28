@@ -43,12 +43,12 @@ const AssistantReply = () => {
    * TODO: Make this a nicer loading screen.
    */
   if (tasks.length == 0) {
-    return <div className="p-6 h-full mx-auto bg-slate-100 text-gray-800">Loading...</div>;
+    return <div className="p-6 bg-slate-100 text-gray-800">Loading...</div>;
   }
 
   const task = tasks[0].task;
   return (
-    <div className="p-6 h-full mx-auto bg-slate-100 text-gray-800">
+    <div className="p-6 bg-slate-100 text-gray-800">
       <TwoColumns>
         <>
           <h5 className="text-lg font-semibold">Reply as the assistant</h5>
