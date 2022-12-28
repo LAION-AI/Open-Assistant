@@ -55,9 +55,9 @@ function AccountButton() {
 
 export function Header() {
   return (
-    <header>
+    <header className="bg-white">
       <nav>
-        <Container className="relative bg-white z-10 flex justify-between py-8">
+        <Container className="relative z-10 flex justify-between py-8">
           <div className="relative z-10 flex items-center gap-16">
             <Link href="/" aria-label="Home" className="flex items-center">
               <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />

@@ -10,6 +10,11 @@ repos:
       - id: trailing-whitespace
       - id: check-ast
       - id: check-yaml
+        # Always check YAML but skip a few YAML files that are auto-generated
+        # and which break the standard YAML check.  The alternative would be to
+        # skip any unsafe errors (and thus break YAML compatibility) or use
+        # some other checker that may not work in general.
+        exclude: copilot/web/addons/*
       - id: check-json
       - id: check-case-conflict
       - id: detect-private-key
