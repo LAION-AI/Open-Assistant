@@ -6,8 +6,8 @@ import { useSession } from "next-auth/react";
 import { CallToAction } from "src/components/CallToAction";
 import { Faq } from "src/components/Faq";
 import { Footer } from "src/components/Footer";
-import { Header } from "src/components/Header";
-import { Hero } from "sr../components/Header/Header
+import { Header } from "src/components/Header/Header";
+import { Hero } from "src/components/Hero";
 import { TaskSelection } from "src/components/TaskSelection";
 
 const Home = () => {

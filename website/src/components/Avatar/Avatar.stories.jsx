@@ -1,11 +1,11 @@
-import { SessionContext } from 'next-auth/react';
-import React from 'react';
+import { SessionContext } from "next-auth/react";
+import React from "react";
 
-import { Avatar } from './Avatar';
+import { Avatar } from "./Avatar";
 
 export default {
-  title: 'Example/Avatar',
-  component: Avatar
+  title: "Example/Avatar",
+  component: Avatar,
 };
 
 const Template = (args) => {
@@ -14,8 +14,8 @@ const Template = (args) => {
     <SessionContext.Provider value={session}>
       <Avatar {...args} />
     </SessionContext.Provider>
-    );
+  );
 };
 
 export const Default = Template.bind({});
-Default.args = {session :{ data: {user: { name: "StoryBook user"}}, status: "authenticated",  }};
+Default.args = { session: { data: { user: { name: "StoryBook user" } }, status: "authenticated" } };

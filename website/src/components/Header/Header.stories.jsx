@@ -1,14 +1,14 @@
-import { SessionContext } from 'next-auth/react';
-import React from 'react';
+import { SessionContext } from "next-auth/react";
+import React from "react";
 
-import { Header } from './Header';
+import { Header } from "./Header";
 
 export default {
-  title: 'Example/Header',
+  title: "Example/Header",
   component: Header,
   parameters: {
     // More on Story layout: https://storybook.js.org/docs/react/configure/story-layout
-    layout: 'fullscreen',
+    layout: "fullscreen",
   },
 };
 
@@ -18,8 +18,8 @@ const Template = (args) => {
     <SessionContext.Provider value={session}>
       <Header {...args} />
     </SessionContext.Provider>
-    );
+  );
 };
 
 export const Default = Template.bind({});
-Default.args =  {session :{ data: {user: { name: "StoryBook user"}}, status: "authenticated",  }};
+Default.args = { session: { data: { user: { name: "StoryBook user" } }, status: "authenticated" } };
