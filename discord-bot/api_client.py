@@ -36,8 +36,8 @@ class ApiClient:
         }
         self.task_models_map = task_models_map
 
-    def post(self, path: str, json: dict) -> dict:
-        response = requests.post(f"{self.backend_url}{path}", json=json, headers={"X-API-Key": self.api_key})
+    def message(self, path: str, json: dict) -> dict:
+        response = requests.message(f"{self.backend_url}{path}", json=json, headers={"X-API-Key": self.api_key})
         response.raise_for_status()
         return response.json()
 
@@ -55,20 +55,20 @@ class ApiClient:
         self, task_type: protocol_schema.TaskRequestType, user: Optional[protocol_schema.User] = None
     ) -> protocol_schema.Task:
         req = protocol_schema.TaskRequest(type=task_type, user=user)
-        data = self.post("/api/v1/tasks/", req.dict())
+        data = self.message("/api/v1/tasks/", req.dict())
         return self._parse_task(data)
 
     def fetch_random_task(self, user: Optional[protocol_schema.User] = None) -> protocol_schema.Task:
         return self.fetch_task(protocol_schema.TaskRequestType.random, user)
 
-    def ack_task(self, task_id: str, post_id: str) -> None:
-        req = protocol_schema.TaskAck(post_id=post_id)
-        return self.post(f"/api/v1/tasks/{task_id}/ack", req.dict())
+    def ack_task(self, task_id: str, message_id: str) -> None:
+        req = protocol_schema.TaskAck(message_id=message_id)
+        return self.message(f"/api/v1/tasks/{task_id}/ack", req.dict())
 
     def nack_task(self, task_id: str, reason: str) -> None:
         req = protocol_schema.TaskNAck(reason=reason)
-        return self.post(f"/api/v1/tasks/{task_id}/nack", req.dict())
+        return self.message(f"/api/v1/tasks/{task_id}/nack", req.dict())
 
-    def post_interaction(self, interaction: protocol_schema.Interaction) -> protocol_schema.Task:
-        data = self.post("/api/v1/tasks/interaction", interaction.dict())
+    def message_interaction(self, interaction: protocol_schema.Interaction) -> protocol_schema.Task:
+        data = self.message("/api/v1/tasks/interaction", interaction.dict())
         return self._parse_task(data)

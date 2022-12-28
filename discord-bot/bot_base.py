@@ -38,7 +38,7 @@ class BotBase(ABC):
         if self.bot_channel is None:
             raise RuntimeError(f"bot channel '{self.bot_channel_name}' not found")
 
-    async def post(
+    async def message(
         self, content: str, *, view: discord.ui.View = None, channel: discord.abc.Messageable = None
     ) -> discord.Message:
         if channel is None:
@@ -46,12 +46,12 @@ class BotBase(ABC):
             channel = self.bot_channel
         return await channel.send(content=content, view=view)
 
-    async def post_template(
+    async def message_template(
         self, name: str, *, view: discord.ui.View = None, channel: discord.abc.Messageable = None, **kwargs: Any
     ) -> discord.Message:
         logger.debug(f"rendering {name}")
         text = self.templates.render(name, **kwargs)
-        return await self.post(text, view=view, channel=channel)
+        return await self.message(text, view=view, channel=channel)
 
     def register_reply_handler(self, msg_id: int, handler: ChannelHandlerBase):
         if msg_id in self.reply_handlers:

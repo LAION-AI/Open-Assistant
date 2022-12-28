@@ -62,8 +62,8 @@ class OpenAssistantBot(BotBase):
 
             await self.delete_all_old_bot_messages()
             # if self.debug:
-            #    await self.post_boot_message()
-            await self.post_welcome_message()
+            #    await self.message_boot_message()
+            await self.message_welcome_message()
 
             client.loop.create_task(self.background_timer(), name="OpenAssistantBot.background_timer()")
 
@@ -84,7 +84,7 @@ class OpenAssistantBot(BotBase):
         @self.tree.command()
         async def help(interaction: discord.Interaction):
             """Sends the user a list of all available commands"""
-            await self.post_help(interaction.user)
+            await self.message_help(interaction.user)
             await interaction.response.send_message(f"@{interaction.user.display_name}, I've sent you a PM.")
 
         @self.tree.command()
@@ -96,17 +96,17 @@ class OpenAssistantBot(BotBase):
             q = task_handlers.Questionnaire()
             await interaction.response.send_modal(q)
 
-    async def post_help(self, user: discord.abc.User) -> discord.Message:
+    async def message_help(self, user: discord.abc.User) -> discord.Message:
         is_bot_owner = user.id == self.owner_id
-        return await self.post_template("help.msg", channel=user, is_bot_owner=is_bot_owner)
+        return await self.message_template("help.msg", channel=user, is_bot_owner=is_bot_owner)
 
-    async def post_boot_message(self) -> discord.Message:
-        return await self.post_template(
+    async def message_boot_message(self) -> discord.Message:
+        return await self.message_template(
             "boot.msg", bot_name=BOT_NAME, version=__version__, git_hash=get_git_head_hash(), debug=self.debug
         )
 
-    async def post_welcome_message(self) -> discord.Message:
-        return await self.post_template("welcome.msg")
+    async def message_welcome_message(self) -> discord.Message:
+        return await self.message_template("welcome.msg")
 
     async def delete_all_old_bot_messages(self) -> None:
         logger.info("Deleting old threads...")
@@ -205,7 +205,7 @@ class OpenAssistantBot(BotBase):
         command_text = command_text[1:]
         match command_text:
             case "help" | "?":
-                await self.post_help(user=message.author)
+                await self.message_help(user=message.author)
             case "sync" | "sync.guild" | "sync.copy_global" | "sync.clear_guild":
                 if is_owner:
                     await self._sync(command_text, message)

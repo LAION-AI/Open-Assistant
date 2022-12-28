@@ -13,8 +13,8 @@ from .payload_column_type import PayloadContainer, payload_column_type
 class MessageReaction(SQLModel, table=True):
     __tablename__ = "message_reaction"
 
-    post_id: Optional[UUID] = Field(
-        sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("post.id"), nullable=False, primary_key=True)
+    message_id: Optional[UUID] = Field(
+        sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("message.id"), nullable=False, primary_key=True)
     )
     user_id: UUID = Field(
         sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("user.id"), nullable=False, primary_key=True)

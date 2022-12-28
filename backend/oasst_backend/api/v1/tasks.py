@@ -169,7 +169,7 @@ def acknowledge_task(
 
         # here we store the post id in the database for the task
         logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
-        pr.bind_frontend_post_id(task_id=task_id, post_id=ack_request.post_id)
+        pr.bind_frontend_message_id(task_id=task_id, post_id=ack_request.post_id)
 
     except Exception:
         logger.exception("Failed to acknowledge task.")
@@ -213,9 +213,9 @@ def post_interaction(
         pr = PromptRepository(db, api_client, user=interaction.user)
 
         match type(interaction):
-            case protocol_schema.TextReplyToPost:
+            case protocol_schema.TextReplyToMessage:
                 logger.info(
-                    f"Frontend reports text reply to {interaction.post_id=} with {interaction.text=} by {interaction.user=}."
+                    f"Frontend reports text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                 )
 
                 # here we store the text reply in the database
@@ -223,18 +223,18 @@ def post_interaction(
                 pr.store_text_reply(interaction, role="unknown")
 
                 return protocol_schema.TaskDone()
-            case protocol_schema.PostRating:
+            case protocol_schema.MessageRating:
                 logger.info(
-                    f"Frontend reports rating of {interaction.post_id=} with {interaction.rating=} by {interaction.user=}."
+                    f"Frontend reports rating of {interaction.message_id=} with {interaction.rating=} by {interaction.user=}."
                 )
 
                 # here we store the rating in the database
                 pr.store_rating(interaction)
 
                 return protocol_schema.TaskDone()
-            case protocol_schema.PostRanking:
+            case protocol_schema.MessageRanking:
                 logger.info(
-                    f"Frontend reports ranking of {interaction.post_id=} with {interaction.ranking=} by {interaction.user=}."
+                    f"Frontend reports ranking of {interaction.message_id=} with {interaction.ranking=} by {interaction.user=}."
                 )
 
                 # TODO: check if the ranking is valid
