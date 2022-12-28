@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
+from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import ApiClient, Person, Post, PostReaction, TextLabels, WorkPackage
 from oasst_backend.models.payload_column_type import PayloadContainer
@@ -52,9 +53,9 @@ class PromptRepository:
 
     def validate_post_id(self, post_id: str) -> None:
         if not isinstance(post_id, str):
-            raise TypeError(f"post_id must be string, not {type(post_id)}")
+            raise OasstError(f"post_id must be string, not {type(post_id)}", OasstErrorCode.INVALID_POST_ID)
         if not post_id:
-            raise ValueError("post_id must not be empty")
+            raise OasstError("post_id must not be empty", OasstErrorCode.INVALID_POST_ID)
 
     def bind_frontend_post_id(self, task_id: UUID, post_id: str):
         self.validate_post_id(post_id)
@@ -66,11 +67,11 @@ class PromptRepository:
             .first()
         )
         if work_pack is None:
-            raise KeyError(f"WorkPackage for task {task_id} not found")
+            raise OasstError(f"WorkPackage for task {task_id} not found", OasstErrorCode.WORK_PACKAGE_NOT_FOUND)
         if work_pack.expired:
-            raise RuntimeError("WorkPackage already expired.")
+            raise OasstError("WorkPackage already expired.", OasstErrorCode.WORK_PACKAGE_EXPIRED)
         if work_pack.done or work_pack.ack is not None:
-            raise RuntimeError("WorkPackage already updated.")
+            raise OasstError("WorkPackage already updated.", OasstErrorCode.WORK_PACKAGE_ALREADY_UPDATED)
 
         work_pack.frontend_ref_post_id = post_id
         work_pack.ack = True
@@ -86,11 +87,11 @@ class PromptRepository:
             .first()
         )
         if work_pack is None:
-            raise KeyError(f"WorkPackage for task {task_id} not found")
+            raise OasstError(f"WorkPackage for task {task_id} not found", OasstErrorCode.WORK_PACKAGE_NOT_FOUND)
         if work_pack.expired:
-            raise RuntimeError("WorkPackage already expired.")
+            raise OasstError("WorkPackage already expired.", OasstErrorCode.WORK_PACKAGE_EXPIRED)
         if work_pack.done or work_pack.ack is not None:
-            raise RuntimeError("WorkPackage already updated.")
+            raise OasstError("WorkPackage already updated.", OasstErrorCode.WORK_PACKAGE_ALREADY_UPDATED)
 
         work_pack.ack = False
         # ToDo: check race-condition, transaction
@@ -105,7 +106,7 @@ class PromptRepository:
             .one_or_none()
         )
         if fail_if_missing and post is None:
-            raise KeyError(f"Post with post_id {frontend_post_id} not found.")
+            raise OasstError(f"Post with post_id {frontend_post_id} not found.", OasstErrorCode.POST_NOT_FOUND)
         return post
 
     def fetch_workpackage_by_postid(self, post_id: str) -> WorkPackage:
@@ -124,13 +125,13 @@ class PromptRepository:
         wp = self.fetch_workpackage_by_postid(post_id)
 
         if wp is None:
-            raise KeyError(f"WorkPackage for {post_id=} not found")
+            raise OasstError(f"WorkPackage for {post_id=} not found", OasstErrorCode.WORK_PACKAGE_NOT_FOUND)
         if wp.expired:
-            raise RuntimeError("WorkPackage already expired.")
+            raise OasstError("WorkPackage already expired.", OasstErrorCode.WORK_PACKAGE_EXPIRED)
         if not wp.ack:
-            raise RuntimeError("WorkPackage is not acknowledged.")
+            raise OasstError("WorkPackage is not acknowledged.", OasstErrorCode.WORK_PACKAGE_NOT_ACK)
         if wp.done:
-            raise RuntimeError("WorkPackage already done.")
+            raise OasstError("WorkPackage already done.", OasstErrorCode.WORK_PACKAGE_ALREADY_DONE)
 
         # If there's no parent post assume user started new conversation
         role = "user"
@@ -171,12 +172,16 @@ class PromptRepository:
         work_package = self.fetch_workpackage_by_postid(rating.post_id)
         work_payload: db_payload.RateSummaryPayload = work_package.payload.payload
         if type(work_payload) != db_payload.RateSummaryPayload:
-            raise ValueError(
-                f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RateSummaryPayload}"
+            raise OasstError(
+                f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RateSummaryPayload}",
+                OasstErrorCode.WORK_PACKAGE_PAYLOAD_TYPE_MISMATCH,
             )
 
         if rating.rating < work_payload.scale.min or rating.rating > work_payload.scale.max:
-            raise ValueError(f"Invalid rating value: {rating.rating=} not in {work_payload.scale=}")
+            raise OasstError(
+                f"Invalid rating value: {rating.rating=} not in {work_payload.scale=}",
+                OasstErrorCode.RATING_OUT_OF_RANGE,
+            )
 
         # store reaction to post
         reaction_payload = db_payload.RatingReactionPayload(rating=rating.rating)
@@ -201,8 +206,9 @@ class PromptRepository:
                 # validate ranking
                 num_replies = len(work_payload.replies)
                 if sorted(ranking.ranking) != list(range(num_replies)):
-                    raise ValueError(
-                        f"Invalid ranking submitted. Each reply index must appear exactly once ({num_replies=})."
+                    raise OasstError(
+                        f"Invalid ranking submitted. Each reply index must appear exactly once ({num_replies=}).",
+                        OasstErrorCode.INVALID_RANKING_VALUE,
                     )
 
                 # store reaction to post
@@ -218,8 +224,9 @@ class PromptRepository:
             case db_payload.RankInitialPromptsPayload:
                 # validate ranking
                 if sorted(ranking.ranking) != list(range(num_prompts := len(work_payload.prompts))):
-                    raise ValueError(
-                        f"Invalid ranking submitted. Each reply index must appear exactly once ({num_prompts=})."
+                    raise OasstError(
+                        f"Invalid ranking submitted. Each reply index must appear exactly once ({num_prompts=}).",
+                        OasstErrorCode.INVALID_RANKING_VALUE,
                     )
 
                 # store reaction to post
@@ -233,8 +240,9 @@ class PromptRepository:
                 return reaction
 
             case _:
-                raise ValueError(
-                    f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RankConversationRepliesPayload}"
+                raise OasstError(
+                    f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RankConversationRepliesPayload}",
+                    OasstErrorCode.WORK_PACKAGE_PAYLOAD_TYPE_MISMATCH,
                 )
 
     def store_task(
@@ -276,7 +284,7 @@ class PromptRepository:
                 )
 
             case _:
-                raise ValueError(f"Invalid task type: {type(task)=}")
+                raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
 
         wp = self.insert_work_package(
             payload=payload,
@@ -348,7 +356,7 @@ class PromptRepository:
 
     def insert_reaction(self, work_package_id: UUID, payload: db_payload.ReactionPayload) -> PostReaction:
         if self.person_id is None:
-            raise ValueError("User required")
+            raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
 
         container = PayloadContainer(payload=payload)
         reaction = PostReaction(
@@ -405,7 +413,7 @@ class PromptRepository:
         """
         thread_posts = self.fetch_random_thread(last_post_role)
         if not thread_posts:
-            raise RuntimeError("No threads found")
+            raise OasstError("No threads found", OasstErrorCode.NO_THREADS_FOUND)
         if last_post_role:
             conv_posts = [p for p in thread_posts if p.role == last_post_role]
             conv_posts = [random.choice(conv_posts)]
