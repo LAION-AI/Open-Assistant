@@ -40,7 +40,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
 
   return (
     <ChakraProvider theme={theme}>
-      <SessionProvider session={pageProps.session}>{page}</SessionProvider>
+      <SessionProvider session={session}>{page}</SessionProvider>
     </ChakraProvider>
   );
 }

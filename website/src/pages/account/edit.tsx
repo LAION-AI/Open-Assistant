@@ -1,14 +1,8 @@
 import React, { useState } from "react";
-import { getSession, useSession } from "next-auth/react";
-import { PrismaClient, User } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import { Button, Input, InputGroup, Stack } from "@chakra-ui/react";
 import Head from "next/head";
-import Link from "next/link";
 import Router from "next/router";
-import { Footer } from "src/components/Footer";
-import { Header } from "src/components/Header";
-
-import styles from "../styles/Home.module.css";
 
 export default function Account() {
   const { data: session } = useSession();

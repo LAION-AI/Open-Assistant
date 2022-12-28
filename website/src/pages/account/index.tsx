@@ -1,14 +1,8 @@
 import Head from "next/head";
 import Link from "next/link";
-import Router from "next/router";
-import React, { useEffect, useState } from "react";
-import { getSession, useSession } from "next-auth/react";
-import { Button, Input, InputGroup, Stack } from "@chakra-ui/react";
-import { Footer } from "../../components/Footer";
-import { Header } from "../../components/Header";
-
-import styles from "../styles/Home.module.css";
-import { getSystemErrorName } from "util";
+import React, { useState } from "react";
+import { useSession } from "next-auth/react";
+import { Button } from "@chakra-ui/react";
 
 export default function Account() {
   const { data: session } = useSession();

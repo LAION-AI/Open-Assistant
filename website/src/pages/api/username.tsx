@@ -12,7 +12,7 @@ export default async function handle(req, res) {
   const session = await getSession({ req });
   const result = await prisma.user.update({
     where: {
-      email: session?.user?.email,
+      email: session.user.email,
     },
     data: {
       name: username,
