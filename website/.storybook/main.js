@@ -16,10 +16,14 @@ module.exports = {
     builder: "@storybook/builder-webpack5",
   },
   staticDirs: ["../public"],
+  // https://github.com/storybookjs/storybook/issues/15336#issuecomment-888528747
   typescript: { reactDocgen: false },
+  // fix to make absolute imports working in storybook
   webpackFinal: async (config, { configType }) => {
-    config.resolve.modules = [path.resolve(__dirname, ".."), "node_modules"];
-
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      src: path.resolve(__dirname, "../src"),
+    };
     return config;
   },
   features: {
