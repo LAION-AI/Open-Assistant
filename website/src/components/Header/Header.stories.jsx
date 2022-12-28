@@ -1,8 +1,7 @@
-import React from 'react';
 import { SessionContext } from 'next-auth/react';
+import React from 'react';
 
-
-import { Header } from '../components/Header';
+import { Header } from './Header';
 
 export default {
   title: 'Example/Header',
@@ -23,4 +22,4 @@ const Template = (args) => {
 };
 
 export const Default = Template.bind({});
-Default.args = {session :{ data: undefined, status: "unauthenticated" }};
+Default.args =  {session :{ data: {user: { name: "StoryBook user"}}, status: "authenticated",  }};

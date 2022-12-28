@@ -5,7 +5,7 @@ import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
 import { Footer } from "src/components/Footer";
-import { Header } from "src/components/Header";
+import { Header } from "@/components/Header/Header";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 
