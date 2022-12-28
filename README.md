@@ -30,6 +30,50 @@ All open source projects begins with people like you. Open source is the belief 
 
 [Visit the Notion](https://ykilcher.com/open-assistant)
 
+### Taking on Tasks
+
+We have a growing task list
+[of issues](https://github.com/LAION-AI/Open-Assistant/issues). Find an issue
+that appeals to you and make a comment that you'd like to work on it. Include
+in your comment a brief description of how you'll solve the problem and if
+there are any open questions you want to discuss. Once a project coordinator
+has assigned the issue to you, start working on it.
+
+If the issue is currently unclear but you are interested, please post in
+Discord and someone can help clarify the issue with more detail.
+
+### Submitting Work
+
+We're all working on different parts of Open Assistant together. To make
+contributions smoothly we recommend the following:
+
+1.  Work on a small focused change that only touches on a few files.
+1.  Run `pre-commit` and make sure all files have formatting fixed. This
+    simplifies life for reviewers.
+1.  Package up a small bit of work that solves part of the problem into a Pull
+    Request and send it out for review
+1.  If you're lucky, we can merge your change into `main` without any problems.
+    If there's changes to files you're working on, resolve them by:
+1.  First try rebase as suggested
+    [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-rebase)
+1.  If rebase feels too painful, merge as suggested
+    [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-merge)
+1.  Once you've resolved any conflicts, finish the review and merge into `main`.
+1.  Merge in your change and move onto a new issue or the second step of your
+    current issue.
+
+Additionally, if someone is working on an issue that interests you, ask if they
+need help on it or would like suggestions on how to approach the issue. If so,
+share wildly. If they seem to have a good handle on it, let them work on their
+solution until a challenge comes up.
+
+### When does a review finish
+
+A review finishes when all blocking comments are addressed and at least one
+owning reviewer has approved the PR. Be sure to acknowledge any non-blocking
+comments either by making the request change, explaining why it's not being
+addressed now, or filing an issue to handle it later.
+
 ## Developer Setup
 
 Work is organized in the [project board](https://github.com/orgs/LAION-AI/projects/3).
