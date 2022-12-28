@@ -47,6 +47,22 @@ We are using Python 3.10 for the backend.
 
 Check out the [High-Level Protocol Architecture](https://www.notion.so/High-Level-Protocol-Architecture-6f1fd3551da74213b560ead369f132dc)
 
+## End to End Demo
+
+If you are interested in just taking a look at the project.
+You can set up an entire stack needed to run Open Assistant, including the
+website, backend, and associated dependent services.
+
+To start the demo, run this, in root directory:
+
+```sh
+docker compose up --build
+```
+
+Then, navigate to `http://localhost:3000` and interact with the website. When
+logging in, navigate to `http://localhost:1080` to get the magic email login
+link.
+
 ### Website
 
 The website is built using Next.js and is in the `website` folder.
