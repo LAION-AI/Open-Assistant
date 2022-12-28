@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from http import HTTPStatus
 from pathlib import Path
 
 import alembic.command
@@ -7,7 +8,7 @@ import fastapi
 from loguru import logger
 from oasst_backend.api.v1.api import api_router
 from oasst_backend.config import settings
-from oasst_backend.exceptions import OasstError
+from oasst_backend.exceptions import OasstError, OasstErrorCode
 from starlette.middleware.cors import CORSMiddleware
 
 app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
@@ -17,7 +18,16 @@ app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V
 async def oasst_exception_handler(request: fastapi.Request, ex: OasstError):
     logger.error(f"{request.method} {request.url} failed: {repr(ex)}")
     return fastapi.responses.JSONResponse(
-        status_code=ex.http_status_code, content={"message": ex.message, "error_code": ex.error_code}
+        status_code=int(ex.http_status_code), content={"message": ex.message, "error_code": ex.error_code}
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: fastapi.Request, ex: Exception):
+    logger.exception(f"{request.method} {request.url} failed [UNHANDLED]: {repr(ex)}")
+    status = HTTPStatus.INTERNAL_SERVER_ERROR
+    return fastapi.responses.JSONResponse(
+        status_code=status.value, content={"message": status.name, "error_code": OasstErrorCode.GENERIC_ERROR}
     )
 
 

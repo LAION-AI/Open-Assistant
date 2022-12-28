@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from http import HTTPStatus
 from secrets import token_hex
 from typing import Generator
 from uuid import UUID
@@ -8,10 +9,9 @@ from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
 from loguru import logger
 from oasst_backend.config import settings
 from oasst_backend.database import engine
-from oasst_backend.exceptions import OasstError, error_codes
+from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.models import ApiClient
 from sqlmodel import Session
-from starlette.status import HTTP_403_FORBIDDEN
 
 
 def get_db() -> Generator:
@@ -37,25 +37,26 @@ def api_auth(
     api_key: APIKey,
     db: Session,
 ) -> ApiClient:
-    if api_key is None and not settings.DEBUG_SKIP_API_KEY_CHECK:
-        raise OasstError(
-            "Could not validate credentials",
-            error_code=error_codes.API_CLIENT_NOT_AUTHORIZED,
-            http_status_code=HTTP_403_FORBIDDEN,
-        )
+    if api_key or settings.DEBUG_SKIP_API_KEY_CHECK:
 
-    if settings.DEBUG_SKIP_API_KEY_CHECK or settings.DEBUG_ALLOW_ANY_API_KEY:
-        # make sure that a dummy api key exits in db (foreign key references)
-        ANY_API_KEY_ID = UUID("00000000-1111-2222-3333-444444444444")
-        api_client: ApiClient = db.query(ApiClient).filter(ApiClient.id == ANY_API_KEY_ID).first()
-        if api_client is None:
-            token = token_hex(32)
-            logger.info(f"ANY_API_KEY missing, inserting api_key: {token}")
-            api_client = ApiClient(id=ANY_API_KEY_ID, api_key=token, description="ANY_API_KEY, random token")
-            db.add(api_client)
-            db.commit()
-        return api_client
+        if settings.DEBUG_SKIP_API_KEY_CHECK or settings.DEBUG_ALLOW_ANY_API_KEY:
+            # make sure that a dummy api key exits in db (foreign key references)
+            ANY_API_KEY_ID = UUID("00000000-1111-2222-3333-444444444444")
+            api_client: ApiClient = db.query(ApiClient).filter(ApiClient.id == ANY_API_KEY_ID).first()
+            if api_client is None:
+                token = token_hex(32)
+                logger.info(f"ANY_API_KEY missing, inserting api_key: {token}")
+                api_client = ApiClient(id=ANY_API_KEY_ID, api_key=token, description="ANY_API_KEY, random token")
+                db.add(api_client)
+                db.commit()
+            return api_client
 
-    api_client = db.query(ApiClient).filter(ApiClient.api_key == api_key).first()
-    if api_client is not None and api_client.enabled:
-        return api_client
+        api_client = db.query(ApiClient).filter(ApiClient.api_key == api_key).first()
+        if api_client is not None and api_client.enabled:
+            return api_client
+
+    raise OasstError(
+        "Could not validate credentials",
+        error_code=OasstErrorCode.API_CLIENT_NOT_AUTHORIZED,
+        http_status_code=HTTPStatus.FORBIDDEN,
+    )

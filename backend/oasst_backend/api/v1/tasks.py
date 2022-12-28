@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
-from oasst_backend.exceptions import OasstError, error_codes
+from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -114,7 +114,7 @@ def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
                 ],
             )
         case _:
-            raise OasstError("Invalid request type", error_codes.TASK_INVALID_REQUEST_TYPE)
+            raise OasstError("Invalid request type", OasstErrorCode.TASK_INVALID_REQUEST_TYPE)
 
     logger.info(f"Generated {task=}.")
 
@@ -131,7 +131,6 @@ def request_task(
     """
     Create new task.
     """
-
     api_client = deps.api_auth(api_key, db)
 
     try:
@@ -144,7 +143,7 @@ def request_task(
         raise
     except Exception:
         logger.exception("Failed to generate task..")
-        raise OasstError("Failed to generate task.", error_codes.TASK_GENERATION_FAILED)
+        raise OasstError("Failed to generate task.", OasstErrorCode.TASK_GENERATION_FAILED)
     return task
 
 
@@ -173,7 +172,7 @@ def acknowledge_task(
         raise
     except Exception:
         logger.exception("Failed to acknowledge task.")
-        raise OasstError("Failed to acknowledge task.", error_codes.TASK_ACK_FAILED)
+        raise OasstError("Failed to acknowledge task.", OasstErrorCode.TASK_ACK_FAILED)
     return {}
 
 
@@ -240,9 +239,9 @@ def post_interaction(
                 # here we would store the ranking in the database
                 return protocol_schema.TaskDone()
             case _:
-                raise OasstError("Invalid response type.", error_codes.TASK_INVALID_RESPONSE_TYPE)
+                raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)
     except OasstError:
         raise
     except Exception:
         logger.exception("Interaction request failed.")
-        raise OasstError("Interaction request failed.", error_codes.TASK_INTERACTION_REQUEST_FAILED)
+        raise OasstError("Interaction request failed.", OasstErrorCode.TASK_INTERACTION_REQUEST_FAILED)

@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
-from oasst_backend.exceptions import OasstError, error_codes
+from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import ApiClient, Person, Post, PostReaction, TextLabels, WorkPackage
 from oasst_backend.models.payload_column_type import PayloadContainer
@@ -53,9 +53,9 @@ class PromptRepository:
 
     def validate_post_id(self, post_id: str) -> None:
         if not isinstance(post_id, str):
-            raise OasstError(f"post_id must be string, not {type(post_id)}", error_codes.INVALID_POST_ID)
+            raise OasstError(f"post_id must be string, not {type(post_id)}", OasstErrorCode.INVALID_POST_ID)
         if not post_id:
-            raise OasstError("post_id must not be empty", error_codes.INVALID_POST_ID)
+            raise OasstError("post_id must not be empty", OasstErrorCode.INVALID_POST_ID)
 
     def bind_frontend_post_id(self, task_id: UUID, post_id: str):
         self.validate_post_id(post_id)
@@ -67,9 +67,9 @@ class PromptRepository:
             .first()
         )
         if work_pack is None:
-            raise OasstError(f"WorkPackage for task {task_id} not found", error_codes.WORK_PACKAGE_NOT_FOUND)
+            raise OasstError(f"WorkPackage for task {task_id} not found", OasstErrorCode.WORK_PACKAGE_NOT_FOUND)
         if work_pack.expiry_date is not None and datetime.utcnow() > work_pack.expiry_date:
-            raise OasstError("WorkPackage already expired.", error_codes.WORK_PACKAGE_EXPIRED)
+            raise OasstError("WorkPackage already expired.", OasstErrorCode.WORK_PACKAGE_EXPIRED)
 
         # ToDo: check race-condition, transaction
 
@@ -106,7 +106,7 @@ class PromptRepository:
             .one_or_none()
         )
         if fail_if_missing and post is None:
-            raise OasstError(f"Post with post_id {frontend_post_id} not found.", error_codes.POST_NOT_FOUND)
+            raise OasstError(f"Post with post_id {frontend_post_id} not found.", OasstErrorCode.POST_NOT_FOUND)
         return post
 
     def fetch_workpackage_by_postid(self, post_id: str) -> WorkPackage:
@@ -135,7 +135,7 @@ class PromptRepository:
         )
 
         if parent_post is None:
-            raise OasstError(f"Post for post_id {reply.post_id} not found.", error_codes.POST_NOT_FOUND)
+            raise OasstError(f"Post for post_id {reply.post_id} not found.", OasstErrorCode.POST_NOT_FOUND)
 
         # create reply post
         user_post_id = uuid4()
@@ -159,12 +159,13 @@ class PromptRepository:
         if type(work_payload) != db_payload.RateSummaryPayload:
             raise OasstError(
                 f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RateSummaryPayload}",
-                error_codes.WORK_PACKAGE_PAYLOAD_TYPE_MISMATCH,
+                OasstErrorCode.WORK_PACKAGE_PAYLOAD_TYPE_MISMATCH,
             )
 
         if rating.rating < work_payload.scale.min or rating.rating > work_payload.scale.max:
             raise OasstError(
-                f"Invalid rating value: {rating.rating=} not in {work_payload.scale=}", error_codes.RATING_OUT_OF_RANGE
+                f"Invalid rating value: {rating.rating=} not in {work_payload.scale=}",
+                OasstErrorCode.RATING_OUT_OF_RANGE,
             )
 
         # store reaction to post
@@ -191,7 +192,7 @@ class PromptRepository:
                 if sorted(ranking.ranking) != list(range(num_replies)):
                     raise OasstError(
                         f"Invalid ranking submitted. Each reply index must appear exactly once ({num_replies=}).",
-                        error_codes.INVALID_RANKING_VALUE,
+                        OasstErrorCode.INVALID_RANKING_VALUE,
                     )
 
                 # store reaction to post
@@ -208,7 +209,7 @@ class PromptRepository:
                 if sorted(ranking.ranking) != list(range(num_prompts := len(work_payload.prompts))):
                     raise OasstError(
                         f"Invalid ranking submitted. Each reply index must appear exactly once ({num_prompts=}).",
-                        error_codes.INVALID_RANKING_VALUE,
+                        OasstErrorCode.INVALID_RANKING_VALUE,
                     )
 
                 # store reaction to post
@@ -223,7 +224,7 @@ class PromptRepository:
             case _:
                 raise OasstError(
                     f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RankConversationRepliesPayload}",
-                    error_codes.WORK_PACKAGE_PAYLOAD_TYPE_MISMATCH,
+                    OasstErrorCode.WORK_PACKAGE_PAYLOAD_TYPE_MISMATCH,
                 )
 
     def store_task(self, task: protocol_schema.Task) -> WorkPackage:
@@ -260,7 +261,7 @@ class PromptRepository:
                 )
 
             case _:
-                raise OasstError(f"Invalid task type: {type(task)=}", error_codes.INVALID_TASK_TYPE)
+                raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
 
         wp = self.insert_work_package(payload=payload, id=task.id)
         assert wp.id == task.id
@@ -317,7 +318,7 @@ class PromptRepository:
 
     def insert_reaction(self, post_id: UUID, payload: db_payload.ReactionPayload) -> PostReaction:
         if self.person_id is None:
-            raise OasstError("User required", error_codes.USER_NOT_SPECIFIED)
+            raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
 
         container = PayloadContainer(payload=payload)
         reaction = PostReaction(
