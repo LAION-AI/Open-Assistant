@@ -92,6 +92,7 @@ services:
       - EMAIL_SERVER_PORT=1025
       - EMAIL_FROM=info@example.com
       - NEXTAUTH_URL=http://localhost:3000
+      - DEBUG_LOGIN=true
     depends_on:
       webdb:
         condition: service_healthy

@@ -4,6 +4,7 @@ import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { boolean } from "boolean";
 
 import prisma from "src/lib/prismadb";
 
@@ -33,7 +34,7 @@ if (process.env.DISCORD_CLIENT_ID) {
   );
 }
 
-if (process.env.NODE_ENV === "development") {
+if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") {
   providers.push(
     CredentialsProvider({
       name: "Debug Credentials",
