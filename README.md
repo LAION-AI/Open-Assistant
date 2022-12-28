@@ -103,9 +103,7 @@ To start the demo, run this, in root directory:
 docker compose up --build
 ```
 
-Then, navigate to `http://localhost:3000` and interact with the website. When
-logging in, navigate to `http://localhost:1080` to get the magic email login
-link.
+Then, navigate to `http://localhost:3000` and interact with the website.
 
 ### Website
 
