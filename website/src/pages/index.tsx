@@ -1,18 +1,16 @@
-import { useSession } from "next-auth/react";
-
+import { Button, Input, Stack } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
-import { Button, Input, Stack } from "@chakra-ui/react";
+import { useSession } from "next-auth/react";
 
-import { CallToAction } from "../components/CallToAction";
-import { Faq } from "../components/Faq";
-import { Footer } from "../components/Footer";
-import { Header } from "../components/Header";
-import { Hero } from "../components/Hero";
+import { CallToAction } from "src/components/CallToAction";
+import { Faq } from "src/components/Faq";
+import { Footer } from "src/components/Footer";
+import { Header } from "src/components/Header";
+import { Hero } from "src/components/Hero";
+import { TaskSelection } from "src/components/TaskSelection";
 
-import styles from "../styles/Home.module.css";
-
-export default function Home() {
+const Home = () => {
   const { data: session } = useSession();
 
   if (!session) {
@@ -46,21 +44,12 @@ export default function Home() {
         />
       </Head>
       <Header />
-      <main className="h-3/4  z-0 bg-white flex flex-col items-center justify-center gap-2">
-        <Button size="lg" colorScheme="blue" className="drop-shadow">
-          <Link href="/grading/grade-output">Rate a prompt and output now</Link>
-        </Button>
-        <Button size="lg" colorScheme="blue" className="drop-shadow">
-          <Link href="/summarize/story">Summarize a story</Link>
-        </Button>
-        <Button size="lg" colorScheme="blue" className="drop-shadow">
-          <Link href="/create/user_reply">Reply as a user</Link>
-        </Button>
-        <Button size="lg" colorScheme="blue" className="drop-shadow">
-          <Link href="/create/assistant_reply">Reply as the assistant</Link>
-        </Button>
+      <main className="h-3/4 m-20 z-0 bg-white flex flex-col items-center justify-center gap-2">
+        <TaskSelection />
       </main>
       <Footer />
     </>
   );
-}
+};
+
+export default Home;

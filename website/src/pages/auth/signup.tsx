@@ -1,20 +1,31 @@
 import { Button, Input, Stack } from "@chakra-ui/react";
 import Head from "next/head";
+import Link from "next/link";
 import { FaDiscord, FaEnvelope, FaBug, FaGithub } from "react-icons/fa";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
 import { useRef } from "react";
-import Link from "next/link";
+import { FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 
 import { AuthLayout } from "src/components/AuthLayout";
 
 export default function Signin({ csrfToken, providers }) {
   const { discord, email, github, credentials } = providers;
   const emailEl = useRef(null);
-  const signinWithEmail = () => {
+  const debugUsernameEl = useRef(null);
+
+  const signinWithDiscord = () => {
+    signIn(discord.id, { callbackUrl: "/" });
+  };
+
+  const signinWithEmail = (ev: React.FormEvent) => {
+    ev.preventDefault();
     signIn(email.id, { callbackUrl: "/", email: emailEl.current.value });
   };
 
-  const debugUsernameEl = useRef(null);
+  const signinWithGithub = () => {
+    signIn(github.id, { callbackUrl: "/" });
+  };
+
   function signinWithDebugCredentials(ev: React.FormEvent) {
     ev.preventDefault();
     signIn(credentials.id, { callbackUrl: "/", username: debugUsernameEl.current.value });
@@ -40,18 +51,14 @@ export default function Signin({ csrfToken, providers }) {
             </form>
           )}
           {email && (
-            <Stack>
-              <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
-              <Button
-                size={"lg"}
-                leftIcon={<FaEnvelope />}
-                colorScheme="gray"
-                onClick={signinWithEmail}
-                // isDisabled="false"
-              >
-                Continue with Email
-              </Button>
-            </Stack>
+            <form onSubmit={signinWithEmail}>
+              <Stack>
+                <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
+                <Button size={"lg"} leftIcon={<FaEnvelope />} colorScheme="gray">
+                  Continue with Email
+                </Button>
+              </Stack>
+            </form>
           )}
           {discord && (
             <Button
@@ -63,8 +70,7 @@ export default function Signin({ csrfToken, providers }) {
               size="lg"
               leftIcon={<FaDiscord />}
               color="white"
-              onClick={() => signIn(discord, { callbackUrl: "/" })}
-              // isDisabled="false"
+              onClick={signinWithDiscord}
             >
               Continue with Discord
             </Button>
@@ -79,7 +85,7 @@ export default function Signin({ csrfToken, providers }) {
               size={"lg"}
               leftIcon={<FaGithub />}
               colorScheme="blue"
-              // isDisabled="false"
+              onClick={signinWithGithub}
             >
               Continue with Github
             </Button>

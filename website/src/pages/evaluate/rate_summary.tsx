@@ -1,15 +1,18 @@
 import { HStack, Textarea } from "@chakra-ui/react";
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import Head from "next/head";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
-import useSWRMutation from "swr/mutation";
 import useSWRImmutable from "swr/immutable";
+import useSWRMutation from "swr/mutation";
 
+import { Footer } from "src/components/Footer";
+import { Header } from "src/components/Header";
 import RatingRadioGroup from "src/components/RatingRadioGroup";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 
-const GradeOutput = () => {
+const RateSummary = () => {
   // Use an array of tasks that record the sequence of steps until a task is
   // deemed complete.
   const [tasks, setTasks] = useState([]);
@@ -58,93 +61,109 @@ const GradeOutput = () => {
   }
 
   return (
-    <div className=" p-6 h-full mx-auto bg-slate-100 text-gray-800">
-      {/* Instrunction and Output panels */}
-      <section className="mb-8  lt-lg:mb-12 ">
-        <div className="grid lg:gap-x-12 lg:grid-cols-2">
-          {/* Instruction panel */}
-          <div className="rounded-lg shadow-lg h-full block bg-white">
-            <div className="p-6">
-              <h5 className="text-lg font-semibold mb-4">Instruction</h5>
-              <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">
-                {tasks[0].task.full_text}
+    <>
+      <Head>
+        <title>Rate A Summary</title>
+        <meta name="description" content="Rate a proposed story summary." />
+      </Head>
+      <Header />
+      <main className="z-0 bg-white flex flex-col items-center justify-center gap-2">
+        <div className=" p-6 mx-auto bg-slate-100 text-gray-800">
+          {/* Instrunction and Output panels */}
+          <section className="mb-8  lt-lg:mb-12 ">
+            <div className="grid lg:gap-x-12 lg:grid-cols-2">
+              {/* Instruction panel */}
+              <div className="rounded-lg shadow-lg h-full block bg-white">
+                <div className="p-6">
+                  <h5 className="text-lg font-semibold mb-4">Instruction</h5>
+                  <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">
+                    {tasks[0].task.full_text}
+                  </div>
+                </div>
+              </div>
+
+              {/* Output panel */}
+              <div className="mt-6 lg:mt-0 rounded-lg shadow-lg h-full block bg-white">
+                <div className="p-6">
+                  <h5 className="text-lg font-semibold mb-4">Output</h5>
+                  <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">
+                    {tasks[0].task.summary}
+                  </div>
+                </div>
+                {/* Form  wrap*/}
+                <div className="p-6">
+                  <h3 className="text-lg text-center font-medium leading-6 text-gray-900">Rating</h3>
+                  <p className="text-center mt-1 text-sm text-gray-500">
+                    ({tasks[0].task.scale.min} = worst, {tasks[0].task.scale.max} = best)
+                  </p>
+
+                  {/* Rating buttons */}
+                  <div className="flex justify-center p-6">
+                    <RatingRadioGroup
+                      min={tasks[0].task.scale.min}
+                      max={tasks[0].task.scale.max}
+                      onChange={setRating}
+                    />
+                  </div>
+                </div>
+
+                {/* Annotation checkboxes */}
+                <div className="flex justify-center px-10">
+                  <ul>
+                    {ANNOTATION_FLAGS.map((option, i) => {
+                      return <AnnotationCheckboxLi option={option} key={i}></AnnotationCheckboxLi>;
+                    })}
+                  </ul>
+                </div>
+                <div className="flex justify-center p-6">
+                  <Textarea name="notes" placeholder="Optional notes" />
+                </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Output panel */}
-          <div className="mt-6 lg:mt-0 rounded-lg shadow-lg h-full block bg-white">
-            <div className="p-6">
-              <h5 className="text-lg font-semibold mb-4">Output</h5>
-              <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">{tasks[0].task.summary}</div>
-            </div>
-            {/* Form  wrap*/}
-            <div className="p-6">
-              <h3 className="text-lg text-center font-medium leading-6 text-gray-900">Rating</h3>
-              <p className="text-center mt-1 text-sm text-gray-500">
-                ({tasks[0].task.scale.min} = worst, {tasks[0].task.scale.max} = best)
-              </p>
-
-              {/* Rating buttons */}
-              <div className="flex justify-center p-6">
-                <RatingRadioGroup min={tasks[0].task.scale.min} max={tasks[0].task.scale.max} onChange={setRating} />
+          {/* Info & controls */}
+          <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
+            <div className="flex flex-col justify-self-start text-gray-700">
+              <div>
+                <span>
+                  <b>Prompt</b>
+                </span>
+                <span className="ml-2">{tasks[0].id}</span>
+              </div>
+              <div>
+                <span>
+                  <b>Output</b>
+                </span>
+                <span className="ml-2">{tasks.length === 2 ? tasks[1].id : "Submit your answer"}</span>
               </div>
             </div>
 
-            {/* Annotation checkboxes */}
-            <div className="flex justify-center px-10">
-              <ul>
-                {ANNOTATION_FLAGS.map((option, i) => {
-                  return <AnnotationCheckboxLi option={option} key={i}></AnnotationCheckboxLi>;
-                })}
-              </ul>
+            {/* Skip / Submit controls */}
+            <div className="flex justify-center ml-auto">
+              <button
+                type="button"
+                className="mr-2 inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                Skip
+              </button>
+              <button
+                type="button"
+                onClick={() => submitResponse(tasks[0])}
+                className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                Submit
+              </button>
             </div>
-            <div className="flex justify-center p-6">
-              <Textarea name="notes" placeholder="Optional notes" />
-            </div>
-          </div>
+          </section>
         </div>
-      </section>
-
-      {/* Info & controls */}
-      <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
-        <div className="flex flex-col justify-self-start text-gray-700">
-          <div>
-            <span>
-              <b>Prompt</b>
-            </span>
-            <span className="ml-2">{tasks[0].id}</span>
-          </div>
-          <div>
-            <span>
-              <b>Output</b>
-            </span>
-            <span className="ml-2">{tasks.length === 2 ? tasks[1].id : "Submit your answer"}</span>
-          </div>
-        </div>
-
-        {/* Skip / Submit controls */}
-        <div className="flex justify-center ml-auto">
-          <button
-            type="button"
-            className="mr-2 inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            Skip
-          </button>
-          <button
-            type="button"
-            onClick={() => submitResponse(tasks[0])}
-            className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            Submit
-          </button>
-        </div>
-      </section>
-    </div>
+      </main>
+      <Footer />
+    </>
   );
 };
 
-export default GradeOutput;
+export default RateSummary;
 
 function AnnotationCheckboxLi(props: { option: annotationBool }): JSX.Element {
   let AdditionalExplanation = null;
