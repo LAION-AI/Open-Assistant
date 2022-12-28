@@ -12,6 +12,8 @@ services:
     extends:
       file: ../frontend-development/docker-compose.yaml
       service: webdb
+    environment:
+      POSTGRES_DB: oasst_web
 
   # This lets you manually inspect the web and backend databases.
   adminer:
@@ -40,7 +42,7 @@ services:
       context: ../../
     image: oasst-web
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@webdb/ocgpt_website
+      - DATABASE_URL=postgres://postgres:postgres@webdb/oasst_web
       - FASTAPI_URL=http://backend:8080
       - FASTAPI_KEY=1234
       - NEXTAUTH_SECRET=O/M2uIbGj+lDD2oyNa8ax4jEOJqCPJzO53UbWShmq98=
