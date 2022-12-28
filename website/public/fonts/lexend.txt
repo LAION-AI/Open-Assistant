@@ -42,10 +42,10 @@ Original Version, by changing formats or by porting the Font Software to a
 new environment.
 
 "Author" refers to any designer, engineer, programmer, technical
-writer or other person who contributed to the Font Software.
+writer or other user who contributed to the Font Software.
 
 PERMISSION & CONDITIONS
-Permission is hereby granted, free of charge, to any person obtaining
+Permission is hereby granted, free of charge, to any user obtaining
 a copy of the Font Software, to use, study, copy, merge, embed, modify,
 redistribute, and sell modified and unmodified copies of the Font
 Software, subject to the following conditions:

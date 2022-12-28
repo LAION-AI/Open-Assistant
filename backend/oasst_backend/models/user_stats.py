@@ -8,11 +8,11 @@ import sqlalchemy.dialects.postgresql as pg
 from sqlmodel import Field, SQLModel
 
 
-class PersonStats(SQLModel, table=True):
-    __tablename__ = "person_stats"
+class UserStats(SQLModel, table=True):
+    __tablename__ = "user_stats"
 
-    person_id: Optional[UUID] = Field(
-        sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("person.id"), primary_key=True)
+    user_id: Optional[UUID] = Field(
+        sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("user.id"), primary_key=True)
     )
     leader_score: int = 0
     modified_date: Optional[datetime] = Field(

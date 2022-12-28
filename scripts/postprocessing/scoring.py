@@ -67,7 +67,7 @@ def score_update_votes(new_vote: int, consensus: npt.ArrayLike, voter_data: Vote
         Parameters:
             new_vote (int): the index of the vote cast by the voter
             consensus (ArrayLike): all votes cast for this question
-            voter_data (Voter): a "Voter" object that represents the person casting the "new_vote"
+            voter_data (Voter): a "Voter" object that represents the user casting the "new_vote"
 
         Returns:
             updated_voter (Voter): the new "quality score" and points for the voter
@@ -93,7 +93,7 @@ def score_update_prompts(consensus: npt.ArrayLike, voter_data: Voter) -> Voter:
 
     Parameters:
             consensus (ArrayLike): all votes cast for this question
-            voter_data (Voter): a "Voter" object that represents the person that wrote the prompt
+            voter_data (Voter): a "Voter" object that represents the user that wrote the prompt
 
         Returns:
             updated_voter (Voter): the new "quality score" and points for the voter
@@ -137,7 +137,7 @@ def score_update_ranking(user_ranking: npt.ArrayLike, consensus_ranking: npt.Arr
     Parameters:
             user_ranking (ArrayLike): ranking produced by the user
             consensus (ArrayLike): ranking produced after running the voting algorithm to merge into the consensus ranking
-            voter_data (Voter): a "Voter" object that represents the person that wrote the prompt
+            voter_data (Voter): a "Voter" object that represents the user that wrote the prompt
 
         Returns:
             updated_voter (Voter): the new "quality score" and points for the voter
