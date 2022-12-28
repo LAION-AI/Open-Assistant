@@ -60,4 +60,4 @@ repos:
         types_or: [javascript, jsx, ts, tsx]
         language: system
         pass_filenames: false
-        entry: bash -c 'cd website && npm install && npm run lint'
+        entry: bash -c 'cd website && npm ci && npm run lint'
