@@ -53,7 +53,7 @@ export default function Signin({ csrfToken, providers }) {
             <form onSubmit={signinWithEmail}>
               <Stack>
                 <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
-                <Button size={"lg"} leftIcon={<FaEnvelope />} colorScheme="gray">
+                <Button size={"lg"} leftIcon={<FaEnvelope />} colorScheme="gray" type="submit">
                   Continue with Email
                 </Button>
               </Stack>
