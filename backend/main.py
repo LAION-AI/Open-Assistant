@@ -14,7 +14,7 @@ app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V
 
 
 @app.exception_handler(OasstError)
-async def http_exception_handler(request: fastapi.Request, ex: OasstError):
+async def oasst_exception_handler(request: fastapi.Request, ex: OasstError):
     logger.error(f"{request.method} {request.url} failed: {repr(ex)}")
     return fastapi.responses.JSONResponse(
         status_code=ex.http_status_code, content={"message": ex.message, "error_code": ex.error_code}
