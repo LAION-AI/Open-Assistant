@@ -67,6 +67,13 @@ need help on it or would like suggestions on how to approach the issue. If so,
 share wildly. If they seem to have a good handle on it, let them work on their
 solution until a challenge comes up.
 
+### When does a review finish
+
+A review finishes when all blocking comments are addressed and at least one
+owning reviewer has approved the PR. Be sure to acknowledge any non-blocking
+comments either by making the request change, explaining why it's not being
+addressed now, or filling an issue to handle it later.
+
 ## Developer Setup
 
 Work is organized in the [project board](https://github.com/orgs/LAION-AI/projects/3).
