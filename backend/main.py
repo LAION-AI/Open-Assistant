@@ -7,9 +7,19 @@ import fastapi
 from loguru import logger
 from oasst_backend.api.v1.api import api_router
 from oasst_backend.config import settings
+from oasst_backend.exceptions import OasstError
 from starlette.middleware.cors import CORSMiddleware
 
 app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
+
+
+@app.exception_handler(OasstError)
+async def http_exception_handler(request: fastapi.Request, ex: OasstError):
+    logger.error(f"{request.method} {request.url} failed: {repr(ex)}")
+    return fastapi.responses.JSONResponse(
+        status_code=ex.http_status_code, content={"message": ex.message, "error_code": ex.error_code}
+    )
+
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:

@@ -3,14 +3,14 @@ import random
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
+from oasst_backend.exceptions import OasstError, error_codes
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
-from starlette.status import HTTP_400_BAD_REQUEST
 
 router = APIRouter()
 
@@ -114,10 +114,7 @@ def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
                 ],
             )
         case _:
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail="Invalid request type.",
-            )
+            raise OasstError("Invalid request type", error_codes.TASK_INVALID_REQUEST_TYPE)
 
     logger.info(f"Generated {task=}.")
 
@@ -134,6 +131,7 @@ def request_task(
     """
     Create new task.
     """
+
     api_client = deps.api_auth(api_key, db)
 
     try:
@@ -142,11 +140,11 @@ def request_task(
         pr = PromptRepository(db, api_client, request.user)
         pr.store_task(task)
 
+    except OasstError:
+        raise
     except Exception:
-        logger.exception("Failed to generate task.")
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-        )
+        logger.exception("Failed to generate task..")
+        raise OasstError("Failed to generate task.", error_codes.TASK_GENERATION_FAILED)
     return task
 
 
@@ -171,11 +169,11 @@ def acknowledge_task(
         logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
         pr.bind_frontend_post_id(task_id=task_id, post_id=ack_request.post_id)
 
+    except OasstError:
+        raise
     except Exception:
         logger.exception("Failed to acknowledge task.")
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-        )
+        raise OasstError("Failed to acknowledge task.", error_codes.TASK_ACK_FAILED)
     return {}
 
 
@@ -242,13 +240,9 @@ def post_interaction(
                 # here we would store the ranking in the database
                 return protocol_schema.TaskDone()
             case _:
-                raise HTTPException(
-                    status_code=HTTP_400_BAD_REQUEST,
-                    detail="Invalid response type.",
-                )
-
+                raise OasstError("Invalid response type.", error_codes.TASK_INVALID_RESPONSE_TYPE)
+    except OasstError:
+        raise
     except Exception:
         logger.exception("Interaction request failed.")
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-        )
+        raise OasstError("Interaction request failed.", error_codes.TASK_INTERACTION_REQUEST_FAILED)

@@ -3,11 +3,12 @@ from secrets import token_hex
 from typing import Generator
 from uuid import UUID
 
-from fastapi import HTTPException, Security
+from fastapi import Security
 from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
 from loguru import logger
 from oasst_backend.config import settings
 from oasst_backend.database import engine
+from oasst_backend.exceptions import OasstError, error_codes
 from oasst_backend.models import ApiClient
 from sqlmodel import Session
 from starlette.status import HTTP_403_FORBIDDEN
@@ -36,9 +37,12 @@ def api_auth(
     api_key: APIKey,
     db: Session,
 ) -> ApiClient:
-
     if api_key is None and not settings.DEBUG_SKIP_API_KEY_CHECK:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials")
+        raise OasstError(
+            "Could not validate credentials",
+            error_code=error_codes.API_CLIENT_NOT_AUTHORIZED,
+            http_status_code=HTTP_403_FORBIDDEN,
+        )
 
     if settings.DEBUG_SKIP_API_KEY_CHECK or settings.DEBUG_ALLOW_ANY_API_KEY:
         # make sure that a dummy api key exits in db (foreign key references)
