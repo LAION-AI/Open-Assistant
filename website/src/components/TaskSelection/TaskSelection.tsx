@@ -11,7 +11,7 @@ export const TaskSelection = () => {
           alt="Summarize Stories"
           img="/images/logos/logo.svg"
           title="Summarize stories"
-          link="/summarize/story"
+          link="/create/summarize_story"
         />
         <TaskOption alt="Reply as User" img="/images/logos/logo.svg" title="Reply as User" link="/create/user_reply" />
         <TaskOption
@@ -22,7 +22,12 @@ export const TaskSelection = () => {
         />
       </TaskOptions>
       <TaskOptions key="evaluate" title="Evaluate">
-        <TaskOption alt="Rate Prompts" img="/images/logos/logo.svg" title="Rate Prompts" link="/grading/grade-output" />
+        <TaskOption
+          alt="Rate Prompts"
+          img="/images/logos/logo.svg"
+          title="Rate Prompts"
+          link="/evaluate/rate_summary"
+        />
       </TaskOptions>
     </Flex>
   );
