@@ -28,6 +28,12 @@ export const TaskSelection = () => {
           title="Rate Prompts"
           link="/evaluate/rate_summary"
         />
+        <TaskOption
+          alt="Rank Initial Prompts"
+          img="/images/logos/logo.svg"
+          title="Rank Initial Prompts"
+          link="/evaluate/rank_initial_prompts"
+        />
       </TaskOptions>
     </Flex>
   );
