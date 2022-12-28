@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+import random
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -9,7 +9,7 @@ from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import ApiClient, Person, Post, PostReaction, TextLabels, WorkPackage
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
-from sqlmodel import Session
+from sqlmodel import Session, func
 
 
 class PromptRepository:
@@ -67,35 +67,35 @@ class PromptRepository:
         )
         if work_pack is None:
             raise KeyError(f"WorkPackage for task {task_id} not found")
-        if work_pack.expiry_date is not None and datetime.utcnow() > work_pack.expiry_date:
+        if work_pack.expired:
             raise RuntimeError("WorkPackage already expired.")
+        if work_pack.done or work_pack.ack is not None:
+            raise RuntimeError("WorkPackage already updated.")
 
+        work_pack.frontend_ref_post_id = post_id
+        work_pack.ack = True
         # ToDo: check race-condition, transaction
+        self.db.add(work_pack)
+        self.db.commit()
 
-        # check if task thread exits
-        thread_root = (
-            self.db.query(Post)
-            .filter(
-                Post.workpackage_id == work_pack.id,
-                Post.frontend_post_id == post_id,
-                Post.parent_id is None,
-                Post.api_client_id == self.api_client.id,
-            )
-            .one_or_none()
+    def acknowledge_task_failure(self, task_id):
+        # find work package
+        work_pack: WorkPackage = (
+            self.db.query(WorkPackage)
+            .filter(WorkPackage.id == task_id, WorkPackage.api_client_id == self.api_client.id)
+            .first()
         )
-        if thread_root is None:
-            thread_id = uuid4()
-            thread_root = self.insert_post(
-                post_id=thread_id,
-                thread_id=thread_id,
-                frontend_post_id=post_id,
-                parent_id=None,
-                role="system",
-                workpackage_id=work_pack.id,
-                payload=None,
-                payload_type="bind",
-            )
-        return thread_root
+        if work_pack is None:
+            raise KeyError(f"WorkPackage for task {task_id} not found")
+        if work_pack.expired:
+            raise RuntimeError("WorkPackage already expired.")
+        if work_pack.done or work_pack.ack is not None:
+            raise RuntimeError("WorkPackage already updated.")
+
+        work_pack.ack = False
+        # ToDo: check race-condition, transaction
+        self.db.add(work_pack)
+        self.db.commit()
 
     def fetch_post_by_frontend_post_id(self, frontend_post_id: str, fail_if_missing: bool = True) -> Post:
         self.validate_post_id(frontend_post_id)
@@ -110,44 +110,59 @@ class PromptRepository:
 
     def fetch_workpackage_by_postid(self, post_id: str) -> WorkPackage:
         self.validate_post_id(post_id)
-        post = self.fetch_post_by_frontend_post_id(post_id, fail_if_missing=True)
-        work_pack = self.db.query(WorkPackage).filter(WorkPackage.id == post.workpackage_id).one()
-        return work_pack
-
-    def store_text_reply(self, reply: protocol_schema.TextReplyToPost, role: str) -> Post:
-        self.validate_post_id(reply.post_id)
-        self.validate_post_id(reply.user_post_id)
-
-        work_package = self.fetch_workpackage_by_postid(reply.post_id)
-        work_payload: db_payload.TaskPayload = work_package.payload.payload
-        logger.info(f"found task work package in db: {work_payload}")
-
-        # find post with post-id
-        parent_post: Post = (
-            self.db.query(Post)
-            .filter(
-                Post.api_client_id == self.api_client.id,
-                Post.frontend_post_id == reply.post_id,
-                # Post.person_id == self.person_id
-            )
+        work_pack = (
+            self.db.query(WorkPackage)
+            .filter(WorkPackage.api_client_id == self.api_client.id, WorkPackage.frontend_ref_post_id == post_id)
             .one_or_none()
         )
+        return work_pack
 
-        if parent_post is None:
-            raise KeyError(f"Post for post_id {reply.post_id} not found.")
+    def store_text_reply(self, text: str, post_id: str, user_post_id: str, role: str = None) -> Post:
+        self.validate_post_id(post_id)
+        self.validate_post_id(user_post_id)
+
+        wp = self.fetch_workpackage_by_postid(post_id)
+
+        if wp is None:
+            raise KeyError(f"WorkPackage for {post_id=} not found")
+        if wp.expired:
+            raise RuntimeError("WorkPackage already expired.")
+        if not wp.ack:
+            raise RuntimeError("WorkPackage is not acknowledged.")
+        if wp.done:
+            raise RuntimeError("WorkPackage already done.")
+
+        # If there's no parent post assume user started new conversation
+        role = "user"
+        depth = 0
+
+        if wp.parent_post_id:
+            parent_post = self.fetch_post(wp.parent_post_id)
+            parent_post.children_count += 1
+            self.db.add(parent_post)
+
+            depth = parent_post.depth + 1
+            if parent_post.role == "assistant":
+                role = "user"
+            else:
+                role = "assistant"
 
         # create reply post
-        user_post_id = uuid4()
+        new_post_id = uuid4()
         user_post = self.insert_post(
-            post_id=user_post_id,
-            frontend_post_id=reply.user_post_id,
-            parent_id=parent_post.id,
-            thread_id=parent_post.thread_id,
-            workpackage_id=parent_post.workpackage_id,
+            post_id=new_post_id,
+            frontend_post_id=user_post_id,
+            parent_id=wp.parent_post_id,
+            thread_id=wp.thread_id or new_post_id,
+            workpackage_id=wp.id,
             role=role,
-            payload=db_payload.PostPayload(text=reply.text),
+            payload=db_payload.PostPayload(text=text),
+            depth=depth,
         )
-        self.journal.log_text_reply(work_package=work_package, post_id=user_post_id, role=role, length=len(reply.text))
+        wp.done = True
+        self.db.add(wp)
+        self.db.commit()
+        self.journal.log_text_reply(work_package=wp, post_id=new_post_id, role=role, length=len(text))
         return user_post
 
     def store_rating(self, rating: protocol_schema.PostRating) -> PostReaction:
@@ -171,10 +186,11 @@ class PromptRepository:
         return reaction
 
     def store_ranking(self, ranking: protocol_schema.PostRanking) -> PostReaction:
-        post = self.fetch_post_by_frontend_post_id(ranking.post_id, fail_if_missing=True)
-
         # fetch work_package
         work_package = self.fetch_workpackage_by_postid(ranking.post_id)
+        work_package.done = True
+        self.db.add(work_package)
+
         work_payload: db_payload.RankConversationRepliesPayload | db_payload.RankInitialPromptsPayload = (
             work_package.payload.payload
         )
@@ -191,8 +207,9 @@ class PromptRepository:
 
                 # store reaction to post
                 reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
-                reaction = self.insert_reaction(post.id, reaction_payload)
-                self.journal.log_ranking(work_package, post_id=post.id, ranking=ranking.ranking)
+                reaction = self.insert_reaction(work_package.id, reaction_payload)
+                # TODO: resolve post_id
+                self.journal.log_ranking(work_package, post_id=None, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for work_package {work_package.id}.")
 
@@ -207,8 +224,9 @@ class PromptRepository:
 
                 # store reaction to post
                 reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
-                reaction = self.insert_reaction(post.id, reaction_payload)
-                self.journal.log_ranking(work_package, post_id=post.id, ranking=ranking.ranking)
+                reaction = self.insert_reaction(work_package.id, reaction_payload)
+                # TODO: resolve post_id
+                self.journal.log_ranking(work_package, post_id=None, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for work_package {work_package.id}.")
 
@@ -219,7 +237,12 @@ class PromptRepository:
                     f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RankConversationRepliesPayload}"
                 )
 
-    def store_task(self, task: protocol_schema.Task) -> WorkPackage:
+    def store_task(
+        self,
+        task: protocol_schema.Task,
+        thread_id: UUID = None,
+        parent_post_id: UUID = None,
+    ) -> WorkPackage:
         payload: db_payload.TaskPayload
         match type(task):
             case protocol_schema.SummarizeStoryTask:
@@ -255,11 +278,22 @@ class PromptRepository:
             case _:
                 raise ValueError(f"Invalid task type: {type(task)=}")
 
-        wp = self.insert_work_package(payload=payload, id=task.id)
+        wp = self.insert_work_package(
+            payload=payload,
+            id=task.id,
+            thread_id=thread_id,
+            parent_post_id=parent_post_id,
+        )
         assert wp.id == task.id
         return wp
 
-    def insert_work_package(self, payload: db_payload.TaskPayload, id: UUID = None) -> WorkPackage:
+    def insert_work_package(
+        self,
+        payload: db_payload.TaskPayload,
+        id: UUID = None,
+        thread_id: UUID = None,
+        parent_post_id: UUID = None,
+    ) -> WorkPackage:
         c = PayloadContainer(payload=payload)
         wp = WorkPackage(
             id=id,
@@ -267,6 +301,8 @@ class PromptRepository:
             payload_type=type(payload).__name__,
             payload=c,
             api_client_id=self.api_client.id,
+            thread_id=thread_id,
+            parent_post_id=parent_post_id,
         )
         self.db.add(wp)
         self.db.commit()
@@ -284,6 +320,7 @@ class PromptRepository:
         role: str,
         payload: db_payload.PostPayload,
         payload_type: str = None,
+        depth: int = 0,
     ) -> Post:
         if payload_type is None:
             if payload is None:
@@ -302,19 +339,20 @@ class PromptRepository:
             api_client_id=self.api_client.id,
             payload_type=payload_type,
             payload=PayloadContainer(payload=payload),
+            depth=depth,
         )
         self.db.add(post)
         self.db.commit()
         self.db.refresh(post)
         return post
 
-    def insert_reaction(self, post_id: UUID, payload: db_payload.ReactionPayload) -> PostReaction:
+    def insert_reaction(self, work_package_id: UUID, payload: db_payload.ReactionPayload) -> PostReaction:
         if self.person_id is None:
             raise ValueError("User required")
 
         container = PayloadContainer(payload=payload)
         reaction = PostReaction(
-            post_id=post_id,
+            work_package_id=work_package_id,
             person_id=self.person_id,
             payload=container,
             api_client_id=self.api_client.id,
@@ -338,3 +376,82 @@ class PromptRepository:
         self.db.commit()
         self.db.refresh(model)
         return model
+
+    def fetch_random_thread(self, require_role: str = None) -> list[Post]:
+        """
+        Loads all posts of a random thread.
+
+        :param require_role: If set loads only thread which has
+            at least one post with given role.
+        """
+        distinct_threads = self.db.query(Post.thread_id).distinct(Post.thread_id)
+        if require_role:
+            distinct_threads = distinct_threads.filter(Post.role == require_role)
+        distinct_threads = distinct_threads.subquery()
+
+        random_thread = self.db.query(distinct_threads).order_by(func.random()).limit(1).subquery()
+        thread_posts = self.db.query(Post).filter(Post.thread_id.in_(random_thread)).all()
+        return thread_posts
+
+    def fetch_random_conversation(self, last_post_role: str = None) -> list[Post]:
+        """
+        Picks a random linear conversation starting from any root post
+        and ending somewhere in the thread, possibly at the root itself.
+
+        :param last_post_role: If set will form a conversation ending with a post
+            created by this role. Necessary for the tasks like "user_reply" where
+            the user should reply as a human and hence the last message of the conversation
+            needs to have "assistant" role.
+        """
+        thread_posts = self.fetch_random_thread(last_post_role)
+        if not thread_posts:
+            raise RuntimeError("No threads found")
+        if last_post_role:
+            conv_posts = [p for p in thread_posts if p.role == last_post_role]
+            conv_posts = [random.choice(conv_posts)]
+        else:
+            conv_posts = [random.choice(thread_posts)]
+        thread_posts = {p.id: p for p in thread_posts}
+
+        while True:
+            if not conv_posts[-1].parent_id:
+                # reached the start of the conversation
+                break
+
+            parent_post = thread_posts[conv_posts[-1].parent_id]
+            conv_posts.append(parent_post)
+
+        return list(reversed(conv_posts))
+
+    def fetch_random_initial_prompts(self, size: int = 5):
+        posts = self.db.query(Post).filter(Post.parent_id.is_(None)).order_by(func.random()).limit(size).all()
+        return posts
+
+    def fetch_thread(self, thread_id: UUID):
+        return self.db.query(Post).filter(Post.thread_id == thread_id).all()
+
+    def fetch_multiple_random_replies(self, max_size: int = 5, post_role: str = None):
+        parent = self.db.query(Post.id).filter(Post.children_count > 1)
+        if post_role:
+            parent = parent.filter(Post.role == post_role)
+
+        parent = parent.order_by(func.random()).limit(1).subquery()
+        replies = self.db.query(Post).filter(Post.parent_id.in_(parent)).order_by(func.random()).limit(max_size).all()
+
+        thread = self.fetch_thread(replies[0].thread_id)
+        thread = {p.id: p for p in thread}
+        thread_posts = [thread[replies[0].parent_id]]
+        while True:
+            if not thread_posts[-1].parent_id:
+                # reached start of the conversation
+                break
+
+            parent_post = thread[thread_posts[-1].parent_id]
+            thread_posts.append(parent_post)
+
+        thread_posts = reversed(thread_posts)
+
+        return thread_posts, replies
+
+    def fetch_post(self, post_id: UUID) -> Optional[Post]:
+        return self.db.query(Post).filter(Post.id == post_id).one()
