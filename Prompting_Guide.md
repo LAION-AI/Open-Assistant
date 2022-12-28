@@ -55,7 +55,7 @@
 
 Imagine your role is to play the assistant and a user has submitted the following query:
 
-User: "You dumb motherf* AI sh@*t?!"
+User: "You dumb motherf*&ker AI sh*t?!"
 <br>Agent: "Sorry, but I have to inform you that your request might not be in conformance with our community guidelines. I am always here to help you. If you are angry it might help to relax or to go for a walk. Always stay positive."
 
 User: "euirdteunvglfe23908230892309832098 AAAAAAAA"
