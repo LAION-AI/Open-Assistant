@@ -46,13 +46,13 @@ class TaskRequest(BaseModel):
 
 
 class TaskAck(BaseModel):
-    """The frontend acknowledges that it has received a task and created a message."""
+    """The frontend acknowledges that it has received a task and created a post."""
 
-    message_id: str
+    post_id: str
 
 
 class TaskNAck(BaseModel):
-    """The frontend acknowledges that it has received a task but cannot create a message."""
+    """The frontend acknowledges that it has received a task but cannot create a post."""
 
     reason: str
 
@@ -174,35 +174,35 @@ class Interaction(BaseModel):
     user: User
 
 
-class TextReplyToMessage(Interaction):
-    """A user has replied to a message with text."""
+class TextReplyToPost(Interaction):
+    """A user has replied to a post with text."""
 
-    type: Literal["text_reply_to_message"] = "text_reply_to_message"
-    message_id: str
-    user_message_id: str
+    type: Literal["text_reply_to_post"] = "text_reply_to_post"
+    post_id: str
+    user_post_id: str
     text: str
 
 
-class MessageRating(Interaction):
-    """A user has rated a message."""
+class PostRating(Interaction):
+    """A user has rated a post."""
 
-    type: Literal["message_rating"] = "message_rating"
-    message_id: str
+    type: Literal["post_rating"] = "post_rating"
+    post_id: str
     rating: int
 
 
-class MessageRanking(Interaction):
-    """A user has given a ranking for a message."""
+class PostRanking(Interaction):
+    """A user has given a ranking for a post."""
 
-    type: Literal["message_ranking"] = "message_ranking"
-    message_id: str
+    type: Literal["post_ranking"] = "post_ranking"
+    post_id: str
     ranking: list[int]
 
 
 AnyInteraction = Union[
-    TextReplyToMessage,
-    MessageRating,
-    MessageRanking,
+    TextReplyToPost,
+    PostRating,
+    PostRanking,
 ]
 
 
@@ -238,12 +238,12 @@ class TextLabels(BaseModel):
 
     text: str
     labels: dict[TextLabel, float]
-    message_id: str | None = None
+    post_id: str | None = None
 
     @property
-    def has_message_id(self) -> bool:
-        """Whether this TextLabels has a message_id."""
-        return bool(self.message_id)
+    def has_post_id(self) -> bool:
+        """Whether this TextLabels has a post_id."""
+        return bool(self.post_id)
 
     # check that each label value is between 0 and 1
     @pydantic.validator("labels")

@@ -62,8 +62,8 @@ class OpenAssistantBot(BotBase):
 
             await self.delete_all_old_bot_messages()
             # if self.debug:
-            #    await self.message_boot_message()
-            await self.message_welcome_message()
+            #    await self.post_boot_message()
+            await self.post_welcome_message()
 
             client.loop.create_task(self.background_timer(), name="OpenAssistantBot.background_timer()")
 
@@ -84,7 +84,7 @@ class OpenAssistantBot(BotBase):
         @self.tree.command()
         async def help(interaction: discord.Interaction):
             """Sends the user a list of all available commands"""
-            await self.message_help(interaction.user)
+            await self.post_help(interaction.user)
             await interaction.response.send_message(f"@{interaction.user.display_name}, I've sent you a PM.")
 
         @self.tree.command()
@@ -96,24 +96,24 @@ class OpenAssistantBot(BotBase):
             q = task_handlers.Questionnaire()
             await interaction.response.send_modal(q)
 
-    async def message_help(self, user: discord.abc.User) -> discord.Message:
+    async def post_help(self, user: discord.abc.User) -> discord.Message:
         is_bot_owner = user.id == self.owner_id
-        return await self.message_template("help.msg", channel=user, is_bot_owner=is_bot_owner)
+        return await self.post_template("help.msg", channel=user, is_bot_owner=is_bot_owner)
 
-    async def message_boot_message(self) -> discord.Message:
-        return await self.message_template(
+    async def post_boot_message(self) -> discord.Message:
+        return await self.post_template(
             "boot.msg", bot_name=BOT_NAME, version=__version__, git_hash=get_git_head_hash(), debug=self.debug
         )
 
-    async def message_welcome_message(self) -> discord.Message:
-        return await self.message_template("welcome.msg")
+    async def post_welcome_message(self) -> discord.Message:
+        return await self.post_template("welcome.msg")
 
     async def delete_all_old_bot_messages(self) -> None:
-        logger.info("Deleting old Message Trees...")
-        for message_tree in self.bot_channel.message_trees:
-            if message_tree.owner_id == self.client.user.id:
-                await message_tree.delete()
-        logger.info("Completed deleting old Message Trees.")
+        logger.info("Deleting old threads...")
+        for thread in self.bot_channel.threads:
+            if thread.owner_id == self.client.user.id:
+                await thread.delete()
+        logger.info("Completed deleting old theards.")
 
         logger.info("Deleting old messages...")
         look_until = utcnow() - timedelta(days=365)
@@ -205,7 +205,7 @@ class OpenAssistantBot(BotBase):
         command_text = command_text[1:]
         match command_text:
             case "help" | "?":
-                await self.message_help(user=message.author)
+                await self.post_help(user=message.author)
             case "sync" | "sync.guild" | "sync.copy_global" | "sync.clear_guild":
                 if is_owner:
                     await self._sync(command_text, message)
@@ -217,13 +217,13 @@ class OpenAssistantBot(BotBase):
 
         if (
             message.channel.type == discord.ChannelType.private
-            or message.channel.type == discord.ChannelType.private_message_tree
+            or message.channel.type == discord.ChannelType.private_thread
         ):
             return True
 
         if (
             message.channel.type == discord.ChannelType.text
-            or message.channel.type == discord.ChannelType.public_message_tree
+            or message.channel.type == discord.ChannelType.public_thread
         ):
             while channel:
                 if self.bot_channel and channel.id == self.bot_channel.id:
@@ -248,7 +248,7 @@ class OpenAssistantBot(BotBase):
             is_owner = self.owner_id and user_id == self.owner_id
             await self.handle_command(message, is_owner)
 
-        if isinstance(message.channel, discord.MessageTree):
+        if isinstance(message.channel, discord.Thread):
             handler = self.reply_handlers.get(message.channel.id)
             if handler and not handler.handler.completed:
                 handler.handler.on_reply(message)

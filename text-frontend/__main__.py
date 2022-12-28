@@ -13,7 +13,7 @@ app = typer.Typer()
 USER = {"id": "1234", "display_name": "John Doe", "auth_method": "local"}
 
 
-def _random_message_id():
+def _random_post_id():
     return str(random.randint(1000, 9999))
 
 
@@ -28,7 +28,7 @@ def _render_message(message: dict) -> str:
 def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY"):
     """Simple REPL frontend."""
 
-    def _message(path: str, json: dict) -> dict:
+    def _post(path: str, json: dict) -> dict:
         response = requests.post(f"{backend_url}{path}", json=json, headers={"X-API-Key": api_key})
         response.raise_for_status()
         return response.json()
@@ -43,20 +43,20 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 typer.echo(task["story"])
 
                 # acknowledge task
-                message_id = _random_message_id()
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
 
                 summary = typer.prompt("Enter your summary")
 
-                user_message_id = _random_message_id()
+                user_post_id = _random_post_id()
 
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
-                        "type": "text_reply_to_message",
-                        "message_id": message_id,
-                        "user_message_id": user_message_id,
+                        "type": "text_reply_to_post",
+                        "post_id": post_id,
+                        "user_post_id": user_post_id,
                         "text": summary,
                         "user": USER,
                     },
@@ -70,16 +70,16 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 typer.echo(f"Rating scale: {task['scale']['min']} - {task['scale']['max']}")
 
                 # acknowledge task
-                message_id = _random_message_id()
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
 
                 rating = typer.prompt("Enter your rating", type=int)
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
-                        "type": "message_rating",
-                        "message_id": message_id,
+                        "type": "post_rating",
+                        "post_id": post_id,
                         "rating": rating,
                         "user": USER,
                     },
@@ -90,17 +90,17 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 if task["hint"]:
                     typer.echo(f"Hint: {task['hint']}")
                 # acknowledge task
-                message_id = _random_message_id()
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
                 prompt = typer.prompt("Enter your prompt")
-                user_message_id = _random_message_id()
+                user_post_id = _random_post_id()
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
-                        "type": "text_reply_to_message",
-                        "message_id": message_id,
-                        "user_message_id": user_message_id,
+                        "type": "text_reply_to_post",
+                        "post_id": post_id,
+                        "user_post_id": user_post_id,
                         "text": prompt,
                         "user": USER,
                     },
@@ -115,17 +115,17 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 if task["hint"]:
                     typer.echo(f"Hint: {task['hint']}")
                 # acknowledge task
-                message_id = _random_message_id()
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
                 reply = typer.prompt("Enter your reply")
-                user_message_id = _random_message_id()
+                user_post_id = _random_post_id()
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
-                        "type": "text_reply_to_message",
-                        "message_id": message_id,
-                        "user_message_id": user_message_id,
+                        "type": "text_reply_to_post",
+                        "post_id": post_id,
+                        "user_post_id": user_post_id,
                         "text": reply,
                         "user": USER,
                     },
@@ -138,17 +138,17 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 for message in task["conversation"]["messages"]:
                     typer.echo(_render_message(message))
                 # acknowledge task
-                message_id = _random_message_id()
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
                 reply = typer.prompt("Enter your reply")
-                user_message_id = _random_message_id()
+                user_post_id = _random_post_id()
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
-                        "type": "text_reply_to_message",
-                        "message_id": message_id,
-                        "user_message_id": user_message_id,
+                        "type": "text_reply_to_post",
+                        "post_id": post_id,
+                        "user_post_id": user_post_id,
                         "text": reply,
                         "user": USER,
                     },
@@ -160,8 +160,8 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 for idx, prompt in enumerate(task["prompts"], start=1):
                     typer.echo(f"{idx}: {prompt}")
                 # acknowledge task
-                message_id = _random_message_id()
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
 
                 ranking_str = typer.prompt("Enter the prompt numbers in order of preference, separated by commas")
                 ranking = [int(x) - 1 for x in ranking_str.split(",")]
@@ -170,8 +170,8 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
-                        "type": "message_ranking",
-                        "message_id": message_id,
+                        "type": "post_ranking",
+                        "post_id": post_id,
                         "ranking": ranking,
                         "user": USER,
                     },
@@ -186,8 +186,8 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 for idx, reply in enumerate(task["replies"], start=1):
                     typer.echo(f"{idx}: {reply}")
                 # acknowledge task
-                message_id = _random_message_id()
-                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+                post_id = _random_post_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"post_id": post_id})
 
                 ranking_str = typer.prompt("Enter the reply numbers in order of preference, separated by commas")
                 ranking = [int(x) - 1 for x in ranking_str.split(",")]
@@ -196,8 +196,8 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
-                        "type": "message_ranking",
-                        "message_id": message_id,
+                        "type": "post_ranking",
+                        "post_id": post_id,
                         "ranking": ranking,
                         "user": USER,
                     },
