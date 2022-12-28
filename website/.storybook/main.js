@@ -12,4 +12,10 @@ module.exports = {
     builder: "@storybook/builder-webpack5",
   },
   staticDirs: ["../public"],
+  typescript: { reactDocgen: false },
+  webpackFinal: async (config, { configType }) => {
+    config.resolve.modules = [path.resolve(__dirname, ".."), "node_modules"];
+
+    return config;
+  },
 };

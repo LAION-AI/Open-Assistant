@@ -6,7 +6,7 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
 
-import { Avatar } from "../Avatar/Avatar";
+import { Avatar } from "src/components/Avatar/Avatar";
 import { Container } from "../Container";
 import { NavLinks } from "../NavLinks";
 
