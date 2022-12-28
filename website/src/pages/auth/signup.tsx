@@ -1,10 +1,9 @@
 import { Button, Input, Stack } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
-import { FaDiscord, FaEnvelope, FaBug, FaGithub } from "react-icons/fa";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
 import { useRef } from "react";
-import { FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
+import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 
 import { AuthLayout } from "src/components/AuthLayout";
 
