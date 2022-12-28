@@ -10,6 +10,9 @@ export const parameters = {
   },
 };
 
+
+// Hacky solution to get Images in next to work
+// https://dev.to/jonasmerlin/how-to-use-the-next-js-image-component-in-storybook-1415
 import * as NextImage from "next/image";
 
 const OriginalNextImage = NextImage.default;
