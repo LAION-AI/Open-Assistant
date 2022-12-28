@@ -1,11 +1,11 @@
 import { useSession } from "next-auth/react";
 import Head from "next/head";
-import { CallToAction } from "../components/CallToAction";
-import { Faq } from "../components/Faq";
-import { Footer } from "../components/Footer";
-import { Header } from "../components/Header";
-import { Hero } from "../components/Hero";
-import { TaskSelection } from "../components/TaskSelection";
+import { CallToAction } from "src/components/CallToAction";
+import { Faq } from "src/components/Faq";
+import { Footer } from "src/components/Footer";
+import { Header } from "src/components/Header";
+import { Hero } from "src/components/Hero";
+import { TaskSelection } from "src/components/TaskSelection";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -41,7 +41,7 @@ export default function Home() {
         />
       </Head>
       <Header />
-      <main className="h-3/4 m-20 z-0 bg-white flex flex-col items-center justify-center gap-2">
+      <main className="m-20 z-0 bg-white flex flex-col items-center justify-center gap-2">
         <TaskSelection />
       </main>
       <Footer />

@@ -1,12 +1,12 @@
-import Head from "next/head";
-import Link from "next/link";
-import Router from "next/router";
 import React, { useState } from "react";
 import { getSession, useSession } from "next-auth/react";
 import { PrismaClient, User } from "@prisma/client";
 import { Button, Input, InputGroup, Stack } from "@chakra-ui/react";
-import { Footer } from "../../components/Footer";
-import { Header } from "../../components/Header";
+import Head from "next/head";
+import Link from "next/link";
+import Router from "next/router";
+import { Footer } from "src/components/Footer";
+import { Header } from "src/components/Header";
 
 import styles from "../styles/Home.module.css";
 
@@ -17,7 +17,7 @@ export default function Account() {
     e.preventDefault();
     try {
       const body = { username };
-      await fetch("../api/username", {
+      await fetch("/api/username", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
