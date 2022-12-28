@@ -40,7 +40,6 @@ export default function Account() {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <Header />
       <main className="h-3/4 z-0 bg-white flex flex-col items-center justify-center">
         <p>{session.user.name || "No username"}</p>
         <form onSubmit={updateUser}>
@@ -58,7 +57,6 @@ export default function Account() {
         </form>
         <p>{session.user.email}</p>
       </main>
-      <Footer />
     </>
   );
 }

@@ -38,7 +38,6 @@ export default function Account() {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <Header />
       <main className="h-3/4 z-0 bg-white flex flex-col items-center justify-center">
         <p>{username}</p>
         <Button>
@@ -46,7 +45,6 @@ export default function Account() {
         </Button>
         <p>{session.user.email}</p>
       </main>
-      <Footer />
     </>
   );
 }
