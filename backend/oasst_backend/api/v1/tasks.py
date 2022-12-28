@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
-from typing import Any
+from typing import Any, Optional, Tuple
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -15,13 +15,18 @@ from starlette.status import HTTP_400_BAD_REQUEST
 router = APIRouter()
 
 
-def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
+def generate_task(
+    request: protocol_schema.TaskRequest, pr: PromptRepository
+) -> Tuple[protocol_schema.Task, Optional[UUID], Optional[UUID]]:
+    thread_id = None
+    parent_post_id = None
+
     match request.type:
         case protocol_schema.TaskRequestType.random:
             logger.info("Frontend requested a random task.")
             while request.type == protocol_schema.TaskRequestType.random:
                 request.type = random.choice(list(protocol_schema.TaskRequestType)).value
-            return generate_task(request)
+            return generate_task(request, pr)
         case protocol_schema.TaskRequestType.summarize_story:
             logger.info("Generating a SummarizeStoryTask.")
             task = protocol_schema.SummarizeStoryTask(
@@ -41,77 +46,65 @@ def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
             )
         case protocol_schema.TaskRequestType.user_reply:
             logger.info("Generating a UserReplyTask.")
-            task = protocol_schema.UserReplyTask(
-                conversation=protocol_schema.Conversation(
-                    messages=[
-                        protocol_schema.ConversationMessage(
-                            text="Hey, assistant, what's going on in the world?",
-                            is_assistant=False,
-                        ),
-                        protocol_schema.ConversationMessage(
-                            text="I'm not sure I understood correctly, could you rephrase that?",
-                            is_assistant=True,
-                        ),
-                    ],
-                )
-            )
+            posts = pr.fetch_random_conversation("assistant")
+            messages = [
+                protocol_schema.ConversationMessage(text=p.payload.payload.text, is_assistant=(p.role == "assistant"))
+                for p in posts
+            ]
+
+            task = protocol_schema.UserReplyTask(conversation=protocol_schema.Conversation(messages=messages))
+            thread_id = posts[-1].thread_id
+            parent_post_id = posts[-1].id
         case protocol_schema.TaskRequestType.assistant_reply:
             logger.info("Generating a AssistantReplyTask.")
-            task = protocol_schema.AssistantReplyTask(
-                conversation=protocol_schema.Conversation(
-                    messages=[
-                        protocol_schema.ConversationMessage(
-                            text="Hey, assistant, write me an English essay about water.",
-                            is_assistant=False,
-                        ),
-                    ],
-                )
-            )
+            posts = pr.fetch_random_conversation("user")
+            messages = [
+                protocol_schema.ConversationMessage(text=p.payload.payload.text, is_assistant=(p.role == "assistant"))
+                for p in posts
+            ]
+
+            task = protocol_schema.AssistantReplyTask(conversation=protocol_schema.Conversation(messages=messages))
+            thread_id = posts[-1].thread_id
+            parent_post_id = posts[-1].id
         case protocol_schema.TaskRequestType.rank_initial_prompts:
             logger.info("Generating a RankInitialPromptsTask.")
-            task = protocol_schema.RankInitialPromptsTask(
-                prompts=[
-                    "Please write a story about a time you were happy.",
-                    "Please write a story about a time you were sad.",
-                ]
-            )
+
+            posts = pr.fetch_random_initial_prompts()
+            task = protocol_schema.RankInitialPromptsTask(prompts=[p.payload.payload.text for p in posts])
         case protocol_schema.TaskRequestType.rank_user_replies:
             logger.info("Generating a RankUserRepliesTask.")
+            conversation, replies = pr.fetch_multiple_random_replies(post_role="assistant")
+
+            messages = [
+                protocol_schema.ConversationMessage(
+                    text=p.payload.payload.text,
+                    is_assistant=(p.role == "assistant"),
+                )
+                for p in conversation
+            ]
+            replies = [p.payload.payload.text for p in replies]
             task = protocol_schema.RankUserRepliesTask(
                 conversation=protocol_schema.Conversation(
-                    messages=[
-                        protocol_schema.ConversationMessage(
-                            text="Hey, assistant, what's going on in the world?",
-                            is_assistant=False,
-                        ),
-                        protocol_schema.ConversationMessage(
-                            text="I'm not sure I understood correctly, could you rephrase that?",
-                            is_assistant=True,
-                        ),
-                    ],
+                    messages=messages,
                 ),
-                replies=[
-                    "Oh come oooooon!",
-                    "What are the news?",
-                ],
+                replies=replies,
             )
 
         case protocol_schema.TaskRequestType.rank_assistant_replies:
             logger.info("Generating a RankAssistantRepliesTask.")
+            conversation, replies = pr.fetch_multiple_random_replies(post_role="user")
+
+            messages = [
+                protocol_schema.ConversationMessage(
+                    text=p.payload.payload.text,
+                    is_assistant=(p.role == "assistant"),
+                )
+                for p in conversation
+            ]
+            replies = [p.payload.payload.text for p in replies]
             task = protocol_schema.RankAssistantRepliesTask(
-                conversation=protocol_schema.Conversation(
-                    messages=[
-                        protocol_schema.ConversationMessage(
-                            text="Hey, assistant, what's going on in the world?",
-                            is_assistant=False,
-                        ),
-                    ],
-                ),
-                replies=[
-                    "I'm not sure I understood correctly, could you rephrase that?",
-                    "The world is fine. All good.",
-                    "Crap is hitting the fan. Start farming.",
-                ],
+                conversation=protocol_schema.Conversation(messages=messages),
+                replies=replies,
             )
         case _:
             raise HTTPException(
@@ -121,7 +114,7 @@ def generate_task(request: protocol_schema.TaskRequest) -> protocol_schema.Task:
 
     logger.info(f"Generated {task=}.")
 
-    return task
+    return task, thread_id, parent_post_id
 
 
 @router.post("/", response_model=protocol_schema.AnyTask)  # work with Union once more types are added
@@ -137,10 +130,9 @@ def request_task(
     api_client = deps.api_auth(api_key, db)
 
     try:
-        task = generate_task(request)
-
         pr = PromptRepository(db, api_client, request.user)
-        pr.store_task(task)
+        task, thread_id, parent_post_id = generate_task(request, pr)
+        pr.store_task(task, thread_id, parent_post_id)
 
     except Exception:
         logger.exception("Failed to generate task.")
@@ -190,11 +182,17 @@ def acknowledge_task_failure(
     """
     The frontend reports failure to implement a task.
     """
-    deps.api_auth(api_key, db)
 
-    logger.info(f"Frontend reports failure to implement task {task_id=}, {nack_request=}.")
-    # here we would store the post id in the database for the task
-    return {}
+    try:
+        logger.info(f"Frontend reports failure to implement task {task_id=}, {nack_request=}.")
+        api_client = deps.api_auth(api_key, db)
+        pr = PromptRepository(db, api_client, user=None)
+        pr.acknowledge_task_failure(task_id)
+    except (KeyError, RuntimeError):
+        logger.exception("Failed to acknowledge task.")
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+        )
 
 
 @router.post("/interaction")
@@ -219,8 +217,9 @@ def post_interaction(
                 )
 
                 # here we store the text reply in the database
-                # ToDo: role user or agent?
-                pr.store_text_reply(interaction, role="unknown")
+                pr.store_text_reply(
+                    text=interaction.text, post_id=interaction.post_id, user_post_id=interaction.user_post_id
+                )
 
                 return protocol_schema.TaskDone()
             case protocol_schema.PostRating:
