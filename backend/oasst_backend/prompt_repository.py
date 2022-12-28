@@ -72,8 +72,8 @@ class PromptRepository:
 
         # ToDo: check race-condition, transaction
 
-        # check if task thread exits
-        thread_root = (
+        # check if task message_tree exits
+        message_tree_root = (
             self.db.query(Message)
             .filter(
                 Message.workpackage_id == work_pack.id,
@@ -83,11 +83,11 @@ class PromptRepository:
             )
             .one_or_none()
         )
-        if thread_root is None:
-            thread_id = uuid4()
-            thread_root = self.insert_message(
-                message_id=thread_id,
-                thread_id=thread_id,
+        if message_tree_root is None:
+            message_tree_id = uuid4()
+            message_tree_root = self.insert_message(
+                message_id=message_tree_id,
+                message_tree_id=message_tree_id,
                 frontend_message_id=message_id,
                 parent_id=None,
                 role="system",
@@ -95,7 +95,7 @@ class PromptRepository:
                 payload=None,
                 payload_type="bind",
             )
-        return thread_root
+        return message_tree_root
 
     def fetch_message_by_frontend_message_id(self, frontend_message_id: str, fail_if_missing: bool = True) -> Message:
         self.validate_message_id(frontend_message_id)
@@ -142,7 +142,7 @@ class PromptRepository:
             message_id=user_message_id,
             frontend_message_id=reply.user_message_id,
             parent_id=parent_message.id,
-            thread_id=parent_message.thread_id,
+            message_tree_id=parent_message.message_tree_id,
             workpackage_id=parent_message.workpackage_id,
             role=role,
             payload=db_payload.MessagePayload(text=reply.text),
@@ -279,7 +279,7 @@ class PromptRepository:
         message_id: UUID,
         frontend_message_id: str,
         parent_id: UUID,
-        thread_id: UUID,
+        message_tree_id: UUID,
         workpackage_id: UUID,
         role: str,
         payload: db_payload.MessagePayload,
@@ -294,7 +294,7 @@ class PromptRepository:
         message = Message(
             id=message_id,
             parent_id=parent_id,
-            thread_id=thread_id,
+            message_tree_id=message_tree_id,
             workpackage_id=workpackage_id,
             user_id=self.user_id,
             role=role,

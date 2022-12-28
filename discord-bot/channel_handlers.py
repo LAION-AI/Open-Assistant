@@ -58,9 +58,9 @@ class ChannelHandlerBase(ABC):
         pass
 
 
-class AutoDestructThreadHandler(ChannelHandlerBase):
+class AutoDestructMessageTreeHandler(ChannelHandlerBase):
     first_message: discord.Message = None
-    thread: discord.Thread = None
+    message_tree: discord.MessageTree = None
 
     def __init__(self, *, expiry_date: datetime = None):
         super().__init__(expiry_date=expiry_date)
@@ -73,11 +73,11 @@ class AutoDestructThreadHandler(ChannelHandlerBase):
             raise
 
     async def cleanup(self):
-        logger.debug("AutoDestructThreadHandler.cleanup")
-        if self.thread:
-            logger.debug(f"deleting thread: {self.thread.name}")
-            await self.thread.delete()
-            self.thread = None
+        logger.debug("AutoDestructMessageTreeHandler.cleanup")
+        if self.message_tree:
+            logger.debug(f"deleting message tree: {self.message_tree.name}")
+            await self.message_tree.delete()
+            self.message_tree = None
         if self.first_message:
             logger.debug(f"deleting first_message: {self.first_message.content}")
             await self.first_message.delete()

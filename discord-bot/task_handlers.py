@@ -7,7 +7,7 @@ from datetime import timedelta
 import discord
 from api_client import ApiClient
 from bot_base import BotBase
-from channel_handlers import AutoDestructThreadHandler, ChannelExpiredException
+from channel_handlers import AutoDestructMessageTreeHandler, ChannelExpiredException
 from loguru import logger
 from oasst_shared.schemas import protocol as protocol_schema
 from utils import DiscordTimestampStyle, discord_timestamp, utcnow
@@ -21,8 +21,8 @@ class Questionnaire(discord.ui.Modal, title="Questionnaire Response"):
         await interaction.response.send_message(f"Thanks for your response, {self.name}!", ephemeral=True)
 
 
-class ChannelTaskBase(AutoDestructThreadHandler):
-    thread_name: str = "Replies"
+class ChannelTaskBase(AutoDestructMessageTreeHandler):
+    message_tree_name: str = "Replies"
     expires_after: timedelta = timedelta(minutes=5)
     backend: ApiClient
 
@@ -34,17 +34,17 @@ class ChannelTaskBase(AutoDestructThreadHandler):
             self.expiry_date = utcnow() + self.expires_after if self.expires_after else None
             msg = await self.send_first_message()
             self.first_message = msg
-            self.thread = await bot.bot_channel.create_thread(message=discord.Object(msg.id), name=self.thread_name)
-            await self.on_thread_created(self.thread)
+            self.message_tree = await bot.bot_channel.create_thread(message=discord.Object(msg.id), name=self.message_tree_name)
+            await self.on_message_tree_created(self.message_tree)
         except Exception:
             logger.exception("start task failed")
-            await self.cleanup()  # try to cleanup messag or thread
+            await self.cleanup()  # try to cleanup messag or message_tree
             raise
 
         bot.register_reply_handler(msg_id=msg.id, handler=self)
         return msg
 
-    async def on_thread_created(self, thread: discord.Thread) -> None:
+    async def on_message_tree_created(self, message_tree: discord.message_tree) -> None:
         pass
 
     @abstractmethod
@@ -116,13 +116,13 @@ class ChannelTaskBase(AutoDestructThreadHandler):
 
 class SummarizeStoryHandler(ChannelTaskBase):
     task: protocol_schema.SummarizeStoryTask
-    thread_name: str = "Summaries"
+    message_tree_name: str = "Summaries"
 
     async def send_first_message(self) -> discord.message:
         return await self.message_teaser_msg("teaser_summarize_story.msg")
 
-    async def on_thread_created(self, thread: discord.Thread) -> None:
-        await self.bot.message_template("task_summarize_story.msg", channel=thread, task=self.task)
+    async def on_message_tree_created(self, message_tree: discord.MessageTree) -> None:
+        await self.bot.message_template("task_summarize_story.msg", channel=message_tree, task=self.task)
 
     async def handler_loop(self):
         while True:
@@ -132,13 +132,13 @@ class SummarizeStoryHandler(ChannelTaskBase):
 
 class InitialPromptHandler(ChannelTaskBase):
     task: protocol_schema.InitialPromptTask
-    thread_name: str = "Prompts"
+    message_tree_name: str = "Prompts"
 
     async def send_first_message(self) -> discord.message:
         return await self.message_teaser_msg("teaser_initial_prompt.msg")
 
-    async def on_thread_created(self, thread: discord.Thread) -> None:
-        await self.bot.message_template("task_initial_prompt.msg", channel=thread, task=self.task)
+    async def on_message_tree_created(self, message_tree: discord.MessageTree) -> None:
+        await self.bot.message_template("task_initial_prompt.msg", channel=message_tree, task=self.task)
 
     async def handler_loop(self):
         while True:
@@ -148,13 +148,13 @@ class InitialPromptHandler(ChannelTaskBase):
 
 class UserReplyHandler(ChannelTaskBase):
     task: protocol_schema.UserReplyTask
-    thread_name: str = "User replies"
+    message_tree_name: str = "User replies"
 
     async def send_first_message(self) -> discord.message:
         return await self.message_teaser_msg("teaser_user_reply.msg")
 
-    async def on_thread_created(self, thread: discord.Thread) -> None:
-        await self.bot.message_template("task_user_reply.msg", channel=thread, task=self.task)
+    async def on_message_tree_created(self, message_tree: discord.MessageTree) -> None:
+        await self.bot.message_template("task_user_reply.msg", channel=message_tree, task=self.task)
 
     async def handler_loop(self):
         while True:
@@ -164,13 +164,13 @@ class UserReplyHandler(ChannelTaskBase):
 
 class AssistantReplyHandler(ChannelTaskBase):
     task: protocol_schema.AssistantReplyTask
-    thread_name: str = "Assistant replies"
+    message_tree_name: str = "Assistant replies"
 
     async def send_first_message(self) -> discord.message:
         return await self.message_teaser_msg("teaser_assistant_reply.msg")
 
-    async def on_thread_created(self, thread: discord.Thread) -> None:
-        await self.bot.message_template("task_assistant_reply.msg", channel=thread, task=self.task)
+    async def on_message_tree_created(self, message_tree: discord.MessageTree) -> None:
+        await self.bot.message_template("task_assistant_reply.msg", channel=message_tree, task=self.task)
 
     async def handler_loop(self):
         while True:
@@ -180,13 +180,13 @@ class AssistantReplyHandler(ChannelTaskBase):
 
 class RankInitialPromptsHandler(ChannelTaskBase):
     task: protocol_schema.RankInitialPromptsTask
-    thread_name: str = "User Responses"
+    message_tree_name: str = "User Responses"
 
     async def send_first_message(self) -> discord.message:
         return await self.message_teaser_msg("teaser_rank_initial_prompts.msg")
 
-    async def on_thread_created(self, thread: discord.Thread) -> None:
-        await self.bot.message_template("task_rank_initial_prompts.msg", channel=thread, task=self.task)
+    async def on_message_tree_created(self, message_tree: discord.MessageTree) -> None:
+        await self.bot.message_template("task_rank_initial_prompts.msg", channel=message_tree, task=self.task)
 
     async def handler_loop(self):
         while True:
@@ -196,13 +196,13 @@ class RankInitialPromptsHandler(ChannelTaskBase):
 
 class RankConversationsHandler(ChannelTaskBase):
     task: protocol_schema.RankConversationRepliesTask
-    thread_name: str = "Rankings"
+    message_tree_name: str = "Rankings"
 
     async def send_first_message(self) -> discord.message:
         return await self.message_teaser_msg("teaser_rank_conversation_replies.msg")
 
-    async def on_thread_created(self, thread: discord.Thread) -> None:
-        await self.bot.message_template("task_rank_conversation_replies.msg", channel=thread, task=self.task)
+    async def on_message_tree_created(self, message_tree: discord.MessageTree) -> None:
+        await self.bot.message_template("task_rank_conversation_replies.msg", channel=message_tree, task=self.task)
 
     async def handler_loop(self):
         while True:
@@ -229,11 +229,11 @@ def generate_rating_view(lo: int, hi: int, response_handler) -> discord.ui.View:
 
 class RateSummaryHandler(ChannelTaskBase):
     task: protocol_schema.RateSummaryTask
-    thread_name: str = "Ratings"
+    message_tree_name: str = "Ratings"
 
     async def _rating_response_handler(self, score, interaction: discord.Interaction):
         logger.info("rating_response_handler", score)
-        if self.thread:
+        if self.message_tree:
             try:
                 self.backend.message_interaction(
                     protocol_schema.MessageRating(
@@ -255,9 +255,9 @@ class RateSummaryHandler(ChannelTaskBase):
     async def send_first_message(self) -> discord.message:
         return await self.message_teaser_msg("teaser_rate_summary.msg")
 
-    async def on_thread_created(self, thread: discord.Thread) -> None:
+    async def on_message_tree_created(self, message_tree: discord.MessageTree) -> None:
         view = generate_rating_view(self.task.scale.min, self.task.scale.max, self._rating_response_handler)
-        return await self.bot.message_template("task_rate_summary.msg", view=view, channel=thread, task=self.task)
+        return await self.bot.message_template("task_rate_summary.msg", view=view, channel=message_tree, task=self.task)
 
     async def handler_loop(self):
         while True:

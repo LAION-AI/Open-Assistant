@@ -109,11 +109,11 @@ class OpenAssistantBot(BotBase):
         return await self.message_template("welcome.msg")
 
     async def delete_all_old_bot_messages(self) -> None:
-        logger.info("Deleting old threads...")
-        for thread in self.bot_channel.threads:
-            if thread.owner_id == self.client.user.id:
-                await thread.delete()
-        logger.info("Completed deleting old theards.")
+        logger.info("Deleting old Message Trees...")
+        for message_tree in self.bot_channel.message_trees:
+            if message_tree.owner_id == self.client.user.id:
+                await message_tree.delete()
+        logger.info("Completed deleting old Message Trees.")
 
         logger.info("Deleting old messages...")
         look_until = utcnow() - timedelta(days=365)
@@ -217,13 +217,13 @@ class OpenAssistantBot(BotBase):
 
         if (
             message.channel.type == discord.ChannelType.private
-            or message.channel.type == discord.ChannelType.private_thread
+            or message.channel.type == discord.ChannelType.private_message_tree
         ):
             return True
 
         if (
             message.channel.type == discord.ChannelType.text
-            or message.channel.type == discord.ChannelType.public_thread
+            or message.channel.type == discord.ChannelType.public_message_tree
         ):
             while channel:
                 if self.bot_channel and channel.id == self.bot_channel.id:
@@ -248,7 +248,7 @@ class OpenAssistantBot(BotBase):
             is_owner = self.owner_id and user_id == self.owner_id
             await self.handle_command(message, is_owner)
 
-        if isinstance(message.channel, discord.Thread):
+        if isinstance(message.channel, discord.MessageTree):
             handler = self.reply_handlers.get(message.channel.id)
             if handler and not handler.handler.completed:
                 handler.handler.on_reply(message)
