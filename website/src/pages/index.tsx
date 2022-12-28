@@ -1,13 +1,16 @@
-import { useSession } from "next-auth/react";
+import { Button, Input, Stack } from "@chakra-ui/react";
 import Head from "next/head";
-import { CallToAction } from "../components/CallToAction";
-import { Faq } from "../components/Faq";
-import { Footer } from "../components/Footer";
-import { Header } from "../components/Header";
-import { Hero } from "../components/Hero";
-import { TaskSelection } from "../components/TaskSelection";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
 
-export default function Home() {
+import { CallToAction } from "src/components/CallToAction";
+import { Faq } from "src/components/Faq";
+import { Footer } from "src/components/Footer";
+import { Header } from "src/components/Header";
+import { Hero } from "src/components/Hero";
+import { TaskSelection } from "src/components/TaskSelection";
+
+const Home = () => {
   const { data: session } = useSession();
 
   if (!session) {
@@ -47,4 +50,6 @@ export default function Home() {
       <Footer />
     </>
   );
-}
+};
+
+export default Home;
