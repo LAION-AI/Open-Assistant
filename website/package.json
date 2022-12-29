@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@chakra-ui/react": "^2.4.4",
+    "@dnd-kit/sortable": "^7.0.1",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@headlessui/react": "^1.7.7",
@@ -58,11 +59,11 @@
     "@storybook/testing-library": "^0.0.13",
     "@types/node": "18.11.17",
     "@types/react": "18.0.26",
+    "@typescript-eslint/eslint-plugin": "^5.47.1",
     "babel-loader": "^8.3.0",
     "cypress": "^12.2.0",
     "cypress-image-diff-js": "^1.23.0",
     "eslint-plugin-storybook": "^0.6.8",
-    "@typescript-eslint/eslint-plugin": "^5.47.1",
     "prettier": "2.8.1",
     "prisma": "^4.7.1",
     "typescript": "4.9.4"
