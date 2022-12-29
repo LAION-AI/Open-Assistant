@@ -25,20 +25,30 @@ def generate_task(
         case protocol_schema.TaskRequestType.random:
             logger.info("Frontend requested a random task.")
             while request.type == protocol_schema.TaskRequestType.random:
-                request.type = random.choice(list(protocol_schema.TaskRequestType)).value
+                disabled_tasks = (
+                    protocol_schema.TaskRequestType.summarize_story,
+                    protocol_schema.TaskRequestType.rate_summary,
+                )
+                request.type = random.choice(
+                    tuple(set(protocol_schema.TaskRequestType).difference(disabled_tasks))
+                ).value
             return generate_task(request, pr)
-        case protocol_schema.TaskRequestType.summarize_story:
-            logger.info("Generating a SummarizeStoryTask.")
-            task = protocol_schema.SummarizeStoryTask(
-                story="This is a story. A very long story. So long, it needs to be summarized.",
-            )
-        case protocol_schema.TaskRequestType.rate_summary:
-            logger.info("Generating a RateSummaryTask.")
-            task = protocol_schema.RateSummaryTask(
-                full_text="This is a story. A very long story. So long, it needs to be summarized.",
-                summary="This is a summary.",
-                scale=protocol_schema.RatingScale(min=1, max=5),
-            )
+
+        # AKo: Summary tasks are currently disabled/supported, we focus on the conversation tasks.
+
+        # case protocol_schema.TaskRequestType.summarize_story:
+        #     logger.info("Generating a SummarizeStoryTask.")
+        #     task = protocol_schema.SummarizeStoryTask(
+        #         story="This is a story. A very long story. So long, it needs to be summarized.",
+        #     )
+        # case protocol_schema.TaskRequestType.rate_summary:
+        #     logger.info("Generating a RateSummaryTask.")
+        #     task = protocol_schema.RateSummaryTask(
+        #         full_text="This is a story. A very long story. So long, it needs to be summarized.",
+        #         summary="This is a summary.",
+        #         scale=protocol_schema.RatingScale(min=1, max=5),
+        #     )
+
         case protocol_schema.TaskRequestType.initial_prompt:
             logger.info("Generating an InitialPromptTask.")
             task = protocol_schema.InitialPromptTask(
