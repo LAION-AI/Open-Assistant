@@ -5,6 +5,8 @@ import { CallToAction } from "src/components/CallToAction";
 import { Faq } from "src/components/Faq";
 import { Hero } from "src/components/Hero";
 import { TaskSelection } from "src/components/TaskSelection";
+import { Header } from "src/components/Header";
+import { Footer } from "src/components/Footer";
 
 const Home = () => {
   const { data: session } = useSession();
@@ -33,5 +35,13 @@ const Home = () => {
     </>
   );
 };
+
+Home.getLayout = (page) => (
+  <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
+    <Header transparent={true}/>
+    {page}
+    <Footer />
+  </div>
+);
 
 export default Home;

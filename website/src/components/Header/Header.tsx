@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
+import clsx from "clsx";
 
 import { Container } from "src/components/Container";
 import { NavLinks } from "./NavLinks";
@@ -53,9 +54,10 @@ function AccountButton() {
   );
 }
 
-export function Header() {
+export function Header(props) {
+  const transparent = props.transparent ?? false;
   return (
-    <header className="bg-white">
+    <header className={`${clsx({'bg-transparent':transparent, 'bg-white':!transparent})}`}>
       <nav>
         <Container className="relative z-10 flex justify-between py-8">
           <div className="relative z-10 flex items-center gap-16">
