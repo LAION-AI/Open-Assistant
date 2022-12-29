@@ -1,7 +1,5 @@
 import RankItem from "src/components/RankItem";
-import { BarsArrowUpIcon, BarsArrowDownIcon } from "@heroicons/react/24/solid";
-import Image from "next/image";
-import { HiBarsArrowUp, HiBarsArrowDown } from "react-icons/hi2";
+import { HiBarsArrowDown } from "react-icons/hi2";
 
 const LeaderBoard = () => {
   const PlaceHolderProps = { username: "test_user", score: 10 };

@@ -9,7 +9,7 @@ import poster from "src/lib/poster";
 
 import { TwoColumns } from "src/components/TwoColumns";
 import { Button } from "src/components/Button";
-import { LoadingScreen } from "@/components/Loading/LoadingScreen";
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 
 const SummarizeStory = () => {
   // Use an array of tasks that record the sequence of steps until a task is

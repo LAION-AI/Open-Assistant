@@ -4,7 +4,7 @@ import { Inter } from "@next/font/google";
 import { extendTheme } from "@chakra-ui/react";
 import type { AppProps } from "next/app";
 
-import { getDefaultLayout, NextPageWithLayout } from "src/components/Layout";
+import { NextPageWithLayout, getDefaultLayout } from "src/components/Layout";
 
 import "../styles/globals.css";
 import "focus-visible";

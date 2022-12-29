@@ -3,6 +3,7 @@ import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+
 import { signOut, useSession } from "next-auth/react";
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
 import clsx from "clsx";
