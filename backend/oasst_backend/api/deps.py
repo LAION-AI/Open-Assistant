@@ -53,7 +53,7 @@ def api_auth(
     if api_key or settings.DEBUG_SKIP_API_KEY_CHECK:
 
         if settings.DEBUG_SKIP_API_KEY_CHECK or settings.DEBUG_ALLOW_ANY_API_KEY:
-            return get_dummy_api_client()
+            return get_dummy_api_client(db)
 
         api_client = db.query(ApiClient).filter(ApiClient.api_key == api_key).first()
         if api_client is not None and api_client.enabled:
