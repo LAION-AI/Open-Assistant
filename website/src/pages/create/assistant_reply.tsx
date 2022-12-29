@@ -1,4 +1,4 @@
-import { Textarea } from "@chakra-ui/react";
+import { Flex, Textarea } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import useSWRMutation from "swr/mutation";
 import useSWRImmutable from "swr/immutable";
@@ -6,11 +6,12 @@ import useSWRImmutable from "swr/immutable";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 
-import { Button } from "src/components/Button";
 import { Messages } from "src/components/Messages";
 import { TwoColumns } from "src/components/TwoColumns";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
+import { SkipButton } from "src/components/Buttons/Skip";
+import { SubmitButton } from "src/components/Buttons/Submit";
 
 const AssistantReply = () => {
   const [tasks, setTasks] = useState([]);
@@ -64,15 +65,11 @@ const AssistantReply = () => {
 
       <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
         <TaskInfo id={tasks[0].id} output="Submit your answer" />
-        <div className="flex justify-center ml-auto">
-          <Button className="mr-2 bg-indigo-100 text-indigo-700 hover:bg-indigo-200">Skip</Button>
-          <Button
-            onClick={() => submitResponse(tasks[0])}
-            className="bg-indigo-600 text-white shadow-sm hover:bg-indigo-700"
-          >
-            Submit
-          </Button>
-        </div>
+
+        <Flex justify="center" ml="auto" gap={2}>
+          <SkipButton>Skip</SkipButton>
+          <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
+        </Flex>
       </section>
     </div>
   );
