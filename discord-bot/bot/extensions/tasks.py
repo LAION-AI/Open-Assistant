@@ -6,12 +6,12 @@ import typing as t
 from datetime import datetime, timedelta
 
 import hikari
-
 import lightbulb
 import lightbulb.decorators
 import miru
-from bot.utils import format_time
 from oasst_shared.schemas.protocol import TaskRequestType
+
+from bot.utils import format_time
 
 plugin = lightbulb.Plugin("TaskPlugin")
 
@@ -42,9 +42,13 @@ async def task_thread(ctx: lightbulb.SlashContext):
     await ctx.respond(f"Please complete the task in the thread: {thread.mention}")
 
     # Send the task in the thread
-    # TODO: Request task from the backend
     await thread.send(
-        f"Please complete the task.\nSample Task\n\nSelf destruct {format_time(datetime.now() + timedelta(seconds=MAX_TASK_TIME), 'R')}"
+        f"""\
+Please complete the task.
+Sample Task
+
+Self destruct {format_time(datetime.now() + timedelta(seconds=MAX_TASK_TIME), 'R')}
+"""
     )
 
     # Wait for the user to respond
@@ -55,7 +59,6 @@ async def task_thread(ctx: lightbulb.SlashContext):
             predicate=lambda e: e.author.id == ctx.author.id and e.channel_id == thread.id,
         )
         await ctx.respond(f"Received message: {event.message.content}")
-        # TODO: Send the message to the backend
     except asyncio.TimeoutError:
         await ctx.respond("You took too long to respond.")
     finally:
@@ -75,16 +78,16 @@ async def task_thread(ctx: lightbulb.SlashContext):
 @lightbulb.implements(lightbulb.SlashCommand, lightbulb.PrefixCommand)
 async def task_dm(ctx: lightbulb.Context):
     """Request a task from the backend."""
-    typ: str = ctx.options.type
+    await ctx.respond("Please complete the task in your DMs")
 
-    # Create a thread for the task
-
-    await ctx.respond(f"Please complete the task in your DMs")
-
-    # Send the task in the thread
-    # TODO: Request task from the backend
+    # Send the task in the dm
     await ctx.author.send(
-        f"Please complete the task.\nSample Task ({typ})\n\nSelf destruct {format_time(datetime.now() + timedelta(seconds=MAX_TASK_TIME), 'R')}"
+        f"""\
+Please complete the task.
+Sample Task
+
+Self destruct {format_time(datetime.now() + timedelta(seconds=MAX_TASK_TIME), 'R')}
+"""
     )
 
     # Wait for the user to respond
@@ -95,7 +98,6 @@ async def task_dm(ctx: lightbulb.Context):
             predicate=lambda e: e.author.id == ctx.author.id,
         )
         await ctx.respond(f"Received message: {event.message.content}")
-        # TODO: Send the message to the backend
     except asyncio.TimeoutError:
         await ctx.respond("You took too long to respond.")
 
@@ -113,7 +115,6 @@ class TaskModal(miru.Modal):
 
     async def callback(self, context: miru.ModalContext) -> None:
         await context.respond(f"Received response: {self.response.value}", flags=hikari.MessageFlag.EPHEMERAL)
-        # TODO: Send the message to the backend
 
 
 class ModalView(miru.View):
@@ -146,7 +147,7 @@ async def task_modal(ctx: lightbulb.SlashContext):
     """Request a task from the backend."""
     # typ: str = ctx.options.type
     view = ModalView(
-        modal_title=f"Assistant Response",
+        modal_title="Assistant Response",
         task="Please explain the moon landing to a six year old.",
         timeout=MAX_TASK_TIME,
     )
@@ -211,6 +212,8 @@ class RatingView(miru.View):
 
 
 class SelectRating(miru.View):
+    """View for rating a task with a select menu."""
+
     @miru.select(
         options=[
             hikari.SelectMenuOption(
@@ -249,7 +252,6 @@ class SelectRating(miru.View):
 @lightbulb.implements(lightbulb.SlashCommand)
 async def rating_task(ctx: lightbulb.SlashContext):
     """Rate stuff."""
-
     # Message Based rating
     await ctx.respond(
         "List the responses in order of best to worst response (1,2,3,4,5)", flags=hikari.MessageFlag.EPHEMERAL

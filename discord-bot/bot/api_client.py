@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import asyncio
+"""API Client for interacting with the OASST backend."""
 import enum
 import typing as t
 from typing import Optional, Type
@@ -7,11 +7,12 @@ from uuid import UUID
 
 import aiohttp
 from loguru import logger
-
 from oasst_shared.schemas import protocol as protocol_schema
 
 
 class TaskType(str, enum.Enum):
+    """Task types."""
+
     summarize_story = "summarize_story"
     rate_summary = "rate_summary"
     initial_prompt = "initial_prompt"
@@ -30,6 +31,7 @@ class OasstApiClient:
         """Create a new OasstApiClient.
 
         Args:
+        ----
             backend_url (str): The base backend URL.
             api_key (str): The API key to use for authentication.
         """
@@ -38,7 +40,7 @@ class OasstApiClient:
         self.backend_url = backend_url
         self.api_key = api_key
 
-        self.task_models_map: dict[str, Type[protocol_schema.Task]] = {
+        self.task_models_map: dict[TaskType, Type[protocol_schema.Task]] = {
             TaskType.summarize_story: protocol_schema.SummarizeStoryTask,
             TaskType.rate_summary: protocol_schema.RateSummaryTask,
             TaskType.initial_prompt: protocol_schema.InitialPromptTask,
@@ -58,17 +60,13 @@ class OasstApiClient:
         return await response.json()
 
     def _parse_task(self, data: dict[str, t.Any]) -> protocol_schema.Task:
-        task_type = data.get("type")
-
-        if not isinstance(task_type, str):
-            logger.error(f"task type must be a `str`: {task_type}")
-            raise ValueError(f"task type must be a `str`: {task_type}")
+        task_type = TaskType(data.get("type"))
 
         model = self.task_models_map.get(task_type)
         if not model:
             logger.error(f"Unsupported task type: {task_type}")
             raise ValueError(f"Unsupported task type: {task_type}")
-        return self.task_models_map[task_type].parse_obj(data)
+        return self.task_models_map[task_type].parse_obj(data)  # type: ignore
 
     async def fetch_task(
         self, task_type: protocol_schema.TaskRequestType, user: Optional[protocol_schema.User] = None
@@ -76,8 +74,8 @@ class OasstApiClient:
         """Fetch a task from the backend."""
         logger.debug(f"Fetching task {task_type} for user {user}")
         req = protocol_schema.TaskRequest(type=task_type.value, user=user)
-        resp = await self.post(f"/api/v1/tasks/", data=req.dict())
-        print("resp", resp)
+        resp = await self.post("/api/v1/tasks/", data=req.dict())
+        logger.debug(f"Fetch task response: {resp}")
         return self._parse_task(resp)
 
     async def fetch_random_task(self, user: Optional[protocol_schema.User] = None) -> protocol_schema.Task:
@@ -107,24 +105,3 @@ class OasstApiClient:
     async def close(self):
         logger.debug("Closing OasstApiClient session")
         await self.session.close()
-
-
-async def main():
-    api = OasstApiClient("http://localhost:8080", "test")
-    try:
-        task = await api.fetch_task(protocol_schema.TaskRequestType.initial_prompt, None)
-        print(task)
-    finally:
-
-        await api.close()
-    # session = aiohttp.ClientSession()
-    # try:
-    #     resp = await session.post("http://localhost:8080/api/v1/tasks/", json={"type": "initial_prompt", "user": None})
-    #     resp.raise_for_status()
-    #     print(await resp.text())
-    # finally:
-    #     await session.close()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """Example plugin for reference.
 
-Because this file starts with an `_`, it cannot be loaded by the bot. To see the example plugin in action, rename this file to `example.py`.
+Because this file starts with an `_`, it cannot be loaded by the bot.
+To see the example plugin in action, rename this file to `example.py`.
 """
 import asyncio
 

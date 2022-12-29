@@ -27,6 +27,7 @@ def lint_code(session: Session):
 
 @nox.session(reuse_venv=True)
 def typecheck_code(session: Session):
+    """Typecheck the codebase."""
     session.install("-r", "requirements.txt", "-U")
     session.install("pyright", "-U")
 

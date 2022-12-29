@@ -6,13 +6,13 @@ import typing as t
 from datetime import datetime
 
 import hikari
-
 import lightbulb
 import lightbulb.decorators
 import miru
-from bot.api_client import OasstApiClient, TaskType
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import TaskRequestType
+
+from bot.api_client import OasstApiClient, TaskType
 from bot.utils import ZWJ
 
 plugin = lightbulb.Plugin("WorkPlugin")
@@ -52,7 +52,6 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
     If they select one, present the task steps until a `task_done` task is received.
     Finally, ask the user if they want to perform another task (of the same type).
     """
-
     oasst_api: OasstApiClient = ctx.bot.d.oasst_api
 
     # Continue to complete tasks until the user doesn't want to do another
@@ -165,8 +164,8 @@ async def _send_task(
 ) -> tuple[t.Literal["accept", "next", "cancel"] | None, str]:
     """Send a task to the user.
 
-    Returns the user's choice and the message ID of the task message."""
-
+    Returns the user's choice and the message ID of the task message.
+    """
     # The clean way to do this would be to attach a `to_embed` method to the task classes
     # but the tasks aren't discord specific so that doesn't really make sense.
 
@@ -204,9 +203,7 @@ async def _send_task(
 def _initial_prompt_embed(task: protocol_schema.InitialPromptTask) -> hikari.Embed:
     return (
         hikari.Embed(title="Initial Prompt", description=f"Hint: {task.hint}", timestamp=datetime.now().astimezone())
-        .set_image(
-            "https://images.unsplash.com/photo-1455390582262-044cdead277a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80",
-        )
+        .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")
         .set_footer(text=f"OASST Assistant | {task.id}")
     )
 
@@ -215,12 +212,10 @@ def _rank_initial_prompt_embed(task: protocol_schema.RankInitialPromptsTask) -> 
     embed = (
         hikari.Embed(
             title="Rank Initial Prompt",
-            description=f"Rank the following tasks from best to worst (1,2,3,4,5)",
+            description="Rank the following tasks from best to worst (1,2,3,4,5)",
             timestamp=datetime.now().astimezone(),
         )
-        .set_image(
-            "https://images.unsplash.com/photo-1455390582262-044cdead277a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80",
-        )
+        .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")
         .set_footer(text=f"OASST Assistant | {task.id}")
     )
 
@@ -258,6 +253,11 @@ class TaskAcceptView(miru.View):
 
 
 class ChoiceView(miru.View):
+    """View with two buttons: yes and no.
+
+    The view stops once one of the buttons is pressed and the choice is stored in the `choice` attribute.
+    """
+
     choice: bool | None = None
 
     @miru.button(label="Yes", custom_id="yes", style=hikari.ButtonStyle.SUCCESS)

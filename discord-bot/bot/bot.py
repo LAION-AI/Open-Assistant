@@ -5,8 +5,8 @@ import hikari
 import lightbulb
 import miru
 
-from bot.config import Config
 from bot.api_client import OasstApiClient
+from bot.config import Config
 
 config = Config.from_env()
 
