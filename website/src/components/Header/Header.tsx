@@ -57,7 +57,7 @@ function AccountButton() {
 export function Header(props) {
   const transparent = props.transparent ?? false;
   return (
-    <header className={`${clsx({'bg-transparent':transparent, 'bg-white':!transparent})}`}>
+    <header className={`${clsx({ "bg-transparent": transparent, "bg-white": !transparent })}`}>
       <nav>
         <Container className="relative z-10 flex justify-between py-8">
           <div className="relative z-10 flex items-center gap-16">

@@ -38,7 +38,7 @@ const Home = () => {
 
 Home.getLayout = (page) => (
   <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
-    <Header transparent={true}/>
+    <Header transparent={true} />
     {page}
     <Footer />
   </div>
