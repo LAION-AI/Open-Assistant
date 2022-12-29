@@ -8,7 +8,7 @@ export default {
   },
 };
 
-const Template = (args) => <LoadingScreen {...args} />; //<><div>text</div><div className="max-w-500 mt-40 z-1000 h-full relative"></div></>;
+const Template = (args) => <LoadingScreen {...args} />;
 
 export const Default = Template.bind({});
 
