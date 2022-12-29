@@ -1,7 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-
-import { FaGithub, FaDiscord } from "react-icons/fa";
 import { Container } from "./Container";
 
 export function Footer() {

@@ -6,6 +6,6 @@
     "next/core-web-vitals"
   ],
   "rules": {
-    "sort-imports": "error"
+    "sort-imports": "warn"
   }
 }

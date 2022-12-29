@@ -1,4 +1,4 @@
-import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/20/solid";
+import { ArrowDownIcon, ArrowUpIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import Head from "next/head";
 import { useState } from "react";

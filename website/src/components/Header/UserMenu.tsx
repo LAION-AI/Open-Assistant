@@ -3,7 +3,7 @@ import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { FaCog, FaSignOutAlt, FaGithub } from "react-icons/fa";
+import { FaCog, FaSignOutAlt } from "react-icons/fa";
 
 export function UserMenu() {
   const { data: session } = useSession();
