@@ -32,3 +32,5 @@ class Post(SQLModel, table=True):
     payload_type: str = Field(nullable=False, max_length=200)
     payload: PayloadContainer = Field(sa_column=sa.Column(payload_column_type(PayloadContainer), nullable=True))
     lang: str = Field(nullable=False, max_length=200, default="en-US")
+    depth: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
+    children_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
