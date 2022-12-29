@@ -1,59 +1,52 @@
-# -*- coding: utf-8 -*-
-from http import HTTPStatus
-from pathlib import Path
+import os
 
-import alembic.command
-import alembic.config
-import fastapi
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
 from loguru import logger
-from oasst_backend.api.v1.api import api_router
+
 from oasst_backend.config import settings
-from oasst_backend.exceptions import OasstError, OasstErrorCode
-from starlette.middleware.cors import CORSMiddleware
+from oasst_backend.exceptions import OasstError
+from oasst_backend.api.v1.api import api_router
 
-app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
-
+app = FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
+if settings.BACKEND_CORS_ORIGINS:
+app.add_middleware(
+CORSMiddleware,
+allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+allow_credentials=True,
+allow_methods=[""],
+allow_headers=[""],
+)
 
 @app.exception_handler(OasstError)
-async def oasst_exception_handler(request: fastapi.Request, ex: OasstError):
-    logger.error(f"{request.method} {request.url} failed: {repr(ex)}")
-    return fastapi.responses.JSONResponse(
-        status_code=int(ex.http_status_code), content={"message": ex.message, "error_code": ex.error_code}
-    )
-
+def oasst_exception_handler(request, exc):
+logger.error(f"{request.method} {request.url} failed: {exc}")
+return JSONResponse(
+status_code=exc.http_status_code,
+content={"message": exc.message, "error_code": exc.error_code},
+)
 
 @app.exception_handler(Exception)
-async def unhandled_exception_handler(request: fastapi.Request, ex: Exception):
-    logger.exception(f"{request.method} {request.url} failed [UNHANDLED]: {repr(ex)}")
-    status = HTTPStatus.INTERNAL_SERVER_ERROR
-    return fastapi.responses.JSONResponse(
-        status_code=status.value, content={"message": status.name, "error_code": OasstErrorCode.GENERIC_ERROR}
-    )
-
-
-# Set all CORS enabled origins
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+def unhandled_exception_handler(request, exc):
+logger.exception(f"{request.method} {request.url} failed [UNHANDLED]: {exc}")
+status_code = 500
+return JSONResponse(
+status_code=status_code,
+content={"message": "Internal Server Error", "error_code": "GENERIC_ERROR"},
+)
 
 if settings.UPDATE_ALEMBIC:
+from alembic import command, config
+@app.on_event("startup")
+def alembic_upgrade():
+    logger.info("Attempting to upgrade alembic on startup")
+    try:
+        alembic_ini_path = os.path.join(os.path.dirname(__file__), "alembic.ini")
+        alembic_cfg = config.Config(alembic_ini_path)
+        alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URI)
+        command.upgrade(alembic_cfg, "head")
+        logger.info("Successfully upgraded alembic on startup")
+    except Exception:
+        logger.exception("Alembic upgrade failed on startup")
 
-    @app.on_event("startup")
-    def alembic_upgrade():
-        logger.info("Attempting to upgrade alembic on startup")
-        try:
-            alembic_ini_path = Path(__file__).parent / "alembic.ini"
-            alembic_cfg = alembic.config.Config(str(alembic_ini_path))
-            alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URI)
-            alembic.command.upgrade(alembic_cfg, "head")
-            logger.info("Successfully upgraded alembic on startup")
-        except Exception:
-            logger.exception("Alembic upgrade failed on startup")
-
-
-app.include_router(api_router, prefix=settings.API_V1_STR)
