@@ -63,7 +63,7 @@ if settings.UPDATE_ALEMBIC:
             logger.exception("Alembic upgrade failed on startup")
 
 
-if settings.USE_SEED_DATA:
+if settings.DEBUG_USE_SEED_DATA:
 
     @app.on_event("startup")
     def seed_data():
@@ -97,6 +97,13 @@ if settings.USE_SEED_DATA:
                         role="assistant",
                     ),
                     DummyPost(
+                        task_post_id="2e4e1e6",
+                        user_post_id="c886920",
+                        parent_post_id="6f1d0711",
+                        text="Hey buddy! How can I serve you?",
+                        role="assistant",
+                    ),
+                    DummyPost(
                         task_post_id="970c437d",
                         user_post_id="cec432cf",
                         parent_post_id=None,
@@ -108,6 +115,13 @@ if settings.USE_SEED_DATA:
                         user_post_id="4f85f637",
                         parent_post_id="cec432cf",
                         text="Sorry, I did not understand your request and it is unclear to me what you want me to do. Could you describe it in a different way?",
+                        role="assistant",
+                    ),
+                    DummyPost(
+                        task_post_id="ba87780d",
+                        user_post_id="0e276b98",
+                        parent_post_id="cec432cf",
+                        text="I'm unsure how to interpret this. Is it a riddle?",
                         role="assistant",
                     ),
                 ]
