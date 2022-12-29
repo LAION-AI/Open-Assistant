@@ -1,4 +1,4 @@
-import { Button } from "@chakra-ui/react";
+import { Box, Button, Text, useColorModeValue } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
@@ -10,6 +10,7 @@ import clsx from "clsx";
 import { Container } from "src/components/Container";
 import { NavLinks } from "./NavLinks";
 import { UserMenu } from "./UserMenu";
+import ColorModeSwitch from "../UI/ColorModeSwitch";
 
 function MenuIcon(props) {
   return (
@@ -56,8 +57,9 @@ function AccountButton() {
 
 export function Header(props) {
   const transparent = props.transparent ?? false;
+  const backgroundColor = useColorModeValue('#FFFFFF', '#000000')
   return (
-    <header className={clsx(!transparent && "bg-white")}>
+    <Box backgroundColor={backgroundColor}>
       <nav>
         <Container className="relative z-10 flex justify-between py-8">
           <div className="relative z-10 flex items-center gap-16">
@@ -116,9 +118,10 @@ export function Header(props) {
             </Popover>
             <AccountButton />
             <UserMenu />
+            <ColorModeSwitch />
           </div>
         </Container>
       </nav>
-    </header>
+    </Box>
   );
 }
