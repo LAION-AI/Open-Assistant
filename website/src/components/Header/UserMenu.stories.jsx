@@ -14,7 +14,7 @@ const Template = (args) => {
     <SessionContext.Provider value={session}>
       <div className="flex flex-col">
         <div className="self-end">
-        <UserMenu {...args} />
+          <UserMenu {...args} />
         </div>
       </div>
     </SessionContext.Provider>
