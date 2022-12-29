@@ -1,5 +1,6 @@
 import type { AuthOptions } from "next-auth";
 import NextAuth from "next-auth";
+import { NextApiHandler } from "next";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -55,7 +56,7 @@ export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers,
   pages: {
-    signIn: "/auth/signup",
+    signIn: "/auth/signin",
     verifyRequest: "/auth/verify",
     // error: "/auth/error", -Will be used later
   },
