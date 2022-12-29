@@ -27,7 +27,7 @@ export function Footer() {
                   <Link href="#" aria-label="Our Team" className="hover:underline underline-offset-2">
                     Our Team
                   </Link>
-                  <Link href="#join-us" aria-label="Join Us" className="hover:underline underline-offset-2">
+                  <Link href="/#join-us" aria-label="Join Us" className="hover:underline underline-offset-2">
                     Join Us
                   </Link>
                 </div>
