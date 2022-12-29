@@ -9,6 +9,7 @@ import poster from "src/lib/poster";
 
 import { TwoColumns } from "src/components/TwoColumns";
 import { Button } from "src/components/Button";
+import { LoadingScreen } from "@/components/Loading/LoadingScreen";
 
 const SummarizeStory = () => {
   // Use an array of tasks that record the sequence of steps until a task is
@@ -49,11 +50,12 @@ const SummarizeStory = () => {
     });
   };
 
-  /**
-   * TODO: Make this a nicer loading screen.
-   */
+  if (isLoading) {
+    return <LoadingScreen text="Loading..." />;
+  }
+
   if (tasks.length == 0) {
-    return <div className=" p-6 bg-slate-100 text-gray-800">Loading...</div>;
+    return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
   }
 
   return (
