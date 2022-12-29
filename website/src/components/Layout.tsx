@@ -3,7 +3,7 @@
 import type { NextPage } from "next";
 
 import { Footer } from "./Footer";
-import { Header } from "@/components/Header/Header";
+import { Header } from "src/components/Header";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: React.ReactElement) => React.ReactNode;

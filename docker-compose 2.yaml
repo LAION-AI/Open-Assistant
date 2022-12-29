@@ -1,0 +1,100 @@
+version: "3.7"
+
+services:
+  # Use `docker compose up backend-dev --build --attach-dependencies` to start a database and work and the backend.
+  backend-dev:
+    image: sverrirab/sleep
+    depends_on: [db, adminer]
+
+  # Use `docker compose up frontend-dev --build --attach-dependencies` to start all services needed to work on the frontend.
+  frontend-dev:
+    image: sverrirab/sleep
+    depends_on: [db, webdb, adminer, maildev, backend]
+
+  # This DB is for the FastAPI Backend.
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
+  # This DB is for Web Authentication and data caching.
+  webdb:
+    image: postgres
+    restart: always
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: oasst_web
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
+  # This lets you manually inspect the web and backend databases.
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8089:8080
+
+  # This fakes an SMTP email server used by website authentication.
+  # User registration emails can be found by going to localhost:1080 and
+  # opening the emails listed.
+  maildev:
+    image: maildev/maildev
+    restart: always
+    environment:
+      - MAILDEV_WEB_PORT=1080
+      - MAILDEV_SMTP_PORT=1025
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+
+  # The oassist backend service.
+  backend:
+    build:
+      dockerfile: docker/Dockerfile.backend
+    image: oasst-backend
+    environment:
+      - POSTGRES_HOST=db
+      - DEBUG_SKIP_API_KEY_CHECK=True
+      - MAX_WORKERS=1
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  # The oassist web service.
+  web:
+    build:
+      dockerfile: docker/Dockerfile.website
+    image: oasst-web
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@webdb/oasst_web
+      - FASTAPI_URL=http://backend:8080
+      - FASTAPI_KEY=1234
+      - NEXTAUTH_SECRET=O/M2uIbGj+lDD2oyNa8ax4jEOJqCPJzO53UbWShmq98=
+      - EMAIL_SERVER_HOST=maildev
+      - EMAIL_SERVER_PORT=1025
+      - EMAIL_FROM=info@example.com
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      webdb:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    command: bash wait-for-postgres.sh node server.js

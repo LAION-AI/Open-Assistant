@@ -13,14 +13,6 @@ export default function Verify() {
       </Head>
       <AuthLayout>
         <h1 className="text-lg">A sign-in link has been sent to your email address.</h1>
-        <hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
-        <Link
-          href="#"
-          aria-label="Log In"
-          className="flex justify-center font-medium text-black hover:underline underline-offset-4"
-        >
-          Already have an account? Log In
-        </Link>
       </AuthLayout>
     </>
   );

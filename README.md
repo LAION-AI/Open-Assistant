@@ -18,17 +18,65 @@ We can then take the resulting model and continue with completion sampling step 
 
 We are not going to stop at replicating ChatGPT. We want to build the assistant of the future, able to not only write email and cover letters, but do meaningful work, use APIs, dynamically research information, and much more, with the ability to be personalized and extended by anyone. And we want to do this in a way that is open and accessible, which means we must not only build a great assistant, but also make it small and efficient enough to run on consumer hardware.
 
+### Slide Decks
+
+[Important Data Structures](https://docs.google.com/presentation/d/1iaX_nxasVWlvPiSNs0cllR9L_1neZq0RJxd6MFEalUY/edit?usp=sharing)
+
 ## How can you help?
 
 All open source projects begins with people like you. Open source is the belief that if we collaborate we can together gift our knowledge and technology to the world for the benefit of humanity.
 
 ## I’m in! Now what?
 
-[Fill out the contributor signup form](https://docs.google.com/forms/d/e/1FAIpQLSeuggO7UdYkBvGLEJldDvxp6DwaRbW5p7dl96UzFkZgziRTrQ/viewform)
-
 [Join the LAION Discord Server!](https://discord.com/invite/mVcgxMPD7e)
 
+[and / or the YK Discord Server](https://ykilcher.com/discord)
+
 [Visit the Notion](https://ykilcher.com/open-assistant)
+
+### Taking on Tasks
+
+We have a growing task list
+[of issues](https://github.com/LAION-AI/Open-Assistant/issues). Find an issue
+that appeals to you and make a comment that you'd like to work on it. Include
+in your comment a brief description of how you'll solve the problem and if
+there are any open questions you want to discuss. Once a project coordinator
+has assigned the issue to you, start working on it.
+
+If the issue is currently unclear but you are interested, please post in
+Discord and someone can help clarify the issue with more detail.
+
+### Submitting Work
+
+We're all working on different parts of Open Assistant together. To make
+contributions smoothly we recommend the following:
+
+1.  Work on a small focused change that only touches on a few files.
+1.  Run `pre-commit` and make sure all files have formatting fixed. This
+    simplifies life for reviewers.
+1.  Package up a small bit of work that solves part of the problem into a Pull
+    Request and send it out for review
+1.  If you're lucky, we can merge your change into `main` without any problems.
+    If there's changes to files you're working on, resolve them by:
+1.  First try rebase as suggested
+    [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-rebase)
+1.  If rebase feels too painful, merge as suggested
+    [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-merge)
+1.  Once you've resolved any conflicts, finish the review and merge into `main`.
+1.  Merge in your change and move onto a new issue or the second step of your
+    current issue.
+
+Additionally, if someone is working on an issue that interests you, ask if they
+need help on it or would like suggestions on how to approach the issue. If so,
+share wildly. If they seem to have a good handle on it, let them work on their
+solution until a challenge comes up.
+
+### When does a review finish
+
+A review finishes when all blocking comments are addressed and at least one
+owning reviewer has approved the PR. Be sure to acknowledge any non-blocking
+comments either by making the request change, explaining why it's not being
+addressed now, or filing an issue to handle it later.
 
 ## Developer Setup
 
@@ -46,6 +94,22 @@ There is also a minimal implementation of a frontend in the `text-frontend` fold
 We are using Python 3.10 for the backend.
 
 Check out the [High-Level Protocol Architecture](https://www.notion.so/High-Level-Protocol-Architecture-6f1fd3551da74213b560ead369f132dc)
+
+## End to End Demo
+
+If you are interested in just taking a look at the project.
+You can set up an entire stack needed to run Open Assistant, including the
+website, backend, and associated dependent services.
+
+To start the demo, run this, in root directory:
+
+```sh
+docker compose up --build
+```
+
+Then, navigate to `http://localhost:3000` and interact with the website. When
+logging in, navigate to `http://localhost:1080` to get the magic email login
+link.
 
 ### Website
 

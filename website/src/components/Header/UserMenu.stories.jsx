@@ -1,18 +1,22 @@
 import { SessionContext } from "next-auth/react";
 import React from "react";
 
-import { Avatar } from "./Avatar";
+import UserMenu from "./UserMenu";
 
 export default {
-  title: "Example/Avatar",
-  component: Avatar,
+  title: "Header/UserMenu",
+  component: UserMenu,
 };
 
 const Template = (args) => {
   var { session } = args;
   return (
     <SessionContext.Provider value={session}>
-      <Avatar {...args} />
+      <div className="flex flex-col">
+        <div className="self-end">
+        <UserMenu {...args} />
+        </div>
+      </div>
     </SessionContext.Provider>
   );
 };

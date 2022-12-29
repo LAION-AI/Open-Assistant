@@ -49,9 +49,8 @@ installed:
 
 If you're doing active development we suggest the following workflow:
 
-1.  In one tab, navigate to
-    `${OPEN_ASSISTANT_ROOT}/scripts/frontend-development`.
-1.  Run `docker compose up --build`. You can optionally include `-d` to detach and
+1.  In one tab, navigate to the project root.
+1.  Run `docker compose up frontend-dev --build --attach-dependencies`. You can optionally include `-d` to detach and
     later track the logs if desired.
 1.  In another tab navigate to `${OPEN_ASSISTANT_ROOT/website`.
 1.  Run `npm install`
