@@ -40,13 +40,13 @@ const AssistantReply = () => {
     });
   };
 
-  if (true) {
-    return (<LoadingScreen text="Loading..."/>);
+  if (isLoading) {
+    return <LoadingScreen text="Loading..." />;
   }
+
   if (tasks.length == 0) {
     return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
   }
-
 
   const task = tasks[0].task;
   return (

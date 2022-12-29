@@ -40,14 +40,10 @@ const UserReply = () => {
     });
   };
 
-
   if (isLoading) {
-    return (<LoadingScreen text="Loading..."/>);
+    return <LoadingScreen text="Loading..." />;
   }
 
-  /**
-   * TODO: Make this a nicer loading screen.
-   */
   if (tasks.length == 0) {
     return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
   }
