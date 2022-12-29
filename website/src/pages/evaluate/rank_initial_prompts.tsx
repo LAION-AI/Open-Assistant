@@ -9,7 +9,7 @@ import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 
 import { Button } from "src/components/Button";
-import { LoadingScreen } from "@/components/Loading/LoadingScreen";
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 
 const RankInitialPrompts = () => {
   const [tasks, setTasks] = useState([]);
