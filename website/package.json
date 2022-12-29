@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.4.4",
@@ -40,9 +42,23 @@
     "use-debounce": "^9.0.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.20.7",
+    "@chakra-ui/storybook-addon": "^4.0.16",
+    "@storybook/addon-actions": "^6.5.15",
+    "@storybook/addon-essentials": "^6.5.15",
+    "@storybook/addon-interactions": "^6.5.15",
+    "@storybook/addon-links": "^6.5.15",
+    "@storybook/addon-postcss": "^2.0.0",
+    "@storybook/builder-webpack5": "^6.5.15",
+    "@storybook/manager-webpack5": "^6.5.15",
+    "@storybook/react": "^6.5.15",
+    "@storybook/testing-library": "^0.0.13",
     "@types/node": "18.11.17",
     "@types/react": "18.0.26",
+    "babel-loader": "^8.3.0",
+    "eslint-plugin-storybook": "^0.6.8",
     "prettier": "2.8.1",
-    "prisma": "^4.7.1"
+    "prisma": "^4.7.1",
+    "typescript": "4.9.4"
   }
 }

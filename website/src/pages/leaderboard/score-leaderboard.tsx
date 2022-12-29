@@ -1,4 +1,4 @@
-import RankItem from "@/components/RankItem";
+import RankItem from "src/components/RankItem";
 import { BarsArrowUpIcon, BarsArrowDownIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { HiBarsArrowUp, HiBarsArrowDown } from "react-icons/hi2";

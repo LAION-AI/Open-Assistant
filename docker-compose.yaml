@@ -1,14 +1,14 @@
 version: "3.7"
 
 services:
-  # Use `docker compose up backend-dev` to start a database and work and the backend.
+  # Use `docker compose up backend-dev --build --attach-dependencies` to start a database and work and the backend.
   backend-dev:
-    image: tianon/true
+    image: sverrirab/sleep
     depends_on: [db, adminer]
 
-  # Use `docker compose up frontend-dev` to start all services needed to work on the frontend.
+  # Use `docker compose up frontend-dev --build --attach-dependencies` to start all services needed to work on the frontend.
   frontend-dev:
-    image: tianon/true
+    image: sverrirab/sleep
     depends_on: [db, webdb, adminer, maildev, backend]
 
   # This DB is for the FastAPI Backend.

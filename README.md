@@ -18,15 +18,19 @@ We can then take the resulting model and continue with completion sampling step 
 
 We are not going to stop at replicating ChatGPT. We want to build the assistant of the future, able to not only write email and cover letters, but do meaningful work, use APIs, dynamically research information, and much more, with the ability to be personalized and extended by anyone. And we want to do this in a way that is open and accessible, which means we must not only build a great assistant, but also make it small and efficient enough to run on consumer hardware.
 
+### Slide Decks
+
+[Important Data Structures](https://docs.google.com/presentation/d/1iaX_nxasVWlvPiSNs0cllR9L_1neZq0RJxd6MFEalUY/edit?usp=sharing)
+
 ## How can you help?
 
 All open source projects begins with people like you. Open source is the belief that if we collaborate we can together gift our knowledge and technology to the world for the benefit of humanity.
 
 ## I’m in! Now what?
 
-[Fill out the contributor signup form](https://docs.google.com/forms/d/e/1FAIpQLSeuggO7UdYkBvGLEJldDvxp6DwaRbW5p7dl96UzFkZgziRTrQ/viewform)
-
 [Join the LAION Discord Server!](https://discord.com/invite/mVcgxMPD7e)
+
+[and / or the YK Discord Server](https://ykilcher.com/discord)
 
 [Visit the Notion](https://ykilcher.com/open-assistant)
 

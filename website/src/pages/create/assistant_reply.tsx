@@ -8,6 +8,7 @@ import poster from "src/lib/poster";
 import { Messages } from "src/components/Messages";
 import { TwoColumns } from "src/components/TwoColumns";
 import { Button } from "src/components/Button";
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 
 const AssistantReply = () => {
   const [tasks, setTasks] = useState([]);
@@ -39,11 +40,12 @@ const AssistantReply = () => {
     });
   };
 
-  /**
-   * TODO: Make this a nicer loading screen.
-   */
+  if (isLoading) {
+    return <LoadingScreen text="Loading..." />;
+  }
+
   if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">Loading...</div>;
+    return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
   }
 
   const task = tasks[0].task;
