@@ -1,18 +1,25 @@
 import { Button, Input, Stack } from "@chakra-ui/react";
 import Head from "next/head";
-import { FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
+import { FaDiscord, FaEnvelope, FaGithub, FaBug } from "react-icons/fa";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
-import { useRef } from "react";
+import React, { useRef } from "react";
 import Link from "next/link";
 
 import { AuthLayout } from "src/components/AuthLayout";
 
 export default function Signin({ csrfToken, providers }) {
-  const { discord, email, github } = providers;
+  const { discord, email, github, credentials } = providers;
   const emailEl = useRef(null);
-  const signinWithEmail = () => {
+  const signinWithEmail = (ev: React.FormEvent) => {
+    ev.preventDefault();
     signIn(email.id, { callbackUrl: "/", email: emailEl.current.value });
   };
+
+  const debugUsernameEl = useRef(null);
+  function signinWithDebugCredentials(ev: React.FormEvent) {
+    ev.preventDefault();
+    signIn(credentials.id, { callbackUrl: "/", username: debugUsernameEl.current.value });
+  }
 
   return (
     <>
@@ -22,19 +29,26 @@ export default function Signin({ csrfToken, providers }) {
       </Head>
       <AuthLayout>
         <Stack spacing="2">
+          {credentials && (
+            <form onSubmit={signinWithDebugCredentials} className="border-2 border-orange-200 rounded-md p-4 relative">
+              <span className="text-orange-600 absolute -top-3 left-5 bg-white px-1">For Debugging Only</span>
+              <Stack>
+                <Input variant="outline" size="lg" placeholder="Username" ref={debugUsernameEl} />
+                <Button size={"lg"} leftIcon={<FaBug />} colorScheme="gray" type="submit">
+                  Continue with Debug User
+                </Button>
+              </Stack>
+            </form>
+          )}
           {email && (
-            <Stack>
-              <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
-              <Button
-                size={"lg"}
-                leftIcon={<FaEnvelope />}
-                colorScheme="gray"
-                onClick={signinWithEmail}
-                // isDisabled="false"
-              >
-                Continue with Email
-              </Button>
-            </Stack>
+            <form onSubmit={signinWithEmail}>
+              <Stack>
+                <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
+                <Button size={"lg"} leftIcon={<FaEnvelope />} colorScheme="gray" type="submit">
+                  Continue with Email
+                </Button>
+              </Stack>
+            </form>
           )}
           {discord && (
             <Button
