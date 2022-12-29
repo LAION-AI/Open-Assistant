@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     DEBUG_ALLOW_ANY_API_KEY: bool = False
     DEBUG_SKIP_API_KEY_CHECK: bool = False
+    DEBUG_USE_SEED_DATA: bool = False
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
@@ -33,7 +34,6 @@ class Settings(BaseSettings):
 
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     UPDATE_ALEMBIC: bool = True
-    USE_SEED_DATA: bool = True
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

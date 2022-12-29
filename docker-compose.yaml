@@ -71,6 +71,7 @@ services:
     environment:
       - POSTGRES_HOST=db
       - DEBUG_SKIP_API_KEY_CHECK=True
+      - DEBUG_USE_SEED_DATA=True
       - MAX_WORKERS=1
     depends_on:
       db:
