@@ -7,6 +7,7 @@ import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 
 import { Button } from "src/components/Button";
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 
@@ -41,9 +42,10 @@ const RankUserReplies = () => {
     });
   };
 
-  /**
-   * TODO: Make this a nicer loading screen.
-   */
+  if (isLoading) {
+    return <LoadingScreen text="Loading..." />;
+  }
+
   if (tasks.length == 0) {
     return <div className="p-6 bg-slate-100 text-gray-800">Loading...</div>;
   }
