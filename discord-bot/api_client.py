@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import enum
 from typing import Optional, Type
+import typing as t
 
 import requests
 from oasst_shared.schemas import protocol as protocol_schema
@@ -41,7 +42,7 @@ class ApiClient:
         response.raise_for_status()
         return response.json()
 
-    def _parse_task(self, data: dict) -> protocol_schema.Task:
+    def _parse_task(self, data: dict[str, t.Any]) -> protocol_schema.Task:
         if not isinstance(data, dict):
             raise ValueError("dict expected")
 

@@ -6,15 +6,6 @@ This bot collects human feedback to create a dataset for RLHF-alignment of an as
 
 To add the official Open-Assistant data collection bot to your discord server [click here](https://discord.com/api/oauth2/authorize?client_id=1054078345542910022&permissions=1634235579456&scope=bot). The bot needs access to read the contents of user text messages.
 
-## Bot token for development
+## Contributing
 
-To test the bot on your own discord server you need to register a discord application at the [Discord Developer Portal](https://discord.com/developers/applications) and get at bot token.
-
-1. Follow a tutorial on how to get a bot token, for example this one: [Creating a discord bot & getting a token](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token)
-2. The bot script expects the bot token to be in an environment variable called `BOT_TOKEN`.
-
-The simplest way to configure the token is via an `.env` file:
-
-```
-BOT_TOKEN=XYZABC123...
-```
+To contribute to the bot, please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file.

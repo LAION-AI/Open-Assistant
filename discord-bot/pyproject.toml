@@ -1,0 +1,47 @@
+[project]
+name = "Open-Assistant Discord Bot"
+version = "0.0.1"
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+
+[tool.pyright]
+include = ["ottbot", "noxfile.py"]
+pythonVersion="3.10"
+reportMissingImports=false
+# reportInvalidTypeVarUse=false
+# reportMissingModuleSource=false
+reportUnknownVariableType=false
+pythonPlatform="Linux"
+
+[tool.isort]
+profile="black"
+sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']
+skip_glob = "**/__init__.pyi"
+
+[tool.flake8]
+max-function-length = 130
+max-line-length = 130
+# Technically this is 120, but black has a policy of "1 or 2 over is fine if it is tidier", so we have to raise this.
+accept-encodings = "utf-8"
+docstring-convention = "numpy"
+ignore = [
+    "A002",      # Argument is shadowing a python builtin.
+    "A003",      # Class attribute is shadowing a python builtin.
+    "CFQ002",    # Function has too many arguments.
+    "CFQ004",    # Function has too many returns.
+    "D001",      # False positive for depreciated functions.
+    "D102",      # Missing docstring in public method.
+    "D105",      # Magic methods not having a docstring.
+    "D412",      # No blank lines allowed between a section header and its content
+    "E203",      # Whitespace after : (to match how black formats it)
+    "E402",      # Module level import not at top of file (isn't compatible with our import style).
+    "T101",      # TO-DO comment detection (T102 is FIX-ME and T103 is XXX).
+    "W503",      # line break before binary operator.
+    "W504",      # line break before binary operator (again, I guess).
+    "S101",      # Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+    "S105",      # Possible hardcoded password.
+    "EXE002",    # Executable file with not shebang
+    "D401",      # Imperative mood
+]

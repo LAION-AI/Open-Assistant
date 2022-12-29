@@ -1,0 +1,8 @@
+nox
+
+black
+isort
+
+codespell
+flake8
+pyright
