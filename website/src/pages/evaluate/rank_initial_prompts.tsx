@@ -9,6 +9,7 @@ import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 
 import { Button } from "src/components/Button";
+import { LoadingScreen } from "@/components/Loading/LoadingScreen";
 
 const RankInitialPrompts = () => {
   const [tasks, setTasks] = useState([]);
@@ -44,12 +45,14 @@ const RankInitialPrompts = () => {
     });
   };
 
-  /**
-   * TODO: Make this a nicer loading screen.
-   */
-  if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">Loading...</div>;
+  if (isLoading) {
+    return <LoadingScreen text="Loading..." />;
   }
+
+  if (tasks.length == 0) {
+    return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
+  }
+
   const prompts = tasks[0].task.prompts as string[];
   const items = ranking.map((i) => ({
     text: prompts[i],
