@@ -69,19 +69,24 @@ class OasstApiClient:
         return self.task_models_map[task_type].parse_obj(data)  # type: ignore
 
     async def fetch_task(
-        self, task_type: protocol_schema.TaskRequestType, user: Optional[protocol_schema.User] = None
+        self,
+        task_type: protocol_schema.TaskRequestType,
+        user: Optional[protocol_schema.User] = None,
+        collective: bool = False,
     ) -> protocol_schema.Task:
         """Fetch a task from the backend."""
         logger.debug(f"Fetching task {task_type} for user {user}")
-        req = protocol_schema.TaskRequest(type=task_type.value, user=user)
+        req = protocol_schema.TaskRequest(type=task_type.value, user=user, collective=collective)
         resp = await self.post("/api/v1/tasks/", data=req.dict())
         logger.debug(f"Fetch task response: {resp}")
         return self._parse_task(resp)
 
-    async def fetch_random_task(self, user: Optional[protocol_schema.User] = None) -> protocol_schema.Task:
+    async def fetch_random_task(
+        self, user: Optional[protocol_schema.User] = None, collective: bool = False
+    ) -> protocol_schema.Task:
         """Fetch a random task from the backend."""
         logger.debug(f"Fetching random for user {user}")
-        return await self.fetch_task(protocol_schema.TaskRequestType.random, user)
+        return await self.fetch_task(protocol_schema.TaskRequestType.random, user, collective)
 
     async def ack_task(self, task_id: str | UUID, post_id: str):
         """Send an ACK for a task to the backend."""
