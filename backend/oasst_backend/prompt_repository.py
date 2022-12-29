@@ -160,8 +160,9 @@ class PromptRepository:
             payload=db_payload.PostPayload(text=text),
             depth=depth,
         )
-        wp.done = True
-        self.db.add(wp)
+        if not wp.collective:
+            wp.done = True
+            self.db.add(wp)
         self.db.commit()
         self.journal.log_text_reply(work_package=wp, post_id=new_post_id, role=role, length=len(text))
         return user_post
@@ -186,6 +187,10 @@ class PromptRepository:
         # store reaction to post
         reaction_payload = db_payload.RatingReactionPayload(rating=rating.rating)
         reaction = self.insert_reaction(post.id, reaction_payload)
+        if not work_package.collective:
+            work_package.done = True
+            self.db.add(work_package)
+
         self.journal.log_rating(work_package, post_id=post.id, rating=rating.rating)
         logger.info(f"Ranking {rating.rating} stored for work_package {work_package.id}.")
         return reaction
@@ -193,8 +198,9 @@ class PromptRepository:
     def store_ranking(self, ranking: protocol_schema.PostRanking) -> PostReaction:
         # fetch work_package
         work_package = self.fetch_workpackage_by_postid(ranking.post_id)
-        work_package.done = True
-        self.db.add(work_package)
+        if not work_package.collective:
+            work_package.done = True
+            self.db.add(work_package)
 
         work_payload: db_payload.RankConversationRepliesPayload | db_payload.RankInitialPromptsPayload = (
             work_package.payload.payload
@@ -250,6 +256,7 @@ class PromptRepository:
         task: protocol_schema.Task,
         thread_id: UUID = None,
         parent_post_id: UUID = None,
+        collective: bool = False,
     ) -> WorkPackage:
         payload: db_payload.TaskPayload
         match type(task):
@@ -287,10 +294,7 @@ class PromptRepository:
                 raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
 
         wp = self.insert_work_package(
-            payload=payload,
-            id=task.id,
-            thread_id=thread_id,
-            parent_post_id=parent_post_id,
+            payload=payload, id=task.id, thread_id=thread_id, parent_post_id=parent_post_id, collective=collective
         )
         assert wp.id == task.id
         return wp
@@ -301,6 +305,7 @@ class PromptRepository:
         id: UUID = None,
         thread_id: UUID = None,
         parent_post_id: UUID = None,
+        collective: bool = False,
     ) -> WorkPackage:
         c = PayloadContainer(payload=payload)
         wp = WorkPackage(
@@ -311,6 +316,7 @@ class PromptRepository:
             api_client_id=self.api_client.id,
             thread_id=thread_id,
             parent_post_id=parent_post_id,
+            collective=collective,
         )
         self.db.add(wp)
         self.db.commit()
@@ -463,3 +469,20 @@ class PromptRepository:
 
     def fetch_post(self, post_id: UUID) -> Optional[Post]:
         return self.db.query(Post).filter(Post.id == post_id).one()
+
+    def close_task(self, post_id: str, allow_personal_tasks: bool = False):
+        self.validate_post_id(post_id)
+        wp = self.fetch_workpackage_by_postid(post_id)
+
+        if not wp:
+            raise OasstError("Work package not found", OasstErrorCode.WORK_PACKAGE_NOT_FOUND)
+        if wp.expired:
+            raise OasstError("Work package expired", OasstErrorCode.WORK_PACKAGE_EXPIRED)
+        if not allow_personal_tasks and not wp.collective:
+            raise OasstError("This is not a collective task", OasstErrorCode.WORK_PACKAGE_NOT_COLLECTIVE)
+        if wp.done:
+            raise OasstError("Allready closed", OasstErrorCode.WORK_PACKAGE_ALREADY_DONE)
+
+        wp.done = True
+        self.db.add(wp)
+        self.db.commit()
