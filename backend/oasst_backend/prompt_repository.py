@@ -445,6 +445,8 @@ class PromptRepository:
 
         parent = parent.order_by(func.random()).limit(1).subquery()
         replies = self.db.query(Post).filter(Post.parent_id.in_(parent)).order_by(func.random()).limit(max_size).all()
+        if not replies:
+            raise OasstError("No replies found", OasstErrorCode.NO_REPLIES_FOUND)
 
         thread = self.fetch_thread(replies[0].thread_id)
         thread = {p.id: p for p in thread}
