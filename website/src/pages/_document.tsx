@@ -8,7 +8,6 @@ export default function Document() {
         <link rel="shortcut icon" type="image/png" href="/images/logos/favicon.png" />
       </Head>
       <body className="flex h-full flex-col bg-gray-50">
-        <ColorModeScript type='localStorage' />
         <Main />
         <NextScript />
       </body>
