@@ -1,5 +1,6 @@
+# TODO: Convert file to markdown
 # -*- coding: utf-8 -*-
-"""Example plugins for reference.
+"""Example plugin for reference.
 
 Because this file starts with an `_`, it cannot be loaded by the bot. To see the example plugin in action, rename this file to `example.py`.
 """
@@ -394,6 +395,10 @@ async def modal_example(ctx: lightbulb.SlashContext) -> None:
     view = ModalView()
     resp = await ctx.respond("This button triggers a modal!", components=view)
     await view.start(await resp.message())
+
+
+# TODO: Database example
+# TODO: Rest client example
 
 
 def load(bot: lightbulb.BotApp):

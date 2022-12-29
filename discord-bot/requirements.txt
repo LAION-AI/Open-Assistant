@@ -8,3 +8,4 @@ python-dotenv       # .env file support
 aiosqlite           # database
 aiohttp             # http client
 aiohttp[speedups]   # speedups for aiohttp
+loguru

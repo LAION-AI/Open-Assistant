@@ -21,3 +21,10 @@ def format_time(dt: datetime, fmt: t.Literal["t", "T", "D", "f", "F", "R"]) -> s
             return f"<t:{dt.timestamp():.0f}:{fmt}>"
         case _:
             raise ValueError(f"`fmt` must be 't', 'T', 'D', 'f', 'F' or 'R', not {fmt}")
+
+
+ZWJ = "\u200d"
+"""Zero-width joiner.
+
+This appears as an empty message in Discord.
+"""

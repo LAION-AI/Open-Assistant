@@ -6,6 +6,7 @@ import lightbulb
 import miru
 
 from bot.config import Config
+from bot.api_client import OasstApiClient
 
 config = Config.from_env()
 
@@ -29,8 +30,11 @@ async def on_starting(event: hikari.StartingEvent):
     await bot.d.db.executescript(open("./bot/db/schema.sql").read())
     await bot.d.db.commit()
 
+    bot.d.oasst_api = OasstApiClient("http://localhost:8080", "any_key")
+
 
 @bot.listen()
 async def on_stopping(event: hikari.StoppingEvent):
     """Cleanup."""
     await bot.d.db.close()
+    await bot.d.oasst_api.close()
