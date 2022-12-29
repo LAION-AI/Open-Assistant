@@ -56,7 +56,7 @@ export function Hero() {
       <Container className="">
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
           <div className="relative z-10 mx-auto max-w-2xl lg:col-span-7 lg:max-w-none lg:pt-6 xl:col-span-6">
-            <h1 className="text-5xl mb-6 font-bold tracking-tight text-gray-900">Open Assistant</h1>
+            <h1 className="text-5xl mb-6 font-bold tracking-tight">Open Assistant</h1>
             <p className="mt-8 text-3xl inline bg-gradient-to-r from-indigo-600 via-sky-400 to-indigo-700 bg-clip-text font-display tracking-tight text-transparent">
               <b>Conversational AI for everyone.</b>
             </p>

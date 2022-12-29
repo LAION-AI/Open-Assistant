@@ -7,6 +7,7 @@ import { Hero } from "src/components/Hero";
 import { TaskSelection } from "src/components/TaskSelection";
 import { Header } from "src/components/Header";
 import { Footer } from "src/components/Footer";
+import { Box, Container } from "@chakra-ui/react";
 
 const Home = () => {
   const { data: session } = useSession();
@@ -21,16 +22,15 @@ const Home = () => {
         />
       </Head>
       {session ? (
-        <main className="my-4">
+        <Container>
           <TaskSelection />
-        </main>
+        </Container>
       ) : (
-        <main>
+        <Container className="min-w-full">
           <Hero />
           <CallToAction />
-
           <Faq />
-        </main>
+        </Container>
       )}
     </>
   );

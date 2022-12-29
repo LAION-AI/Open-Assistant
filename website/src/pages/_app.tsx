@@ -5,7 +5,7 @@ import { getDefaultLayout, NextPageWithLayout } from "src/components/Layout";
 
 import "../styles/globals.css";
 import "focus-visible";
-import { Chakra, getServerSideProps } from "../styles/Theme";
+import { Chakra, getServerSideProps } from "../styles/Chakra";
 
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;

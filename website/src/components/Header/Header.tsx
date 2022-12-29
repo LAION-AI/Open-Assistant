@@ -1,13 +1,11 @@
-import { Box, Button, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Button, Container, useColorModeValue } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
-import { FaUser, FaSignOutAlt } from "react-icons/fa";
-import clsx from "clsx";
+import {  useSession } from "next-auth/react";
+import { FaUser} from "react-icons/fa";
 
-import { Container } from "src/components/Container";
 import { NavLinks } from "./NavLinks";
 import { UserMenu } from "./UserMenu";
 import ColorModeSwitch from "../UI/ColorModeSwitch";
@@ -56,10 +54,8 @@ function AccountButton() {
 }
 
 export function Header(props) {
-  const transparent = props.transparent ?? false;
-  const backgroundColor = useColorModeValue('#FFFFFF', '#000000')
   return (
-    <Box backgroundColor={backgroundColor}>
+    <Container>
       <nav>
         <Container className="relative z-10 flex justify-between py-8">
           <div className="relative z-10 flex items-center gap-16">
@@ -122,6 +118,6 @@ export function Header(props) {
           </div>
         </Container>
       </nav>
-    </Box>
+    </Container>
   );
 }
