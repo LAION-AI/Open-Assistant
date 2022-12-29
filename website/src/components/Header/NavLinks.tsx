@@ -8,8 +8,8 @@ export function NavLinks(): JSX.Element {
   return (
     <>
       {[
-        ["Join Us", "#join-us"],
-        ["FAQ", "#faq"],
+        ["Join Us", "/#join-us"],
+        ["FAQ", "/#faq"],
       ].map(([label, href], index) => (
         <Link
           key={label}

@@ -14,7 +14,7 @@ repos:
         # and which break the standard YAML check.  The alternative would be to
         # skip any unsafe errors (and thus break YAML compatibility) or use
         # some other checker that may not work in general.
-        exclude: copilot/web/addons/*
+        exclude: "^copilot/web/addons/.*$"
       - id: check-json
       - id: check-case-conflict
       - id: detect-private-key
