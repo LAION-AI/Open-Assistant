@@ -3,13 +3,13 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 
 export function NavLinks(): JSX.Element {
-  let [hoveredIndex, setHoveredIndex] = useState(null);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
   return (
     <>
       {[
-        ["Join Us", "#join-us"],
-        ["FAQ", "#faq"],
+        ["Join Us", "/#join-us"],
+        ["FAQ", "/#faq"],
       ].map(([label, href], index) => (
         <Link
           key={label}

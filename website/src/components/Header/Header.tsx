@@ -3,12 +3,14 @@ import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+
 import { signOut, useSession } from "next-auth/react";
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
+import clsx from "clsx";
 
-import { UserMenu } from "./UserMenu";
-import { Container } from "./Container";
+import { Container } from "src/components/Container";
 import { NavLinks } from "./NavLinks";
+import { UserMenu } from "./UserMenu";
 
 function MenuIcon(props) {
   return (
@@ -53,9 +55,10 @@ function AccountButton() {
   );
 }
 
-export function Header() {
+export function Header(props) {
+  const transparent = props.transparent ?? false;
   return (
-    <header className="bg-white">
+    <header className={clsx(!transparent && "bg-white")}>
       <nav>
         <Container className="relative z-10 flex justify-between py-8">
           <div className="relative z-10 flex items-center gap-16">
@@ -101,8 +104,8 @@ export function Header() {
                           className="absolute inset-x-0 top-0 z-0 origin-top rounded-b-2xl bg-white px-6 pb-6 pt-32 shadow-2xl shadow-gray-900/20"
                         >
                           <div className="space-y-4">
-                            <MobileNavLink href="#join-us">Join Us</MobileNavLink>
-                            <MobileNavLink href="#faqs">FAQs</MobileNavLink>
+                            <MobileNavLink href="/#join-us">Join Us</MobileNavLink>
+                            <MobileNavLink href="/#faqs">FAQs</MobileNavLink>
                           </div>
                           <div className="mt-8 flex flex-col gap-4"></div>
                         </Popover.Panel>

@@ -1,4 +1,4 @@
-import { Textarea } from "@chakra-ui/react";
+import { Flex, Textarea } from "@chakra-ui/react";
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import Head from "next/head";
 import { useState } from "react";
@@ -9,8 +9,11 @@ import RatingRadioGroup from "src/components/RatingRadioGroup";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { TwoColumns } from "src/components/TwoColumns";
-import { Button } from "src/components/Button";
+import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
+import { SkipButton } from "src/components/Buttons/Skip";
+import { SubmitButton } from "src/components/Buttons/Submit";
 
 const RateSummary = () => {
   // Use an array of tasks that record the sequence of steps until a task is
@@ -49,11 +52,12 @@ const RateSummary = () => {
     });
   };
 
-  /**
-   * TODO: Make this a nicer loading screen.
-   */
+  if (isLoading) {
+    return <LoadingScreen text="Loading..." />;
+  }
+
   if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">Loading...</div>;
+    return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
   }
 
   return (
@@ -89,22 +93,12 @@ const RateSummary = () => {
         </TwoColumns>
 
         <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
-          <div className="grid grid-cols-[min-content_auto] gap-x-2 text-gray-700">
-            <b>Prompt</b>
-            <span>{tasks[0].id}</span>
-            <b>Output</b>
-            <span>Submit your answer</span>
-          </div>
+          <TaskInfo id={tasks[0].id} output="Submit your answer" />
 
-          <div className="flex justify-center ml-auto">
-            <Button className="mr-2 bg-indigo-100 text-indigo-700 hover:bg-indigo-200">Skip</Button>
-            <Button
-              onClick={() => submitResponse(tasks[0])}
-              className="bg-indigo-600 text-white shadow-sm hover:bg-indigo-700"
-            >
-              Submit
-            </Button>
-          </div>
+          <Flex justify="center" ml="auto" gap={2}>
+            <SkipButton>Skip</SkipButton>
+            <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
+          </Flex>
         </section>
       </main>
     </>

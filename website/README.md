@@ -64,11 +64,17 @@ If you're doing active development we suggest the following workflow:
 
 ### Using debug user credentials
 
-Whenever the website runs in development mode, you can use the debug credentials provider to log in without fancy emails or OAuth.
+You can use the debug credentials provider to log in without fancy emails or OAuth.
 
-1. Development mode is automatically active when you start the website with `npm run dev`.
+1. This feature is automatically on in development mode, i.e. when you run `npm run dev`. In case you want to do the same with a production build (for example, the docker image), then run the website with environment variable `DEBUG_LOGIN=true`.
 1. Use the `Login` button in the top right to go to the login page.
 1. You should see a section for debug credentials. Enter any username you wish, you will be logged in as that user.
+
+### Using Storybook
+
+To develop components using [Storybook](https://storybook.js.org/) run `npm run storybook`. Then navigate to in your browser to `http://localhost:6006`.
+
+To create a new story create a file named `[componentName].stories.js`. An example how such a story could look like, see `Header.stories.jsx`.
 
 ## Code Layout
 

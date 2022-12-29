@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     DEBUG_ALLOW_ANY_API_KEY: bool = False
     DEBUG_SKIP_API_KEY_CHECK: bool = False
+    DEBUG_USE_SEED_DATA: bool = False
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:

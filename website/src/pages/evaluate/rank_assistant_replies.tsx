@@ -1,4 +1,4 @@
-import { Flex } from "@chakra-ui/react";
+import { Button, Flex } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
 import useSWRImmutable from "swr/immutable";
@@ -10,18 +10,18 @@ import poster from "src/lib/poster";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
-import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
+import { SkipButton } from "src/components/Buttons/Skip";
 
-const RankInitialPrompts = () => {
+const RankAssistantReplies = () => {
   const [tasks, setTasks] = useState([]);
   /**
-   * This array will contain the ranked indices of the prompts
-   * The best prompt will have index 0, and the worst is the last.
+   * This array will contain the ranked indices of the replies
+   * The best reply will have index 0, and the worst is the last.
    */
   const [ranking, setRanking] = useState<number[]>([]);
 
-  const { isLoading } = useSWRImmutable("/api/new_task/rank_initial_prompts", fetcher, {
+  const { isLoading } = useSWRImmutable("/api/new_task/rank_assistant_replies", fetcher, {
     onSuccess: (data) => {
       setTasks([data]);
     },
@@ -49,22 +49,23 @@ const RankInitialPrompts = () => {
   }
 
   if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
+    return <div className="p-6 bg-slate-100 text-gray-800">Loading...</div>;
   }
+  const replies = tasks[0].task.replies as string[];
 
   return (
     <>
       <Head>
-        <title>Rank Initial Prompts</title>
-        <meta name="description" content="Rank initial prompts." />
+        <title>Rank Assistant Replies</title>
+        <meta name="description" content="Rank Assistant Replies." />
       </Head>
       <main className="p-6 bg-slate-100 text-gray-800">
         <div className="rounded-lg shadow-lg block bg-white p-6 mb-8">
           <h5 className="text-lg font-semibold mb-4">Instructions</h5>
           <p className="text-lg py-1">
-            Given the following prompts, sort them from best to worst, best being first, worst being last.
+            Given the following replies, sort them from best to worst, best being first, worst being last.
           </p>
-          <Sortable items={tasks[0].task.prompts} onChange={setRanking} />
+          <Sortable items={replies} onChange={setRanking} />
         </div>
 
         <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch">
@@ -82,4 +83,4 @@ const RankInitialPrompts = () => {
   );
 };
 
-export default RankInitialPrompts;
+export default RankAssistantReplies;
