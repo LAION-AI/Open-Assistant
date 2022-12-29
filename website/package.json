@@ -58,6 +58,7 @@
     "@types/react": "18.0.26",
     "babel-loader": "^8.3.0",
     "cypress": "^12.2.0",
+    "cypress-image-diff-js": "^1.23.0",
     "eslint-plugin-storybook": "^0.6.8",
     "@typescript-eslint/eslint-plugin": "^5.47.1",
     "prettier": "2.8.1",

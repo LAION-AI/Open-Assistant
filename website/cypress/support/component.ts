@@ -15,6 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import "./commands";
+import compareSnapshotCommand from "cypress-image-diff-js/dist/command";
 import "../../src/styles/globals.css";
 
 // Alternatively you can use CommonJS syntax:
@@ -38,3 +39,5 @@ Cypress.Commands.add("mount", mount);
 
 // Example use:
 // cy.mount(<MyComponent />)
+
+compareSnapshotCommand();
