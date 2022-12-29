@@ -40,6 +40,12 @@ export const TaskSelection = () => {
           title="Rank User Replies"
           link="/evaluate/rank_user_replies"
         />
+        <TaskOption
+          alt="Rank Assistant Replies"
+          img="/images/logos/logo.svg"
+          title="Rank Assistant Replies"
+          link="/evaluate/rank_assistant_replies"
+        />
       </TaskOptions>
     </Flex>
   );

@@ -1,5 +1,5 @@
 import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/20/solid";
-import { Button } from "src/components/Button";
+import { Button } from "@chakra-ui/react";
 import clsx from "clsx";
 
 export interface SortableItemProps {
@@ -33,11 +33,7 @@ interface ArrowButtonProps {
 
 const ArrowButton = ({ children, active, onClick }: ArrowButtonProps) => {
   return (
-    <Button
-      className={clsx("justify-center", active ? "hover:bg-indigo-200" : "opacity-10")}
-      onClick={onClick}
-      disabled={!active}
-    >
+    <Button justifyContent="center" variant="ghost" onClick={onClick} disabled={!active}>
       {children}
     </Button>
   );
