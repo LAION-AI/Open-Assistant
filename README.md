@@ -4,7 +4,7 @@ Open Assistant is a project meant to give everyone access to a great chat based 
 
 We believe that by doing this we will create a revolution in innovation in language. In the same way that stable-diffusion helped the world make art and images in new ways we hope Open Assistant can help improve the world by improving language itself.
 
-## Do you want to try ?
+## Do you want to try it out?
 
 If you are interested in taking a look at the current state of the project, You can set up an entire stack needed to run **Open-Assistant**, including the
 website, backend, and associated dependent services.
@@ -97,7 +97,7 @@ addressed now, or filing an issue to handle it later.
 
 Work is organized in the [project board](https://github.com/orgs/LAION-AI/projects/3).
 
-**Anything that is in the `Todo` column and not assigned, is up for grabs. Meaning we'd be happy if anyone did those tasks.**
+**Anything that is in the `Todo` column and not assigned, is up for grabs. Meaning we'd be happy for anyone to do these tasks.**
 
 If you want to work on something, assign yourself to it or write a comment that you want to work on it and what you plan to do.
 
