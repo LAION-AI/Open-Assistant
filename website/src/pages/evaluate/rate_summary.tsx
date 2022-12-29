@@ -9,9 +9,10 @@ import RatingRadioGroup from "src/components/RatingRadioGroup";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 
-import { TwoColumns } from "src/components/TwoColumns";
 import { Button } from "src/components/Button";
-import { LoadingScreen } from "@/components/Loading/LoadingScreen";
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
+import { TwoColumns } from "src/components/TwoColumns";
+import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 
 const RateSummary = () => {
   // Use an array of tasks that record the sequence of steps until a task is
@@ -91,12 +92,7 @@ const RateSummary = () => {
         </TwoColumns>
 
         <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
-          <div className="grid grid-cols-[min-content_auto] gap-x-2 text-gray-700">
-            <b>Prompt</b>
-            <span>{tasks[0].id}</span>
-            <b>Output</b>
-            <span>Submit your answer</span>
-          </div>
+          <TaskInfo id={tasks[0].id} output="Submit your answer" />
 
           <div className="flex justify-center ml-auto">
             <Button className="mr-2 bg-indigo-100 text-indigo-700 hover:bg-indigo-200">Skip</Button>

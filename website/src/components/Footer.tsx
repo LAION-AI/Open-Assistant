@@ -1,7 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-
-import { FaGithub, FaDiscord } from "react-icons/fa";
 import { Container } from "./Container";
 
 export function Footer() {
@@ -27,7 +25,7 @@ export function Footer() {
                   <Link href="#" aria-label="Our Team" className="hover:underline underline-offset-2">
                     Our Team
                   </Link>
-                  <Link href="#join-us" aria-label="Join Us" className="hover:underline underline-offset-2">
+                  <Link href="/#join-us" aria-label="Join Us" className="hover:underline underline-offset-2">
                     Join Us
                   </Link>
                 </div>

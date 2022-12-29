@@ -43,6 +43,7 @@ class TaskRequest(BaseModel):
 
     type: TaskRequestType = TaskRequestType.random
     user: Optional[User] = None
+    collective: bool = False
 
 
 class TaskAck(BaseModel):
@@ -55,6 +56,12 @@ class TaskNAck(BaseModel):
     """The frontend acknowledges that it has received a task but cannot create a post."""
 
     reason: str
+
+
+class TaskClose(BaseModel):
+    """The frontend asks to mark task as done"""
+
+    post_id: str
 
 
 class Task(BaseModel):
