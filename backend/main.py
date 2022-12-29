@@ -97,6 +97,20 @@ if settings.DEBUG_USE_SEED_DATA:
                         role="assistant",
                     ),
                     DummyPost(
+                        task_post_id="3d5dc440",
+                        user_post_id="a8c01c04",
+                        parent_post_id="4a24530b",
+                        text="Do you have a recipe for potato soup?",
+                        role="user",
+                    ),
+                    DummyPost(
+                        task_post_id="643716c1",
+                        user_post_id="f43a93b7",
+                        parent_post_id="4a24530b",
+                        text="Who were the 8 presidents before George Washington?",
+                        role="user",
+                    ),
+                    DummyPost(
                         task_post_id="2e4e1e6",
                         user_post_id="c886920",
                         parent_post_id="6f1d0711",
