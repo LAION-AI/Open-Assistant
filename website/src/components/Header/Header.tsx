@@ -6,9 +6,9 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
 
-import { UserMenu } from "./UserMenu";
-import { Container } from "./Container";
+import { Container } from "src/components/Container";
 import { NavLinks } from "./NavLinks";
+import { UserMenu } from "./UserMenu";
 
 function MenuIcon(props) {
   return (
