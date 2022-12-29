@@ -17,7 +17,7 @@ docker compose up --build
 
 Then, navigate to `http://localhost:3000` (It may take some time to boot up) and interact with the website.
 
-**Note:** When logging in, navigate to `http://localhost:1080` to get the magic email login link.
+**Note:** When logging in via email, navigate to `http://localhost:1080` to get the magic email login link.
 
 ## The Plan
 
