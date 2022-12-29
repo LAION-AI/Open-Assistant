@@ -5,3 +5,6 @@ __pycache__/
 .venv
 .nox
 .env
+
+# Database files
+*.db
