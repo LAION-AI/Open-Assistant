@@ -37,7 +37,7 @@ logger.setLevel(logging.DEBUG)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def work(ctx: lightbulb.SlashContext):
     """Create and handle a task."""
-    task_type: TaskRequestType = TaskRequestType(ctx.options.type)
+    task_type: TaskRequestType = TaskRequestType(ctx.options.type.split(".")[-1])
 
     await ctx.respond("Sending you a task, check your DMs", flags=hikari.MessageFlag.EPHEMERAL)
     logger.debug(f"task_type: {task_type!r}, task_type type {type(task_type)}")
