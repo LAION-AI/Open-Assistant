@@ -14,8 +14,8 @@ EXTENSIONS_FOLDER = "bot/extensions"
 
 
 def _get_extensions() -> list[str]:
-    # Recursively get all the .py files in the extensions directory.
-    exts = glob("bot/extensions/**/*.py", recursive=True)
+    # Recursively get all the .py files in the extensions directory not starting with an `_`.
+    exts = glob("bot/extensions/**/*[!_].py", recursive=True)
     # Turn the path into a plugin path ("path/to/extension.py" -> "path.to.extension")
     return [ext.replace("/", ".").replace("\\", ".").replace(".py", "") for ext in exts]
 

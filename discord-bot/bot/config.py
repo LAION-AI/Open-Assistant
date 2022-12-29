@@ -19,6 +19,7 @@ class Config:
     token: str
     declare_global_commands: int
     owner_ids: list[int]
+    prefix: str
 
     @classmethod
     def from_env(cls):
@@ -32,4 +33,5 @@ class Config:
             token=token,
             declare_global_commands=int(getenv("DECLARE_GLOBAL_COMMANDS", 0)),
             owner_ids=[int(x) for x in getenv("OWNER_IDS", "").split(",")],
+            prefix=getenv("PREFIX", "./"),
         )

@@ -1,10 +1,10 @@
 # -*- coding=utf-8 -*-
 """Bot logic."""
-import hikari
-
 import aiosqlite
+import hikari
 import lightbulb
 import miru
+
 from bot.config import Config
 
 config = Config.from_env()
@@ -12,7 +12,7 @@ config = Config.from_env()
 bot = lightbulb.BotApp(
     token=config.token,
     logs="DEBUG",
-    prefix="./",
+    prefix=config.prefix,
     default_enabled_guilds=config.declare_global_commands,
     owner_ids=config.owner_ids,
     intents=hikari.Intents.ALL,
@@ -22,7 +22,6 @@ bot = lightbulb.BotApp(
 @bot.listen()
 async def on_starting(event: hikari.StartingEvent):
     """Setup."""
-
     miru.install(bot)  # component handler
     bot.load_extensions_from("./bot/extensions")  # load extensions
 
