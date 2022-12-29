@@ -11,14 +11,14 @@ export const TaskSelection = () => {
           alt="Summarize Stories"
           img="/images/logos/logo.svg"
           title="Summarize stories"
-          link="/create/summarize_story"
+          // link="/create/summarize_story"
         />
         <TaskOption alt="Reply as User" img="/images/logos/logo.svg" title="Reply as User" link="/create/user_reply" />
         <TaskOption
           alt="Reply as Assistant"
           img="/images/logos/logo.svg"
           title="Reply as Assistant"
-          link="/create/assistant_reply"
+          // link="/create/assistant_reply"
         />
       </TaskOptions>
       <TaskOptions key="evaluate" title="Evaluate">
@@ -26,13 +26,13 @@ export const TaskSelection = () => {
           alt="Rate Prompts"
           img="/images/logos/logo.svg"
           title="Rate Prompts"
-          link="/evaluate/rate_summary"
+          // link="/evaluate/rate_summary"
         />
         <TaskOption
           alt="Rank Initial Prompts"
           img="/images/logos/logo.svg"
           title="Rank Initial Prompts"
-          link="/evaluate/rank_initial_prompts"
+          // link="/evaluate/rank_initial_prompts"
         />
       </TaskOptions>
     </Flex>
