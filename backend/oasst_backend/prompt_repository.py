@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import datetime
 import random
+from collections import defaultdict
+from http import HTTPStatus
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -10,6 +13,7 @@ from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import ApiClient, Message, MessageReaction, Task, TextLabels, User
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
+from sqlalchemy import update
 from sqlmodel import Session, func
 
 
@@ -491,4 +495,149 @@ class PromptRepository:
 
         task.done = True
         self.db.add(task)
+        self.db.commit()
+
+    @staticmethod
+    def trace_conversation(messages: list[Post] | dict[UUID, Post], last_message: Post) -> list[Post]:
+        """
+        Pick messages from a collection so that the result makes a linear conversation
+        starting from a message tree root and up to the given message.
+        Returns an ordered list of messages starting from the message tree root.
+        """
+        if isinstance(messages, list):
+            messages = {m.id: m for m in messages}
+        if not isinstance(messages, dict):
+            # This should not normally happen
+            raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+        conv = [last_message]
+        while conv[-1].parent_id:
+            if conv[-1].parent_id not in messages:
+                # Can't form a continuous conversation
+                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+            parent_message = messages[conv[-1].parent_id]
+            conv.append(parent_message)
+
+        return list(reversed(conv))
+
+    def fetch_message_conversation(self, message: Post | UUID) -> list[Post]:
+        """
+        Fetch a conversation from the tree root and up to this message.
+        """
+        if isinstance(message, UUID):
+            message = self.fetch_post(message)
+
+        tree_messages = self.fetch_thread(message.thread_id)
+        return self.trace_conversation(tree_messages, message)
+
+    def fetch_message_tree(self, message: Post | UUID) -> list[Post]:
+        """
+        Fetch message tree this message belongs to.
+        """
+        if isinstance(message, UUID):
+            message = self.fetch_post(message)
+        return self.fetch_thread(message.thread_id)
+
+    def fetch_message_children(self, message: Post | UUID) -> list[Post]:
+        """
+        Get all direct children of this message
+        """
+        if isinstance(message, Post):
+            message = message.id
+
+        children = self.db.query(Post).filter(Post.parent_id == message).all()
+        return children
+
+    @staticmethod
+    def trace_descendants(root: Post, messages: list[Post]) -> list[Post]:
+        children = defaultdict(list)
+        for msg in messages:
+            children[msg.parent_id].append(msg)
+
+        def _traverse_subtree(m: Post):
+            for child in children[m.id]:
+                yield child
+                yield from _traverse_subtree(child)
+
+        return list(_traverse_subtree(root))
+
+    def fetch_post_descendants(self, message: Post | UUID, max_depth: int = None) -> list[Post]:
+        if isinstance(message, UUID):
+            message = self.fetch_post(message)
+
+        desc = self.db.query(Post).filter(Post.thread_id == message.thread_id, Post.depth > message.depth)
+        if max_depth is not None:
+            desc = desc.filter(Post.depth <= max_depth)
+
+        desc = desc.all()
+
+        return self.trace_descendants(message, desc)
+
+    def fetch_longest_conversation(self, message: Post | UUID) -> list[Post]:
+        tree = self.fetch_message_tree(message)
+        max_message = max(tree, key=lambda m: m.depth)
+        return self.trace_conversation(tree, max_message)
+
+    def fetch_message_with_max_children(self, message: Post | UUID) -> tuple[Post, list[Post]]:
+        tree = self.fetch_message_tree(message)
+        max_message = max(tree, key=lambda m: m.children_count)
+        return max_message, [m for m in tree if m.parent_id == max_message.id]
+
+    def query_messages(
+        self,
+        username: str = None,
+        api_client_id: str = None,
+        desc: bool = True,
+        max_count: int = 10,
+        start_date: datetime.datetime = None,
+        end_date: datetime.datetime = None,
+        only_roots: bool = False,
+    ) -> list[Post]:
+        messages = self.db.query(Post)
+        if username:
+            messages = messages.join(Person)
+            messages = messages.filter(Person.username == username)
+        if api_client_id:
+            messages = messages.filter(Post.api_client_id == api_client_id)
+
+        if start_date:
+            messages = messages.filter(Post.created_date >= start_date)
+        if end_date:
+            messages = messages.filter(Post.created_date < end_date)
+
+        if only_roots:
+            messages = messages.filter(Post.parent_id.is_(None))
+
+        if desc:
+            messages = messages.order_by(Post.created_date.desc())
+        else:
+            messages = messages.order_by(Post.created_date.asc())
+
+        messages = messages.limit(max_count).all()
+        return messages
+
+    def mark_messages_deleted(self, messages: Post | UUID | list[Post | UUID], recursive: bool = True):
+        if isinstance(messages, (Post, UUID)):
+            messages = [messages]
+
+        ids = []
+        for message in messages:
+            if isinstance(message, UUID):
+                ids.append(message)
+            elif isinstance(message, Post):
+                ids.append(message.id)
+            else:
+                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+        query = update(Post).where(Post.id.in_(ids)).values(deleted=True)
+        self.db.execute(query)
+
+        parent_ids = ids
+        if recursive:
+            while parent_ids:
+                query = update(Post).filter(Post.parent_id.in_(parent_ids)).values(deleted=True).returning(Post.id)
+
+                parent_ids = self.db.execute(query).scalars().all()
+
         self.db.commit()

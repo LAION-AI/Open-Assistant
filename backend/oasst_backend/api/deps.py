@@ -4,7 +4,7 @@ from secrets import token_hex
 from typing import Generator
 from uuid import UUID
 
-from fastapi import Security
+from fastapi import Depends, Security
 from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
 from loguru import logger
 from oasst_backend.config import settings
@@ -64,3 +64,24 @@ def api_auth(
         error_code=OasstErrorCode.API_CLIENT_NOT_AUTHORIZED,
         http_status_code=HTTPStatus.FORBIDDEN,
     )
+
+
+def get_api_client(
+    api_key: APIKey = Depends(get_api_key),
+    db: Session = Depends(get_db),
+):
+    return api_auth(api_key, db)
+
+
+def get_trusted_api_client(
+    api_key: APIKey = Depends(get_api_key),
+    db: Session = Depends(get_db),
+):
+    client = api_auth(api_key, db)
+    if not client.trusted:
+        raise OasstError(
+            "Forbidden",
+            error_code=OasstErrorCode.API_CLIENT_NOT_AUTHORIZED,
+            http_status_code=HTTPStatus.FORBIDDEN,
+        )
+    return client
