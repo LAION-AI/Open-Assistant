@@ -37,7 +37,7 @@ services:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 2s
       timeout: 2s
-      retries : 10
+      retries: 10
     command: redis-server /usr/local/etc/redis/redis.conf
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
