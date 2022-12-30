@@ -1,4 +1,4 @@
-import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/20/solid";
+import { ArrowDownIcon, ArrowUpIcon } from "@heroicons/react/20/solid";
 import { Button } from "@chakra-ui/react";
 import clsx from "clsx";
 

@@ -1,9 +1,8 @@
 import { Switch, useColorMode } from "@chakra-ui/react";
 import React from "react";
 
-type Props = {};
 
-const ColorModeSwitch = (props: Props) => {
+const ColorModeSwitch = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   return (
     <Switch
