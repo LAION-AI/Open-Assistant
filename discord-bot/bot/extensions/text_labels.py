@@ -9,6 +9,7 @@ import miru
 from aiosqlite import Connection
 from bot.db.schemas import GuildSettings
 from bot.utils import EMPTY
+from loguru import logger
 
 plugin = lightbulb.Plugin(
     "TextLabels",
@@ -49,6 +50,7 @@ class LabelModal(miru.Modal):
             f"Sending {self.label}=`{val}` for `{self.content.value}` (edited={edited}) to the backend.",
             flags=hikari.MessageFlag.EPHEMERAL,
         )
+        logger.info(f"Sending {self.label}=`{val}` for `{self.content.value}` (edited={edited}) to the backend.")
 
         # Send a notification to the log channel
         assert context.guild_id is not None  # `guild_only` check
@@ -56,6 +58,7 @@ class LabelModal(miru.Modal):
         guild_settings = await GuildSettings.from_db(conn, context.guild_id)
 
         if guild_settings is None or guild_settings.log_channel_id is None:
+            logger.warning(f"No guild settings or log channel for guild {context.guild_id}")
             return
 
         embed = (
@@ -148,6 +151,7 @@ async def label_message_text(ctx: lightbulb.MessageContext):
     """Label a message."""
     # We have to do some funny interaction chaining because discord only allows one component (select or modal) per interaction
     # so the select menu will open the modal
+
     msg: hikari.Message = ctx.options.target
     # Exit if the message is empty
     if not msg.content:

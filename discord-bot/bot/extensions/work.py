@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Work plugin for collecting user data."""
 import asyncio
-import logging
 import typing as t
 from datetime import datetime
 
@@ -13,6 +12,7 @@ from aiosqlite import Connection
 from bot.api_client import OasstApiClient, TaskType
 from bot.db.schemas import GuildSettings
 from bot.utils import EMPTY
+from loguru import logger
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import TaskRequestType
 
@@ -20,9 +20,6 @@ plugin = lightbulb.Plugin("WorkPlugin")
 
 MAX_TASK_TIME = 60 * 60  # 1 hour
 MAX_TASK_ACCEPT_TIME = 60  # 1 minute
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 @plugin.command
@@ -41,7 +38,7 @@ async def work(ctx: lightbulb.SlashContext):
     task_type: TaskRequestType = TaskRequestType(ctx.options.type.split(".")[-1])
 
     await ctx.respond("Sending you a task, check your DMs", flags=hikari.MessageFlag.EPHEMERAL)
-    logger.debug(f"task_type: {task_type!r}, task_type type {type(task_type)}")
+    logger.debug(f"Starting task_type: {task_type!r}")
 
     await _handle_task(ctx, task_type)
 
@@ -76,6 +73,7 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
             except asyncio.TimeoutError:
                 await ctx.author.send("Task timed out. Exiting")
                 await oasst_api.nack_task(task.id, reason="timed out")
+                logger.info(f"Task {task.id} timed out")
                 return
 
             # Invalid response
@@ -83,7 +81,7 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
                 await ctx.author.send("Invalid response")
                 continue
 
-            logger.info(f"Successful user input received: {event.content}")
+            logger.debug(f"Successful user input received: {event.content}")
 
             # Send the response to the backend
             reply = protocol_schema.TextReplyToPost(
@@ -105,7 +103,7 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
                 completed = True
                 continue
             else:
-                logger.fatal(f"Unexpected task type received: {new_task.type}")
+                logger.critical(f"Unexpected task type received: {new_task.type}")
 
         # Send a message in the log channel that the task is complete
         # TODO: Maybe do something with the msg ID so users can rate the "answer"
@@ -159,7 +157,7 @@ async def _select_task(
         task = await oasst_api.fetch_task(task_type, user)
         resp, msg_id = await _send_task(ctx, task)
 
-        logger.debug(f"user choice: {resp}")
+        logger.debug(f"User choice: {resp}")
         match resp:
             case "accept":
                 logger.info(f"Task {task.id} accepted, sending ACK")
@@ -200,32 +198,32 @@ async def _send_task(
     # Create an embed based on the task's type
     if task.type == TaskRequestType.initial_prompt:
         assert isinstance(task, protocol_schema.InitialPromptTask)
-        logger.info("sending initial prompt task")
+        logger.debug("sending initial prompt task")
         embed = _initial_prompt_embed(task)
 
     elif task.type == TaskRequestType.rank_initial_prompts:
         assert isinstance(task, protocol_schema.RankInitialPromptsTask)
-        logger.info("sending rank initial prompt task")
+        logger.debug("sending rank initial prompt task")
         embed = _rank_initial_prompt_embed(task)
 
     elif task.type == TaskRequestType.rank_user_replies:
         assert isinstance(task, protocol_schema.RankUserRepliesTask)
-        logger.info("sending rank user reply task")
+        logger.debug("sending rank user reply task")
         embed = _rank_user_reply_embed(task)
 
     elif task.type == TaskRequestType.rank_assistant_replies:
         assert isinstance(task, protocol_schema.RankAssistantRepliesTask)
-        logger.info("sending rank assistant reply task")
+        logger.debug("sending rank assistant reply task")
         embed = _rank_assistant_reply_embed(task)
 
     elif task.type == TaskRequestType.user_reply:
         assert isinstance(task, protocol_schema.UserReplyTask)
-        logger.info("sending user reply task")
+        logger.debug("sending user reply task")
         embed = _user_reply_embed(task)
 
     elif task.type == TaskRequestType.assistant_reply:
         assert isinstance(task, protocol_schema.AssistantReplyTask)
-        logger.info("sending assistant reply task")
+        logger.debug("sending assistant reply task")
         embed = _assistant_reply_embed(task)
 
     elif task.type == TaskRequestType.summarize_story:
@@ -234,7 +232,7 @@ async def _send_task(
         raise NotImplementedError
 
     else:
-        logger.error(f"unknown task type {task.type}")
+        logger.critical(f"unknown task type {task.type}")
         raise ValueError(f"unknown task type {task.type}")
 
     view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
@@ -279,7 +277,7 @@ def _validate_user_input(content: str | None, task_type: str) -> bool:
         raise NotImplementedError
 
     else:
-        logger.fatal(f"Unknown task type {task_type}")
+        logger.critical(f"Unknown task type {task_type}")
         raise ValueError(f"Unknown task type {task_type}")
 
 

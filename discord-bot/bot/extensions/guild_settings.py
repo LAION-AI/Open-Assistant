@@ -5,6 +5,7 @@ import lightbulb
 from aiosqlite import Connection
 from bot.db.schemas import GuildSettings
 from bot.utils import mention
+from loguru import logger
 
 plugin = lightbulb.Plugin("GuildSettings")
 plugin.add_checks(lightbulb.guild_only)
@@ -34,6 +35,7 @@ async def get(ctx: lightbulb.SlashContext) -> None:
         row = await cursor.fetchone()
 
         if row is None:
+            logger.warning(f"No guild settings for {ctx.guild_id}")
             await ctx.respond("No settings found for this guild.")
             return
 
@@ -70,6 +72,7 @@ async def log_channel(ctx: lightbulb.SlashContext) -> None:
         )
 
     await conn.commit()
+    logger.info(f"Updated `log_channel` for {ctx.guild_id} to {channel.id}.")
 
 
 def load(bot: lightbulb.BotApp):

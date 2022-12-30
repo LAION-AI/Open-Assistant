@@ -4,6 +4,7 @@ from glob import glob
 
 import hikari
 import lightbulb
+from loguru import logger
 
 plugin = lightbulb.Plugin(
     "HotReloadPlugin",
@@ -37,7 +38,7 @@ async def _plugin_autocomplete(option: hikari.CommandInteractionOption, _: hikar
     required=False,
     default=None,
 )
-@lightbulb.command("reload", "Reload a plugin")
+@lightbulb.command("reload", "Reload a plugin", ephemeral=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def reload(ctx: lightbulb.SlashContext):
     """Reload a plugin or all plugins."""
@@ -45,10 +46,12 @@ async def reload(ctx: lightbulb.SlashContext):
     if ctx.options.plugin is None:
         ctx.bot.reload_extensions(*_get_extensions())
         await ctx.respond("Reloaded all plugins.")
+        logger.info("Reloaded all plugins.")
     # Otherwise, reload the specified plugin.
     else:
         ctx.bot.reload_extensions(ctx.options.plugin)
         await ctx.respond(f"Reloaded `{ctx.options.plugin}`.")
+        logger.info(f"Reloaded `{ctx.options.plugin}`.")
 
 
 def load(bot: lightbulb.BotApp):

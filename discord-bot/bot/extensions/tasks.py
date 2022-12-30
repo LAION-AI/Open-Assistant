@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Task plugin for testing different data collection methods."""
+# TODO: Delete this once user input method has been decided for final bot.
 import asyncio
-import logging
 import typing as t
 from datetime import datetime, timedelta
 
@@ -16,8 +16,6 @@ plugin = lightbulb.Plugin("TaskPlugin")
 
 MAX_TASK_TIME = 60 * 60
 MAX_TASK_ACCEPT_TIME = 60
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 @plugin.command
