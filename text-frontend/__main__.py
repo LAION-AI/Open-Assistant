@@ -21,7 +21,7 @@ def _render_message(message: dict) -> str:
     """Render a message to the user."""
     if message["is_assistant"]:
         return f"Assistant: {message['text']}"
-    return f"User: {message['text']}"
+    return f"Prompter: {message['text']}"
 
 
 @app.command()
@@ -107,7 +107,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 )
                 tasks.append(new_task)
 
-            case "user_reply":
+            case "prompter_reply":
                 typer.echo("Please provide a reply to the assistant.")
                 typer.echo("Here is the conversation so far:")
                 for message in task["conversation"]["messages"]:
@@ -178,7 +178,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 )
                 tasks.append(new_task)
 
-            case "rank_user_replies" | "rank_assistant_replies":
+            case "rank_prompter_replies" | "rank_assistant_replies":
                 typer.echo("Here is the conversation so far:")
                 for message in task["conversation"]["messages"]:
                     typer.echo(_render_message(message))

@@ -132,7 +132,7 @@ class PromptRepository:
             raise OasstError("Task already done.", OasstErrorCode.TASK_ALREADY_DONE)
 
         # If there's no parent message assume user started new conversation
-        role = "user"
+        role = "prompter"
         depth = 0
 
         if task.parent_message_id:
@@ -142,7 +142,7 @@ class PromptRepository:
 
             depth = parent_message.depth + 1
             if parent_message.role == "assistant":
-                role = "user"
+                role = "prompter"
             else:
                 role = "assistant"
 
@@ -206,7 +206,7 @@ class PromptRepository:
 
         match type(task_payload):
 
-            case db_payload.RankUserRepliesPayload | db_payload.RankAssistantRepliesPayload:
+            case db_payload.RankPrompterRepliesPayload | db_payload.RankAssistantRepliesPayload:
                 # validate ranking
                 num_replies = len(task_payload.replies)
                 if sorted(ranking.ranking) != list(range(num_replies)):
@@ -269,8 +269,8 @@ class PromptRepository:
             case protocol_schema.InitialPromptTask:
                 payload = db_payload.InitialPromptPayload(hint=task.hint)
 
-            case protocol_schema.UserReplyTask:
-                payload = db_payload.UserReplyPayload(conversation=task.conversation, hint=task.hint)
+            case protocol_schema.PrompterReplyTask:
+                payload = db_payload.PrompterReplyPayload(conversation=task.conversation, hint=task.hint)
 
             case protocol_schema.AssistantReplyTask:
                 payload = db_payload.AssistantReplyPayload(type=task.type, conversation=task.conversation)
@@ -278,8 +278,8 @@ class PromptRepository:
             case protocol_schema.RankInitialPromptsTask:
                 payload = db_payload.RankInitialPromptsPayload(tpye=task.type, prompts=task.prompts)
 
-            case protocol_schema.RankUserRepliesTask:
-                payload = db_payload.RankUserRepliesPayload(
+            case protocol_schema.RankPrompterRepliesTask:
+                payload = db_payload.RankPrompterRepliesPayload(
                     tpye=task.type, conversation=task.conversation, replies=task.replies
                 )
 

@@ -12,10 +12,10 @@ class TaskRequestType(str, enum.Enum):
     summarize_story = "summarize_story"
     rate_summary = "rate_summary"
     initial_prompt = "initial_prompt"
-    user_reply = "user_reply"
+    prompter_reply = "prompter_reply"
     assistant_reply = "assistant_reply"
     rank_initial_prompts = "rank_initial_prompts"
-    rank_user_replies = "rank_user_replies"
+    rank_prompter_replies = "rank_prompter_replies"
     rank_assistant_replies = "rank_assistant_replies"
 
 
@@ -33,7 +33,7 @@ class ConversationMessage(BaseModel):
 
 
 class Conversation(BaseModel):
-    """Represents a conversation between the user and the assistant."""
+    """Represents a conversation between the prompter and the assistant."""
 
     messages: list[ConversationMessage] = []
 
@@ -114,10 +114,10 @@ class ReplyToConversationTask(Task):
     conversation: Conversation  # the conversation so far
 
 
-class UserReplyTask(ReplyToConversationTask, WithHintMixin):
+class PrompterReplyTask(ReplyToConversationTask, WithHintMixin):
     """A task to prompt the user to submit a reply to the assistant."""
 
-    type: Literal["user_reply"] = "user_reply"
+    type: Literal["prompter_reply"] = "prompter_reply"
 
 
 class AssistantReplyTask(ReplyToConversationTask):
@@ -141,10 +141,10 @@ class RankConversationRepliesTask(Task):
     replies: list[str]
 
 
-class RankUserRepliesTask(RankConversationRepliesTask):
-    """A task to rank a set of user replies to a conversation."""
+class RankPrompterRepliesTask(RankConversationRepliesTask):
+    """A task to rank a set of prompter replies to a conversation."""
 
-    type: Literal["rank_user_replies"] = "rank_user_replies"
+    type: Literal["rank_prompter_replies"] = "rank_prompter_replies"
 
 
 class RankAssistantRepliesTask(RankConversationRepliesTask):
@@ -165,11 +165,11 @@ AnyTask = Union[
     RateSummaryTask,
     InitialPromptTask,
     ReplyToConversationTask,
-    UserReplyTask,
+    PrompterReplyTask,
     AssistantReplyTask,
     RankInitialPromptsTask,
     RankConversationRepliesTask,
-    RankUserRepliesTask,
+    RankPrompterRepliesTask,
     RankAssistantRepliesTask,
 ]
 

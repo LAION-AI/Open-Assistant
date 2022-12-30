@@ -54,7 +54,7 @@ def generate_task(
             task = protocol_schema.InitialPromptTask(
                 hint="Ask the assistant about a current event."  # this is optional
             )
-        case protocol_schema.TaskRequestType.user_reply:
+        case protocol_schema.TaskRequestType.prompter_reply:
             logger.info("Generating a UserReplyTask.")
             messages = pr.fetch_random_conversation("assistant")
             task_messages = [
@@ -64,7 +64,7 @@ def generate_task(
                 for msg in messages
             ]
 
-            task = protocol_schema.UserReplyTask(conversation=protocol_schema.Conversation(messages=task_messages))
+            task = protocol_schema.PrompterReplyTask(conversation=protocol_schema.Conversation(messages=task_messages))
             message_tree_id = messages[-1].message_tree_id
             parent_message_id = messages[-1].id
         case protocol_schema.TaskRequestType.assistant_reply:
@@ -85,7 +85,7 @@ def generate_task(
 
             messages = pr.fetch_random_initial_prompts()
             task = protocol_schema.RankInitialPromptsTask(prompts=[msg.payload.payload.text for msg in messages])
-        case protocol_schema.TaskRequestType.rank_user_replies:
+        case protocol_schema.TaskRequestType.rank_prompter_replies:
             logger.info("Generating a RankUserRepliesTask.")
             conversation, replies = pr.fetch_multiple_random_replies(message_role="assistant")
 
@@ -97,7 +97,7 @@ def generate_task(
                 for p in conversation
             ]
             replies = [p.payload.payload.text for p in replies]
-            task = protocol_schema.RankUserRepliesTask(
+            task = protocol_schema.RankPrompterRepliesTask(
                 conversation=protocol_schema.Conversation(
                     messages=task_messages,
                 ),
@@ -106,7 +106,7 @@ def generate_task(
 
         case protocol_schema.TaskRequestType.rank_assistant_replies:
             logger.info("Generating a RankAssistantRepliesTask.")
-            conversation, replies = pr.fetch_multiple_random_replies(message_role="user")
+            conversation, replies = pr.fetch_multiple_random_replies(message_role="prompter")
 
             task_messages = [
                 protocol_schema.ConversationMessage(

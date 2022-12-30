@@ -137,13 +137,13 @@ class OpenAssistantBot(BotBase):
                 handler = task_handlers.RateSummaryHandler()
             case TaskType.initial_prompt:
                 handler = task_handlers.InitialPromptHandler()
-            case TaskType.user_reply:
-                handler = task_handlers.UserReplyHandler()
+            case TaskType.prompter_reply:
+                handler = task_handlers.PrompterReplyHandler()
             case TaskType.assistant_reply:
                 handler = task_handlers.AssistantReplyHandler()
             case TaskType.rank_initial_prompts:
                 handler = task_handlers.RankInitialPromptsHandler()
-            case TaskType.rank_user_replies | TaskType.rank_assistant_replies:
+            case TaskType.rank_prompter_replies | TaskType.rank_assistant_replies:
                 handler = task_handlers.RankConversationsHandler()
             case _:
                 logger.warning(f"Unsupported task type received: {task.type}")

@@ -10,10 +10,10 @@ class TaskType(str, enum.Enum):
     summarize_story = "summarize_story"
     rate_summary = "rate_summary"
     initial_prompt = "initial_prompt"
-    user_reply = "user_reply"
+    prompter_reply = "prompter_reply"
     assistant_reply = "assistant_reply"
     rank_initial_prompts = "rank_initial_prompts"
-    rank_user_replies = "rank_user_replies"
+    rank_prompter_replies = "rank_prompter_replies"
     rank_assistant_replies = "rank_assistant_replies"
     done = "task_done"
 
@@ -27,10 +27,10 @@ class ApiClient:
             TaskType.summarize_story: protocol_schema.SummarizeStoryTask,
             TaskType.rate_summary: protocol_schema.RateSummaryTask,
             TaskType.initial_prompt: protocol_schema.InitialPromptTask,
-            TaskType.user_reply: protocol_schema.UserReplyTask,
+            TaskType.prompter_reply: protocol_schema.PrompterReplyTask,
             TaskType.assistant_reply: protocol_schema.AssistantReplyTask,
             TaskType.rank_initial_prompts: protocol_schema.RankInitialPromptsTask,
-            TaskType.rank_user_replies: protocol_schema.RankUserRepliesTask,
+            TaskType.rank_prompter_replies: protocol_schema.RankPrompterRepliesTask,
             TaskType.rank_assistant_replies: protocol_schema.RankAssistantRepliesTask,
             TaskType.done: protocol_schema.TaskDone,
         }
