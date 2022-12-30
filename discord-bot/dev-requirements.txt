@@ -1,8 +1,8 @@
-nox
 
 black
-isort
 
 codespell
 flake8
+isort
+nox
 pyright

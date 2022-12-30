@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Database schemas."""
-from aiosqlite import Row, Connection
-from pydantic import BaseModel
 import typing as t
+
+from aiosqlite import Connection, Row
+from pydantic import BaseModel
 
 
 class GuildSettings(BaseModel):

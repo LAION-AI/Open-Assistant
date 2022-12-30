@@ -7,7 +7,14 @@ import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Person, Post, PostReaction, TextLabels, WorkPackage
+from oasst_backend.models import (
+    ApiClient,
+    Person,
+    Post,
+    PostReaction,
+    TextLabels,
+    WorkPackage,
+)
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session, func

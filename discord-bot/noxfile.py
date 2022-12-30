@@ -1,4 +1,4 @@
-# -*- coding=utf-8 -*-
+# -*- coding: utf-8 -*-
 """Automated linting, formatting, and typechecking."""
 import nox
 from nox.sessions import Session

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # TODO: Convert file to markdown
 # -*- coding: utf-8 -*-
 """Example plugin for reference.

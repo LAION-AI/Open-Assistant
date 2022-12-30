@@ -4,18 +4,18 @@ import asyncio
 import logging
 import typing as t
 from datetime import datetime
-from aiosqlite import Connection
 
 import hikari
 import lightbulb
 import lightbulb.decorators
 import miru
+from aiosqlite import Connection
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import TaskRequestType
 
 from bot.api_client import OasstApiClient, TaskType
-from bot.utils import EMPTY
 from bot.db.schemas import GuildSettings
+from bot.utils import EMPTY
 
 plugin = lightbulb.Plugin("WorkPlugin")
 
@@ -76,7 +76,7 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
                 )
             except asyncio.TimeoutError:
                 await ctx.author.send("Task timed out. Exiting")
-                # TODO: NACK task maybe?
+                await oasst_api.nack_task(task.id, reason="timed out")
                 return
 
             # Invalid response

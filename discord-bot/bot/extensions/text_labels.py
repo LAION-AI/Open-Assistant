@@ -8,13 +8,14 @@ import lightbulb
 import miru
 from aiosqlite import Connection
 
+from bot.db.schemas import GuildSettings
+from bot.utils import EMPTY
+
 plugin = lightbulb.Plugin(
     "TextLabels",
 )
 plugin.add_checks(lightbulb.guild_only)  # Context menus are only enabled in guilds
 
-from bot.utils import EMPTY
-from bot.db.schemas import GuildSettings
 
 DISCORD_GRAY = 0x2F3136
 

@@ -1,8 +1,4 @@
 flake8==6.0.0
-
-# Plugins
-
-Flake8-pyproject                 # use the pyproject.toml as the config file
 flake8-bandit                    # runs bandit
 flake8-black                     # runs black
 # flake8-broken-line               # forbey "\" linebreaks
@@ -21,6 +17,10 @@ flake8-mutable                   # mutable default argument detection
 flake8-pep3101                   # new-style format strings only
 flake8-print                     # complain about print statements in code
 flake8-printf-formatting         # forbey printf-style python2 string formatting
+
+# Plugins
+
+Flake8-pyproject                 # use the pyproject.toml as the config file
 flake8-pytest-style              # pytest checks
 flake8-raise                     # exception raising linting
 flake8-use-fstring                 # format string checking

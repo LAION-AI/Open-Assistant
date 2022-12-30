@@ -1,11 +1,11 @@
-hikari              # discord framework
-hikari[speedups]
-uvloop; os_name != 'nt'
-hikari-lightbulb    # command handler
-hikari-miru         # modals and buttons
-
-python-dotenv       # .env file support
-aiosqlite           # database
 aiohttp             # http client
 aiohttp[speedups]   # speedups for aiohttp
+aiosqlite           # database
+hikari              # discord framework
+hikari-lightbulb    # command handler
+hikari-miru         # modals and buttons
+hikari[speedups]
 loguru
+
+python-dotenv       # .env file support
+uvloop; os_name != 'nt'

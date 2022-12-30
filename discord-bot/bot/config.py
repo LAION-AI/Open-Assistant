@@ -1,11 +1,11 @@
-# -*- coding=utf-8 -*-
+# -*- coding: utf-8 -*-
 """Configuration for the bot."""
 
 import logging
 from dataclasses import dataclass
 from os import getenv
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # type: ignore
 
 load_dotenv()
 

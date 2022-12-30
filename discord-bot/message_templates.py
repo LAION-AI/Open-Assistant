@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """Message templates for the discord bot."""
-import jinja2
 import typing
+
+import jinja2
 from loguru import logger
 
 
