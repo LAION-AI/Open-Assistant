@@ -102,6 +102,21 @@ All static images, fonts, svgs, etc are stored in `public/`.
 
 We're not really using CSS styles. `styles/` can be ignored.
 
+## Testing the UI
+
+Cypress is used for end-to-end (e2e) and component testing and is configured in `./cypress.config.ts`. The `./cypress` folder is used for supporting configuration files etc.
+
+- Store e2e tests in the `./cypress/e2e` folder.
+- Store component tests adjacent to the component being tested. If you want to wriite a test for `./src/components/Layout.tsx` then store the test file at `./src/components/Layout.cy.tsx`.
+
+A few npm scripts are available for convenience:
+
+- `npm run cypress`: Useful for development, it opens Cypress and allows you to explore, run and debug tests. It assumes you have the NextJS site running at `localhost:3000`.
+- `npm run cypress:run`: Runs all tests. Useful for a quick sanity check before sending a PR or to run in CI pipelines.
+- `npm run cypress:image-baseline`: If you have tests failing because of visual changes that was expected, this command will update the baseline images stored in `./cypress-visual-screenshots/baseline` with those from the adjacent comparison folder. More can be found in the [docs of `uktrade/cypress-image-diff`](https://github.com/uktrade/cypress-image-diff/blob/main/docs/CLI.md#update-all-baseline-images-for-failing-tests).
+
+Read more in the [./cypress README](cypress/).
+
 ## Best Practices
 
 When writing code for the website, we have a few best practices:
