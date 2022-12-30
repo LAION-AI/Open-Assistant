@@ -396,9 +396,6 @@ async def modal_example(ctx: lightbulb.SlashContext) -> None:
     await view.start(await resp.message())
 
 
-# TODO: Database example
-# TODO: Rest client example
-
 
 def load(bot: lightbulb.BotApp):
     """Add the plugin to the bot."""

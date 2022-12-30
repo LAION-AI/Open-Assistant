@@ -69,7 +69,6 @@ class LabelModal(miru.Modal):
             .add_field("Total Labeled Message", "0", inline=True)
             .add_field("Server Ranking", "0/0", inline=True)
             .add_field("Global Ranking", "0/0", inline=True)
-            .set_footer("Message ID: TODO")
         )
         channel = await context.bot.rest.fetch_channel(guild_settings.log_channel_id)
         assert isinstance(channel, hikari.TextableChannel)
