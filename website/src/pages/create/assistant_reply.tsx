@@ -1,4 +1,4 @@
-import { Textarea } from "@chakra-ui/react";
+import { Container, Textarea } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import useSWRMutation from "swr/mutation";
 import useSWRImmutable from "swr/immutable";
@@ -45,12 +45,12 @@ const AssistantReply = () => {
   }
 
   if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
+    return <Container className="p-6 text-center text-gray-800">No tasks found...</Container>;
   }
 
   const task = tasks[0].task;
   return (
-    <div className="p-6 bg-slate-100 text-gray-800">
+    <Container className="p-6 text-gray-800">
       <TwoColumns>
         <>
           <h5 className="text-lg font-semibold">Reply as the assistant</h5>
@@ -78,7 +78,7 @@ const AssistantReply = () => {
           </Button>
         </div>
       </section>
-    </div>
+    </Container>
   );
 };
 

@@ -1,4 +1,4 @@
-import { Textarea } from "@chakra-ui/react";
+import { Container, Textarea, useColorModeValue } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import useSWRMutation from "swr/mutation";
 import useSWRImmutable from "swr/immutable";
@@ -12,6 +12,7 @@ import { LoadingScreen } from "@/components/Loading/LoadingScreen";
 
 const UserReply = () => {
   const [tasks, setTasks] = useState([]);
+  const bg = useColorModeValue("white", "gray.400");
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -45,12 +46,12 @@ const UserReply = () => {
   }
 
   if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
+    return <Container className="p-6 text-gray-800">No tasks found...</Container>;
   }
 
   const task = tasks[0].task;
   return (
-    <div className="p-6 bg-slate-100 text-gray-800">
+    <Container className="p-6">
       <TwoColumns>
         <>
           <h5 className="text-lg font-semibold">Reply as a user</h5>
@@ -61,7 +62,7 @@ const UserReply = () => {
         <Textarea name="reply" placeholder="Reply..." ref={inputRef} />
       </TwoColumns>
 
-      <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
+      <Container bg={bg} className="p-4 rounded-lg shadow-lg flex flex-row justify-items-stretch">
         <div className="grid grid-cols-[min-content_auto] gap-x-2 text-gray-700">
           <b>Prompt</b>
           <span>{tasks[0].id}</span>
@@ -78,8 +79,8 @@ const UserReply = () => {
             Submit
           </Button>
         </div>
-      </section>
-    </div>
+      </Container>
+    </Container>
   );
 };
 
