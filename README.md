@@ -66,13 +66,18 @@ Discord and someone can help clarify the issue with more detail.
 We're all working on different parts of Open Assistant together. To make
 contributions smoothly we recommend the following:
 
-1.  [Fork this project repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo) and clone it to your local machine (Read more [About Forks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-forks)).
-1.  Before working on any changes, try to [sync the forked repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork) to keep it up-to-date with the upstream repository.
+1.  [Fork this project repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
+    and clone it to your local machine.
+    (Read more [About Forks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-forks)).
+1.  Before working on any changes, try to
+    [sync the forked repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
+    to keep it up-to-date with the upstream repository.
 1.  Work on a small focused change that only touches on a few files.
 1.  Run `pre-commit` and make sure all files have formatting fixed. This
     simplifies life for reviewers.
-1.  Package up a small bit of work that solves part of the problem [into a Pull
-    Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) and send it out for review
+1.  Package up a small bit of work that solves part of the problem
+    [into a Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork)
+    and [send it out for review](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/requesting-a-pull-request-review).
 1.  If you're lucky, we can merge your change into `main` without any problems.
     If there's changes to files you're working on, resolve them by:
 1.  First try rebase as suggested
