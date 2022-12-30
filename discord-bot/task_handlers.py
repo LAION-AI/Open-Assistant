@@ -71,9 +71,9 @@ class ChannelTaskBase(AutoDestructThreadHandler):
 
     def post_text_reply_to_post(self, user_msg: discord.Message) -> protocol_schema.Task:
         return self.backend.post_interaction(
-            protocol_schema.TextReplyToPost(
-                post_id=str(self.first_message.id),
-                user_post_id=str(user_msg.id),
+            protocol_schema.TextReplyToMessage(
+                message_id=str(self.first_message.id),
+                user_message_id=str(user_msg.id),
                 user=self.to_api_user(user_msg.author),
                 text=user_msg.content,
             )
@@ -92,9 +92,9 @@ class ChannelTaskBase(AutoDestructThreadHandler):
 
     def post_ranking(self, user_msg: discord.Message, ranking: list[int]) -> protocol_schema.Task:
         return self.backend.post_interaction(
-            protocol_schema.PostRanking(
-                post_id=str(self.first_message.id),
-                user_post_id=str(user_msg.id),
+            protocol_schema.MessageRanking(
+                message_id=str(self.first_message.id),
+                user_message_id=str(user_msg.id),
                 user=self.to_api_user(user_msg.author),
                 ranking=ranking,
             )
@@ -236,9 +236,9 @@ class RateSummaryHandler(ChannelTaskBase):
         if self.thread:
             try:
                 self.backend.post_interaction(
-                    protocol_schema.PostRating(
-                        post_id=str(self.first_message.id),
-                        user_post_id=str(interaction.id),
+                    protocol_schema.MessageRating(
+                        message_id=str(self.first_message.id),
+                        user_message_id=str(interaction.id),
                         user=self.to_api_user(interaction.user),
                         rating=score,
                     )

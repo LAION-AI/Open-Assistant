@@ -140,20 +140,21 @@ if settings.DEBUG_USE_SEED_DATA:
                     ),
                 ]
 
-                for p in dummy_messages:
-                    task = pr.fetch_task_by_message_id(p.task_message_id)
+                for msg in dummy_messages:
+                    task = pr.fetch_task_by_frontend_message_id(msg.task_message_id)
                     if task and not task.ack:
                         logger.warning("Deleting unacknowledged seed data work package")
                         db.delete(task)
                         task = None
                     if not task:
-                        if p.parent_message_id is None:
+                        if msg.parent_message_id is None:
                             task = pr.store_task(
                                 protocol_schema.InitialPromptTask(hint=""), message_tree_id=None, parent_message_id=None
                             )
                         else:
-                            print("p.parent_message_id", p.parent_message_id)
-                            parent_message = pr.fetch_message_by_frontend_message_id(p.parent_message_id, fail_if_missing=True)
+                            parent_message = pr.fetch_message_by_frontend_message_id(
+                                msg.parent_message_id, fail_if_missing=True
+                            )
                             task = pr.store_task(
                                 protocol_schema.AssistantReplyTask(
                                     conversation=protocol_schema.Conversation(
@@ -163,8 +164,8 @@ if settings.DEBUG_USE_SEED_DATA:
                                 message_tree_id=parent_message.message_tree_id,
                                 parent_message_id=parent_message.id,
                             )
-                        pr.bind_frontend_message_id(task.id, p.task_message_id)
-                        message = pr.store_text_reply(p.text, p.task_message_id, p.user_message_id)
+                        pr.bind_frontend_message_id(task.id, msg.task_message_id)
+                        message = pr.store_text_reply(msg.text, msg.task_message_id, msg.user_message_id)
 
                         logger.info(
                             f"Inserted: message_id: {message.id}, payload: {message.payload.payload}, parent_message_id: {message.parent_id}"
