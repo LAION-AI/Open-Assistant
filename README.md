@@ -63,6 +63,8 @@ has assigned the issue to you, start working on it.
 If the issue is currently unclear but you are interested, please post in
 Discord and someone can help clarify the issue with more detail.
 
+**Always Welcome:** Documentation markdowns in `docs/`, docstrings, diagrams of the system architecture, and other documentation.
+
 ### Submitting Work
 
 We're all working on different parts of Open Assistant together. To make
