@@ -2,7 +2,7 @@
 """Added lang column for ISO-639-1 codes
 
 Revision ID: ef0b52902560
-Revises: 3358eb6834e6
+Revises: d24b37426857
 Create Date: 2022-12-28 18:24:21.393973
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "ef0b52902560"
-down_revision = "3358eb6834e6"
+down_revision = "d24b37426857"
 branch_labels = None
 depends_on = None
 
