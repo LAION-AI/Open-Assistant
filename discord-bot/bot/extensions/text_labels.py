@@ -6,12 +6,15 @@ from datetime import datetime
 import hikari
 import lightbulb
 import miru
+from aiosqlite import Connection
 
 plugin = lightbulb.Plugin(
-    "HotReloadPlugin",
+    "TextLabels",
 )
+plugin.add_checks(lightbulb.guild_only)  # Context menus are only enabled in guilds
 
 from bot.utils import EMPTY
+from bot.db.schemas import GuildSettings
 
 DISCORD_GRAY = 0x2F3136
 
@@ -48,6 +51,14 @@ class LabelModal(miru.Modal):
         )
 
         # Send a notification to the log channel
+        assert context.guild_id is not None  # `guild_only` check
+        conn: Connection = context.bot.d.db  # type: ignore
+        guild_settings = await GuildSettings.from_db(conn, context.guild_id)
+
+
+        if guild_settings is None or guild_settings.log_channel_id is None:
+            return
+
         embed = (
             hikari.Embed(
                 title="Message Label",
@@ -61,7 +72,7 @@ class LabelModal(miru.Modal):
             .add_field("Global Ranking", "0/0", inline=True)
             .set_footer("Message ID: TODO")
         )
-        channel = await context.bot.rest.fetch_channel(1058299131115872297)
+        channel = await context.bot.rest.fetch_channel(guild_settings.log_channel_id)
         assert isinstance(channel, hikari.TextableChannel)
         await channel.send(EMPTY, embed=embed)
 

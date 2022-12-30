@@ -4,6 +4,7 @@ import asyncio
 import logging
 import typing as t
 from datetime import datetime
+from aiosqlite import Connection
 
 import hikari
 import lightbulb
@@ -14,6 +15,7 @@ from oasst_shared.schemas.protocol import TaskRequestType
 
 from bot.api_client import OasstApiClient, TaskType
 from bot.utils import EMPTY
+from bot.db.schemas import GuildSettings
 
 plugin = lightbulb.Plugin("WorkPlugin")
 
@@ -108,21 +110,28 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
 
         # Send a message in the log channel that the task is complete
         # TODO: Maybe do something with the msg ID
-        done_embed = (
-            hikari.Embed(
-                title="Task Completion",
-                description=f"`{task.type}` completed by {ctx.author.mention}",
-                color=hikari.Color(0x00FF00),
-                timestamp=datetime.now().astimezone(),
+        assert ctx.guild_id is not None
+        conn: Connection = ctx.bot.d.db
+        guild_settings = await GuildSettings.from_db(conn, ctx.guild_id)
+
+        if guild_settings is not None and guild_settings.log_channel_id is not None:
+
+            channel = await ctx.bot.rest.fetch_channel(guild_settings.log_channel_id)
+            assert isinstance(channel, hikari.TextableChannel)  # option converter
+
+            done_embed = (
+                hikari.Embed(
+                    title="Task Completion",
+                    description=f"`{task.type}` completed by {ctx.author.mention}",
+                    color=hikari.Color(0x00FF00),
+                    timestamp=datetime.now().astimezone(),
+                )
+                .add_field("Total Tasks", "0", inline=True)
+                .add_field("Server Ranking", "0/0", inline=True)
+                .add_field("Global Ranking", "0/0", inline=True)
+                .set_footer(f"Task ID: {task.id}")
             )
-            .add_field("Total Tasks", "0", inline=True)
-            .add_field("Server Ranking", "0/0", inline=True)
-            .add_field("Global Ranking", "0/0", inline=True)
-            .set_footer(f"Task ID: {task.id}")
-        )
-        channel = await ctx.bot.rest.fetch_channel(1058299131115872297)
-        assert isinstance(channel, hikari.TextableChannel)
-        await channel.send(EMPTY, embed=done_embed)
+            await channel.send(EMPTY, embed=done_embed)
 
         # ask the user if they want to do another task
         choice_view = ChoiceView(timeout=MAX_TASK_ACCEPT_TIME)
