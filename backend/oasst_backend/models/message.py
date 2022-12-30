@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
+from sqlalchemy import false
 from sqlmodel import Field, Index, SQLModel
 
 from .payload_column_type import PayloadContainer, payload_column_type
@@ -34,3 +35,4 @@ class Message(SQLModel, table=True):
     lang: str = Field(nullable=False, max_length=200, default="en-US")
     depth: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
     children_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
+    deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))

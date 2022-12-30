@@ -38,6 +38,18 @@ class Conversation(BaseModel):
     messages: list[ConversationMessage] = []
 
 
+class Message(ConversationMessage):
+    id: UUID
+    parent_id: Optional[UUID] = None
+
+
+class MessageTree(BaseModel):
+    """All messages belonging to the same message tree."""
+
+    id: UUID
+    messages: list[Message] = []
+
+
 class TaskRequest(BaseModel):
     """The frontend asks the backend for a task."""
 

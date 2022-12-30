@@ -17,6 +17,7 @@ class OasstErrorCode(IntEnum):
     GENERIC_ERROR = 0
     DATABASE_URI_NOT_SET = 1
     API_CLIENT_NOT_AUTHORIZED = 2
+    SERVER_ERROR = 3
 
     # 1000-2000: tasks endpoint
     TASK_INVALID_REQUEST_TYPE = 1000
