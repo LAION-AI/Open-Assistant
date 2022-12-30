@@ -21,7 +21,7 @@ class Message(SQLModel, table=True):
     )
     parent_id: UUID = Field(nullable=True)
     message_tree_id: UUID = Field(nullable=False, index=True)
-    workpackage_id: UUID = Field(nullable=True, index=True)
+    task_id: UUID = Field(nullable=True, index=True)
     user_id: UUID = Field(nullable=True, foreign_key="user.id", index=True)
     role: str = Field(nullable=False, max_length=128)
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")

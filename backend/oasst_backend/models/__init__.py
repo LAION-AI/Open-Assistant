@@ -6,7 +6,7 @@ from .user_stats import UserStats
 from .message import Message
 from .message_reaction import MessageReaction
 from .text_labels import TextLabels
-from .work_package import WorkPackage
+from .task import Task
 
 __all__ = [
     "ApiClient",
@@ -14,7 +14,7 @@ __all__ = [
     "UserStats",
     "Message",
     "MessageReaction",
-    "WorkPackage",
+    "Task",
     "TextLabels",
     "Journal",
     "JournalIntegration",

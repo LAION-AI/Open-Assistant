@@ -23,6 +23,6 @@ class UserStats(SQLModel, table=True):
     messages: int = 0  # messages sent by user
     upvotes: int = 0  # received upvotes (form other users)
     downvotes: int = 0  # received downvotes (from other users)
-    work_reward: int = 0  # reward for workpackage completions
+    task_reward: int = 0  # reward for task completions
     compare_wins: int = 0  # num times user's message won compare tasks
     compare_losses: int = 0  # num times users's message lost compare tasks

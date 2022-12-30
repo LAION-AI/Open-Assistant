@@ -7,7 +7,7 @@ import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, User, Message, MessageReaction, TextLabels, WorkPackage
+from oasst_backend.models import ApiClient, User, Message, MessageReaction, TextLabels, Task
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session, func
@@ -61,17 +61,17 @@ class PromptRepository:
         self.validate_message_id(message_id)
 
         # find work package
-        work_pack: WorkPackage = (
-            self.db.query(WorkPackage)
-            .filter(WorkPackage.id == task_id, WorkPackage.api_client_id == self.api_client.id)
+        work_pack: Task = (
+            self.db.query(Task)
+            .filter(Task.id == task_id, Task.api_client_id == self.api_client.id)
             .first()
         )
         if work_pack is None:
-            raise OasstError(f"WorkPackage for task {task_id} not found", OasstErrorCode.WORK_PACKAGE_NOT_FOUND)
+            raise OasstError(f"Task for task {task_id} not found", OasstErrorCode.TASK_NOT_FOUND)
         if work_pack.expired:
-            raise OasstError("WorkPackage already expired.", OasstErrorCode.WORK_PACKAGE_EXPIRED)
+            raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
         if work_pack.done or work_pack.ack is not None:
-            raise OasstError("WorkPackage already updated.", OasstErrorCode.WORK_PACKAGE_ALREADY_UPDATED)
+            raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
 
         work_pack.frontend_ref_message_id = message_id
         work_pack.ack = True
@@ -81,17 +81,17 @@ class PromptRepository:
 
     def acknowledge_task_failure(self, task_id):
         # find work package
-        work_pack: WorkPackage = (
-            self.db.query(WorkPackage)
-            .filter(WorkPackage.id == task_id, WorkPackage.api_client_id == self.api_client.id)
+        work_pack: Task = (
+            self.db.query(Task)
+            .filter(Task.id == task_id, Task.api_client_id == self.api_client.id)
             .first()
         )
         if work_pack is None:
-            raise OasstError(f"WorkPackage for task {task_id} not found", OasstErrorCode.WORK_PACKAGE_NOT_FOUND)
+            raise OasstError(f"Task for task {task_id} not found", OasstErrorCode.TASK_NOT_FOUND)
         if work_pack.expired:
-            raise OasstError("WorkPackage already expired.", OasstErrorCode.WORK_PACKAGE_EXPIRED)
+            raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
         if work_pack.done or work_pack.ack is not None:
-            raise OasstError("WorkPackage already updated.", OasstErrorCode.WORK_PACKAGE_ALREADY_UPDATED)
+            raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
 
         work_pack.ack = False
         # ToDo: check race-condition, transaction
@@ -109,36 +109,36 @@ class PromptRepository:
             raise OasstError(f"Message with message_id {frontend_message_id} not found.", OasstErrorCode.POST_NOT_FOUND)
         return message
 
-    def fetch_workpackage_by_message_id(self, message_id: str) -> WorkPackage:
+    def fetch_task_by_message_id(self, message_id: str) -> Task:
         self.validate_message_id(message_id)
-        work_pack = (
-            self.db.query(WorkPackage)
-            .filter(WorkPackage.api_client_id == self.api_client.id, WorkPackage.frontend_ref_message_id == message_id)
+        task = (
+            self.db.query(Task)
+            .filter(Task.api_client_id == self.api_client.id, Task.frontend_ref_message_id == message_id)
             .one_or_none()
         )
-        return work_pack
+        return task
 
     def store_text_reply(self, text: str, message_id: str, user_message_id: str, role: str = None) -> Message:
         self.validate_message_id(message_id)
         self.validate_message_id(user_message_id)
 
-        wp = self.fetch_workpackage_by_message_id(message_id)
+        task = self.fetch_task_by_message_id(message_id)
 
-        if wp is None:
-            raise OasstError(f"WorkPackage for {message_id=} not found", OasstErrorCode.WORK_PACKAGE_NOT_FOUND)
-        if wp.expired:
-            raise OasstError("WorkPackage already expired.", OasstErrorCode.WORK_PACKAGE_EXPIRED)
-        if not wp.ack:
-            raise OasstError("WorkPackage is not acknowledged.", OasstErrorCode.WORK_PACKAGE_NOT_ACK)
-        if wp.done:
-            raise OasstError("WorkPackage already done.", OasstErrorCode.WORK_PACKAGE_ALREADY_DONE)
+        if task is None:
+            raise OasstError(f"Task for {message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+        if task.expired:
+            raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
+        if not task.ack:
+            raise OasstError("Task is not acknowledged.", OasstErrorCode.TASK_NOT_ACK)
+        if task.done:
+            raise OasstError("Task already done.", OasstErrorCode.TASK_ALREADY_DONE)
 
         # If there's no parent message assume user started new conversation
         role = "user"
         depth = 0
 
-        if wp.parent_message_id:
-            parent_message = self.fetch_message(wp.parent_message_id)
+        if task.parent_message_id:
+            parent_message = self.fetch_message(task.parent_message_id)
             parent_message.children_count += 1
             self.db.add(parent_message)
 
@@ -153,29 +153,29 @@ class PromptRepository:
         user_message = self.insert_message(
             message_id=new_message_id,
             frontend_message_id=user_message_id,
-            parent_id=wp.parent_message_id,
-            message_tree_id=wp.message_tree_id or new_message_id,
-            workpackage_id=wp.id,
+            parent_id=task.parent_message_id,
+            message_tree_id=task.message_tree_id or new_message_id,
+            task_id=task.id,
             role=role,
             payload=db_payload.MessagePayload(text=text),
             depth=depth,
         )
-        if not wp.collective:
-            wp.done = True
-            self.db.add(wp)
+        if not task.collective:
+            task.done = True
+            self.db.add(task)
         self.db.commit()
-        self.journal.log_text_reply(work_package=wp, message_id=new_message_id, role=role, length=len(text))
+        self.journal.log_text_reply(task=task, message_id=new_message_id, role=role, length=len(text))
         return user_message
 
     def store_rating(self, rating: protocol_schema.MessageRating) -> MessageReaction:
         message = self.fetch_message_by_frontend_message_id(rating.message_id, fail_if_missing=True)
 
-        work_package = self.fetch_workpackage_by_message_id(rating.message_id)
-        work_payload: db_payload.RateSummaryPayload = work_package.payload.payload
+        task = self.fetch_task_by_message_id(rating.message_id)
+        work_payload: db_payload.RateSummaryPayload = task.payload.payload
         if type(work_payload) != db_payload.RateSummaryPayload:
             raise OasstError(
-                f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RateSummaryPayload}",
-                OasstErrorCode.WORK_PACKAGE_PAYLOAD_TYPE_MISMATCH,
+                f"task payload type mismatch: {type(work_payload)=} != {db_payload.RateSummaryPayload}",
+                OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
             )
 
         if rating.rating < work_payload.scale.min or rating.rating > work_payload.scale.max:
@@ -187,23 +187,23 @@ class PromptRepository:
         # store reaction to message
         reaction_payload = db_payload.RatingReactionPayload(rating=rating.rating)
         reaction = self.insert_reaction(message.id, reaction_payload)
-        if not work_package.collective:
-            work_package.done = True
-            self.db.add(work_package)
+        if not task.collective:
+            task.done = True
+            self.db.add(task)
 
-        self.journal.log_rating(work_package, message_id=message.id, rating=rating.rating)
-        logger.info(f"Ranking {rating.rating} stored for work_package {work_package.id}.")
+        self.journal.log_rating(task, message_id=message.id, rating=rating.rating)
+        logger.info(f"Ranking {rating.rating} stored for task {task.id}.")
         return reaction
 
     def store_ranking(self, ranking: protocol_schema.MessageRanking) -> MessageReaction:
-        # fetch work_package
-        work_package = self.fetch_workpackage_by_message_id(ranking.message_id)
-        if not work_package.collective:
-            work_package.done = True
-            self.db.add(work_package)
+        # fetch task
+        task = self.fetch_task_by_message_id(ranking.message_id)
+        if not task.collective:
+            task.done = True
+            self.db.add(task)
 
         work_payload: db_payload.RankConversationRepliesPayload | db_payload.RankInitialPromptsPayload = (
-            work_package.payload.payload
+            task.payload.payload
         )
 
         match type(work_payload):
@@ -219,11 +219,11 @@ class PromptRepository:
 
                 # store reaction to message
                 reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
-                reaction = self.insert_reaction(work_package.id, reaction_payload)
+                reaction = self.insert_reaction(task.id, reaction_payload)
                 # TODO: resolve message_id
-                self.journal.log_ranking(work_package, message_id=None, ranking=ranking.ranking)
+                self.journal.log_ranking(task, message_id=None, ranking=ranking.ranking)
 
-                logger.info(f"Ranking {ranking.ranking} stored for work_package {work_package.id}.")
+                logger.info(f"Ranking {ranking.ranking} stored for task {task.id}.")
 
                 return reaction
 
@@ -237,18 +237,18 @@ class PromptRepository:
 
                 # store reaction to message
                 reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
-                reaction = self.insert_reaction(work_package.id, reaction_payload)
+                reaction = self.insert_reaction(task.id, reaction_payload)
                 # TODO: resolve message_id
-                self.journal.log_ranking(work_package, message_id=None, ranking=ranking.ranking)
+                self.journal.log_ranking(task, message_id=None, ranking=ranking.ranking)
 
-                logger.info(f"Ranking {ranking.ranking} stored for work_package {work_package.id}.")
+                logger.info(f"Ranking {ranking.ranking} stored for task {task.id}.")
 
                 return reaction
 
             case _:
                 raise OasstError(
-                    f"work_package payload type mismatch: {type(work_payload)=} != {db_payload.RankConversationRepliesPayload}",
-                    OasstErrorCode.WORK_PACKAGE_PAYLOAD_TYPE_MISMATCH,
+                    f"task payload type mismatch: {type(work_payload)=} != {db_payload.RankConversationRepliesPayload}",
+                    OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
                 )
 
     def store_task(
@@ -257,7 +257,7 @@ class PromptRepository:
         message_tree_id: UUID = None,
         parent_message_id: UUID = None,
         collective: bool = False,
-    ) -> WorkPackage:
+    ) -> Task:
         payload: db_payload.TaskPayload
         match type(task):
             case protocol_schema.SummarizeStoryTask:
@@ -293,22 +293,22 @@ class PromptRepository:
             case _:
                 raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
 
-        wp = self.insert_work_package(
+        task = self.insert_task(
             payload=payload, id=task.id, message_tree_id=message_tree_id, parent_message_id=parent_message_id, collective=collective
         )
-        assert wp.id == task.id
-        return wp
+        assert task.id == task.id
+        return task
 
-    def insert_work_package(
+    def insert_task(
         self,
         payload: db_payload.TaskPayload,
         id: UUID = None,
         message_tree_id: UUID = None,
         parent_message_id: UUID = None,
         collective: bool = False,
-    ) -> WorkPackage:
+    ) -> Task:
         c = PayloadContainer(payload=payload)
-        wp = WorkPackage(
+        task = Task(
             id=id,
             user_id=self.user_id,
             payload_type=type(payload).__name__,
@@ -318,10 +318,10 @@ class PromptRepository:
             parent_message_id=parent_message_id,
             collective=collective,
         )
-        self.db.add(wp)
+        self.db.add(task)
         self.db.commit()
-        self.db.refresh(wp)
-        return wp
+        self.db.refresh(task)
+        return task
 
     def insert_message(
         self,
@@ -330,7 +330,7 @@ class PromptRepository:
         frontend_message_id: str,
         parent_id: UUID,
         message_tree_id: UUID,
-        workpackage_id: UUID,
+        task_id: UUID,
         role: str,
         payload: db_payload.MessagePayload,
         payload_type: str = None,
@@ -346,7 +346,7 @@ class PromptRepository:
             id=message_id,
             parent_id=parent_id,
             message_tree_id=message_tree_id,
-            workpackage_id=workpackage_id,
+            task_id=task_id,
             user_id=self.user_id,
             role=role,
             frontend_message_id=frontend_message_id,
@@ -360,13 +360,13 @@ class PromptRepository:
         self.db.refresh(message)
         return message
 
-    def insert_reaction(self, work_package_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
+    def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
         if self.user_id is None:
             raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
 
         container = PayloadContainer(payload=payload)
         reaction = MessageReaction(
-            work_package_id=work_package_id,
+            task_id=task_id,
             user_id=self.user_id,
             payload=container,
             api_client_id=self.api_client.id,
@@ -474,17 +474,17 @@ class PromptRepository:
 
     def close_task(self, message_id: str, allow_personal_tasks: bool = False):
         self.validate_message_id(message_id)
-        wp = self.fetch_workpackage_by_message_id(message_id)
+        task = self.fetch_task_by_message_id(message_id)
 
-        if not wp:
-            raise OasstError("Work package not found", OasstErrorCode.WORK_PACKAGE_NOT_FOUND)
-        if wp.expired:
-            raise OasstError("Work package expired", OasstErrorCode.WORK_PACKAGE_EXPIRED)
-        if not allow_personal_tasks and not wp.collective:
-            raise OasstError("This is not a collective task", OasstErrorCode.WORK_PACKAGE_NOT_COLLECTIVE)
-        if wp.done:
-            raise OasstError("Allready closed", OasstErrorCode.WORK_PACKAGE_ALREADY_DONE)
+        if not task:
+            raise OasstError("Work package not found", OasstErrorCode.TASK_NOT_FOUND)
+        if task.expired:
+            raise OasstError("Work package expired", OasstErrorCode.TASK_EXPIRED)
+        if not allow_personal_tasks and not task.collective:
+            raise OasstError("This is not a collective task", OasstErrorCode.TASK_NOT_COLLECTIVE)
+        if task.done:
+            raise OasstError("Allready closed", OasstErrorCode.TASK_ALREADY_DONE)
 
-        wp.done = True
-        self.db.add(wp)
+        task.done = True
+        self.db.add(task)
         self.db.commit()

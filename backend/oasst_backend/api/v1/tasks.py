@@ -18,7 +18,7 @@ router = APIRouter()
 def generate_task(
     request: protocol_schema.TaskRequest, pr: PromptRepository
 ) -> Tuple[protocol_schema.Task, Optional[UUID], Optional[UUID]]:
-    thread_id = None
+    message_tree_id = None
     parent_message_id = None
 
     match request.type:
@@ -63,7 +63,7 @@ def generate_task(
             ]
 
             task = protocol_schema.UserReplyTask(conversation=protocol_schema.Conversation(messages=messages))
-            thread_id = messages[-1].thread_id
+            message_tree_id = messages[-1].message_tree_id
             parent_message_id = messages[-1].id
         case protocol_schema.TaskRequestType.assistant_reply:
             logger.info("Generating a AssistantReplyTask.")
@@ -74,7 +74,7 @@ def generate_task(
             ]
 
             task = protocol_schema.AssistantReplyTask(conversation=protocol_schema.Conversation(messages=messages))
-            thread_id = messages[-1].thread_id
+            message_tree_id = messages[-1].message_tree_id
             parent_message_id = messages[-1].id
         case protocol_schema.TaskRequestType.rank_initial_prompts:
             logger.info("Generating a RankInitialPromptsTask.")
@@ -121,7 +121,7 @@ def generate_task(
 
     logger.info(f"Generated {task=}.")
 
-    return task, thread_id, parent_message_id
+    return task, message_tree_id, parent_message_id
 
 
 @router.post("/", response_model=protocol_schema.AnyTask)  # work with Union once more types are added
@@ -138,8 +138,8 @@ def request_task(
 
     try:
         pr = PromptRepository(db, api_client, request.user)
-        task, thread_id, parent_message_id = generate_task(request, pr)
-        pr.store_task(task, thread_id, parent_message_id, request.collective)
+        task, message_tree_id, parent_message_id = generate_task(request, pr)
+        pr.store_task(task, message_tree_id, parent_message_id, request.collective)
 
     except OasstError:
         raise

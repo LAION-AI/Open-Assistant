@@ -11,8 +11,8 @@ from sqlmodel import Field, SQLModel
 from .payload_column_type import PayloadContainer, payload_column_type
 
 
-class WorkPackage(SQLModel, table=True):
-    __tablename__ = "work_package"
+class Task(SQLModel, table=True):
+    __tablename__ = "task"
 
     id: Optional[UUID] = Field(
         sa_column=sa.Column(
