@@ -68,7 +68,7 @@ contributions smoothly we recommend the following:
 
 1.  [Fork this project repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
     and clone it to your local machine.
-    (Read more [About Forks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-forks)).
+    (Read more [About Forks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-forks))
 1.  Before working on any changes, try to
     [sync the forked repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
     to keep it up-to-date with the upstream repository.
@@ -81,9 +81,9 @@ contributions smoothly we recommend the following:
 1.  If you're lucky, we can merge your change into `main` without any problems.
     If there's changes to files you're working on, resolve them by:
 1.  First try rebase as suggested
-    [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-rebase)
+    [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-rebase).
 1.  If rebase feels too painful, merge as suggested
-    [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-merge)
+    [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-merge).
 1.  Once you've resolved any conflicts, finish the review and merge into `main`.
 1.  Merge in your change and move onto a new issue or the second step of your
     current issue.
