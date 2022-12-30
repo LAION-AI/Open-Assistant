@@ -27,6 +27,29 @@ services:
       timeout: 2s
       retries: 10
 
+  # Redis - caching + rate limiting on BE
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 2s
+      timeout: 2s
+      retries : 10
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - redis:/data
+  # insights host - redis:6379
+  redis-insights:
+    image: redislabs/redisinsight:latest
+    ports:
+      - 8001:8001
+    volumes:
+      - redis:/data
+
   # This DB is for Web Authentication and data caching.
   webdb:
     image: postgres
@@ -100,3 +123,7 @@ services:
     ports:
       - "3000:3000"
     command: bash wait-for-postgres.sh node server.js
+
+volumes:
+  redis:
+    driver: local
