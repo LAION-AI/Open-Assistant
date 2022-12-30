@@ -154,7 +154,7 @@ class PromptRepository:
             message_id=new_message_id,
             frontend_message_id=user_message_id,
             parent_id=wp.parent_message_id,
-            thread_id=wp.thread_id or new_message_id,
+            message_tree_id=wp.message_tree_id or new_message_id,
             workpackage_id=wp.id,
             role=role,
             payload=db_payload.MessagePayload(text=text),
@@ -254,7 +254,7 @@ class PromptRepository:
     def store_task(
         self,
         task: protocol_schema.Task,
-        thread_id: UUID = None,
+        message_tree_id: UUID = None,
         parent_message_id: UUID = None,
         collective: bool = False,
     ) -> WorkPackage:
@@ -294,7 +294,7 @@ class PromptRepository:
                 raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
 
         wp = self.insert_work_package(
-            payload=payload, id=task.id, thread_id=thread_id, parent_message_id=parent_message_id, collective=collective
+            payload=payload, id=task.id, message_tree_id=message_tree_id, parent_message_id=parent_message_id, collective=collective
         )
         assert wp.id == task.id
         return wp
@@ -303,7 +303,7 @@ class PromptRepository:
         self,
         payload: db_payload.TaskPayload,
         id: UUID = None,
-        thread_id: UUID = None,
+        message_tree_id: UUID = None,
         parent_message_id: UUID = None,
         collective: bool = False,
     ) -> WorkPackage:
@@ -314,7 +314,7 @@ class PromptRepository:
             payload_type=type(payload).__name__,
             payload=c,
             api_client_id=self.api_client.id,
-            thread_id=thread_id,
+            message_tree_id=message_tree_id,
             parent_message_id=parent_message_id,
             collective=collective,
         )
@@ -329,7 +329,7 @@ class PromptRepository:
         message_id: UUID,
         frontend_message_id: str,
         parent_id: UUID,
-        thread_id: UUID,
+        message_tree_id: UUID,
         workpackage_id: UUID,
         role: str,
         payload: db_payload.MessagePayload,
@@ -345,7 +345,7 @@ class PromptRepository:
         message = Message(
             id=message_id,
             parent_id=parent_id,
-            thread_id=thread_id,
+            message_tree_id=message_tree_id,
             workpackage_id=workpackage_id,
             user_id=self.user_id,
             role=role,
@@ -391,48 +391,48 @@ class PromptRepository:
         self.db.refresh(model)
         return model
 
-    def fetch_random_thread(self, require_role: str = None) -> list[Message]:
+    def fetch_random_message_tree(self, require_role: str = None) -> list[Message]:
         """
-        Loads all messages of a random thread.
+        Loads all messages of a random message_tree.
 
-        :param require_role: If set loads only thread which has
+        :param require_role: If set loads only message_tree which has
             at least one message with given role.
         """
-        distinct_threads = self.db.query(Message.thread_id).distinct(Message.thread_id)
+        distinct_message_trees = self.db.query(Message.message_tree_id).distinct(Message.message_tree_id)
         if require_role:
-            distinct_threads = distinct_threads.filter(Message.role == require_role)
-        distinct_threads = distinct_threads.subquery()
+            distinct_message_trees = distinct_message_trees.filter(Message.role == require_role)
+        distinct_message_trees = distinct_message_trees.subquery()
 
-        random_thread = self.db.query(distinct_threads).order_by(func.random()).limit(1)
-        thread_messages = self.db.query(Message).filter(Message.thread_id.in_(random_thread)).all()
-        return thread_messages
+        random_message_tree = self.db.query(distinct_message_trees).order_by(func.random()).limit(1)
+        message_tree_messages = self.db.query(Message).filter(Message.message_tree_id.in_(random_message_tree)).all()
+        return message_tree_messages
 
     def fetch_random_conversation(self, last_message_role: str = None) -> list[Message]:
         """
         Picks a random linear conversation starting from any root message
-        and ending somewhere in the thread, possibly at the root itself.
+        and ending somewhere in the message_tree, possibly at the root itself.
 
         :param last_message_role: If set will form a conversation ending with a message
             created by this role. Necessary for the tasks like "user_reply" where
             the user should reply as a human and hence the last message of the conversation
             needs to have "assistant" role.
         """
-        thread_messages = self.fetch_random_thread(last_message_role)
-        if not thread_messages:
-            raise OasstError("No threads found", OasstErrorCode.NO_THREADS_FOUND)
+        mt_messages = self.fetch_random_message_tree(last_message_role)
+        if not mt_messages:
+            raise OasstError("No message_tree found", OasstErrorCode.NO_THREADS_FOUND)
         if last_message_role:
-            conv_messages = [p for p in thread_messages if p.role == last_message_role]
+            conv_messages = [m for m in mt_messages if m.role == last_message_role]
             conv_messages = [random.choice(conv_messages)]
         else:
-            conv_messages = [random.choice(thread_messages)]
-        thread_messages = {p.id: p for p in thread_messages}
+            conv_messages = [random.choice(mt_messages)]
+        mt_messages = {m.id: m for m in mt_messages}
 
         while True:
             if not conv_messages[-1].parent_id:
                 # reached the start of the conversation
                 break
 
-            parent_message = thread_messages[conv_messages[-1].parent_id]
+            parent_message = mt_messages[conv_messages[-1].parent_id]
             conv_messages.append(parent_message)
 
         return list(reversed(conv_messages))
@@ -441,8 +441,8 @@ class PromptRepository:
         messages = self.db.query(Message).filter(Message.parent_id.is_(None)).order_by(func.random()).limit(size).all()
         return messages
 
-    def fetch_thread(self, thread_id: UUID):
-        return self.db.query(Message).filter(Message.thread_id == thread_id).all()
+    def fetch_message_tree(self, message_tree_id: UUID):
+        return self.db.query(Message).filter(Message.message_tree_id == message_tree_id).all()
 
     def fetch_multiple_random_replies(self, max_size: int = 5, message_role: str = None):
         parent = self.db.query(Message.id).filter(Message.children_count > 1)
@@ -454,20 +454,20 @@ class PromptRepository:
         if not replies:
             raise OasstError("No replies found", OasstErrorCode.NO_REPLIES_FOUND)
 
-        thread = self.fetch_thread(replies[0].thread_id)
-        thread = {p.id: p for p in thread}
-        thread_messages = [thread[replies[0].parent_id]]
+        message_tree = self.fetch_message_tree(replies[0].message_tree_id)
+        message_tree = {p.id: p for p in message_tree}
+        mt_messages = [message_tree[replies[0].parent_id]]
         while True:
-            if not thread_messages[-1].parent_id:
+            if not mt_messages[-1].parent_id:
                 # reached start of the conversation
                 break
 
-            parent_message = thread[thread_messages[-1].parent_id]
-            thread_messages.append(parent_message)
+            parent_message = message_tree[mt_messages[-1].parent_id]
+            mt_messages.append(parent_message)
 
-        thread_messages = reversed(thread_messages)
+        mt_messages = reversed(mt_messages)
 
-        return thread_messages, replies
+        return message_tree_messages, replies
 
     def fetch_message(self, message_id: UUID) -> Optional[Message]:
         return self.db.query(Message).filter(Message.id == message_id).one()

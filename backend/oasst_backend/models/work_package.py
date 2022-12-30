@@ -30,7 +30,7 @@ class WorkPackage(SQLModel, table=True):
     ack: Optional[bool] = None
     done: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
     frontend_ref_message_id: Optional[str] = None
-    thread_id: Optional[UUID] = None
+    message_tree_id: Optional[UUID] = None
     parent_message_id: Optional[UUID] = None
     collective: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
 
