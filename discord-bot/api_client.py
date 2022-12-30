@@ -67,7 +67,7 @@ class ApiClient:
         return self.fetch_task(protocol_schema.TaskRequestType.random, user, collective=collective)
 
     def ack_task(self, task_id: str, post_id: str) -> None:
-        req = protocol_schema.TaskAck(post_id=post_id)
+        req = protocol_schema.TaskAck(message_id=post_id)
         return self.post(f"/api/v1/tasks/{task_id}/ack", req.dict())
 
     def nack_task(self, task_id: str, reason: str) -> None:

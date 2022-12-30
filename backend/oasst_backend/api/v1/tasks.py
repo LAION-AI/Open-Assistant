@@ -57,35 +57,39 @@ def generate_task(
         case protocol_schema.TaskRequestType.user_reply:
             logger.info("Generating a UserReplyTask.")
             messages = pr.fetch_random_conversation("assistant")
-            messages = [
-                protocol_schema.ConversationMessage(text=m.payload.payload.text, is_assistant=(m.role == "assistant"))
-                for m in messages
+            task_messages = [
+                protocol_schema.ConversationMessage(
+                    text=msg.payload.payload.text, is_assistant=(msg.role == "assistant")
+                )
+                for msg in messages
             ]
 
-            task = protocol_schema.UserReplyTask(conversation=protocol_schema.Conversation(messages=messages))
+            task = protocol_schema.UserReplyTask(conversation=protocol_schema.Conversation(messages=task_messages))
             message_tree_id = messages[-1].message_tree_id
             parent_message_id = messages[-1].id
         case protocol_schema.TaskRequestType.assistant_reply:
             logger.info("Generating a AssistantReplyTask.")
             messages = pr.fetch_random_conversation("user")
-            messages = [
-                protocol_schema.ConversationMessage(text=m.payload.payload.text, is_assistant=(m.role == "assistant"))
-                for m in messages
+            task_messages = [
+                protocol_schema.ConversationMessage(
+                    text=msg.payload.payload.text, is_assistant=(msg.role == "assistant")
+                )
+                for msg in messages
             ]
 
-            task = protocol_schema.AssistantReplyTask(conversation=protocol_schema.Conversation(messages=messages))
+            task = protocol_schema.AssistantReplyTask(conversation=protocol_schema.Conversation(messages=task_messages))
             message_tree_id = messages[-1].message_tree_id
             parent_message_id = messages[-1].id
         case protocol_schema.TaskRequestType.rank_initial_prompts:
             logger.info("Generating a RankInitialPromptsTask.")
 
             messages = pr.fetch_random_initial_prompts()
-            task = protocol_schema.RankInitialPromptsTask(prompts=[m.payload.payload.text for m in messages])
+            task = protocol_schema.RankInitialPromptsTask(prompts=[msg.payload.payload.text for msg in messages])
         case protocol_schema.TaskRequestType.rank_user_replies:
             logger.info("Generating a RankUserRepliesTask.")
             conversation, replies = pr.fetch_multiple_random_replies(message_role="assistant")
 
-            messages = [
+            task_messages = [
                 protocol_schema.ConversationMessage(
                     text=p.payload.payload.text,
                     is_assistant=(p.role == "assistant"),
@@ -95,7 +99,7 @@ def generate_task(
             replies = [p.payload.payload.text for p in replies]
             task = protocol_schema.RankUserRepliesTask(
                 conversation=protocol_schema.Conversation(
-                    messages=messages,
+                    messages=task_messages,
                 ),
                 replies=replies,
             )
@@ -104,7 +108,7 @@ def generate_task(
             logger.info("Generating a RankAssistantRepliesTask.")
             conversation, replies = pr.fetch_multiple_random_replies(message_role="user")
 
-            messages = [
+            task_messages = [
                 protocol_schema.ConversationMessage(
                     text=p.payload.payload.text,
                     is_assistant=(p.role == "assistant"),
@@ -113,7 +117,7 @@ def generate_task(
             ]
             replies = [p.payload.payload.text for p in replies]
             task = protocol_schema.RankAssistantRepliesTask(
-                conversation=protocol_schema.Conversation(messages=messages),
+                conversation=protocol_schema.Conversation(messages=task_messages),
                 replies=replies,
             )
         case _:
@@ -150,7 +154,7 @@ def request_task(
 
 
 @router.post("/{task_id}/ack")
-def acknowledge_task(
+def tasks_acknowledge(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
@@ -168,7 +172,7 @@ def acknowledge_task(
 
         # here we store the message id in the database for the task
         logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
-        pr.bind_frontend_message_id(task_id=task_id, message_id=ack_request.message_id)
+        pr.bind_frontend_message_id(task_id=task_id, frontend_message_id=ack_request.message_id)
 
     except OasstError:
         raise
@@ -179,7 +183,7 @@ def acknowledge_task(
 
 
 @router.post("/{task_id}/nack")
-def acknowledge_task_failure(
+def tasks_acknowledge_failure(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
@@ -201,7 +205,7 @@ def acknowledge_task_failure(
 
 
 @router.post("/interaction")
-def message_interaction(
+def tasks_interaction(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
@@ -223,7 +227,9 @@ def message_interaction(
 
                 # here we store the text reply in the database
                 pr.store_text_reply(
-                    text=interaction.text, message_id=interaction.message_id, user_message_id=interaction.user_message_id
+                    text=interaction.text,
+                    frontend_message_id=interaction.message_id,
+                    user_frontend_message_id=interaction.user_message_id,
                 )
 
                 return protocol_schema.TaskDone()

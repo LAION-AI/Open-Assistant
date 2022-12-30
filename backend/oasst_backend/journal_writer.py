@@ -3,7 +3,7 @@ import enum
 from typing import Literal, Optional
 from uuid import UUID
 
-from oasst_backend.models import ApiClient, Journal, Person, Task
+from oasst_backend.models import ApiClient, Journal, Task, User
 from oasst_backend.models.payload_column_type import PayloadContainer, payload_type
 from oasst_shared.utils import utcnow
 from pydantic import BaseModel

@@ -7,7 +7,7 @@ import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, User, Message, MessageReaction, TextLabels, Task
+from oasst_backend.models import ApiClient, Message, MessageReaction, Task, TextLabels, User
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session, func
@@ -21,111 +21,109 @@ class PromptRepository:
         self.user_id = self.user.id if self.user else None
         self.journal = JournalWriter(db, api_client, self.user)
 
-    def lookup_user(self, user: protocol_schema.User) -> User:
-        if not user:
+    def lookup_user(self, client_user: protocol_schema.User) -> User:
+        if not client_user:
             return None
         user: User = (
             self.db.query(User)
             .filter(
                 User.api_client_id == self.api_client.id,
-                User.username == user.id,
-                User.auth_method == user.auth_method,
+                User.username == client_user.id,
+                User.auth_method == client_user.auth_method,
             )
             .first()
         )
         if user is None:
             # user is unknown, create new record
             user = User(
-                username=user.id,
-                display_name=user.display_name,
+                username=client_user.id,
+                display_name=client_user.display_name,
                 api_client_id=self.api_client.id,
-                auth_method=user.auth_method,
+                auth_method=client_user.auth_method,
             )
             self.db.add(user)
             self.db.commit()
             self.db.refresh(user)
-        elif user.display_name and user.display_name != user.display_name:
+        elif client_user.display_name and client_user.display_name != user.display_name:
             # we found the user but the display name changed
-            user.display_name = user.display_name
+            user.display_name = client_user.display_name
             self.db.add(user)
             self.db.commit()
         return user
 
-    def validate_message_id(self, message_id: str) -> None:
+    def validate_frontend_message_id(self, message_id: str) -> None:
         if not isinstance(message_id, str):
-            raise OasstError(f"message_id must be string, not {type(message_id)}", OasstErrorCode.INVALID_POST_ID)
+            raise OasstError(
+                f"message_id must be string, not {type(message_id)}", OasstErrorCode.INVALID_FRONTEND_MESSAGE_ID
+            )
         if not message_id:
-            raise OasstError("message_id must not be empty", OasstErrorCode.INVALID_POST_ID)
+            raise OasstError("message_id must not be empty", OasstErrorCode.INVALID_FRONTEND_MESSAGE_ID)
 
-    def bind_frontend_message_id(self, task_id: UUID, message_id: str):
-        self.validate_message_id(message_id)
+    def bind_frontend_message_id(self, task_id: UUID, frontend_message_id: str):
+        self.validate_frontend_message_id(frontend_message_id)
 
-        # find work package
-        work_pack: Task = (
-            self.db.query(Task)
-            .filter(Task.id == task_id, Task.api_client_id == self.api_client.id)
-            .first()
-        )
-        if work_pack is None:
-            raise OasstError(f"Task for task {task_id} not found", OasstErrorCode.TASK_NOT_FOUND)
-        if work_pack.expired:
+        # find task
+        task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
+        if task is None:
+            raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+        if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
-        if work_pack.done or work_pack.ack is not None:
+        if task.done or task.ack is not None:
             raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
 
-        work_pack.frontend_ref_message_id = message_id
-        work_pack.ack = True
+        task.frontend_message_id = frontend_message_id
+        task.ack = True
         # ToDo: check race-condition, transaction
-        self.db.add(work_pack)
+        self.db.add(task)
         self.db.commit()
 
     def acknowledge_task_failure(self, task_id):
-        # find work package
-        work_pack: Task = (
-            self.db.query(Task)
-            .filter(Task.id == task_id, Task.api_client_id == self.api_client.id)
-            .first()
-        )
-        if work_pack is None:
-            raise OasstError(f"Task for task {task_id} not found", OasstErrorCode.TASK_NOT_FOUND)
-        if work_pack.expired:
+        # find task
+        task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
+        if task is None:
+            raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+        if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
-        if work_pack.done or work_pack.ack is not None:
+        if task.done or task.ack is not None:
             raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
 
-        work_pack.ack = False
+        task.ack = False
         # ToDo: check race-condition, transaction
-        self.db.add(work_pack)
+        self.db.add(task)
         self.db.commit()
 
     def fetch_message_by_frontend_message_id(self, frontend_message_id: str, fail_if_missing: bool = True) -> Message:
-        self.validate_message_id(frontend_message_id)
+        self.validate_frontend_message_id(frontend_message_id)
         message: Message = (
             self.db.query(Message)
             .filter(Message.api_client_id == self.api_client.id, Message.frontend_message_id == frontend_message_id)
             .one_or_none()
         )
         if fail_if_missing and message is None:
-            raise OasstError(f"Message with message_id {frontend_message_id} not found.", OasstErrorCode.POST_NOT_FOUND)
+            raise OasstError(
+                f"Message with frontend_message_id {frontend_message_id} not found.", OasstErrorCode.MESSAGE_NOT_FOUND
+            )
         return message
 
-    def fetch_task_by_message_id(self, message_id: str) -> Task:
-        self.validate_message_id(message_id)
+    def fetch_task_by_frontend_message_id(self, message_id: str) -> Task:
+        self.validate_frontend_message_id(message_id)
         task = (
             self.db.query(Task)
-            .filter(Task.api_client_id == self.api_client.id, Task.frontend_ref_message_id == message_id)
+            .filter(Task.api_client_id == self.api_client.id, Task.frontend_message_id == message_id)
             .one_or_none()
         )
         return task
 
-    def store_text_reply(self, text: str, message_id: str, user_message_id: str, role: str = None) -> Message:
-        self.validate_message_id(message_id)
-        self.validate_message_id(user_message_id)
+    def store_text_reply(
+        self, text: str, frontend_message_id: str, user_frontend_message_id: str, role: str = None
+    ) -> Message:
+        self.validate_frontend_message_id(frontend_message_id)
+        self.validate_frontend_message_id(user_frontend_message_id)
 
-        task = self.fetch_task_by_message_id(message_id)
+        task = self.fetch_task_by_frontend_message_id(frontend_message_id)
 
         if task is None:
-            raise OasstError(f"Task for {message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+            raise OasstError(f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
         if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
         if not task.ack:
@@ -152,7 +150,7 @@ class PromptRepository:
         new_message_id = uuid4()
         user_message = self.insert_message(
             message_id=new_message_id,
-            frontend_message_id=user_message_id,
+            frontend_message_id=user_frontend_message_id,
             parent_id=task.parent_message_id,
             message_tree_id=task.message_tree_id or new_message_id,
             task_id=task.id,
@@ -170,17 +168,17 @@ class PromptRepository:
     def store_rating(self, rating: protocol_schema.MessageRating) -> MessageReaction:
         message = self.fetch_message_by_frontend_message_id(rating.message_id, fail_if_missing=True)
 
-        task = self.fetch_task_by_message_id(rating.message_id)
-        work_payload: db_payload.RateSummaryPayload = task.payload.payload
-        if type(work_payload) != db_payload.RateSummaryPayload:
+        task = self.fetch_task_by_frontend_message_id(rating.message_id)
+        task_payload: db_payload.RateSummaryPayload = task.payload.payload
+        if type(task_payload) != db_payload.RateSummaryPayload:
             raise OasstError(
-                f"task payload type mismatch: {type(work_payload)=} != {db_payload.RateSummaryPayload}",
+                f"Task payload type mismatch: {type(task_payload)=} != {db_payload.RateSummaryPayload}",
                 OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
             )
 
-        if rating.rating < work_payload.scale.min or rating.rating > work_payload.scale.max:
+        if rating.rating < task_payload.scale.min or rating.rating > task_payload.scale.max:
             raise OasstError(
-                f"Invalid rating value: {rating.rating=} not in {work_payload.scale=}",
+                f"Invalid rating value: {rating.rating=} not in {task_payload.scale=}",
                 OasstErrorCode.RATING_OUT_OF_RANGE,
             )
 
@@ -197,20 +195,20 @@ class PromptRepository:
 
     def store_ranking(self, ranking: protocol_schema.MessageRanking) -> MessageReaction:
         # fetch task
-        task = self.fetch_task_by_message_id(ranking.message_id)
+        task = self.fetch_task_by_frontend_message_id(ranking.message_id)
         if not task.collective:
             task.done = True
             self.db.add(task)
 
-        work_payload: db_payload.RankConversationRepliesPayload | db_payload.RankInitialPromptsPayload = (
+        task_payload: db_payload.RankConversationRepliesPayload | db_payload.RankInitialPromptsPayload = (
             task.payload.payload
         )
 
-        match type(work_payload):
+        match type(task_payload):
 
             case db_payload.RankUserRepliesPayload | db_payload.RankAssistantRepliesPayload:
                 # validate ranking
-                num_replies = len(work_payload.replies)
+                num_replies = len(task_payload.replies)
                 if sorted(ranking.ranking) != list(range(num_replies)):
                     raise OasstError(
                         f"Invalid ranking submitted. Each reply index must appear exactly once ({num_replies=}).",
@@ -229,7 +227,7 @@ class PromptRepository:
 
             case db_payload.RankInitialPromptsPayload:
                 # validate ranking
-                if sorted(ranking.ranking) != list(range(num_prompts := len(work_payload.prompts))):
+                if sorted(ranking.ranking) != list(range(num_prompts := len(task_payload.prompts))):
                     raise OasstError(
                         f"Invalid ranking submitted. Each reply index must appear exactly once ({num_prompts=}).",
                         OasstErrorCode.INVALID_RANKING_VALUE,
@@ -247,7 +245,7 @@ class PromptRepository:
 
             case _:
                 raise OasstError(
-                    f"task payload type mismatch: {type(work_payload)=} != {db_payload.RankConversationRepliesPayload}",
+                    f"task payload type mismatch: {type(task_payload)=} != {db_payload.RankConversationRepliesPayload}",
                     OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
                 )
 
@@ -294,7 +292,11 @@ class PromptRepository:
                 raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
 
         task = self.insert_task(
-            payload=payload, id=task.id, message_tree_id=message_tree_id, parent_message_id=parent_message_id, collective=collective
+            payload=payload,
+            id=task.id,
+            message_tree_id=message_tree_id,
+            parent_message_id=parent_message_id,
+            collective=collective,
         )
         assert task.id == task.id
         return task
@@ -450,36 +452,38 @@ class PromptRepository:
             parent = parent.filter(Message.role == message_role)
 
         parent = parent.order_by(func.random()).limit(1)
-        replies = self.db.query(Message).filter(Message.parent_id.in_(parent)).order_by(func.random()).limit(max_size).all()
+        replies = (
+            self.db.query(Message).filter(Message.parent_id.in_(parent)).order_by(func.random()).limit(max_size).all()
+        )
         if not replies:
             raise OasstError("No replies found", OasstErrorCode.NO_REPLIES_FOUND)
 
         message_tree = self.fetch_message_tree(replies[0].message_tree_id)
         message_tree = {p.id: p for p in message_tree}
-        mt_messages = [message_tree[replies[0].parent_id]]
+        thread_messages = [message_tree[replies[0].parent_id]]
         while True:
-            if not mt_messages[-1].parent_id:
+            if not thread_messages[-1].parent_id:
                 # reached start of the conversation
                 break
 
-            parent_message = message_tree[mt_messages[-1].parent_id]
-            mt_messages.append(parent_message)
+            parent_message = message_tree[thread_messages[-1].parent_id]
+            thread_messages.append(parent_message)
 
-        mt_messages = reversed(mt_messages)
+        thread_messages = reversed(thread_messages)
 
-        return message_tree_messages, replies
+        return thread_messages, replies
 
     def fetch_message(self, message_id: UUID) -> Optional[Message]:
         return self.db.query(Message).filter(Message.id == message_id).one()
 
-    def close_task(self, message_id: str, allow_personal_tasks: bool = False):
-        self.validate_message_id(message_id)
-        task = self.fetch_task_by_message_id(message_id)
+    def close_task(self, frontend_message_id: str, allow_personal_tasks: bool = False):
+        self.validate_frontend_message_id(frontend_message_id)
+        task = self.fetch_task_by_frontend_message_id(frontend_message_id)
 
         if not task:
-            raise OasstError("Work package not found", OasstErrorCode.TASK_NOT_FOUND)
+            raise OasstError(f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
         if task.expired:
-            raise OasstError("Work package expired", OasstErrorCode.TASK_EXPIRED)
+            raise OasstError("Task already expired", OasstErrorCode.TASK_EXPIRED)
         if not allow_personal_tasks and not task.collective:
             raise OasstError("This is not a collective task", OasstErrorCode.TASK_NOT_COLLECTIVE)
         if task.done:
