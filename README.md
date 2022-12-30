@@ -35,6 +35,8 @@ We are not going to stop at replicating ChatGPT. We want to build the assistant 
 
 ### Slide Decks
 
+[Vision & Roadmap](https://docs.google.com/presentation/d/1n7IrAOVOqwdYgiYrXc8Sj0He8krn5MVZO_iLkCjTtu0/edit?usp=sharing)
+
 [Important Data Structures](https://docs.google.com/presentation/d/1iaX_nxasVWlvPiSNs0cllR9L_1neZq0RJxd6MFEalUY/edit?usp=sharing)
 
 ## How can you help?
