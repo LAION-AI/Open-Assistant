@@ -45,9 +45,11 @@ All open source projects begins with people like you. Open source is the belief 
 
 ## I’m in! Now what?
 
-[Join the LAION Discord Server!](https://discord.com/invite/mVcgxMPD7e)
+[Join the OpenAssistant Contributors Discord Server!](https://ykilcher.com/open-assistant-discord), this is for work coordination.
 
-[and / or the YK Discord Server](https://ykilcher.com/discord)
+[Join the LAION Discord Server!](https://discord.com/invite/mVcgxMPD7e), it has a dedicated channel and is more public.
+
+[and / or the YK Discord Server](https://ykilcher.com/discord), also has a dedicated, but not as active, channel.
 
 [Visit the Notion](https://ykilcher.com/open-assistant)
 
