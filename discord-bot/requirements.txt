@@ -6,6 +6,6 @@ hikari-lightbulb    # command handler
 hikari-miru         # modals and buttons
 hikari[speedups]
 loguru
+pydantic
 
-python-dotenv       # .env file support
-uvloop; os_name != 'nt'
+uvloop; os_name != 'nt'  # Faster drop-in replacement for asyncio event loop

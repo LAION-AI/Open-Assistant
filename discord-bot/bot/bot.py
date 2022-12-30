@@ -5,16 +5,16 @@ import hikari
 import lightbulb
 import miru
 from bot.api_client import OasstApiClient
-from bot.config import Config
+from bot.settings import Settings
 
-config = Config.from_env()
+settings = Settings()
 
 bot = lightbulb.BotApp(
-    token=config.token,
+    token=settings.token,
     logs="DEBUG",
-    prefix=config.prefix,
-    default_enabled_guilds=config.declare_global_commands,
-    owner_ids=config.owner_ids,
+    prefix=settings.prefix,
+    default_enabled_guilds=settings.declare_global_commands,
+    owner_ids=settings.owner_ids,
     intents=hikari.Intents.ALL,
 )
 
