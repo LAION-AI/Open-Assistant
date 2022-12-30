@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "open-assistant-model-ranking-rankgen"
+version = "0.1.0"
+description = "Reward model based on rankgen"
+authors = ["Bobak Hashemi <bth5032@gmail.com>"]
+readme = "README.md"
+packages = [{include = "open_assistant_model_ranking_rankgen"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+torch = "1.13.1"
+torcheval-nightly = "^2022.12.29"
+transformers = "^4.25.1"
+wandb = "^0.13.7"
+hydra-core = "^1.3.1"
+sentencepiece = "^0.1.97"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.19.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
