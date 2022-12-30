@@ -7,7 +7,6 @@ import hikari
 import lightbulb
 import miru
 from aiosqlite import Connection
-
 from bot.db.schemas import GuildSettings
 from bot.utils import EMPTY
 

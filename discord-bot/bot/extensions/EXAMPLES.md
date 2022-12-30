@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-# TODO: Convert file to markdown
-# -*- coding: utf-8 -*-
-"""Example plugin for reference.
+# `hikari`, `lightbulb`, and `muri` examples
 
-Because this file starts with an `_`, it cannot be loaded by the bot.
-To see the example plugin in action, rename this file to `example.py`.
-"""
+Example plugin for reference.
+
+````py
 import asyncio
 
 import hikari
@@ -411,3 +408,4 @@ def load(bot: lightbulb.BotApp):
 def unload(bot: lightbulb.BotApp):
     """Remove the plugin to the bot."""
     bot.remove_plugin(plugin)
+````

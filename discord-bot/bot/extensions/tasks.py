@@ -9,9 +9,8 @@ import hikari
 import lightbulb
 import lightbulb.decorators
 import miru
-from oasst_shared.schemas.protocol import TaskRequestType
-
 from bot.utils import format_time
+from oasst_shared.schemas.protocol import TaskRequestType
 
 plugin = lightbulb.Plugin("TaskPlugin")
 

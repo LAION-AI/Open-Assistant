@@ -1,8 +1,0 @@
-
-black
-
-codespell
-flake8
-isort
-nox
-pyright

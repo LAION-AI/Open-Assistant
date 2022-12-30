@@ -13,12 +13,12 @@ pip install -r requirements.txt
 python -m bot
 ```
 
-To test the bot
+Before you push, make sure the `pre-commit` hooks are installed and run successfully.
 
 ```
-python -m pip install -r dev-requirements.txt
-
-nox
+pip install pre-commit
+pre-commit install
+pre-commit run --all-files
 ```
 
 To test the bot on your own discord server you need to register a discord application at the [Discord Developer Portal](https://discord.com/developers/applications) and get at bot token.
@@ -81,7 +81,7 @@ def unload(bot: lightbulb.BotApp):
     bot.remove_plugin(plugin)
 ```
 
-For example commands and listeners, see [here](/discord-bot/bot/extensions/_example.py)
+For example commands and listeners, see [EXAMPLES.md](/discord-bot/EXAMPLES.md)
 
 ### Docs
 
