@@ -69,7 +69,7 @@ def generate_task(
             parent_message_id = messages[-1].id
         case protocol_schema.TaskRequestType.assistant_reply:
             logger.info("Generating a AssistantReplyTask.")
-            messages = pr.fetch_random_conversation("user")
+            messages = pr.fetch_random_conversation("prompter")
             task_messages = [
                 protocol_schema.ConversationMessage(
                     text=msg.payload.payload.text, is_assistant=(msg.role == "assistant")
