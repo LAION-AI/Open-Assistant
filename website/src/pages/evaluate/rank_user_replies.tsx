@@ -9,7 +9,7 @@ import poster from "src/lib/poster";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
-import { Flex } from "@chakra-ui/react";
+import { Container, Flex, useColorModeValue } from "@chakra-ui/react";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 
@@ -20,7 +20,7 @@ const RankUserReplies = () => {
    * The best reply will have index 0, and the worst is the last.
    */
   const [ranking, setRanking] = useState<number[]>([]);
-
+  const bg = useColorModeValue("gray.100", "gray.800");
   const { isLoading } = useSWRImmutable("/api/new_task/rank_user_replies", fetcher, {
     onSuccess: (data) => {
       setTasks([data]);
@@ -49,7 +49,7 @@ const RankUserReplies = () => {
   }
 
   if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">Loading...</div>;
+    return <Container className="p-6 bg-slate-100 text-gray-800">Loading...</Container>;
   }
   const replies = tasks[0].task.replies as string[];
 
@@ -59,14 +59,14 @@ const RankUserReplies = () => {
         <title>Rank User Replies</title>
         <meta name="description" content="Rank User Replies." />
       </Head>
-      <main className="p-6 bg-slate-100 text-gray-800">
-        <div className="rounded-lg shadow-lg block bg-white p-6 mb-8">
+      <Container className="p-6 text-gray-800">
+        <Container bg={bg} className="rounded-lg shadow-lg block bg-white p-6 mb-8">
           <h5 className="text-lg font-semibold mb-4">Instructions</h5>
           <p className="text-lg py-1">
             Given the following replies, sort them from best to worst, best being first, worst being last.
           </p>
           <Sortable items={replies} onChange={setRanking} />
-        </div>
+        </Container>
 
         <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
           <TaskInfo id={tasks[0].id} output="Submit your answer" />
@@ -78,7 +78,7 @@ const RankUserReplies = () => {
             </SubmitButton>
           </Flex>
         </section>
-      </main>
+      </Container>
     </>
   );
 };

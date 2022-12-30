@@ -1,4 +1,4 @@
-import { Button, Flex } from "@chakra-ui/react";
+import { Button, Container, Flex, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
 import useSWRImmutable from "swr/immutable";
@@ -20,7 +20,7 @@ const RankAssistantReplies = () => {
    * The best reply will have index 0, and the worst is the last.
    */
   const [ranking, setRanking] = useState<number[]>([]);
-
+  const bg = useColorModeValue("gray.100", "gray.800")
   const { isLoading } = useSWRImmutable("/api/new_task/rank_assistant_replies", fetcher, {
     onSuccess: (data) => {
       setTasks([data]);
@@ -49,7 +49,7 @@ const RankAssistantReplies = () => {
   }
 
   if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">Loading...</div>;
+    return <Container className="p-6 bg-slate-100 text-gray-800">No Tasks Found...</Container>;
   }
   const replies = tasks[0].task.replies as string[];
 
@@ -59,16 +59,16 @@ const RankAssistantReplies = () => {
         <title>Rank Assistant Replies</title>
         <meta name="description" content="Rank Assistant Replies." />
       </Head>
-      <main className="p-6 bg-slate-100 text-gray-800">
-        <div className="rounded-lg shadow-lg block bg-white p-6 mb-8">
+      <Container className="p-6 bg-slate-100 text-gray-800">
+        <Container bg={bg} className="rounded-lg shadow-lg block  p-6 mb-8">
           <h5 className="text-lg font-semibold mb-4">Instructions</h5>
           <p className="text-lg py-1">
             Given the following replies, sort them from best to worst, best being first, worst being last.
           </p>
           <Sortable items={replies} onChange={setRanking} />
-        </div>
+        </Container>
 
-        <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch">
+        <Container bg={bg} className="mb-8 p-4 rounded-lg shadow-lg  flex flex-row justify-items-stretch">
           <TaskInfo id={tasks[0].id} output="Submit your answer" />
 
           <Flex justify="center" ml="auto" gap={2}>
@@ -77,8 +77,8 @@ const RankAssistantReplies = () => {
               Submit
             </SubmitButton>
           </Flex>
-        </section>
-      </main>
+        </Container>
+      </Container>
     </>
   );
 };
