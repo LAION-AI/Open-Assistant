@@ -13,7 +13,7 @@ from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import TaskRequestType
 
 from bot.api_client import OasstApiClient, TaskType
-from bot.utils import ZWJ
+from bot.utils import EMPTY
 
 plugin = lightbulb.Plugin("WorkPlugin")
 
@@ -106,6 +106,24 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
             else:
                 logger.fatal(f"Unexpected task type received: {new_task.type}")
 
+        # Send a message in the log channel that the task is complete
+        # TODO: Maybe do something with the msg ID
+        done_embed = (
+            hikari.Embed(
+                title="Task Completion",
+                description=f"`{task.type}` completed by {ctx.author.mention}",
+                color=hikari.Color(0x00FF00),
+                timestamp=datetime.now().astimezone(),
+            )
+            .add_field("Total Tasks", "0", inline=True)
+            .add_field("Server Ranking", "0/0", inline=True)
+            .add_field("Global Ranking", "0/0", inline=True)
+            .set_footer(f"Task ID: {task.id}")
+        )
+        channel = await ctx.bot.rest.fetch_channel(1058299131115872297)
+        assert isinstance(channel, hikari.TextableChannel)
+        await channel.send(EMPTY, embed=done_embed)
+
         # ask the user if they want to do another task
         choice_view = ChoiceView(timeout=MAX_TASK_ACCEPT_TIME)
         msg = await ctx.author.send("Would you like another task?", components=choice_view)
@@ -169,7 +187,6 @@ async def _send_task(
     # The clean way to do this would be to attach a `to_embed` method to the task classes
     # but the tasks aren't discord specific so that doesn't really make sense.
 
-    view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
     embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED
 
     # Create an embed based on the task's type
@@ -183,11 +200,38 @@ async def _send_task(
         logger.info("sending rank initial prompt task")
         embed = _rank_initial_prompt_embed(task)
 
+    elif task.type == TaskRequestType.rank_user_replies:
+        assert isinstance(task, protocol_schema.RankUserRepliesTask)
+        logger.info("sending rank user reply task")
+        embed = _rank_user_reply_embed(task)
+
+    elif task.type == TaskRequestType.rank_assistant_replies:
+        assert isinstance(task, protocol_schema.RankAssistantRepliesTask)
+        logger.info("sending rank assistant reply task")
+        embed = _rank_assistant_reply_embed(task)
+
+    elif task.type == TaskRequestType.user_reply:
+        assert isinstance(task, protocol_schema.UserReplyTask)
+        logger.info("sending user reply task")
+        embed = _user_reply_embed(task)
+
+    elif task.type == TaskRequestType.assistant_reply:
+        assert isinstance(task, protocol_schema.AssistantReplyTask)
+        logger.info("sending assistant reply task")
+        embed = _assistant_reply_embed(task)
+
+    elif task.type == TaskRequestType.summarize_story:
+        raise NotImplementedError
+    elif task.type == TaskRequestType.rate_summary:
+        raise NotImplementedError
+
     else:
         logger.error(f"unknown task type {task.type}")
+        raise ValueError(f"unknown task type {task.type}")
 
+    view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
     msg = await ctx.author.send(
-        ZWJ,
+        EMPTY,
         embed=embed,
         components=view,
     )
@@ -198,31 +242,6 @@ async def _send_task(
     await view.wait()
 
     return view.choice, str(msg.id)
-
-
-def _initial_prompt_embed(task: protocol_schema.InitialPromptTask) -> hikari.Embed:
-    return (
-        hikari.Embed(title="Initial Prompt", description=f"Hint: {task.hint}", timestamp=datetime.now().astimezone())
-        .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")
-        .set_footer(text=f"OASST Assistant | {task.id}")
-    )
-
-
-def _rank_initial_prompt_embed(task: protocol_schema.RankInitialPromptsTask) -> hikari.Embed:
-    embed = (
-        hikari.Embed(
-            title="Rank Initial Prompt",
-            description="Rank the following tasks from best to worst (1,2,3,4,5)",
-            timestamp=datetime.now().astimezone(),
-        )
-        .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")
-        .set_footer(text=f"OASST Assistant | {task.id}")
-    )
-
-    for i, prompt in enumerate(task.prompts):
-        embed.add_field(name=f"Prompt {i + 1}", value=prompt, inline=False)
-
-    return embed
 
 
 class TaskAcceptView(miru.View):
@@ -269,6 +288,109 @@ class ChoiceView(miru.View):
     async def no_button(self, button: miru.Button, ctx: miru.ViewContext) -> None:
         self.choice = False
         self.stop()
+
+
+################################################################
+#                       Template Embeds                        #
+################################################################
+
+# TODO: Maybe implement a better way of creating embeds, like `from_json` or something
+
+
+def _initial_prompt_embed(task: protocol_schema.InitialPromptTask) -> hikari.Embed:
+    return (
+        hikari.Embed(title="Initial Prompt", description=f"Hint: {task.hint}", timestamp=datetime.now().astimezone())
+        .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")
+        .set_footer(text=f"OASST Assistant | {task.id}")
+    )
+
+
+def _rank_initial_prompt_embed(task: protocol_schema.RankInitialPromptsTask) -> hikari.Embed:
+    embed = (
+        hikari.Embed(
+            title="Rank Initial Prompt",
+            description="Rank the following tasks from best to worst (1,2,3,4,5)",
+            timestamp=datetime.now().astimezone(),
+        )
+        .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")
+        .set_footer(text=f"OASST Assistant | {task.id}")
+    )
+
+    for i, prompt in enumerate(task.prompts):
+        embed.add_field(name=f"Prompt {i + 1}", value=prompt, inline=False)
+
+    return embed
+
+
+def _rank_user_reply_embed(task: protocol_schema.RankUserRepliesTask) -> hikari.Embed:
+    embed = (
+        hikari.Embed(
+            title="Rank User Reply",
+            description="Rank the following tasks from best to worst. e.g. 1,2,5,3,4",
+            timestamp=datetime.now().astimezone(),
+        )
+        .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")  # TODO: update image
+        .set_footer(text=f"OASST Assistant | {task.id}")
+    )
+
+    for i, reply in enumerate(task.replies):
+        embed.add_field(name=f"Reply {i + 1}", value=reply, inline=False)
+
+    return embed
+
+
+def _rank_assistant_reply_embed(task: protocol_schema.RankAssistantRepliesTask) -> hikari.Embed:
+    embed = (
+        hikari.Embed(
+            title="Rank Assistant Reply",
+            description="Rank the following tasks from best to worst. e.g. 1,2,5,3,4",
+            timestamp=datetime.now().astimezone(),
+        )
+        .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")  # TODO: update image
+        .set_footer(text=f"OASST Assistant | {task.id}")
+    )
+
+    for i, reply in enumerate(task.replies):
+        embed.add_field(name=f"Reply {i + 1}", value=reply, inline=False)
+
+    return embed
+
+
+def _user_reply_embed(task: protocol_schema.UserReplyTask) -> hikari.Embed:
+    embed = (
+        hikari.Embed(
+            title="User Reply",
+            description=f"""\
+                Send the next message in the conversation as if you were the user.
+                {'Hint: ' if task.hint else ''}
+            """,
+            timestamp=datetime.now().astimezone(),
+        )
+        # .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")  # TODO: change image
+        .set_footer(text=f"OASST Assistant | {task.id}")
+    )
+
+    for message in task.conversation.messages:
+        embed.add_field(name="Assistant" if message.is_assistant else "User", value=message.text, inline=False)
+
+    return embed
+
+
+def _assistant_reply_embed(task: protocol_schema.AssistantReplyTask) -> hikari.Embed:
+    embed = (
+        hikari.Embed(
+            title="User Reply",
+            description="Send the next message in the conversation as if you were the user.",
+            timestamp=datetime.now().astimezone(),
+        )
+        # .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")  # TODO: change image
+        .set_footer(text=f"OASST Assistant | {task.id}")
+    )
+
+    for message in task.conversation.messages:
+        embed.add_field(name="Assistant" if message.is_assistant else "User", value=message.text, inline=False)
+
+    return embed
 
 
 def load(bot: lightbulb.BotApp):
