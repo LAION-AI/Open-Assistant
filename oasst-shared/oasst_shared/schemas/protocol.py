@@ -271,3 +271,10 @@ class TextLabels(BaseModel):
             if not (0 <= value <= 1):
                 raise ValueError(f"Label values must be between 0 and 1, got {value} for {key}.")
         return v
+
+
+class SystemStats(BaseModel):
+    all: int = 0
+    active: int = 0
+    deleted: int = 0
+    threads: int = 0

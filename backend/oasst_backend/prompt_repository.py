@@ -663,3 +663,15 @@ class PromptRepository:
                 parent_ids = self.db.execute(query).scalars().all()
 
         self.db.commit()
+
+    def get_stats(self):
+        deleted = self.db.query(Post.deleted, func.count()).group_by(Post.deleted)
+        nthreads = self.db.query(None, func.count(Post.id)).filter(Post.parent_id.is_(None))
+        query = deleted.union_all(nthreads)
+        result = {k: v for k, v in query.all()}
+        return {
+            "all": result.get(True, 0) + result.get(False, 0),
+            "active": result.get(False, 0),
+            "deleted": result.get(True, 0),
+            "threads": result.get(None, 0),
+        }
