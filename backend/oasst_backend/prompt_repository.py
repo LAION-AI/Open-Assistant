@@ -419,22 +419,22 @@ class PromptRepository:
             the user should reply as a human and hence the last message of the conversation
             needs to have "assistant" role.
         """
-        mt_messages = self.fetch_random_message_tree(last_message_role)
-        if not mt_messages:
+        messages_tree = self.fetch_random_message_tree(last_message_role)
+        if not messages_tree:
             raise OasstError("No message tree found", OasstErrorCode.NO_MESSAGE_TREE_FOUND)
         if last_message_role:
-            conv_messages = [m for m in mt_messages if m.role == last_message_role]
+            conv_messages = [m for m in messages_tree if m.role == last_message_role]
             conv_messages = [random.choice(conv_messages)]
         else:
-            conv_messages = [random.choice(mt_messages)]
-        mt_messages = {m.id: m for m in mt_messages}
+            conv_messages = [random.choice(messages_tree)]
+        messages_tree = {m.id: m for m in messages_tree}
 
         while True:
             if not conv_messages[-1].parent_id:
                 # reached the start of the conversation
                 break
 
-            parent_message = mt_messages[conv_messages[-1].parent_id]
+            parent_message = messages_tree[conv_messages[-1].parent_id]
             conv_messages.append(parent_message)
 
         return list(reversed(conv_messages))
