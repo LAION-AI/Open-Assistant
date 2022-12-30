@@ -143,7 +143,7 @@ if settings.DEBUG_USE_SEED_DATA:
                 for msg in dummy_messages:
                     task = pr.fetch_task_by_frontend_message_id(msg.task_message_id)
                     if task and not task.ack:
-                        logger.warning("Deleting unacknowledged seed data work package")
+                        logger.warning("Deleting unacknowledged seed data task")
                         db.delete(task)
                         task = None
                     if not task:

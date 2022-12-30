@@ -421,7 +421,7 @@ class PromptRepository:
         """
         mt_messages = self.fetch_random_message_tree(last_message_role)
         if not mt_messages:
-            raise OasstError("No message_tree found", OasstErrorCode.NO_THREADS_FOUND)
+            raise OasstError("No message tree found", OasstErrorCode.NO_MESSAGE_TREE_FOUND)
         if last_message_role:
             conv_messages = [m for m in mt_messages if m.role == last_message_role]
             conv_messages = [random.choice(conv_messages)]
@@ -460,18 +460,18 @@ class PromptRepository:
 
         message_tree = self.fetch_message_tree(replies[0].message_tree_id)
         message_tree = {p.id: p for p in message_tree}
-        thread_messages = [message_tree[replies[0].parent_id]]
+        conversation = [message_tree[replies[0].parent_id]]
         while True:
-            if not thread_messages[-1].parent_id:
+            if not conversation[-1].parent_id:
                 # reached start of the conversation
                 break
 
-            parent_message = message_tree[thread_messages[-1].parent_id]
-            thread_messages.append(parent_message)
+            parent_message = message_tree[conversation[-1].parent_id]
+            conversation.append(parent_message)
 
-        thread_messages = reversed(thread_messages)
+        conversation = reversed(conversation)
 
-        return thread_messages, replies
+        return conversation, replies
 
     def fetch_message(self, message_id: UUID) -> Optional[Message]:
         return self.db.query(Message).filter(Message.id == message_id).one()
