@@ -55,7 +55,6 @@ class LabelModal(miru.Modal):
         conn: Connection = context.bot.d.db  # type: ignore
         guild_settings = await GuildSettings.from_db(conn, context.guild_id)
 
-
         if guild_settings is None or guild_settings.log_channel_id is None:
             return
 
@@ -148,6 +147,8 @@ class LabelSelect(miru.View):
 @lightbulb.implements(lightbulb.MessageCommand)
 async def label_message_text(ctx: lightbulb.MessageContext):
     """Label a message."""
+    # We have to do some funny interaction chaining because discord only allows one component (select or modal) per interaction
+    # so the select menu will open the modal
     msg: hikari.Message = ctx.options.target
     # Exit if the message is empty
     if not msg.content:
