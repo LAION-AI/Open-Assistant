@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from bot import OpenAssistantBot
 from bot_settings import settings
+
+from bot import OpenAssistantBot
 
 # invite bot url: https://discord.com/api/oauth2/authorize?client_id=1054078345542910022&permissions=1634235579456&scope=bot
 
