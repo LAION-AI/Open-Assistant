@@ -23,7 +23,7 @@ class Message(SQLModel, table=True):
     message_tree_id: UUID = Field(nullable=False, index=True)
     task_id: UUID = Field(nullable=True, index=True)
     user_id: UUID = Field(nullable=True, foreign_key="user.id", index=True)
-    role: str = Field(nullable=False, max_length=128)
+    role: str = Field(nullable=False, max_length=128)  # valid: "prompter" | "assistant"
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")
     frontend_message_id: str = Field(max_length=200, nullable=False)
     created_date: Optional[datetime] = Field(

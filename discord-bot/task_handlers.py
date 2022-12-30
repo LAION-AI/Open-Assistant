@@ -146,15 +146,15 @@ class InitialPromptHandler(ChannelTaskBase):
             await self.handle_text_reply_to_post(msg)
 
 
-class UserReplyHandler(ChannelTaskBase):
-    task: protocol_schema.UserReplyTask
+class PrompterReplyHandler(ChannelTaskBase):
+    task: protocol_schema.PrompterReplyTask
     thread_name: str = "User replies"
 
     async def send_first_message(self) -> discord.message:
-        return await self.post_teaser_msg("teaser_user_reply.msg")
+        return await self.post_teaser_msg("teaser_prompter_reply.msg")
 
     async def on_thread_created(self, thread: discord.Thread) -> None:
-        await self.bot.post_template("task_user_reply.msg", channel=thread, task=self.task)
+        await self.bot.post_template("task_prompter_reply.msg", channel=thread, task=self.task)
 
     async def handler_loop(self):
         while True:

@@ -87,7 +87,7 @@ if settings.DEBUG_USE_SEED_DATA:
                         user_message_id="6f1d0711",
                         parent_message_id=None,
                         text="Hi!",
-                        role="user",
+                        role="prompter",
                     ),
                     DummyMessage(
                         task_message_id="74c381d4",
@@ -101,14 +101,14 @@ if settings.DEBUG_USE_SEED_DATA:
                         user_message_id="a8c01c04",
                         parent_message_id="4a24530b",
                         text="Do you have a recipe for potato soup?",
-                        role="user",
+                        role="prompter",
                     ),
                     DummyMessage(
                         task_message_id="643716c1",
                         user_message_id="f43a93b7",
                         parent_message_id="4a24530b",
                         text="Who were the 8 presidents before George Washington?",
-                        role="user",
+                        role="prompter",
                     ),
                     DummyMessage(
                         task_message_id="2e4e1e6",
@@ -122,7 +122,7 @@ if settings.DEBUG_USE_SEED_DATA:
                         user_message_id="cec432cf",
                         parent_message_id=None,
                         text="euirdteunvglfe23908230892309832098 AAAAAAAA",
-                        role="user",
+                        role="prompter",
                     ),
                     DummyMessage(
                         task_message_id="6066118e",
