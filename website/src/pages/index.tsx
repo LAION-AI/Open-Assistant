@@ -21,7 +21,7 @@ const Home = () => {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      {false ? (
+      {session ? (
         <Container>
           <TaskSelection />
         </Container>
