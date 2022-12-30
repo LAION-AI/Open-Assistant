@@ -26,7 +26,7 @@ async def on_starting(event: hikari.StartingEvent):
     miru.install(bot)  # component handler
     bot.load_extensions_from("./bot/extensions")  # load extensions
 
-    bot.d.db = await aiosqlite.connect(":memory:")  # TODO: Update
+    bot.d.db = await aiosqlite.connect("./bot/db/database.db")  # TODO: Update
     await bot.d.db.executescript(open("./bot/db/schema.sql").read())
     await bot.d.db.commit()
 

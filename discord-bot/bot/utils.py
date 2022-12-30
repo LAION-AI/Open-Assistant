@@ -3,6 +3,8 @@
 import typing as t
 from datetime import datetime
 
+import hikari
+
 
 def format_time(dt: datetime, fmt: t.Literal["t", "T", "D", "f", "F", "R"]) -> str:
     """Format a datetime object into the discord time format.
@@ -28,3 +30,19 @@ EMPTY = "\u200d"
 
 This appears as an empty message in Discord.
 """
+
+
+def mention(
+    id: hikari.Snowflakeish,
+    type: t.Literal["channel", "role", "user"],
+) -> str:
+    """Mention an object."""
+    match type:
+        case "channel":
+            return f"<#{id}>"
+
+        case "user":
+            return f"<@{id}>"
+
+        case "role":
+            return f"<@&{id}>"
