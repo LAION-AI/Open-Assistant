@@ -21,7 +21,7 @@ const RankInitialPrompts = () => {
    * The best prompt will have index 0, and the worst is the last.
    */
   const [ranking, setRanking] = useState<number[]>([]);
-  const bg = useColorModeValue("gray.100", "gray.800")
+  const bg = useColorModeValue("gray.100", "gray.800");
 
   const { isLoading } = useSWRImmutable("/api/new_task/rank_initial_prompts", fetcher, {
     onSuccess: (data) => {

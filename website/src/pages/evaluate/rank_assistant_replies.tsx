@@ -20,7 +20,7 @@ const RankAssistantReplies = () => {
    * The best reply will have index 0, and the worst is the last.
    */
   const [ranking, setRanking] = useState<number[]>([]);
-  const bg = useColorModeValue("gray.100", "gray.800")
+  const bg = useColorModeValue("gray.100", "gray.800");
   const { isLoading } = useSWRImmutable("/api/new_task/rank_assistant_replies", fetcher, {
     onSuccess: (data) => {
       setTasks([data]);
