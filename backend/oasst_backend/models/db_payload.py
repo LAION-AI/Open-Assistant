@@ -56,13 +56,13 @@ class ReactionPayload(BaseModel):
 
 @payload_type
 class RatingReactionPayload(ReactionPayload):
-    type: Literal["post_rating"] = "post_rating"
+    type: Literal["message_rating"] = "message_rating"
     rating: str
 
 
 @payload_type
 class RankingReactionPayload(ReactionPayload):
-    type: Literal["post_ranking"] = "post_ranking"
+    type: Literal["message_ranking"] = "message_ranking"
     ranking: list[int]
 
 

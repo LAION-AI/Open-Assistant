@@ -19,7 +19,7 @@ def generate_task(
     request: protocol_schema.TaskRequest, pr: PromptRepository
 ) -> Tuple[protocol_schema.Task, Optional[UUID], Optional[UUID]]:
     thread_id = None
-    parent_post_id = None
+    parent_message_id = None
 
     match request.type:
         case protocol_schema.TaskRequestType.random:
@@ -56,34 +56,34 @@ def generate_task(
             )
         case protocol_schema.TaskRequestType.user_reply:
             logger.info("Generating a UserReplyTask.")
-            posts = pr.fetch_random_conversation("assistant")
+            messages = pr.fetch_random_conversation("assistant")
             messages = [
-                protocol_schema.ConversationMessage(text=p.payload.payload.text, is_assistant=(p.role == "assistant"))
-                for p in posts
+                protocol_schema.ConversationMessage(text=m.payload.payload.text, is_assistant=(m.role == "assistant"))
+                for m in messages
             ]
 
             task = protocol_schema.UserReplyTask(conversation=protocol_schema.Conversation(messages=messages))
-            thread_id = posts[-1].thread_id
-            parent_post_id = posts[-1].id
+            thread_id = messages[-1].thread_id
+            parent_message_id = messages[-1].id
         case protocol_schema.TaskRequestType.assistant_reply:
             logger.info("Generating a AssistantReplyTask.")
-            posts = pr.fetch_random_conversation("user")
+            messages = pr.fetch_random_conversation("user")
             messages = [
-                protocol_schema.ConversationMessage(text=p.payload.payload.text, is_assistant=(p.role == "assistant"))
-                for p in posts
+                protocol_schema.ConversationMessage(text=m.payload.payload.text, is_assistant=(m.role == "assistant"))
+                for m in messages
             ]
 
             task = protocol_schema.AssistantReplyTask(conversation=protocol_schema.Conversation(messages=messages))
-            thread_id = posts[-1].thread_id
-            parent_post_id = posts[-1].id
+            thread_id = messages[-1].thread_id
+            parent_message_id = messages[-1].id
         case protocol_schema.TaskRequestType.rank_initial_prompts:
             logger.info("Generating a RankInitialPromptsTask.")
 
-            posts = pr.fetch_random_initial_prompts()
-            task = protocol_schema.RankInitialPromptsTask(prompts=[p.payload.payload.text for p in posts])
+            messages = pr.fetch_random_initial_prompts()
+            task = protocol_schema.RankInitialPromptsTask(prompts=[m.payload.payload.text for m in messages])
         case protocol_schema.TaskRequestType.rank_user_replies:
             logger.info("Generating a RankUserRepliesTask.")
-            conversation, replies = pr.fetch_multiple_random_replies(post_role="assistant")
+            conversation, replies = pr.fetch_multiple_random_replies(message_role="assistant")
 
             messages = [
                 protocol_schema.ConversationMessage(
@@ -102,7 +102,7 @@ def generate_task(
 
         case protocol_schema.TaskRequestType.rank_assistant_replies:
             logger.info("Generating a RankAssistantRepliesTask.")
-            conversation, replies = pr.fetch_multiple_random_replies(post_role="user")
+            conversation, replies = pr.fetch_multiple_random_replies(message_role="user")
 
             messages = [
                 protocol_schema.ConversationMessage(
@@ -121,7 +121,7 @@ def generate_task(
 
     logger.info(f"Generated {task=}.")
 
-    return task, thread_id, parent_post_id
+    return task, thread_id, parent_message_id
 
 
 @router.post("/", response_model=protocol_schema.AnyTask)  # work with Union once more types are added
@@ -138,8 +138,8 @@ def request_task(
 
     try:
         pr = PromptRepository(db, api_client, request.user)
-        task, thread_id, parent_post_id = generate_task(request, pr)
-        pr.store_task(task, thread_id, parent_post_id, request.collective)
+        task, thread_id, parent_message_id = generate_task(request, pr)
+        pr.store_task(task, thread_id, parent_message_id, request.collective)
 
     except OasstError:
         raise
@@ -166,9 +166,9 @@ def acknowledge_task(
     try:
         pr = PromptRepository(db, api_client, user=None)
 
-        # here we store the post id in the database for the task
+        # here we store the message id in the database for the task
         logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
-        pr.bind_frontend_post_id(task_id=task_id, post_id=ack_request.post_id)
+        pr.bind_frontend_message_id(task_id=task_id, message_id=ack_request.message_id)
 
     except OasstError:
         raise
@@ -201,7 +201,7 @@ def acknowledge_task_failure(
 
 
 @router.post("/interaction")
-def post_interaction(
+def message_interaction(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
@@ -216,29 +216,29 @@ def post_interaction(
         pr = PromptRepository(db, api_client, user=interaction.user)
 
         match type(interaction):
-            case protocol_schema.TextReplyToPost:
+            case protocol_schema.TextReplyToMessage:
                 logger.info(
-                    f"Frontend reports text reply to {interaction.post_id=} with {interaction.text=} by {interaction.user=}."
+                    f"Frontend reports text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                 )
 
                 # here we store the text reply in the database
                 pr.store_text_reply(
-                    text=interaction.text, post_id=interaction.post_id, user_post_id=interaction.user_post_id
+                    text=interaction.text, message_id=interaction.message_id, user_message_id=interaction.user_message_id
                 )
 
                 return protocol_schema.TaskDone()
-            case protocol_schema.PostRating:
+            case protocol_schema.MessageRating:
                 logger.info(
-                    f"Frontend reports rating of {interaction.post_id=} with {interaction.rating=} by {interaction.user=}."
+                    f"Frontend reports rating of {interaction.message_id=} with {interaction.rating=} by {interaction.user=}."
                 )
 
                 # here we store the rating in the database
                 pr.store_rating(interaction)
 
                 return protocol_schema.TaskDone()
-            case protocol_schema.PostRanking:
+            case protocol_schema.MessageRanking:
                 logger.info(
-                    f"Frontend reports ranking of {interaction.post_id=} with {interaction.ranking=} by {interaction.user=}."
+                    f"Frontend reports ranking of {interaction.message_id=} with {interaction.ranking=} by {interaction.user=}."
                 )
 
                 # TODO: check if the ranking is valid
@@ -262,5 +262,5 @@ def close_collective_task(
 ):
     api_client = deps.api_auth(api_key, db)
     pr = PromptRepository(db, api_client, user=None)
-    pr.close_task(close_task_request.post_id)
+    pr.close_task(close_task_request.message_id)
     return protocol_schema.TaskDone()

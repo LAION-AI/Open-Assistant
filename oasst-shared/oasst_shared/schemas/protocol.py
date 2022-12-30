@@ -190,18 +190,18 @@ class TextReplyToPost(Interaction):
     text: str
 
 
-class PostRating(Interaction):
+class MessageRating(Interaction):
     """A user has rated a post."""
 
-    type: Literal["post_rating"] = "post_rating"
+    type: Literal["post_rating"] = "message_rating"
     post_id: str
     rating: int
 
 
-class PostRanking(Interaction):
+class MessageRanking(Interaction):
     """A user has given a ranking for a post."""
 
-    type: Literal["post_ranking"] = "post_ranking"
+    type: Literal["post_ranking"] = "message_ranking"
     post_id: str
     ranking: list[int]
 
