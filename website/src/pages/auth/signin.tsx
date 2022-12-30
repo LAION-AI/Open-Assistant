@@ -60,7 +60,7 @@ export default function Signin({ csrfToken, providers }) {
               size="lg"
               leftIcon={<FaDiscord />}
               color="white"
-              onClick={() => signIn(discord, { callbackUrl: "/" })}
+              onClick={() => signIn(discord.id, { callbackUrl: "/" })}
               // isDisabled="false"
             >
               Continue with Discord
