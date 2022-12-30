@@ -41,3 +41,5 @@ Cypress.Commands.add("mount", mount);
 // cy.mount(<MyComponent />)
 
 compareSnapshotCommand();
+
+export {};
