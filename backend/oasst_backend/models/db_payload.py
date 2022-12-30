@@ -45,7 +45,7 @@ class AssistantReplyPayload(TaskPayload):
 
 
 @payload_type
-class PostPayload(BaseModel):
+class MessagePayload(BaseModel):
     text: str
 
 

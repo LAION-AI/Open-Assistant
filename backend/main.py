@@ -141,36 +141,36 @@ if settings.DEBUG_USE_SEED_DATA:
                 ]
 
                 for p in dummy_messages:
-                    wp = pr.fetch_workpackage_by_message_id(p.task_message_id)
-                    if wp and not wp.ack:
+                    task = pr.fetch_task_by_message_id(p.task_message_id)
+                    if task and not task.ack:
                         logger.warning("Deleting unacknowledged seed data work package")
-                        db.delete(wp)
-                        wp = None
-                    if not wp:
+                        db.delete(task)
+                        task = None
+                    if not task:
                         if p.parent_message_id is None:
-                            wp = pr.store_task(
-                                protocol_schema.InitialPromptTask(hint=""), thread_id=None, parent_message_id=None
+                            task = pr.store_task(
+                                protocol_schema.InitialPromptTask(hint=""), message_tree_id=None, parent_message_id=None
                             )
                         else:
                             print("p.parent_message_id", p.parent_message_id)
                             parent_message = pr.fetch_message_by_frontend_message_id(p.parent_message_id, fail_if_missing=True)
-                            wp = pr.store_task(
+                            task = pr.store_task(
                                 protocol_schema.AssistantReplyTask(
                                     conversation=protocol_schema.Conversation(
                                         messages=[protocol_schema.ConversationMessage(text="dummy", is_assistant=False)]
                                     )
                                 ),
-                                thread_id=parent_message.thread_id,
+                                message_tree_id=parent_message.message_tree_id,
                                 parent_message_id=parent_message.id,
                             )
-                        pr.bind_frontend_message_id(wp.id, p.task_message_id)
+                        pr.bind_frontend_message_id(task.id, p.task_message_id)
                         message = pr.store_text_reply(p.text, p.task_message_id, p.user_message_id)
 
                         logger.info(
                             f"Inserted: message_id: {message.id}, payload: {message.payload.payload}, parent_message_id: {message.parent_id}"
                         )
                     else:
-                        logger.debug(f"seed data work_package found: {wp.id}")
+                        logger.debug(f"seed data task found: {task.id}")
                 logger.info("Seed data check completed")
 
         except Exception:

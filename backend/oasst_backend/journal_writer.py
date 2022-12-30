@@ -3,7 +3,7 @@ import enum
 from typing import Literal, Optional
 from uuid import UUID
 
-from oasst_backend.models import ApiClient, Journal, Person, WorkPackage
+from oasst_backend.models import ApiClient, Journal, Person, Task
 from oasst_backend.models.payload_column_type import PayloadContainer, payload_type
 from oasst_shared.utils import utcnow
 from pydantic import BaseModel
@@ -24,7 +24,7 @@ class JournalEvent(BaseModel):
     type: str
     user_id: Optional[UUID]
     message_id: Optional[UUID]
-    workpackage_id: Optional[UUID]
+    task_id: Optional[UUID]
     task_type: Optional[str]
 
 
@@ -54,30 +54,30 @@ class JournalWriter:
         self.user = user
         self.user_id = self.user.id if self.user else None
 
-    def log_text_reply(self, work_package: WorkPackage, message_id: UUID, role: str, length: int) -> Journal:
+    def log_text_reply(self, task: Task, message_id: UUID, role: str, length: int) -> Journal:
         return self.log(
-            task_type=work_package.payload_type,
+            task_type=task.payload_type,
             event_type=JournalEventType.text_reply_to_message,
             payload=TextReplyEvent(role=role, length=length),
-            workpackage_id=work_package.id,
+            task_id=task.id,
             message_id=message_id,
         )
 
-    def log_rating(self, work_package: WorkPackage, message_id: UUID, rating: int) -> Journal:
+    def log_rating(self, task: Task, message_id: UUID, rating: int) -> Journal:
         return self.log(
-            task_type=work_package.payload_type,
+            task_type=task.payload_type,
             event_type=JournalEventType.message_rating,
             payload=RatingEvent(rating=rating),
-            workpackage_id=work_package.id,
+            task_id=task.id,
             message_id=message_id,
         )
 
-    def log_ranking(self, work_package: WorkPackage, message_id: UUID, ranking: list[int]) -> Journal:
+    def log_ranking(self, task: Task, message_id: UUID, ranking: list[int]) -> Journal:
         return self.log(
-            task_type=work_package.payload_type,
+            task_type=task.payload_type,
             event_type=JournalEventType.message_ranking,
             payload=RankingEvent(ranking=ranking),
-            workpackage_id=work_package.id,
+            task_id=task.id,
             message_id=message_id,
         )
 
@@ -87,7 +87,7 @@ class JournalWriter:
         payload: JournalEvent,
         task_type: str,
         event_type: str = None,
-        workpackage_id: Optional[UUID] = None,
+        task_id: Optional[UUID] = None,
         message_id: Optional[UUID] = None,
         commit: bool = True,
     ) -> Journal:
@@ -101,8 +101,8 @@ class JournalWriter:
             payload.user_id = self.user_id
         if payload.message_id is None:
             payload.message_id = message_id
-        if payload.workpackage_id is None:
-            payload.workpackage_id = workpackage_id
+        if payload.task_id is None:
+            payload.task_id = task_id
         if payload.task_type is None:
             payload.task_type = task_type
 
