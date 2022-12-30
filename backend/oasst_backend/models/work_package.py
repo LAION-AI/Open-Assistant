@@ -29,9 +29,9 @@ class WorkPackage(SQLModel, table=True):
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")
     ack: Optional[bool] = None
     done: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
-    frontend_ref_post_id: Optional[str] = None
+    frontend_ref_message_id: Optional[str] = None
     thread_id: Optional[UUID] = None
-    parent_post_id: Optional[UUID] = None
+    parent_message_id: Optional[UUID] = None
     collective: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
 
     @property

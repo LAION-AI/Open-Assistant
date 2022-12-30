@@ -10,9 +10,9 @@ from sqlmodel import Field, Index, SQLModel
 from .payload_column_type import PayloadContainer, payload_column_type
 
 
-class Post(SQLModel, table=True):
-    __tablename__ = "post"
-    __table_args__ = (Index("ix_post_frontend_post_id", "api_client_id", "frontend_post_id", unique=True),)
+class Message(SQLModel, table=True):
+    __tablename__ = "message"
+    __table_args__ = (Index("ix_message_frontend_message_id", "api_client_id", "frontend_message_id", unique=True),)
 
     id: Optional[UUID] = Field(
         sa_column=sa.Column(
@@ -25,7 +25,7 @@ class Post(SQLModel, table=True):
     user_id: UUID = Field(nullable=True, foreign_key="user.id", index=True)
     role: str = Field(nullable=False, max_length=128)
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")
-    frontend_post_id: str = Field(max_length=200, nullable=False)
+    frontend_message_id: str = Field(max_length=200, nullable=False)
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
