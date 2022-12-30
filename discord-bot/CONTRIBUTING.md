@@ -30,31 +30,32 @@ To test the bot on your own discord server you need to register a discord applic
 
 ### Structure
 
+Important files
+
 ```graphql
 .env                        # Environment variables
 .env.example                # Example environment variables
 CONTRIBUTING.md             # This file
-dev-requirements.txt        # Development requirements
-flake8-requirements.txt     # Flake8 extensions (for linting)
-noxfile.py                  # Nox session definitions (for formatting, typechecking, linting)
-pyproject.toml              # Project configuration
 README.md                   # Project readme
+EXAMPLES.md                 # Examples for commands and listeners
 requirements.txt            # Requirements
-templates/                  # Message templates
 
 bot/
-├─  __init__.py
-├─  __main__.py         # Entrypoint
-├─  bot.py              # Main bot class
-├─  config.py           # Configuration and secrets
-├─  utils.py            # Utility Functions
+├─  __main__.py             # Entrypoint
+├─  api_client.py           # API Client for interacting with the backend
+├─  bot.py                  # Main bot class
+├─  settings.py             # Settings and secrets
+├─  utils.py                # Utility Functions
 │
-├─  db/                 # Database related code
-│   ├─  database.db     # SQLite database
-│   └─  schema.sql      # Database schema
+├─  db/                     # Database related code
+│   ├─  database.db         # SQLite database
+│   ├─  schema.sql          # SQL schema
+│   └─  schemas.py          # Python table schemas
 │
-└── extensions/         # Application logic, see https://hikari-lightbulb.readthedocs.io/en/latest/guides/extensions.html
-    └─   hot_reload.py  # Utility for hot reload extension
+└── extensions/             # Application logic, see https://hikari-lightbulb.readthedocs.io/en/latest/guides/extensions.html
+    ├─  work.py             # Task handling logic  <-- most important file
+    ├─  guild_settings.py   # Server specific settings
+    └─  hot_reload.py       # Utility for hot reload extensions during development
 ```
 
 ### Adding a new command/listener
