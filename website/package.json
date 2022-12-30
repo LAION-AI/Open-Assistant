@@ -11,7 +11,8 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "cypress": "cypress open",
-    "cypress-image-baseline": "cypress-image-diff -u"
+    "cypress:run": "cypress run",
+    "cypress:image-baseline": "cypress-image-diff -u"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.4.4",
