@@ -15,6 +15,7 @@ from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlalchemy import update
 from sqlmodel import Session, func
+from starlette.status import HTTP_403_FORBIDDEN
 
 
 class PromptRepository:
@@ -477,8 +478,11 @@ class PromptRepository:
 
         return conversation, replies
 
-    def fetch_message(self, message_id: UUID) -> Optional[Message]:
-        return self.db.query(Message).filter(Message.id == message_id).one()
+    def fetch_message(self, message_id: UUID, fail_if_missing: bool = True) -> Optional[Message]:
+        message = self.db.query(Message).filter(Message.id == message_id).one_or_none()
+        if fail_if_missing and not message:
+            raise OasstError("Message not found", OasstErrorCode.POST_NOT_FOUND)
+        return message
 
     def close_task(self, frontend_message_id: str, allow_personal_tasks: bool = False):
         self.validate_frontend_message_id(frontend_message_id)
@@ -586,15 +590,27 @@ class PromptRepository:
 
     def query_messages(
         self,
-        username: str = None,
-        api_client_id: str = None,
+        user_id: Optional[UUID] = None,
+        username: Optional[str] = None,
+        api_client_id: Optional[UUID] = None,
         desc: bool = True,
-        max_count: int = 10,
-        start_date: datetime.datetime = None,
-        end_date: datetime.datetime = None,
+        limit: Optional[int] = 10,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
         only_roots: bool = False,
+        deleted: Optional[bool] = None,
     ) -> list[Post]:
+        if not self.api_client.trusted and not api_client_id:
+            # Let unprivileged api clients query their own messages without api_client_id being set
+            api_client_id = self.api_client.id
+
+        if not self.api_client.trusted and api_client_id != self.api_client.id:
+            # Unprivileged api client asks for foreign messages
+            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+
         messages = self.db.query(Post)
+        if user_id:
+            messages = messages.filter(Post.person_id == user_id)
         if username:
             messages = messages.join(Person)
             messages = messages.filter(Person.username == username)
@@ -609,13 +625,19 @@ class PromptRepository:
         if only_roots:
             messages = messages.filter(Post.parent_id.is_(None))
 
+        if deleted is not None:
+            messages = messages.filter(Post.deleted == deleted)
+
         if desc:
             messages = messages.order_by(Post.created_date.desc())
         else:
             messages = messages.order_by(Post.created_date.asc())
 
-        messages = messages.limit(max_count).all()
-        return messages
+        if limit is not None:
+            messages = messages.limit(limit)
+
+        # TODO: Pagination could be great at some point
+        return messages.all()
 
     def mark_messages_deleted(self, messages: Post | UUID | list[Post | UUID], recursive: bool = True):
         if isinstance(messages, (Post, UUID)):
