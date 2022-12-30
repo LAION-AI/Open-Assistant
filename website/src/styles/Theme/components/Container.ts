@@ -8,6 +8,13 @@ const baseStyle = defineStyle(({ colorMode }) => ({
   color: colorMode === "light" ? colors.light.text : colors.dark.text,
 }));
 
+const variants = {
+  'no-padding': {
+    padding: 0,
+  }
+}
+
 export const containerTheme = defineStyleConfig({
   baseStyle,
-});
+  variants,
+})
