@@ -34,17 +34,19 @@ export function Footer() {
                 </Link>
               </div>
             </div>
-            <div className="flex flex-col text-sm leading-7">
-              <b>Legal</b>
-              <div className="flex flex-col leading-5">
-                <Link href="#" aria-label="Privacy Policy" className="hover:underline underline-offset-2">
-                  Privacy Policy
-                </Link>
-                <Link href="#" aria-label="Terms of Service" className="hover:underline underline-offset-2">
-                  Terms of Service
-                </Link>
+            <nav className="flex justify-center gap-20">
+              <div className="flex flex-col text-sm leading-7">
+                <b>Information</b>
+                <div className="flex flex-col leading-5">
+                  <Link href="#" aria-label="Our Team" className="hover:underline underline-offset-2">
+                    Our Team
+                  </Link>
+                  <Link href="/#join-us" aria-label="Join Us" className="hover:underline underline-offset-2">
+                    Join Us
+                  </Link>
+                </div>
               </div>
-            </div>
+            </nav>
             <div className="flex flex-col text-sm leading-7">
               <b>Connect</b>
               <div className="flex flex-col leading-5">

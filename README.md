@@ -4,6 +4,21 @@ Open Assistant is a project meant to give everyone access to a great chat based 
 
 We believe that by doing this we will create a revolution in innovation in language. In the same way that stable-diffusion helped the world make art and images in new ways we hope Open Assistant can help improve the world by improving language itself.
 
+## Do you want to try it out?
+
+If you are interested in taking a look at the current state of the project, You can set up an entire stack needed to run **Open-Assistant**, including the
+website, backend, and associated dependent services.
+
+To start the demo, Run this in the root directory of the repository:
+
+```sh
+docker compose up --build
+```
+
+Then, navigate to `http://localhost:3000` (It may take some time to boot up) and interact with the website.
+
+**Note:** When logging in via email, navigate to `http://localhost:1080` to get the magic email login link.
+
 ## The Plan
 
 We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the InstructGPT paper.
@@ -82,7 +97,7 @@ addressed now, or filing an issue to handle it later.
 
 Work is organized in the [project board](https://github.com/orgs/LAION-AI/projects/3).
 
-**Anything that is in the `Todo` column and not assigned, is up for grabs. Meaning we'd be happy if anyone did those tasks.**
+**Anything that is in the `Todo` column and not assigned, is up for grabs. Meaning we'd be happy for anyone to do these tasks.**
 
 If you want to work on something, assign yourself to it or write a comment that you want to work on it and what you plan to do.
 
@@ -94,20 +109,6 @@ There is also a minimal implementation of a frontend in the `text-frontend` fold
 We are using Python 3.10 for the backend.
 
 Check out the [High-Level Protocol Architecture](https://www.notion.so/High-Level-Protocol-Architecture-6f1fd3551da74213b560ead369f132dc)
-
-## End to End Demo
-
-If you are interested in just taking a look at the project.
-You can set up an entire stack needed to run Open Assistant, including the
-website, backend, and associated dependent services.
-
-To start the demo, run this, in root directory:
-
-```sh
-docker compose up --build
-```
-
-Then, navigate to `http://localhost:3000` and interact with the website.
 
 ### Website
 

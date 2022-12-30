@@ -87,7 +87,7 @@ if settings.DEBUG_USE_SEED_DATA:
                         user_post_id="6f1d0711",
                         parent_post_id=None,
                         text="Hi!",
-                        role="uesr",
+                        role="user",
                     ),
                     DummyPost(
                         task_post_id="74c381d4",

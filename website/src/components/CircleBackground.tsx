@@ -1,7 +1,7 @@
 import { useId } from "react";
 
 export function CircleBackground({ color, width = 558, height = 558, ...props }) {
-  let id = useId();
+  const id = useId();
 
   return (
     <svg viewBox="0 0 558 558" width={width} height={height} fill="none" aria-hidden="true" {...props}>

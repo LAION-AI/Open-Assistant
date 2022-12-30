@@ -139,7 +139,7 @@ def request_task(
     try:
         pr = PromptRepository(db, api_client, request.user)
         task, thread_id, parent_post_id = generate_task(request, pr)
-        pr.store_task(task, thread_id, parent_post_id)
+        pr.store_task(task, thread_id, parent_post_id, request.collective)
 
     except OasstError:
         raise
@@ -252,3 +252,15 @@ def post_interaction(
     except Exception:
         logger.exception("Interaction request failed.")
         raise OasstError("Interaction request failed.", OasstErrorCode.TASK_INTERACTION_REQUEST_FAILED)
+
+
+@router.post("/close")
+def close_collective_task(
+    close_task_request: protocol_schema.TaskClose,
+    db: Session = Depends(deps.get_db),
+    api_key: APIKey = Depends(deps.get_api_key),
+):
+    api_client = deps.api_auth(api_key, db)
+    pr = PromptRepository(db, api_client, user=None)
+    pr.close_task(close_task_request.post_id)
+    return protocol_schema.TaskDone()

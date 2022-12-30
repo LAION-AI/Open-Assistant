@@ -52,14 +52,19 @@ class ApiClient:
         return self.task_models_map[task_type].parse_obj(data)
 
     def fetch_task(
-        self, task_type: protocol_schema.TaskRequestType, user: Optional[protocol_schema.User] = None
+        self,
+        task_type: protocol_schema.TaskRequestType,
+        user: Optional[protocol_schema.User] = None,
+        collective: bool = False,
     ) -> protocol_schema.Task:
-        req = protocol_schema.TaskRequest(type=task_type, user=user)
+        req = protocol_schema.TaskRequest(type=task_type, user=user, collective=collective)
         data = self.post("/api/v1/tasks/", req.dict())
         return self._parse_task(data)
 
-    def fetch_random_task(self, user: Optional[protocol_schema.User] = None) -> protocol_schema.Task:
-        return self.fetch_task(protocol_schema.TaskRequestType.random, user)
+    def fetch_random_task(
+        self, user: Optional[protocol_schema.User] = None, collective: bool = False
+    ) -> protocol_schema.Task:
+        return self.fetch_task(protocol_schema.TaskRequestType.random, user, collective=collective)
 
     def ack_task(self, task_id: str, post_id: str) -> None:
         req = protocol_schema.TaskAck(post_id=post_id)
