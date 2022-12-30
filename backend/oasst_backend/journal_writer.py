@@ -22,7 +22,7 @@ class JournalEventType(str, enum.Enum):
 @payload_type
 class JournalEvent(BaseModel):
     type: str
-    person_id: Optional[UUID]
+    user_id: Optional[UUID]
     post_id: Optional[UUID]
     workpackage_id: Optional[UUID]
     task_type: Optional[str]
@@ -48,11 +48,11 @@ class RankingEvent(JournalEvent):
 
 
 class JournalWriter:
-    def __init__(self, db: Session, api_client: ApiClient, person: Person):
+    def __init__(self, db: Session, api_client: ApiClient, user: User):
         self.db = db
         self.api_client = api_client
-        self.person = person
-        self.person_id = self.person.id if self.person else None
+        self.user = user
+        self.user_id = self.user.id if self.user else None
 
     def log_text_reply(self, work_package: WorkPackage, post_id: UUID, role: str, length: int) -> Journal:
         return self.log(
@@ -97,8 +97,8 @@ class JournalWriter:
             else:
                 event_type = type(payload).__name__
 
-        if payload.person_id is None:
-            payload.person_id = self.person_id
+        if payload.user_id is None:
+            payload.user_id = self.user_id
         if payload.post_id is None:
             payload.post_id = post_id
         if payload.workpackage_id is None:
@@ -107,7 +107,7 @@ class JournalWriter:
             payload.task_type = task_type
 
         entry = Journal(
-            person_id=self.person_id,
+            user_id=self.user_id,
             api_client_id=self.api_client.id,
             created_date=utcnow(),
             event_type=event_type,

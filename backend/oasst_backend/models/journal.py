@@ -33,7 +33,7 @@ class Journal(SQLModel, table=True):
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp())
     )
-    person_id: UUID = Field(nullable=True, foreign_key="person.id", index=True)
+    user_id: UUID = Field(nullable=True, foreign_key="user.id", index=True)
     post_id: Optional[UUID] = Field(foreign_key="post.id", nullable=True)
     api_client_id: UUID = Field(foreign_key="api_client.id")
 
