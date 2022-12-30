@@ -7,7 +7,7 @@ import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Person, Post, PostReaction, TextLabels, WorkPackage
+from oasst_backend.models import ApiClient, User, Post, PostReaction, TextLabels, WorkPackage
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session, func
@@ -17,39 +17,39 @@ class PromptRepository:
     def __init__(self, db: Session, api_client: ApiClient, user: Optional[protocol_schema.User]):
         self.db = db
         self.api_client = api_client
-        self.person = self.lookup_person(user)
-        self.person_id = self.person.id if self.person else None
-        self.journal = JournalWriter(db, api_client, self.person)
+        self.user = self.lookup_user(user)
+        self.user_id = self.user.id if self.user else None
+        self.journal = JournalWriter(db, api_client, self.user)
 
-    def lookup_person(self, user: protocol_schema.User) -> Person:
+    def lookup_user(self, user: protocol_schema.User) -> User:
         if not user:
             return None
-        person: Person = (
-            self.db.query(Person)
+        user: User = (
+            self.db.query(User)
             .filter(
-                Person.api_client_id == self.api_client.id,
-                Person.username == user.id,
-                Person.auth_method == user.auth_method,
+                User.api_client_id == self.api_client.id,
+                User.username == user.id,
+                User.auth_method == user.auth_method,
             )
             .first()
         )
-        if person is None:
+        if user is None:
             # user is unknown, create new record
-            person = Person(
+            user = User(
                 username=user.id,
                 display_name=user.display_name,
                 api_client_id=self.api_client.id,
                 auth_method=user.auth_method,
             )
-            self.db.add(person)
+            self.db.add(user)
             self.db.commit()
-            self.db.refresh(person)
-        elif user.display_name and user.display_name != person.display_name:
+            self.db.refresh(user)
+        elif user.display_name and user.display_name != user.display_name:
             # we found the user but the display name changed
-            person.display_name = user.display_name
-            self.db.add(person)
+            user.display_name = user.display_name
+            self.db.add(user)
             self.db.commit()
-        return person
+        return user
 
     def validate_post_id(self, post_id: str) -> None:
         if not isinstance(post_id, str):
@@ -310,7 +310,7 @@ class PromptRepository:
         c = PayloadContainer(payload=payload)
         wp = WorkPackage(
             id=id,
-            person_id=self.person_id,
+            user_id=self.user_id,
             payload_type=type(payload).__name__,
             payload=c,
             api_client_id=self.api_client.id,
@@ -347,7 +347,7 @@ class PromptRepository:
             parent_id=parent_id,
             thread_id=thread_id,
             workpackage_id=workpackage_id,
-            person_id=self.person_id,
+            user_id=self.user_id,
             role=role,
             frontend_post_id=frontend_post_id,
             api_client_id=self.api_client.id,
@@ -361,13 +361,13 @@ class PromptRepository:
         return post
 
     def insert_reaction(self, work_package_id: UUID, payload: db_payload.ReactionPayload) -> PostReaction:
-        if self.person_id is None:
+        if self.user_id is None:
             raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
 
         container = PayloadContainer(payload=payload)
         reaction = PostReaction(
             work_package_id=work_package_id,
-            person_id=self.person_id,
+            user_id=self.user_id,
             payload=container,
             api_client_id=self.api_client.id,
             payload_type=type(payload).__name__,

@@ -22,7 +22,7 @@ class Post(SQLModel, table=True):
     parent_id: UUID = Field(nullable=True)
     thread_id: UUID = Field(nullable=False, index=True)
     workpackage_id: UUID = Field(nullable=True, index=True)
-    person_id: UUID = Field(nullable=True, foreign_key="person.id", index=True)
+    user_id: UUID = Field(nullable=True, foreign_key="user.id", index=True)
     role: str = Field(nullable=False, max_length=128)
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")
     frontend_post_id: str = Field(max_length=200, nullable=False)

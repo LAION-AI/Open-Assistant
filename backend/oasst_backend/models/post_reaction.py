@@ -16,8 +16,8 @@ class PostReaction(SQLModel, table=True):
     work_package_id: Optional[UUID] = Field(
         sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("work_package.id"), nullable=False, primary_key=True)
     )
-    person_id: UUID = Field(
-        sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("person.id"), nullable=False, primary_key=True)
+    user_id: UUID = Field(
+        sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("user.id"), nullable=False, primary_key=True)
     )
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
