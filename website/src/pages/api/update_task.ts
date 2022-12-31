@@ -52,8 +52,8 @@ const handler = async (req, res) => {
         display_name: token.name || token.email,
         auth_method: "local",
       },
-      post_id: id,
-      user_post_id: interaction.id,
+      message_id: id,
+      user_message_id: interaction.id,
       ...content,
     }),
   });
