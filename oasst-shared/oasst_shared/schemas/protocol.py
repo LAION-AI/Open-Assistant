@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import enum
+from datetime import datetime
 from typing import Literal, Optional, Union
 from uuid import UUID, uuid4
 
@@ -41,6 +42,7 @@ class Conversation(BaseModel):
 class Message(ConversationMessage):
     id: UUID
     parent_id: Optional[UUID] = None
+    created_date: Optional[datetime] = None
 
 
 class MessageTree(BaseModel):
