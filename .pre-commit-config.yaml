@@ -1,4 +1,4 @@
-exclude: "build|stubs|^bot/templates/"
+exclude: "build|stubs|^bot/templates/|^notebooks/.*\\.ipynb$"
 
 default_language_version:
   python: python3
