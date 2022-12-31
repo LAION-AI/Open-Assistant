@@ -61,7 +61,7 @@ const UserReply = () => {
         <>
           <h5 className="text-lg font-semibold">Reply as a user</h5>
           <p className="text-lg py-1">Given the following conversation, provide an adequate reply</p>
-          <Messages messages={task.conversation.messages} post_id={task.id}/>
+          <Messages messages={task.conversation.messages} post_id={task.id} />
           {task.hint && <p className="text-lg py-1">Hint: {task.hint}</p>}
         </>
         <Textarea name="reply" placeholder="Reply..." ref={inputRef} />
