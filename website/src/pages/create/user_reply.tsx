@@ -18,7 +18,7 @@ const UserReply = () => {
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const { isLoading } = useSWRImmutable("/api/new_task/user_reply", fetcher, {
+  const { isLoading } = useSWRImmutable("/api/new_task/prompter_reply", fetcher, {
     onSuccess: (data) => {
       console.log(data);
       setTasks([data]);

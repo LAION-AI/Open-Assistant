@@ -21,7 +21,7 @@ const RankUserReplies = () => {
    */
   const [ranking, setRanking] = useState<number[]>([]);
 
-  const { isLoading } = useSWRImmutable("/api/new_task/rank_user_replies", fetcher, {
+  const { isLoading } = useSWRImmutable("/api/new_task/rank_prompter_replies", fetcher, {
     onSuccess: (data) => {
       setTasks([data]);
     },
