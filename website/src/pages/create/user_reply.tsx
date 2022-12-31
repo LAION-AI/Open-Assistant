@@ -18,9 +18,8 @@ const UserReply = () => {
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const { isLoading } = useSWRImmutable("/api/new_task/prompter_reply", fetcher, {
+  const { isLoading, mutate } = useSWRImmutable("/api/new_task/prompter_reply", fetcher, {
     onSuccess: (data) => {
-      console.log(data);
       setTasks([data]);
     },
   });
@@ -43,6 +42,11 @@ const UserReply = () => {
     });
   };
 
+  const fetchNextTask = () => {
+    inputRef.current.value = "";
+    mutate();
+  };
+
   if (isLoading) {
     return <LoadingScreen text="Loading..." />;
   }
@@ -52,6 +56,7 @@ const UserReply = () => {
   }
 
   const task = tasks[0].task;
+  const endTask = tasks[tasks.length - 1];
   return (
     <div className="p-6 bg-slate-100 text-gray-800">
       <TwoColumns>
@@ -69,7 +74,11 @@ const UserReply = () => {
 
         <Flex justify="center" ml="auto" gap={2}>
           <SkipButton>Skip</SkipButton>
-          <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
+          {endTask.task.type !== "task_done" ? (
+            <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
+          ) : (
+            <SubmitButton onClick={fetchNextTask}>Next Task</SubmitButton>
+          )}
         </Flex>
       </section>
     </div>

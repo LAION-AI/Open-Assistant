@@ -23,9 +23,8 @@ const RateSummary = () => {
 
   // Fetch the very fist task.  We can ignore everything except isLoading
   // because the onSuccess handler will update `tasks` when ready.
-  const { isLoading } = useSWRImmutable("/api/new_task/rate_summary", fetcher, {
+  const { isLoading, mutate } = useSWRImmutable("/api/new_task/rate_summary", fetcher, {
     onSuccess: (data) => {
-      console.log(data);
       setTasks([data]);
     },
   });
@@ -46,6 +45,7 @@ const RateSummary = () => {
   const submitResponse = (t) => {
     trigger({
       id: t.id,
+      update_type: "message_rating",
       content: {
         rating: rating,
       },
@@ -60,6 +60,7 @@ const RateSummary = () => {
     return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
   }
 
+  const endTask = tasks[tasks.length - 1];
   return (
     <>
       <Head>
@@ -97,7 +98,11 @@ const RateSummary = () => {
 
           <Flex justify="center" ml="auto" gap={2}>
             <SkipButton>Skip</SkipButton>
-            <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
+            {endTask.task.type !== "task_done" ? (
+              <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
+            ) : (
+              <SubmitButton onClick={mutate}>Next Task</SubmitButton>
+            )}
           </Flex>
         </section>
       </main>

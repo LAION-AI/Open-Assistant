@@ -21,7 +21,7 @@ const RankUserReplies = () => {
    */
   const [ranking, setRanking] = useState<number[]>([]);
 
-  const { isLoading } = useSWRImmutable("/api/new_task/rank_prompter_replies", fetcher, {
+  const { isLoading, mutate } = useSWRImmutable("/api/new_task/rank_prompter_replies", fetcher, {
     onSuccess: (data) => {
       setTasks([data]);
     },
@@ -44,6 +44,11 @@ const RankUserReplies = () => {
     });
   };
 
+  const fetchNextTask = () => {
+    setRanking([]);
+    mutate();
+  };
+
   if (isLoading) {
     return <LoadingScreen text="Loading..." />;
   }
@@ -53,6 +58,7 @@ const RankUserReplies = () => {
   }
   const replies = tasks[0].task.replies as string[];
 
+  const endTask = tasks[tasks.length - 1];
   return (
     <>
       <Head>
@@ -73,9 +79,13 @@ const RankUserReplies = () => {
 
           <Flex justify="center" ml="auto" gap={2}>
             <SkipButton>Skip</SkipButton>
-            <SubmitButton onClick={() => submitResponse(tasks[0])} disabled={ranking.length === 0}>
-              Submit
-            </SubmitButton>
+            {endTask.task.type !== "task_done" ? (
+              <SubmitButton onClick={() => submitResponse(tasks[0])} disabled={ranking.length === 0}>
+                Submit
+              </SubmitButton>
+            ) : (
+              <SubmitButton onClick={fetchNextTask}>Next Task</SubmitButton>
+            )}
           </Flex>
         </section>
       </main>
