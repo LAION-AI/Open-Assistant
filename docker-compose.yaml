@@ -41,14 +41,11 @@ services:
     command: redis-server /usr/local/etc/redis/redis.conf
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
-      - redis:/data
   # insights host - redis:6379
   redis-insights:
     image: redislabs/redisinsight:latest
     ports:
       - 8001:8001
-    volumes:
-      - redis:/data
 
   # This DB is for Web Authentication and data caching.
   webdb:
@@ -123,7 +120,3 @@ services:
     ports:
       - "3000:3000"
     command: bash wait-for-postgres.sh node server.js
-
-volumes:
-  redis:
-    driver: local
