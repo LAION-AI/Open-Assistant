@@ -8,31 +8,50 @@
     [ ] 
 
 '''
+from typing import Optional, Union
 import os
 import glob
 import json
+from dataclasses import dataclass
 import numpy as np
 from torch.utils.data import Dataset
+import torch
 from datasets import load_dataset
+from transformers.tokenization_utils_base import PreTrainedTokenizerBase, PaddingStrategy
 
-class CollateFN():
-    def __init__(self, tokenizer, max_length=400) -> None:
-        self.tokenizer = tokenizer
-        self.max_length = max_length
+@dataclass
+class DataCollatorForPairRank:
+    """
 
-    def __call__(self, batch):
-        prompts = []
-        pos_sentences = []
-        neg_sentences = []
-        for prompt, pairs in batch:
+    Data collator that will dynamically pad the inputs for multiple choice received.
+
+    """
+    tokenizer: PreTrainedTokenizerBase
+    num_choices: int = 2
+    padding: Union[bool, str, PaddingStrategy] = True
+    max_length: Optional[int] = None
+    pad_to_multiple_of: Optional[int] = None
+
+    def __call__(self, features):
+
+        flatten_features = []
+        batch_size = 0
+        for question, pairs in features:
             for (pos, neg) in pairs:
-                prompts.append(prompt)
-                pos_sentences.append(pos)
-                neg_sentences.append(neg)
-
-        batch = [self.tokenizer(prompts, pos_sentences, return_tensors='pt', max_length=self.max_length, padding=True, truncation=True),\
-                self.tokenizer(prompts, neg_sentences, return_tensors='pt', max_length=self.max_length, padding=True, truncation=True)]
+                flatten_features.append(self.tokenizer(question, pos, truncation=True))
+                flatten_features.append(self.tokenizer(question, neg, truncation=True))
+                batch_size += 1
+        
+        batch = self.tokenizer.pad(
+            flatten_features,
+            padding=self.padding,
+            max_length=self.max_length,
+            pad_to_multiple_of=self.pad_to_multiple_of,
+            return_tensors="pt",
+        )
+        # batch = {k: v.view(batch_size, self.num_choices, -1) for k, v in batch.items()}
         return batch
+
 
 class WebGPT(Dataset):
 
