@@ -1,42 +1,29 @@
-import poster from "src/lib/poster";
 import {
-  Popover,
-  useBoolean,
-  PopoverAnchor,
   Button,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverBody,
   Checkbox,
-  PopoverCloseButton,
-  PopoverArrow,
   Flex,
-  Spacer,
+  Popover,
+  PopoverAnchor,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverTrigger,
   Slider,
-  SliderTrack,
   SliderFilledTrack,
   SliderThumb,
+  SliderTrack,
+  Spacer,
+  useBoolean,
 } from "@chakra-ui/react";
-import useSWRMutation from "swr/mutation";
-import { QuestionMarkCircleIcon, FlagIcon } from "@heroicons/react/20/solid";
-import { useState } from "react";
+import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 
-export type TextFlagProps = {
-  text: string;
-  label_map;
-  post_id: string;
-};
-type FlagRefs = {
-  label: string;
-  value: number;
-  setValue;
-  isChecked: boolean;
-  setChecked;
-};
+import poster from "src/lib/poster";
+import useSWRMutation from "swr/mutation";
+import { useState } from "react";
 
 export const FlaggableElement = (props) => {
   const [isEditing, setIsEditing] = useBoolean();
-  const [hasCheck, setHasCheck] = useBoolean();
   const { trigger, isMutating } = useSWRMutation("/api/v1/text_labels", poster, {
     onSuccess: () => {
       setIsEditing.off;
@@ -46,26 +33,31 @@ export const FlaggableElement = (props) => {
   const submitResponse = (label_data) => {
     trigger(label_data);
   };
-  const label_refs: FlagRefs[] = TEXT_LABEL_FLAGS.map((flag) => {
-    const [isChecked, setChecked] = useState(false);
-    const [value, setValue] = useState(1);
-    return {
-      label: flag.attributeName,
-      value: value,
-      setValue: setValue,
-      isChecked: isChecked,
-      setChecked: setChecked,
-    };
-  });
+  const [checkboxValues, setCheckboxValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(false));
+  const [sliderValues, setSliderValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(1));
+
   const fetchData = () => {
     let label_map: Map<string, number> = new Map();
-    label_refs
-      .filter((flagRef) => flagRef.isChecked)
-      .map((refs) => {
-        label_map.set(refs.label, refs.value);
-      });
-    console.log(label_map);
+    TEXT_LABEL_FLAGS.forEach((flag, i) => {
+      if (checkboxValues[i]) {
+        label_map.set(flag.attributeName, sliderValues[i]);
+      }
+    });
     return { post_id: props.post_id, label_map: Object.fromEntries(label_map), text: props.text };
+  };
+  const handleCheckboxState = (isChecked, idx) => {
+    setCheckboxValues(
+      checkboxValues.map((val, i) => {
+        return i == idx ? isChecked : val;
+      })
+    );
+  };
+  const handleSliderState = (newVal, idx) => {
+    setSliderValues(
+      sliderValues.map((val, i) => {
+        return i == idx ? newVal : val;
+      })
+    );
   };
 
   return (
@@ -80,8 +72,11 @@ export const FlaggableElement = (props) => {
       <div className="inline-block float-left">
         <PopoverAnchor>{props.children}</PopoverAnchor>
         <PopoverTrigger>
-          <Button h="20px">
-            <FlagIcon className="h-5 w-5 ml-3 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+          <Button color="transparent">
+            <FlagIcon
+              className="h-5 w-5 ml-3 align-center text-gray-400 group-hover:text-gray-500"
+              aria-hidden="true"
+            />
           </Button>
         </PopoverTrigger>
       </div>
@@ -93,11 +88,26 @@ export const FlaggableElement = (props) => {
           <PopoverBody>
             <ul>
               {TEXT_LABEL_FLAGS.map((option, i) => {
-                return <FlagCheckboxLi option={option} key={i} state={label_refs[i]}></FlagCheckboxLi>;
+                return (
+                  <FlagCheckboxLi
+                    option={option}
+                    key={i}
+                    idx={i}
+                    checkboxValues={checkboxValues}
+                    sliderValues={sliderValues}
+                    checkboxHandler={handleCheckboxState}
+                    sliderHandler={handleSliderState}
+                  ></FlagCheckboxLi>
+                );
               })}
             </ul>
             <div className="flex justify-center ml-auto">
               <Button
+                isDisabled={
+                  !checkboxValues.reduce((all, current) => {
+                    return all | current;
+                  }, false)
+                }
                 onClick={() => submitResponse(fetchData())}
                 className="bg-indigo-600 text-black hover:bg-indigo-700"
               >
@@ -110,7 +120,14 @@ export const FlaggableElement = (props) => {
     </Popover>
   );
 };
-function FlagCheckboxLi(props: { option: textFlagLabels; state: FlagRefs }): JSX.Element {
+function FlagCheckboxLi(props: {
+  option: textFlagLabels;
+  idx: number;
+  checkboxValues: boolean[];
+  sliderValues: number[];
+  checkboxHandler: (newVal: boolean, idx: number) => void;
+  sliderHandler: (newVal: number, idx: number) => void;
+}): JSX.Element {
   let AdditionalExplanation = null;
   if (props.option.additionalExplanation) {
     AdditionalExplanation = (
@@ -124,38 +141,36 @@ function FlagCheckboxLi(props: { option: textFlagLabels; state: FlagRefs }): JSX
   }
 
   return (
-    <>
-      <li>
-        <Flex>
-          <Checkbox
-            onChange={(e) => {
-              props.state.setChecked(e.target.checked);
-            }}
-          />
-          <label
-            className=" ml-1 mr-1 text-sm form-check-label  hover:cursor-pointer"
-            htmlFor={props.option.attributeName}
-          >
-            <span className="text-gray-800 hover:text-blue-700 float-left">{props.option.labelText}</span>
-            {AdditionalExplanation}
-          </label>
-          <Spacer />
-          <Slider
-            width="100px"
-            isDisabled={!props.state.isChecked}
-            defaultValue={100}
-            onChangeEnd={(val) => {
-              props.state.setValue(val / 100);
-            }}
-          >
-            <SliderTrack>
-              <SliderFilledTrack />
-              <SliderThumb />
-            </SliderTrack>
-          </Slider>
-        </Flex>
-      </li>
-    </>
+    <li>
+      <Flex>
+        <Checkbox
+          onChange={(e) => {
+            props.checkboxHandler(e.target.checked, props.idx);
+          }}
+        />
+        <label
+          className=" ml-1 mr-1 text-sm form-check-label  hover:cursor-pointer"
+          htmlFor={props.option.attributeName}
+        >
+          <span className="text-gray-800 hover:text-blue-700 float-left">{props.option.labelText}</span>
+          {AdditionalExplanation}
+        </label>
+        <Spacer />
+        <Slider
+          width="100px"
+          isDisabled={!props.checkboxValues[props.idx]}
+          defaultValue={100}
+          onChangeEnd={(val) => {
+            props.sliderHandler(val / 100, props.idx);
+          }}
+        >
+          <SliderTrack>
+            <SliderFilledTrack />
+            <SliderThumb />
+          </SliderTrack>
+        </Slider>
+      </Flex>
+    </li>
   );
 }
 interface textFlagLabels {
