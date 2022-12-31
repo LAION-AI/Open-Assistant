@@ -21,7 +21,7 @@ router = APIRouter()
 def query_messages(
     username: str = None,
     api_client_id: str = None,
-    max_count: int = Query(10, gt=0, le=25),
+    max_count: int = Query(10, gt=0, le=1000),
     start_date: datetime.datetime = None,
     end_date: datetime.datetime = None,
     only_roots: bool = False,
@@ -63,7 +63,8 @@ def get_message(
     pr = PromptRepository(db, api_client, user=None)
     message = pr.fetch_message(message_id)
     if not isinstance(message.payload.payload, MessagePayload):
-        raise OasstError("Invalid message id", OasstErrorCode.INVALID_FRONTEND_MESSAGE_ID)
+        # Unexptcted message payload
+        raise OasstError("Invalid message", OasstErrorCode.INVALID_MESSAGE)
 
     return protocol.ConversationMessage(text=message.payload.payload.text, is_assistant=(message.role == "assistant"))
 

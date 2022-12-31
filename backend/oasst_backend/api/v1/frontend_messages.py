@@ -24,7 +24,8 @@ def get_message_by_frontend_id(
     message = pr.fetch_message_by_frontend_message_id(message_id)
 
     if not isinstance(message.payload.payload, MessagePayload):
-        raise OasstError("Invalid message id", OasstErrorCode.INVALID_FRONTEND_MESSAGE_ID)
+        # Unexpected message payload
+        raise OasstError("Invalid message", OasstErrorCode.INVALID_MESSAGE)
 
     return protocol.ConversationMessage(text=message.payload.payload.text, is_assistant=(message.role == "assistant"))
 
