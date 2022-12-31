@@ -109,7 +109,7 @@ if __name__ == "__main__":
         # half_precision_backend="apex",
         fp16=True,
         gradient_checkpointing=training_conf['gradient_checkpointing'],
-        gradient_accumulation_steps=training_conf['gradient_checkpointing'],
+        gradient_accumulation_steps=training_conf['gradient_accumulation_steps'],
         per_device_train_batch_size=training_conf['per_device_train_batch_size'],
         per_device_eval_batch_size=5,
         weight_decay=0.01,
@@ -132,8 +132,8 @@ if __name__ == "__main__":
         sum_train, sum_eval = train_val_dataset(summary_dataset)
         train_datasets.append(sum_train)
         evals['hfsummary'] = sum_eval
-    
-    collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf['max_length'])
+    train = ConcatDataset(train_datasets)
+    collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf['max_length'], drop_token_type= 'galactica' in model_name)
     trainer = RankTrainer(
         model,
         args,

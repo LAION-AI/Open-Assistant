@@ -74,6 +74,10 @@ def argument_parsing(parser):
     with open(args.config, 'r', encoding='utf-8') as f:
         training_conf = yaml.safe_load(f.read())
 
-    return { **default_params, **training_conf }
-
+    params = { **default_params, **training_conf }
+    params['gradient_accumulation_steps'] = int(params['gradient_accumulation_steps'])
+    params['num_train_epochs'] = int(params['num_train_epochs'])
+    params['per_device_train_batch_size'] = int(params['per_device_train_batch_size'])
+    params['learning_rate'] = float(params['learning_rate'])
+    return params
 
