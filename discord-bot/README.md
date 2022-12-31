@@ -14,7 +14,7 @@ If you are unfamiliar with `hikari`, `lightbulb`, or `miru`, please refer to the
 
 To run the bot
 
-```
+```bash
 cp .env.example .env
 
 python -V  # 3.10
@@ -25,10 +25,17 @@ python -m bot
 
 Before you push, make sure the `pre-commit` hooks are installed and run successfully.
 
-```
+```bash
 pip install pre-commit
 pre-commit install
-pre-commit run --all-files
+
+...
+
+git add .
+git commit -m "<good commit message>"
+# if the pre-commit fails
+git add .
+git commit -m "<good commit message>"
 ```
 
 To test the bot on your own discord server you need to register a discord application at the [Discord Developer Portal](https://discord.com/developers/applications) and get at bot token.
