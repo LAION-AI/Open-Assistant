@@ -9,8 +9,9 @@ from bot.settings import Settings
 
 settings = Settings()
 
+# TODO: Revisit cache settings
 bot = lightbulb.BotApp(
-    token=settings.token,
+    token=settings.bot_token,
     logs="DEBUG",
     prefix=settings.prefix,
     default_enabled_guilds=settings.declare_global_commands,

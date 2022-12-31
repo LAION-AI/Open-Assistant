@@ -6,7 +6,7 @@ from pydantic import BaseSettings, Field
 class Settings(BaseSettings):
     """Settings for the bot."""
 
-    token: str = Field(env="TOKEN", default="")
+    bot_token: str = Field(env="BOT_TOKEN", default="")
     declare_global_commands: int = Field(env="DECLARE_GLOBAL_COMMANDS", default=0)
     owner_ids: list[int] = Field(env="OWNER_IDS", default_factory=list)
     prefix: str = Field(env="PREFIX", default="./")

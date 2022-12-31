@@ -5,6 +5,7 @@ import lightbulb
 from aiosqlite import Connection
 from bot.db.schemas import GuildSettings
 from bot.utils import mention
+from lightbulb.utils.permissions import permissions_in
 from loguru import logger
 
 plugin = lightbulb.Plugin("GuildSettings")
@@ -62,6 +63,16 @@ async def log_channel(ctx: lightbulb.SlashContext) -> None:
     channel: hikari.TextableGuildChannel = ctx.options.channel
     conn: Connection = ctx.bot.d.db
     assert ctx.guild_id is not None  # `guild_only` check
+    assert isinstance(channel, hikari.PermissibleGuildChannel)
+
+    # Check if the bot can send messages in that channel
+    assert (me := ctx.bot.get_me()) is not None  # non-None after `StartedEvent`
+    if (own_member := ctx.bot.cache.get_member(ctx.guild_id, me.id)) is None:
+        own_member = await ctx.bot.rest.fetch_member(ctx.guild_id, me.id)
+    perms = permissions_in(channel, own_member)
+    if perms & ~hikari.Permissions.SEND_MESSAGES:
+        await ctx.respond("I don't have permission to send messages in that channel.")
+        return
 
     await ctx.respond(f"Setting `log_channel` to {channel.mention}.")
 
