@@ -22,7 +22,7 @@ const handler = async (req, res) => {
   }
 
   // Parse out the local task ID and the interaction contents.
-  const { id, content } = await JSON.parse(req.body);
+  const { id, content, update_type } = await JSON.parse(req.body);
 
   // Log the interaction locally to create our user_post_id needed by the Task
   // Backend.
@@ -46,7 +46,7 @@ const handler = async (req, res) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      type: "message_rating",
+      type: update_type,
       user: {
         id: token.sub,
         display_name: token.name || token.email,

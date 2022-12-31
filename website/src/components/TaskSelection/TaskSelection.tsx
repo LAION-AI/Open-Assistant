@@ -22,7 +22,9 @@ export const TaskSelection = () => {
         />
       </TaskOptions>
       <TaskOptions key="evaluate" title="Evaluate">
-        {/* <TaskOption
+        {/*
+        Commented out while the backend does not support them.
+        <TaskOption
           alt="Rate Prompts"
           img="/images/logos/logo.svg"
           title="Rate Prompts"
