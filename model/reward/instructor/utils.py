@@ -1,4 +1,5 @@
 import re
+import yaml
 from torch.utils.data import Subset
 from sklearn.model_selection import train_test_split
 from transformers import AutoTokenizer
@@ -38,4 +39,41 @@ def train_val_dataset(dataset, val_split=0.2):
     # [13582, 5919, 11875, 7373, 19135, 13706, 8555, 15788, 15005, 15209]
     print(train_idx[:10])
     return Subset(dataset, train_idx), Subset(dataset, val_idx)
+
+def freeze_top_n_layers(model, target_layers):
+    for name, param in model.name_parameters():
+        if 'embed' in name:
+            param.requires_grad = False
+        elif 'layer' in name:
+            tokens = name.split('.')
+            idx = 0
+            for token in tokens:
+                if 'layer' in token:
+                    break
+                idx += 1
+
+            layer_ = int(tokens[idx+1])
+            if layer_ < target_layers:
+                param.requires_grad = False
+    return model
+
+
+def argument_parsing(parser):
+    default_params = {
+        'num_train_epochs': 4,
+        'learning_rate': 3e-5,
+        'eval_steps': 500,
+        'loss': 'rank',
+        'max_length': 440,
+        'per_device_train_batch_size': 8,
+        'gradient_accumulation_steps': 8,
+        'gradient_checkpointing': False,
+        'datasets': ['webgpt']
+    }
+    args = parser.parse_args()
+    with open(args.config, 'r', encoding='utf-8') as f:
+        training_conf = yaml.safe_load(f.read())
+
+    return { **default_params, **training_conf }
+
 

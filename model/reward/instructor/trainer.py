@@ -1,18 +1,22 @@
 import os
 os.environ['WANDB_PROJECT'] = 'reward-model'
-from typing import Any, Callable, List, Optional, Tuple, Union, Dict
 import torch
-from torch import nn
-import numpy as np
+import yaml
 import evaluate
+from typing import Any, Callable, List, Optional, Tuple, Union, Dict
+from torch import nn
+from argparse import ArgumentParser
+import numpy as np
 from dataclasses import dataclass
 from torch.utils.data import Dataset, ConcatDataset
-from transformers import AutoModelForSequenceClassification, AutoModelForMultipleChoice
+from transformers import AutoModelForSequenceClassification
 from transformers import Trainer, PreTrainedModel, TrainingArguments, DataCollator, EvalPrediction, TrainerCallback, PreTrainedTokenizerBase
 from rank_datasets import DataCollatorForPairRank, WebGPT, HFSummary
-from utils import get_tokenizer, train_val_dataset
+from utils import get_tokenizer, train_val_dataset, freeze_top_n_layers, argument_parsing
 
 accuracy = evaluate.load("accuracy")
+parser = ArgumentParser()
+parser.add_argument('config', type=str)
 
 @dataclass
 class CustomTrainingArguments(TrainingArguments):
@@ -87,21 +91,26 @@ class RankTrainer(Trainer):
         return (loss, logits, labels)
 
 if __name__ == "__main__":
-    model_name = 'bigscience/bloomz-560m'
-    model_name = 'google/electra-large-discriminator'
+    training_conf = argument_parsing(parser)
+    
+    model_name = training_conf['model_name']
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=1, problem_type='regression')
+    if 'freeze_layer' in training_conf:
+        num_layer = training_conf['freeze_layer']
+        model = freeze_top_n_layers(model, num_layer)
+
     tokenizer = get_tokenizer(model_name)
     args = CustomTrainingArguments(
         output_dir=f"{model_name}-finetuned",
-        num_train_epochs=4,
+        num_train_epochs=training_conf['num_train_epochs'],
         warmup_steps=500,
-        loss_function='rank',
-        learning_rate=3e-5,
+        loss_function=training_conf['loss'],
+        learning_rate=training_conf['learning_rate'],
         # half_precision_backend="apex",
         fp16=True,
-        gradient_checkpointing=True,
-        gradient_accumulation_steps=8,
-        per_device_train_batch_size=8,
+        gradient_checkpointing=training_conf['gradient_checkpointing'],
+        gradient_accumulation_steps=training_conf['gradient_checkpointing'],
+        per_device_train_batch_size=training_conf['per_device_train_batch_size'],
         per_device_eval_batch_size=5,
         weight_decay=0.01,
         max_grad_norm=2.0,
@@ -112,10 +121,19 @@ if __name__ == "__main__":
         save_steps=1000,
         report_to='wandb'
     )
-    dataset = WebGPT()
-    train, eval = train_val_dataset(dataset)
-    train = ConcatDataset([train, HFSummary()])
-    collate_fn = DataCollatorForPairRank(tokenizer, max_length=440)
+    train_datasets, evals = [], {}
+    if 'webgpt' in training_conf['datasets']:
+        web_dataset = WebGPT()
+        train, eval = train_val_dataset(web_dataset)
+        train_datasets.append(train)
+        evals['webgpt'] = eval
+    if 'hfsummary' in training_conf['datasets']:
+        summary_dataset = HFSummary()
+        sum_train, sum_eval = train_val_dataset(summary_dataset)
+        train_datasets.append(sum_train)
+        evals['hfsummary'] = sum_eval
+    
+    collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf['max_length'])
     trainer = RankTrainer(
         model,
         args,
