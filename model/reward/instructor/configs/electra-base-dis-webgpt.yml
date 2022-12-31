@@ -1,0 +1,2 @@
+model_name: google/electra-base-discriminator
+learning_rate: 3e-5
