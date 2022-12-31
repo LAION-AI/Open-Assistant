@@ -64,6 +64,7 @@ async def log_channel(ctx: lightbulb.SlashContext) -> None:
     conn: Connection = ctx.bot.d.db
     assert ctx.guild_id is not None  # `guild_only` check
     assert isinstance(channel, hikari.PermissibleGuildChannel)
+    type(channel).mro()
 
     # Check if the bot can send messages in that channel
     assert (me := ctx.bot.get_me()) is not None  # non-None after `StartedEvent`
