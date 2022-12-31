@@ -18,7 +18,7 @@ router = APIRouter()
 def query_frontend_user_messages(
     username: str,
     api_client_id: UUID = None,
-    max_count: int = Query(10, gt=0, le=25),
+    max_count: int = Query(10, gt=0, le=1000),
     start_date: datetime.datetime = None,
     end_date: datetime.datetime = None,
     only_roots: bool = False,

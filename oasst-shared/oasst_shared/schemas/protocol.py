@@ -277,4 +277,4 @@ class SystemStats(BaseModel):
     all: int = 0
     active: int = 0
     deleted: int = 0
-    threads: int = 0
+    message_trees: int = 0
