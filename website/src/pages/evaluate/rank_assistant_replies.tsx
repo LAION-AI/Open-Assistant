@@ -37,7 +37,7 @@ const RankAssistantReplies = () => {
   const submitResponse = (task) => {
     trigger({
       id: task.id,
-      update_type: "post_ranking",
+      update_type: "message_ranking",
       content: {
         ranking,
       },
