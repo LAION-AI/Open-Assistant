@@ -10,13 +10,8 @@ python -m print_openapi_schema > oasst-openapi.json
 
 MOCK_SERVER_PORT=8080
 
-docker run -d -it --rm \
-  -p $MOCK_SERVER_PORT:8080 \
-  --name wiremock \
-  wiremock/wiremock:2.35.0
+docker run --init --rm -d -p $MOCK_SERVER_PORT:4010 -v $(pwd):/tmp -P stoplight/prism:4 proxy -h 0.0.0.0 "/tmp/oasst-openapi.json"
 
-sleep 1
-
-curl -X POST -d @oasst-openapi.json http://localhost:$MOCK_SERVER_PORT/__admin/mappings/import
 
 popd
+
