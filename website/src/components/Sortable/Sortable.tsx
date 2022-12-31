@@ -1,4 +1,8 @@
+import { DndContext, PointerSensor, TouchSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core";
 import { ReactNode, useEffect, useState } from "react";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import type { DragEndEvent } from "@dnd-kit/core/dist/types/events";
+import { Flex } from "@chakra-ui/react";
 import { SortableItem } from "./SortableItem";
 
 export interface SortableProps {
@@ -6,43 +10,52 @@ export interface SortableProps {
   onChange: (newSortedIndices: number[]) => void;
 }
 
-export const Sortable = ({ items, onChange }) => {
-  const [sortOrder, setSortOrder] = useState<number[]>([]);
+interface SortableItems {
+  id: number;
+  originalIndex: number;
+  item: ReactNode;
+}
 
-  const update = (newRanking: number[]) => {
-    setSortOrder(newRanking);
-    onChange(newRanking);
-  };
+export const Sortable = ({ items, onChange }: SortableProps) => {
+  const [itemsWithIds, setItemsWithIds] = useState<SortableItems[]>([]);
 
   useEffect(() => {
-    const indices = Array.from({ length: items.length }).map((_, i) => i);
-    setSortOrder(indices);
-    onChange(indices);
-  }, [items, onChange]);
+    setItemsWithIds(
+      items.map((item, idx) => ({
+        item,
+        id: idx + 1, // +1 because dndtoolkit has problem with "falsy" ids
+        originalIndex: idx,
+      }))
+    );
+  }, [items]);
+
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
 
   return (
-    <ul className="flex flex-col gap-4">
-      {sortOrder.map((rank, i) => (
-        <SortableItem
-          key={`${rank}`}
-          canIncrement={i > 0}
-          onIncrement={() => {
-            const newRanking = sortOrder.slice();
-            const newIdx = i - 1;
-            [newRanking[i], newRanking[newIdx]] = [newRanking[newIdx], newRanking[i]];
-            update(newRanking);
-          }}
-          canDecrement={i < sortOrder.length - 1}
-          onDecrement={() => {
-            const newRanking = sortOrder.slice();
-            const newIdx = i + 1;
-            [newRanking[i], newRanking[newIdx]] = [newRanking[newIdx], newRanking[i]];
-            update(newRanking);
-          }}
-        >
-          {items[rank]}
-        </SortableItem>
-      ))}
-    </ul>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
+        <Flex direction="column" gap={2}>
+          {itemsWithIds.map(({ id, item }) => (
+            <SortableItem key={id} id={id}>
+              {item}
+            </SortableItem>
+          ))}
+        </Flex>
+      </SortableContext>
+    </DndContext>
   );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (active.id === over.id) {
+      return;
+    }
+    setItemsWithIds((items) => {
+      const oldIndex = items.findIndex((x) => x.id === active.id);
+      const newIndex = items.findIndex((x) => x.id === over.id);
+      const newArray = arrayMove(items, oldIndex, newIndex);
+      onChange(newArray.map((item) => item.originalIndex));
+      return newArray;
+    });
+  }
 };
