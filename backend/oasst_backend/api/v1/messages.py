@@ -8,7 +8,7 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
 from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.models import ApiClient
-from oasst_backend.models.db_payload import PostPayload
+from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
@@ -61,9 +61,9 @@ def get_message(
     Get a message by its internal ID.
     """
     pr = PromptRepository(db, api_client, user=None)
-    message = pr.fetch_post(message_id)
-    if not isinstance(message.payload.payload, PostPayload):
-        raise OasstError("Invalid message id", OasstErrorCode.INVALID_POST_ID)
+    message = pr.fetch_message(message_id)
+    if not isinstance(message.payload.payload, MessagePayload):
+        raise OasstError("Invalid message id", OasstErrorCode.INVALID_FRONTEND_MESSAGE_ID)
 
     return protocol.ConversationMessage(text=message.payload.payload.text, is_assistant=(message.role == "assistant"))
 
@@ -89,9 +89,9 @@ def get_tree(
     Get all messages belonging to the same message tree.
     """
     pr = PromptRepository(db, api_client, user=None)
-    message = pr.fetch_post(message_id)
-    tree = pr.fetch_message_tree(message)
-    return utils.prepare_tree(tree, message.thread_id)
+    message = pr.fetch_message(message_id)
+    tree = pr.fetch_message_tree(message.message_tree_id)
+    return utils.prepare_tree(tree, message.message_tree_id)
 
 
 @router.get("/{message_id}/children")
@@ -119,8 +119,8 @@ def get_descendants(
     Get a subtree which starts with this message.
     """
     pr = PromptRepository(db, api_client, user=None)
-    message = pr.fetch_post(message_id)
-    descendants = pr.fetch_post_descendants(message)
+    message = pr.fetch_message(message_id)
+    descendants = pr.fetch_message_descendants(message)
     return utils.prepare_tree(descendants, message.id)
 
 
@@ -132,8 +132,8 @@ def get_longest_conv(
     Get the longest conversation from the tree of the message.
     """
     pr = PromptRepository(db, api_client, user=None)
-    message = pr.fetch_post(message_id)
-    conv = pr.fetch_longest_conversation(message.thread_id)
+    message = pr.fetch_message(message_id)
+    conv = pr.fetch_longest_conversation(message.message_tree_id)
     return utils.prepare_conversation(conv)
 
 
@@ -145,8 +145,8 @@ def get_max_children(
     Get message with the most children from the tree of the provided message.
     """
     pr = PromptRepository(db, api_client, user=None)
-    message = pr.fetch_post(message_id)
-    message, children = pr.fetch_message_with_max_children(message.thread_id)
+    message = pr.fetch_message(message_id)
+    message, children = pr.fetch_message_with_max_children(message.message_tree_id)
     return utils.prepare_tree([message, *children], message.id)
 
 

@@ -54,7 +54,7 @@ class JournalWriter:
         self.user = user
         self.user_id = self.user.id if self.user else None
 
-    def log_text_reply(self, task: Task, message_id: UUID, role: str, length: int) -> Journal:
+    def log_text_reply(self, task: Task, message_id: Optional[UUID], role: str, length: int) -> Journal:
         return self.log(
             task_type=task.payload_type,
             event_type=JournalEventType.text_reply_to_message,
@@ -63,7 +63,7 @@ class JournalWriter:
             message_id=message_id,
         )
 
-    def log_rating(self, task: Task, message_id: UUID, rating: int) -> Journal:
+    def log_rating(self, task: Task, message_id: Optional[UUID], rating: int) -> Journal:
         return self.log(
             task_type=task.payload_type,
             event_type=JournalEventType.message_rating,
@@ -72,7 +72,7 @@ class JournalWriter:
             message_id=message_id,
         )
 
-    def log_ranking(self, task: Task, message_id: UUID, ranking: list[int]) -> Journal:
+    def log_ranking(self, task: Task, message_id: Optional[UUID], ranking: list[int]) -> Journal:
         return self.log(
             task_type=task.payload_type,
             event_type=JournalEventType.message_ranking,
