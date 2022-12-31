@@ -1,7 +1,5 @@
 import Head from "next/head";
-import { getCsrfToken, getProviders, signIn } from "next-auth/react";
-import Link from "next/link";
-
+import { getCsrfToken, getProviders } from "next-auth/react";
 import { AuthLayout } from "src/components/AuthLayout";
 
 export default function Verify() {

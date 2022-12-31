@@ -2,18 +2,16 @@ import { Flex, Textarea } from "@chakra-ui/react";
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import Head from "next/head";
 import { useState } from "react";
-import useSWRImmutable from "swr/immutable";
-import useSWRMutation from "swr/mutation";
-
-import RatingRadioGroup from "src/components/RatingRadioGroup";
-import fetcher from "src/lib/fetcher";
-import poster from "src/lib/poster";
-
-import { LoadingScreen } from "src/components/Loading/LoadingScreen";
-import { TwoColumns } from "src/components/TwoColumns";
-import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
+import RatingRadioGroup from "src/components/RatingRadioGroup";
+import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
+import { TwoColumns } from "src/components/TwoColumns";
+import fetcher from "src/lib/fetcher";
+import poster from "src/lib/poster";
+import useSWRImmutable from "swr/immutable";
+import useSWRMutation from "swr/mutation";
 
 const RateSummary = () => {
   // Use an array of tasks that record the sequence of steps until a task is

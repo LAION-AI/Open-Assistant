@@ -1,17 +1,15 @@
-import { Button, Flex } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
-import useSWRImmutable from "swr/immutable";
-import useSWRMutation from "swr/mutation";
-
-import fetcher from "src/lib/fetcher";
-import poster from "src/lib/poster";
-
+import { SkipButton } from "src/components/Buttons/Skip";
+import { SubmitButton } from "src/components/Buttons/Submit";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
-import { SubmitButton } from "src/components/Buttons/Submit";
-import { SkipButton } from "src/components/Buttons/Skip";
+import fetcher from "src/lib/fetcher";
+import poster from "src/lib/poster";
+import useSWRImmutable from "swr/immutable";
+import useSWRMutation from "swr/mutation";
 
 const RankAssistantReplies = () => {
   const [tasks, setTasks] = useState([]);

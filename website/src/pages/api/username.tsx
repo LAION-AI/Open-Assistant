@@ -1,6 +1,4 @@
 import { getSession } from "next-auth/react";
-import { Prisma } from "@prisma/client";
-import Email from "next-auth/providers/email";
 
 // POST /api/post
 // Required fields in body: title

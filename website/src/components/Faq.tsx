@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { Container } from "./Container";
 
 const faqs = [

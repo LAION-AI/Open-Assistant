@@ -1,17 +1,15 @@
 import { Flex, Textarea } from "@chakra-ui/react";
 import { useRef, useState } from "react";
-import useSWRMutation from "swr/mutation";
-import useSWRImmutable from "swr/immutable";
-
-import fetcher from "src/lib/fetcher";
-import poster from "src/lib/poster";
-
-import { Messages } from "src/components/Messages";
-import { TwoColumns } from "src/components/TwoColumns";
-import { LoadingScreen } from "src/components/Loading/LoadingScreen";
-import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
+import { Messages } from "src/components/Messages";
+import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
+import { TwoColumns } from "src/components/TwoColumns";
+import fetcher from "src/lib/fetcher";
+import poster from "src/lib/poster";
+import useSWRImmutable from "swr/immutable";
+import useSWRMutation from "swr/mutation";
 
 const AssistantReply = () => {
   const [tasks, setTasks] = useState([]);

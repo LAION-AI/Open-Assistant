@@ -1,7 +1,8 @@
-import React from "react";
-import { TaskOptions } from "./TaskOptions";
 import { Flex } from "@chakra-ui/react";
+import React from "react";
+
 import { TaskOption } from "./TaskOption";
+import { TaskOptions } from "./TaskOptions";
 
 export const TaskSelection = () => {
   return (
