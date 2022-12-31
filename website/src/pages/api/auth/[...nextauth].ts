@@ -43,10 +43,19 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
         username: { label: "Username", type: "text" },
       },
       async authorize(credentials) {
-        return {
+        const user = {
           id: credentials.username,
           name: credentials.username,
         };
+        // save the user to the database
+        await prisma.user.upsert({
+          where: {
+            id: user.id,
+          },
+          update: {},
+          create: user,
+        });
+        return user;
       },
     })
   );
