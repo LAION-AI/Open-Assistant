@@ -10,16 +10,17 @@ from loguru import logger
 from oasst_shared.schemas import protocol as protocol_schema
 
 
+# TODO: Move to `protocol`?
 class TaskType(str, enum.Enum):
     """Task types."""
 
     summarize_story = "summarize_story"
     rate_summary = "rate_summary"
     initial_prompt = "initial_prompt"
-    user_reply = "user_reply"
+    prompter_reply = "prompter_reply"
     assistant_reply = "assistant_reply"
     rank_initial_prompts = "rank_initial_prompts"
-    rank_user_replies = "rank_user_replies"
+    rank_prompter_replies = "rank_prompter_replies"
     rank_assistant_replies = "rank_assistant_replies"
     done = "task_done"
 
@@ -44,10 +45,10 @@ class OasstApiClient:
             TaskType.summarize_story: protocol_schema.SummarizeStoryTask,
             TaskType.rate_summary: protocol_schema.RateSummaryTask,
             TaskType.initial_prompt: protocol_schema.InitialPromptTask,
-            TaskType.user_reply: protocol_schema.UserReplyTask,
+            TaskType.prompter_reply: protocol_schema.PrompterReplyTask,
             TaskType.assistant_reply: protocol_schema.AssistantReplyTask,
             TaskType.rank_initial_prompts: protocol_schema.RankInitialPromptsTask,
-            TaskType.rank_user_replies: protocol_schema.RankUserRepliesTask,
+            TaskType.rank_prompter_replies: protocol_schema.RankPrompterRepliesTask,
             TaskType.rank_assistant_replies: protocol_schema.RankAssistantRepliesTask,
             TaskType.done: protocol_schema.TaskDone,
         }
@@ -78,7 +79,7 @@ class OasstApiClient:
         logger.debug(f"Fetching task {task_type} for user {user}")
         req = protocol_schema.TaskRequest(type=task_type.value, user=user, collective=collective)
         resp = await self.post("/api/v1/tasks/", data=req.dict())
-        logger.debug(f"Fetch task response: {resp}")
+        logger.debug(f"RESP {resp}")
         return self._parse_task(resp)
 
     async def fetch_random_task(
@@ -88,10 +89,10 @@ class OasstApiClient:
         logger.debug(f"Fetching random for user {user}")
         return await self.fetch_task(protocol_schema.TaskRequestType.random, user, collective)
 
-    async def ack_task(self, task_id: str | UUID, post_id: str):
+    async def ack_task(self, task_id: str | UUID, message_id: str):
         """Send an ACK for a task to the backend."""
-        logger.debug(f"ACK task {task_id} with post {post_id}")
-        req = protocol_schema.TaskAck(post_id=post_id)
+        logger.debug(f"ACK task {task_id} with post {message_id}")
+        req = protocol_schema.TaskAck(message_id=message_id)
         return await self.post(f"/api/v1/tasks/{task_id}/ack", data=req.dict())
 
     async def nack_task(self, task_id: str | UUID, reason: str):

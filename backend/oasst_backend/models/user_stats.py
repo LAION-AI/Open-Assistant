@@ -8,11 +8,11 @@ import sqlalchemy.dialects.postgresql as pg
 from sqlmodel import Field, SQLModel
 
 
-class PersonStats(SQLModel, table=True):
-    __tablename__ = "person_stats"
+class UserStats(SQLModel, table=True):
+    __tablename__ = "user_stats"
 
-    person_id: Optional[UUID] = Field(
-        sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("person.id"), primary_key=True)
+    user_id: Optional[UUID] = Field(
+        sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("user.id"), primary_key=True)
     )
     leader_score: int = 0
     modified_date: Optional[datetime] = Field(
@@ -20,9 +20,9 @@ class PersonStats(SQLModel, table=True):
     )
 
     reactions: int = 0  # reactions sent by user
-    posts: int = 0  # posts sent by user
+    messages: int = 0  # messages sent by user
     upvotes: int = 0  # received upvotes (form other users)
     downvotes: int = 0  # received downvotes (from other users)
-    work_reward: int = 0  # reward for workpackage completions
-    compare_wins: int = 0  # num times user's post won compare tasks
-    compare_losses: int = 0  # num times users's post lost compare tasks
+    task_reward: int = 0  # reward for task completions
+    compare_wins: int = 0  # num times user's message won compare tasks
+    compare_losses: int = 0  # num times users's message lost compare tasks

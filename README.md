@@ -35,6 +35,8 @@ We are not going to stop at replicating ChatGPT. We want to build the assistant 
 
 ### Slide Decks
 
+[Vision & Roadmap](https://docs.google.com/presentation/d/1n7IrAOVOqwdYgiYrXc8Sj0He8krn5MVZO_iLkCjTtu0/edit?usp=sharing)
+
 [Important Data Structures](https://docs.google.com/presentation/d/1iaX_nxasVWlvPiSNs0cllR9L_1neZq0RJxd6MFEalUY/edit?usp=sharing)
 
 ## How can you help?
@@ -43,9 +45,11 @@ All open source projects begins with people like you. Open source is the belief 
 
 ## I’m in! Now what?
 
-[Join the LAION Discord Server!](https://discord.com/invite/mVcgxMPD7e)
+[Join the OpenAssistant Contributors Discord Server!](https://ykilcher.com/open-assistant-discord), this is for work coordination.
 
-[and / or the YK Discord Server](https://ykilcher.com/discord)
+[Join the LAION Discord Server!](https://discord.com/invite/mVcgxMPD7e), it has a dedicated channel and is more public.
+
+[and / or the YK Discord Server](https://ykilcher.com/discord), also has a dedicated, but not as active, channel.
 
 [Visit the Notion](https://ykilcher.com/open-assistant)
 
@@ -60,6 +64,8 @@ has assigned the issue to you, start working on it.
 
 If the issue is currently unclear but you are interested, please post in
 Discord and someone can help clarify the issue with more detail.
+
+**Always Welcome:** Documentation markdowns in `docs/`, docstrings, diagrams of the system architecture, and other documentation.
 
 ### Submitting Work
 

@@ -23,6 +23,6 @@ class GuildSettings(BaseModel):
             await cursor.execute("SELECT * FROM guild_settings WHERE guild_id = ?", (guild_id,))
             row = await cursor.fetchone()
             if row is None:
-                raise ValueError("No settings found for this guild.")
+                return None
 
             return cls.parse_obj(row)

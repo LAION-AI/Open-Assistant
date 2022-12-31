@@ -84,9 +84,9 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
             logger.debug(f"Successful user input received: {event.content}")
 
             # Send the response to the backend
-            reply = protocol_schema.TextReplyToPost(
-                post_id=str(msg_id),
-                user_post_id=str(event.message_id),
+            reply = protocol_schema.TextReplyToMessage(
+                message_id=str(msg_id),
+                user_message_id=str(event.message_id),
                 user=protocol_schema.User(
                     auth_method="discord", id=str(ctx.author.id), display_name=ctx.author.username
                 ),
@@ -206,20 +206,20 @@ async def _send_task(
         logger.debug("sending rank initial prompt task")
         embed = _rank_initial_prompt_embed(task)
 
-    elif task.type == TaskRequestType.rank_user_replies:
-        assert isinstance(task, protocol_schema.RankUserRepliesTask)
+    elif task.type == TaskRequestType.rank_prompter_replies:
+        assert isinstance(task, protocol_schema.RankPrompterRepliesTask)
         logger.debug("sending rank user reply task")
-        embed = _rank_user_reply_embed(task)
+        embed = _rank_prompter_reply_embed(task)
 
     elif task.type == TaskRequestType.rank_assistant_replies:
         assert isinstance(task, protocol_schema.RankAssistantRepliesTask)
         logger.debug("sending rank assistant reply task")
         embed = _rank_assistant_reply_embed(task)
 
-    elif task.type == TaskRequestType.user_reply:
-        assert isinstance(task, protocol_schema.UserReplyTask)
+    elif task.type == TaskRequestType.prompter_reply:
+        assert isinstance(task, protocol_schema.PrompterReplyTask)
         logger.debug("sending user reply task")
-        embed = _user_reply_embed(task)
+        embed = _prompter_reply_embed(task)
 
     elif task.type == TaskRequestType.assistant_reply:
         assert isinstance(task, protocol_schema.AssistantReplyTask)
@@ -258,28 +258,29 @@ def _validate_user_input(content: str | None, task: protocol_schema.Task) -> boo
     # User message input
     if (
         task.type == TaskRequestType.initial_prompt
-        or task.type == TaskRequestType.user_reply
+        or task.type == TaskRequestType.prompter_reply
         or task.type == TaskRequestType.assistant_reply
     ):
         assert isinstance(
-            task, protocol_schema.InitialPromptTask | protocol_schema.UserReplyTask | protocol_schema.AssistantReplyTask
+            task,
+            protocol_schema.InitialPromptTask | protocol_schema.PrompterReplyTask | protocol_schema.AssistantReplyTask,
         )
         return len(content) > 0
 
     # Ranking tasks
-    elif task.type == TaskRequestType.rank_user_replies or task.type == TaskRequestType.rank_assistant_replies:
-        assert isinstance(task, protocol_schema.RankUserRepliesTask | protocol_schema.RankAssistantRepliesTask)
+    elif task.type == TaskRequestType.rank_prompter_replies or task.type == TaskRequestType.rank_assistant_replies:
+        assert isinstance(task, protocol_schema.RankPrompterRepliesTask | protocol_schema.RankAssistantRepliesTask)
         num_replies = len(task.replies)
 
-        rankings = [int(r) for r in content.split(",")]
-        return all([r in range(1, num_replies + 1) for r in rankings]) and len(rankings) == num_replies
+        rankings = content.split(",")
+        return set(rankings) == {str(i) for i in range(1, num_replies + 1)} and len(rankings) == num_replies
 
     elif task.type == TaskRequestType.rank_initial_prompts:
         assert isinstance(task, protocol_schema.RankInitialPromptsTask)
         num_prompts = len(task.prompts)
 
-        rankings = [int(r) for r in content.split(",")]
-        return all([r in range(1, num_prompts + 1) for r in rankings]) and len(rankings) == num_prompts
+        rankings = content.split(",")
+        return set(rankings) == {str(i) for i in range(1, num_prompts + 1)} and len(rankings) == num_prompts
 
     elif task.type == TaskRequestType.summarize_story:
         raise NotImplementedError
@@ -369,7 +370,7 @@ def _rank_initial_prompt_embed(task: protocol_schema.RankInitialPromptsTask) -> 
     return embed
 
 
-def _rank_user_reply_embed(task: protocol_schema.RankUserRepliesTask) -> hikari.Embed:
+def _rank_prompter_reply_embed(task: protocol_schema.RankPrompterRepliesTask) -> hikari.Embed:
     embed = (
         hikari.Embed(
             title="Rank User Reply",
@@ -403,7 +404,7 @@ def _rank_assistant_reply_embed(task: protocol_schema.RankAssistantRepliesTask) 
     return embed
 
 
-def _user_reply_embed(task: protocol_schema.UserReplyTask) -> hikari.Embed:
+def _prompter_reply_embed(task: protocol_schema.PrompterReplyTask) -> hikari.Embed:
     embed = (
         hikari.Embed(
             title="User Reply",
