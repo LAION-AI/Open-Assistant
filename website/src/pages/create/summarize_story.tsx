@@ -29,7 +29,7 @@ const SummarizeStory = () => {
   // Every time we submit an answer to the latest task, let the backend handle
   // all the interactions then add the resulting task to the queue.  This ends
   // when we hit the done task.
-  const { trigger, isMutating } = useSWRMutation("/api/update_task", poster, {
+  const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (data) => {
       const newTask = await data.json();
       // This is the more efficient way to update a react state array.

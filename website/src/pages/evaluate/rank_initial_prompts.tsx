@@ -25,7 +25,7 @@ const RankInitialPrompts = () => {
     },
   });
 
-  const { trigger, isMutating } = useSWRMutation("/api/update_task", poster, {
+  const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (data) => {
       const newTask = await data.json();
       setTasks((oldTasks) => [...oldTasks, newTask]);

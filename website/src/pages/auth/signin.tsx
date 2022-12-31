@@ -6,6 +6,7 @@ import React, { useRef } from "react";
 import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { AuthLayout } from "src/components/AuthLayout";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function Signin({ csrfToken, providers }) {
   const { discord, email, github, credentials } = providers;
   const emailEl = useRef(null);
@@ -104,6 +105,7 @@ export default function Signin({ csrfToken, providers }) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getServerSideProps(context) {
   const csrfToken = await getCsrfToken();
   const providers = await getProviders();

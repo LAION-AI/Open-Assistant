@@ -8,6 +8,7 @@ import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 import { getDefaultLayout, NextPageWithLayout } from "src/components/Layout";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",

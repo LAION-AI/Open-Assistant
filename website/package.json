@@ -13,9 +13,9 @@
     "cypress": "cypress open",
     "cypress:run": "cypress run",
     "cypress:image-baseline": "cypress-image-diff -u",
-    "fix:lint": "eslint --fix src/",
+    "fix:lint": "eslint --fix src/ --ext .js,.jsx,.ts,.tsx",
     "fix:format": "prettier --write ./src",
-    "fix": "npm run fix:lint && npm run fix:format"
+    "fix": "npm run fix:format && npm run fix:lint"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.4.4",

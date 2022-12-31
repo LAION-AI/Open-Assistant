@@ -8,6 +8,7 @@ export default function Account() {
   const { data: session } = useSession();
   const [username, setUsername] = useState("null");
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleUpdate = async () => {
     const response = await fetch("../api/update", {
       method: "POST",

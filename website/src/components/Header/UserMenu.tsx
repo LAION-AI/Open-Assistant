@@ -12,7 +12,6 @@ export function UserMenu() {
     return <></>;
   }
   if (session && session.user) {
-    const email = session.user.email;
     const accountOptions = [
       {
         name: "Account Settings",

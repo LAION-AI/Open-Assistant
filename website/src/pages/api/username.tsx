@@ -5,7 +5,6 @@ import { getSession } from "next-auth/react";
 // Optional fields in body: content
 export default async function handle(req, res) {
   const { username } = req.body;
-  const { email } = req.body;
 
   const session = await getSession({ req });
   const result = await prisma.user.update({

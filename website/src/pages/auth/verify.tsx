@@ -16,6 +16,7 @@ export default function Verify() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getServerSideProps(context) {
   const csrfToken = await getCsrfToken();
   const providers = await getProviders();

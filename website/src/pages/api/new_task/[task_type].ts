@@ -63,7 +63,7 @@ const handler = async (req, res) => {
       message_id: registeredTask.id,
     }),
   });
-  const ack = await ackRes.json();
+  await ackRes.json();
 
   // Send the results to the client.
   res.status(200).json(registeredTask);
