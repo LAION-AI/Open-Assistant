@@ -38,6 +38,18 @@ class Conversation(BaseModel):
     messages: list[ConversationMessage] = []
 
 
+class Message(ConversationMessage):
+    id: UUID
+    parent_id: Optional[UUID] = None
+
+
+class MessageTree(BaseModel):
+    """All messages belonging to the same message tree."""
+
+    id: UUID
+    messages: list[Message] = []
+
+
 class TaskRequest(BaseModel):
     """The frontend asks the backend for a task."""
 
@@ -259,3 +271,10 @@ class TextLabels(BaseModel):
             if not (0 <= value <= 1):
                 raise ValueError(f"Label values must be between 0 and 1, got {value} for {key}.")
         return v
+
+
+class SystemStats(BaseModel):
+    all: int = 0
+    active: int = 0
+    deleted: int = 0
+    message_trees: int = 0

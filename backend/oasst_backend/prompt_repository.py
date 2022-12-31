@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import datetime
 import random
+from collections import defaultdict
+from http import HTTPStatus
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -10,7 +13,10 @@ from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import ApiClient, Message, MessageReaction, Task, TextLabels, User
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
+from oasst_shared.schemas.protocol import SystemStats
+from sqlalchemy import update
 from sqlmodel import Session, func
+from starlette.status import HTTP_403_FORBIDDEN
 
 
 class PromptRepository:
@@ -21,7 +27,7 @@ class PromptRepository:
         self.user_id = self.user.id if self.user else None
         self.journal = JournalWriter(db, api_client, self.user)
 
-    def lookup_user(self, client_user: protocol_schema.User) -> User:
+    def lookup_user(self, client_user: protocol_schema.User) -> Optional[User]:
         if not client_user:
             return None
         user: User = (
@@ -52,6 +58,7 @@ class PromptRepository:
         return user
 
     def validate_frontend_message_id(self, message_id: str) -> None:
+        # TODO: Should it be replaced with fastapi/pydantic validation?
         if not isinstance(message_id, str):
             raise OasstError(
                 f"message_id must be string, not {type(message_id)}", OasstErrorCode.INVALID_FRONTEND_MESSAGE_ID
@@ -114,9 +121,7 @@ class PromptRepository:
         )
         return task
 
-    def store_text_reply(
-        self, text: str, frontend_message_id: str, user_frontend_message_id: str, role: str = None
-    ) -> Message:
+    def store_text_reply(self, text: str, frontend_message_id: str, user_frontend_message_id: str) -> Message:
         self.validate_frontend_message_id(frontend_message_id)
         self.validate_frontend_message_id(user_frontend_message_id)
 
@@ -447,6 +452,13 @@ class PromptRepository:
         return self.db.query(Message).filter(Message.message_tree_id == message_tree_id).all()
 
     def fetch_multiple_random_replies(self, max_size: int = 5, message_role: str = None):
+        """
+        Fetch a conversation with multiple possible replies to it.
+
+        This function finds a random message with >1 replies,
+        forms a conversation from the corresponding message tree root up to this message
+        and fetches up to max_size possible replies in continuation to this conversation.
+        """
         parent = self.db.query(Message.id).filter(Message.children_count > 1)
         if message_role:
             parent = parent.filter(Message.role == message_role)
@@ -473,10 +485,16 @@ class PromptRepository:
 
         return conversation, replies
 
-    def fetch_message(self, message_id: UUID) -> Optional[Message]:
-        return self.db.query(Message).filter(Message.id == message_id).one()
+    def fetch_message(self, message_id: UUID, fail_if_missing: bool = True) -> Optional[Message]:
+        message = self.db.query(Message).filter(Message.id == message_id).one_or_none()
+        if fail_if_missing and not message:
+            raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND)
+        return message
 
     def close_task(self, frontend_message_id: str, allow_personal_tasks: bool = False):
+        """
+        Mark task as done. No further messages will be accepted for this task.
+        """
         self.validate_frontend_message_id(frontend_message_id)
         task = self.fetch_task_by_frontend_message_id(frontend_message_id)
 
@@ -492,3 +510,195 @@ class PromptRepository:
         task.done = True
         self.db.add(task)
         self.db.commit()
+
+    @staticmethod
+    def trace_conversation(messages: list[Message] | dict[UUID, Message], last_message: Message) -> list[Message]:
+        """
+        Pick messages from a collection so that the result makes a linear conversation
+        starting from a message tree root and up to the given message.
+        Returns an ordered list of messages starting from the message tree root.
+        """
+        if isinstance(messages, list):
+            messages = {m.id: m for m in messages}
+        if not isinstance(messages, dict):
+            # This should not normally happen
+            raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+        conv = [last_message]
+        while conv[-1].parent_id:
+            if conv[-1].parent_id not in messages:
+                # Can't form a continuous conversation
+                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+            parent_message = messages[conv[-1].parent_id]
+            conv.append(parent_message)
+
+        return list(reversed(conv))
+
+    def fetch_message_conversation(self, message: Message | UUID) -> list[Message]:
+        """
+        Fetch a conversation from the tree root and up to this message.
+        """
+        if isinstance(message, UUID):
+            message = self.fetch_message(message)
+
+        tree_messages = self.fetch_message_tree(message.message_tree_id)
+        return self.trace_conversation(tree_messages, message)
+
+    def fetch_tree_from_message(self, message: Message | UUID) -> list[Message]:
+        """
+        Fetch message tree this message belongs to.
+        """
+        if isinstance(message, UUID):
+            message = self.fetch_message(message)
+        return self.fetch_message_tree(message.message_tree_id)
+
+    def fetch_message_children(self, message: Message | UUID) -> list[Message]:
+        """
+        Get all direct children of this message
+        """
+        if isinstance(message, Message):
+            message = message.id
+
+        children = self.db.query(Message).filter(Message.parent_id == message).all()
+        return children
+
+    @staticmethod
+    def trace_descendants(root: Message, messages: list[Message]) -> list[Message]:
+        children = defaultdict(list)
+        for msg in messages:
+            children[msg.parent_id].append(msg)
+
+        def _traverse_subtree(m: Message):
+            for child in children[m.id]:
+                yield child
+                yield from _traverse_subtree(child)
+
+        return list(_traverse_subtree(root))
+
+    def fetch_message_descendants(self, message: Message | UUID, max_depth: int = None) -> list[Message]:
+        """
+        Find all descendant messages to this message.
+
+        This function creates a subtree of messages starting from given root message.
+        """
+        if isinstance(message, UUID):
+            message = self.fetch_message(message)
+
+        desc = self.db.query(Message).filter(
+            Message.message_tree_id == message.message_tree_id, Message.depth > message.depth
+        )
+        if max_depth is not None:
+            desc = desc.filter(Message.depth <= max_depth)
+
+        desc = desc.all()
+
+        return self.trace_descendants(message, desc)
+
+    def fetch_longest_conversation(self, message: Message | UUID) -> list[Message]:
+        tree = self.fetch_tree_from_message(message)
+        max_message = max(tree, key=lambda m: m.depth)
+        return self.trace_conversation(tree, max_message)
+
+    def fetch_message_with_max_children(self, message: Message | UUID) -> tuple[Message, list[Message]]:
+        tree = self.fetch_tree_from_message(message)
+        max_message = max(tree, key=lambda m: m.children_count)
+        return max_message, [m for m in tree if m.parent_id == max_message.id]
+
+    def query_messages(
+        self,
+        user_id: Optional[UUID] = None,
+        username: Optional[str] = None,
+        api_client_id: Optional[UUID] = None,
+        desc: bool = True,
+        limit: Optional[int] = 10,
+        start_date: Optional[datetime.datetime] = None,
+        end_date: Optional[datetime.datetime] = None,
+        only_roots: bool = False,
+        deleted: Optional[bool] = None,
+    ) -> list[Message]:
+        if not self.api_client.trusted and not api_client_id:
+            # Let unprivileged api clients query their own messages without api_client_id being set
+            api_client_id = self.api_client.id
+
+        if not self.api_client.trusted and api_client_id != self.api_client.id:
+            # Unprivileged api client asks for foreign messages
+            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+
+        messages = self.db.query(Message)
+        if user_id:
+            messages = messages.filter(Message.user_id == user_id)
+        if username:
+            messages = messages.join(User)
+            messages = messages.filter(User.username == username)
+        if api_client_id:
+            messages = messages.filter(Message.api_client_id == api_client_id)
+
+        if start_date:
+            messages = messages.filter(Message.created_date >= start_date)
+        if end_date:
+            messages = messages.filter(Message.created_date < end_date)
+
+        if only_roots:
+            messages = messages.filter(Message.parent_id.is_(None))
+
+        if deleted is not None:
+            messages = messages.filter(Message.deleted == deleted)
+
+        if desc:
+            messages = messages.order_by(Message.created_date.desc())
+        else:
+            messages = messages.order_by(Message.created_date.asc())
+
+        if limit is not None:
+            messages = messages.limit(limit)
+
+        # TODO: Pagination could be great at some point
+        return messages.all()
+
+    def mark_messages_deleted(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):
+        """
+        Marks deleted messages and all their descendants.
+        """
+        if isinstance(messages, (Message, UUID)):
+            messages = [messages]
+
+        ids = []
+        for message in messages:
+            if isinstance(message, UUID):
+                ids.append(message)
+            elif isinstance(message, Message):
+                ids.append(message.id)
+            else:
+                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+        query = update(Message).where(Message.id.in_(ids)).values(deleted=True)
+        self.db.execute(query)
+
+        parent_ids = ids
+        if recursive:
+            while parent_ids:
+                query = (
+                    update(Message).filter(Message.parent_id.in_(parent_ids)).values(deleted=True).returning(Message.id)
+                )
+
+                parent_ids = self.db.execute(query).scalars().all()
+
+        self.db.commit()
+
+    def get_stats(self) -> SystemStats:
+        """
+        Get data stats such as number of all messages in the system,
+        number of deleted and active messages and number of message trees.
+        """
+        deleted = self.db.query(Message.deleted, func.count()).group_by(Message.deleted)
+        nthreads = self.db.query(None, func.count(Message.id)).filter(Message.parent_id.is_(None))
+        query = deleted.union_all(nthreads)
+        result = {k: v for k, v in query.all()}
+
+        return SystemStats(
+            all=result.get(True, 0) + result.get(False, 0),
+            active=result.get(False, 0),
+            deleted=result.get(True, 0),
+            message_trees=result.get(None, 0),
+        )
