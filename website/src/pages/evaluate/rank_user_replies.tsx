@@ -21,7 +21,7 @@ const RankUserReplies = () => {
    */
   const [ranking, setRanking] = useState<number[]>([]);
 
-  const { isLoading } = useSWRImmutable("/api/new_task/rank_user_replies", fetcher, {
+  const { isLoading } = useSWRImmutable("/api/new_task/rank_prompter_replies", fetcher, {
     onSuccess: (data) => {
       setTasks([data]);
     },
@@ -37,7 +37,7 @@ const RankUserReplies = () => {
   const submitResponse = (task) => {
     trigger({
       id: task.id,
-      update_type: "post_ranking",
+      update_type: "message_ranking",
       content: {
         ranking,
       },

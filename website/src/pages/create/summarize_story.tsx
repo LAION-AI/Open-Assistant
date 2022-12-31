@@ -45,7 +45,7 @@ const SummarizeStory = () => {
     const text = inputRef.current.value.trim();
     trigger({
       id: task.id,
-      update_type: "text_reply_to_post",
+      update_type: "text_reply_to_message",
       content: {
         text,
       },
