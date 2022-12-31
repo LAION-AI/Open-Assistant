@@ -374,7 +374,7 @@ def _rank_prompter_reply_embed(task: protocol_schema.RankPrompterRepliesTask) ->
     embed = (
         hikari.Embed(
             title="Rank User Reply",
-            description="Rank the following tasks from best to worst. e.g. 1,2,5,3,4",
+            description="Rank the following user replies from best to worst. e.g. 1,2,5,3,4",
             timestamp=datetime.now().astimezone(),
         )
         .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")  # TODO: update image
@@ -391,7 +391,7 @@ def _rank_assistant_reply_embed(task: protocol_schema.RankAssistantRepliesTask) 
     embed = (
         hikari.Embed(
             title="Rank Assistant Reply",
-            description="Rank the following tasks from best to worst. e.g. 1,2,5,3,4",
+            description="Rank the following assistant replies from best to worst. e.g. 1,2,5,3,4",
             timestamp=datetime.now().astimezone(),
         )
         .set_image("https://images.unsplash.com/photo-1455390582262-044cdead277a?w=512")  # TODO: update image
