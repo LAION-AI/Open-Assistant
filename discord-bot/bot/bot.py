@@ -29,7 +29,7 @@ async def on_starting(event: hikari.StartingEvent):
     await bot.d.db.executescript(open("./bot/db/schema.sql").read())
     await bot.d.db.commit()
 
-    bot.d.oasst_api = OasstApiClient("http://localhost:8080", "any_key")
+    bot.d.oasst_api = OasstApiClient(settings.oasst_api_url, settings.oasst_api_key)
 
 
 @bot.listen()
