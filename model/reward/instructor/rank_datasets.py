@@ -38,8 +38,10 @@ class DataCollatorForPairRank:
         batch_size = 0
         for question, pairs in features:
             for (pos, neg) in pairs:
-                flatten_features.append(self.tokenizer(question, pos, truncation=True))
-                flatten_features.append(self.tokenizer(question, neg, truncation=True))
+                flatten_features.append(self.tokenizer(question, pos,
+                    truncation=True, max_length=self.max_length))
+                flatten_features.append(self.tokenizer(question, neg,
+                    truncation=True, max_length=self.max_length))
                 batch_size += 1
         
         batch = self.tokenizer.pad(
@@ -147,6 +149,8 @@ class HFSummary(Dataset):
 
         self.summaries = summaries
 
+        self.postfix_prompt = ' TLDR;'
+
     def __len__(self):
         return len(self.index2summary)
 
@@ -159,6 +163,5 @@ class HFSummary(Dataset):
         # not optimal but good for now
         valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
         # optimize the format later
-        return context, [ r for idx, r in enumerate(rows) if idx in valid_idx ]
-
+        return context+self.postfix_prompt, [ r for idx, r in enumerate(rows) if idx in valid_idx ]
 

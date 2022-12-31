@@ -6,10 +6,10 @@ from torch import nn
 import numpy as np
 import evaluate
 from dataclasses import dataclass
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, ConcatDataset
 from transformers import AutoModelForSequenceClassification, AutoModelForMultipleChoice
 from transformers import Trainer, PreTrainedModel, TrainingArguments, DataCollator, EvalPrediction, TrainerCallback, PreTrainedTokenizerBase
-from rank_datasets import DataCollatorForPairRank, WebGPT
+from rank_datasets import DataCollatorForPairRank, WebGPT, HFSummary
 from utils import get_tokenizer, train_val_dataset
 
 accuracy = evaluate.load("accuracy")
@@ -88,7 +88,7 @@ class RankTrainer(Trainer):
 
 if __name__ == "__main__":
     model_name = 'bigscience/bloomz-560m'
-    model_name = 'google/electra-base-discriminator'
+    model_name = 'google/electra-large-discriminator'
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=1, problem_type='regression')
     tokenizer = get_tokenizer(model_name)
     args = CustomTrainingArguments(
@@ -99,9 +99,9 @@ if __name__ == "__main__":
         learning_rate=3e-5,
         # half_precision_backend="apex",
         fp16=True,
-        gradient_checkpointing=False,
-        gradient_accumulation_steps=5,
-        per_device_train_batch_size=16,
+        gradient_checkpointing=True,
+        gradient_accumulation_steps=8,
+        per_device_train_batch_size=8,
         per_device_eval_batch_size=5,
         weight_decay=0.01,
         max_grad_norm=2.0,
@@ -114,7 +114,8 @@ if __name__ == "__main__":
     )
     dataset = WebGPT()
     train, eval = train_val_dataset(dataset)
-    collate_fn = DataCollatorForPairRank(tokenizer, max_length=400)
+    train = ConcatDataset([train, HFSummary()])
+    collate_fn = DataCollatorForPairRank(tokenizer, max_length=440)
     trainer = RankTrainer(
         model,
         args,
