@@ -61,7 +61,7 @@ const UserReply = () => {
         <>
           <h5 className="text-lg font-semibold">Reply as a user</h5>
           <p className="text-lg py-1">Given the following conversation, provide an adequate reply</p>
-          <Messages messages={task.conversation.messages} />
+          <Messages messages={task.conversation.messages} post_id={task.id}/>
           {task.hint && <p className="text-lg py-1">Hint: {task.hint}</p>}
         </>
         <Textarea name="reply" placeholder="Reply..." ref={inputRef} />
@@ -69,7 +69,6 @@ const UserReply = () => {
 
       <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
         <TaskInfo id={tasks[0].id} output="Submit your answer" />
-
         <Flex justify="center" ml="auto" gap={2}>
           <SkipButton>Skip</SkipButton>
           {endTask.task.type !== "task_done" ? (
