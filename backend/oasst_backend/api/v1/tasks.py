@@ -55,7 +55,7 @@ def generate_task(
                 hint="Ask the assistant about a current event."  # this is optional
             )
         case protocol_schema.TaskRequestType.prompter_reply:
-            logger.info("Generating a UserReplyTask.")
+            logger.info("Generating a PrompterReplyTask.")
             messages = pr.fetch_random_conversation("assistant")
             task_messages = [
                 protocol_schema.ConversationMessage(
@@ -86,7 +86,7 @@ def generate_task(
             messages = pr.fetch_random_initial_prompts()
             task = protocol_schema.RankInitialPromptsTask(prompts=[msg.payload.payload.text for msg in messages])
         case protocol_schema.TaskRequestType.rank_prompter_replies:
-            logger.info("Generating a RankUserRepliesTask.")
+            logger.info("Generating a RankPrompterRepliesTask.")
             conversation, replies = pr.fetch_multiple_random_replies(message_role="assistant")
 
             task_messages = [
