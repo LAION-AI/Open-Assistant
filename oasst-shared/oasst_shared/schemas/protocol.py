@@ -288,6 +288,7 @@ class UserScore(BaseModel):
     ranking: int
     user_id: UUID
     username: str
+    display_name: str
     score: int
 
 

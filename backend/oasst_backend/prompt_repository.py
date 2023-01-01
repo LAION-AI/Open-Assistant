@@ -714,15 +714,16 @@ class PromptRepository:
 
         """
         query = (
-            self.db.query(Message.user_id, User.username, func.count(Message.user_id))
+            self.db.query(Message.user_id, User.username, User.display_name, func.count(Message.user_id))
             .join(User, User.id == Message.user_id, isouter=True)
             .filter(Message.deleted is not True, Message.role == role)
-            .group_by(Message.user_id, User.username)
+            .group_by(Message.user_id, User.username, User.display_name)
             .order_by(func.count(Message.user_id).desc())
         )
 
         result = [
-            {"ranking": i, "user_id": j[0], "username": j[1], "score": j[2]} for i, j in enumerate(query.all(), start=1)
+            {"ranking": i, "user_id": j[0], "username": j[1], "display_name": j[2], "score": j[3]}
+            for i, j in enumerate(query.all(), start=1)
         ]
 
         return LeaderboardStats(leaderboard=result)
