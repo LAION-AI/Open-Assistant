@@ -28,8 +28,8 @@ class WebGPTDataset(Dataset):
         dataset = load_dataset("openai/webgpt_comparisons")
         self.dataset_index = []
 
-        t = dataset['train'].map(webgpt_return_format, 
-                         remove_columns=dataset['train'].column_names)
+        t = dataset["train"].map(webgpt_return_format, 
+                                 remove_columns=dataset["train"].column_names)
         self.dataset = [{k: row[k] for k in t.column_names} for row in t]
 
         # since this dataset was generated from 176B GPT-3
