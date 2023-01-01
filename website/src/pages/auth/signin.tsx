@@ -1,12 +1,12 @@
 import { Button, Input, Stack } from "@chakra-ui/react";
 import Head from "next/head";
-import { FaDiscord, FaEnvelope, FaGithub, FaBug } from "react-icons/fa";
+import Link from "next/link";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
 import React, { useRef } from "react";
-import Link from "next/link";
-
+import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { AuthLayout } from "src/components/AuthLayout";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function Signin({ csrfToken, providers }) {
   const { discord, email, github, credentials } = providers;
   const emailEl = useRef(null);
@@ -105,6 +105,7 @@ export default function Signin({ csrfToken, providers }) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getServerSideProps(context) {
   const csrfToken = await getCsrfToken();
   const providers = await getProviders();

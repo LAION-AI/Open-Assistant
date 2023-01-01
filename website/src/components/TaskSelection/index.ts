@@ -1,3 +1,3 @@
-export { TaskSelection } from "./TaskSelection";
-export { TaskOptions } from "./TaskOptions";
 export { TaskOption } from "./TaskOption";
+export { TaskOptions } from "./TaskOptions";
+export { TaskSelection } from "./TaskSelection";

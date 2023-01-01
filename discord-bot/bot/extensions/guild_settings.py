@@ -5,7 +5,7 @@ import lightbulb
 from aiosqlite import Connection
 from bot.db.schemas import GuildSettings
 from bot.utils import mention
-from lightbulb.utils.permissions import permissions_in
+from lightbulb.utils import permissions_in
 from loguru import logger
 
 plugin = lightbulb.Plugin("GuildSettings")
@@ -56,32 +56,42 @@ if guild_settings.log_channel_id else 'not set'}
 
 @settings.child
 @lightbulb.option("channel", "The channel to use.", hikari.TextableGuildChannel)
-@lightbulb.command("log_channel", "Set the channel that the bot logs task and label completions in.")
+@lightbulb.command("log_channel", "Set the channel that the bot logs task and label completions in.", ephemeral=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def log_channel(ctx: lightbulb.SlashContext) -> None:
     """Set the channel that the bot logs task and label completions in."""
     channel: hikari.TextableGuildChannel = ctx.options.channel
     conn: Connection = ctx.bot.d.db
     assert ctx.guild_id is not None  # `guild_only` check
-    assert isinstance(channel, hikari.PermissibleGuildChannel)
 
     # Check if the bot can send messages in that channel
-    assert (me := ctx.bot.get_me()) is not None  # non-None after `StartedEvent`
-    if (own_member := ctx.bot.cache.get_member(ctx.guild_id, me.id)) is None:
-        own_member = await ctx.bot.rest.fetch_member(ctx.guild_id, me.id)
-    perms = permissions_in(channel, own_member)
-    if perms & ~hikari.Permissions.SEND_MESSAGES:
-        await ctx.respond("I don't have permission to send messages in that channel.")
+    assert isinstance(channel, hikari.InteractionChannel)  # Slash commands are interactions
+    me = ctx.bot.cache.get_me() or await ctx.bot.rest.fetch_my_user()
+    own_member = ctx.bot.cache.get_member(ctx.guild_id, me.id) or await ctx.bot.rest.fetch_member(ctx.guild_id, me.id)
+
+    # Get the channel from the cache if it is there, otherwise fetch it
+    if (ch := ctx.bot.cache.get_guild_channel(channel.id)) is None:
+        ch = {ch.id: ch for ch in await ctx.bot.rest.fetch_guild_channels(channel.id)}[channel.id]
+
+    if not isinstance(ch, hikari.GuildTextChannel):
+        await ctx.respond(f"{ch.mention} is not a text channel.")
+        return
+
+    # if the bot's permissions for this channel don't contain SEND_MESSAGE
+    # This will also filter out categories and voice channels
+    print(permissions_in(ch, own_member) & hikari.Permissions.SEND_MESSAGES)
+    if not permissions_in(ch, own_member) & hikari.Permissions.SEND_MESSAGES:
+        await ctx.respond(f"I don't have permission to send messages in {ch.mention}.")
         return
 
     await ctx.respond(f"Setting `log_channel` to {channel.mention}.")
 
+    # update the database
     async with conn.cursor() as cursor:
         await cursor.execute(
             "INSERT OR REPLACE INTO guild_settings (guild_id, log_channel_id) VALUES (?, ?)",
             (ctx.guild_id, channel.id),
         )
-
     await conn.commit()
     logger.info(f"Updated `log_channel` for {ctx.guild_id} to {channel.id}.")
 

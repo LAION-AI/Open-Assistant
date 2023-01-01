@@ -1,7 +1,5 @@
 import { getToken } from "next-auth/jwt";
-
 import prisma from "src/lib/prismadb";
-import { authOptions } from "src/pages/api/auth/[...nextauth]";
 
 /**
  * Stores the task interaction with the Task Backend and then returns the next task generated.

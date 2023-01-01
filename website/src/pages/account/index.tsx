@@ -1,13 +1,14 @@
+import { Button } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
-import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Button } from "@chakra-ui/react";
+import React, { useState } from "react";
 
 export default function Account() {
   const { data: session } = useSession();
   const [username, setUsername] = useState("null");
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleUpdate = async () => {
     const response = await fetch("../api/update", {
       method: "POST",

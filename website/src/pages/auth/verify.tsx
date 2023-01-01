@@ -1,7 +1,5 @@
 import Head from "next/head";
-import { getCsrfToken, getProviders, signIn } from "next-auth/react";
-import Link from "next/link";
-
+import { getCsrfToken, getProviders } from "next-auth/react";
 import { AuthLayout } from "src/components/AuthLayout";
 
 export default function Verify() {
@@ -18,6 +16,7 @@ export default function Verify() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getServerSideProps(context) {
   const csrfToken = await getCsrfToken();
   const providers = await getProviders();
