@@ -134,12 +134,14 @@ if __name__ == "__main__":
         train_datasets.append(train)
         evals['webgpt'] = eval
     if 'hfsummary' in training_conf['datasets']:
-        summary_dataset = HFSummary()
-        sum_train, sum_eval = train_val_dataset(summary_dataset)
+        sum_train = HFSummary(split='train')
         train_datasets.append(sum_train)
+        sum_eval = HFSummary(split='valid1')
+        assert len(sum_eval) > 0
         evals['hfsummary'] = sum_eval
     train = ConcatDataset(train_datasets)
     collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf['max_length'], drop_token_type= 'galactica' in model_name)
+    assert len(evals) > 0
     trainer = RankTrainer(
         model,
         args,
