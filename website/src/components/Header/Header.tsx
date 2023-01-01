@@ -65,9 +65,6 @@ export function Header(props) {
               <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
               <span className="text-2xl font-bold ml-3">Open Assistant</span>
             </Link>
-            <div className="hidden lg:flex lg:gap-10">
-              <NavLinks />
-            </div>
           </div>
           <div className="flex items-center gap-4">
             <Popover className="lg:hidden">
@@ -102,10 +99,6 @@ export function Header(props) {
                           }}
                           className="absolute inset-x-0 top-0 z-0 origin-top rounded-b-2xl bg-white px-6 pb-6 pt-32 shadow-2xl shadow-gray-900/20"
                         >
-                          <div className="space-y-4">
-                            <MobileNavLink href="/#join-us">Join Us</MobileNavLink>
-                            <MobileNavLink href="/#faqs">FAQs</MobileNavLink>
-                          </div>
                           <div className="mt-8 flex flex-col gap-4"></div>
                         </Popover.Panel>
                       </>
