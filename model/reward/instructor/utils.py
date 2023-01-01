@@ -41,14 +41,16 @@ def train_val_dataset(dataset, val_split=0.2):
     return Subset(dataset, train_idx), Subset(dataset, val_idx)
 
 def freeze_top_n_layers(model, target_layers):
+    # its possible we can simply detect which module is a ModuleList
+    # and simply freeze the module without doing string parsing
     for name, param in model.named_parameters():
         if 'embed' in name:
             param.requires_grad = False
-        elif '.layer' in name:
+        elif '.layer' in name or '.h.' in name:
             tokens = name.split('.')
             idx = 0
             for token in tokens:
-                if 'layer' in token:
+                if 'layer' in token or token == 'h':
                     break
                 idx += 1
             if idx >= len(tokens):
@@ -56,6 +58,7 @@ def freeze_top_n_layers(model, target_layers):
 
             layer_ = int(tokens[idx+1])
             if layer_ < target_layers:
+                # print('freeze ', layer_, name)
                 param.requires_grad = False
     return model
 
@@ -82,3 +85,11 @@ def argument_parsing(parser):
     params['learning_rate'] = float(params['learning_rate'])
     return params
 
+
+
+if __name__ == "__main__":
+    from transformers import AutoModelForSequenceClassification
+
+    model = AutoModelForSequenceClassification.from_pretrained('bigscience/bloomz-560m')
+    freeze_top_n_layers(model, 10)
+    print(model.state_dict().keys())

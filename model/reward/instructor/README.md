@@ -1,7 +1,6 @@
 # Sections to train Reward Model (RM)
 
-Trainer code based on huggingface. Should be compatible with deepspeed or accelerate
-
+Trainer code based on huggingface. Compatible with deepspeed or accelerate
 
 
 Requirements
@@ -14,7 +13,7 @@ transformers
 torch==1.12
 ```
 
-To train your model run this
+Start training
 
 
 ```bash
@@ -26,6 +25,16 @@ python trainer.py configs/electra-base-dis-webgpt.yml
 
 For now we only supports webgpt and summary dataset from OpenAI. Once open-asisstant dataset are available it will be added here.
 
+## Model
 
+Check out configs
 
+```
+Open-Assistant/model/reward/instructor/configs/
+    bloomz-560m.yml
+    electra-base-dis-webgpt.yml
+    galactica-125m.yml
+    galactica-1b.yml
+```
 
+You can add new huggingface model as you want.

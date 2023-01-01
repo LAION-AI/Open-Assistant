@@ -1,6 +1,12 @@
 '''
     author: theblackcat102
 
+    Dataset output format from __getitem__
+
+     - question / prompt : string
+
+     - answers / rows : list of tuple pair. The first element in the tuple pair must be the positive pair (rank higher than the second element)
+
     A list of rank based dataset for training using rank loss
 
     Some nice features to have
@@ -105,7 +111,7 @@ class HFSummary(Dataset):
 
             >> azcopy copy "https://openaipublic.blob.core.windows.net/summarize-from-feedback/dataset/*" . --recursive
         
-        choice : 0 or 1
+        labeling method : pair comparison, 0 or 1
 
     '''
     def __init__(self, split='train',
