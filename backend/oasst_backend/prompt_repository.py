@@ -16,7 +16,7 @@ from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
 from sqlalchemy import update
 from sqlmodel import Session, func
-from starlette.status import HTTP_403_FORBIDDEN
+from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
 class PromptRepository:
@@ -72,7 +72,7 @@ class PromptRepository:
         # find task
         task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
         if task is None:
-            raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+            raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND)
         if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
         if task.done or task.ack is not None:
@@ -88,7 +88,7 @@ class PromptRepository:
         # find task
         task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
         if task is None:
-            raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+            raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND)
         if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
         if task.done or task.ack is not None:
@@ -108,7 +108,9 @@ class PromptRepository:
         )
         if fail_if_missing and message is None:
             raise OasstError(
-                f"Message with frontend_message_id {frontend_message_id} not found.", OasstErrorCode.MESSAGE_NOT_FOUND
+                f"Message with frontend_message_id {frontend_message_id} not found.",
+                OasstErrorCode.MESSAGE_NOT_FOUND,
+                HTTP_404_NOT_FOUND,
             )
         return message
 
@@ -488,7 +490,7 @@ class PromptRepository:
     def fetch_message(self, message_id: UUID, fail_if_missing: bool = True) -> Optional[Message]:
         message = self.db.query(Message).filter(Message.id == message_id).one_or_none()
         if fail_if_missing and not message:
-            raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND)
+            raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
         return message
 
     def close_task(self, frontend_message_id: str, allow_personal_tasks: bool = False):
@@ -499,7 +501,9 @@ class PromptRepository:
         task = self.fetch_task_by_frontend_message_id(frontend_message_id)
 
         if not task:
-            raise OasstError(f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+            raise OasstError(
+                f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND
+            )
         if task.expired:
             raise OasstError("Task already expired", OasstErrorCode.TASK_EXPIRED)
         if not allow_personal_tasks and not task.collective:

@@ -7,7 +7,6 @@ from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.models import ApiClient
 from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_shared.schemas import protocol
 from sqlmodel import Session
 
 router = APIRouter()
@@ -27,7 +26,7 @@ def get_message_by_frontend_id(
         # Unexpected message payload
         raise OasstError("Invalid message", OasstErrorCode.INVALID_MESSAGE)
 
-    return protocol.ConversationMessage(text=message.payload.payload.text, is_assistant=(message.role == "assistant"))
+    return utils.prepare_message(message)
 
 
 @router.get("/{message_id}/conversation")
@@ -68,12 +67,7 @@ def get_children_by_frontend_id(
     pr = PromptRepository(db, api_client, user=None)
     message = pr.fetch_message_by_frontend_message_id(message_id)
     messages = pr.fetch_message_children(message.id)
-    return [
-        protocol.Message(
-            id=m.id, parent_id=m.parent_id, text=m.payload.payload.text, is_assistant=(m.role == "assistant")
-        )
-        for m in messages
-    ]
+    return utils.prepare_message_list(messages)
 
 
 @router.get("/{message_id}/descendants")

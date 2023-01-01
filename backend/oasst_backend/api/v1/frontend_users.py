@@ -4,9 +4,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from oasst_backend.api import deps
+from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_shared.schemas import protocol
 from sqlmodel import Session
 from starlette.responses import Response
 from starlette.status import HTTP_200_OK
@@ -41,13 +41,7 @@ def query_frontend_user_messages(
         only_roots=only_roots,
         deleted=None if include_deleted else False,
     )
-
-    return [
-        protocol.Message(
-            id=m.id, parent_id=m.parent_id, text=m.payload.payload.text, is_assistant=(m.role == "assistant")
-        )
-        for m in messages
-    ]
+    return utils.prepare_message_list(messages)
 
 
 @router.delete("/{username}/messages")
