@@ -6,24 +6,22 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
 from transformers import AutoTokenizer
 
-re_reference_remove = re.compile(r"\[([0-9])+\]|\[([0-9])+,([0-9])+\]")
+re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
 
 
-def webgpt_return_format(row):
+def webgpt_return_format2(row):
+    res = {'question': row['question']['full_text']}
+    row["answer_0"] = re_reference_remove.sub("", row["answer_0"])
+    row["answer_1"] = re_reference_remove.sub("", row["answer_1"])
+  
     if row["score_0"] >= row["score_1"]:
-        # remove this to prevent information leak, since we are not using reference
-        return {
-            "question": row["question"]["full_text"],
-            "pos": re_reference_remove.sub("", row["answer_0"]),
-            "neg": re_reference_remove.sub("", row["answer_1"]),
-        }
+        res['pos'] = row['answer_0']
+        res['neg'] = row['answer_1']
+        return res
 
-    return {
-        "question": row["question"]["full_text"],
-        "pos": re_reference_remove.sub("", row["answer_1"]),
-        "neg": re_reference_remove.sub("", row["answer_0"]),
-    }
-
+    res['pos'] = row['answer_1']
+    res['neg'] = row['answer_0']
+    return res  
 
 def get_tokenizer(tokenizer_name):
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
