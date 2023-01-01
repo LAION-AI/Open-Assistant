@@ -18,6 +18,8 @@ jobs:
 
       - run: cd oasst-shared && pip install -e .
 
+      - run: cd backend && pip install -r requirements.txt
+
       - run: cd discord-bot && pip install -r requirements.txt
 
       - run: cd discord-bot && pip install -r requirements.dev.txt
