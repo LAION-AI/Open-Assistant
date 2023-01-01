@@ -8,7 +8,7 @@ import json
 import os
 import random
 
-from dataset import load_dataset
+from datasets import load_dataset
 from torch.utils.data import Dataset
 
 from .utils import webgpt_return_format
