@@ -179,3 +179,33 @@ if settings.DEBUG_USE_SEED_DATA:
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+def get_openapi_schema():
+    return json.dumps(app.openapi())
+
+
+if __name__ == "__main__":
+    # Importing here so we don't import packages unnecessarily if we're
+    # importing main as a module.
+    import argparse
+    import json
+
+    import uvicorn
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--print-openapi-schema",
+        help="Dumps the openapi schema to stdout",
+        action=argparse.BooleanOptionalAction,
+    )
+    parser.add_argument("--host", help="The host to run the server")
+    parser.add_argument("--port", help="The port to run the server")
+
+    args = parser.parse_args()
+
+    if args.print_openapi_schema:
+        print(get_openapi_schema())
+    else:
+        uvicorn.run(app, host=args.host, port=args.port)

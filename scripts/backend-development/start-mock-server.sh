@@ -8,7 +8,7 @@ MOCK_SERVER_PORT=8080
 OPENAPI_JSON_FILE_NAME=openapi.json
 
 echo "Generating OpenAPI schema..."
-python -m print_openapi_schema > $OPENAPI_JSON_FILE_NAME
+python -m main --print-openapi-schema > $OPENAPI_JSON_FILE_NAME
 echo "Done!"
 
 # If oasst-mock-backend docker container is already running,
