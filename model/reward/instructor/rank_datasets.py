@@ -120,19 +120,23 @@ class HFSummary(Dataset):
         conf_threshold=-1,
         max_comparison_per_sample=3) -> None:
         super().__init__()
-        assert split in ('train', 'validation')
+        assert split in ('train', 'valid1', 'valid2', 'test')
         summaries = {}
         # using prompt as our index will allows us
         # to add additional generated prompt later
         self.index2summary = {}
         self.max_comparison_per_sample = max_comparison_per_sample
-        dataset = load_dataset('Tristan/summarize_from_feedback', 'comparisons')[split]
+        major_split = split if 'train' == split else 'validation'
+        dataset = load_dataset('Tristan/summarize_from_feedback', 'comparisons')[major_split]
         for data in dataset:
             if 'extra' in data and \
                 'confidence' in data['extra'] and \
                 data['extra']['confidence'] is not None and \
                 conf_threshold > data['extra']['confidence']:
                 print('skipping {}'.format(data['info']['id']))
+                continue
+
+            if split != 'train' and split != data['split']:
                 continue
 
             if 'article' in data['info'] and \

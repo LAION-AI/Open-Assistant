@@ -7,7 +7,7 @@ def test_hfsummary():
     
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForPairRank(tokenizer, max_length=200)
-    dataset = HFSummary()
+    dataset = HFSummary('train')
     print(len(dataset))
     dataloader = DataLoader(dataset, collate_fn=collate_fn, batch_size=8)
     for batch in dataloader:
