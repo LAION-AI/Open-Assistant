@@ -54,9 +54,10 @@ function AccountButton() {
 }
 
 export function Header(props) {
+  const borderClass = props.transparent ? "" : props.borderClass ?? "border-b border-gray-100";
   return (
     <nav>
-      <Container className="flex justify-evenly py-8 px-10 border-b">
+      <Container className={`flex justify-evenly py-8 px-10 ${borderClass}`}>
         <div className="relative z-10 flex items-center gap-16">
           <Link href="/" aria-label="Home" className="flex items-center">
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />

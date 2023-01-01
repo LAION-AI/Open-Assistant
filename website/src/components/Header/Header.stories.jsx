@@ -21,4 +21,15 @@ const Template = (args) => {
 };
 
 export const Default = Template.bind({});
-Default.args = { session: { data: { user: { name: "StoryBook user" } }, status: "authenticated" }, transparent: false };
+Default.args = {
+  session: {
+    data: {
+      user: {
+        name: "StoryBook user"
+      }
+    },
+    status: "authenticated"
+  },
+  transparent: false,
+  borderClass: undefined
+};
