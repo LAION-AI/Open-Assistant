@@ -2,7 +2,6 @@
 
 Trainer code based on huggingface. Compatible with deepspeed or accelerate
 
-
 Requirements
 
 ```
@@ -15,11 +14,9 @@ torch==1.12
 
 Start training reward model
 
-
 ```bash
 python trainer.py configs/electra-base-dis-webgpt.yml
 ```
-
 
 Additional axis labeling, this outputs a 4 summary quality evaluation metrics (score are normalized to 0-1 )
 
@@ -29,13 +26,13 @@ python summary_quality_trainer.py configs/test-bloomz-560m-quality.yml
 
 The four summary are :
 
-* overall
+- overall
 
-* accuracy
+- accuracy
 
-* coverage
+- coverage
 
-* coherence
+- coherence
 
 ## Dataset
 
