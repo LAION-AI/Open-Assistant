@@ -12,7 +12,7 @@ on:
   workflow_call:
 
 jobs:
- build-frontend:
+  build-frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: website/package-lock.json
       - run: npm ci
       - run: npm run build

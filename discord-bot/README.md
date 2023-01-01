@@ -1,14 +1,21 @@
 # Open-Assistant Data Collection Discord Bot
 
-This bot collects human feedback to create a dataset for RLHF-alignment of an assistant chat bot based on a large language model. You and other people can teach the bot how to respond to user requests by demonstration and by ranking the bot's outputs. If you want to learn more about RLHF please refer [to OpenAI's InstructGPT blog post](https://openai.com/blog/instruction-following/).
+This bot collects human feedback to create a dataset for RLHF-alignment of an
+assistant chat bot based on a large language model. You and other people can
+teach the bot how to respond to user requests by demonstration and by ranking
+the bot's outputs. If you want to learn more about RLHF please refer
+[to OpenAI's InstructGPT blog post](https://openai.com/blog/instruction-following/).
 
 ## Invite official bot
 
-To add the official Open-Assistant data collection bot to your discord server [click here](https://discord.com/api/oauth2/authorize?client_id=1054078345542910022&permissions=1634235579456&scope=bot). The bot needs access to read the contents of user text messages.
+To add the official Open-Assistant data collection bot to your discord server
+[click here](https://discord.com/api/oauth2/authorize?client_id=1054078345542910022&permissions=1634235579456&scope=bot).
+The bot needs access to read the contents of user text messages.
 
 ## Contributing
 
-If you are unfamiliar with `hikari`, `lightbulb`, or `miru`, please refer to the [large list of examples](https://gist.github.com/AlexanderHOtt/7805843a7120f755938a3b75d680d2e7)
+If you are unfamiliar with `hikari`, `lightbulb`, or `miru`, please refer to the
+[large list of examples](https://gist.github.com/AlexanderHOtt/7805843a7120f755938a3b75d680d2e7)
 
 ### Setup
 
@@ -31,7 +38,8 @@ pip install -r requirements.txt
 python -m bot
 ```
 
-Before you push, make sure the `pre-commit` hooks are installed and run successfully.
+Before you push, make sure the `pre-commit` hooks are installed and run
+successfully.
 
 ```bash
 pip install pre-commit
@@ -46,10 +54,15 @@ git add .
 git commit -m "<good commit message>"
 ```
 
-To test the bot on your own discord server you need to register a discord application at the [Discord Developer Portal](https://discord.com/developers/applications) and get at bot token.
+To test the bot on your own discord server you need to register a discord
+application at the
+[Discord Developer Portal](https://discord.com/developers/applications) and get
+at bot token.
 
-1. Follow a tutorial on how to get a bot token, for example this one: [Creating a discord bot & getting a token](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token)
-2. The bot script expects the bot token to be in the `.env` file under the `TOKEN` variable.
+1. Follow a tutorial on how to get a bot token, for example this one:
+   [Creating a discord bot & getting a token](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token)
+2. The bot script expects the bot token to be in the `.env` file under the
+   `TOKEN` variable.
 
 ### Resources
 
