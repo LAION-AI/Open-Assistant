@@ -15,12 +15,12 @@ def webgpt_return_format(row):
     row["answer_1"] = re_reference_remove.sub("", row["answer_1"])
   
     if row["score_0"] >= row["score_1"]:
-        res['pos'] = row['answer_0']
-        res['neg'] = row['answer_1']
+        res["pos"] = row["answer_0"]
+        res["neg"] = row["answer_1"]
         return res
 
-    res['pos'] = row['answer_1']
-    res['neg'] = row['answer_0']
+    res["pos"] = row["answer_1"]
+    res["neg"] = row["answer_0"]
     return res  
 
 def get_tokenizer(tokenizer_name):
