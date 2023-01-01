@@ -92,7 +92,7 @@ class RankTrainer(Trainer):
 
 if __name__ == "__main__":
     training_conf = argument_parsing(parser)
-    
+
     model_name = training_conf['model_name']
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=1, problem_type='regression')
     if 'freeze_layer' in training_conf:
