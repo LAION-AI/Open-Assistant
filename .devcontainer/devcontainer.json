@@ -1,3 +1,4 @@
 {
-    "dockerComposeFile": "docker-compose.yml"
+    "dockerComposeFile": "../docker-compose.yml",
+    "forwardPorts": [3000]
 }
