@@ -53,14 +53,16 @@ class OasstApiClient:
             TaskType.done: protocol_schema.TaskDone,
         }
 
-    async def post(self, path: str, data: dict[str, t.Any]) -> dict[str, t.Any]:
+    async def post(self, path: str, data: dict[str, t.Any]) -> Optional[dict[str, t.Any]]:
         """Make a POST request to the backend."""
         logger.debug(f"POST {self.backend_url}{path} DATA: {data}")
         response = await self.session.post(f"{self.backend_url}{path}", json=data, headers={"X-API-Key": self.api_key})
         response.raise_for_status()
         return await response.json()
 
-    def _parse_task(self, data: dict[str, t.Any]) -> protocol_schema.Task:
+    def _parse_task(self, data: Optional[dict[str, t.Any]]) -> protocol_schema.Task:
+        if data is None:
+            raise Exception("Cannot parse data as a task: data is none")
         task_type = TaskType(data.get("type"))
 
         model = self.task_models_map.get(task_type)
@@ -89,23 +91,22 @@ class OasstApiClient:
         logger.debug(f"Fetching random for user {user}")
         return await self.fetch_task(protocol_schema.TaskRequestType.random, user, collective)
 
-    async def ack_task(self, task_id: str | UUID, message_id: str):
+    async def ack_task(self, task_id: str | UUID, message_id: str) -> None:
         """Send an ACK for a task to the backend."""
         logger.debug(f"ACK task {task_id} with post {message_id}")
         req = protocol_schema.TaskAck(message_id=message_id)
-        return await self.post(f"/api/v1/tasks/{task_id}/ack", data=req.dict())
+        await self.post(f"/api/v1/tasks/{task_id}/ack", data=req.dict())
 
-    async def nack_task(self, task_id: str | UUID, reason: str):
+    async def nack_task(self, task_id: str | UUID, reason: str) -> None:
         """Send a NACK for a task to the backend."""
         logger.debug(f"NACK task {task_id} with reason {reason}")
         req = protocol_schema.TaskNAck(reason=reason)
-        return await self.post(f"/api/v1/tasks/{task_id}/nack", data=req.dict())
+        await self.post(f"/api/v1/tasks/{task_id}/nack", data=req.dict())
 
     async def post_interaction(self, interaction: protocol_schema.Interaction) -> protocol_schema.Task:
         """Send a completed task to the backend."""
         logger.debug(f"Interaction: {interaction}")
         resp = await self.post("/api/v1/tasks/interaction", data=interaction.dict())
-
         return self._parse_task(resp)
 
     async def close(self):

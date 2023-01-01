@@ -5,7 +5,7 @@ from typing import Literal, Optional, Union
 from uuid import UUID, uuid4
 
 import pydantic
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TaskRequestType(str, enum.Enum):
@@ -56,7 +56,9 @@ class TaskRequest(BaseModel):
     """The frontend asks the backend for a task."""
 
     type: TaskRequestType = TaskRequestType.random
-    user: Optional[User] = None
+    # Must use Field(..., nullable=True) to indicate to the OpenAPI schema that
+    # this is optional. https://github.com/pydantic/pydantic/issues/1270
+    user: Optional[User] = Field(None, nullable=True)
     collective: bool = False
 
 
