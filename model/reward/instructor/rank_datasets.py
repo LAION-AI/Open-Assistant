@@ -1,4 +1,5 @@
-'''
+# -*- coding: utf-8 -*-
+"""
     author: theblackcat102
 
     Dataset output format from __getitem__
@@ -17,13 +18,15 @@
         inferior than the human perference one
 
 
-'''
-from typing import Optional, Union
+"""
 from dataclasses import dataclass
+from typing import Optional, Union
+
 import numpy as np
-from torch.utils.data import Dataset
 from datasets import load_dataset
-from transformers.tokenization_utils_base import PreTrainedTokenizerBase, PaddingStrategy
+from torch.utils.data import Dataset
+from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
+
 
 @dataclass
 class DataCollatorForPairRank:
@@ -32,12 +35,13 @@ class DataCollatorForPairRank:
     Data collator that will dynamically pad the inputs for multiple choice received.
 
     """
+
     tokenizer: PreTrainedTokenizerBase
     num_choices: int = 2
     padding: Union[bool, str, PaddingStrategy] = True
     max_length: Optional[int] = None
     pad_to_multiple_of: Optional[int] = None
-    drop_token_type: bool = False # galactica
+    drop_token_type: bool = False  # galactica
 
     def __call__(self, features):
 
@@ -45,12 +49,10 @@ class DataCollatorForPairRank:
         batch_size = 0
         for question, pairs in features:
             for (pos, neg) in pairs:
-                flatten_features.append(self.tokenizer(question, pos,
-                    truncation=True, max_length=self.max_length))
-                flatten_features.append(self.tokenizer(question, neg,
-                    truncation=True, max_length=self.max_length))
+                flatten_features.append(self.tokenizer(question, pos, truncation=True, max_length=self.max_length))
+                flatten_features.append(self.tokenizer(question, neg, truncation=True, max_length=self.max_length))
                 batch_size += 1
-        
+
         batch = self.tokenizer.pad(
             flatten_features,
             padding=self.padding,
@@ -59,13 +61,12 @@ class DataCollatorForPairRank:
             return_tensors="pt",
         )
         if self.drop_token_type:
-            batch.pop('token_type_ids')
+            batch.pop("token_type_ids")
         # batch = {k: v.view(batch_size, self.num_choices, -1) for k, v in batch.items()}
         return batch
 
 
 class WebGPT(Dataset):
-
     def __init__(self) -> None:
         super().__init__()
 
@@ -74,23 +75,19 @@ class WebGPT(Dataset):
         # using prompt as our index will allows us
         # to add additional generated prompt later
         self.index2question = {}
-        for row in dataset['train']:
-            question = row['question']['full_text']
+        for row in dataset["train"]:
+            question = row["question"]["full_text"]
             if question not in self.index2question:
                 self.index2question[len(self.index2question)] = question
 
             if question not in questions:
                 questions[question] = []
 
-            if row['score_0'] > row['score_1']:
+            if row["score_0"] > row["score_1"]:
                 # not going to risk it
-                questions[question].append((
-                    row['answer_0'], row['answer_1']
-                ))
+                questions[question].append((row["answer_0"], row["answer_1"]))
             else:
-                questions[question].append((
-                    row['answer_1'], row['answer_0']
-                ))
+                questions[question].append((row["answer_1"], row["answer_0"]))
 
         self.questions = questions
 
@@ -104,61 +101,55 @@ class WebGPT(Dataset):
         return question, rows
 
 
-
-
 class HFSummary(Dataset):
-    '''
-        Human feedback data from OpenAI
-        https://github.com/openai/summarize-from-feedback
-        
-        labeling method : pair comparison, 0 or 1
+    """
+    Human feedback data from OpenAI
+    https://github.com/openai/summarize-from-feedback
 
-    '''
-    def __init__(self, split='train',
-        conf_threshold=-1,
-        max_comparison_per_sample=3) -> None:
+    labeling method : pair comparison, 0 or 1
+
+    """
+
+    def __init__(self, split="train", conf_threshold=-1, max_comparison_per_sample=3) -> None:
         super().__init__()
-        assert split in ('train', 'valid1', 'valid2', 'test')
+        assert split in ("train", "valid1", "valid2", "test")
         summaries = {}
         # using prompt as our index will allows us
         # to add additional generated prompt later
         self.index2summary = {}
         self.max_comparison_per_sample = max_comparison_per_sample
-        major_split = split if 'train' == split else 'validation'
-        dataset = load_dataset('Tristan/summarize_from_feedback', 'comparisons')[major_split]
+        major_split = split if "train" == split else "validation"
+        dataset = load_dataset("Tristan/summarize_from_feedback", "comparisons")[major_split]
         for data in dataset:
-            if 'extra' in data and \
-                'confidence' in data['extra'] and \
-                data['extra']['confidence'] is not None and \
-                conf_threshold > data['extra']['confidence']:
-                print('skipping {}'.format(data['info']['id']))
+            if (
+                "extra" in data
+                and "confidence" in data["extra"]
+                and data["extra"]["confidence"] is not None
+                and conf_threshold > data["extra"]["confidence"]
+            ):
+                print("skipping {}".format(data["info"]["id"]))
                 continue
 
-            if split != 'train' and split != data['split']:
+            if split != "train" and split != data["split"]:
                 continue
 
-            if 'article' in data['info'] and \
-                data['info']['article'] is not None:
-                context = data['info']['article']
-            elif 'post' in data['info']:
-                context = data['info']['post']
-
+            if "article" in data["info"] and data["info"]["article"] is not None:
+                context = data["info"]["article"]
+            elif "post" in data["info"]:
+                context = data["info"]["post"]
 
             if context not in self.index2summary:
                 self.index2summary[len(self.index2summary)] = context
-            
+
             if context not in summaries:
                 summaries[context] = []
 
-            pos, neg = (0, 1) if data['choice'] == 0 else (1, 0)
-            summaries[context].append((
-                data['summaries'][pos]['text'],
-                data['summaries'][neg]['text']
-            ))
+            pos, neg = (0, 1) if data["choice"] == 0 else (1, 0)
+            summaries[context].append((data["summaries"][pos]["text"], data["summaries"][neg]["text"]))
 
         self.summaries = summaries
 
-        self.postfix_prompt = ' TLDR;'
+        self.postfix_prompt = " TLDR;"
 
     def __len__(self):
         return len(self.index2summary)
@@ -172,5 +163,4 @@ class HFSummary(Dataset):
         # not optimal but good for now
         valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
         # optimize the format later
-        return context+self.postfix_prompt, [ r for idx, r in enumerate(rows) if idx in valid_idx ]
-
+        return context + self.postfix_prompt, [r for idx, r in enumerate(rows) if idx in valid_idx]
