@@ -1,8 +1,8 @@
+import { Button } from "@chakra-ui/react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { RxDragHandleDots2 } from "react-icons/rx";
 import { PropsWithChildren } from "react";
-import { Button } from "@chakra-ui/react";
 
 export const SortableItem = ({ children, id }: PropsWithChildren<{ id: number }>) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
