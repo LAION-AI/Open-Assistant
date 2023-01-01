@@ -16,7 +16,7 @@ To run the bot:
 
 Install dependency module `oasst-shared`
 
-```
+```bash
 cd oasst-shared
 pip install -e .
 ```
