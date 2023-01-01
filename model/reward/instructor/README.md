@@ -13,13 +13,29 @@ transformers
 torch==1.12
 ```
 
-Start training
+Start training reward model
 
 
 ```bash
 python trainer.py configs/electra-base-dis-webgpt.yml
 ```
 
+
+Additional axis labeling, this outputs a 4 summary quality evaluation metrics (score are normalized to 0-1 )
+
+```bash
+python summary_quality_trainer.py configs/test-bloomz-560m-quality.yml
+```
+
+The four summary are :
+
+* overall
+
+* accuracy
+
+* coverage
+
+* coherence
 
 ## Dataset
 

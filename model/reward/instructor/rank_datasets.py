@@ -19,8 +19,6 @@
 
 '''
 from typing import Optional, Union
-import glob
-import json
 from dataclasses import dataclass
 import numpy as np
 from torch.utils.data import Dataset
@@ -145,8 +143,6 @@ class HFSummary(Dataset):
             elif 'post' in data['info']:
                 context = data['info']['post']
 
-            if context is None:
-                continue
 
             if context not in self.index2summary:
                 self.index2summary[len(self.index2summary)] = context

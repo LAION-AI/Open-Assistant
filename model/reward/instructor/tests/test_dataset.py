@@ -1,7 +1,7 @@
 from transformers import AutoTokenizer
 from torch.utils.data import DataLoader
 from rank_datasets import WebGPT, HFSummary, DataCollatorForPairRank
-
+from experimental_dataset import HFSummaryQuality, DataCollatorForSummaryScore
 
 def test_hfsummary():
     
@@ -24,6 +24,17 @@ def test_webgpt():
         print(batch['input_ids'].shape)
 
 
+def test_hf_quality():
+
+    tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
+    collate_fn = DataCollatorForSummaryScore(tokenizer, max_length=200)
+    dataset = HFSummaryQuality('validation', tokenizer)
+    dataloader = DataLoader(dataset, collate_fn=collate_fn, batch_size=32)
+    for batch in dataloader:
+        print(batch['input_ids'].shape)
+
+
+
 if __name__ == "__main__":
-    test_hfsummary()
+    test_hf_quality()
     # test_webgpt()

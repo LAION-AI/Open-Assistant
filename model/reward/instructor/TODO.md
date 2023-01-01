@@ -9,7 +9,7 @@ Some other reward features we can use
 
 * each labeling has a labeling `note`, basically comments by labeler, not sure what else we can use
 
-* Use the score for "overall", "accuracy", "coverage", "coherence" from axis/evals to train an addition model (rank additional aspect of the policy model)
+* ~~Use the score for "overall", "accuracy", "coverage", "coherence" from axis/evals to train an addition model (rank additional aspect of the policy model)~~
 
     * this should be placed under experimental_dataset.py
 

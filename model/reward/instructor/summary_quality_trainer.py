@@ -1,5 +1,5 @@
 import os
-os.environ['WANDB_PROJECT'] = 'reward-model'
+os.environ['WANDB_PROJECT'] = 'quality-scoring'
 import torch
 import yaml
 import evaluate
@@ -7,38 +7,22 @@ from typing import Any, Callable, List, Optional, Tuple, Union, Dict
 from torch import nn
 from argparse import ArgumentParser
 import numpy as np
-from dataclasses import dataclass
-from torch.utils.data import Dataset, ConcatDataset
+from torch.utils.data import Dataset
 from transformers import AutoModelForSequenceClassification
 from transformers import Trainer, PreTrainedModel, TrainingArguments, DataCollator, EvalPrediction, TrainerCallback, PreTrainedTokenizerBase
-from rank_datasets import DataCollatorForPairRank, WebGPT, HFSummary
+from experimental_dataset import HFSummaryQuality, DataCollatorForSummaryScore
 from utils import get_tokenizer, train_val_dataset, freeze_top_n_layers, argument_parsing
 
-accuracy = evaluate.load("accuracy")
 parser = ArgumentParser()
 parser.add_argument('config', type=str)
 
-@dataclass
-class CustomTrainingArguments(TrainingArguments):
-    loss_function: str='rank'
-
-
+accuracy = evaluate.load("mse")
 def compute_metrics(eval_pred):
-    predictions, _ = eval_pred
-    predictions = np.argmax(predictions, axis=1)
-    return accuracy.compute(predictions=predictions, references=[0]*predictions.shape[0])
-
-class RankLoss(nn.Module):
-    def __init__(self, eps=1e-8) -> None:
-        super().__init__()
-        self.eps = eps
-        self.log_sigmoid = nn.LogSigmoid()
-
-    def forward(self, pos, neg):
-        return -self.log_sigmoid(pos - neg + self.eps).mean()
+    predictions, labels = eval_pred
+    return accuracy.compute(predictions=predictions.flatten(), references=labels.flatten())
 
 
-class RankTrainer(Trainer):
+class QualityTrainer(Trainer):
     def __init__(self, model: Union[PreTrainedModel, nn.Module] = None,
                  args: TrainingArguments = None,
                  data_collator: Optional[DataCollator] = None,
@@ -52,28 +36,24 @@ class RankTrainer(Trainer):
                  preprocess_logits_for_metrics: Callable[[torch.Tensor, torch.Tensor], torch.Tensor] = None):
         super().__init__(model, args, data_collator, train_dataset, eval_dataset, tokenizer,
                          model_init, compute_metrics, callbacks, optimizers, preprocess_logits_for_metrics)
-        self.loss_fct = RankLoss() if args.loss_function == 'rank' else nn.CrossEntropyLoss()
-        self.loss_function = args.loss_function
+        self.loss_fct = nn.L1Loss()
+        self.sigmoid = nn.Sigmoid()
 
     def compute_loss(self, model, inputs, return_outputs=False):
+        labels = inputs.pop('labels')
         # forward pass
         outputs = model(**inputs)
-        logits = outputs.get("logits").view(-1, 2)
-        if self.loss_function == 'rank':
-            loss = self.loss_fct(logits[:, 0], logits[:, 1])
-        else:
-            loss = self.loss_fct(logits, torch.zeros(logits.shape[0], device=logits.device, dtype=torch.long))
+        logits = self.sigmoid(outputs.get("logits"))
+        loss = self.loss_fct(logits, labels)
 
         return (loss, outputs) if return_outputs else loss
 
     def _compute_loss(self, model, inputs):
         inputs = self._prepare_inputs(inputs)
+        labels = inputs.pop('labels')
         outputs = model(**inputs)
-        logits = outputs.get("logits").view(-1, 2)
-        if self.loss_function == 'rank':
-            loss = self.loss_fct(logits[:, 0], logits[:, 1])
-        else:
-            loss = self.loss_fct(logits, torch.zeros(logits.shape[0], device=logits.device, dtype=torch.long))
+        logits = self.sigmoid(outputs.get("logits"))
+        loss = self.loss_fct(logits, labels)
 
         return loss, logits
 
@@ -87,7 +67,7 @@ class RankTrainer(Trainer):
             loss, logits = self._compute_loss(model, inputs)
 
         loss = loss.mean().detach()
-        labels = torch.zeros(logits.shape[0], device=logits.device, dtype=torch.long)
+        labels = inputs['labels']
         if self.args.prediction_loss_only:
             return (loss, None, None)
 
@@ -97,7 +77,22 @@ if __name__ == "__main__":
     training_conf = argument_parsing(parser)
 
     model_name = training_conf['model_name']
-    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=1, problem_type='regression')
+    tokenizer = get_tokenizer(model_name)
+    collate_fn = DataCollatorForSummaryScore(tokenizer,
+        max_length=training_conf['max_length'],
+        drop_token_type= 'galactica' in model_name
+    )
+    train = HFSummaryQuality(split='validation',
+        tokenizer=tokenizer,
+        max_length=training_conf['max_length']
+        )
+    eval = HFSummaryQuality(split='test',
+            tokenizer=tokenizer,
+            max_length=training_conf['max_length']
+        )
+    model = AutoModelForSequenceClassification.from_pretrained(model_name,
+        num_labels=len(train.label2idx), problem_type='regression')
+
     if 'freeze_layer' in training_conf:
         num_layer = training_conf['freeze_layer']
         model = freeze_top_n_layers(model, num_layer)
@@ -105,12 +100,10 @@ if __name__ == "__main__":
         params = sum([np.prod(p.size()) for p in model_parameters])
         print('Number of trainable : {}M'.format(int(params/1e6)))
 
-    tokenizer = get_tokenizer(model_name)
-    args = CustomTrainingArguments(
+    args = TrainingArguments(
         output_dir=f"{model_name}-finetuned",
         num_train_epochs=training_conf['num_train_epochs'],
         warmup_steps=500,
-        loss_function=training_conf['loss'],
         learning_rate=training_conf['learning_rate'],
         # half_precision_backend="apex",
         fp16=True,
@@ -127,22 +120,7 @@ if __name__ == "__main__":
         save_steps=1000,
         report_to='wandb'
     )
-    train_datasets, evals = [], {}
-    if 'webgpt' in training_conf['datasets']:
-        web_dataset = WebGPT()
-        train, eval = train_val_dataset(web_dataset)
-        train_datasets.append(train)
-        evals['webgpt'] = eval
-    if 'hfsummary' in training_conf['datasets']:
-        sum_train = HFSummary(split='train')
-        train_datasets.append(sum_train)
-        sum_eval = HFSummary(split='valid1')
-        assert len(sum_eval) > 0
-        evals['hfsummary'] = sum_eval
-    train = ConcatDataset(train_datasets)
-    collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf['max_length'], drop_token_type= 'galactica' in model_name)
-    assert len(evals) > 0
-    trainer = RankTrainer(
+    trainer = QualityTrainer(
         model,
         args,
         train_dataset=train,
