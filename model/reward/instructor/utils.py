@@ -9,7 +9,7 @@ from transformers import AutoTokenizer
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
 
 
-def webgpt_return_format2(row):
+def webgpt_return_format(row):
     res = {'question': row['question']['full_text']}
     row["answer_0"] = re_reference_remove.sub("", row["answer_0"])
     row["answer_1"] = re_reference_remove.sub("", row["answer_1"])
