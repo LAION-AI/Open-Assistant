@@ -23,6 +23,7 @@ def webgpt_return_format(row):
     res["neg"] = row["answer_0"]
     return res  
 
+
 def get_tokenizer(tokenizer_name):
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     if "galactica" in tokenizer_name:
