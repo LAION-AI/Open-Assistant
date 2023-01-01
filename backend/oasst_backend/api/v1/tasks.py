@@ -153,7 +153,7 @@ def request_task(
     return task
 
 
-@router.post("/{task_id}/ack")
+@router.post("/{task_id}/ack", response_model=None)
 def tasks_acknowledge(
     *,
     db: Session = Depends(deps.get_db),
@@ -179,10 +179,9 @@ def tasks_acknowledge(
     except Exception:
         logger.exception("Failed to acknowledge task.")
         raise OasstError("Failed to acknowledge task.", OasstErrorCode.TASK_ACK_FAILED)
-    return {}
 
 
-@router.post("/{task_id}/nack")
+@router.post("/{task_id}/nack", response_model=None)
 def tasks_acknowledge_failure(
     *,
     db: Session = Depends(deps.get_db),
