@@ -1,8 +1,23 @@
-import { DndContext, PointerSensor, TouchSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core";
-import { ReactNode, useEffect, useState } from "react";
-import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import type { DragEndEvent } from "@dnd-kit/core/dist/types/events";
 import { Flex } from "@chakra-ui/react";
+import {
+  closestCenter,
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core/dist/types/events";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { ReactNode, useEffect, useState } from "react";
+
 import { SortableItem } from "./SortableItem";
 
 export interface SortableProps {
@@ -29,10 +44,19 @@ export const Sortable = ({ items, onChange }: SortableProps) => {
     );
   }, [items]);
 
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+      modifiers={[restrictToVerticalAxis]}
+    >
       <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
         <Flex direction="column" gap={2}>
           {itemsWithIds.map(({ id, item }) => (

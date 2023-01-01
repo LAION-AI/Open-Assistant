@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { useSession } from "next-auth/react";
-import { Button, Input, InputGroup, Stack } from "@chakra-ui/react";
+import { Button, Input, InputGroup } from "@chakra-ui/react";
 import Head from "next/head";
 import Router from "next/router";
+import { useSession } from "next-auth/react";
+import React, { useState } from "react";
 
 export default function Account() {
   const { data: session } = useSession();
