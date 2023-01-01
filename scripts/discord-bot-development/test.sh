@@ -7,4 +7,3 @@ pushd "$parent_path/../../discord-bot"
 pytest .
 
 popd
-
