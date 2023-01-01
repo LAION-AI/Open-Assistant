@@ -4,14 +4,17 @@ Parameters:
     Description: Your application's name.
   Env:
     Type: String
-    Description: The environment name your service, job, or workflow is being deployed to.
+    Description:
+      The environment name your service, job, or workflow is being deployed to.
   Name:
     Type: String
     Description: The name of the service, job, or workflow being deployed.
   # Customize your Aurora Serverless cluster by setting the default value of the following parameters.
   webclusterDBName:
     Type: String
-    Description: The name of the initial database to be created in the Aurora Serverless v2 cluster.
+    Description:
+      The name of the initial database to be created in the Aurora Serverless v2
+      cluster.
     Default: oassist_web
     # Cannot have special characters
     # Naming constraints: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.Constraints
@@ -29,15 +32,20 @@ Resources:
   webclusterDBSubnetGroup:
     Type: "AWS::RDS::DBSubnetGroup"
     Properties:
-      DBSubnetGroupDescription: Group of Copilot private subnets for Aurora Serverless v2 cluster.
+      DBSubnetGroupDescription:
+        Group of Copilot private subnets for Aurora Serverless v2 cluster.
       SubnetIds:
         !Split [",", { "Fn::ImportValue": !Sub "${App}-${Env}-PrivateSubnets" }]
   webclusterSecurityGroup:
     Metadata:
-      "aws:copilot:description": "A security group for your workload to access the Aurora Serverless v2 cluster webcluster"
+      "aws:copilot:description":
+        "A security group for your workload to access the Aurora Serverless v2
+        cluster webcluster"
     Type: "AWS::EC2::SecurityGroup"
     Properties:
-      GroupDescription: !Sub "The Security Group for ${Name} to access Aurora Serverless v2 cluster webcluster."
+      GroupDescription:
+        !Sub "The Security Group for ${Name} to access Aurora Serverless v2
+        cluster webcluster."
       VpcId:
         Fn::ImportValue: !Sub "${App}-${Env}-VpcId"
       Tags:
@@ -45,7 +53,8 @@ Resources:
           Value: !Sub "copilot-${App}-${Env}-${Name}-Aurora"
   webclusterDBClusterSecurityGroup:
     Metadata:
-      "aws:copilot:description": "A security group for your Aurora Serverless v2 cluster webcluster"
+      "aws:copilot:description":
+        "A security group for your Aurora Serverless v2 cluster webcluster"
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: The Security Group for the Aurora Serverless v2 cluster.
@@ -53,13 +62,15 @@ Resources:
         - ToPort: 5432
           FromPort: 5432
           IpProtocol: tcp
-          Description: !Sub "From the Aurora Security Group of the workload ${Name}."
+          Description:
+            !Sub "From the Aurora Security Group of the workload ${Name}."
           SourceSecurityGroupId: !Ref webclusterSecurityGroup
       VpcId:
         Fn::ImportValue: !Sub "${App}-${Env}-VpcId"
   webclusterAuroraSecret:
     Metadata:
-      "aws:copilot:description": "A Secrets Manager secret to store your DB credentials"
+      "aws:copilot:description":
+        "A Secrets Manager secret to store your DB credentials"
     Type: AWS::SecretsManager::Secret
     Properties:
       Description: !Sub Aurora main user secret for ${AWS::StackName}
@@ -71,7 +82,8 @@ Resources:
         PasswordLength: 16
   webclusterDBClusterParameterGroup:
     Metadata:
-      "aws:copilot:description": "A DB parameter group for engine configuration values"
+      "aws:copilot:description":
+        "A DB parameter group for engine configuration values"
     Type: "AWS::RDS::DBClusterParameterGroup"
     Properties:
       Description: !Ref "AWS::StackName"
@@ -80,7 +92,8 @@ Resources:
         client_encoding: "UTF8"
   webclusterDBCluster:
     Metadata:
-      "aws:copilot:description": "The webcluster Aurora Serverless v2 database cluster"
+      "aws:copilot:description":
+        "The webcluster Aurora Serverless v2 database cluster"
     Type: "AWS::RDS::DBCluster"
     Properties:
       MasterUsername:
@@ -117,7 +130,8 @@ Resources:
           !FindInMap [webclusterEnvScalingConfigurationMap, All, DBMaxCapacity]
   webclusterDBWriterInstance:
     Metadata:
-      "aws:copilot:description": "The webcluster Aurora Serverless v2 writer instance"
+      "aws:copilot:description":
+        "The webcluster Aurora Serverless v2 writer instance"
     Type: "AWS::RDS::DBInstance"
     Properties:
       DBClusterIdentifier: !Ref webclusterDBCluster
@@ -137,7 +151,10 @@ Resources:
       TargetType: AWS::RDS::DBCluster
 Outputs:
   webclusterSecret: # injected as WEBCLUSTER_SECRET environment variable by Copilot.
-    Description: "The JSON secret that holds the database username and password. Fields are 'host', 'port', 'dbname', 'username', 'password', 'dbClusterIdentifier' and 'engine'"
+    Description:
+      "The JSON secret that holds the database username and password. Fields are
+      'host', 'port', 'dbname', 'username', 'password', 'dbClusterIdentifier'
+      and 'engine'"
     Value: !Ref webclusterAuroraSecret
   webclusterSecurityGroup:
     Description: "The security group to attach to the workload."
