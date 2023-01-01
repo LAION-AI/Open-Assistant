@@ -18,6 +18,7 @@ sentencepiece = "^0.1.97"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.19.4"
+datasets = "^2.8.0"
 
 [build-system]
 requires = ["poetry-core"]
