@@ -50,7 +50,7 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        args: ["--write"]
+        args: ["--prose-wrap=always", "--write"]
 
   - repo: local
     hooks:
