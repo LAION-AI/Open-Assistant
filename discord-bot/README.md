@@ -12,9 +12,17 @@ If you are unfamiliar with `hikari`, `lightbulb`, or `miru`, please refer to the
 
 ### Setup
 
-To run the bot
+To run the bot:
+
+Install dependency module `oasst-shared`
 
 ```bash
+cd oasst-shared
+pip install -e .
+```
+
+```bash
+cd ../discord-bot
 cp .env.example .env
 
 python -V  # 3.10
