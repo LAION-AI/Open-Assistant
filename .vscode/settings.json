@@ -1,0 +1,4 @@
+{
+  "python.formatting.provider": "autopep8",
+  "python.analysis.extraPaths": ["${workspaceFolder}/oasst-shared"]
+}
