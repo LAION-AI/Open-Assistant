@@ -57,7 +57,8 @@ repos:
       - id: next-lint-website
         name: Lint website
         files: ^website/
+        exclude: ^website/node_modules/
         types_or: [javascript, jsx, ts, tsx]
-        language: system
+        language: node
         pass_filenames: false
-        entry: bash -c "cd website && npm install && npm run lint"
+        entry: website/next-lint.js
