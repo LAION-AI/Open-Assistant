@@ -8,7 +8,7 @@ from sqlmodel import Session
 router = APIRouter()
 
 
-@router.get("/assistant")
+@router.get("create/assistant")
 def get_assistant_leaderboard(
     db: Session = Depends(deps.get_db),
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
@@ -17,7 +17,7 @@ def get_assistant_leaderboard(
     return pr.get_user_leaderboard(role="assistant")
 
 
-@router.get("/prompter/")
+@router.get("create/prompter")
 def get_prompter_leaderboard(
     db: Session = Depends(deps.get_db),
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
