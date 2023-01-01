@@ -1,7 +1,20 @@
 import { Flex } from "@chakra-ui/react";
-import { closestCenter, DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
+import {
+  closestCenter,
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core/dist/types/events";
-import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { ReactNode, useEffect, useState } from "react";
 
@@ -31,7 +44,11 @@ export const Sortable = ({ items, onChange }: SortableProps) => {
     );
   }, [items]);
 
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   return (
     <DndContext
