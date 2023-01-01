@@ -1,7 +1,7 @@
 import { Box, HStack, useRadio, useRadioGroup } from "@chakra-ui/react";
 
 const RatingRadioButton = (props) => {
-  const { state, getInputProps, getCheckboxProps } = useRadio(props);
+  const { getInputProps, getCheckboxProps } = useRadio(props);
 
   const input = getInputProps();
   const checkbox = getCheckboxProps();

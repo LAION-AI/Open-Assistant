@@ -1,14 +1,13 @@
 import { Button } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
+import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-
-import { signOut, useSession } from "next-auth/react";
-import { FaUser, FaSignOutAlt } from "react-icons/fa";
-import clsx from "clsx";
-
+import { useSession } from "next-auth/react";
+import { FaUser } from "react-icons/fa";
 import { Container } from "src/components/Container";
+
 import { NavLinks } from "./NavLinks";
 import { UserMenu } from "./UserMenu";
 
