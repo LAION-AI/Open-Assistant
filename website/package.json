@@ -20,6 +20,7 @@
   "dependencies": {
     "@chakra-ui/react": "^2.4.4",
     "@dnd-kit/core": "^6.0.6",
+    "@dnd-kit/modifiers": "^6.0.1",
     "@dnd-kit/sortable": "^7.0.1",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
