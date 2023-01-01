@@ -2,6 +2,7 @@ import { Flex } from "@chakra-ui/react";
 import { closestCenter, DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core/dist/types/events";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { ReactNode, useEffect, useState } from "react";
 
 import { SortableItem } from "./SortableItem";
@@ -33,7 +34,12 @@ export const Sortable = ({ items, onChange }: SortableProps) => {
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+      modifiers={[restrictToVerticalAxis]}
+    >
       <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
         <Flex direction="column" gap={2}>
           {itemsWithIds.map(({ id, item }) => (
