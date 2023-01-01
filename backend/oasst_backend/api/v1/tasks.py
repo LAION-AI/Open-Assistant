@@ -204,7 +204,7 @@ def tasks_acknowledge_failure(
         raise OasstError("Failed to not acknowledge task.", OasstErrorCode.TASK_NACK_FAILED)
 
 
-@router.post("/interaction")
+@router.post("/interaction", response_model=protocol_schema.TaskDone)
 def tasks_interaction(
     *,
     db: Session = Depends(deps.get_db),
