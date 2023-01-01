@@ -136,3 +136,9 @@ In case you haven't done this, have already committed, and CI is failing, you ca
 ### Deployment
 
 Upon making a release on GitHub, all docker images are automatically built and pushed to ghcr.io. The docker images are tagged with the release version, and the `latest` tag. Further, the ansible playbook in `ansible/dev.yaml` is run to automatically deploy the built release to the dev machine.
+
+### Problems and Solutions
+
+- **I am on Ubuntu and getting `ERROR: The Compose file is invalid because:Service backend has neither an image nor a build context specified. At least one must be provided.`**
+
+  Make sure you have an up-to-date version of docker installed, and also install `docker-compose-plugin`. See [here](https://github.com/LAION-AI/Open-Assistant/issues/208) for more details.
