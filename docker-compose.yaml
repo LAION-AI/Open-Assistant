@@ -87,6 +87,7 @@ services:
   backend:
     build:
       dockerfile: docker/Dockerfile.backend
+      context: .
     image: oasst-backend
     environment:
       - POSTGRES_HOST=db
@@ -103,6 +104,7 @@ services:
   web:
     build:
       dockerfile: docker/Dockerfile.website
+      context: .
     image: oasst-web
     environment:
       - DATABASE_URL=postgres://postgres:postgres@webdb/oasst_web

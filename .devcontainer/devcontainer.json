@@ -1,5 +1,5 @@
 {
-    "initializeCommand": "apt-get update -y && apt-get install docker-compose -y && apt-get install docker-compose-plugin -y",
+    "service": "web",
     "dockerComposeFile": "../docker-compose.yaml",
     "forwardPorts": [3000]
 }
