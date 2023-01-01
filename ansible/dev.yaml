@@ -32,24 +32,6 @@
         - name: oasst-postgres
         - name: oasst-postgres-web
 
-    - name: Setup redis
-      community.docker.docker_container:
-        name: "{{ item.name }}"
-        image: redis
-        state: started
-        restart_policy: always
-        network_mode: oasst
-        volumes:
-          - redis:/data
-        healthcheck:
-          test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-          interval: 2s
-          timeout: 2s
-          retries: 10
-        ports:
-          - 6379:6379
-        command: redis-server /usr/local/etc/redis/redis.conf
-
     - name: Set up maildev
       community.docker.docker_container:
         name: oasst-maildev
