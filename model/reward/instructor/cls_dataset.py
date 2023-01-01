@@ -24,20 +24,10 @@ class WebGPTDataset(Dataset):
         '''
         os.makedirs('dataset', exist_ok=True)
         dataset = load_dataset("openai/webgpt_comparisons")
-        if os.path.exists(index_cache):
-            train_idx = torch.load(index_cache)
-        else:
-            train_idx = np.random.choice(range(len(dataset['train'])), int(len(dataset['train'])*0.8), replace=False)
-            torch.save(set(train_idx.tolist()), index_cache)
         self.dataset = []
         self.dataset_index = []
         for idx, row in enumerate(dataset['train']):
-            if mode == 'train' and idx in train_idx:
-                self.dataset.append(webgpt_return_format(row))
-                self.dataset_index.append(idx)
-            elif idx not in train_idx and mode != 'train':
-                self.dataset.append(webgpt_return_format(row))
-                self.dataset_index.append(idx)
+            self.dataset.append(webgpt_return_format(row))
 
         # since this dataset was generated from 176B GPT-3
         # we needed some more sample generated from the starting model
@@ -71,3 +61,6 @@ class WebGPTDataset(Dataset):
 
         gen_neg = random.choice(self.additional[self.dataset_index[index]])
         return row['question'], row['pos'], row['neg'], gen_neg
+
+
+

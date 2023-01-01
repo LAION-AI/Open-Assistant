@@ -11,7 +11,11 @@
 
     Some nice features to have
 
-    [ ] 
+    [] support additional negative samples generated from other models.
+
+        For example we can use galactica-125m to generate a TLDR and assume it was
+        inferior than the human perference one
+
 
 '''
 from typing import Optional, Union
@@ -35,7 +39,7 @@ class DataCollatorForPairRank:
     padding: Union[bool, str, PaddingStrategy] = True
     max_length: Optional[int] = None
     pad_to_multiple_of: Optional[int] = None
-    drop_token_type: bool = False
+    drop_token_type: bool = False # galactica
 
     def __call__(self, features):
 
