@@ -1,6 +1,8 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { RxDragHandleDots2 } from "react-icons/rx";
 import { PropsWithChildren } from "react";
+import { Button } from "@chakra-ui/react";
 
 export const SortableItem = ({ children, id }: PropsWithChildren<{ id: number }>) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
@@ -13,12 +15,13 @@ export const SortableItem = ({ children, id }: PropsWithChildren<{ id: number }>
 
   return (
     <li
-      className="rounded-lg shadow-md p-4 bg-white hover:bg-slate-50"
+      className="grid grid-cols-[min-content_1fr] items-center rounded-lg shadow-md gap-x-2 p-2 bg-white hover:bg-slate-50"
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
     >
+      <Button justifyContent="center" variant="ghost" {...attributes} {...listeners}>
+        <RxDragHandleDots2 />
+      </Button>
       {children}
     </li>
   );
