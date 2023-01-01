@@ -18,7 +18,8 @@ Start training reward model
 python trainer.py configs/electra-base-dis-webgpt.yml
 ```
 
-Additional axis labeling, this outputs a 4 summary quality evaluation metrics (score are normalized to 0-1 )
+Additional axis labeling, this outputs a 4 summary quality evaluation metrics
+(score are normalized to 0-1 )
 
 ```bash
 python summary_quality_trainer.py configs/test-bloomz-560m-quality.yml
@@ -36,7 +37,8 @@ The four summary are :
 
 ## Dataset
 
-For now we only supports webgpt and summary dataset from OpenAI. Once open-asisstant dataset are available it will be added here.
+For now we only supports webgpt and summary dataset from OpenAI. Once
+open-asisstant dataset are available it will be added here.
 
 ## Model
 
