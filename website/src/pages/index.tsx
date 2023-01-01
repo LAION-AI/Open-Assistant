@@ -27,7 +27,6 @@ const Home = () => {
         <main>
           <Hero />
           <CallToAction />
-
           <Faq />
         </main>
       )}
