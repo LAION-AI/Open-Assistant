@@ -4,7 +4,7 @@ services:
   # Use `docker compose up backend-dev --build --attach-dependencies` to start a database and work and the backend.
   backend-dev:
     image: sverrirab/sleep
-    depends_on: [db, adminer]
+    depends_on: [db, adminer, redis, redis-insights]
 
   # Use `docker compose up frontend-dev --build --attach-dependencies` to start all services needed to work on the frontend.
   frontend-dev:
@@ -90,6 +90,7 @@ services:
     image: oasst-backend
     environment:
       - POSTGRES_HOST=db
+      - REDIS_HOST=redis
       - DEBUG_SKIP_API_KEY_CHECK=True
       - DEBUG_USE_SEED_DATA=True
       - MAX_WORKERS=1
