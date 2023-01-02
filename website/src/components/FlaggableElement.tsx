@@ -17,14 +17,13 @@ import {
   useBoolean,
 } from "@chakra-ui/react";
 import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
-
+import { useState } from "react";
 import poster from "src/lib/poster";
 import useSWRMutation from "swr/mutation";
-import { useState } from "react";
 
 export const FlaggableElement = (props) => {
   const [isEditing, setIsEditing] = useBoolean();
-  const { trigger, isMutating } = useSWRMutation("/api/v1/text_labels", poster, {
+  const { trigger } = useSWRMutation("/api/v1/text_labels", poster, {
     onSuccess: () => {
       setIsEditing.off;
     },
