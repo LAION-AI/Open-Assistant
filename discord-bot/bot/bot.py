@@ -5,9 +5,9 @@ import aiosqlite
 import hikari
 import lightbulb
 import miru
-from bot.api_client import OasstApiClient
 from bot.settings import Settings
 from bot.utils import EMPTY, mention
+from oasst_shared.api_client import OasstApiClient
 
 settings = Settings()
 

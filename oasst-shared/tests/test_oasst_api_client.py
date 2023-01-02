@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 import pytest
-from bot.api_client import OasstApiClient
+from oasst_shared.api_client import OasstApiClient
 from oasst_shared.schemas import protocol as protocol_schema
 
 
