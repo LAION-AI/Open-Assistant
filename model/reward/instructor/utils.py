@@ -4,7 +4,7 @@ import re
 import yaml
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, T5Tokenizer
 
 re_reference_remove = re.compile(r"\[([0-9])+\]|\[([0-9])+,([0-9])+\]")
 
@@ -26,7 +26,10 @@ def webgpt_return_format(row):
 
 
 def get_tokenizer(tokenizer_name):
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    if "t5" in tokenizer_name: #rankgen
+        tokenizer = T5Tokenizer.from_pretrained(tokenizer_name, truncation_side="left")
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     if "galactica" in tokenizer_name:
         tokenizer.add_special_tokens({"pad_token": "<pad>", "eos_token": "</s>"})
 
