@@ -64,7 +64,7 @@ const UserReply = () => {
           <Messages messages={task.conversation.messages} post_id={task.id} />
           {task.hint && <p className="text-lg py-1">Hint: {task.hint}</p>}
         </>
-        <Textarea name="reply" placeholder="Reply..." ref={inputRef} />
+        <Textarea name="reply" data-cy="reply" placeholder="Reply..." ref={inputRef} />
       </TwoColumns>
 
       <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
@@ -72,9 +72,13 @@ const UserReply = () => {
         <Flex justify="center" ml="auto" gap={2}>
           <SkipButton>Skip</SkipButton>
           {endTask.task.type !== "task_done" ? (
-            <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
+            <SubmitButton data-cy="submit" onClick={() => submitResponse(tasks[0])}>
+              Submit
+            </SubmitButton>
           ) : (
-            <SubmitButton onClick={fetchNextTask}>Next Task</SubmitButton>
+            <SubmitButton data-cy="next-task" onClick={fetchNextTask}>
+              Next Task
+            </SubmitButton>
           )}
         </Flex>
       </section>

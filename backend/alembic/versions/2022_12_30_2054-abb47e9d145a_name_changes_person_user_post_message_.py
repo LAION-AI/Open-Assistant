@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """name changes: person->user, post->message, work_package->task
 
 Revision ID: abb47e9d145a

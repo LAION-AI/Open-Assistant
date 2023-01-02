@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Guild settings."""
 import hikari
 import lightbulb

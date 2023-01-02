@@ -34,7 +34,9 @@ export function UserMenu() {
                   height="40"
                   className="rounded-full"
                 ></Image>
-                <p className="hidden lg:flex">{session.user.name || session.user.email}</p>
+                <p data-cy="username" className="hidden lg:flex">
+                  {session.user.name || session.user.email}
+                </p>
               </div>
             </Popover.Button>
             <AnimatePresence initial={false}>

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Bot logic."""
 from datetime import datetime
 
@@ -34,6 +33,9 @@ async def on_starting(event: hikari.StartingEvent):
     await bot.d.db.commit()
 
     bot.d.oasst_api = OasstApiClient(settings.oasst_api_url, settings.oasst_api_key)
+
+    # A set of user id's that are currently doing work.
+    bot.d.currently_working = set()
 
 
 @bot.listen()

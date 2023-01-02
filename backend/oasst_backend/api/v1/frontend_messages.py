@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from fastapi import APIRouter, Depends
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils

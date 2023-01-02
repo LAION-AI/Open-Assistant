@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import Literal
 
 from oasst_backend.models.payload_column_type import payload_type

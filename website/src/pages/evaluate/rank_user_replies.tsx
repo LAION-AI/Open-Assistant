@@ -78,11 +78,13 @@ const RankUserReplies = () => {
           <Flex justify="center" ml="auto" gap={2}>
             <SkipButton>Skip</SkipButton>
             {endTask.task.type !== "task_done" ? (
-              <SubmitButton onClick={() => submitResponse(tasks[0])} disabled={ranking.length === 0}>
+              <SubmitButton data-cy="submit" onClick={() => submitResponse(tasks[0])} disabled={ranking.length === 0}>
                 Submit
               </SubmitButton>
             ) : (
-              <SubmitButton onClick={fetchNextTask}>Next Task</SubmitButton>
+              <SubmitButton data-cy="next-task" onClick={fetchNextTask}>
+                Next Task
+              </SubmitButton>
             )}
           </Flex>
         </section>

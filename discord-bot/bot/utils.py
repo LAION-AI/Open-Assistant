@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Utility functions."""
 import typing as t
 from datetime import datetime
