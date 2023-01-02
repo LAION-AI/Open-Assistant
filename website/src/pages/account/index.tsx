@@ -2,7 +2,7 @@ import { Button } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import React, { useState } from "react";
+import React from "react";
 
 export default function Account() {
   const { data: session } = useSession();
