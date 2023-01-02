@@ -52,7 +52,6 @@ async def work(ctx: lightbulb.SlashContext):
 
     await _handle_task(ctx, task_type)
 
-    # TODO: make sure that the user gets removed even if the command errors
     currently_working.remove(ctx.author.id)
 
 
