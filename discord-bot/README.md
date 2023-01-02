@@ -10,16 +10,56 @@ To add the official Open-Assistant data collection bot to your discord server [c
 
 If you are unfamiliar with `hikari`, `lightbulb`, or `miru`, please refer to the [large list of examples](https://gist.github.com/AlexanderHOtt/7805843a7120f755938a3b75d680d2e7)
 
-### Setup
+### Bot Setup
+
+1. Create a new discord application at the [Discord Developer Portal](https://discord.com/developers/applications)
+
+1. Go to the "Bot" tab and create a new bot
+
+1. Scroll down to "Privileged Gateway Intents" and enable the following options:
+
+   - Server Members Intent
+   - Presence Intent
+   - Message Content Intent
+
+This page also contains the bot token, which you will need to add to the `.env` file later.
+
+2. Go to the "OAuth2" tab scroll to "Default Authorization Link"
+
+3. Set "AUTHORIZATION METHOD" to "In-app Authorization"
+
+4. Select the "bot" and "applications.commands" scopes
+
+5. For testing and local development, it's easiest to set "BOT PERMISSIONS" to "Administrator"
+
+Remember to save your changes.
+
+6. Copy the "CLIENT ID" from the top of the page and replace it in the link below to invite your bot.
+
+```
+https://discord.com/oauth2/authorize?client_id=YOUR_ID_HERE&permissions=8&scope=bot%20applications.commands
+```
+
+### Environment Setup
 
 To run the bot
 
 ```bash
+# in the base open-assist folder
+cd oasst-shared
+pip install -e .
+
+cd ../discord-bot
+
 cp .env.example .env
+
+# edit .env and add your bot token and other values
 
 python -V  # 3.10
 
 pip install -r requirements.txt
+
+# in the discord-bot folder
 python -m bot
 ```
 
@@ -37,11 +77,6 @@ git commit -m "<good commit message>"
 git add .
 git commit -m "<good commit message>"
 ```
-
-To test the bot on your own discord server you need to register a discord application at the [Discord Developer Portal](https://discord.com/developers/applications) and get at bot token.
-
-1. Follow a tutorial on how to get a bot token, for example this one: [Creating a discord bot & getting a token](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token)
-2. The bot script expects the bot token to be in the `.env` file under the `TOKEN` variable.
 
 ### Resources
 
