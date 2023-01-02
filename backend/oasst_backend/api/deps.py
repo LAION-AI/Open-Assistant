@@ -105,7 +105,6 @@ class UserRateLimiter(RateLimiter):
             return
 
         # Attempt to retrieve api_key and user information
-        api_key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
         user = (await request.json()).get("user")
 
         # Skip when api_key and user information are not available
@@ -133,7 +132,6 @@ class APIClientRateLimiter(RateLimiter):
             return
 
         # Attempt to retrieve api_key and user information
-        api_key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
         user = (await request.json()).get("user")
 
         # Skip if user information is available
