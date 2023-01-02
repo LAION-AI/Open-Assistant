@@ -109,7 +109,6 @@ async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> No
         async with conn.cursor() as cursor:
             await cursor.execute("SELECT log_channel_id FROM guild_settings")
             log_channel_ids = await cursor.fetchall()
-            print(log_channel_ids)
 
             channels = [
                 ctx.bot.cache.get_guild_channel(id[0]) or await ctx.bot.rest.fetch_channel(id[0])
