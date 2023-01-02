@@ -9,7 +9,7 @@ the bot's outputs. If you want to learn more about RLHF please refer
 ## Invite official bot
 
 To add the official Open-Assistant data collection bot to your discord server
-[click here](https://discord.com/api/oauth2/authorize?client_id=1054078345542910022&permissions=1634235579456&scope=bot).
+[click here](https://discord.com/api/oauth2/authorize?client_id=1054078345542910022&permissions=1634235579456&scope=bot%20applications.commands).
 The bot needs access to read the contents of user text messages.
 
 ## Contributing
