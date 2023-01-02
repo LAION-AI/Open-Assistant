@@ -1,18 +1,26 @@
 # Open-Assistant Data Collection Discord Bot
 
-This bot collects human feedback to create a dataset for RLHF-alignment of an assistant chat bot based on a large language model. You and other people can teach the bot how to respond to user requests by demonstration and by ranking the bot's outputs. If you want to learn more about RLHF please refer [to OpenAI's InstructGPT blog post](https://openai.com/blog/instruction-following/).
+This bot collects human feedback to create a dataset for RLHF-alignment of an
+assistant chat bot based on a large language model. You and other people can
+teach the bot how to respond to user requests by demonstration and by ranking
+the bot's outputs. If you want to learn more about RLHF please refer
+[to OpenAI's InstructGPT blog post](https://openai.com/blog/instruction-following/).
 
 ## Invite official bot
 
-To add the official Open-Assistant data collection bot to your discord server [click here](https://discord.com/api/oauth2/authorize?client_id=1054078345542910022&permissions=1634235579456&scope=bot). The bot needs access to read the contents of user text messages.
+To add the official Open-Assistant data collection bot to your discord server
+[click here](https://discord.com/api/oauth2/authorize?client_id=1054078345542910022&permissions=1634235579456&scope=bot).
+The bot needs access to read the contents of user text messages.
 
 ## Contributing
 
-If you are unfamiliar with `hikari`, `lightbulb`, or `miru`, please refer to the [large list of examples](https://gist.github.com/AlexanderHOtt/7805843a7120f755938a3b75d680d2e7)
+If you are unfamiliar with `hikari`, `lightbulb`, or `miru`, please refer to the
+[large list of examples](https://gist.github.com/AlexanderHOtt/7805843a7120f755938a3b75d680d2e7)
 
 ### Bot Setup
 
-1. Create a new discord application at the [Discord Developer Portal](https://discord.com/developers/applications)
+1. Create a new discord application at the
+   [Discord Developer Portal](https://discord.com/developers/applications)
 
 1. Go to the "Bot" tab and create a new bot
 
@@ -22,7 +30,8 @@ If you are unfamiliar with `hikari`, `lightbulb`, or `miru`, please refer to the
    - Presence Intent
    - Message Content Intent
 
-This page also contains the bot token, which you will need to add to the `.env` file later.
+This page also contains the bot token, which you will need to add to the `.env`
+file later.
 
 2. Go to the "OAuth2" tab scroll to "Default Authorization Link"
 
@@ -30,11 +39,13 @@ This page also contains the bot token, which you will need to add to the `.env` 
 
 4. Select the "bot" and "applications.commands" scopes
 
-5. For testing and local development, it's easiest to set "BOT PERMISSIONS" to "Administrator"
+5. For testing and local development, it's easiest to set "BOT PERMISSIONS" to
+   "Administrator"
 
 Remember to save your changes.
 
-6. Copy the "CLIENT ID" from the top of the page and replace it in the link below to invite your bot.
+6. Copy the "CLIENT ID" from the top of the page and replace it in the link
+   below to invite your bot.
 
 ```
 https://discord.com/oauth2/authorize?client_id=YOUR_ID_HERE&permissions=8&scope=bot%20applications.commands
@@ -42,15 +53,16 @@ https://discord.com/oauth2/authorize?client_id=YOUR_ID_HERE&permissions=8&scope=
 
 ### Environment Setup
 
-To run the bot
+To run the bot:
+
+Install dependency module `oasst-shared`
 
 ```bash
-# in the base open-assist folder
 cd oasst-shared
 pip install -e .
+```
 
-cd ../discord-bot
-
+```bash
 cp .env.example .env
 
 # edit .env and add your bot token and other values
@@ -63,7 +75,8 @@ pip install -r requirements.txt
 python -m bot
 ```
 
-Before you push, make sure the `pre-commit` hooks are installed and run successfully.
+Before you push, make sure the `pre-commit` hooks are installed and run
+successfully.
 
 ```bash
 pip install pre-commit

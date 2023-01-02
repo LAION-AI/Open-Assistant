@@ -16,8 +16,8 @@ Setup requires a few steps:
 copilot app init --domain your_domain.com
 ```
 
-This will initialize and register a variety of URLs with your
-`your_domain.com`. Replace with a proper domain to setup SSL certificates.
+This will initialize and register a variety of URLs with your `your_domain.com`.
+Replace with a proper domain to setup SSL certificates.
 
 ```sh
 copilot env deploy
@@ -29,10 +29,10 @@ This will create a variety of aws roles and services needed for deployment.
 copilot deploy
 ```
 
-This will depoy the services but it won't be 100% ready for usage. Before
-being ready, we have to inspect the AWS Secrets manager and extract out the
-database credentials. Read those credentials then put them, and a few other
-secrets, in a `secrets.yml` file like the following:
+This will depoy the services but it won't be 100% ready for usage. Before being
+ready, we have to inspect the AWS Secrets manager and extract out the database
+credentials. Read those credentials then put them, and a few other secrets, in a
+`secrets.yml` file like the following:
 
 ```yaml
 DATABASE_URL:

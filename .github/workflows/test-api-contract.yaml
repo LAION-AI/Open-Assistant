@@ -1,0 +1,35 @@
+name: Test API Contract
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_call:
+
+jobs:
+  test-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - run: cd oasst-shared && pip install -e .
+
+      - run: cd backend && pip install -r requirements.txt
+
+      - run: cd discord-bot && pip install -r requirements.txt
+
+      - run: cd discord-bot && pip install -r requirements.dev.txt
+
+      - run: ./scripts/backend-development/start-mock-server.sh
+
+      # runs the contract tests. currently the api client is
+      # found in the discord bot code, but this should be updated
+      # once the client moves into oasst-shared.
+      - name: Run contract tests
+        run: ./scripts/discord-bot-development/test.sh
+
+      - run: ./scripts/backend-development/stop-mock-server.sh
