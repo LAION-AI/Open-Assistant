@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from .api_client import ApiClient
 from .journal import Journal, JournalIntegration
 from .message import Message

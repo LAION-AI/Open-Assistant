@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pydantic
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey
@@ -7,7 +6,7 @@ from oasst_backend.api import deps
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
-from starlette.status import HTTP_400_BAD_REQUEST
+from starlette.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
 router = APIRouter()
 
@@ -17,7 +16,7 @@ class LabelTextRequest(pydantic.BaseModel):
     user: protocol_schema.User
 
 
-@router.post("/")
+@router.post("/", status_code=HTTP_204_NO_CONTENT)
 def label_text(
     *,
     db: Session = Depends(deps.get_db),

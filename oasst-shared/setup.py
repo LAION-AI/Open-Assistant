@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # setup.py for the shared python modules
 
 from distutils.core import setup

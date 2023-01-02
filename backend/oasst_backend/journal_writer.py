@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import enum
 from typing import Literal, Optional
 from uuid import UUID
