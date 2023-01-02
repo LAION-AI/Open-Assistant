@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """API Client for interacting with the OASST backend."""
 import enum
 import typing as t

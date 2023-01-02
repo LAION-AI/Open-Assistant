@@ -47,6 +47,7 @@ repos:
       - id: check-case-conflict
       - id: detect-private-key
       - id: fix-encoding-pragma
+        args: ["--remove"]
       - id: forbid-submodules
       - id: mixed-line-ending
       - id: requirements-txt-fixer
