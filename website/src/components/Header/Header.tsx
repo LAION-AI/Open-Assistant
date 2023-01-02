@@ -1,4 +1,4 @@
-import { Button, Container } from "@chakra-ui/react";
+import { Button, Container, Box } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
@@ -8,7 +8,7 @@ import { FaUser } from "react-icons/fa";
 
 import { NavLinks } from "./NavLinks";
 import { UserMenu } from "./UserMenu";
-import ColorModeSwitch from "../UI/ColorModeSwitch";
+import { ColorModeIconToggle } from "../UI/ColorModeIconToggle";
 
 function MenuIcon(props) {
   return (
@@ -57,7 +57,8 @@ export function Header(props) {
   const borderClass = props.transparent ? "" : props.borderClass ?? "border-b border-gray-100";
   return (
     <nav>
-      <Container className={`flex justify-evenly py-8 px-10 ${borderClass}`}>
+      <Container>
+      <Box className={`flex mx-auto max-w-7xl justify-between py-8 px-10 ${borderClass}`}>
         <div className="relative z-10 flex items-center gap-16">
           <Link href="/" aria-label="Home" className="flex items-center">
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
@@ -114,8 +115,9 @@ export function Header(props) {
           </Popover>
           <AccountButton />
           <UserMenu />
-          <ColorModeSwitch />
+          <ColorModeIconToggle className="ml-5"/>
         </div>
+      </Box>
       </Container>
     </nav>
   );
