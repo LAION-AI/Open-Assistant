@@ -1,3 +1,31 @@
+# WARNING!
+#
+# When making changes to auto-formatters used in pre-commit hooks, you are
+# likely to cause merge conflicts with main and/or other pull requests.
+# Fixing them might revert other people's work. Expect pain!
+# To avoid accidental reversions and keep it easy to review, please make sure
+# that changes here are in a pull request by themselves, that it consists of
+# two commits:
+#
+# 1. The changes to this file
+# 2. Changes made by running `python3 -m pre_commit run --all-files`.
+#
+# Then each time your pull request is blocked by a merge conflict, do the
+# following steps:
+#
+#    git reset HEAD^1 && git checkout -f    # discard the change commit
+#    git rebase main                        # re-apply other people's changes
+#    python3 -m pre_commit run --all-files  # re-run the rules
+#    git add .                              # add the newly changed files
+#    git commit -m 'apply pre-commit'       # commit it
+#    git push -f                            # force push back to your branch
+#
+# Keep in mind you may have to do this a few times, as changes here may impact
+# other pull requests. Try to keep it up-to-date so they can go in when it'll
+# cause least disruption.
+#
+# /WARNING!
+
 exclude: "build|stubs|^bot/templates/|^notebooks/.*\\.ipynb$"
 
 default_language_version:
@@ -19,6 +47,7 @@ repos:
       - id: check-case-conflict
       - id: detect-private-key
       - id: fix-encoding-pragma
+        args: ["--remove"]
       - id: forbid-submodules
       - id: mixed-line-ending
       - id: requirements-txt-fixer
@@ -50,7 +79,7 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        args: ["--write"]
+        args: ["--prose-wrap=always", "--write"]
 
   - repo: local
     hooks:

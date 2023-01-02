@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Added lang column for ISO-639-1 codes
 
 Revision ID: ef0b52902560

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """post ref for work_package
 
 Revision ID: d24b37426857
