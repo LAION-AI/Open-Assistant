@@ -40,6 +40,7 @@ class OasstApiClient:
         self.session = aiohttp.ClientSession()
         self.backend_url = backend_url
         self.api_key = api_key
+        self._calls = 0
 
         self.task_models_map: dict[TaskType, Type[protocol_schema.Task]] = {
             TaskType.summarize_story: protocol_schema.SummarizeStoryTask,
@@ -53,9 +54,10 @@ class OasstApiClient:
             TaskType.done: protocol_schema.TaskDone,
         }
 
-    async def post(self, path: str, data: dict[str, t.Any]) -> Optional[dict[str, t.Any]]:
+    async def _post(self, path: str, data: dict[str, t.Any]) -> Optional[dict[str, t.Any]]:
         """Make a POST request to the backend."""
         logger.debug(f"POST {self.backend_url}{path} DATA: {data}")
+        self._calls += 1
         response = await self.session.post(f"{self.backend_url}{path}", json=data, headers={"X-API-Key": self.api_key})
         response.raise_for_status()
         return await response.json()
@@ -80,7 +82,7 @@ class OasstApiClient:
         """Fetch a task from the backend."""
         logger.debug(f"Fetching task {task_type} for user {user}")
         req = protocol_schema.TaskRequest(type=task_type.value, user=user, collective=collective)
-        resp = await self.post("/api/v1/tasks/", data=req.dict())
+        resp = await self._post("/api/v1/tasks/", data=req.dict())
         logger.debug(f"RESP {resp}")
         return self._parse_task(resp)
 
@@ -95,20 +97,25 @@ class OasstApiClient:
         """Send an ACK for a task to the backend."""
         logger.debug(f"ACK task {task_id} with post {message_id}")
         req = protocol_schema.TaskAck(message_id=message_id)
-        await self.post(f"/api/v1/tasks/{task_id}/ack", data=req.dict())
+        await self._post(f"/api/v1/tasks/{task_id}/ack", data=req.dict())
 
     async def nack_task(self, task_id: str | UUID, reason: str) -> None:
         """Send a NACK for a task to the backend."""
         logger.debug(f"NACK task {task_id} with reason {reason}")
         req = protocol_schema.TaskNAck(reason=reason)
-        await self.post(f"/api/v1/tasks/{task_id}/nack", data=req.dict())
+        await self._post(f"/api/v1/tasks/{task_id}/nack", data=req.dict())
 
     async def post_interaction(self, interaction: protocol_schema.Interaction) -> protocol_schema.Task:
         """Send a completed task to the backend."""
         logger.debug(f"Interaction: {interaction}")
-        resp = await self.post("/api/v1/tasks/interaction", data=interaction.dict())
+        resp = await self._post("/api/v1/tasks/interaction", data=interaction.dict())
         return self._parse_task(resp)
 
     async def close(self):
         logger.debug("Closing OasstApiClient session")
         await self.session.close()
+
+    @property
+    def calls(self) -> int:
+        """Get the number of calls made to the backend."""
+        return self._calls

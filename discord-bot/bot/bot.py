@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Bot logic."""
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 
 import aiosqlite
 import hikari
@@ -9,8 +10,11 @@ import miru
 from bot.api_client import OasstApiClient
 from bot.settings import Settings
 from bot.utils import EMPTY, mention
+from lightbulb.ext import tasks
+from psutil import Process, virtual_memory
 
 settings = Settings()
+
 
 # TODO: Revisit cache settings
 bot = lightbulb.BotApp(
@@ -21,6 +25,7 @@ bot = lightbulb.BotApp(
     owner_ids=settings.owner_ids,
     intents=hikari.Intents.ALL,
 )
+tasks.load(bot)
 
 
 @bot.listen()
@@ -115,3 +120,29 @@ async def on_error(event: lightbulb.CommandErrorEvent) -> None:
         await _send_error_embed("Not enough attachemnts were supplied to this command.", exc, ctx)
     else:
         raise exc
+
+
+# Only start if TRACK_PERF env var is set
+@tasks.task(m=10, auto_start=settings.track_perf)
+async def perf_tracker():
+    """Track CPU and memory usage."""
+    await tasks.wait_until_started()  # Blocks until bot is ready
+
+    # Get process info
+    proc = Process()
+    with proc.oneshot():
+        uptime = timedelta(seconds=time.time() - proc.create_time())  # process time
+        cpu_time = str(timedelta(seconds=(cpu := proc.cpu_times()).system + cpu.user))  # cpu execution time
+        mem_total = virtual_memory().total / (1024**2)  # total memory MiB
+        pct_mem_usage = proc.memory_percent()  # used memory in MiB
+        mem_usage = mem_total * (pct_mem_usage / 100)  # percent of used memory
+
+    # Store in db
+    conn: aiosqlite.Connection = bot.d.db
+    async with conn.cursor() as cursor:
+
+        await cursor.execute(
+            "INSERT INTO perf_info(uptime, cpu_time, mem_usage, mem_total, pct_mem_usage) VALUES (?,?,?,?,?)",
+            (str(uptime), str(cpu_time), mem_usage, mem_total, pct_mem_usage),
+        )
+    await conn.commit()

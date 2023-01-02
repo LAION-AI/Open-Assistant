@@ -6,6 +6,8 @@ hikari-lightbulb    # command handler
 hikari-miru         # modals and buttons
 hikari[speedups]
 loguru
+
+psutil
 pydantic
 
 uvloop; os_name != 'nt'  # Faster drop-in replacement for asyncio event loop
