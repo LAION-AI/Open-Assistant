@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 from argparse import ArgumentParser
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union

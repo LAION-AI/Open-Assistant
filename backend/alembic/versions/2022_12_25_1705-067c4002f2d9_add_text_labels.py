@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Adds text labels table.
 
 Revision ID: 067c4002f2d9

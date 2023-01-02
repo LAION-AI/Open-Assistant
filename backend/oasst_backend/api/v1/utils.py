@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from http import HTTPStatus
 from uuid import UUID
 

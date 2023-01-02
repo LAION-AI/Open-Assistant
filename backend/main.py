@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 from http import HTTPStatus
+from math import ceil
 from pathlib import Path
 from typing import Optional
 
@@ -7,6 +7,8 @@ import alembic.command
 import alembic.config
 import fastapi
 import pydantic
+import redis.asyncio as redis
+from fastapi_limiter import FastAPILimiter
 from loguru import logger
 from oasst_backend.api.deps import get_dummy_api_client
 from oasst_backend.api.v1.api import api_router
@@ -61,6 +63,29 @@ if settings.UPDATE_ALEMBIC:
             logger.info("Successfully upgraded alembic on startup")
         except Exception:
             logger.exception("Alembic upgrade failed on startup")
+
+
+if settings.RATE_LIMIT:
+
+    @app.on_event("startup")
+    async def connect_redis():
+        async def http_callback(request: fastapi.Request, response: fastapi.Response, pexpire: int):
+            """Error callback function when too many requests"""
+            expire = ceil(pexpire / 1000)
+            raise OasstError(
+                f"Too Many Requests. Retry After {expire} seconds.",
+                OasstErrorCode.TOO_MANY_REQUESTS,
+                HTTPStatus.TOO_MANY_REQUESTS,
+            )
+
+        try:
+            redis_client = redis.from_url(
+                f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/0", encoding="utf-8", decode_responses=True
+            )
+            logger.info(f"Connected to {redis_client=}")
+            await FastAPILimiter.init(redis_client, http_callback=http_callback)
+        except Exception:
+            logger.exception("Failed to establish Redis connection")
 
 
 if settings.DEBUG_USE_SEED_DATA:

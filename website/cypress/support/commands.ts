@@ -36,4 +36,38 @@
 //   }
 // }
 
+Cypress.Commands.add("signInUsingEmailedLink", (emailAddress) => {
+  const mailDevApi = `${Cypress.env("MAILDEV_PROTOCOL")}://${Cypress.env(
+    "MAILDEV_HOST"
+  )}:${Cypress.env("MAILDEV_API_PORT")}`;
+  cy.request(
+    "GET",
+    `${mailDevApi}/email?headers.to=${emailAddress.toLowerCase()}`
+  ).then((response) => {
+    const emails = response.body;
+
+    // Find and use login link
+    const loginLink = emails
+      .pop()
+      .html.match(/href="[^"]+(\/api\/auth\/callback\/[^"]+?)"/)[1];
+    cy.visit(loginLink);
+  });
+});
+
+Cypress.Commands.add("signInWithEmail", (emailAddress) => {
+  cy.request("GET", "/api/auth/csrf")
+    .then((response) => {
+      const csrfToken = response.body.csrfToken;
+      cy.request("POST", "/api/auth/signin/email", {
+        callbackUrl: "/",
+        email: emailAddress,
+        csrfToken,
+        json: "true",
+      });
+    })
+    .then(() => {
+      cy.signInUsingEmailedLink(emailAddress);
+    });
+});
+
 export {};
