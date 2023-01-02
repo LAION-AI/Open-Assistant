@@ -2,6 +2,7 @@ import { Container, Heading } from "@chakra-ui/react";
 import Head from "next/head";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
+import { getTransparentHeaderLayout } from "src/components/Layout";
 
 const TermsOfService = () => {
   return (
@@ -148,12 +149,6 @@ const TermsOfService = () => {
   );
 };
 
-TermsOfService.getLayout = (page) => (
-  <div>
-    <Header transparent={true} />
-    {page}
-    <Footer />
-  </div>
-);
+TermsOfService.getLayout = getTransparentHeaderLayout;
 
 export default TermsOfService;

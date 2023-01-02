@@ -2,6 +2,7 @@ import { Container, Heading } from "@chakra-ui/react";
 import Head from "next/head";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
+import { getTransparentHeaderLayout } from "src/components/Layout";
 
 const PrivacyPolicy = () => {
   return (
@@ -403,12 +404,6 @@ const PrivacyPolicy = () => {
   );
 };
 
-PrivacyPolicy.getLayout = (page) => (
-  <div>
-    <Header transparent={true} />
-    {page}
-    <Footer />
-  </div>
-);
+PrivacyPolicy.getLayout = getTransparentHeaderLayout;
 
 export default PrivacyPolicy;
