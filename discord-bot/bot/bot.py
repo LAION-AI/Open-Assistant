@@ -34,6 +34,9 @@ async def on_starting(event: hikari.StartingEvent):
 
     bot.d.oasst_api = OasstApiClient(settings.oasst_api_url, settings.oasst_api_key)
 
+    # A set of user id's that are currently doing work.
+    bot.d.currently_working = set()
+
 
 @bot.listen()
 async def on_stopping(event: hikari.StoppingEvent):
