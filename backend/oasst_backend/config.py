@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "postgres"
     DATABASE_URI: Optional[PostgresDsn] = None
 
+    RATE_LIMIT: bool = True
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: str = "6379"
+
     DEBUG_ALLOW_ANY_API_KEY: bool = False
     DEBUG_SKIP_API_KEY_CHECK: bool = False
     DEBUG_USE_SEED_DATA: bool = False
