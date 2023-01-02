@@ -61,7 +61,7 @@ const AssistantReply = () => {
         <>
           <h5 className="text-lg font-semibold">Reply as the assistant</h5>
           <p className="text-lg py-1">Given the following conversation, provide an adequate reply</p>
-          <Messages messages={task.conversation.messages} post_id={task.id}/>
+          <Messages messages={task.conversation.messages} post_id={task.id} />
         </>
         <Textarea name="reply" placeholder="Reply..." ref={inputRef} />
       </TwoColumns>
