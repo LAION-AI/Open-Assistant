@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Bot logic."""
 from datetime import datetime
 

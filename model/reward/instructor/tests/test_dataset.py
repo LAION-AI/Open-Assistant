@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from experimental_dataset import DataCollatorForSummaryScore, HFSummaryQuality
 from rank_datasets import DataCollatorForPairRank, HFSummary, WebGPT
 from torch.utils.data import DataLoader

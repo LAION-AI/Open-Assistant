@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Hot reload plugin."""
 from glob import glob
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from http import HTTPStatus
 from secrets import token_hex
 from typing import Generator

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Entry point for the bot."""
 import logging
 import os

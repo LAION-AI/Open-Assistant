@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """add collective flag to task
 
 Revision ID: 464ec4667aae
