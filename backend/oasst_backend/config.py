@@ -44,4 +44,5 @@ class Settings(BaseSettings):
         raise ValueError(v)
 
 
+print("cats")
 settings = Settings(_env_file=".env")
