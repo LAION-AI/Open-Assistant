@@ -37,7 +37,7 @@ export const FlaggableElement = (props) => {
   const [sliderValues, setSliderValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(1));
 
   const fetchData = () => {
-    let label_map: Map<string, number> = new Map();
+    const label_map: Map<string, number> = new Map();
     TEXT_LABEL_FLAGS.forEach((flag, i) => {
       if (checkboxValues[i]) {
         label_map.set(flag.attributeName, sliderValues[i]);

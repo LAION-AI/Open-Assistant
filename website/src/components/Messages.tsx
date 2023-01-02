@@ -10,7 +10,7 @@ const getColor = (isAssistant: boolean) => (isAssistant ? "bg-slate-800" : "bg-s
 export const Messages = ({ messages, post_id }: { messages: Message[]; post_id: string }) => {
   const items = messages.map(({ text, is_assistant }: Message, i: number) => {
     return (
-      <div className="flex">
+      <div className="flex" key={i + text}>
         <FlaggableElement text={text} post_id={post_id}>
           <div
             key={i + text}
