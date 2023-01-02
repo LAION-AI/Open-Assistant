@@ -1,5 +1,14 @@
 {
   "service": "frontend-dev",
   "dockerComposeFile": "../docker-compose.yaml",
-  "forwardPorts": [3000]
+"forwardPorts": [
+	3000
+],
+"customizations": {
+	"vscode": {
+		"extensions": [
+			"GitHub.copilot"
+		]
+	}
+}
 }
