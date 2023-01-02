@@ -128,7 +128,14 @@ def generate_task(
     return task, message_tree_id, parent_message_id
 
 
-@router.post("/", response_model=protocol_schema.AnyTask)  # work with Union once more types are added
+@router.post(
+    "/",
+    response_model=protocol_schema.AnyTask,
+    dependencies=[
+        Depends(deps.UserRateLimiter(times=100, minutes=5)),
+        Depends(deps.APIClientRateLimiter(times=10_000, minutes=1)),
+    ],
+)  # work with Union once more types are added
 def request_task(
     *,
     db: Session = Depends(deps.get_db),
