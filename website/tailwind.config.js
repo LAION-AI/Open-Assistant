@@ -71,6 +71,10 @@ module.exports = {
       maxWidth: {
         "2xl": "40rem",
       },
+
+      colors: {
+        'chakra-gray-900': '#171923',
+      }
     },
   },
   plugins: [require("@tailwindcss/forms")],

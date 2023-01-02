@@ -1,12 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-
-import { Container, Text, useColorModeValue } from "@chakra-ui/react";
+import { useColorMode } from "@chakra-ui/react";
 
 export function Footer() {
+  const { colorMode } = useColorMode();
+  const bgColorClass = colorMode === "light" ? "bg-transparent" : "bg-gray-800";
+  const borderClass = colorMode === "light" ? "border-slate-200" : "border-gray-900";
+
   return (
-    <footer>
-      <Container className="flex justify-evenly py-10 px-10 border-t">
+    <footer className={bgColorClass}>
+      <div className={`flex justify-evenly py-10 px-10 border-t ${borderClass}`}>
         <div className="flex items-center pr-8">
           <Link href="/" aria-label="Home" className="flex items-center">
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="52" height="52" alt="logo" />
@@ -66,7 +69,7 @@ export function Footer() {
             </div>
           </div>
         </nav>
-      </Container>
+      </div>
     </footer>
   );
 }

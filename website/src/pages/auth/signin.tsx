@@ -4,10 +4,12 @@ import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
 import React, { useRef } from "react";
 import Link from "next/link";
-
+import { Header } from "src/components/Header";
+import { Footer } from "src/components/Footer";
 import { AuthLayout } from "src/components/AuthLayout";
+import { useColorMode } from "@chakra-ui/react";
 
-export default function Signin({ csrfToken, providers }) {
+function Signin({ csrfToken, providers }) {
   const { discord, email, github, credentials } = providers;
   const emailEl = useRef(null);
   const signinWithEmail = (ev: React.FormEvent) => {
@@ -21,8 +23,17 @@ export default function Signin({ csrfToken, providers }) {
     signIn(credentials.id, { callbackUrl: "/", username: debugUsernameEl.current.value });
   }
 
+  const { colorMode } = useColorMode();
+  const bgColorClass = colorMode === "light" ? "bg-gray-50" : "bg-chakra-gray-900";
+  const buttonBgColor = colorMode === "light" ? "#2563eb" : "#2563eb";
+  const borderClass = colorMode === "light" ? "border-slate-200" : "border-transparent";
+
+  const buttonColorScheme = colorMode === "light" ? "blue" : "dark-blue-btn";
+
+
+
   return (
-    <>
+    <div className={bgColorClass}>
       <Head>
         <title>Sign Up - Open Assistant</title>
         <meta name="Sign Up" content="Sign up to access Open Assistant" />
@@ -30,11 +41,11 @@ export default function Signin({ csrfToken, providers }) {
       <AuthLayout>
         <Stack spacing="2">
           {credentials && (
-            <form onSubmit={signinWithDebugCredentials} className="border-2 border-orange-200 rounded-md p-4 relative">
-              <span className="text-orange-600 absolute -top-3 left-5 bg-white px-1">For Debugging Only</span>
+            <form onSubmit={signinWithDebugCredentials} className="border-2 border-orange-600 rounded-md p-4 relative">
+              <span className={`text-orange-600 absolute -top-3 left-5 ${bgColorClass} px-1`}>For Debugging Only</span>
               <Stack>
-                <Input variant="outline" size="lg" placeholder="Username" ref={debugUsernameEl} />
-                <Button size={"lg"} leftIcon={<FaBug />} colorScheme="gray" type="submit">
+                <Input variant="outline" size="lg" placeholder="Username" ref={debugUsernameEl}/>
+                <Button size={"lg"} leftIcon={<FaBug />} colorScheme={buttonColorScheme} color="white" type="submit">
                   Continue with Debug User
                 </Button>
               </Stack>
@@ -44,7 +55,7 @@ export default function Signin({ csrfToken, providers }) {
             <form onSubmit={signinWithEmail}>
               <Stack>
                 <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
-                <Button size={"lg"} leftIcon={<FaEnvelope />} colorScheme="gray" type="submit">
+                <Button size={"lg"} leftIcon={<FaEnvelope />} type="submit" colorScheme={buttonColorScheme} color="white">
                   Continue with Email
                 </Button>
               </Stack>
@@ -52,7 +63,7 @@ export default function Signin({ csrfToken, providers }) {
           )}
           {discord && (
             <Button
-              bg="#5865F2"
+              bg={buttonBgColor}
               _hover={{ bg: "#4A57E3" }}
               _active={{
                 bg: "#454FBF",
@@ -101,9 +112,20 @@ export default function Signin({ csrfToken, providers }) {
           </Link>
         </div>
       </AuthLayout>
-    </>
+    </div>
   );
 }
+
+
+Signin.getLayout = (page) => (
+  <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
+    <Header transparent={true} />
+    {page}
+    <Footer />
+  </div>
+);
+
+export default Signin;
 
 export async function getServerSideProps(context) {
   const csrfToken = await getCsrfToken();

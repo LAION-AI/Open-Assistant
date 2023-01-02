@@ -26,11 +26,13 @@ const Home = () => {
           <TaskSelection />
         </Container>
       ) : (
-        <Container className="min-w-full" variant="no-padding">
+        <main className="oa-basic-theme">
+        {/* <Container className="min-w-full" variant="no-padding"> */}
           <Hero />
           <CallToAction />
           <Faq />
-        </Container>
+        {/* </Container> */}
+        </main>
       )}
     </>
   );

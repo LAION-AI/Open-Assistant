@@ -1,4 +1,4 @@
-import { Button, Container, Box } from "@chakra-ui/react";
+import { Button, Box } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
@@ -56,8 +56,7 @@ function AccountButton() {
 export function Header(props) {
   const borderClass = props.transparent ? "" : props.borderClass ?? "border-b border-gray-100";
   return (
-    <nav>
-      <Container>
+    <nav className="oa-basic-theme">
       <Box className={`flex mx-auto max-w-7xl justify-between py-8 px-10 ${borderClass}`}>
         <div className="relative z-10 flex items-center gap-16">
           <Link href="/" aria-label="Home" className="flex items-center">
@@ -118,7 +117,6 @@ export function Header(props) {
           <ColorModeIconToggle className="ml-5"/>
         </div>
       </Box>
-      </Container>
     </nav>
   );
 }

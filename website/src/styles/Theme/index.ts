@@ -1,11 +1,13 @@
 import { type ThemeConfig, extendTheme } from "@chakra-ui/react";
 import { containerTheme } from "./components/Container";
 import { Styles } from "@chakra-ui/theme-tools";
+import { colors } from "./colors";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
   useSystemColorMode: true,
   disableTransitionOnChange: false,
+  
 };
 
 const components = {
@@ -13,9 +15,15 @@ const components = {
 };
 
 const styles: Styles = {
-  global: {
-    body: {
-      bg: "white",
+  global: (props) => ({
+    '*': {
+      transition: "background-color 200ms cubic-bezier(0.4, 0, 1, 1)",
+      // bg: props.colorMode === "light" ? colors.light.bg : colors.dark.bg,
+      // color: props.colorMode === "light" ? colors.light.text : colors.dark.text,
+    },
+    '.oa-basic-theme': {
+      bg: props.colorMode === "light" ? colors.light.bg : colors.dark.bg,
+      color: props.colorMode === "light" ? colors.light.text : colors.dark.text,
     },
     main: {
       fontFamily: "Inter",
@@ -23,7 +31,7 @@ const styles: Styles = {
     header: {
       fontFamily: "Inter",
     },
-  },
+  }),
 };
 
-export const theme = extendTheme({ config, styles, components });
+export const theme = extendTheme({ colors, config, styles, components });

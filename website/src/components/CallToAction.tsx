@@ -1,16 +1,51 @@
-import { CircleBackground } from "./CircleBackground";
+import { useId } from "react";
+import { useColorMode } from "@chakra-ui/react";
 import { Container } from "./Container";
 
-export function CallToAction() {
+
+function CircleBackground({ width = 558, height = 558, ...props }) {
+  const id = useId();
+
+  const { colorMode } = useColorMode();
+  const baseRingColor = colorMode === "light" ? "#777" : "#000";
+  const gradStopColor = colorMode === "light" ? "#fff" : "#000";
+
   return (
-    <section id="join-us" className="relative overflow-hidden bg-gray-900 py-20 sm:py-28">
+    <svg viewBox="0 0 558 558" width={width} height={height} fill="none" aria-hidden="true" {...props}>
+      <defs>
+        <linearGradient id={id} x1="79" y1="16" x2="105" y2="237" gradientUnits="userSpaceOnUse">
+          <stop stopColor={gradStopColor} />
+          <stop offset="1" stopColor={baseRingColor} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        opacity=".2"
+        d="M1 279C1 125.465 125.465 1 279 1s278 124.465 278 278-124.465 278-278 278S1 432.535 1 279Z"
+        stroke={baseRingColor}
+      />
+      <path d="M1 279C1 125.465 125.465 1 279 1" stroke={`url(#${id})`} strokeLinecap="round" />
+    </svg>
+  );
+}
+
+
+export function CallToAction() {
+
+  const { colorMode } = useColorMode();
+  const bgColorClass = colorMode === "light" ? "bg-gray-900" : "bg-gray-50";
+  const headingColorClass = colorMode === "light" ? "text-white" : "text-black";
+  const textColorClass = colorMode === "light" ? "text-gray-300" : "text-black";
+  const gradStopColor = colorMode === "light" ? "#06b6d4" : "#00f2ff";
+
+  return (
+    <section id="join-us" className={`relative overflow-hidden py-20 sm:py-28 ${bgColorClass} ${textColorClass}`}>
       <div className="absolute top-1/2 left-20 -translate-y-1/2 sm:left-1/2 sm:-translate-x-1/2">
-        <CircleBackground color="#fff" className="animate-spin-slower" />
+        <CircleBackground className="animate-spin-slower" />
       </div>
       <Container className="relative">
         <div className="mx-auto max-w-md sm:text-center">
-          <h2 className="text-3xl font-medium tracking-tight text-white sm:text-4xl">Join Us</h2>
-          <p className="mt-4 text-lg text-gray-300">
+          <h2 className={`text-3xl font-medium tracking-tight sm:text-4xl ${headingColorClass}`}>Join Us</h2>
+          <p className="mt-4 text-lg">
             All open source projects begin with people like you. Open source is the belief that if we collaborate we can
             together gift our knowledge and technology to the world for the benefit of humanity. Are you in? Find us
             here:
