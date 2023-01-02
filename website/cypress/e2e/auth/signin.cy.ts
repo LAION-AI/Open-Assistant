@@ -3,10 +3,8 @@ import { faker } from "@faker-js/faker";
 describe("signin flow", () => {
   it("redirects to a confirmation page on submit of valid email address", () => {
     cy.visit("/auth/signin");
-    cy.get('form[data-cy="signin-email"').within(() => {
-      cy.get(".chakra-input").type(`test@example.com`);
-      cy.get(".chakra-stack > .chakra-button").click();
-    });
+    cy.get('[data-cy="email-address"]').type(`test@example.com`);
+    cy.get('[data-cy="signin-email-button"]').click();
     cy.url().should("contain", "/auth/verify");
   });
   it("emails a login link to the user when signing in with email", () => {
