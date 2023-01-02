@@ -8,10 +8,10 @@ import lightbulb
 import lightbulb.decorators
 import miru
 from aiosqlite import Connection
-from bot.api_client import OasstApiClient, TaskType
 from bot.db.schemas import GuildSettings
 from bot.utils import EMPTY
 from loguru import logger
+from oasst_shared.api_client import OasstApiClient, TaskType
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import TaskRequestType
 
