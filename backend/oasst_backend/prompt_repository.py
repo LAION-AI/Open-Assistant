@@ -9,7 +9,7 @@ import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Message, MessageReaction, Task, TextLabels, User
+from oasst_backend.models import ApiClient, Journal, Message, MessageReaction, Task, TextLabels, User
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
@@ -381,6 +381,10 @@ class PromptRepository:
         )
         if existing_reaction is not None:
             existing_reaction.payload = container
+            self.db.query(Journal).filter(Journal.event_payload["payload"]["task_id"].astext == str(task_id)).delete(
+                synchronize_session="fetch"
+            )
+
         else:
             new_reaction = MessageReaction(
                 task_id=task_id,
