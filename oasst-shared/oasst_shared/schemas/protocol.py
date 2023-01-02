@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime
-from typing import Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 from uuid import UUID, uuid4
 
 import pydantic
@@ -281,3 +281,15 @@ class SystemStats(BaseModel):
     active: int = 0
     deleted: int = 0
     message_trees: int = 0
+
+
+class UserScore(BaseModel):
+    ranking: int
+    user_id: UUID
+    username: str
+    display_name: str
+    score: int
+
+
+class LeaderboardStats(BaseModel):
+    leaderboard: List[UserScore]
