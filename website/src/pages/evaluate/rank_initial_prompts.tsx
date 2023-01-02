@@ -1,18 +1,15 @@
 import { Flex } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
-import useSWRImmutable from "swr/immutable";
-import useSWRMutation from "swr/mutation";
-
-import fetcher from "src/lib/fetcher";
-import poster from "src/lib/poster";
-
-import { Container, useColorModeValue } from "@chakra-ui/react";
+import { SkipButton } from "src/components/Buttons/Skip";
+import { SubmitButton } from "src/components/Buttons/Submit";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
-import { SkipButton } from "src/components/Buttons/Skip";
-import { SubmitButton } from "src/components/Buttons/Submit";
+import fetcher from "src/lib/fetcher";
+import poster from "src/lib/poster";
+import useSWRImmutable from "swr/immutable";
+import useSWRMutation from "swr/mutation";
 
 const RankInitialPrompts = () => {
   const [tasks, setTasks] = useState([]);
@@ -23,13 +20,13 @@ const RankInitialPrompts = () => {
   const [ranking, setRanking] = useState<number[]>([]);
   const bg = useColorModeValue("gray.100", "gray.800");
 
-  const { isLoading } = useSWRImmutable("/api/new_task/rank_initial_prompts", fetcher, {
+  const { isLoading, mutate } = useSWRImmutable("/api/new_task/rank_initial_prompts", fetcher, {
     onSuccess: (data) => {
       setTasks([data]);
     },
   });
 
-  const { trigger, isMutating } = useSWRMutation("/api/update_task", poster, {
+  const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (data) => {
       const newTask = await data.json();
       setTasks((oldTasks) => [...oldTasks, newTask]);
@@ -39,11 +36,16 @@ const RankInitialPrompts = () => {
   const submitResponse = (task) => {
     trigger({
       id: task.id,
-      update_type: "post_ranking",
+      update_type: "message_ranking",
       content: {
         ranking,
       },
     });
+  };
+
+  const fetchNextTask = () => {
+    setRanking([]);
+    mutate();
   };
 
   if (isLoading) {
@@ -54,6 +56,7 @@ const RankInitialPrompts = () => {
     return <Container className="p-6 bg-slate-100 text-gray-800">No tasks found...</Container>;
   }
 
+  const endTask = tasks[tasks.length - 1];
   return (
     <>
       <Head>
@@ -74,9 +77,13 @@ const RankInitialPrompts = () => {
 
           <Flex justify="center" ml="auto" gap={2}>
             <SkipButton>Skip</SkipButton>
-            <SubmitButton onClick={() => submitResponse(tasks[0])} disabled={ranking.length === 0}>
-              Submit
-            </SubmitButton>
+            {endTask.task.type !== "task_done" ? (
+              <SubmitButton onClick={() => submitResponse(tasks[0])} disabled={ranking.length === 0}>
+                Submit
+              </SubmitButton>
+            ) : (
+              <SubmitButton onClick={fetchNextTask}>Next Task</SubmitButton>
+            )}
           </Flex>
         </section>
       </Container>

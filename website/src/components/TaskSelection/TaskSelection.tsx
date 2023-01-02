@@ -1,11 +1,20 @@
-import React from "react";
-import { TaskOptions } from "./TaskOptions";
 import { Flex } from "@chakra-ui/react";
+import React from "react";
+import { useColorMode } from "@chakra-ui/react";
+
 import { TaskOption } from "./TaskOption";
+import { TaskOptions } from "./TaskOptions";
 
 export const TaskSelection = () => {
+
+  const { colorMode } = useColorMode();
+  const bgColorClass = colorMode === "light" ? "bg-gray-50" : "bg-gray-600";
+  const buttonBgColor = colorMode === "light" ? "#2563eb" : "#2563eb";
+  const borderClass = colorMode === "light" ? "border-slate-200" : "border-transparent";
+
+
   return (
-    <Flex gap={10} wrap="wrap" justifyContent="space-evenly" width="full" height="full" alignItems={"center"}>
+    <Flex gap={10} wrap="wrap" justifyContent="space-evenly" width="full" height="full" alignItems={"center"} className={bgColorClass}>
       <TaskOptions key="create" title="Create">
         {/* <TaskOption
           alt="Summarize Stories"
@@ -22,7 +31,9 @@ export const TaskSelection = () => {
         />
       </TaskOptions>
       <TaskOptions key="evaluate" title="Evaluate">
-        {/* <TaskOption
+        {/*
+        Commented out while the backend does not support them.
+        <TaskOption
           alt="Rate Prompts"
           img="/images/logos/logo.svg"
           title="Rate Prompts"

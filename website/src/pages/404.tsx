@@ -1,8 +1,4 @@
-import { useSession } from "next-auth/react";
-import { Footer } from "../components/Footer";
-import { Header } from "src/components/Header";
 import Head from "next/head";
-import Link from "next/link";
 
 export default function Error() {
   return (

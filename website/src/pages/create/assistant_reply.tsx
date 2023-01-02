@@ -1,31 +1,28 @@
 import { Container, Flex, Textarea } from "@chakra-ui/react";
 import { useRef, useState } from "react";
-import useSWRMutation from "swr/mutation";
-import useSWRImmutable from "swr/immutable";
-
-import fetcher from "src/lib/fetcher";
-import poster from "src/lib/poster";
-
-import { Messages } from "src/components/Messages";
-import { TwoColumns } from "src/components/TwoColumns";
-import { LoadingScreen } from "src/components/Loading/LoadingScreen";
-import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
+import { Messages } from "src/components/Messages";
+import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
+import { TwoColumns } from "src/components/TwoColumns";
+import fetcher from "src/lib/fetcher";
+import poster from "src/lib/poster";
+import useSWRImmutable from "swr/immutable";
+import useSWRMutation from "swr/mutation";
 
 const AssistantReply = () => {
   const [tasks, setTasks] = useState([]);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const { isLoading } = useSWRImmutable("/api/new_task/assistant_reply ", fetcher, {
+  const { isLoading, mutate } = useSWRImmutable("/api/new_task/assistant_reply ", fetcher, {
     onSuccess: (data) => {
-      console.log(data);
       setTasks([data]);
     },
   });
 
-  const { trigger, isMutating } = useSWRMutation("/api/update_task", poster, {
+  const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (data) => {
       const newTask = await data.json();
       setTasks((oldTasks) => [...oldTasks, newTask]);
@@ -36,11 +33,16 @@ const AssistantReply = () => {
     const text = inputRef.current.value.trim();
     trigger({
       id: task.id,
-      update_type: "text_reply_to_post",
+      update_type: "text_reply_to_message",
       content: {
         text,
       },
     });
+  };
+
+  const fetchNextTask = () => {
+    inputRef.current.value = "";
+    mutate();
   };
 
   if (isLoading) {
@@ -52,13 +54,14 @@ const AssistantReply = () => {
   }
 
   const task = tasks[0].task;
+  const endTask = tasks[tasks.length - 1];
   return (
     <Container className="p-6 text-gray-800">
       <TwoColumns>
         <>
           <h5 className="text-lg font-semibold">Reply as the assistant</h5>
           <p className="text-lg py-1">Given the following conversation, provide an adequate reply</p>
-          <Messages messages={task.conversation.messages} />
+          <Messages messages={task.conversation.messages} post_id={task.id} />
         </>
         <Textarea name="reply" placeholder="Reply..." ref={inputRef} />
       </TwoColumns>
@@ -68,7 +71,11 @@ const AssistantReply = () => {
 
         <Flex justify="center" ml="auto" gap={2}>
           <SkipButton>Skip</SkipButton>
-          <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
+          {endTask.task.type !== "task_done" ? (
+            <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
+          ) : (
+            <SubmitButton onClick={fetchNextTask}>Next Task</SubmitButton>
+          )}
         </Flex>
       </section>
     </Container>

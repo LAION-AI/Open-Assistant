@@ -1,7 +1,6 @@
-import { useId } from "react";
 import Image from "next/image";
 import { useColorMode } from "@chakra-ui/react";
-
+import { useId } from "react";
 import { Container } from "./Container";
 
 function BackgroundIllustration(props) {

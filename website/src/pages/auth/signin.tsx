@@ -9,6 +9,7 @@ import { Footer } from "src/components/Footer";
 import { AuthLayout } from "src/components/AuthLayout";
 import { useColorMode } from "@chakra-ui/react";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Signin({ csrfToken, providers }) {
   const { discord, email, github, credentials } = providers;
   const emailEl = useRef(null);
@@ -71,7 +72,7 @@ function Signin({ csrfToken, providers }) {
               size="lg"
               leftIcon={<FaDiscord />}
               color="white"
-              onClick={() => signIn(discord, { callbackUrl: "/" })}
+              onClick={() => signIn(discord.id, { callbackUrl: "/" })}
               // isDisabled="false"
             >
               Continue with Discord

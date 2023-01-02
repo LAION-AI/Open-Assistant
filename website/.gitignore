@@ -37,3 +37,7 @@ next-env.d.ts
 
 # Vim files
 *.swp
+
+# cypress
+/cypress-visual-screenshots/diff
+/cypress-visual-screenshots/comparison

@@ -1,7 +1,5 @@
 import { getToken } from "next-auth/jwt";
-
 import prisma from "src/lib/prismadb";
-import { authOptions } from "src/pages/api/auth/[...nextauth]";
 
 /**
  * Stores the task interaction with the Task Backend and then returns the next task generated.
@@ -22,7 +20,7 @@ const handler = async (req, res) => {
   }
 
   // Parse out the local task ID and the interaction contents.
-  const { id, content } = await JSON.parse(req.body);
+  const { id, content, update_type } = await JSON.parse(req.body);
 
   // Log the interaction locally to create our user_post_id needed by the Task
   // Backend.
@@ -46,14 +44,14 @@ const handler = async (req, res) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      type: "post_rating",
+      type: update_type,
       user: {
         id: token.sub,
         display_name: token.name || token.email,
         auth_method: "local",
       },
-      post_id: id,
-      user_post_id: interaction.id,
+      message_id: id,
+      user_message_id: interaction.id,
       ...content,
     }),
   });

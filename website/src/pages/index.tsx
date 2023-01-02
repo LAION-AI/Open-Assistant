@@ -1,12 +1,11 @@
 import Head from "next/head";
 import { useSession } from "next-auth/react";
-
 import { CallToAction } from "src/components/CallToAction";
 import { Faq } from "src/components/Faq";
+import { Footer } from "src/components/Footer";
+import { Header } from "src/components/Header";
 import { Hero } from "src/components/Hero";
 import { TaskSelection } from "src/components/TaskSelection";
-import { Header } from "src/components/Header";
-import { Footer } from "src/components/Footer";
 import { Box, Container } from "@chakra-ui/react";
 
 const Home = () => {
@@ -22,16 +21,12 @@ const Home = () => {
         />
       </Head>
       {session ? (
-        <Container>
           <TaskSelection />
-        </Container>
       ) : (
         <main className="oa-basic-theme">
-        {/* <Container className="min-w-full" variant="no-padding"> */}
           <Hero />
           <CallToAction />
           <Faq />
-        {/* </Container> */}
         </main>
       )}
     </>

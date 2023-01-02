@@ -1,7 +1,5 @@
 import { getToken } from "next-auth/jwt";
-
 import prisma from "src/lib/prismadb";
-import { authOptions } from "src/pages/api/auth/[...nextauth]";
 
 /**
  * Returns a new task created from the Task Backend.  We do a few things here:
@@ -62,10 +60,10 @@ const handler = async (req, res) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      post_id: registeredTask.id,
+      message_id: registeredTask.id,
     }),
   });
-  const ack = await ackRes.json();
+  await ackRes.json();
 
   // Send the results to the client.
   res.status(200).json(registeredTask);
