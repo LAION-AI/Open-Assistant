@@ -14,8 +14,8 @@ from oasst_backend.api.deps import get_dummy_api_client
 from oasst_backend.api.v1.api import api_router
 from oasst_backend.config import settings
 from oasst_backend.database import engine
-from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
 from starlette.middleware.cors import CORSMiddleware
