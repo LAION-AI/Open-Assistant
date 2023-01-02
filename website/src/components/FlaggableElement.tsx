@@ -30,21 +30,18 @@ export const FlaggableElement = (props) => {
     },
   });
 
-  const submitResponse = (label_data) => {
-    trigger(label_data);
-  };
-  const [checkboxValues, setCheckboxValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(false));
-  const [sliderValues, setSliderValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(1));
-
-  const fetchData = () => {
+  const submitResponse = () => {
     const label_map: Map<string, number> = new Map();
     TEXT_LABEL_FLAGS.forEach((flag, i) => {
       if (checkboxValues[i]) {
         label_map.set(flag.attributeName, sliderValues[i]);
       }
     });
-    return { post_id: props.post_id, label_map: Object.fromEntries(label_map), text: props.text };
+    trigger({ post_id: props.post_id, label_map: Object.fromEntries(label_map), text: props.text });
   };
+  const [checkboxValues, setCheckboxValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(false));
+  const [sliderValues, setSliderValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(1));
+
   const handleCheckboxState = (isChecked, idx) => {
     setCheckboxValues(
       checkboxValues.map((val, i) => {
@@ -108,7 +105,7 @@ export const FlaggableElement = (props) => {
                     return all | current;
                   }, false)
                 }
-                onClick={() => submitResponse(fetchData())}
+                onClick={() => submitResponse()}
                 className="bg-indigo-600 text-black hover:bg-indigo-700"
               >
                 Report
