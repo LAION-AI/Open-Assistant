@@ -50,9 +50,10 @@ async def work(ctx: lightbulb.SlashContext):
     await ctx.respond("Sending you a task, check your DMs", flags=hikari.MessageFlag.EPHEMERAL)
     logger.debug(f"Starting task_type: {task_type!r}")
 
-    await _handle_task(ctx, task_type)
-
-    currently_working.remove(ctx.author.id)
+    try:
+        await _handle_task(ctx, task_type)
+    finally:
+        currently_working.remove(ctx.author.id)
 
 
 async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) -> None:
