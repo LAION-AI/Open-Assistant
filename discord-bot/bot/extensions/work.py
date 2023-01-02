@@ -10,7 +10,6 @@ import lightbulb.decorators
 import miru
 from aiosqlite import Connection
 from bot.api_client import OasstApiClient, TaskType
-from bot.db.schemas import GuildSettings
 from bot.utils import EMPTY
 from loguru import logger
 from oasst_shared.schemas import protocol as protocol_schema
@@ -32,8 +31,8 @@ MAX_TASK_ACCEPT_TIME = 60  # 1 minute
     type=str,
 )
 @lightbulb.command("work", "Complete a task.")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def work(ctx: lightbulb.SlashContext):
+@lightbulb.implements(lightbulb.SlashCommand, lightbulb.PrefixCommand)
+async def work(ctx: lightbulb.Context):
     """Create and handle a task."""
     task_type: TaskRequestType = TaskRequestType(ctx.options.type.split(".")[-1])
 
@@ -43,7 +42,7 @@ async def work(ctx: lightbulb.SlashContext):
     await _handle_task(ctx, task_type)
 
 
-async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) -> None:
+async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> None:
     """Handle creating and collecting user input for a task.
 
     Continually present tasks to the user until they select one, cancel, or time out.
@@ -105,16 +104,17 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
             else:
                 logger.critical(f"Unexpected task type received: {new_task.type}")
 
-        # Send a message in the log channel that the task is complete
-        # TODO: Maybe do something with the msg ID so users can rate the "answer"
-        assert ctx.guild_id is not None
+        # Send a message in all the log channels that the task is complete
         conn: Connection = ctx.bot.d.db
-        guild_settings = await GuildSettings.from_db(conn, ctx.guild_id)
+        async with conn.cursor() as cursor:
+            await cursor.execute("SELECT log_channel_id FROM guild_settings")
+            log_channel_ids = await cursor.fetchall()
+            print(log_channel_ids)
 
-        if guild_settings is not None and guild_settings.log_channel_id is not None:
-
-            channel = await ctx.bot.rest.fetch_channel(guild_settings.log_channel_id)
-            assert isinstance(channel, hikari.TextableChannel)  # option converter
+            channels = [
+                ctx.bot.cache.get_guild_channel(id[0]) or await ctx.bot.rest.fetch_channel(id[0])
+                for id in log_channel_ids
+            ]
 
             done_embed = (
                 hikari.Embed(
@@ -128,7 +128,10 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
                 .add_field("Global Ranking", "0/0", inline=True)
                 .set_footer(f"Task ID: {task.id}")
             )
-            await channel.send(EMPTY, embed=done_embed)
+            # This will definitely get the bot rate limited, but that's a future problem
+            asyncio.gather(
+                *(ch.send(EMPTY, embed=done_embed) for ch in channels if isinstance(ch, hikari.TextableChannel))
+            )
 
         # ask the user if they want to do another task
         choice_view = ChoiceView(timeout=MAX_TASK_ACCEPT_TIME)
@@ -145,7 +148,7 @@ async def _handle_task(ctx: lightbulb.SlashContext, task_type: TaskRequestType) 
 
 
 async def _select_task(
-    ctx: lightbulb.SlashContext, task_type: TaskRequestType, user: protocol_schema.User | None = None
+    ctx: lightbulb.Context, task_type: TaskRequestType, user: protocol_schema.User | None = None
 ) -> tuple[protocol_schema.Task | None, str]:
     """Present tasks to the user until they accept one, cancel, or time out."""
     oasst_api: OasstApiClient = ctx.bot.d.oasst_api
@@ -184,7 +187,7 @@ async def _select_task(
 
 
 async def _send_task(
-    ctx: lightbulb.SlashContext, task: protocol_schema.Task
+    ctx: lightbulb.Context, task: protocol_schema.Task
 ) -> tuple[t.Literal["accept", "next", "cancel"] | None, str]:
     """Send a task to the user.
 
