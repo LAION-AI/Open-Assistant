@@ -95,9 +95,7 @@ services:
       - DEBUG_SKIP_API_KEY_CHECK=True
       - DEBUG_USE_SEED_DATA=True
       - MAX_WORKERS=1
-    depends_on:
-      db:
-        condition: service_healthy
+    depends_on: [db]
     ports:
       - "8080:8080"
 
@@ -117,9 +115,7 @@ services:
       - EMAIL_FROM=info@example.com
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
-    depends_on:
-      webdb:
-        condition: service_healthy
+    depends_on: [webdb]
     ports:
       - "3000:3000"
     command: bash wait-for-postgres.sh node server.js
