@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Work plugin for collecting user data."""
 import asyncio
 import typing as t

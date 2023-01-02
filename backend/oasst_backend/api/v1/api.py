@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from fastapi import APIRouter
 from oasst_backend.api.v1 import (
     frontend_messages,

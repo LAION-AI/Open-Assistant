@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Hot reload plugin."""
 import typing as t
 from datetime import datetime
