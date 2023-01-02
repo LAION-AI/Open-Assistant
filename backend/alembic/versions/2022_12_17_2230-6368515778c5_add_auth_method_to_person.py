@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """add auth_method to person
 
 Revision ID: 6368515778c5

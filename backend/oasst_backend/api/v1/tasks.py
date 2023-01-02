@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import random
 from typing import Any, Optional, Tuple
 from uuid import UUID

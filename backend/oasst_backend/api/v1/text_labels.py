@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pydantic
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey

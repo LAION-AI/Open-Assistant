@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import enum
 from datetime import datetime
 from typing import Literal, Optional, Union
