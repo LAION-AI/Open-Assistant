@@ -4,10 +4,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Response
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
-from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.models import ApiClient
 from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_shared.exceptions import OasstError, OasstErrorCode
 from sqlmodel import Session
 from starlette.status import HTTP_200_OK
 

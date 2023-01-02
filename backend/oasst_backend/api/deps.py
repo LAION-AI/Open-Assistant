@@ -9,8 +9,8 @@ from fastapi_limiter.depends import RateLimiter
 from loguru import logger
 from oasst_backend.config import settings
 from oasst_backend.database import engine
-from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.models import ApiClient
+from oasst_shared.exceptions import OasstError, OasstErrorCode
 from sqlmodel import Session
 
 
