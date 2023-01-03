@@ -2,7 +2,8 @@
 
 ## example usage
 
-Below are some example use cases you might want to run from within the devcontainer (either within VSCode or GitHub Codespaces).
+Below are some example use cases you might want to run from within the
+devcontainer (either within VSCode or GitHub Codespaces).
 
 ### Run pre-commit
 
@@ -20,7 +21,9 @@ docker compose up --build
 
 You should see some docker containers being pulled and activated.
 
-Once you see the line `open-assistant-web-1             | Listening on port 3000 url: http://localhost:3000` you should be able to access that port like below:
+Once you see the line
+`open-assistant-web-1 | Listening on port 3000 url: http://localhost:3000` you
+should be able to access that port like below:
 
 ![port_forwarding](https://user-images.githubusercontent.com/2178292/210395676-e9c2aab5-cb54-4ae6-b1eb-ac929fd73607.png)
 
