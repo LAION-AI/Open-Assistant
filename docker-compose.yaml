@@ -9,7 +9,7 @@ services:
   # Use `docker compose up frontend-dev --build --attach-dependencies` to start all services needed to work on the frontend.
   frontend-dev:
     image: sverrirab/sleep
-    depends_on: [db, webdb, adminer, maildev, backend]
+    depends_on: [db, webdb, adminer, maildev, backend, redis]
 
   # This DB is for the FastAPI Backend.
   db:

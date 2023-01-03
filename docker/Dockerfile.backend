@@ -5,6 +5,7 @@ COPY ./backend/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 ENV PORT 8080
+EXPOSE 8080
 
 COPY ./oasst-shared /oasst-shared
 RUN pip install -e /oasst-shared
