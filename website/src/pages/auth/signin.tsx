@@ -52,8 +52,9 @@ function Signin({ csrfToken, providers }) {
           {email && (
             <form onSubmit={signinWithEmail}>
               <Stack>
-                <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
+                <Input data-cy="email-address" variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
                 <Button
+                  data-cy="signin-email-button"
                   size={"lg"}
                   leftIcon={<FaEnvelope />}
                   type="submit"
@@ -99,21 +100,14 @@ function Signin({ csrfToken, providers }) {
         </Stack>
         <div className="pt-10 text-center">
           By signing up you agree to our <br></br>
-          <Link href="#" aria-label="Terms of Service" className="hover:underline underline-offset-4">
+          <Link href="/terms-of-service" aria-label="Terms of Service" className="hover:underline underline-offset-4">
             <b>Terms of Service</b>
           </Link>{" "}
           and{" "}
-          <Link href="#" aria-label="Terms of Use" className="hover:underline underline-offset-4">
+          <Link href="/privacy-policy" aria-label="Privacy Policy" className="hover:underline underline-offset-4">
             <b>Privacy Policy</b>
           </Link>
           .
-        </div>
-        <hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
-        <div className="text-center">
-          Already have an account?{" "}
-          <Link href="#" aria-label="Log In" className="hover:underline underline-offset-4">
-            <b>Log In</b>
-          </Link>
         </div>
       </AuthLayout>
     </div>

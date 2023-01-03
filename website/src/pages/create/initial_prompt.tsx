@@ -1,8 +1,7 @@
-import { Textarea } from "@chakra-ui/react";
+import { Container, Textarea } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
-import { Messages } from "src/components/Messages";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import fetcher from "src/lib/fetcher";
@@ -10,12 +9,12 @@ import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
-const UserReply = () => {
+const InitialPrompt = () => {
   const [tasks, setTasks] = useState([]);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const { isLoading, mutate } = useSWRImmutable("/api/new_task/prompter_reply", fetcher, {
+  const { isLoading, mutate } = useSWRImmutable("/api/new_task/initial_prompt ", fetcher, {
     onSuccess: (data) => {
       setTasks([data]);
     },
@@ -52,13 +51,7 @@ const UserReply = () => {
   }
 
   if (tasks.length == 0) {
-    return (
-      <div className={`p-12 ${mainBgClasses}`}>
-        <div className="flex h-full">
-          <div className="text-xl font-bold  mx-auto my-auto">No tasks found...</div>
-        </div>
-      </div>
-    );
+    return <Container className="p-6 text-center text-gray-800">No tasks found...</Container>;
   }
 
   const task = tasks[0].task;
@@ -67,12 +60,10 @@ const UserReply = () => {
     <div className={`p-12 ${mainBgClasses}`}>
       <TwoColumnsWithCards>
         <>
-          <h5 className="text-lg font-semibold">Reply as a user</h5>
-          <p className="text-lg py-1">Given the following conversation, provide an adequate reply</p>
-          <Messages messages={task.conversation.messages} post_id={task.id} />
-          {task.hint && <p className="text-lg py-1">Hint: {task.hint}</p>}
+          <h5 className="text-lg font-semibold">Start a conversation</h5>
+          <p className="text-lg py-1">Create an initial message to send to the assistant</p>
         </>
-        <Textarea name="reply" data-cy="reply" placeholder="Reply..." ref={inputRef} />
+        <Textarea name="reply" data-cy="reply" placeholder="Question, task, greeting or similar..." ref={inputRef} />
       </TwoColumnsWithCards>
 
       <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
@@ -80,4 +71,4 @@ const UserReply = () => {
   );
 };
 
-export default UserReply;
+export default InitialPrompt;
