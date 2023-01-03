@@ -18,7 +18,9 @@ export default function Account() {
       </Head>
       <main className="h-3/4 z-0 bg-white flex flex-col items-center justify-center">
         <p data-cy="username" className="hidden lg:flex">
-          {session.user.name || session.user.email}
+          Username
+          {/* {session.user.name || session.user.email} */}
+          {/* this was working and now it's not. leaving here as a reminder for me to fix */}
         </p>
         <Button>
           <Link href="/account/edit">Edit Username</Link>

@@ -49,7 +49,6 @@ export default function Account() {
             </Button>
           </InputGroup>
         </form>
-        <p>{session.user.email}</p>
       </main>
     </>
   );
