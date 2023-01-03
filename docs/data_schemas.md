@@ -92,3 +92,114 @@ conversations, we should use a row-major format.
   Avro files and protobufs. Keep in mind that column-major files are better for
   reading, filtering, and aggregating, but row-major files are better for
   writing.
+
+# Task-Specific Data Schemas
+
+The main tasks are a) generation of response text and b) ranking of responses.
+The following sections describe the data schemas for each of these tasks. Both
+should be implementable in parquet files.
+
+Note: These files are meant to be consumed by ML algorithms and should ideally
+be produced from the above files.
+
+## Common Data Structures
+
+```python
+
+class Message:
+  text: str # The text of the message
+  role: Literal['prompter', 'assistant'] # Whether the message is a user prompt/follow-up or an assistant response
+
+class Thread:
+  messages: list[Message] # The messages in the conversation
+
+```
+
+The corresponding parquet schemas are:
+
+```parquet
+message Message {
+  required binary text (UTF8);
+  required binary role (UTF8);
+}
+
+message Thread {
+  required group messages (LIST) {
+    repeated group list {
+      required group element {
+        required binary text (UTF8);
+        required binary role (UTF8);
+      }
+    }
+  }
+}
+
+```
+
+## Generation
+
+```python
+
+class GenerationExample:
+  thread: Thread # The conversation thread before the message to be generated
+  message: Message # The message to be generated
+
+```
+
+The corresponding parquet schema is:
+
+```parquet
+message GenerationExample {
+  required group thread (LIST) {
+    repeated group list {
+      required group element {
+        required binary text (UTF8);
+        required binary role (UTF8);
+      }
+    }
+  }
+  required group message (LIST) {
+    repeated group list {
+      required group element {
+        required binary text (UTF8);
+        required binary role (UTF8);
+      }
+    }
+  }
+}
+
+```
+
+## Ranking
+
+```python
+
+class RankingExample:
+  thread: Thread # The conversation thread before the message to be ranked
+  messages: list[Message] # The messages to be ranked, in oder of decreasing preference
+
+```
+
+The corresponding parquet schema is:
+
+```parquet
+message RankingExample {
+  required group thread (LIST) {
+    repeated group list {
+      required group element {
+        required binary text (UTF8);
+        required binary role (UTF8);
+      }
+    }
+  }
+  required group messages (LIST) {
+    repeated group list {
+      required group element {
+        required binary text (UTF8);
+        required binary role (UTF8);
+      }
+    }
+  }
+}
+
+```

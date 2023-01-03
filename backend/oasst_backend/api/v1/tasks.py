@@ -10,6 +10,7 @@ from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
+from starlette.status import HTTP_204_NO_CONTENT
 
 router = APIRouter()
 
@@ -159,14 +160,14 @@ def request_task(
     return task
 
 
-@router.post("/{task_id}/ack", response_model=None)
+@router.post("/{task_id}/ack", response_model=None, status_code=HTTP_204_NO_CONTENT)
 def tasks_acknowledge(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
     task_id: UUID,
     ack_request: protocol_schema.TaskAck,
-) -> Any:
+) -> None:
     """
     The frontend acknowledges a task.
     """
@@ -187,14 +188,14 @@ def tasks_acknowledge(
         raise OasstError("Failed to acknowledge task.", OasstErrorCode.TASK_ACK_FAILED)
 
 
-@router.post("/{task_id}/nack", response_model=None)
+@router.post("/{task_id}/nack", response_model=None, status_code=HTTP_204_NO_CONTENT)
 def tasks_acknowledge_failure(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
     task_id: UUID,
     nack_request: protocol_schema.TaskNAck,
-) -> Any:
+) -> None:
     """
     The frontend reports failure to implement a task.
     """
@@ -265,7 +266,7 @@ def tasks_interaction(
         raise OasstError("Interaction request failed.", OasstErrorCode.TASK_INTERACTION_REQUEST_FAILED)
 
 
-@router.post("/close")
+@router.post("/close", response_model=protocol_schema.TaskDone)
 def close_collective_task(
     close_task_request: protocol_schema.TaskClose,
     db: Session = Depends(deps.get_db),

@@ -53,7 +53,7 @@ const handler = async (req, res) => {
   });
 
   // Update the backend with our Task ID
-  const ackRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/tasks/${task.id}/ack`, {
+  await fetch(`${process.env.FASTAPI_URL}/api/v1/tasks/${task.id}/ack`, {
     method: "POST",
     headers: {
       "X-API-Key": process.env.FASTAPI_KEY,
@@ -63,7 +63,6 @@ const handler = async (req, res) => {
       message_id: registeredTask.id,
     }),
   });
-  await ackRes.json();
 
   // Send the results to the client.
   res.status(200).json(registeredTask);

@@ -12,7 +12,7 @@ from oasst_backend.models import ApiClient, Message, MessageReaction, Task, Text
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from oasst_shared.schemas.protocol import SystemStats
+from oasst_shared.schemas.protocol import LeaderboardStats, SystemStats
 from sqlalchemy import update
 from sqlmodel import Session, func
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
@@ -705,3 +705,24 @@ class PromptRepository:
             deleted=result.get(True, 0),
             message_trees=result.get(None, 0),
         )
+
+    def get_user_leaderboard(self, role: str) -> LeaderboardStats:
+        """
+        Get leaderboard stats for Messages created,
+        separate leaderboard for prompts & assistants
+
+        """
+        query = (
+            self.db.query(Message.user_id, User.username, User.display_name, func.count(Message.user_id))
+            .join(User, User.id == Message.user_id, isouter=True)
+            .filter(Message.deleted is not True, Message.role == role)
+            .group_by(Message.user_id, User.username, User.display_name)
+            .order_by(func.count(Message.user_id).desc())
+        )
+
+        result = [
+            {"ranking": i, "user_id": j[0], "username": j[1], "display_name": j[2], "score": j[3]}
+            for i, j in enumerate(query.all(), start=1)
+        ]
+
+        return LeaderboardStats(leaderboard=result)
