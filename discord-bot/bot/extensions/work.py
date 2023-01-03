@@ -73,8 +73,8 @@ async def work(ctx: lightbulb.Context):
                 return
             case True:
                 old_msg, task_id = currently_working[ctx.author.id]
-                logger.info(f"User {ctx.author.id} cancelled task {task_id}, deleting message {old_msg.id}")
                 if old_msg is not None:
+                    logger.info(f"User {ctx.author.id} cancelled task {task_id}, deleting message {old_msg.id}")
                     map(lambda c: c, old_msg.components)
                     await old_msg.delete()
                 if task_id is not None:
