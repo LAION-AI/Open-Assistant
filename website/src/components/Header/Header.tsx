@@ -7,7 +7,6 @@ import { useSession } from "next-auth/react";
 import { FaUser } from "react-icons/fa";
 
 import { ColorModeIconToggle } from "../UI/ColorModeIconToggle";
-import { NavLinks } from "./NavLinks";
 import { UserMenu } from "./UserMenu";
 
 function MenuIcon(props) {
@@ -69,9 +68,6 @@ export function Header(props) {
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
             <span className="text-2xl font-bold ml-3">Open Assistant</span>
           </Link>
-          <div className="hidden lg:flex lg:gap-10">
-            <NavLinks />
-          </div>
         </div>
         <div className="flex items-center gap-4">
           <Popover className="lg:hidden">
