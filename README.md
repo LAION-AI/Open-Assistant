@@ -26,8 +26,8 @@ interact with the website.
 **Note:** When logging in via email, navigate to `http://localhost:1080` to get
 the magic email login link.
 
-**Note** If you would like to run this in a standardized development environment
-(a
+**Note:** If you would like to run this in a standardized development
+environment (a
 ["devcontainer"](https://code.visualstudio.com/docs/devcontainers/containers))
 using
 [vscode locally](https://code.visualstudio.com/docs/devcontainers/create-dev-container#_create-a-devcontainerjson-file)
