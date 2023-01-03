@@ -1,7 +1,9 @@
 {
-  "service": "frontend-dev",
-  "dockerComposeFile": "../docker-compose.yaml",
-  "forwardPorts": [3000],
+  "name": "Open-Assistant",
+  "image": "mcr.microsoft.com/vscode/devcontainers/universal",
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/pre-commit:2": {"version": "2.0.1"}
+  },
   "customizations": {
     "vscode": {
       "extensions": ["GitHub.copilot"]
