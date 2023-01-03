@@ -13,7 +13,7 @@ export const CollapsableText = ({ text, maxLength = 220 }) => {
         <Button style={{ display: "contents" }} onClick={onOpen}>
           ...
         </Button>
-        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior={"inside"} >
+        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior={"inside"}>
           <ModalOverlay style={{ width: "100%", height: "100%" }}>
             <ModalContent maxH="400">
               <ModalHeader>Full Text</ModalHeader>
