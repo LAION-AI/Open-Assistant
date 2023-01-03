@@ -28,11 +28,6 @@ parser = ArgumentParser()
 parser.add_argument("config", type=str)
 
 
-@dataclass
-class CustomTrainingArguments(TrainingArguments):
-    loss_function: str = "rank"
-
-
 def compute_metrics(eval_pred):
     predictions, _ = eval_pred
     predictions = np.argmax(predictions, axis=1)
@@ -114,11 +109,10 @@ if __name__ == "__main__":
         print("Number of trainable : {}M".format(int(params / 1e6)))
 
     tokenizer = get_tokenizer(model_name)
-    args = CustomTrainingArguments(
+    args = TrainingArguments(
         output_dir=f"{model_name}-finetuned",
         num_train_epochs=training_conf["num_train_epochs"],
         warmup_steps=500,
-        loss_function=training_conf["loss"],
         learning_rate=training_conf["learning_rate"],
         # half_precision_backend="apex",
         fp16=True,
@@ -155,6 +149,7 @@ if __name__ == "__main__":
     trainer = RankTrainer(
         model,
         args,
+        loss_function=training_conf["loss"],
         train_dataset=train,
         eval_dataset=eval,
         data_collator=collate_fn,
