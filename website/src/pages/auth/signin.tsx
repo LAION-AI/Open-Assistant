@@ -15,13 +15,13 @@ function Signin({ csrfToken, providers }) {
   const emailEl = useRef(null);
   const signinWithEmail = (ev: React.FormEvent) => {
     ev.preventDefault();
-    signIn(email.id, { callbackUrl: "/", email: emailEl.current.value });
+    signIn(email.id, { callbackUrl: "/dashboard", email: emailEl.current.value });
   };
 
   const debugUsernameEl = useRef(null);
   function signinWithDebugCredentials(ev: React.FormEvent) {
     ev.preventDefault();
-    signIn(credentials.id, { callbackUrl: "/", username: debugUsernameEl.current.value });
+    signIn(credentials.id, { callbackUrl: "/dashboard", username: debugUsernameEl.current.value });
   }
 
   const { colorMode } = useColorMode();
@@ -97,7 +97,8 @@ function Signin({ csrfToken, providers }) {
             </Button>
           )}
         </Stack>
-        <div className="pt-10 text-center">
+        <hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
+        <div className="text-center">
           By signing up you agree to our <br></br>
           <Link href="#" aria-label="Terms of Service" className="hover:underline underline-offset-4">
             <b>Terms of Service</b>
@@ -107,13 +108,6 @@ function Signin({ csrfToken, providers }) {
             <b>Privacy Policy</b>
           </Link>
           .
-        </div>
-        <hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
-        <div className="text-center">
-          Already have an account?{" "}
-          <Link href="#" aria-label="Log In" className="hover:underline underline-offset-4">
-            <b>Log In</b>
-          </Link>
         </div>
       </AuthLayout>
     </div>

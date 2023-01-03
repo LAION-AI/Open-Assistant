@@ -7,9 +7,6 @@ import React from "react";
 export default function Account() {
   const { data: session } = useSession();
 
-  if (!session) {
-    return;
-  }
   return (
     <>
       <Head>
@@ -20,7 +17,9 @@ export default function Account() {
         />
       </Head>
       <main className="h-3/4 z-0 bg-white flex flex-col items-center justify-center">
-        <p>{session.user.name || "No username"}</p>
+        <p data-cy="username" className="hidden lg:flex">
+          {session.user.name || session.user.email}
+        </p>
         <Button>
           <Link href="/account/edit">Edit Username</Link>
         </Button>
