@@ -1,4 +1,4 @@
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, useColorMode } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
@@ -54,10 +54,16 @@ function AccountButton() {
 }
 
 export function Header(props) {
-  const borderClass = props.transparent ? "" : props.borderClass ?? "border-b border-gray-100";
+  const { colorMode } = useColorMode();
+  const borderClass = props.transparent
+    ? ""
+    : colorMode === "light"
+    ? "border-b border-gray-400"
+    : "border-b border-zinc-800";
+
   return (
-    <nav className="oa-basic-theme">
-      <Box className={`flex mx-auto max-w-7xl justify-between py-8 px-10 ${borderClass}`}>
+    <nav className={`oa-basic-theme ${borderClass}`}>
+      <Box className="flex mx-auto max-w-7xl justify-between py-8 px-10">
         <div className="relative z-10 flex items-center gap-16">
           <Link href="/" aria-label="Home" className="flex items-center">
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
