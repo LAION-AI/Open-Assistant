@@ -53,7 +53,6 @@ class RankTrainer(Trainer):
             self.loss_fct = RankLoss()
             self.loss_function = loss_function
 
-
     def compute_loss(self, model, inputs, return_outputs=False):
         # forward pass
         outputs = model(**inputs)
