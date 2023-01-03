@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
 import enum
 from datetime import datetime
-from typing import Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 from uuid import UUID, uuid4
 
 import pydantic
-from pydantic import BaseModel
+from oasst_shared.exceptions import OasstErrorCode
+from pydantic import BaseModel, Field
 
 
 class TaskRequestType(str, enum.Enum):
@@ -56,7 +56,9 @@ class TaskRequest(BaseModel):
     """The frontend asks the backend for a task."""
 
     type: TaskRequestType = TaskRequestType.random
-    user: Optional[User] = None
+    # Must use Field(..., nullable=True) to indicate to the OpenAPI schema that
+    # this is optional. https://github.com/pydantic/pydantic/issues/1270
+    user: Optional[User] = Field(None, nullable=True)
     collective: bool = False
 
 
@@ -280,3 +282,22 @@ class SystemStats(BaseModel):
     active: int = 0
     deleted: int = 0
     message_trees: int = 0
+
+
+class UserScore(BaseModel):
+    ranking: int
+    user_id: UUID
+    username: str
+    display_name: str
+    score: int
+
+
+class LeaderboardStats(BaseModel):
+    leaderboard: List[UserScore]
+
+
+class OasstErrorResponse(BaseModel):
+    """The format of an error response from the OASST API."""
+
+    error_code: OasstErrorCode
+    message: str

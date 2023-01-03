@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """add_auth_method_to_ix_person_username
 
 Revision ID: 0daec5f8135f

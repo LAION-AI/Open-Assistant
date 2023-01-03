@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Hot reload plugin."""
 import typing as t
 from datetime import datetime
@@ -8,7 +7,6 @@ import lightbulb
 import miru
 from aiosqlite import Connection
 from bot.db.schemas import GuildSettings
-from bot.utils import EMPTY
 from loguru import logger
 
 plugin = lightbulb.Plugin(
@@ -75,7 +73,7 @@ class LabelModal(miru.Modal):
         )
         channel = await context.bot.rest.fetch_channel(guild_settings.log_channel_id)
         assert isinstance(channel, hikari.TextableChannel)
-        await channel.send(EMPTY, embed=embed)
+        await channel.send(embed=embed)
 
 
 class LabelSelect(miru.View):
@@ -165,7 +163,7 @@ async def label_message_text(ctx: lightbulb.MessageContext):
         msg.content,
         timeout=60,
     )
-    resp = await ctx.respond(EMPTY, embed=embed, components=label_select_view, flags=hikari.MessageFlag.EPHEMERAL)
+    resp = await ctx.respond(embed=embed, components=label_select_view, flags=hikari.MessageFlag.EPHEMERAL)
 
     await label_select_view.start(await resp.message())
     await label_select_view.wait()

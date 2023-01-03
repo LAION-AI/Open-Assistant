@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Guild settings."""
 import hikari
 import lightbulb
@@ -79,7 +78,6 @@ async def log_channel(ctx: lightbulb.SlashContext) -> None:
 
     # if the bot's permissions for this channel don't contain SEND_MESSAGE
     # This will also filter out categories and voice channels
-    print(permissions_in(ch, own_member) & hikari.Permissions.SEND_MESSAGES)
     if not permissions_in(ch, own_member) & hikari.Permissions.SEND_MESSAGES:
         await ctx.respond(f"I don't have permission to send messages in {ch.mention}.")
         return
