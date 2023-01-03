@@ -1,6 +1,6 @@
 import { Box, Button, Link, Text, Tooltip, useColorMode } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { FiAward, FiBarChart2, FiLayout, FiSun } from "react-icons/fi";
+import { FiLayout, FiSun } from "react-icons/fi";
 import { colors } from "styles/Theme/colors";
 
 export function SideMenu() {
@@ -13,18 +13,18 @@ export function SideMenu() {
       desc: "Dashboard Home",
       icon: FiLayout,
     },
-    {
-      label: "Leaderboard",
-      pathname: "#",
-      desc: "Public Leaderboard",
-      icon: FiAward,
-    },
-    {
-      label: "Stats",
-      pathname: "#",
-      desc: "User Statistics",
-      icon: FiBarChart2,
-    },
+    // {
+    //   label: "Leaderboard",
+    //   pathname: "#",
+    //   desc: "Public Leaderboard",
+    //   icon: FiAward,
+    // },
+    // {
+    //   label: "Stats",
+    //   pathname: "#",
+    //   desc: "User Statistics",
+    //   icon: FiBarChart2,
+    // },
   ];
 
   return (
