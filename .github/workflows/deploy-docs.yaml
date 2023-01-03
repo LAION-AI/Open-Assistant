@@ -23,10 +23,10 @@ jobs:
           cache-dependency-path: "./docs/package-lock.json"
 
       - name: Install dependencies
-        working-directory: ./docs
+        working-directory: ./docs/
         run: yarn install --frozen-lockfile
       - name: Build website
-        working-directory: ./docs
+        working-directory: ./docs/
         run: yarn build
 
       # Popular action to deploy to GitHub Pages:
@@ -34,7 +34,7 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          working-directory: ./docs
+          working-directory: ./docs/
           github_token: ${{ secrets.GITHUB_TOKEN }}
           # Build output to publish to the `gh-pages` branch:
           publish_dir: ./build
