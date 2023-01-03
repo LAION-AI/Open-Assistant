@@ -1,12 +1,10 @@
-import { Box, Button, Text, useColorMode } from "@chakra-ui/react";
+import { Box, Button } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { FaUser } from "react-icons/fa";
-
-import { NavLinks } from "./NavLinks";
 import { UserMenu } from "./UserMenu";
 
 function MenuIcon(props) {
@@ -53,7 +51,6 @@ function AccountButton() {
 }
 
 export function Header(props) {
-  const transparent = props.transparent ?? false;
   return (
     <header>
       <nav>

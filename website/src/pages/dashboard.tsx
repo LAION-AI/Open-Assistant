@@ -1,4 +1,4 @@
-import { Box, Text, useColorMode } from "@chakra-ui/react";
+import { Box, useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
 import { colors } from "styles/Theme/colors";
 

@@ -1,5 +1,4 @@
 import { Box, Flex, GridItem, Heading, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
-import { Inter } from "@next/font/google";
 import Link from "next/link";
 
 const crTasks = [
@@ -41,7 +40,6 @@ const evTasks = [
 
 export const TaskOption = () => {
   const backgroundColor = useColorModeValue("white", "gray.700");
-  const accentColor = useColorModeValue("gray.200", "gray.900");
 
   return (
     <Box className="flex flex-col gap-14" fontFamily="inter">

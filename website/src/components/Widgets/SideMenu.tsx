@@ -1,5 +1,4 @@
 import { Box, Button, Link, Text, Tooltip, useColorMode } from "@chakra-ui/react";
-import { Inter } from "@next/font/google";
 import { useRouter } from "next/router";
 import { FiLayout, FiAward, FiBarChart2, FiSun } from "react-icons/fi";
 import { colors } from "styles/Theme/colors";

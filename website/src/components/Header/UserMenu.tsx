@@ -2,20 +2,18 @@ import React from "react";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { Popover } from "@headlessui/react";
-import { Box, Button, Link, Text, textDecoration, useColorModeValue } from "@chakra-ui/react";
+import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { FiSettings, FiLogOut, FiLayout } from "react-icons/fi";
 
 export function UserMenu() {
   const { data: session } = useSession();
-  const backgroundColor = useColorModeValue("#FFFFFF", "#000000");
 
   if (!session) {
     return <></>;
   }
   if (session && session.user) {
-    const email = session.user.email;
     const backgroundColor = useColorModeValue("white", "gray.700");
     const hovColor = useColorModeValue("gray.100", "gray.800");
     const accentColor = useColorModeValue("gray.300", "gray.600");

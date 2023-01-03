@@ -1,4 +1,4 @@
-import { Badge, Box, Image, Link, Stack, StackDivider, Text, useColorMode, useColorModeValue } from "@chakra-ui/react";
+import { Badge, Box, Image, Link, Stack, StackDivider, Text, useColorModeValue } from "@chakra-ui/react";
 
 export function LeaderboardWidget() {
   const backgroundColor = useColorModeValue("white", "gray.700");
@@ -75,7 +75,7 @@ export function LeaderboardWidget() {
               </div>
             </div>
             {leaderInfo.map((item) => (
-              <div className="grid grid-cols-4 items-center">
+              <div key="User" className="grid grid-cols-4 items-center">
                 <div className="flex items-center gap-3">
                   <Image alt="Profile Picture" src={item.image} boxSize="7" borderRadius="full"></Image>
                   <p>{item.name}</p>
