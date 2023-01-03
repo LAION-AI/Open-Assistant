@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Work plugin for collecting user data."""
 import asyncio
 import typing as t
@@ -9,9 +8,9 @@ import lightbulb
 import lightbulb.decorators
 import miru
 from aiosqlite import Connection
-from bot.api_client import OasstApiClient, TaskType
 from bot.utils import EMPTY
 from loguru import logger
+from oasst_shared.api_client import OasstApiClient, TaskType
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import TaskRequestType
 
@@ -34,12 +33,25 @@ MAX_TASK_ACCEPT_TIME = 60  # 1 minute
 @lightbulb.implements(lightbulb.SlashCommand, lightbulb.PrefixCommand)
 async def work(ctx: lightbulb.Context):
     """Create and handle a task."""
+    # make sure the user isn't currently doing a task
+    currently_working: set[hikari.Snowflakeish] = ctx.bot.d.currently_working
+    if ctx.author.id in currently_working:
+        await ctx.respond(
+            "You are already performing a task. Please complete that one first.", flags=hikari.MessageFlag.EPHEMERAL
+        )
+        return
+
+    currently_working.add(ctx.author.id)
+
     task_type: TaskRequestType = TaskRequestType(ctx.options.type.split(".")[-1])
 
     await ctx.respond("Sending you a task, check your DMs", flags=hikari.MessageFlag.EPHEMERAL)
     logger.debug(f"Starting task_type: {task_type!r}")
 
-    await _handle_task(ctx, task_type)
+    try:
+        await _handle_task(ctx, task_type)
+    finally:
+        currently_working.remove(ctx.author.id)
 
 
 async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> None:
