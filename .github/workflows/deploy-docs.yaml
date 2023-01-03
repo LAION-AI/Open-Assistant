@@ -11,13 +11,16 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./docs/
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: yarn
-          working-directory: ./docs
+          cache-dependency-path: "./docs/package-lock.json"
 
       - name: Install dependencies
         working-directory: ./docs
