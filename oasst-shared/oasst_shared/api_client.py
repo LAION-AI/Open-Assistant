@@ -86,6 +86,10 @@ class OasstApiClient:
                     OasstErrorCode.GENERIC_ERROR,
                     HTTPStatus(response.status),
                 )
+
+        if response.status == 204:
+            # No content
+            return None
         return await response.json()
 
     def _parse_task(self, data: Optional[dict[str, t.Any]]) -> protocol_schema.Task:
