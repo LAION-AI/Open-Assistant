@@ -2,6 +2,7 @@ import {
   Button,
   Checkbox,
   Flex,
+  Grid,
   Popover,
   PopoverAnchor,
   PopoverArrow,
@@ -15,6 +16,7 @@ import {
   SliderTrack,
   Spacer,
   useBoolean,
+  useId,
 } from "@chakra-ui/react";
 import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
@@ -65,58 +67,47 @@ export const FlaggableElement = (props) => {
       isLazy
       lazyBehavior="keepMounted"
     >
-      <div className="inline-block float-left">
+      <Grid templateColumns="1fr min-content" gap={2}>
         <PopoverAnchor>{props.children}</PopoverAnchor>
         <PopoverTrigger>
-          <Button color="transparent">
-            <FlagIcon
-              className="h-5 w-5 ml-3 align-center text-gray-400 group-hover:text-gray-500"
-              aria-hidden="true"
-            />
+          <Button h="full">
+            <FlagIcon className="w-4 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
           </Button>
         </PopoverTrigger>
-      </div>
+      </Grid>
 
       <PopoverContent width="fit-content">
         <PopoverArrow />
-        <PopoverCloseButton />
-        <div className="flex mt-3 ">
-          <PopoverBody>
-            <ul>
-              {TEXT_LABEL_FLAGS.map((option, i) => {
-                return (
-                  <FlagCheckboxLi
-                    option={option}
-                    key={i}
-                    idx={i}
-                    checkboxValues={checkboxValues}
-                    sliderValues={sliderValues}
-                    checkboxHandler={handleCheckboxState}
-                    sliderHandler={handleSliderState}
-                  ></FlagCheckboxLi>
-                );
-              })}
-            </ul>
-            <div className="flex justify-center ml-auto">
-              <Button
-                isDisabled={
-                  !checkboxValues.reduce((all, current) => {
-                    return all | current;
-                  }, false)
-                }
-                onClick={() => submitResponse()}
-                className="bg-indigo-600 text-black hover:bg-indigo-700"
-              >
-                Report
-              </Button>
-            </div>
-          </PopoverBody>
+        <div className="relative h-4">
+          <PopoverCloseButton />
         </div>
+        <PopoverBody>
+          {TEXT_LABEL_FLAGS.map((option, i) => (
+            <FlagCheckbox
+              option={option}
+              key={i}
+              idx={i}
+              checkboxValues={checkboxValues}
+              sliderValues={sliderValues}
+              checkboxHandler={handleCheckboxState}
+              sliderHandler={handleSliderState}
+            />
+          ))}
+          <Flex justify="center">
+            <Button
+              isDisabled={!checkboxValues.some(Boolean)}
+              onClick={submitResponse}
+              className="bg-indigo-600 text-black hover:bg-indigo-700"
+            >
+              Report
+            </Button>
+          </Flex>
+        </PopoverBody>
       </PopoverContent>
     </Popover>
   );
 };
-function FlagCheckboxLi(props: {
+function FlagCheckbox(props: {
   option: textFlagLabels;
   idx: number;
   checkboxValues: boolean[];
@@ -136,37 +127,35 @@ function FlagCheckboxLi(props: {
     );
   }
 
+  const id = useId();
+
   return (
-    <li>
-      <Flex>
-        <Checkbox
-          onChange={(e) => {
-            props.checkboxHandler(e.target.checked, props.idx);
-          }}
-        />
-        <label
-          className=" ml-1 mr-1 text-sm form-check-label  hover:cursor-pointer"
-          htmlFor={props.option.attributeName}
-        >
-          <span className="text-gray-800 hover:text-blue-700 float-left">{props.option.labelText}</span>
-          {AdditionalExplanation}
-        </label>
-        <Spacer />
-        <Slider
-          width="100px"
-          isDisabled={!props.checkboxValues[props.idx]}
-          defaultValue={100}
-          onChangeEnd={(val) => {
-            props.sliderHandler(val / 100, props.idx);
-          }}
-        >
-          <SliderTrack>
-            <SliderFilledTrack />
-            <SliderThumb />
-          </SliderTrack>
-        </Slider>
-      </Flex>
-    </li>
+    <Flex gap={1}>
+      <Checkbox
+        id={id}
+        onChange={(e) => {
+          props.checkboxHandler(e.target.checked, props.idx);
+        }}
+      />
+      <label className="text-sm form-check-label" htmlFor={id}>
+        <span className="text-gray-800 hover:text-blue-700 float-left">{props.option.labelText}</span>
+        {AdditionalExplanation}
+      </label>
+      <Spacer />
+      <Slider
+        width="100px"
+        isDisabled={!props.checkboxValues[props.idx]}
+        defaultValue={100}
+        onChangeEnd={(val) => {
+          props.sliderHandler(val / 100, props.idx);
+        }}
+      >
+        <SliderTrack>
+          <SliderFilledTrack />
+          <SliderThumb />
+        </SliderTrack>
+      </Slider>
+    </Flex>
   );
 }
 interface textFlagLabels {
