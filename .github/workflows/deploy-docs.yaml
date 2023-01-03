@@ -28,9 +28,9 @@ jobs:
       # Popular action to deploy to GitHub Pages:
       # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
       - name: Deploy to GitHub Pages
-        working-directory: ./docs
         uses: peaceiris/actions-gh-pages@v3
         with:
+          working-directory: ./docs
           github_token: ${{ secrets.GITHUB_TOKEN }}
           # Build output to publish to the `gh-pages` branch:
           publish_dir: ./build
