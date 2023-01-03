@@ -7,8 +7,7 @@ import prisma from "src/lib/prismadb";
  * This implicity does a few things:
  * 1) Stores the answer with the Task Backend.
  * 2) Records the new task in our local database.
- * 3) (TODO) Acks the new task with our local task ID to the Task Backend.
- * 4) Returns the newly created task to the client.
+ * 3) Returns the newly created task to the client.
  */
 const handler = async (req, res) => {
   const token = await getToken({ req });
@@ -68,9 +67,6 @@ const handler = async (req, res) => {
       },
     },
   });
-
-  // TODO: Ack the task with the Task Backend using the newly created local
-  // task ID.
 
   // Send the next task in the sequence to the client.
   res.status(200).json(newRegisteredTask);

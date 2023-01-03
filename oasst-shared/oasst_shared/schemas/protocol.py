@@ -4,6 +4,7 @@ from typing import List, Literal, Optional, Union
 from uuid import UUID, uuid4
 
 import pydantic
+from oasst_shared.exceptions import OasstErrorCode
 from pydantic import BaseModel, Field
 
 
@@ -293,3 +294,10 @@ class UserScore(BaseModel):
 
 class LeaderboardStats(BaseModel):
     leaderboard: List[UserScore]
+
+
+class OasstErrorResponse(BaseModel):
+    """The format of an error response from the OASST API."""
+
+    error_code: OasstErrorCode
+    message: str

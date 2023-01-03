@@ -5,6 +5,7 @@ import { Faq } from "src/components/Faq";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
 import { Hero } from "src/components/Hero";
+import { getTransparentHeaderLayout } from "src/components/Layout";
 import { TaskSelection } from "src/components/TaskSelection";
 
 const Home = () => {
@@ -20,11 +21,9 @@ const Home = () => {
         />
       </Head>
       {session ? (
-        <main className="my-4">
-          <TaskSelection />
-        </main>
+        <TaskSelection />
       ) : (
-        <main>
+        <main className="oa-basic-theme">
           <Hero />
           <CallToAction />
           <Faq />
@@ -34,12 +33,6 @@ const Home = () => {
   );
 };
 
-Home.getLayout = (page) => (
-  <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
-    <Header transparent={true} />
-    {page}
-    <Footer />
-  </div>
-);
+Home.getLayout = getTransparentHeaderLayout;
 
 export default Home;
