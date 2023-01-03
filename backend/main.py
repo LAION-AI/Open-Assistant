@@ -14,8 +14,8 @@ from oasst_backend.api.deps import get_dummy_api_client
 from oasst_backend.api.v1.api import api_router
 from oasst_backend.config import settings
 from oasst_backend.database import engine
-from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
 from starlette.middleware.cors import CORSMiddleware
@@ -26,8 +26,13 @@ app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V
 @app.exception_handler(OasstError)
 async def oasst_exception_handler(request: fastapi.Request, ex: OasstError):
     logger.error(f"{request.method} {request.url} failed: {repr(ex)}")
+
     return fastapi.responses.JSONResponse(
-        status_code=int(ex.http_status_code), content={"message": ex.message, "error_code": ex.error_code}
+        status_code=int(ex.http_status_code),
+        content=protocol_schema.OasstErrorResponse(
+            message=ex.message,
+            error_code=OasstErrorCode(ex.error_code),
+        ).dict(),
     )
 
 
