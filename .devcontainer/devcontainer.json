@@ -6,5 +6,12 @@
       "version": "latest"
     }
   },
-  "onCreateCommand": "(cd website/ && npm install) && docker compose build" 
+  "portsAttributes": {
+    "3000": {
+      "label": "Application",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "onCreateCommand": "(cd website/ && npm install) && docker compose build",
+  "postCreateCommand": "pre-commit && pre-commit install"
 }
