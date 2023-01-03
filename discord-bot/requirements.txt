@@ -1,5 +1,3 @@
-aiohttp             # http client
-aiohttp[speedups]   # speedups for aiohttp
 aiosqlite           # database
 hikari              # discord framework
 hikari-lightbulb    # command handler
