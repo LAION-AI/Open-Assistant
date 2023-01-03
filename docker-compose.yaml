@@ -92,7 +92,7 @@ services:
       - POSTGRES_HOST=db
       - DEBUG_SKIP_API_KEY_CHECK=True
       - MAX_WORKERS=1
-        #- DEBUG_USE_SEED_DATA=True
+      - DEBUG_USE_SEED_DATA=True
     depends_on:
       db:
         condition: service_healthy
