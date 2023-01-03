@@ -1,3 +1,4 @@
+import { Grid } from "@chakra-ui/react";
 import { FlaggableElement } from "./FlaggableElement";
 import { useColorMode } from "@chakra-ui/react";
 
@@ -19,20 +20,13 @@ export const Messages = ({ messages, post_id }: { messages: Message[]; post_id: 
 
   const items = messages.map(({ text, is_assistant }: Message, i: number) => {
     return (
-      <div className="flex" key={i + text}>
-        <FlaggableElement text={text} post_id={post_id}>
-          <div
-            key={i + text}
-            className={`${getBgColor(
-              is_assistant,
-              colorMode
-            )} p-4 my-2 rounded-xl text-white whitespace-pre-wrap float-left mr-3`}
-          >
-            {text}
-          </div>
-        </FlaggableElement>
-      </div>
+      <FlaggableElement text={text} post_id={post_id} key={i + text}>
+        <div key={i + text} className={`${getBgColor(is_assistant)} p-4 rounded-md text-white whitespace-pre-wrap`}>
+          {text}
+        </div>
+      </FlaggableElement>
     );
   });
-  return <>{items}</>;
+  // Maybe also show a legend of the colors?
+  return <Grid gap={2}>{items}</Grid>;
 };

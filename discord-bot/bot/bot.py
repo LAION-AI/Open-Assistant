@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Bot logic."""
 from datetime import datetime
 
@@ -6,9 +5,9 @@ import aiosqlite
 import hikari
 import lightbulb
 import miru
-from bot.api_client import OasstApiClient
 from bot.settings import Settings
 from bot.utils import EMPTY, mention
+from oasst_shared.api_client import OasstApiClient
 
 settings = Settings()
 
@@ -34,6 +33,9 @@ async def on_starting(event: hikari.StartingEvent):
     await bot.d.db.commit()
 
     bot.d.oasst_api = OasstApiClient(settings.oasst_api_url, settings.oasst_api_key)
+
+    # A set of user id's that are currently doing work.
+    bot.d.currently_working = set()
 
 
 @bot.listen()
