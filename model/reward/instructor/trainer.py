@@ -114,8 +114,7 @@ if __name__ == "__main__":
         warmup_steps=500,
         learning_rate=training_conf["learning_rate"],
         # half_precision_backend="apex",
-        #fp16=True,
-        fp16=False,
+        fp16=True,
         gradient_checkpointing=training_conf["gradient_checkpointing"],
         gradient_accumulation_steps=training_conf["gradient_accumulation_steps"],
         per_device_train_batch_size=training_conf["per_device_train_batch_size"],
@@ -156,4 +155,4 @@ if __name__ == "__main__":
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
     )
-    #trainer.train()
+    trainer.train()
