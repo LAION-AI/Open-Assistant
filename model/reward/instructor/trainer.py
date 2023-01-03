@@ -1,8 +1,7 @@
 import os
 from argparse import ArgumentParser
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-from typing import Literal
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, Literal
 
 import evaluate
 import numpy as np
@@ -51,9 +50,7 @@ class RankLoss(nn.Module):
 
 
 class RankTrainer(Trainer):
-    def __init__(self, 
-                 loss_function: Optional[Literal["rank"]] = None, 
-                 *args, **kwargs):
+    def __init__(self, loss_function: Optional[Literal["rank"]] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loss_fct = nn.CrossEntropyLoss()
         self.loss_function = None
