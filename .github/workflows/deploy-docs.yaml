@@ -17,6 +17,7 @@ jobs:
         with:
           node-version: 18
           cache: yarn
+          working-directory: ./docs
 
       - name: Install dependencies
         working-directory: ./docs
