@@ -1,7 +1,5 @@
 {
   "name": "Open-Assistant",
   "image": "mcr.microsoft.com/vscode/devcontainers/universal",
-  "features": {
-    "ghcr.io/devcontainers-contrib/features/pre-commit:2": {"version": "2.0.1"}
-  }
+  "initializeCommand": "pip install pre-commit && (cd website/ && npm install) && docker compose build" 
 }
