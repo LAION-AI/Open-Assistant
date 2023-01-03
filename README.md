@@ -33,7 +33,7 @@ using
 [vscode locally](https://code.visualstudio.com/docs/devcontainers/create-dev-container#_create-a-devcontainerjson-file)
 or in a web browser using
 [GitHub Codespaces](https://github.com/features/codespaces), you can use the
-provided [`.devcontainer`](.devcontainer/README.md) folder.
+provided [`.devcontainer`](.devcontainer/) folder.
 
 ## The Plan
 
