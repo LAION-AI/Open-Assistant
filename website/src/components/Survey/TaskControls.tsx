@@ -30,9 +30,13 @@ export const TaskControls = (props: TaskControlsProps) => {
       <Flex justify="center" ml="auto" gap={2}>
         <SkipButton>Skip</SkipButton>
         {endTask.task.type !== "task_done" ? (
-          <SubmitButton onClick={() => props.onSubmitResponse(props.tasks[0])}>Submit</SubmitButton>
+          <SubmitButton data-cy="submit" onClick={() => props.onSubmitResponse(props.tasks[0])}>
+            Submit
+          </SubmitButton>
         ) : (
-          <SubmitButton onClick={props.onSkip}>Next Task</SubmitButton>
+          <SubmitButton data-cy="next-task" onClick={props.onSkip}>
+            Next Task
+          </SubmitButton>
         )}
       </Flex>
     </section>
