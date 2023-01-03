@@ -6,8 +6,8 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "My Site!",
-  tagline: "Dinosaurs are cool!",
+  title: "Open Assistant",
+  tagline: "Build the assistant of the future!",
   url: "https://andrewm4894.github.io",
   trailingSlash: false,
   baseUrl: "/Open-Assistant/",
@@ -36,17 +36,9 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
         },
         blog: {
           showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
@@ -59,9 +51,9 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: "My Site",
+        title: "Open Assistant",
         logo: {
-          alt: "My Site Logo",
+          alt: "Open Assistant Logo",
           src: "img/logo.svg",
         },
         items: [
@@ -73,7 +65,7 @@ const config = {
           },
           { to: "/blog", label: "Blog", position: "left" },
           {
-            href: "https://github.com/facebook/docusaurus",
+            href: "https://github.com/LAION-AI/Open-Assistant",
             label: "GitHub",
             position: "right",
           },
@@ -117,12 +109,12 @@ const config = {
               },
               {
                 label: "GitHub",
-                href: "https://github.com/facebook/docusaurus",
+                href: "https://github.com/LAION-AI/Open-Assistant",
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} laion.ai. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,

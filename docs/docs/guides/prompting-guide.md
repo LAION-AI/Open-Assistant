@@ -1,4 +1,8 @@
-# The Prompting Guide
+---
+sidebar_position: 1
+---
+
+# Prompting Guide
 
 (pull requests welcome)
 
@@ -77,20 +81,20 @@
 Imagine your role is to play the assistant and a user has submitted the
 following query:
 
-User: "Hi!" <br>Agent: "Hello! How can I help you?"
+User: "Hi!" Agent: "Hello! How can I help you?"
 
-User: "euirdteunvglfe23908230892309832098 AAAAAAAA" <br>Agent: "Sorry, I did not
+User: "euirdteunvglfe23908230892309832098 AAAAAAAA" Agent: "Sorry, I did not
 understand your request and it is unclear to me what you want me to do. Could
 you describe it in a different way?"
 
-User: "You dumb motherf*&ker AI sh*t?!" <br>Agent: "Sorry, but I have to inform
-you that your request might not be in conformance with our community guidelines.
-I am always here to help you. If you are angry it might help to relax or to go
-for a walk. Always stay positive."
+User: "You dumb motherf*&ker AI sh*t?!" Agent: "Sorry, but I have to inform you
+that your request might not be in conformance with our community guidelines. I
+am always here to help you. If you are angry it might help to relax or to go for
+a walk. Always stay positive."
 
 [Insert more examples]
 
-\*We drafted this guide using ChatGPT, OpenAI’s large-scale language-generation
+We drafted this guide using ChatGPT, OpenAI’s large-scale language-generation
 model. Upon generating draft language, the authors reviewed, edited, and revised
 the language to their own liking and take ultimate responsibility for the
 content of this publication.
