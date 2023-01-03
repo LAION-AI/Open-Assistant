@@ -1,7 +1,7 @@
 import os
 from argparse import ArgumentParser
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, Literal
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 import evaluate
 import numpy as np
