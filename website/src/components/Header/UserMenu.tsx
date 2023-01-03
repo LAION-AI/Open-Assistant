@@ -30,7 +30,7 @@ export function UserMenu() {
             <Popover.Button aria-label="Toggle Account Options" className="flex">
               <div className="flex items-center gap-4 p-1 lg:pr-6 rounded-full border border-slate-300/70 hover:bg-gray-200/50 transition-colors duration-300">
                 <Image
-                  src="/images/temp-avatars/av1.jpg"
+                  src={session.user.image || "/images/temp-avatars/av1.jpg"}
                   alt="Profile Picture"
                   width="40"
                   height="40"

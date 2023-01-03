@@ -51,6 +51,20 @@ Remember to save your changes.
 https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID_HERE&permissions=8&scope=bot%20applications.commands
 ```
 
+## Discord setup for development
+
+- Create `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` keys in the `.env` file
+  in `website`.
+- Go to `https://discord.com/developers/applications` and click on
+  `New Application` and create a new application.
+- Once the new application is created, you will have access to `Client ID` and
+  `Client Secret` in the `OAuth2` section. Copy those values and paste for the
+  respective fields in the `.env` file.
+- In the `Oauth2` section, there is an field called `Redirects` which has to be
+  provided with the following URL. This URL is nothing but the discord callback
+  URL which NextAuth uses - `http://localhost:3000/api/auth/callback/discord`
+  (The PORT number for the localhost could be different based on your setup)
+
 ### Environment Setup
 
 To run the bot:
