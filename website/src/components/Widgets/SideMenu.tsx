@@ -1,6 +1,6 @@
 import { Box, Button, Link, Text, Tooltip, useColorMode } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { FiLayout, FiAward, FiBarChart2, FiSun } from "react-icons/fi";
+import { FiAward, FiBarChart2, FiLayout, FiSun } from "react-icons/fi";
 import { colors } from "styles/Theme/colors";
 
 export function SideMenu() {
@@ -38,8 +38,14 @@ export function SideMenu() {
       >
         <nav className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
           {buttonOptions.map((item) => (
-            <Tooltip fontFamily="inter" label={item.label} placement="right" className="hidden lg:hidden sm:block">
-              <Link key={item.label} href={item.pathname} style={{ textDecoration: "none" }}>
+            <Tooltip
+              key="Tooltip"
+              fontFamily="inter"
+              label={item.label}
+              placement="right"
+              className="hidden lg:hidden sm:block"
+            >
+              <Link key="{item.label}" href={item.pathname} style={{ textDecoration: "none" }}>
                 <Button
                   justifyContent={["center", "center", "center", "left"]}
                   gap="3"

@@ -1,9 +1,8 @@
 import { Box, useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
-import { colors } from "styles/Theme/colors";
-
 import { Header } from "src/components/Header";
 import { LeaderboardWidget, SideMenu, TaskOption } from "src/components/Widgets";
+import { colors } from "styles/Theme/colors";
 
 const Dashboard = () => {
   const { colorMode } = useColorMode();

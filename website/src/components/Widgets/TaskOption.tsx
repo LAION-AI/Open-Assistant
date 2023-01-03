@@ -47,7 +47,7 @@ export const TaskOption = () => {
         <Text className="text-2xl font-bold pb-4">Create</Text>
         <SimpleGrid columns={[1, 2, 2, 3, 4]} gap={4}>
           {crTasks.map((item) => (
-            <Link href={item.pathname}>
+            <Link key="Create Option" href={item.pathname}>
               <GridItem
                 bg={backgroundColor}
                 borderRadius="xl"
@@ -83,7 +83,7 @@ export const TaskOption = () => {
         <Text className="text-2xl font-bold pb-4">Evaluate</Text>
         <SimpleGrid columns={[1, 2, 2, 3, 4]} gap={4}>
           {evTasks.map((item) => (
-            <Link href={item.pathname}>
+            <Link key="Evaluate Option" href={item.pathname}>
               <GridItem
                 bg={backgroundColor}
                 borderRadius="xl"
