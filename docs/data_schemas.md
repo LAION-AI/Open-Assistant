@@ -99,6 +99,9 @@ The main tasks are a) generation of response text and b) ranking of responses.
 The following sections describe the data schemas for each of these tasks. Both
 should be implementable in parquet files.
 
+Note: These files are meant to be consumed by ML algorithms and should ideally
+be produced from the above files.
+
 ## Common Data Structures
 
 ```python

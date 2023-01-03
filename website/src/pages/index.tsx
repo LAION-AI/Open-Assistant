@@ -20,11 +20,9 @@ const Home = () => {
         />
       </Head>
       {session ? (
-        <main className="my-4">
-          <TaskSelection />
-        </main>
+        <TaskSelection />
       ) : (
-        <main>
+        <main className="oa-basic-theme">
           <Hero />
           <CallToAction />
           <Faq />

@@ -1,11 +1,10 @@
-import { Flex, Textarea } from "@chakra-ui/react";
+import { Container, Textarea } from "@chakra-ui/react";
+import { useColorMode } from "@chakra-ui/react";
 import { useRef, useState } from "react";
-import { SkipButton } from "src/components/Buttons/Skip";
-import { SubmitButton } from "src/components/Buttons/Submit";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Messages } from "src/components/Messages";
-import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
-import { TwoColumns } from "src/components/TwoColumns";
+import { TaskControls } from "src/components/Survey/TaskControls";
+import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
@@ -45,43 +44,31 @@ const AssistantReply = () => {
     mutate();
   };
 
+  const { colorMode } = useColorMode();
+  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
+
   if (isLoading) {
     return <LoadingScreen text="Loading..." />;
   }
 
   if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
+    return <Container className="p-6 text-center text-gray-800">No tasks found...</Container>;
   }
 
   const task = tasks[0].task;
-  const endTask = tasks[tasks.length - 1];
+
   return (
-    <div className="p-6 bg-slate-100 text-gray-800">
-      <TwoColumns>
+    <div className={`p-12 ${mainBgClasses}`}>
+      <TwoColumnsWithCards>
         <>
           <h5 className="text-lg font-semibold">Reply as the assistant</h5>
           <p className="text-lg py-1">Given the following conversation, provide an adequate reply</p>
           <Messages messages={task.conversation.messages} post_id={task.id} />
         </>
-        <Textarea name="reply" data-cy="reply" placeholder="Reply..." ref={inputRef} />
-      </TwoColumns>
+        <Textarea name="reply" placeholder="Reply..." ref={inputRef} />
+      </TwoColumnsWithCards>
 
-      <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
-        <TaskInfo id={tasks[0].id} output="Submit your answer" />
-
-        <Flex justify="center" ml="auto" gap={2}>
-          <SkipButton>Skip</SkipButton>
-          {endTask.task.type !== "task_done" ? (
-            <SubmitButton data-cy="submit" onClick={() => submitResponse(tasks[0])}>
-              Submit
-            </SubmitButton>
-          ) : (
-            <SubmitButton data-cy="next-task" onClick={fetchNextTask}>
-              Next Task
-            </SubmitButton>
-          )}
-        </Flex>
-      </section>
+      <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
     </div>
   );
 };

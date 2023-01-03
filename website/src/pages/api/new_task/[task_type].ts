@@ -64,6 +64,8 @@ const handler = async (req, res) => {
     }),
   });
 
+  ackRes; // calling this only to get rid of the unused variable warning... not sure if anything is intended to be done with ackRes
+
   // Send the results to the client.
   res.status(200).json(registeredTask);
 };
