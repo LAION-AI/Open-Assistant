@@ -54,9 +54,9 @@ class RankTrainer(Trainer):
         super().__init__(*args, **kwargs)
         self.loss_fct = nn.CrossEntropyLoss()
         self.loss_function = None
-        if args and args.loss_function == "rank":
+        if args and loss_function == "rank":
             self.loss_fct = RankLoss()
-            self.loss_function = args.loss_function
+            self.loss_function = loss_function
 
 
     def compute_loss(self, model, inputs, return_outputs=False):
