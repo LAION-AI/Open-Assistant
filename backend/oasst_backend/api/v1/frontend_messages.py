@@ -1,18 +1,17 @@
-# -*- coding: utf-8 -*-
-
 from fastapi import APIRouter, Depends
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
-from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.models import ApiClient
 from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_shared.exceptions import OasstError, OasstErrorCode
+from oasst_shared.schemas import protocol
 from sqlmodel import Session
 
 router = APIRouter()
 
 
-@router.get("/{message_id}")
+@router.get("/{message_id}", response_model=protocol.Message)
 def get_message_by_frontend_id(
     message_id: str, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
 ):
@@ -29,7 +28,7 @@ def get_message_by_frontend_id(
     return utils.prepare_message(message)
 
 
-@router.get("/{message_id}/conversation")
+@router.get("/{message_id}/conversation", response_model=protocol.Conversation)
 def get_conv_by_frontend_id(
     message_id: str, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
 ):
@@ -43,7 +42,7 @@ def get_conv_by_frontend_id(
     return utils.prepare_conversation(messages)
 
 
-@router.get("/{message_id}/tree")
+@router.get("/{message_id}/tree", response_model=protocol.MessageTree)
 def get_tree_by_frontend_id(
     message_id: str, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
 ):
@@ -57,7 +56,7 @@ def get_tree_by_frontend_id(
     return utils.prepare_tree(tree, message.message_tree_id)
 
 
-@router.get("/{message_id}/children")
+@router.get("/{message_id}/children", response_model=list[protocol.Message])
 def get_children_by_frontend_id(
     message_id: str, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
 ):
@@ -70,7 +69,7 @@ def get_children_by_frontend_id(
     return utils.prepare_message_list(messages)
 
 
-@router.get("/{message_id}/descendants")
+@router.get("/{message_id}/descendants", response_model=protocol.MessageTree)
 def get_descendants_by_frontend_id(
     message_id: str, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
 ):
@@ -84,7 +83,7 @@ def get_descendants_by_frontend_id(
     return utils.prepare_tree(descendants, message.id)
 
 
-@router.get("/{message_id}/longest_conversation_in_tree")
+@router.get("/{message_id}/longest_conversation_in_tree", response_model=protocol.Conversation)
 def get_longest_conv_by_frontend_id(
     message_id: str, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
 ):
@@ -98,7 +97,7 @@ def get_longest_conv_by_frontend_id(
     return utils.prepare_conversation(conv)
 
 
-@router.get("/{message_id}/max_children_in_tree")
+@router.get("/{message_id}/max_children_in_tree", response_model=protocol.MessageTree)
 def get_max_children_by_frontend_id(
     message_id: str, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
 ):

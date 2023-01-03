@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from enum import IntEnum
 from http import HTTPStatus
 
@@ -18,6 +17,7 @@ class OasstErrorCode(IntEnum):
     DATABASE_URI_NOT_SET = 1
     API_CLIENT_NOT_AUTHORIZED = 2
     SERVER_ERROR = 3
+    TOO_MANY_REQUESTS = 429
 
     # 1000-2000: tasks endpoint
     TASK_INVALID_REQUEST_TYPE = 1000

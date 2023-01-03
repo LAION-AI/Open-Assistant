@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Simple REPL frontend."""
 
 import random
