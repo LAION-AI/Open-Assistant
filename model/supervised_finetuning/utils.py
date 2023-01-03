@@ -1,15 +1,14 @@
 from pathlib import Path
 
 import yaml
-from custom_datasets import get_one_dataset
+from custom_datasets import QA_SPECIAL_TOKENS, get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from losses import CrossEntropyLoss
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from custom_datasets import QA_SPECIAL_TOKENS
 
-SUPPORTED_MODELS = ["galactica"]
+SUPPORTED_MODELS = ["galactica", "GPT-JT"]  # deprecated ..
 
 
 def get_tokenizer(conf):
@@ -20,7 +19,7 @@ def get_tokenizer(conf):
 
     additional_special_tokens = (
         []
-        if not "additional_special_tokens" in tokenizer.special_tokens_map
+        if "additional_special_tokens" not in tokenizer.special_tokens_map
         else tokenizer.special_tokens_map["additional_special_tokens"]
     )
     additional_special_tokens = list(set(additional_special_tokens + list(QA_SPECIAL_TOKENS.values())))
