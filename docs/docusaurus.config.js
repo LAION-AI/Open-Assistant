@@ -10,7 +10,7 @@ const config = {
   tagline: "Dinosaurs are cool!",
   url: "https://andrewm4894.github.io",
   trailingSlash: false,
-  baseUrl: "/",
+  baseUrl: "/Open-Assistant/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
   favicon: "img/favicon.ico",
