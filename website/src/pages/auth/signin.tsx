@@ -1,13 +1,13 @@
 import { Button, Input, Stack } from "@chakra-ui/react";
+import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
-import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
+import Link from "next/link";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
 import React, { useRef } from "react";
-import Link from "next/link";
-import { Header } from "src/components/Header";
-import { Footer } from "src/components/Footer";
+import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { AuthLayout } from "src/components/AuthLayout";
-import { useColorMode } from "@chakra-ui/react";
+import { Footer } from "src/components/Footer";
+import { Header } from "src/components/Header";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Signin({ csrfToken, providers }) {

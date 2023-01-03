@@ -1,10 +1,10 @@
+import { Box, useColorModeValue } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
 import { FaCog, FaSignOutAlt } from "react-icons/fa";
-import { Box, useColorModeValue } from "@chakra-ui/react";
 
 export function UserMenu() {
   const { data: session } = useSession();

@@ -1,14 +1,14 @@
+import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Sortable } from "src/components/Sortable/Sortable";
+import { SurveyCard } from "src/components/Survey/SurveyCard";
+import { TaskControls } from "src/components/Survey/TaskControls";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
-import { SurveyCard } from "src/components/Survey/SurveyCard";
-import { useColorMode } from "@chakra-ui/react";
-import { TaskControls } from "src/components/Survey/TaskControls";
 
 const RankInitialPrompts = () => {
   const [tasks, setTasks] = useState([]);

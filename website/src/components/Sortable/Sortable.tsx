@@ -2,9 +2,9 @@ import { Flex } from "@chakra-ui/react";
 import {
   closestCenter,
   DndContext,
+  KeyboardSensor,
   PointerSensor,
   TouchSensor,
-  KeyboardSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";

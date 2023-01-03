@@ -1,14 +1,14 @@
 import { Textarea } from "@chakra-ui/react";
+import { useColorMode } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Messages } from "src/components/Messages";
+import { TaskControls } from "src/components/Survey/TaskControls";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
-import { useColorMode } from "@chakra-ui/react";
-import { TaskControls } from "src/components/Survey/TaskControls";
 
 const UserReply = () => {
   const [tasks, setTasks] = useState([]);

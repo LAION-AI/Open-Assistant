@@ -1,5 +1,4 @@
 import { useColorMode } from "@chakra-ui/react";
-
 import { CiDark } from "react-icons/ci";
 import { CiLight } from "react-icons/ci";
 

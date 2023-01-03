@@ -1,8 +1,7 @@
+import { useColorMode } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
-
-import { useColorMode } from "@chakra-ui/react";
 
 export function NavLinks(): JSX.Element {
   const [hoveredIndex, setHoveredIndex] = useState(null);

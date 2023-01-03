@@ -1,8 +1,8 @@
 import { useColorMode } from "@chakra-ui/react";
-import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 import { Flex } from "@chakra-ui/react";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
+import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 
 interface TaskControlsProps {
   // we need a task type

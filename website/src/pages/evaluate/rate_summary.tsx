@@ -1,17 +1,16 @@
 import { Textarea } from "@chakra-ui/react";
+import { useColorMode } from "@chakra-ui/react";
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import Head from "next/head";
 import { useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import RatingRadioGroup from "src/components/RatingRadioGroup";
+import { TaskControls } from "src/components/Survey/TaskControls";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
-
-import { useColorMode } from "@chakra-ui/react";
-import { TaskControls } from "src/components/Survey/TaskControls";
 
 const RateSummary = () => {
   // Use an array of tasks that record the sequence of steps until a task is

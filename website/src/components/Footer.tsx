@@ -1,6 +1,6 @@
+import { useColorMode } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useColorMode } from "@chakra-ui/react";
 
 export function Footer() {
   const { colorMode } = useColorMode();

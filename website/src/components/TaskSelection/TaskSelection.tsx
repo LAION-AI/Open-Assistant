@@ -1,6 +1,6 @@
 import { Flex } from "@chakra-ui/react";
-import React from "react";
 import { useColorMode } from "@chakra-ui/react";
+import React from "react";
 
 import { TaskOption } from "./TaskOption";
 import { TaskOptions } from "./TaskOptions";
