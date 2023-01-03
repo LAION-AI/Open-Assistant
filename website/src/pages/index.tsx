@@ -1,15 +1,11 @@
 import Head from "next/head";
-import { useSession } from "next-auth/react";
 import { CallToAction } from "src/components/CallToAction";
 import { Faq } from "src/components/Faq";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
 import { Hero } from "src/components/Hero";
-import { TaskSelection } from "src/components/TaskSelection";
 
 const Home = () => {
-  const { data: session } = useSession();
-
   return (
     <>
       <Head>
@@ -19,15 +15,11 @@ const Home = () => {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      {session ? (
-        <TaskSelection />
-      ) : (
-        <main className="oa-basic-theme">
-          <Hero />
-          <CallToAction />
-          <Faq />
-        </main>
-      )}
+      <main className="oa-basic-theme">
+        <Hero />
+        <CallToAction />
+        <Faq />
+      </main>
     </>
   );
 };
