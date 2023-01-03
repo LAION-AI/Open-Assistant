@@ -1,5 +1,3 @@
-
-
 export function AuthLayout({ children }) {
   return (
     <div className="flex items-center justify-center sm:py-4 subpixel-antialiased">

@@ -57,15 +57,18 @@ function BackgroundIllustration(props) {
 export function Hero() {
   const { colorMode } = useColorMode();
   const pTextColor = colorMode === "light" ? "text-gray-600" : "text-white";
-  const fancyTextGradientClasses = colorMode === "light" ? "from-blue-600 via-sky-400 to-blue-700" : "from-blue-500 via-sky-300 to-blue-400";
-  
+  const fancyTextGradientClasses =
+    colorMode === "light" ? "from-blue-600 via-sky-400 to-blue-700" : "from-blue-500 via-sky-300 to-blue-400";
+
   return (
     <div className="overflow-hidden py-20 sm:py-32 lg:pb-32 xl:pb-36">
       <Container className="">
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
           <div className="relative z-10 mx-auto max-w-2xl lg:col-span-7 lg:max-w-none lg:pt-6 xl:col-span-6">
             <h1 className="text-5xl mb-6 font-bold tracking-tight">Open Assistant</h1>
-            <p className={`bg-gradient-to-r ${fancyTextGradientClasses} mt-8 text-3xl inline bg-clip-text font-display tracking-tight text-transparent`}>
+            <p
+              className={`bg-gradient-to-r ${fancyTextGradientClasses} mt-8 text-3xl inline bg-clip-text font-display tracking-tight text-transparent`}
+            >
               <b>Conversational AI for everyone.</b>
             </p>
             <p className={`mt-6 text-lg ${pTextColor}`}>We believe we can create a revolution.</p>

@@ -1,17 +1,17 @@
-import { Flex, Textarea } from "@chakra-ui/react";
+import { Textarea } from "@chakra-ui/react";
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import Head from "next/head";
 import { useState } from "react";
-import { SkipButton } from "src/components/Buttons/Skip";
-import { SubmitButton } from "src/components/Buttons/Submit";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import RatingRadioGroup from "src/components/RatingRadioGroup";
-import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
-import { TwoColumns } from "src/components/TwoColumns";
+import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
+
+import { useColorMode } from "@chakra-ui/react";
+import { TaskControls } from "src/components/Survey/TaskControls";
 
 const RateSummary = () => {
   // Use an array of tasks that record the sequence of steps until a task is
@@ -50,15 +50,27 @@ const RateSummary = () => {
     });
   };
 
+  const fetchNextTask = () => {
+    mutate();
+  };
+
+  const { colorMode } = useColorMode();
+  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
+
   if (isLoading) {
     return <LoadingScreen text="Loading..." />;
   }
 
   if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">No tasks found...</div>;
+    return (
+      <div className={`p-12 ${mainBgClasses}`}>
+        <div className="flex h-full">
+          <div className="text-xl font-bold  mx-auto my-auto">No tasks found...</div>
+        </div>
+      </div>
+    );
   }
 
-  const endTask = tasks[tasks.length - 1];
   return (
     <>
       <Head>
@@ -66,7 +78,7 @@ const RateSummary = () => {
         <meta name="description" content="Rate a proposed story summary." />
       </Head>
       <main className="p-6 bg-slate-100 text-gray-800">
-        <TwoColumns>
+        <TwoColumnsWithCards>
           <>
             <h5 className="text-lg font-semibold mb-4">Instruction</h5>
             <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">{tasks[0].task.full_text}</div>
@@ -89,20 +101,9 @@ const RateSummary = () => {
             </ul>
             <Textarea name="notes" placeholder="Optional notes" />
           </section>
-        </TwoColumns>
+        </TwoColumnsWithCards>
 
-        <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
-          <TaskInfo id={tasks[0].id} output="Submit your answer" />
-
-          <Flex justify="center" ml="auto" gap={2}>
-            <SkipButton>Skip</SkipButton>
-            {endTask.task.type !== "task_done" ? (
-              <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
-            ) : (
-              <SubmitButton onClick={mutate}>Next Task</SubmitButton>
-            )}
-          </Flex>
-        </section>
+        <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
       </main>
     </>
   );

@@ -4,19 +4,13 @@ import { useState } from "react";
 
 import { useColorMode } from "@chakra-ui/react";
 
-
 export function NavLinks(): JSX.Element {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const { colorMode } = useColorMode();
 
+  const linkColor = colorMode === "light" ? "text-gray-700 hover:text-gray-900" : "text-gray-50 hover:text-white";
 
-  const linkColor = (colorMode === "light") ? 
-    "text-gray-700 hover:text-gray-900" :
-    "text-gray-50 hover:text-white";
-
-  const hoverBgColor = (colorMode === "light") ? 
-  "bg-gray-100" :
-  "bg-gray-800";
+  const hoverBgColor = colorMode === "light" ? "bg-gray-100" : "bg-gray-800";
 
   return (
     <>

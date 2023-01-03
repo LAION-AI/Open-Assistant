@@ -2,7 +2,6 @@ import { useId } from "react";
 import { useColorMode } from "@chakra-ui/react";
 import { Container } from "./Container";
 
-
 function CircleBackground({ width = 558, height = 558, ...props }) {
   const id = useId();
 
@@ -28,14 +27,11 @@ function CircleBackground({ width = 558, height = 558, ...props }) {
   );
 }
 
-
 export function CallToAction() {
-
   const { colorMode } = useColorMode();
   const bgColorClass = colorMode === "light" ? "bg-gray-900" : "bg-gray-50";
   const headingColorClass = colorMode === "light" ? "text-white" : "text-black";
   const textColorClass = colorMode === "light" ? "text-gray-300" : "text-black";
-  const gradStopColor = colorMode === "light" ? "#06b6d4" : "#00f2ff";
 
   return (
     <section id="join-us" className={`relative overflow-hidden py-20 sm:py-28 ${bgColorClass} ${textColorClass}`}>

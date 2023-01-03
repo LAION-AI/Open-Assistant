@@ -1,6 +1,5 @@
 import { Button, Box } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
-import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -115,7 +114,7 @@ export function Header(props) {
           </Popover>
           <AccountButton />
           <UserMenu />
-          <ColorModeIconToggle className="ml-5"/>
+          <ColorModeIconToggle className="ml-5" />
         </div>
       </Box>
     </nav>

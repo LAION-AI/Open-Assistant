@@ -21,62 +21,58 @@ export function Footer() {
           </div>
         </div>
 
+        <nav className="flex justify-center gap-20">
+          <div className="flex flex-col text-sm leading-7">
+            <b>Information</b>
+            <div className="flex flex-col leading-5">
+              <Link href="#" aria-label="Our Team" className="hover:underline underline-offset-2">
+                Our Team
+              </Link>
+              <Link href="/#join-us" aria-label="Join Us" className="hover:underline underline-offset-2">
+                Join Us
+              </Link>
+            </div>
+          </div>
           <nav className="flex justify-center gap-20">
             <div className="flex flex-col text-sm leading-7">
-              <b>Information</b>
+              <b>Legal</b>
               <div className="flex flex-col leading-5">
-                <Link href="#" aria-label="Our Team" className="hover:underline underline-offset-2">
-                  Our Team
+                <Link href="/privacy-policy" aria-label="Privacy Policy" className="hover:underline underline-offset-2">
+                  Privacy Policy
                 </Link>
-                <Link href="/#join-us" aria-label="Join Us" className="hover:underline underline-offset-2">
-                  Join Us
+                <Link
+                  href="/terms-of-service"
+                  aria-label="Terms of Service"
+                  className="hover:underline underline-offset-2"
+                >
+                  Terms of Service
                 </Link>
               </div>
             </div>
-            <nav className="flex justify-center gap-20">
-              <div className="flex flex-col text-sm leading-7">
-                <b>Legal</b>
-                <div className="flex flex-col leading-5">
-                  <Link
-                    href="/privacy-policy"
-                    aria-label="Privacy Policy"
-                    className="hover:underline underline-offset-2"
-                  >
-                    Privacy Policy
-                  </Link>
-                  <Link
-                    href="/terms-of-service"
-                    aria-label="Terms of Service"
-                    className="hover:underline underline-offset-2"
-                  >
-                    Terms of Service
-                  </Link>
-                </div>
+            <div className="flex flex-col text-sm leading-7">
+              <b>Connect</b>
+              <div className="flex flex-col leading-5">
+                <Link
+                  href="https://github.com/LAION-AI/Open-Assistant"
+                  rel="noopener noreferrer nofollow"
+                  target="_blank"
+                  aria-label="Privacy Policy"
+                  className="hover:underline underline-offset-2"
+                >
+                  Github
+                </Link>
+                <Link
+                  href="https://discord.gg/pXtnYk9c"
+                  rel="noopener noreferrer nofollow"
+                  target="_blank"
+                  aria-label="Terms of Service"
+                  className="hover:underline underline-offset-2"
+                >
+                  Discord
+                </Link>
               </div>
-              <div className="flex flex-col text-sm leading-7">
-                <b>Connect</b>
-                <div className="flex flex-col leading-5">
-                  <Link
-                    href="https://github.com/LAION-AI/Open-Assistant"
-                    rel="noopener noreferrer nofollow"
-                    target="_blank"
-                    aria-label="Privacy Policy"
-                    className="hover:underline underline-offset-2"
-                  >
-                    Github
-                  </Link>
-                  <Link
-                    href="https://discord.gg/pXtnYk9c"
-                    rel="noopener noreferrer nofollow"
-                    target="_blank"
-                    aria-label="Terms of Service"
-                    className="hover:underline underline-offset-2"
-                  >
-                    Discord
-                  </Link>
-                </div>
-              </div>
-            </nav>
+            </div>
+          </nav>
           {/* </div> */}
         </nav>
       </div>

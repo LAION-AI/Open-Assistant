@@ -7,8 +7,8 @@ export const colors = {
     bg: "gray.900",
     text: "white",
   },
-  'dark-blue-btn': {
-    200: 'rgb(29,78,216)',
-    300: 'blue',
-  }
+  "dark-blue-btn": {
+    200: "rgb(29,78,216)",
+    300: "blue",
+  },
 };

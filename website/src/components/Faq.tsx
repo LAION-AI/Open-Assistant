@@ -27,11 +27,7 @@ const faqs = [
 ];
 
 export function Faq() {
-
   const { colorMode } = useColorMode();
-  const bgColorClass = colorMode === "light" ? "bg-gray-900" : "bg-gray-50";
-  
-  const gradStopColor = colorMode === "light" ? "#06b6d4" : "#00f2ff";
 
   const headingColorClass = colorMode === "light" ? "text-gray-900" : "text-white";
   const textColorClass = colorMode === "light" ? "text-gray-700" : "text-gray-100";

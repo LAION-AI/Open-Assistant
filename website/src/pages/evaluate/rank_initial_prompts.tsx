@@ -1,15 +1,14 @@
-import { Flex } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
-import { SkipButton } from "src/components/Buttons/Skip";
-import { SubmitButton } from "src/components/Buttons/Submit";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Sortable } from "src/components/Sortable/Sortable";
-import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
+import { SurveyCard } from "src/components/Survey/SurveyCard";
+import { useColorMode } from "@chakra-ui/react";
+import { TaskControls } from "src/components/Survey/TaskControls";
 
 const RankInitialPrompts = () => {
   const [tasks, setTasks] = useState([]);
@@ -18,7 +17,7 @@ const RankInitialPrompts = () => {
    * The best prompt will have index 0, and the worst is the last.
    */
   const [ranking, setRanking] = useState<number[]>([]);
-  const bg = useColorModeValue("gray.100", "gray.800");
+  // const bg = useColorModeValue("gray.100", "gray.800");
 
   const { isLoading, mutate } = useSWRImmutable("/api/new_task/rank_initial_prompts", fetcher, {
     onSuccess: (data) => {
@@ -48,45 +47,40 @@ const RankInitialPrompts = () => {
     mutate();
   };
 
+  const { colorMode } = useColorMode();
+  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
+
   if (isLoading) {
     return <LoadingScreen text="Loading..." />;
   }
 
   if (tasks.length == 0) {
-    return <Container className="p-6 bg-slate-100 text-gray-800">No tasks found...</Container>;
+    return (
+      <div className={`p-12 ${mainBgClasses}`}>
+        <div className="flex h-full">
+          <div className="text-xl font-bold  mx-auto my-auto">No tasks found...</div>
+        </div>
+      </div>
+    );
   }
 
-  const endTask = tasks[tasks.length - 1];
   return (
     <>
       <Head>
         <title>Rank Initial Prompts</title>
         <meta name="description" content="Rank initial prompts." />
       </Head>
-      <Container className="p-6 text-gray-800">
-        <Container bg={bg} className="rounded-lg shadow-lg block  p-6 mb-8">
+      <div className={`p-12 ${mainBgClasses}`}>
+        <SurveyCard className="max-w-7xl mx-auto h-fit mb-24">
           <h5 className="text-lg font-semibold mb-4">Instructions</h5>
           <p className="text-lg py-1">
             Given the following prompts, sort them from best to worst, best being first, worst being last.
           </p>
-          <Sortable items={tasks[0].task.prompts} onChange={setRanking} />
-        </Container>
+          <Sortable items={tasks[0].task.prompts} onChange={setRanking} className="my-8" />
+        </SurveyCard>
 
-        <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch">
-          <TaskInfo id={tasks[0].id} output="Submit your answer" />
-
-          <Flex justify="center" ml="auto" gap={2}>
-            <SkipButton>Skip</SkipButton>
-            {endTask.task.type !== "task_done" ? (
-              <SubmitButton onClick={() => submitResponse(tasks[0])} disabled={ranking.length === 0}>
-                Submit
-              </SubmitButton>
-            ) : (
-              <SubmitButton onClick={fetchNextTask}>Next Task</SubmitButton>
-            )}
-          </Flex>
-        </section>
-      </Container>
+        <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
+      </div>
     </>
   );
 };

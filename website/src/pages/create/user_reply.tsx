@@ -1,20 +1,17 @@
-import { Flex, Textarea, useColorModeValue } from "@chakra-ui/react";
-import { Container } from "src/components/Container";
+import { Textarea } from "@chakra-ui/react";
 import { useRef, useState } from "react";
-import { SkipButton } from "src/components/Buttons/Skip";
-import { SubmitButton } from "src/components/Buttons/Submit";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Messages } from "src/components/Messages";
-import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
-import { TwoColumns } from "src/components/TwoColumns";
+import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
+import { useColorMode } from "@chakra-ui/react";
+import { TaskControls } from "src/components/Survey/TaskControls";
 
 const UserReply = () => {
   const [tasks, setTasks] = useState([]);
-  const bg = useColorModeValue("white", "gray.400");
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -47,19 +44,28 @@ const UserReply = () => {
     mutate();
   };
 
+  const { colorMode } = useColorMode();
+  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
+
   if (isLoading) {
     return <LoadingScreen text="Loading..." />;
   }
 
   if (tasks.length == 0) {
-    return <Container className="p-6 text-gray-800">No tasks found...</Container>;
+    return (
+      <div className={`p-12 ${mainBgClasses}`}>
+        <div className="flex h-full">
+          <div className="text-xl font-bold  mx-auto my-auto">No tasks found...</div>
+        </div>
+      </div>
+    );
   }
 
   const task = tasks[0].task;
-  const endTask = tasks[tasks.length - 1];
+
   return (
-    <Container className="p-6">
-      <TwoColumns>
+    <div className={`p-12 ${mainBgClasses}`}>
+      <TwoColumnsWithCards>
         <>
           <h5 className="text-lg font-semibold">Reply as a user</h5>
           <p className="text-lg py-1">Given the following conversation, provide an adequate reply</p>
@@ -67,20 +73,10 @@ const UserReply = () => {
           {task.hint && <p className="text-lg py-1">Hint: {task.hint}</p>}
         </>
         <Textarea name="reply" placeholder="Reply..." ref={inputRef} />
-      </TwoColumns>
+      </TwoColumnsWithCards>
 
-      <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch ">
-        <TaskInfo id={tasks[0].id} output="Submit your answer" />
-        <Flex justify="center" ml="auto" gap={2}>
-          <SkipButton>Skip</SkipButton>
-          {endTask.task.type !== "task_done" ? (
-            <SubmitButton onClick={() => submitResponse(tasks[0])}>Submit</SubmitButton>
-          ) : (
-            <SubmitButton onClick={fetchNextTask}>Next Task</SubmitButton>
-          )}
-        </Flex>
-      </section>
-    </Container>
+      <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
+    </div>
   );
 };
 

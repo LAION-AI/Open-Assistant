@@ -27,11 +27,8 @@ function Signin({ csrfToken, providers }) {
   const { colorMode } = useColorMode();
   const bgColorClass = colorMode === "light" ? "bg-gray-50" : "bg-chakra-gray-900";
   const buttonBgColor = colorMode === "light" ? "#2563eb" : "#2563eb";
-  const borderClass = colorMode === "light" ? "border-slate-200" : "border-transparent";
 
   const buttonColorScheme = colorMode === "light" ? "blue" : "dark-blue-btn";
-
-
 
   return (
     <div className={bgColorClass}>
@@ -45,7 +42,7 @@ function Signin({ csrfToken, providers }) {
             <form onSubmit={signinWithDebugCredentials} className="border-2 border-orange-600 rounded-md p-4 relative">
               <span className={`text-orange-600 absolute -top-3 left-5 ${bgColorClass} px-1`}>For Debugging Only</span>
               <Stack>
-                <Input variant="outline" size="lg" placeholder="Username" ref={debugUsernameEl}/>
+                <Input variant="outline" size="lg" placeholder="Username" ref={debugUsernameEl} />
                 <Button size={"lg"} leftIcon={<FaBug />} colorScheme={buttonColorScheme} color="white" type="submit">
                   Continue with Debug User
                 </Button>
@@ -56,7 +53,13 @@ function Signin({ csrfToken, providers }) {
             <form onSubmit={signinWithEmail}>
               <Stack>
                 <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
-                <Button size={"lg"} leftIcon={<FaEnvelope />} type="submit" colorScheme={buttonColorScheme} color="white">
+                <Button
+                  size={"lg"}
+                  leftIcon={<FaEnvelope />}
+                  type="submit"
+                  colorScheme={buttonColorScheme}
+                  color="white"
+                >
                   Continue with Email
                 </Button>
               </Stack>
@@ -117,7 +120,6 @@ function Signin({ csrfToken, providers }) {
   );
 }
 
-
 Signin.getLayout = (page) => (
   <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
     <Header transparent={true} />
@@ -128,7 +130,7 @@ Signin.getLayout = (page) => (
 
 export default Signin;
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps() {
   const csrfToken = await getCsrfToken();
   const providers = await getProviders();
   return {

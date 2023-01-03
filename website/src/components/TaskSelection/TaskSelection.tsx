@@ -6,15 +6,19 @@ import { TaskOption } from "./TaskOption";
 import { TaskOptions } from "./TaskOptions";
 
 export const TaskSelection = () => {
-
   const { colorMode } = useColorMode();
-  const bgColorClass = colorMode === "light" ? "bg-gray-50" : "bg-gray-600";
-  const buttonBgColor = colorMode === "light" ? "#2563eb" : "#2563eb";
-  const borderClass = colorMode === "light" ? "border-slate-200" : "border-transparent";
-
+  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
 
   return (
-    <Flex gap={10} wrap="wrap" justifyContent="space-evenly" width="full" height="full" alignItems={"center"} className={bgColorClass}>
+    <Flex
+      gap={10}
+      wrap="wrap"
+      justifyContent="space-evenly"
+      width="full"
+      height="full"
+      alignItems={"center"}
+      className={mainBgClasses}
+    >
       <TaskOptions key="create" title="Create">
         {/* <TaskOption
           alt="Summarize Stories"

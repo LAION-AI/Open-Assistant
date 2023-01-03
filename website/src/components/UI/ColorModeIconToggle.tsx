@@ -1,12 +1,11 @@
 import { useColorMode } from "@chakra-ui/react";
 
-import { CiDark } from 'react-icons/ci';
-import { CiLight } from 'react-icons/ci';
-
+import { CiDark } from "react-icons/ci";
+import { CiLight } from "react-icons/ci";
 
 export function ColorModeIconToggle(props) {
   const { colorMode, toggleColorMode } = useColorMode();
-  const propsClassName = props.className ?? '';
+  const propsClassName = props.className ?? "";
 
   return (
     <button
@@ -15,12 +14,11 @@ export function ColorModeIconToggle(props) {
       aria-label="Toggle dark mode"
       onClick={toggleColorMode}
     >
-      {colorMode === 'light' ? (
-          <CiDark className="h-5 w-5 stroke-zinc-900 dark:hidden"/>
-        ) : (
-          <CiLight className="h-5 w-5 stroke-white" />
-        )
-      }
+      {colorMode === "light" ? (
+        <CiDark className="h-5 w-5 stroke-zinc-900 dark:hidden" />
+      ) : (
+        <CiLight className="h-5 w-5 stroke-white" />
+      )}
     </button>
-  )
+  );
 }

@@ -26,11 +26,11 @@ Default.args = {
   session: {
     data: {
       user: {
-        name: "StoryBook user"
-      }
+        name: "StoryBook user",
+      },
     },
-    status: "authenticated"
+    status: "authenticated",
   },
   transparent: false,
-  borderClass: undefined
+  borderClass: undefined,
 };

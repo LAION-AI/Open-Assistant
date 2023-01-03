@@ -7,7 +7,6 @@ const config: ThemeConfig = {
   initialColorMode: "light",
   useSystemColorMode: true,
   disableTransitionOnChange: false,
-  
 };
 
 const components = {
@@ -16,12 +15,12 @@ const components = {
 
 const styles: Styles = {
   global: (props) => ({
-    '*': {
+    "*": {
       transition: "background-color 200ms cubic-bezier(0.4, 0, 1, 1)",
       // bg: props.colorMode === "light" ? colors.light.bg : colors.dark.bg,
       // color: props.colorMode === "light" ? colors.light.text : colors.dark.text,
     },
-    '.oa-basic-theme': {
+    ".oa-basic-theme": {
       bg: props.colorMode === "light" ? colors.light.bg : colors.dark.bg,
       color: props.colorMode === "light" ? colors.light.text : colors.dark.text,
     },

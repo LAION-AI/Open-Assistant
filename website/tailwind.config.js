@@ -73,8 +73,8 @@ module.exports = {
       },
 
       colors: {
-        'chakra-gray-900': '#171923',
-      }
+        "chakra-gray-900": "#171923",
+      },
     },
   },
   plugins: [require("@tailwindcss/forms")],
