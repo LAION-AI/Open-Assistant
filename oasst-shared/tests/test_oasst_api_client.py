@@ -1,3 +1,4 @@
+from typing import Any
 from unittest import mock
 from uuid import uuid4
 
@@ -23,9 +24,19 @@ def oasst_api_client_mocked():
     # await client.close()
 
 
+class MockClientSession(aiohttp.ClientSession):
+    response: Any
+
+    def set_response(self, response: Any):
+        self.response = response
+
+    async def post(self, *args, **kwargs):
+        return self.response
+
+
 @pytest.fixture
 def mock_http_session():
-    yield mock.AsyncMock(spec=aiohttp.ClientSession)
+    yield MockClientSession()
 
 
 @pytest.fixture
@@ -76,17 +87,22 @@ async def test_can_post_interaction(oasst_api_client_mocked: OasstApiClient):
 @pytest.mark.asyncio
 async def test_can_handle_oasst_error_from_api(
     oasst_api_client_fake_http: OasstApiClient,
-    mock_http_session: mock.AsyncMock,
+    mock_http_session: MockClientSession,
 ):
     # Return a 400 response with an OasstErrorResponse body
     response_body = protocol_schema.OasstErrorResponse(
         error_code=OasstErrorCode.GENERIC_ERROR,
         message="Some error",
-    ).json()
+    )
     status_code = 400
 
-    mock_http_session.post.return_value.__aenter__.return_value.json.return_value = response_body
-    mock_http_session.post.return_value.__aenter__.return_value.status = status_code
+    mock_http_session.set_response(
+        mock.AsyncMock(
+            status=status_code,
+            text=mock.AsyncMock(return_value=response_body.json()),
+            json=mock.AsyncMock(return_value=response_body.dict()),
+        )
+    )
 
     with pytest.raises(OasstError):
         await oasst_api_client_fake_http.post("/some-path", data={})
