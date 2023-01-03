@@ -48,7 +48,7 @@ Remember to save your changes.
    below to invite your bot.
 
 ```
-https://discord.com/oauth2/authorize?client_id=YOUR_ID_HERE&permissions=8&scope=bot%20applications.commands
+https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID_HERE&permissions=8&scope=bot%20applications.commands
 ```
 
 ### Environment Setup
@@ -66,6 +66,9 @@ pip install -e .
 cp .env.example .env
 
 # edit .env and add your bot token and other values
+# BOT_TOKEN is given by the discord developer portal when you create a bot
+# DECLARE_GLOBAL_COMMANDS is the id of the server where you added the bot (right click on the server icon and copy id)
+# OWNER_ID can be leave as an empty list
 
 python -V  # 3.10
 
