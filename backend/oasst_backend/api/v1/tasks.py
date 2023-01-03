@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import random
 from typing import Any, Optional, Tuple
 from uuid import UUID
@@ -7,10 +6,11 @@ from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
-from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
+from starlette.status import HTTP_204_NO_CONTENT
 
 router = APIRouter()
 
@@ -128,7 +128,14 @@ def generate_task(
     return task, message_tree_id, parent_message_id
 
 
-@router.post("/", response_model=protocol_schema.AnyTask)  # work with Union once more types are added
+@router.post(
+    "/",
+    response_model=protocol_schema.AnyTask,
+    dependencies=[
+        Depends(deps.UserRateLimiter(times=100, minutes=5)),
+        Depends(deps.APIClientRateLimiter(times=10_000, minutes=1)),
+    ],
+)  # work with Union once more types are added
 def request_task(
     *,
     db: Session = Depends(deps.get_db),
@@ -153,14 +160,14 @@ def request_task(
     return task
 
 
-@router.post("/{task_id}/ack")
+@router.post("/{task_id}/ack", response_model=None, status_code=HTTP_204_NO_CONTENT)
 def tasks_acknowledge(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
     task_id: UUID,
     ack_request: protocol_schema.TaskAck,
-) -> Any:
+) -> None:
     """
     The frontend acknowledges a task.
     """
@@ -179,17 +186,16 @@ def tasks_acknowledge(
     except Exception:
         logger.exception("Failed to acknowledge task.")
         raise OasstError("Failed to acknowledge task.", OasstErrorCode.TASK_ACK_FAILED)
-    return {}
 
 
-@router.post("/{task_id}/nack")
+@router.post("/{task_id}/nack", response_model=None, status_code=HTTP_204_NO_CONTENT)
 def tasks_acknowledge_failure(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
     task_id: UUID,
     nack_request: protocol_schema.TaskNAck,
-) -> Any:
+) -> None:
     """
     The frontend reports failure to implement a task.
     """
@@ -204,7 +210,7 @@ def tasks_acknowledge_failure(
         raise OasstError("Failed to not acknowledge task.", OasstErrorCode.TASK_NACK_FAILED)
 
 
-@router.post("/interaction")
+@router.post("/interaction", response_model=protocol_schema.TaskDone)
 def tasks_interaction(
     *,
     db: Session = Depends(deps.get_db),
@@ -260,7 +266,7 @@ def tasks_interaction(
         raise OasstError("Interaction request failed.", OasstErrorCode.TASK_INTERACTION_REQUEST_FAILED)
 
 
-@router.post("/close")
+@router.post("/close", response_model=protocol_schema.TaskDone)
 def close_collective_task(
     close_task_request: protocol_schema.TaskClose,
     db: Session = Depends(deps.get_db),

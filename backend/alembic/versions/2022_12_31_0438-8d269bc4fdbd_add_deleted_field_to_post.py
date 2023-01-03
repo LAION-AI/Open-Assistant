@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """add deleted field to post
 
 Revision ID: 8d269bc4fdbd

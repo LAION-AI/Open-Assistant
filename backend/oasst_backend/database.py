@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 from oasst_backend.config import settings
-from oasst_backend.exceptions import OasstError, OasstErrorCode
+from oasst_shared.exceptions import OasstError, OasstErrorCode
 from sqlmodel import create_engine
 
 if settings.DATABASE_URI is None:

@@ -1,13 +1,15 @@
-# -*- coding: utf-8 -*-
 """API Client for interacting with the OASST backend."""
 import enum
 import typing as t
+from http import HTTPStatus
 from typing import Optional, Type
 from uuid import UUID
 
 import aiohttp
 from loguru import logger
+from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
+from pydantic import ValidationError
 
 
 # TODO: Move to `protocol`?
@@ -28,7 +30,7 @@ class TaskType(str, enum.Enum):
 class OasstApiClient:
     """API Client for interacting with the OASST backend."""
 
-    def __init__(self, backend_url: str, api_key: str):
+    def __init__(self, backend_url: str, api_key: str, session: Optional[aiohttp.ClientSession] = None):
         """Create a new OasstApiClient.
 
         Args:
@@ -36,8 +38,12 @@ class OasstApiClient:
             backend_url (str): The base backend URL.
             api_key (str): The API key to use for authentication.
         """
-        logger.debug("Opening OasstApiClient session")
-        self.session = aiohttp.ClientSession()
+
+        if session is None:
+            logger.debug("Opening OasstApiClient session")
+            session = aiohttp.ClientSession()
+
+        self.session = session
         self.backend_url = backend_url
         self.api_key = api_key
 
@@ -53,14 +59,42 @@ class OasstApiClient:
             TaskType.done: protocol_schema.TaskDone,
         }
 
-    async def post(self, path: str, data: dict[str, t.Any]) -> dict[str, t.Any]:
+    async def post(self, path: str, data: dict[str, t.Any]) -> Optional[dict[str, t.Any]]:
         """Make a POST request to the backend."""
         logger.debug(f"POST {self.backend_url}{path} DATA: {data}")
         response = await self.session.post(f"{self.backend_url}{path}", json=data, headers={"X-API-Key": self.api_key})
-        response.raise_for_status()
+
+        # If the response is not a 2XX, check to see
+        # if the json has the fields to create an
+        # OasstError.
+        if response.status >= 300:
+            data = await response.json()
+            try:
+                oasst_error = protocol_schema.OasstErrorResponse(**(data or {}))
+                raise OasstError(
+                    error_code=oasst_error.error_code,
+                    message=oasst_error.message,
+                )
+            except ValidationError as e:
+                logger.debug(f"Got error from API but could not parse: {e}")
+
+                raw_response = await response.text()
+                logger.debug(f"Raw response: {raw_response}")
+
+                raise OasstError(
+                    raw_response,
+                    OasstErrorCode.GENERIC_ERROR,
+                    HTTPStatus(response.status),
+                )
+
+        if response.status == 204:
+            # No content
+            return None
         return await response.json()
 
-    def _parse_task(self, data: dict[str, t.Any]) -> protocol_schema.Task:
+    def _parse_task(self, data: Optional[dict[str, t.Any]]) -> protocol_schema.Task:
+        if data is None:
+            raise Exception("Cannot parse data as a task: data is none")
         task_type = TaskType(data.get("type"))
 
         model = self.task_models_map.get(task_type)
@@ -89,23 +123,22 @@ class OasstApiClient:
         logger.debug(f"Fetching random for user {user}")
         return await self.fetch_task(protocol_schema.TaskRequestType.random, user, collective)
 
-    async def ack_task(self, task_id: str | UUID, message_id: str):
+    async def ack_task(self, task_id: str | UUID, message_id: str) -> None:
         """Send an ACK for a task to the backend."""
         logger.debug(f"ACK task {task_id} with post {message_id}")
         req = protocol_schema.TaskAck(message_id=message_id)
-        return await self.post(f"/api/v1/tasks/{task_id}/ack", data=req.dict())
+        await self.post(f"/api/v1/tasks/{task_id}/ack", data=req.dict())
 
-    async def nack_task(self, task_id: str | UUID, reason: str):
+    async def nack_task(self, task_id: str | UUID, reason: str) -> None:
         """Send a NACK for a task to the backend."""
         logger.debug(f"NACK task {task_id} with reason {reason}")
         req = protocol_schema.TaskNAck(reason=reason)
-        return await self.post(f"/api/v1/tasks/{task_id}/nack", data=req.dict())
+        await self.post(f"/api/v1/tasks/{task_id}/nack", data=req.dict())
 
     async def post_interaction(self, interaction: protocol_schema.Interaction) -> protocol_schema.Task:
         """Send a completed task to the backend."""
         logger.debug(f"Interaction: {interaction}")
         resp = await self.post("/api/v1/tasks/interaction", data=interaction.dict())
-
         return self._parse_task(resp)
 
     async def close(self):

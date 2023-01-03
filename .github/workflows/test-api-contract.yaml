@@ -1,0 +1,30 @@
+name: Test API Contract
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_call:
+
+jobs:
+  test-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - run: cd oasst-shared && pip install -e .
+
+      - run: cd oasst-shared && pip install -r requirements.dev.txt
+
+      - run: cd backend && pip install -r requirements.txt
+
+      - run: ./scripts/backend-development/start-mock-server.sh
+
+      - name: Run contract tests
+        run: ./scripts/oasst-shared-development/test.sh
+
+      - run: ./scripts/backend-development/stop-mock-server.sh

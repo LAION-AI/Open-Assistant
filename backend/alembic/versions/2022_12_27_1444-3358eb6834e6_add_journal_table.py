@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """add_journal_table
 
 Revision ID: 3358eb6834e6

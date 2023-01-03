@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 from http import HTTPStatus
+from math import ceil
 from pathlib import Path
 from typing import Optional
 
@@ -7,13 +7,15 @@ import alembic.command
 import alembic.config
 import fastapi
 import pydantic
+import redis.asyncio as redis
+from fastapi_limiter import FastAPILimiter
 from loguru import logger
 from oasst_backend.api.deps import get_dummy_api_client
 from oasst_backend.api.v1.api import api_router
 from oasst_backend.config import settings
 from oasst_backend.database import engine
-from oasst_backend.exceptions import OasstError, OasstErrorCode
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
 from starlette.middleware.cors import CORSMiddleware
@@ -24,8 +26,13 @@ app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V
 @app.exception_handler(OasstError)
 async def oasst_exception_handler(request: fastapi.Request, ex: OasstError):
     logger.error(f"{request.method} {request.url} failed: {repr(ex)}")
+
     return fastapi.responses.JSONResponse(
-        status_code=int(ex.http_status_code), content={"message": ex.message, "error_code": ex.error_code}
+        status_code=int(ex.http_status_code),
+        content=protocol_schema.OasstErrorResponse(
+            message=ex.message,
+            error_code=OasstErrorCode(ex.error_code),
+        ).dict(),
     )
 
 
@@ -61,6 +68,29 @@ if settings.UPDATE_ALEMBIC:
             logger.info("Successfully upgraded alembic on startup")
         except Exception:
             logger.exception("Alembic upgrade failed on startup")
+
+
+if settings.RATE_LIMIT:
+
+    @app.on_event("startup")
+    async def connect_redis():
+        async def http_callback(request: fastapi.Request, response: fastapi.Response, pexpire: int):
+            """Error callback function when too many requests"""
+            expire = ceil(pexpire / 1000)
+            raise OasstError(
+                f"Too Many Requests. Retry After {expire} seconds.",
+                OasstErrorCode.TOO_MANY_REQUESTS,
+                HTTPStatus.TOO_MANY_REQUESTS,
+            )
+
+        try:
+            redis_client = redis.from_url(
+                f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/0", encoding="utf-8", decode_responses=True
+            )
+            logger.info(f"Connected to {redis_client=}")
+            await FastAPILimiter.init(redis_client, http_callback=http_callback)
+        except Exception:
+            logger.exception("Failed to establish Redis connection")
 
 
 if settings.DEBUG_USE_SEED_DATA:
@@ -179,3 +209,33 @@ if settings.DEBUG_USE_SEED_DATA:
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+def get_openapi_schema():
+    return json.dumps(app.openapi())
+
+
+if __name__ == "__main__":
+    # Importing here so we don't import packages unnecessarily if we're
+    # importing main as a module.
+    import argparse
+    import json
+
+    import uvicorn
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--print-openapi-schema",
+        help="Dumps the openapi schema to stdout",
+        action=argparse.BooleanOptionalAction,
+    )
+    parser.add_argument("--host", help="The host to run the server")
+    parser.add_argument("--port", help="The port to run the server")
+
+    args = parser.parse_args()
+
+    if args.print_openapi_schema:
+        print(get_openapi_schema())
+    else:
+        uvicorn.run(app, host=args.host, port=args.port)
