@@ -7,6 +7,7 @@ from losses import CrossEntropyLoss
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from custom_datasets import QA_SPECIAL_TOKENS
 
 SUPPORTED_MODELS = ["galactica"]
 
@@ -17,10 +18,19 @@ def get_tokenizer(conf):
     if "galactica" in conf.model_name:
         tokenizer.add_special_tokens({"pad_token": "<pad>", "eos_token": "</s>"})
 
+    additional_special_tokens = (
+        []
+        if not "additional_special_tokens" in tokenizer.special_tokens_map
+        else tokenizer.special_tokens_map["additional_special_tokens"]
+    )
+    additional_special_tokens = list(set(additional_special_tokens + list(QA_SPECIAL_TOKENS.values())))
+
+    tokenizer.add_special_tokens({"additional_special_tokens": additional_special_tokens})
+
     return tokenizer
 
 
-def get_model(conf):
+def get_model(conf, tokenizer):
     if not any([x in conf.model_name for x in SUPPORTED_MODELS]):
         raise ValueError(
             f"Model {conf.model_name} not supported. Supported models: {SUPPORTED_MODELS}. "
@@ -28,6 +38,11 @@ def get_model(conf):
         )
 
     model = AutoModelForCausalLM.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+
+    if len(tokenizer) != model.get_input_embeddings().num_embeddings:
+        assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
+
+    model.resize_token_embeddings(len(tokenizer))
 
     if conf.freeze_layer:
         model = freeze_top_n_layers(model, conf.freeze_layer)
