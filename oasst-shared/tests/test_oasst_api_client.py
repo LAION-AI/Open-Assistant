@@ -106,3 +106,23 @@ async def test_can_handle_oasst_error_from_api(
 
     with pytest.raises(OasstError):
         await oasst_api_client_fake_http.post("/some-path", data={})
+
+
+@pytest.mark.asyncio
+async def test_can_handle_unknown_error_from_api(
+    oasst_api_client_fake_http: OasstApiClient,
+    mock_http_session: MockClientSession,
+):
+    response_body = "Internal Server Error"
+    status_code = 500
+
+    mock_http_session.set_response(
+        mock.AsyncMock(
+            status=status_code,
+            text=mock.AsyncMock(return_value=response_body),
+            json=mock.AsyncMock(return_value=None),
+        )
+    )
+
+    with pytest.raises(OasstError):
+        await oasst_api_client_fake_http.post("/some-path", data={})

@@ -70,7 +70,7 @@ class OasstApiClient:
         if response.status >= 300:
             data = await response.json()
             try:
-                oasst_error = protocol_schema.OasstErrorResponse(**data)
+                oasst_error = protocol_schema.OasstErrorResponse(**(data or {}))
                 raise OasstError(
                     error_code=oasst_error.error_code,
                     message=oasst_error.message,
