@@ -24,10 +24,13 @@ only described in the notebook
 
 Charts showing detailed memory usages and times for different sentence lengths
 and batch sizes are inside the notebook Quick overview batch size 16, sentence
-length 4k for training, batch size 128 sentence length 4k for inference | Model
-name | Training memory| Training speed | Inference Memory| Inference Speed| |
-:---: | :---: | :---: |:---: | :---: | |original| 11.8GB | 2.40s| 4.8GB|16.48s|
-|unbiased| 12GB| 1.09s| 4.8GB | 5.59s| |multilingual|14GB| 1.00s| 5.5GB| 4.89s|
+length 4k for training, batch size 128 sentence length 4k for Inference
+
+|  Model name  | Training memory | Training speed | Inference Memory | Inference Speed |
+| :----------: | :-------------: | :------------: | :--------------: | :-------------: |
+|   original   |     11.8GB      |     2.40s      |      4.8GB       |     16.48s      |
+|   unbiased   |      12GB       |     1.09s      |      4.8GB       |      5.59s      |
+| multilingual |      14GB       |     1.00s      |      5.5GB       |      4.89s      |
 
 # Filtering quality
 
