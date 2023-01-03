@@ -9,6 +9,8 @@ import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
+import {Message} from "src/components/Messages"
+import { ContextMessages } from "src/components/ContextMessages";
 
 const RankUserReplies = () => {
   const [tasks, setTasks] = useState([]);
@@ -63,6 +65,7 @@ const RankUserReplies = () => {
     );
   }
   const replies = tasks[0].task.replies as string[];
+  const messages = tasks[0].task.conversation.messages as Message[];
 
   return (
     <>
@@ -76,6 +79,7 @@ const RankUserReplies = () => {
           <p className="text-lg py-1">
             Given the following replies, sort them from best to worst, best being first, worst being last.
           </p>
+          <ContextMessages messages={messages} />
           <Sortable items={replies} onChange={setRanking} className="my-8" />
         </SurveyCard>
 
