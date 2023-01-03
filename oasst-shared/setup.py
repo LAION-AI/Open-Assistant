@@ -11,7 +11,7 @@ setup(
     author="OASST Team",
     install_requires=[
         "pydantic==1.9.1",
-        "aiohttp",
+        "aiohttp==3.8.3",
         "aiohttp[speedups]",
     ],
 )
