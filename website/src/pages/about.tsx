@@ -1,8 +1,8 @@
-import { Container } from "@/components/Container";
-import Services from "@/components/Services";
-import Vision from "@/components/Vision";
-import Roadmap from "@/components/Roadmap";
-import { CallToAction } from "@/components/CallToAction";
+import { Container } from "src/components/Container";
+import Services from "src/components/Services";
+import Vision from "src/components/Vision";
+import Roadmap from "src/components/Roadmap";
+import { CallToAction } from "src/components/CallToAction";
 import Image from "next/image";
 
 const AboutPage = () => {
