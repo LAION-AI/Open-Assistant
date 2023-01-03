@@ -30,7 +30,7 @@ export function SideMenu() {
   return (
     <main className="sticky top-0 sm:h-full">
       <Box
-        width={["100%", "100px", "100px", "280px"]}
+        width={["100%", "100%", "100px", "280px"]}
         backgroundColor={colorMode === "light" ? colors.light.div : colors.dark.div}
         boxShadow="base"
         borderRadius="xl"
