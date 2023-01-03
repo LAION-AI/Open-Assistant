@@ -27,7 +27,6 @@ const RankAssistantReplies = () => {
   const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (data) => {
       const newTask = await data.json();
-      console.log("response", newTask);
       setTasks((oldTasks) => [...oldTasks, newTask]);
     },
   });
