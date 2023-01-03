@@ -50,7 +50,6 @@ class RankLoss(nn.Module):
 
     def forward(self, pos, neg):
         loss = -self.log_sigmoid(pos - neg + self.eps).mean()
-        print(f"in loss {pos=}, {neg=}, {loss=}")
         return loss
 
 
@@ -90,7 +89,6 @@ class RankTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False):
         # forward pass
         if "rankgen" in self.model_name:
-            print(f"{inputs=}")
             positive_outputs = model(inputs["prefix"], inputs["positive"])
             negative_outputs = model(inputs["prefix"], inputs["negative"])
             if self.loss_function == "rank":
@@ -171,7 +169,7 @@ if __name__ == "__main__":
         loss_function=training_conf["loss"],
         learning_rate=training_conf["learning_rate"],
         # half_precision_backend="apex",
-        fp16=True,
+        fp16=training_conf["fp16"] if "fp16" in training_conf else True,
         gradient_checkpointing=training_conf["gradient_checkpointing"],
         gradient_accumulation_steps=training_conf["gradient_accumulation_steps"],
         per_device_train_batch_size=training_conf["per_device_train_batch_size"],

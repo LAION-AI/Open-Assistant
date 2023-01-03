@@ -33,6 +33,7 @@ class RankGenCollator():
     tokenizer: PreTrainedTokenizerBase
     padding: Union[bool, str, PaddingStrategy] = True
     max_length: Optional[int] = None
+    max_examples: Optional[int] = None
 
     def __call__(self, batch : list[dict[str, str]]) -> dict[str, torch.Tensor]:
         prefixes = []
