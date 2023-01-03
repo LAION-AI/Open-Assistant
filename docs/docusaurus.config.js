@@ -9,9 +9,6 @@ const config = {
   title: "My Site",
   tagline: "Dinosaurs are cool",
   url: "https://andrewm4894.github.io/Open-Assistant/",
-  projectName: "andrewm4894.github.io",
-  organizationName: "andrewm4894",
-  deploymentBranch: "docs-site-poc",
   trailingSlash: false,
   baseUrl: "/",
   onBrokenLinks: "throw",
@@ -20,8 +17,9 @@ const config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "facebook", // Usually your GitHub org/user name.
-  projectName: "docusaurus", // Usually your repo name.
+  organizationName: "andrewm4894", // Usually your GitHub org/user name.
+  projectName: "Open-Assistant", // Usually your repo name.
+  deploymentBranch: "docs-site-poc",
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
