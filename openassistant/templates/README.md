@@ -1,31 +1,11 @@
-# Dataset instructions for {dataset_name}
+# Dataset preparation instructions for {dataset_name}
 
 ## Setup
 
-```bash
-python -m pip install -r requirements.txt
-```
+Add any installation details here.
 
-## Download
+## Usage
 
-```bash
-python download.py
-```
+Explain how to run any scripts that involve special downloading (e.g. data is obtained from a web scraper) or data preprocessing.
 
-## Preprocess
 
-```bash
-python preprocess.py
-```
-
-## Load
-
-```bash
-python load.py
-```
-
-## Upload
-
-```bash
-python upload.py
-```
