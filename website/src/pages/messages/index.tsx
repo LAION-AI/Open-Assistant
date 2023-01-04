@@ -5,9 +5,9 @@ import useSWRImmutable from "swr/immutable";
 
 import fetcher from "src/lib/fetcher";
 import { SideMenu } from "src/components/Dashboard";
-import { Header } from "src/components/Header";
-import { colors } from "styles/Theme/colors";
 import { MessageTable } from "src/components/Messages/MessageTable";
+import { getDashboardLayout } from "src/components/Layout";
+import { colors } from "styles/Theme/colors";
 
 const MessagesDashboard = () => {
   const bgColor = useColorModeValue(colors.light.bg, colors.dark.bg);
@@ -39,7 +39,7 @@ const MessagesDashboard = () => {
             <SideMenu />
           </Box>
           <Box className="flex flex-col overflow-auto p-6 sm:pl-0 gap-14">
-            <SimpleGrid columns={2} spacing={2}>
+            <SimpleGrid columns={[1, 1, 1, 2]} spacing={2}>
               <Box>
                 <Text className="text-2xl font-bold">Most recent messages</Text>
                 <MessageTable messages={messages} isLoading={isLoadingAll} />
@@ -56,11 +56,6 @@ const MessagesDashboard = () => {
   );
 };
 
-MessagesDashboard.getLayout = (page) => (
-  <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
-    <Header transparent={true} />
-    {page}
-  </div>
-);
+MessagesDashboard.getLayout = (page) => getDashboardLayout(page);
 
 export default MessagesDashboard;
