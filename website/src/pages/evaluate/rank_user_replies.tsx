@@ -1,6 +1,6 @@
 import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ContextMessages } from "src/components/ContextMessages";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Message } from "src/components/Messages";
@@ -25,6 +25,12 @@ const RankUserReplies = () => {
       setTasks([data]);
     },
   });
+
+  useEffect(() => {
+    if (tasks.length == 0) {
+      mutate();
+    }
+  }, [tasks]);
 
   const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (data) => {
