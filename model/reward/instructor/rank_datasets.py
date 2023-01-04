@@ -118,7 +118,7 @@ class HFSummary(Dataset):
         self.index2summary = {}
         self.max_comparison_per_sample = max_comparison_per_sample
         major_split = split if "train" == split else "validation"
-        dataset = load_dataset("Tristan/summarize_from_feedback", "comparisons")[major_split]
+        dataset = load_dataset("openai/summarize_from_feedback", "comparisons")[major_split]
         for data in dataset:
             if (
                 "extra" in data
