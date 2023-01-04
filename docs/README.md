@@ -39,11 +39,17 @@ $ yarn start
 This command starts a local development server and opens up a browser window.
 Most changes are reflected live without having to restart the server.
 
-### Build
+### Browser Development
 
-```
-$ yarn build
+If you would like to work on the docs from within your browser you can create a github codespace on your fork or branch. Then from within that codespace you can run below commands to launch the docs site on port 3000 within your codespace. 
+
+```bash
+
+# cd to docs dir
+cd docs
+
+# start dev server to work on your changes
+yarn start
 ```
 
-This command generates static content into the `build` directory and can be
-served using any static contents hosting service.
+Once you port forward to port 3000 within your codespace you will be able to see all changes reflected as soon as you make them.
