@@ -17,6 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { ReactNode, useEffect, useState } from "react";
+import { CollapsableText } from "../CollapsableText";
 
 import { SortableItem } from "./SortableItem";
 
@@ -64,7 +65,7 @@ export const Sortable = (props: SortableProps) => {
         <Flex direction="column" gap={2} className={extraClasses}>
           {itemsWithIds.map(({ id, item }) => (
             <SortableItem key={id} id={id}>
-              {item}
+              <CollapsableText text={item} />
             </SortableItem>
           ))}
         </Flex>
