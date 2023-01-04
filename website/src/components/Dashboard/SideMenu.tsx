@@ -37,15 +37,15 @@ export function SideMenu() {
         className="grid grid-cols-4 gap-2 sm:flex sm:flex-col sm:justify-between p-4 h-full"
       >
         <nav className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
-          {buttonOptions.map((item) => (
+          {buttonOptions.map((item, itemIndex) => (
             <Tooltip
-              key="Tooltip"
+              key={itemIndex}
               fontFamily="inter"
               label={item.label}
               placement="right"
               className="hidden lg:hidden sm:block"
             >
-              <Link key="{item.label}" href={item.pathname} style={{ textDecoration: "none" }}>
+              <Link key={`${item.label}-${itemIndex}`} href={item.pathname} style={{ textDecoration: "none" }}>
                 <Button
                   justifyContent={["center", "center", "center", "left"]}
                   gap="3"

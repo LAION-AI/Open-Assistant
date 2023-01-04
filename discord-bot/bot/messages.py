@@ -151,7 +151,7 @@ def assistant_reply_message(task: protocol_schema.AssistantReplyTask) -> str:
 
 {_conversation(task.conversation)}
 
-{_response_prompt("Please provide a reply to the assistant.")}
+{_response_prompt("Please provide an assistant reply to the prompter.")}
 """
 
 
