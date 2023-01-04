@@ -6,7 +6,8 @@ from custom_datasets.dialogue_collator import DialogueDataCollator
 from losses import CrossEntropyLoss
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer
+from models import get_specific_model
 
 SUPPORTED_MODELS = ["galactica", "GPT-JT"]  # deprecated ..
 
@@ -36,7 +37,7 @@ def get_model(conf, tokenizer):
             "To include more make sure the masking is dne correctly... (decoder only supported for now)"
         )
 
-    model = AutoModelForCausalLM.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    model = get_specific_model(conf.model_name, conf.cache_dir, conf.quantization)
 
     if len(tokenizer) != model.get_input_embeddings().num_embeddings:
         assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."

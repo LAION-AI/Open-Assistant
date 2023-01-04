@@ -17,6 +17,7 @@ from transformers import (
     TrainingArguments,
     get_cosine_schedule_with_warmup,
 )
+import bitsandbytes as bnb
 from utils import get_dataset, get_loss, get_model, get_tokenizer, read_yamls
 
 os.environ["WANDB_PROJECT"] = "supervised-finetuning"
@@ -25,6 +26,7 @@ os.environ["WANDB_PROJECT"] = "supervised-finetuning"
 @dataclass
 class CustomTrainingArguments(TrainingArguments):
     loss_function: str = "CrossEntropyLoss"
+    quantization: str = None
 
 
 def compute_metrics(eval_pred):
@@ -71,8 +73,16 @@ class SFTTrainer(Trainer):
         # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
         self.loss_fct = get_loss(args.loss_function)
 
-    def fetch_scheduler(self):
-        return get_cosine_schedule_with_warmup(
+    def create_optimizer_and_scheduler(self, num_training_steps: int):
+        if self.args.quantization == "8bit":
+            self.optimizer = bnb.optim.Adam8bit(model.parameters(), lr=0.001, betas=(0.9, 0.995))
+        else:
+            self.optimizer = torch.optim.AdamW(
+                self.model.parameters(), lr=self.args.learning_rate, weight_decay=self.args.weight_decay
+            )
+
+        print("lr sheduler")
+        self.lr_scheduler = get_cosine_schedule_with_warmup(
             self.optimizer,
             num_warmup_steps=self.args.warmup_steps,
             num_training_steps=self.num_train_steps,
@@ -165,6 +175,7 @@ if __name__ == "__main__":
     model = get_model(training_conf, tokenizer)
 
     train, evals, collate_fn = get_dataset(training_conf, tokenizer)
+    assert len(evals) > 0
 
     args = CustomTrainingArguments(
         output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
@@ -186,9 +197,9 @@ if __name__ == "__main__":
         save_steps=training_conf.save_steps,
         eval_accumulation_steps=training_conf.eval_accumulation_steps,
         report_to="wandb",
+        quantization=training_conf.quantization,
     )
 
-    assert len(evals) > 0
     trainer = SFTTrainer(
         model,
         args,
