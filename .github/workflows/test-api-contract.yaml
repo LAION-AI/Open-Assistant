@@ -25,7 +25,7 @@ jobs:
 
       - run: cd backend && pip install -r requirements.txt
 
-      - run: cd frontend && npm install
+      - run: cd website && npm install
 
       - run: ./scripts/backend-development/start-mock-server.sh
 
