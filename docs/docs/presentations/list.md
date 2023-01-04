@@ -1,4 +1,4 @@
-# Presentations & Decks
+# List
 
 - [OpenAssistant Roadmap](https://docs.google.com/presentation/d/1n7IrAOVOqwdYgiYrXc8Sj0He8krn5MVZO_iLkCjTtu0/edit?usp=sharing):
   High level vison and roadmap (December 2022).
