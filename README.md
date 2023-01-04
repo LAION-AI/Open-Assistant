@@ -10,11 +10,11 @@ improving language itself.
 
 ## Do you want to try it out?
 
-If you are interested in taking a look at the current state of the project, You
+If you are interested in taking a look at the current state of the project, you
 can set up an entire stack needed to run **Open-Assistant**, including the
 website, backend, and associated dependent services.
 
-To start the demo, Run this in the root directory of the repository:
+To start the demo, run this in the root directory of the repository:
 
 ```sh
 docker compose up --build
@@ -25,6 +25,15 @@ interact with the website.
 
 **Note:** When logging in via email, navigate to `http://localhost:1080` to get
 the magic email login link.
+
+**Note:** If you would like to run this in a standardized development
+environment (a
+["devcontainer"](https://code.visualstudio.com/docs/devcontainers/containers))
+using
+[vscode locally](https://code.visualstudio.com/docs/devcontainers/create-dev-container#_create-a-devcontainerjson-file)
+or in a web browser using
+[GitHub Codespaces](https://github.com/features/codespaces), you can use the
+provided [`.devcontainer`](.devcontainer/) folder.
 
 ## The Plan
 
@@ -67,7 +76,7 @@ hardware.
 
 ## How can you help?
 
-All open source projects begins with people like you. Open source is the belief
+All open source projects begin with people like you. Open source is the belief
 that if we collaborate we can together gift our knowledge and technology to the
 world for the benefit of humanity.
 

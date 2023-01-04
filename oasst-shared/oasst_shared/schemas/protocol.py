@@ -1,9 +1,10 @@
 import enum
 from datetime import datetime
-from typing import Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 from uuid import UUID, uuid4
 
 import pydantic
+from oasst_shared.exceptions import OasstErrorCode
 from pydantic import BaseModel, Field
 
 
@@ -281,3 +282,22 @@ class SystemStats(BaseModel):
     active: int = 0
     deleted: int = 0
     message_trees: int = 0
+
+
+class UserScore(BaseModel):
+    ranking: int
+    user_id: UUID
+    username: str
+    display_name: str
+    score: int
+
+
+class LeaderboardStats(BaseModel):
+    leaderboard: List[UserScore]
+
+
+class OasstErrorResponse(BaseModel):
+    """The format of an error response from the OASST API."""
+
+    error_code: OasstErrorCode
+    message: str
