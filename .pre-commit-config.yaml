@@ -1,4 +1,4 @@
-exclude: "build|stubs|^bot/templates/"
+exclude: "build|stubs|^bot/templates/|openassistant/templates"
 
 default_language_version:
   python: python3

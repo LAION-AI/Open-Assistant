@@ -11,10 +11,12 @@ and then running:
 ```python
 from datasets import load_dataset
 
-dataset = load_dataset("OpenAssistant/<dataset-name>")
+dataset = load_dataset("OpenAssistant/{dataset-name}")
 ```
 
 See the instructions below if you'd like to contribute a new dataset to the project.
+
+## Adding a new dataset
 
 ## Uploading a dataset to the Hugging Face Hub
 
@@ -29,8 +31,8 @@ Adding a new dataset for the OpenAssistant project typically involves the follow
 
 To upload a dataset to the OpenAssistant organization, you first need to:
 
-* Create a [Hugging Face account](https://huggingface.co/join) (it's free)
-* Join the [OpenAssistant organization](https://huggingface.co/OpenAssistant) by clicking on the _Request to join this org_ button on the top right-hand side
+- Create a [Hugging Face account](https://huggingface.co/join) (it's free)
+- Join the [OpenAssistant organization](https://huggingface.co/OpenAssistant) by clicking on the _Request to join this org_ button on the top right-hand side
 
 By default, your [role](https://huggingface.co/docs/hub/organizations-security#access-control-in-organizations) in the organization is `contributor`, which gives you write access to any datasets that you create (and only those). If you'd like to make changes to other datasets, [open a discussion or Hub pull request](https://huggingface.co/docs/hub/repositories-pull-requests-discussions).
 
@@ -76,8 +78,8 @@ python -m pip install datasets
 
 We've created a [Gradio application](https://huggingface.co/spaces/OpenAssistant/dataset-generator) on Hugging Face Spaces that will create a new dataset repository for you with the following template files:
 
-* A dataset loading script
-* A dataset card
+- A dataset loading script
+- A dataset card
 
 Simply provide the name of the new dataset and your access token from Step 1, and you're good to go!
 
@@ -97,5 +99,4 @@ from datasets import load_dataset
 load_dataset("OpenAssistant/my_dataset")
 ```
 
-Congratulations - you've now added a dataset to the Hub!
-
+Congratulations - you've now added a dataset to the OpenAssistant org!
