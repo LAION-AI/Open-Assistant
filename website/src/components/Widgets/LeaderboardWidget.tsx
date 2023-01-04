@@ -54,7 +54,7 @@ export function LeaderboardWidget() {
       <div className="flex flex-col gap-4">
         <div className="flex items-end justify-between">
           <Text className="text-2xl font-bold">Top 5 Contributors</Text>
-          <Link key="Leaderboard" href="#" _hover={{ textDecoration: "none" }}>
+          <Link href="#" _hover={{ textDecoration: "none" }}>
             <Text color="blue.400" className="text-sm font-bold">
               View All -&gt;
             </Text>
@@ -74,8 +74,8 @@ export function LeaderboardWidget() {
                 <p>Score</p>
               </div>
             </div>
-            {leaderInfo.map((item) => (
-              <div key="User" className="grid grid-cols-4 items-center">
+            {leaderInfo.map((item, itemIndex) => (
+              <div key={itemIndex} className="grid grid-cols-4 items-center">
                 <div className="flex items-center gap-3">
                   <Image alt="Profile Picture" src={item.image} boxSize="7" borderRadius="full"></Image>
                   <p>{item.name}</p>
