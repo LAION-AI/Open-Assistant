@@ -1,7 +1,6 @@
 import { Flex, Tooltip } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
 import React from "react";
-import styles from '../../styles/Home.module.css'
 import { TaskOption } from "./TaskOption";
 import { TaskOptions } from "./TaskOptions";
 
@@ -46,7 +45,7 @@ export const TaskSelection = () => {
 
         />
       </TaskOptions>
-      <TaskOptions key="evaluate" data-size="Evaluate">
+      <TaskOptions key="evaluate" title="Evaluate">
         {/*
         Commented out while the backend does not support them.
         <TaskOption

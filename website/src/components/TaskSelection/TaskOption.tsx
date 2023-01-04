@@ -8,10 +8,11 @@ export type OptionProps = {
   alt: string;
   title: string;
   link: string;
+  label:string
 };
 
 export const TaskOption = (props: OptionProps) => {
-  const { alt, img, title, link } = props;
+  const { alt, img, title, link,label } = props;
   return (
     
     <Tooltip label={label}>
