@@ -37,9 +37,12 @@ const config = {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
         },
+        blog: false,
+        /*
         blog: {
           showReadingTime: true,
         },
+        */
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },
@@ -61,9 +64,9 @@ const config = {
             type: "doc",
             docId: "intro",
             position: "left",
-            label: "Tutorial",
+            label: "Docs",
           },
-          { to: "/blog", label: "Blog", position: "left" },
+          //{ to: "/blog", label: "Blog", position: "left" },
           {
             href: "https://github.com/LAION-AI/Open-Assistant",
             label: "GitHub",
@@ -78,7 +81,7 @@ const config = {
             title: "Docs",
             items: [
               {
-                label: "Tutorial",
+                label: "Docs",
                 to: "/docs/intro",
               },
             ],
@@ -87,26 +90,22 @@ const config = {
             title: "Community",
             items: [
               {
-                label: "Stack Overflow",
-                href: "https://stackoverflow.com/questions/tagged/docusaurus",
+                label: "OpenAssistant Contributors Discord",
+                href: "https://ykilcher.com/open-assistant-discord",
               },
               {
-                label: "Discord",
-                href: "https://discordapp.com/invite/docusaurus",
+                label: "LAION Discord",
+                href: "https://discord.com/invite/mVcgxMPD7e",
               },
               {
-                label: "Twitter",
-                href: "https://twitter.com/docusaurus",
+                label: "YK Discord",
+                href: "https://ykilcher.com/discord",
               },
             ],
           },
           {
             title: "More",
             items: [
-              {
-                label: "Blog",
-                to: "/blog",
-              },
               {
                 label: "GitHub",
                 href: "https://github.com/LAION-AI/Open-Assistant",
