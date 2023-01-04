@@ -23,7 +23,7 @@ describe("Contract test for Oasst API", function () {
     expect(await oasstApiClient.ackTask(task.id, "321")).to.be.null;
   });
 
-  // TODO Add test for 204
-  // TODO Add test for parsing >=300, throwing an OasstError
-  // TODO Add test for parsing >=300, throwing a generic error
+  // TODO(#354): Add test for 204
+  // TODO(#354): Add test for parsing >=300, throwing an OasstError
+  // TODO(#354): Add test for parsing >=300, throwing a generic error
 });

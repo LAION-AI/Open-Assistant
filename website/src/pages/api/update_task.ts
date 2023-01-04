@@ -36,7 +36,7 @@ const handler = async (req, res) => {
 
   // Send the interaction to the Task Backend.  This automatically fetches the
   // next task in the sequence (or the done task).
-  // TODO Move this into OasstApiClient.
+  // TODO(#353): Move this into OasstApiClient.
   const interactionRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/tasks/interaction`, {
     method: "POST",
     headers: {
