@@ -15,6 +15,10 @@ on:
       build-args:
         required: false
         type: string
+    outputs:
+      tag:
+        description: "Tag for the resulting docker image (e.g. ghcr.io/LAION-AI/Open-Assistant/oasst-backend:cba4321)"
+        value: ${{ jobs.build.outputs.tag }}
 
 jobs:
   build:
@@ -59,3 +63,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+    outputs:
+      tag: ${{ steps.meta.outputs.tags }}

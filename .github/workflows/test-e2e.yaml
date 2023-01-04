@@ -1,0 +1,55 @@
+name: Website Tests (Cypress)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - website/**
+  pull_request:
+    paths:
+      - website/**
+
+jobs:
+  build-backend:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      image-name: oasst-backend
+      context: .
+      dockerfile: docker/Dockerfile.backend
+      build-args: ""
+  build-web:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      image-name: oasst-web
+      context: .
+      dockerfile: docker/Dockerfile.website
+      build-args: ""
+  test-e2e:
+    needs: [build-backend, build-web]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to container registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download backend docker image
+        run: |
+          docker pull ${{ needs.build-backend.outputs.tag }} && docker tag ${{ needs.build-backend.outputs.tag }} oasst-backend
+      - name: Download web docker image
+        run: |
+          docker pull ${{ needs.build-web.outputs.tag }} && docker tag ${{ needs.build-web.outputs.tag }} oasst-web
+      - name: Start website, backend, etc
+        run: docker compose up ci --no-build -d
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v5.0.2
+        with:
+          browser: ${{ matrix.browser }}
+          working-directory: website
