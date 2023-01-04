@@ -71,6 +71,10 @@ def freeze_top_n_layers(model, target_layers):
 
 
 def argument_parsing(parser):
+    args = parser.parse_args()
+    with open(args.config, "r", encoding="utf-8") as f:
+        training_conf = yaml.safe_load(f.read())
+
     default_params = {
         "num_train_epochs": 4,
         "learning_rate": 3e-5,
@@ -82,10 +86,9 @@ def argument_parsing(parser):
         "gradient_accumulation_steps": 8,
         "gradient_checkpointing": False,
         "datasets": ["webgpt"],
+        "fp16": True,
+        "tokenizer_name": training_conf["model_name"],
     }
-    args = parser.parse_args()
-    with open(args.config, "r", encoding="utf-8") as f:
-        training_conf = yaml.safe_load(f.read())
 
     params = {**default_params, **training_conf}
     params["gradient_accumulation_steps"] = int(params["gradient_accumulation_steps"])

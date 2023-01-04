@@ -168,7 +168,7 @@ if __name__ == "__main__":
         loss_function=training_conf["loss"],
         learning_rate=training_conf["learning_rate"],
         # half_precision_backend="apex",
-        fp16=training_conf["fp16"] if "fp16" in training_conf else True,
+        fp16=training_conf["fp16"],
         gradient_checkpointing=training_conf["gradient_checkpointing"],
         gradient_accumulation_steps=training_conf["gradient_accumulation_steps"],
         per_device_train_batch_size=training_conf["per_device_train_batch_size"],
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         evaluation_strategy="steps",
         eval_steps=training_conf["eval_steps"],
         save_steps=1000,
-        report_to="wandb",
+        report_to="local",
     )
     train_datasets, evals = [], {}
     if "webgpt" in training_conf["datasets"]:
@@ -196,10 +196,7 @@ if __name__ == "__main__":
         evals["hfsummary"] = sum_eval
     train = ConcatDataset(train_datasets)
 
-    if "tokenizer_name" in training_conf:
-        tokenizer = get_tokenizer(training_conf["tokenizer_name"])
-    else:
-        tokenizer = get_tokenizer(model_name)
+    tokenizer = get_tokenizer(training_conf["tokenizer_name"])
 
     if "rankgen" in model_name:
         collate_fn = RankGenCollator(tokenizer, max_length=training_conf["max_length"])
