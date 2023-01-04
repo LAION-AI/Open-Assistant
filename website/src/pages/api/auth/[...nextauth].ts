@@ -59,7 +59,7 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
   );
 }
 
-export const authOptions: AuthOptions = {
+const authOptions: AuthOptions = {
   // Ensure we can store user data in a database.
   adapter: PrismaAdapter(prisma),
   providers,
@@ -70,6 +70,49 @@ export const authOptions: AuthOptions = {
   },
   session: {
     strategy: "jwt",
+  },
+  callbacks: {
+    async signIn(user, account) {
+      // Check if the user should be marked as an admin.
+      const adminUsers = process.env.ADMIN_USERS.split(",");
+      if (account && account.providor === "discord") {
+        const discordID = account.id;
+        const discordUsername = account.username;
+        const discordIdAndUsername = `${discordUsername}#${discordID}`;
+        if (adminUsers && (adminUsers.includes(discordIdAndUsername))) {
+          // Mark the user as an admin.
+          await prisma.user.update({
+            where: {
+              id: user.id,
+            },
+            data: {
+              role: "ADMIN",
+            },
+          });
+        }
+      }
+      if (adminUsers && (adminUsers.includes(user.email))) {
+        // Mark the user as an admin.
+        await prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            role: "ADMIN",
+          },
+        });
+      }
+      else {
+        await prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            role: "general",
+          },
+        });
+      }
+    },
   },
 };
 

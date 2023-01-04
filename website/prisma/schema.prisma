@@ -41,7 +41,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-
+  role          String?  // New Column
   accounts      Account[]
   sessions      Session[]
 
