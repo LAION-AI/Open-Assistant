@@ -6,7 +6,7 @@ import hikari
 import lightbulb
 import miru
 from bot.settings import Settings
-from bot.utils import EMPTY, mention
+from bot.utils import mention
 from oasst_shared.api_client import OasstApiClient
 
 settings = Settings()
@@ -34,8 +34,11 @@ async def on_starting(event: hikari.StartingEvent):
 
     bot.d.oasst_api = OasstApiClient(settings.oasst_api_url, settings.oasst_api_key)
 
-    # A set of user id's that are currently doing work.
-    bot.d.currently_working = set()
+    # A `dict[hikari.Message | None, UUID | None]]` that maps user IDs to (task msg ID, task UUIDs).
+    # Either both are `None` or both are not `None`.
+    # If both are `None`, the user is not currently selecting a task.
+    # TODO: Grow this on startup so we don't have to re-allocate memory every time it needs to grow
+    bot.d.currently_working = {}
 
 
 @bot.listen()
@@ -50,13 +53,13 @@ async def _send_error_embed(
 ) -> None:
     ctx.command
     embed = hikari.Embed(
-        title=f"`{exception.__class__.__name__}` Error{f' in `{ctx.command.name}`' if ctx.command else '' }",
+        title=f"`{exception.__class__.__name__}` Error{f' in `/{ctx.command.name}`' if ctx.command else '' }",
         description=content,
         color=0xFF0000,
         timestamp=datetime.now().astimezone(),
     ).set_author(name=ctx.author.username, url=str(ctx.author.avatar_url))
 
-    await ctx.respond(EMPTY, embed=embed)
+    await ctx.respond(embed=embed)
 
 
 @bot.listen(lightbulb.CommandErrorEvent)
@@ -65,6 +68,8 @@ async def on_error(event: lightbulb.CommandErrorEvent) -> None:
     # Unwrap the exception to get the original cause
     exc = event.exception.__cause__ or event.exception
     ctx = event.context
+    if not ctx.bot.rest.is_alive:
+        return
 
     if isinstance(event.exception, lightbulb.CommandInvocationError):
         if not event.context.command:
@@ -114,6 +119,8 @@ async def on_error(event: lightbulb.CommandErrorEvent) -> None:
             ctx,
         )
     elif isinstance(exc, lightbulb.errors.MissingRequiredAttachment):
-        await _send_error_embed("Not enough attachemnts were supplied to this command.", exc, ctx)
+        await _send_error_embed("Not enough attachments were supplied to this command.", exc, ctx)
+    elif isinstance(exc, lightbulb.errors.CommandNotFound):
+        await ctx.respond(f"`/{exc.invoked_with}` is not a valid command. Use `/help` to see a list of commands.")
     else:
         raise exc

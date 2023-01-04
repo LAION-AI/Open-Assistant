@@ -65,7 +65,7 @@ const AssistantReply = () => {
           <p className="text-lg py-1">Given the following conversation, provide an adequate reply</p>
           <Messages messages={task.conversation.messages} post_id={task.id} />
         </>
-        <Textarea name="reply" placeholder="Reply..." ref={inputRef} />
+        <Textarea name="reply" data-cy="reply" placeholder="Reply..." ref={inputRef} />
       </TwoColumnsWithCards>
 
       <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
