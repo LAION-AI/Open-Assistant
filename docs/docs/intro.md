@@ -1,12 +1,15 @@
 # Introduction
 
-OpenAssistant is a chat-based assistant that understands tasks, can interact with third-party systems, and retrieve information dynamically to do so.
+OpenAssistant is a chat-based assistant that understands tasks, can interact
+with third-party systems, and retrieve information dynamically to do so.
 
-It can be extended and personalized easily and is developed as free, open-source software.
+It can be extended and personalized easily and is developed as free, open-source
+software.
 
 ## Our Vision
 
-We want OpenAssistant to be the single, unifying platform that all other systems use to interface with humans.
+We want OpenAssistant to be the single, unifying platform that all other systems
+use to interface with humans.
 
 ## Principles
 
@@ -14,8 +17,10 @@ We want OpenAssistant to be the single, unifying platform that all other systems
 - We need to get the MVP out fast, while we still have momentum
 - We pull in one direction
 - We are pragmatic
-- We aim for models that can (or could, with some effort) be run on consumer hardware
-- We rapidly validate our ML experiments on a small scale, before going to a supercluster
+- We aim for models that can (or could, with some effort) be run on consumer
+  hardware
+- We rapidly validate our ML experiments on a small scale, before going to a
+  supercluster
 
 ## Main Efforts
 
@@ -27,4 +32,3 @@ We want OpenAssistant to be the single, unifying platform that all other systems
 - Data Collection → This is the bulk of the work
 - Data Augmentation → Making more data from little data
 - Privacy and Safety → Protecting sensitive data
-

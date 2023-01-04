@@ -41,7 +41,9 @@ Most changes are reflected live without having to restart the server.
 
 ### Browser Development
 
-If you would like to work on the docs from within your browser you can create a github codespace on your fork or branch. Then from within that codespace you can run below commands to launch the docs site on port 3000 within your codespace. 
+If you would like to work on the docs from within your browser you can create a
+github codespace on your fork or branch. Then from within that codespace you can
+run below commands to launch the docs site on port 3000 within your codespace.
 
 ```bash
 
@@ -52,4 +54,5 @@ cd docs
 yarn start
 ```
 
-Once you port forward to port 3000 within your codespace you will be able to see all changes reflected as soon as you make them.
+Once you port forward to port 3000 within your codespace you will be able to see
+all changes reflected as soon as you make them.

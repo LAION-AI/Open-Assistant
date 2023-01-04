@@ -14,51 +14,42 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   sidebar: [
-    'intro',
+    "intro",
     {
-      type: 'category',
-      label: 'Guides',
+      type: "category",
+      label: "Guides",
       link: {
-        type: 'generated-index',
+        type: "generated-index",
         description: "Useful guides.",
       },
-      items: ['guides/prompting'],
+      items: ["guides/prompting"],
     },
     {
-      type: 'category',
-      label: 'Data',
+      type: "category",
+      label: "Data",
       link: {
-        type: 'generated-index',
+        type: "generated-index",
         description: "Important data concepts.",
       },
-      items: [
-        'data/schemas',
-        'data/augmentation',
-        'data/supervised-datasets',
-      ],
+      items: ["data/schemas", "data/augmentation", "data/supervised-datasets"],
     },
     {
-      type: 'category',
-      label: 'Research',
+      type: "category",
+      label: "Research",
       link: {
-        type: 'generated-index',
+        type: "generated-index",
         description: "Useful research material.",
       },
-      items: [
-        'research/general',
-        'research/search-based-qa'
-      ],
+      items: ["research/general", "research/search-based-qa"],
     },
     {
-      type: 'category',
-      label: 'Presentations',
+      type: "category",
+      label: "Presentations",
       link: {
-        type: 'generated-index',
+        type: "generated-index",
         description: "Useful decks and presentations.",
       },
-      items: [
-        'presentations/presentations',
-      ],
+      items: ["presentations/presentations"],
     },
   ],
 };

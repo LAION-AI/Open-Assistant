@@ -22,19 +22,13 @@ const FeatureList: FeatureItem[] = [
     title: "Retrieval via Search Engines",
     Svg: require("@site/static/img/logo.svg").default,
     description: (
-      <>
-        External, upgradeable knowledge: No need for billions of parameters.
-      </>
+      <>External, upgradeable knowledge: No need for billions of parameters.</>
     ),
   },
   {
     title: "A building block for developers",
     Svg: require("@site/static/img/logo.svg").default,
-    description: (
-      <>
-        Integrate OpenAssistant into your application.
-      </>
-    ),
+    description: <>Integrate OpenAssistant into your application.</>,
   },
 ];
 
