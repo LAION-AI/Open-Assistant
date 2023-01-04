@@ -1,3 +1,4 @@
+import "./config.js"
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { boolean } from "boolean";
 import type { AuthOptions } from "next-auth";
@@ -79,7 +80,7 @@ const authOptions: AuthOptions = {
         const discordID = account.id;
         const discordUsername = account.username;
         const discordIdAndUsername = `${discordUsername}#${discordID}`;
-        if (adminUsers && (adminUsers.includes(discordIdAndUsername))) {
+        if (adminUsers && adminUsers.includes(discordIdAndUsername)) {
           // Mark the user as an admin.
           await prisma.user.update({
             where: {
@@ -91,7 +92,7 @@ const authOptions: AuthOptions = {
           });
         }
       }
-      if (adminUsers && (adminUsers.includes(user.email))) {
+      if (adminUsers && adminUsers.includes(user.email)) {
         // Mark the user as an admin.
         await prisma.user.update({
           where: {
@@ -101,8 +102,7 @@ const authOptions: AuthOptions = {
             role: "ADMIN",
           },
         });
-      }
-      else {
+      } else {
         await prisma.user.update({
           where: {
             id: user.id,
