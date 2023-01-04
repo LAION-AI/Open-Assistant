@@ -19,8 +19,8 @@ const sidebars = {
       type: "category",
       label: "Guides",
       link: {
-        type: "generated-index",
-        description: "Useful guides.",
+        type: "doc",
+        id: "guides/README",
       },
       items: ["guides/prompting"],
     },
@@ -28,8 +28,8 @@ const sidebars = {
       type: "category",
       label: "Data",
       link: {
-        type: "generated-index",
-        description: "Important data concepts.",
+        type: "doc",
+        id: "data/README",
       },
       items: [
         "data/schemas",
@@ -42,8 +42,8 @@ const sidebars = {
       type: "category",
       label: "Research",
       link: {
-        type: "generated-index",
-        description: "Useful research material.",
+        type: "doc",
+        id: "research/README",
       },
       items: ["research/general", "research/search-based-qa"],
     },
@@ -51,10 +51,10 @@ const sidebars = {
       type: "category",
       label: "Presentations",
       link: {
-        type: "generated-index",
-        description: "Useful decks and presentations.",
+        type: "doc",
+        id: "presentations/README",
       },
-      items: ["presentations/presentations"],
+      items: ["presentations/list"],
     },
   ],
 };
