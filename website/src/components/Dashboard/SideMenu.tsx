@@ -1,6 +1,6 @@
 import { Box, Button, Link, Text, Tooltip, useColorMode } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { FiLayout, FiSun } from "react-icons/fi";
+import { FiLayout, FiSun, FiMessageSquare } from "react-icons/fi";
 import { colors } from "styles/Theme/colors";
 
 export function SideMenu() {
@@ -12,6 +12,12 @@ export function SideMenu() {
       pathname: "/dashboard",
       desc: "Dashboard Home",
       icon: FiLayout,
+    },
+    {
+      label: "Messages",
+      pathname: "/messages",
+      desc: "Messages Dashboard",
+      icon: FiMessageSquare,
     },
     // {
     //   label: "Leaderboard",
