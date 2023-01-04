@@ -1,7 +1,7 @@
 import { Box, useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
 import { Header } from "src/components/Header";
-import { LeaderboardWidget, SideMenu, TaskOption } from "src/components/Widgets";
+import { LeaderboardTable, SideMenu, TaskOption } from "src/components/Dashboard";
 import { colors } from "styles/Theme/colors";
 
 const Dashboard = () => {
@@ -19,7 +19,7 @@ const Dashboard = () => {
           </Box>
           <Box className="flex flex-col overflow-auto p-6 sm:pl-0 gap-14">
             <TaskOption />
-            <LeaderboardWidget />
+            <LeaderboardTable />
           </Box>
         </Box>
       </Box>

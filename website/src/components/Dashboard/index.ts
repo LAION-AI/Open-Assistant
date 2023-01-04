@@ -1,3 +1,3 @@
-export { LeaderboardWidget } from "./LeaderboardWidget";
+export { LeaderboardTable } from "./LeaderboardTable";
 export { SideMenu } from "./SideMenu";
 export { TaskOption } from "./TaskOption";
