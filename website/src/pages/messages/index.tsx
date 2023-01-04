@@ -1,4 +1,4 @@
-import { Box, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, CircularProgress, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
 import useSWRImmutable from "swr/immutable";
@@ -11,6 +11,8 @@ import { colors } from "styles/Theme/colors";
 
 const MessagesDashboard = () => {
   const bgColor = useColorModeValue(colors.light.bg, colors.dark.bg);
+  const boxBgColor = useColorModeValue("white", "gray.700");
+  const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
   const [messages, setMessages] = useState([]);
   const [userMessages, setUserMessages] = useState([]);
@@ -42,11 +44,27 @@ const MessagesDashboard = () => {
             <SimpleGrid columns={[1, 1, 1, 2]} spacing={2}>
               <Box>
                 <Text className="text-2xl font-bold">Most recent messages</Text>
-                <MessageTable messages={messages} isLoading={isLoadingAll} />
+                <Box
+                  backgroundColor={boxBgColor}
+                  boxShadow="base"
+                  dropShadow={boxAccentColor}
+                  borderRadius="xl"
+                  className="p-6 shadow-sm"
+                >
+                  {isLoadingAll ? <CircularProgress isIndeterminate /> : <MessageTable messages={messages} />}
+                </Box>
               </Box>
               <Box>
                 <Text className="text-2xl font-bold">Your most recent messages</Text>
-                <MessageTable messages={userMessages} isLoading={isLoadingUser} />
+                <Box
+                  backgroundColor={boxBgColor}
+                  boxShadow="base"
+                  dropShadow={boxAccentColor}
+                  borderRadius="xl"
+                  className="p-6 shadow-sm"
+                >
+                  {isLoadingUser ? <CircularProgress isIndeterminate /> : <MessageTable messages={userMessages} />}
+                </Box>
               </Box>
             </SimpleGrid>
           </Box>
