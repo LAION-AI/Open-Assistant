@@ -26,6 +26,12 @@ export const TaskSelection = () => {
           title="Summarize stories"
           link="/create/summarize_story"
         /> */}
+        <TaskOption
+          alt="Create Initial Prompt"
+          img="/images/logos/logo.svg"
+          title="Create Initial Prompt"
+          link="/create/initial_prompt"
+        />
         <TaskOption alt="Reply as User" img="/images/logos/logo.svg" title="Reply as User" link="/create/user_reply" />
         <TaskOption
           alt="Reply as Assistant"
