@@ -98,7 +98,11 @@ You can make a new branch as such:
 git checkout -b <dataset_name>
 ```
 
-:::caution Please do not make changes on the master branch! :::
+:::caution
+
+Please do not make changes on the master branch!
+
+:::
 
 Always make sure you're on the right branch with the following command:
 
