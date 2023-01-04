@@ -1,22 +1,16 @@
 import os
 from argparse import ArgumentParser
-from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 import evaluate
 import numpy as np
 import torch
 from rank_datasets import DataCollatorForPairRank, HFSummary, WebGPT
 from torch import nn
-from torch.utils.data import ConcatDataset, Dataset
+from torch.utils.data import ConcatDataset
 from transformers import (
     AutoModelForSequenceClassification,
-    DataCollator,
-    EvalPrediction,
-    PreTrainedModel,
-    PreTrainedTokenizerBase,
     Trainer,
-    TrainerCallback,
     TrainingArguments,
 )
 from utils import argument_parsing, freeze_top_n_layers, get_tokenizer, train_val_dataset
