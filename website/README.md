@@ -74,6 +74,7 @@ OAuth.
 1. Use the `Login` button in the top right to go to the login page.
 1. You should see a section for debug credentials. Enter any username you wish,
    you will be logged in as that user.
+
 ### Using Storybook
 
 To develop components using [Storybook](https://storybook.js.org/) run
