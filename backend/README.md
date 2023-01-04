@@ -18,5 +18,5 @@ REDIS_PORT=6379
 ## Running the REST Server locally for development
 
 Have a look into the main `README.md` file for more information on how to set up
-the backend for development.
-Use the scripts within the scripts/backend-development folder to run the BE API locally.
+the backend for development. Use the scripts within the
+scripts/backend-development folder to run the BE API locally.

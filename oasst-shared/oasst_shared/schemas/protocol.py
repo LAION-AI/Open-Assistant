@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 
 import pydantic
 from oasst_shared.exceptions import OasstErrorCode
-from pydantic import BaseModel, Field, constr, conint, conlist
+from pydantic import BaseModel, Field, conint, conlist, constr
 
 
 class TaskRequestType(str, enum.Enum):
