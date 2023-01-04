@@ -6,7 +6,7 @@ const crTasks = [
     label: "Reply as User",
     desc: "Chat with Open Assistant and help improve it’s responses as you interact with it.",
     type: "create",
-    pathname: "/create/assistant_reply",
+    pathname: "/create/user_reply",
   },
   {
     label: "Reply as Assistant",
