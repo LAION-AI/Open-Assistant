@@ -17,8 +17,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { ReactNode, useEffect, useState } from "react";
-import { CollapsableText } from "../CollapsableText";
 
+import { CollapsableText } from "../CollapsableText";
 import { SortableItem } from "./SortableItem";
 
 export interface SortableProps {
