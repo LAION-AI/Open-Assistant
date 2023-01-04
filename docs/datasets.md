@@ -1,4 +1,4 @@
-# Datasets
+# OpenAssistant Datasets
 
 The datasets for this project are currently hosted as loading scripts on the
 [Open-Assistant organization](https://huggingface.co/OpenAssistant) the Hugging
