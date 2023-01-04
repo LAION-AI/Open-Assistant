@@ -1,6 +1,6 @@
 import { Badge, Box, Image, Link, Stack, StackDivider, Text, useColorModeValue } from "@chakra-ui/react";
 
-export function LeaderboardWidget() {
+export function LeaderboardTable() {
   const backgroundColor = useColorModeValue("white", "gray.700");
   const accentColor = useColorModeValue("gray.200", "gray.900");
 
