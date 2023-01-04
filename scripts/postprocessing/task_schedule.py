@@ -5,21 +5,6 @@ import numpy as np
 from scipy import optimize
 
 
-def prompt_likelihood(current_active_prompts_size: int, target_active_prompts_size: int) -> float:
-    """
-    linearly scales the likelihood of serving a prompt, rather than a voting task.
-    Rankings should be done ASAP as these are always blocking outflow from the active pool.
-
-        Parameters:
-            current_active_prompts_size (int): number of currently active prompts
-            max_active_prompts_size (int): target number of active prompts
-        Returns:
-            likelihood of  p(serve_prompt_task) = 1-p(serve_voting_task)
-    """
-    rate = current_active_prompts_size / (target_active_prompts_size * 2)
-    return 0.5 + current_active_prompts_size * rate
-
-
 class Task(Enum):
     RANKING = 0
     ANSWER = 1
