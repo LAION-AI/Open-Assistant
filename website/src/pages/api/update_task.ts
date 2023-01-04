@@ -1,7 +1,5 @@
 import { getToken } from "next-auth/jwt";
-
 import prisma from "src/lib/prismadb";
-import { authOptions } from "src/pages/api/auth/[...nextauth]";
 
 /**
  * Stores the task interaction with the Task Backend and then returns the next task generated.
@@ -9,8 +7,7 @@ import { authOptions } from "src/pages/api/auth/[...nextauth]";
  * This implicity does a few things:
  * 1) Stores the answer with the Task Backend.
  * 2) Records the new task in our local database.
- * 3) (TODO) Acks the new task with our local task ID to the Task Backend.
- * 4) Returns the newly created task to the client.
+ * 3) Returns the newly created task to the client.
  */
 const handler = async (req, res) => {
   const token = await getToken({ req });
@@ -22,7 +19,7 @@ const handler = async (req, res) => {
   }
 
   // Parse out the local task ID and the interaction contents.
-  const { id, content } = await JSON.parse(req.body);
+  const { id, content, update_type } = await JSON.parse(req.body);
 
   // Log the interaction locally to create our user_post_id needed by the Task
   // Backend.
@@ -46,14 +43,14 @@ const handler = async (req, res) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      type: "post_rating",
+      type: update_type,
       user: {
         id: token.sub,
         display_name: token.name || token.email,
         auth_method: "local",
       },
-      post_id: id,
-      user_post_id: interaction.id,
+      message_id: id,
+      user_message_id: interaction.id,
       ...content,
     }),
   });
@@ -70,9 +67,6 @@ const handler = async (req, res) => {
       },
     },
   });
-
-  // TODO: Ack the task with the Task Backend using the newly created local
-  // task ID.
 
   // Send the next task in the sequence to the client.
   res.status(200).json(newRegisteredTask);

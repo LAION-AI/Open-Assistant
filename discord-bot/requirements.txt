@@ -1,7 +1,9 @@
-discord.py==2.1.0
-Jinja2==3.1.2
-pydantic==1.9.1
-python-dotenv==0.21.0
-pytz==2022.7
-requests==2.28.1
-schedule==1.1.0
+aiosqlite           # database
+hikari              # discord framework
+hikari-lightbulb    # command handler
+hikari-miru         # modals and buttons
+hikari[speedups]
+loguru
+pydantic[dotenv]
+
+uvloop; os_name != 'nt'  # Faster drop-in replacement for asyncio event loop

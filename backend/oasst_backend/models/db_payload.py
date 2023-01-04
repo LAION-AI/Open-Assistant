@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import Literal
 
 from oasst_backend.models.payload_column_type import payload_type
@@ -32,8 +31,8 @@ class InitialPromptPayload(TaskPayload):
 
 
 @payload_type
-class UserReplyPayload(TaskPayload):
-    type: Literal["user_reply"] = "user_reply"
+class PrompterReplyPayload(TaskPayload):
+    type: Literal["prompter_reply"] = "prompter_reply"
     conversation: protocol_schema.Conversation
     hint: str | None
 
@@ -45,7 +44,7 @@ class AssistantReplyPayload(TaskPayload):
 
 
 @payload_type
-class PostPayload(BaseModel):
+class MessagePayload(BaseModel):
     text: str
 
 
@@ -56,13 +55,13 @@ class ReactionPayload(BaseModel):
 
 @payload_type
 class RatingReactionPayload(ReactionPayload):
-    type: Literal["post_rating"] = "post_rating"
+    type: Literal["message_rating"] = "message_rating"
     rating: str
 
 
 @payload_type
 class RankingReactionPayload(ReactionPayload):
-    type: Literal["post_ranking"] = "post_ranking"
+    type: Literal["message_ranking"] = "message_ranking"
     ranking: list[int]
 
 
@@ -81,10 +80,10 @@ class RankInitialPromptsPayload(TaskPayload):
 
 
 @payload_type
-class RankUserRepliesPayload(RankConversationRepliesPayload):
-    """A task to rank a set of user replies to a conversation."""
+class RankPrompterRepliesPayload(RankConversationRepliesPayload):
+    """A task to rank a set of prompter replies to a conversation."""
 
-    type: Literal["rank_user_replies"] = "rank_user_replies"
+    type: Literal["rank_prompter_replies"] = "rank_prompter_replies"
 
 
 @payload_type

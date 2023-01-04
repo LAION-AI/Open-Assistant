@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
@@ -21,5 +20,7 @@ class TextLabels(SQLModel, table=True):
     )
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")
     text: str = Field(nullable=False, max_length=2**16)
-    post_id: Optional[UUID] = Field(sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("post.id"), nullable=True))
+    message_id: Optional[UUID] = Field(
+        sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("message.id"), nullable=True)
+    )
     labels: dict[str, float] = Field(default={}, sa_column=sa.Column(pg.JSONB), nullable=False)

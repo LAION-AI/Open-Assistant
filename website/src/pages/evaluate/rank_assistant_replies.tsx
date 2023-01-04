@@ -1,17 +1,16 @@
-import { Button, Flex } from "@chakra-ui/react";
+import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
-import useSWRImmutable from "swr/immutable";
-import useSWRMutation from "swr/mutation";
-
+import { ContextMessages } from "src/components/ContextMessages";
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
+import { Message } from "src/components/Messages";
+import { Sortable } from "src/components/Sortable/Sortable";
+import { SurveyCard } from "src/components/Survey/SurveyCard";
+import { TaskControls } from "src/components/Survey/TaskControls";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
-
-import { LoadingScreen } from "src/components/Loading/LoadingScreen";
-import { Sortable } from "src/components/Sortable/Sortable";
-import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
-import { SubmitButton } from "src/components/Buttons/Submit";
-import { SkipButton } from "src/components/Buttons/Skip";
+import useSWRImmutable from "swr/immutable";
+import useSWRMutation from "swr/mutation";
 
 const RankAssistantReplies = () => {
   const [tasks, setTasks] = useState([]);
@@ -21,13 +20,13 @@ const RankAssistantReplies = () => {
    */
   const [ranking, setRanking] = useState<number[]>([]);
 
-  const { isLoading } = useSWRImmutable("/api/new_task/rank_assistant_replies", fetcher, {
+  const { isLoading, mutate } = useSWRImmutable("/api/new_task/rank_assistant_replies", fetcher, {
     onSuccess: (data) => {
       setTasks([data]);
     },
   });
 
-  const { trigger, isMutating } = useSWRMutation("/api/update_task", poster, {
+  const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (data) => {
       const newTask = await data.json();
       setTasks((oldTasks) => [...oldTasks, newTask]);
@@ -37,21 +36,37 @@ const RankAssistantReplies = () => {
   const submitResponse = (task) => {
     trigger({
       id: task.id,
-      update_type: "post_ranking",
+      update_type: "message_ranking",
       content: {
         ranking,
       },
     });
   };
 
+  const fetchNextTask = () => {
+    setRanking([]);
+    mutate();
+  };
+
+  const { colorMode } = useColorMode();
+  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
+
   if (isLoading) {
     return <LoadingScreen text="Loading..." />;
   }
 
   if (tasks.length == 0) {
-    return <div className="p-6 bg-slate-100 text-gray-800">Loading...</div>;
+    return (
+      <div className={`p-12 ${mainBgClasses}`}>
+        <div className="flex h-full">
+          <div className="text-xl font-bold  mx-auto my-auto">No tasks found...</div>
+        </div>
+      </div>
+    );
   }
+
   const replies = tasks[0].task.replies as string[];
+  const messages = tasks[0].task.conversation.messages as Message[];
 
   return (
     <>
@@ -59,26 +74,18 @@ const RankAssistantReplies = () => {
         <title>Rank Assistant Replies</title>
         <meta name="description" content="Rank Assistant Replies." />
       </Head>
-      <main className="p-6 bg-slate-100 text-gray-800">
-        <div className="rounded-lg shadow-lg block bg-white p-6 mb-8">
+      <div className={`p-12 ${mainBgClasses}`}>
+        <SurveyCard className="max-w-7xl mx-auto h-fit mb-24">
           <h5 className="text-lg font-semibold mb-4">Instructions</h5>
           <p className="text-lg py-1">
             Given the following replies, sort them from best to worst, best being first, worst being last.
           </p>
-          <Sortable items={replies} onChange={setRanking} />
-        </div>
+          <ContextMessages messages={messages} />
+          <Sortable items={replies} onChange={setRanking} className="my-8" />
+        </SurveyCard>
 
-        <section className="mb-8 p-4 rounded-lg shadow-lg bg-white flex flex-row justify-items-stretch">
-          <TaskInfo id={tasks[0].id} output="Submit your answer" />
-
-          <Flex justify="center" ml="auto" gap={2}>
-            <SkipButton>Skip</SkipButton>
-            <SubmitButton onClick={() => submitResponse(tasks[0])} disabled={ranking.length === 0}>
-              Submit
-            </SubmitButton>
-          </Flex>
-        </section>
-      </main>
+        <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
+      </div>
     </>
   );
 };

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 from scipy import log2
 from scipy.integrate import nquad

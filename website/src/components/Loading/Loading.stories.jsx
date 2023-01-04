@@ -1,5 +1,6 @@
 import { LoadingScreen } from "./LoadingScreen";
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default {
   title: "Example/LoadingScreen",
   component: LoadingScreen,

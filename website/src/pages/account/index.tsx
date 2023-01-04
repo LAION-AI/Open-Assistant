@@ -1,24 +1,11 @@
+import { Button } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
-import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Button } from "@chakra-ui/react";
+import React from "react";
 
 export default function Account() {
   const { data: session } = useSession();
-  const [username, setUsername] = useState("null");
-
-  const handleUpdate = async () => {
-    const response = await fetch("../api/update", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username }),
-    });
-    const { name } = await response.json();
-    setUsername(name);
-  };
 
   if (!session) {
     return;
@@ -33,7 +20,7 @@ export default function Account() {
         />
       </Head>
       <main className="h-3/4 z-0 bg-white flex flex-col items-center justify-center">
-        <p>{username}</p>
+        <p>{session.user.name || "No username"}</p>
         <Button>
           <Link href="/account/edit">Edit Username</Link>
         </Button>

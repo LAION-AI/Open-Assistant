@@ -3,6 +3,7 @@ import React from "react";
 
 import { Header } from "./Header";
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default {
   title: "Header/Header",
   component: Header,
@@ -21,4 +22,15 @@ const Template = (args) => {
 };
 
 export const Default = Template.bind({});
-Default.args = { session: { data: { user: { name: "StoryBook user" } }, status: "authenticated" }, transparent: false };
+Default.args = {
+  session: {
+    data: {
+      user: {
+        name: "StoryBook user",
+      },
+    },
+    status: "authenticated",
+  },
+  transparent: false,
+  borderClass: undefined,
+};
