@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
-import { FiLayout, FiLogOut } from "react-icons/fi";
+import { FiLayout, FiLogOut, FiSettings } from "react-icons/fi";
 
 export function UserMenu() {
   const { data: session } = useSession();
@@ -21,6 +21,13 @@ export function UserMenu() {
         href: "/dashboard",
         desc: "Dashboard",
         icon: FiLayout,
+        //For future use
+      },
+      {
+        name: "Account Settings",
+        href: "/account",
+        desc: "Account Settings",
+        icon: FiSettings,
         //For future use
       },
     ];
