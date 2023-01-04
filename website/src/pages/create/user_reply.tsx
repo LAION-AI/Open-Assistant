@@ -72,7 +72,7 @@ const UserReply = () => {
           <Messages messages={task.conversation.messages} post_id={task.id} />
           {task.hint && <p className="text-lg py-1">Hint: {task.hint}</p>}
         </>
-        <Textarea name="reply" placeholder="Reply..." ref={inputRef} />
+        <Textarea name="reply" data-cy="reply" placeholder="Reply..." ref={inputRef} />
       </TwoColumnsWithCards>
 
       <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />

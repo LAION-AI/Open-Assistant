@@ -26,10 +26,7 @@
 #
 # /WARNING!
 
-exclude: "build|stubs|^bot/templates/|^notebooks/.*\\.ipynb$"
-
-default_language_version:
-  python: python3
+exclude: build|stubs|^bot/templates/$
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -42,12 +39,12 @@ repos:
         # and which break the standard YAML check.  The alternative would be to
         # skip any unsafe errors (and thus break YAML compatibility) or use
         # some other checker that may not work in general.
-        exclude: "^copilot/web/addons/.*$"
+        exclude: ^copilot/.*/addons/.*$
       - id: check-json
       - id: check-case-conflict
       - id: detect-private-key
       - id: fix-encoding-pragma
-        args: ["--remove"]
+        args: [--remove]
       - id: forbid-submodules
       - id: mixed-line-ending
       - id: requirements-txt-fixer
@@ -57,13 +54,13 @@ repos:
       - id: check-symlinks
       - id: check-merge-conflict
       - id: check-added-large-files
-        args: ["--maxkb=1024"]
+        args: [--maxkb=1024]
       - id: end-of-file-fixer
 
   - repo: https://github.com/psf/black
     rev: 22.12.0
     hooks:
-      - id: black
+      - id: black-jupyter
 
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
@@ -79,7 +76,7 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        args: ["--prose-wrap=always", "--write"]
+        args: [--prose-wrap=always, --write]
 
   - repo: local
     hooks:

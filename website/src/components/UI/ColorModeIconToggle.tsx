@@ -14,7 +14,7 @@ export function ColorModeIconToggle(props) {
       onClick={toggleColorMode}
     >
       {colorMode === "light" ? (
-        <CiDark className="h-5 w-5 stroke-zinc-900 dark:hidden" />
+        <CiDark className="h-5 w-5 stroke-zinc-900" />
       ) : (
         <CiLight className="h-5 w-5 stroke-white" />
       )}

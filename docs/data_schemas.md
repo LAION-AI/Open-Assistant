@@ -10,6 +10,9 @@ Also, the schemas are leaning heavily on the
 [OpenAssistant Data Structures](https://docs.google.com/presentation/d/1iaX_nxasVWlvPiSNs0cllR9L_1neZq0RJxd6MFEalUY/edit?usp=sharing)
 presentation.
 
+_Note on conformity: be pragmatic and decide what makes sense 🙂 , it's more
+important that we move forward than cramming everything into a uniform thing._
+
 ## Data Schemas
 
 ### Main structure: conversation trees
