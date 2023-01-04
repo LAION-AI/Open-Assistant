@@ -31,7 +31,12 @@ const sidebars = {
         type: "generated-index",
         description: "Important data concepts.",
       },
-      items: ["data/schemas", "data/augmentation", "data/supervised-datasets"],
+      items: [
+        "data/schemas",
+        "data/datasets",
+        "data/augmentation",
+        "data/supervised-datasets",
+      ],
     },
     {
       type: "category",
