@@ -1,6 +1,7 @@
 import OasstApiClient from "src/lib/oasst_api_client";
 
 describe("Contract test for Oasst API", function () {
+  // Assumes this is running the mock server.
   const oasstApiClient = new OasstApiClient("http://localhost:8080", "test");
 
   it("can fetch a task", async () => {

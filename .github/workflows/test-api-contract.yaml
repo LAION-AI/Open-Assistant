@@ -15,6 +15,9 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
       - run: cd oasst-shared && pip install -e .
 
@@ -22,9 +25,14 @@ jobs:
 
       - run: cd backend && pip install -r requirements.txt
 
+      - run: cd frontend && npm install
+
       - run: ./scripts/backend-development/start-mock-server.sh
 
-      - name: Run contract tests
+      - name: Run Python OasstApiClient contract tests
         run: ./scripts/oasst-shared-development/test.sh
+
+      - name: Run JavaScript OasstApiClient contract tests
+        run: ./scripts/frontend-development/run-contract-test.sh
 
       - run: ./scripts/backend-development/stop-mock-server.sh
