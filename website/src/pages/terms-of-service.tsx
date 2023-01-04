@@ -14,7 +14,7 @@ const TermsOfService = () => {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <main>
+      <main className="oa-basic-theme">
         <Container>
           <Heading as="h1" size="3xl">
             Terms Of Service
