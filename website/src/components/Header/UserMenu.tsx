@@ -1,14 +1,15 @@
-import { Box, useColorModeValue } from "@chakra-ui/react";
+import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
-import { FaCog, FaSignOutAlt } from "react-icons/fa";
+import { FiLayout, FiLogOut, FiSettings } from "react-icons/fi";
 
 export function UserMenu() {
   const { data: session } = useSession();
-  const backgroundColor = useColorModeValue("#FFFFFF", "#000000");
+  const backgroundColor = useColorModeValue("white", "gray.700");
+  const accentColor = useColorModeValue("gray.300", "gray.600");
 
   if (!session) {
     return <></>;
@@ -16,10 +17,17 @@ export function UserMenu() {
   if (session && session.user) {
     const accountOptions = [
       {
+        name: "Dashboard",
+        href: "/dashboard",
+        desc: "Dashboard",
+        icon: FiLayout,
+        //For future use
+      },
+      {
         name: "Account Settings",
         href: "/account",
         desc: "Account Settings",
-        icon: FaCog,
+        icon: FiSettings,
         //For future use
       },
     ];
@@ -28,18 +36,22 @@ export function UserMenu() {
         {({ open }) => (
           <>
             <Popover.Button aria-label="Toggle Account Options" className="flex">
-              <div className="flex items-center gap-4 p-1 lg:pr-6 rounded-full border border-slate-300/70 hover:bg-gray-200/50 transition-colors duration-300">
+              <Box
+                borderWidth="1px"
+                borderColor={accentColor}
+                className="flex items-center gap-4 p-1 lg:pr-6 rounded-full transition-colors duration-300"
+              >
                 <Image
-                  src="/images/temp-avatars/av1.jpg"
+                  src="/images/temp-avatars/av5.jpg"
                   alt="Profile Picture"
-                  width="40"
-                  height="40"
+                  width="36"
+                  height="36"
                   className="rounded-full"
                 ></Image>
                 <p data-cy="username" className="hidden lg:flex">
                   {session.user.name || session.user.email}
                 </p>
-              </div>
+              </Box>
             </Popover.Button>
             <AnimatePresence initial={false}>
               {open && (
@@ -54,35 +66,45 @@ export function UserMenu() {
                       y: -10,
                       transition: { duration: 0.2 },
                     }}
-                    className="absolute right-0 mt-3 w-screen bg-inherit max-w-xs p-4 rounded-md border border-slate-300/70"
                   >
-                    <Box className="flex flex-col gap-1">
-                      {accountOptions.map((item) => (
-                        <a
-                          key={item.name}
-                          href={item.href}
-                          aria-label={item.desc}
-                          className="flex items-center rounded-md hover:bg-gray-200/50"
+                    <Box
+                      bg={backgroundColor}
+                      borderWidth="1px"
+                      borderColor={accentColor}
+                      borderRadius="xl"
+                      className="absolute right-0 mt-3 w-screen max-w-xs p-4"
+                    >
+                      <Box className="flex flex-col gap-1">
+                        {accountOptions.map((item) => (
+                          <Link
+                            key={item.name}
+                            href={item.href}
+                            aria-label={item.desc}
+                            className="flex items-center"
+                            bg={backgroundColor}
+                            _hover={{ textDecoration: "none" }}
+                          >
+                            <div className="p-4">
+                              <item.icon className="text-blue-500" aria-hidden="true" />
+                            </div>
+                            <div>
+                              <Text fontFamily="inter">{item.name}</Text>
+                            </div>
+                          </Link>
+                        ))}
+                        <Link
+                          className="flex items-center rounded-md cursor-pointer"
+                          _hover={{ textDecoration: "none" }}
+                          onClick={() => signOut({ callbackUrl: "/" })}
                         >
                           <div className="p-4">
-                            <item.icon aria-hidden="true" />
+                            <FiLogOut className="text-blue-500" />
                           </div>
                           <div>
-                            <p>{item.name}</p>
+                            <Text fontFamily="inter">Sign Out</Text>
                           </div>
-                        </a>
-                      ))}
-                      <a
-                        className="flex items-center rounded-md hover:bg-gray-100 cursor-pointer"
-                        onClick={() => signOut({ callbackUrl: "/" })}
-                      >
-                        <div className="p-4">
-                          <FaSignOutAlt />
-                        </div>
-                        <div>
-                          <p>Sign Out</p>
-                        </div>
-                      </a>
+                        </Link>
+                      </Box>
                     </Box>
                   </Popover.Panel>
                 </Box>
