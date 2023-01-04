@@ -1,40 +1,25 @@
-import { ChakraProvider } from "@chakra-ui/react";
-import { SessionProvider } from "next-auth/react";
-import { Inter } from "@next/font/google";
-import { extendTheme } from "@chakra-ui/react";
-
 import "../styles/globals.css";
 import "focus-visible";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+import type { AppProps } from "next/app";
+import { SessionProvider } from "next-auth/react";
+import { getDefaultLayout, NextPageWithLayout } from "src/components/Layout";
 
-const theme = extendTheme({
-  styles: {
-    global: {
-      body: {
-        bg: "white",
-      },
-      main: {
-        fontFamily: "Inter",
-      },
-      header: {
-        fontFamily: "Inter",
-      },
-    },
-  },
-});
+import { Chakra, getServerSideProps } from "../styles/Chakra";
 
-function MyApp({ Component, pageProps: { session, ...pageProps } }) {
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+function MyApp({ Component, pageProps: { session, cookies, ...pageProps } }: AppPropsWithLayout) {
+  const getLayout = Component.getLayout ?? getDefaultLayout;
+  const page = getLayout(<Component {...pageProps} />);
+
   return (
-    <ChakraProvider theme={theme}>
-      <SessionProvider session={session}>
-        <Component {...pageProps} />
-      </SessionProvider>
-    </ChakraProvider>
+    <Chakra cookies={cookies}>
+      <SessionProvider session={session}>{page}</SessionProvider>
+    </Chakra>
   );
 }
-
+export { getServerSideProps };
 export default MyApp;
