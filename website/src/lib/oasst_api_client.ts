@@ -30,11 +30,12 @@ export default class OasstApiClient {
     }
 
     if (resp.status >= 300) {
+      const errorText = await resp.text();
       try {
-        const error = await resp.clone().json();
+        const error = JSON.parse(errorText);
         throw new OasstError(error.message, error.error_code, resp.status);
       } catch (e) {
-        throw new OasstError(await resp.text(), 0, resp.status);
+        throw new OasstError(errorText, 0, resp.status);
       }
     }
 
