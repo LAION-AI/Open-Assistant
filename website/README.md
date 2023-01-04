@@ -74,21 +74,6 @@ OAuth.
 1. Use the `Login` button in the top right to go to the login page.
 1. You should see a section for debug credentials. Enter any username you wish,
    you will be logged in as that user.
-
-## Discord setup to enable discord authentication
-
-- Create `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` keys in the `.env` file
-  in `website`.
-- Go to `https://discord.com/developers/applications` and click on
-  `New Application` and create a new application.
-- Once the new application is created, you will have access to `Client ID` and
-  `Client Secret` in the `OAuth2` section. Copy those values and paste for the
-  respective fields in the `.env` file.
-- In the `Oauth2` section, there is an field called `Redirects` which has to be
-  provided with the following URL. This URL is nothing but the discord callback
-  URL which NextAuth uses - `http://localhost:3000/api/auth/callback/discord`
-  (The PORT number for the localhost could be different based on your setup)
-
 ### Using Storybook
 
 To develop components using [Storybook](https://storybook.js.org/) run

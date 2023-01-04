@@ -50,6 +50,7 @@ Remember to save your changes.
 ```
 https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID_HERE&permissions=8&scope=bot%20applications.commands
 ```
+
 ### Environment Setup
 
 To run the bot:
