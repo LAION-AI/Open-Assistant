@@ -1,4 +1,8 @@
-# Research
+---
+sidebar_position: 1
+---
+
+# General
 
 This page lists research papers that are relevant to the project.
 

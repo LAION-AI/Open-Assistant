@@ -19,7 +19,7 @@ function HomepageHeader() {
             className="button button--secondary button--lg"
             to="/docs/intro"
           >
-            Open Assistant Introduction - 5min ⏱️
+            Open Assistant Introduction
           </Link>
         </div>
       </div>
@@ -31,8 +31,8 @@ export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
+      title={`${siteConfig.title}`}
+      description="OpenAssistant is a state-of-the-art chat assistant that can be personalized to your needs."
     >
       <HomepageHeader />
       <main>

@@ -1,3 +1,7 @@
+---
+sidebar_position: 2
+---
+
 # Cohere Grounded QA
 
 [Cohere AI created a question-answering chatbot](https://github.com/cohere-ai/sandbox-grounded-qa)
