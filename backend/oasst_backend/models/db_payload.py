@@ -91,3 +91,33 @@ class RankAssistantRepliesPayload(RankConversationRepliesPayload):
     """A task to rank a set of assistant replies to a conversation."""
 
     type: Literal["rank_assistant_replies"] = "rank_assistant_replies"
+
+
+@payload_type
+class LabelInitialPromptPayload(TaskPayload):
+    """A task to label an initial prompt."""
+
+    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    prompt: str
+
+
+@payload_type
+class LabelConversationReplyPayload(TaskPayload):
+    """A task to label a conversation reply."""
+
+    conversation: protocol_schema.Conversation
+    reply: str
+
+
+@payload_type
+class LabelPrompterReplyPayload(LabelConversationReplyPayload):
+    """A task to label a prompter reply."""
+
+    type: Literal["label_prompter_reply"] = "label_prompter_reply"
+
+
+@payload_type
+class LabelAssistantReplyPayload(LabelConversationReplyPayload):
+    """A task to label an assistant reply."""
+
+    type: Literal["label_assistant_reply"] = "label_assistant_reply"

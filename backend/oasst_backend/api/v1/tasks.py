@@ -120,6 +120,24 @@ def generate_task(
                 conversation=protocol_schema.Conversation(messages=task_messages),
                 replies=replies,
             )
+
+        case protocol_schema.TaskRequestType.label_initial_prompt:
+            logger.info("Generating a LabelInitialPromptTask.")
+            message = pr.fetch_random_initial_prompts(1)[0]
+            task = protocol_schema.LabelInitialPromptTask(prompt=message.payload.payload.text)
+
+        case protocol_schema.TaskRequestType.label_prompter_reply:
+            logger.info("Generating a LabelPrompterReplyTask.")
+            conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="assistant")
+            message = messages[0].payload.payload.text
+            task = protocol_schema.LabelPrompterReplyTask(conversation=conversation, reply=message)
+
+        case protocol_schema.TaskRequestType.label_assistant_reply:
+            logger.info("Generating a LabelAssistantReplyTask.")
+            conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="prompter")
+            message = messages[0].payload.payload.text
+            task = protocol_schema.LabelAssistantReplyTask(conversation=conversation, reply=message)
+
         case _:
             raise OasstError("Invalid request type", OasstErrorCode.TASK_INVALID_REQUEST_TYPE)
 
@@ -256,6 +274,11 @@ def tasks_interaction(
                 # TODO: check if the ranking is valid
                 pr.store_ranking(interaction)
                 # here we would store the ranking in the database
+                return protocol_schema.TaskDone()
+            case protocol_schema.TextLabels:
+                logger.info(f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}.")
+                # TODO: check if the labels are valid?
+                pr.store_text_labels(interaction)
                 return protocol_schema.TaskDone()
             case _:
                 raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)

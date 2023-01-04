@@ -11,6 +11,31 @@ app = typer.Typer()
 # debug constants
 USER = {"id": "1234", "display_name": "John Doe", "auth_method": "local"}
 
+VALID_LABELS = [
+    "spam",
+    "violence",
+    "sexual_content",
+    "toxicity",
+    "political_content",
+    "humor",
+    "sarcasm",
+    "hate_speech",
+    "profanity",
+    "ad_hominem",
+    "insult",
+    "threat",
+    "aggressive",
+    "misleading",
+    "helpful",
+    "formal",
+    "cringe",
+    "creative",
+    "beautiful",
+    "informative",
+    "based",
+    "slang",
+]
+
 
 def _random_message_id():
     return str(random.randint(1000, 9999))
@@ -198,6 +223,62 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                         "type": "message_ranking",
                         "message_id": message_id,
                         "ranking": ranking,
+                        "user": USER,
+                    },
+                )
+                tasks.append(new_task)
+
+            case "label_initial_prompt":
+                typer.echo("Label the following prompt:")
+                typer.echo(task["prompt"])
+                # acknowledge task
+                message_id = _random_message_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+
+                labels_str: str = typer.prompt("Enter labels, separated by commas")
+                labels = labels_str.lower().replace(" ", "").split(",")
+                labels_dict = {
+                    label: 1 if label in labels else 0
+                    for label in VALID_LABELS
+                }
+
+                # send ranking
+                new_task = _post(
+                    "/api/v1/tasks/interaction",
+                    {
+                        "type": "text_labels",
+                        "message_id": message_id,
+                        "labels": labels_dict,
+                        "user": USER,
+                    },
+                )
+                tasks.append(new_task)
+
+            case "label_prompter_reply" | "label_assistant_reply":
+                typer.echo("Here is the conversation so far:")
+                for message in task["conversation"]["messages"]:
+                    typer.echo(_render_message(message))
+
+                typer.echo("Label the following reply:")
+                typer.echo(task["reply"])
+                # acknowledge task
+                message_id = _random_message_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+
+                labels_str: str = typer.prompt("Enter labels, separated by commas")
+                labels = labels_str.lower().replace(" ", "").split(",")
+                labels_dict = {
+                    label: 1 if label in labels else 0
+                    for label in VALID_LABELS
+                }
+
+                # send ranking
+                new_task = _post(
+                    "/api/v1/tasks/interaction",
+                    {
+                        "type": "text_labels",
+                        "message_id": message_id,
+                        "labels": labels_dict,
                         "user": USER,
                     },
                 )

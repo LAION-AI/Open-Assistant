@@ -11,6 +11,7 @@ from aiosqlite import Connection
 from bot.messages import (
     assistant_reply_message,
     confirm_ranking_response_message,
+    confirm_label_response_message,
     confirm_text_response_message,
     initial_prompt_message,
     invalid_user_input_embed,
@@ -19,6 +20,9 @@ from bot.messages import (
     rank_assistant_reply_message,
     rank_initial_prompts_message,
     rank_prompter_reply_message,
+    label_initial_prompt_message,
+    label_prompter_reply_message,
+    label_assistant_reply_message,
     task_complete_embed,
 )
 from bot.settings import Settings
@@ -145,6 +149,8 @@ async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> No
                 content = confirm_ranking_response_message(event.content, task.replies)
             elif isinstance(task, protocol_schema.RankInitialPromptsTask):
                 content = confirm_ranking_response_message(event.content, task.prompts)
+            elif isinstance(task, protocol_schema.LabelConversationReplyTask | protocol_schema.LabelInitialPromptTask):
+                content = confirm_label_response_message(event.content)
             elif isinstance(task, protocol_schema.ReplyToConversationTask | protocol_schema.InitialPromptTask):
                 content = confirm_text_response_message(event.content)
             else:
@@ -167,6 +173,22 @@ async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> No
                 reply = protocol_schema.MessageRanking(
                     message_id=str(msg_id),
                     ranking=[int(r) - 1 for r in event.content.replace(" ", "").split(",")],
+                    user=protocol_schema.User(
+                        auth_method="discord", id=str(ctx.author.id), display_name=ctx.author.username
+                    ),
+                )
+            elif isinstance(task, protocol_schema.LabelConversationReplyTask | protocol_schema.LabelInitialPromptTask):
+                labels_input = event.content.replace(" ", "").split(",")
+                labels = set(map(protocol_schema.TextLabel, labels_input))
+
+                labels_dict = {
+                    label: 1 if label in labels else 0
+                    for label in protocol_schema.TextLabel
+                }
+
+                reply = protocol_schema.TextLabels(
+                    message_id=str(msg_id),
+                    labels=labels_dict,
                     user=protocol_schema.User(
                         auth_method="discord", id=str(ctx.author.id), display_name=ctx.author.username
                     ),
@@ -300,6 +322,21 @@ async def _send_task(
         logger.debug("sending rank assistant reply task")
         content = rank_assistant_reply_message(task)
 
+    elif task.type == TaskRequestType.label_initial_prompt:
+        assert isinstance(task, protocol_schema.LabelInitialPromptTask)
+        logger.debug("sending label initial prompt task")
+        content = label_initial_prompt_message(task)
+
+    elif task.type == TaskRequestType.label_prompter_reply:
+        assert isinstance(task, protocol_schema.LabelPrompterReplyTask)
+        logger.debug("sending label prompter reply task")
+        content = label_prompter_reply_message(task)
+
+    elif task.type == TaskRequestType.label_assistant_reply:
+        assert isinstance(task, protocol_schema.LabelAssistantReplyTask)
+        logger.debug("sending label assistant reply task")
+        content = label_assistant_reply_message(task)
+
     elif task.type == TaskRequestType.prompter_reply:
         assert isinstance(task, protocol_schema.PrompterReplyTask)
         logger.debug("sending user reply task")
@@ -380,6 +417,17 @@ def _validate_user_input(content: str | None, task: protocol_schema.Task) -> tup
         return (
             set(rankings) == {str(i) for i in range(1, num_prompts + 1)} and len(rankings) == num_prompts,
             "Message must contain numbers for all prompts.",
+        )
+
+    # Labels tasks
+    elif task.type in (TaskRequestType.label_initial_prompt, TaskRequestType.label_prompter_reply, TaskRequestType.label_assistant_reply):
+        assert isinstance(task, protocol_schema.LabelInitialPromptTask | protocol_schema.LabelPrompterReplyTask | protocol_schema.LabelAssistantReplyTask)
+
+        labels = content.replace(" ", "").split(",")
+        valid_labels = set(map(str, protocol_schema.TextLabel))
+        return (
+            set(labels).issubset(valid_labels),
+            "Message must only contain labels from predefined set of labels.",
         )
 
     elif task.type == TaskRequestType.summarize_story:

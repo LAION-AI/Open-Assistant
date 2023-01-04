@@ -282,17 +282,26 @@ class PromptRepository:
                 payload = db_payload.AssistantReplyPayload(type=task.type, conversation=task.conversation)
 
             case protocol_schema.RankInitialPromptsTask:
-                payload = db_payload.RankInitialPromptsPayload(tpye=task.type, prompts=task.prompts)
+                payload = db_payload.RankInitialPromptsPayload(type=task.type, prompts=task.prompts)
 
             case protocol_schema.RankPrompterRepliesTask:
                 payload = db_payload.RankPrompterRepliesPayload(
-                    tpye=task.type, conversation=task.conversation, replies=task.replies
+                    type=task.type, conversation=task.conversation, replies=task.replies
                 )
 
             case protocol_schema.RankAssistantRepliesTask:
                 payload = db_payload.RankAssistantRepliesPayload(
-                    tpye=task.type, conversation=task.conversation, replies=task.replies
+                    type=task.type, conversation=task.conversation, replies=task.replies
                 )
+
+            case protocol_schema.LabelInitialPromptTask:
+                payload = db_payload.LabelInitialPromptPayload(type=task.type, prompt=task.prompt)
+
+            case protocol_schema.LabelPrompterReplyTask:
+                payload = db_payload.LabelPrompterReplyPayload(type=task.type, reply=task.reply)
+
+            case protocol_schema.LabelAssistantReplyTask:
+                payload = db_payload.LabelAssistantReplyPayload(type=task.type, reply=task.reply)
 
             case _:
                 raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
