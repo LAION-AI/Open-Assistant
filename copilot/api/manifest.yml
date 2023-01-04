@@ -1,0 +1,38 @@
+# The manifest for the "api" service.
+# Read the full specification for the "Load Balanced Web Service" type at:
+#  https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/
+
+name: api
+type: Load Balanced Web Service
+
+http:
+  path: "/"
+  healthcheck:
+    path: "/docs"
+
+image:
+  build:
+    dockerfile: docker/Dockerfile.backend
+    context: ./
+  port: 8080
+
+cpu: 256
+memory: 512
+platform: linux/x86_64
+count: 1
+exec: true
+network:
+  connect: true
+
+environments:
+  staging:
+    variables:
+      # Note: this has to be a valid JSON list for Pydantic to parse it.
+      BACKEND_CORS_ORIGINS: '["https://web.staging.open-assistant.surfacedata.org"]'
+      DEBUG_ALLOW_ANY_API_KEY: True
+      DEBUG_SKIP_API_KEY_CHECK: True
+      MAX_WORKERS: 1
+
+secrets:
+  # Note: URI, not URL.
+  DATABASE_URI: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/API_DATABASE_URL

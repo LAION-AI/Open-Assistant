@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 from scipy.special import gammaln, psi
 from scipy.stats import dirichlet

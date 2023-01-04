@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
@@ -15,7 +14,13 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "postgres"
     DATABASE_URI: Optional[PostgresDsn] = None
 
-    ALLOW_ANY_API_KEY: bool = False
+    RATE_LIMIT: bool = True
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: str = "6379"
+
+    DEBUG_ALLOW_ANY_API_KEY: bool = False
+    DEBUG_SKIP_API_KEY_CHECK: bool = False
+    DEBUG_USE_SEED_DATA: bool = False
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
