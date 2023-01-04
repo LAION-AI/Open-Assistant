@@ -67,7 +67,7 @@ const RankAssistantReplies = () => {
 
   const replies = tasks[0].task.replies as string[];
   const messages = tasks[0].task.conversation.messages as Message[];
-  
+
   return (
     <>
       <Head>

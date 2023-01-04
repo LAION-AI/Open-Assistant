@@ -9,7 +9,7 @@ import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
-import {Message} from "src/components/Messages"
+import { Message } from "src/components/Messages";
 import { ContextMessages } from "src/components/ContextMessages";
 
 const RankUserReplies = () => {
