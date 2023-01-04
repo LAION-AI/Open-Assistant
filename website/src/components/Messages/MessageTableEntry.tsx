@@ -1,5 +1,6 @@
-import { Avatar, Box, HStack, useColorModeValue } from "@chakra-ui/react";
-
+import { Avatar, Box, HStack, LinkBox, useColorModeValue } from "@chakra-ui/react";
+import { boolean } from "boolean";
+import NextLink from "next/link";
 import { FlaggableElement } from "../FlaggableElement";
 
 export function MessageTableEntry({ item, idx }) {
@@ -9,10 +10,14 @@ export function MessageTableEntry({ item, idx }) {
     <FlaggableElement text={item.text} post_id={item.id} key={`flag_${item.id}`}>
       <HStack>
         <Avatar
-          name={`${item.isAssistant ? "Assitant" : "User"}`}
-          src={`${item.isAssistant ? "/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
+          name={`${boolean(item.is_assistant) ? "Assitant" : "User"}`}
+          src={`${boolean(item.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
         />
-        <Box className={`p-4 rounded-md text-white whitespace-pre-wrap ${bgColor} text-white w-full`}>{item.text}</Box>
+        <LinkBox className={`p-4 rounded-md text-white whitespace-pre-wrap ${bgColor} text-white w-full`}>
+          <NextLink href={`/messages/${item.id}`} passHref>
+            {item.text}
+          </NextLink>
+        </LinkBox>
       </HStack>
     </FlaggableElement>
   );
