@@ -53,3 +53,13 @@ jobs:
         with:
           browser: ${{ matrix.browser }}
           working-directory: website
+      - uses: actions/upload-artifact@v3
+        if: failure() # NOTE: screenshots will be generated only if E2E test failed
+        with:
+          name: cypress-screenshots-${{ matrix.browser }}
+          path: website/cypress/screenshots
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: cypress-videos-${{ matrix.browser }}
+          path: website/cypress/videos
