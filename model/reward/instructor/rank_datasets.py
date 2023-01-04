@@ -23,19 +23,20 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 import numpy as np
-from datasets import load_dataset
 import torch
+from datasets import load_dataset
 from torch.utils.data import Dataset
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
 
+
 @dataclass
-class RankGenCollator():    
+class RankGenCollator:
     tokenizer: PreTrainedTokenizerBase
     padding: Union[bool, str, PaddingStrategy] = True
     max_length: Optional[int] = None
     max_examples: Optional[int] = None
 
-    def __call__(self, batch : list[dict[str, str]]) -> dict[str, torch.Tensor]:
+    def __call__(self, batch: list[dict[str, str]]) -> dict[str, torch.Tensor]:
         prefixes = []
         better_answers = []
         worse_answers = []
@@ -44,13 +45,18 @@ class RankGenCollator():
                 prefixes.append("pre " + question)
                 better_answers.append("suffi " + pos)
                 worse_answers.append("suffi " + neg)
-                
-        tokenized_prefixes = self.tokenizer(prefixes, return_tensors="pt", padding=self.padding, max_length=self.max_length, truncation=True)
-        tokenized_pos = self.tokenizer(better_answers, return_tensors="pt", padding=self.padding, max_length=self.max_length, truncation=True)
-        tokenized_neg = self.tokenizer(worse_answers, return_tensors="pt", padding=self.padding, max_length=self.max_length, truncation=True)
-        return {"prefix" : tokenized_prefixes, 
-                "positive": tokenized_pos, 
-                "negative": tokenized_neg}
+
+        tokenized_prefixes = self.tokenizer(
+            prefixes, return_tensors="pt", padding=self.padding, max_length=self.max_length, truncation=True
+        )
+        tokenized_pos = self.tokenizer(
+            better_answers, return_tensors="pt", padding=self.padding, max_length=self.max_length, truncation=True
+        )
+        tokenized_neg = self.tokenizer(
+            worse_answers, return_tensors="pt", padding=self.padding, max_length=self.max_length, truncation=True
+        )
+        return {"prefix": tokenized_prefixes, "positive": tokenized_pos, "negative": tokenized_neg}
+
 
 @dataclass
 class DataCollatorForPairRank:

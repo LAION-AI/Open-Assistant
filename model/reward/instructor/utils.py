@@ -26,7 +26,7 @@ def webgpt_return_format(row):
 
 
 def get_tokenizer(tokenizer_name):
-    if "t5" in tokenizer_name: #rankgen
+    if "t5" in tokenizer_name:  # rankgen
         tokenizer = T5Tokenizer.from_pretrained(tokenizer_name, truncation_side="left")
     else:
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)

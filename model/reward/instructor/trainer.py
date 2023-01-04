@@ -7,11 +7,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import evaluate
 import numpy as np
 import torch
+from models import RankGenModel
 from rank_datasets import DataCollatorForPairRank, HFSummary, RankGenCollator, WebGPT
 from torch import nn
 from torch.utils.data import ConcatDataset, Dataset
 from transformers import (
-    AutoModel,
     AutoModelForSequenceClassification,
     DataCollator,
     EvalPrediction,
@@ -21,7 +21,6 @@ from transformers import (
     TrainerCallback,
     TrainingArguments,
 )
-from models import RankGenModel
 from utils import argument_parsing, freeze_top_n_layers, get_tokenizer, train_val_dataset
 
 os.environ["WANDB_PROJECT"] = "reward-model"
@@ -95,7 +94,7 @@ class RankTrainer(Trainer):
                 loss = self.loss_fct(positive_outputs, negative_outputs)
             else:
                 raise NotImplementedError("Only ranking loss has been implemented for rankgen model")
-            outputs = torch.hstack((positive_outputs, negative_outputs)) #logits
+            outputs = torch.hstack((positive_outputs, negative_outputs))  # logits
         else:
             outputs = model(**inputs)
             logits = outputs.get("logits").view(-1, 2)
@@ -133,7 +132,7 @@ class RankTrainer(Trainer):
                     loss = self.loss_fct(positive_outputs, negative_outputs)
                 else:
                     raise NotImplementedError("Only ranking loss has been implemented for rankgen model")
-                outputs = torch.hstack((positive_outputs, negative_outputs)) # logits
+                outputs = torch.hstack((positive_outputs, negative_outputs))  # logits
                 return (loss, outputs, None)
             else:
                 # compute loss on predict data
@@ -161,7 +160,7 @@ if __name__ == "__main__":
         model_parameters = filter(lambda p: p.requires_grad, model.parameters())
         params = sum([np.prod(p.size()) for p in model_parameters])
         print("Number of trainable : {}M".format(int(params / 1e6)))
-        
+
     args = CustomTrainingArguments(
         output_dir=f"{model_name}-finetuned",
         num_train_epochs=training_conf["num_train_epochs"],
@@ -196,20 +195,16 @@ if __name__ == "__main__":
         assert len(sum_eval) > 0
         evals["hfsummary"] = sum_eval
     train = ConcatDataset(train_datasets)
-    
+
     if "tokenizer_name" in training_conf:
-        tokenizer=get_tokenizer(training_conf["tokenizer_name"])
+        tokenizer = get_tokenizer(training_conf["tokenizer_name"])
     else:
         tokenizer = get_tokenizer(model_name)
-    
+
     if "rankgen" in model_name:
-        collate_fn = RankGenCollator(
-            tokenizer, max_length=training_conf["max_length"]
-        )
+        collate_fn = RankGenCollator(tokenizer, max_length=training_conf["max_length"])
     else:
-        collate_fn = DataCollatorForPairRank(
-            tokenizer, max_length=training_conf["max_length"]
-        )
+        collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf["max_length"])
     assert len(evals) > 0
     trainer = RankTrainer(
         model=model,
