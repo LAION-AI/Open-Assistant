@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from dataclasses import dataclass
 
 import datasets
@@ -13,3 +12,11 @@ class OpenAssistantConfig(datasets.BuilderConfig):
     description: str = None
     schema: str = None
     subset_id: str = None
+
+
+lm_features = datasets.Features(
+    {
+        "text": datasets.Value("string"),
+        "meta": [datasets.Value("string")],
+    }
+)

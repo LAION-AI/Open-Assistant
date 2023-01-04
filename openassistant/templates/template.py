@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2023 The OpenAssistant Authors and the current dataset script contributor.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,10 +36,10 @@ from typing import Dict, List, Tuple
 
 import datasets
 
-from openassistant.utils.configs import OpenAssistantConfig
+from .hub import OpenAssistantConfig
 
-# TODO: import the schema that fits your dataset:
-from openassistant.utils.schemas import
+# TODO: import the schema (i.e. features) that fits your dataset:
+from .hub import
 
 # TODO: Add BibTeX citation where appropriate
 _CITATION = """\
