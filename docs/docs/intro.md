@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Introduction
 
 OpenAssistant is a chat-based assistant that understands tasks, can interact with third-party systems, and retrieve information dynamically to do so.

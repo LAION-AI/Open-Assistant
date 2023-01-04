@@ -1,7 +1,3 @@
----
-sidebar_position: 3
----
-
 # Supervised Datasets
 
 For discussion about usage of supervised data see issue

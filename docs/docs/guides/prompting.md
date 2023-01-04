@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Prompting Guide
 
 (pull requests welcome)

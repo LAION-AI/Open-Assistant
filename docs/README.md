@@ -3,7 +3,28 @@
 This website is built using [Docusaurus 2](https://docusaurus.io/), a modern
 static website generator.
 
+### Contributing
+
+#### Changes to existing docs
+
+You can just make a PR on whatever .md file you would like to update.
+
+#### Changes to docs structure
+
+If you would like to add a new category:
+
+1. Create a new folder under `/docs/docs/` for the category you want to add.
+1. Include any `.md` files you want to live under this new category.
+1. Update the order or hierarchy in `/docs/sidebars.js` as needed.
+
+If you would like to add a new page into an existing category:
+
+1. Create the `.md` file you want in the relevant folder within `/docs/docs/`.
+1. Update the hierarchy in `/docs/sidebars.js` as needed.
+
 ### Installation
+
+From within the `/docs/` folder.
 
 ```
 $ yarn
@@ -26,20 +47,3 @@ $ yarn build
 
 This command generates static content into the `build` directory and can be
 served using any static contents hosting service.
-
-### Deployment
-
-Using SSH:
-
-```
-$ USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```
-$ GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to
-build the website and push to the `gh-pages` branch.
