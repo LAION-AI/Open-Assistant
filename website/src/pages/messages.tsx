@@ -3,12 +3,10 @@ import {
   Box,
   CircularProgress,
   HStack,
-  Image,
   SimpleGrid,
   Stack,
   StackDivider,
   Text,
-  useColorMode,
   useColorModeValue,
 } from "@chakra-ui/react";
 import Head from "next/head";
@@ -68,13 +66,13 @@ const MessagesDashboard = () => {
   const [messages, setMessages] = useState([]);
   const [userMessages, setUserMessages] = useState([]);
 
-  const { isLoading: isLoadingAll } = useSWRImmutable("/api/messages?allUsers=true", fetcher, {
+  const { isLoading: isLoadingAll } = useSWRImmutable("/api/messages", fetcher, {
     onSuccess: (data) => {
       setMessages(data);
     },
   });
 
-  const { isLoading: isLoadingUser } = useSWRImmutable(`/api/messages`, fetcher, {
+  const { isLoading: isLoadingUser } = useSWRImmutable(`/api/messages/user`, fetcher, {
     onSuccess: (data) => {
       setUserMessages(data);
     },

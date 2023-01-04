@@ -1,4 +1,3 @@
-import { boolean } from "boolean";
 import { getToken } from "next-auth/jwt";
 
 const handler = async (req, res) => {
@@ -11,9 +10,8 @@ const handler = async (req, res) => {
   }
 
   //TODO: add params if needed
-  const reqParams = req.query;
   const params = new URLSearchParams({
-    username: boolean(reqParams.allUsers) ? "" : token.sub,
+    username: token.sub,
   });
 
   const messagesRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/messages?${params}`, {
