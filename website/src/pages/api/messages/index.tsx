@@ -1,4 +1,3 @@
-import { boolean } from "boolean";
 import { getToken } from "next-auth/jwt";
 
 const handler = async (req, res) => {
