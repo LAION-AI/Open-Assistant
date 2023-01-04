@@ -1,7 +1,7 @@
-import { Flex } from "@chakra-ui/react";
+import { Flex, Tooltip } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
 import React from "react";
-
+import styles from '../../styles/Home.module.css'
 import { TaskOption } from "./TaskOption";
 import { TaskOptions } from "./TaskOptions";
 
@@ -26,46 +26,57 @@ export const TaskSelection = () => {
           title="Summarize stories"
           link="/create/summarize_story"
         /> */}
+
+        {/* <Tooltip aria-label='A tooltip'label='Ask a question as the user to start the conversation'> */}
+        
         <TaskOption
           alt="Create Initial Prompt"
           img="/images/logos/logo.svg"
           title="Create Initial Prompt"
           link="/create/initial_prompt"
+          label='Prompt the AI to start the conversation'
         />
-        <TaskOption alt="Reply as User" img="/images/logos/logo.svg" title="Reply as User" link="/create/user_reply" />
+        <TaskOption alt="Reply as User" img="/images/logos/logo.svg" title="Reply as User" link="/create/user_reply" label='Keep the conversation going with the user response to the AI' />
         <TaskOption
           alt="Reply as Assistant"
           img="/images/logos/logo.svg"
           title="Reply as Assistant"
           link="/create/assistant_reply"
+          label='Respond to the user as the AI'
+
         />
       </TaskOptions>
-      <TaskOptions key="evaluate" title="Evaluate">
+      <TaskOptions key="evaluate" data-size="Evaluate">
         {/*
         Commented out while the backend does not support them.
         <TaskOption
-          alt="Rate Prompts"
-          img="/images/logos/logo.svg"
-          title="Rate Prompts"
-          link="/evaluate/rate_summary"
-        /> */}
+        alt="Rate Prompts"
+        img="/images/logos/logo.svg"
+        title="Rate Prompts"
+        link="/evaluate/rate_summary"
+      /> */}
         <TaskOption
           alt="Rank Initial Prompts"
           img="/images/logos/logo.svg"
           title="Rank Initial Prompts"
           link="/evaluate/rank_initial_prompts"
+          label='Rank starting prompts from user'
+
         />
         <TaskOption
           alt="Rank User Replies"
           img="/images/logos/logo.svg"
           title="Rank User Replies"
           link="/evaluate/rank_user_replies"
+          label='Rank replies from user'
+
         />
         <TaskOption
           alt="Rank Assistant Replies"
           img="/images/logos/logo.svg"
           title="Rank Assistant Replies"
           link="/evaluate/rank_assistant_replies"
+          label='Rank replies from the AI'
         />
       </TaskOptions>
     </Flex>

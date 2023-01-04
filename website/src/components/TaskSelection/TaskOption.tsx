@@ -1,6 +1,7 @@
-import { Card, CardBody, Flex, Heading } from "@chakra-ui/react";
+import { Card, CardBody, Flex, Heading, Tooltip } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
+
 
 export type OptionProps = {
   img: string;
@@ -12,6 +13,8 @@ export type OptionProps = {
 export const TaskOption = (props: OptionProps) => {
   const { alt, img, title, link } = props;
   return (
+    
+    <Tooltip label={label}>
     <Link href={link}>
       <Card
         maxW="300"
@@ -35,5 +38,6 @@ export const TaskOption = (props: OptionProps) => {
         </CardBody>
       </Card>
     </Link>
+    </Tooltip>
   );
 };
