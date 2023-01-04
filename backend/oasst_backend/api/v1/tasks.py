@@ -276,7 +276,9 @@ def tasks_interaction(
                 # here we would store the ranking in the database
                 return protocol_schema.TaskDone()
             case protocol_schema.TextLabels:
-                logger.info(f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}.")
+                logger.info(
+                    f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}."
+                )
                 # TODO: check if the labels are valid?
                 pr.store_text_labels(interaction)
                 return protocol_schema.TaskDone()

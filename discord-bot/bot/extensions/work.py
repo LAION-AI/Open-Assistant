@@ -10,19 +10,19 @@ import miru
 from aiosqlite import Connection
 from bot.messages import (
     assistant_reply_message,
-    confirm_ranking_response_message,
     confirm_label_response_message,
+    confirm_ranking_response_message,
     confirm_text_response_message,
     initial_prompt_message,
     invalid_user_input_embed,
+    label_assistant_reply_message,
+    label_initial_prompt_message,
+    label_prompter_reply_message,
     plain_embed,
     prompter_reply_message,
     rank_assistant_reply_message,
     rank_initial_prompts_message,
     rank_prompter_reply_message,
-    label_initial_prompt_message,
-    label_prompter_reply_message,
-    label_assistant_reply_message,
     task_complete_embed,
 )
 from bot.settings import Settings
@@ -181,10 +181,7 @@ async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> No
                 labels_input = event.content.replace(" ", "").split(",")
                 labels = set(map(protocol_schema.TextLabel, labels_input))
 
-                labels_dict = {
-                    label: 1 if label in labels else 0
-                    for label in protocol_schema.TextLabel
-                }
+                labels_dict = {label: 1 if label in labels else 0 for label in protocol_schema.TextLabel}
 
                 reply = protocol_schema.TextLabels(
                     message_id=str(msg_id),
@@ -419,9 +416,18 @@ def _validate_user_input(content: str | None, task: protocol_schema.Task) -> tup
             "Message must contain numbers for all prompts.",
         )
 
-    # Labels tasks
-    elif task.type in (TaskRequestType.label_initial_prompt, TaskRequestType.label_prompter_reply, TaskRequestType.label_assistant_reply):
-        assert isinstance(task, protocol_schema.LabelInitialPromptTask | protocol_schema.LabelPrompterReplyTask | protocol_schema.LabelAssistantReplyTask)
+    # Labels tasks
+    elif task.type in (
+        TaskRequestType.label_initial_prompt,
+        TaskRequestType.label_prompter_reply,
+        TaskRequestType.label_assistant_reply,
+    ):
+        assert isinstance(
+            task,
+            protocol_schema.LabelInitialPromptTask
+            | protocol_schema.LabelPrompterReplyTask
+            | protocol_schema.LabelAssistantReplyTask,
+        )
 
         labels = content.replace(" ", "").split(",")
         valid_labels = set(map(str, protocol_schema.TextLabel))
