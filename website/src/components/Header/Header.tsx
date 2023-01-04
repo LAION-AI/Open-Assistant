@@ -10,9 +10,11 @@ import { ColorModeIconToggle } from "../UI/ColorModeIconToggle";
 import { UserMenu } from "./UserMenu";
 
 function MenuIcon(props) {
+  const { colorMode } = useColorMode();
+  const stroke = colorMode === "light" ? "black" : "white";
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path d="M5 6h14M5 18h14M5 12h14" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 6h14M5 18h14M5 12h14" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" stroke={stroke} />
     </svg>
   );
 }
