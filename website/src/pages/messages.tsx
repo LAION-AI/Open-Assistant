@@ -1,64 +1,13 @@
-import {
-  Avatar,
-  Box,
-  CircularProgress,
-  HStack,
-  SimpleGrid,
-  Stack,
-  StackDivider,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Box, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
 import useSWRImmutable from "swr/immutable";
 
 import fetcher from "src/lib/fetcher";
 import { SideMenu } from "src/components/Dashboard";
-import { FlaggableElement } from "src/components/FlaggableElement";
 import { Header } from "src/components/Header";
 import { colors } from "styles/Theme/colors";
-
-const MessageTable = ({ messages, isLoading }) => {
-  const backgroundColor = useColorModeValue("white", "gray.700");
-  const accentColor = useColorModeValue("gray.200", "gray.900");
-
-  return (
-    <Box
-      backgroundColor={backgroundColor}
-      boxShadow="base"
-      dropShadow={accentColor}
-      borderRadius="xl"
-      className="p-6 shadow-sm"
-    >
-      {isLoading ? (
-        <CircularProgress isIndeterminate />
-      ) : (
-        <Stack divider={<StackDivider />} spacing="4">
-          {messages.map((item, idx) => (
-            <MesssageTableEntry item={item} idx={idx} key={item.id} />
-          ))}
-        </Stack>
-      )}
-    </Box>
-  );
-};
-
-const MesssageTableEntry = ({ item, idx }) => {
-  const bgColor = useColorModeValue(idx % 2 === 0 ? "bg-slate-800" : "bg-black", "bg-sky-900");
-
-  return (
-    <FlaggableElement text={item.text} post_id={item.id} key={`flag_${item.id}`}>
-      <HStack>
-        <Avatar
-          name={`${item.isAssistant ? "Assitant" : "User"}`}
-          src={`${item.isAssistant ? "/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
-        />
-        <Box className={`p-4 rounded-md text-white whitespace-pre-wrap ${bgColor} text-white w-full`}>{item.text}</Box>
-      </HStack>
-    </FlaggableElement>
-  );
-};
+import { MessageTable } from "src/components/Messages/MessageTable";
 
 const MessagesDashboard = () => {
   const bgColor = useColorModeValue(colors.light.bg, colors.dark.bg);
