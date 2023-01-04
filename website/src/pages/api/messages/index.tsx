@@ -13,7 +13,6 @@ const handler = async (req, res) => {
     method: "GET",
     headers: {
       "X-API-Key": process.env.FASTAPI_KEY,
-      "Content-Type": "application/json",
     },
   });
   const messages = await messagesRes.json();
