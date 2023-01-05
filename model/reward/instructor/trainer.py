@@ -107,6 +107,14 @@ class RankTrainer(Trainer):
 def run_trainer(config_path: str):
     """
     Runs the trainer.
+
+    ```
+    from instructor.trainer import run_trainer
+
+    config_path = "meta-opt-125m-freeze.yml"
+
+    run_trainer(config_path=config_path)
+    ```
     
     @param config_path: Path to the config file.
     """
