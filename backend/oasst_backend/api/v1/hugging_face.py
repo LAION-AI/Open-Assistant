@@ -12,14 +12,12 @@ router = APIRouter()
 @router.get("/hf/text_toxicity")
 def get_text_toxicity(
     msg: str,
-    hf_token: str,
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
 ) -> List[List[ToxicityClassification]]:
     """Get the Message Toxicity from HuggingFace Roberta model.
 
     Args:
         msg (str): the message that we want to analyze.
-        hf_token (str): the token for the huggingface access.
         api_client (ApiClient, optional): authentification of the user of the request.
             Defaults to Depends(deps.get_trusted_api_client).
 
@@ -27,4 +25,4 @@ def get_text_toxicity(
         ToxicityClassification: the score of toxicity of the message.
     """
 
-    return get_detoxify_classification(msg=msg, hf_token=hf_token)
+    return get_detoxify_classification(msg=msg)
