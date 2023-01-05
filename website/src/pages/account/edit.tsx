@@ -7,6 +7,7 @@ import React, { useState } from "react";
 export default function Account() {
   const { data: session } = useSession();
   const [username, setUsername] = useState("");
+
   const updateUser = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     try {
@@ -16,6 +17,7 @@ export default function Account() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      session.user.name = username;
       await Router.push("/account");
     } catch (error) {
       console.error(error);
@@ -49,7 +51,6 @@ export default function Account() {
             </Button>
           </InputGroup>
         </form>
-        <p>{session.user.email}</p>
       </main>
     </>
   );

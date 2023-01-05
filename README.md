@@ -26,6 +26,15 @@ interact with the website.
 **Note:** When logging in via email, navigate to `http://localhost:1080` to get
 the magic email login link.
 
+**Note:** If you would like to run this in a standardized development
+environment (a
+["devcontainer"](https://code.visualstudio.com/docs/devcontainers/containers))
+using
+[vscode locally](https://code.visualstudio.com/docs/devcontainers/create-dev-container#_create-a-devcontainerjson-file)
+or in a web browser using
+[GitHub Codespaces](https://github.com/features/codespaces), you can use the
+provided [`.devcontainer`](.devcontainer/) folder.
+
 ## The Plan
 
 We want to get to an initial MVP as fast as possible, by following the 3-steps

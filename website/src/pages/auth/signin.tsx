@@ -15,13 +15,13 @@ function Signin({ csrfToken, providers }) {
   const emailEl = useRef(null);
   const signinWithEmail = (ev: React.FormEvent) => {
     ev.preventDefault();
-    signIn(email.id, { callbackUrl: "/", email: emailEl.current.value });
+    signIn(email.id, { callbackUrl: "/dashboard", email: emailEl.current.value });
   };
 
   const debugUsernameEl = useRef(null);
   function signinWithDebugCredentials(ev: React.FormEvent) {
     ev.preventDefault();
-    signIn(credentials.id, { callbackUrl: "/", username: debugUsernameEl.current.value });
+    signIn(credentials.id, { callbackUrl: "/dashboard", username: debugUsernameEl.current.value });
   }
 
   const { colorMode } = useColorMode();
@@ -52,8 +52,9 @@ function Signin({ csrfToken, providers }) {
           {email && (
             <form onSubmit={signinWithEmail}>
               <Stack>
-                <Input variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
+                <Input data-cy="email-address" variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
                 <Button
+                  data-cy="signin-email-button"
                   size={"lg"}
                   leftIcon={<FaEnvelope />}
                   type="submit"
@@ -97,7 +98,8 @@ function Signin({ csrfToken, providers }) {
             </Button>
           )}
         </Stack>
-        <div className="pt-10 text-center">
+        <hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
+        <div className="text-center">
           By signing up you agree to our <br></br>
           <Link href="/terms-of-service" aria-label="Terms of Service" className="hover:underline underline-offset-4">
             <b>Terms of Service</b>
