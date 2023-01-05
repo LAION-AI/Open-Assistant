@@ -1,7 +1,10 @@
+
+
 import logging
 from alembic import context
 from oasst_backend import models  # noqa: F401
 from sqlalchemy import engine_from_config, pool
+
 
 
 # Read in the Alembic config file.
@@ -14,6 +17,8 @@ target_metadata = models.Base.metadata
 # Other values from the config file can be acquired as follows:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -27,6 +32,8 @@ def run_migrations_offline() -> None:
     )
     with context.begin_transaction():
         context.run_migrations()
+        
+        
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
