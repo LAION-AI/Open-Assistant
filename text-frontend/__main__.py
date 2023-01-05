@@ -250,6 +250,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_labels",
                         "message_id": message_id,
+                        "text": task["prompt"],
                         "labels": labels_dict,
                         "user": USER,
                     },
