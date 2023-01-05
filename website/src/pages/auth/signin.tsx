@@ -4,8 +4,9 @@ import Head from "next/head";
 import Link from "next/link";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
 import React, { useRef } from "react";
-import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
+import { FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { AuthLayout } from "src/components/AuthLayout";
+import { SocialLoginButton } from "src/components/Buttons/3p";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
 
@@ -43,9 +44,18 @@ function Signin({ csrfToken, providers }) {
               <span className={`text-orange-600 absolute -top-3 left-5 ${bgColorClass} px-1`}>For Debugging Only</span>
               <Stack>
                 <Input variant="outline" size="lg" placeholder="Username" ref={debugUsernameEl} />
-                <Button size={"lg"} leftIcon={<FaBug />} colorScheme={buttonColorScheme} color="white" type="submit">
+                {/* <Button size={"lg"} leftIcon={<FaBug />} colorScheme={buttonColorScheme} color="white" type="submit">
                   Continue with Debug User
-                </Button>
+                </Button> */}
+                <SocialLoginButton
+                  size={"lg"}
+                  placeholder="Username"
+                  colorScheme={buttonColorScheme}
+                  color="white"
+                  type="submit"
+                >
+                  Continue with Debug User
+                </SocialLoginButton>
               </Stack>
             </form>
           )}
@@ -67,7 +77,7 @@ function Signin({ csrfToken, providers }) {
             </form>
           )}
           {discord && (
-            <Button
+            <SocialLoginButton
               bg={buttonBgColor}
               _hover={{ bg: "#4A57E3" }}
               _active={{
@@ -77,13 +87,12 @@ function Signin({ csrfToken, providers }) {
               leftIcon={<FaDiscord />}
               color="white"
               onClick={() => signIn(discord.id, { callbackUrl: "/" })}
-              // isDisabled="false"
             >
               Continue with Discord
-            </Button>
+            </SocialLoginButton>
           )}
           {github && (
-            <Button
+            <SocialLoginButton
               bg="#333333"
               _hover={{ bg: "#181818" }}
               _active={{
@@ -95,7 +104,7 @@ function Signin({ csrfToken, providers }) {
               // isDisabled="false"
             >
               Continue with Github
-            </Button>
+            </SocialLoginButton>
           )}
         </Stack>
         <hr className="mt-14 mb-4 h-px bg-gray-200 border-0" />
