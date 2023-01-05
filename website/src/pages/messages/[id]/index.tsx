@@ -75,14 +75,14 @@ const MessageDetail = () => {
           </>
         }
       </Container>
-      {children && Array.isArray(children) &&
+      {children && Array.isArray(children) && children.length > 0 &&
       <>
       <Text align="center" fontSize='xl'>Children</Text>
         <HStack spacing={8} alignItems="start" justifyContent="center">
           {children.map((item, idx) =>
-          <Box maxWidth="container.sm" flex="1" px="6">
+          <Box maxWidth="container.sm" flex="1" px="6" key={idx} >
             <Box my="3" bg={bg} rounded='lg' pb="4" px="6" >
-              <MessageTableEntry item={item} idx={idx * 2} key={idx} />
+              <MessageTableEntry item={item} idx={idx * 2} />
             </Box>
           </Box>
           )}
