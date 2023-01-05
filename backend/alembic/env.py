@@ -55,9 +55,7 @@ def run_migrations_online() -> None:
             connection.execute("LOCK TABLE alembic_version IN ACCESS EXCLUSIVE MODE")
             context.run_migrations()
 
-
 if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-
