@@ -1,22 +1,28 @@
+import enum
 from typing import Optional
 from uuid import UUID, uuid4
-import enum
+
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from sqlmodel import Field, Index, SQLModel
 
-
-
 # The types of States a message tree can have.
 states = enum(
-    INITIAL = "initial",
-    BREEDING_PHASE = "breeding_phase",
-    RANKING_PHASE = "ranking_phase",
-    READY_FOR_SCORING = "ready_for_scoring",
-    CHILDREN_SCORED = "children_scored",
-    FINAL = "final",
+    INITIAL="initial",
+    BREEDING_PHASE="breeding_phase",
+    RANKING_PHASE="ranking_phase",
+    READY_FOR_SCORING="ready_for_scoring",
+    CHILDREN_SCORED="children_scored",
+    FINAL="final",
 )
-VALID_STATES = states.INITIAL, states.BREEDING_PHASE, states.RANKING_PHASE, states.READY_FOR_SCORING, states.CHILDREN_SCORED, states.FINAL
+VALID_STATES = (
+    states.INITIAL,
+    states.BREEDING_PHASE,
+    states.RANKING_PHASE,
+    states.READY_FOR_SCORING,
+    states.CHILDREN_SCORED,
+    states.FINAL,
+)
 
 
 class MessageTreeState(SQLModel, table=True):
