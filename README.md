@@ -1,7 +1,29 @@
-# Open-Assistant
+<h1 align="center">
+    Open-Assistant
+</h1>
 
-Open Assistant is a project meant to give everyone access to a great chat based
-large language model.
+<p align="center">
+  <img width="60%" hight="100%" src="https://github.com/LAION-AI/Open-Assistant/blob/main/assets/logo.png"/>
+</p>
+
+
+Table of Contents
+=======================
+
+* [What is Open Assistant?](#what-is-open-assistant)
+* [Do you want to try it out?](#do-you-want-to-try-it-out)
+* [The Plan](#the-plan)
+* [The Vision](#the-vision)
+* [How can you help?](#how-can-you-help)
+* [I’m in! Now what?](#i'm-in-now-what)
+
+---
+
+What is Open Assistant?
+------
+
+_Open Assistant is a project meant to give everyone access to a great chat based
+large language model._
 
 We believe that by doing this we will create a revolution in innovation in
 language. In the same way that stable-diffusion helped the world make art and
@@ -14,7 +36,7 @@ If you are interested in taking a look at the current state of the project, you
 can set up an entire stack needed to run **Open-Assistant**, including the
 website, backend, and associated dependent services.
 
-To start the demo, run this in the root directory of the repository:
+##### To start the demo, run this in the root directory of the repository:
 
 ```sh
 docker compose up --build
@@ -23,10 +45,10 @@ docker compose up --build
 Then, navigate to `http://localhost:3000` (It may take some time to boot up) and
 interact with the website.
 
-**Note:** When logging in via email, navigate to `http://localhost:1080` to get
+> **Note:** When logging in via email, navigate to `http://localhost:1080` to get
 the magic email login link.
 
-**Note:** If you would like to run this in a standardized development
+> **Note:** If you would like to run this in a standardized development
 environment (a
 ["devcontainer"](https://code.visualstudio.com/docs/devcontainers/containers))
 using
@@ -37,8 +59,7 @@ provided [`.devcontainer`](.devcontainer/) folder.
 
 ## The Plan
 
-We want to get to an initial MVP as fast as possible, by following the 3-steps
-outlined in the InstructGPT paper.
+##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the InstructGPT paper.
 
 1. Collect high-quality human generated Instruction-Fulfillment samples
    (prompt + response), goal >50k. We design a crowdsourced process to collect
