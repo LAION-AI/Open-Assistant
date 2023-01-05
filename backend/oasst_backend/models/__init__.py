@@ -6,6 +6,7 @@ from .task import Task
 from .text_labels import TextLabels
 from .user import User
 from .user_stats import UserStats
+from .message_tree_state import MessageTreeState
 
 __all__ = [
     "ApiClient",
@@ -13,6 +14,7 @@ __all__ = [
     "UserStats",
     "Message",
     "MessageReaction",
+    "MessageTreeState",
     "Task",
     "TextLabels",
     "Journal",
