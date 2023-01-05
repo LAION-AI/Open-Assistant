@@ -29,9 +29,5 @@ class MessageTreeState(SQLModel, table=True):
     message_tree_id: UUID = Field(nullable=False, index=True)
     state: str = Field(nullable=False, max_length=128)
     goal_tree_size: int = Field(nullable=False)
-    created_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
-    )
     current_num_non_filtered_messages: int = Field(nullable=False)
     max_depth: int = Field(nullable=False)
-    deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
