@@ -48,4 +48,6 @@ class HuggingFaceAPI:
                 # Get the response from the API call
                 inference = await response.json()
 
+        await session.close()
+
         return inference
