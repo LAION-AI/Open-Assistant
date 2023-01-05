@@ -1,6 +1,6 @@
 import { Container, Textarea } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Messages } from "src/components/Messages";
 import { TaskControls } from "src/components/Survey/TaskControls";
@@ -20,6 +20,12 @@ const AssistantReply = () => {
       setTasks([data]);
     },
   });
+
+  useEffect(() => {
+    if (tasks.length == 0) {
+      mutate();
+    }
+  }, [tasks]);
 
   const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (data) => {

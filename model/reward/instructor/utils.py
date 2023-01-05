@@ -3,7 +3,7 @@ import re
 import yaml
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, T5Tokenizer
 
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
 
@@ -24,7 +24,10 @@ def webgpt_return_format(row):
 
 
 def get_tokenizer(tokenizer_name):
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    if "t5" in tokenizer_name:  # rankgen
+        tokenizer = T5Tokenizer.from_pretrained(tokenizer_name, truncation_side="left")
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     if "galactica" in tokenizer_name:
         tokenizer.add_special_tokens({"pad_token": "<pad>", "eos_token": "</s>"})
 
@@ -66,6 +69,10 @@ def freeze_top_n_layers(model, target_layers):
 
 
 def argument_parsing(parser):
+    args = parser.parse_args()
+    with open(args.config, "r", encoding="utf-8") as f:
+        training_conf = yaml.safe_load(f.read())
+
     default_params = {
         "num_train_epochs": 4,
         "learning_rate": 3e-5,
@@ -77,10 +84,9 @@ def argument_parsing(parser):
         "gradient_accumulation_steps": 8,
         "gradient_checkpointing": False,
         "datasets": ["webgpt"],
+        "fp16": True,
+        "tokenizer_name": training_conf["model_name"],
     }
-    args = parser.parse_args()
-    with open(args.config, "r", encoding="utf-8") as f:
-        training_conf = yaml.safe_load(f.read())
 
     params = {**default_params, **training_conf}
     params["gradient_accumulation_steps"] = int(params["gradient_accumulation_steps"])

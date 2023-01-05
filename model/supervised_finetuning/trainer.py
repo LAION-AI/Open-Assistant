@@ -67,6 +67,8 @@ class SFTTrainer(Trainer):
             optimizers,
             preprocess_logits_for_metrics,
         )
+
+        # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
         self.loss_fct = get_loss(args.loss_function)
 
     def fetch_scheduler(self):
@@ -112,7 +114,7 @@ class SFTTrainer(Trainer):
 
         with torch.no_grad():
             loss, logits, labels, labels_mask = self._compute_loss(model, inputs)
-            labels[~labels_mask] = -1
+            labels[~labels_mask] = -100  # padding_index
 
         loss = loss.mean().detach()
 
@@ -159,8 +161,8 @@ def argument_parsing(notebook=False, notebook_args=None):
 if __name__ == "__main__":
     training_conf = argument_parsing()
 
-    model = get_model(training_conf)
     tokenizer = get_tokenizer(training_conf)
+    model = get_model(training_conf, tokenizer)
 
     train, evals, collate_fn = get_dataset(training_conf, tokenizer)
 

@@ -12,6 +12,7 @@
     "build-storybook": "build-storybook",
     "cypress": "cypress open",
     "cypress:run": "cypress run",
+    "cypress:run:contract": "cypress run --config-file ./cypress.config.contract.js",
     "cypress:image-baseline": "cypress-image-diff -u",
     "fix:lint": "eslint --fix src/ --ext .js,.jsx,.ts,.tsx",
     "fix:format": "prettier --write ./src",
