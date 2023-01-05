@@ -218,7 +218,7 @@ all necessary TODOs. There are three key methods that are important:
 For the `_info_` function, you will need to define `features` for your
 `DatasetInfo` object. For each dataset config, choose the right schema from our
 list of examples. You can find the schemas in the
-[schemas directory](openassistant/utils/schemas/).
+[schemas directory](https://github.com/LAION-AI/Open-Assistant/tree/main/openassistant).
 
 You will use this schema in the `_generate_examples` return value.
 
@@ -232,7 +232,7 @@ TODO
 #### Running & debugging
 
 You can run your data loader script during development by appending the
-following statement to your code ([templates/template.py](templates/template.py)
+following statement to your code ([templates/template.py](https://github.com/LAION-AI/Open-Assistant/blob/main/openassistant/templates/template.py)
 already includes this):
 
 ```python
