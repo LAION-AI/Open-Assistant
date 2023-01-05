@@ -1,16 +1,21 @@
+from enum import Enum
 from typing import List
 
 from fastapi import APIRouter, Depends
 from oasst_backend.api import deps
 from oasst_backend.models import ApiClient
 from oasst_backend.schemas.hugging_face import ToxicityClassification
-from oasst_backend.utils import get_detoxify_classification
+from oasst_backend.utils.hugging_face import HuggingFaceAPI
 
 router = APIRouter()
 
 
-@router.get("/hf/text_toxicity")
-def get_text_toxicity(
+class HF_url(str, Enum):
+    HUGGINGFACE_TOXIC_ROBERTA = "https://api-inference.huggingface.co/models/unitary/multilingual-toxic-xlm-roberta"
+
+
+@router.get("/text_toxicity")
+async def get_text_toxicity(
     msg: str,
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
 ) -> List[List[ToxicityClassification]]:
@@ -25,4 +30,8 @@ def get_text_toxicity(
         ToxicityClassification: the score of toxicity of the message.
     """
 
-    return get_detoxify_classification(msg=msg)
+    api_url: str = HF_url.HUGGINGFACE_TOXIC_ROBERTA.value
+    hugging_face_api = HuggingFaceAPI(api_url)
+    response = await hugging_face_api.post(msg)
+
+    return response
