@@ -22,21 +22,32 @@ class FillDb:
         # Seed to make sure values are reproducible
         random.seed(seed)
 
-    def fill_api_client(
-        self,
-    ):
+    def fill_api_client(self, num_api_client: int = 10):
+        """Fill the database with api clients
 
+        Args:
+            num_api_client (int, optional): the number of api clients that we want to create. Defaults to 10.
+        """
+
+        # Create the Session to the database
         with Session(self.db_engine) as db:
-            random_api_client = self._create_random_api_client()
 
-            # Store the API key created
-            self.api_keys.append(random_api_client.api_key)
+            # For the range of the api clients we want to create
+            for num in range(num_api_client):
 
-            db.add(random_api_client)
-            db.commit()
-            db.refresh(random_api_client)
+                # Create a new ApiClient
+                random_api_client = self._create_random_api_client()
 
-            pass
+                # Store the API key created
+                self.api_keys.append(random_api_client.api_key)
+
+                # Store this new ApiClient in the database
+                db.add(random_api_client)
+                db.commit()
+                db.refresh(random_api_client)
+
+        # Return all the api clients created
+        return self.api_keys
 
     def fill_users(self):
         pass
@@ -46,11 +57,15 @@ class FillDb:
     ):
         """Create Random Api Client values"""
 
+        # Two random booleans for enabled & trusted
         enabled, trusted = self._create_random_bool(2)
+
+        # Create random strings with characters & digits
         api_key = self._create_random_str(api_key_length)
         description = self._create_random_str(description_length)
         admin_email = self._create_random_str(admin_email_length) + "@example.com"
 
+        # Create the API Client object
         api_client = ApiClient(
             id=uuid.uuid4(),
             api_key=api_key,
@@ -63,7 +78,16 @@ class FillDb:
         return api_client
 
     @staticmethod
-    def _create_random_str(length: str):
+    def _create_random_str(length: str) -> str:
+        """Generator of a random string
+
+        Args:
+            length (str): the length of the string we want to generate
+
+        Returns:
+            str: the random string generated
+        """
+
         return "".join(choice(string.ascii_letters + string.digits) for _ in range(length))
 
     @staticmethod
@@ -74,7 +98,7 @@ class FillDb:
             length (int): the length of the list that we want in response
 
         Returns:
-            Generator: generator of the list of booleans
+            list[bool]: generator of the list of booleans
         """
 
         return (choice([True, False]) for idx in range(length))
