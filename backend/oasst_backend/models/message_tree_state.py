@@ -1,10 +1,8 @@
-from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from sqlalchemy import false
 from sqlmodel import Field, Index, SQLModel
 
 INITIAL = "initial"
