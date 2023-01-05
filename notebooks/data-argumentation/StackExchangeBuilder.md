@@ -1,13 +1,17 @@
 # StackExchange Builder
 
-StackExchange Builder is a notebook that downloads data from StackExchange data dumps 
-and converts it into different formats. It will parse the XML files, group questions and answers, can filter the dataset and puts the results into the Open-Assistant Data Scheme.
-Files can be saved to either JSON, JSONL, Parquet, or CSV.
+StackExchange Builder is a notebook that downloads data from StackExchange data
+dumps and converts it into different formats. It will parse the XML files, group
+questions and answers, can filter the dataset and puts the results into the
+Open-Assistant Data Scheme. Files can be saved to either JSON, JSONL, Parquet,
+or CSV.
 
 ---
+
 #### Sample Data Open-Assistant Data Scheme:
 
-Open-Assistant Data Scheme as outlined here: https://github.com/LAION-AI/Open-Assistant/blob/main/docs/data_schemas.md
+Open-Assistant Data Scheme as outlined here:
+https://github.com/LAION-AI/Open-Assistant/blob/main/docs/data_schemas.md
 
 ```
 {
@@ -40,7 +44,9 @@ Open-Assistant Data Scheme as outlined here: https://github.com/LAION-AI/Open-As
 ```
 
 ---
+
 #### JSONL format
+
 Each question and all related answers are on a single line in JSONL format.
 
 ```
@@ -77,10 +83,11 @@ Each question and all related answers are on a single line in JSONL format.
 }
 ```
 
-
 #### Table/CSV/Parquet Format
 
-There are a lot more columns left over in the table format. `_q` and `_a` are suffixes indiciating if the column came from the question or answer table as leftover from a join statement.
+There are a lot more columns left over in the table format. `_q` and `_a` are
+suffixes indiciating if the column came from the question or answer table as
+leftover from a join statement.
 
 ```
 |  Id_q |                                          Question | ParentId_a | AcceptedAnswerId |    Id_a |                                            Answer | AnswerScore | AcceptedAnswerFlag |
@@ -95,4 +102,5 @@ There are a lot more columns left over in the table format. `_q` and `_a` are su
 
 ## Contributing
 
-Feel free to contribute to this notebook. It's not perfect and additional functionality is planned.
+Feel free to contribute to this notebook. It's not perfect and additional
+functionality is planned.
