@@ -14,6 +14,14 @@ const components = {
   Container: containerTheme,
 };
 
+const breakpoints = {
+  sm: "640px",
+  md: "768px",
+  lg: "1024px",
+  xl: "1280px",
+  "2xl": "1536px",
+};
+
 const styles: Styles = {
   global: (props) => ({
     "*": {
@@ -34,4 +42,4 @@ const styles: Styles = {
   }),
 };
 
-export const theme = extendTheme({ colors, config, styles, components });
+export const theme = extendTheme({ colors, config, styles, components, breakpoints });

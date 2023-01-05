@@ -29,8 +29,8 @@ from oasst_shared.schemas.protocol import TaskRequestType
 
 plugin = lightbulb.Plugin("WorkPlugin")
 
-MAX_TASK_TIME = 60 * 60  # 1 hour
-MAX_TASK_ACCEPT_TIME = 60  # 1 minute
+MAX_TASK_TIME = 60 * 60  # seconds
+MAX_TASK_ACCEPT_TIME = 60 * 10  # seconds
 
 settings = Settings()
 
@@ -117,7 +117,7 @@ async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> No
         # Task action loop
         completed = False
         while not completed:
-            await ctx.author.send(embed=plain_embed("Please type your response here"))
+            await ctx.author.send(embed=plain_embed("Please type your response below:"))
             try:
                 event = await ctx.bot.wait_for(
                     hikari.DMMessageCreateEvent,

@@ -1,7 +1,9 @@
 import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ContextMessages } from "src/components/ContextMessages";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
+import { Message } from "src/components/Messages";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { TaskControls } from "src/components/Survey/TaskControls";
@@ -9,8 +11,6 @@ import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
-import { Message } from "src/components/Messages";
-import { ContextMessages } from "src/components/ContextMessages";
 
 const RankUserReplies = () => {
   const [tasks, setTasks] = useState([]);
@@ -25,6 +25,12 @@ const RankUserReplies = () => {
       setTasks([data]);
     },
   });
+
+  useEffect(() => {
+    if (tasks.length == 0) {
+      mutate();
+    }
+  }, [tasks]);
 
   const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (data) => {
