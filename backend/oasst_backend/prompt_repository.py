@@ -295,16 +295,18 @@ class PromptRepository:
                 )
 
             case protocol_schema.LabelInitialPromptTask:
-                payload = db_payload.LabelInitialPromptPayload(type=task.type, prompt=task.prompt)
+                payload = db_payload.LabelInitialPromptPayload(
+                    type=task.type, prompt=task.prompt, valid_labels=task.valid_labels
+                )
 
             case protocol_schema.LabelPrompterReplyTask:
                 payload = db_payload.LabelPrompterReplyPayload(
-                    type=task.type, conversation=task.conversation, reply=task.reply
+                    type=task.type, conversation=task.conversation, reply=task.reply, valid_labels=task.valid_labels
                 )
 
             case protocol_schema.LabelAssistantReplyTask:
                 payload = db_payload.LabelAssistantReplyPayload(
-                    type=task.type, conversation=task.conversation, reply=task.reply
+                    type=task.type, conversation=task.conversation, reply=task.reply, valid_labels=task.valid_labels
                 )
 
             case _:

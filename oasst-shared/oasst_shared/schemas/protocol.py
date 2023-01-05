@@ -177,6 +177,7 @@ class LabelInitialPromptTask(Task):
 
     type: Literal["label_initial_prompt"] = "label_initial_prompt"
     prompt: str
+    valid_labels: list[str]
 
 
 class LabelConversationReplyTask(Task):
@@ -185,6 +186,7 @@ class LabelConversationReplyTask(Task):
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
     conversation: Conversation  # the conversation so far
     reply: str
+    valid_labels: list[str]
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):

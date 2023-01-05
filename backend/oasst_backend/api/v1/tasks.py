@@ -124,19 +124,25 @@ def generate_task(
         case protocol_schema.TaskRequestType.label_initial_prompt:
             logger.info("Generating a LabelInitialPromptTask.")
             message = pr.fetch_random_initial_prompts(1)[0]
-            task = protocol_schema.LabelInitialPromptTask(prompt=message.payload.payload.text)
+            task = protocol_schema.LabelInitialPromptTask(
+                prompt=message.payload.payload.text, valid_labels=list(map(str, protocol_schema.TextLabel))
+            )
 
         case protocol_schema.TaskRequestType.label_prompter_reply:
             logger.info("Generating a LabelPrompterReplyTask.")
             conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="assistant")
             message = messages[0].payload.payload.text
-            task = protocol_schema.LabelPrompterReplyTask(conversation=conversation, reply=message)
+            task = protocol_schema.LabelPrompterReplyTask(
+                conversation=conversation, reply=message, valid_labels=list(map(str, protocol_schema.TextLabel))
+            )
 
         case protocol_schema.TaskRequestType.label_assistant_reply:
             logger.info("Generating a LabelAssistantReplyTask.")
             conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="prompter")
             message = messages[0].payload.payload.text
-            task = protocol_schema.LabelAssistantReplyTask(conversation=conversation, reply=message)
+            task = protocol_schema.LabelAssistantReplyTask(
+                conversation=conversation, reply=message, valid_labels=list(map(str, protocol_schema.TextLabel))
+            )
 
         case _:
             raise OasstError("Invalid request type", OasstErrorCode.TASK_INVALID_REQUEST_TYPE)

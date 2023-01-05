@@ -99,6 +99,7 @@ class LabelInitialPromptPayload(TaskPayload):
 
     type: Literal["label_initial_prompt"] = "label_initial_prompt"
     prompt: str
+    valid_labels: list[str]
 
 
 @payload_type
@@ -107,6 +108,7 @@ class LabelConversationReplyPayload(TaskPayload):
 
     conversation: protocol_schema.Conversation
     reply: str
+    valid_labels: list[str]
 
 
 @payload_type

@@ -178,10 +178,8 @@ async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> No
                     ),
                 )
             elif isinstance(task, protocol_schema.LabelConversationReplyTask | protocol_schema.LabelInitialPromptTask):
-                labels_input = event.content.replace(" ", "").split(",")
-                labels = set(map(protocol_schema.TextLabel, labels_input))
-
-                labels_dict = {label: 1 if label in labels else 0 for label in protocol_schema.TextLabel}
+                labels = event.content.replace(" ", "").split(",")
+                labels_dict = {label: 1 if label in labels else 0 for label in task.valid_labels}
 
                 reply = protocol_schema.TextLabels(
                     message_id=str(msg_id),
@@ -430,7 +428,7 @@ def _validate_user_input(content: str | None, task: protocol_schema.Task) -> tup
         )
 
         labels = content.replace(" ", "").split(",")
-        valid_labels = set(map(str, protocol_schema.TextLabel))
+        valid_labels = set(task.valid_labels)
         return (
             set(labels).issubset(valid_labels),
             "Message must only contain labels from predefined set of labels.",
