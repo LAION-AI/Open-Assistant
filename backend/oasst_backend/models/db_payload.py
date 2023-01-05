@@ -1,4 +1,5 @@
 from typing import Literal
+from uuid import UUID
 
 from oasst_backend.models.payload_column_type import payload_type
 from oasst_shared.schemas import protocol as protocol_schema
@@ -98,6 +99,7 @@ class LabelInitialPromptPayload(TaskPayload):
     """A task to label an initial prompt."""
 
     type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    message_id: UUID
     prompt: str
     valid_labels: list[str]
 
@@ -106,6 +108,7 @@ class LabelInitialPromptPayload(TaskPayload):
 class LabelConversationReplyPayload(TaskPayload):
     """A task to label a conversation reply."""
 
+    message_id: UUID
     conversation: protocol_schema.Conversation
     reply: str
     valid_labels: list[str]

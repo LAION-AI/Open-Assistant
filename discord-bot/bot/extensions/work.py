@@ -182,7 +182,7 @@ async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> No
                 labels_dict = {label: 1 if label in labels else 0 for label in task.valid_labels}
 
                 reply = protocol_schema.TextLabels(
-                    message_id=str(msg_id),
+                    message_id=task.message_id,
                     labels=labels_dict,
                     user=protocol_schema.User(
                         auth_method="discord", id=str(ctx.author.id), display_name=ctx.author.username

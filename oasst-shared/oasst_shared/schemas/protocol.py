@@ -176,6 +176,7 @@ class LabelInitialPromptTask(Task):
     """A task to label an initial prompt."""
 
     type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    message_id: UUID
     prompt: str
     valid_labels: list[str]
 
@@ -185,6 +186,7 @@ class LabelConversationReplyTask(Task):
 
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
     conversation: Conversation  # the conversation so far
+    message_id: UUID
     reply: str
     valid_labels: list[str]
 
@@ -291,7 +293,7 @@ class TextLabels(Interaction):
     type: Literal["text_labels"] = "text_labels"
     text: str
     labels: dict[TextLabel, float]
-    message_id: str | None = None
+    message_id: str
 
     @property
     def has_message_id(self) -> bool:

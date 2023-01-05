@@ -124,6 +124,7 @@ def generate_task(
             logger.info("Generating a LabelInitialPromptTask.")
             message = pr.fetch_random_initial_prompts(1)[0]
             task = protocol_schema.LabelInitialPromptTask(
+                message_id=message.id,
                 prompt=message.payload.payload.text,
                 valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
             )
@@ -133,6 +134,7 @@ def generate_task(
             conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="assistant")
             message = messages[0].payload.payload.text
             task = protocol_schema.LabelPrompterReplyTask(
+                message_id=message.id,
                 conversation=conversation,
                 reply=message,
                 valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
@@ -143,6 +145,7 @@ def generate_task(
             conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="prompter")
             message = messages[0].payload.payload.text
             task = protocol_schema.LabelAssistantReplyTask(
+                message_id=message.id,
                 conversation=conversation,
                 reply=message,
                 valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),

@@ -296,17 +296,25 @@ class PromptRepository:
 
             case protocol_schema.LabelInitialPromptTask:
                 payload = db_payload.LabelInitialPromptPayload(
-                    type=task.type, prompt=task.prompt, valid_labels=task.valid_labels
+                    type=task.type, message_id=task.message_id, prompt=task.prompt, valid_labels=task.valid_labels
                 )
 
             case protocol_schema.LabelPrompterReplyTask:
                 payload = db_payload.LabelPrompterReplyPayload(
-                    type=task.type, conversation=task.conversation, reply=task.reply, valid_labels=task.valid_labels
+                    type=task.type,
+                    message_id=task.message_id,
+                    conversation=task.conversation,
+                    reply=task.reply,
+                    valid_labels=task.valid_labels,
                 )
 
             case protocol_schema.LabelAssistantReplyTask:
                 payload = db_payload.LabelAssistantReplyPayload(
-                    type=task.type, conversation=task.conversation, reply=task.reply, valid_labels=task.valid_labels
+                    type=task.type,
+                    message_id=task.message_id,
+                    conversation=task.conversation,
+                    reply=task.reply,
+                    valid_labels=task.valid_labels,
                 )
 
             case _:
@@ -403,13 +411,12 @@ class PromptRepository:
     def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> TextLabels:
         model = TextLabels(
             api_client_id=self.api_client.id,
+            message_id=UUID(text_labels.message_id),
             user_id=self.user_id,
             text=text_labels.text,
             labels=text_labels.labels,
         )
-        if text_labels.has_message_id:
-            self.fetch_message_by_frontend_message_id(text_labels.message_id, fail_if_missing=True)
-            model.message_id = text_labels.message_id
+
         self.db.add(model)
         self.db.commit()
         self.db.refresh(model)
