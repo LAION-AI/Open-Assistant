@@ -1,14 +1,10 @@
 # Dependencies
-docs/node_modules
 node_modules
 
 # Production
-docs/build
 build
 
 # Generated files
-docs/.docusaurus
-docs/.cache-loader
 .docusaurus
 .cache-loader
 
@@ -18,15 +14,7 @@ docs/.cache-loader
 .env.development.local
 .env.test.local
 .env.production.local
-docs/.DS_Store
-docs/.env.local
-docs/.env.development.local
-docs/.env.test.local
-docs/.env.production.local
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-docs/npm-debug.log*
-docs/yarn-debug.log*
-docs/yarn-error.log*
