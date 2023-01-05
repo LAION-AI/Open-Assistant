@@ -17,6 +17,7 @@ class States(Enum):
     CHILDREN_SCORED = "children_scored"
     FINAL = "final"
 
+
 VALID_STATES = (
     States.INITIAL,
     States.BREEDING_PHASE,
@@ -25,7 +26,6 @@ VALID_STATES = (
     States.CHILDREN_SCORED,
     States.FINAL,
 )
-
 
 
 class MessageTreeState(SQLModel, table=True):
