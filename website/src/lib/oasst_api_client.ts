@@ -61,4 +61,27 @@ export default class OasstApiClient {
       message_id: messageId,
     });
   }
+
+  // TODO return a strongly typed Task?
+  // This method is used to record interaction with task while fetching next task.
+  // This is a raw Json type, so we can't use it to strongly type the task.
+  async interactTask(
+    updateType: string,
+    messageId: string,
+    userMessageId: string,
+    content: object,
+    userToken: JWT
+  ): Promise<any> {
+    return this.post("/api/v1/tasks/interaction", {
+      type: updateType,
+      user: {
+        id: userToken.sub,
+        display_name: userToken.name || userToken.email,
+        auth_method: "local",
+      },
+      message_id: messageId,
+      user_message_id: userMessageId,
+      ...content,
+    });
+  }
 }
