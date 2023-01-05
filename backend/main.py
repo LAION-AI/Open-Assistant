@@ -230,8 +230,8 @@ if __name__ == "__main__":
         help="Dumps the openapi schema to stdout",
         action=argparse.BooleanOptionalAction,
     )
-    parser.add_argument("--host", help="The host to run the server")
-    parser.add_argument("--port", help="The port to run the server")
+    parser.add_argument("--host", help="The host to run the server", default="0.0.0.0")
+    parser.add_argument("--port", help="The port to run the server", default=8080)
 
     args = parser.parse_args()
 
