@@ -1,6 +1,9 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from oasst_backend.api import deps
 from oasst_backend.models import ApiClient
+from oasst_backend.schemas.hugging_face import ToxicityClassification
 from oasst_backend.utils import get_detoxify_classification
 
 router = APIRouter()
@@ -11,7 +14,7 @@ def get_text_toxicity(
     msg: str,
     hf_token: str,
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
-):
+) -> List[List[ToxicityClassification]]:
     """Get the Message Toxicity from HuggingFace Roberta model.
 
     Args:
