@@ -6,21 +6,18 @@
   <img width="50%" hight="100%" src="https://github.com/LAION-AI/Open-Assistant/blob/main/assets/logo.png"/>
 </p>
 
+# Table of Contents
 
-Table of Contents
-=======================
-
-* [What is Open Assistant?](#what-is-open-assistant)
-* [Do you want to try it out?](#do-you-want-to-try-it-out)
-* [The Plan](#the-plan)
-* [The Vision](#the-vision)
-* [How can you help?](#how-can-you-help)
-* [I’m in! Now what?](CONTRIBUTING.md)
+- [What is Open Assistant?](#what-is-open-assistant)
+- [Do you want to try it out?](#do-you-want-to-try-it-out)
+- [The Plan](#the-plan)
+- [The Vision](#the-vision)
+- [How can you help?](#how-can-you-help)
+- [I’m in! Now what?](CONTRIBUTING.md)
 
 ---
 
-What is Open Assistant?
-------
+## What is Open Assistant?
 
 <p align="center">
     Open Assistant is a project meant to give everyone access to a great chat based large language model.
@@ -46,17 +43,17 @@ docker compose up --build
 Then, navigate to `http://localhost:3000` (It may take some time to boot up) and
 interact with the website.
 
-> **Note:** When logging in via email, navigate to `http://localhost:1080` to get
-the magic email login link.
+> **Note:** When logging in via email, navigate to `http://localhost:1080` to
+> get the magic email login link.
 
 > **Note:** If you would like to run this in a standardized development
-environment (a
-["devcontainer"](https://code.visualstudio.com/docs/devcontainers/containers))
-using
-[vscode locally](https://code.visualstudio.com/docs/devcontainers/create-dev-container#_create-a-devcontainerjson-file)
-or in a web browser using
-[GitHub Codespaces](https://github.com/features/codespaces), you can use the
-provided [`.devcontainer`](.devcontainer/) folder.
+> environment (a
+> ["devcontainer"](https://code.visualstudio.com/docs/devcontainers/containers))
+> using
+> [vscode locally](https://code.visualstudio.com/docs/devcontainers/create-dev-container#_create-a-devcontainerjson-file)
+> or in a web browser using
+> [GitHub Codespaces](https://github.com/features/codespaces), you can use the
+> provided [`.devcontainer`](.devcontainer/) folder.
 
 ## The Plan
 
