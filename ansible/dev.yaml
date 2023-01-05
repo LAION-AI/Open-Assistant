@@ -12,8 +12,7 @@
 
     - name: Set up Redis
       community.docker.docker_container:
-        name: redis
-        #name: oasst-redis
+        name: oasst-redis
         image: redis
         state: started
         restart_policy: always
@@ -31,20 +30,13 @@
 
     - name: Set up Redis Insights
       community.docker.docker_container:
-        name: redis-insights
-        #name: oasst-redis-insights
+        name: oasst-redis-insights
         image: redislabs/redisinsight:latest
-        #command: pip install redis-cli python entry.pyc
         state: started
         restart_policy: always
         network_mode: oasst
         ports:
           - 8001:8001
-        env:
-          REDIS_URL: redis://redis:6379
-          REDIS_HOST: redis
-        #environment:
-          #- REDIS_URL=redis://redis:6379
 
     - name: Create postgres containers
       community.docker.docker_container:
