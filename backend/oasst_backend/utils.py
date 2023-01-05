@@ -31,6 +31,6 @@ def get_detoxify_classification(msg: str, hf_token: str) -> List[List[ToxicityCl
 
 
 if __name__ == "__main__":
-    res = get_detoxify_classification("Bullshit", "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")
+    res = get_detoxify_classification("Bullshit", "")
 
     print(res)
