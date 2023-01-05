@@ -13,7 +13,7 @@
 - [The Plan](#the-plan)
 - [The Vision](#the-vision)
 - [How can you help?](#how-can-you-help)
-- [I’m in! Now what?](CONTRIBUTING.md)
+- [I’m in! How do I contribute?](CONTRIBUTING.md)
 
 ---
 
@@ -98,3 +98,5 @@ hardware.
 All open source projects begin with people like you. Open source is the belief
 that if we collaborate we can together gift our knowledge and technology to the
 world for the benefit of humanity.
+
+Check out our [contributing guide](CONTRIBUTING.md) to get started.
