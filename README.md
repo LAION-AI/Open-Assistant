@@ -10,7 +10,7 @@
 - [The Plan](#the-plan)
 - [The Vision](#the-vision)
 - [How Can You Help?](#how-can-you-help)
-- [I’m in! How do I Contribute?](CONTRIBUTING.md)
+- [I’m in! How Do I Contribute?](CONTRIBUTING.md)
 
 ---
 
