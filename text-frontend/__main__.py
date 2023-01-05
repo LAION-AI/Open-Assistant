@@ -213,7 +213,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 valid_labels = task["valid_labels"]
                 labels_str: str = typer.prompt("Enter labels, separated by commas")
                 labels = labels_str.lower().replace(" ", "").split(",")
-                labels_dict = {label: 1 if label in labels else 0 for label in valid_labels}
+                labels_dict = {label: "1" if label in labels else "0" for label in valid_labels}
 
                 # send ranking
                 new_task = _post(
@@ -221,6 +221,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_labels",
                         "message_id": message_id,
+                        "text": task["prompt"],
                         "labels": labels_dict,
                         "user": USER,
                     },
@@ -241,7 +242,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 valid_labels = task["valid_labels"]
                 labels_str: str = typer.prompt("Enter labels, separated by commas")
                 labels = labels_str.lower().replace(" ", "").split(",")
-                labels_dict = {label: 1 if label in labels else 0 for label in valid_labels}
+                labels_dict = {label: "1" if label in labels else "0" for label in valid_labels}
 
                 # send ranking
                 new_task = _post(
