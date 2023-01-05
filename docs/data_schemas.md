@@ -206,3 +206,27 @@ message RankingExample {
 }
 
 ```
+
+## Databases
+
+Open-Assistant uses two databases, one for the backend and one for the frontend.
+Both are [PostgreSQL](https://www.postgresql.org/) databases which run in docker
+containers.
+
+### Backend ER-Diagram
+
+![ER-Diagram of backend Database](./db.png)
+
+**Notes**
+
+- In order for the diagram to not be too messy, foreign key connection to
+  `api_client` are not shown
+- `frontend_message_id` references `id` of `taskInteraction` on the frontend
+
+  ### Frontend ER-Diagram
+
+  ![ER-Diagram of frontend Database](./webdb.png)
+
+  **Notes**
+
+- `id` of `registeredTask` references `id`of `message`on the backend

@@ -10,6 +10,7 @@ class OasstErrorCode(IntEnum):
          0-1000: general errors
       1000-2000: tasks endpoint
       2000-3000: prompt_repository
+      3000-4000: external resources
     """
 
     # 0-1000: general errors
@@ -44,6 +45,9 @@ class OasstErrorCode(IntEnum):
     TASK_NOT_ACK = 2104
     TASK_ALREADY_DONE = 2105
     TASK_NOT_COLLECTIVE = 2106
+
+    # 3000-4000: external resources
+    HUGGINGFACE_API_ERROR = 3001
 
 
 class OasstError(Exception):
