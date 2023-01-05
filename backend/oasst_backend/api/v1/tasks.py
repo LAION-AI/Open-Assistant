@@ -29,9 +29,8 @@ def generate_task(
                 protocol_schema.TaskRequestType.summarize_story,
                 protocol_schema.TaskRequestType.rate_summary,
             )
-            request.type = random.choice(
-                tuple(set(protocol_schema.TaskRequestType).difference(disabled_tasks))
-            ).value
+            candidate_tasks = set(protocol_schema.TaskRequestType).difference(disabled_tasks)
+            request.type = random.choice(tuple(candidate_tasks)).value
             return generate_task(request, pr)
 
         # AKo: Summary tasks are currently disabled/supported, we focus on the conversation tasks.
