@@ -2,6 +2,8 @@ import logging
 from alembic import context
 from oasst_backend import models  # noqa: F401
 from sqlalchemy import engine_from_config, pool
+
+
 # Read in the Alembic config file.
 config = context.config
 # Set up loggers.
