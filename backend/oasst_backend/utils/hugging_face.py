@@ -35,17 +35,15 @@ class HuggingFaceAPI:
             inference: the inference we obtain from the model in HF
         """
 
-        session = aiohttp.ClientSession()
-        payload: Dict[str, str] = {"inputs": input}
-        response = await session.post(self.api_url, headers=self.headers, json=payload)
+        async with aiohttp.ClientSession() as session:
+            payload: Dict[str, str] = {"inputs": input}
 
-        # If we get a bad response
-        if response.status != 200:
-            raise OasstError("Response Error Detoxify HuggingFace", error_code=OasstErrorCode.HUGGINGFACE_API_ERROR)
+            async with session.post(self.api_url, headers=self.headers, json=payload) as response:
+                # If we get a bad response
+                if response.status != 200:
+                    raise OasstError("Response Error Detoxify HuggingFace", error_code=OasstErrorCode.HUGGINGFACE_API_ERROR)
 
-        # Get the response from the API call
-        inference = await response.json()
-
-        await session.close()
+                # Get the response from the API call
+                inference = await response.json()
 
         return inference
