@@ -43,8 +43,6 @@ async def on_starting(event: hikari.StartingEvent):
     # TODO: Grow this on startup so we don't have to re-allocate memory every time it needs to grow
     bot.d.currently_working = {}
 
-    bot.update_presence
-
 
 @bot.listen()
 async def on_stopping(event: hikari.StoppingEvent):
