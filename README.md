@@ -1,10 +1,7 @@
 <h1 align="center">
-    Open-Assistant
-</h1>
-
-<p align="center">
+    <span>Open-Assistant</span>
   <img width="50%" hight="100%" src="https://github.com/LAION-AI/Open-Assistant/blob/main/assets/logo.png"/>
-</p>
+</h1>
 
 # Table of Contents
 
