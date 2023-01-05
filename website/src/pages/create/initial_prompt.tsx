@@ -1,6 +1,6 @@
 import { Container, Textarea } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
@@ -26,6 +26,12 @@ const InitialPrompt = () => {
       setTasks((oldTasks) => [...oldTasks, newTask]);
     },
   });
+
+  useEffect(() => {
+    if (tasks.length == 0) {
+      mutate();
+    }
+  }, [tasks]);
 
   const submitResponse = (task: { id: string }) => {
     const text = inputRef.current.value.trim();
