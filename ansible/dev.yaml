@@ -79,6 +79,7 @@
         network_mode: oasst
         env:
           POSTGRES_HOST: oasst-postgres
+          REDIS_HOST: oasst-redis
           DEBUG_ALLOW_ANY_API_KEY: "true"
           DEBUG_USE_SEED_DATA: "true"
           MAX_WORKERS: "1"
