@@ -298,10 +298,14 @@ class PromptRepository:
                 payload = db_payload.LabelInitialPromptPayload(type=task.type, prompt=task.prompt)
 
             case protocol_schema.LabelPrompterReplyTask:
-                payload = db_payload.LabelPrompterReplyPayload(type=task.type, reply=task.reply)
+                payload = db_payload.LabelPrompterReplyPayload(
+                    type=task.type, conversation=task.conversation, reply=task.reply
+                )
 
             case protocol_schema.LabelAssistantReplyTask:
-                payload = db_payload.LabelAssistantReplyPayload(type=task.type, reply=task.reply)
+                payload = db_payload.LabelAssistantReplyPayload(
+                    type=task.type, conversation=task.conversation, reply=task.reply
+                )
 
             case _:
                 raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
