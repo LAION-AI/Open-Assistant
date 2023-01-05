@@ -1,6 +1,6 @@
 """Custom help command."""
 import lightbulb
-from bot.messages import help_message
+from bot.messages import help_message, tutorial_message
 from bot.settings import Settings
 from hikari.permissions import Permissions
 from lightbulb.utils import permissions_for
@@ -23,6 +23,14 @@ async def help_command(ctx: lightbulb.Context) -> None:
         can_manage_guild = bool(permissions_for(member) & Permissions.MANAGE_GUILD)
 
     await ctx.respond(help_message(can_manage_guild, ctx.author.id in settings.owner_ids))
+
+
+@plugin.command
+@lightbulb.command("tutorial", "A tutorial for completing tasks.", ephemeral=True)
+@lightbulb.implements(lightbulb.SlashCommand, lightbulb.PrefixCommand)
+async def tutorial(ctx: lightbulb.Context) -> None:
+    """Help for the bot."""
+    await ctx.respond(tutorial_message(True, True))
 
 
 def load(bot: lightbulb.BotApp):

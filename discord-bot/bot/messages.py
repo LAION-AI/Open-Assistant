@@ -225,6 +225,15 @@ The plugin to hot-reload. If no plugin is provided, all plugins are hot-reload.
     return content
 
 
+def tutorial_message() -> str:
+    """The /tutorial command message."""
+    # TODO: Finish message
+    return f"""\
+{_h1("TUTORIAL")}
+
+"""
+
+
 ###
 # Embeds
 ###
