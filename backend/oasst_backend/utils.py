@@ -1,5 +1,6 @@
+from typing import Any, Dict
+
 import requests
-from typing import Dict, Any
 from oasst_backend.constants import HUGGINGFACE_TOXIC_ROBERTA_URL
 
 
