@@ -14,6 +14,7 @@ const config = {
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
   favicon: "img/logo.svg",
+  staticDirectories: ['public', 'static', 'docs/data/img'],
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -38,11 +39,6 @@ const config = {
           sidebarPath: require.resolve("./sidebars.js"),
         },
         blog: false,
-        /*
-        blog: {
-          showReadingTime: true,
-        },
-        */
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },

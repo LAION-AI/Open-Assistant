@@ -191,4 +191,235 @@ cp templates/prepare.py openassistant/datasets/<dataset_name>/
 
 Next, implement any logic that is needed to prepare a local version of the
 dataset files (by convention we store them in `datasets/<dataset_name>/data/`).
-Add any extra depen
+Add any extra dependencies to a `requirements.txt` file and provide instructions
+on how to prepare the dataset files in a README:
+
+```bash
+touch openassistant/datasets/<dataset_name>/requirements.txt
+cp templates/README.py openassistant/datasets/<dataset_name>/
+```
+
+**Note:** Do not commit any dataset files to the OpenAssistant repo - all data
+will be hosted on the Hugging Face Hub. This step is needed for the project's
+data admins to be able to replicate the dataset creation process before pushing
+to the Hub.
+
+### 4. Implement your dataset
+
+To implement your dataloader, you will need to follow `template.py` and fill in
+all necessary TODOs. There are three key methods that are important:
+
+- `_info`: Specifies the schema of the expected dataloader
+- `_split_generators`: Downloads and extracts data for each split (e.g.
+  train/val/test) or associate local data with each split.
+- `_generate_examples`: Create examples from data that conform to each schema
+  defined in `_info`.
+
+For the `_info_` function, you will need to define `features` for your
+`DatasetInfo` object. For each dataset config, choose the right schema from our
+list of examples. You can find the schemas in the
+[schemas directory](openassistant/utils/schemas/).
+
+You will use this schema in the `_generate_examples` return value.
+
+Populate the information in the dataset according to this schema; some fields
+may be empty.
+
+#### Example scripts
+
+TODO
+
+#### Running & debugging
+
+You can run your data loader script during development by appending the
+following statement to your code ([templates/template.py](templates/template.py)
+already includes this):
+
+```python
+if __name__ == "__main__":
+    datasets.load_dataset(__file__)
+```
+
+If you want to use an interactive debugger during development, you will have to
+use `breakpoint()` instead of setting breakpoints directly in your IDE. Most
+IDEs will recognize the `breakpoint()` statement and pause there during
+debugging. If your preferred IDE doesn't support this, you can always run the
+script in your terminal and debug with `pdb`.
+
+### 5. Check if your dataloader works
+
+Make sure your dataset is implemented correctly by checking in python the
+following commands:
+
+```python
+from datasets import load_dataset
+
+data = load_dataset("openassistant/datasets/<dataset_name>/<dataset_name>.py", name="<dataset_name>_<schema>")
+```
+
+Run these commands from the top level of the `OpenAssistant` repo.
+
+### 6. Create a dataset card
+
+Copy and fill out the template dataset card:
+
+```bash
+cp templates/dataset_card.md openassistant/datasets/<dataset_name>/README.md
+```
+
+### 7. Format your code
+
+From the main directory, run the code quality checks via the following command:
+
+```
+pre-commit run --all-files
+```
+
+This runs the black formatter, isort, and lints to ensure that the code is
+readable and looks nice. Flake8 linting errors may require manual changes.
+
+### 8. Commit your changes
+
+First, commit your changes to the branch to "add" the work:
+
+```
+git add openassistant/datasets/<dataset_name>/*.py
+git commit -m "A message describing your commits"
+```
+
+Then, run the following commands to incorporate any new changes in the master
+branch of datasets as follows:
+
+```
+git fetch upstream
+git rebase upstream/main
+```
+
+**Run these commands in your custom branch**.
+
+Push these changes to **your fork** with the following command:
+
+```
+git push -u origin <dataset_name>
+```
+
+### 9. **Make a pull request**
+
+Make a Pull Request to implement your changes on the main repository
+[here](https://github.com/LAION-AI/Open-Assistant/pulls). To do so, click "New
+Pull Request". Then, choose your branch from your fork to push into "base:main".
+
+When opening a PR, please link the
+[issue](https://github.com/LAION-AI/Open-Assistant/issues) corresponding to your
+dataset using
+[closing keywords](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)
+in the PR's description, e.g. `resolves #17`.
+
+## [Admins] Uploading a dataset to the Hugging Face Hub
+
+Uploading a new dataset from `openassistant/datasets/<dataset_name>` to the
+Hugging Face Hub typically involves the following steps:
+
+1. Setup
+2. Create a new dataset repository
+3. Copy a dataset loading script and dataset card
+4. Upload to the Hub
+
+### 1. Setup
+
+To upload a dataset to the OpenAssistant organization, you first need to:
+
+- Create a [Hugging Face account](https://huggingface.co/join) (it's free)
+- Join the [OpenAssistant organization](https://huggingface.co/OpenAssistant) by
+  clicking on the _Request to join this org_ button on the top right-hand side
+
+Next, check that you're correctly logged in and that `git-lfs` is installed so
+that the dataset can be uploaded. To log in, create a **write access token**
+that can be found under your Hugging Face profile (icon in the top right corner
+on [hf.co](http://hf.co/), then Settings -> Access Tokens -> User Access Tokens
+-> New Token. Alternatively, you can go to
+[your token settings](https://huggingface.co/settings/tokens) directly.
+
+Once you've created a token, run:
+
+```bash
+huggingface-cli login
+```
+
+in a terminal, or case you're working in a notebook
+
+```python
+from huggingface_hub import notebook_login
+
+notebook_login()
+```
+
+You can then copy-paste your token to log in locally.
+
+Next, let's make sure that `git-lfs` is correctly installed. To do so, simply
+run:
+
+```bash
+git-lfs -v
+```
+
+The output should show something like
+`git-lfs/2.13.2 (GitHub; linux amd64; go 1.15.4)`. If your console states that
+the `git-lfs` command was not found, please make sure to install it
+[here](https://git-lfs.github.com/) or simply via:
+
+```bash
+sudo apt-get install git-lfs
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+```
+
+The final step of the setup is to install the 🤗 Datasets library by running:
+
+```bash
+python -m pip install datasets
+```
+
+### 2. Create a new dataset repository
+
+Follow [this guide](https://huggingface.co/docs/datasets/upload_dataset) for
+instructions on creating a new dataset repo on the Hub. Use the same snake_case
+name as the dataset in `openassistant/datasets/<dataset_name>`.
+
+Once you've created the dataset repo, clone it by running:
+
+```bash
+git clone https://huggingface.co/datasets/OpenAssistant/<dataset_name>
+cd <dataset_name>
+```
+
+### 3. Copy a dataset loading script and dataset card
+
+Next, copy the loading script and dataset card to your repo:
+
+```bash
+cp openassistant/datasets/<dataset_name>/<dataset_name>.py .
+cp openassistant/datasets/<dataset_name>/README.md .
+```
+
+#### (Optional) Prepare local dataset files
+
+If the dataset files of `openassistant/datasets/<dataset_name>` aren't public,
+you'll need to run the `openassistant/datasets/<dataset_name>/prepare.py` script
+to create them. Store them in the same directory that is specified by the
+loading script (`data` by default).
+
+### 4. Upload to the Hub
+
+Once the dataset script and card are ready, use Git to push them to the Hub
+(along with any data files you may need).
+
+At this point, you can load the dataset by running:
+
+```python
+from datasets import load_dataset
+
+load_dataset("OpenAssistant/{dataset_name}")
+```
+
+Congratulations - you've now added a dataset to the OpenAssistant org!
