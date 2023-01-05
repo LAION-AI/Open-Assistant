@@ -232,7 +232,8 @@ TODO
 #### Running & debugging
 
 You can run your data loader script during development by appending the
-following statement to your code ([templates/template.py](https://github.com/LAION-AI/Open-Assistant/blob/main/openassistant/templates/template.py)
+following statement to your code
+([templates/template.py](https://github.com/LAION-AI/Open-Assistant/blob/main/openassistant/templates/template.py)
 already includes this):
 
 ```python

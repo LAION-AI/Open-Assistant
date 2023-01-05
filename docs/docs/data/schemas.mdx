@@ -1,5 +1,5 @@
-import dbpng from './img/db.png';
-import webdbpng from './img/webdb.png';
+import dbpng from "./img/db.png";
+import webdbpng from "./img/webdb.png";
 
 # Data Schemas
 
@@ -219,17 +219,20 @@ containers.
 
 ER-Diagram of backend Database
 
-<img src={dbpng}/>
+<img src={dbpng} />
 
 **Notes**
-- In order for the diagram to not be too messy, foreign key connection to `api_client` are not shown.
+
+- In order for the diagram to not be too messy, foreign key connection to
+  `api_client` are not shown.
 - `frontend_message_id` references `id` of `taskInteraction` on the frontend
 
 ### Frontend ER-Diagram
 
 ER-Diagram of frontend Database
 
-<img src={webdbpng}/>
+<img src={webdbpng} />
 
 **Notes**
-  - `id` of `registeredTask` references `id` of `message` on the backend
+
+- `id` of `registeredTask` references `id` of `message` on the backend
