@@ -179,7 +179,7 @@ def confirm_ranking_response_message(content: str, items: list[str]) -> str:
 """
 
 
-def help_message(is_admin: bool, is_dev: bool) -> str:
+def help_message(can_manage_guild: bool, is_dev: bool) -> str:
     """The /help command message."""
     content = f"""\
 {_h1("HELP")}
@@ -203,7 +203,7 @@ The type of task to start. If not provided, a random task will be selected. The 
 
 To learn how to complete tasks, run `/tutorial`.
 """
-    if is_admin:
+    if can_manage_guild:
         content += f"""\
 
 {_li("**`/settings log_channel <channel>`**")}

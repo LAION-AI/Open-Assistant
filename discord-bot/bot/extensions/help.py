@@ -15,14 +15,14 @@ settings = Settings()
 @lightbulb.implements(lightbulb.SlashCommand, lightbulb.PrefixCommand)
 async def help_command(ctx: lightbulb.Context) -> None:
     """Help for the bot."""
-    is_admin = False
+    can_manage_guild = False
     if ctx.guild_id:
         member = ctx.bot.cache.get_member(ctx.guild_id, ctx.author.id) or await ctx.bot.rest.fetch_member(
             ctx.guild_id, ctx.author.id
         )
-        is_admin = bool(permissions_for(member) & Permissions.MANAGE_GUILD)
+        can_manage_guild = bool(permissions_for(member) & Permissions.MANAGE_GUILD)
 
-    await ctx.respond(help_message(is_admin, ctx.author.id in settings.owner_ids))
+    await ctx.respond(help_message(can_manage_guild, ctx.author.id in settings.owner_ids))
 
 
 def load(bot: lightbulb.BotApp):
