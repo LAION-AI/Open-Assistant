@@ -6,11 +6,11 @@
 # Table of Contents
 
 - [What is Open Assistant?](#what-is-open-assistant)
-- [Do you want to try it out?](#do-you-want-to-try-it-out)
+- [Do You Want to Try it Out?](#do-you-want-to-try-it-out)
 - [The Plan](#the-plan)
 - [The Vision](#the-vision)
-- [How can you help?](#how-can-you-help)
-- [I’m in! How do I contribute?](CONTRIBUTING.md)
+- [How Can You Help?](#how-can-you-help)
+- [I’m in! How do I Contribute?](CONTRIBUTING.md)
 
 ---
 
@@ -25,7 +25,7 @@ language. In the same way that stable-diffusion helped the world make art and
 images in new ways we hope Open Assistant can help improve the world by
 improving language itself.
 
-## Do you want to try it out?
+## Do You Want to Try it Out?
 
 If you are interested in taking a look at the current state of the project, you
 can set up an entire stack needed to run **Open-Assistant**, including the
@@ -90,7 +90,7 @@ hardware.
 
 [Important Data Structures](https://docs.google.com/presentation/d/1iaX_nxasVWlvPiSNs0cllR9L_1neZq0RJxd6MFEalUY/edit?usp=sharing)
 
-## How can you help?
+## How Can You Help?
 
 All open source projects begin with people like you. Open source is the belief
 that if we collaborate we can together gift our knowledge and technology to the
