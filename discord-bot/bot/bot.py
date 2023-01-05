@@ -19,6 +19,7 @@ bot = lightbulb.BotApp(
     default_enabled_guilds=settings.declare_global_commands,
     owner_ids=settings.owner_ids,
     intents=hikari.Intents.ALL,
+    help_class=None,
 )
 
 
@@ -28,10 +29,12 @@ async def on_starting(event: hikari.StartingEvent):
     miru.install(bot)  # component handler
     bot.load_extensions_from("./bot/extensions")  # load extensions
 
+    # Database setup
     bot.d.db = await aiosqlite.connect("./bot/db/database.db")
     await bot.d.db.executescript(open("./bot/db/schema.sql").read())
     await bot.d.db.commit()
 
+    # OASST API setup
     bot.d.oasst_api = OasstApiClient(settings.oasst_api_url, settings.oasst_api_key)
 
     # A `dict[hikari.Message | None, UUID | None]]` that maps user IDs to (task msg ID, task UUIDs).
@@ -39,6 +42,8 @@ async def on_starting(event: hikari.StartingEvent):
     # If both are `None`, the user is not currently selecting a task.
     # TODO: Grow this on startup so we don't have to re-allocate memory every time it needs to grow
     bot.d.currently_working = {}
+
+    bot.update_presence
 
 
 @bot.listen()
