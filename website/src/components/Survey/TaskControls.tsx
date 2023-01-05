@@ -4,7 +4,7 @@ import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 
-interface TaskControlsProps {
+export interface TaskControlsProps {
   // we need a task type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   tasks: any[];
