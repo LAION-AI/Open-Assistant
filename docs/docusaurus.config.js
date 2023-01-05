@@ -14,7 +14,7 @@ const config = {
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
   favicon: "img/logo.svg",
-  staticDirectories: ['public', 'static', 'docs/data/img'],
+  staticDirectories: ["public", "static", "docs/data/img"],
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
