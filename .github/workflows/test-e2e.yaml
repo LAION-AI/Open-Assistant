@@ -5,9 +5,11 @@ on:
     branches:
       - main
     paths:
+      - backend/**
       - website/**
   pull_request:
     paths:
+      - backend/**
       - website/**
 
 jobs:
