@@ -3,7 +3,7 @@
 </h1>
 
 <p align="center">
-  <img width="60%" hight="100%" src="https://github.com/LAION-AI/Open-Assistant/blob/main/assets/logo.png"/>
+  <img width="50%" hight="100%" src="https://github.com/LAION-AI/Open-Assistant/blob/main/assets/logo.png"/>
 </p>
 
 
@@ -15,7 +15,7 @@ Table of Contents
 * [The Plan](#the-plan)
 * [The Vision](#the-vision)
 * [How can you help?](#how-can-you-help)
-* [I’m in! Now what?](#i'm-in-now-what)
+* [I’m in! Now what?](#I'm-in-now-what)
 
 ---
 
