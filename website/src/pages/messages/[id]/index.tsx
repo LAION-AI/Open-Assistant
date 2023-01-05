@@ -1,4 +1,4 @@
-import { Box, Container, Flex, HStack, useColorModeValue } from "@chakra-ui/react";
+import { Box, Container, Text, HStack, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -13,31 +13,36 @@ const MessageDetail = () => {
   const bg = useColorModeValue("white", colors.dark.bg);
   const router = useRouter()
   const { id } = router.query
+
+  /** State arrays of messages */
   const [message, setMessage] = useState(null);
-  const [parent, setParent]= useState(null);
+  const [parent, setParent] = useState(null);
   const [children, setChildren] = useState(null);
 
-  const { isLoading } = useSWRImmutable(`/api/messages/${id}`, fetcher, {
+  /** Fetching functions */
+  const { isLoading } = useSWRImmutable(id ? `/api/messages/${id}` : null, fetcher, {
     onSuccess: (data) => {
       setMessage(data);
     },
+    onError: (err, key, config) => {
+      setMessage(null);
+    },
   });
-
-  const { isLoading: isLoadingChildren } = useSWRImmutable(`/api/messages/${id}/children`, fetcher, {
+  const { isLoading: isLoadingChildren } = useSWRImmutable(id ? `/api/messages/${id}/children` : null, fetcher, {
     onSuccess: (data) => {
       setChildren(data);
     },
+    onError: (err, key, config) => {
+      setChildren(null);
+    },
   });
-
-  const { isLoading: isLoadingParent } = useSWRImmutable(`/api/messages/${id}/parent`, fetcher, {
-
+  const { isLoading: isLoadingParent } = useSWRImmutable(id ? `/api/messages/${id}/parent` : null, fetcher, {
     onSuccess: (data) => {
-      console.log(data);
       setParent(data);
     },
     onError: (err, key, config) => {
-      console.log(parent);
-    }
+      setParent(null);
+    },
   });
 
   if (isLoading || isLoadingChildren || isLoadingParent) {
@@ -52,27 +57,38 @@ const MessageDetail = () => {
       />
     </Head>
     <main>
-      <Container>
-      {parent && 
-        <Box my="3" bg={bg} rounded='lg' p="4">
+      <Container w='100%'>
+        {parent &&
+        <>
+        <Text align="center" fontSize='xl' pt="4">Parent</Text>
+          <Box my="3" bg={bg} rounded='lg' pb="4" px="4">
             <MessageTableEntry item={parent} idx={1} />
           </Box>
+          </>
         }
         {message &&
-          <Box my="3" bg={bg} rounded='lg' p="4">
+        <>
+        <Text align="center" fontSize='xl'>Message</Text>
+          <Box my="3" bg={bg} rounded='lg'pb="4" px="4">
             <MessageTableEntry item={message} idx={1} />
           </Box>
+          </>
         }
-          </Container>
-          {children && Array.isArray(children) &&
-          <HStack spacing={8} alignItems="start">
-            {children.map((item, idx) =>
-              <Box bg={bg} rounded='lg' flex="1" p="4">
-                <MessageTableEntry item={item} idx={idx * 2} />
-              </Box>
+      </Container>
+      {children && Array.isArray(children) &&
+      <>
+      <Text align="center" fontSize='xl'>Children</Text>
+        <HStack spacing={8} alignItems="start" justifyContent="center">
+          {children.map((item, idx) =>
+          <Box maxWidth="container.sm" flex="1" px="6">
+            <Box my="3" bg={bg} rounded='lg' pb="4" px="6" >
+              <MessageTableEntry item={item} idx={idx * 2} key={idx} />
+            </Box>
+          </Box>
           )}
-          </HStack>
-          }
+        </HStack>
+        </>
+      }
     </main>
   </>
 }
