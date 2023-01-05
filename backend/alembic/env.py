@@ -1,4 +1,3 @@
-@@ -1,49 +1,34 @@
 import logging
 from alembic import context
 from oasst_backend import models  # noqa: F401
