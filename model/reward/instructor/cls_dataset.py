@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 
     classification based ranking
@@ -15,7 +16,6 @@ from .utils import webgpt_return_format
 
 class WebGPTDataset(Dataset):
     def __init__(self, mode="train", index_cache="dataset/webgpt_train_idx.pt", additional_dataset=None) -> None:
-        super().__init__()
         """
             mode : train or val, used for validation purpose, has nothing to do with original split
             additional_dataset : a list of jsonline format with idx, question and texts (generate candidates)
@@ -23,6 +23,8 @@ class WebGPTDataset(Dataset):
                 question : for validation purpose
                 texts : list of K generate results from the question prompt
         """
+        super().__init__()
+        
         os.makedirs("dataset", exist_ok=True)
         dataset = load_dataset("openai/webgpt_comparisons")
         self.dataset_index = []

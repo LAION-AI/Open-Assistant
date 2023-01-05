@@ -5,18 +5,31 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 import evaluate
 import numpy as np
 import torch
-from models import RankGenModel
-from rank_datasets import DataCollatorForPairRank, HFSummary, RankGenCollator, WebGPT
+
 from torch import nn
 from torch.utils.data import ConcatDataset
-from transformers import AutoModelForSequenceClassification, Trainer, TrainingArguments
-from utils import argument_parsing, freeze_top_n_layers, get_tokenizer, train_val_dataset
+from transformers import Trainer
+
+try:
+    from .rank_datasets import DataCollatorForPairRank, HFSummary, WebGPT
+    from .utils import (
+        argument_parsing, 
+        get_tokenizer, 
+        train_val_dataset,
+        load_model)
+except ImportError:
+    from rank_datasets import DataCollatorForPairRank, HFSummary, WebGPT
+    from utils import (
+        argument_parsing, 
+        get_tokenizer, 
+        train_val_dataset,
+        load_model)
 
 os.environ["WANDB_PROJECT"] = "reward-model"
 
 accuracy = evaluate.load("accuracy")
-parser = ArgumentParser()
-parser.add_argument("config", type=str)
+PARSER = ArgumentParser()
+PARSER.add_argument("config", type=str)
 
 
 def compute_metrics(eval_pred):
@@ -32,60 +45,31 @@ class RankLoss(nn.Module):
         self.log_sigmoid = nn.LogSigmoid()
 
     def forward(self, pos, neg):
-        loss = -self.log_sigmoid(pos - neg + self.eps).mean()
-        return loss
+        return -self.log_sigmoid(pos - neg + self.eps).mean()
 
 
 class RankTrainer(Trainer):
-    def __init__(
-        self,
-        model: Union[PreTrainedModel, nn.Module] = None,
-        model_name: str = None,
-        args: Optional[TrainingArguments] = None,
-        data_collator: Optional[DataCollator] = None,
-        train_dataset: Optional[Dataset] = None,
-        eval_dataset: Optional[Dataset] = None,
-        tokenizer: Optional[PreTrainedTokenizerBase] = None,
-        model_init: Callable[[], PreTrainedModel] = None,
-        compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
-        callbacks: Optional[List[TrainerCallback]] = None,
-        optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = (None, None),
-        preprocess_logits_for_metrics: Callable[[torch.Tensor, torch.Tensor], torch.Tensor] = None,
-    ):
-        super().__init__(
-            model,
-            args,
-            data_collator,
-            train_dataset,
-            eval_dataset,
-            tokenizer,
-            model_init,
-            compute_metrics,
-            callbacks,
-            optimizers,
-            preprocess_logits_for_metrics,
-        )
-        self.loss_fct = RankLoss() if args.loss_function == "rank" else nn.CrossEntropyLoss()
-        self.loss_function = args.loss_function
-        self.model_name = model_name
+    def __init__(self, 
+            loss_function: Optional[Literal["rank"]] = None, 
+            *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.loss_fct = nn.CrossEntropyLoss()
+        self.loss_function = None
+        if loss_function == "rank":
+            self.loss_fct = RankLoss()
+            self.loss_function = loss_function
 
     def compute_loss(self, model, inputs, return_outputs=False):
         # forward pass
-        if "rankgen" in self.model_name:
-            positive_outputs = model(inputs["prefix"], inputs["positive"])
-            negative_outputs = model(inputs["prefix"], inputs["negative"])
-            if self.loss_function == "rank":
-                loss = self.loss_fct(positive_outputs, negative_outputs)
-            else:
-                raise NotImplementedError("Only ranking loss has been implemented for rankgen model")
-            outputs = torch.hstack((positive_outputs, negative_outputs))  # logits
+        outputs = model(**inputs)
+        logits = outputs.get("logits").view(-1, 2)
+        if self.loss_function == "rank":
+            loss = self.loss_fct(logits[:, 0], logits[:, 1])
         else:
-            outputs = model(**inputs)
-            logits = outputs.get("logits").view(-1, 2)
-            if self.loss_function == "rank":
-                loss = self.loss_fct(logits[:, 0], logits[:, 1])
-            else:
-                loss = self.loss_fct(logits, torch.zeros(logits.shape[0], device=logits.device, dtype=torch.long))
+            loss = self.loss_fct(logits, 
+                torch.zeros(logits.shape[0], 
+                    device=logits.device, 
+                    dtype=torch.long))
 
         return (loss, outputs) if return_outputs else loss
 
@@ -107,64 +91,32 @@ class RankTrainer(Trainer):
         prediction_loss_only: bool,
         ignore_keys: Optional[List[str]] = None,
     ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
-        with torch.inference_mode():
-            if "rankgen" in self.model_name:
-                inputs = self._prepare_inputs(inputs)
-                positive_outputs = model(inputs["prefix"], inputs["positive"])
-                negative_outputs = model(inputs["prefix"], inputs["negative"])
-                if self.loss_function == "rank":
-                    loss = self.loss_fct(positive_outputs, negative_outputs)
-                else:
-                    raise NotImplementedError("Only ranking loss has been implemented for rankgen model")
-                outputs = torch.hstack((positive_outputs, negative_outputs))  # logits
-                return (loss, outputs, None)
-            else:
-                # compute loss on predict data
-                loss, logits = self._compute_loss(model, inputs)
 
-                loss = loss.mean().detach()
-                labels = torch.zeros(logits.shape[0], device=logits.device, dtype=torch.long)
-                if self.args.prediction_loss_only:
-                    return (loss, None, None)
+        with torch.no_grad():
+            # compute loss on predict data
+            loss, logits = self._compute_loss(model, inputs)
 
-                return (loss, logits, labels)
+        loss = loss.mean().detach()
+        labels = torch.zeros(logits.shape[0], device=logits.device, dtype=torch.long)
+        if self.args.prediction_loss_only:
+            return (loss, None, None)
+
+        return (loss, logits, labels)
 
 
-if __name__ == "__main__":
-    training_conf = argument_parsing(parser)
+def run_trainer(config_path: str):
+    """
+    Runs the trainer.
+    
+    @param config_path: Path to the config file.
+    """
 
-    model_name = training_conf["model_name"]
-    if "rankgen-t5" in model_name:
-        model = RankGenModel(model_name)
-    else:
-        model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=1, problem_type="regression")
-    if "freeze_layer" in training_conf:
-        num_layer = training_conf["freeze_layer"]
-        model = freeze_top_n_layers(model, num_layer)
-        model_parameters = filter(lambda p: p.requires_grad, model.parameters())
-        params = sum([np.prod(p.size()) for p in model_parameters])
-        print("Number of trainable : {}M".format(int(params / 1e6)))
+    training_conf, training_args = argument_parsing(config_path)
 
-    args = CustomTrainingArguments(
-        output_dir=f"{model_name}-finetuned",
-        num_train_epochs=training_conf["num_train_epochs"],
-        warmup_steps=500,
-        learning_rate=training_conf["learning_rate"],
-        # half_precision_backend="apex",
-        fp16=training_conf["fp16"],
-        gradient_checkpointing=training_conf["gradient_checkpointing"],
-        gradient_accumulation_steps=training_conf["gradient_accumulation_steps"],
-        per_device_train_batch_size=training_conf["per_device_train_batch_size"],
-        per_device_eval_batch_size=training_conf["per_device_eval_batch_size"],
-        weight_decay=0.01,
-        max_grad_norm=2.0,
-        logging_steps=10,
-        save_total_limit=4,
-        evaluation_strategy="steps",
-        eval_steps=training_conf["eval_steps"],
-        save_steps=1000,
-        report_to="local",
-    )
+    model = load_model(training_conf)
+
+    tokenizer = get_tokenizer(training_conf["model_name"])
+
     train_datasets, evals = [], {}
     if "webgpt" in training_conf["datasets"]:
         web_dataset = WebGPT()
@@ -178,23 +130,26 @@ if __name__ == "__main__":
         assert len(sum_eval) > 0
         evals["hfsummary"] = sum_eval
     train = ConcatDataset(train_datasets)
-
-    tokenizer = get_tokenizer(training_conf["tokenizer_name"])
-
-    if "rankgen" in model_name:
-        collate_fn = RankGenCollator(tokenizer, max_length=training_conf["max_length"])
-    else:
-        collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf["max_length"])
-    assert len(evals) > 0
-    trainer = RankTrainer(
-        model=model,
-        model_name=model_name,
-        args=args,
-        train_dataset=train,
-        eval_dataset=eval,
-        data_collator=collate_fn,
-        tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
+    collate_fn = DataCollatorForPairRank(
+        tokenizer, max_length=training_conf["max_length"], 
+        drop_token_type="galactica" in training_conf["model_name"]
     )
-    # trainer.evaluate()
+    assert len(evals) > 0
+
+    trainer = RankTrainer(
+        loss_function=training_conf["loss"],
+        **dict(
+            train_dataset=train,
+            args=training_args,
+            eval_dataset=evals,
+            data_collator=collate_fn,
+            tokenizer=tokenizer,
+            compute_metrics=compute_metrics,
+            model=model),
+    )
     trainer.train()
+
+
+if __name__ == "__main__":
+    args = PARSER.parse_args()
+    run_trainer(args.config)

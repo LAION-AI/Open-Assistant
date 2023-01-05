@@ -1,0 +1,13 @@
+model_name: facebook/opt-125m
+learning_rate: 1e-5
+gradient_checkpointing: false
+gradient_accumulation_steps: 32
+per_device_train_batch_size: 2
+warmup_steps: 600
+eval_steps: 200
+save_steps: 500
+max_length: 512
+num_train_epochs: 2
+datasets:
+  - webgpt
+  - hfsummary

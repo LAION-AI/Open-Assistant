@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
     HFSummary
 
@@ -60,7 +61,7 @@ class HFSummaryQuality(Dataset):
     def __init__(self, split, tokenizer, max_length=300) -> None:
         super().__init__()
         assert split in ("validation", "test")
-        dataset = load_dataset("openai/summarize_from_feedback", "axis")[split]
+        dataset = load_dataset("Tristan/summarize_from_feedback", "axis")[split]
         self.max_length = max_length
         mean_scores = defaultdict(list)
         self.contexts = []
