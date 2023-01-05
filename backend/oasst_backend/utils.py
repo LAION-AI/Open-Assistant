@@ -6,4 +6,5 @@ def get_detoxify_classification(inputs, hf_token):
     headers = {"Authorization": f"Bearer {hf_token}"}
     payload = {"inputs": inputs}
     response = requests.post(API_URL, headers=headers, json=payload)
+    response.raise_for_status()
     return response.json()
