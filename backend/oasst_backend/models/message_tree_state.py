@@ -16,6 +16,7 @@ FINAL = "final"
 
 VALID_STATES = (INITIAL, BREEDING_PHASE, RANKING_PHASE, READY_FOR_SCORING, CHILDREN_SCORED, FINAL)
 
+
 class MessageTreeState(SQLModel, table=True):
     __tablename__ = "message_tree_state"
     __table_args__ = (Index("ix_message_tree_state_tree_id", "message_tree_id", unique=True),)
