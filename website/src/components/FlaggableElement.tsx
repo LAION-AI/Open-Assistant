@@ -15,6 +15,7 @@ import {
   SliderThumb,
   SliderTrack,
   Spacer,
+  Tooltip,
   useBoolean,
   useId,
 } from "@chakra-ui/react";
@@ -69,11 +70,15 @@ export const FlaggableElement = (props) => {
     >
       <Grid templateColumns="1fr min-content" gap={2}>
         <PopoverAnchor>{props.children}</PopoverAnchor>
-        <PopoverTrigger>
-          <Button h="full">
-            <FlagIcon className="w-4 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
-          </Button>
-        </PopoverTrigger>
+        <Tooltip hasArrow label="Report" bg="red.600">
+          <div>
+            <PopoverTrigger>
+              <Button h="full">
+                <FlagIcon className="w-4 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+              </Button>
+            </PopoverTrigger>
+          </div>
+        </Tooltip>
       </Grid>
 
       <PopoverContent width="fit-content">

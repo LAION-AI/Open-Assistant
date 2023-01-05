@@ -33,6 +33,6 @@ Experimental results in wandb
 ## TODOS
 
 - decide on a model
-- add special token to declare prompt and reply. Do nto freeze the weights for
-  these
 - Merge utils etc with reward model
+- Casual Modelling for GPT-JT does not leverage the bidirectional mask for the
+  prompt? (https://huggingface.co/togethercomputer/GPT-JT-6B-v1)
