@@ -23,6 +23,27 @@ describe("Contract test for Oasst API", function () {
     expect(await oasstApiClient.ackTask(task.id, "321")).to.be.null;
   });
 
+  it("can record a taskInteraction", async () => {
+    const task = await oasstApiClient.fetchTask("random", {
+      sub: "test",
+      name: "test",
+      email: "test",
+    });
+    expect(
+      await oasstApiClient.interactTask(
+        "text_reply_to_message",
+        task.id,
+        "1",
+        { text: "Test" },
+        {
+          sub: "test",
+          name: "test",
+          email: "test",
+        }
+      )
+    ).to.be.not.null;
+  });
+
   // TODO(#354): Add test for 204
   // TODO(#354): Add test for parsing >=300, throwing an OasstError
   // TODO(#354): Add test for parsing >=300, throwing a generic error
