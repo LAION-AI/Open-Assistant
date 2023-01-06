@@ -10,6 +10,11 @@
         state: present
         driver: bridge
 
+    - name: Copy redis.conf to managed node
+      ansible.builtin.copy:
+        src: ./redis.conf
+        dest: ./redis.conf
+
     - name: Set up Redis
       community.docker.docker_container:
         name: oasst-redis
