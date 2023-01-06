@@ -171,7 +171,7 @@ def get_model(model_name, cache_dir, quantization):
     if quantization is None:
         model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir)
     elif quantization == "8bit":
-        print("Loading 8-bit model")
+        raise ValueError("Loading 8-bit model. Bitsandbytes does not behave so far...")
         transformers.models.gptj.modeling_gptj.GPTJBlock = GPTJBlock
         model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir)
         add_adapters(model)
