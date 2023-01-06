@@ -1,6 +1,5 @@
-import { Textarea } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Messages } from "src/components/Messages";
 import { TaskControls } from "src/components/Survey/TaskControls";

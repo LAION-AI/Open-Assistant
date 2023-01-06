@@ -1,6 +1,6 @@
-import { Container, Textarea } from "@chakra-ui/react";
+import { Container } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
@@ -63,8 +63,6 @@ const InitialPrompt = () => {
   if (tasks.length == 0) {
     return <Container className="p-6 text-center text-gray-800">No tasks found...</Container>;
   }
-
-  const task = tasks[0].task;
 
   return (
     <div className={`p-12 ${mainBgClasses}`}>
