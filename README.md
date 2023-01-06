@@ -47,6 +47,20 @@ website, backend, and associated dependent services.
 docker compose up --build
 ```
 
+<details>
+  <summary>If you are getting `unknown flag: --build` error. Upgrade docker compose using this script.</summary>
+   DOCKER_CONFIG=${DOCKER_CONFIG:/usr/local/lib/docker}
+   mkdir -p $DOCKER_CONFIG/cli-plugins
+   curl -SL https://github.com/docker/compose/releases/download/v2.15.0/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
+   chmod +x $DOCKER_CONFIG/docker-compose
+   sudo chmod +x $DOCKER_CONFIG/docker-compose
+   sudo cp $DOCKER_CONFIG/docker-compose $DOCKER_CONFIG compose
+   chmod +x $DOCKER_CONFIG/compose
+   sudo chmod +x $DOCKER_CONFIG/compose
+   sudo docker compose version
+</details>
+.
+
 Then, navigate to `http://localhost:3000` (It may take some time to boot up) and
 interact with the website.
 
