@@ -8,7 +8,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 const config = {
   title: "Open Assistant",
   tagline: "Build the assistant of the future!",
-  url: "https://andrewm4894.github.io",
+  url: "https://LAION-AI.github.io",
   trailingSlash: false,
   baseUrl: "/Open-Assistant/",
   onBrokenLinks: "throw",
@@ -18,7 +18,7 @@ const config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "andrewm4894", // Usually your GitHub org/user name.
+  organizationName: "LAION-AI", // Usually your GitHub org/user name.
   projectName: "Open-Assistant", // Usually your repo name.
   deploymentBranch: "docs-site-poc",
 
