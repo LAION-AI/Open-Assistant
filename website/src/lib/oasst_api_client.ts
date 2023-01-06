@@ -1,6 +1,6 @@
 import { JWT } from "next-auth/jwt";
 
-class OasstError {
+export class OasstError {
   message: string;
   errorCode: number;
   httpStatusCode: number;
@@ -31,12 +31,13 @@ export default class OasstApiClient {
 
     if (resp.status >= 300) {
       const errorText = await resp.text();
+      let error: any;
       try {
-        const error = JSON.parse(errorText);
-        throw new OasstError(error.message, error.error_code, resp.status);
+        error = JSON.parse(errorText);
       } catch (e) {
         throw new OasstError(errorText, 0, resp.status);
       }
+      throw new OasstError(error.message, error.error_code, resp.status);
     }
 
     return await resp.json();
