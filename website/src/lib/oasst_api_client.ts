@@ -5,7 +5,7 @@ declare global {
   var oasstApiClient: OasstApiClient | undefined;
 }
 
-class OasstError {
+export class OasstError {
   message: string;
   errorCode: number;
   httpStatusCode: number;
