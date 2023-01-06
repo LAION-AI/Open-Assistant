@@ -11,8 +11,8 @@ const handler = async (req, res) => {
 
   const { id } = req.query;
 
-  if(!id){
-    res.status(400).end()
+  if (!id) {
+    res.status(400).end();
     return;
   }
 
@@ -26,7 +26,7 @@ const handler = async (req, res) => {
 
   const message = await messageRes.json();
 
-  if(!message.parent_id){
+  if (!message.parent_id) {
     res.status(404).end();
     return;
   }

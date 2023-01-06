@@ -11,8 +11,8 @@ import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 
 const MessageDetail = () => {
   const bg = useColorModeValue("white", colors.dark.bg);
-  const router = useRouter()
-  const { id } = router.query
+  const router = useRouter();
+  const { id } = router.query;
 
   /** State arrays of messages */
   const [message, setMessage] = useState(null);
@@ -48,49 +48,57 @@ const MessageDetail = () => {
   if (isLoading || isLoadingChildren || isLoadingParent) {
     return <LoadingScreen text="Loading..." />;
   }
-  return <>
-    <Head>
-      <title>Open Assistant</title>
-      <meta
-        name="description"
-        content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
-      />
-    </Head>
-    <main>
-      <Container w='100%'>
-        {parent &&
-        <>
-        <Text align="center" fontSize='xl' pt="4">Parent</Text>
-          <Box my="3" bg={bg} rounded='lg' pb="4" px="4">
-            <MessageTableEntry item={parent} idx={1} />
-          </Box>
-          </>
-        }
-        {message &&
-        <>
-        <Text align="center" fontSize='xl'>Message</Text>
-          <Box my="3" bg={bg} rounded='lg'pb="4" px="4">
-            <MessageTableEntry item={message} idx={1} />
-          </Box>
-          </>
-        }
-      </Container>
-      {children && Array.isArray(children) && children.length > 0 &&
-      <>
-      <Text align="center" fontSize='xl'>Children</Text>
-        <HStack spacing={8} alignItems="start" justifyContent="center">
-          {children.map((item, idx) =>
-          <Box maxWidth="container.sm" flex="1" px="6" key={idx} >
-            <Box my="3" bg={bg} rounded='lg' pb="4" px="6" >
-              <MessageTableEntry item={item} idx={idx * 2} />
-            </Box>
-          </Box>
+  return (
+    <>
+      <Head>
+        <title>Open Assistant</title>
+        <meta
+          name="description"
+          content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
+        />
+      </Head>
+      <main>
+        <Container w="100%">
+          {parent && (
+            <>
+              <Text align="center" fontSize="xl" pt="4">
+                Parent
+              </Text>
+              <Box my="3" bg={bg} rounded="lg" pb="4" px="4">
+                <MessageTableEntry item={parent} idx={1} />
+              </Box>
+            </>
           )}
-        </HStack>
-        </>
-      }
-    </main>
-  </>
-}
+          {message && (
+            <>
+              <Text align="center" fontSize="xl">
+                Message
+              </Text>
+              <Box my="3" bg={bg} rounded="lg" pb="4" px="4">
+                <MessageTableEntry item={message} idx={1} />
+              </Box>
+            </>
+          )}
+        </Container>
+        {children && Array.isArray(children) && children.length > 0 && (
+          <>
+            <Text align="center" fontSize="xl">
+              Children
+            </Text>
+            <HStack spacing={8} alignItems="start" justifyContent="center">
+              {children.map((item, idx) => (
+                <Box maxWidth="container.sm" flex="1" px="6" key={idx}>
+                  <Box my="3" bg={bg} rounded="lg" pb="4" px="6">
+                    <MessageTableEntry item={item} idx={idx * 2} />
+                  </Box>
+                </Box>
+              ))}
+            </HStack>
+          </>
+        )}
+      </main>
+    </>
+  );
+};
 
 export default MessageDetail;
