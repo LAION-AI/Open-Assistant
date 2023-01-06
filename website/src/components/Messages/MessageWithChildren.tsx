@@ -60,13 +60,8 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
         renderRecursive ? (
           <HStack spacing={8} alignItems="start" justifyContent="center">
             {children.map((item, idx) => (
-              <Box flex="1">
-                <MessageWithChildren
-                  id={item.id}
-                  depth={depth ? depth + 1 : 1}
-                  maxDepth={maxDepth}
-                  key={`recursiveMessageWChildren_${idx}`}
-                />
+              <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
+                <MessageWithChildren id={item.id} depth={depth ? depth + 1 : 1} maxDepth={maxDepth} />
               </Box>
             ))}
           </HStack>
