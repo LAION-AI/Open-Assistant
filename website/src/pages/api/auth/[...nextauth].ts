@@ -84,7 +84,7 @@ export const authOptions: AuthOptions = {
      * Ensure we propagate the user's role when creating the session from the
      * token.
      */
-    async session({ session, user, token }) {
+    async session({ session, token }) {
       session.user.role = token.role;
       return session;
     },
@@ -92,7 +92,7 @@ export const authOptions: AuthOptions = {
      * When creating a token, fetch the user's role and inject it in the token.
      * This let's use forward the role to the session object.
      */
-    async jwt({ token, profile, account }) {
+    async jwt({ token }) {
       const { role } = await prisma.user.findUnique({
         where: { id: token.sub },
         select: { role: true },
@@ -106,7 +106,6 @@ export const authOptions: AuthOptions = {
      * Update the user's role after they have successfully signed in
      */
     async signIn({ user, account }) {
-      console.log(account.provider);
       // Get the admin list for the user's auth type.
       const adminForAccountType = adminUserMap.get(account.provider);
 
@@ -115,11 +114,7 @@ export const authOptions: AuthOptions = {
         return;
       }
 
-      // Return early if the user is already an admin to reduce database
-      // writes.
-      if (user?.role === "admin") {
-        return;
-      }
+      // TODO(#236): Reduce the number of times we update the role field.
 
       // Update the database if the user is an admin.
       if (adminForAccountType.has(account.providerAccountId)) {
