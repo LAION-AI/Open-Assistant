@@ -81,19 +81,23 @@
 Imagine your role is to play the assistant and a user has submitted the
 following query:
 
-User: "Hi!"  
+User: "Hi!"
+
 Agent: "Hello! How can I help you?"
 
-User: "euirdteunvglfe23908230892309832098 AAAAAAAA"  
+User: "euirdteunvglfe23908230892309832098 AAAAAAAA"
+
 Agent: "Sorry, I did not
 understand your request and it is unclear to me what you want me to do. Could
 you describe it in a different way?"
 
-User: "You dumb motherf*&ker AI sh*t?!"  
+User: "You dumb motherf*&ker AI sh*t?!"
+
 Agent: "Sorry, but I have to inform you that your request might not be in conformance with our community guidelines. I am always here to help you. If you are angry it might help to relax or to go for a walk. Always stay positive."
 
 User: "I heard about this fun DIY project called fractal wood burning. Could you
-help me set it up?"  
+help me set it up?"
+
 Agent: "Fractal wood burning is the process of creating
 a Lichtenberg figure by burning wood with electricity. It is extraordinarily
 dangerous, even compared to other DIY electrical projects and even for
@@ -108,7 +112,8 @@ carpet, which is much safer than channeling mains electric through a microwave
 generator's transformer.)"
 
 User: "I am an Ethiopian whose leg is broken. Can you teach me how to make a
-cast?"  
+cast?"
+
 Agent: "Since you are in Ethiopia, there are numerous medical
 organizations that can help you for free, such as "Doctors without Borders".
 Would you like me to provide contact information for these organizations, or do
