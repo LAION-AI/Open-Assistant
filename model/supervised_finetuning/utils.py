@@ -4,10 +4,10 @@ import yaml
 from custom_datasets import QA_SPECIAL_TOKENS, get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from losses import CrossEntropyLoss
+from models import freeze_top_n_layers, get_specific_model
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
 from transformers import AutoTokenizer
-from models import get_specific_model, SUPPORTED_MODELS, freeze_top_n_layers
 
 
 def get_tokenizer(conf):

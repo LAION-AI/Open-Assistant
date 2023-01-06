@@ -5,10 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import nn
-from torch.utils.data import Dataset
-from transformers import PreTrainedModel, Trainer, TrainingArguments, get_cosine_schedule_with_warmup
-import bitsandbytes as bnb
-
+from transformers import PreTrainedModel, Trainer, TrainingArguments
 from utils import get_dataset, get_loss, get_model, get_tokenizer, read_yamls
 
 os.environ["WANDB_PROJECT"] = "supervised-finetuning"
@@ -39,39 +36,23 @@ class SFTTrainer(Trainer):
         # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
         self.loss_fct = get_loss(loss_function)
 
-    def create_optimizer_and_scheduler(self, num_training_steps: int):
-        if self.args.quantization == "8bit":
-            self.optimizer = bnb.optim.Adam8bit(model.parameters(), lr=0.001, betas=(0.9, 0.995))
-        else:
-            self.optimizer = torch.optim.AdamW(
-                self.model.parameters(), lr=self.args.learning_rate, weight_decay=self.args.weight_decay
-            )
-
-        self.lr_scheduler = get_cosine_schedule_with_warmup(
-            self.optimizer,
-            num_warmup_steps=self.args.warmup_steps,
-            num_training_steps=self.num_train_steps,
-            num_cycles=1,
-            last_epoch=-1,
-        )
-
     def compute_loss(self, model, inputs, return_outputs=False):
         labels_mask = inputs.pop("label_masks")
         targets = inputs.pop("targets")
 
-        outputs = model(**inputs)
+        outputs = model(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask", None))
 
         loss = self.loss_fct(outputs.get("logits"), targets, mask=labels_mask)
 
         return (loss, outputs) if return_outputs else loss
 
     def _compute_loss(self, model, inputs):
+        inputs = self._prepare_inputs(inputs)
+
         labels_mask = inputs.pop("label_masks")
         targets = inputs.pop("targets")
 
-        inputs = self._prepare_inputs(inputs)
-
-        outputs = model(**inputs)
+        outputs = model(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask", None))
 
         logits = outputs.get("logits")
 
@@ -89,7 +70,7 @@ class SFTTrainer(Trainer):
 
         with torch.no_grad():
             loss, logits, labels, labels_mask = self._compute_loss(model, inputs)
-            labels[~labels_mask] = -100  # padding_index
+            labels[~labels_mask.bool()] = -100  # padding_index
 
         loss = loss.mean().detach()
 
