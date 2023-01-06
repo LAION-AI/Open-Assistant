@@ -1,5 +1,6 @@
 import { Button } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
+import { DragOverlay } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { PropsWithChildren } from "react";
@@ -21,15 +22,17 @@ export const SortableItem = ({ children, id }: PropsWithChildren<{ id: number }>
       : "bg-black hover:bg-slate-900 text-white ring-1 ring-white/30 ring-inset hover:ring-slate-200/50";
 
   return (
-    <li
-      className={`grid grid-cols-[min-content_1fr] items-center rounded-lg shadow-md gap-x-2 p-2 ${themedClasses}`}
-      ref={setNodeRef}
-      style={style}
-    >
-      <Button justifyContent="center" variant="ghost" {...attributes} {...listeners}>
-        <RxDragHandleDots2 />
-      </Button>
-      {children}
-    </li>
+      <li
+        className={`grid grid-cols-[min-content_1fr] items-center rounded-lg shadow-md gap-x-2 p-2 ${themedClasses}`}
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+      >
+        <Button justifyContent="center" variant="ghost" {...attributes} {...listeners}>
+          <RxDragHandleDots2 />
+        </Button>
+        {children}
+      </li>
   );
 };
