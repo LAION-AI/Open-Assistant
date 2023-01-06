@@ -22,8 +22,12 @@ def prepare_conversation(messages: list[Message]) -> protocol.Conversation:
     conv_messages = []
     for message in messages:
         conv_messages.append(
-            protocol.ConversationMessage(text=message.payload.payload.text,
-            is_assistant=(message.role == "assistant"), message_id=message.id, frontend_message_id=message.frontend_id)
+            protocol.ConversationMessage(
+                text=message.payload.payload.text,
+                is_assistant=(message.role == "assistant"),
+                message_id=message.id,
+                frontend_message_id=message.frontend_id,
+            )
         )
 
     return protocol.Conversation(messages=conv_messages)
