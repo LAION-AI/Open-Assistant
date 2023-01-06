@@ -8,6 +8,10 @@ devcontainer (either
 or in your browser via
 [GitHub Codespaces](https://github.com/features/codespaces)).
 
+**Note**: If you want to chose a specific .devcontainer within GitHub codespaces
+select "New with options" and you will be able to select any of the pre-defined
+devcontainers in this repo.
+
 ### Run pre-commit
 
 ```bash
