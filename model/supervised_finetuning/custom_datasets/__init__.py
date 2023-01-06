@@ -2,6 +2,8 @@ from datasets import load_dataset
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 
+from .prompt_dialogue import PromptGeneratedDataset
+
 QA_SPECIAL_TOKENS = {"Question": "<question>", "Answer": "<answer>"}
 
 
@@ -62,6 +64,9 @@ def get_one_dataset(conf, dataset_name):
         eval = SquadV2Dataset(conf.cache_dir, "validation")
     elif dataset_name == "webgpt":
         dataset = WebGPT()
+        train, eval = train_val_dataset(dataset, val_split=0.2)
+    elif dataset_name == "prompt_dialogue":
+        dataset = PromptGeneratedDataset()
         train, eval = train_val_dataset(dataset, val_split=0.2)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
