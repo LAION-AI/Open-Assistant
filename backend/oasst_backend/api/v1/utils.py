@@ -29,8 +29,12 @@ def prepare_conversation(messages: list[Message]) -> protocol.Conversation:
         if not isinstance(message.payload.payload, MessagePayload):
             raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
         conv_messages.append(
-            protocol.ConversationMessage(text=message.payload.payload.text,
-            is_assistant=(message.role == "assistant"), message_id=message.id, frontend_message_id=message.frontend_id)
+            protocol.ConversationMessage(
+                text=message.payload.payload.text,
+                is_assistant=(message.role == "assistant"),
+                message_id=message.id,
+                frontend_message_id=message.frontend_id,
+            )
         )
 
     return protocol.Conversation(messages=conv_messages)
