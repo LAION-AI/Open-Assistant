@@ -12,6 +12,7 @@ export const SortableItem = ({ children, id }: PropsWithChildren<{ id: number }>
     transform: CSS.Transform.toString(transform),
     transition,
     touchAction: "none",
+    cursor: "grab",
   };
 
   const { colorMode } = useColorMode();
@@ -25,7 +26,6 @@ export const SortableItem = ({ children, id }: PropsWithChildren<{ id: number }>
       className={`grid grid-cols-[min-content_1fr] items-center rounded-lg shadow-md gap-x-2 p-2 ${themedClasses}`}
       ref={setNodeRef}
       style={style}
-      {...attributes}
       {...listeners}
     >
       <Button justifyContent="center" variant="ghost" {...attributes} {...listeners}>
