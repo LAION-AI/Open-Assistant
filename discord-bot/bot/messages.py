@@ -33,6 +33,10 @@ def _ranking_prompt(text: str) -> str:
     return f":trophy: _{text}_"
 
 
+def _label_prompt(text: str) -> str:
+    return f":question: _{text}"
+
+
 def _response_prompt(text: str) -> str:
     return f":speech_balloon: _{text}_"
 
@@ -129,6 +133,49 @@ def rank_assistant_reply_message(task: protocol_schema.RankAssistantRepliesTask)
 """
 
 
+def label_initial_prompt_message(task: protocol_schema.LabelInitialPromptTask) -> str:
+    """Creates the message that gets sent to users when they request a `label_initial_prompt` task."""
+    return f"""\
+
+{_h1("LABEL INITIAL PROMPT")}
+
+
+{task.prompt}
+
+{_label_prompt("Reply with labels for the prompt separated by commas (example: 'profanity,misleading')")}
+"""
+
+
+def label_prompter_reply_message(task: protocol_schema.LabelPrompterReplyTask) -> str:
+    """Creates the message that gets sent to users when they request a `label_prompter_reply` task."""
+    return f"""\
+
+{_h1("LABEL PROMPTER REPLY")}
+
+
+{_conversation(task.conversation)}
+{_user(None)}
+{task.reply}
+
+{_label_prompt("Reply with labels for the reply separated by commas (example: 'profanity,misleading')")}
+"""
+
+
+def label_assistant_reply_message(task: protocol_schema.LabelAssistantReplyTask) -> str:
+    """Creates the message that gets sent to users when they request a `label_assistant_reply` task."""
+    return f"""\
+
+{_h1("LABEL ASSISTANT REPLY")}
+
+
+{_conversation(task.conversation)}
+{_assistant(None)}
+{task.reply}
+
+{_label_prompt("Reply with labels for the reply separated by commas (example: 'profanity,misleading')")}
+"""
+
+
 def prompter_reply_message(task: protocol_schema.PrompterReplyTask) -> str:
     """Creates the message that gets sent to users when they request a `prompter_reply` task."""
     return f"""\
@@ -172,6 +219,17 @@ def confirm_ranking_response_message(content: str, items: list[str]) -> str:
 {_h2("CONFIRM RESPONSE")}
 
 {user_ranked_list}
+"""
+
+
+def confirm_label_response_message(content: str) -> str:
+    user_labels = content.lower().replace(" ", "").split(",")
+    user_labels_str = ", ".join(user_labels)
+
+    return f"""\
+{_h2("CONFIRM RESPONSE")}
+
+{user_labels_str}
 """
 
 

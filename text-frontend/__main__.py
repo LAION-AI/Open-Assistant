@@ -203,6 +203,60 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 )
                 tasks.append(new_task)
 
+            case "label_initial_prompt":
+                typer.echo("Label the following prompt:")
+                typer.echo(task["prompt"])
+                # acknowledge task
+                message_id = _random_message_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+
+                valid_labels = task["valid_labels"]
+                labels_str: str = typer.prompt("Enter labels, separated by commas")
+                labels = labels_str.lower().replace(" ", "").split(",")
+                labels_dict = {label: "1" if label in labels else "0" for label in valid_labels}
+
+                # send ranking
+                new_task = _post(
+                    "/api/v1/tasks/interaction",
+                    {
+                        "type": "text_labels",
+                        "message_id": task["message_id"],
+                        "text": task["prompt"],
+                        "labels": labels_dict,
+                        "user": USER,
+                    },
+                )
+                tasks.append(new_task)
+
+            case "label_prompter_reply" | "label_assistant_reply":
+                typer.echo("Here is the conversation so far:")
+                for message in task["conversation"]["messages"]:
+                    typer.echo(_render_message(message))
+
+                typer.echo("Label the following reply:")
+                typer.echo(task["reply"])
+                # acknowledge task
+                message_id = _random_message_id()
+                _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
+
+                valid_labels = task["valid_labels"]
+                labels_str: str = typer.prompt("Enter labels, separated by commas")
+                labels = labels_str.lower().replace(" ", "").split(",")
+                labels_dict = {label: "1" if label in labels else "0" for label in valid_labels}
+
+                # send ranking
+                new_task = _post(
+                    "/api/v1/tasks/interaction",
+                    {
+                        "type": "text_labels",
+                        "message_id": task["message_id"],
+                        "text": task["prompt"],
+                        "labels": labels_dict,
+                        "user": USER,
+                    },
+                )
+                tasks.append(new_task)
+
             case "task_done":
                 typer.echo("Task done!")
             case _:
