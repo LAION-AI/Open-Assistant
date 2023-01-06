@@ -81,6 +81,7 @@ class DialogueDataCollator:
 
         batch["label_masks"] = torch.stack([F.pad(torch.tensor(x), (0, dim - len(x))) for x in label_masks])
 
+        # why the fuck?
         for k in list(batch.keys()):
             if k not in ["input_ids", "attention_mask", "label_masks"]:
                 batch.pop(k)

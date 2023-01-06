@@ -8,14 +8,16 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-SUPPORTED_MODELS = ["galactica", "GPT-JT"]  # deprecated ..
-
 
 def get_tokenizer(conf):
     tokenizer = AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
 
     if "galactica" in conf.model_name:
         tokenizer.add_special_tokens({"pad_token": "<pad>", "eos_token": "</s>"})
+    elif "GPT-JT" in conf.model_name:
+        tokenizer.add_special_tokens({"pad_token": tokenizer.eos_token, "sep_token": "<|extratoken_100|>"})
+    elif "codegen" in conf.model_name:
+        tokenizer.add_special_tokens({"pad_token": "<|endoftext|>", "sep_token": "<|endoftext|>"})
 
     additional_special_tokens = (
         []
@@ -30,11 +32,6 @@ def get_tokenizer(conf):
 
 
 def get_model(conf, tokenizer):
-    if not any([x in conf.model_name for x in SUPPORTED_MODELS]):
-        raise ValueError(
-            f"Model {conf.model_name} not supported. Supported models: {SUPPORTED_MODELS}. "
-            "To include more make sure the masking is dne correctly... (decoder only supported for now)"
-        )
 
     model = AutoModelForCausalLM.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
 
