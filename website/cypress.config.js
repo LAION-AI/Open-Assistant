@@ -21,6 +21,7 @@ export default defineConfig({
       // implement node event listeners here
       getCompareSnapshotsPlugin(on, config);
     },
+    specPattern: "cypress/components/*.cy.tsx"
   },
 
   env: {
