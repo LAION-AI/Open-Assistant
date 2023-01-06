@@ -411,7 +411,7 @@ class PromptRepository:
     def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> TextLabels:
         model = TextLabels(
             api_client_id=self.api_client.id,
-            message_id=UUID(text_labels.message_id),
+            message_id=text_labels.message_id,
             user_id=self.user_id,
             text=text_labels.text,
             labels=text_labels.labels,

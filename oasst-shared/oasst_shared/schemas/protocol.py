@@ -293,7 +293,7 @@ class TextLabels(Interaction):
     type: Literal["text_labels"] = "text_labels"
     text: str
     labels: dict[TextLabel, float]
-    message_id: str
+    message_id: UUID
 
     @property
     def has_message_id(self) -> bool:
