@@ -31,6 +31,8 @@ class ConversationMessage(BaseModel):
 
     text: str
     is_assistant: bool
+    message_id: Optional[str] = None
+    frontend_message_id: Optional[str] = None
 
 
 class Conversation(BaseModel):
