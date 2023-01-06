@@ -9,10 +9,8 @@ import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { MessageWithChildren } from "src/components/Messages/MessageWithChildren";
 
-const MessageDetail = () => {
+const MessageDetail = ({ id }) => {
   const mainBg = useColorModeValue("bg-slate-300", "bg-slate-900");
-  const router = useRouter();
-  const { id } = router.query;
 
   const [parent, setParent] = useState(null);
 
@@ -56,6 +54,11 @@ const MessageDetail = () => {
       </main>
     </>
   );
+};
+
+MessageDetail.getInitialProps = async ({ query }) => {
+  const { id } = query;
+  return { id };
 };
 
 export default MessageDetail;
