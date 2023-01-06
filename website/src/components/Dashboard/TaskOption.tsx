@@ -3,6 +3,12 @@ import Link from "next/link";
 
 const crTasks = [
   {
+    label: "Create Initial Prompts",
+    desc: "Write initial prompts to help Open Assistant to try replying to diverse messages.",
+    type: "create",
+    pathname: "/create/initial_prompt",
+  },
+  {
     label: "Reply as User",
     desc: "Chat with Open Assistant and help improve it’s responses as you interact with it.",
     type: "create",
