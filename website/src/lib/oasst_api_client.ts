@@ -1,6 +1,11 @@
 import { JWT } from "next-auth/jwt";
 
-export class OasstError {
+declare global {
+  // eslint-disable-next-line no-var
+  var oasstApiClient: OasstApiClient | undefined;
+}
+
+class OasstError {
   message: string;
   errorCode: number;
   httpStatusCode: number;
@@ -12,7 +17,7 @@ export class OasstError {
   }
 }
 
-export default class OasstApiClient {
+export class OasstApiClient {
   constructor(private readonly oasstApiUrl: string, private readonly oasstApiKey: string) {}
 
   private async post(path: string, body: any): Promise<any> {
@@ -62,4 +67,33 @@ export default class OasstApiClient {
       message_id: messageId,
     });
   }
+
+  // TODO return a strongly typed Task?
+  // This method is used to record interaction with task while fetching next task.
+  // This is a raw Json type, so we can't use it to strongly type the task.
+  async interactTask(
+    updateType: string,
+    messageId: string,
+    userMessageId: string,
+    content: object,
+    userToken: JWT
+  ): Promise<any> {
+    return this.post("/api/v1/tasks/interaction", {
+      type: updateType,
+      user: {
+        id: userToken.sub,
+        display_name: userToken.name || userToken.email,
+        auth_method: "local",
+      },
+      message_id: messageId,
+      user_message_id: userMessageId,
+      ...content,
+    });
+  }
+}
+
+export const oasstApiClient =
+  globalThis.oasstApiClient || new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
+if (process.env.NODE_ENV !== "production") {
+  globalThis.oasstApiClient = oasstApiClient;
 }

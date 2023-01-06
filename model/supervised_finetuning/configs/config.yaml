@@ -32,6 +32,17 @@ galactica-125:
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
 
+gpt-jt:
+  learning_rate: 2e-6
+  model_name: togethercomputer/GPT-JT-6B-v1
+  weight_decay: 0.01
+  max_length: 1024
+  warmup_steps: 600
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+
 debug:
   eval_steps: 20
   eval_size: 100

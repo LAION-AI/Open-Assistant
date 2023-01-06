@@ -1,7 +1,8 @@
-import { useColorMode } from "@chakra-ui/react";
+import { Text, useColorMode } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
+import { colors } from "styles/Theme/colors";
 
 export function NavLinks(): JSX.Element {
   const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -14,8 +15,8 @@ export function NavLinks(): JSX.Element {
   return (
     <>
       {[
-        ["Join Us", "/#join-us"],
         ["FAQ", "/#faq"],
+        ["Join Us", "/#join-us"],
       ].map(([label, href], index) => (
         <Link
           key={label}
@@ -38,7 +39,9 @@ export function NavLinks(): JSX.Element {
               />
             )}
           </AnimatePresence>
-          <span className="relative z-10">{label}</span>
+          <Text color={colorMode === "light" ? colors.light.text : colors.dark.text} className="relative z-10">
+            {label}
+          </Text>
         </Link>
       ))}
     </>

@@ -1,10 +1,10 @@
 import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
-import { TaskControls } from "src/components/Survey/TaskControls";
+import { TaskControlsOverridable } from "src/components/Survey/TaskControlsOverridable";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
@@ -31,6 +31,12 @@ const RankInitialPrompts = () => {
       setTasks((oldTasks) => [...oldTasks, newTask]);
     },
   });
+
+  useEffect(() => {
+    if (tasks.length == 0) {
+      mutate();
+    }
+  }, [tasks]);
 
   const submitResponse = (task) => {
     trigger({
@@ -79,7 +85,13 @@ const RankInitialPrompts = () => {
           <Sortable items={tasks[0].task.prompts} onChange={setRanking} className="my-8" />
         </SurveyCard>
 
-        <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
+        <TaskControlsOverridable
+          tasks={tasks}
+          isValid={ranking.length == tasks[0].task.prompts.length}
+          prepareForSubmit={() => setRanking(tasks[0].task.prompts.map((_, idx) => idx))}
+          onSubmitResponse={submitResponse}
+          onSkip={fetchNextTask}
+        />
       </div>
     </>
   );
