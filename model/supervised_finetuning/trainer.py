@@ -74,6 +74,7 @@ class SFTTrainer(Trainer):
         self.loss_fct = get_loss(args.loss_function)
 
     def create_optimizer_and_scheduler(self, num_training_steps: int):
+        print("Optimizer")
         if self.args.quantization == "8bit":
             self.optimizer = bnb.optim.Adam8bit(model.parameters(), lr=0.001, betas=(0.9, 0.995))
         else:
@@ -174,40 +175,76 @@ if __name__ == "__main__":
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
 
-    train, evals, collate_fn = get_dataset(training_conf, tokenizer)
-    assert len(evals) > 0
+    ###
+    from datasets import load_dataset
+    from bitsandbytes.optim import Adam8bit
+    from torch.nn import functional as F
+    from tqdm import tqdm
 
-    args = CustomTrainingArguments(
-        output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
-        num_train_epochs=training_conf.num_train_epochs,
-        warmup_steps=training_conf.warmup_steps,
-        loss_function=training_conf.loss_fn,
-        learning_rate=float(training_conf.learning_rate),
-        fp16=True,
-        gradient_checkpointing=training_conf.gradient_checkpointing,
-        gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
-        per_device_train_batch_size=training_conf.per_device_train_batch_size,
-        per_device_eval_batch_size=training_conf.per_device_eval_batch_size,
-        weight_decay=training_conf.weight_decay,
-        max_grad_norm=training_conf.max_grad_norm,
-        logging_steps=training_conf.logging_steps,
-        save_total_limit=training_conf.save_total_limit,
-        evaluation_strategy="steps",
-        eval_steps=training_conf.eval_steps,
-        save_steps=training_conf.save_steps,
-        eval_accumulation_steps=training_conf.eval_accumulation_steps,
-        report_to="wandb",
-        quantization=training_conf.quantization,
-    )
+    gpt = model.to("cuda")
 
-    trainer = SFTTrainer(
-        model,
-        args,
-        train_dataset=train,
-        eval_dataset=evals,
-        data_collator=collate_fn,
-        tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
-        preprocess_logits_for_metrics=preprocess_logits_for_metrics,
-    )
-    trainer.train()
+    gpt.gradient_checkpointing_enable()
+
+    codeparrot = load_dataset("transformersbook/codeparrot-train", streaming=True, cache_dir=training_conf.cache_dir)
+    optimizer = Adam8bit(gpt.parameters(), lr=1e-5)
+
+    with torch.cuda.amp.autocast():
+        for row in tqdm(codeparrot["train"]):
+            if len(row["content"]) <= 1:
+                continue
+
+            batch = tokenizer(row["content"], truncation=True, max_length=128, return_tensors="pt")
+            batch = {k: v.cuda() for k, v in batch.items()}
+
+            out = gpt.forward(
+                **batch,
+            )
+
+            loss = F.cross_entropy(
+                out.logits[:, :-1, :].flatten(0, -2), batch["input_ids"][:, 1:].flatten(), reduction="mean"
+            )
+            print(loss)
+            loss.backward()
+
+            optimizer.step()
+            optimizer.zero_grad()
+    ###
+
+
+    # train, evals, collate_fn = get_dataset(training_conf, tokenizer)
+    # assert len(evals) > 0
+
+    # args = CustomTrainingArguments(
+    #     output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
+    #     num_train_epochs=training_conf.num_train_epochs,
+    #     warmup_steps=training_conf.warmup_steps,
+    #     loss_function=training_conf.loss_fn,
+    #     learning_rate=float(training_conf.learning_rate),
+    #     fp16=True,
+    #     gradient_checkpointing=training_conf.gradient_checkpointing,
+    #     gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
+    #     per_device_train_batch_size=training_conf.per_device_train_batch_size,
+    #     per_device_eval_batch_size=training_conf.per_device_eval_batch_size,
+    #     weight_decay=training_conf.weight_decay,
+    #     max_grad_norm=training_conf.max_grad_norm,
+    #     logging_steps=training_conf.logging_steps,
+    #     save_total_limit=training_conf.save_total_limit,
+    #     evaluation_strategy="steps",
+    #     eval_steps=training_conf.eval_steps,
+    #     save_steps=training_conf.save_steps,
+    #     eval_accumulation_steps=training_conf.eval_accumulation_steps,
+    #     report_to="wandb",
+    #     quantization=training_conf.quantization,
+    # )
+
+    # trainer = SFTTrainer(
+    #     model,
+    #     args,
+    #     train_dataset=train,
+    #     eval_dataset=evals,
+    #     data_collator=collate_fn,
+    #     tokenizer=tokenizer,
+    #     compute_metrics=compute_metrics,
+    #     preprocess_logits_for_metrics=preprocess_logits_for_metrics,
+    # )
+    # trainer.train()
