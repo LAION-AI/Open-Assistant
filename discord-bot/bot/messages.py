@@ -277,6 +277,7 @@ def tutorial_message() -> str:
     # TODO: Finish message
     return f"""\
 {_h1("TUTORIAL")}
+"""
 
 
 def confirm_label_response_message(content: str) -> str:
