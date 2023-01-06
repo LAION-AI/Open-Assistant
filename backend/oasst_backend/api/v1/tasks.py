@@ -58,7 +58,10 @@ def generate_task(
             messages = pr.fetch_random_conversation("assistant")
             task_messages = [
                 protocol_schema.ConversationMessage(
-                    text=msg.payload.payload.text, is_assistant=(msg.role == "assistant")
+                    text=msg.payload.payload.text,
+                    is_assistant=(msg.role == "assistant"),
+                    message_id=msg.id,
+                    frontend_message_id=msg.frontend_message_id,
                 )
                 for msg in messages
             ]
@@ -71,7 +74,10 @@ def generate_task(
             messages = pr.fetch_random_conversation("prompter")
             task_messages = [
                 protocol_schema.ConversationMessage(
-                    text=msg.payload.payload.text, is_assistant=(msg.role == "assistant")
+                    text=msg.payload.payload.text,
+                    is_assistant=(msg.role == "assistant"),
+                    message_id=msg.id,
+                    frontend_message_id=msg.frontend_message_id,
                 )
                 for msg in messages
             ]
@@ -92,6 +98,8 @@ def generate_task(
                 protocol_schema.ConversationMessage(
                     text=p.text,
                     is_assistant=(p.role == "assistant"),
+                    message_id=p.id,
+                    frontend_message_id=p.frontend_message_id,
                 )
                 for p in conversation
             ]
@@ -111,6 +119,8 @@ def generate_task(
                 protocol_schema.ConversationMessage(
                     text=p.text,
                     is_assistant=(p.role == "assistant"),
+                    message_id=p.id,
+                    frontend_message_id=p.frontend_message_id,
                 )
                 for p in conversation
             ]
