@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     DEBUG_ALLOW_ANY_API_KEY: bool = False
     DEBUG_SKIP_API_KEY_CHECK: bool = False
     DEBUG_USE_SEED_DATA: bool = False
-    DEBUG_USE_SEED_DATA_PATH: FilePath = "test_data/generic/test_generic_data.json"
+    DEBUG_USE_SEED_DATA_PATH: FilePath = "backend/test_data/generic/test_generic_data.json"
 
     HUGGING_FACE_API_KEY: str = ""
 
