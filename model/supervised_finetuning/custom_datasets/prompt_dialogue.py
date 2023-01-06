@@ -30,16 +30,15 @@ class PromptGeneratedDataset(Dataset):
         answer = ""
         self.pairs = []
         with open(chat_dialogue, "r") as f:
-            corpus = f.read().split('<|endoftext|>')
+            corpus = f.read().split("<|endoftext|>")
             for dialogue in corpus:
                 dialogue = dialogue.strip()
-                if 'Rosey:' in dialogue:
-                    user, bot = dialogue.split('Rosey:', maxsplit=1)
+                if "Rosey:" in dialogue:
+                    user, bot = dialogue.split("Rosey:", maxsplit=1)
                     question = user.split(":", maxsplit=1)[1].strip()
                     answer = bot.strip()
                     if len(answer) and len(question):
                         self.pairs.append((question, answer))
-
 
         if len(question) > 0 and len(answer) > 0:
             self.pairs.append((question, answer))
