@@ -3,6 +3,7 @@ import { useColorMode } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { TaskControls } from "src/components/Survey/TaskControls";
+import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
@@ -13,8 +14,7 @@ const SummarizeStory = () => {
   // Use an array of tasks that record the sequence of steps until a task is
   // deemed complete.
   const [tasks, setTasks] = useState([]);
-
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [inputText, setInputText] = useState("");
 
   // Fetch the very fist task.  We can ignore everything except isLoading
   // because the onSuccess handler will update `tasks` when ready.
@@ -38,7 +38,7 @@ const SummarizeStory = () => {
   // Trigger a mutation that updates the current task.  We should probably
   // signal somewhere that this interaction is being processed.
   const submitResponse = (task: { id: string }) => {
-    const text = inputRef.current.value.trim();
+    const text = inputText.trim();
     trigger({
       id: task.id,
       update_type: "text_reply_to_message",
@@ -49,8 +49,12 @@ const SummarizeStory = () => {
   };
 
   const fetchNextTask = () => {
-    inputRef.current.value = "";
+    setInputText("");
     mutate();
+  };
+
+  const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(event.target.value);
   };
 
   const { colorMode } = useColorMode();
@@ -73,7 +77,15 @@ const SummarizeStory = () => {
             <p className="text-lg py-1">Summarize the following story</p>
             <div className="bg-slate-800 p-6 rounded-xl text-white whitespace-pre-wrap">{tasks[0].task.story}</div>
           </>
-          <Textarea name="summary" placeholder="Summary" ref={inputRef} />
+          <>
+            <h5 className="text-lg font-semibold">Provide the assistant`s reply</h5>
+            <TrackedTextarea
+              text={inputText}
+              onTextChange={textChangeHandler}
+              thresholds={{ low: 20, medium: 40, goal: 50 }}
+              textareaProps={{ placeholder: "Summary" }}
+            />
+          </>
         </TwoColumnsWithCards>
 
         <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
