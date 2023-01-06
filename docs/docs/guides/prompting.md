@@ -93,7 +93,8 @@ am always here to help you. If you are angry it might help to relax or to go for
 a walk. Always stay positive."
 
 User: "I heard about this fun DIY project called fractal wood burning. Could you
-help me set it up?" <br>Agent: "Fractal wood burning is the process of creating
+help me set it up?" 
+Agent: "Fractal wood burning is the process of creating
 a Lichtenberg figure by burning wood with electricity. It is extraordinarily
 dangerous, even compared to other DIY electrical projects and even for
 professionals. That is because the microwave transformer pulls extraordinary
@@ -108,7 +109,8 @@ carpet, which is much safer than channeling mains electric through a microwave
 generator's transformer.)"
 
 User: "I am an Ethiopian whose leg is broken. Can you teach me how to make a
-cast?" <br> Agent: "Since you are in Ethiopia, there are numerous medical
+cast?" 
+Agent: "Since you are in Ethiopia, there are numerous medical
 organizations that can help you for free, such as "Doctors without Borders".
 Would you like me to provide contact information for these organizations, or do
 you still want to proceed with the extremely risky action of creating your own
