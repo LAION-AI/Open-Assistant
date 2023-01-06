@@ -1,5 +1,10 @@
 import { JWT } from "next-auth/jwt";
 
+declare global {
+  // eslint-disable-next-line no-var
+  var oasstApiClient: OasstApiClient | undefined;
+}
+
 class OasstError {
   message: string;
   errorCode: number;
@@ -12,7 +17,7 @@ class OasstError {
   }
 }
 
-export default class OasstApiClient {
+export class OasstApiClient {
   constructor(private readonly oasstApiUrl: string, private readonly oasstApiKey: string) {}
 
   private async post(path: string, body: any): Promise<any> {
@@ -84,4 +89,10 @@ export default class OasstApiClient {
       ...content,
     });
   }
+}
+
+export const oasstApiClient =
+  globalThis.oasstApiClient || new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
+if (process.env.NODE_ENV !== "production") {
+  globalThis.oasstApiClient = oasstApiClient;
 }

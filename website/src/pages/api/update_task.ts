@@ -1,5 +1,5 @@
 import { getToken } from "next-auth/jwt";
-import OasstApiClient from "src/lib/oasst_api_client";
+import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
 
 /**
@@ -18,8 +18,6 @@ const handler = async (req, res) => {
     res.status(401).end();
     return;
   }
-
-  const oasstApiClient = new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
 
   // Parse out the local task ID and the interaction contents.
   const { id, content, update_type } = await JSON.parse(req.body);
