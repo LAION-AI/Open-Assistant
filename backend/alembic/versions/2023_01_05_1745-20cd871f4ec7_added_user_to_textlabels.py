@@ -1,7 +1,7 @@
 """Added user to TextLabels
 
 Revision ID: 20cd871f4ec7
-Revises: 8d269bc4fdbd
+Revises: d4161e384f83
 Create Date: 2023-01-05 17:45:15.696468
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "20cd871f4ec7"
-down_revision = "d4161e384f83"
+down_revision = "3b0adfadbef9"
 branch_labels = None
 depends_on = None
 
