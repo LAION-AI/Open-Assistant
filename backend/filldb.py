@@ -1,3 +1,5 @@
+import argparse
+import random
 import string
 import uuid
 from random import choice
@@ -6,27 +8,32 @@ from typing import List
 from oasst_backend.api.deps import api_auth
 from oasst_backend.database import engine
 from oasst_backend.models import ApiClient
-from oasst_backend.models import User as ModelUser
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.schemas.protocol import User as ProtocolUser
 from sqlmodel import Session
 
 
+# TODO: Should put settings into False
 class FillDb:
     """Class object which fills the database: Api Client, Users & Messages."""
 
-    def __init__(self, db_engine, seed: int = 0):
+    def __init__(self, db_engine, num_api_clients: int = 10, num_users: int = 10, use_seed: bool = True, seed: int = 0):
         # The database engine
         self.db_engine = db_engine
 
         # Store the generated api keys
         self.api_keys: List[str] = []
-        self.users: List[ModelUser] = []
+        self.users: List[ProtocolUser] = []
+
+        # The amount of data we want to produce
+        self._num_api_clients = num_api_clients
+        self._num_users = num_users
 
         # Seed to make sure values are reproducible
-        # random.seed(seed)
+        if use_seed:
+            random.seed(seed)
 
-    def fill_api_client(self, num_api_client: int = 10):
+    def fill_api_client(self):
         """Fill the database with api clients
 
         Args:
@@ -37,7 +44,7 @@ class FillDb:
         with Session(self.db_engine) as db:
 
             # For the range of the api clients we want to create
-            for _ in range(num_api_client):
+            for _ in range(self._num_api_clients):
 
                 # Create a new ApiClient
                 random_api_client = self._create_random_api_client()
@@ -53,11 +60,12 @@ class FillDb:
         # Return all the api clients created
         return self.api_keys
 
-    def fill_users(self, num_users: int = 10):
+    def fill_users(self):
         """Fill with new users that have the API clients."""
 
         with Session(engine) as db:
-            for _ in range(num_users):
+            for _ in range(self._num_users):
+                # Get the keys that we will use for that user
                 api_key = self._get_random_api_client_key()
                 api_client = self._get_api_auth(api_key, db)
 
@@ -112,10 +120,9 @@ class FillDb:
             api_key: api key
         """
 
-        print(self.api_keys, "here")
         return choice(self.api_keys)
 
-    def _get_api_auth(self, api_key: str, db: Session):
+    def _get_api_auth(self, api_key: str, db: Session) -> ApiClient:
         """Get the api auth based on the api key from the database.
 
         Args:
@@ -162,7 +169,22 @@ class FillDb:
 
 
 if __name__ == "__main__":
-    fill_db = FillDb(engine)
-    fill_db.fill_api_client(1)
-    fill_db.fill_users(1)
-    print(fill_db.api_keys)
+    parser = argparse.ArgumentParser(
+        prog="Fill Database",
+        description="Fill the database with mock data generated randomly",
+    )
+
+    parser.add_argument("--api_clients", type=int, default=1, help="Amount of API Clients that we want to create")
+
+    parser.add_argument("--users", type=int, default=1, help="Amount of Users that we want to create")
+
+    parser.add_argument(
+        "--use_seed", type=bool, default=True, help="Whether we want to use seed for the random messages"
+    )
+
+    args = parser.parse_args()
+
+    fill_db = FillDb(engine, args.api_clients, args.users, use_seed=args.use_seed)
+
+    fill_db.fill_api_client()
+    fill_db.fill_users()
