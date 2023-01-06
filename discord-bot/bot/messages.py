@@ -80,6 +80,7 @@ def initial_prompt_message(task: protocol_schema.InitialPromptTask) -> str:
 
 {_h1("INITIAL PROMPT")}
 
+
 {_writing_prompt("Please provide an initial prompt to the assistant.")}
 {_hint(task.hint)}
 """
@@ -91,10 +92,10 @@ def rank_initial_prompts_message(task: protocol_schema.RankInitialPromptsTask) -
 
 {_h1("RANK INITIAL PROMPTS")}
 
-{_ranking_prompt("Reply with the numbers of best to worst prompts separated by commas (example: '4,1,3,2')")}
-
 
 {_ordered_list(task.prompts)}
+
+{_ranking_prompt("Reply with the numbers of best to worst prompts separated by commas (example: '4,1,3,2')")}
 """
 
 
@@ -104,12 +105,12 @@ def rank_prompter_reply_message(task: protocol_schema.RankPrompterRepliesTask) -
 
 {_h1("RANK PROMPTER REPLIES")}
 
-{_ranking_prompt("Reply with the numbers of best to worst replies separated by commas (example: '4,1,3,2')")}
-
 
 {_conversation(task.conversation)}
 {_user(None)}
 {_ordered_list(task.replies)}
+
+{_ranking_prompt("Reply with the numbers of best to worst replies separated by commas (example: '4,1,3,2')")}
 """
 
 
@@ -119,12 +120,12 @@ def rank_assistant_reply_message(task: protocol_schema.RankAssistantRepliesTask)
 
 {_h1("RANK ASSISTANT REPLIES")}
 
-{_ranking_prompt("Reply with the numbers of best to worst replies separated by commas (example: '4,1,3,2')")}
-
 
 {_conversation(task.conversation)}
 {_assistant(None)}
 {_ordered_list(task.replies)}
+
+{_ranking_prompt("Reply with the numbers of best to worst replies separated by commas (example: '4,1,3,2')")}
 """
 
 
@@ -134,11 +135,11 @@ def prompter_reply_message(task: protocol_schema.PrompterReplyTask) -> str:
 
 {_h1("PROMPTER REPLY")}
 
-{_response_prompt("Please provide a reply to the assistant.")}
-
 
 {_conversation(task.conversation)}
 {_hint(task.hint)}
+
+{_response_prompt("Please provide a reply to the assistant.")}
 """
 
 
@@ -147,10 +148,10 @@ def assistant_reply_message(task: protocol_schema.AssistantReplyTask) -> str:
     return f"""\
 {_h1("ASSISTANT REPLY")}
 
-{_response_prompt("Please provide a reply to the assistant.")}
-
 
 {_conversation(task.conversation)}
+
+{_response_prompt("Please provide an assistant reply to the prompter.")}
 """
 
 

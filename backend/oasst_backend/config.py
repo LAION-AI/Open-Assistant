@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     DEBUG_SKIP_API_KEY_CHECK: bool = False
     DEBUG_USE_SEED_DATA: bool = False
 
+    HUGGING_FACE_API_KEY: str = ""
+
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if isinstance(v, str):

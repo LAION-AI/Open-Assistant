@@ -1,4 +1,5 @@
 import { getToken } from "next-auth/jwt";
+import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
 
 /**
@@ -34,27 +35,7 @@ const handler = async (req, res) => {
     },
   });
 
-  // Send the interaction to the Task Backend.  This automatically fetches the
-  // next task in the sequence (or the done task).
-  const interactionRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/tasks/interaction`, {
-    method: "POST",
-    headers: {
-      "X-API-Key": process.env.FASTAPI_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      type: update_type,
-      user: {
-        id: token.sub,
-        display_name: token.name || token.email,
-        auth_method: "local",
-      },
-      message_id: id,
-      user_message_id: interaction.id,
-      ...content,
-    }),
-  });
-  const newTask = await interactionRes.json();
+  const newTask = await oasstApiClient.interactTask(update_type, id, interaction.id, content, token);
 
   // Stores the new task with our database.
   const newRegisteredTask = await prisma.registeredTask.create({
