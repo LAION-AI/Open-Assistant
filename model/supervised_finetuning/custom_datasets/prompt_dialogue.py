@@ -30,26 +30,16 @@ class PromptGeneratedDataset(Dataset):
         answer = ""
         self.pairs = []
         with open(chat_dialogue, "r") as f:
-
-            for line in f:
-                try:
-                    line = line.rstrip()
-                    if len(line) == 0:
-                        continue
-                    elif line == "<|endoftext|>" and len(question) > 0 and len(answer) > 0:
+            corpus = f.read().split('<|endoftext|>')
+            for dialogue in corpus:
+                dialogue = dialogue.strip()
+                if 'Rosey:' in dialogue:
+                    user, bot = dialogue.split('Rosey:', maxsplit=1)
+                    question = user.split(":", maxsplit=1)[1].strip()
+                    answer = bot.strip()
+                    if len(answer) and len(question):
                         self.pairs.append((question, answer))
-                        question = ""
-                        answer = ""
-                    elif line[:4] == "User":
-                        question = line.split(":", maxsplit=1)[1]
-                    elif line == "Rosey:":
-                        question = ""
-                        answer = ""
-                    elif len(line) > 4:  # should be bot answer
-                        answer = line.split(":", maxsplit=1)[1]
-                except IndexError:
-                    question = ""
-                    answer = ""
+
 
         if len(question) > 0 and len(answer) > 0:
             self.pairs.append((question, answer))
