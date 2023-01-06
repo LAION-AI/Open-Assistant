@@ -6,7 +6,7 @@
       "version": "latest"
     }
   },
-  "postCreateCommand": "bash .devcontainer/post_create_command.sh",
+  "postCreateCommand": "bash .devcontainer/frontend/post_create_command.sh",
   "customizations": {
     "vscode": {
       "extensions": ["GitHub.copilot"]
