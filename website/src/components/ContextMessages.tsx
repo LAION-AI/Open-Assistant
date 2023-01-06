@@ -1,7 +1,11 @@
 import { Box } from "@chakra-ui/react";
+
 import { Message } from "./Messages";
 
 export const ContextMessages = ({ messages }: { messages: Message[] }) => {
+  if (!messages) {
+    return null;
+  }
   return (
     <Box className="flex flex-col gap-1">
       {messages.map((message, i) => {
