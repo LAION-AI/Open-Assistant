@@ -73,6 +73,10 @@ def _hint(hint: str | None) -> str:
     return f"{NL}Hint: {hint}" if hint else ""
 
 
+def _li(text: str) -> str:
+    return f":small_blue_diamond: {text}"
+
+
 ###
 # Messages
 ###
@@ -219,6 +223,60 @@ def confirm_ranking_response_message(content: str, items: list[str]) -> str:
 {_h2("CONFIRM RESPONSE")}
 
 {user_ranked_list}
+"""
+
+
+def help_message(can_manage_guild: bool, is_dev: bool) -> str:
+    """The /help command message."""
+    content = f"""\
+{_h1("HELP")}
+
+{_li("**`/help`**")}
+Show this message.
+
+{_li("**`/work [type]`**")}
+Start a new task.
+**`[type]`**:
+The type of task to start. If not provided, a random task will be selected. The different types are
+:small_orange_diamond: `random`: A random task type
+:small_orange_diamond: ~~`summarize_story`~~ (coming soon)
+:small_orange_diamond: ~~`rate_summary`~~ (coming soon)
+:small_orange_diamond: `initial_prompt`: Ask the assistant something
+:small_orange_diamond: `prompter_reply`: Reply to the assistant
+:small_orange_diamond: `assistant_reply`: Reply to the user
+:small_orange_diamond: `rank_initial_prompts`: Rank some initial prompts
+:small_orange_diamond: `rank_prompter_replies`: Rank some prompter replies
+:small_orange_diamond: `rank_assistant_replies`: Rank some assistant replies
+
+To learn how to complete tasks, run `/tutorial`.
+"""
+    if can_manage_guild:
+        content += f"""\
+
+{_li("**`/settings log_channel <channel>`**")}
+Set the channel that the bot logs completed task messages in.
+**`<channel>`**: The channel to log completed tasks in. The bot needs to be able to send messages in this channel.
+
+{_li("**`/settings get`**")}
+Get the current settings.
+"""
+    if is_dev:
+        content += f"""\
+
+{_li("**`/reload [plugin]`**")}
+Hot-reload a plugin. Only code *inside* of function bodies will be updated.
+Any changes to __function signatures__, __other files__, __decorators__, or __imports__ will require a restart.
+**`[plugin]`**:
+The plugin to hot-reload. If no plugin is provided, all plugins are hot-reload.
+"""
+    return content
+
+
+def tutorial_message() -> str:
+    """The /tutorial command message."""
+    # TODO: Finish message
+    return f"""\
+{_h1("TUTORIAL")}
 """
 
 
