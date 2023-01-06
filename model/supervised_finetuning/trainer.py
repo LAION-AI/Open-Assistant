@@ -1,32 +1,17 @@
 import argparse
 import os
-from dataclasses import dataclass
 from distutils.util import strtobool
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import nn
 from torch.utils.data import Dataset
-from transformers import (
-    DataCollator,
-    EvalPrediction,
-    PreTrainedModel,
-    PreTrainedTokenizerBase,
-    Trainer,
-    TrainerCallback,
-    TrainingArguments,
-    get_cosine_schedule_with_warmup,
-)
+from transformers import PreTrainedModel, Trainer, TrainingArguments, get_cosine_schedule_with_warmup
 import bitsandbytes as bnb
+
 from utils import get_dataset, get_loss, get_model, get_tokenizer, read_yamls
 
 os.environ["WANDB_PROJECT"] = "supervised-finetuning"
-
-
-@dataclass
-class CustomTrainingArguments(TrainingArguments):
-    loss_function: str = "CrossEntropyLoss"
-    quantization: str = None
 
 
 def compute_metrics(eval_pred):
@@ -46,35 +31,15 @@ class SFTTrainer(Trainer):
         self,
         model: Union[PreTrainedModel, nn.Module] = None,
         args: TrainingArguments = None,
-        data_collator: Optional[DataCollator] = None,
-        train_dataset: Optional[Dataset] = None,
-        eval_dataset: Optional[Dataset] = None,
-        tokenizer: Optional[PreTrainedTokenizerBase] = None,
-        model_init: Callable[[], PreTrainedModel] = None,
-        compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
-        callbacks: Optional[List[TrainerCallback]] = None,
-        optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = (None, None),
-        preprocess_logits_for_metrics: Callable[[torch.Tensor, torch.Tensor], torch.Tensor] = None,
+        loss_function: str = "CrossEntropyLoss",
+        **kwargs,
     ):
-        super().__init__(
-            model,
-            args,
-            data_collator,
-            train_dataset,
-            eval_dataset,
-            tokenizer,
-            model_init,
-            compute_metrics,
-            callbacks,
-            optimizers,
-            preprocess_logits_for_metrics,
-        )
+        super().__init__(model, args, **kwargs)
 
         # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
-        self.loss_fct = get_loss(args.loss_function)
+        self.loss_fct = get_loss(loss_function)
 
     def create_optimizer_and_scheduler(self, num_training_steps: int):
-        print("Optimizer")
         if self.args.quantization == "8bit":
             self.optimizer = bnb.optim.Adam8bit(model.parameters(), lr=0.001, betas=(0.9, 0.995))
         else:
@@ -82,7 +47,6 @@ class SFTTrainer(Trainer):
                 self.model.parameters(), lr=self.args.learning_rate, weight_decay=self.args.weight_decay
             )
 
-        print("lr sheduler")
         self.lr_scheduler = get_cosine_schedule_with_warmup(
             self.optimizer,
             num_warmup_steps=self.args.warmup_steps,
@@ -93,16 +57,17 @@ class SFTTrainer(Trainer):
 
     def compute_loss(self, model, inputs, return_outputs=False):
         labels_mask = inputs.pop("label_masks")
+        targets = inputs.pop("targets")
 
         outputs = model(**inputs)
 
-        loss = self.loss_fct(outputs.get("logits"), torch.roll(inputs["input_ids"], -1, -1), mask=labels_mask)
+        loss = self.loss_fct(outputs.get("logits"), targets, mask=labels_mask)
 
         return (loss, outputs) if return_outputs else loss
 
     def _compute_loss(self, model, inputs):
-
         labels_mask = inputs.pop("label_masks")
+        targets = inputs.pop("targets")
 
         inputs = self._prepare_inputs(inputs)
 
@@ -110,7 +75,6 @@ class SFTTrainer(Trainer):
 
         logits = outputs.get("logits")
 
-        targets = torch.roll(inputs["input_ids"], -1, -1)
         loss = self.loss_fct(outputs.get("logits"), targets, mask=labels_mask)
 
         return loss, logits, targets, labels_mask
@@ -142,11 +106,17 @@ def _strtobool(x):
 def argument_parsing(notebook=False, notebook_args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--configs", nargs="+", required=True)
+    parser.add_argument("--local_rank", type=int, default=-1)
+    parser.add_argument("--deepspeed", action="store_true")
+    parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
+    parser.set_defaults(deepspeed=False)
 
     if notebook:
         args, remaining = parser.parse_known_args(notebook_args)
     else:
         args, remaining = parser.parse_known_args()
+
+    print(args)
 
     # Config from YAML
     conf = {}
@@ -158,6 +128,8 @@ def argument_parsing(notebook=False, notebook_args=None):
         else:
             conf.update(configs[name])
 
+    conf["local_rank"] = args.local_rank
+    conf["deepspeed"] = args.deepspeed
     # Override config from command-line
     parser = argparse.ArgumentParser()
     for key, value in conf.items():
@@ -175,76 +147,41 @@ if __name__ == "__main__":
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
 
-    ###
-    from datasets import load_dataset
-    from bitsandbytes.optim import Adam8bit
-    from torch.nn import functional as F
-    from tqdm import tqdm
+    train, evals, collate_fn = get_dataset(training_conf, tokenizer)
 
-    gpt = model.to("cuda")
+    args = TrainingArguments(
+        output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
+        num_train_epochs=training_conf.num_train_epochs,
+        warmup_steps=training_conf.warmup_steps,
+        learning_rate=float(training_conf.learning_rate),
+        deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
+        fp16=True,
+        local_rank=training_conf.local_rank,
+        gradient_checkpointing=training_conf.gradient_checkpointing,
+        gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
+        per_device_train_batch_size=training_conf.per_device_train_batch_size,
+        per_device_eval_batch_size=training_conf.per_device_eval_batch_size,
+        weight_decay=training_conf.weight_decay,
+        max_grad_norm=training_conf.max_grad_norm,
+        logging_steps=training_conf.logging_steps,
+        save_total_limit=training_conf.save_total_limit,
+        evaluation_strategy="steps",
+        eval_steps=training_conf.eval_steps,
+        save_steps=training_conf.save_steps,
+        eval_accumulation_steps=training_conf.eval_accumulation_steps,
+        report_to="wandb",
+    )
 
-    gpt.gradient_checkpointing_enable()
-
-    codeparrot = load_dataset("transformersbook/codeparrot-train", streaming=True, cache_dir=training_conf.cache_dir)
-    optimizer = Adam8bit(gpt.parameters(), lr=1e-5)
-
-    with torch.cuda.amp.autocast():
-        for row in tqdm(codeparrot["train"]):
-            if len(row["content"]) <= 1:
-                continue
-
-            batch = tokenizer(row["content"], truncation=True, max_length=128, return_tensors="pt")
-            batch = {k: v.cuda() for k, v in batch.items()}
-
-            out = gpt.forward(
-                **batch,
-            )
-
-            loss = F.cross_entropy(
-                out.logits[:, :-1, :].flatten(0, -2), batch["input_ids"][:, 1:].flatten(), reduction="mean"
-            )
-            print(loss)
-            loss.backward()
-
-            optimizer.step()
-            optimizer.zero_grad()
-    ###
-
-
-    # train, evals, collate_fn = get_dataset(training_conf, tokenizer)
-    # assert len(evals) > 0
-
-    # args = CustomTrainingArguments(
-    #     output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
-    #     num_train_epochs=training_conf.num_train_epochs,
-    #     warmup_steps=training_conf.warmup_steps,
-    #     loss_function=training_conf.loss_fn,
-    #     learning_rate=float(training_conf.learning_rate),
-    #     fp16=True,
-    #     gradient_checkpointing=training_conf.gradient_checkpointing,
-    #     gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
-    #     per_device_train_batch_size=training_conf.per_device_train_batch_size,
-    #     per_device_eval_batch_size=training_conf.per_device_eval_batch_size,
-    #     weight_decay=training_conf.weight_decay,
-    #     max_grad_norm=training_conf.max_grad_norm,
-    #     logging_steps=training_conf.logging_steps,
-    #     save_total_limit=training_conf.save_total_limit,
-    #     evaluation_strategy="steps",
-    #     eval_steps=training_conf.eval_steps,
-    #     save_steps=training_conf.save_steps,
-    #     eval_accumulation_steps=training_conf.eval_accumulation_steps,
-    #     report_to="wandb",
-    #     quantization=training_conf.quantization,
-    # )
-
-    # trainer = SFTTrainer(
-    #     model,
-    #     args,
-    #     train_dataset=train,
-    #     eval_dataset=evals,
-    #     data_collator=collate_fn,
-    #     tokenizer=tokenizer,
-    #     compute_metrics=compute_metrics,
-    #     preprocess_logits_for_metrics=preprocess_logits_for_metrics,
-    # )
-    # trainer.train()
+    assert len(evals) > 0
+    trainer = SFTTrainer(
+        model,
+        args,
+        loss_function=training_conf.loss_fn,
+        train_dataset=train,
+        eval_dataset=evals,
+        data_collator=collate_fn,
+        tokenizer=tokenizer,
+        compute_metrics=compute_metrics,
+        preprocess_logits_for_metrics=preprocess_logits_for_metrics,
+    )
+    trainer.train()

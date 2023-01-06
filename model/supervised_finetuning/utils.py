@@ -15,6 +15,10 @@ def get_tokenizer(conf):
 
     if "galactica" in conf.model_name:
         tokenizer.add_special_tokens({"pad_token": "<pad>", "eos_token": "</s>"})
+    elif "GPT-JT" in conf.model_name:
+        tokenizer.add_special_tokens({"pad_token": tokenizer.eos_token, "sep_token": "<|extratoken_100|>"})
+    elif "codegen" in conf.model_name:
+        tokenizer.add_special_tokens({"pad_token": "<|endoftext|>", "sep_token": "<|endoftext|>"})
 
     additional_special_tokens = (
         []
@@ -29,12 +33,6 @@ def get_tokenizer(conf):
 
 
 def get_model(conf, tokenizer):
-    if not any([x in conf.model_name.lower() for x in SUPPORTED_MODELS]):
-        raise ValueError(
-            f"Model {conf.model_name} not supported. Supported models: {SUPPORTED_MODELS}. "
-            "To include more make sure the masking is done correctly... (decoder only supported for now)"
-        )
-
     model = get_specific_model(conf.model_name, conf.cache_dir, conf.quantization)
 
     if len(tokenizer) != model.get_input_embeddings().num_embeddings:
