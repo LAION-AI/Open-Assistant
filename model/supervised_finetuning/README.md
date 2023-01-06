@@ -42,14 +42,17 @@ your-model-name:
 python trainer.py --configs defaults your-model-name
 ```
 
-However, if the model of your choice doesn't have pad_token, eos_token, sep_token, you have to update utils.py `get_tokenizer` to use the right token.
-
+However, if the model of your choice doesn't have pad_token, eos_token,
+sep_token, you have to update utils.py `get_tokenizer` to use the right token.
 
 ## Deepspeed support
 
-You can edit the configs/zero_config.json and use any stage you wish. The current config uses zero-stage 3. For more details on how to setup the config checkout [this page](https://www.deepspeed.ai/tutorials/zero/)
+You can edit the configs/zero_config.json and use any stage you wish. The
+current config uses zero-stage 3. For more details on how to setup the config
+checkout [this page](https://www.deepspeed.ai/tutorials/zero/)
 
-Once you are satisfy with your deepzero config, you can add --deepspeed flag at the end to trigger deepspeed
+Once you are satisfy with your deepzero config, you can add --deepspeed flag at
+the end to trigger deepspeed
 
 ```
 python trainer.py --configs defaults your-model-name --deepspeed
