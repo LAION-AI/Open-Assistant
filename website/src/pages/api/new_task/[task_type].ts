@@ -1,4 +1,5 @@
 import { getToken } from "next-auth/jwt";
+import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
 
 /**
@@ -21,24 +22,7 @@ const handler = async (req, res) => {
   }
 
   // Fetch the new task.
-  //
-  // This needs to be refactored into an easier to use library.
-  const taskRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/tasks/`, {
-    method: "POST",
-    headers: {
-      "X-API-Key": process.env.FASTAPI_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      type: task_type,
-      user: {
-        id: token.sub,
-        display_name: token.name || token.email,
-        auth_method: "local",
-      },
-    }),
-  });
-  const task = await taskRes.json();
+  const task = await oasstApiClient.fetchTask(task_type, token);
 
   // Store the task and link it to the user..
   const registeredTask = await prisma.registeredTask.create({
@@ -53,16 +37,7 @@ const handler = async (req, res) => {
   });
 
   // Update the backend with our Task ID
-  await fetch(`${process.env.FASTAPI_URL}/api/v1/tasks/${task.id}/ack`, {
-    method: "POST",
-    headers: {
-      "X-API-Key": process.env.FASTAPI_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      message_id: registeredTask.id,
-    }),
-  });
+  await oasstApiClient.ackTask(task.id, registeredTask.id);
 
   // Send the results to the client.
   res.status(200).json(registeredTask);

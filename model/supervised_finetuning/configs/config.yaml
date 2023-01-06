@@ -6,7 +6,7 @@ defaults:
   per_device_eval_batch_size: 2
   weight_decay: 0.00
   warmup_steps: 600
-  eval_steps: 200
+  eval_steps: 100
   save_steps: 500
   max_length: 512
   num_train_epochs: 3
@@ -17,6 +17,7 @@ defaults:
   freeze_layer:
   datasets:
     - webgpt
+    - prompt_dialogue
   cache_dir: ~/.cache
   loss_fn: CrossEntropyLoss
   eval_size:
@@ -40,6 +41,17 @@ gpt-jt:
   warmup_steps: 600
   gradient_checkpointing: false
   gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+
+codegen:
+  learning_rate: 2e-6
+  model_name: Salesforce/codegen-2B-multi
+  weight_decay: 0.01
+  max_length: 812
+  warmup_steps: 600
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 5
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
 

@@ -53,7 +53,7 @@ If you're doing active development we suggest the following workflow:
 1.  Run `docker compose up frontend-dev --build --attach-dependencies`. You can
     optionally include `-d` to detach and later track the logs if desired.
 1.  In another tab navigate to `${OPEN_ASSISTANT_ROOT/website`.
-1.  Run `npm install`
+1.  Run `npm ci`
 1.  Run `npx prisma db push` (This is also needed when you restart the docker
     stack from scratch).
 1.  Run `npm run dev`. Now the website is up and running locally at

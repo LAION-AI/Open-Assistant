@@ -24,14 +24,13 @@ def generate_task(
     match request.type:
         case protocol_schema.TaskRequestType.random:
             logger.info("Frontend requested a random task.")
-            while request.type == protocol_schema.TaskRequestType.random:
-                disabled_tasks = (
-                    protocol_schema.TaskRequestType.summarize_story,
-                    protocol_schema.TaskRequestType.rate_summary,
-                )
-                request.type = random.choice(
-                    tuple(set(protocol_schema.TaskRequestType).difference(disabled_tasks))
-                ).value
+            disabled_tasks = (
+                protocol_schema.TaskRequestType.random,
+                protocol_schema.TaskRequestType.summarize_story,
+                protocol_schema.TaskRequestType.rate_summary,
+            )
+            candidate_tasks = set(protocol_schema.TaskRequestType).difference(disabled_tasks)
+            request.type = random.choice(tuple(candidate_tasks)).value
             return generate_task(request, pr)
 
         # AKo: Summary tasks are currently disabled/supported, we focus on the conversation tasks.
@@ -120,6 +119,38 @@ def generate_task(
                 conversation=protocol_schema.Conversation(messages=task_messages),
                 replies=replies,
             )
+
+        case protocol_schema.TaskRequestType.label_initial_prompt:
+            logger.info("Generating a LabelInitialPromptTask.")
+            message = pr.fetch_random_initial_prompts(1)[0]
+            task = protocol_schema.LabelInitialPromptTask(
+                message_id=message.id,
+                prompt=message.payload.payload.text,
+                valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
+            )
+
+        case protocol_schema.TaskRequestType.label_prompter_reply:
+            logger.info("Generating a LabelPrompterReplyTask.")
+            conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="assistant")
+            message = messages[0].payload.payload.text
+            task = protocol_schema.LabelPrompterReplyTask(
+                message_id=message.id,
+                conversation=conversation,
+                reply=message,
+                valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
+            )
+
+        case protocol_schema.TaskRequestType.label_assistant_reply:
+            logger.info("Generating a LabelAssistantReplyTask.")
+            conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="prompter")
+            message = messages[0].payload.payload.text
+            task = protocol_schema.LabelAssistantReplyTask(
+                message_id=message.id,
+                conversation=conversation,
+                reply=message,
+                valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
+            )
+
         case _:
             raise OasstError("Invalid request type", OasstErrorCode.TASK_INVALID_REQUEST_TYPE)
 
@@ -256,6 +287,13 @@ def tasks_interaction(
                 # TODO: check if the ranking is valid
                 pr.store_ranking(interaction)
                 # here we would store the ranking in the database
+                return protocol_schema.TaskDone()
+            case protocol_schema.TextLabels:
+                logger.info(
+                    f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}."
+                )
+                # TODO: check if the labels are valid?
+                pr.store_text_labels(interaction)
                 return protocol_schema.TaskDone()
             case _:
                 raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)

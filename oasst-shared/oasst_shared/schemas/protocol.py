@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 
 import pydantic
 from oasst_shared.exceptions import OasstErrorCode
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, conint, conlist, constr
 
 
 class TaskRequestType(str, enum.Enum):
@@ -18,6 +18,9 @@ class TaskRequestType(str, enum.Enum):
     rank_initial_prompts = "rank_initial_prompts"
     rank_prompter_replies = "rank_prompter_replies"
     rank_assistant_replies = "rank_assistant_replies"
+    label_initial_prompt = "label_initial_prompt"
+    label_assistant_reply = "label_assistant_reply"
+    label_prompter_reply = "label_prompter_reply"
 
 
 class User(BaseModel):
@@ -169,6 +172,37 @@ class RankAssistantRepliesTask(RankConversationRepliesTask):
     type: Literal["rank_assistant_replies"] = "rank_assistant_replies"
 
 
+class LabelInitialPromptTask(Task):
+    """A task to label an initial prompt."""
+
+    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    message_id: UUID
+    prompt: str
+    valid_labels: list[str]
+
+
+class LabelConversationReplyTask(Task):
+    """A task to label a reply to a conversation."""
+
+    type: Literal["label_conversation_reply"] = "label_conversation_reply"
+    conversation: Conversation  # the conversation so far
+    message_id: UUID
+    reply: str
+    valid_labels: list[str]
+
+
+class LabelPrompterReplyTask(LabelConversationReplyTask):
+    """A task to label a prompter reply to a conversation."""
+
+    type: Literal["label_prompter_reply"] = "label_prompter_reply"
+
+
+class LabelAssistantReplyTask(LabelConversationReplyTask):
+    """A task to label an assistant reply to a conversation."""
+
+    type: Literal["label_assistant_reply"] = "label_assistant_reply"
+
+
 class TaskDone(Task):
     """Signals to the frontend that the task is done."""
 
@@ -187,6 +221,10 @@ AnyTask = Union[
     RankConversationRepliesTask,
     RankPrompterRepliesTask,
     RankAssistantRepliesTask,
+    LabelInitialPromptTask,
+    LabelConversationReplyTask,
+    LabelPrompterReplyTask,
+    LabelAssistantReplyTask,
 ]
 
 
@@ -203,7 +241,7 @@ class TextReplyToMessage(Interaction):
     type: Literal["text_reply_to_message"] = "text_reply_to_message"
     message_id: str
     user_message_id: str
-    text: str
+    text: constr(min_length=1, strip_whitespace=True)
 
 
 class MessageRating(Interaction):
@@ -211,7 +249,7 @@ class MessageRating(Interaction):
 
     type: Literal["message_rating"] = "message_rating"
     message_id: str
-    rating: int
+    rating: conint(gt=0)
 
 
 class MessageRanking(Interaction):
@@ -219,14 +257,7 @@ class MessageRanking(Interaction):
 
     type: Literal["message_ranking"] = "message_ranking"
     message_id: str
-    ranking: list[int]
-
-
-AnyInteraction = Union[
-    TextReplyToMessage,
-    MessageRating,
-    MessageRanking,
-]
+    ranking: conlist(item_type=int, min_items=1)
 
 
 class TextLabel(str, enum.Enum):
@@ -256,12 +287,13 @@ class TextLabel(str, enum.Enum):
     slang = "slang"
 
 
-class TextLabels(BaseModel):
+class TextLabels(Interaction):
     """A set of labels for a piece of text."""
 
+    type: Literal["text_labels"] = "text_labels"
     text: str
     labels: dict[TextLabel, float]
-    message_id: str | None = None
+    message_id: UUID
 
     @property
     def has_message_id(self) -> bool:
@@ -275,6 +307,14 @@ class TextLabels(BaseModel):
             if not (0 <= value <= 1):
                 raise ValueError(f"Label values must be between 0 and 1, got {value} for {key}.")
         return v
+
+
+AnyInteraction = Union[
+    TextReplyToMessage,
+    MessageRating,
+    MessageRanking,
+    TextLabels,
+]
 
 
 class SystemStats(BaseModel):

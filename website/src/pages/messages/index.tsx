@@ -41,9 +41,11 @@ const MessagesDashboard = () => {
             <SideMenu />
           </Box>
           <Box className="flex flex-col overflow-auto p-6 sm:pl-0 gap-14">
-            <SimpleGrid columns={[1, 1, 1, 2]} spacing={2}>
+            <SimpleGrid columns={[1, 1, 1, 2]} gap={4}>
               <Box>
-                <Text className="text-2xl font-bold">Most recent messages</Text>
+                <Text className="text-2xl font-bold" pb="4">
+                  Most recent messages
+                </Text>
                 <Box
                   backgroundColor={boxBgColor}
                   boxShadow="base"
@@ -55,7 +57,9 @@ const MessagesDashboard = () => {
                 </Box>
               </Box>
               <Box>
-                <Text className="text-2xl font-bold">Your most recent messages</Text>
+                <Text className="text-2xl font-bold" pb="4">
+                  Your most recent messages
+                </Text>
                 <Box
                   backgroundColor={boxBgColor}
                   boxShadow="base"
