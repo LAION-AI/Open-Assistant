@@ -1,10 +1,22 @@
 import { useState } from "react";
+
 import { Messages } from "src/components/Messages";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
+import { TaskType } from "./TaskTypes";
 
-export const CreateTask = ({ tasks, taskType, trigger, mutate, mainBgClasses }) => {
+export interface CreateTaskProps {
+  // we need a task type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  tasks: any[];
+  taskType: TaskType;
+  trigger: (update: { id: string; update_type: string; content: { text: string } }) => void;
+  onSkipTask: (task: { id: string }, reason: string) => void;
+  onNextTask: () => void;
+  mainBgClasses: string;
+}
+export const CreateTask = ({ tasks, taskType, trigger, onSkipTask, onNextTask, mainBgClasses }: CreateTaskProps) => {
   const task = tasks[0].task;
 
   const [inputText, setInputText] = useState("");
@@ -18,11 +30,6 @@ export const CreateTask = ({ tasks, taskType, trigger, mutate, mainBgClasses }) 
         text,
       },
     });
-  };
-
-  const fetchNextTask = () => {
-    setInputText("");
-    mutate();
   };
 
   const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -48,7 +55,15 @@ export const CreateTask = ({ tasks, taskType, trigger, mutate, mainBgClasses }) 
         </>
       </TwoColumnsWithCards>
 
-      <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
+      <TaskControls
+        tasks={tasks}
+        onSubmitResponse={submitResponse}
+        onSkipTask={(task, reason) => {
+          setInputText("");
+          onSkipTask(task, reason);
+        }}
+        onNextTask={onNextTask}
+      />
     </div>
   );
 };

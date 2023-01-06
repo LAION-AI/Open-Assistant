@@ -11,7 +11,8 @@ export interface TaskControlsProps {
   tasks: any[];
   className?: string;
   onSubmitResponse: (task: { id: string }) => void;
-  onSkip: () => void;
+  onSkipTask: (task: { id: string }, reason: string) => void;
+  onNextTask: () => void;
 }
 
 export const TaskControls = (props: TaskControlsProps) => {
@@ -31,13 +32,17 @@ export const TaskControls = (props: TaskControlsProps) => {
     >
       <TaskInfo id={props.tasks[0].id} output="Submit your answer" />
       <Flex justify="center" ml="auto" gap={2}>
-        <SkipButton>Skip</SkipButton>
+        <SkipButton
+          onSkip={(reason: string) => {
+            props.onSkipTask(props.tasks[0], reason);
+          }}
+        />
         {endTask.task.type !== "task_done" ? (
           <SubmitButton colorScheme="blue" data-cy="submit" onClick={() => props.onSubmitResponse(props.tasks[0])}>
             Submit
           </SubmitButton>
         ) : (
-          <SubmitButton colorScheme="green" data-cy="next-task" onClick={props.onSkip}>
+          <SubmitButton colorScheme="green" data-cy="next-task" onClick={props.onNextTask}>
             Next Task
           </SubmitButton>
         )}

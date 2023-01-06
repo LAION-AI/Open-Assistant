@@ -33,7 +33,8 @@ const LabelPrompterReply = () => {
       controls={
         <TaskControls
           tasks={tasks}
-          onSkip={reset}
+          onSkipTask={() => reset()}
+          onNextTask={reset}
           onSubmitResponse={({ id, task }: LabelPrompterReplyTaskResponse) =>
             submit(id, task.message_id, task.reply, task.valid_labels, sliderValues)
           }

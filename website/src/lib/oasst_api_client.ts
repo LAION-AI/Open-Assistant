@@ -68,6 +68,12 @@ export class OasstApiClient {
     });
   }
 
+  async nackTask(taskId: string, reason: string): Promise<void> {
+    return this.post(`/api/v1/tasks/${taskId}/nack`, {
+      reason,
+    });
+  }
+
   // TODO return a strongly typed Task?
   // This method is used to record interaction with task while fetching next task.
   // This is a raw Json type, so we can't use it to strongly type the task.
