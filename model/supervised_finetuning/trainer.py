@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import nn
-from torch.utils.data import Dataset
 from transformers import PreTrainedModel, Trainer, TrainingArguments, get_cosine_schedule_with_warmup
 from utils import get_dataset, get_loss, get_model, get_tokenizer, read_yamls
 
