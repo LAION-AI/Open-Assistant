@@ -1,12 +1,12 @@
+import json
 from http import HTTPStatus
 from math import ceil
 from pathlib import Path
 from typing import Optional
-import json
+
 import alembic.command
 import alembic.config
 import fastapi
-from pydantic import BaseModel
 import redis.asyncio as redis
 from fastapi_limiter import FastAPILimiter
 from loguru import logger
@@ -17,6 +17,7 @@ from oasst_backend.database import engine
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
+from pydantic import BaseModel
 from sqlmodel import Session
 from starlette.middleware.cors import CORSMiddleware
 
@@ -165,6 +166,7 @@ if __name__ == "__main__":
     # Importing here so we don't import packages unnecessarily if we're
     # importing main as a module.
     import argparse
+
     import uvicorn
 
     parser = argparse.ArgumentParser()
