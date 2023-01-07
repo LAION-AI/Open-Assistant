@@ -2,7 +2,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
-import { getTransparentHeaderLayout } from "src/components/Layout";
+import { getAdminLayout } from "src/components/Layout";
 import UsersCell from "src/components/UsersCell";
 
 /**
@@ -44,6 +44,6 @@ const AdminIndex = () => {
   );
 };
 
-AdminIndex.getLayout = getTransparentHeaderLayout;
+AdminIndex.getLayout = getAdminLayout;
 
 export default AdminIndex;
