@@ -62,7 +62,7 @@ def generate_task(
                     text=msg.text,
                     is_assistant=(msg.role == "assistant"),
                     message_id=msg.id,
-                    front_end_id=msg.front_end_id,
+                    front_end_id=msg.frontend_message_id,
                 )
                 for msg in messages
             ]
@@ -78,7 +78,7 @@ def generate_task(
                     text=msg.text,
                     is_assistant=(msg.role == "assistant"),
                     message_id=msg.id,
-                    front_end_id=msg.front_end_id,
+                    front_end_id=msg.frontend_message_id,
                 )
                 for msg in messages
             ]
@@ -100,7 +100,7 @@ def generate_task(
                     text=p.text,
                     is_assistant=(p.role == "assistant"),
                     message_id=p.id,
-                    front_end_id=p.front_end_id,
+                    front_end_id=p.frontend_message_id,
                 )
                 for p in conversation
             ]
@@ -121,7 +121,7 @@ def generate_task(
                     text=p.text,
                     is_assistant=(p.role == "assistant"),
                     message_id=p.id,
-                    front_end_id=p.front_end_id,
+                    front_end_id=p.frontend_message_id,
                 )
                 for p in conversation
             ]
