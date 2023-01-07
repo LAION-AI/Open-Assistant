@@ -132,12 +132,17 @@ if settings.DEBUG_USE_SEED_DATA:
                             parent_message = pr.fetch_message_by_frontend_message_id(
                                 msg.parent_message_id, fail_if_missing=True
                             )
-                            task = pr.store_task(
-                                protocol_schema.AssistantReplyTask(
-                                    conversation=protocol_schema.Conversation(
-                                        messages=[protocol_schema.ConversationMessage(text="dummy", is_assistant=False)]
+                            conversation_messages = pr.fetch_message_conversation(parent_message)
+                            conversation = protocol_schema.Conversation(
+                                messages=[
+                                    protocol_schema.ConversationMessage(
+                                        text=msg.text, is_assistant=msg.role == "assistant"
                                     )
-                                ),
+                                    for msg in conversation_messages
+                                ]
+                            )
+                            task = pr.store_task(
+                                protocol_schema.AssistantReplyTask(conversation=conversation),
                                 message_tree_id=parent_message.message_tree_id,
                                 parent_message_id=parent_message.id,
                             )

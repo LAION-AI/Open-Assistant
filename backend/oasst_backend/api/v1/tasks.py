@@ -57,9 +57,7 @@ def generate_task(
             logger.info("Generating a PrompterReplyTask.")
             messages = pr.fetch_random_conversation("assistant")
             task_messages = [
-                protocol_schema.ConversationMessage(
-                    text=msg.payload.payload.text, is_assistant=(msg.role == "assistant")
-                )
+                protocol_schema.ConversationMessage(text=msg.text, is_assistant=(msg.role == "assistant"))
                 for msg in messages
             ]
 
@@ -70,9 +68,7 @@ def generate_task(
             logger.info("Generating a AssistantReplyTask.")
             messages = pr.fetch_random_conversation("prompter")
             task_messages = [
-                protocol_schema.ConversationMessage(
-                    text=msg.payload.payload.text, is_assistant=(msg.role == "assistant")
-                )
+                protocol_schema.ConversationMessage(text=msg.text, is_assistant=(msg.role == "assistant"))
                 for msg in messages
             ]
 
@@ -83,19 +79,19 @@ def generate_task(
             logger.info("Generating a RankInitialPromptsTask.")
 
             messages = pr.fetch_random_initial_prompts()
-            task = protocol_schema.RankInitialPromptsTask(prompts=[msg.payload.payload.text for msg in messages])
+            task = protocol_schema.RankInitialPromptsTask(prompts=[msg.text for msg in messages])
         case protocol_schema.TaskRequestType.rank_prompter_replies:
             logger.info("Generating a RankPrompterRepliesTask.")
             conversation, replies = pr.fetch_multiple_random_replies(message_role="assistant")
 
             task_messages = [
                 protocol_schema.ConversationMessage(
-                    text=p.payload.payload.text,
+                    text=p.text,
                     is_assistant=(p.role == "assistant"),
                 )
                 for p in conversation
             ]
-            replies = [p.payload.payload.text for p in replies]
+            replies = [p.text for p in replies]
             task = protocol_schema.RankPrompterRepliesTask(
                 conversation=protocol_schema.Conversation(
                     messages=task_messages,
@@ -109,12 +105,12 @@ def generate_task(
 
             task_messages = [
                 protocol_schema.ConversationMessage(
-                    text=p.payload.payload.text,
+                    text=p.text,
                     is_assistant=(p.role == "assistant"),
                 )
                 for p in conversation
             ]
-            replies = [p.payload.payload.text for p in replies]
+            replies = [p.text for p in replies]
             task = protocol_schema.RankAssistantRepliesTask(
                 conversation=protocol_schema.Conversation(messages=task_messages),
                 replies=replies,
@@ -125,14 +121,14 @@ def generate_task(
             message = pr.fetch_random_initial_prompts(1)[0]
             task = protocol_schema.LabelInitialPromptTask(
                 message_id=message.id,
-                prompt=message.payload.payload.text,
+                prompt=message.text,
                 valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
             )
 
         case protocol_schema.TaskRequestType.label_prompter_reply:
             logger.info("Generating a LabelPrompterReplyTask.")
             conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="assistant")
-            message = messages[0].payload.payload.text
+            message = messages[0].text
             task = protocol_schema.LabelPrompterReplyTask(
                 message_id=message.id,
                 conversation=conversation,
@@ -143,7 +139,7 @@ def generate_task(
         case protocol_schema.TaskRequestType.label_assistant_reply:
             logger.info("Generating a LabelAssistantReplyTask.")
             conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="prompter")
-            message = messages[0].payload.payload.text
+            message = messages[0].text
             task = protocol_schema.LabelAssistantReplyTask(
                 message_id=message.id,
                 conversation=conversation,
