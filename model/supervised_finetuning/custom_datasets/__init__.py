@@ -16,8 +16,8 @@ class SquadV2Dataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.dataset[idx]
-        # dummy return first answer
-        return "".join([data["title"], ". ", data["context"], " " + data["question"]]), data["answers"]["text"][0]
+        # return first answer form list of possible answers
+        return data["title"] + ". " + data["context"] + " " + data["question"], data["answers"]["text"][0]
 
 
 class WebGPT(Dataset):
@@ -59,7 +59,6 @@ def get_one_dataset(conf, dataset_name):
     dataset_name = dataset_name.lower()
 
     if dataset_name == "squadv2":
-        raise ValueError("SquadV2 is not diverse enough for generation .. ")
         train = SquadV2Dataset(conf.cache_dir, "train")
         eval = SquadV2Dataset(conf.cache_dir, "validation")
     elif dataset_name == "webgpt":

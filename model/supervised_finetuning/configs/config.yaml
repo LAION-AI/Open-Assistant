@@ -22,6 +22,7 @@ defaults:
   loss_fn: CrossEntropyLoss
   eval_size:
   log_dir: "base"
+  quantization:
 
 galactica-125:
   learning_rate: 5e-5
@@ -58,3 +59,7 @@ codegen:
 debug:
   eval_steps: 20
   eval_size: 100
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  quantization:

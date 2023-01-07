@@ -4,9 +4,10 @@ import yaml
 from custom_datasets import QA_SPECIAL_TOKENS, get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from losses import CrossEntropyLoss
+from models import freeze_top_n_layers, get_specific_model
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer
 
 
 def get_tokenizer(conf):
@@ -32,8 +33,7 @@ def get_tokenizer(conf):
 
 
 def get_model(conf, tokenizer):
-
-    model = AutoModelForCausalLM.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    model = get_specific_model(conf.model_name, conf.cache_dir, conf.quantization)
 
     if len(tokenizer) != model.get_input_embeddings().num_embeddings:
         assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
@@ -92,31 +92,3 @@ def train_val_dataset(dataset, val_split=0.2):
         list(range(len(dataset))), test_size=val_split, random_state=666, shuffle=True
     )
     return Subset(dataset, train_idx), Subset(dataset, val_idx)
-
-
-def freeze_top_n_layers(model, target_layers):
-    # its possible we can simply detect which module is a ModuleList
-    # and simply freeze the module without doing string parsing
-    for name, param in model.named_parameters():
-        if "embed" in name:
-            param.requires_grad = False
-        elif ".layer" in name or ".h." in name:
-            tokens = name.split(".")
-            layer_ = None
-            for token in tokens:
-                if token.isdigit():
-                    layer_ = int(token)
-                    break
-
-            if layer_ is not None and layer_ < target_layers:
-                # print('freeze ', layer_, name)
-                param.requires_grad = False
-    return model
-
-
-if __name__ == "__main__":
-    from transformers import AutoModelForSequenceClassification
-
-    model = AutoModelForSequenceClassification.from_pretrained("bigscience/bloomz-560m")
-    freeze_top_n_layers(model, 10)
-    print(model.state_dict().keys())

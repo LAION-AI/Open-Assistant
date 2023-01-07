@@ -1,4 +1,7 @@
+accelerate==0.15.0
 datasets==2.8.0
+deepspeed==0.7.7
+mpi4py==3.1.4
 numpy==1.23.0
 PyYAML==6.0
 scikit_learn==1.2.0
