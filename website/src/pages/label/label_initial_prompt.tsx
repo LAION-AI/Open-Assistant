@@ -1,4 +1,4 @@
-import {  Container, Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack } from "@chakra-ui/react";
+import { Container, Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
 import { useEffect, useId, useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
