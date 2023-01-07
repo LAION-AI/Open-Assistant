@@ -1,13 +1,11 @@
 import { Box, Container, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { useState } from "react";
-import useSWR from "swr";
-
-import fetcher from "src/lib/fetcher";
-import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
+import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { MessageWithChildren } from "src/components/Messages/MessageWithChildren";
+import fetcher from "src/lib/fetcher";
+import useSWR from "swr";
 
 const MessageDetail = ({ id }) => {
   const mainBg = useColorModeValue("bg-slate-300", "bg-slate-900");
@@ -18,7 +16,7 @@ const MessageDetail = ({ id }) => {
     onSuccess: (data) => {
       setParent(data);
     },
-    onError: (err, key, config) => {
+    onError: () => {
       setParent(null);
     },
   });

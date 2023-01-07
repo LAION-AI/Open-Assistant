@@ -1,5 +1,5 @@
 import { Box } from "@chakra-ui/react";
-import { Message } from "./Messages";
+import { Message } from "src/components/Messages";
 
 export const ContextMessages = ({ messages }: { messages: Message[] }) => {
   return (

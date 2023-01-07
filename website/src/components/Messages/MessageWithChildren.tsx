@@ -1,10 +1,9 @@
-import { Box, CircularProgress, Flex, HStack, StackDivider, Text, TextProps, StackProps } from "@chakra-ui/react";
-import { useState } from "react";
-import useSWR from "swr";
-
-import fetcher from "src/lib/fetcher";
-import { MessageTableEntry } from "./MessageTableEntry";
+import { Box, CircularProgress, Flex, HStack, StackDivider, StackProps, Text, TextProps } from "@chakra-ui/react";
 import { boolean } from "boolean";
+import { useState } from "react";
+import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
+import fetcher from "src/lib/fetcher";
+import useSWR from "swr";
 
 const MessageHeaderProps: TextProps = {
   align: "center",
@@ -36,7 +35,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
     onSuccess: (data) => {
       setMessage(data);
     },
-    onError: (err, key, config) => {
+    onError: () => {
       setMessage(null);
     },
   });
@@ -44,7 +43,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
     onSuccess: (data) => {
       setChildren(data);
     },
-    onError: (err, key, config) => {
+    onError: () => {
       setChildren(null);
     },
   });
