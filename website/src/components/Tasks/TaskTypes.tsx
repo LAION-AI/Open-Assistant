@@ -1,9 +1,16 @@
 export enum TaskCategory {
+  Tasks,
   Create,
   Evaluate,
 }
 
 export const TaskTypes = [
+  {
+    label: "Get Random Tasks to perform",
+    desc: "Get any task that needs to be done and help us complete it",
+    category: TaskCategory.Tasks,
+    pathname: "/tasks/random",
+  },
   {
     label: "Create Initial Prompts",
     desc: "Write initial prompts to help Open Assistant to try replying to diverse messages.",

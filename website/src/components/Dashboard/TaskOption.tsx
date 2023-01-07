@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { TaskCategory, TaskTypes } from "../Tasks/TaskTypes";
 
-const displayTaskCategories = [TaskCategory.Create, TaskCategory.Evaluate];
+const displayTaskCategories = [TaskCategory.Tasks];
 
 export const TaskOption = () => {
   const backgroundColor = useColorModeValue("white", "gray.700");
