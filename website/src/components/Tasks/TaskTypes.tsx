@@ -5,6 +5,8 @@ export const TaskTypes = [
     category: "create",
     pathname: "/create/initial_prompt",
     type: "initial_prompt",
+    overview: "Create an initial message to send to the assistant",
+    instruction: "Provide the initial prompt",
   },
   {
     label: "Reply as User",
@@ -12,6 +14,8 @@ export const TaskTypes = [
     category: "create",
     pathname: "/create/user_reply",
     type: "prompter_reply",
+    overview: "Given the following conversation, provide an adequate reply",
+    instruction: "Provide the user`s reply",
   },
   {
     label: "Reply as Assistant",
@@ -19,6 +23,8 @@ export const TaskTypes = [
     category: "create",
     pathname: "/create/assistant_reply",
     type: "assistant_reply",
+    overview: "Given the following conversation, provide an adequate reply",
+    instruction: "Provide the assistant`s reply",
   },
   {
     label: "Rank User Replies",

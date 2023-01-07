@@ -5,10 +5,6 @@ import { TaskTypes } from "../Tasks/TaskTypes";
 
 const displayTaskCategories = ["create", "evaluate"];
 
-function capitalize(text: string) {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
 export const TaskOption = () => {
   const backgroundColor = useColorModeValue("white", "gray.700");
 
@@ -16,7 +12,9 @@ export const TaskOption = () => {
     <Box className="flex flex-col gap-14" fontFamily="inter">
       {displayTaskCategories.map((category, categoryIndex) => (
         <div key={categoryIndex}>
-          <Text className="text-2xl font-bold pb-4">{capitalize(category)}</Text>
+          <Text className="text-2xl font-bold pb-4" style={{ textTransform: "capitalize" }}>
+            {category}
+          </Text>
           <SimpleGrid columns={[1, 2, 2, 3, 4]} gap={4}>
             {TaskTypes.filter((task) => task.category == category).map((item, itemIndex) => (
               <Link key={itemIndex} href={item.pathname}>

@@ -6,11 +6,19 @@ export const Task = ({ tasks, trigger, mutate, mainBgClasses }) => {
   const task = tasks[0].task;
 
   function taskTypeComponent(type) {
-    const category = TaskTypes.find((taskType) => taskType.type === type).category;
-
+    const taskType = TaskTypes.find((taskType) => taskType.type === type);
+    const category = taskType.category;
     switch (category) {
       case "create":
-        return <CreateTask tasks={tasks} trigger={trigger} mutate={mutate} mainBgClasses={mainBgClasses} />;
+        return (
+          <CreateTask
+            tasks={tasks}
+            trigger={trigger}
+            mutate={mutate}
+            taskType={taskType}
+            mainBgClasses={mainBgClasses}
+          />
+        );
       case "evaluate":
         return <EvaluateTask tasks={tasks} trigger={trigger} mutate={mutate} mainBgClasses={mainBgClasses} />;
     }

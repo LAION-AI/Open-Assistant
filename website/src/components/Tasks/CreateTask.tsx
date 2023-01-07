@@ -4,7 +4,7 @@ import { TaskControls } from "src/components/Survey/TaskControls";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 
-export const CreateTask = ({ tasks, trigger, mutate, mainBgClasses }) => {
+export const CreateTask = ({ tasks, taskType, trigger, mutate, mainBgClasses }) => {
   const task = tasks[0].task;
 
   const [inputText, setInputText] = useState("");
@@ -33,12 +33,12 @@ export const CreateTask = ({ tasks, trigger, mutate, mainBgClasses }) => {
     <div className={`p-12 ${mainBgClasses}`}>
       <TwoColumnsWithCards>
         <>
-          <h5 className="text-lg font-semibold">Reply as the assistant</h5>
-          <p className="text-lg py-1">Given the following conversation, provide an adequate reply</p>
+          <h5 className="text-lg font-semibold">{taskType.label}</h5>
+          <p className="text-lg py-1">{taskType.overview}</p>
           {task.conversation ? <Messages messages={task.conversation.messages} post_id={task.id} /> : null}
         </>
         <>
-          <h5 className="text-lg font-semibold">Provide the assistant`s reply</h5>
+          <h5 className="text-lg font-semibold">{taskType.instruction}</h5>
           <TrackedTextarea
             text={inputText}
             onTextChange={textChangeHandler}
