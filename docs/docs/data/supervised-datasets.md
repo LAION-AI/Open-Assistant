@@ -1,4 +1,4 @@
-# Supervised datasets
+# Supervised Datasets
 
 For discussion about usage of supervised data see issue
 <https://github.com/LAION-AI/Open-Assistant/issues/186>.

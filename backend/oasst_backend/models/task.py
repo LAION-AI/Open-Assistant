@@ -22,7 +22,7 @@ class Task(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
     )
     expiry_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(), nullable=True))
-    user_id: UUID = Field(nullable=True, foreign_key="user.id", index=True)
+    user_id: Optional[UUID] = Field(nullable=True, foreign_key="user.id", index=True)
     payload_type: str = Field(nullable=False, max_length=200)
     payload: PayloadContainer = Field(sa_column=sa.Column(payload_column_type(PayloadContainer), nullable=False))
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")

@@ -32,7 +32,7 @@ class Journal(SQLModel, table=True):
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp())
     )
-    user_id: UUID = Field(nullable=True, foreign_key="user.id", index=True)
+    user_id: Optional[UUID] = Field(nullable=True, foreign_key="user.id", index=True)
     message_id: Optional[UUID] = Field(foreign_key="message.id", nullable=True)
     api_client_id: UUID = Field(foreign_key="api_client.id")
 
@@ -49,7 +49,7 @@ class JournalIntegration(SQLModel, table=True):
         ),
     )
     description: str = Field(max_length=512, primary_key=True)
-    last_journal_id: UUID = Field(foreign_key="journal.id", nullable=True)
-    last_run: datetime = Field(sa_column=sa.Column(sa.DateTime(), nullable=True))
-    last_error: str = Field(nullable=True)
-    next_run: datetime = Field(nullable=True)
+    last_journal_id: Optional[UUID] = Field(foreign_key="journal.id", nullable=True)
+    last_run: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(), nullable=True))
+    last_error: Optional[str] = Field(nullable=True)
+    next_run: Optional[datetime] = Field(nullable=True)

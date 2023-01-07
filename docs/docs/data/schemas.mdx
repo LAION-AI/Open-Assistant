@@ -1,4 +1,7 @@
-# OpenAssistant Data Schemas
+import dbpng from "./img/db.png";
+import webdbpng from "./img/webdb.png";
+
+# Data Schemas
 
 ## Introduction
 
@@ -204,7 +207,6 @@ message RankingExample {
     }
   }
 }
-
 ```
 
 ## Databases
@@ -215,18 +217,22 @@ containers.
 
 ### Backend ER-Diagram
 
-![ER-Diagram of backend Database](./db.png)
+ER-Diagram of backend Database
+
+<img src={dbpng} />
 
 **Notes**
 
 - In order for the diagram to not be too messy, foreign key connection to
-  `api_client` are not shown
+  `api_client` are not shown.
 - `frontend_message_id` references `id` of `taskInteraction` on the frontend
 
-  ### Frontend ER-Diagram
+### Frontend ER-Diagram
 
-  ![ER-Diagram of frontend Database](./webdb.png)
+ER-Diagram of frontend Database
 
-  **Notes**
+<img src={webdbpng} />
 
-- `id` of `registeredTask` references `id`of `message`on the backend
+**Notes**
+
+- `id` of `registeredTask` references `id` of `message` on the backend

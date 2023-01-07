@@ -18,6 +18,9 @@ class TaskRequestType(str, enum.Enum):
     rank_initial_prompts = "rank_initial_prompts"
     rank_prompter_replies = "rank_prompter_replies"
     rank_assistant_replies = "rank_assistant_replies"
+    label_initial_prompt = "label_initial_prompt"
+    label_assistant_reply = "label_assistant_reply"
+    label_prompter_reply = "label_prompter_reply"
 
 
 class User(BaseModel):
@@ -31,6 +34,8 @@ class ConversationMessage(BaseModel):
 
     text: str
     is_assistant: bool
+    message_id: Optional[UUID] = None
+    frontend_message_id: Optional[str] = None
 
 
 class Conversation(BaseModel):
@@ -169,6 +174,37 @@ class RankAssistantRepliesTask(RankConversationRepliesTask):
     type: Literal["rank_assistant_replies"] = "rank_assistant_replies"
 
 
+class LabelInitialPromptTask(Task):
+    """A task to label an initial prompt."""
+
+    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    message_id: UUID
+    prompt: str
+    valid_labels: list[str]
+
+
+class LabelConversationReplyTask(Task):
+    """A task to label a reply to a conversation."""
+
+    type: Literal["label_conversation_reply"] = "label_conversation_reply"
+    conversation: Conversation  # the conversation so far
+    message_id: UUID
+    reply: str
+    valid_labels: list[str]
+
+
+class LabelPrompterReplyTask(LabelConversationReplyTask):
+    """A task to label a prompter reply to a conversation."""
+
+    type: Literal["label_prompter_reply"] = "label_prompter_reply"
+
+
+class LabelAssistantReplyTask(LabelConversationReplyTask):
+    """A task to label an assistant reply to a conversation."""
+
+    type: Literal["label_assistant_reply"] = "label_assistant_reply"
+
+
 class TaskDone(Task):
     """Signals to the frontend that the task is done."""
 
@@ -187,6 +223,10 @@ AnyTask = Union[
     RankConversationRepliesTask,
     RankPrompterRepliesTask,
     RankAssistantRepliesTask,
+    LabelInitialPromptTask,
+    LabelConversationReplyTask,
+    LabelPrompterReplyTask,
+    LabelAssistantReplyTask,
 ]
 
 
@@ -222,20 +262,28 @@ class MessageRanking(Interaction):
     ranking: conlist(item_type=int, min_items=1)
 
 
-AnyInteraction = Union[
-    TextReplyToMessage,
-    MessageRating,
-    MessageRanking,
-]
-
-
 class TextLabel(str, enum.Enum):
     """A label for a piece of text."""
 
+    def __new__(cls, label: str, display_text: str = "", help_text: str = None):
+        obj = str.__new__(cls, label)
+        obj._value_ = label
+        obj.display_text = display_text
+        obj.help_text = help_text
+        return obj
+
     spam = "spam"
-    violence = "violence"
-    sexual_content = "sexual_content"
+    fails_task = "fails_task", "Fails to follow the correct instruction / task"
+    not_appropriate = "not_appropriate", "Inappropriate for customer assistant"
+    violence = "violence", "Encourages or fails to discourage violence/abuse/terrorism/self-harm"
+    harmful = (
+        "harmful",
+        "Harmful content",
+        "The advice given in the output is harmful or counter-productive. This may be in addition to, but is distinct from the question about encouraging violence/abuse/terrorism/self-harm.",
+    )
+    sexual_content = "sexual_content", "Contains sexual content"
     toxicity = "toxicity"
+    moral_judgement = "moral_judgement", "Expresses moral judgement"
     political_content = "political_content"
     humor = "humor"
     sarcasm = "sarcasm"
@@ -256,12 +304,13 @@ class TextLabel(str, enum.Enum):
     slang = "slang"
 
 
-class TextLabels(BaseModel):
+class TextLabels(Interaction):
     """A set of labels for a piece of text."""
 
+    type: Literal["text_labels"] = "text_labels"
     text: str
     labels: dict[TextLabel, float]
-    message_id: str | None = None
+    message_id: UUID
 
     @property
     def has_message_id(self) -> bool:
@@ -275,6 +324,14 @@ class TextLabels(BaseModel):
             if not (0 <= value <= 1):
                 raise ValueError(f"Label values must be between 0 and 1, got {value} for {key}.")
         return v
+
+
+AnyInteraction = Union[
+    TextReplyToMessage,
+    MessageRating,
+    MessageRanking,
+    TextLabels,
+]
 
 
 class SystemStats(BaseModel):

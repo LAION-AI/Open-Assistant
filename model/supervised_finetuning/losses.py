@@ -7,7 +7,7 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
 
     def forward(self, input, target, mask=None):
         if mask is not None:
-            mask = mask.view(-1)
+            mask = mask.view(-1).bool()
             input = input.view(-1, input.size(-1))
             target = target.view(-1)
             input = input[mask]

@@ -4,7 +4,7 @@ import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 
-interface TaskControlsProps {
+export interface TaskControlsProps {
   // we need a task type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   tasks: any[];
@@ -30,11 +30,11 @@ export const TaskControls = (props: TaskControlsProps) => {
       <Flex justify="center" ml="auto" gap={2}>
         <SkipButton>Skip</SkipButton>
         {endTask.task.type !== "task_done" ? (
-          <SubmitButton data-cy="submit" onClick={() => props.onSubmitResponse(props.tasks[0])}>
+          <SubmitButton colorScheme="blue" data-cy="submit" onClick={() => props.onSubmitResponse(props.tasks[0])}>
             Submit
           </SubmitButton>
         ) : (
-          <SubmitButton data-cy="next-task" onClick={props.onSkip}>
+          <SubmitButton colorScheme="green" data-cy="next-task" onClick={props.onSkip}>
             Next Task
           </SubmitButton>
         )}

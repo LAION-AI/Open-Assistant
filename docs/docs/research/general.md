@@ -1,4 +1,4 @@
-# Research
+# General
 
 This page lists research papers that are relevant to the project.
 
