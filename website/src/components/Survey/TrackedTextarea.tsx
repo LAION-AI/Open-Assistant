@@ -12,7 +12,7 @@ interface TrackedTextboxProps {
 }
 
 export const TrackedTextarea = (props: TrackedTextboxProps) => {
-  const wordCount = props.text.split(" ").length - 1;
+  const wordCount = (props.text.match(/\w+/g) || []).length;
 
   let progressColor: string;
   switch (true) {
