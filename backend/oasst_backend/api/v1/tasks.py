@@ -30,7 +30,7 @@ def generate_task(
                 protocol_schema.TaskRequestType.rate_summary,
                 protocol_schema.TaskRequestType.label_assistant_reply,
                 protocol_schema.TaskRequestType.label_initial_prompt,
-                protocol_schema.TaskRequestType.label_prompter_reply
+                protocol_schema.TaskRequestType.label_prompter_reply,
             )
             candidate_tasks = set(protocol_schema.TaskRequestType).difference(disabled_tasks)
             request.type = random.choice(tuple(candidate_tasks)).value
