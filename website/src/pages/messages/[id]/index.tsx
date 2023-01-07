@@ -48,7 +48,7 @@ const MessageDetail = ({ id }) => {
             </>
           )}
         </Container>
-        <Box pb="4">
+        <Box pb="4" maxW="full" px="2">
           <MessageWithChildren id={id} maxDepth={2} />
         </Box>
       </main>
