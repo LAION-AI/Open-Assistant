@@ -1,7 +1,6 @@
 import Head from "next/head";
-
-import { getDashboardLayout } from "src/components/Layout";
 import { LeaderboardTable, TaskOption } from "src/components/Dashboard";
+import { getDashboardLayout } from "src/components/Layout";
 
 const Dashboard = () => {
   return (

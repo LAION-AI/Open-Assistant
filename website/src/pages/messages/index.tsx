@@ -1,10 +1,10 @@
 import { Box, CircularProgress, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
-import useSWRImmutable from "swr/immutable";
-import fetcher from "src/lib/fetcher";
-import { MessageTable } from "src/components/Messages/MessageTable";
 import { getDashboardLayout } from "src/components/Layout";
+import { MessageTable } from "src/components/Messages/MessageTable";
+import fetcher from "src/lib/fetcher";
+import useSWRImmutable from "swr/immutable";
 
 const MessagesDashboard = () => {
   const boxBgColor = useColorModeValue("white", "gray.700");
