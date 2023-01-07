@@ -1,0 +1,15 @@
+{
+  "name": "Open-Assistant",
+  "image": "mcr.microsoft.com/vscode/devcontainers/universal",
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/pre-commit:2": {
+      "version": "latest"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/frontend/post_create_command.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": ["GitHub.copilot"]
+    }
+  }
+}
