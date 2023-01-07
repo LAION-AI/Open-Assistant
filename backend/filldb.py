@@ -13,7 +13,6 @@ from oasst_shared.schemas.protocol import User as ProtocolUser
 from sqlmodel import Session
 
 
-# TODO: Should put settings into False
 class FillDb:
     """Class object which fills the database: Api Client, Users & Messages."""
 
