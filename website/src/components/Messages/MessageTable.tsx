@@ -1,5 +1,5 @@
 import { Stack, StackDivider } from "@chakra-ui/react";
-import { MessageTableEntry } from "src/components/MessageTableEntry";
+import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 
 export function MessageTable({ messages }) {
   return (
