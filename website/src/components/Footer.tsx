@@ -31,7 +31,7 @@ export function Footer() {
           <div className="flex flex-col">
             <b className="pb-1">Connect</b>
             <FooterLink href="https://github.com/LAION-AI/Open-Assistant" label="Github" />
-            <FooterLink href="https://discord.gg/pXtnYk9c" label="Discord" />
+            <FooterLink href="https://ykilcher.com/open-assistant-discord" label="Discord" />
           </div>
         </nav>
       </div>
