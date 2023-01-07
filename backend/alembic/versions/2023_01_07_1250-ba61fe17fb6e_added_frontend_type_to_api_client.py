@@ -5,20 +5,19 @@ Revises: 20cd871f4ec7
 Create Date: 2023-01-07 12:50:32.195930
 
 """
-from alembic import op
 import sqlalchemy as sa
 import sqlmodel
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = 'ba61fe17fb6e'
-down_revision = '20cd871f4ec7'
+revision = "ba61fe17fb6e"
+down_revision = "20cd871f4ec7"
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-     op.add_column("api_client", sa.Column("frontend_type", sa.String(256), nullable=True))
+    op.add_column("api_client", sa.Column("frontend_type", sa.String(256), nullable=True))
 
 
 def downgrade() -> None:
