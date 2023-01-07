@@ -36,4 +36,4 @@ scripts/backend-development folder to run the BE API locally.
 
 ## Alembic
 
-To the database run `alembic revision -m "..."` ("..." is what you did) in the `/backend` directory. Then edit the newly created file. See [here](https://alembic.sqlalchemy.org/en/latest/tutorial.html) for more information. 
+To create an Alembic database migration script after sql-models were modified run `alembic revision --autogenerate -m "..."` ("..." is what you did) in the `/backend` directory. Then edit the newly created file. See [here](https://alembic.sqlalchemy.org/en/latest/tutorial.html) for more information. 
