@@ -288,7 +288,8 @@ def tasks_interaction(
                 logger.info(
                     f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}."
                 )
-                # TODO: check if the labels are valid?
+                # Labels are implicitly validated when converting str -> TextLabel
+                # So no need for explicit validation here
                 pr.store_text_labels(interaction)
                 return protocol_schema.TaskDone()
             case _:
