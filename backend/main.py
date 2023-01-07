@@ -118,6 +118,7 @@ if settings.DEBUG_USE_SEED_DATA:
                 dummy_messages = [DummyMessage(**dm) for dm in dummy_messages_raw]
 
                 for msg in dummy_messages:
+                    print(f"msg: {msg}")
                     task = pr.fetch_task_by_frontend_message_id(msg.task_message_id)
                     if task and not task.ack:
                         logger.warning("Deleting unacknowledged seed data task")
@@ -125,20 +126,27 @@ if settings.DEBUG_USE_SEED_DATA:
                         task = None
                     if not task:
                         if msg.parent_message_id is None:
+                            print("storing initial prompt task")
                             task = pr.store_task(
                                 protocol_schema.InitialPromptTask(hint=""), message_tree_id=None, parent_message_id=None
                             )
                         else:
+                            print("storing assistant reply task")
                             parent_message = pr.fetch_message_by_frontend_message_id(
                                 msg.parent_message_id, fail_if_missing=True
                             )
+                            print(f"parent message {parent_message}")
                             conversation_messages = pr.fetch_message_conversation(parent_message)
+                            print(f"conversation messages {conversation_messages}")
                             conversation = protocol_schema.Conversation(
                                 messages=[
                                     protocol_schema.ConversationMessage(
-                                        text=msg.text, is_assistant=msg.role == "assistant"
+                                        text=cmsg.text,
+                                        is_assistant=(cmsg.role == "assistant"),
+                                        message_id=cmsg.id,
+                                        frontend_message_id=cmsg.frontend_message_id,
                                     )
-                                    for msg in conversation_messages
+                                    for cmsg in conversation_messages
                                 ]
                             )
                             task = pr.store_task(
