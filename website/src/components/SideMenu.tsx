@@ -1,4 +1,5 @@
-import { Box, Button, Link, Text, Tooltip, useColorMode } from "@chakra-ui/react";
+import { Box, Button, Text, Tooltip, useColorMode } from "@chakra-ui/react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { FiSun } from "react-icons/fi";
 import { IconType } from "react-icons/lib";

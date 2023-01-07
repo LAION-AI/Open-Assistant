@@ -2,6 +2,7 @@ import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
 import { Popover } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
+import NextLink from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
 import { FiLayout, FiLogOut, FiSettings } from "react-icons/fi";
@@ -77,6 +78,7 @@ export function UserMenu() {
                       <Box className="flex flex-col gap-1">
                         {accountOptions.map((item) => (
                           <Link
+                            as={NextLink}
                             key={item.name}
                             href={item.href}
                             aria-label={item.desc}

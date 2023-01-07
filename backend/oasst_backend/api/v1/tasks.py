@@ -58,7 +58,12 @@ def generate_task(
             logger.info("Generating a PrompterReplyTask.")
             messages = pr.fetch_random_conversation("assistant")
             task_messages = [
-                protocol_schema.ConversationMessage(text=msg.text, is_assistant=(msg.role == "assistant"))
+                protocol_schema.ConversationMessage(
+                    text=msg.text,
+                    is_assistant=(msg.role == "assistant"),
+                    message_id=msg.id,
+                    front_end_id=msg.front_end_id,
+                )
                 for msg in messages
             ]
 
@@ -69,7 +74,12 @@ def generate_task(
             logger.info("Generating a AssistantReplyTask.")
             messages = pr.fetch_random_conversation("prompter")
             task_messages = [
-                protocol_schema.ConversationMessage(text=msg.text, is_assistant=(msg.role == "assistant"))
+                protocol_schema.ConversationMessage(
+                    text=msg.text,
+                    is_assistant=(msg.role == "assistant"),
+                    message_id=msg.id,
+                    front_end_id=msg.front_end_id,
+                )
                 for msg in messages
             ]
 
@@ -89,6 +99,8 @@ def generate_task(
                 protocol_schema.ConversationMessage(
                     text=p.text,
                     is_assistant=(p.role == "assistant"),
+                    message_id=p.id,
+                    front_end_id=p.front_end_id,
                 )
                 for p in conversation
             ]
@@ -103,6 +115,16 @@ def generate_task(
         case protocol_schema.TaskRequestType.rank_assistant_replies:
             logger.info("Generating a RankAssistantRepliesTask.")
             conversation, replies = pr.fetch_multiple_random_replies(message_role="prompter")
+
+            task_messages = [
+                protocol_schema.ConversationMessage(
+                    text=p.text,
+                    is_assistant=(p.role == "assistant"),
+                    message_id=p.id,
+                    front_end_id=p.front_end_id,
+                )
+                for p in conversation
+            ]
             replies = [p.text for p in replies]
             task = protocol_schema.RankAssistantRepliesTask(
                 conversation=prepare_conversation(conversation),
@@ -281,7 +303,8 @@ def tasks_interaction(
                 logger.info(
                     f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}."
                 )
-                # TODO: check if the labels are valid?
+                # Labels are implicitly validated when converting str -> TextLabel
+                # So no need for explicit validation here
                 pr.store_text_labels(interaction)
                 return protocol_schema.TaskDone()
             case _:
