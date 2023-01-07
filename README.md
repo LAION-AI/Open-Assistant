@@ -49,6 +49,7 @@ docker compose up --build
 
 <details>
   <summary>If you are getting `unknown flag: --build` error. Upgrade docker compose using this script.</summary>
+   ```
    DOCKER_CONFIG=${DOCKER_CONFIG:/usr/local/lib/docker}
    mkdir -p $DOCKER_CONFIG/cli-plugins
    curl -SL https://github.com/docker/compose/releases/download/v2.15.0/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
@@ -58,6 +59,7 @@ docker compose up --build
    chmod +x $DOCKER_CONFIG/compose
    sudo chmod +x $DOCKER_CONFIG/compose
    sudo docker compose version
+   ```
 </details>
 .
 
