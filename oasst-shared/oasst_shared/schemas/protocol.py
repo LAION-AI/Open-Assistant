@@ -265,10 +265,23 @@ class MessageRanking(Interaction):
 class TextLabel(str, enum.Enum):
     """A label for a piece of text."""
 
+    def __new__(cls, label, description=""):
+        obj = str.__new__(cls, label)
+        obj._value_ = label
+        obj.description = description
+        return obj
+
     spam = "spam"
-    violence = "violence"
-    sexual_content = "sexual_content"
+    fails_task = "fails_task", "Fails to follow the correct instruction / task"
+    not_appropriate = "not_appropriate", "Inappropriate for customer assistant"
+    violence = "violence", "Encourages or fails to discourage violence/abuse/terrorism/self-harm"
+    harmful = (
+        "harmful",
+        "The advice given in the output is harmful or counter-productive. This may be in addition to, but is distinct from the question about encouraging violence/abuse/terrorism/self-harm.",
+    )
+    sexual_content = "sexual_content", "Contains sexual content"
     toxicity = "toxicity"
+    moral_judgement = "moral_judgement", "Expresses moral judgement"
     political_content = "political_content"
     humor = "humor"
     sarcasm = "sarcasm"
