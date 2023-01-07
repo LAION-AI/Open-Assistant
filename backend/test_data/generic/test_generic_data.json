@@ -56,13 +56,6 @@
     "role": "assistant"
   },
   {
-    "task_message_id": "ba87780d",
-    "user_message_id": "0e276b98",
-    "parent_message_id": "cec432cf",
-    "text": "I'm unsure how to interpret this. Is it a riddle?",
-    "role": "assistant"
-  },
-  {
     "task_message_id": "b8e98ed6",
     "user_message_id": "89384709",
     "parent_message_id": "0e276b98",
