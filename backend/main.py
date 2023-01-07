@@ -136,9 +136,12 @@ if settings.DEBUG_USE_SEED_DATA:
                             conversation = protocol_schema.Conversation(
                                 messages=[
                                     protocol_schema.ConversationMessage(
-                                        text=msg.text, is_assistant=msg.role == "assistant"
+                                        text=cmsg.text,
+                                        is_assistant=cmsg.role == "assistant",
+                                        message_id=cmsg.id,
+                                        fronend_message_id=cmsg.frontend_message_id,
                                     )
-                                    for msg in conversation_messages
+                                    for cmsg in conversation_messages
                                 ]
                             )
                             task = pr.store_task(
