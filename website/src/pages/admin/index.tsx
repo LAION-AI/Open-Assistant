@@ -28,22 +28,6 @@ const AdminIndex = () => {
     router.push("/");
   }, [session, status]);
 
-  // While loading, just show something.
-  if (status === "loading") {
-    return (
-      <>
-        <Head>
-          <title>Open Assistant</title>
-          <meta
-            name="description"
-            content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
-          />
-        </Head>
-        <main className="oa-basic-theme">loading...</main>
-      </>
-    );
-  }
-
   // Show the final page.
   // TODO(#237): Display a component that fetches actual user data.
   return (
@@ -55,9 +39,7 @@ const AdminIndex = () => {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <main className="oa-basic-theme">
-        <UsersCell />
-      </main>
+      <main className="oa-basic-theme">{status === "loading" ? "loading..." : <UsersCell />}</main>
     </>
   );
 };

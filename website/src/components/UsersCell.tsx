@@ -10,9 +10,7 @@ const UsersCell = () => {
   // Fetch and save the users.
   const [users, setUsers] = useState([]);
   const { isLoading } = useSWR("/api/admin/users", fetcher, {
-    onSuccess: (data) => {
-      setUsers(data);
-    },
+    onSuccess: setUsers,
   });
 
   // Present users in a naive table.
