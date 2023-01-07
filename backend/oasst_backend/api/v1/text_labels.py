@@ -38,5 +38,8 @@ def label_text(
 @router.get("/valid_labels")
 def get_valid_lables() -> ValidLabelsResponse:
     return ValidLabelsResponse(
-        valid_labels=[LabelOption(name=l.value, description=l.description) for l in protocol_schema.TextLabel]
+        valid_labels=[
+            LabelOption(name=l.value, display_text=l.display_text, help_text=l.help_text)
+            for l in protocol_schema.TextLabel
+        ]
     )

@@ -1,9 +1,12 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
 class LabelOption(BaseModel):
     name: str
-    description: str
+    display_text: str
+    help_text: Optional[str]
 
 
 class ValidLabelsResponse(BaseModel):
