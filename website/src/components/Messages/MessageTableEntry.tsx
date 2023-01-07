@@ -3,7 +3,17 @@ import { boolean } from "boolean";
 import NextLink from "next/link";
 import { FlaggableElement } from "../FlaggableElement";
 
-export function MessageTableEntry({ item, idx }) {
+interface Message {
+  text: string;
+  id: string;
+  is_assistant: boolean;
+}
+interface MessageTableEntryProps {
+  item: Message;
+  idx: number;
+}
+export function MessageTableEntry(props: MessageTableEntryProps) {
+  const { item, idx } = props;
   const bgColor = useColorModeValue(idx % 2 === 0 ? "bg-slate-800" : "bg-black", "bg-sky-900");
 
   return (
