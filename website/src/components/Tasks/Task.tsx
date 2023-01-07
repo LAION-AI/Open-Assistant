@@ -1,6 +1,6 @@
 import { CreateTask } from "./CreateTask";
 import { EvaluateTask } from "./EvaluateTask";
-import { TaskTypes } from "./TaskTypes";
+import { TaskCategory, TaskTypes } from "./TaskTypes";
 
 export const Task = ({ tasks, trigger, mutate, mainBgClasses }) => {
   const task = tasks[0].task;
@@ -9,7 +9,7 @@ export const Task = ({ tasks, trigger, mutate, mainBgClasses }) => {
     const taskType = TaskTypes.find((taskType) => taskType.type === type);
     const category = taskType.category;
     switch (category) {
-      case "create":
+      case TaskCategory.Create:
         return (
           <CreateTask
             tasks={tasks}
@@ -19,7 +19,7 @@ export const Task = ({ tasks, trigger, mutate, mainBgClasses }) => {
             mainBgClasses={mainBgClasses}
           />
         );
-      case "evaluate":
+      case TaskCategory.Evaluate:
         return <EvaluateTask tasks={tasks} trigger={trigger} mutate={mutate} mainBgClasses={mainBgClasses} />;
     }
   }
