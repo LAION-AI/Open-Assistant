@@ -31,38 +31,36 @@ const MessagesDashboard = () => {
         <title>Messages - Open Assistant</title>
         <meta name="description" content="Chat with Open Assistant and provide feedback." />
       </Head>
-      <Box className="flex flex-col overflow-auto p-6 sm:pl-0 gap-14">
-        <SimpleGrid columns={[1, 1, 1, 2]} gap={4}>
-          <Box>
-            <Text className="text-2xl font-bold" pb="4">
-              Most recent messages
-            </Text>
-            <Box
-              backgroundColor={boxBgColor}
-              boxShadow="base"
-              dropShadow={boxAccentColor}
-              borderRadius="xl"
-              className="p-6 shadow-sm"
-            >
-              {isLoadingAll ? <CircularProgress isIndeterminate /> : <MessageTable messages={messages} />}
-            </Box>
+      <SimpleGrid columns={[1, 1, 1, 2]} gap={4}>
+        <Box>
+          <Text className="text-2xl font-bold" pb="4">
+            Most recent messages
+          </Text>
+          <Box
+            backgroundColor={boxBgColor}
+            boxShadow="base"
+            dropShadow={boxAccentColor}
+            borderRadius="xl"
+            className="p-6 shadow-sm"
+          >
+            {isLoadingAll ? <CircularProgress isIndeterminate /> : <MessageTable messages={messages} />}
           </Box>
-          <Box>
-            <Text className="text-2xl font-bold" pb="4">
-              Your most recent messages
-            </Text>
-            <Box
-              backgroundColor={boxBgColor}
-              boxShadow="base"
-              dropShadow={boxAccentColor}
-              borderRadius="xl"
-              className="p-6 shadow-sm"
-            >
-              {isLoadingUser ? <CircularProgress isIndeterminate /> : <MessageTable messages={userMessages} />}
-            </Box>
+        </Box>
+        <Box>
+          <Text className="text-2xl font-bold" pb="4">
+            Your most recent messages
+          </Text>
+          <Box
+            backgroundColor={boxBgColor}
+            boxShadow="base"
+            dropShadow={boxAccentColor}
+            borderRadius="xl"
+            className="p-6 shadow-sm"
+          >
+            {isLoadingUser ? <CircularProgress isIndeterminate /> : <MessageTable messages={userMessages} />}
           </Box>
-        </SimpleGrid>
-      </Box>
+        </Box>
+      </SimpleGrid>
     </>
   );
 };
