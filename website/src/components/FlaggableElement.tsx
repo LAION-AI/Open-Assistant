@@ -118,7 +118,8 @@ export const FlaggableElement = (props) => {
     </Popover>
   );
 };
-function FlagCheckbox(props: {
+
+export function FlagCheckbox(props: {
   option: textFlagLabels;
   idx: number;
   checkboxValues: boolean[];
