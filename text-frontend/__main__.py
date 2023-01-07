@@ -1,5 +1,6 @@
 """Simple REPL frontend."""
 
+import http
 import random
 
 import requests
@@ -30,6 +31,8 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
     def _post(path: str, json: dict) -> dict:
         response = requests.post(f"{backend_url}{path}", json=json, headers={"X-API-Key": api_key})
         response.raise_for_status()
+        if response.status_code == http.HTTPStatus.NO_CONTENT:
+            return None
         return response.json()
 
     typer.echo("Requesting work...")
@@ -191,7 +194,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 ranking_str = typer.prompt("Enter the reply numbers in order of preference, separated by commas")
                 ranking = [int(x) - 1 for x in ranking_str.split(",")]
 
-                # send ranking
+                # send labels
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
@@ -223,7 +226,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                         invalid_labels = [label for label in labels if label not in valid_labels]
                         typer.echo(f"Invalid labels: {', '.join(invalid_labels)}. Valid: {', '.join(valid_labels)}")
 
-                # send ranking
+                # send labels
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
@@ -260,13 +263,13 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                         invalid_labels = [label for label in labels if label not in valid_labels]
                         typer.echo(f"Invalid labels: {', '.join(invalid_labels)}. Valid: {', '.join(valid_labels)}")
 
-                # send ranking
+                # send labels
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
                         "type": "text_labels",
                         "message_id": task["message_id"],
-                        "text": task["prompt"],
+                        "text": task["reply"],
                         "labels": labels_dict,
                         "user": USER,
                     },

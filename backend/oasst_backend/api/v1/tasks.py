@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
+from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -126,7 +127,7 @@ def generate_task(
             ]
             replies = [p.text for p in replies]
             task = protocol_schema.RankAssistantRepliesTask(
-                conversation=protocol_schema.Conversation(messages=task_messages),
+                conversation=prepare_conversation(conversation),
                 replies=replies,
             )
 
@@ -142,22 +143,22 @@ def generate_task(
         case protocol_schema.TaskRequestType.label_prompter_reply:
             logger.info("Generating a LabelPrompterReplyTask.")
             conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="assistant")
-            message = messages[0].text
+            message = messages[0]
             task = protocol_schema.LabelPrompterReplyTask(
                 message_id=message.id,
-                conversation=conversation,
-                reply=message,
+                conversation=prepare_conversation(conversation),
+                reply=message.text,
                 valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
             )
 
         case protocol_schema.TaskRequestType.label_assistant_reply:
             logger.info("Generating a LabelAssistantReplyTask.")
             conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="prompter")
-            message = messages[0].text
+            message = messages[0]
             task = protocol_schema.LabelAssistantReplyTask(
                 message_id=message.id,
-                conversation=conversation,
-                reply=message,
+                conversation=prepare_conversation(conversation),
+                reply=message.text,
                 valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
             )
 
