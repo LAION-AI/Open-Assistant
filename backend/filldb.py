@@ -174,17 +174,25 @@ if __name__ == "__main__":
         description="Fill the database with mock data generated randomly",
     )
 
-    parser.add_argument("--api_clients", type=int, default=1, help="Amount of API Clients that we want to create")
+    parser.add_argument("--api_client", type=int, default=1, help="Amount of API Clients that we want to create")
 
     parser.add_argument("--users", type=int, default=1, help="Amount of Users that we want to create")
+
+    parser.add_argument("--seed", type=int, default=0, help="The value we want to use as seed")
 
     parser.add_argument(
         "--use_seed", type=bool, default=True, help="Whether we want to use seed for the random messages"
     )
 
+    # Parse the arguments
     args = parser.parse_args()
 
-    fill_db = FillDb(engine, args.api_clients, args.users, use_seed=args.use_seed)
+    api_client = args.api_client
+    users = args.users
+    use_seed = args.use_seed
+    seed = args.seed
+
+    fill_db = FillDb(engine, api_client, users, use_seed=use_seed, seed=seed)
 
     fill_db.fill_api_client()
     fill_db.fill_users()

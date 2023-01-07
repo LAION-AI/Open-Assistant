@@ -15,12 +15,12 @@ database.
 
 We have the following arguments:
 
-- _api_clients_: amount of api clients that we want to create
+- _api_client_: amount of api clients that we want to create
 - _users_: amount of users that we want to create
 - _use_seed_: use a seed for the random generation of the data
 
 So an example would be:
 
 ```bash
-    python3 filldb.py --api_clients=10 --users=10 --use_seed=False
+    python3 filldb.py --api_client=10 --users=10 --use_seed=False --seed=0
 ```
