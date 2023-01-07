@@ -1,7 +1,9 @@
-# Website
+# Docs Site
 
-This website is built using [Docusaurus 2](https://docusaurus.io/), a modern
-static website generator.
+https://liaon-ai.github.io/Open-Assistant/
+
+This [site](https://liaon-ai.github.io/Open-Assistant/) is built using
+[Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
 ### Contributing
 
