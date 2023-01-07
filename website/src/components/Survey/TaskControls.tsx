@@ -21,7 +21,7 @@ export const TaskControls = (props: TaskControlsProps) => {
   return (
     <section
       className={clsx(
-        "flex-row justify-items-stretch mb-8 p-4 rounded-lg max-w-7xl mx-auto space-y-4 sm:flex",
+        "flex-row justify-items-stretch mb-8 p-4 rounded-lg max-w-7xl mx-auto space-y-4 sm:space-y-0 sm:flex",
         props.className,
         {
           "bg-white text-gray-800 shadow-lg": isLightMode,
