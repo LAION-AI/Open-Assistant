@@ -1,17 +1,23 @@
 import { TaskResponse, useGenericTaskAPI } from "./useGenericTaskAPI";
 
-export interface LabelInitialPromptTask {
+export interface LabelPrompterReplyTask {
   id: string;
-  type: "label_initial_prompt";
+  type: "label_prompter_reply";
   message_id: string;
   valid_labels: string[];
-  prompt: string;
+  reply: string;
+  conversation: {
+    messages: Array<{
+      text: string;
+      is_assistant: boolean;
+    }>;
+  };
 }
 
-export type LabelInitialPromptTaskResponse = TaskResponse<LabelInitialPromptTask>;
+export type LabelPrompterReplyTaskResponse = TaskResponse<LabelPrompterReplyTask>;
 
-export const useLabelInitialPromptTask = () => {
-  const { tasks, isLoading, trigger, reset, error } = useGenericTaskAPI<LabelInitialPromptTask>("label_initial_prompt");
+export const useLabelPrompterReplyTask = () => {
+  const { tasks, isLoading, trigger, reset, error } = useGenericTaskAPI<LabelPrompterReplyTask>("label_prompter_reply");
 
   const submit = (id: string, message_id: string, text: string, validLabels: string[], labelWeights: number[]) => {
     console.assert(validLabels.length === labelWeights.length);
