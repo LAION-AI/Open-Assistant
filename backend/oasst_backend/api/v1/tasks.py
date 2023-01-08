@@ -285,7 +285,7 @@ async def tasks_interaction(
                 if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
                     try:
                         hugging_face_api = HuggingFaceAPI(
-                            f"{HF_url.HUGGINGFACE_FEATURE_EXTRACTION.value}{HF_embeddingModel.MINILM.value}"
+                            f"{HF_url.HUGGINGFACE_FEATURE_EXTRACTION.value}/{HF_embeddingModel.MINILM.value}"
                         )
                         embedding = await hugging_face_api.post(interaction.text)
                         pr.insert_message_embedding(
