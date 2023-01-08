@@ -18,6 +18,9 @@ class TaskRequestType(str, enum.Enum):
     rank_initial_prompts = "rank_initial_prompts"
     rank_prompter_replies = "rank_prompter_replies"
     rank_assistant_replies = "rank_assistant_replies"
+    label_initial_prompt = "label_initial_prompt"
+    label_assistant_reply = "label_assistant_reply"
+    label_prompter_reply = "label_prompter_reply"
 
 
 class User(BaseModel):
@@ -31,6 +34,8 @@ class ConversationMessage(BaseModel):
 
     text: str
     is_assistant: bool
+    message_id: Optional[UUID] = None
+    frontend_message_id: Optional[str] = None
 
 
 class Conversation(BaseModel):
@@ -169,6 +174,37 @@ class RankAssistantRepliesTask(RankConversationRepliesTask):
     type: Literal["rank_assistant_replies"] = "rank_assistant_replies"
 
 
+class LabelInitialPromptTask(Task):
+    """A task to label an initial prompt."""
+
+    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    message_id: UUID
+    prompt: str
+    valid_labels: list[str]
+
+
+class LabelConversationReplyTask(Task):
+    """A task to label a reply to a conversation."""
+
+    type: Literal["label_conversation_reply"] = "label_conversation_reply"
+    conversation: Conversation  # the conversation so far
+    message_id: UUID
+    reply: str
+    valid_labels: list[str]
+
+
+class LabelPrompterReplyTask(LabelConversationReplyTask):
+    """A task to label a prompter reply to a conversation."""
+
+    type: Literal["label_prompter_reply"] = "label_prompter_reply"
+
+
+class LabelAssistantReplyTask(LabelConversationReplyTask):
+    """A task to label an assistant reply to a conversation."""
+
+    type: Literal["label_assistant_reply"] = "label_assistant_reply"
+
+
 class TaskDone(Task):
     """Signals to the frontend that the task is done."""
 
@@ -187,6 +223,10 @@ AnyTask = Union[
     RankConversationRepliesTask,
     RankPrompterRepliesTask,
     RankAssistantRepliesTask,
+    LabelInitialPromptTask,
+    LabelConversationReplyTask,
+    LabelPrompterReplyTask,
+    LabelAssistantReplyTask,
 ]
 
 
@@ -222,46 +262,48 @@ class MessageRanking(Interaction):
     ranking: conlist(item_type=int, min_items=1)
 
 
-AnyInteraction = Union[
-    TextReplyToMessage,
-    MessageRating,
-    MessageRanking,
-]
-
-
 class TextLabel(str, enum.Enum):
     """A label for a piece of text."""
 
-    spam = "spam"
-    violence = "violence"
-    sexual_content = "sexual_content"
-    toxicity = "toxicity"
-    political_content = "political_content"
-    humor = "humor"
-    sarcasm = "sarcasm"
-    hate_speech = "hate_speech"
-    profanity = "profanity"
-    ad_hominem = "ad_hominem"
-    insult = "insult"
-    threat = "threat"
-    aggressive = "aggressive"
-    misleading = "misleading"
-    helpful = "helpful"
-    formal = "formal"
-    cringe = "cringe"
-    creative = "creative"
-    beautiful = "beautiful"
-    informative = "informative"
-    based = "based"
-    slang = "slang"
+    def __new__(cls, label: str, display_text: str = "", help_text: str = None):
+        obj = str.__new__(cls, label)
+        obj._value_ = label
+        obj.display_text = display_text
+        obj.help_text = help_text
+        return obj
+
+    spam = "spam", "Seems to be intentionally low-quality or irrelevant"
+    fails_task = "fails_task", "Fails to follow the correct instruction / task"
+    not_appropriate = "not_appropriate", "Inappropriate for customer assistant"
+    violence = "violence", "Encourages or fails to discourage violence/abuse/terrorism/self-harm"
+    excessive_harm = (
+        "excessive_harm",
+        "Content likely to cause excessive harm not justifiable in the context",
+        "Harm refers to physical or mental damage or injury to someone or something. Excessive refers to a reasonable threshold of harm in the context, for instance damaging skin is not excessive in the context of surgery.",
+    )
+    sexual_content = "sexual_content", "Contains sexual content"
+    toxicity = "toxicity", "Contains rude, abusive, profane or insulting content"
+    moral_judgement = "moral_judgement", "Expresses moral judgement"
+    political_content = "political_content", "Expresses political views"
+    humor = "humor", "Contains humorous content including sarcasm"
+    hate_speech = (
+        "hate_speech",
+        "Content is abusive or threatening and expresses prejudice against a protected characteristic",
+        "Prejudice refers to preconceived views not based on reason. Protected characteristics include gender, ethnicity, religion, sexual orientation, and similar characteristics.",
+    )
+    threat = "threat", "Contains a threat against a person or persons"
+    misleading = "misleading", "Contains text which is incorrect or misleading"
+    helpful = "helpful", "Completes the task to a high standard"
+    creative = "creative", "Expresses creativity in responding to the task"
 
 
-class TextLabels(BaseModel):
+class TextLabels(Interaction):
     """A set of labels for a piece of text."""
 
+    type: Literal["text_labels"] = "text_labels"
     text: str
     labels: dict[TextLabel, float]
-    message_id: str | None = None
+    message_id: UUID
 
     @property
     def has_message_id(self) -> bool:
@@ -275,6 +317,14 @@ class TextLabels(BaseModel):
             if not (0 <= value <= 1):
                 raise ValueError(f"Label values must be between 0 and 1, got {value} for {key}.")
         return v
+
+
+AnyInteraction = Union[
+    TextReplyToMessage,
+    MessageRating,
+    MessageRanking,
+    TextLabels,
+]
 
 
 class SystemStats(BaseModel):

@@ -16,3 +16,12 @@ jobs:
         with:
           python-version: "3.10"
       - uses: pre-commit/action@v3.0.0
+      - name: Post PR comment on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            :x: **pre-commit** failed.
+            Please run `pre-commit run --all-files` locally and commit the changes.
+            Find more information in the repository's CONTRIBUTING.md

@@ -48,7 +48,7 @@ export function CallToAction() {
             here:
           </p>
           <div className="mt-8 flex justify-center">
-            <a href="https://discord.gg/pXtnYk9c" rel="noreferrer" target="_blank">
+            <a href="https://ykilcher.com/open-assistant-discord" rel="noreferrer" target="_blank">
               <button
                 type="button"
                 className="mb-2 ml-6 flex items-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
