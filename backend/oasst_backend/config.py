@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     )
 
     HUGGING_FACE_API_KEY: str = ""
+    DEBUT_SKIP_TOXICITY_CALCULATION: bool = False
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
