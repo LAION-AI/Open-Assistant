@@ -28,7 +28,7 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
 
   return (
     <Stack direction={"column"}>
-      <Textarea data-cy="reply" value={props.text} onChange={props.onTextChange} {...props.textareaProps} onCapture />
+      <Textarea data-cy="reply" value={props.text} onChange={props.onTextChange} {...props.textareaProps} />
       <Progress size={"md"} rounded={"md"} value={wordCount} colorScheme={progressColor} max={props.thresholds.goal} />
     </Stack>
   );
