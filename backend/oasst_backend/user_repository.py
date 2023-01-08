@@ -85,7 +85,7 @@ class UserRepository:
             users = users.filter(User.display_name >= ge)
 
         if lt:
-            users = users.filter(User.display_name <= lt)
+            users = users.filter(User.display_name < lt)
 
         users = users.order_by(User.display_name)
 
