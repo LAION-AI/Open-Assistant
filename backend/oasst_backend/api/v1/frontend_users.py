@@ -6,6 +6,7 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.user_repository import UserRepository
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
@@ -24,8 +25,8 @@ def query_frontend_user(
     """
     Query frontend user.
     """
-    pr = PromptRepository(db, api_client, user=None)
-    user = pr.query_frontend_user(auth_method, username, api_client_id)
+    ur = UserRepository(db, api_client)
+    user = ur.query_frontend_user(auth_method, username, api_client_id)
     return user
 
 
