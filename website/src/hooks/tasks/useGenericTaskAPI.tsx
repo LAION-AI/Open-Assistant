@@ -17,7 +17,7 @@ export const useGenericTaskAPI = <TaskType,>(taskApiEndpoint: string) => {
 
   const [tasks, setTasks] = useState<ConcreteTaskResponse[]>([]);
 
-  const { isLoading, mutate, error } = useSWRImmutable<ConcreteTaskResponse>(
+  const { data, isLoading, mutate, error } = useSWRImmutable<ConcreteTaskResponse>(
     "/api/new_task/" + taskApiEndpoint,
     fetcher,
     {
@@ -26,10 +26,10 @@ export const useGenericTaskAPI = <TaskType,>(taskApiEndpoint: string) => {
   );
 
   useEffect(() => {
-    if (tasks.length === 0 && !isLoading && !error) {
+    if (data === undefined && !isLoading && !error) {
       mutate();
     }
-  }, [tasks, isLoading, mutate, error]);
+  }, [data, isLoading, mutate, error]);
 
   const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (response) => {
