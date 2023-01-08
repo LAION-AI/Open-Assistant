@@ -5,14 +5,14 @@ import { MessageTable } from "src/components/Messages/MessageTable";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { LabelSliderGroup, LabelTask } from "src/components/Tasks/LabelTask";
 import {
-  LabelPrompterReplyTaskResponse,
-  useLabelPrompterReplyTask,
-} from "src/hooks/tasks/labeling/useLabelPrompterReply";
+  LabelAssistantReplyTaskResponse,
+  useLabelAssistantReplyTask,
+} from "src/hooks/tasks/labeling/useLabelAssistantReply";
 
-const LabelPrompterReply = () => {
+const LabelAssistantReply = () => {
   const [sliderValues, setSliderValues] = useState<number[]>([]);
 
-  const { tasks, isLoading, submit, reset } = useLabelPrompterReplyTask();
+  const { tasks, isLoading, submit, reset } = useLabelAssistantReplyTask();
 
   if (isLoading || tasks.length === 0) {
     return <LoadingScreen />;
@@ -21,12 +21,12 @@ const LabelPrompterReply = () => {
   const task = tasks[0].task;
   const messages: Message[] = [
     ...task.conversation.messages,
-    { text: task.reply, is_assistant: false, message_id: task.message_id },
+    { text: task.reply, is_assistant: true, message_id: task.message_id },
   ];
 
   return (
     <LabelTask
-      title="Label Prompter Reply"
+      title="Label Assistant Reply"
       desc="Given the following discussion, provide labels for the final prompt"
       messages={<MessageTable messages={messages} />}
       inputs={<LabelSliderGroup labelIDs={task.valid_labels} onChange={setSliderValues} />}
@@ -34,7 +34,7 @@ const LabelPrompterReply = () => {
         <TaskControls
           tasks={tasks}
           onSkip={reset}
-          onSubmitResponse={({ id, task }: LabelPrompterReplyTaskResponse) =>
+          onSubmitResponse={({ id, task }: LabelAssistantReplyTaskResponse) =>
             submit(id, task.message_id, task.reply, task.valid_labels, sliderValues)
           }
         />
@@ -43,4 +43,4 @@ const LabelPrompterReply = () => {
   );
 };
 
-export default LabelPrompterReply;
+export default LabelAssistantReply;
