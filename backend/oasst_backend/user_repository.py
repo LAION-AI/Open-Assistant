@@ -1,11 +1,9 @@
 from typing import Optional
 
 from oasst_backend.models import ApiClient, Message, User
-from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import LeaderboardStats
 from sqlmodel import Session, func
-from starlette.status import HTTP_403_FORBIDDEN
 
 
 class UserRepository:
@@ -72,11 +70,11 @@ class UserRepository:
         lt: Optional[str] = None,
         auth_method: Optional[str] = None,
     ) -> list[User]:
-        # TODO: api_client_id
-        if not self.api_client.trusted:
-            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
 
         users = self.db.query(User)
+
+        if not self.api_client.trusted:
+            users = users.filter(User.api_client_id == self.api_client.id)
 
         if auth_method:
             users = users.filter(User.auth_method == auth_method)
