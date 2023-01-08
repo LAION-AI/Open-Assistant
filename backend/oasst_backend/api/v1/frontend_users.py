@@ -13,6 +13,22 @@ from starlette.status import HTTP_204_NO_CONTENT
 router = APIRouter()
 
 
+@router.get("/{auth_method}/{username}", response_model=protocol.User)
+def query_frontend_user(
+    auth_method: str,
+    username: str,
+    api_client_id: UUID = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    """
+    Query frontend user.
+    """
+    pr = PromptRepository(db, api_client, user=None)
+    user = pr.query_frontend_user(auth_method, username, api_client_id)
+    return user
+
+
 @router.get("/{username}/messages", response_model=list[protocol.Message])
 def query_frontend_user_messages(
     username: str,
