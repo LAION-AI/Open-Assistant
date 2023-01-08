@@ -27,6 +27,10 @@ The Python notebook openbugger_example.ipynb does the following:
    steps 7 and 8 for the medium and hard scripts, but with the "medium" and
    "hard" injection methods and different numbers of errors to inject.
 
+It also contains openbugger_example_noimports.ipynb that skips 1/2/3 with a big
+copy-pasta with code updated 1/8/2023, use this if you don't want to bother
+installing openbugger.
+
 General Usage To use OpenBugger, import the SintaxBug or LogicBug classes from
 the openbugger module and use them to inject a bug with a call to the inject().
 The injector will return the modified script with the injected bug.
