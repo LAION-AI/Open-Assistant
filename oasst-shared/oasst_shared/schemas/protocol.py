@@ -276,10 +276,10 @@ class TextLabel(str, enum.Enum):
     fails_task = "fails_task", "Fails to follow the correct instruction / task"
     not_appropriate = "not_appropriate", "Inappropriate for customer assistant"
     violence = "violence", "Encourages or fails to discourage violence/abuse/terrorism/self-harm"
-    harmful = (
-        "harmful",
-        "Harmful content",
-        "The advice given in the output is harmful or counter-productive. This may be in addition to, but is distinct from the label for encouraging violence/abuse/terrorism/self-harm.",
+    excessive_harm = (
+        "excessive_harm",
+        "Content likely to cause excessive harm not justifiable in the context",
+        "Harm refers to physical or mental damage or injury to someone or something. Excessive refers to a reasonable threshold of harm in the context, for instance damaging skin is not excessive in the context of surgery.",
     )
     sexual_content = "sexual_content", "Contains sexual content"
     toxicity = "toxicity", "Contains rude, abusive, profane or insulting content"
