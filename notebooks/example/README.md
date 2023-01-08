@@ -20,7 +20,8 @@ like to try ensure are:
 
 ## Running in Google Colab
 
-At the top of the notebook there is a code cell that will (once uncommented):
+At the top of the [example notebook](example.ipynb) there is a code cell that
+will (once uncommented):
 
 1. clone the repository into your colab instance.
 1. `cd` into the relevant notebook directory.
