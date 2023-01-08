@@ -14,7 +14,7 @@ from oasst_backend.api.deps import get_dummy_api_client
 from oasst_backend.api.v1.api import api_router
 from oasst_backend.config import settings
 from oasst_backend.database import engine
-from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from pydantic import BaseModel
@@ -110,7 +110,12 @@ if settings.DEBUG_USE_SEED_DATA:
             with Session(engine) as db:
                 api_client = get_dummy_api_client(db)
                 dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
-                pr = PromptRepository(db=db, api_client=api_client, user=dummy_user)
+
+                ur = UserRepository(db=db, api_client=api_client)
+                tr = TaskRepository(db=db, api_client=api_client, client_user=dummy_user, user_repository=ur)
+                pr = PromptRepository(
+                    db=db, api_client=api_client, client_user=dummy_user, user_repository=ur, task_repository=tr
+                )
 
                 with open(settings.DEBUG_USE_SEED_DATA_PATH) as f:
                     dummy_messages_raw = json.load(f)
@@ -118,14 +123,14 @@ if settings.DEBUG_USE_SEED_DATA:
                 dummy_messages = [DummyMessage(**dm) for dm in dummy_messages_raw]
 
                 for msg in dummy_messages:
-                    task = pr.fetch_task_by_frontend_message_id(msg.task_message_id)
+                    task = tr.fetch_task_by_frontend_message_id(msg.task_message_id)
                     if task and not task.ack:
                         logger.warning("Deleting unacknowledged seed data task")
                         db.delete(task)
                         task = None
                     if not task:
                         if msg.parent_message_id is None:
-                            task = pr.store_task(
+                            task = tr.store_task(
                                 protocol_schema.InitialPromptTask(hint=""), message_tree_id=None, parent_message_id=None
                             )
                         else:
@@ -144,12 +149,12 @@ if settings.DEBUG_USE_SEED_DATA:
                                     for cmsg in conversation_messages
                                 ]
                             )
-                            task = pr.store_task(
+                            task = tr.store_task(
                                 protocol_schema.AssistantReplyTask(conversation=conversation),
                                 message_tree_id=parent_message.message_tree_id,
                                 parent_message_id=parent_message.id,
                             )
-                        pr.bind_frontend_message_id(task.id, msg.task_message_id)
+                        tr.bind_frontend_message_id(task.id, msg.task_message_id)
                         message = pr.store_text_reply(msg.text, msg.task_message_id, msg.user_message_id)
 
                         logger.info(

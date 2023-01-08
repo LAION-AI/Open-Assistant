@@ -20,4 +20,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_column("api_client", "frontend_id")
+    op.drop_column("api_client", "frontend_type")
