@@ -20,3 +20,20 @@ __all__ = [
     "Journal",
     "JournalIntegration",
 ]
+
+# Add a docstring to provide an overview of the models
+__doc__ = """
+This module contains the SQLAlchemy models used in the application.
+
+The models are:
+- `ApiClient`: represents a client that consumes the API
+- `User`: represents a user of the application
+- `UserStats`: represents the statistics for a user
+- `Message`: represents a message in the application
+- `MessageReaction`: represents a reaction to a message
+- `MessageTreeState`: represents the state of a message tree
+- `Task`: represents a task in the application
+- `TextLabels`: represents labels for text in the application
+- `Journal`: represents a journal in the application
+- `JournalIntegration`: represents an integration with a journaling service
+"""
