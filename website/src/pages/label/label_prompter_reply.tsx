@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
-import { Message, Messages } from "src/components/Messages";
+import { Message } from "src/components/Messages";
+import { MessageTable } from "src/components/Messages/MessageTable";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { LabelSliderGroup, LabelTask } from "src/components/Tasks/LabelTask";
 import { LabelPrompterReplyTaskResponse, useLabelPrompterReplyTask } from "src/hooks/tasks/useLabelPrompterReply";
@@ -26,7 +27,7 @@ const LabelPrompterReply = () => {
     <LabelTask
       title="Label Prompter Reply"
       desc="Given the following discussion, provide labels for the final prompt"
-      messages={<Messages messages={messages} post_id={task.id} />}
+      messages={<MessageTable messages={messages} />}
       inputs={<LabelSliderGroup labelIDs={task.valid_labels} onChange={setSliderValues} />}
       controls={
         <TaskControls
