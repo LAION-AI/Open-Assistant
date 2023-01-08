@@ -233,11 +233,11 @@ class PromptRepository:
         if None in (message_id, model, embedding):
             raise OasstError("Paramters missing to add embedding", OasstErrorCode.GENERIC_ERROR)
 
-        model = MessageEmbedding(message_id=message_id, model=model, embedding=embedding)
-        self.db.add(model)
+        message_embedding = MessageEmbedding(message_id=message_id, model=model, embedding=embedding)
+        self.db.add(message_embedding)
         self.db.commit()
-        self.db.refresh(model)
-        return model
+        self.db.refresh(message_embedding)
+        return message_embedding
 
     def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
         if self.user_id is None:
