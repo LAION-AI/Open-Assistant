@@ -1,8 +1,8 @@
 # Notebooks
 
 This is a folder with some useful notebooks, all the notebooks have a markdown
-file with the same name explaining what they do (or a README.md if its a single
-notebook folder).
+file with the same name (or a README.md if its a single notebook folder)
+explaining what they do.
 
 ## Contributing
 
