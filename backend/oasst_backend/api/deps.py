@@ -40,7 +40,13 @@ def get_dummy_api_client(db: Session) -> ApiClient:
     if api_client is None:
         token = token_hex(32)
         logger.info(f"ANY_API_KEY missing, inserting api_key: {token}")
-        api_client = ApiClient(id=ANY_API_KEY_ID, api_key=token, description="ANY_API_KEY, random token", trusted=True)
+        api_client = ApiClient(
+            id=ANY_API_KEY_ID,
+            api_key=token,
+            description="ANY_API_KEY, random token",
+            trusted=True,
+            frontend_type="Test frontend",
+        )
         db.add(api_client)
         db.commit()
     return api_client

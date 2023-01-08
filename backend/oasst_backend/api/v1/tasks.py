@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
+from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -58,7 +59,10 @@ def generate_task(
             messages = pr.fetch_random_conversation("assistant")
             task_messages = [
                 protocol_schema.ConversationMessage(
-                    text=msg.payload.payload.text, is_assistant=(msg.role == "assistant")
+                    text=msg.text,
+                    is_assistant=(msg.role == "assistant"),
+                    message_id=msg.id,
+                    front_end_id=msg.frontend_message_id,
                 )
                 for msg in messages
             ]
@@ -71,7 +75,10 @@ def generate_task(
             messages = pr.fetch_random_conversation("prompter")
             task_messages = [
                 protocol_schema.ConversationMessage(
-                    text=msg.payload.payload.text, is_assistant=(msg.role == "assistant")
+                    text=msg.text,
+                    is_assistant=(msg.role == "assistant"),
+                    message_id=msg.id,
+                    front_end_id=msg.frontend_message_id,
                 )
                 for msg in messages
             ]
@@ -83,19 +90,21 @@ def generate_task(
             logger.info("Generating a RankInitialPromptsTask.")
 
             messages = pr.fetch_random_initial_prompts()
-            task = protocol_schema.RankInitialPromptsTask(prompts=[msg.payload.payload.text for msg in messages])
+            task = protocol_schema.RankInitialPromptsTask(prompts=[msg.text for msg in messages])
         case protocol_schema.TaskRequestType.rank_prompter_replies:
             logger.info("Generating a RankPrompterRepliesTask.")
             conversation, replies = pr.fetch_multiple_random_replies(message_role="assistant")
 
             task_messages = [
                 protocol_schema.ConversationMessage(
-                    text=p.payload.payload.text,
+                    text=p.text,
                     is_assistant=(p.role == "assistant"),
+                    message_id=p.id,
+                    front_end_id=p.frontend_message_id,
                 )
                 for p in conversation
             ]
-            replies = [p.payload.payload.text for p in replies]
+            replies = [p.text for p in replies]
             task = protocol_schema.RankPrompterRepliesTask(
                 conversation=protocol_schema.Conversation(
                     messages=task_messages,
@@ -109,16 +118,50 @@ def generate_task(
 
             task_messages = [
                 protocol_schema.ConversationMessage(
-                    text=p.payload.payload.text,
+                    text=p.text,
                     is_assistant=(p.role == "assistant"),
+                    message_id=p.id,
+                    front_end_id=p.frontend_message_id,
                 )
                 for p in conversation
             ]
-            replies = [p.payload.payload.text for p in replies]
+            replies = [p.text for p in replies]
             task = protocol_schema.RankAssistantRepliesTask(
-                conversation=protocol_schema.Conversation(messages=task_messages),
+                conversation=prepare_conversation(conversation),
                 replies=replies,
             )
+
+        case protocol_schema.TaskRequestType.label_initial_prompt:
+            logger.info("Generating a LabelInitialPromptTask.")
+            message = pr.fetch_random_initial_prompts(1)[0]
+            task = protocol_schema.LabelInitialPromptTask(
+                message_id=message.id,
+                prompt=message.text,
+                valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
+            )
+
+        case protocol_schema.TaskRequestType.label_prompter_reply:
+            logger.info("Generating a LabelPrompterReplyTask.")
+            conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="assistant")
+            message = messages[0]
+            task = protocol_schema.LabelPrompterReplyTask(
+                message_id=message.id,
+                conversation=prepare_conversation(conversation),
+                reply=message.text,
+                valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
+            )
+
+        case protocol_schema.TaskRequestType.label_assistant_reply:
+            logger.info("Generating a LabelAssistantReplyTask.")
+            conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="prompter")
+            message = messages[0]
+            task = protocol_schema.LabelAssistantReplyTask(
+                message_id=message.id,
+                conversation=prepare_conversation(conversation),
+                reply=message.text,
+                valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
+            )
+
         case _:
             raise OasstError("Invalid request type", OasstErrorCode.TASK_INVALID_REQUEST_TYPE)
 
@@ -255,6 +298,14 @@ def tasks_interaction(
                 # TODO: check if the ranking is valid
                 pr.store_ranking(interaction)
                 # here we would store the ranking in the database
+                return protocol_schema.TaskDone()
+            case protocol_schema.TextLabels:
+                logger.info(
+                    f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}."
+                )
+                # Labels are implicitly validated when converting str -> TextLabel
+                # So no need for explicit validation here
+                pr.store_text_labels(interaction)
                 return protocol_schema.TaskDone()
             case _:
                 raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)

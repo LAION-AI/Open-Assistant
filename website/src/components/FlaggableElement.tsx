@@ -17,11 +17,14 @@ import {
   Spacer,
   Tooltip,
   useBoolean,
+  useColorMode,
+  useColorModeValue,
   useId,
 } from "@chakra-ui/react";
 import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
 import poster from "src/lib/poster";
+import { colors } from "styles/Theme/colors";
 import useSWRMutation from "swr/mutation";
 
 export const FlaggableElement = (props) => {
@@ -102,7 +105,10 @@ export const FlaggableElement = (props) => {
             <Button
               isDisabled={!checkboxValues.some(Boolean)}
               onClick={submitResponse}
-              className="bg-indigo-600 text-black hover:bg-indigo-700"
+              className={`bg-indigo-600 text-${useColorModeValue(
+                colors.light.text,
+                colors.dark.text
+              )} hover:bg-indigo-700`}
             >
               Report
             </Button>
@@ -112,7 +118,8 @@ export const FlaggableElement = (props) => {
     </Popover>
   );
 };
-function FlagCheckbox(props: {
+
+export function FlagCheckbox(props: {
   option: textFlagLabels;
   idx: number;
   checkboxValues: boolean[];
@@ -133,6 +140,12 @@ function FlagCheckbox(props: {
   }
 
   const id = useId();
+  const { colorMode } = useColorMode();
+
+  const labelTextClass =
+    colorMode === "light"
+      ? `text-${colors.light.text} hover:text-blue-700 float-left`
+      : `text-${colors.dark.text} hover:text-blue-400 float-left`;
 
   return (
     <Flex gap={1}>
@@ -143,7 +156,7 @@ function FlagCheckbox(props: {
         }}
       />
       <label className="text-sm form-check-label" htmlFor={id}>
-        <span className="text-gray-800 hover:text-blue-700 float-left">{props.option.labelText}</span>
+        <span className={labelTextClass}>{props.option.labelText}</span>
         {AdditionalExplanation}
       </label>
       <Spacer />

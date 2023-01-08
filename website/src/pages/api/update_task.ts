@@ -35,7 +35,12 @@ const handler = async (req, res) => {
     },
   });
 
-  const newTask = await oasstApiClient.interactTask(update_type, id, interaction.id, content, token);
+  let newTask;
+  try {
+    newTask = await oasstApiClient.interactTask(update_type, id, interaction.id, content, token);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 
   // Stores the new task with our database.
   const newRegisteredTask = await prisma.registeredTask.create({
