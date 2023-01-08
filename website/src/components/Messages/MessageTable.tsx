@@ -1,5 +1,5 @@
-import { Box, CircularProgress, Stack, StackDivider, useColorModeValue } from "@chakra-ui/react";
-import { MessageTableEntry } from "./MessageTableEntry";
+import { Stack, StackDivider } from "@chakra-ui/react";
+import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 
 export function MessageTable({ messages }) {
   return (

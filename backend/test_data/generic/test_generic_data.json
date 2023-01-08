@@ -1,0 +1,72 @@
+[
+  {
+    "task_message_id": "de111fa8",
+    "user_message_id": "6f1d0711",
+    "parent_message_id": null,
+    "text": "Hi!",
+    "role": "prompter"
+  },
+  {
+    "task_message_id": "74c381d4",
+    "user_message_id": "4a24530b",
+    "parent_message_id": "6f1d0711",
+    "text": "Hello! How can I help you?",
+    "role": "assistant"
+  },
+  {
+    "task_message_id": "3d5dc440",
+    "user_message_id": "a8c01c04",
+    "parent_message_id": "4a24530b",
+    "text": "Do you have a recipe for potato soup?",
+    "role": "prompter"
+  },
+  {
+    "task_message_id": "643716c1",
+    "user_message_id": "f43a93b7",
+    "parent_message_id": "4a24530b",
+    "text": "Who were the 8 presidents before George Washington?",
+    "role": "prompter"
+  },
+  {
+    "task_message_id": "2e4e1e6",
+    "user_message_id": "c886920",
+    "parent_message_id": "6f1d0711",
+    "text": "Hey buddy! How can I serve you?",
+    "role": "assistant"
+  },
+  {
+    "task_message_id": "970c437d",
+    "user_message_id": "cec432cf",
+    "parent_message_id": null,
+    "text": "euirdteunvglfe23908230892309832098 AAAAAAAA",
+    "role": "prompter"
+  },
+  {
+    "task_message_id": "6066118e",
+    "user_message_id": "4f85f637",
+    "parent_message_id": "cec432cf",
+    "text": "Sorry, I did not understand your request and it is unclear to me what you want me to do. Could you describe it in a different way?",
+    "role": "assistant"
+  },
+  {
+    "task_message_id": "ba87780d",
+    "user_message_id": "0e276b98",
+    "parent_message_id": "cec432cf",
+    "text": "I'm unsure how to interpret this. Is it a riddle?",
+    "role": "assistant"
+  },
+  {
+    "task_message_id": "b8e98ed6",
+    "user_message_id": "89384709",
+    "parent_message_id": "0e276b98",
+    "text": "No, I just wanted to see how you reply when I type random characters. Can you tell me who invented Wikipedia?",
+    "role": "prompter"
+  },
+  {
+    "task_message_id": "9a0e7683",
+    "user_message_id": "6d452c57",
+    "parent_message_id": "0e276b98",
+    "text": "Sorry, my cat sat on my keyboard. Can you print a cat in ASCII art?",
+    "role": "prompter"
+  }
+]

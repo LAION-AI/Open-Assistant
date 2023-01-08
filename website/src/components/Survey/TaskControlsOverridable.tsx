@@ -10,7 +10,7 @@ import {
   ModalOverlay,
   useDisclosure,
 } from "@chakra-ui/react";
-import { TaskControls, TaskControlsProps } from "./TaskControls";
+import { TaskControls, TaskControlsProps } from "src/components/Survey/TaskControls";
 
 interface TaskControlsOverridableProps extends TaskControlsProps {
   isValid: boolean;

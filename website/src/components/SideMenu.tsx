@@ -1,37 +1,24 @@
-import { Box, Button, Link, Text, Tooltip, useColorMode } from "@chakra-ui/react";
+import { Box, Button, Text, Tooltip, useColorMode } from "@chakra-ui/react";
+import Link from "next/link";
 import { useRouter } from "next/router";
-import { FiLayout, FiSun, FiMessageSquare } from "react-icons/fi";
+import { FiSun } from "react-icons/fi";
+import { IconType } from "react-icons/lib";
 import { colors } from "styles/Theme/colors";
 
-export function SideMenu() {
+export interface MenuButtonOption {
+  label: string;
+  pathname: string;
+  desc: string;
+  icon: IconType;
+}
+
+export interface SideMenuProps {
+  buttonOptions: MenuButtonOption[];
+}
+
+export function SideMenu(props: SideMenuProps) {
   const router = useRouter();
   const { colorMode, toggleColorMode } = useColorMode();
-  const buttonOptions = [
-    {
-      label: "Dashboard",
-      pathname: "/dashboard",
-      desc: "Dashboard Home",
-      icon: FiLayout,
-    },
-    {
-      label: "Messages",
-      pathname: "/messages",
-      desc: "Messages Dashboard",
-      icon: FiMessageSquare,
-    },
-    // {
-    //   label: "Leaderboard",
-    //   pathname: "#",
-    //   desc: "Public Leaderboard",
-    //   icon: FiAward,
-    // },
-    // {
-    //   label: "Stats",
-    //   pathname: "#",
-    //   desc: "User Statistics",
-    //   icon: FiBarChart2,
-    // },
-  ];
 
   return (
     <main className="sticky top-0 sm:h-full">
@@ -43,7 +30,7 @@ export function SideMenu() {
         className="grid grid-cols-4 gap-2 sm:flex sm:flex-col sm:justify-between p-4 h-full"
       >
         <nav className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
-          {buttonOptions.map((item, itemIndex) => (
+          {props.buttonOptions.map((item, itemIndex) => (
             <Tooltip
               key={itemIndex}
               fontFamily="inter"
