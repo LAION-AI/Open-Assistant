@@ -229,7 +229,7 @@ class PromptRepository:
         Args:
             message_id (UUID): the identifier of the message we want to save its toxicity score
             model (str): the model used for creating the toxicity score
-            embedding (List[float]): the values obtained from the message & model
+            toxicity (float): the values obtained from the message & model
         Raises:
             OasstError: if misses some of the before params
         Returns:
@@ -237,7 +237,7 @@ class PromptRepository:
         """
 
         if None in (message_id, model, toxicity):
-            raise OasstError("Paramters missing to add embedding", OasstErrorCode.GENERIC_ERROR)
+            raise OasstError("Paramters missing to add toxicity", OasstErrorCode.GENERIC_ERROR)
 
         message_toxicity = MessageToxicity(message_id=message_id, model=model, toxicity=toxicity)
         self.db.add(message_toxicity)
