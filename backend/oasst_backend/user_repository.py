@@ -14,9 +14,7 @@ class UserRepository:
         self.db = db
         self.api_client = api_client
 
-    def query_frontend_user(
-        self, auth_method: str, username: str, api_client_id: Optional[UUID] = None
-    ) -> Optional[User]:
+    def query_frontend_user(self, auth_method: str, username: str, api_client_id: UUID) -> Optional[User]:
         if not self.api_client.trusted and not api_client_id:
             api_client_id = self.api_client.id
 
@@ -24,12 +22,12 @@ class UserRepository:
             # Unprivileged API client asks for foreign user
             raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
 
-        user_query = self.db.query(User).filter(User.auth_method == auth_method, User.username == username)
+        user: User = (
+            self.db.query(User)
+            .filter(User.auth_method == auth_method, User.username == username, User.api_client_id == api_client_id)
+            .first()
+        )
 
-        if api_client_id:
-            user_query = user_query.filter(User.api_client_id == api_client_id)
-
-        user: User = user_query.first()
         return user
 
     def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
