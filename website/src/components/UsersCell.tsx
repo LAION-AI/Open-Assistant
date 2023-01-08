@@ -1,4 +1,5 @@
 import { Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
+import Link from "next/link";
 import { useState } from "react";
 import fetcher from "src/lib/fetcher";
 import useSWR from "swr";
@@ -24,6 +25,7 @@ const UsersCell = () => {
             <Th>Email</Th>
             <Th>Name</Th>
             <Th>Role</Th>
+            <Th>Update</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -33,6 +35,9 @@ const UsersCell = () => {
               <Td>{user.email}</Td>
               <Td>{user.name}</Td>
               <Td>{user.role}</Td>
+              <Td>
+                <Link href={`/admin/manage_user/${user.id}`}>Manage</Link>
+              </Td>
             </Tr>
           ))}
         </Tbody>
