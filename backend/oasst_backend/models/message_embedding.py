@@ -1,4 +1,5 @@
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 from uuid import UUID
 
 import sqlalchemy as sa
@@ -13,3 +14,8 @@ class MessageEmbedding(SQLModel, table=True):
     message_id: UUID = Field(sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("message.id"), nullable=False))
     model: str = Field(max_length=256, nullable=False)
     embedding: List[float] = Field(sa_column=sa.Column(ARRAY(Float)), nullable=True)
+
+    # In the case that the Message Embedding is created afterwards
+    created_date: Optional[datetime] = Field(
+        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
+    )
