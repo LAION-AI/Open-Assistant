@@ -4,7 +4,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { AuthLayout } from "src/components/AuthLayout";
 import { Footer } from "src/components/Footer";
@@ -23,7 +23,7 @@ export type SignInErrorTypes =
   | "SessionRequired"
   | "default";
 
-const errors: Record<SignInErrorTypes, string> = {
+const errorMessages: Record<SignInErrorTypes, string> = {
   Signin: "Try signing in with a different account.",
   OAuthSignin: "Try signing in with a different account.",
   OAuthCallback: "Try signing in with the same account you used originally.",
@@ -45,13 +45,12 @@ function Signin({ csrfToken, providers }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (router?.query?.error) {
-      if (typeof router.query.error === "string") {
-        const errorType = errors[router.query.error];
-        setError(errorType);
+    const err = router?.query?.error;
+    if (err) {
+      if (typeof err === "string") {
+        setError(errorMessages[err]);
       } else {
-        const errorType = errors[router.query.error[0]];
-        setError(errorType);
+        setError(errorMessages[err[0]]);
       }
     }
   }, [router]);
