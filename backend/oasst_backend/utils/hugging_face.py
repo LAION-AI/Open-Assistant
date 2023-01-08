@@ -2,7 +2,10 @@ from enum import Enum
 from typing import Any, Dict
 
 import aiohttp
+from loguru import logger
 from oasst_backend.config import settings
+from oasst_backend.models import Message
+from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 
 
@@ -58,3 +61,24 @@ class HuggingFaceAPI:
                 inference = await response.json()
 
         return inference
+
+
+async def save_toxicity(
+    interaction,
+    pr: PromptRepository,
+    new_message: Message,
+):
+    try:
+        model_name = HF_model.TOXIC_ROBERTA.value
+        hugging_face_api = HuggingFaceAPI(f"{HF_url.HUGGINGFACE_TOXIC_ROBERTA.value}/{model_name}")
+
+        toxicity = await hugging_face_api.post(interaction.text)
+
+        toxicity_instance = pr.insert_toxicity(message_id=new_message.id, model=model_name, toxicity=toxicity)
+
+    except OasstError:
+        logger.error(
+            f"Could not compute toxicity for  text reply to {interaction.message_id} with {interaction.text} by {interaction.user}."
+        )
+
+    return toxicity_instance

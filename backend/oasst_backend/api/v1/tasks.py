@@ -9,7 +9,7 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
-from oasst_backend.utils.hugging_face import HF_model, HF_url, HuggingFaceAPI
+from oasst_backend.utils.hugging_face import save_toxicity
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -283,17 +283,7 @@ async def tasks_interaction(
                 )
 
                 if not settings.DEBUT_SKIP_TOXICITY_CALCULATION:
-                    try:
-                        model_name = HF_model.TOXIC_ROBERTA.value
-                        hugging_face_api = HuggingFaceAPI(f"{HF_url.HUGGINGFACE_TOXIC_ROBERTA.value}/{model_name}")
-
-                        toxicity = await hugging_face_api.post(interaction.text)
-
-                        pr.insert_toxicity(message_id=new_message.id, model=model_name, toxicity=toxicity)
-                    except OasstError:
-                        logger.error(
-                            f"Could not compute toxicity for  text reply to {interaction.message_id} with {interaction.text} by {interaction.user}."
-                        )
+                    save_toxicity(interaction, pr, new_message)
 
                 return protocol_schema.TaskDone()
             case protocol_schema.MessageRating:
