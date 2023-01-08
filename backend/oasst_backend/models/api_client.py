@@ -21,3 +21,9 @@ class ApiClient(SQLModel, table=True):
     enabled: bool = Field(default=True)
     trusted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
     frontend_type: str = Field(max_length=256, nullable=True)
+    created_at: Optional[datetime] = Field(
+        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
+    )
+    updated_at: Optional[datetime] = Field(
+        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
+    )
