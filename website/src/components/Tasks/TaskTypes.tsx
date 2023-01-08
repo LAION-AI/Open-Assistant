@@ -70,4 +70,11 @@ export const TaskTypes = [
     pathname: "/label/label_prompter_reply",
     type: "label_prompter_reply",
   },
+  {
+    label: "Label Assistant Reply",
+    desc: "Provide labels for a prompt.",
+    category: TaskCategory.Label,
+    pathname: "/label/label_assistant_reply",
+    type: "label_assistant_reply",
+  },
 ];
