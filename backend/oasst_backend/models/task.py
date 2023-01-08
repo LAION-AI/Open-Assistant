@@ -16,10 +16,11 @@ class Task(SQLModel, table=True):
     id: Optional[UUID] = Field(
         sa_column=sa.Column(
             pg.UUID(as_uuid=True), primary_key=True, default=uuid4, server_default=sa.text("gen_random_uuid()")
-        ),
+        )
     )
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
+        default=datetime.utcnow
     )
     expiry_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(), nullable=True))
     user_id: Optional[UUID] = Field(nullable=True, foreign_key="user.id", index=True)
@@ -35,4 +36,4 @@ class Task(SQLModel, table=True):
 
     @property
     def expired(self) -> bool:
-        return self.expiry_date is not None and datetime.utcnow() < self.expiry_date
+        return self.expiry_date is not None and datetime.utcnow() > self.expiry_date
