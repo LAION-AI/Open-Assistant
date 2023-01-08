@@ -96,7 +96,6 @@ class PromptRepository:
         text: str,
         frontend_message_id: str,
         user_frontend_message_id: str,
-        miniLM_embedding: Optional[List[float]] = None,
     ) -> Message:
         validate_frontend_message_id(frontend_message_id)
         validate_frontend_message_id(user_frontend_message_id)
