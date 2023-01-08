@@ -5,10 +5,12 @@ on:
     branches:
       - main
     paths:
+      - oasst-shared/**
       - backend/**
       - website/**
   pull_request:
     paths:
+      - oasst-shared/**
       - backend/**
       - website/**
 
