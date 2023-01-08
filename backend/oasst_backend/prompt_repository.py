@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Message, MessageReaction, Task, TextLabels, User
+from oasst_backend.models import ApiClient, Journal, Message, MessageReaction, Task, TextLabels, User
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -190,7 +190,7 @@ class PromptRepository:
 
         # store reaction to message
         reaction_payload = db_payload.RatingReactionPayload(rating=rating.rating)
-        reaction = self.insert_reaction(message.id, reaction_payload)
+        reaction = self.upsert_reaction(message.id, reaction_payload)
         if not task.collective:
             task.done = True
             self.db.add(task)
@@ -223,7 +223,7 @@ class PromptRepository:
 
                 # store reaction to message
                 reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
-                reaction = self.insert_reaction(task.id, reaction_payload)
+                reaction = self.upsert_reaction(task.id, reaction_payload)
                 # TODO: resolve message_id
                 self.journal.log_ranking(task, message_id=None, ranking=ranking.ranking)
 
@@ -241,7 +241,7 @@ class PromptRepository:
 
                 # store reaction to message
                 reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
-                reaction = self.insert_reaction(task.id, reaction_payload)
+                reaction = self.upsert_reaction(task.id, reaction_payload)
                 # TODO: resolve message_id
                 self.journal.log_ranking(task, message_id=None, ranking=ranking.ranking)
 
@@ -391,18 +391,32 @@ class PromptRepository:
         self.db.refresh(message)
         return message
 
-    def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
+    def upsert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
         if self.user_id is None:
             raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
 
         container = PayloadContainer(payload=payload)
-        reaction = MessageReaction(
-            task_id=task_id,
-            user_id=self.user_id,
-            payload=container,
-            api_client_id=self.api_client.id,
-            payload_type=type(payload).__name__,
+
+        existing_reaction = (
+            self.db.query(MessageReaction)
+            .filter_by(task_id=task_id, user_id=self.user_id, api_client_id=self.api_client.id)
+            .one_or_none()
         )
+        if existing_reaction is not None:
+            existing_reaction.payload = container
+            self.db.query(Journal).filter(Journal.event_payload["payload"]["task_id"].astext == str(task_id)).delete(
+                synchronize_session="fetch"
+            )
+
+        else:
+            new_reaction = MessageReaction(
+                task_id=task_id,
+                user_id=self.user_id,
+                payload=container,
+                api_client_id=self.api_client.id,
+                payload_type=type(payload).__name__,
+            )
+        reaction = existing_reaction or new_reaction
         self.db.add(reaction)
         self.db.commit()
         self.db.refresh(reaction)
