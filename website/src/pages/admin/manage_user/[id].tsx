@@ -1,4 +1,4 @@
-import { Box, Button, Container, Flex, FormControl, FormLabel, Input, Select, useToast } from "@chakra-ui/react";
+import { Button, Container, FormControl, FormLabel, Input, Select, useToast } from "@chakra-ui/react";
 import { Field, Form, Formik } from "formik";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -27,7 +27,7 @@ const ManageUser = ({ user }) => {
       return;
     }
     router.push("/");
-  }, [session, status]);
+  }, [router, session, status]);
 
   // Trigger to let us update the user's role.  Triggers a toast when complete.
   const { trigger } = useSWRMutation("/api/admin/update_user", poster, {

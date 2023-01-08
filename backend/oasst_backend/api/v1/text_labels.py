@@ -25,7 +25,7 @@ def label_text(
 
     try:
         logger.info(f"Labeling text {text_labels=}.")
-        pr = PromptRepository(db, api_client, user=text_labels.user)
+        pr = PromptRepository(db, api_client, client_user=text_labels.user)
         pr.store_text_labels(text_labels)
 
     except Exception:
