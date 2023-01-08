@@ -1,6 +1,6 @@
 # Notebooks
 
-This is a folders with some useful notebooks, all the notebooks have a markdown
+This is a folder with some useful notebooks, all the notebooks have a markdown
 file with the same name explaining what they do (or a README.md if its a single
 notebook folder).
 
