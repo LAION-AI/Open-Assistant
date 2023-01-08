@@ -67,5 +67,5 @@ Experimental results in wandb
 
 - decide on a model
 - Merge utils etc with reward model
-- Casual Modelling for GPT-JT does not leverage the bidirectional mask for the
+- Causal Language Modelling for GPT-JT does not leverage the bidirectional mask for the
   prompt? (https://huggingface.co/togethercomputer/GPT-JT-6B-v1)
