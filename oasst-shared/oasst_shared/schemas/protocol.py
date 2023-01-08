@@ -286,7 +286,11 @@ class TextLabel(str, enum.Enum):
     moral_judgement = "moral_judgement", "Expresses moral judgement"
     political_content = "political_content", "Expresses political views"
     humor = "humor", "Contains humorous content including sarcasm"
-    hate_speech = "hate_speech", "Expresses sentiment which is discriminatory against a grouping of people"
+    hate_speech = (
+        "hate_speech",
+        "Content is abusive or threatening and expresses prejudice against a protected characteristic",
+        "Prejudice refers to preconceived views not based on reason. Protected characteristics include gender, ethnicity, religion, sexual orientation, and similar characteristics.",
+    )
     threat = "threat", "Contains a threat against a person or persons"
     misleading = "misleading", "Contains text which is incorrect or misleading"
     helpful = "helpful", "Completes the task to a high standard"
