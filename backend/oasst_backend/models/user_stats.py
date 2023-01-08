@@ -14,8 +14,11 @@ class UserStats(SQLModel, table=True):
         sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("user.id"), primary_key=True)
     )
     leader_score: int = 0
-    modified_date: Optional[datetime] = Field(
+    created_at: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
+    )
+    updated_at: Optional[datetime] = Field(
+        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp(), onupdate=sa.func.current_timestamp())
     )
 
     reactions: int = 0  # reactions sent by user
@@ -24,4 +27,12 @@ class UserStats(SQLModel, table=True):
     downvotes: int = 0  # received downvotes (from other users)
     task_reward: int = 0  # reward for task completions
     compare_wins: int = 0  # num times user's message won compare tasks
-    compare_losses: int = 0  # num times users's message lost compare tasks
+    compare_losses: int = 0  # num times users's message lost compare tasks 
+    compare_streak: int = 0  # longest compare task streak by user
+    compare_streak_start: Optional[datetime] = Field(
+        sa_column=sa.Column(sa.DateTime(), nullable=True)
+    )
+    compare_streak_end: Optional[datetime] = Field(
+        sa_column=sa.Column(sa.DateTime(), nullable=True)
+    )
+    compare_streak_length: int = 0  # length of compare task streak by user
