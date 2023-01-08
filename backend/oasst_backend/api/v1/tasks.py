@@ -9,7 +9,7 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.utils.hugging_face import HF_url, HuggingFaceAPI
+from oasst_backend.utils.hugging_face import HF_embeddingModel, HF_url, HuggingFaceAPI
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -275,23 +275,26 @@ async def tasks_interaction(
                     f"Frontend reports text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                 )
 
-                embedding = None
+                # here we store the text reply in the database
+                newMessage = pr.store_text_reply(
+                    text=interaction.text,
+                    frontend_message_id=interaction.message_id,
+                    user_frontend_message_id=interaction.user_message_id,
+                )
+
                 if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
                     try:
-                        hugging_face_api = HuggingFaceAPI(HF_url.HUGGINGFACE_MINILM_EMBEDDING.value)
+                        hugging_face_api = HuggingFaceAPI(
+                            f"{HF_url.HUGGINGFACE_FEATURE_EXTRACTION.value}{HF_embeddingModel.MINILM.value}"
+                        )
                         embedding = await hugging_face_api.post(interaction.text)
+                        pr.insert_message_embedding(
+                            message_id=newMessage.id, model=HF_embeddingModel.MINILM.value, embedding=embedding
+                        )
                     except OasstError:
                         logger.error(
                             f"Could not fetch embbeddings for  text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                         )
-
-                # here we store the text reply in the database
-                pr.store_text_reply(
-                    text=interaction.text,
-                    frontend_message_id=interaction.message_id,
-                    user_frontend_message_id=interaction.user_message_id,
-                    miniLM_embedding=embedding,
-                )
 
                 return protocol_schema.TaskDone()
             case protocol_schema.MessageRating:

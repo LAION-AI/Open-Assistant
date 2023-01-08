@@ -1,6 +1,6 @@
 from datetime import datetime
 from http import HTTPStatus
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID, uuid4
 
 import sqlalchemy as sa
@@ -8,7 +8,7 @@ import sqlalchemy.dialects.postgresql as pg
 from oasst_backend.models.db_payload import MessagePayload
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from sqlalchemy import false
-from sqlmodel import ARRAY, Field, Float, Index, SQLModel
+from sqlmodel import Field, Index, SQLModel
 
 from .payload_column_type import PayloadContainer, payload_column_type
 
@@ -40,7 +40,6 @@ class Message(SQLModel, table=True):
     depth: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
     children_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
-    miniLM_embedding: List[float] = Field(sa_column=sa.Column(ARRAY(Float)), nullable=True)
 
     def ensure_is_message(self) -> None:
         if not self.payload or not isinstance(self.payload.payload, MessagePayload):

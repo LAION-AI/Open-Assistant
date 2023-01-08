@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Message, MessageReaction, Task, TextLabels, User
+from oasst_backend.models import ApiClient, Message, MessageEmbedding, MessageReaction, Task, TextLabels, User
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -165,7 +165,6 @@ class PromptRepository:
             role=role,
             payload=db_payload.MessagePayload(text=text),
             depth=depth,
-            miniLM_embedding=miniLM_embedding,
         )
         if not task.collective:
             task.done = True
@@ -369,7 +368,6 @@ class PromptRepository:
         payload: db_payload.MessagePayload,
         payload_type: str = None,
         depth: int = 0,
-        miniLM_embedding: List[float] = None,
     ) -> Message:
         if payload_type is None:
             if payload is None:
@@ -389,12 +387,21 @@ class PromptRepository:
             payload_type=payload_type,
             payload=PayloadContainer(payload=payload),
             depth=depth,
-            miniLM_embedding=miniLM_embedding,
         )
         self.db.add(message)
         self.db.commit()
         self.db.refresh(message)
         return message
+
+    def insert_message_embedding(self, message_id: UUID, model: str, embedding: List[float]) -> MessageEmbedding:
+        if None in (message_id, model, embedding):
+            raise OasstError("Paramters missing to add embedding", OasstErrorCode.GENERIC_ERROR)
+
+        model = MessageEmbedding(message_id=message_id, model=model, embedding=embedding)
+        self.db.add(model)
+        self.db.commit()
+        self.db.refresh(model)
+        return model
 
     def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
         if self.user_id is None:
