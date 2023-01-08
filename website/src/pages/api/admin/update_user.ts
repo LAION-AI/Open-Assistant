@@ -1,4 +1,3 @@
-import { getToken } from "next-auth/jwt";
 import withRole from "src/lib/auth";
 import prisma from "src/lib/prismadb";
 
