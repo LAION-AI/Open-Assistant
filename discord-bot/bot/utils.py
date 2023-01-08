@@ -1,4 +1,3 @@
-"""Utility functions."""
 import typing as t
 from datetime import datetime
 
@@ -17,11 +16,9 @@ def format_time(dt: datetime, fmt: t.Literal["t", "T", "D", "f", "F", "R"]) -> s
     | R | relative         | in an hour
     ```
     """
-    match fmt:
-        case "t" | "T" | "D" | "f" | "F" | "R":
-            return f"<t:{dt.timestamp():.0f}:{fmt}>"
-        case _:
-            raise ValueError(f"`fmt` must be 't', 'T', 'D', 'f', 'F' or 'R', not {fmt}")
+    if fmt not in ("t", "T", "D", "f", "F", "R"):
+        raise ValueError(f"`fmt` must be 't', 'T', 'D', 'f', 'F' or 'R', not {fmt}")
+    return f"<t:{dt.timestamp():.0f}:{fmt}>"
 
 
 def mention(
@@ -29,12 +26,11 @@ def mention(
     type: t.Literal["channel", "role", "user"],
 ) -> str:
     """Mention an object."""
-    match type:
-        case "channel":
-            return f"<#{id}>"
-
-        case "user":
-            return f"<@{id}>"
-
-        case "role":
-            return f"<@&{id}>"
+    if type == "channel":
+        return f"<#{id}>"
+    elif type == "user":
+        return f"<@{id}>"
+    elif type == "role":
+        return f"<@&{id}>"
+    else:
+        raise ValueError(f"`type` must be 'channel', 'user', or 'role', not {type}")
