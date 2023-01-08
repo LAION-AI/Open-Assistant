@@ -182,7 +182,7 @@ if __name__ == "__main__":
         args=args,
         loss_function=training_conf["loss"],
         train_dataset=train,
-        eval_dataset=eval,
+        eval_dataset=evals,
         data_collator=collate_fn,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
