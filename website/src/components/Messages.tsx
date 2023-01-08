@@ -7,14 +7,15 @@ import { FlaggableElement } from "./FlaggableElement";
 export interface Message {
   text: string;
   is_assistant: boolean;
+  message_id: string;
 }
 
 export const Messages = ({ messages, post_id }: { messages: Message[]; post_id: string }) => {
   const items = messages.map((messageProps: Message, i: number) => {
     const { text } = messageProps;
-
+    const { message_id } = messageProps;
     return (
-      <FlaggableElement text={text} post_id={post_id} key={i + text}>
+      <FlaggableElement text={text} post_id={post_id} message_id={message_id} key={i + text}>
         <MessageView {...messageProps} />
       </FlaggableElement>
     );

@@ -42,7 +42,7 @@ export const FlaggableElement = (props) => {
         label_map.set(flag.attributeName, sliderValues[i]);
       }
     });
-    trigger({ post_id: props.post_id, label_map: Object.fromEntries(label_map), text: props.text });
+    trigger({ message_id: props.message_id, post_id: props.post_id, label_map: Object.fromEntries(label_map), text: props.text });
   };
   const [checkboxValues, setCheckboxValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(false));
   const [sliderValues, setSliderValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(1));
