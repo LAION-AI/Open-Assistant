@@ -7,7 +7,7 @@ from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.api.v1.utils import prepare_conversation
-from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.prompt_repository import PromptRepository, TaskRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -323,6 +323,6 @@ def close_collective_task(
     api_key: APIKey = Depends(deps.get_api_key),
 ):
     api_client = deps.api_auth(api_key, db)
-    pr = PromptRepository(db, api_client)
-    pr.close_task(close_task_request.message_id)
+    tr = TaskRepository(db, api_client)
+    tr.close_task(close_task_request.message_id)
     return protocol_schema.TaskDone()

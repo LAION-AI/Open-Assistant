@@ -128,6 +128,28 @@ class TaskRepository:
         self.db.add(task)
         self.db.commit()
 
+    def close_task(self, frontend_message_id: str, allow_personal_tasks: bool = False):
+        """
+        Mark task as done. No further messages will be accepted for this task.
+        """
+        validate_frontend_message_id(frontend_message_id)
+        task = self.task_repository.fetch_task_by_frontend_message_id(frontend_message_id)
+
+        if not task:
+            raise OasstError(
+                f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND
+            )
+        if task.expired:
+            raise OasstError("Task already expired", OasstErrorCode.TASK_EXPIRED)
+        if not allow_personal_tasks and not task.collective:
+            raise OasstError("This is not a collective task", OasstErrorCode.TASK_NOT_COLLECTIVE)
+        if task.done:
+            raise OasstError("Allready closed", OasstErrorCode.TASK_ALREADY_DONE)
+
+        task.done = True
+        self.db.add(task)
+        self.db.commit()
+
     def acknowledge_task_failure(self, task_id):
         # find task
         task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()

@@ -14,7 +14,7 @@ from oasst_backend.task_repository import TaskRepository, validate_frontend_mess
 from oasst_backend.user_repository import UserRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from oasst_shared.schemas.protocol import LeaderboardStats, SystemStats
+from oasst_shared.schemas.protocol import SystemStats
 from sqlalchemy import update
 from sqlmodel import Session, func
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
@@ -348,28 +348,6 @@ class PromptRepository:
             raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
         return message
 
-    def close_task(self, frontend_message_id: str, allow_personal_tasks: bool = False):
-        """
-        Mark task as done. No further messages will be accepted for this task.
-        """
-        validate_frontend_message_id(frontend_message_id)
-        task = self.task_repository.fetch_task_by_frontend_message_id(frontend_message_id)
-
-        if not task:
-            raise OasstError(
-                f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND
-            )
-        if task.expired:
-            raise OasstError("Task already expired", OasstErrorCode.TASK_EXPIRED)
-        if not allow_personal_tasks and not task.collective:
-            raise OasstError("This is not a collective task", OasstErrorCode.TASK_NOT_COLLECTIVE)
-        if task.done:
-            raise OasstError("Allready closed", OasstErrorCode.TASK_ALREADY_DONE)
-
-        task.done = True
-        self.db.add(task)
-        self.db.commit()
-
     @staticmethod
     def trace_conversation(messages: list[Message] | dict[UUID, Message], last_message: Message) -> list[Message]:
         """
@@ -561,24 +539,3 @@ class PromptRepository:
             deleted=result.get(True, 0),
             message_trees=result.get(None, 0),
         )
-
-    def get_user_leaderboard(self, role: str) -> LeaderboardStats:
-        """
-        Get leaderboard stats for Messages created,
-        separate leaderboard for prompts & assistants
-
-        """
-        query = (
-            self.db.query(Message.user_id, User.username, User.display_name, func.count(Message.user_id))
-            .join(User, User.id == Message.user_id, isouter=True)
-            .filter(Message.deleted is not True, Message.role == role)
-            .group_by(Message.user_id, User.username, User.display_name)
-            .order_by(func.count(Message.user_id).desc())
-        )
-
-        result = [
-            {"ranking": i, "user_id": j[0], "username": j[1], "display_name": j[2], "score": j[3]}
-            for i, j in enumerate(query.all(), start=1)
-        ]
-
-        return LeaderboardStats(leaderboard=result)
