@@ -280,7 +280,7 @@ async def tasks_interaction(
                     try:
                         hugging_face_api = HuggingFaceAPI(HF_url.HUGGINGFACE_MINILM_EMBEDDING.value)
                         embedding = await hugging_face_api.post(interaction.text)
-                    except:
+                    except OasstError:
                         logger.error(
                             f"Could not fetch embbeddings for  text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                         )
