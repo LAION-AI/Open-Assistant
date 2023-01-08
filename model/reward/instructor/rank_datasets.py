@@ -18,6 +18,7 @@
 
 
 """
+from typing import List, Dict
 from dataclasses import dataclass
 from typing import Optional, Union
 
@@ -35,7 +36,7 @@ class RankGenCollator:
     max_length: Optional[int] = None
     max_examples: Optional[int] = None
 
-    def __call__(self, batch: list[dict[str, str]]) -> dict[str, torch.Tensor]:
+    def __call__(self, batch: List[Dict[str, str]]) -> Dict[str, torch.Tensor]:
         prefixes = []
         better_answers = []
         worse_answers = []

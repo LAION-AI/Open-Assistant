@@ -137,7 +137,6 @@ if __name__ == "__main__":
         output_dir=f"{model_name}-finetuned",
         num_train_epochs=training_conf["num_train_epochs"],
         warmup_steps=500,
-        loss_function=training_conf["loss"],
         learning_rate=training_conf["learning_rate"],
         # half_precision_backend="apex",
         fp16=training_conf["fp16"],
