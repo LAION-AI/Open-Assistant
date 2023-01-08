@@ -43,7 +43,7 @@ const LabelInitialPrompt = () => {
         <>
           <h5 className="text-lg font-semibold">Label Initial Prompt</h5>
           <p className="text-lg py-1">Provide labels for the following prompt</p>
-          <MessageView text={task.prompt} is_assistant />
+          <MessageView text={task.prompt} is_assistant message_id={task.message_id} />
         </>
         <CheckboxSliderGroup labelIDs={task.valid_labels} onChange={setSliderValues} />
       </TwoColumnsWithCards>
