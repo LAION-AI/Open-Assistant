@@ -10,6 +10,7 @@ export interface LabelPrompterReplyTask {
     messages: Array<{
       text: string;
       is_assistant: boolean;
+      message_id: string;
     }>;
   };
 }

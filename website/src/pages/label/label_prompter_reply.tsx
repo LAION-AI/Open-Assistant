@@ -17,9 +17,7 @@ const LabelPrompterReply = () => {
 
   const task = tasks[0].task;
   const messages: Message[] = [
-    // TODO: could we re-use the task message_id as message id for all messages in the conversation?
-    // or should we ask the backend team to send message ids in the task?
-    ...task.conversation.messages.map((m) => ({ ...m, message_id: null })),
+    ...task.conversation.messages,
     { text: task.reply, is_assistant: false, message_id: task.message_id },
   ];
 
