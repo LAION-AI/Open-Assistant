@@ -83,15 +83,17 @@ def _li(text: str) -> str:
 
 
 def initial_prompt_message(task: protocol_schema.InitialPromptTask) -> str:
-    """Creates the message that gets sent to users when they request an `initial_prompt` task."""
-    return f"""\
-
-{_h1("INITIAL PROMPT")}
-
-
-{_writing_prompt("Please provide an initial prompt to the assistant.")}
-{_hint(task.hint)}
-"""
+    template = """
+    {{h1}}
+    {{writing_prompt}}
+    {{hint}}
+    """
+    context = {
+        "h1": _h1("INITIAL PROMPT"),
+        "writing_prompt": _writing_prompt("Please provide an initial prompt to the assistant."),
+        "hint": _hint(task.hint),
+    }
+    return render_template(template, context)
 
 
 def rank_initial_prompts_message(task: protocol_schema.RankInitialPromptsTask) -> str:
