@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ContextMessages } from "src/components/ContextMessages";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { TaskControlsOverridable } from "src/components/Survey/TaskControlsOverridable";
+
+import { MessageTable } from "../Messages/MessageTable";
 
 export const EvaluateTask = ({ tasks, trigger, mutate, mainBgClasses }) => {
   const [ranking, setRanking] = useState<number[]>([]);
@@ -20,6 +21,11 @@ export const EvaluateTask = ({ tasks, trigger, mutate, mainBgClasses }) => {
     setRanking([]);
     mutate();
   };
+  let messages = null;
+  if (tasks[0].task.conversation) {
+    messages = tasks[0].task.conversation.messages;
+    messages = messages.map((message, index) => ({ ...message, id: index }));
+  }
 
   const sortables = tasks[0].task.replies ? "replies" : "prompts";
 
@@ -30,7 +36,7 @@ export const EvaluateTask = ({ tasks, trigger, mutate, mainBgClasses }) => {
         <p className="text-lg py-1">
           Given the following {sortables}, sort them from best to worst, best being first, worst being last.
         </p>
-        {tasks[0].task.conversation ? <ContextMessages messages={tasks[0].task.conversation.messages} /> : null}
+        {messages ? <MessageTable messages={messages} /> : null}
         <Sortable items={tasks[0].task[sortables]} onChange={setRanking} className="my-8" />
       </SurveyCard>
 

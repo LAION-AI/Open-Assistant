@@ -2,17 +2,59 @@ import { Button, Input, Stack } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { getCsrfToken, getProviders, signIn } from "next-auth/react";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { AuthLayout } from "src/components/AuthLayout";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
 
+export type SignInErrorTypes =
+  | "Signin"
+  | "OAuthSignin"
+  | "OAuthCallback"
+  | "OAuthCreateAccount"
+  | "EmailCreateAccount"
+  | "Callback"
+  | "OAuthAccountNotLinked"
+  | "EmailSignin"
+  | "CredentialsSignin"
+  | "SessionRequired"
+  | "default";
+
+const errorMessages: Record<SignInErrorTypes, string> = {
+  Signin: "Try signing in with a different account.",
+  OAuthSignin: "Try signing in with a different account.",
+  OAuthCallback: "Try signing in with the same account you used originally.",
+  OAuthCreateAccount: "Try signing in with a different account.",
+  EmailCreateAccount: "Try signing in with a different account.",
+  Callback: "Try signing in with a different account.",
+  OAuthAccountNotLinked: "To confirm your identity, sign in with the same account you used originally.",
+  EmailSignin: "The e-mail could not be sent.",
+  CredentialsSignin: "Sign in failed. Check the details you provided are correct.",
+  SessionRequired: "Please sign in to access this page.",
+  default: "Unable to sign in.",
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Signin({ csrfToken, providers }) {
+  const router = useRouter();
   const { discord, email, github, credentials } = providers;
   const emailEl = useRef(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const err = router?.query?.error;
+    if (err) {
+      if (typeof err === "string") {
+        setError(errorMessages[err]);
+      } else {
+        setError(errorMessages[err[0]]);
+      }
+    }
+  }, [router]);
+
   const signinWithEmail = (ev: React.FormEvent) => {
     ev.preventDefault();
     signIn(email.id, { callbackUrl: "/dashboard", email: emailEl.current.value });
@@ -110,6 +152,11 @@ function Signin({ csrfToken, providers }) {
           </Link>
           .
         </div>
+        {error && (
+          <div className="text-center mt-8">
+            <p className="text-orange-600">Error: {error}</p>
+          </div>
+        )}
       </AuthLayout>
     </div>
   );

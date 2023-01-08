@@ -20,7 +20,7 @@ const config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: "LAION-AI", // Usually your GitHub org/user name.
   projectName: "Open-Assistant", // Usually your repo name.
-  deploymentBranch: "docs-site-poc",
+  deploymentBranch: "main",
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want

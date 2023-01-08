@@ -6,8 +6,9 @@ from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
+from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
-from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.prompt_repository import PromptRepository, TaskRepository
 from oasst_backend.utils.hugging_face import HF_model, HF_url, HuggingFaceAPI
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -63,7 +64,7 @@ def generate_task(
                     text=msg.text,
                     is_assistant=(msg.role == "assistant"),
                     message_id=msg.id,
-                    front_end_id=msg.front_end_id,
+                    front_end_id=msg.frontend_message_id,
                 )
                 for msg in messages
             ]
@@ -79,7 +80,7 @@ def generate_task(
                     text=msg.text,
                     is_assistant=(msg.role == "assistant"),
                     message_id=msg.id,
-                    front_end_id=msg.front_end_id,
+                    front_end_id=msg.frontend_message_id,
                 )
                 for msg in messages
             ]
@@ -101,7 +102,7 @@ def generate_task(
                     text=p.text,
                     is_assistant=(p.role == "assistant"),
                     message_id=p.id,
-                    front_end_id=p.front_end_id,
+                    front_end_id=p.frontend_message_id,
                 )
                 for p in conversation
             ]
@@ -122,13 +123,13 @@ def generate_task(
                     text=p.text,
                     is_assistant=(p.role == "assistant"),
                     message_id=p.id,
-                    front_end_id=p.front_end_id,
+                    front_end_id=p.frontend_message_id,
                 )
                 for p in conversation
             ]
             replies = [p.text for p in replies]
             task = protocol_schema.RankAssistantRepliesTask(
-                conversation=protocol_schema.Conversation(messages=task_messages),
+                conversation=prepare_conversation(conversation),
                 replies=replies,
             )
 
@@ -144,22 +145,22 @@ def generate_task(
         case protocol_schema.TaskRequestType.label_prompter_reply:
             logger.info("Generating a LabelPrompterReplyTask.")
             conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="assistant")
-            message = messages[0].text
+            message = messages[0]
             task = protocol_schema.LabelPrompterReplyTask(
                 message_id=message.id,
-                conversation=conversation,
-                reply=message,
+                conversation=prepare_conversation(conversation),
+                reply=message.text,
                 valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
             )
 
         case protocol_schema.TaskRequestType.label_assistant_reply:
             logger.info("Generating a LabelAssistantReplyTask.")
             conversation, messages = pr.fetch_multiple_random_replies(max_size=1, message_role="prompter")
-            message = messages[0].text
+            message = messages[0]
             task = protocol_schema.LabelAssistantReplyTask(
                 message_id=message.id,
-                conversation=conversation,
-                reply=message,
+                conversation=prepare_conversation(conversation),
+                reply=message.text,
                 valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
             )
 
@@ -191,9 +192,9 @@ def request_task(
     api_client = deps.api_auth(api_key, db)
 
     try:
-        pr = PromptRepository(db, api_client, request.user)
+        pr = PromptRepository(db, api_client, client_user=request.user)
         task, message_tree_id, parent_message_id = generate_task(request, pr)
-        pr.store_task(task, message_tree_id, parent_message_id, request.collective)
+        pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
 
     except OasstError:
         raise
@@ -218,11 +219,11 @@ def tasks_acknowledge(
     api_client = deps.api_auth(api_key, db)
 
     try:
-        pr = PromptRepository(db, api_client, user=None)
+        pr = PromptRepository(db, api_client)
 
         # here we store the message id in the database for the task
         logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
-        pr.bind_frontend_message_id(task_id=task_id, frontend_message_id=ack_request.message_id)
+        pr.task_repository.bind_frontend_message_id(task_id=task_id, frontend_message_id=ack_request.message_id)
 
     except OasstError:
         raise
@@ -246,8 +247,8 @@ def tasks_acknowledge_failure(
     try:
         logger.info(f"Frontend reports failure to implement task {task_id=}, {nack_request=}.")
         api_client = deps.api_auth(api_key, db)
-        pr = PromptRepository(db, api_client, user=None)
-        pr.acknowledge_task_failure(task_id)
+        pr = PromptRepository(db, api_client)
+        pr.task_repository.acknowledge_task_failure(task_id)
     except (KeyError, RuntimeError):
         logger.exception("Failed to not acknowledge task.")
         raise OasstError("Failed to not acknowledge task.", OasstErrorCode.TASK_NACK_FAILED)
@@ -266,7 +267,7 @@ async def tasks_interaction(
     api_client = deps.api_auth(api_key, db)
 
     try:
-        pr = PromptRepository(db, api_client, user=interaction.user)
+        pr = PromptRepository(db, api_client, client_user=interaction.user)
 
         match type(interaction):
             case protocol_schema.TextReplyToMessage:
@@ -317,7 +318,8 @@ async def tasks_interaction(
                 logger.info(
                     f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}."
                 )
-                # TODO: check if the labels are valid?
+                # Labels are implicitly validated when converting str -> TextLabel
+                # So no need for explicit validation here
                 pr.store_text_labels(interaction)
                 return protocol_schema.TaskDone()
             case _:
@@ -336,6 +338,6 @@ def close_collective_task(
     api_key: APIKey = Depends(deps.get_api_key),
 ):
     api_client = deps.api_auth(api_key, db)
-    pr = PromptRepository(db, api_client, user=None)
-    pr.close_task(close_task_request.message_id)
+    tr = TaskRepository(db, api_client)
+    tr.close_task(close_task_request.message_id)
     return protocol_schema.TaskDone()
