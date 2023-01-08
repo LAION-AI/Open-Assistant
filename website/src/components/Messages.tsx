@@ -12,8 +12,8 @@ export interface Message {
 
 export const Messages = ({ messages, post_id }: { messages: Message[]; post_id: string }) => {
   const items = messages.map((messageProps: Message, i: number) => {
-    const { text } = messageProps;
     const { message_id } = messageProps;
+    const { text } = messageProps;
     return (
       <FlaggableElement text={text} post_id={post_id} message_id={message_id} key={i + text}>
         <MessageView {...messageProps} />
@@ -24,7 +24,7 @@ export const Messages = ({ messages, post_id }: { messages: Message[]; post_id: 
   return <Grid gap={2}>{items}</Grid>;
 };
 
-export const MessageView = ({ is_assistant, text }: Message) => {
+export const MessageView = ({ is_assistant, text, message_id }: Message) => {
   const { colorMode } = useColorMode();
 
   const bgColor = useMemo(() => {
