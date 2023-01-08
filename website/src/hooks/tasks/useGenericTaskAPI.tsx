@@ -23,6 +23,7 @@ export const useGenericTaskAPI = <TaskType,>(taskApiEndpoint: string) => {
     {
       onSuccess: (data) => setTasks([data]),
       revalidateOnMount: true,
+      dedupingInterval: 500,
     }
   );
 
