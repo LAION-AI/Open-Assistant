@@ -230,6 +230,20 @@ class PromptRepository:
                 )
 
     def insert_message_embedding(self, message_id: UUID, model: str, embedding: List[float]) -> MessageEmbedding:
+        """Insert the embedding of a new message in the database.
+
+        Args:
+            message_id (UUID): the identifier of the message we want to save its embedding
+            model (str): the model used for creating the embedding
+            embedding (List[float]): the values obtained from the message & model
+
+        Raises:
+            OasstError: if misses some of the before params
+
+        Returns:
+            MessageEmbedding: the instance in the database of the embedding saved for that message
+        """
+
         if None in (message_id, model, embedding):
             raise OasstError("Paramters missing to add embedding", OasstErrorCode.GENERIC_ERROR)
 
