@@ -52,7 +52,7 @@ const ManageUser = ({ user }) => {
   return (
     <>
       <Head>
-        <title>Open Assistant</title>
+        <title>Manage Users - Open Assistant</title>
         <meta
           name="description"
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."

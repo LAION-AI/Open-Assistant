@@ -1,21 +1,14 @@
 import { getToken } from "next-auth/jwt";
-import client from "src/lib/prismadb";
+import withRole from "src/lib/auth";
+import prisma from "src/lib/prismadb";
 
 /**
  * Returns a list of user results from the database when the requesting user is
  * a logged in admin.
  */
-const handler = async (req, res) => {
-  const token = await getToken({ req });
-
-  // Return nothing if the user isn't registered or if the user isn't an admin.
-  if (!token || token.role !== "admin") {
-    res.status(403).end();
-    return;
-  }
-
+const handler = withRole("admin", async (req, res) => {
   // Fetch 20 users.
-  const users = await client.user.findMany({
+  const users = await prisma.user.findMany({
     select: {
       id: true,
       role: true,
@@ -26,6 +19,6 @@ const handler = async (req, res) => {
   });
 
   res.status(200).json(users);
-};
+});
 
 export default handler;

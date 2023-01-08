@@ -1,19 +1,13 @@
 import { getToken } from "next-auth/jwt";
+import withRole from "src/lib/auth";
 import prisma from "src/lib/prismadb";
 
 /**
  * Update's the user's data in the database.  Accessible only to admins.
  */
-const handler = async (req, res) => {
-  const token = await getToken({ req });
-
-  // Return nothing if the user isn't registered or if the user isn't an admin.
-  if (!token || token.role !== "admin") {
-    res.status(403).end();
-    return;
-  }
-
+const handler = withRole("admin", async (req, res) => {
   const { id, role } = JSON.parse(req.body);
+
   await prisma.user.update({
     where: {
       id,
@@ -24,6 +18,6 @@ const handler = async (req, res) => {
   });
 
   res.status(200).end();
-};
+});
 
 export default handler;
