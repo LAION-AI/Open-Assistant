@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from oasst_backend.models import Message
+from oasst_backend.models import Message, User
 from oasst_shared.schemas import protocol
 
 
@@ -39,3 +39,7 @@ def prepare_tree(tree: list[Message], tree_id: UUID) -> protocol.MessageTree:
         tree_messages.append(prepare_message(message))
 
     return protocol.MessageTree(id=tree_id, messages=tree_messages)
+
+
+def prepare_user(u: User) -> protocol.User:
+    return protocol.User(id=u.username, display_name=u.display_name, auth_method=u.auth_method)

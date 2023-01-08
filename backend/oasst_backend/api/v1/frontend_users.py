@@ -6,11 +6,26 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.user_repository import UserRepository
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
 router = APIRouter()
+
+
+@router.get("/", response_model=list[protocol.User])
+def get_users(
+    max_count: int = Query(10, gt=0, le=20),  # TODO: refine bounds
+    ge: str = None,
+    lt: str = None,
+    auth_method: str = None,
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    pr = UserRepository(db, api_client)
+    users = pr.query_users(limit=max_count, ge=ge, lt=lt, auth_method=auth_method)
+    return [utils.prepare_user(u) for u in users]
 
 
 @router.get("/{username}/messages", response_model=list[protocol.Message])

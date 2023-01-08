@@ -1,9 +1,11 @@
 from typing import Optional
 
 from oasst_backend.models import ApiClient, Message, User
+from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import LeaderboardStats
 from sqlmodel import Session, func
+from starlette.status import HTTP_403_FORBIDDEN
 
 
 class UserRepository:
@@ -62,3 +64,32 @@ class UserRepository:
         ]
 
         return LeaderboardStats(leaderboard=result)
+
+    def query_users(
+        self,
+        limit: Optional[int] = 20,
+        ge: Optional[str] = None,
+        lt: Optional[str] = None,
+        auth_method: Optional[str] = None,
+    ) -> list[User]:
+        # TODO: api_client_id
+        if not self.api_client.trusted:
+            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+
+        users = self.db.query(User)
+
+        if auth_method:
+            users = users.filter(User.auth_method == auth_method)
+
+        if ge:
+            users = users.filter(User.display_name >= ge)
+
+        if lt:
+            users = users.filter(User.display_name <= lt)
+
+        users = users.order_by(User.display_name)
+
+        if limit is not None:
+            users = users.limit(limit)
+
+        return users.all()
