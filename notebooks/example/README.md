@@ -12,7 +12,8 @@ like to try ensure are:
 1. Each notebook should have a markdown file with the same name as the notebook
    (or README.md if it's a single notebook folder) that explains what the
    notebook does and how to use it.
-1. Add an "Open in Colab" badge to the top of the notebook.
+1. Add an "Open in Colab" badge to the top of the notebook (see the markdown
+   cell near the top of `example.ipynb` as an example you can adapt).
 1. Make it as easy as possible for someone to run the notebook in Google Colab
    or some other environment based on standard practices like providing a
    `requirements.txt` file or anything else needed to successfully run the
@@ -34,7 +35,10 @@ expected (for example `example.ipynb` will read some sample data from
 `data/data.csv`).
 
 If you are adding a notebook please try and add a similar cell to the top of the
-notebook so that it is easy for others to run the notebook in colab.
+notebook so that it is easy for others to run the notebook in colab. If your
+notebook does not have any dependencies beyond what already comes as standard in
+Google Colab then you do not need such a cell, just an "Open in Colab" badge
+will suffice.
 
 ## example.ipynb
 
