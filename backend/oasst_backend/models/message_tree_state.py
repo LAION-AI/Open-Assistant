@@ -1,13 +1,12 @@
 from enum import Enum
-from typing import Optional
-from uuid import UUID, uuid4
+from uuid import UUID
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from sqlmodel import Field, Index, SQLModel
+from sqlmodel import Field, SQLModel
 
 
-class States(str, Enum):
+class State(str, Enum):
     """States of the Open-Assistant message tree state machine."""
 
     INITIAL_PROMPT_REVIEW = "initial_prompt_review"
@@ -46,28 +45,26 @@ class States(str, Enum):
 
 
 VALID_STATES = (
-    States.INITIAL_PROMPT_REVIEW,
-    States.BREEDING_PHASE,
-    States.RANKING_PHASE,
-    States.READY_FOR_SCORING,
-    States.READY_FOR_EXPORT,
-    States.ABORTED_LOW_GRADE,
+    State.INITIAL_PROMPT_REVIEW,
+    State.BREEDING_PHASE,
+    State.RANKING_PHASE,
+    State.READY_FOR_SCORING,
+    State.READY_FOR_EXPORT,
+    State.ABORTED_LOW_GRADE,
 )
 
-TERMINAL_STATES = (States.READY_FOR_EXPORT, States.ABORTED_LOW_GRADE, States.SCORING_FAILED, States.HALTED_BY_MODERATOR)
+TERMINAL_STATES = (State.READY_FOR_EXPORT, State.ABORTED_LOW_GRADE, State.SCORING_FAILED, State.HALTED_BY_MODERATOR)
 
 
 class MessageTreeState(SQLModel, table=True):
     __tablename__ = "message_tree_state"
-    __table_args__ = (Index("ix_message_tree_state_tree_id", "message_tree_id", unique=True),)
 
-    id: Optional[UUID] = Field(
-        sa_column=sa.Column(
-            pg.UUID(as_uuid=True), primary_key=True, default=uuid4, server_default=sa.text("gen_random_uuid()")
-        ),
+    message_tree_id: UUID = Field(
+        sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("message.id"), primary_key=True)
     )
-    message_tree_id: UUID = Field(nullable=False, index=True)
-    state: str = Field(nullable=False, max_length=128)
     goal_tree_size: int = Field(nullable=False)
-    current_num_non_filtered_messages: int = Field(nullable=False)
     max_depth: int = Field(nullable=False)
+    max_child_count: int = Field(nullable=False)
+    state: str = Field(nullable=False, max_length=128, index=True)
+    active: bool = Field(nullable=False, index=True)
+    accepted_messages: int = Field(nullable=False, default=0)
