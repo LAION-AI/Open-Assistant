@@ -3,7 +3,7 @@ import { LabelingTaskType, useLabelingTask } from "./useLabelingTask";
 
 export interface LabelInitialPromptTask {
   id: string;
-  type: "label_initial_prompt";
+  type: LabelingTaskType.label_initial_prompt;
   message_id: string;
   valid_labels: string[];
   prompt: string;

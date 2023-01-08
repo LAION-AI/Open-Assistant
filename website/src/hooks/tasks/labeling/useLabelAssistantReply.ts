@@ -3,7 +3,7 @@ import { LabelingTaskType, useLabelingTask } from "./useLabelingTask";
 
 export interface LabelAssistantReplyTask {
   id: string;
-  type: "label_prompter_reply";
+  type: LabelingTaskType.label_assistant_reply;
   message_id: string;
   valid_labels: string[];
   reply: string;
