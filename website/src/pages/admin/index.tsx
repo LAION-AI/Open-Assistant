@@ -28,8 +28,6 @@ const AdminIndex = () => {
     router.push("/");
   }, [session, status]);
 
-  // Show the final page.
-  // TODO(#237): Display a component that fetches actual user data.
   return (
     <>
       <Head>
