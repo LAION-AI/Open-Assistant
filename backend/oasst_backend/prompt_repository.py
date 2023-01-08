@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Message, MessageReaction, Task, TextLabels, User
+from oasst_backend.models import ApiClient, Message, MessageReaction, MessageToxicity, Task, TextLabels, User
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -390,6 +390,27 @@ class PromptRepository:
         self.db.commit()
         self.db.refresh(message)
         return message
+
+    def insert_toxicity(self, message_id: UUID, model: str, toxicity: float) -> MessageToxicity:
+        """Save the toxicity score of a new message in the database.
+        Args:
+            message_id (UUID): the identifier of the message we want to save its toxicity score
+            model (str): the model used for creating the toxicity score
+            embedding (List[float]): the values obtained from the message & model
+        Raises:
+            OasstError: if misses some of the before params
+        Returns:
+            MessageToxicity: the instance in the database of the score saved for that message
+        """
+
+        if None in (message_id, model, toxicity):
+            raise OasstError("Paramters missing to add embedding", OasstErrorCode.GENERIC_ERROR)
+
+        message_toxicity = MessageToxicity(message_id=message_id, model=model, toxicity=toxicity)
+        self.db.add(message_toxicity)
+        self.db.commit()
+        self.db.refresh(message_toxicity)
+        return message_toxicity
 
     def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
         if self.user_id is None:

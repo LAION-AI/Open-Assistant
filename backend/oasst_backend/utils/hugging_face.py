@@ -1,8 +1,17 @@
+from enum import Enum
 from typing import Any, Dict
 
 import aiohttp
 from oasst_backend.config import settings
 from oasst_shared.exceptions import OasstError, OasstErrorCode
+
+
+class HF_url(str, Enum):
+    HUGGINGFACE_TOXIC_ROBERTA = "https://api-inference.huggingface.co/models/unitary"
+
+
+class HF_model(str, Enum):
+    TOXIC_ROBERTA = "multilingual-toxic-xlm-roberta"
 
 
 class HuggingFaceAPI:
