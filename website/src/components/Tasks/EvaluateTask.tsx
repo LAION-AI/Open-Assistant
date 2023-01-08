@@ -5,7 +5,17 @@ import { TaskControlsOverridable } from "src/components/Survey/TaskControlsOverr
 
 import { MessageTable } from "../Messages/MessageTable";
 
-export const EvaluateTask = ({ tasks, trigger, mutate, mainBgClasses }) => {
+export interface EvaluateTaskProps {
+  // we need a task type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  tasks: any[];
+  trigger: (update: { id: string; update_type: string; content: { ranking: number[] } }) => void;
+  onSkipTask: (task: { id: string }, reason: string) => void;
+  onNextTask: () => void;
+  mainBgClasses: string;
+}
+
+export const EvaluateTask = ({ tasks, trigger, onSkipTask, onNextTask, mainBgClasses }: EvaluateTaskProps) => {
   const [ranking, setRanking] = useState<number[]>([]);
   const submitResponse = (task) => {
     trigger({
@@ -17,10 +27,6 @@ export const EvaluateTask = ({ tasks, trigger, mutate, mainBgClasses }) => {
     });
   };
 
-  const fetchNextTask = () => {
-    setRanking([]);
-    mutate();
-  };
   let messages = null;
   if (tasks[0].task.conversation) {
     messages = tasks[0].task.conversation.messages;
@@ -45,7 +51,11 @@ export const EvaluateTask = ({ tasks, trigger, mutate, mainBgClasses }) => {
         isValid={ranking.length == tasks[0].task[sortables].length}
         prepareForSubmit={() => setRanking(tasks[0].task[sortables].map((_, idx) => idx))}
         onSubmitResponse={submitResponse}
-        onSkip={fetchNextTask}
+        onSkipTask={(task, reason) => {
+          setRanking([]);
+          onSkipTask(task, reason);
+        }}
+        onNextTask={onNextTask}
       />
     </div>
   );
