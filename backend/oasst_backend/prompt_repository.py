@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Message, MessageReaction, MessageToxicity, Task, TextLabels, User
+from oasst_backend.models import ApiClient, Message, MessageReaction, MessageToxicity, TextLabels, User
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
@@ -223,105 +223,6 @@ class PromptRepository:
                     f"task payload type mismatch: {type(task_payload)=} != {db_payload.RankConversationRepliesPayload}",
                     OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
                 )
-
-    def store_task(
-        self,
-        task: protocol_schema.Task,
-        message_tree_id: UUID = None,
-        parent_message_id: UUID = None,
-        collective: bool = False,
-    ) -> Task:
-        payload: db_payload.TaskPayload
-        match type(task):
-            case protocol_schema.SummarizeStoryTask:
-                payload = db_payload.SummarizationStoryPayload(story=task.story)
-
-            case protocol_schema.RateSummaryTask:
-                payload = db_payload.RateSummaryPayload(
-                    full_text=task.full_text, summary=task.summary, scale=task.scale
-                )
-
-            case protocol_schema.InitialPromptTask:
-                payload = db_payload.InitialPromptPayload(hint=task.hint)
-
-            case protocol_schema.PrompterReplyTask:
-                payload = db_payload.PrompterReplyPayload(conversation=task.conversation, hint=task.hint)
-
-            case protocol_schema.AssistantReplyTask:
-                payload = db_payload.AssistantReplyPayload(type=task.type, conversation=task.conversation)
-
-            case protocol_schema.RankInitialPromptsTask:
-                payload = db_payload.RankInitialPromptsPayload(type=task.type, prompts=task.prompts)
-
-            case protocol_schema.RankPrompterRepliesTask:
-                payload = db_payload.RankPrompterRepliesPayload(
-                    type=task.type, conversation=task.conversation, replies=task.replies
-                )
-
-            case protocol_schema.RankAssistantRepliesTask:
-                payload = db_payload.RankAssistantRepliesPayload(
-                    type=task.type, conversation=task.conversation, replies=task.replies
-                )
-
-            case protocol_schema.LabelInitialPromptTask:
-                payload = db_payload.LabelInitialPromptPayload(
-                    type=task.type, message_id=task.message_id, prompt=task.prompt, valid_labels=task.valid_labels
-                )
-
-            case protocol_schema.LabelPrompterReplyTask:
-                payload = db_payload.LabelPrompterReplyPayload(
-                    type=task.type,
-                    message_id=task.message_id,
-                    conversation=task.conversation,
-                    reply=task.reply,
-                    valid_labels=task.valid_labels,
-                )
-
-            case protocol_schema.LabelAssistantReplyTask:
-                payload = db_payload.LabelAssistantReplyPayload(
-                    type=task.type,
-                    message_id=task.message_id,
-                    conversation=task.conversation,
-                    reply=task.reply,
-                    valid_labels=task.valid_labels,
-                )
-
-            case _:
-                raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
-
-        task = self.insert_task(
-            payload=payload,
-            id=task.id,
-            message_tree_id=message_tree_id,
-            parent_message_id=parent_message_id,
-            collective=collective,
-        )
-        assert task.id == task.id
-        return task
-
-    def insert_task(
-        self,
-        payload: db_payload.TaskPayload,
-        id: UUID = None,
-        message_tree_id: UUID = None,
-        parent_message_id: UUID = None,
-        collective: bool = False,
-    ) -> Task:
-        c = PayloadContainer(payload=payload)
-        task = Task(
-            id=id,
-            user_id=self.user_id,
-            payload_type=type(payload).__name__,
-            payload=c,
-            api_client_id=self.api_client.id,
-            message_tree_id=message_tree_id,
-            parent_message_id=parent_message_id,
-            collective=collective,
-        )
-        self.db.add(task)
-        self.db.commit()
-        self.db.refresh(task)
-        return task
 
     def insert_toxicity(self, message_id: UUID, model: str, toxicity: float) -> MessageToxicity:
         """Save the toxicity score of a new message in the database.
