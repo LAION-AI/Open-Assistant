@@ -42,7 +42,7 @@ export class OasstApiClient {
       } catch (e) {
         throw new OasstError(errorText, 0, resp.status);
       }
-      throw new OasstError(error.message, error.error_code, resp.status);
+      throw new OasstError(error.message ?? error, error.error_code, resp.status);
     }
 
     return await resp.json();

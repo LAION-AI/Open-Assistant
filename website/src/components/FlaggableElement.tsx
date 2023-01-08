@@ -24,8 +24,8 @@ import {
 import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
 import poster from "src/lib/poster";
-import useSWRMutation from "swr/mutation";
 import { colors } from "styles/Theme/colors";
+import useSWRMutation from "swr/mutation";
 
 export const FlaggableElement = (props) => {
   const [isEditing, setIsEditing] = useBoolean();
@@ -118,7 +118,8 @@ export const FlaggableElement = (props) => {
     </Popover>
   );
 };
-function FlagCheckbox(props: {
+
+export function FlagCheckbox(props: {
   option: textFlagLabels;
   idx: number;
   checkboxValues: boolean[];

@@ -11,6 +11,7 @@ from rank_datasets import DataCollatorForPairRank, HFSummary, RankGenCollator, W
 from torch import nn
 from torch.utils.data import ConcatDataset, Dataset
 from transformers import (
+    AdamW,
     AutoModelForSequenceClassification,
     DataCollator,
     EvalPrediction,
@@ -19,6 +20,8 @@ from transformers import (
     Trainer,
     TrainerCallback,
     TrainingArguments,
+    get_cosine_schedule_with_warmup,
+    get_linear_schedule_with_warmup,
 )
 from utils import argument_parsing, freeze_top_n_layers, get_tokenizer, train_val_dataset
 
@@ -179,7 +182,7 @@ if __name__ == "__main__":
         evaluation_strategy="steps",
         eval_steps=training_conf["eval_steps"],
         save_steps=1000,
-        report_to="local",
+        report_to="wandb",
     )
     train_datasets, evals = [], {}
     if "webgpt" in training_conf["datasets"]:
@@ -202,6 +205,21 @@ if __name__ == "__main__":
     else:
         collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf["max_length"])
     assert len(evals) > 0
+
+    optimizer = AdamW(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
+    scheduler = None
+    if "scheduler" in training_conf:
+        if training_conf["scheduler"] == "linear":
+            scheduler = get_linear_schedule_with_warmup()
+        elif training_conf["scheduler"] == "cosine":
+            scheduler = get_cosine_schedule_with_warmup(
+                optimizer,
+                num_warmup_steps=args.warmup_steps,
+                num_training_steps=len(train)
+                * args.num_train_epochs
+                / (args.per_device_train_batch_size * args.gradient_accumulation_steps),
+            )
+
     trainer = RankTrainer(
         model=model,
         model_name=model_name,
@@ -211,6 +229,7 @@ if __name__ == "__main__":
         data_collator=collate_fn,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
+        optimizers=(optimizer, scheduler),
     )
     # trainer.evaluate()
     trainer.train()

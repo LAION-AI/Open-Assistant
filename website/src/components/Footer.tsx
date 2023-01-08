@@ -1,6 +1,7 @@
 import { useColorMode } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo } from "react";
 
 export function Footer() {
   const { colorMode } = useColorMode();
@@ -9,7 +10,7 @@ export function Footer() {
 
   return (
     <footer className={bgColorClass}>
-      <div className={`flex mx-auto max-w-7xl justify-between py-10 px-10 border-t ${borderClass}`}>
+      <div className={`flex mx-auto max-w-7xl justify-between border-t p-10 ${borderClass}`}>
         <div className="flex items-center pr-8">
           <Link href="/" aria-label="Home" className="flex items-center">
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="52" height="52" alt="logo" />
@@ -21,50 +22,35 @@ export function Footer() {
           </div>
         </div>
 
-        <nav className="flex justify-center gap-20">
-          <nav className="flex justify-center gap-20">
-            <div className="flex flex-col text-sm leading-7">
-              <b>Legal</b>
-              <div className="flex flex-col leading-5">
-                <Link href="/privacy-policy" aria-label="Privacy Policy" className="hover:underline underline-offset-2">
-                  Privacy Policy
-                </Link>
-                <Link
-                  href="/terms-of-service"
-                  aria-label="Terms of Service"
-                  className="hover:underline underline-offset-2"
-                >
-                  Terms of Service
-                </Link>
-              </div>
-            </div>
-            <div className="flex flex-col text-sm leading-7">
-              <b>Connect</b>
-              <div className="flex flex-col leading-5">
-                <Link
-                  href="https://github.com/LAION-AI/Open-Assistant"
-                  rel="noopener noreferrer nofollow"
-                  target="_blank"
-                  aria-label="Privacy Policy"
-                  className="hover:underline underline-offset-2"
-                >
-                  Github
-                </Link>
-                <Link
-                  href="https://discord.gg/pXtnYk9c"
-                  rel="noopener noreferrer nofollow"
-                  target="_blank"
-                  aria-label="Terms of Service"
-                  className="hover:underline underline-offset-2"
-                >
-                  Discord
-                </Link>
-              </div>
-            </div>
-          </nav>
-          {/* </div> */}
+        <nav className="grid grid-cols-2 gap-20 leading-5 text-sm">
+          <div className="flex flex-col">
+            <b className="pb-1">Legal</b>
+            <FooterLink href="/privacy-policy" label="Privacy Policy" />
+            <FooterLink href="/terms-of-service" label="Terms of Service" />
+          </div>
+          <div className="flex flex-col">
+            <b className="pb-1">Connect</b>
+            <FooterLink href="https://github.com/LAION-AI/Open-Assistant" label="Github" />
+            <FooterLink href="https://ykilcher.com/open-assistant-discord" label="Discord" />
+          </div>
         </nav>
       </div>
     </footer>
   );
 }
+
+const FooterLink = ({ href, label }: { href: string; label: string }) =>
+  useMemo(
+    () => (
+      <Link
+        href={href}
+        rel="noopener noreferrer nofollow"
+        target="_blank"
+        aria-label={label}
+        className="hover:underline underline-offset-2"
+      >
+        {label}
+      </Link>
+    ),
+    [href, label]
+  );

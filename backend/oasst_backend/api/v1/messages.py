@@ -5,9 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient
-from oasst_backend.models.db_payload import MessagePayload
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
@@ -55,10 +53,6 @@ def get_message(
     """
     pr = PromptRepository(db, api_client, user=None)
     message = pr.fetch_message(message_id)
-    if not isinstance(message.payload.payload, MessagePayload):
-        # Unexptcted message payload
-        raise OasstError("Invalid message", OasstErrorCode.INVALID_MESSAGE)
-
     return utils.prepare_message(message)
 
 
