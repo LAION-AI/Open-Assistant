@@ -36,7 +36,7 @@ const handler = async (req, res) => {
 
     }),
   });
-  res.status(interactionRes.status).json(interactionRes.json());
+  res.status(interactionRes.status).end();
 };
 
 export default handler;
