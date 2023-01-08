@@ -1,17 +1,12 @@
-from enum import Enum
 from typing import List
 
 from fastapi import APIRouter, Depends
 from oasst_backend.api import deps
 from oasst_backend.models import ApiClient
 from oasst_backend.schemas.hugging_face import ToxicityClassification
-from oasst_backend.utils.hugging_face import HuggingFaceAPI
+from oasst_backend.utils.hugging_face import HF_url, HuggingFaceAPI
 
 router = APIRouter()
-
-
-class HF_url(str, Enum):
-    HUGGINGFACE_TOXIC_ROBERTA = "https://api-inference.huggingface.co/models/unitary/multilingual-toxic-xlm-roberta"
 
 
 @router.get("/text_toxicity")

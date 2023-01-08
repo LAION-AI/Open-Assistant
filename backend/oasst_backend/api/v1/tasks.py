@@ -7,7 +7,9 @@ from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.api.v1.utils import prepare_conversation
+from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.utils.hugging_face import HF_url, HuggingFaceAPI
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -253,7 +255,7 @@ def tasks_acknowledge_failure(
 
 
 @router.post("/interaction", response_model=protocol_schema.TaskDone)
-def tasks_interaction(
+async def tasks_interaction(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
@@ -273,11 +275,22 @@ def tasks_interaction(
                     f"Frontend reports text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                 )
 
+                embedding = None
+                if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
+                    try:
+                        hugging_face_api = HuggingFaceAPI(HF_url.HUGGINGFACE_MINILM_EMBEDDING.value)
+                        embedding = await hugging_face_api.post(interaction.text)
+                    except:
+                        logger.error(
+                            f"Could not fetch embbeddings for  text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                        )
+
                 # here we store the text reply in the database
                 pr.store_text_reply(
                     text=interaction.text,
                     frontend_message_id=interaction.message_id,
                     user_frontend_message_id=interaction.user_message_id,
+                    miniLM_embedding=embedding,
                 )
 
                 return protocol_schema.TaskDone()

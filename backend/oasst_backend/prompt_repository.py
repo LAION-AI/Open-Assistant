@@ -2,7 +2,7 @@ import datetime
 import random
 from collections import defaultdict
 from http import HTTPStatus
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
@@ -122,7 +122,9 @@ class PromptRepository:
         )
         return task
 
-    def store_text_reply(self, text: str, frontend_message_id: str, user_frontend_message_id: str) -> Message:
+    def store_text_reply(
+        self, text: str, frontend_message_id: str, user_frontend_message_id: str, miniLM_embedding: List[float] = None
+    ) -> Message:
         self.validate_frontend_message_id(frontend_message_id)
         self.validate_frontend_message_id(user_frontend_message_id)
 
@@ -163,6 +165,7 @@ class PromptRepository:
             role=role,
             payload=db_payload.MessagePayload(text=text),
             depth=depth,
+            miniLM_embedding=miniLM_embedding,
         )
         if not task.collective:
             task.done = True
@@ -366,6 +369,7 @@ class PromptRepository:
         payload: db_payload.MessagePayload,
         payload_type: str = None,
         depth: int = 0,
+        miniLM_embedding: List[float] = None,
     ) -> Message:
         if payload_type is None:
             if payload is None:
@@ -385,6 +389,7 @@ class PromptRepository:
             payload_type=payload_type,
             payload=PayloadContainer(payload=payload),
             depth=depth,
+            miniLM_embedding=miniLM_embedding,
         )
         self.db.add(message)
         self.db.commit()

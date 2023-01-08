@@ -1,8 +1,14 @@
+from enum import Enum
 from typing import Any, Dict
 
 import aiohttp
 from oasst_backend.config import settings
 from oasst_shared.exceptions import OasstError, OasstErrorCode
+
+
+class HF_url(str, Enum):
+    HUGGINGFACE_TOXIC_ROBERTA = ("https://api-inference.huggingface.co/models/unitary/multilingual-toxic-xlm-roberta",)
+    HUGGINGFACE_MINILM_EMBEDDING = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 
 class HuggingFaceAPI:
@@ -41,6 +47,10 @@ class HuggingFaceAPI:
             async with session.post(self.api_url, headers=self.headers, json=payload) as response:
                 # If we get a bad response
                 if response.status != 200:
+                    from loguru import logger
+
+                    logger.error(response)
+                    logger.info(self.headers)
                     raise OasstError(
                         "Response Error Detoxify HuggingFace", error_code=OasstErrorCode.HUGGINGFACE_API_ERROR
                     )
