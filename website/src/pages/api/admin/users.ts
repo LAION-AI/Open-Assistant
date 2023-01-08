@@ -1,4 +1,3 @@
-import { getToken } from "next-auth/jwt";
 import withRole from "src/lib/auth";
 import prisma from "src/lib/prismadb";
 
@@ -15,7 +14,7 @@ const handler = withRole("admin", async (req, res) => {
   // Note: with Prisma this isn't the most efficient but it's the only possible
   // option with cuid based User IDs.
   const { pageIndex } = req.query;
-  const skip = pageIndex * PAGE_SIZE;
+  const skip = parseInt(pageIndex as string) * PAGE_SIZE || 0;
 
   // Fetch 20 users.
   const users = await prisma.user.findMany({

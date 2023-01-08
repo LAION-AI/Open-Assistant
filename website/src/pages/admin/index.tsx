@@ -26,7 +26,7 @@ const AdminIndex = () => {
       return;
     }
     router.push("/");
-  }, [session, status]);
+  }, [router, session, status]);
 
   return (
     <>

@@ -27,7 +27,7 @@ const UsersCell = () => {
   // Fetch and save the users.
   // This follows useSWR's recommendation for simple pagination:
   //   https://swr.vercel.app/docs/pagination#when-to-use-useswr
-  const { isLoading } = useSWR(`/api/admin/users?pageIndex=${pageIndex}`, fetcher, {
+  useSWR(`/api/admin/users?pageIndex=${pageIndex}`, fetcher, {
     onSuccess: setUsers,
   });
 
