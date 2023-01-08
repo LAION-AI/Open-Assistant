@@ -16,9 +16,10 @@ def format_time(dt: datetime, fmt: t.Literal["t", "T", "D", "f", "F", "R"]) -> s
     | R | relative         | in an hour
     ```
     """
-    if fmt not in ("t", "T", "D", "f", "F", "R"):
+    if fmt in ("t", "T", "D", "f", "F", "R"):
+        return f"<t:{dt.timestamp():.0f}:{fmt}>"
+    else:
         raise ValueError(f"`fmt` must be 't', 'T', 'D', 'f', 'F' or 'R', not {fmt}")
-    return f"<t:{dt.timestamp():.0f}:{fmt}>"
 
 
 def mention(
