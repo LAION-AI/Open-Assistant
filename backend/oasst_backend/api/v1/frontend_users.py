@@ -27,7 +27,7 @@ def query_frontend_user(
     """
     ur = UserRepository(db, api_client)
     user = ur.query_frontend_user(auth_method, username, api_client_id)
-    return user
+    return protocol.User(id=user.username, display_name=user.display_name, auth_method=user.auth_method)
 
 
 @router.get("/{username}/messages", response_model=list[protocol.Message])

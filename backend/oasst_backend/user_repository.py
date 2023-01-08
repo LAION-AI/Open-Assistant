@@ -25,7 +25,7 @@ class UserRepository:
             .first()
         )
 
-        return protocol_schema.User(id=user.username, display_name=user.display_name, auth_method=user.auth_method)
+        return user
 
     def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
         if not client_user:
