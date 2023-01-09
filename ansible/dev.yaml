@@ -69,11 +69,11 @@
         network_mode: oasst
         env:
           FASTAPI_URL: http://oasst-backend:8080
-          FASTAPI_KEY: "123"
+          FASTAPI_KEY: 123
           DATABASE_URL: postgres://postgres:postgres@oasst-postgres-web/postgres
           NEXTAUTH_SECRET: O/M2uIbGj+lDD2oyNa8ax4jEOJqCPJzO53UbWShmq98=
           EMAIL_SERVER_HOST: oasst-maildev
-          EMAIL_SERVER_PORT: "25"
+          EMAIL_SERVER_PORT: 1025
           EMAIL_FROM: info@example.com
           NEXTAUTH_URL: http://web.dev.open-assistant.io/
           DEBUG_LOGIN: "true"
