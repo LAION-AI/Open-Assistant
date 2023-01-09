@@ -96,8 +96,10 @@ The website is built using Next.js and is in the `website` folder.
 
 ### Pre-commit
 
-Install `pre-commit` and run `pre-commit install` to install the pre-commit
-hooks.
+We are using `pre-commit` to enforce code style and formatting.
+
+Install `pre-commit` from [its website](https://pre-commit.com) and run
+`pre-commit install` to install the pre-commit hooks.
 
 In case you haven't done this, have already committed, and CI is failing, you
 can run `pre-commit run --all-files` to run the pre-commit hooks on all files.

@@ -19,7 +19,7 @@
 
 """
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -35,7 +35,7 @@ class RankGenCollator:
     max_length: Optional[int] = None
     max_examples: Optional[int] = None
 
-    def __call__(self, batch: list[dict[str, str]]) -> dict[str, torch.Tensor]:
+    def __call__(self, batch: List[Dict[str, str]]) -> Dict[str, torch.Tensor]:
         prefixes = []
         better_answers = []
         worse_answers = []
@@ -193,3 +193,47 @@ class HFSummary(Dataset):
         valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
         # optimize the format later
         return context + self.postfix_prompt, [r for idx, r in enumerate(rows) if idx in valid_idx]
+
+
+class HFDataset(Dataset):
+    """
+    This is a base huggingface dataset which written to support the
+    simplest pos-neg pair format
+
+    we should do something like this for supervised datasets
+    """
+
+    def __init__(
+        self, dataset_name, question_field, pos_answer_field, neg_answer_field, subset=None, split=None
+    ) -> None:
+        super().__init__()
+        dataset = load_dataset(dataset_name, subset)
+        if split is not None:
+            dataset = dataset[split]
+
+        self.questions = {}
+        self.index2question = {}
+        for row in dataset:
+            question = row[question_field].strip()
+            pos = row[pos_answer_field]
+            neg = row[neg_answer_field]
+            if question not in self.index2question:
+                self.index2question[len(self.index2question)] = question
+
+            if question not in self.questions:
+                self.questions[question] = []
+            self.questions[question].append((pos.strip(), neg.strip()))
+
+    def __len__(self):
+        return len(self.index2question)
+
+    def __getitem__(self, index):
+        question = self.index2question[index]
+        rows = self.questions[question]
+        # optimize the format later
+        return question, rows
+
+
+class GPTJSynthetic(HFDataset):
+    def __init__(self) -> None:
+        super().__init__("Dahoas/synthetic-instruct-gptj-pairwise", "prompt", "chosen", "rejected", None, "train")

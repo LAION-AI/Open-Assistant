@@ -10,6 +10,39 @@
         state: present
         driver: bridge
 
+    - name: Copy redis.conf to managed node
+      ansible.builtin.copy:
+        src: ./redis.conf
+        dest: ./redis.conf
+
+    - name: Set up Redis
+      community.docker.docker_container:
+        name: oasst-redis
+        image: redis
+        state: started
+        restart_policy: always
+        network_mode: oasst
+        ports:
+          - 6379:6379
+        healthcheck:
+          test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+          interval: 2s
+          timeout: 2s
+          retries: 10
+        command: redis-server /usr/local/etc/redis/redis.conf
+        volumes:
+          - "./redis.conf:/usr/local/etc/redis/redis.conf"
+
+    - name: Set up Redis Insights
+      community.docker.docker_container:
+        name: oasst-redis-insights
+        image: redislabs/redisinsight:latest
+        state: started
+        restart_policy: always
+        network_mode: oasst
+        ports:
+          - 8001:8001
+
     - name: Create postgres containers
       community.docker.docker_container:
         name: "{{ item.name }}"
@@ -32,14 +65,6 @@
         - name: oasst-postgres
         - name: oasst-postgres-web
 
-    - name: Set up maildev
-      community.docker.docker_container:
-        name: oasst-maildev
-        image: maildev/maildev
-        state: started
-        restart_policy: always
-        network_mode: oasst
-
     - name: Run the oasst oasst-backend
       community.docker.docker_container:
         name: oasst-backend
@@ -51,6 +76,7 @@
         network_mode: oasst
         env:
           POSTGRES_HOST: oasst-postgres
+          REDIS_HOST: oasst-redis
           DEBUG_ALLOW_ANY_API_KEY: "true"
           DEBUG_USE_SEED_DATA: "true"
           MAX_WORKERS: "1"
@@ -68,15 +94,27 @@
         restart_policy: always
         network_mode: oasst
         env:
-          FASTAPI_URL: http://oasst-backend:8080
-          FASTAPI_KEY: "123"
+          ADMIN_USERS: "{{ lookup('ansible.builtin.env', 'WEB_ADMIN_USERS') }}"
           DATABASE_URL: postgres://postgres:postgres@oasst-postgres-web/postgres
-          NEXTAUTH_SECRET: O/M2uIbGj+lDD2oyNa8ax4jEOJqCPJzO53UbWShmq98=
-          EMAIL_SERVER_HOST: oasst-maildev
-          EMAIL_SERVER_PORT: "25"
-          EMAIL_FROM: info@example.com
-          NEXTAUTH_URL: http://web.dev.open-assistant.io/
           DEBUG_LOGIN: "true"
+          DISCORD_CLIENT_ID:
+            "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_ID') }}"
+          DISCORD_CLIENT_SECRET:
+            "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_SECRET') }}"
+          EMAIL_FROM: open-assistent@laion.ai
+          EMAIL_SERVER_HOST:
+            "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_HOST') }}"
+          EMAIL_SERVER_PASSWORD:
+            "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_PASSWORD') }}"
+          EMAIL_SERVER_PORT:
+            "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_PORT') }}"
+          EMAIL_SERVER_USER:
+            "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
+          FASTAPI_URL: http://oasst-backend:8080
+          FASTAPI_KEY: "1234"
+          NEXTAUTH_SECRET:
+            "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
+          NEXTAUTH_URL: http://web.dev.open-assistant.io/
         ports:
           - 3000:3000
         command: bash wait-for-postgres.sh node server.js

@@ -42,7 +42,7 @@ export class OasstApiClient {
       } catch (e) {
         throw new OasstError(errorText, 0, resp.status);
       }
-      throw new OasstError(error.message, error.error_code, resp.status);
+      throw new OasstError(error.message ?? error, error.error_code, resp.status);
     }
 
     return await resp.json();
@@ -65,6 +65,12 @@ export class OasstApiClient {
   async ackTask(taskId: string, messageId: string): Promise<void> {
     return this.post(`/api/v1/tasks/${taskId}/ack`, {
       message_id: messageId,
+    });
+  }
+
+  async nackTask(taskId: string, reason: string): Promise<void> {
+    return this.post(`/api/v1/tasks/${taskId}/nack`, {
+      reason,
     });
   }
 
