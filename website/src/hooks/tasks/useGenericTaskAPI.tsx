@@ -2,19 +2,11 @@ import { useState } from "react";
 import type { ValidLabel } from "src/components/Messages";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
+import { BaseTask, TaskResponse } from "src/types/Task";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
-// TODO: type & centralize types for all tasks
-
-export interface TaskResponse<TaskType> {
-  id: string;
-  userId: string;
-  task: TaskType;
-  valid_labels: ValidLabel[];
-}
-
-export const useGenericTaskAPI = <TaskType,>(taskApiEndpoint: string) => {
+export const useGenericTaskAPI = <TaskType extends BaseTask>(taskApiEndpoint: string) => {
   type ConcreteTaskResponse = TaskResponse<TaskType>;
 
   const [tasks, setTasks] = useState<ConcreteTaskResponse[]>([]);
