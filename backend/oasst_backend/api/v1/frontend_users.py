@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -18,7 +19,7 @@ router = APIRouter()
 def query_frontend_user(
     auth_method: str,
     username: str,
-    api_client_id: UUID = None,
+    api_client_id: Optional[UUID] = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
