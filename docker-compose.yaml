@@ -95,7 +95,8 @@ services:
       - DEBUG_SKIP_API_KEY_CHECK=True
       - DEBUG_USE_SEED_DATA=True
       - MAX_WORKERS=1
-      - DEBUT_SKIP_TOXICITY_CALCULATION=False
+      - DEBUG_SKIP_TOXICITY_CALCULATION=False
+      - DEBUG_SKIP_EMBEDDING_COMPUTATION=True
     depends_on:
       db:
         condition: service_healthy

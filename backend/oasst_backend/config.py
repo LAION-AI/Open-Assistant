@@ -25,9 +25,10 @@ class Settings(BaseSettings):
     DEBUG_USE_SEED_DATA_PATH: Optional[FilePath] = (
         Path(__file__).parent.parent / "test_data/generic/test_generic_data.json"
     )
+    DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
+    DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
 
     HUGGING_FACE_API_KEY: str = ""
-    DEBUT_SKIP_TOXICITY_CALCULATION: bool = False
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:

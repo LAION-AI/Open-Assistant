@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
@@ -22,14 +22,10 @@ export const useGenericTaskAPI = <TaskType,>(taskApiEndpoint: string) => {
     fetcher,
     {
       onSuccess: (data) => setTasks([data]),
+      revalidateOnMount: true,
+      dedupingInterval: 500,
     }
   );
-
-  useEffect(() => {
-    if (tasks.length === 0 && !isLoading && !error) {
-      mutate();
-    }
-  }, [tasks, isLoading, mutate, error]);
 
   const { trigger } = useSWRMutation("/api/update_task", poster, {
     onSuccess: async (response) => {

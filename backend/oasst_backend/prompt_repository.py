@@ -2,13 +2,21 @@ import datetime
 import random
 from collections import defaultdict
 from http import HTTPStatus
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Message, MessageReaction, MessageToxicity, TextLabels, User
+from oasst_backend.models import (
+    ApiClient,
+    Message,
+    MessageEmbedding,
+    MessageReaction,
+    MessageToxicity,
+    TextLabels,
+    User,
+)
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
@@ -91,7 +99,12 @@ class PromptRepository:
         self.db.refresh(message)
         return message
 
-    def store_text_reply(self, text: str, frontend_message_id: str, user_frontend_message_id: str) -> Message:
+    def store_text_reply(
+        self,
+        text: str,
+        frontend_message_id: str,
+        user_frontend_message_id: str,
+    ) -> Message:
         validate_frontend_message_id(frontend_message_id)
         validate_frontend_message_id(user_frontend_message_id)
 
@@ -244,6 +257,30 @@ class PromptRepository:
         self.db.commit()
         self.db.refresh(message_toxicity)
         return message_toxicity
+
+    def insert_message_embedding(self, message_id: UUID, model: str, embedding: List[float]) -> MessageEmbedding:
+        """Insert the embedding of a new message in the database.
+
+        Args:
+            message_id (UUID): the identifier of the message we want to save its embedding
+            model (str): the model used for creating the embedding
+            embedding (List[float]): the values obtained from the message & model
+
+        Raises:
+            OasstError: if misses some of the before params
+
+        Returns:
+            MessageEmbedding: the instance in the database of the embedding saved for that message
+        """
+
+        if None in (message_id, model, embedding):
+            raise OasstError("Paramters missing to add embedding", OasstErrorCode.GENERIC_ERROR)
+
+        message_embedding = MessageEmbedding(message_id=message_id, model=model, embedding=embedding)
+        self.db.add(message_embedding)
+        self.db.commit()
+        self.db.refresh(message_embedding)
+        return message_embedding
 
     def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
         if self.user_id is None:

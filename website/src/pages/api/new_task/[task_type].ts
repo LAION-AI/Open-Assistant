@@ -36,9 +36,6 @@ const handler = async (req, res) => {
     },
   });
 
-  // Update the backend with our Task ID
-  await oasstApiClient.ackTask(task.id, registeredTask.id);
-
   // Send the results to the client.
   res.status(200).json(registeredTask);
 };
