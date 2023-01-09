@@ -100,4 +100,3 @@ models.
 > are well calibrated. The model also remains moderately calibrated under
 > distribution shift, and is sensitive to uncertainty in its own answers, rather
 > than imitating human examples.
-
