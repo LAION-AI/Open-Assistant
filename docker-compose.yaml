@@ -11,6 +11,11 @@ services:
     image: sverrirab/sleep
     depends_on: [db, webdb, adminer, maildev, backend, redis]
 
+  # Used by CI automations.
+  ci:
+    image: sverrirab/sleep
+    depends_on: [db, webdb, maildev, backend, redis, web]
+
   # This DB is for the FastAPI Backend.
   db:
     image: postgres
