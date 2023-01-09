@@ -22,7 +22,6 @@ const AdminIndex = () => {
     if (status === "loading") {
       return;
     }
-    console.log("checking role: " + session?.user?.role);
     if (session?.user?.role === "admin") {
       return;
     }
