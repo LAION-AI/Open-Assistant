@@ -57,9 +57,7 @@ class HuggingFaceAPI:
 
                     logger.error(response)
                     logger.info(self.headers)
-                    raise OasstError(
-                        "Response Error Detoxify HuggingFace", error_code=OasstErrorCode.HUGGINGFACE_API_ERROR
-                    )
+                    raise OasstError("Response Error HuggingFace", error_code=OasstErrorCode.HUGGINGFACE_API_ERROR)
 
                 # Get the response from the API call
                 inference = await response.json()
