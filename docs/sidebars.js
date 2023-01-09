@@ -56,6 +56,15 @@ const sidebars = {
       },
       items: ["presentations/list"],
     },
+    {
+      type: "category",
+      label: "FAQ",
+      link: {
+        type: "doc",
+        id: "faq/README",
+      },
+      items: ["faq/faq"],
+    },
   ],
 };
 
