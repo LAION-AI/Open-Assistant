@@ -181,6 +181,7 @@ class LabelInitialPromptTask(Task):
     message_id: UUID
     prompt: str
     valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
 
 
 class LabelConversationReplyTask(Task):
@@ -191,6 +192,7 @@ class LabelConversationReplyTask(Task):
     message_id: UUID
     reply: str
     valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):
@@ -304,6 +306,7 @@ class TextLabels(Interaction):
     text: str
     labels: dict[TextLabel, float]
     message_id: UUID
+    task_id: Optional[UUID]
 
     @property
     def has_message_id(self) -> bool:

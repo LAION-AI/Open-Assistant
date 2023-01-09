@@ -86,6 +86,7 @@ class TaskRepository:
                     conversation=task.conversation,
                     reply=task.reply,
                     valid_labels=task.valid_labels,
+                    mandatory_labels=task.mandatory_labels,
                 )
 
             case protocol_schema.LabelAssistantReplyTask:
@@ -95,20 +96,21 @@ class TaskRepository:
                     conversation=task.conversation,
                     reply=task.reply,
                     valid_labels=task.valid_labels,
+                    mandatory_labels=task.mandatory_labels,
                 )
 
             case _:
                 raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
 
-        task = self.insert_task(
+        task_model = self.insert_task(
             payload=payload,
             id=task.id,
             message_tree_id=message_tree_id,
             parent_message_id=parent_message_id,
             collective=collective,
         )
-        assert task.id == task.id
-        return task
+        assert task_model.id == task.id
+        return task_model
 
     def bind_frontend_message_id(self, task_id: UUID, frontend_message_id: str):
         validate_frontend_message_id(frontend_message_id)
@@ -196,4 +198,8 @@ class TaskRepository:
             .filter(Task.api_client_id == self.api_client.id, Task.frontend_message_id == message_id)
             .one_or_none()
         )
+        return task
+
+    def fetch_task_by_id(self, task_id: UUID) -> Task:
+        task = self.db.query(Task).filter(Task.api_client_id == self.api_client.id, Task.id == task_id).one_or_none()
         return task

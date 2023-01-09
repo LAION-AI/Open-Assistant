@@ -9,6 +9,7 @@ from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.models import Message, MessageTreeState, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlalchemy.sql import text
 from sqlmodel import Session, func
@@ -45,6 +46,19 @@ class TreeManagerConfiguration(pydantic.BaseModel):
 
     num_required_rankings: int = 5
     """Number of rankings in which the message participated."""
+
+    mandatory_labels_initial_prompt: Optional[list[protocol_schema.TextLabel]] = [
+        protocol_schema.TextLabel.helpful,
+        protocol_schema.TextLabel.spam,
+    ]
+    mandatory_labels_assistant_reply: Optional[list[protocol_schema.TextLabel]] = [
+        protocol_schema.TextLabel.helpful,
+        protocol_schema.TextLabel.spam,
+    ]
+    mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [
+        protocol_schema.TextLabel.helpful,
+        protocol_schema.TextLabel.spam,
+    ]
 
 
 class TaskType(Enum):
@@ -175,6 +189,8 @@ class TreeManager:
                 messages = self.pr.fetch_message_conversation(random_reply_message_id)
                 conversation = prepare_conversation(messages[:-1])
                 message = messages[-1]
+                parent_message_id = message.id
+                message_tree_id = message.message_tree_id
                 if message.role == "assistant":
                     logger.info("Generating a LabelAssistantReplyTask.")
                     task = protocol_schema.LabelAssistantReplyTask(
@@ -182,6 +198,7 @@ class TreeManager:
                         conversation=conversation,
                         reply=message.text,
                         valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
+                        mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_assistant_reply)),
                     )
                 else:
                     logger.info("Generating a LabelPrompterReplyTask.")
@@ -190,6 +207,7 @@ class TreeManager:
                         conversation=conversation,
                         reply=message.text,
                         valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
+                        mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_prompter_reply)),
                     )
 
             case TaskType.REPLY:
@@ -219,10 +237,13 @@ class TreeManager:
                 assert len(prompts_need_review) > 0
                 message = self.pr.fetch_message(random.choice(prompts_need_review))
                 logger.info("Generating a LabelInitialPromptTask.")
+                parent_message_id = message.id
+                message_tree_id = message.message_tree_id
                 task = protocol_schema.LabelInitialPromptTask(
                     message_id=message.id,
                     prompt=message.text,
                     valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
+                    mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt)),
                 )
 
             case TaskType.PROMPT:
@@ -235,6 +256,53 @@ class TreeManager:
         logger.info(f"Generated {task=}.")
 
         return task, message_tree_id, parent_message_id
+
+    def handle_interaction(self, interaction: protocol_schema.AnyInteraction) -> protocol_schema.Task:
+        pr = self.pr
+        match type(interaction):
+            case protocol_schema.TextReplyToMessage:
+                logger.info(
+                    f"Frontend reports text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                )
+
+                # here we store the text reply in the database
+                message = pr.store_text_reply(
+                    text=interaction.text,
+                    frontend_message_id=interaction.message_id,
+                    user_frontend_message_id=interaction.user_message_id,
+                )
+
+                if not message.parent_id:
+                    logger.info(f"TreeManager: Inserting new tree state for initial prompt {message.id=}")
+                    self._insert_default_state(message.id)
+
+                return protocol_schema.TaskDone()
+            case protocol_schema.MessageRating:
+                logger.info(
+                    f"Frontend reports rating of {interaction.message_id=} with {interaction.rating=} by {interaction.user=}."
+                )
+
+                # here we store the rating in the database
+                pr.store_rating(interaction)
+
+                return protocol_schema.TaskDone()
+            case protocol_schema.MessageRanking:
+                logger.info(
+                    f"Frontend reports ranking of {interaction.message_id=} with {interaction.ranking=} by {interaction.user=}."
+                )
+
+                # TODO: check if the ranking is valid
+                pr.store_ranking(interaction)
+                # here we would store the ranking in the database
+                return protocol_schema.TaskDone()
+            case protocol_schema.TextLabels:
+                logger.info(
+                    f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}."
+                )
+                pr.store_text_labels(interaction)
+                return protocol_schema.TaskDone()
+            case _:
+                raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)
 
     def query_prompts_need_review(self) -> list[UUID]:
         """

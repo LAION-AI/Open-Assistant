@@ -2,14 +2,14 @@ import datetime
 import random
 from collections import defaultdict
 from http import HTTPStatus
-from typing import Optional
+from typing import Optional, Tuple
 from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
 import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Message, MessageReaction, TextLabels, User
+from oasst_backend.models import ApiClient, Message, MessageReaction, Task, TextLabels, User
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
@@ -92,20 +92,22 @@ class PromptRepository:
         self.db.refresh(message)
         return message
 
-    def store_text_reply(self, text: str, frontend_message_id: str, user_frontend_message_id: str) -> Message:
-        validate_frontend_message_id(frontend_message_id)
-        validate_frontend_message_id(user_frontend_message_id)
-
-        task = self.task_repository.fetch_task_by_frontend_message_id(frontend_message_id)
-
-        if task is None:
-            raise OasstError(f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+    def _validate_task_not_done(self, task: Task) -> None:
         if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
         if not task.ack:
             raise OasstError("Task is not acknowledged.", OasstErrorCode.TASK_NOT_ACK)
         if task.done:
             raise OasstError("Task already done.", OasstErrorCode.TASK_ALREADY_DONE)
+
+    def store_text_reply(self, text: str, frontend_message_id: str, user_frontend_message_id: str) -> Message:
+        validate_frontend_message_id(frontend_message_id)
+        validate_frontend_message_id(user_frontend_message_id)
+
+        task = self.task_repository.fetch_task_by_frontend_message_id(frontend_message_id)
+        if task is None:
+            raise OasstError(f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+        self._validate_task_not_done(task)
 
         # If there's no parent message assume user started new conversation
         role = "prompter"
@@ -242,7 +244,54 @@ class PromptRepository:
         self.db.refresh(reaction)
         return reaction
 
-    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> TextLabels:
+    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> Tuple[TextLabels, Task]:
+
+        valid_labels: Optional[list[str]] = None
+        mandatory_labels: Optional[list[str]] = None
+
+        task: Task = None
+        if text_labels.task_id:
+            logger.debug(f"text_labels reply has task_id {text_labels.task_id}")
+            task = self.task_repository.fetch_task_by_id(text_labels.task_id)
+            if task is None:
+                raise OasstError(f"Task for task_id={text_labels.task_id} not found", OasstErrorCode.TASK_NOT_FOUND)
+            self._validate_task_not_done(task)
+
+            task_payload: db_payload.TaskPayload = task.payload.payload
+            if isinstance(task_payload, db_payload.LabelInitialPromptPayload):
+                if task_payload.message_id != text_labels.message_id:
+                    raise OasstError("Task message id mismatch", OasstErrorCode.TEXT_LABELS_WRONG_MESSAGE_ID)
+                valid_labels = task_payload.valid_labels
+                mandatory_labels = task_payload.mandatory_labels
+            elif isinstance(task_payload, db_payload.LabelConversationReplyPayload):
+                if task_payload.message_id != text_labels.message_id:
+                    raise OasstError("Task message id mismatch", OasstErrorCode.TEXT_LABELS_WRONG_MESSAGE_ID)
+                valid_labels = task_payload.valid_labels
+                mandatory_labels = task_payload.mandatory_labels
+            else:
+                raise OasstError(
+                    "Unexpected text_labels task payload",
+                    OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
+                )
+
+            logger.debug(f"text_labels relpy: {valid_labels=}, {mandatory_labels=}")
+
+            if valid_labels:
+                if not all([label in valid_labels for label in text_labels.labels.keys()]):
+                    raise OasstError("Invalid text label specified", OasstErrorCode.TEXT_LABELS_INVALID_LABEL)
+
+            if isinstance(mandatory_labels, list):
+                mandatory_set = set(mandatory_labels)
+                if not mandatory_set.issubset(text_labels.labels.keys()):
+                    missing = ", ".join(mandatory_set - text_labels.labels.keys())
+                    raise OasstError(
+                        f"Mandatory text labels missing: {missing}", OasstErrorCode.TEXT_LABELS_MANDATORY_LABEL_MISSING
+                    )
+
+            if not task.collective:
+                task.done = True
+                self.db.add(task)
+
         model = TextLabels(
             api_client_id=self.api_client.id,
             message_id=text_labels.message_id,
@@ -254,7 +303,7 @@ class PromptRepository:
         self.db.add(model)
         self.db.commit()
         self.db.refresh(model)
-        return model
+        return model, task
 
     def fetch_random_message_tree(self, require_role: str = None, reviewed: bool = True) -> list[Message]:
         """

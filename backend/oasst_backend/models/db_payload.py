@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID
 
 from oasst_backend.models.payload_column_type import payload_type
@@ -28,7 +28,7 @@ class RateSummaryPayload(TaskPayload):
 @payload_type
 class InitialPromptPayload(TaskPayload):
     type: Literal["initial_prompt"] = "initial_prompt"
-    hint: str
+    hint: str | None
 
 
 @payload_type
@@ -102,6 +102,7 @@ class LabelInitialPromptPayload(TaskPayload):
     message_id: UUID
     prompt: str
     valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
 
 
 @payload_type
@@ -112,6 +113,7 @@ class LabelConversationReplyPayload(TaskPayload):
     conversation: protocol_schema.Conversation
     reply: str
     valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
 
 
 @payload_type
