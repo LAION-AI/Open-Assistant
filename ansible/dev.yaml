@@ -10,6 +10,39 @@
         state: present
         driver: bridge
 
+    - name: Copy redis.conf to managed node
+      ansible.builtin.copy:
+        src: ./redis.conf
+        dest: ./redis.conf
+
+    - name: Set up Redis
+      community.docker.docker_container:
+        name: oasst-redis
+        image: redis
+        state: started
+        restart_policy: always
+        network_mode: oasst
+        ports:
+          - 6379:6379
+        healthcheck:
+          test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+          interval: 2s
+          timeout: 2s
+          retries: 10
+        command: redis-server /usr/local/etc/redis/redis.conf
+        volumes:
+          - "./redis.conf:/usr/local/etc/redis/redis.conf"
+
+    - name: Set up Redis Insights
+      community.docker.docker_container:
+        name: oasst-redis-insights
+        image: redislabs/redisinsight:latest
+        state: started
+        restart_policy: always
+        network_mode: oasst
+        ports:
+          - 8001:8001
+
     - name: Create postgres containers
       community.docker.docker_container:
         name: "{{ item.name }}"
@@ -51,6 +84,7 @@
         network_mode: oasst
         env:
           POSTGRES_HOST: oasst-postgres
+          REDIS_HOST: oasst-redis
           DEBUG_ALLOW_ANY_API_KEY: "true"
           DEBUG_USE_SEED_DATA: "true"
           MAX_WORKERS: "1"
