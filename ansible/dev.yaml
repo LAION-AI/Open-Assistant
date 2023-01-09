@@ -81,6 +81,7 @@
           DEBUG_USE_SEED_DATA: "true"
           MAX_WORKERS: "1"
           RATE_LIMIT: "false"
+          DEBUG_SKIP_EMBEDDING_COMPUTATION: "true"
         ports:
           - 8080:8080
 
