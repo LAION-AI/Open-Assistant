@@ -69,6 +69,8 @@ const adminUserMap = process.env.ADMIN_USERS.split(",").reduce((result, entry) =
   result.set(authType, s);
   return result;
 }, new Map());
+console.log(adminUserMap);
+console.log(process.env.ADMIN_USERS);
 
 export const authOptions: AuthOptions = {
   // Ensure we can store user data in a database.
@@ -97,6 +99,7 @@ export const authOptions: AuthOptions = {
         where: { id: token.sub },
         select: { role: true },
       });
+      console.log("found role: " + role);
       token.role = role;
       return token;
     },
@@ -118,6 +121,7 @@ export const authOptions: AuthOptions = {
 
       // Update the database if the user is an admin.
       if (adminForAccountType.has(account.providerAccountId)) {
+        console.log("updating admin");
         await prisma.user.update({
           data: {
             role: "admin",
