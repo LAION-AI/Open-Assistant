@@ -20,7 +20,7 @@ def get_users(
     ge: str = None,
     lt: str = None,
     auth_method: str = None,
-    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+    api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
     pr = UserRepository(db, api_client)
