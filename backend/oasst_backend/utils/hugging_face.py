@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Any, Dict
 
 import aiohttp
+from loguru import logger
 from oasst_backend.config import settings
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 
@@ -51,7 +52,6 @@ class HuggingFaceAPI:
             async with session.post(self.api_url, headers=self.headers, json=payload) as response:
                 # If we get a bad response
                 if response.status != 200:
-                    from loguru import logger
 
                     logger.error(response)
                     logger.info(self.headers)
