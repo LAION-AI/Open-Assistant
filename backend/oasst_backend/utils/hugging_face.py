@@ -86,7 +86,7 @@ async def save_toxicity(
 
     except OasstError:
         logger.error(
-            f"Could not compute toxicity for  text reply to {interaction.message_id} with {interaction.text} by {interaction.user}."
+            f"Could not compute toxicity for  text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
         )
 
     return toxicity_instance
