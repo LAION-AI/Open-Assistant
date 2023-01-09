@@ -2,6 +2,7 @@ import { Box, Button, Text, useColorMode } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { Flags } from "react-feature-flags";
 import { FaUser } from "react-icons/fa";
 
 import { UserMenu } from "./UserMenu";
@@ -42,6 +43,9 @@ export function Header(props) {
           </Link>
         </div>
         <div className="flex items-center gap-4">
+          <Flags authorizedFlags={["flagTest"]}>
+            <div>FlagTest</div>
+          </Flags>
           <AccountButton />
           <UserMenu />
         </div>
