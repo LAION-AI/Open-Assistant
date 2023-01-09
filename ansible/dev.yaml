@@ -70,11 +70,14 @@
         restart_policy: always
         network_mode: oasst
         env:
+          ADMIN_USERS: "{{ lookup('ansible.builtin.env', 'WEB_ADMIN_USERS') }}"
+          DATABASE_URL: postgres://postgres:postgres@oasst-postgres-web/postgres
+          DEBUG_LOGIN: "true"
           DISCORD_CLIENT_ID:
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_ID') }}"
           DISCORD_CLIENT_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_SECRET') }}"
-          EMAIL_SERVER_FROM: open-assistent@laion.ai
+          EMAIL_FROM: open-assistent@laion.ai
           EMAIL_SERVER_HOST:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_HOST') }}"
           EMAIL_SERVER_PASSWORD:
@@ -85,10 +88,9 @@
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
           FASTAPI_URL: http://oasst-backend:8080
           FASTAPI_KEY: "1234"
-          DATABASE_URL: postgres://postgres:postgres@oasst-postgres-web/postgres
-          NEXTAUTH_SECRET: O/M2uIbGj+lDD2oyNa8ax4jEOJqCPJzO53UbWShmq98=
+          NEXTAUTH_SECRET:
+            "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
           NEXTAUTH_URL: http://web.dev.open-assistant.io/
-          DEBUG_LOGIN: "true"
         ports:
           - 3000:3000
         command: bash wait-for-postgres.sh node server.js
