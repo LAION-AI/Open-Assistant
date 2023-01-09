@@ -8,6 +8,7 @@ from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
+from oasst_backend.tree_manager import TreeManager, TreeManagerConfiguration
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -191,7 +192,13 @@ def request_task(
 
     try:
         pr = PromptRepository(db, api_client, client_user=request.user)
-        task, message_tree_id, parent_message_id = generate_task(request, pr)
+        tree_manager_config = TreeManagerConfiguration()
+        tm = TreeManager(db, pr, tree_manager_config)
+
+        if request.type != protocol_schema.TaskRequestType.random:
+            logger.warning(f"Ignoring {request.type=}")
+
+        task, message_tree_id, parent_message_id = tm.next_task()
         pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
 
     except OasstError:

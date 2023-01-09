@@ -6,6 +6,7 @@ from typing import Optional
 from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
+import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import ApiClient, Message, MessageReaction, TextLabels, User
@@ -255,7 +256,7 @@ class PromptRepository:
         self.db.refresh(model)
         return model
 
-    def fetch_random_message_tree(self, require_role: str = None) -> list[Message]:
+    def fetch_random_message_tree(self, require_role: str = None, reviewed: bool = True) -> list[Message]:
         """
         Loads all messages of a random message_tree.
 
@@ -265,13 +266,18 @@ class PromptRepository:
         distinct_message_trees = self.db.query(Message.message_tree_id).distinct(Message.message_tree_id)
         if require_role:
             distinct_message_trees = distinct_message_trees.filter(Message.role == require_role)
+        if reviewed:
+            distinct_message_trees = distinct_message_trees.filter(Message.review_result)
         distinct_message_trees = distinct_message_trees.subquery()
 
-        random_message_tree = self.db.query(distinct_message_trees).order_by(func.random()).limit(1)
-        message_tree_messages = self.db.query(Message).filter(Message.message_tree_id.in_(random_message_tree)).all()
-        return message_tree_messages
+        random_message_tree_id = self.db.query(distinct_message_trees).order_by(func.random()).limit(1).scalar()
+        if random_message_tree_id:
+            return self.fetch_message_tree(random_message_tree_id, reviewed)
+        return None
 
-    def fetch_random_conversation(self, last_message_role: str = None) -> list[Message]:
+    def fetch_random_conversation(
+        self, last_message_role: str = None, message_tree_id: Optional[UUID] = None, reviewed: bool = True
+    ) -> list[Message]:
         """
         Picks a random linear conversation starting from any root message
         and ending somewhere in the message_tree, possibly at the root itself.
@@ -281,9 +287,13 @@ class PromptRepository:
             the user should reply as a human and hence the last message of the conversation
             needs to have "assistant" role.
         """
-        messages_tree = self.fetch_random_message_tree(last_message_role)
+        if message_tree_id:
+            messages_tree = self.fetch_message_tree(message_tree_id, reviewed)
+        else:
+            messages_tree = self.fetch_random_message_tree(last_message_role)
         if not messages_tree:
             raise OasstError("No message tree found", OasstErrorCode.NO_MESSAGE_TREE_FOUND)
+
         if last_message_role:
             conv_messages = [m for m in messages_tree if m.role == last_message_role]
             conv_messages = [random.choice(conv_messages)]
@@ -305,8 +315,11 @@ class PromptRepository:
         messages = self.db.query(Message).filter(Message.parent_id.is_(None)).order_by(func.random()).limit(size).all()
         return messages
 
-    def fetch_message_tree(self, message_tree_id: UUID):
-        return self.db.query(Message).filter(Message.message_tree_id == message_tree_id).all()
+    def fetch_message_tree(self, message_tree_id: UUID, reviewed: bool = True):
+        qry = self.db.query(Message).filter(Message.message_tree_id == message_tree_id)
+        if reviewed:
+            qry = qry.filter(Message.review_result)
+        return qry.all()
 
     def fetch_multiple_random_replies(self, max_size: int = 5, message_role: str = None):
         """
@@ -390,14 +403,21 @@ class PromptRepository:
             message = self.fetch_message(message)
         return self.fetch_message_tree(message.message_tree_id)
 
-    def fetch_message_children(self, message: Message | UUID) -> list[Message]:
+    def fetch_message_children(
+        self, message: Message | UUID, reviewed: bool = True, exclude_deleted: bool = True
+    ) -> list[Message]:
         """
         Get all direct children of this message
         """
         if isinstance(message, Message):
             message = message.id
 
-        children = self.db.query(Message).filter(Message.parent_id == message).all()
+        qry = self.db.query(Message).filter(Message.parent_id == message)
+        if reviewed:
+            qry = qry.filter(Message.review_result)
+        if exclude_deleted:
+            qry = qry.filter(Message.deleted == sa.false())
+        children = qry.all()
         return children
 
     @staticmethod
