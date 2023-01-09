@@ -6,7 +6,7 @@ from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import LeaderboardStats
 from sqlmodel import Session, func
-from starlette.status import HTTP_403_FORBIDDEN
+from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
 class UserRepository:
@@ -31,7 +31,7 @@ class UserRepository:
         )
 
         if user is None:
-            raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, 404)
+            raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
 
         return user
 
