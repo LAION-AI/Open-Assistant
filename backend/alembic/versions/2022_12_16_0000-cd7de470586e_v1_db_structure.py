@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """v1 db structure
 
 Revision ID: cd7de470586e

@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 from typing import Literal
+from uuid import UUID
 
 from oasst_backend.models.payload_column_type import payload_type
 from oasst_shared.schemas import protocol as protocol_schema
@@ -92,3 +92,37 @@ class RankAssistantRepliesPayload(RankConversationRepliesPayload):
     """A task to rank a set of assistant replies to a conversation."""
 
     type: Literal["rank_assistant_replies"] = "rank_assistant_replies"
+
+
+@payload_type
+class LabelInitialPromptPayload(TaskPayload):
+    """A task to label an initial prompt."""
+
+    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    message_id: UUID
+    prompt: str
+    valid_labels: list[str]
+
+
+@payload_type
+class LabelConversationReplyPayload(TaskPayload):
+    """A task to label a conversation reply."""
+
+    message_id: UUID
+    conversation: protocol_schema.Conversation
+    reply: str
+    valid_labels: list[str]
+
+
+@payload_type
+class LabelPrompterReplyPayload(LabelConversationReplyPayload):
+    """A task to label a prompter reply."""
+
+    type: Literal["label_prompter_reply"] = "label_prompter_reply"
+
+
+@payload_type
+class LabelAssistantReplyPayload(LabelConversationReplyPayload):
+    """A task to label an assistant reply."""
+
+    type: Literal["label_assistant_reply"] = "label_assistant_reply"

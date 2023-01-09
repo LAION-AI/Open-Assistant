@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # setup.py for the shared python modules
 
 from distutils.core import setup
@@ -12,5 +11,7 @@ setup(
     author="OASST Team",
     install_requires=[
         "pydantic==1.9.1",
+        "aiohttp==3.8.3",
+        "aiohttp[speedups]",
     ],
 )

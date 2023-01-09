@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     author: theblackcat102
 
@@ -20,12 +19,42 @@
 
 """
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
+import torch
 from datasets import load_dataset
 from torch.utils.data import Dataset
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
+
+
+@dataclass
+class RankGenCollator:
+    tokenizer: PreTrainedTokenizerBase
+    padding: Union[bool, str, PaddingStrategy] = True
+    max_length: Optional[int] = None
+    max_examples: Optional[int] = None
+
+    def __call__(self, batch: List[Dict[str, str]]) -> Dict[str, torch.Tensor]:
+        prefixes = []
+        better_answers = []
+        worse_answers = []
+        for question, pairs in batch:
+            for (pos, neg) in pairs:
+                prefixes.append("pre " + question)
+                better_answers.append("suffi " + pos)
+                worse_answers.append("suffi " + neg)
+
+        tokenized_prefixes = self.tokenizer(
+            prefixes, return_tensors="pt", padding=self.padding, max_length=self.max_length, truncation=True
+        )
+        tokenized_pos = self.tokenizer(
+            better_answers, return_tensors="pt", padding=self.padding, max_length=self.max_length, truncation=True
+        )
+        tokenized_neg = self.tokenizer(
+            worse_answers, return_tensors="pt", padding=self.padding, max_length=self.max_length, truncation=True
+        )
+        return {"prefix": tokenized_prefixes, "positive": tokenized_pos, "negative": tokenized_neg}
 
 
 @dataclass
@@ -119,7 +148,7 @@ class HFSummary(Dataset):
         self.index2summary = {}
         self.max_comparison_per_sample = max_comparison_per_sample
         major_split = split if "train" == split else "validation"
-        dataset = load_dataset("Tristan/summarize_from_feedback", "comparisons")[major_split]
+        dataset = load_dataset("openai/summarize_from_feedback", "comparisons")[major_split]
         for data in dataset:
             if (
                 "extra" in data
@@ -164,3 +193,47 @@ class HFSummary(Dataset):
         valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
         # optimize the format later
         return context + self.postfix_prompt, [r for idx, r in enumerate(rows) if idx in valid_idx]
+
+
+class HFDataset(Dataset):
+    """
+    This is a base huggingface dataset which written to support the
+    simplest pos-neg pair format
+
+    we should do something like this for supervised datasets
+    """
+
+    def __init__(
+        self, dataset_name, question_field, pos_answer_field, neg_answer_field, subset=None, split=None
+    ) -> None:
+        super().__init__()
+        dataset = load_dataset(dataset_name, subset)
+        if split is not None:
+            dataset = dataset[split]
+
+        self.questions = {}
+        self.index2question = {}
+        for row in dataset:
+            question = row[question_field].strip()
+            pos = row[pos_answer_field]
+            neg = row[neg_answer_field]
+            if question not in self.index2question:
+                self.index2question[len(self.index2question)] = question
+
+            if question not in self.questions:
+                self.questions[question] = []
+            self.questions[question].append((pos.strip(), neg.strip()))
+
+    def __len__(self):
+        return len(self.index2question)
+
+    def __getitem__(self, index):
+        question = self.index2question[index]
+        rows = self.questions[question]
+        # optimize the format later
+        return question, rows
+
+
+class GPTJSynthetic(HFDataset):
+    def __init__(self) -> None:
+        super().__init__("Dahoas/synthetic-instruct-gptj-pairwise", "prompt", "chosen", "rejected", None, "train")

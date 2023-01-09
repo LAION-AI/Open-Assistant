@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from dataclasses import dataclass, replace
 from typing import Any
 
@@ -88,8 +87,9 @@ def score_update_prompts(consensus: npt.ArrayLike, voter_data: Voter) -> Voter:
     """
     This function returns the gain of points for a given prompt's votes
 
-    This function is only to be run when archiving a question
-    i.e. the question has had sufficiently many votes, or we cann't get more than "K" bits of information
+    In contrast to the other score updating functions, we can run this online as new votes come in.
+    i.e. the question has had sufficiently many votes, or we cann't get more than "K" bits of information.
+
 
     Parameters:
             consensus (ArrayLike): all votes cast for this question
@@ -101,7 +101,8 @@ def score_update_prompts(consensus: npt.ArrayLike, voter_data: Voter) -> Voter:
     # produces the ranking of votes, e.g. for [100,300,200] it returns [0, 2, 1],
     # since 100 is the lowest, 300 the highest and 200 the middle value
     consensus_ranking = np.arange(len(consensus)) - len(consensus) // 2 + 1
-    delta_votes = np.sum(consensus_ranking * consensus)
+    # expected consenus ranking (i.e. normalize the votes and multiply-sum with weightings)
+    delta_votes = np.sum(consensus_ranking * consensus / sum(consensus))
     new_points = delta_votes + voter_data.prompt_points
 
     # we need to correct for 0 indexing, if you are closer to "right" than "wrong" of the conensus,
@@ -134,7 +135,7 @@ def score_update_ranking(user_ranking: npt.ArrayLike, consensus_ranking: npt.Arr
         "research design and statistical analyses, second edition, 2003"
     the authors note that at least from an significance test POV they will yield the same p-values
 
-    Parameters:
+        Parameters:
             user_ranking (ArrayLike): ranking produced by the user
             consensus (ArrayLike): ranking produced after running the voting algorithm to merge into the consensus ranking
             voter_data (Voter): a "Voter" object that represents the person that wrote the prompt

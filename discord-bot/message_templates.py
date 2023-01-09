@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Message templates for the discord bot."""
 import typing
 

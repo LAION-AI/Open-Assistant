@@ -15,21 +15,24 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
       - run: cd oasst-shared && pip install -e .
 
+      - run: cd oasst-shared && pip install -r requirements.dev.txt
+
       - run: cd backend && pip install -r requirements.txt
 
-      - run: cd discord-bot && pip install -r requirements.txt
-
-      - run: cd discord-bot && pip install -r requirements.dev.txt
+      - run: cd website && npm ci
 
       - run: ./scripts/backend-development/start-mock-server.sh
 
-      # runs the contract tests. currently the api client is
-      # found in the discord bot code, but this should be updated
-      # once the client moves into oasst-shared.
-      - name: Run contract tests
-        run: ./scripts/discord-bot-development/test.sh
+      - name: Run Python OasstApiClient contract tests
+        run: ./scripts/oasst-shared-development/test.sh
+
+      - name: Run JavaScript OasstApiClient contract tests
+        run: ./scripts/frontend-development/run-contract-test.sh
 
       - run: ./scripts/backend-development/stop-mock-server.sh

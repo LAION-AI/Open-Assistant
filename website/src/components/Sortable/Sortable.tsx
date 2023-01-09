@@ -2,9 +2,9 @@ import { Flex } from "@chakra-ui/react";
 import {
   closestCenter,
   DndContext,
+  KeyboardSensor,
   PointerSensor,
   TouchSensor,
-  KeyboardSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -18,11 +18,13 @@ import {
 } from "@dnd-kit/sortable";
 import { ReactNode, useEffect, useState } from "react";
 
+import { CollapsableText } from "../CollapsableText";
 import { SortableItem } from "./SortableItem";
 
 export interface SortableProps {
   items: ReactNode[];
   onChange: (newSortedIndices: number[]) => void;
+  className?: string;
 }
 
 interface SortableItems {
@@ -31,24 +33,26 @@ interface SortableItems {
   item: ReactNode;
 }
 
-export const Sortable = ({ items, onChange }: SortableProps) => {
+export const Sortable = (props: SortableProps) => {
   const [itemsWithIds, setItemsWithIds] = useState<SortableItems[]>([]);
 
   useEffect(() => {
     setItemsWithIds(
-      items.map((item, idx) => ({
+      props.items.map((item, idx) => ({
         item,
         id: idx + 1, // +1 because dndtoolkit has problem with "falsy" ids
         originalIndex: idx,
       }))
     );
-  }, [items]);
+  }, [props.items]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(TouchSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
+
+  const extraClasses = props.className || "";
 
   return (
     <DndContext
@@ -58,10 +62,10 @@ export const Sortable = ({ items, onChange }: SortableProps) => {
       modifiers={[restrictToVerticalAxis]}
     >
       <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
-        <Flex direction="column" gap={2}>
+        <Flex direction="column" gap={2} className={extraClasses}>
           {itemsWithIds.map(({ id, item }) => (
             <SortableItem key={id} id={id}>
-              {item}
+              <CollapsableText text={item} />
             </SortableItem>
           ))}
         </Flex>
@@ -78,7 +82,7 @@ export const Sortable = ({ items, onChange }: SortableProps) => {
       const oldIndex = items.findIndex((x) => x.id === active.id);
       const newIndex = items.findIndex((x) => x.id === over.id);
       const newArray = arrayMove(items, oldIndex, newIndex);
-      onChange(newArray.map((item) => item.originalIndex));
+      props.onChange(newArray.map((item) => item.originalIndex));
       return newArray;
     });
   }

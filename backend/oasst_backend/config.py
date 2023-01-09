@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
+from pydantic import AnyHttpUrl, BaseSettings, FilePath, PostgresDsn, validator
 
 
 class Settings(BaseSettings):
@@ -15,9 +15,18 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "postgres"
     DATABASE_URI: Optional[PostgresDsn] = None
 
+    RATE_LIMIT: bool = True
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: str = "6379"
+
     DEBUG_ALLOW_ANY_API_KEY: bool = False
     DEBUG_SKIP_API_KEY_CHECK: bool = False
     DEBUG_USE_SEED_DATA: bool = False
+    DEBUG_USE_SEED_DATA_PATH: Optional[FilePath] = (
+        Path(__file__).parent.parent / "test_data/generic/test_generic_data.json"
+    )
+
+    HUGGING_FACE_API_KEY: str = ""
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:

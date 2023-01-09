@@ -1,4 +1,5 @@
 import { getSession } from "next-auth/react";
+import prisma from "src/lib/prismadb";
 
 // POST /api/post
 // Required fields in body: title

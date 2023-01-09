@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from logging.config import fileConfig
 
 import sqlmodel

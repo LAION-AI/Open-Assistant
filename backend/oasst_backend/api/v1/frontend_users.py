@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import datetime
 from uuid import UUID
 
@@ -7,14 +6,14 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_shared.schemas import protocol
 from sqlmodel import Session
-from starlette.responses import Response
-from starlette.status import HTTP_200_OK
+from starlette.status import HTTP_204_NO_CONTENT
 
 router = APIRouter()
 
 
-@router.get("/{username}/messages")
+@router.get("/{username}/messages", response_model=list[protocol.Message])
 def query_frontend_user_messages(
     username: str,
     api_client_id: UUID = None,
@@ -30,7 +29,7 @@ def query_frontend_user_messages(
     """
     Query frontend user messages.
     """
-    pr = PromptRepository(db, api_client, user=None)
+    pr = PromptRepository(db, api_client)
     messages = pr.query_messages(
         username=username,
         api_client_id=api_client_id,
@@ -44,11 +43,10 @@ def query_frontend_user_messages(
     return utils.prepare_message_list(messages)
 
 
-@router.delete("/{username}/messages")
+@router.delete("/{username}/messages", status_code=HTTP_204_NO_CONTENT)
 def mark_frontend_user_messages_deleted(
     username: str, api_client: ApiClient = Depends(deps.get_trusted_api_client), db: Session = Depends(deps.get_db)
 ):
-    pr = PromptRepository(db, api_client, None)
+    pr = PromptRepository(db, api_client)
     messages = pr.query_messages(username=username, api_client_id=api_client.id)
     pr.mark_messages_deleted(messages)
-    return Response(status_code=HTTP_200_OK)

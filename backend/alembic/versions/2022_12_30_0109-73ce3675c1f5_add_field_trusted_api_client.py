@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """add field trusted api client
 
 Revision ID: 73ce3675c1f5

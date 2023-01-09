@@ -53,7 +53,7 @@ If you're doing active development we suggest the following workflow:
 1.  Run `docker compose up frontend-dev --build --attach-dependencies`. You can
     optionally include `-d` to detach and later track the logs if desired.
 1.  In another tab navigate to `${OPEN_ASSISTANT_ROOT/website`.
-1.  Run `npm install`
+1.  Run `npm ci`
 1.  Run `npx prisma db push` (This is also needed when you restart the docker
     stack from scratch).
 1.  Run `npm run dev`. Now the website is up and running locally at
@@ -152,6 +152,34 @@ When writing code for the website, we have a few best practices:
     default with pre-submits. We currently don't have any custom settings.
 1.  Define functional React components (with types for all properties when
     feasible).
+
+### Developing New Features
+
+When working on new features or making significant changes that can't be done
+within a single Pull Request, we ask that you make use of Feature Flags.
+
+We've set up
+[`react-feature-flags`](https://www.npmjs.com/package/react-feature-flags) to
+make this easier. To get started:
+
+1.  Add a new flag entry to `website/src/flags.ts`. We have an example flag you
+    can copy as an example. Be sure to `isActive` to true when testing your
+    features but false when submitting your PR.
+1.  Use your flag wherever you add a new UI element. This can be done with:
+
+```js
+import { Flags } from "react-feature-flags";
+...
+      <Flags authorizedFlags={["yourFlagName"]}>
+        <YourNewComponent />
+      </Flags>
+```
+
+    You can see an example of how this works by checking `website/src/components/Header/Headers.tsx` where we use `flagTest`.
+
+1.  Once you've finished building out the feature and it is ready for everyone
+    to use, it's safe to remove the `Flag` wrappers around your component and
+    the entry in `flags.ts`.
 
 ### URL Paths
 

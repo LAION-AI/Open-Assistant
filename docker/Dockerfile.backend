@@ -5,6 +5,7 @@ COPY ./backend/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 ENV PORT 8080
+EXPOSE 8080
 
 COPY ./oasst-shared /oasst-shared
 RUN pip install -e /oasst-shared
@@ -13,3 +14,4 @@ COPY ./backend/alembic /app/alembic
 COPY ./backend/alembic.ini /app/alembic.ini
 COPY ./backend/main.py /app/main.py
 COPY ./backend/oasst_backend /app/oasst_backend
+COPY ./backend/test_data /app/test_data
