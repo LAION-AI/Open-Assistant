@@ -9,15 +9,15 @@ import lightbulb.decorators
 import miru
 from aiosqlite import Connection
 from bot.messages import (
-    assistant_reply_message,
+    assistant_reply_messages,
     confirm_ranking_response_message,
     confirm_text_response_message,
-    initial_prompt_message,
+    initial_prompt_messages,
     invalid_user_input_embed,
     plain_embed,
-    prompter_reply_message,
+    prompter_reply_messages,
     rank_assistant_reply_message,
-    rank_initial_prompts_message,
+    rank_initial_prompts_messages,
     rank_prompter_reply_message,
     task_complete_embed,
 )
@@ -278,17 +278,18 @@ async def _send_task(
 
     embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED
     content: hikari.UndefinedOr[str] = hikari.UNDEFINED
+    messages: list[str] | None = None
 
     # Create an embed based on the task's type
     if task.type == TaskRequestType.initial_prompt:
         assert isinstance(task, protocol_schema.InitialPromptTask)
         logger.debug("sending initial prompt task")
-        content = initial_prompt_message(task)
+        messages = initial_prompt_messages(task)
 
     elif task.type == TaskRequestType.rank_initial_prompts:
         assert isinstance(task, protocol_schema.RankInitialPromptsTask)
         logger.debug("sending rank initial prompt task")
-        content = rank_initial_prompts_message(task)
+        content = rank_initial_prompts_messages(task)
 
     elif task.type == TaskRequestType.rank_prompter_replies:
         assert isinstance(task, protocol_schema.RankPrompterRepliesTask)
@@ -303,12 +304,12 @@ async def _send_task(
     elif task.type == TaskRequestType.prompter_reply:
         assert isinstance(task, protocol_schema.PrompterReplyTask)
         logger.debug("sending user reply task")
-        content = prompter_reply_message(task)
+        messages = prompter_reply_messages(task)
 
     elif task.type == TaskRequestType.assistant_reply:
         assert isinstance(task, protocol_schema.AssistantReplyTask)
         logger.debug("sending assistant reply task")
-        content = assistant_reply_message(task)
+        messages = assistant_reply_messages(task)
 
     elif task.type == TaskRequestType.summarize_story:
         raise NotImplementedError
@@ -319,27 +320,38 @@ async def _send_task(
         logger.critical(f"unknown task type {task.type}")
         raise ValueError(f"unknown task type {task.type}")
 
-    view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
-    if not msg:
-        msg = await ctx.author.send(
-            content,
-            embed=embed,
-            components=view,
-        )
+    # Send all messages and attach buttons to the last one
+    if messages is not None:
+        for message in messages[:-1]:
+            await ctx.author.send(message)
+        view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
+        msg = await ctx.author.send(messages[-1], components=view)
+        ctx.bot.d.currently_working[ctx.author.id] = (msg, task.id)
+
+        await view.start(msg)
+        await view.wait()
     else:
-        await msg.edit(
-            content,
-            embed=embed,
-            components=view,
-        )
+        view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
+        if not msg:
+            msg = await ctx.author.send(
+                content,
+                embed=embed,
+                components=view,
+            )
+        else:
+            await msg.edit(
+                content,
+                embed=embed,
+                components=view,
+            )
 
-    assert msg is not None
+        assert msg is not None
 
-    # Set the choice id as the current msg id
-    ctx.bot.d.currently_working[ctx.author.id] = (msg, task.id)
+        # Set the choice id as the current msg id
+        ctx.bot.d.currently_working[ctx.author.id] = (msg, task.id)
 
-    await view.start(msg)
-    await view.wait()
+        await view.start(msg)
+        await view.wait()
 
     return view.choice, msg
 
