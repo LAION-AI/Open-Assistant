@@ -18,19 +18,20 @@ def prepare_message_list(messages: list[Message]) -> list[protocol.Message]:
     return [prepare_message(m) for m in messages]
 
 
-def prepare_conversation(messages: list[Message]) -> protocol.Conversation:
-    conv_messages = []
-    for message in messages:
-        conv_messages.append(
-            protocol.ConversationMessage(
-                text=message.text,
-                is_assistant=(message.role == "assistant"),
-                message_id=message.id,
-                frontend_message_id=message.frontend_message_id,
-            )
+def prepare_conversation_message_list(messages: list[Message]) -> list[protocol.ConversationMessage]:
+    return [
+        protocol.ConversationMessage(
+            text=message.text,
+            is_assistant=(message.role == "assistant"),
+            message_id=message.id,
+            frontend_message_id=message.frontend_message_id,
         )
+        for message in messages
+    ]
 
-    return protocol.Conversation(messages=conv_messages)
+
+def prepare_conversation(messages: list[Message]) -> protocol.Conversation:
+    return protocol.Conversation(messages=prepare_conversation_message_list(messages))
 
 
 def prepare_tree(tree: list[Message], tree_id: UUID) -> protocol.MessageTree:

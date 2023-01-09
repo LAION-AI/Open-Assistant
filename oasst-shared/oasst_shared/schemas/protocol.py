@@ -151,7 +151,8 @@ class RankInitialPromptsTask(Task):
     """A task to rank a set of initial prompts."""
 
     type: Literal["rank_initial_prompts"] = "rank_initial_prompts"
-    prompts: list[str]
+    prompts: list[str]  # deprecated, use prompt_messages
+    prompt_messages: list[ConversationMessage]
 
 
 class RankConversationRepliesTask(Task):
@@ -159,7 +160,8 @@ class RankConversationRepliesTask(Task):
 
     type: Literal["rank_conversation_replies"] = "rank_conversation_replies"
     conversation: Conversation  # the conversation so far
-    replies: list[str]
+    replies: list[str]  # deprecated, use reply_messages
+    reply_messages: list[ConversationMessage]
 
 
 class RankPrompterRepliesTask(RankConversationRepliesTask):

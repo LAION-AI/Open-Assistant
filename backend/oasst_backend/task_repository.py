@@ -62,16 +62,16 @@ class TaskRepository:
                 payload = db_payload.AssistantReplyPayload(type=task.type, conversation=task.conversation)
 
             case protocol_schema.RankInitialPromptsTask:
-                payload = db_payload.RankInitialPromptsPayload(type=task.type, prompts=task.prompts)
+                payload = db_payload.RankInitialPromptsPayload(type=task.type, prompt_messages=task.prompt_messages)
 
             case protocol_schema.RankPrompterRepliesTask:
                 payload = db_payload.RankPrompterRepliesPayload(
-                    type=task.type, conversation=task.conversation, replies=task.replies
+                    type=task.type, conversation=task.conversation, reply_messages=task.reply_messages
                 )
 
             case protocol_schema.RankAssistantRepliesTask:
                 payload = db_payload.RankAssistantRepliesPayload(
-                    type=task.type, conversation=task.conversation, replies=task.replies
+                    type=task.type, conversation=task.conversation, reply_messages=task.reply_messages
                 )
 
             case protocol_schema.LabelInitialPromptTask:

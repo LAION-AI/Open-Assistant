@@ -6,7 +6,7 @@ from uuid import UUID
 import numpy as np
 import pydantic
 from loguru import logger
-from oasst_backend.api.v1.utils import prepare_conversation
+from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.models import Message, MessageTreeState, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
@@ -175,13 +175,22 @@ class TreeManager:
                 messages = self.pr.fetch_message_conversation(ranking_parent_id)
                 conversation = prepare_conversation(messages)
                 replies = self.pr.fetch_message_children(ranking_parent_id, reviewed=True, exclude_deleted=True)
+                reply_messages = prepare_conversation_message_list(replies)
                 replies = [p.text for p in replies]
+
                 if messages[-1].role == "assistant":
                     logger.info("Generating a RankPrompterRepliesTask.")
-                    task = protocol_schema.RankPrompterRepliesTask(conversation=conversation, replies=replies)
+                    task = protocol_schema.RankPrompterRepliesTask(
+                        conversation=conversation, replies=replies, reply_messages=reply_messages
+                    )
                 else:
                     logger.info("Generating a RankAssistantRepliesTask.")
-                    task = protocol_schema.RankAssistantRepliesTask(conversation=conversation, replies=replies)
+                    task = protocol_schema.RankAssistantRepliesTask(
+                        conversation=conversation, replies=replies, reply_messages=reply_messages
+                    )
+
+                parent_message_id = ranking_parent_id
+                message_tree_id = messages[-1].message_tree_id
 
             case TaskType.LABEL_REPLY:
                 assert len(replies_need_review) > 0
@@ -189,8 +198,7 @@ class TreeManager:
                 messages = self.pr.fetch_message_conversation(random_reply_message_id)
                 conversation = prepare_conversation(messages[:-1])
                 message = messages[-1]
-                parent_message_id = message.id
-                message_tree_id = message.message_tree_id
+
                 if message.role == "assistant":
                     logger.info("Generating a LabelAssistantReplyTask.")
                     task = protocol_schema.LabelAssistantReplyTask(
@@ -210,6 +218,9 @@ class TreeManager:
                         mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_prompter_reply)),
                     )
 
+                parent_message_id = message.id
+                message_tree_id = message.message_tree_id
+
             case TaskType.REPLY:
                 # select a tree with missing replies
                 tree_candidates = list(filter(lambda x: x.remaining_messages > 0, active_tree_sizes))
@@ -217,6 +228,7 @@ class TreeManager:
                 source_tree = random.choice(tree_candidates)
 
                 # fetch random conversation in tree
+                logger.debug(f"fetch_random_conversation(message_tree_id={source_tree.message_tree_id})")
                 messages = self.pr.fetch_random_conversation(
                     last_message_role=None, message_tree_id=source_tree.message_tree_id
                 )
@@ -230,21 +242,23 @@ class TreeManager:
                     logger.info("Generating a AssistantReplyTask.")
                     task = protocol_schema.AssistantReplyTask(conversation=conversation)
 
-                message_tree_id = messages[-1].message_tree_id
                 parent_message_id = messages[-1].id
+                message_tree_id = messages[-1].message_tree_id
 
             case TaskType.LABEL_PROMPT:
                 assert len(prompts_need_review) > 0
                 message = self.pr.fetch_message(random.choice(prompts_need_review))
                 logger.info("Generating a LabelInitialPromptTask.")
-                parent_message_id = message.id
-                message_tree_id = message.message_tree_id
+
                 task = protocol_schema.LabelInitialPromptTask(
                     message_id=message.id,
                     prompt=message.text,
                     valid_labels=list(map(lambda x: x.value, protocol_schema.TextLabel)),
                     mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt)),
                 )
+
+                parent_message_id = message.id
+                message_tree_id = message.message_tree_id
 
             case TaskType.PROMPT:
                 logger.info("Generating an InitialPromptTask.")
@@ -275,34 +289,32 @@ class TreeManager:
                 if not message.parent_id:
                     logger.info(f"TreeManager: Inserting new tree state for initial prompt {message.id=}")
                     self._insert_default_state(message.id)
+                    self.db.commit()
 
-                return protocol_schema.TaskDone()
             case protocol_schema.MessageRating:
                 logger.info(
                     f"Frontend reports rating of {interaction.message_id=} with {interaction.rating=} by {interaction.user=}."
                 )
 
-                # here we store the rating in the database
                 pr.store_rating(interaction)
 
-                return protocol_schema.TaskDone()
             case protocol_schema.MessageRanking:
                 logger.info(
                     f"Frontend reports ranking of {interaction.message_id=} with {interaction.ranking=} by {interaction.user=}."
                 )
 
-                # TODO: check if the ranking is valid
                 pr.store_ranking(interaction)
-                # here we would store the ranking in the database
-                return protocol_schema.TaskDone()
+
             case protocol_schema.TextLabels:
                 logger.info(
                     f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}."
                 )
                 pr.store_text_labels(interaction)
-                return protocol_schema.TaskDone()
+
             case _:
                 raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)
+
+        return protocol_schema.TaskDone()
 
     def query_prompts_need_review(self) -> list[UUID]:
         """
@@ -428,6 +440,7 @@ GROUP BY m.message_tree_id, mts.goal_tree_size;"""
         for id in missing_tree_ids:
             logger.info(f"Inserting missing message tree state for message: {id}")
             self._insert_default_state(id)
+        self.db.commit()
 
     def query_num_active_trees(self) -> int:
         query = self.db.query(func.count(MessageTreeState.message_tree_id)).filter(MessageTreeState.active)

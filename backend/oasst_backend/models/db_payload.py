@@ -69,7 +69,7 @@ class RankingReactionPayload(ReactionPayload):
 @payload_type
 class RankConversationRepliesPayload(TaskPayload):
     conversation: protocol_schema.Conversation  # the conversation so far
-    replies: list[str]
+    reply_messages: list[protocol_schema.ConversationMessage]
 
 
 @payload_type
@@ -77,7 +77,7 @@ class RankInitialPromptsPayload(TaskPayload):
     """A task to rank a set of initial prompts."""
 
     type: Literal["rank_initial_prompts"] = "rank_initial_prompts"
-    prompts: list[str]
+    prompt_messages: list[protocol_schema.ConversationMessage]
 
 
 @payload_type

@@ -421,13 +421,15 @@ class PromptRepository:
             messages = {m.id: m for m in messages}
         if not isinstance(messages, dict):
             # This should not normally happen
-            raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+            raise OasstError("Server error", OasstErrorCode.SERVER_ERROR0, HTTPStatus.INTERNAL_SERVER_ERROR)
 
         conv = [last_message]
         while conv[-1].parent_id:
             if conv[-1].parent_id not in messages:
                 # Can't form a continuous conversation
-                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+                raise OasstError(
+                    "Broken conversation", OasstErrorCode.BROKEN_CONVERSATION, HTTPStatus.INTERNAL_SERVER_ERROR
+                )
 
             parent_message = messages[conv[-1].parent_id]
             conv.append(parent_message)
@@ -450,6 +452,7 @@ class PromptRepository:
         """
         if isinstance(message, UUID):
             message = self.fetch_message(message)
+        logger.debug(f"fetch_message_tree({message.message_tree_id=})")
         return self.fetch_message_tree(message.message_tree_id)
 
     def fetch_message_children(
@@ -576,7 +579,7 @@ class PromptRepository:
             elif isinstance(message, Message):
                 ids.append(message.id)
             else:
-                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR1, HTTPStatus.INTERNAL_SERVER_ERROR)
 
         query = update(Message).where(Message.id.in_(ids)).values(deleted=True)
         self.db.execute(query)
