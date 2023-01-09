@@ -9,7 +9,7 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
-from oasst_backend.utils.hugging_face import HF_embeddingModel, HF_url, HuggingFaceAPI
+from oasst_backend.utils.hugging_face import HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -285,15 +285,15 @@ async def tasks_interaction(
                 if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
                     try:
                         hugging_face_api = HuggingFaceAPI(
-                            f"{HF_url.HUGGINGFACE_FEATURE_EXTRACTION.value}/{HF_embeddingModel.MINILM.value}"
+                            f"{HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value}/{HfEmbeddingModel.MINILM.value}"
                         )
                         embedding = await hugging_face_api.post(interaction.text)
                         pr.insert_message_embedding(
-                            message_id=newMessage.id, model=HF_embeddingModel.MINILM.value, embedding=embedding
+                            message_id=newMessage.id, model=HfEmbeddingModel.MINILM.value, embedding=embedding
                         )
                     except OasstError:
                         logger.error(
-                            f"Could not fetch embbeddings for  text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                            f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                         )
 
                 return protocol_schema.TaskDone()

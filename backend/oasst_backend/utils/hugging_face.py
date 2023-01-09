@@ -7,12 +7,12 @@ from oasst_backend.config import settings
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 
 
-class HF_url(str, Enum):
+class HfUrl(str, Enum):
     HUGGINGFACE_TOXIC_ROBERTA = ("https://api-inference.huggingface.co/models/unitary/multilingual-toxic-xlm-roberta",)
     HUGGINGFACE_FEATURE_EXTRACTION = "https://api-inference.huggingface.co/pipeline/feature-extraction"
 
 
-class HF_embeddingModel(str, Enum):
+class HfEmbeddingModel(str, Enum):
     MINILM = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 
