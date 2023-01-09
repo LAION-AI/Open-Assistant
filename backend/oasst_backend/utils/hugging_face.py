@@ -4,6 +4,8 @@ from typing import Any, Dict
 import aiohttp
 from loguru import logger
 from oasst_backend.config import settings
+from oasst_backend.models import Message, MessageEmbedding
+from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 
 
@@ -63,3 +65,39 @@ class HuggingFaceAPI:
                 inference = await response.json()
 
         return inference
+
+
+async def save_embedding(
+    interaction,
+    pr: PromptRepository,
+    new_message: Message,
+) -> MessageEmbedding:
+
+    """Function to get the embedding from a message and save it on the database.
+
+    Args:
+        interaction (str): the interaction that was used for creating the message
+        pr (PromptRepository): instance of the prompt repository for that api client
+        new_message (str): the message instance saved in the db
+
+    Returns:
+        MessageEmbedding: the instance in the database.
+    """
+
+    try:
+        hugging_face_api = HuggingFaceAPI(
+            f"{HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value}/{HfEmbeddingModel.MINILM.value}"
+        )
+
+        embedding = await hugging_face_api.post(interaction.text)
+
+        message_embedding = pr.insert_message_embedding(
+            message_id=new_message.id, model=HfEmbeddingModel.MINILM.value, embedding=embedding
+        )
+
+    except OasstError:
+        logger.error(
+            f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+        )
+
+    return message_embedding
