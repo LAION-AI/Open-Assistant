@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column("message_tree_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("goal_tree_size", sa.Integer(), nullable=False),
         sa.Column("max_depth", sa.Integer(), nullable=False),
-        sa.Column("max_child_count", sa.Integer(), nullable=False),
+        sa.Column("max_children_count", sa.Integer(), nullable=False),
         sa.Column("state", sqlmodel.sql.sqltypes.AutoString(length=128), nullable=False),
         sa.Column("active", sa.Boolean(), nullable=False),
         sa.Column("accepted_messages", sa.Integer(), nullable=False),
@@ -48,12 +48,16 @@ def downgrade() -> None:
     op.drop_table("message_tree_state")
     op.create_table(
         "message_tree_state",
-        sa.Column("message_tree_id", postgresql.UUID(), autoincrement=False, nullable=False),
-        sa.Column("state", sa.VARCHAR(length=128), autoincrement=False, nullable=False),
-        sa.Column("goal_tree_size", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("max_depth", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("max_child_count", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("accepted_messages", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(["message_tree_id"], ["message.id"], name="message_tree_state_message_tree_id_fkey"),
+        sa.Column("id", postgresql.UUID(as_uuid=True), server_default=sa.text("gen_random_uuid()"), nullable=False),
+        sa.Column("message_tree_id", sqlmodel.sql.sqltypes.GUID(), nullable=False),
+        sa.Column("state", sqlmodel.sql.sqltypes.AutoString(length=128), nullable=False),
+        sa.Column("goal_tree_size", sa.Integer(), nullable=False),
+        sa.Column("current_num_non_filtered_messages", sa.Integer(), nullable=False),
+        sa.Column("max_depth", sa.Integer(), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(
+        op.f("ix_message_tree_state_message_tree_id"), "message_tree_state", ["message_tree_id"], unique=False
+    )
+    op.create_index("ix_message_tree_state_tree_id", "message_tree_state", ["message_tree_id"], unique=True)
     # ### end Alembic commands ###

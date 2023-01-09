@@ -64,7 +64,7 @@ class MessageTreeState(SQLModel, table=True):
     )
     goal_tree_size: int = Field(nullable=False)
     max_depth: int = Field(nullable=False)
-    max_child_count: int = Field(nullable=False)
+    max_children_count: int = Field(nullable=False)
     state: str = Field(nullable=False, max_length=128, index=True)
     active: bool = Field(nullable=False, index=True)
     accepted_messages: int = Field(nullable=False, default=0)

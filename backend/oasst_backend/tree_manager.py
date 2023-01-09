@@ -3,6 +3,7 @@ from uuid import UUID
 import pydantic
 from loguru import logger
 from oasst_backend.models import Message, MessageTreeState, message_tree_state
+from sqlalchemy.sql import text
 from sqlmodel import Session, func
 
 
@@ -17,7 +18,7 @@ class TreeManagerConfiguration(pydantic.BaseModel):
     max_tree_depth: int = 6
     """Maximum depth of message tree."""
 
-    max_child_count: int = 6
+    max_children_count: int = 6
     """Maximum number of reply messages per tree node."""
 
     goal_tree_size: int = 30
@@ -35,6 +36,9 @@ class TreeManagerConfiguration(pydantic.BaseModel):
     acceptance_threshold_reply: float = 0.6
     """Threshold for accepting a reply"""
 
+    num_required_rankings: int = 5
+    """Number of rankings in which the message participated."""
+
 
 class TreeManager:
     def __init__(self, db: Session, configuration: TreeManagerConfiguration):
@@ -45,6 +49,30 @@ class TreeManager:
         # 1. determine number of active trees in db
         # active_trees = self.query_num_active_trees()
         pass
+
+    def query_incomplete_rankings(self) -> list:
+        """query parents which have childern that need further rankings"""
+
+        statement = text(
+            """
+SELECT m.parent_id, COUNT(m.id) children_count, MIN(ranking_count) child_min_ranking_count,
+    COUNT(m.id) FILTER (WHERE m.ranking_count >= :num_required_rankings) as completed_rankings
+FROM message_tree_state mts
+    LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
+WHERE mts.active and mts.state = :ranking_state AND m.review_result AND m.parent_id is NOT NULL
+GROUP BY m.parent_id
+HAVING COUNT(m.id) > 1 and MIN(ranking_count) < :num_required_rankings;
+"""
+        )
+
+        r = self.db.execute(
+            statement,
+            {
+                "num_required_rankings": self.cfg.num_required_rankings,
+                "ranking_state": message_tree_state.State.RANKING_PHASE,
+            },
+        )
+        return r.all()
 
     def query_misssing_tree_states(self) -> list[UUID]:
         """find all initial prompt messages that have no associated message tree state"""
@@ -78,7 +106,7 @@ class TreeManager:
         root_message_id: UUID,
         goal_tree_size: int,
         max_depth: int,
-        max_child_count: int,
+        max_children_count: int,
         active: bool,
         state: message_tree_state.State = message_tree_state.State.INITIAL_PROMPT_REVIEW,
     ) -> MessageTreeState:
@@ -86,7 +114,7 @@ class TreeManager:
             message_tree_id=root_message_id,
             goal_tree_size=goal_tree_size,
             max_depth=max_depth,
-            max_child_count=max_child_count,
+            max_children_count=max_children_count,
             state=state.value,
             active=active,
             accepted_messages=0,
@@ -100,7 +128,7 @@ class TreeManager:
             root_message_id=root_message_id,
             goal_tree_size=self.cfg.goal_tree_size,
             max_depth=self.cfg.max_tree_depth,
-            max_child_count=self.cfg.max_child_count,
+            max_children_count=self.cfg.max_children_count,
             state=message_tree_state.State.INITIAL_PROMPT_REVIEW,
             active=True,
         )
@@ -112,6 +140,6 @@ if __name__ == "__main__":
     with Session(engine) as db:
         cfg = TreeManagerConfiguration()
         tm = TreeManager(db, cfg)
-
         tm.ensure_tree_state()
         print("query_num_active_trees", tm.query_num_active_trees())
+        print("query_num_ranking_tasks", tm.query_incomplete_rankings())
