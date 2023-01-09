@@ -32,16 +32,6 @@
         - name: oasst-postgres
         - name: oasst-postgres-web
 
-    - name: Set up maildev
-      community.docker.docker_container:
-        name: oasst-maildev
-        image: maildev/maildev
-        state: started
-        restart_policy: always
-        network_mode: oasst
-        ports:
-          - 1080:1080
-
     - name: Run the oasst oasst-backend
       community.docker.docker_container:
         name: oasst-backend
