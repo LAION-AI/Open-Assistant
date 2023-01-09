@@ -30,6 +30,9 @@ jobs:
   deploy-dev:
     needs: [build-backend, build-web, build-bot]
     runs-on: ubuntu-latest
+    env:
+      WEB_DISCORD_CLIENT_ID: ${{ secrets.DEV_WEB_DISCORD_CLIENT_ID }}
+      WEB_DISCORD_CLIENT_SECRET: ${{ secrets.DEV_WEB_DISCORD_CLIENT_SECRET }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2

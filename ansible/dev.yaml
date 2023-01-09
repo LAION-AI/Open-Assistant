@@ -39,6 +39,8 @@
         state: started
         restart_policy: always
         network_mode: oasst
+        ports:
+          - 1080:1080
 
     - name: Run the oasst oasst-backend
       community.docker.docker_container:
@@ -68,6 +70,8 @@
         restart_policy: always
         network_mode: oasst
         env:
+          DISCORD_CLIENT_ID: "{{ lookup('WEB_DISCORD_CLIENT_ID') }} "
+          DISCORD_CLIENT_SECRET: "{{ lookup('WEB_DISCORD_CLIENT_SECRET') }} "
           FASTAPI_URL: http://oasst-backend:8080
           FASTAPI_KEY: "1234"
           DATABASE_URL: postgres://postgres:postgres@oasst-postgres-web/postgres
