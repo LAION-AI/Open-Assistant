@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
+from oasst_shared.schemas import protocol
 from sqlmodel import Field, Index, SQLModel
 
 
@@ -23,3 +24,6 @@ class User(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
     api_client_id: UUID = Field(foreign_key="api_client.id")
+
+    def to_protocol_user(self):
+        return protocol.User(id=self.username, display_name=self.display_name, auth_method=self.auth_method)
