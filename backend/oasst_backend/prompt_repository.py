@@ -244,7 +244,7 @@ class PromptRepository:
                     )
 
                 # store reaction to message
-                ranked_message_ids = [task_payload.prompt_messages[i].message_id for i in ranking.ranking]
+                ranked_message_ids = [task_payload.reply_messages[i].message_id for i in ranking.ranking]
                 reaction_payload = db_payload.RankingReactionPayload(
                     ranking=ranking.ranking, ranked_message_ids=ranked_message_ids
                 )
