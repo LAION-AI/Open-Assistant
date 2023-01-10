@@ -48,7 +48,7 @@ export const EvaluateTask = ({ tasks, trigger, onSkipTask, onNextTask, mainBgCla
 
       <TaskControlsOverridable
         tasks={tasks}
-        isValid={ranking.length == tasks[0].task[sortables].length}
+        isValid={ranking.length === tasks[0].task[sortables].length}
         prepareForSubmit={() => setRanking(tasks[0].task[sortables].map((_, idx) => idx))}
         onSubmitResponse={submitResponse}
         onSkipTask={(task, reason) => {

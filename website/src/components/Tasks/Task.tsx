@@ -1,8 +1,8 @@
-import { CreateTask } from "./CreateTask";
-import { EvaluateTask } from "./EvaluateTask";
-import { TaskCategory, TaskTypes } from "./TaskTypes";
-import useSWRMutation from "swr/mutation";
+import { CreateTask } from "src/components/Tasks/CreateTask";
+import { EvaluateTask } from "src/components/Tasks/EvaluateTask";
+import { TaskCategory, TaskTypes } from "src/components/Tasks/TaskTypes";
 import poster from "src/lib/poster";
+import useSWRMutation from "swr/mutation";
 
 export const Task = ({ tasks, trigger, mutate, mainBgClasses }) => {
   const task = tasks[0].task;

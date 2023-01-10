@@ -1,10 +1,9 @@
 import { useState } from "react";
-
 import { Messages } from "src/components/Messages";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
-import { TaskType } from "./TaskTypes";
+import { TaskType } from "src/components/Tasks/TaskTypes";
 
 export interface CreateTaskProps {
   // we need a task type

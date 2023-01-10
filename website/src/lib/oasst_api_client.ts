@@ -30,7 +30,7 @@ export class OasstApiClient {
       body: JSON.stringify(body),
     });
 
-    if (resp.status == 204) {
+    if (resp.status === 204) {
       return null;
     }
 
@@ -57,7 +57,7 @@ export class OasstApiClient {
       },
     });
 
-    if (resp.status == 204) {
+    if (resp.status === 204) {
       return null;
     }
 

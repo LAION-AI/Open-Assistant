@@ -43,7 +43,7 @@ export const Messages = ({
   return <Grid gap={2}>{items}</Grid>;
 };
 
-export const MessageView = forwardRef(({ is_assistant, text, message_id }: Message, ref) => {
+export const MessageView = forwardRef(({ is_assistant, text }: Message, ref) => {
   const { colorMode } = useColorMode();
 
   const bgColor = useMemo(() => {
@@ -54,7 +54,11 @@ export const MessageView = forwardRef(({ is_assistant, text, message_id }: Messa
     }
   }, [colorMode, is_assistant]);
 
-  return <div className={`${bgColor} p-4 rounded-md text-white whitespace-pre-wrap`}>{text}</div>;
+  return (
+    <div ref={ref} className={`${bgColor} p-4 rounded-md text-white whitespace-pre-wrap`}>
+      {text}
+    </div>
+  );
 });
 
 MessageView.displayName = "MessageView";
