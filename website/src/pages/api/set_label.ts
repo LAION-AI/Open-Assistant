@@ -1,5 +1,4 @@
 import { getToken } from "next-auth/jwt";
-import prisma from "src/lib/prismadb";
 
 /**
  * Sets the Label in the Backend.
@@ -15,7 +14,7 @@ const handler = async (req, res) => {
   }
 
   // Parse out the local message_id, task ID and the interaction contents.
-  const { message_id, post_id, label_map, text } = await JSON.parse(req.body);
+  const { message_id, label_map, text } = await JSON.parse(req.body);
 
   const interactionRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/text_labels`, {
     method: "POST",

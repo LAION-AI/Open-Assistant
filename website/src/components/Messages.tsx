@@ -1,15 +1,10 @@
 import { Grid } from "@chakra-ui/react";
-import { useColorMode } from "@chakra-ui/react";
+import { forwardRef, useColorMode } from "@chakra-ui/react";
 import { useMemo } from "react";
 import { Message } from "src/types/Conversation";
+import { ValidLabel } from "src/types/Task";
 
 import { FlaggableElement } from "./FlaggableElement";
-
-export interface ValidLabel {
-  name: string;
-  display_text: string;
-  help_text: string;
-}
 
 export const Messages = ({
   messages,
@@ -38,7 +33,7 @@ export const Messages = ({
   return <Grid gap={2}>{items}</Grid>;
 };
 
-export const MessageView = ({ is_assistant, text, message_id }: Message) => {
+export const MessageView = forwardRef<Message, "div">(({ is_assistant, text }: Message, ref) => {
   const { colorMode } = useColorMode();
 
   const bgColor = useMemo(() => {
@@ -49,5 +44,11 @@ export const MessageView = ({ is_assistant, text, message_id }: Message) => {
     }
   }, [colorMode, is_assistant]);
 
-  return <div className={`${bgColor} p-4 rounded-md text-white whitespace-pre-wrap`}>{text}</div>;
-};
+  return (
+    <div ref={ref} className={`${bgColor} p-4 rounded-md text-white whitespace-pre-wrap`}>
+      {text}
+    </div>
+  );
+});
+
+MessageView.displayName = "MessageView";

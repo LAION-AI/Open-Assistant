@@ -39,8 +39,6 @@ const handler = async (req, res) => {
 
   // Add the valid labels that can be used to flag messages in this Task
   registeredTask["valid_labels"] = valid_labels;
-  // Update the backend with our Task ID
-  await oasstApiClient.ackTask(task.id, registeredTask.id);
 
   // Send the results to the client.
   res.status(200).json(registeredTask);

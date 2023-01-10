@@ -45,7 +45,7 @@ export const FlaggableElement = (props) => {
   });
   const { trigger } = useSWRMutation("/api/set_label", poster, {
     onSuccess: () => {
-      setIsEditing.off;
+      setIsEditing.off();
     },
   });
 
@@ -69,14 +69,14 @@ export const FlaggableElement = (props) => {
   const handleCheckboxState = (isChecked, idx) => {
     setCheckboxValues(
       checkboxValues.map((val, i) => {
-        return i == idx ? isChecked : val;
+        return i === idx ? isChecked : val;
       })
     );
   };
   const handleSliderState = (newVal, idx) => {
     setSliderValues(
       sliderValues.map((val, i) => {
-        return i == idx ? newVal : val;
+        return i === idx ? newVal : val;
       })
     );
   };

@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { getToken } from "next-auth/jwt";
 import { oasstApiClient } from "src/lib/oasst_api_client";
+import prisma from "src/lib/prismadb";
 
 const handler = async (req, res) => {
   const token = await getToken({ req });
