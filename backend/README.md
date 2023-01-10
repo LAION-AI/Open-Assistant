@@ -52,7 +52,7 @@ default api docs at `localhost:8080/docs`. If you need to update the exported
 openapi.json in the docs/ folder you can run below command to `wget` them from
 the relevant local fastapi endpoint. This will enable anyone to just see API
 docs via something like
-[Swagger.io](https://editor.swagger.io/?url=https://raw.githubusercontent.com/andrewm4894/Open-Assistant/devcontainer-backend-dev/docs/docs/api/openapi.json)
+[Swagger.io](https://editor.swagger.io/?url=https://raw.githubusercontent.com/LAION-AI/Open-Assistant/main/docs/docs/api/openapi.json)
 without having to actually set up and run a development backend.
 
 ```bash

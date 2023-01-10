@@ -17,6 +17,7 @@ cd ..
 # docker compose up for backend-dev
 docker compose up backend-dev --build --attach-dependencies -d
 
+# note: commented out for now, you probably want to manually run this part once in the devcontainer
 # run run-local.sh script
-cd scripts/backend-development/
-bash run-local.sh
+# cd scripts/backend-development/
+# bash run-local.sh
