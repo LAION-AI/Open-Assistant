@@ -243,14 +243,24 @@ class PromptRepository:
                         OasstErrorCode.INVALID_RANKING_VALUE,
                     )
 
+                last_conv_message = task_payload.conversation.messages[-1]
+                parent_msg = self.fetch_message(last_conv_message.message_id)
+
                 # store reaction to message
                 ranked_message_ids = [task_payload.reply_messages[i].message_id for i in ranking.ranking]
+                for mid in ranked_message_ids:
+                    message = self.fetch_message(mid)
+                    if message.parent_id != parent_msg.id:
+                        raise OasstError("Corrupt reply ranking result", OasstErrorCode.CORRUPT_RANKING_RESULT)
+                    message.ranking_count += 1
+                    self.db.add(message)
+
                 reaction_payload = db_payload.RankingReactionPayload(
                     ranking=ranking.ranking, ranked_message_ids=ranked_message_ids
                 )
                 reaction = self.insert_reaction(task.id, reaction_payload)
-                last_message = task_payload.conversation.messages[-1]
-                self.journal.log_ranking(task, message_id=last_message.message_id, ranking=ranking.ranking)
+
+                self.journal.log_ranking(task, message_id=parent_msg.id, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for task {task.id}.")
 
