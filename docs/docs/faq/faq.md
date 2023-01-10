@@ -1,15 +1,13 @@
 ### Docker-Compose instead of Docker Compose
 
-If you have installed the version of `docker-compose` instead of
-`docker compose`, you might have to do some changes in the commands:
+If you are using `docker-compose` instead of `docker compose` (note the " "
+instead of the "-"), you should update your docker cli to the latest version.
+`docker compose` is the most recent version and should be used instead of
+`docker-compose`
 
-```bash
-    # docker compose up backend-dev --build --attach-dependencies
-    docker-compose up --build --attach-dependencies backend-dev     # starting only backend-dev
-
-    # docker compose up --build
-    docker-compose up --build                                       # starting the all services
-```
+For more details and information check out
+[this SO thread](https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose)
+that explains it all in detail.
 
 ### Pre-commit
 
