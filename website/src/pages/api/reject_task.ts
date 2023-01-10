@@ -1,17 +1,9 @@
 import { Prisma } from "@prisma/client";
-import { getToken } from "next-auth/jwt";
+import { withoutRole } from "src/lib/auth";
 import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
 
-const handler = async (req, res) => {
-  const token = await getToken({ req });
-
-  // Return nothing if the user isn't registered.
-  if (!token) {
-    res.status(401).end();
-    return;
-  }
-
+const handler = withoutRole("banned", async (req, res) => {
   // Parse out the local task ID and the interaction contents.
   const { id: frontendId, reason } = await JSON.parse(req.body);
 
@@ -25,6 +17,6 @@ const handler = async (req, res) => {
 
   // Send the results to the client.
   res.status(200).json({});
-};
+});
 
 export default handler;
