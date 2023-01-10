@@ -1,41 +1,41 @@
 ---
 annotations_creators:
-- no-annotation
+  - no-annotation
 language:
-- en
+  - en
 language_creators:
-- machine-generated
+  - machine-generated
 license:
-- mit
+  - mit
 multilinguality:
-- monolingual
+  - monolingual
 pretty_name: "SODA Synthetic Dialogue"
 size_categories:
-- 1M<n<10M
+  - 1M<n<10M
 source_datasets:
-- extended|allenai/soda
+  - extended|allenai/soda
 tags:
-- open-assistant
-- conversations-summarization
+  - open-assistant
+  - conversations-summarization
 task_categories:
-- conversational
+  - conversational
 task_ids:
-- dialogue-generation
+  - dialogue-generation
 dataset_info:
   features:
-  - name: conversation
-    dtype: string
+    - name: conversation
+      dtype: string
   config_name: soda_synthetic_dialogue_dialogue_modeling
   splits:
-  - name: train
-    num_bytes: 1524941476
-    num_examples: 1191582
-  - name: test
-    num_bytes: 190565707
-    num_examples: 148968
-  - name: validation
-    num_bytes: 187161878
-    num_examples: 146346
+    - name: train
+      num_bytes: 1524941476
+      num_examples: 1191582
+    - name: test
+      num_bytes: 190565707
+      num_examples: 148968
+    - name: validation
+      num_bytes: 187161878
+      num_examples: 146346
   download_size: 1952926579
   dataset_size: 1902669061
 ---
@@ -44,15 +44,22 @@ dataset_info:
 
 ## Dataset Description
 
-- **Repository:** [Code](https://github.com/LAION-AI/Open-Assistant/openassistant/datasets/soda_synthetic_dialogue/)
+- **Repository:**
+  [Code](https://github.com/LAION-AI/Open-Assistant/openassistant/datasets/soda_synthetic_dialogue/)
 
 ## Dataset Summary
 
-🥤SODA Synthetic Dialogue is a set of synthetic dialogues between Assistant and User. In each conversation, User asks Assistant to perform summarization or story generation tasks based on a snippet of an existing dialogue, story, or from a title or theme.
+🥤SODA Synthetic Dialogue is a set of synthetic dialogues between Assistant and
+User. In each conversation, User asks Assistant to perform summarization or
+story generation tasks based on a snippet of an existing dialogue, story, or
+from a title or theme.
 
-This data was created by synthesizing the dialogues in [🥤Soda](https://huggingface.co/datasets/allenai/soda) and applying a set of templates to generate the conversation.
+This data was created by synthesizing the dialogues in
+[🥤Soda](https://huggingface.co/datasets/allenai/soda) and applying a set of
+templates to generate the conversation.
 
 Example:
+
 ```
 User: Can you write the next few lines of dialogue for this scene:
   Cornell: I know what you're thinking, Dontrell. I can sense your feelings and know exactly what you're going to say or do next. You're thinking about how much you miss your family, and how you wish you could see them again. You're wondering if there's anything you can do to make that happen. And you're also feeling a little guilty, because you know that if you could see them again, it would only be for a short while before they died.
@@ -76,15 +83,21 @@ Assistant: One theme of this story could be:
 
 ## Usage
 
-The dataset contains one configuration, `dialogue_modeling`, which has a single text `conversation` feature.
+The dataset contains one configuration, `dialogue_modeling`, which has a single
+text `conversation` feature.
 
 ## Source data
 
-The script to synthesize this dataset was originally created by [ontocard](https://github.com/ontocord) in [this Colab notebook](https://colab.research.google.com/drive/1Sw3px5dP8whdqT7QMNoqwmqIasZkMbJi?usp=sharing) and prepared for Hugging Face by [Jeffrey Quesnelle](https://github.com/jquesnelle/).
+The script to synthesize this dataset was originally created by
+[ontocard](https://github.com/ontocord) in
+[this Colab notebook](https://colab.research.google.com/drive/1Sw3px5dP8whdqT7QMNoqwmqIasZkMbJi?usp=sharing)
+and prepared for Hugging Face by
+[Jeffrey Quesnelle](https://github.com/jquesnelle/).
 
 ## Citation
 
 Please cite our work if you find the resources in this repository useful:
+
 ```
 @article{ontocard2023sodasynth,
   author    = {ontocard and Jeffrey Quesnelle},

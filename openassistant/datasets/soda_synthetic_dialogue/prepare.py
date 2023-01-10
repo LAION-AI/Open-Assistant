@@ -1,9 +1,10 @@
 """Prepare the SODA Synthetic Dialogue Dataset"""
 
 import json
-import random
 import os
+import random
 import sys
+
 from datasets import load_dataset
 from tqdm import tqdm
 

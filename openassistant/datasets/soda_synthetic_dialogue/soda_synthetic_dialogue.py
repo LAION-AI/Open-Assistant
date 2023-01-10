@@ -25,9 +25,7 @@ from typing import Dict, List, Tuple
 
 import datasets
 
-from .hub import OpenAssistantConfig
-
-from .hub import features
+from .hub import OpenAssistantConfig, features
 
 _CITATION = """\
 @article{ontocard2023sodasynth,
@@ -42,11 +40,7 @@ _DESCRIPTION = "A set of dialogues synthesized from the SODA dataset."
 _HOMEPAGE = ""
 _LICENSE = "mit"
 _URLS = {
-    _DATASETNAME: {
-        'train': './data/train.jsonl',
-        'test': './data/test.jsonl',
-        'validation': './data/validation.jsonl'
-    }
+    _DATASETNAME: {"train": "./data/train.jsonl", "test": "./data/test.jsonl", "validation": "./data/validation.jsonl"}
 }
 _SUPPORTED_TASKS = ["dialogue-modeling"]
 _VERSION = "1.0.0"
@@ -88,24 +82,15 @@ class SODASyntheticDialogueDataset(datasets.GeneratorBasedBuilder):
         return [
             datasets.SplitGenerator(
                 name=datasets.Split.TRAIN,
-                gen_kwargs={
-                    "filepath": data_dir,
-                    "split": "train"
-                },
+                gen_kwargs={"filepath": data_dir, "split": "train"},
             ),
             datasets.SplitGenerator(
                 name=datasets.Split.TEST,
-                gen_kwargs={
-                    "filepath": data_dir,
-                    "split": "test"
-                },
+                gen_kwargs={"filepath": data_dir, "split": "test"},
             ),
             datasets.SplitGenerator(
                 name=datasets.Split.VALIDATION,
-                gen_kwargs={
-                    "filepath": data_dir,
-                    "split": "validation"
-                },
+                gen_kwargs={"filepath": data_dir, "split": "validation"},
             ),
         ]
 
@@ -114,7 +99,7 @@ class SODASyntheticDialogueDataset(datasets.GeneratorBasedBuilder):
 
         if self.config.schema == "dialogue_modeling":
             key = 0
-            with open(filepath[split], 'r', encoding='utf8') as data:
+            with open(filepath[split], "r", encoding="utf8") as data:
                 while True:
                     line = data.readline()
                     if not line:
