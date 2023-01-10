@@ -35,6 +35,7 @@ class PromptRepository:
         self.user_repository = user_repository or UserRepository(db, api_client)
         self.user = self.user_repository.lookup_client_user(client_user, create_missing=True)
         self.user_id = self.user.id if self.user else None
+        logger.debug(f"PromptRepository(api_client_id={self.api_client.id}, {self.user_id=})")
         self.task_repository = task_repository or TaskRepository(
             db, api_client, client_user, user_repository=self.user_repository
         )
@@ -113,7 +114,8 @@ class PromptRepository:
         if task.done:
             raise OasstError("Task already done.", OasstErrorCode.TASK_ALREADY_DONE)
 
-        if not task.collective and task.user_id != self.user_id:
+        if (not task.collective or task.user_id is None) and task.user_id != self.user_id:
+            logger.warning(f"Task was assigned to a different user (expected: {task.user_id}; actual: {self.user_id}).")
             raise OasstError("Task was assigned to a different user.", OasstErrorCode.TASK_NOT_ASSIGNED_TO_USER)
 
         return task

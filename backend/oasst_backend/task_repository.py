@@ -2,6 +2,7 @@ from typing import Optional
 from uuid import UUID
 
 import oasst_backend.models.db_payload as db_payload
+from loguru import logger
 from oasst_backend.models import ApiClient, Task
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.user_repository import UserRepository
@@ -186,6 +187,7 @@ class TaskRepository:
             parent_message_id=parent_message_id,
             collective=collective,
         )
+        logger.debug(f"inserting {task=}")
         self.db.add(task)
         self.db.commit()
         self.db.refresh(task)

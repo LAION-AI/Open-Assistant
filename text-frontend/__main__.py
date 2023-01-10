@@ -36,7 +36,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
         return response.json()
 
     typer.echo("Requesting work...")
-    tasks = [_post("/api/v1/tasks/", {"type": "random"})]
+    tasks = [_post("/api/v1/tasks/", {"type": "random", "user": USER})]
     while tasks:
         task = tasks.pop(0)
         match (task["type"]):

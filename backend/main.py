@@ -174,7 +174,7 @@ if settings.DEBUG_USE_SEED_DATA:
 @app.on_event("startup")
 def ensure_tree_states():
     try:
-        logger.info("Seed data check began")
+        logger.info("Startup: TreeManager.ensure_tree_states()")
         cfg = TreeManagerConfiguration()  # TODO: decide where config is stored, e.g. load form json/yaml file
         with Session(engine) as db:
             tm = TreeManager(db, None, configuration=cfg)
