@@ -19,6 +19,7 @@ const LabelPrompterReply = () => {
   }
 
   const task = tasks[0].task;
+  const valid_labels = tasks[0].valid_labels;
   const messages: Message[] = [
     ...task.conversation.messages,
     { text: task.reply, is_assistant: false, message_id: task.message_id },
@@ -28,7 +29,7 @@ const LabelPrompterReply = () => {
     <LabelTask
       title="Label Prompter Reply"
       desc="Given the following discussion, provide labels for the final prompt"
-      messages={<MessageTable messages={messages} />}
+      messages={<MessageTable messages={messages} valid_labels={valid_labels} />}
       inputs={<LabelSliderGroup labelIDs={task.valid_labels} onChange={setSliderValues} />}
       controls={
         <TaskControls
