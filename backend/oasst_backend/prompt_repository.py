@@ -237,8 +237,7 @@ class PromptRepository:
 
             case db_payload.RankPrompterRepliesPayload | db_payload.RankAssistantRepliesPayload:
                 # validate ranking
-                num_replies = len(task_payload.replies)
-                if sorted(ranking.ranking) != list(range(num_replies)):
+                if sorted(ranking.ranking) != list(range(num_replies := len(task_payload.reply_messages))):
                     raise OasstError(
                         f"Invalid ranking submitted. Each reply index must appear exactly once ({num_replies=}).",
                         OasstErrorCode.INVALID_RANKING_VALUE,
@@ -256,7 +255,7 @@ class PromptRepository:
 
             case db_payload.RankInitialPromptsPayload:
                 # validate ranking
-                if sorted(ranking.ranking) != list(range(num_prompts := len(task_payload.prompts))):
+                if sorted(ranking.ranking) != list(range(num_prompts := len(task_payload.prompt_messages))):
                     raise OasstError(
                         f"Invalid ranking submitted. Each reply index must appear exactly once ({num_prompts=}).",
                         OasstErrorCode.INVALID_RANKING_VALUE,
