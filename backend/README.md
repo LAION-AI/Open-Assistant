@@ -44,3 +44,18 @@ run `alembic revision --autogenerate -m "..."` ("..." is what you did) in the
 `/backend` directory. Then edit the newly created file. See
 [here](https://alembic.sqlalchemy.org/en/latest/tutorial.html) for more
 information.
+
+## API Documentation
+
+Once you have successfully started the backend server, you can access the
+default api docs at `localhost:8080/docs`. If you need to update the exported
+openapi.json in the docs/ folder you can run below command to `wget` them from
+the relevant local fastapi endpoint. This will enable anyone to just see API
+docs via something like
+[Swagger.io](https://editor.swagger.io/?url=https://raw.githubusercontent.com/andrewm4894/Open-Assistant/devcontainer-backend-dev/docs/docs/api/openapi.json)
+without having to actually set up and run a development backend.
+
+```bash
+# save openapi.json to docs/docs/api
+wget localhost:8080/api/v1/openapi.json -O docs/docs/api/openapi.json
+```
