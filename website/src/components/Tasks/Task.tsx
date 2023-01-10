@@ -1,9 +1,24 @@
 import { CreateTask } from "./CreateTask";
 import { EvaluateTask } from "./EvaluateTask";
 import { TaskCategory, TaskTypes } from "./TaskTypes";
+import useSWRMutation from "swr/mutation";
+import poster from "src/lib/poster";
 
 export const Task = ({ tasks, trigger, mutate, mainBgClasses }) => {
   const task = tasks[0].task;
+
+  const { trigger: sendRejection } = useSWRMutation("/api/reject_task", poster, {
+    onSuccess: async () => {
+      mutate();
+    },
+  });
+
+  const rejectTask = (task: { id: string }, reason: string) => {
+    sendRejection({
+      id: task.id,
+      reason,
+    });
+  };
 
   function taskTypeComponent(type) {
     const taskType = TaskTypes.find((taskType) => taskType.type === type);
@@ -14,13 +29,22 @@ export const Task = ({ tasks, trigger, mutate, mainBgClasses }) => {
           <CreateTask
             tasks={tasks}
             trigger={trigger}
-            mutate={mutate}
+            onSkipTask={rejectTask}
+            onNextTask={mutate}
             taskType={taskType}
             mainBgClasses={mainBgClasses}
           />
         );
       case TaskCategory.Evaluate:
-        return <EvaluateTask tasks={tasks} trigger={trigger} mutate={mutate} mainBgClasses={mainBgClasses} />;
+        return (
+          <EvaluateTask
+            tasks={tasks}
+            trigger={trigger}
+            onSkipTask={rejectTask}
+            onNextTask={mutate}
+            mainBgClasses={mainBgClasses}
+          />
+        );
     }
   }
 

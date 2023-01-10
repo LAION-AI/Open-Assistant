@@ -1,8 +1,8 @@
 # Docs Site
 
-https://liaon-ai.github.io/Open-Assistant/
+https://laion-ai.github.io/Open-Assistant/
 
-This [site](https://liaon-ai.github.io/Open-Assistant/) is built using
+This [site](https://laion-ai.github.io/Open-Assistant/) is built using
 [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
 ### Contributing

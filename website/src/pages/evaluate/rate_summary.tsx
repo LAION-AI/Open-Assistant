@@ -102,7 +102,12 @@ const RateSummary = () => {
           </section>
         </TwoColumnsWithCards>
 
-        <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
+        <TaskControls
+          tasks={tasks}
+          onSubmitResponse={submitResponse}
+          onSkipTask={fetchNextTask}
+          onNextTask={fetchNextTask}
+        />
       </main>
     </>
   );

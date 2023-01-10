@@ -35,4 +35,4 @@ class Task(SQLModel, table=True):
 
     @property
     def expired(self) -> bool:
-        return self.expiry_date is not None and datetime.utcnow() < self.expiry_date
+        return self.expiry_date is not None and datetime.utcnow() > self.expiry_date

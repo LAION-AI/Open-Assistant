@@ -2,6 +2,7 @@ import { Box, CircularProgress, SimpleGrid, Text, useColorModeValue } from "@cha
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import { getDashboardLayout } from "src/components/Layout";
+import { Message } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import fetcher from "src/lib/fetcher";
 import useSWRImmutable from "swr/immutable";
@@ -10,29 +11,28 @@ const MessagesDashboard = () => {
   const boxBgColor = useColorModeValue("white", "gray.700");
   const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
-  const [messages, setMessages] = useState([]);
-  const [userMessages, setUserMessages] = useState([]);
+  const [messages, setMessages] = useState<Message[]>(null);
+  const [userMessages, setUserMessages] = useState<Message[]>(null);
 
   const { isLoading: isLoadingAll, mutate: mutateAll } = useSWRImmutable("/api/messages", fetcher, {
-    onSuccess: (data) => {
-      setMessages(data);
-    },
+    onSuccess: setMessages,
   });
 
   const { isLoading: isLoadingUser, mutate: mutateUser } = useSWRImmutable(`/api/messages/user`, fetcher, {
-    onSuccess: (data) => {
-      setUserMessages(data);
-    },
+    onSuccess: setUserMessages,
   });
 
+  const receivedMessages = !isLoadingAll && Array.isArray(messages);
+  const receivedUserMessages = !isLoadingUser && Array.isArray(userMessages);
+
   useEffect(() => {
-    if (messages.length == 0) {
+    if (!receivedMessages) {
       mutateAll();
     }
-    if (userMessages.length == 0) {
+    if (!receivedUserMessages) {
       mutateUser();
     }
-  }, [messages, userMessages]);
+  }, [receivedMessages, mutateAll, receivedUserMessages, mutateUser]);
 
   return (
     <>
@@ -52,7 +52,7 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {isLoadingAll ? <CircularProgress isIndeterminate /> : <MessageTable messages={messages} />}
+            {receivedMessages ? <MessageTable messages={messages} /> : <CircularProgress isIndeterminate />}
           </Box>
         </Box>
         <Box>
@@ -66,7 +66,7 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {isLoadingUser ? <CircularProgress isIndeterminate /> : <MessageTable messages={userMessages} />}
+            {receivedUserMessages ? <MessageTable messages={userMessages} /> : <CircularProgress isIndeterminate />}
           </Box>
         </Box>
       </SimpleGrid>

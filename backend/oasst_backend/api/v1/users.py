@@ -29,7 +29,7 @@ def query_user_messages(
     """
     Query user messages.
     """
-    pr = PromptRepository(db, api_client, user=None)
+    pr = PromptRepository(db, api_client)
     messages = pr.query_messages(
         user_id=user_id,
         api_client_id=api_client_id,
@@ -48,6 +48,6 @@ def query_user_messages(
 def mark_user_messages_deleted(
     user_id: UUID, api_client: ApiClient = Depends(deps.get_trusted_api_client), db: Session = Depends(deps.get_db)
 ):
-    pr = PromptRepository(db, api_client, None)
+    pr = PromptRepository(db, api_client)
     messages = pr.query_messages(user_id=user_id)
     pr.mark_messages_deleted(messages)

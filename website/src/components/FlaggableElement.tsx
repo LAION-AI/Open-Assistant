@@ -27,9 +27,23 @@ import poster from "src/lib/poster";
 import { colors } from "styles/Theme/colors";
 import useSWRMutation from "swr/mutation";
 
+interface textFlagLabels {
+  attributeName: string;
+  labelText: string;
+  additionalExplanation?: string;
+}
+
 export const FlaggableElement = (props) => {
   const [isEditing, setIsEditing] = useBoolean();
-  const { trigger } = useSWRMutation("/api/v1/text_labels", poster, {
+  const flaggable_labels = props.flaggable_labels;
+  const TEXT_LABEL_FLAGS = flaggable_labels.valid_labels.map((valid_label) => {
+    return {
+      attributeName: valid_label.name,
+      labelText: valid_label.display_text,
+      additionalExplanation: valid_label.help_text,
+    };
+  });
+  const { trigger } = useSWRMutation("/api/set_label", poster, {
     onSuccess: () => {
       setIsEditing.off;
     },
@@ -42,7 +56,12 @@ export const FlaggableElement = (props) => {
         label_map.set(flag.attributeName, sliderValues[i]);
       }
     });
-    trigger({ post_id: props.post_id, label_map: Object.fromEntries(label_map), text: props.text });
+    trigger({
+      message_id: props.message_id,
+      post_id: props.post_id,
+      label_map: Object.fromEntries(label_map),
+      text: props.text,
+    });
   };
   const [checkboxValues, setCheckboxValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(false));
   const [sliderValues, setSliderValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(1));
@@ -118,7 +137,8 @@ export const FlaggableElement = (props) => {
     </Popover>
   );
 };
-function FlagCheckbox(props: {
+
+export function FlagCheckbox(props: {
   option: textFlagLabels;
   idx: number;
   checkboxValues: boolean[];
@@ -175,48 +195,3 @@ function FlagCheckbox(props: {
     </Flex>
   );
 }
-interface textFlagLabels {
-  attributeName: string;
-  labelText: string;
-  additionalExplanation?: string;
-}
-const TEXT_LABEL_FLAGS: textFlagLabels[] = [
-  // For the time being this list is configured on the FE.
-  // In the future it may be provided by the API.
-  {
-    attributeName: "fails_task",
-    labelText: "Fails to follow the correct instruction / task",
-    additionalExplanation: "__TODO__",
-  },
-  {
-    attributeName: "not_customer_assistant_appropriate",
-    labelText: "Inappropriate for customer assistant",
-    additionalExplanation: "__TODO__",
-  },
-  {
-    attributeName: "contains_sexual_content",
-    labelText: "Contains sexual content",
-  },
-  {
-    attributeName: "contains_violent_content",
-    labelText: "Contains violent content",
-  },
-  {
-    attributeName: "encourages_violence",
-    labelText: "Encourages or fails to discourage violence/abuse/terrorism/self-harm",
-  },
-  {
-    attributeName: "denigrates_a_protected_class",
-    labelText: "Denigrates a protected class",
-  },
-  {
-    attributeName: "gives_harmful_advice",
-    labelText: "Fails to follow the correct instruction / task",
-    additionalExplanation:
-      "The advice given in the output is harmful or counter-productive. This may be in addition to, but is distinct from the question about encouraging violence/abuse/terrorism/self-harm.",
-  },
-  {
-    attributeName: "expresses_moral_judgement",
-    labelText: "Expresses moral judgement",
-  },
-];

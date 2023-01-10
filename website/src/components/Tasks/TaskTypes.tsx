@@ -1,9 +1,21 @@
 export enum TaskCategory {
-  Create,
-  Evaluate,
+  Create = "Create",
+  Evaluate = "Evaluate",
+  Label = "Label",
 }
 
-export const TaskTypes = [
+export interface TaskType {
+  label: string;
+  desc: string;
+  category: TaskCategory;
+  pathname: string;
+  type: string;
+  overview?: string;
+  instruction?: string;
+}
+
+export const TaskTypes: TaskType[] = [
+  // create
   {
     label: "Create Initial Prompts",
     desc: "Write initial prompts to help Open Assistant to try replying to diverse messages.",
@@ -31,6 +43,7 @@ export const TaskTypes = [
     overview: "Given the following conversation, provide an adequate reply",
     instruction: "Provide the assistant`s reply",
   },
+  // evaluate
   {
     label: "Rank User Replies",
     category: TaskCategory.Evaluate,
@@ -51,5 +64,27 @@ export const TaskTypes = [
     category: TaskCategory.Evaluate,
     pathname: "/evaluate/rank_initial_prompts",
     type: "rank_initial_prompts",
+  },
+  // label
+  {
+    label: "Label Initial Prompt",
+    desc: "Provide labels for a prompt.",
+    category: TaskCategory.Label,
+    pathname: "/label/label_initial_prompt",
+    type: "label_initial_prompt",
+  },
+  {
+    label: "Label Prompter Reply",
+    desc: "Provide labels for a prompt.",
+    category: TaskCategory.Label,
+    pathname: "/label/label_prompter_reply",
+    type: "label_prompter_reply",
+  },
+  {
+    label: "Label Assistant Reply",
+    desc: "Provide labels for a prompt.",
+    category: TaskCategory.Label,
+    pathname: "/label/label_assistant_reply",
+    type: "label_assistant_reply",
   },
 ];
