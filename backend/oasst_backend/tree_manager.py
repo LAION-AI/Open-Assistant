@@ -83,6 +83,16 @@ class ActiveTreeSizeRow(pydantic.BaseModel):
         orm_mode = True
 
 
+class ExtendibleParentRow(pydantic.BaseModel):
+    parent_id: UUID
+    depth: int
+    message_tree_id: UUID
+    active_children_count: int
+
+    class Config:
+        orm_mode = True
+
+
 class IncompleteRankingsRow(pydantic.BaseModel):
     parent_id: UUID
     children_count: int
@@ -146,8 +156,10 @@ class TreeManager:
         return TaskType(task_type)
 
     def next_task(self) -> Tuple[protocol_schema.Task, Optional[UUID], Optional[UUID]]:
-        # 1. determine type of task to generate
 
+        logger.debug("TreeManager.next_task()")
+
+        # determine type of task to generate
         num_active_trees = self.query_num_active_trees()
         prompts_need_review = self.query_prompts_need_review()
         replies_need_review = self.query_replies_need_review()
@@ -167,6 +179,7 @@ class TreeManager:
         message_tree_id = None
         parent_message_id = None
 
+        logger.debug(f"selected {task_tpye=}")
         match task_tpye:
             case TaskType.RANKING:
                 assert len(incomplete_rankings) > 0
@@ -223,15 +236,14 @@ class TreeManager:
 
             case TaskType.REPLY:
                 # select a tree with missing replies
-                tree_candidates = list(filter(lambda x: x.remaining_messages > 0, active_tree_sizes))
-                assert len(tree_candidates) > 0
-                source_tree = random.choice(tree_candidates)
+                extensible_parents = self.query_extendible_parents()
+                assert len(extensible_parents) > 0
 
-                # fetch random conversation in tree
-                logger.debug(f"fetch_random_conversation(message_tree_id={source_tree.message_tree_id})")
-                messages = self.pr.fetch_random_conversation(
-                    last_message_role=None, message_tree_id=source_tree.message_tree_id
-                )
+                # fetch random conversation to extend
+                random_parent = random.choice(extensible_parents)
+                logger.debug(f"selected {random_parent=}")
+                messages = self.pr.fetch_message_conversation(random_parent.parent_id)
+                assert all(m.review_result for m in messages)  # ensure all messages have positive review
                 conversation = prepare_conversation(messages)
 
                 # generate reply task depending on last message
@@ -412,6 +424,19 @@ WHERE mts.active                        -- only consider active trees
 GROUP BY m.id, m.depth, m.message_tree_id, mts.max_children_count
 HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
 """
+
+    def query_extendible_parents(self) -> list[ExtendibleParentRow]:
+        """Query parent messages that have not reached the maximum number of replies."""
+
+        r = self.db.execute(
+            text(self._sql_find_extendible_parents),
+            {
+                "growing_state": message_tree_state.State.GROWING,
+                "num_reviews_reply": self.cfg.num_reviews_reply,
+            },
+        )
+        return [ExtendibleParentRow.from_orm(x) for x in r.all()]
+
     _sql_find_extendible_trees = f"""
 -- find extendible trees
 SELECT m.message_tree_id, mts.goal_tree_size, COUNT(m.id) AS tree_size
@@ -519,5 +544,6 @@ if __name__ == "__main__":
         print("query_incomplete_reply_reviews", tm.query_replies_need_review())
         print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
         print("query_extendible_trees", tm.query_extendible_trees())
+        print("query_extendible_parents", tm.query_extendible_parents())
 
         print("next_task:", tm.next_task())
