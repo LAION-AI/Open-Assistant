@@ -35,7 +35,7 @@ class UserRepository:
         if api_client_id:
             user_query = user_query.filter(User.api_client_id == api_client_id)
 
-        user: User = user.first()
+        user: User = user_query.first()
 
         if user is None:
             raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
