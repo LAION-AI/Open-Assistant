@@ -1,10 +1,6 @@
 import {
   Button,
   ButtonProps,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -16,7 +12,6 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { FaChevronDown } from "react-icons/fa";
 
 interface SkipButtonProps extends ButtonProps {
   onSkip: (reason: string) => void;
