@@ -36,13 +36,14 @@ interface textFlagLabels {
 export const FlaggableElement = (props) => {
   const [isEditing, setIsEditing] = useBoolean();
   const flaggable_labels = props.flaggable_labels;
-  const TEXT_LABEL_FLAGS = flaggable_labels.valid_labels.map((valid_label) => {
-    return {
-      attributeName: valid_label.name,
-      labelText: valid_label.display_text,
-      additionalExplanation: valid_label.help_text,
-    };
-  });
+  const TEXT_LABEL_FLAGS =
+    flaggable_labels?.valid_labels?.map((valid_label) => {
+      return {
+        attributeName: valid_label.name,
+        labelText: valid_label.display_text,
+        additionalExplanation: valid_label.help_text,
+      };
+    }) || [];
   const { trigger } = useSWRMutation("/api/set_label", poster, {
     onSuccess: () => {
       setIsEditing.off();
