@@ -8,7 +8,7 @@ import pydantic
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import settings
-from oasst_backend.models import Message, MessageTreeState, TextLabels, message_tree_state
+from oasst_backend.models import Message, MessageReaction, MessageTreeState, TextLabels, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -607,6 +607,41 @@ GROUP BY mts.message_tree_id, mts.goal_tree_size
 
         return [m.id for m in qry_missing_tree_states.all()]
 
+    _sql_find_tree_ranking_results = """
+-- get all ranking results of completed tasks for all parents with >=2 children
+SELECT p.parent_id, mr.* FROM
+(
+    -- find parents with > 1 children
+    SELECT m.parent_id, m.message_tree_id, COUNT(m.id) children_count
+    FROM message_tree_state mts
+       LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
+    WHERE m.review_result                  -- must be reviewed
+       AND NOT m.deleted                   -- not deleted
+       AND m.parent_id IS NOT NULL         -- ignore initial prompts
+      AND mts.message_tree_id = :message_tree_id
+    GROUP BY m.parent_id, m.message_tree_id
+    HAVING COUNT(m.id) > 1
+) as p
+LEFT JOIN task t ON p.parent_id = t.parent_message_id AND t.done AND (t.payload_type = 'RankPrompterRepliesPayload' OR t.payload_type = 'RankAssistantRepliesPayload')
+LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'RankingReactionPayload'
+"""
+
+    def query_tree_ranking_results(self, message_tree_id: UUID) -> dict[UUID, list[MessageReaction]]:
+        """Finds all completed ranking restuls for a message_tree"""
+        r = self.db.execute(
+            text(self._sql_find_tree_ranking_results),
+            {"message_tree_id": message_tree_id},
+        )
+
+        rankings_by_message = {}
+        for x in r.all():
+            parent_id = x["parent_id"]
+            if parent_id not in rankings_by_message:
+                rankings_by_message[parent_id] = []
+            if x["task_id"]:
+                rankings_by_message[parent_id].append(MessageReaction.from_orm(x))
+        return rankings_by_message
+
     def ensure_tree_states(self):
         """Add message tree state rows for all root nodes (inital prompt messages)."""
 
@@ -686,6 +721,7 @@ if __name__ == "__main__":
         cfg = TreeManagerConfiguration()
         tm = TreeManager(db, pr, cfg)
         tm.ensure_tree_states()
+
         print("query_num_active_trees", tm.query_num_active_trees())
         print("query_incomplete_rankings", tm.query_incomplete_rankings())
         print("query_incomplete_reply_reviews", tm.query_replies_need_review())
@@ -694,3 +730,7 @@ if __name__ == "__main__":
         print("query_extendible_parents", tm.query_extendible_parents())
 
         print("next_task:", tm.next_task())
+
+        print(
+            ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("2ac20d38-6650-43aa-8bb3-f61080c0d921"))
+        )
