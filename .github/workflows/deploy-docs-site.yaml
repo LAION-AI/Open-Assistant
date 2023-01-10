@@ -8,6 +8,9 @@ on:
       - ".github/workflows/deploy-docs-site.yaml"
       - "docs/**"
   pull_request:
+    paths:
+      - ".github/workflows/deploy-docs-site.yaml"
+      - "docs/**"
 
 jobs:
   deploy:
