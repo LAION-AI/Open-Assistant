@@ -273,11 +273,12 @@ class PromptRepository:
         self.db.refresh(reaction)
         return reaction
 
-    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> Tuple[TextLabels, Task]:
+    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> Tuple[TextLabels, Task, Message]:
 
         valid_labels: Optional[list[str]] = None
         mandatory_labels: Optional[list[str]] = None
         text_labels_id: Optional[UUID] = None
+        message_id: Optional[UUID] = text_labels.message_id
 
         task: Task = None
         if text_labels.task_id:
@@ -287,13 +288,15 @@ class PromptRepository:
 
             task_payload: db_payload.TaskPayload = task.payload.payload
             if isinstance(task_payload, db_payload.LabelInitialPromptPayload):
-                if task_payload.message_id != text_labels.message_id:
+                if message_id and task_payload.message_id != message_id:
                     raise OasstError("Task message id mismatch", OasstErrorCode.TEXT_LABELS_WRONG_MESSAGE_ID)
+                message_id = task_payload.message_id
                 valid_labels = task_payload.valid_labels
                 mandatory_labels = task_payload.mandatory_labels
             elif isinstance(task_payload, db_payload.LabelConversationReplyPayload):
-                if task_payload.message_id != text_labels.message_id:
+                if message_id and message_id != message_id:
                     raise OasstError("Task message id mismatch", OasstErrorCode.TEXT_LABELS_WRONG_MESSAGE_ID)
+                message_id = task_payload.message_id
                 valid_labels = task_payload.valid_labels
                 mandatory_labels = task_payload.mandatory_labels
             else:
@@ -322,19 +325,26 @@ class PromptRepository:
                 task.done = True
                 self.db.add(task)
 
+        logger.debug(f"inserting TextLabels for {message_id=}, {text_labels_id=}")
         model = TextLabels(
             id=text_labels_id,
             api_client_id=self.api_client.id,
-            message_id=text_labels.message_id,
+            message_id=message_id,
             user_id=self.user_id,
             text=text_labels.text,
             labels=text_labels.labels,
         )
 
+        if message_id:
+            message = self.fetch_message(message_id)
+            if task:
+                message.review_count += 1
+                self.db.add(message)
+
         self.db.add(model)
         self.db.commit()
         self.db.refresh(model)
-        return model, task
+        return model, task, message
 
     def fetch_random_message_tree(self, require_role: str = None, reviewed: bool = True) -> list[Message]:
         """

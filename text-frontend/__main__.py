@@ -197,12 +197,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 # send labels
                 new_task = _post(
                     "/api/v1/tasks/interaction",
-                    {
-                        "type": "message_ranking",
-                        "message_id": message_id,
-                        "ranking": ranking,
-                        "user": USER,
-                    },
+                    {"type": "message_ranking", "message_id": message_id, "ranking": ranking, "user": USER},
                 )
                 tasks.append(new_task)
 
@@ -232,6 +227,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_labels",
                         "message_id": task["message_id"],
+                        "task_id": task["id"],
                         "text": task["prompt"],
                         "labels": labels_dict,
                         "user": USER,

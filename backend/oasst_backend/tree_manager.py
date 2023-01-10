@@ -7,7 +7,7 @@ import numpy as np
 import pydantic
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
-from oasst_backend.models import Message, MessageTreeState, message_tree_state
+from oasst_backend.models import Message, MessageTreeState, TextLabels, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -18,7 +18,7 @@ from sqlmodel import Session, func
 class TreeManagerConfiguration(pydantic.BaseModel):
     """Configuration class for the TreeManager"""
 
-    max_active_trees: int = 100
+    max_active_trees: int = 10
     """Maximum number of concurrently active trees in the database.
     No new initial prompt tasks will be handed out to users if this
     number is reached."""
@@ -133,10 +133,10 @@ class TreeManager:
             task_weights[TaskType.RANKING.value] = 10
 
         if num_replies_need_review > 0:
-            task_weights[TaskType.LABEL_REPLY.value] = 2
+            task_weights[TaskType.LABEL_REPLY.value] = 5
 
         if num_prompts_need_review > 0:
-            task_weights[TaskType.LABEL_PROMPT.value] = 1
+            task_weights[TaskType.LABEL_PROMPT.value] = 5
 
         if num_missing_replies > 0:
             task_weights[TaskType.REPLY.value] = 2
@@ -321,12 +321,62 @@ class TreeManager:
                 logger.info(
                     f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}."
                 )
-                pr.store_text_labels(interaction)
+
+                _, task, msg = pr.store_text_labels(interaction)
+
+                # if it was a respones for a task, check if we have enough reviews to calc review_result
+                if task and msg:
+                    reviews = self.query_reviews_for_message(msg.id)
+                    acceptance_score = self._calculate_acceptance(reviews)
+                    logger.debug(
+                        f"Message {msg.id=}, {acceptance_score=}, {len(reviews)=}, {msg.review_result=}, {msg.review_count=}"
+                    )
+                    if msg.parent_id is None:
+                        if msg.review_count >= self.cfg.num_reviews_initial_prompt:
+                            if (
+                                not msg.review_result
+                                and acceptance_score > self.cfg.acceptance_threshold_initial_prompt
+                            ):
+                                msg.review_result = True
+                                self.db.add(msg)
+                                self.db.commit()
+                                logger.info(
+                                    f"Initial prompt message was accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
+                                )
+                        self.check_condition_for_growing_state(msg.message_tree_id)
+                    elif msg.review_count >= self.cfg.num_reviews_reply:
+                        if not msg.review_result and acceptance_score > self.cfg.acceptance_threshold_reply:
+                            msg.review_result = True
+                            self.db.add(msg)
+                            self.db.commit()
+                            logger.info(
+                                f"Reply message message accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
+                            )
+
+                    self.check_condition_for_scoring_state(msg.message_tree_id)
 
             case _:
                 raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)
 
         return protocol_schema.TaskDone()
+
+    def check_condition_for_growing_state(self, message_tree_id: UUID):
+        mts = self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one()
+        mts: MessageTreeState
+        if mts.active and mts.state == message_tree_state.State.INITIAL_PROMPT_REVIEW.value:
+            initial_prompt = self.pr.fetch_message(message_tree_id)
+            if initial_prompt.review_result:
+                mts.state = message_tree_state.State.GROWING.value
+                self.db.add(mts)
+                self.db.commit()
+                logger.info(f"Tree entered {mts.state} state ({message_tree_id=})")
+
+    def check_condition_for_scoring_state(self, message_tree_id: UUID):
+        pass
+
+    def _calculate_acceptance(self, labels: list[TextLabels]):
+        # simply use spam text-labels
+        return 1.0 - np.mean([l.labels[protocol_schema.TextLabel.spam] for l in labels])
 
     _sql_find_prompts_need_review = """
 -- find initial prompts that need more reviews
@@ -359,7 +409,7 @@ WHERE mts.state = :state
 SELECT m.id
 FROM message_tree_state mts
     LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
-WHERE mts.state = :breedin_state
+WHERE mts.state = :breeding_state
     AND NOT m.review_result
     AND NOT m.deleted
     AND m.review_count < :num_required_reviews
@@ -375,7 +425,7 @@ WHERE mts.state = :breedin_state
         r = self.db.execute(
             text(self._sql_find_replies_need_review),
             {
-                "breedin_state": message_tree_state.State.GROWING,
+                "breeding_state": message_tree_state.State.GROWING,
                 "num_required_reviews": self.cfg.num_reviews_reply,
             },
         )
@@ -495,6 +545,21 @@ HAVING COUNT(m.id) < mts.goal_tree_size
     def query_num_active_trees(self) -> int:
         query = self.db.query(func.count(MessageTreeState.message_tree_id)).filter(MessageTreeState.active)
         return query.scalar()
+
+    def query_reviews_for_message(self, message_id: UUID) -> list[TextLabels]:
+        qry = text(
+            """
+SELECT tl.*
+FROM
+    task t
+    INNER JOIN text_labels tl ON tl.id = t.id
+WHERE
+    t.done = TRUE
+    AND tl.message_id = :message_id
+"""
+        )
+        r = self.db.execute(qry, {"message_id": message_id})
+        return [TextLabels.from_orm(x) for x in r.all()]
 
     def _insert_tree_state(
         self,
