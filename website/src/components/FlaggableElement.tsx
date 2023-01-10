@@ -27,11 +27,26 @@ import poster from "src/lib/poster";
 import { colors } from "styles/Theme/colors";
 import useSWRMutation from "swr/mutation";
 
+interface textFlagLabels {
+  attributeName: string;
+  labelText: string;
+  additionalExplanation?: string;
+}
+
 export const FlaggableElement = (props) => {
   const [isEditing, setIsEditing] = useBoolean();
+  const flaggable_labels = props.flaggable_labels;
+  const TEXT_LABEL_FLAGS =
+    flaggable_labels?.valid_labels?.map((valid_label) => {
+      return {
+        attributeName: valid_label.name,
+        labelText: valid_label.display_text,
+        additionalExplanation: valid_label.help_text,
+      };
+    }) || [];
   const { trigger } = useSWRMutation("/api/set_label", poster, {
     onSuccess: () => {
-      setIsEditing.off;
+      setIsEditing.off();
     },
   });
 
@@ -55,14 +70,14 @@ export const FlaggableElement = (props) => {
   const handleCheckboxState = (isChecked, idx) => {
     setCheckboxValues(
       checkboxValues.map((val, i) => {
-        return i == idx ? isChecked : val;
+        return i === idx ? isChecked : val;
       })
     );
   };
   const handleSliderState = (newVal, idx) => {
     setSliderValues(
       sliderValues.map((val, i) => {
-        return i == idx ? newVal : val;
+        return i === idx ? newVal : val;
       })
     );
   };
@@ -181,48 +196,3 @@ export function FlagCheckbox(props: {
     </Flex>
   );
 }
-interface textFlagLabels {
-  attributeName: string;
-  labelText: string;
-  additionalExplanation?: string;
-}
-const TEXT_LABEL_FLAGS: textFlagLabels[] = [
-  // For the time being this list is configured on the FE.
-  // In the future it may be provided by the API.
-  // {
-  //   attributeName: "fails_task",
-  //   labelText: "Fails to follow the correct instruction / task",
-  //   additionalExplanation: "__TODO__",
-  // },
-  // {
-  //   attributeName: "not_customer_assistant_appropriate",
-  //   labelText: "Inappropriate for customer assistant",
-  //   additionalExplanation: "__TODO__",
-  // },
-  {
-    attributeName: "sexual_content",
-    labelText: "Contains sexual content",
-  },
-  {
-    attributeName: "violence",
-    labelText: "Contains violent content",
-  },
-  // {
-  //   attributeName: "encourages_violence",
-  //   labelText: "Encourages or fails to discourage violence/abuse/terrorism/self-harm",
-  // },
-  // {
-  //   attributeName: "denigrates_a_protected_class",
-  //   labelText: "Denigrates a protected class",
-  // },
-  // {
-  //   attributeName: "gives_harmful_advice",
-  //   labelText: "Fails to follow the correct instruction / task",
-  //   additionalExplanation:
-  //     "The advice given in the output is harmful or counter-productive. This may be in addition to, but is distinct from the question about encouraging violence/abuse/terrorism/self-harm.",
-  // },
-  // {
-  //   attributeName: "expresses_moral_judgement",
-  //   labelText: "Expresses moral judgement",
-  // },
-];

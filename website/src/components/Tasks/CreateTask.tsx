@@ -1,16 +1,15 @@
 import { useState } from "react";
-
 import { Messages } from "src/components/Messages";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
-import { TaskType } from "./TaskTypes";
+import { TaskInfo } from "src/components/Tasks/TaskTypes";
 
 export interface CreateTaskProps {
   // we need a task type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   tasks: any[];
-  taskType: TaskType;
+  taskType: TaskInfo;
   trigger: (update: { id: string; update_type: string; content: { text: string } }) => void;
   onSkipTask: (task: { id: string }, reason: string) => void;
   onNextTask: () => void;
@@ -18,7 +17,7 @@ export interface CreateTaskProps {
 }
 export const CreateTask = ({ tasks, taskType, trigger, onSkipTask, onNextTask, mainBgClasses }: CreateTaskProps) => {
   const task = tasks[0].task;
-
+  const valid_labels = tasks[0].valid_labels;
   const [inputText, setInputText] = useState("");
 
   const submitResponse = (task: { id: string }) => {
@@ -42,7 +41,9 @@ export const CreateTask = ({ tasks, taskType, trigger, onSkipTask, onNextTask, m
         <>
           <h5 className="text-lg font-semibold">{taskType.label}</h5>
           <p className="text-lg py-1">{taskType.overview}</p>
-          {task.conversation ? <Messages messages={task.conversation.messages} post_id={task.id} /> : null}
+          {task.conversation ? (
+            <Messages messages={task.conversation.messages} post_id={task.id} valid_labels={valid_labels} />
+          ) : null}
         </>
         <>
           <h5 className="text-lg font-semibold">{taskType.instruction}</h5>

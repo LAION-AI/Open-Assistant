@@ -1,46 +1,28 @@
-import { useState } from "react";
+import { Container } from "@chakra-ui/react";
+import Head from "next/head";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
-import { Message } from "src/components/Messages";
-import { MessageTable } from "src/components/Messages/MessageTable";
-import { TaskControls } from "src/components/Survey/TaskControls";
-import { LabelSliderGroup, LabelTask } from "src/components/Tasks/LabelTask";
-import {
-  LabelPrompterReplyTaskResponse,
-  useLabelPrompterReplyTask,
-} from "src/hooks/tasks/labeling/useLabelPrompterReply";
+import { Task } from "src/components/Tasks/Task";
+import { useLabelPrompterReplyTask } from "src/hooks/tasks/useLabelingTask";
 
 const LabelPrompterReply = () => {
-  const [sliderValues, setSliderValues] = useState<number[]>([]);
+  const { tasks, isLoading, trigger, reset } = useLabelPrompterReplyTask();
 
-  const { tasks, isLoading, submit, reset } = useLabelPrompterReplyTask();
-
-  if (isLoading || tasks.length === 0) {
+  if (isLoading) {
     return <LoadingScreen />;
   }
 
-  const task = tasks[0].task;
-  const messages: Message[] = [
-    ...task.conversation.messages,
-    { text: task.reply, is_assistant: false, message_id: task.message_id },
-  ];
+  if (tasks.length === 0) {
+    return <Container className="p-6 text-center text-gray-800">No tasks found...</Container>;
+  }
 
   return (
-    <LabelTask
-      title="Label Prompter Reply"
-      desc="Given the following discussion, provide labels for the final prompt"
-      messages={<MessageTable messages={messages} />}
-      inputs={<LabelSliderGroup labelIDs={task.valid_labels} onChange={setSliderValues} />}
-      controls={
-        <TaskControls
-          tasks={tasks}
-          onSkipTask={() => reset()}
-          onNextTask={reset}
-          onSubmitResponse={({ id, task }: LabelPrompterReplyTaskResponse) =>
-            submit(id, task.message_id, task.reply, task.valid_labels, sliderValues)
-          }
-        />
-      }
-    />
+    <>
+      <Head>
+        <title>Label Prompter Reply</title>
+        <meta name="description" content="Label Prompter Reply" />
+      </Head>
+      <Task tasks={tasks} trigger={trigger} mutate={reset} />
+    </>
   );
 };
 
