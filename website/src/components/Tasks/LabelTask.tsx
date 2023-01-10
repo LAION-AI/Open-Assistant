@@ -31,11 +31,12 @@ export const LabelTask = ({ tasks, taskType, trigger, onSkipTask, onNextTask, ma
 
   const submitResponse = (task: { id: string; reply: string; message_id: string }) => {
     console.assert(valid_labels.length === sliderValues.length);
-    const labels = Object.fromEntries(valid_labels.valid_labels.map((label, i) => [label, sliderValues[i]]));
+    const labels = Object.fromEntries(valid_labels.valid_labels.map((label, i) => [label.name, sliderValues[i]]));
     trigger({
       id: task.id,
       update_type: "text_labels",
-      content: { labels, text: task.reply, message_id: task.message_id },
+      // TODO: task isn't working, changed to tasks[0].task as a temporary workaround
+      content: { labels, text: tasks[0].task.reply, message_id: tasks[0].task.message_id },
     });
   };
 
