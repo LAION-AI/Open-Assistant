@@ -2,7 +2,6 @@ import { Stack, StackDivider } from "@chakra-ui/react";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 
 export function MessageTable({ messages, valid_labels }) {
-  console.log(messages);
   return (
     <Stack divider={<StackDivider />} spacing="4">
       {messages.map((item, idx) => (
