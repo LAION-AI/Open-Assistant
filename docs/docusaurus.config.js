@@ -62,7 +62,11 @@ const config = {
             position: "left",
             label: "Docs",
           },
-          //{ to: "/blog", label: "Blog", position: "left" },
+          {
+            href: "https://editor.swagger.io/?url=https://raw.githubusercontent.com/LAION-AI/Open-Assistant/main/docs/docs/api/openapi.json",
+            label: "API",
+            position: "left",
+          },
           {
             href: "https://github.com/LAION-AI/Open-Assistant",
             label: "GitHub",
