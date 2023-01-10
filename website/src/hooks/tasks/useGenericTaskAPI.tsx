@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ValidLabel } from "src/components/Messages";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import useSWRImmutable from "swr/immutable";
@@ -10,6 +11,7 @@ export interface TaskResponse<TaskType> {
   id: string;
   userId: string;
   task: TaskType;
+  valid_labels: ValidLabel[];
 }
 
 export const useGenericTaskAPI = <TaskType,>(taskApiEndpoint: string) => {
