@@ -11,10 +11,10 @@ class State(str, Enum):
 
     INITIAL_PROMPT_REVIEW = "initial_prompt_review"
     """In this state the message tree consists only of a single inital prompt root node.
-    Initial prompt labeling tasks will determine if the tree goes into `breeding_phase` or
+    Initial prompt labeling tasks will determine if the tree goes into `growing_phase` or
     `aborted_low_grade`."""
 
-    BREEDING_PHASE = "breeding_phase"
+    GROWING = "growing"
     """Assistant & prompter human demonstrations are collected. Concurrently labeling tasks
     are handed out to check if the quality of the replies surpasses the minimum acceptable
     quality.
@@ -22,7 +22,7 @@ class State(str, Enum):
     collected the tree will enter `ranking_phase`. If too many poor-quality labelling responses
     are received the tree can also enter the `aborted_low_grade` state."""
 
-    RANKING_PHASE = "ranking_phase"
+    RANKING = "ranking"
     """The tree has been successfully populated with the desired number of messages. Ranking
     tasks are now handed out for all nodes with more than one child."""
 
@@ -46,8 +46,8 @@ class State(str, Enum):
 
 VALID_STATES = (
     State.INITIAL_PROMPT_REVIEW,
-    State.BREEDING_PHASE,
-    State.RANKING_PHASE,
+    State.GROWING,
+    State.RANKING,
     State.READY_FOR_SCORING,
     State.READY_FOR_EXPORT,
     State.ABORTED_LOW_GRADE,

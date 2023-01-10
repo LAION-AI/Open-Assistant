@@ -33,7 +33,7 @@ class TreeManagerConfiguration(pydantic.BaseModel):
     """Total number of messages to gather per tree"""
 
     num_reviews_initial_prompt: int = 5
-    """Number of peer review checks to collect in INITIAL_PROMPT_REVIEW phase."""
+    """Number of peer review checks to collect in INITIAL_PROMPT_REVIEW state."""
 
     num_reviews_reply: int = 3
     """Number of peer review checks to collect per reply (other than initial_prompt)"""
@@ -152,7 +152,7 @@ class TreeManager:
         prompts_need_review = self.query_prompts_need_review()
         replies_need_review = self.query_replies_need_review()
         incomplete_rankings = self.query_incomplete_rankings()
-        active_tree_sizes = self.query_active_tree_sizes()
+        active_tree_sizes = self.query_extendible_trees()
 
         num_missing_replies = sum(x.remaining_messages for x in active_tree_sizes)
 
@@ -316,40 +316,34 @@ class TreeManager:
 
         return protocol_schema.TaskDone()
 
-    def query_prompts_need_review(self) -> list[UUID]:
-        """
-        Select id of initial prompts with less then required rankings in active message tree
-        (active == True in message_tree_state)
-        """
-
-        qry = text(
-            """
+    _sql_find_prompts_need_review = """
+-- find initial prompts that need more reviews
 SELECT m.id
 FROM message_tree_state mts
     LEFT JOIN message m ON mts.message_tree_id = m.id
 WHERE mts.state = :state
     AND NOT m.review_result
     AND NOT m.deleted
-    AND m.review_count < :num_required_reviews
-    AND m.parent_id is NULL;"""
-        )
+    AND m.review_count < :num_reviews_initial_prompt
+    AND m.parent_id is NULL
+"""
+
+    def query_prompts_need_review(self) -> list[UUID]:
+        """
+        Select id of initial prompts with less then required rankings in active message tree
+        (active == True in message_tree_state)
+        """
+
         r = self.db.execute(
-            qry,
+            text(self._sql_find_prompts_need_review),
             {
                 "state": message_tree_state.State.INITIAL_PROMPT_REVIEW,
-                "num_required_reviews": self.cfg.num_reviews_initial_prompt,
+                "num_reviews_initial_prompt": self.cfg.num_reviews_initial_prompt,
             },
         )
         return [x["id"] for x in r.all()]
 
-    def query_replies_need_review(self) -> list[UUID]:
-        """
-        Select ids of child messages (parent_id IS NOT NULL) with less then required rankings
-        in active message tree (active == True in message_tree_state)
-        """
-
-        qry = text(
-            """
+    _sql_find_replies_need_review = """
 SELECT m.id
 FROM message_tree_state mts
     LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
@@ -357,64 +351,91 @@ WHERE mts.state = :breedin_state
     AND NOT m.review_result
     AND NOT m.deleted
     AND m.review_count < :num_required_reviews
-    AND m.parent_id is NOT NULL;"""
-        )
+    AND m.parent_id is NOT NULL;
+"""
+
+    def query_replies_need_review(self) -> list[UUID]:
+        """
+        Select ids of child messages (parent_id IS NOT NULL) with less then required rankings
+        in active message tree (active == True in message_tree_state)
+        """
+
         r = self.db.execute(
-            qry,
+            text(self._sql_find_replies_need_review),
             {
-                "breedin_state": message_tree_state.State.BREEDING_PHASE,
+                "breedin_state": message_tree_state.State.GROWING,
                 "num_required_reviews": self.cfg.num_reviews_reply,
             },
         )
         return [x["id"] for x in r.all()]
 
-    def query_incomplete_rankings(self) -> list[IncompleteRankingsRow]:
-        """Query parents which have childern that need further rankings"""
-
-        qry = text(
-            """
+    _sql_find_incomplete_rankings = """
+-- find incomplete rankings
 SELECT m.parent_id, COUNT(m.id) children_count, MIN(m.ranking_count) child_min_ranking_count,
     COUNT(m.id) FILTER (WHERE m.ranking_count >= :num_required_rankings) as completed_rankings
 FROM message_tree_state mts
     LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
-WHERE mts.active
-    AND mts.state = :ranking_state
-    AND m.review_result
-    AND NOT m.deleted
-    AND m.parent_id IS NOT NULL
+WHERE mts.active                        -- only consider active trees
+    AND mts.state = :ranking_state      -- message tree must be in ranking state
+    AND m.review_result                 -- must be reviewed
+    AND NOT m.deleted                   -- not deleted
+    AND m.parent_id IS NOT NULL         -- ignore initial prompts
 GROUP BY m.parent_id
-HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings;"""
-        )
+HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
+"""
+
+    def query_incomplete_rankings(self) -> list[IncompleteRankingsRow]:
+        """Query parents which have childern that need further rankings"""
 
         r = self.db.execute(
-            qry,
+            text(self._sql_find_incomplete_rankings),
             {
                 "num_required_rankings": self.cfg.num_required_rankings,
-                "ranking_state": message_tree_state.State.RANKING_PHASE,
+                "ranking_state": message_tree_state.State.RANKING,
             },
         )
         return [IncompleteRankingsRow.from_orm(x) for x in r.all()]
 
-    def query_active_tree_sizes(self) -> list[ActiveTreeSizeRow]:
-        """Query size of active message trees in breeding phase."""
-
-        qry = text(
-            """
-SELECT m.message_tree_id, mts.goal_tree_size, COUNT(m.id) AS tree_size
+    _sql_find_extendible_parents = """
+-- find all extendible parent nodes
+SELECT m.id as parent_id, m.depth, m.message_tree_id, COUNT(c.id) active_children_count
 FROM message_tree_state mts
+    LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id	-- all elements of message tree
+    LEFT JOIN message c ON m.id = c.Id  -- child nodes
+WHERE mts.active                        -- only consider active trees
+    AND mts.state = :growing_state      -- message tree must be growing
+    AND NOT m.deleted                   -- ignore deleted messages as parents
+    AND m.depth < mts.max_depth         -- ignore leaf nodes as parents
+    AND m.review_result                 -- parent node must have positive review
+    AND NOT c.deleted                   -- don't count deleted children
+    AND (c.review_result OR c.review_count < :num_reviews_reply) -- don't count children with negative review but count elements under review
+GROUP BY m.id, m.depth, m.message_tree_id, mts.max_children_count
+HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
+"""
+    _sql_find_extendible_trees = f"""
+-- find extendible trees
+SELECT m.message_tree_id, mts.goal_tree_size, COUNT(m.id) AS tree_size
+FROM (
+        SELECT DISTINCT message_tree_id FROM ({_sql_find_extendible_parents}) extendible_parents
+    ) trees LEFT JOIN message_tree_state mts ON trees.message_tree_id = mts.message_tree_id
     LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
-WHERE mts.active
-    AND mts.state = :breedin_state
-    AND NOT m.deleted
-    AND (m.review_count < :num_required_reviews OR m.review_result OR m.parent_id IS NULL)
-GROUP BY m.message_tree_id, mts.goal_tree_size;"""
-        )
+WHERE NOT m.deleted
+    AND (
+        m.parent_id IS NOT NULL AND (m.review_result OR m.review_count < :num_reviews_reply) -- children
+        OR m.parent_id IS NULL AND m.review_result -- prompts (root nodes) must have positive review
+    )
+GROUP BY m.message_tree_id, mts.goal_tree_size
+HAVING COUNT(m.id) < mts.goal_tree_size
+"""
+
+    def query_extendible_trees(self) -> list[ActiveTreeSizeRow]:
+        """Query size of active message trees in growing state."""
 
         r = self.db.execute(
-            qry,
+            text(self._sql_find_extendible_trees),
             {
-                "breedin_state": message_tree_state.State.BREEDING_PHASE,
-                "num_required_reviews": self.cfg.num_reviews_reply,
+                "growing_state": message_tree_state.State.GROWING,
+                "num_reviews_reply": self.cfg.num_reviews_reply,
             },
         )
         return [ActiveTreeSizeRow.from_orm(x) for x in r.all()]
@@ -497,6 +518,6 @@ if __name__ == "__main__":
         print("query_incomplete_rankings", tm.query_incomplete_rankings())
         print("query_incomplete_reply_reviews", tm.query_replies_need_review())
         print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
-        print("query_active_tree_sizes", tm.query_active_tree_sizes())
+        print("query_extendible_trees", tm.query_extendible_trees())
 
         print("next_task:", tm.next_task())
