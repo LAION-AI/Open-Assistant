@@ -3,7 +3,10 @@ import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { MessageView } from "src/components/Messages";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { LabelSliderGroup, LabelTask } from "src/components/Tasks/LabelTask";
-import { LabelInitialPromptTaskResponse, useLabelInitialPromptTask } from "src/hooks/tasks/useLabelingTask";
+import {
+  LabelInitialPromptTaskResponse,
+  useLabelInitialPromptTask,
+} from "src/hooks/tasks/labeling/useLabelInitialPrompt";
 
 const LabelInitialPrompt = () => {
   const [sliderValues, setSliderValues] = useState<number[]>([]);

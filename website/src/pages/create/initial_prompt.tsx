@@ -3,7 +3,7 @@ import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
-import { useCreateInitialPrompt } from "src/hooks/tasks/useCreateReply";
+import { useCreateInitialPrompt } from "src/hooks/tasks/create/useCreateInitialPrompt";
 
 const InitialPrompt = () => {
   const { tasks, isLoading, reset, trigger } = useCreateInitialPrompt();

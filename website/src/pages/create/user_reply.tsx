@@ -3,7 +3,7 @@ import Head from "next/head";
 import { Container } from "src/components/Container";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
-import { useCreatePrompterReply } from "src/hooks/tasks/useCreateReply";
+import { useCreatePrompterReply } from "src/hooks/tasks/create/useCreateReply";
 
 const UserReply = () => {
   const { tasks, isLoading, reset, trigger } = useCreatePrompterReply();

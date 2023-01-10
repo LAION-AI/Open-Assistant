@@ -3,7 +3,7 @@ import Head from "next/head";
 import { Container } from "src/components/Container";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
-import { useRankInitialPromptsTask } from "src/hooks/tasks/useRankReplies";
+import { useRankInitialPromptsTask } from "src/hooks/tasks/evaluate/useRankInitialPrompts";
 
 const RankInitialPrompts = () => {
   const { tasks, isLoading, reset, trigger } = useRankInitialPromptsTask();

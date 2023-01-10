@@ -3,14 +3,13 @@ import { Messages } from "src/components/Messages";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
-import {} from "src/components/Tasks/TaskTypes";
-import { TaskType } from "./TaskTypes";
+import { TaskType } from "src/components/Tasks/TaskTypes";
 
 export interface CreateTaskProps {
   // we need a task type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   tasks: any[];
-  taskType: TaskInfo;
+  taskType: TaskType;
   trigger: (update: { id: string; update_type: string; content: { text: string } }) => void;
   onSkipTask: (task: { id: string }, reason: string) => void;
   onNextTask: () => void;

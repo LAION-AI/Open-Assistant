@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
+import { Message } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { LabelSliderGroup, LabelTask } from "src/components/Tasks/LabelTask";
-import { LabelAssistantReplyTaskResponse, useLabelAssistantReplyTask } from "src/hooks/tasks/useLabelingTask";
-import { Message } from "src/types/Conversation";
+import {
+  LabelAssistantReplyTaskResponse,
+  useLabelAssistantReplyTask,
+} from "src/hooks/tasks/labeling/useLabelAssistantReply";
 
 const LabelAssistantReply = () => {
   const [sliderValues, setSliderValues] = useState<number[]>([]);

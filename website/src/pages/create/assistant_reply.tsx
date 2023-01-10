@@ -3,7 +3,7 @@ import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
-import { useCreateAssistantReply } from "src/hooks/tasks/useCreateReply";
+import { useCreateAssistantReply } from "src/hooks/tasks/create/useCreateReply";
 
 const AssistantReply = () => {
   const { tasks, isLoading, reset, trigger } = useCreateAssistantReply();

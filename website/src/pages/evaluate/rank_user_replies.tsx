@@ -3,7 +3,7 @@ import Head from "next/head";
 import { Container } from "src/components/Container";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
-import { useRankPrompterRepliesTask } from "src/hooks/tasks/useRankReplies";
+import { useRankPrompterRepliesTask } from "src/hooks/tasks/evaluate/useRankReplies";
 
 const RankUserReplies = () => {
   const { tasks, isLoading, reset, trigger } = useRankPrompterRepliesTask();

@@ -1,9 +1,14 @@
 import { Grid } from "@chakra-ui/react";
 import { forwardRef, useColorMode } from "@chakra-ui/react";
 import { useMemo } from "react";
-import { Message } from "src/types/Conversation";
 
 import { FlaggableElement } from "./FlaggableElement";
+
+export interface Message {
+  text: string;
+  is_assistant: boolean;
+  message_id: string;
+}
 
 export interface ValidLabel {
   name: string;

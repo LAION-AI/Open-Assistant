@@ -4,7 +4,7 @@ export enum TaskCategory {
   Label = "Label",
 }
 
-export interface TaskInfo {
+export interface TaskType {
   label: string;
   desc: string;
   category: TaskCategory;
@@ -14,7 +14,7 @@ export interface TaskInfo {
   instruction?: string;
 }
 
-export const TaskTypes: TaskInfo[] = [
+export const TaskTypes: TaskType[] = [
   // create
   {
     label: "Create Initial Prompts",
