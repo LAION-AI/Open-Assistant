@@ -1,25 +1,31 @@
-import torch
-import pandas as pd
+"""Script for a variety of data augmentation techniques for generating Question answer pairs.
+Depending on the class used it takes in the input files and generates summaries from essays (which then will result in a "write a story about [summary]"-> essay pair),#
+buggs code (in order to have bugged code + "please fix" -> code), ...
+example usage:
+  data_augment.py --dataset essays.tsv --augmenter hierarchicalsummarizer --output out.json
+args:
+  -- dataset: TSV file referencing txt files with essays/code
+  -- augmenter: the augmenter used: one of 'essayinstruction', 'essayrevision', 'stackexchange', 'hierarchicalsummarizer', 'entityrecognizedsummarizer', 'codebugger"
+  -- output: where to save the output
+"""
 
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
-import nltk
-from nltk.corpus import wordnet
-import spacy
-from collections import Counter
-#from syntax.syntax_injector import SyntaxBug
-#from logic.logic_injector import LogicBug
 
+import argparse
+import json
 import random
 import string
-from bs4 import BeautifulSoup as bs
+from collections import Counter
 
+import nltk
+import pandas as pd
 import requests
-import json
-import html
-import os
-import subprocess
-import argparse
-
+import spacy
+import torch
+from bs4 import BeautifulSoup as bs
+from logic.logic_injector import LogicBug
+from nltk.corpus import wordnet
+from syntax.syntax_injector import SyntaxBug
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
 
 
 class DataArgumenter:
@@ -65,9 +71,7 @@ class EssayInstructor(DataArgumenter):
                 num_return_sequences=1,
             )
             preds.append(
-                self.tokenizer.decode(
-                    generated_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=True
-                )
+                self.tokenizer.decode(generated_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
             )
 
         prompts = (
@@ -121,7 +125,7 @@ class EssayReviser(DataArgumenter):
         # you can change the number 60 to change how much corrupted this essay will be
         for _ in range(len(essay) // 60):
             rand = random.randint(0, len(essay))
-            corrupted_essay = essay[:rand] + random.choice(string.ascii_letters) + essay[rand+1:]
+            corrupted_essay = essay[:rand] + random.choice(string.ascii_letters) + essay[rand + 1 :]
 
         instructions.append("Fix typing errors in this essay" + corrupted_essay)
 
@@ -130,8 +134,14 @@ class EssayReviser(DataArgumenter):
 
 class StackExchangeBuilder(DataArgumenter):
     def __init__(self, base_url=None, filter_opts=None):
-        self.base_url = base_url if base_url is not None else "https://ia600107.us.archive.org/view_archive.php?archive=/27/items/stackexchange/{0}&file=Posts.xml"
-        self.filter_opts = filter_opts if filter_opts is not None else ["accepted", "score", "convert_html", "clean_tags"]
+        self.base_url = (
+            base_url
+            if base_url is not None
+            else "https://ia600107.us.archive.org/view_archive.php?archive=/27/items/stackexchange/{0}&file=Posts.xml"
+        )
+        self.filter_opts = (
+            filter_opts if filter_opts is not None else ["accepted", "score", "convert_html", "clean_tags"]
+        )
 
     def get_all_filenames(self):
         response = requests.get("https://archive.org/download/stackexchange")
@@ -209,12 +219,13 @@ class StackExchangeBuilder(DataArgumenter):
                 | ((df["Score"] >= answer_score_threshold) & (df.PostTypeId == 2))
             ]
 
-        
         if "clean_tags" in self.filter_opts:
-            """    
+            """
             Convert Tags into Comma separated
             Converts Tag slugs into commas separated tags"""
-            df["TagsClean"] = df["Tags"].str.replace("-", " ").str.replace("><", ", ").str.replace("<", "").str.replace(">", "")
+            df["TagsClean"] = (
+                df["Tags"].str.replace("-", " ").str.replace("><", ", ").str.replace("<", "").str.replace(">", "")
+            )
 
         if "convert_html" in self.filter_opts:
             """
@@ -225,7 +236,6 @@ class StackExchangeBuilder(DataArgumenter):
             column = "Body"
             df.dropna(subset=[column], inplace=True)
             df[f"{column}Clean"] = df[column].apply(lambda row: bs(row, "html.parser").text)
-            
 
         return df
 
@@ -269,7 +279,7 @@ class HierachicalSummarizer(DataArgumenter):
             device=0 if torch.cuda.is_available() else -1,
         )
 
-        self.params =  {
+        self.params = {
             "max_length": 1024,
             "min_length": 8,
             "no_repeat_ngram_size": 3,
@@ -278,14 +288,13 @@ class HierachicalSummarizer(DataArgumenter):
             "length_penalty": 0.3,
             "encoder_no_repeat_ngram_size": 3,
             "num_beams": 4,
-        } # parameters for text generation out of model
+        }  # parameters for text generation out of model
 
         self.nlp = spacy.load("en_core_web_sm")
 
     def cleanup_summary(self, out):
         (
-            out
-            .replace("The novel begins with the description of", "")
+            out.replace("The novel begins with the description of", "")
             .replace("the description of", "")
             .replace("The novel begins", "")
             .replace("This chapter introduces us to", "")
@@ -304,20 +313,18 @@ class HierachicalSummarizer(DataArgumenter):
         essay_parts = essay.split("##")
         for section_text in essay_parts:
             result = self.summarizer(section_text, **self.params)
-            out = self.cleanup_summary(result[0]['summary_text'])
+            out = self.cleanup_summary(result[0]["summary_text"])
             level_2_summary.append(out)
             result = self.summarizer(out, **self.params)
-            out = self.cleanup_summary(result[0]['summary_text'])
+            out = self.cleanup_summary(result[0]["summary_text"])
             new_summary += "\n" + out
             level_1_summary.append(out)
 
             entity = recognize_entities(section_text, self.nlp, n=5, person="ignore")
             entities.append(entity)
 
-            
-
         result = self.summarizer(new_summary, **self.params)
-        final_summary = self.cleanup_summary(result[0]['summary_text'])
+        final_summary = self.cleanup_summary(result[0]["summary_text"])
 
         first_instruction = "Write a story about the following:\n" + final_summary
         first_answer = "\n".join(level_1_summary)
@@ -332,14 +339,13 @@ class HierachicalSummarizer(DataArgumenter):
             instructions.append(f"Further expand on {entity}.")
             answers.append(answer)
 
-
         return instructions, answers
 
 
 class EntityRecognizedSummarizer(DataArgumenter):
     def __init__(self):
-        self.nlp = spacy.load("en_core_web_sm") # run !python -m spacy download en_core_web_sm in order to download
-    
+        self.nlp = spacy.load("en_core_web_sm")  # run !python -m spacy download en_core_web_sm in order to download
+
     def parse_single(self, essay):
         ents = recognize_entities(essay, self.nlp)
         characters = ents.most_common(4, person=True)
@@ -365,29 +371,39 @@ class CodeBugger(DataArgumenter):
         # Now, we'll use pip to install the package from the local repository.
         subprocess.run(["python3", "-m", "pip", "install", "--editable", cwd + "/OpenBugger"])
     """
+
     def __init__(self):
         self.syntax_bug = SyntaxBug()
         self.logic_bug = LogicBug()
 
     def parse_single(self, code):
         code = self.syntax_bug(code, "medium", num_errors=2)
-        code = self.logic_bug(code, "medium", num_errors = 2)
+        code = self.logic_bug(code, "medium", num_errors=2)
 
         question = "Can you fix the following code?\n" + code
 
-        answer = "The following code is correct:\n" + code + "\nI hope I could help you fixing your code. In case you need more help, feel free to ask me again."
+        answer = (
+            "The following code is correct:\n"
+            + code
+            + "\nI hope I could help you fixing your code. In case you need more help, feel free to ask me again."
+        )
 
         return [question], [answer]
+
 
 def recognize_entities(text, model, n=4, person="ignore"):
     """Given a text and a model for entity recognition, return the most occuring entites in the text as a string"""
     doc = model(text)
     if person == "ignore":
-        ents = Counter([ent.text.strip() for ent in  list(doc.ents) if len(ent.text.strip()) >= 5])
+        ents = Counter([ent.text.strip() for ent in list(doc.ents) if len(ent.text.strip()) >= 5])
     elif person:
-        ents = Counter([ent.text.strip() for ent in  list(doc.ents) if ent.label_ == "PERSON" and len(ent.text.strip()) >= 5])
+        ents = Counter(
+            [ent.text.strip() for ent in list(doc.ents) if ent.label_ == "PERSON" and len(ent.text.strip()) >= 5]
+        )
     else:
-        ents = Counter([ent.text.strip() for ent in  list(doc.ents) if  ent.label_ != "PERSON" and len(ent.text.strip()) >= 5])
+        ents = Counter(
+            [ent.text.strip() for ent in list(doc.ents) if ent.label_ != "PERSON" and len(ent.text.strip()) >= 5]
+        )
     ents = ents.most_common(n)
     ents = ", ".join([a[0] for a in ents])
 
@@ -400,7 +416,7 @@ def parse_arguments():
     args.add_argument("--augmenter", type=str, required=True)
     args.add_argument("--output", type=str, required=True)
     args = args.parse_args()
-    
+
     assert args.dataset.endswith(".tsv"), "Dataset file must be a tsv file, containing a list of files to be augmented"
     assert args.output.endswith(".json"), "Output file must be a json file"
 
@@ -421,10 +437,10 @@ def read_data(args):
 def get_augmenter(args):
     if args.augmenter == "essayinstruction":
         augmenter = EssayInstructor()
-    
+
     elif args.augmenter == "essayrevision":
         augmenter = EssayReviser()
-    
+
     elif args.augmenter == "stackexchange":
         augmenter = StackExchangeBuilder()
 
@@ -433,12 +449,14 @@ def get_augmenter(args):
 
     elif args.augmenter == "entityrecognizedsummarizer":
         augmenter = EntityRecognizedSummarizer()
-    
+
     elif args.augmenter == "codebugger":
         augmenter = CodeBugger()
 
     else:
-        raise ValueError("Augmenter must be one of 'essayinstruction', 'essayrevision', 'stackexchange', 'hierarchicalsummarizer', 'entityrecognizedsummarizer', 'codebugger")
+        raise ValueError(
+            "Augmenter must be one of 'essayinstruction', 'essayrevision', 'stackexchange', 'hierarchicalsummarizer', 'entityrecognizedsummarizer', 'codebugger"
+        )
 
     return augmenter
 
@@ -457,8 +475,3 @@ def main(args):
 if __name__ == "__main__":
     args = parse_arguments()
     main(args)
-
-        
-
-
-
