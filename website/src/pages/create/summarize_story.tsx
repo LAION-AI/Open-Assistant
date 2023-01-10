@@ -36,10 +36,10 @@ const SummarizeStory = () => {
 
   // Trigger a mutation that updates the current task.  We should probably
   // signal somewhere that this interaction is being processed.
-  const submitResponse = (task: { id: string }) => {
+  const submitResponse = () => {
     const text = inputText.trim();
     trigger({
-      id: task.id,
+      id: tasks[0].task.id,
       update_type: "text_reply_to_message",
       content: {
         text,
@@ -88,9 +88,10 @@ const SummarizeStory = () => {
         </TwoColumnsWithCards>
 
         <TaskControls
-          tasks={tasks}
-          onSubmitResponse={submitResponse}
-          onSkipTask={fetchNextTask}
+          task={tasks[0].task}
+          taskStatus={"NOT_SUBMITTABLE"}
+          onSubmit={submitResponse}
+          onSkip={fetchNextTask}
           onNextTask={fetchNextTask}
         />
       </main>
