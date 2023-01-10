@@ -63,7 +63,10 @@ export const CreateTask = ({ tasks, taskType, trigger, onSkipTask, onNextTask, m
           setInputText("");
           onSkipTask(task, reason);
         }}
-        onNextTask={onNextTask}
+        onNextTask={() => {
+          onNextTask();
+          setInputText("");
+        }}
       />
     </div>
   );
