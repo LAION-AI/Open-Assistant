@@ -21,7 +21,7 @@ const RankInitialPrompts = () => {
         <title>Rank Initial Prompts</title>
         <meta name="description" content="Rank initial prompts." />
       </Head>
-      <Task tasks={tasks} trigger={trigger} mutate={reset} />
+      <Task key={tasks[0].task.id} task={tasks[0].task} trigger={trigger} mutate={reset} />
     </>
   );
 };
