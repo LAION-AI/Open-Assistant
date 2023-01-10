@@ -30,7 +30,34 @@ export class OasstApiClient {
       body: JSON.stringify(body),
     });
 
-    if (resp.status == 204) {
+    if (resp.status === 204) {
+      return null;
+    }
+
+    if (resp.status >= 300) {
+      const errorText = await resp.text();
+      let error: any;
+      try {
+        error = JSON.parse(errorText);
+      } catch (e) {
+        throw new OasstError(errorText, 0, resp.status);
+      }
+      throw new OasstError(error.message ?? error, error.error_code, resp.status);
+    }
+
+    return await resp.json();
+  }
+
+  private async get(path: string): Promise<any> {
+    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
+      method: "GET",
+      headers: {
+        "X-API-Key": this.oasstApiKey,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (resp.status === 204) {
       return null;
     }
 
@@ -95,6 +122,12 @@ export class OasstApiClient {
       user_message_id: userMessageId,
       ...content,
     });
+  }
+
+  //Fetch valid labels. This is called every task. though the call may be redundant
+  //keeping this for future where the valid labels may change per task
+  async fetch_valid_text(): Promise<void> {
+    return this.get(`/api/v1/text_labels/valid_labels`);
   }
 }
 
