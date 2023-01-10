@@ -1,4 +1,5 @@
-import { Grid, forwardRef, useColorMode } from "@chakra-ui/react";
+import { Grid } from "@chakra-ui/react";
+import { forwardRef, useColorMode } from "@chakra-ui/react";
 import { useMemo } from "react";
 import { Message } from "src/types/Conversation";
 
