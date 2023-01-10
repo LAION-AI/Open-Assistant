@@ -1,6 +1,6 @@
 import { Grid } from "@chakra-ui/react";
-import { useColorMode } from "@chakra-ui/react";
-import { forwardRef, useMemo } from "react";
+import { forwardRef, useColorMode } from "@chakra-ui/react";
+import { useMemo } from "react";
 
 import { FlaggableElement } from "./FlaggableElement";
 
@@ -43,7 +43,7 @@ export const Messages = ({
   return <Grid gap={2}>{items}</Grid>;
 };
 
-export const MessageView = forwardRef(({ is_assistant, text }: Message, ref) => {
+export const MessageView = forwardRef<Message, "div">(({ is_assistant, text }: Message, ref) => {
   const { colorMode } = useColorMode();
 
   const bgColor = useMemo(() => {
