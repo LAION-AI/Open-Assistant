@@ -7,3 +7,4 @@ PyYAML==6.0
 scikit_learn==1.2.0
 torch==1.13.1
 transformers==4.25.1
+bitsandbytes==0.36.0.post2

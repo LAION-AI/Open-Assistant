@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import torch
 from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
+from transformers.training_args import OptimizerNames
+
 from utils import get_dataset, get_loss, get_model, get_tokenizer, read_yamls
 
 os.environ["WANDB_PROJECT"] = "supervised-finetuning"
@@ -130,12 +132,15 @@ if __name__ == "__main__":
 
     train, evals, collate_fn = get_dataset(training_conf, tokenizer)
 
+    optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else None
+
     args = TrainingArguments(
         output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
         num_train_epochs=training_conf.num_train_epochs,
         warmup_steps=training_conf.warmup_steps,
         learning_rate=float(training_conf.learning_rate),
         deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
+        optim=optimizer,
         fp16=True,
         local_rank=training_conf.local_rank,
         gradient_checkpointing=training_conf.gradient_checkpointing,
