@@ -30,10 +30,10 @@ class TreeManagerConfiguration(pydantic.BaseModel):
     max_children_count: int = 5
     """Maximum number of reply messages per tree node."""
 
-    goal_tree_size: int = 30
+    goal_tree_size: int = 15
     """Total number of messages to gather per tree"""
 
-    num_reviews_initial_prompt: int = 5
+    num_reviews_initial_prompt: int = 3
     """Number of peer review checks to collect in INITIAL_PROMPT_REVIEW state."""
 
     num_reviews_reply: int = 3
@@ -45,7 +45,7 @@ class TreeManagerConfiguration(pydantic.BaseModel):
     acceptance_threshold_reply: float = 0.6
     """Threshold for accepting a reply"""
 
-    num_required_rankings: int = 5
+    num_required_rankings: int = 3
     """Number of rankings in which the message participated."""
 
     mandatory_labels_initial_prompt: Optional[list[protocol_schema.TextLabel]] = [

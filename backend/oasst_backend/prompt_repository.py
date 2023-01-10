@@ -244,10 +244,13 @@ class PromptRepository:
                     )
 
                 # store reaction to message
-                reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
+                ranked_message_ids = [task_payload.prompt_messages[i].message_id for i in ranking.ranking]
+                reaction_payload = db_payload.RankingReactionPayload(
+                    ranking=ranking.ranking, ranked_message_ids=ranked_message_ids
+                )
                 reaction = self.insert_reaction(task.id, reaction_payload)
-                # TODO: resolve message_id
-                self.journal.log_ranking(task, message_id=None, ranking=ranking.ranking)
+                last_message = task_payload.conversation.messages[-1]
+                self.journal.log_ranking(task, message_id=last_message.message_id, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for task {task.id}.")
 
@@ -262,7 +265,10 @@ class PromptRepository:
                     )
 
                 # store reaction to message
-                reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
+                ranked_message_ids = [task_payload.prompt_messages[i].message_id for i in ranking.ranking]
+                reaction_payload = db_payload.RankingReactionPayload(
+                    ranking=ranking.ranking, ranked_message_ids=ranked_message_ids
+                )
                 reaction = self.insert_reaction(task.id, reaction_payload)
                 # TODO: resolve message_id
                 self.journal.log_ranking(task, message_id=None, ranking=ranking.ranking)

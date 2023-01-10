@@ -64,6 +64,7 @@ class RatingReactionPayload(ReactionPayload):
 class RankingReactionPayload(ReactionPayload):
     type: Literal["message_ranking"] = "message_ranking"
     ranking: list[int]
+    ranked_message_ids: list[UUID]
 
 
 @payload_type

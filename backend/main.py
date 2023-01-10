@@ -14,6 +14,7 @@ from oasst_backend.api.deps import get_dummy_api_client
 from oasst_backend.api.v1.api import api_router
 from oasst_backend.config import settings
 from oasst_backend.database import engine
+from oasst_backend.models import message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
 from oasst_backend.tree_manager import TreeManager, TreeManagerConfiguration
 from oasst_shared.exceptions import OasstError, OasstErrorCode
@@ -117,6 +118,7 @@ if settings.DEBUG_USE_SEED_DATA:
                 pr = PromptRepository(
                     db=db, api_client=api_client, client_user=dummy_user, user_repository=ur, task_repository=tr
                 )
+                tm = TreeManager(db, pr, TreeManagerConfiguration())
 
                 with open(settings.DEBUG_USE_SEED_DATA_PATH) as f:
                     dummy_messages_raw = json.load(f)
@@ -159,6 +161,9 @@ if settings.DEBUG_USE_SEED_DATA:
                         message = pr.store_text_reply(
                             msg.text, msg.task_message_id, msg.user_message_id, review_count=5, review_result=True
                         )
+                        if message.parent_id is None:
+                            tm._insert_default_state(root_message_id=message.id, state=message_tree_state.State.GROWING)
+                            db.commit()
 
                         logger.info(
                             f"Inserted: message_id: {message.id}, payload: {message.payload.payload}, parent_message_id: {message.parent_id}"
