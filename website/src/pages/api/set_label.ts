@@ -1,18 +1,10 @@
-import { getToken } from "next-auth/jwt";
+import { withoutRole } from "src/lib/auth";
 
 /**
  * Sets the Label in the Backend.
  *
  */
-const handler = async (req, res) => {
-  const token = await getToken({ req });
-
-  // Return nothing if the user isn't registered.
-  if (!token) {
-    res.status(401).end();
-    return;
-  }
-
+const handler = withoutRole("banned", async (req, res, token) => {
   // Parse out the local message_id, task ID and the interaction contents.
   const { message_id, label_map, text } = await JSON.parse(req.body);
 
@@ -35,6 +27,6 @@ const handler = async (req, res) => {
     }),
   });
   res.status(interactionRes.status).end();
-};
+});
 
 export default handler;
