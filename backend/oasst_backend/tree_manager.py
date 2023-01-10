@@ -362,20 +362,29 @@ class TreeManager:
     def fetch_tree_state(self, message_tree_id: UUID) -> MessageTreeState:
         return self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one()
 
-    def enter_low_grade_state(self, message_tree_id: UUID) -> None:
-        logger.debug("enter_low_grade_state({message_tree_id=})")
-        mts = self.fetch_tree_state(message_tree_id)
-        if not mts.active:
-            return
+    def _enter_state(self, mts: MessageTreeState, state: message_tree_state.State):
+        assert mts and mts.active
 
-        mts.active = False
-        mts.state = message_tree_state.State.ABORTED_LOW_GRADE.value
+        is_terminal = state in message_tree_state.TERMINAL_STATES
+
+        if is_terminal:
+            mts.active = False
+        mts.state = state.value
         self.db.add(mts)
         self.db.commit()
-        logger.info(f"Tree entered final '{mts.state}' state ({message_tree_id=})")
+
+        if is_terminal:
+            logger.info(f"Tree entered terminal '{mts.state}' state ({mts.message_tree_id=})")
+        else:
+            logger.info(f"Tree entered '{mts.state}' state ({mts.message_tree_id=})")
+
+    def enter_low_grade_state(self, message_tree_id: UUID) -> None:
+        logger.debug(f"enter_low_grade_state({message_tree_id=})")
+        mts = self.fetch_tree_state(message_tree_id)
+        self._enter_state(mts, message_tree_state.State.ABORTED_LOW_GRADE)
 
     def check_condition_for_growing_state(self, message_tree_id: UUID) -> bool:
-        logger.debug("check_condition_for_growing_state({message_tree_id=})")
+        logger.debug(f"check_condition_for_growing_state({message_tree_id=})")
 
         mts = self.fetch_tree_state(message_tree_id)
         if not mts.active or mts.state != message_tree_state.State.INITIAL_PROMPT_REVIEW:
@@ -388,14 +397,11 @@ class TreeManager:
             logger.debug(f"False {initial_prompt.review_result=}")
             return False
 
-        mts.state = message_tree_state.State.GROWING.value
-        self.db.add(mts)
-        self.db.commit()
-        logger.info(f"Tree entered '{mts.state}' state ({message_tree_id=})")
+        self._enter_state(mts, message_tree_state.State.GROWING)
         return True
 
     def check_condition_for_ranking_state(self, message_tree_id: UUID) -> bool:
-        logger.debug("check_condition_for_scoring_state({message_tree_id=})")
+        logger.debug(f"check_condition_for_scoring_state({message_tree_id=})")
 
         mts = self.fetch_tree_state(message_tree_id)
         if not mts.active or mts.state != message_tree_state.State.GROWING:
@@ -403,11 +409,16 @@ class TreeManager:
             return False
 
         # check if desired tree size has been reached and all nodes have been reviewed
+        tree_size = self.query_tree_size(message_tree_id)
+        if tree_size.remaining_messages > 0:
+            logger.debug(f"False {tree_size.remaining_messages=}")
+            return False
 
-        return False
+        self._enter_state(mts, message_tree_state.State.RANKING)
+        return True
 
     def check_condition_for_scoring_state(self, message_tree_id: UUID) -> bool:
-        logger.debug("check_condition_for_scoring_state({message_tree_id=})")
+        logger.debug(f"check_condition_for_scoring_state({message_tree_id=})")
         mts: MessageTreeState
         mts = self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one()
         if not mts.active or mts.state != message_tree_state.State.RANKING:
@@ -556,6 +567,22 @@ HAVING COUNT(m.id) < mts.goal_tree_size
             },
         )
         return [ActiveTreeSizeRow.from_orm(x) for x in r.all()]
+
+    _sql_get_tree_size = """
+SELECT mts.message_tree_id, mts.goal_tree_size, COUNT(m.id) AS tree_size
+FROM message_tree_state mts
+    LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
+WHERE mts.active
+    AND NOT m.deleted
+    AND m.review_result
+    AND mts.message_tree_id = :message_tree_id
+GROUP BY mts.message_tree_id, mts.goal_tree_size
+"""
+
+    def query_tree_size(self, message_tree_id: UUID) -> ActiveTreeSizeRow:
+        """Returns the number of reviewed not deleted messages in the message tree."""
+        r = self.db.execute(text(self._sql_get_tree_size), {"message_tree_id": message_tree_id})
+        return ActiveTreeSizeRow.from_orm(r.one())
 
     def query_misssing_tree_states(self) -> list[UUID]:
         """Find all initial prompt messages that have no associated message tree state"""
