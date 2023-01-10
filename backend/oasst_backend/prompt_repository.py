@@ -9,7 +9,16 @@ import oasst_backend.models.db_payload as db_payload
 import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Message, MessageReaction, Task, TextLabels, User
+from oasst_backend.models import (
+    ApiClient,
+    Message,
+    MessageReaction,
+    MessageTreeState,
+    Task,
+    TextLabels,
+    User,
+    message_tree_state,
+)
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
@@ -120,6 +129,9 @@ class PromptRepository:
 
         return task
 
+    def fetch_tree_state(self, message_tree_id: UUID) -> MessageTreeState:
+        return self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one()
+
     def store_text_reply(
         self,
         text: str,
@@ -140,6 +152,16 @@ class PromptRepository:
 
         if task.parent_message_id:
             parent_message = self.fetch_message(task.parent_message_id)
+
+            # check tree state
+            ts = self.fetch_tree_state(parent_message.message_tree_id)
+            if not ts.active or ts.state != message_tree_state.State.GROWING:
+                raise OasstError(
+                    "Message insertion failed. Message tree is no longer in 'growing' state.",
+                    OasstErrorCode.TREE_NOT_IN_GROWING_STATE,
+                )
+
+            parent_message.message_tree_id
             parent_message.children_count += 1
             self.db.add(parent_message)
 

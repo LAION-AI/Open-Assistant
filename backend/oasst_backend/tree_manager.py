@@ -359,9 +359,6 @@ class TreeManager:
 
         return protocol_schema.TaskDone()
 
-    def fetch_tree_state(self, message_tree_id: UUID) -> MessageTreeState:
-        return self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one()
-
     def _enter_state(self, mts: MessageTreeState, state: message_tree_state.State):
         assert mts and mts.active
 
@@ -380,13 +377,13 @@ class TreeManager:
 
     def enter_low_grade_state(self, message_tree_id: UUID) -> None:
         logger.debug(f"enter_low_grade_state({message_tree_id=})")
-        mts = self.fetch_tree_state(message_tree_id)
+        mts = self.pr.fetch_tree_state(message_tree_id)
         self._enter_state(mts, message_tree_state.State.ABORTED_LOW_GRADE)
 
     def check_condition_for_growing_state(self, message_tree_id: UUID) -> bool:
         logger.debug(f"check_condition_for_growing_state({message_tree_id=})")
 
-        mts = self.fetch_tree_state(message_tree_id)
+        mts = self.pr.fetch_tree_state(message_tree_id)
         if not mts.active or mts.state != message_tree_state.State.INITIAL_PROMPT_REVIEW:
             logger.debug(f"False {mts.active=}, {mts.state=}")
             return False
@@ -403,7 +400,7 @@ class TreeManager:
     def check_condition_for_ranking_state(self, message_tree_id: UUID) -> bool:
         logger.debug(f"check_condition_for_scoring_state({message_tree_id=})")
 
-        mts = self.fetch_tree_state(message_tree_id)
+        mts = self.pr.fetch_tree_state(message_tree_id)
         if not mts.active or mts.state != message_tree_state.State.GROWING:
             logger.debug(f"False {mts.active=}, {mts.state=}")
             return False
