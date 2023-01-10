@@ -30,6 +30,29 @@ So from now on, in your next commits it will run the `pre-commit` on the files
 that have been staged. If there has been any error, you will need to solve that,
 and then stage+commit again the changes.
 
+## Docker Cannot Start Container: Permission Denied
+
+Instead of running docker with the root command always, you could create a
+`docker` group with granted permissions (root):
+
+```bash
+    # Create new linux user
+    sudo groupadd docker
+
+    # Add the actual user to the group
+    sudo usermod -aG docker $USER
+
+    # Log in the group
+    newgrp docker
+```
+
+After that, you should be able to run docker: `docker run .`. In the case you
+still are not able, can try to reboot terminal:
+
+```bash
+    reboot
+```
+
 ### Docker Cannot Stop Container: Permission Denied
 
 If you try to shut down the services, and you are getting permission denied
