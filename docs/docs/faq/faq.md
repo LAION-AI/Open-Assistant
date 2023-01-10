@@ -42,7 +42,7 @@ Instead of running docker with the root command always, you could create a
     # Add the actual user to the group
     sudo usermod -aG docker $USER
 
-    # Log in the group
+    # Log in the group (apply the group changes to actual terminal session)
     newgrp docker
 ```
 
@@ -53,12 +53,15 @@ still are not able, can try to reboot terminal:
     reboot
 ```
 
-### Docker Cannot Stop Container: Permission Denied
+### Docker Cannot Stop Container
 
-If you try to shut down the services, and you are getting permission denied
-(using root user), you can try the following:
+If you try to shut down the services (`docker-compose down`), and you are
+getting permission denied (using root user), you can try the following:
 
 ```bash
-    #
-    sudo service docker restart
+    # Restart docker daemon
+    sudo systemctl restart docker.socket docker.service
+
+    # And remove the container
+    docker rm -f <container id>
 ```
