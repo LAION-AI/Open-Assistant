@@ -1,6 +1,6 @@
 import { Grid } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
-import { useMemo } from "react";
+import { forwardRef, useMemo } from "react";
 
 import { FlaggableElement } from "./FlaggableElement";
 
@@ -43,7 +43,7 @@ export const Messages = ({
   return <Grid gap={2}>{items}</Grid>;
 };
 
-export const MessageView = ({ is_assistant, text, message_id }: Message) => {
+export const MessageView = forwardRef(({ is_assistant, text, message_id }: Message, ref) => {
   const { colorMode } = useColorMode();
 
   const bgColor = useMemo(() => {
@@ -55,4 +55,6 @@ export const MessageView = ({ is_assistant, text, message_id }: Message) => {
   }, [colorMode, is_assistant]);
 
   return <div className={`${bgColor} p-4 rounded-md text-white whitespace-pre-wrap`}>{text}</div>;
-};
+});
+
+MessageView.displayName = "MessageView";

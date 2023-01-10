@@ -45,7 +45,7 @@ export const FlaggableElement = (props) => {
   });
   const { trigger } = useSWRMutation("/api/set_label", poster, {
     onSuccess: () => {
-      setIsEditing.off;
+      setIsEditing.off();
     },
   });
 
