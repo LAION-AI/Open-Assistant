@@ -10,11 +10,11 @@ from oasst_shared.exceptions import OasstError, OasstErrorCode
 
 
 class HfUrl(str, Enum):
-    HUGGINGFACE_TOXIC_ROBERTA = "https://api-inference.huggingface.co/models/unitary/multilingual-toxic-xlm-roberta"
+    HUGGINGFACE_TOXIC_ROBERTA = "https://api-inference.huggingface.co/models/unitary"
     HUGGINGFACE_FEATURE_EXTRACTION = "https://api-inference.huggingface.co/pipeline/feature-extraction"
 
 
-class HfModel(str, Enum):
+class HfClassificationModel(str, Enum):
     TOXIC_ROBERTA = "multilingual-toxic-xlm-roberta"
 
 
@@ -77,7 +77,7 @@ async def save_toxicity(
     new_message: Message,
 ):
     try:
-        model_name = HfModel.TOXIC_ROBERTA.value
+        model_name = HfClassificationModel.TOXIC_ROBERTA.value
         hugging_face_api = HuggingFaceAPI(f"{HfUrl.HUGGINGFACE_TOXIC_ROBERTA.value}/{model_name}")
 
         toxicity = await hugging_face_api.post(interaction.text)
