@@ -332,17 +332,16 @@ class TreeManager:
                         f"Message {msg.id=}, {acceptance_score=}, {len(reviews)=}, {msg.review_result=}, {msg.review_count=}"
                     )
                     if msg.parent_id is None:
-                        if msg.review_count >= self.cfg.num_reviews_initial_prompt:
-                            if (
-                                not msg.review_result
-                                and acceptance_score > self.cfg.acceptance_threshold_initial_prompt
-                            ):
+                        if not msg.review_result and msg.review_count >= self.cfg.num_reviews_initial_prompt:
+                            if acceptance_score > self.cfg.acceptance_threshold_initial_prompt:
                                 msg.review_result = True
                                 self.db.add(msg)
                                 self.db.commit()
                                 logger.info(
                                     f"Initial prompt message was accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
                                 )
+                            else:
+                                self.enter_low_grade_state(msg.message_tree_id)
                         self.check_condition_for_growing_state(msg.message_tree_id)
                     elif msg.review_count >= self.cfg.num_reviews_reply:
                         if not msg.review_result and acceptance_score > self.cfg.acceptance_threshold_reply:
@@ -353,26 +352,69 @@ class TreeManager:
                                 f"Reply message message accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
                             )
 
-                    self.check_condition_for_scoring_state(msg.message_tree_id)
+                    self.check_condition_for_ranking_state(msg.message_tree_id)
 
             case _:
                 raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)
 
         return protocol_schema.TaskDone()
 
-    def check_condition_for_growing_state(self, message_tree_id: UUID):
-        mts = self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one()
-        mts: MessageTreeState
-        if mts.active and mts.state == message_tree_state.State.INITIAL_PROMPT_REVIEW.value:
-            initial_prompt = self.pr.fetch_message(message_tree_id)
-            if initial_prompt.review_result:
-                mts.state = message_tree_state.State.GROWING.value
-                self.db.add(mts)
-                self.db.commit()
-                logger.info(f"Tree entered {mts.state} state ({message_tree_id=})")
+    def fetch_tree_state(self, message_tree_id: UUID) -> MessageTreeState:
+        return self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one()
 
-    def check_condition_for_scoring_state(self, message_tree_id: UUID):
-        pass
+    def enter_low_grade_state(self, message_tree_id: UUID) -> None:
+        logger.debug("enter_low_grade_state({message_tree_id=})")
+        mts = self.fetch_tree_state(message_tree_id)
+        if not mts.active:
+            return
+
+        mts.active = False
+        mts.state = message_tree_state.State.ABORTED_LOW_GRADE.value
+        self.db.add(mts)
+        self.db.commit()
+        logger.info(f"Tree entered final '{mts.state}' state ({message_tree_id=})")
+
+    def check_condition_for_growing_state(self, message_tree_id: UUID) -> bool:
+        logger.debug("check_condition_for_growing_state({message_tree_id=})")
+
+        mts = self.fetch_tree_state(message_tree_id)
+        if not mts.active or mts.state != message_tree_state.State.INITIAL_PROMPT_REVIEW:
+            logger.debug(f"False {mts.active=}, {mts.state=}")
+            return False
+
+        # check if initial prompt was accepted
+        initial_prompt = self.pr.fetch_message(message_tree_id)
+        if not initial_prompt.review_result:
+            logger.debug(f"False {initial_prompt.review_result=}")
+            return False
+
+        mts.state = message_tree_state.State.GROWING.value
+        self.db.add(mts)
+        self.db.commit()
+        logger.info(f"Tree entered '{mts.state}' state ({message_tree_id=})")
+        return True
+
+    def check_condition_for_ranking_state(self, message_tree_id: UUID) -> bool:
+        logger.debug("check_condition_for_scoring_state({message_tree_id=})")
+
+        mts = self.fetch_tree_state(message_tree_id)
+        if not mts.active or mts.state != message_tree_state.State.GROWING:
+            logger.debug(f"False {mts.active=}, {mts.state=}")
+            return False
+
+        # check if desired tree size has been reached and all nodes have been reviewed
+
+        return False
+
+    def check_condition_for_scoring_state(self, message_tree_id: UUID) -> bool:
+        logger.debug("check_condition_for_scoring_state({message_tree_id=})")
+        mts: MessageTreeState
+        mts = self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one()
+        if not mts.active or mts.state != message_tree_state.State.RANKING:
+            logger.debug(f"False {mts.active=}, {mts.state=}")
+            return False
+
+        return False
 
     def _calculate_acceptance(self, labels: list[TextLabels]):
         # simply use spam text-labels
