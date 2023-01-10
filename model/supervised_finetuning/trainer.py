@@ -3,11 +3,11 @@ import os
 from distutils.util import strtobool
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import bitsandbytes
 import torch
 from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.training_args import OptimizerNames
-
 from utils import get_dataset, get_loss, get_model, get_tokenizer, read_yamls
 
 os.environ["WANDB_PROJECT"] = "supervised-finetuning"
@@ -133,6 +133,13 @@ if __name__ == "__main__":
     train, evals, collate_fn = get_dataset(training_conf, tokenizer)
 
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else None
+
+    if training_conf.quantization:
+        for module in model.modules():
+            if isinstance(module, torch.nn.Embedding):
+                bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
+                    module, "weight", {"optim_bits": 32}
+                )
 
     args = TrainingArguments(
         output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
