@@ -7,6 +7,7 @@ import numpy as np
 import pydantic
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
+from oasst_backend.config import settings
 from oasst_backend.models import Message, MessageTreeState, TextLabels, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
@@ -425,19 +426,26 @@ class TreeManager:
         return False
 
     def _calculate_acceptance(self, labels: list[TextLabels]):
-        # simply use spam text-labels
-        return 1.0 - np.mean([l.labels[protocol_schema.TextLabel.spam] for l in labels])
+        # combine spam and helpful rating (either no spam or helpful both are sufficient)
+        return np.mean(
+            [
+                min(1, 1 - l.labels[protocol_schema.TextLabel.spam] + l.labels[protocol_schema.TextLabel.helpful])
+                for l in labels
+            ]
+        )
 
     _sql_find_prompts_need_review = """
 -- find initial prompts that need more reviews
 SELECT m.id
 FROM message_tree_state mts
     LEFT JOIN message m ON mts.message_tree_id = m.id
-WHERE mts.state = :state
+WHERE mts.active
+    AND mts.state = :state
     AND NOT m.review_result
     AND NOT m.deleted
     AND m.review_count < :num_reviews_initial_prompt
     AND m.parent_id is NULL
+    AND (:excluded_user_id IS NULL OR m.user_id != :excluded_user_id)
 """
 
     def query_prompts_need_review(self) -> list[UUID]:
@@ -451,6 +459,7 @@ WHERE mts.state = :state
             {
                 "state": message_tree_state.State.INITIAL_PROMPT_REVIEW,
                 "num_reviews_initial_prompt": self.cfg.num_reviews_initial_prompt,
+                "excluded_user_id": None if settings.DEBUG_ALLOW_SELF_LABELING else self.pr.user_id,
             },
         )
         return [x["id"] for x in r.all()]
@@ -459,11 +468,13 @@ WHERE mts.state = :state
 SELECT m.id
 FROM message_tree_state mts
     LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
-WHERE mts.state = :breeding_state
+WHERE mts.active
+    AND mts.state = :breeding_state
     AND NOT m.review_result
     AND NOT m.deleted
     AND m.review_count < :num_required_reviews
-    AND m.parent_id is NOT NULL;
+    AND m.parent_id is NOT NULL
+    AND (:excluded_user_id IS NULL OR m.user_id != :excluded_user_id)
 """
 
     def query_replies_need_review(self) -> list[UUID]:
@@ -477,6 +488,7 @@ WHERE mts.state = :breeding_state
             {
                 "breeding_state": message_tree_state.State.GROWING,
                 "num_required_reviews": self.cfg.num_reviews_reply,
+                "excluded_user_id": None if settings.DEBUG_ALLOW_SELF_LABELING else self.pr.user_id,
             },
         )
         return [x["id"] for x in r.all()]
@@ -613,18 +625,14 @@ GROUP BY mts.message_tree_id, mts.goal_tree_size
         return query.scalar()
 
     def query_reviews_for_message(self, message_id: UUID) -> list[TextLabels]:
-        qry = text(
-            """
+        sql_qry = """
 SELECT tl.*
-FROM
-    task t
+FROM task t
     INNER JOIN text_labels tl ON tl.id = t.id
-WHERE
-    t.done = TRUE
+WHERE t.done = TRUE
     AND tl.message_id = :message_id
 """
-        )
-        r = self.db.execute(qry, {"message_id": message_id})
+        r = self.db.execute(text(sql_qry), {"message_id": message_id})
         return [TextLabels.from_orm(x) for x in r.all()]
 
     def _insert_tree_state(
