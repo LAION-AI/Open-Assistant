@@ -60,7 +60,7 @@ const RateSummary = () => {
     return <LoadingScreen text="Loading..." />;
   }
 
-  if (tasks.length == 0) {
+  if (tasks.length === 0) {
     return (
       <div className={`p-12 ${mainBgClasses}`}>
         <div className="flex h-full">
@@ -102,7 +102,12 @@ const RateSummary = () => {
           </section>
         </TwoColumnsWithCards>
 
-        <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
+        <TaskControls
+          tasks={tasks}
+          onSubmitResponse={submitResponse}
+          onSkipTask={fetchNextTask}
+          onNextTask={fetchNextTask}
+        />
       </main>
     </>
   );

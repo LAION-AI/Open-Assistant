@@ -1,20 +1,30 @@
 import { Grid } from "@chakra-ui/react";
-import { useColorMode } from "@chakra-ui/react";
+import { forwardRef, useColorMode } from "@chakra-ui/react";
 import { useMemo } from "react";
+import { Message } from "src/types/Conversation";
+import { ValidLabel } from "src/types/Task";
 
 import { FlaggableElement } from "./FlaggableElement";
 
-export interface Message {
-  text: string;
-  is_assistant: boolean;
-  message_id: string;
-}
-
-export const Messages = ({ messages, post_id }: { messages: Message[]; post_id: string }) => {
+export const Messages = ({
+  messages,
+  post_id,
+  valid_labels,
+}: {
+  messages: Message[];
+  post_id: string;
+  valid_labels: ValidLabel[];
+}) => {
   const items = messages.map((messageProps: Message, i: number) => {
     const { message_id, text } = messageProps;
     return (
-      <FlaggableElement text={text} post_id={post_id} message_id={message_id} key={i + text}>
+      <FlaggableElement
+        text={text}
+        post_id={post_id}
+        message_id={message_id}
+        key={i + text}
+        flaggable_labels={valid_labels}
+      >
         <MessageView {...messageProps} />
       </FlaggableElement>
     );
@@ -23,7 +33,7 @@ export const Messages = ({ messages, post_id }: { messages: Message[]; post_id: 
   return <Grid gap={2}>{items}</Grid>;
 };
 
-export const MessageView = ({ is_assistant, text, message_id }: Message) => {
+export const MessageView = forwardRef<Message, "div">(({ is_assistant, text }: Message, ref) => {
   const { colorMode } = useColorMode();
 
   const bgColor = useMemo(() => {
@@ -34,5 +44,11 @@ export const MessageView = ({ is_assistant, text, message_id }: Message) => {
     }
   }, [colorMode, is_assistant]);
 
-  return <div className={`${bgColor} p-4 rounded-md text-white whitespace-pre-wrap`}>{text}</div>;
-};
+  return (
+    <div ref={ref} className={`${bgColor} p-4 rounded-md text-white whitespace-pre-wrap`}>
+      {text}
+    </div>
+  );
+});
+
+MessageView.displayName = "MessageView";

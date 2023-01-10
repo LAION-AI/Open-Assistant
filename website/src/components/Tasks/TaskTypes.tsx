@@ -4,7 +4,17 @@ export enum TaskCategory {
   Label = "Label",
 }
 
-export const TaskTypes = [
+export interface TaskInfo {
+  label: string;
+  desc: string;
+  category: TaskCategory;
+  pathname: string;
+  type: string;
+  overview?: string;
+  instruction?: string;
+}
+
+export const TaskTypes: TaskInfo[] = [
   // create
   {
     label: "Create Initial Prompts",
@@ -61,6 +71,7 @@ export const TaskTypes = [
     desc: "Provide labels for a prompt.",
     category: TaskCategory.Label,
     pathname: "/label/label_initial_prompt",
+    overview: "Provide labels for the following prompt",
     type: "label_initial_prompt",
   },
   {
@@ -68,6 +79,7 @@ export const TaskTypes = [
     desc: "Provide labels for a prompt.",
     category: TaskCategory.Label,
     pathname: "/label/label_prompter_reply",
+    overview: "Given the following discussion, provide labels for the final promp",
     type: "label_prompter_reply",
   },
   {
@@ -75,6 +87,7 @@ export const TaskTypes = [
     desc: "Provide labels for a prompt.",
     category: TaskCategory.Label,
     pathname: "/label/label_assistant_reply",
+    overview: "Given the following discussion, provide labels for the final prompt.",
     type: "label_assistant_reply",
   },
 ];

@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -27,6 +28,22 @@ def get_users(
     pr = UserRepository(db, api_client)
     users = pr.query_users(api_client_id=api_client_id, limit=max_count, gte=gte, lt=lt, auth_method=auth_method)
     return [u.to_protocol_user() for u in users]
+
+
+@router.get("/{auth_method}/{username}", response_model=protocol.User)
+def query_frontend_user(
+    auth_method: str,
+    username: str,
+    api_client_id: Optional[UUID] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    """
+    Query frontend user.
+    """
+    ur = UserRepository(db, api_client)
+    user = ur.query_frontend_user(auth_method, username, api_client_id)
+    return protocol.User(id=user.username, display_name=user.display_name, auth_method=user.auth_method)
 
 
 @router.get("/{username}/messages", response_model=list[protocol.Message])

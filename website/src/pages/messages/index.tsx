@@ -2,9 +2,9 @@ import { Box, CircularProgress, SimpleGrid, Text, useColorModeValue } from "@cha
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import { getDashboardLayout } from "src/components/Layout";
-import { Message } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import fetcher from "src/lib/fetcher";
+import { Message } from "src/types/Conversation";
 import useSWRImmutable from "swr/immutable";
 
 const MessagesDashboard = () => {
@@ -52,7 +52,11 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {receivedMessages ? <MessageTable messages={messages} /> : <CircularProgress isIndeterminate />}
+            {receivedMessages ? (
+              <MessageTable messages={messages} valid_labels={[]} />
+            ) : (
+              <CircularProgress isIndeterminate />
+            )}
           </Box>
         </Box>
         <Box>
@@ -66,7 +70,11 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {receivedUserMessages ? <MessageTable messages={userMessages} /> : <CircularProgress isIndeterminate />}
+            {receivedUserMessages ? (
+              <MessageTable messages={userMessages} valid_labels={[]} />
+            ) : (
+              <CircularProgress isIndeterminate />
+            )}
           </Box>
         </Box>
       </SimpleGrid>
@@ -74,6 +82,6 @@ const MessagesDashboard = () => {
   );
 };
 
-MessagesDashboard.getLayout = (page) => getDashboardLayout(page);
+MessagesDashboard.getLayout = getDashboardLayout;
 
 export default MessagesDashboard;
