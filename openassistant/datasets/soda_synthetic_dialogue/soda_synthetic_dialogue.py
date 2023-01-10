@@ -28,8 +28,8 @@ import datasets
 from .hub import OpenAssistantConfig, features
 
 _CITATION = """\
-@article{ontocard2023sodasynth,
-  author    = {ontocard and Jeffrey Quesnelle},
+@article{ontocord2023sodasynth,
+  author    = {ontocord and Jeffrey Quesnelle},
   title     = {SODA Synthetic Dialogue},
   year      = {2023}
 }

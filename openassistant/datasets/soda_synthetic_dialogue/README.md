@@ -89,7 +89,7 @@ text `conversation` feature.
 ## Source data
 
 The script to synthesize this dataset was originally created by
-[ontocard](https://github.com/ontocord) in
+[ontocord](https://github.com/ontocord) in
 [this Colab notebook](https://colab.research.google.com/drive/1Sw3px5dP8whdqT7QMNoqwmqIasZkMbJi?usp=sharing)
 and prepared for Hugging Face by
 [Jeffrey Quesnelle](https://github.com/jquesnelle/).
@@ -99,8 +99,8 @@ and prepared for Hugging Face by
 Please cite our work if you find the resources in this repository useful:
 
 ```
-@article{ontocard2023sodasynth,
-  author    = {ontocard and Jeffrey Quesnelle},
+@article{ontocord2023sodasynth,
+  author    = {ontocord and Jeffrey Quesnelle},
   title     = {SODA Synthetic Dialogue},
   year      = {2023}
 }
