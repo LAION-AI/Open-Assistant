@@ -3,7 +3,8 @@ import { Messages } from "src/components/Messages";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
-import { TaskInfo } from "src/components/Tasks/TaskTypes";
+import {} from "src/components/Tasks/TaskTypes";
+import { TaskType } from "./TaskTypes";
 
 export interface CreateTaskProps {
   // we need a task type
