@@ -2,7 +2,7 @@ import { Avatar, HStack, LinkBox, useColorModeValue } from "@chakra-ui/react";
 import { boolean } from "boolean";
 import NextLink from "next/link";
 import { FlaggableElement } from "src/components/FlaggableElement";
-import type { ValidLabel } from "src/components/Messages";
+import type { ValidLabel } from "src/types/Task";
 
 interface Message {
   text: string;

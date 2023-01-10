@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { ValidLabel } from "src/components/Messages";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import { BaseTask, TaskResponse } from "src/types/Task";

@@ -12,6 +12,12 @@ export const enum TaskType {
   label_assistant_reply = "label_assistant_reply",
 }
 
+export interface ValidLabel {
+  name: string;
+  display_text: string;
+  help_text: string;
+}
+
 export interface BaseTask {
   id: string;
   type: TaskType;
@@ -21,4 +27,5 @@ export interface TaskResponse<Task extends BaseTask> {
   id: string;
   userId: string;
   task: Task;
+  valid_labels: ValidLabel[];
 }
