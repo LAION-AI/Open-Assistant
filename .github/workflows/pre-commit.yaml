@@ -4,20 +4,28 @@ on:
   push:
     branches:
       - main
-  pull_request:
-  workflow_call:
+  pull_request_target:
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
+      # in case of PR, check out the PR's head branch
       - uses: actions/checkout@v3
+        if: github.event_name == 'pull_request_target'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      # in case of push, check out the main branch
+      - uses: actions/checkout@v3
+        if: github.event_name == 'push'
+
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
       - uses: pre-commit/action@v3.0.0
       - name: Post PR comment on failure
-        if: failure() && github.event_name == 'pull_request'
+        if: failure() && github.event_name == 'pull_request_target'
         uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: ${{ github.event.pull_request.number }}

@@ -1,43 +1,71 @@
 import { Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
-import { ReactNode, useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { MessageView } from "src/components/Messages";
+import { MessageTable } from "src/components/Messages/MessageTable";
+import { TaskControls } from "src/components/Survey/TaskControls";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
+import { TaskInfo } from "src/components/Tasks/TaskTypes";
+import { TaskType } from "src/types/Task";
 import { colors } from "styles/Theme/colors";
 
-export const LabelTask = ({
-  title,
-  desc,
-  messages,
-  inputs,
-  controls,
-}: {
-  title: string;
-  desc: string;
-  messages: ReactNode;
-  inputs: ReactNode;
-  controls: ReactNode;
-}) => {
-  const { colorMode } = useColorMode();
-  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
+export interface LabelTaskProps {
+  // we need a task type
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  tasks: any[];
+  taskType: TaskInfo;
+  trigger: (update: {
+    id: string;
+    update_type: string;
+    content: { text: string; labels: { [k: string]: number }; message_id: string };
+  }) => void;
+  onSkipTask: (task: { id: string }, reason: string) => void;
+  onNextTask: () => void;
+  mainBgClasses: string;
+}
+export const LabelTask = ({ tasks, taskType, trigger, onSkipTask, onNextTask, mainBgClasses }: LabelTaskProps) => {
+  const task = tasks[0].task;
+  const valid_labels = tasks[0].valid_labels;
 
-  const card = useMemo(
-    () => (
-      <>
-        <h5 className="text-lg font-semibold">{title}</h5>
-        <p className="text-lg py-1">{desc}</p>
-        {messages}
-      </>
-    ),
-    [title, desc, messages]
-  );
+  const [sliderValues, setSliderValues] = useState<number[]>([]);
+
+  const submitResponse = (task: { id: string; reply: string; message_id: string }) => {
+    console.assert(valid_labels.length === sliderValues.length);
+    const labels = Object.fromEntries(valid_labels.valid_labels.map((label, i) => [label, sliderValues[i]]));
+    trigger({
+      id: task.id,
+      update_type: "text_labels",
+      content: { labels, text: task.reply, message_id: task.message_id },
+    });
+  };
 
   return (
     <div className={`p-12 ${mainBgClasses}`}>
       <TwoColumnsWithCards>
-        {card}
-        {inputs}
+        <>
+          <h5 className="text-lg font-semibold">{taskType.label}</h5>
+          <p className="text-lg py-1">{taskType.overview}</p>
+
+          {task.conversation ? (
+            <MessageTable
+              messages={[
+                ...(task.conversation ? task.conversation.messages : []),
+                {
+                  text: task.reply,
+                  is_assistant: task.type === TaskType.label_assistant_reply,
+                  message_id: task.message_id,
+                },
+              ]}
+              valid_labels={valid_labels}
+            />
+          ) : (
+            <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />
+          )}
+        </>
+        <LabelSliderGroup labelIDs={task.valid_labels} onChange={setSliderValues} />
       </TwoColumnsWithCards>
-      {controls}
+
+      <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkipTask={onSkipTask} onNextTask={onNextTask} />
     </div>
   );
 };

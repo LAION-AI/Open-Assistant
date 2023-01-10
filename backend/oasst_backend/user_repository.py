@@ -42,6 +42,27 @@ class UserRepository:
 
         return user
 
+    def query_frontend_user(
+        self, auth_method: str, username: str, api_client_id: Optional[UUID] = None
+    ) -> Optional[User]:
+        if not api_client_id:
+            api_client_id = self.api_client.id
+
+        if not self.api_client.trusted and api_client_id != self.api_client.id:
+            # Unprivileged API client asks for foreign user
+            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+
+        user: User = (
+            self.db.query(User)
+            .filter(User.auth_method == auth_method, User.username == username, User.api_client_id == api_client_id)
+            .first()
+        )
+
+        if user is None:
+            raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
+
+        return user
+
     def update_user(self, id: UUID, enabled: Optional[bool] = None, notes: Optional[str] = None) -> None:
         """
         Update a user by global user ID to disable or set admin notes. Only trusted clients may update users.
