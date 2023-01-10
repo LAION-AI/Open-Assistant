@@ -13,7 +13,10 @@ class MessageToxicity(SQLModel, table=True):
 
     message_id: UUID = Field(sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("message.id"), nullable=False))
     model: str = Field(max_length=256, nullable=False)
-    toxicity: float = Field(sa_column=sa.Column(Float), nullable=False)
+
+    # Storing the score and the label of the message
+    score: float = Field(sa_column=sa.Column(Float), nullable=False)
+    label: str = Field(max_length=256, nullable=False)
 
     # In the case that the Message Embedding is created afterwards
     created_date: Optional[datetime] = Field(

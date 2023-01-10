@@ -18,6 +18,7 @@ from oasst_backend.models import (
     User,
 )
 from oasst_backend.models.payload_column_type import PayloadContainer
+from oasst_backend.schemas.hugging_face import ToxicityClassification
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
@@ -237,7 +238,7 @@ class PromptRepository:
                     OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
                 )
 
-    def insert_toxicity(self, message_id: UUID, model: str, toxicity: float) -> MessageToxicity:
+    def insert_toxicity(self, message_id: UUID, model: str, toxicity: ToxicityClassification) -> MessageToxicity:
         """Save the toxicity score of a new message in the database.
         Args:
             message_id (UUID): the identifier of the message we want to save its toxicity score
@@ -252,7 +253,9 @@ class PromptRepository:
         if None in (message_id, model, toxicity):
             raise OasstError("Paramters missing to add toxicity", OasstErrorCode.GENERIC_ERROR)
 
-        message_toxicity = MessageToxicity(message_id=message_id, model=model, toxicity=toxicity)
+        message_toxicity = MessageToxicity(
+            message_id=message_id, model=model, score=toxicity.score, label=toxicity.label
+        )
         self.db.add(message_toxicity)
         self.db.commit()
         self.db.refresh(message_toxicity)
