@@ -2,7 +2,6 @@ import { Avatar, HStack, LinkBox, useColorModeValue } from "@chakra-ui/react";
 import { boolean } from "boolean";
 import NextLink from "next/link";
 import { FlaggableElement } from "src/components/FlaggableElement";
-import type { ValidLabel } from "src/types/Task";
 
 interface Message {
   text: string;
@@ -12,14 +11,13 @@ interface Message {
 interface MessageTableEntryProps {
   item: Message;
   idx: number;
-  valid_labels: ValidLabel[];
 }
 export function MessageTableEntry(props: MessageTableEntryProps) {
-  const { item, idx, valid_labels } = props;
+  const { item, idx } = props;
   const bgColor = useColorModeValue(idx % 2 === 0 ? "bg-slate-800" : "bg-black", "bg-sky-900");
 
   return (
-    <FlaggableElement text={item.text} post_id={item.id} key={`flag_${item.id}`} flaggable_labels={valid_labels}>
+    <FlaggableElement text={item.text} post_id={item.id} key={`flag_${item.id}`}>
       <HStack>
         <Avatar
           name={`${boolean(item.is_assistant) ? "Assitant" : "User"}`}

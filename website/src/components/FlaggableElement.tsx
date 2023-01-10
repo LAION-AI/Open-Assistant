@@ -22,9 +22,11 @@ import {
   useId,
 } from "@chakra-ui/react";
 import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import { colors } from "styles/Theme/colors";
+import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
 interface textFlagLabels {
@@ -34,16 +36,27 @@ interface textFlagLabels {
 }
 
 export const FlaggableElement = (props) => {
+  const [labels, setLabels] = useState([]);
+  const [checkboxValues, setCheckboxValues] = useState([]);
+  const [sliderValues, setSliderValues] = useState([]);
   const [isEditing, setIsEditing] = useBoolean();
-  const flaggable_labels = props.flaggable_labels;
-  const TEXT_LABEL_FLAGS =
-    flaggable_labels?.valid_labels?.map((valid_label) => {
-      return {
-        attributeName: valid_label.name,
-        labelText: valid_label.display_text,
-        additionalExplanation: valid_label.help_text,
-      };
-    }) || [];
+
+  const { data, isLoading } = useSWR("/api/valid_labels", fetcher);
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+    const { valid_labels } = data;
+    const newLabels = valid_labels.map((valid_label) => ({
+      attributeName: valid_label.name,
+      labelText: valid_label.display_text,
+      additionalExplanation: valid_label.help_text,
+    }));
+    setSliderValues(new Array(newLabels.length).fill(1));
+    setCheckboxValues(new Array(newLabels.length).fill(false));
+    setLabels(newLabels);
+  }, [data, isLoading]);
+
   const { trigger } = useSWRMutation("/api/set_label", poster, {
     onSuccess: () => {
       setIsEditing.off();
@@ -52,7 +65,7 @@ export const FlaggableElement = (props) => {
 
   const submitResponse = () => {
     const label_map: Map<string, number> = new Map();
-    TEXT_LABEL_FLAGS.forEach((flag, i) => {
+    labels.forEach((flag, i) => {
       if (checkboxValues[i]) {
         label_map.set(flag.attributeName, sliderValues[i]);
       }
@@ -64,8 +77,6 @@ export const FlaggableElement = (props) => {
       text: props.text,
     });
   };
-  const [checkboxValues, setCheckboxValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(false));
-  const [sliderValues, setSliderValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(1));
 
   const handleCheckboxState = (isChecked, idx) => {
     setCheckboxValues(
@@ -110,7 +121,7 @@ export const FlaggableElement = (props) => {
           <PopoverCloseButton />
         </div>
         <PopoverBody>
-          {TEXT_LABEL_FLAGS.map((option, i) => (
+          {labels.map((option, i) => (
             <FlagCheckbox
               option={option}
               key={i}

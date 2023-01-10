@@ -16,7 +16,6 @@ const LabelAssistantReply = () => {
   }
 
   const task = tasks[0].task;
-  const valid_labels = tasks[0].valid_labels;
   const messages: Message[] = [
     ...task.conversation.messages,
     { text: task.reply, is_assistant: true, message_id: task.message_id },
@@ -26,7 +25,7 @@ const LabelAssistantReply = () => {
     <LabelTask
       title="Label Assistant Reply"
       desc="Given the following discussion, provide labels for the final prompt"
-      messages={<MessageTable messages={messages} valid_labels={valid_labels} />}
+      messages={<MessageTable messages={messages} />}
       inputs={<LabelSliderGroup labelIDs={task.valid_labels} onChange={setSliderValues} />}
       controls={
         <TaskControls

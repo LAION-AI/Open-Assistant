@@ -52,11 +52,7 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {receivedMessages ? (
-              <MessageTable messages={messages} valid_labels={[]} />
-            ) : (
-              <CircularProgress isIndeterminate />
-            )}
+            {receivedMessages ? <MessageTable messages={messages} /> : <CircularProgress isIndeterminate />}
           </Box>
         </Box>
         <Box>
@@ -70,11 +66,7 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {receivedUserMessages ? (
-              <MessageTable messages={userMessages} valid_labels={[]} />
-            ) : (
-              <CircularProgress isIndeterminate />
-            )}
+            {receivedUserMessages ? <MessageTable messages={userMessages} /> : <CircularProgress isIndeterminate />}
           </Box>
         </Box>
       </SimpleGrid>

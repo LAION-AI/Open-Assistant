@@ -41,7 +41,7 @@ const MessageDetail = ({ id }) => {
                 Parent
               </Text>
               <Box rounded="lg" p="2">
-                <MessageTableEntry item={parent} idx={1} valid_labels={[]} />
+                <MessageTableEntry item={parent} idx={1} />
               </Box>
             </>
           )}

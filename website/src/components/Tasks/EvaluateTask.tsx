@@ -33,7 +33,6 @@ export const EvaluateTask = ({ tasks, trigger, onSkipTask, onNextTask, mainBgCla
     messages = messages.map((message, index) => ({ ...message, id: index }));
   }
 
-  const valid_labels = tasks[0].valid_labels;
   const sortables = tasks[0].task.replies ? "replies" : "prompts";
 
   return (
@@ -43,7 +42,7 @@ export const EvaluateTask = ({ tasks, trigger, onSkipTask, onNextTask, mainBgCla
         <p className="text-lg py-1">
           Given the following {sortables}, sort them from best to worst, best being first, worst being last.
         </p>
-        {messages ? <MessageTable messages={messages} valid_labels={valid_labels} /> : null}
+        {messages ? <MessageTable messages={messages} /> : null}
         <Sortable items={tasks[0].task[sortables]} onChange={setRanking} className="my-8" />
       </SurveyCard>
 
