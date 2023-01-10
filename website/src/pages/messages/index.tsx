@@ -2,9 +2,9 @@ import { Box, CircularProgress, SimpleGrid, Text, useColorModeValue } from "@cha
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import { getDashboardLayout } from "src/components/Layout";
-import { Message } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import fetcher from "src/lib/fetcher";
+import { Message } from "src/types/Conversation";
 import useSWRImmutable from "swr/immutable";
 
 const MessagesDashboard = () => {
@@ -82,6 +82,6 @@ const MessagesDashboard = () => {
   );
 };
 
-MessagesDashboard.getLayout = (page) => getDashboardLayout(page);
+MessagesDashboard.getLayout = getDashboardLayout;
 
 export default MessagesDashboard;
