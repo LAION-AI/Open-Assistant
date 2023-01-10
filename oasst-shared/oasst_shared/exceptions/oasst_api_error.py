@@ -53,6 +53,7 @@ class OasstErrorCode(IntEnum):
     TASK_NOT_ACK = 2104
     TASK_ALREADY_DONE = 2105
     TASK_NOT_COLLECTIVE = 2106
+    TASK_NOT_ASSIGNED_TO_USER = 2106
 
     # 3000-4000: external resources
     HUGGINGFACE_API_ERROR = 3001

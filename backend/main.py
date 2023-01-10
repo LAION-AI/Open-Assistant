@@ -15,6 +15,7 @@ from oasst_backend.api.v1.api import api_router
 from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
+from oasst_backend.tree_manager import TreeManager, TreeManagerConfiguration
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from pydantic import BaseModel
@@ -155,7 +156,9 @@ if settings.DEBUG_USE_SEED_DATA:
                                 parent_message_id=parent_message.id,
                             )
                         tr.bind_frontend_message_id(task.id, msg.task_message_id)
-                        message = pr.store_text_reply(msg.text, msg.task_message_id, msg.user_message_id)
+                        message = pr.store_text_reply(
+                            msg.text, msg.task_message_id, msg.user_message_id, review_count=5, review_result=True
+                        )
 
                         logger.info(
                             f"Inserted: message_id: {message.id}, payload: {message.payload.payload}, parent_message_id: {message.parent_id}"
@@ -168,6 +171,19 @@ if settings.DEBUG_USE_SEED_DATA:
             logger.exception("Seed data insertion failed")
 
 
+@app.on_event("startup")
+def ensure_tree_states():
+    try:
+        logger.info("Seed data check began")
+        cfg = TreeManagerConfiguration()  # TODO: decide where config is stored, e.g. load form json/yaml file
+        with Session(engine) as db:
+            tm = TreeManager(db, None, configuration=cfg)
+            tm.ensure_tree_states()
+
+    except Exception:
+        logger.exception("TreeManager.ensure_tree_states() failed.")
+
+
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
@@ -175,7 +191,7 @@ def get_openapi_schema():
     return json.dumps(app.openapi())
 
 
-if __name__ == "__main__":
+def main():
     # Importing here so we don't import packages unnecessarily if we're
     # importing main as a module.
     import argparse
@@ -198,3 +214,7 @@ if __name__ == "__main__":
         print(get_openapi_schema())
     else:
         uvicorn.run(app, host=args.host, port=args.port)
+
+
+if __name__ == "__main__":
+    main()

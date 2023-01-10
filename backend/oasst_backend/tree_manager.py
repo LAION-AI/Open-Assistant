@@ -479,13 +479,17 @@ HAVING COUNT(m.id) < mts.goal_tree_size
 
         return [m.id for m in qry_missing_tree_states.all()]
 
-    def ensure_tree_state(self):
+    def ensure_tree_states(self):
         """Add message tree state rows for all root nodes (inital prompt messages)."""
 
         missing_tree_ids = self.query_misssing_tree_states()
         for id in missing_tree_ids:
-            logger.info(f"Inserting missing message tree state for message: {id}")
-            self._insert_default_state(id)
+            tree_size = self.db.query(func.count(Message.id)).filter(Message.message_tree_id == id).scalar()
+            state = message_tree_state.State.INITIAL_PROMPT_REVIEW
+            if tree_size > 1:
+                state = message_tree_state.State.GROWING
+                logger.info(f"Inserting missing message tree state for message: {id} ({tree_size=}, {state=})")
+            self._insert_default_state(id, state=state)
         self.db.commit()
 
     def query_num_active_trees(self) -> int:
@@ -514,13 +518,17 @@ HAVING COUNT(m.id) < mts.goal_tree_size
         self.db.add(model)
         return model
 
-    def _insert_default_state(self, root_message_id: UUID) -> MessageTreeState:
+    def _insert_default_state(
+        self,
+        root_message_id: UUID,
+        state: message_tree_state.State = message_tree_state.State.INITIAL_PROMPT_REVIEW,
+    ) -> MessageTreeState:
         return self._insert_tree_state(
             root_message_id=root_message_id,
             goal_tree_size=self.cfg.goal_tree_size,
             max_depth=self.cfg.max_tree_depth,
             max_children_count=self.cfg.max_children_count,
-            state=message_tree_state.State.INITIAL_PROMPT_REVIEW,
+            state=state,
             active=True,
         )
 
@@ -538,7 +546,7 @@ if __name__ == "__main__":
 
         cfg = TreeManagerConfiguration()
         tm = TreeManager(db, pr, cfg)
-        tm.ensure_tree_state()
+        tm.ensure_tree_states()
         print("query_num_active_trees", tm.query_num_active_trees())
         print("query_incomplete_rankings", tm.query_incomplete_rankings())
         print("query_incomplete_reply_reviews", tm.query_replies_need_review())

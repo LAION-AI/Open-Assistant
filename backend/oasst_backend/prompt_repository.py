@@ -67,6 +67,8 @@ class PromptRepository:
         payload: db_payload.MessagePayload,
         payload_type: str = None,
         depth: int = 0,
+        review_count: int = 0,
+        review_result: bool = False,
     ) -> Message:
         if payload_type is None:
             if payload is None:
@@ -86,13 +88,24 @@ class PromptRepository:
             payload_type=payload_type,
             payload=PayloadContainer(payload=payload),
             depth=depth,
+            review_count=review_count,
+            review_result=review_result,
         )
         self.db.add(message)
         self.db.commit()
         self.db.refresh(message)
         return message
 
-    def _validate_task_not_done(self, task: Task) -> None:
+    def _validate_task(
+        self, task: Task, *, task_id: Optional[UUID] = None, frontend_message_id: Optional[str] = None
+    ) -> Task:
+        if task is None:
+            if task_id:
+                raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+            if frontend_message_id:
+                raise OasstError(f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+            raise OasstError("Task not found", OasstErrorCode.TASK_NOT_FOUND)
+
         if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
         if not task.ack:
@@ -100,14 +113,24 @@ class PromptRepository:
         if task.done:
             raise OasstError("Task already done.", OasstErrorCode.TASK_ALREADY_DONE)
 
-    def store_text_reply(self, text: str, frontend_message_id: str, user_frontend_message_id: str) -> Message:
+        if not task.collective and task.user_id != self.user_id:
+            raise OasstError("Task was assigned to a different user.", OasstErrorCode.TASK_NOT_ASSIGNED_TO_USER)
+
+        return task
+
+    def store_text_reply(
+        self,
+        text: str,
+        frontend_message_id: str,
+        user_frontend_message_id: str,
+        review_count: int = 0,
+        review_result: bool = False,
+    ) -> Message:
         validate_frontend_message_id(frontend_message_id)
         validate_frontend_message_id(user_frontend_message_id)
 
         task = self.task_repository.fetch_task_by_frontend_message_id(frontend_message_id)
-        if task is None:
-            raise OasstError(f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
-        self._validate_task_not_done(task)
+        self._validate_task(task)
 
         # If there's no parent message assume user started new conversation
         role = "prompter"
@@ -135,6 +158,8 @@ class PromptRepository:
             role=role,
             payload=db_payload.MessagePayload(text=text),
             depth=depth,
+            review_count=review_count,
+            review_result=review_result,
         )
         if not task.collective:
             task.done = True
@@ -147,6 +172,7 @@ class PromptRepository:
         message = self.fetch_message_by_frontend_message_id(rating.message_id, fail_if_missing=True)
 
         task = self.task_repository.fetch_task_by_frontend_message_id(rating.message_id)
+        self._validate_task(task)
         task_payload: db_payload.RateSummaryPayload = task.payload.payload
         if type(task_payload) != db_payload.RateSummaryPayload:
             raise OasstError(
@@ -174,6 +200,7 @@ class PromptRepository:
     def store_ranking(self, ranking: protocol_schema.MessageRanking) -> MessageReaction:
         # fetch task
         task = self.task_repository.fetch_task_by_frontend_message_id(ranking.message_id)
+        self._validate_task(task, frontend_message_id=ranking.message_id)
         if not task.collective:
             task.done = True
             self.db.add(task)
@@ -248,14 +275,13 @@ class PromptRepository:
 
         valid_labels: Optional[list[str]] = None
         mandatory_labels: Optional[list[str]] = None
+        text_labels_id: Optional[UUID] = None
 
         task: Task = None
         if text_labels.task_id:
             logger.debug(f"text_labels reply has task_id {text_labels.task_id}")
             task = self.task_repository.fetch_task_by_id(text_labels.task_id)
-            if task is None:
-                raise OasstError(f"Task for task_id={text_labels.task_id} not found", OasstErrorCode.TASK_NOT_FOUND)
-            self._validate_task_not_done(task)
+            self._validate_task(task, task_id=text_labels.task_id)
 
             task_payload: db_payload.TaskPayload = task.payload.payload
             if isinstance(task_payload, db_payload.LabelInitialPromptPayload):
@@ -288,11 +314,14 @@ class PromptRepository:
                         f"Mandatory text labels missing: {missing}", OasstErrorCode.TEXT_LABELS_MANDATORY_LABEL_MISSING
                     )
 
+            text_labels_id = task.id  # associate with task by sharing the id
+
             if not task.collective:
                 task.done = True
                 self.db.add(task)
 
         model = TextLabels(
+            id=text_labels_id,
             api_client_id=self.api_client.id,
             message_id=text_labels.message_id,
             user_id=self.user_id,
