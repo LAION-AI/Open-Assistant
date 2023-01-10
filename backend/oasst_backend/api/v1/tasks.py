@@ -9,7 +9,7 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
-from oasst_backend.utils.hugging_face import HfEmbeddingModel, HfUrl, HuggingFaceAPI
+from oasst_backend.utils.hugging_face import save_embedding
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -276,25 +276,14 @@ async def tasks_interaction(
                 )
 
                 # here we store the text reply in the database
-                newMessage = pr.store_text_reply(
+                new_message = pr.store_text_reply(
                     text=interaction.text,
                     frontend_message_id=interaction.message_id,
                     user_frontend_message_id=interaction.user_message_id,
                 )
 
                 if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
-                    try:
-                        hugging_face_api = HuggingFaceAPI(
-                            f"{HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value}/{HfEmbeddingModel.MINILM.value}"
-                        )
-                        embedding = await hugging_face_api.post(interaction.text)
-                        pr.insert_message_embedding(
-                            message_id=newMessage.id, model=HfEmbeddingModel.MINILM.value, embedding=embedding
-                        )
-                    except OasstError:
-                        logger.error(
-                            f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
-                        )
+                    save_embedding(interaction, pr, new_message)
 
                 return protocol_schema.TaskDone()
             case protocol_schema.MessageRating:
