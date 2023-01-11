@@ -430,6 +430,8 @@ class TreeManager:
                 return False
         self._enter_state(mts, message_tree_state.State.READY_FOR_SCORING)
         return True
+    
+    
 
     def _calculate_acceptance(self, labels: list[TextLabels]):
         # combine spam and helpful rating (either no spam or helpful both are sufficient)
