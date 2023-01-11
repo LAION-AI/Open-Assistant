@@ -35,13 +35,10 @@ def request_task(
     api_client = deps.api_auth(api_key, db)
 
     try:
-        if request.type != protocol_schema.TaskRequestType.random:
-            logger.warning(f"Ignoring {request.type=}, returning server selected task type!")
-
         pr = PromptRepository(db, api_client, client_user=request.user)
         tree_manager_config = TreeManagerConfiguration()
         tm = TreeManager(db, pr, tree_manager_config)
-        task, message_tree_id, parent_message_id = tm.next_task()
+        task, message_tree_id, parent_message_id = tm.next_task(request.type)
         pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
 
     except OasstError:

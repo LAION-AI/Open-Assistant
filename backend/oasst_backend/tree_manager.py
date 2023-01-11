@@ -49,18 +49,9 @@ class TreeManagerConfiguration(pydantic.BaseModel):
     num_required_rankings: int = 3
     """Number of rankings in which the message participated."""
 
-    mandatory_labels_initial_prompt: Optional[list[protocol_schema.TextLabel]] = [
-        protocol_schema.TextLabel.helpful,
-        protocol_schema.TextLabel.spam,
-    ]
-    mandatory_labels_assistant_reply: Optional[list[protocol_schema.TextLabel]] = [
-        protocol_schema.TextLabel.helpful,
-        protocol_schema.TextLabel.spam,
-    ]
-    mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [
-        protocol_schema.TextLabel.helpful,
-        protocol_schema.TextLabel.spam,
-    ]
+    mandatory_labels_initial_prompt: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    mandatory_labels_assistant_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
 
 
 class TaskType(Enum):
@@ -70,6 +61,12 @@ class TaskType(Enum):
     REPLY = 2
     LABEL_PROMPT = 3
     PROMPT = 4
+
+
+class TaskRole(Enum):
+    ANY = 0
+    PROMPTER = 1
+    ASSISTANT = 2
 
 
 class ActiveTreeSizeRow(pydantic.BaseModel):
@@ -112,12 +109,13 @@ class TreeManager:
 
     def _task_selection(
         self,
+        desired_task_type: protocol_schema.TaskRequestType,
         num_ranking_tasks: int,
         num_replies_need_review: int,
         num_prompts_need_review: int,
         num_missing_prompts: int,
         num_missing_replies: int,
-    ) -> TaskType:
+    ) -> Tuple[TaskType, TaskRole]:
         """
         Determines which task to hand out to human worker.
         The task type is drawn with relative weight (e.g. ranking has highest priority)
@@ -129,48 +127,86 @@ class TreeManager:
             f"{num_prompts_need_review=}, {num_missing_prompts=}, {num_missing_replies=})"
         )
 
-        task_weights = [0] * 5
+        task_type = TaskType.NONE
+        task_role = TaskRole.ANY
+        if desired_task_type == protocol_schema.TaskRequestType.random:
+            task_weights = [0] * 5
 
-        if num_ranking_tasks > 0:
-            task_weights[TaskType.RANKING.value] = 10
+            if num_ranking_tasks > 0:
+                task_weights[TaskType.RANKING.value] = 10
 
-        if num_replies_need_review > 0:
-            task_weights[TaskType.LABEL_REPLY.value] = 5
+            if num_replies_need_review > 0:
+                task_weights[TaskType.LABEL_REPLY.value] = 5
 
-        if num_prompts_need_review > 0:
-            task_weights[TaskType.LABEL_PROMPT.value] = 5
+            if num_prompts_need_review > 0:
+                task_weights[TaskType.LABEL_PROMPT.value] = 5
 
-        if num_missing_replies > 0:
-            task_weights[TaskType.REPLY.value] = 2
+            if num_missing_replies > 0:
+                task_weights[TaskType.REPLY.value] = 2
 
-        if num_missing_prompts > 0:
-            task_weights[TaskType.PROMPT.value] = 1
+            if num_missing_prompts > 0:
+                task_weights[TaskType.PROMPT.value] = 1
 
-        task_weights = np.array(task_weights)
-        weight_sum = task_weights.sum()
-        if weight_sum < 1e-8:
-            task_type = TaskType.NONE
+            task_weights = np.array(task_weights)
+            weight_sum = task_weights.sum()
+            if weight_sum < 1e-8:
+                task_type = TaskType.NONE
+            else:
+                task_weights = task_weights / weight_sum
+                task_type = TaskType(np.random.choice(a=len(task_weights), p=task_weights))
         else:
-            task_weights = task_weights / weight_sum
-            task_type = TaskType(np.random.choice(a=len(task_weights), p=task_weights))
+            match desired_task_type:
+                case protocol_schema.TaskRequestType.initial_prompt:
+                    if num_missing_prompts > 0:
+                        task_type = TaskType.PROMPT
+                case protocol_schema.TaskRequestType.label_initial_prompt:
+                    if num_prompts_need_review > 0:
+                        task_type = TaskType.LABEL_PROMPT
+                case protocol_schema.TaskRequestType.assistant_reply | protocol_schema.TaskRequestType.prompter_reply:
+                    if num_missing_replies > 0:
+                        task_role = (
+                            TaskRole.ASSISTANT
+                            if desired_task_type == protocol_schema.TaskRequestType.assistant_reply
+                            else TaskRole.PROMPTER
+                        )
+                        task_type = TaskType.REPLY
+                case protocol_schema.TaskRequestType.label_assistant_reply | protocol_schema.TaskRequestType.label_prompter_reply:
+                    if num_replies_need_review > 0:
+                        task_role = (
+                            TaskRole.ASSISTANT
+                            if desired_task_type == protocol_schema.TaskRequestType.label_assistant_reply
+                            else TaskRole.PROMPTER
+                        )
+                        task_type = TaskType.LABEL_REPLY
+                case protocol_schema.TaskRequestType.rank_assistant_replies | protocol_schema.TaskRequestType.rank_prompter_replies:
+                    if num_ranking_tasks > 0:
+                        task_role = (
+                            TaskRole.ASSISTANT
+                            if desired_task_type == protocol_schema.TaskRequestType.rank_assistant_replies
+                            else TaskRole.PROMPTER
+                        )
+                        task_type = TaskType.RANKING
 
-        logger.debug(f"Selected task type: {task_type}")
-        return TaskType(task_type)
+        logger.debug(f"Selected {task_type=}, {task_role=}")
+        return task_type, task_role
 
-    def next_task(self) -> Tuple[protocol_schema.Task, Optional[UUID], Optional[UUID]]:
+    def next_task(
+        self, desired_task_type: protocol_schema.TaskRequestType
+    ) -> Tuple[protocol_schema.Task, Optional[UUID], Optional[UUID]]:
 
         logger.debug("TreeManager.next_task()")
 
-        # determine type of task to generate
         num_active_trees = self.query_num_active_trees()
         prompts_need_review = self.query_prompts_need_review()
         replies_need_review = self.query_replies_need_review()
         incomplete_rankings = self.query_incomplete_rankings()
         active_tree_sizes = self.query_extendible_trees()
 
+        # determine type of task to generate
         num_missing_replies = sum(x.remaining_messages for x in active_tree_sizes)
 
-        task_tpye = self._task_selection(
+        task_type, task_role = self._task_selection(
+            desired_task_type,
             num_ranking_tasks=len(incomplete_rankings),
             num_replies_need_review=len(replies_need_review),
             num_prompts_need_review=len(prompts_need_review),
@@ -178,11 +214,24 @@ class TreeManager:
             num_missing_replies=num_missing_replies,
         )
 
+        if task_type == TaskType.NONE:
+            raise OasstError(
+                f"No tasks of type '{desired_task_type.value}' are currently available.",
+                OasstErrorCode.TASK_REQUESTED_TYPE_UNAVAILABLE,
+            )
+
+        if task_role != TaskRole.ANY:
+            # Todo: Allow role specific message selection...
+            raise OasstError(
+                f"No tasks of type '{desired_task_type.value}' are currently available.",
+                OasstErrorCode.TASK_REQUESTED_TYPE_UNAVAILABLE,
+            )
+
         message_tree_id = None
         parent_message_id = None
 
-        logger.debug(f"selected {task_tpye=}")
-        match task_tpye:
+        logger.debug(f"selected {task_type=}")
+        match task_type:
             case TaskType.RANKING:
                 assert len(incomplete_rankings) > 0
                 ranking_parent_id = random.choice(incomplete_rankings).parent_id
@@ -450,13 +499,8 @@ class TreeManager:
         return True
 
     def _calculate_acceptance(self, labels: list[TextLabels]):
-        # combine spam and helpful rating (either no spam or helpful both are sufficient)
-        return np.mean(
-            [
-                min(1, 1 - l.labels[protocol_schema.TextLabel.spam] + l.labels[protocol_schema.TextLabel.helpful])
-                for l in labels
-            ]
-        )
+        # calculate acceptance based on spam label
+        return np.mean([1 - l.labels[protocol_schema.TextLabel.spam] for l in labels])
 
     _sql_find_prompts_need_review = """
 -- find initial prompts that need more reviews
