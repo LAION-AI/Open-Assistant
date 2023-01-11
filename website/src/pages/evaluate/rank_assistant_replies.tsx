@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { Container } from "src/components/Container";
+import { TaskEmptyState } from "src/components/EmptyState";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useRankAssistantRepliesTask } from "src/hooks/tasks/useRankReplies";
@@ -12,7 +12,7 @@ const RankAssistantReplies = () => {
   }
 
   if (tasks.length === 0) {
-    return <Container className="p-6 text-center">No tasks found...</Container>;
+    return <TaskEmptyState />;
   }
 
   return (
