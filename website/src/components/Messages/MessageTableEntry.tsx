@@ -26,11 +26,11 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
             src={`${boolean(item.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
           />
 
-          <LinkBox bg={backgroundColor} fontFamily="Inter" className={`p-4 rounded-md whitespace-pre-wrap w-full`}>
-            <Link href={`/messages/${item.id}`}>
+          <Link href={`/messages/${item.id}`}>
+            <LinkBox bg={backgroundColor} fontFamily="Inter" className={`p-4 rounded-md whitespace-pre-wrap w-full`}>
               <LinkOverlay>{item.text}</LinkOverlay>
-            </Link>
-          </LinkBox>
+            </LinkBox>
+          </Link>
         </HStack>
       </FlaggableElement>
     </div>
