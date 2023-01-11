@@ -21,7 +21,7 @@ export interface TaskSurveyProps<T> {
   onReplyChanged: (state: TaskReplyState<T>) => void;
 }
 
-export const Task = ({ task, trigger, mutate }) => {
+export const Task = ({ frontendId, task, trigger, mutate }) => {
   const [taskStatus, setTaskStatus] = useState<TaskStatus>("NOT_SUBMITTABLE");
   const replyContent = useRef<TaskContent>(null);
   const [showUnchangedWarning, setShowUnchangedWarning] = useState(false);
@@ -39,7 +39,7 @@ export const Task = ({ task, trigger, mutate }) => {
 
   const rejectTask = (reason: string) => {
     sendRejection({
-      id: task.id,
+      id: frontendId,
       reason,
     });
   };
@@ -66,7 +66,7 @@ export const Task = ({ task, trigger, mutate }) => {
         break;
       case "SUBMITABLE": {
         trigger({
-          id: task.id,
+          id: frontendId,
           update_type: taskType.update_type,
           content: replyContent.current,
         });
@@ -107,7 +107,7 @@ export const Task = ({ task, trigger, mutate }) => {
         onSubmitAnyway={() => {
           if (taskStatus === "DEFAULT") {
             trigger({
-              id: task.id,
+              id: frontendId,
               update_type: taskType.update_type,
               content: replyContent.current,
             });

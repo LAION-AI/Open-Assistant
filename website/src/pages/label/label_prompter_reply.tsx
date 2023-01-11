@@ -21,7 +21,7 @@ const LabelPrompterReply = () => {
         <title>Label Prompter Reply</title>
         <meta name="description" content="Label Prompter Reply" />
       </Head>
-      <Task key={tasks[0].task.id} task={tasks[0].task} trigger={trigger} mutate={reset} />
+      <Task key={tasks[0].task.id} frontendId={tasks[0].id} task={tasks[0].task} trigger={trigger} mutate={reset} />
     </>
   );
 };
