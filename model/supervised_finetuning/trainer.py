@@ -3,9 +3,11 @@ import os
 from distutils.util import strtobool
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import bitsandbytes
 import torch
 from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
+from transformers.training_args import OptimizerNames
 from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
 from functools import partial
 
@@ -141,12 +143,22 @@ if __name__ == "__main__":
     train, evals, collate_fn = get_dataset(training_conf, tokenizer)
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
 
+    optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
+
+    if training_conf.quantization:
+        for module in model.modules():
+            if isinstance(module, torch.nn.Embedding):
+                bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
+                    module, "weight", {"optim_bits": 32}
+                )
+
     args = TrainingArguments(
         output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
         num_train_epochs=training_conf.num_train_epochs,
         warmup_steps=training_conf.warmup_steps,
         learning_rate=float(training_conf.learning_rate),
         deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
+        optim=optimizer,
         fp16=True,
         local_rank=training_conf.local_rank,
         gradient_checkpointing=training_conf.gradient_checkpointing,
