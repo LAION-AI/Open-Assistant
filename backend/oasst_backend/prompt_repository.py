@@ -12,6 +12,7 @@ from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import (
     ApiClient,
     Message,
+    MessageEmbedding,
     MessageReaction,
     MessageTreeState,
     Task,
