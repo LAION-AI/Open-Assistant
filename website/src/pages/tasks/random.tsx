@@ -9,16 +9,16 @@ const RandomTask = () => {
   const { tasks, isLoading, trigger, reset } = useGenericTaskAPI("random");
 
   useEffect(() => {
-    if (tasks.length == 0) {
+    if (tasks.length === 0) {
       reset();
     }
-  }, [tasks]);
+  }, [tasks, reset]);
 
   if (isLoading) {
     return <LoadingScreen text="Loading..." />;
   }
 
-  if (tasks.length == 0) {
+  if (tasks.length === 0) {
     return <Container className="p-6 text-center text-gray-800">No tasks found...</Container>;
   }
 

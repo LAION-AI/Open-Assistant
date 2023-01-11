@@ -13,9 +13,8 @@ export const LabelTask = ({
   taskType,
   onReplyChanged,
 }: TaskSurveyProps<{ text: string; labels: { [k: string]: number }; message_id: string }>) => {
-  const [sliderValues, setSliderValues] = useState<number[]>([]);
-
   const valid_labels = task.valid_labels;
+  const [sliderValues, setSliderValues] = useState<number[]>(new Array(valid_labels.length).fill(0));
 
   useEffect(() => {
     onReplyChanged({ content: { labels: {}, text: task.reply, message_id: task.message_id }, state: "DEFAULT" });
