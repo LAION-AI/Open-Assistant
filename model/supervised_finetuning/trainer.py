@@ -3,21 +3,22 @@ import os
 from distutils.util import strtobool
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import bitsandbytes
 import torch
 from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
-from transformers.training_args import OptimizerNames
-from utils import get_dataset, get_loss, get_model, get_tokenizer, read_yamls
+from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
 
 os.environ["WANDB_PROJECT"] = "supervised-finetuning"
 
 
-def compute_metrics(eval_pred):
-    pred_ids = eval_pred.predictions
-    labels = eval_pred.label_ids
+def compute_metrics(eval_pred, preprocess_fn, metrics):
+    preds, labels = preprocess_fn(eval_pred)
 
-    return {"accuracy": (pred_ids[labels > 0] == labels[labels > 0]).mean()}
+    out = {}
+    for metric in metrics:
+        out = dict(**out, **metric.compute(predictions=preds, references=labels))
+
+    return out
 
 
 def preprocess_logits_for_metrics(logits, labels):
@@ -31,12 +32,13 @@ class SFTTrainer(Trainer):
         model: Union[PreTrainedModel, nn.Module] = None,
         args: TrainingArguments = None,
         loss_function: str = "CrossEntropyLoss",
+        poly_eps: float = 1.0,
         **kwargs,
     ):
         super().__init__(model, args, **kwargs)
 
         # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
-        self.loss_fct = get_loss(loss_function)
+        self.loss_fct = get_loss(loss_function, poly_eps)
 
     def compute_loss(self, model, inputs, return_outputs=False):
         labels_mask = inputs.pop("label_masks")
@@ -92,6 +94,8 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
+    parser.add_argument("--poly_eps", type=float, default=1.0)
+    parser.add_argument("--seq2seq_model", action="store_true")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -131,15 +135,7 @@ if __name__ == "__main__":
     model = get_model(training_conf, tokenizer)
 
     train, evals, collate_fn = get_dataset(training_conf, tokenizer)
-
-    optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else None
-
-    if training_conf.quantization:
-        for module in model.modules():
-            if isinstance(module, torch.nn.Embedding):
-                bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
-                    module, "weight", {"optim_bits": 32}
-                )
+    metrics, preprocess_fn = get_metrics(training_conf)
 
     args = TrainingArguments(
         output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
@@ -147,7 +143,6 @@ if __name__ == "__main__":
         warmup_steps=training_conf.warmup_steps,
         learning_rate=float(training_conf.learning_rate),
         deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
-        optim=optimizer,
         fp16=True,
         local_rank=training_conf.local_rank,
         gradient_checkpointing=training_conf.gradient_checkpointing,

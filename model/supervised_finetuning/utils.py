@@ -1,17 +1,21 @@
+from functools import partial
 from pathlib import Path
 
+import evaluate
+import nltk
+import numpy as np
+import transformers
 import yaml
 from custom_datasets import QA_SPECIAL_TOKENS, get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
-from losses import CrossEntropyLoss
+from losses import CrossEntropyLoss, PolyLoss
 from models import freeze_top_n_layers, get_specific_model
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
-from transformers import AutoTokenizer
 
 
 def get_tokenizer(conf):
-    tokenizer = AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
 
     if "galactica" in conf.model_name:
         tokenizer.add_special_tokens({"pad_token": "<pad>", "eos_token": "</s>"})
@@ -32,8 +36,51 @@ def get_tokenizer(conf):
     return tokenizer
 
 
+# placeholder for now
+def preprocess_qa(eval_pred):
+    return (eval_pred.predictions, eval_pred.label_ids)
+
+
+def postprocess_summarization(preds, labels):
+    preds = [pred.strip() for pred in preds]
+    labels = [label.strip() for label in labels]
+
+    preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
+    labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
+
+    return preds, labels
+
+
+def preprocess_summarization(eval_pred, tokenizer, ignore_pad_token_for_loss=True):
+    preds, labels = eval_pred
+    decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+    if ignore_pad_token_for_loss:
+        labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
+    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+
+    decoded_preds, decoded_labels = postprocess_summarization(decoded_preds, decoded_labels)
+    return decoded_preds, decoded_labels
+
+
+def get_metrics(conf, tokenizer):
+    qa_datasets = ["squad_v2", "adversarial_qa", "trivia_qa_context", "trivia_qa_noconext"]
+    summarization_datasets = ["xsum", "cnn_dailymail", "samsum", "multi_news"]
+
+    # the reason behind using a list is that we might want to extend the list of our
+    # metrics in the future for more thorough evaluation
+    if any(dataset in qa_datasets for dataset in conf.datasets):
+        metrics, preprocess_fn = [evaluate.load("squad_v2")], preprocess_qa
+    elif any(dataset in summarization_datasets for dataset in conf.datasets):
+        metrics, preprocess_fn = [evaluate.load("rouge")], partial(
+            preprocess_summarization, tokenizer, ignore_pad_token_for_loss=conf.ignore_pad_token_for_loss
+        )
+    else:
+        raise ValueError("Unknown dataset / task")
+    return metrics, preprocess_fn
+
+
 def get_model(conf, tokenizer):
-    model = get_specific_model(conf.model_name, conf.cache_dir, conf.quantization)
+    model = get_specific_model(conf.model_name, conf.cache_dir, conf.quantization, conf.seq2seqmodel)
 
     if len(tokenizer) != model.get_input_embeddings().num_embeddings:
         assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
@@ -65,9 +112,11 @@ def get_dataset(conf, tokenizer):
     return train, evals, collate_fn
 
 
-def get_loss(loss):
+def get_loss(loss, poly_eps):
     if loss == "CrossEntropyLoss":
         return CrossEntropyLoss()
+    elif loss == "Poly":
+        return PolyLoss(epsilon=poly_eps)
     else:
         raise ValueError(f"Loss {loss} not supported")
 
