@@ -23,12 +23,6 @@ export function UserMenu() {
         desc: "Dashboard",
         icon: FiLayout,
       },
-      session.user.role === "admin" && {
-        name: "Admin Dashboard",
-        href: "/admin",
-        desc: "Admin Dashboard",
-        icon: FiShield,
-      },
       {
         name: "Account Settings",
         href: "/account",
@@ -36,6 +30,16 @@ export function UserMenu() {
         icon: FiSettings,
       },
     ];
+
+    if (session.user.role === "admin") {
+      accountOptions.unshift({
+        name: "Admin Dashboard",
+        href: "/admin",
+        desc: "Admin Dashboard",
+        icon: FiShield,
+      });
+    }
+
     return (
       <Popover className="relative">
         {({ open }) => (
