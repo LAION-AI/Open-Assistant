@@ -222,7 +222,7 @@ class PromptRepository:
         logger.info(f"Ranking {rating.rating} stored for task {task.id}.")
         return reaction
 
-    def store_ranking(self, ranking: protocol_schema.MessageRanking) -> MessageReaction:
+    def store_ranking(self, ranking: protocol_schema.MessageRanking) -> Tuple[MessageReaction, Task]:
         # fetch task
         task = self.task_repository.fetch_task_by_frontend_message_id(ranking.message_id)
         self._validate_task(task, frontend_message_id=ranking.message_id)
@@ -260,12 +260,9 @@ class PromptRepository:
                     ranking=ranking.ranking, ranked_message_ids=ranked_message_ids
                 )
                 reaction = self.insert_reaction(task.id, reaction_payload)
-
                 self.journal.log_ranking(task, message_id=parent_msg.id, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for task {task.id}.")
-
-                return reaction
 
             case db_payload.RankInitialPromptsPayload:
                 # validate ranking
@@ -286,13 +283,13 @@ class PromptRepository:
 
                 logger.info(f"Ranking {ranking.ranking} stored for task {task.id}.")
 
-                return reaction
-
             case _:
                 raise OasstError(
                     f"task payload type mismatch: {type(task_payload)=} != {db_payload.RankConversationRepliesPayload}",
                     OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
                 )
+
+        return reaction, task
 
     def insert_message_embedding(self, message_id: UUID, model: str, embedding: List[float]) -> MessageEmbedding:
         """Insert the embedding of a new message in the database.

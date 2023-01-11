@@ -316,7 +316,9 @@ class TreeManager:
                     f"Frontend reports ranking of {interaction.message_id=} with {interaction.ranking=} by {interaction.user=}."
                 )
 
-                pr.store_ranking(interaction)
+                _, task = pr.store_ranking(interaction)
+
+                self.check_condition_for_scoring_state(task.message_tree_id)
 
             case protocol_schema.TextLabels:
                 logger.info(
@@ -399,7 +401,7 @@ class TreeManager:
         return True
 
     def check_condition_for_ranking_state(self, message_tree_id: UUID) -> bool:
-        logger.debug(f"check_condition_for_scoring_state({message_tree_id=})")
+        logger.debug(f"check_condition_for_ranking_state({message_tree_id=})")
 
         mts = self.pr.fetch_tree_state(message_tree_id)
         if not mts.active or mts.state != message_tree_state.State.GROWING:
@@ -425,9 +427,10 @@ class TreeManager:
 
         rankings_by_message = self.query_tree_ranking_results(message_tree_id)
         for parent_msg_id, ranking in rankings_by_message.items():
-            if len(ranking) < self.cfg.num_reviews_ranking:
-                logger.debug(f"False {len(ranking)=}")
+            if len(ranking) < self.cfg.num_required_rankings:
+                logger.debug(f"False {parent_msg_id=} {len(ranking)=}")
                 return False
+
         self._enter_state(mts, message_tree_state.State.READY_FOR_SCORING)
         return True
 
