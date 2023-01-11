@@ -117,10 +117,9 @@ class FillDb:
 
                 # First we upload the ones without parent_id
                 mock_messages = [msg for msg in mock_messages if msg.parent_message_id is None] + [
-                    msg for msg in mock_messages if msg.parent_message_id is not None
+                    msg for msg in mock_messages if msg.parent_message_id
                 ]
                 for msg in mock_messages:
-                    print(msg, "msg")
                     task = tr.fetch_task_by_frontend_message_id(msg.task_message_id)
                     if task and not task.ack:
                         logger.warning("Deleting unacknowledged seed data task")
@@ -286,6 +285,6 @@ if __name__ == "__main__":
 
     fill_db = FillDb(engine, api_client, users, use_seed=use_seed, seed=seed)
 
-    # fill_db.fill_api_client()
-    # fill_db.fill_users()
+    fill_db.fill_api_client()
+    fill_db.fill_users()
     fill_db.fill_messages()
