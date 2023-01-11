@@ -36,7 +36,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
         return response.json()
 
     typer.echo("Requesting work...")
-    tasks = [_post("/api/v1/tasks/", {"type": "random"})]
+    tasks = [_post("/api/v1/tasks/", {"type": "random", "user": USER})]
     while tasks:
         task = tasks.pop(0)
         match (task["type"]):
@@ -58,6 +58,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_reply_to_message",
                         "message_id": message_id,
+                        "task_id": task["id"],
                         "user_message_id": user_message_id,
                         "text": summary,
                         "user": USER,
@@ -102,6 +103,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_reply_to_message",
                         "message_id": message_id,
+                        "task_id": task["id"],
                         "user_message_id": user_message_id,
                         "text": prompt,
                         "user": USER,
@@ -150,6 +152,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_reply_to_message",
                         "message_id": message_id,
+                        "task_id": task["id"],
                         "user_message_id": user_message_id,
                         "text": reply,
                         "user": USER,
@@ -200,6 +203,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "message_ranking",
                         "message_id": message_id,
+                        "task_id": task["id"],
                         "ranking": ranking,
                         "user": USER,
                     },
@@ -232,6 +236,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_labels",
                         "message_id": task["message_id"],
+                        "task_id": task["id"],
                         "text": task["prompt"],
                         "labels": labels_dict,
                         "user": USER,
@@ -269,6 +274,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_labels",
                         "message_id": task["message_id"],
+                        "task_id": task["id"],
                         "text": task["reply"],
                         "labels": labels_dict,
                         "user": USER,
