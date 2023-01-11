@@ -12,7 +12,7 @@ import React from "react";
 
 export const CollapsableText = ({ text, maxLength = 220 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  if (typeof text != "string" || text.length <= maxLength) {
+  if (typeof text !== "string" || text.length <= maxLength) {
     return text;
   } else {
     return (

@@ -4,7 +4,7 @@ export enum TaskCategory {
   Label = "Label",
 }
 
-export interface TaskType {
+export interface TaskInfo {
   label: string;
   desc: string;
   category: TaskCategory;
@@ -12,9 +12,12 @@ export interface TaskType {
   type: string;
   overview?: string;
   instruction?: string;
+  update_type: string;
+  unchanged_title?: string;
+  unchanged_message?: string;
 }
 
-export const TaskTypes: TaskType[] = [
+export const TaskTypes: TaskInfo[] = [
   // create
   {
     label: "Create Initial Prompts",
@@ -24,6 +27,7 @@ export const TaskTypes: TaskType[] = [
     type: "initial_prompt",
     overview: "Create an initial message to send to the assistant",
     instruction: "Provide the initial prompt",
+    update_type: "text_reply_to_message",
   },
   {
     label: "Reply as User",
@@ -33,6 +37,7 @@ export const TaskTypes: TaskType[] = [
     type: "prompter_reply",
     overview: "Given the following conversation, provide an adequate reply",
     instruction: "Provide the user`s reply",
+    update_type: "text_reply_to_message",
   },
   {
     label: "Reply as Assistant",
@@ -42,6 +47,7 @@ export const TaskTypes: TaskType[] = [
     type: "assistant_reply",
     overview: "Given the following conversation, provide an adequate reply",
     instruction: "Provide the assistant`s reply",
+    update_type: "text_reply_to_message",
   },
   // evaluate
   {
@@ -50,6 +56,9 @@ export const TaskTypes: TaskType[] = [
     desc: "Help Open Assistant improve its responses to conversations with other users.",
     pathname: "/evaluate/rank_user_replies",
     type: "rank_prompter_replies",
+    update_type: "message_ranking",
+    unchanged_title: "Order Unchanged",
+    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to submit?",
   },
   {
     label: "Rank Assistant Replies",
@@ -57,6 +66,9 @@ export const TaskTypes: TaskType[] = [
     category: TaskCategory.Evaluate,
     pathname: "/evaluate/rank_assistant_replies",
     type: "rank_assistant_replies",
+    update_type: "message_ranking",
+    unchanged_title: "Order Unchanged",
+    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to submit?",
   },
   {
     label: "Rank Initial Prompts",
@@ -64,6 +76,9 @@ export const TaskTypes: TaskType[] = [
     category: TaskCategory.Evaluate,
     pathname: "/evaluate/rank_initial_prompts",
     type: "rank_initial_prompts",
+    update_type: "message_ranking",
+    unchanged_title: "Order Unchanged",
+    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to submit?",
   },
   // label
   {
@@ -71,20 +86,26 @@ export const TaskTypes: TaskType[] = [
     desc: "Provide labels for a prompt.",
     category: TaskCategory.Label,
     pathname: "/label/label_initial_prompt",
+    overview: "Provide labels for the following prompt",
     type: "label_initial_prompt",
+    update_type: "text_labels",
   },
   {
     label: "Label Prompter Reply",
     desc: "Provide labels for a prompt.",
     category: TaskCategory.Label,
     pathname: "/label/label_prompter_reply",
+    overview: "Given the following discussion, provide labels for the final promp",
     type: "label_prompter_reply",
+    update_type: "text_labels",
   },
   {
     label: "Label Assistant Reply",
     desc: "Provide labels for a prompt.",
     category: TaskCategory.Label,
     pathname: "/label/label_assistant_reply",
+    overview: "Given the following discussion, provide labels for the final prompt.",
     type: "label_assistant_reply",
+    update_type: "text_labels",
   },
 ];

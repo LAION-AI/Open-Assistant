@@ -1,15 +1,39 @@
 from typing import Optional
+from uuid import UUID
 
 from oasst_backend.models import ApiClient, Message, User
+from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import LeaderboardStats
 from sqlmodel import Session, func
+from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
 class UserRepository:
     def __init__(self, db: Session, api_client: ApiClient):
         self.db = db
         self.api_client = api_client
+
+    def query_frontend_user(
+        self, auth_method: str, username: str, api_client_id: Optional[UUID] = None
+    ) -> Optional[User]:
+        if not api_client_id:
+            api_client_id = self.api_client.id
+
+        if not self.api_client.trusted and api_client_id != self.api_client.id:
+            # Unprivileged API client asks for foreign user
+            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+
+        user: User = (
+            self.db.query(User)
+            .filter(User.auth_method == auth_method, User.username == username, User.api_client_id == api_client_id)
+            .first()
+        )
+
+        if user is None:
+            raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
+
+        return user
 
     def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
         if not client_user:

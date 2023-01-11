@@ -1,4 +1,4 @@
-import withRole from "src/lib/auth";
+import { withRole } from "src/lib/auth";
 import prisma from "src/lib/prismadb";
 
 /**

@@ -1,44 +1,56 @@
 import { Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
-import { ReactNode, useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { MessageView } from "src/components/Messages";
+import { MessageTable } from "src/components/Messages/MessageTable";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
+import { TaskSurveyProps } from "src/components/Tasks/Task";
+import { TaskType } from "src/types/Task";
 import { colors } from "styles/Theme/colors";
 
 export const LabelTask = ({
-  title,
-  desc,
-  messages,
-  inputs,
-  controls,
-}: {
-  title: string;
-  desc: string;
-  messages: ReactNode;
-  inputs: ReactNode;
-  controls: ReactNode;
-}) => {
-  const { colorMode } = useColorMode();
-  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
+  task,
+  taskType,
+  onReplyChanged,
+}: TaskSurveyProps<{ text: string; labels: { [k: string]: number }; message_id: string }>) => {
+  const [sliderValues, setSliderValues] = useState<number[]>([]);
 
-  const card = useMemo(
-    () => (
-      <>
-        <h5 className="text-lg font-semibold">{title}</h5>
-        <p className="text-lg py-1">{desc}</p>
-        {messages}
-      </>
-    ),
-    [title, desc, messages]
-  );
+  const valid_labels = task.valid_labels;
+
+  useEffect(() => {
+    onReplyChanged({ content: { labels: {}, text: task.reply, message_id: task.message_id }, state: "DEFAULT" });
+  }, [task.reply, task.message_id, onReplyChanged]);
+
+  const onSliderChange = (values: number[]) => {
+    console.assert(valid_labels.length === sliderValues.length);
+    const labels = Object.fromEntries(valid_labels.map((label, i) => [label, sliderValues[i]]));
+    onReplyChanged({ content: { labels, text: task.reply, message_id: task.message_id }, state: "VALID" });
+    setSliderValues(values);
+  };
 
   return (
-    <div className={`p-12 ${mainBgClasses}`}>
-      <TwoColumnsWithCards>
-        {card}
-        {inputs}
-      </TwoColumnsWithCards>
-      {controls}
-    </div>
+    <TwoColumnsWithCards>
+      <>
+        <h5 className="text-lg font-semibold">{taskType.label}</h5>
+        <p className="text-lg py-1">{taskType.overview}</p>
+
+        {task.conversation ? (
+          <MessageTable
+            messages={[
+              ...(task.conversation ? task.conversation.messages : []),
+              {
+                text: task.reply,
+                is_assistant: task.type === TaskType.label_assistant_reply,
+                message_id: task.message_id,
+              },
+            ]}
+          />
+        ) : (
+          <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />
+        )}
+      </>
+      <LabelSliderGroup labelIDs={task.valid_labels} onChange={onSliderChange} />
+    </TwoColumnsWithCards>
   );
 };
 
@@ -51,10 +63,6 @@ interface LabelSliderGroupProps {
 export const LabelSliderGroup = ({ labelIDs, onChange }: LabelSliderGroupProps) => {
   const [sliderValues, setSliderValues] = useState<number[]>(Array.from({ length: labelIDs.length }).map(() => 0));
 
-  useEffect(() => {
-    onChange(sliderValues);
-  }, [sliderValues, onChange]);
-
   return (
     <Grid templateColumns="auto 1fr" rowGap={1} columnGap={3}>
       {labelIDs.map((labelId, idx) => (
@@ -65,6 +73,7 @@ export const LabelSliderGroup = ({ labelIDs, onChange }: LabelSliderGroupProps) 
           sliderHandler={(sliderValue) => {
             const newState = sliderValues.slice();
             newState[idx] = sliderValue;
+            onChange(sliderValues);
             setSliderValues(newState);
           }}
         />
