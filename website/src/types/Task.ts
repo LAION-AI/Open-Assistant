@@ -31,5 +31,4 @@ export interface TaskResponse<Task extends BaseTask> {
   id: string;
   userId: string;
   task: Task;
-  valid_labels: ValidLabel[];
 }

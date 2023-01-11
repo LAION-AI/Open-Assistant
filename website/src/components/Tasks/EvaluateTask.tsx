@@ -24,7 +24,6 @@ export const EvaluateTask = ({ task, onReplyChanged }: TaskSurveyProps<{ ranking
     onReplyChanged({ content: { ranking: newRanking }, state: "VALID" });
   };
 
-  const valid_labels = task.valid_labels;
   const sortables = task.replies ? "replies" : "prompts";
 
   return (
@@ -33,7 +32,7 @@ export const EvaluateTask = ({ task, onReplyChanged }: TaskSurveyProps<{ ranking
       <p className="text-lg py-1">
         Given the following {sortables}, sort them from best to worst, best being first, worst being last.
       </p>
-      <MessageTable messages={messages} valid_labels={valid_labels} />
+      <MessageTable messages={messages} />
       <Sortable items={task[sortables]} onChange={onRank} className="my-8" />
     </SurveyCard>
   );

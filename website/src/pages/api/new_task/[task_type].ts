@@ -14,7 +14,6 @@ const handler = withoutRole("banned", async (req, res, token) => {
   // Fetch the new task.
   const { task_type } = req.query;
   const task = await oasstApiClient.fetchTask(task_type as string, token);
-  const valid_labels = await oasstApiClient.fetch_valid_text();
 
   // Store the task and link it to the user..
   const registeredTask = await prisma.registeredTask.create({
@@ -27,9 +26,6 @@ const handler = withoutRole("banned", async (req, res, token) => {
       },
     },
   });
-
-  // Add the valid labels that can be used to flag messages in this Task
-  registeredTask["valid_labels"] = valid_labels;
 
   // Send the results to the client.
   res.status(200).json(registeredTask);

@@ -29,13 +29,17 @@ class User(BaseModel):
     auth_method: Literal["discord", "local"]
 
 
+class FrontEndUser(User):
+    user_id: UUID
+
+
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
+    id: Optional[UUID] = None
+    frontend_message_id: Optional[str] = None
     text: str
     is_assistant: bool
-    message_id: Optional[UUID] = None
-    frontend_message_id: Optional[str] = None
 
 
 class Conversation(BaseModel):
@@ -45,7 +49,6 @@ class Conversation(BaseModel):
 
 
 class Message(ConversationMessage):
-    id: UUID
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
 
@@ -151,7 +154,8 @@ class RankInitialPromptsTask(Task):
     """A task to rank a set of initial prompts."""
 
     type: Literal["rank_initial_prompts"] = "rank_initial_prompts"
-    prompts: list[str]
+    prompts: list[str]  # deprecated, use prompt_messages
+    prompt_messages: list[ConversationMessage]
 
 
 class RankConversationRepliesTask(Task):
@@ -159,7 +163,8 @@ class RankConversationRepliesTask(Task):
 
     type: Literal["rank_conversation_replies"] = "rank_conversation_replies"
     conversation: Conversation  # the conversation so far
-    replies: list[str]
+    replies: list[str]  # deprecated, use reply_messages
+    reply_messages: list[ConversationMessage]
 
 
 class RankPrompterRepliesTask(RankConversationRepliesTask):
@@ -181,6 +186,7 @@ class LabelInitialPromptTask(Task):
     message_id: UUID
     prompt: str
     valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
 
 
 class LabelConversationReplyTask(Task):
@@ -191,6 +197,7 @@ class LabelConversationReplyTask(Task):
     message_id: UUID
     reply: str
     valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):
@@ -304,6 +311,7 @@ class TextLabels(Interaction):
     text: str
     labels: dict[TextLabel, float]
     message_id: UUID
+    task_id: Optional[UUID]
 
     @property
     def has_message_id(self) -> bool:

@@ -40,10 +40,10 @@ const MessagesDashboard = () => {
         <title>Messages - Open Assistant</title>
         <meta name="description" content="Chat with Open Assistant and provide feedback." />
       </Head>
-      <SimpleGrid columns={[1, 1, 1, 2]} gap={4}>
+      <SimpleGrid fontFamily="Inter" columns={[1, 1, 1, 2]} gap={4}>
         <Box>
           <Text className="text-2xl font-bold" pb="4">
-            Most recent messages
+            Recent messages
           </Text>
           <Box
             backgroundColor={boxBgColor}
@@ -52,16 +52,12 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {receivedMessages ? (
-              <MessageTable messages={messages} valid_labels={[]} />
-            ) : (
-              <CircularProgress isIndeterminate />
-            )}
+            {receivedMessages ? <MessageTable messages={messages} /> : <CircularProgress isIndeterminate />}
           </Box>
         </Box>
         <Box>
           <Text className="text-2xl font-bold" pb="4">
-            Your most recent messages
+            Your recent messages
           </Text>
           <Box
             backgroundColor={boxBgColor}
@@ -70,11 +66,7 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {receivedUserMessages ? (
-              <MessageTable messages={userMessages} valid_labels={[]} />
-            ) : (
-              <CircularProgress isIndeterminate />
-            )}
+            {receivedUserMessages ? <MessageTable messages={userMessages} /> : <CircularProgress isIndeterminate />}
           </Box>
         </Box>
       </SimpleGrid>

@@ -6,6 +6,7 @@ pushd "$parent_path/../../backend"
 
 export DEBUG_SKIP_API_KEY_CHECK=True
 export DEBUG_USE_SEED_DATA=True
+export DEBUG_ALLOW_SELF_LABELING=True
 export DEBUG_SKIP_EMBEDDING_COMPUTATION=True
 
 uvicorn main:app --reload --port 8080 --host 0.0.0.0

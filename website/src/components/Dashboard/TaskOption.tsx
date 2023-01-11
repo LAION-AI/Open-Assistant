@@ -1,11 +1,9 @@
 import { Box, Flex, GridItem, Heading, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Link from "next/link";
 
-import { TaskCategory, TaskTypes } from "../Tasks/TaskTypes";
+import { TaskTypes } from "../Tasks/TaskTypes";
 
-const displayTaskCategories = [TaskCategory.Create, TaskCategory.Evaluate, TaskCategory.Label];
-
-export const TaskOption = () => {
+export const TaskOption = ({ displayTaskCategories }) => {
   const backgroundColor = useColorModeValue("white", "gray.700");
 
   return (

@@ -13,9 +13,8 @@ export const LabelTask = ({
   taskType,
   onReplyChanged,
 }: TaskSurveyProps<{ text: string; labels: { [k: string]: number }; message_id: string }>) => {
-  const [sliderValues, setSliderValues] = useState<number[]>([]);
-
   const valid_labels = task.valid_labels;
+  const [sliderValues, setSliderValues] = useState<number[]>(new Array(valid_labels.length).fill(0));
 
   useEffect(() => {
     onReplyChanged({ content: { labels: {}, text: task.reply, message_id: task.message_id }, state: "DEFAULT" });
@@ -24,7 +23,10 @@ export const LabelTask = ({
   const onSliderChange = (values: number[]) => {
     console.assert(valid_labels.length === sliderValues.length);
     const labels = Object.fromEntries(valid_labels.map((label, i) => [label, sliderValues[i]]));
-    onReplyChanged({ content: { labels, text: task.reply, message_id: task.message_id }, state: "VALID" });
+    onReplyChanged({
+      content: { labels, text: task.reply || task.prompt, message_id: task.message_id },
+      state: "VALID",
+    });
     setSliderValues(values);
   };
 
@@ -44,7 +46,6 @@ export const LabelTask = ({
                 message_id: task.message_id,
               },
             ]}
-            valid_labels={valid_labels}
           />
         ) : (
           <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />

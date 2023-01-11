@@ -1,10 +1,5 @@
 import { JWT } from "next-auth/jwt";
 
-declare global {
-  // eslint-disable-next-line no-var
-  var oasstApiClient: OasstApiClient | undefined;
-}
-
 export class OasstError {
   message: string;
   errorCode: number;
@@ -106,6 +101,7 @@ export class OasstApiClient {
   // This is a raw Json type, so we can't use it to strongly type the task.
   async interactTask(
     updateType: string,
+    taskId: string,
     messageId: string,
     userMessageId: string,
     content: object,
@@ -118,6 +114,7 @@ export class OasstApiClient {
         display_name: userToken.name || userToken.email,
         auth_method: "local",
       },
+      task_id: taskId,
       message_id: messageId,
       user_message_id: userMessageId,
       ...content,
@@ -131,8 +128,6 @@ export class OasstApiClient {
   }
 }
 
-export const oasstApiClient =
-  globalThis.oasstApiClient || new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
-if (process.env.NODE_ENV !== "production") {
-  globalThis.oasstApiClient = oasstApiClient;
-}
+const oasstApiClient = new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
+
+export { oasstApiClient };
