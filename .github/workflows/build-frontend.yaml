@@ -25,5 +25,4 @@ jobs:
           cache: "npm"
           cache-dependency-path: website/package-lock.json
       - run: npm ci
-      - run: npx prisma generate
       - run: npm run build
