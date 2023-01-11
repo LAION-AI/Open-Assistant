@@ -20,8 +20,8 @@ const handler = withoutRole("banned", async (req, res, token) => {
   // Accept the task so that we can complete it, this will probably go away soon.
   const registeredTask = await prisma.registeredTask.findUniqueOrThrow({ where: { id: frontendId } });
   const task = registeredTask.task as Prisma.JsonObject;
-  const id = task.id as string;
-  await oasstApiClient.ackTask(id, registeredTask.id);
+  const taskId = task.id as string;
+  await oasstApiClient.ackTask(taskId, registeredTask.id);
 
   // Log the interaction locally to create our user_post_id needed by the Task
   // Backend.
@@ -38,8 +38,9 @@ const handler = withoutRole("banned", async (req, res, token) => {
 
   let newTask;
   try {
-    newTask = await oasstApiClient.interactTask(update_type, frontendId, interaction.id, content, token);
+    newTask = await oasstApiClient.interactTask(update_type, taskId, frontendId, interaction.id, content, token);
   } catch (err) {
+    console.error(JSON.stringify(err));
     return res.status(500).json(err);
   }
 
