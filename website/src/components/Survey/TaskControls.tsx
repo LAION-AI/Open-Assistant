@@ -4,21 +4,22 @@ import clsx from "clsx";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
+import { TaskStatus } from "src/components/Tasks/Task";
 
 export interface TaskControlsProps {
   // we need a task type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  tasks: any[];
+  task: any;
   className?: string;
-  onSubmitResponse: (task: { id: string }) => void;
-  onSkipTask: (task: { id: string }, reason: string) => void;
+  taskStatus: TaskStatus;
+  onSubmit: () => void;
+  onSkip: (reason: string) => void;
   onNextTask: () => void;
 }
 
 export const TaskControls = (props: TaskControlsProps) => {
   const { colorMode } = useColorMode();
   const isLightMode = colorMode === "light";
-  const endTask = props.tasks[props.tasks.length - 1];
   return (
     <section
       className={clsx(
@@ -30,15 +31,16 @@ export const TaskControls = (props: TaskControlsProps) => {
         }
       )}
     >
-      <TaskInfo id={props.tasks[0].id} output="Submit your answer" />
+      <TaskInfo id={props.task.id} output="Submit your answer" />
       <Flex justify="center" ml="auto" gap={2}>
-        <SkipButton
-          onSkip={(reason: string) => {
-            props.onSkipTask(props.tasks[0], reason);
-          }}
-        />
-        {endTask.task.type !== "task_done" ? (
-          <SubmitButton colorScheme="blue" data-cy="submit" onClick={() => props.onSubmitResponse(props.tasks[0])}>
+        <SkipButton onSkip={props.onSkip} disabled={props.taskStatus === "SUBMITTED"} />
+        {props.taskStatus !== "SUBMITTED" ? (
+          <SubmitButton
+            colorScheme="blue"
+            data-cy="submit"
+            disabled={props.taskStatus === "NOT_SUBMITTABLE"}
+            onClick={props.onSubmit}
+          >
             Submit
           </SubmitButton>
         ) : (

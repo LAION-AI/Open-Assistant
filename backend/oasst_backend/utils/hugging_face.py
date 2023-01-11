@@ -55,12 +55,12 @@ class HuggingFaceAPI:
 
             async with session.post(self.api_url, headers=self.headers, json=payload) as response:
                 # If we get a bad response
-                if response.status != 200:
-
+                if not response.ok:
                     logger.error(response)
                     logger.info(self.headers)
                     raise OasstError(
-                        "Response Error Detoxify HuggingFace", error_code=OasstErrorCode.HUGGINGFACE_API_ERROR
+                        f"Response Error HuggingFace API (Status: {response.status})",
+                        error_code=OasstErrorCode.HUGGINGFACE_API_ERROR,
                     )
 
                 # Get the response from the API call

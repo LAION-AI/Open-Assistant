@@ -79,6 +79,7 @@
           REDIS_HOST: oasst-redis
           DEBUG_ALLOW_ANY_API_KEY: "true"
           DEBUG_USE_SEED_DATA: "true"
+          DEBUG_ALLOW_SELF_LABELING: "true"
           MAX_WORKERS: "1"
           RATE_LIMIT: "false"
           DEBUG_SKIP_EMBEDDING_COMPUTATION: "true"

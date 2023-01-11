@@ -7,6 +7,9 @@ In root directory, run
 database. The default settings are already configured to connect to the database
 at `localhost:5432`.
 
+Python 3.10 is required. It is recommended to use `pyenv` which will recognise
+the `.python-version` in the project root directory.
+
 Make sure you have all requirements installed. You can do this by running
 `pip install -r requirements.txt` inside the `backend` folder and
 `pip install -e .` inside the `oasst-shared` folder. Then, run the backend using
@@ -41,3 +44,18 @@ run `alembic revision --autogenerate -m "..."` ("..." is what you did) in the
 `/backend` directory. Then edit the newly created file. See
 [here](https://alembic.sqlalchemy.org/en/latest/tutorial.html) for more
 information.
+
+## API Documentation
+
+Once you have successfully started the backend server, you can access the
+default api docs at `localhost:8080/docs`. If you need to update the exported
+openapi.json in the docs/ folder you can run below command to `wget` them from
+the relevant local fastapi endpoint. This will enable anyone to just see API
+docs via something like
+[Swagger.io](https://editor.swagger.io/?url=https://raw.githubusercontent.com/LAION-AI/Open-Assistant/main/docs/docs/api/openapi.json)
+without having to actually set up and run a development backend.
+
+```bash
+# save openapi.json to docs/docs/api
+wget localhost:8080/api/v1/openapi.json -O docs/docs/api/openapi.json
+```

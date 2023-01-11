@@ -1,7 +1,7 @@
 describe("ranking assistant replies", () => {
   it("completes the current task on submit and on request shows a new task", () => {
     cy.signInWithEmail("cypress@example.com");
-    cy.visit("/evaluate/rank_assistant_replies");
+    cy.visit("/evaluate/rank_user_replies");
 
     cy.get('[data-cy="task-id"').then((taskIdElement) => {
       const taskId = taskIdElement.text();
