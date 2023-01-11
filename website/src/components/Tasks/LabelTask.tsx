@@ -24,7 +24,10 @@ export const LabelTask = ({
   const onSliderChange = (values: number[]) => {
     console.assert(valid_labels.length === sliderValues.length);
     const labels = Object.fromEntries(valid_labels.map((label, i) => [label, sliderValues[i]]));
-    onReplyChanged({ content: { labels, text: task.reply, message_id: task.message_id }, state: "VALID" });
+    onReplyChanged({
+      content: { labels, text: task.reply || task.prompt, message_id: task.message_id },
+      state: "VALID",
+    });
     setSliderValues(values);
   };
 

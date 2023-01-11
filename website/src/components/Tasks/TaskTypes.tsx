@@ -1,4 +1,5 @@
 export enum TaskCategory {
+  Tasks = "Tasks",
   Create = "Create",
   Evaluate = "Evaluate",
   Label = "Label",
@@ -18,6 +19,15 @@ export interface TaskInfo {
 }
 
 export const TaskTypes: TaskInfo[] = [
+  // general/random
+  {
+    label: "Grab a task",
+    desc: "Help us improve Open Assistant by grabbing a task ...",
+    category: TaskCategory.Tasks,
+    pathname: "/tasks/random",
+    type: "random",
+    update_type: "random",
+  },
   // create
   {
     label: "Create Initial Prompts",
