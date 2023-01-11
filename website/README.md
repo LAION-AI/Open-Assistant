@@ -138,6 +138,7 @@ A few npm scripts are available for convenience:
 Read more in the [./cypress README](cypress/).
 
 ## Unit testing
+
 Jest and React Testing Library are used for unit testing JS/TS/TSX code.
 
 - Store unit test files adjacent to the file being tested and have the filename

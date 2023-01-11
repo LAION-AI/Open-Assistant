@@ -5,6 +5,6 @@ describe("About page", () => {
   it("should render correctly", () => {
     render(<AboutPage />);
 
-    expect(screen.getByRole("heading", {level: 1})).toHaveTextContent("What is OpenAssistant?");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("What is OpenAssistant?");
   });
 });

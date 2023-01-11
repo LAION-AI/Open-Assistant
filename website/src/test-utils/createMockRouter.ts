@@ -25,7 +25,7 @@ export function createMockRouter(router: Partial<NextRouter>): NextRouter {
       off: jest.fn(),
       emit: jest.fn(),
     },
-    ...router
+    ...router,
   };
   return mockRouter;
 }
