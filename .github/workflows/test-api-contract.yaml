@@ -5,9 +5,9 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'docs/**'
-      - 'notebooks/**'
-      - 'assets/**'
+      - "docs/**"
+      - "notebooks/**"
+      - "assets/**"
   pull_request:
   workflow_call:
 
