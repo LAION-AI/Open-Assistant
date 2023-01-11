@@ -1,6 +1,6 @@
 import argparse
-import os
 from distutils.util import strtobool
+from functools import partial
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import bitsandbytes
@@ -9,7 +9,6 @@ from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.training_args import OptimizerNames
 from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
-from functools import partial
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
