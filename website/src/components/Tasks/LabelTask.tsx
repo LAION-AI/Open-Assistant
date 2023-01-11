@@ -3,70 +3,55 @@ import { useColorMode } from "@chakra-ui/react";
 import { useEffect, useId, useState } from "react";
 import { MessageView } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
-import { TaskControls } from "src/components/Survey/TaskControls";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
-import { TaskInfo } from "src/components/Tasks/TaskTypes";
+import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskType } from "src/types/Task";
 import { colors } from "styles/Theme/colors";
 
-export interface LabelTaskProps {
-  // we need a task type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  tasks: any[];
-  taskType: TaskInfo;
-  trigger: (update: {
-    id: string;
-    update_type: string;
-    content: { text: string; labels: { [k: string]: number }; message_id: string };
-  }) => void;
-  onSkipTask: (task: { id: string }, reason: string) => void;
-  onNextTask: () => void;
-  mainBgClasses: string;
-}
-export const LabelTask = ({ tasks, taskType, trigger, onSkipTask, onNextTask, mainBgClasses }: LabelTaskProps) => {
-  const task = tasks[0].task;
-  const valid_labels = tasks[0].valid_labels;
-
+export const LabelTask = ({
+  task,
+  taskType,
+  onReplyChanged,
+}: TaskSurveyProps<{ text: string; labels: { [k: string]: number }; message_id: string }>) => {
   const [sliderValues, setSliderValues] = useState<number[]>([]);
 
-  const submitResponse = (task: { id: string; reply: string; message_id: string }) => {
+  const valid_labels = task.valid_labels;
+
+  useEffect(() => {
+    onReplyChanged({ content: { labels: {}, text: task.reply, message_id: task.message_id }, state: "DEFAULT" });
+  }, [task.reply, task.message_id, onReplyChanged]);
+
+  const onSliderChange = (values: number[]) => {
     console.assert(valid_labels.length === sliderValues.length);
-    const labels = Object.fromEntries(valid_labels.valid_labels.map((label, i) => [label, sliderValues[i]]));
-    trigger({
-      id: task.id,
-      update_type: "text_labels",
-      content: { labels, text: task.reply, message_id: task.message_id },
-    });
+    const labels = Object.fromEntries(valid_labels.map((label, i) => [label, sliderValues[i]]));
+    onReplyChanged({ content: { labels, text: task.reply, message_id: task.message_id }, state: "VALID" });
+    setSliderValues(values);
   };
 
   return (
-    <div className={`p-12 ${mainBgClasses}`}>
-      <TwoColumnsWithCards>
-        <>
-          <h5 className="text-lg font-semibold">{taskType.label}</h5>
-          <p className="text-lg py-1">{taskType.overview}</p>
+    <TwoColumnsWithCards>
+      <>
+        <h5 className="text-lg font-semibold">{taskType.label}</h5>
+        <p className="text-lg py-1">{taskType.overview}</p>
 
-          {task.conversation ? (
-            <MessageTable
-              messages={[
-                ...(task.conversation ? task.conversation.messages : []),
-                {
-                  text: task.reply,
-                  is_assistant: task.type === TaskType.label_assistant_reply,
-                  message_id: task.message_id,
-                },
-              ]}
-              valid_labels={valid_labels}
-            />
-          ) : (
-            <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />
-          )}
-        </>
-        <LabelSliderGroup labelIDs={task.valid_labels} onChange={setSliderValues} />
-      </TwoColumnsWithCards>
-
-      <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkipTask={onSkipTask} onNextTask={onNextTask} />
-    </div>
+        {task.conversation ? (
+          <MessageTable
+            messages={[
+              ...(task.conversation ? task.conversation.messages : []),
+              {
+                text: task.reply,
+                is_assistant: task.type === TaskType.label_assistant_reply,
+                message_id: task.message_id,
+              },
+            ]}
+            valid_labels={valid_labels}
+          />
+        ) : (
+          <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />
+        )}
+      </>
+      <LabelSliderGroup labelIDs={task.valid_labels} onChange={onSliderChange} />
+    </TwoColumnsWithCards>
   );
 };
 
@@ -79,10 +64,6 @@ interface LabelSliderGroupProps {
 export const LabelSliderGroup = ({ labelIDs, onChange }: LabelSliderGroupProps) => {
   const [sliderValues, setSliderValues] = useState<number[]>(Array.from({ length: labelIDs.length }).map(() => 0));
 
-  useEffect(() => {
-    onChange(sliderValues);
-  }, [sliderValues, onChange]);
-
   return (
     <Grid templateColumns="auto 1fr" rowGap={1} columnGap={3}>
       {labelIDs.map((labelId, idx) => (
@@ -93,6 +74,7 @@ export const LabelSliderGroup = ({ labelIDs, onChange }: LabelSliderGroupProps) 
           sliderHandler={(sliderValue) => {
             const newState = sliderValues.slice();
             newState[idx] = sliderValue;
+            onChange(sliderValues);
             setSliderValues(newState);
           }}
         />

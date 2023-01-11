@@ -21,7 +21,7 @@ const LabelInitialPrompt = () => {
         <title>Label Initial Prompt</title>
         <meta name="description" content="Label Initial Prompt" />
       </Head>
-      <Task tasks={tasks} trigger={trigger} mutate={reset} />
+      <Task key={tasks[0].task.id} task={tasks[0].task} trigger={trigger} mutate={reset} />
     </>
   );
 };

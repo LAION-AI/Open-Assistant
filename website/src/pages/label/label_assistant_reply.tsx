@@ -21,7 +21,7 @@ const LabelAssistantReply = () => {
         <title>Label Assistant Reply</title>
         <meta name="description" content="Label Assistant Reply" />
       </Head>
-      <Task tasks={tasks} trigger={trigger} mutate={reset} />
+      <Task key={tasks[0].task.id} task={tasks[0].task} trigger={trigger} mutate={reset} />
     </>
   );
 };

@@ -21,7 +21,7 @@ const InitialPrompt = () => {
         <title>Reply as Assistant</title>
         <meta name="description" content="Reply as Assistant." />
       </Head>
-      <Task tasks={tasks} trigger={trigger} mutate={reset} />
+      <Task key={tasks[0].task.id} task={tasks[0].task} trigger={trigger} mutate={reset} />
     </>
   );
 };
