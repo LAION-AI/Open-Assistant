@@ -34,6 +34,8 @@ interface textFlagLabels {
 }
 
 export const FlaggableElement = (props) => {
+  const backgroundColor = useColorModeValue("gray.200", "gray.700");
+
   const [isEditing, setIsEditing] = useBoolean();
   const flaggable_labels = props.flaggable_labels;
   const TEXT_LABEL_FLAGS =
@@ -93,10 +95,10 @@ export const FlaggableElement = (props) => {
     >
       <Grid templateColumns="1fr min-content" gap={2}>
         <PopoverAnchor>{props.children}</PopoverAnchor>
-        <Tooltip hasArrow label="Report" bg="red.600">
+        <Tooltip label="Report" bg="red.500">
           <div>
             <PopoverTrigger>
-              <Button h="full">
+              <Button h="full" bg={backgroundColor}>
                 <FlagIcon className="w-4 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
               </Button>
             </PopoverTrigger>
