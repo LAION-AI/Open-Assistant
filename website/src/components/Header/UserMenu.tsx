@@ -5,7 +5,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
-import { FiLayout, FiLogOut, FiSettings } from "react-icons/fi";
+import { FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
 
 export function UserMenu() {
   const { data: session } = useSession();
@@ -22,6 +22,12 @@ export function UserMenu() {
         href: "/dashboard",
         desc: "Dashboard",
         icon: FiLayout,
+      },
+      session.user.role === "admin" && {
+        name: "Admin Dashboard",
+        href: "/admin",
+        desc: "Admin Dashboard",
+        icon: FiShield,
       },
       {
         name: "Account Settings",
