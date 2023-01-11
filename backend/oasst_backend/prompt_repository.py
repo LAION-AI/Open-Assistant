@@ -18,7 +18,6 @@ from oasst_backend.models import (
     User,
 )
 from oasst_backend.models.payload_column_type import PayloadContainer
-from oasst_backend.schemas.hugging_face import ToxicityClassification
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
@@ -238,7 +237,7 @@ class PromptRepository:
                     OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
                 )
 
-    def insert_toxicity(self, message_id: UUID, model: str, toxicity: ToxicityClassification) -> MessageToxicity:
+    def insert_toxicity(self, message_id: UUID, model: str, toxicity) -> MessageToxicity:
         """Save the toxicity score of a new message in the database.
         Args:
             message_id (UUID): the identifier of the message we want to save its toxicity score
@@ -250,11 +249,8 @@ class PromptRepository:
             MessageToxicity: the instance in the database of the score saved for that message
         """
 
-        if None in (message_id, model, toxicity):
-            raise OasstError("Paramters missing to add toxicity", OasstErrorCode.GENERIC_ERROR)
-
         message_toxicity = MessageToxicity(
-            message_id=message_id, model=model, score=toxicity.score, label=toxicity.label
+            message_id=message_id, model=model, score=toxicity["score"], label=toxicity["label"]
         )
         self.db.add(message_toxicity)
         self.db.commit()
@@ -275,9 +271,6 @@ class PromptRepository:
         Returns:
             MessageEmbedding: the instance in the database of the embedding saved for that message
         """
-
-        if None in (message_id, model, embedding):
-            raise OasstError("Paramters missing to add embedding", OasstErrorCode.GENERIC_ERROR)
 
         message_embedding = MessageEmbedding(message_id=message_id, model=model, embedding=embedding)
         self.db.add(message_embedding)

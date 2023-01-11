@@ -1,5 +1,5 @@
 import random
-from typing import Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -9,7 +9,6 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
-from oasst_backend.schemas.hugging_face import ToxicityClassification
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -290,7 +289,7 @@ async def tasks_interaction(
                             f"{HfUrl.HUGGINGFACE_TOXIC_ROBERTA.value}/{model_name}"
                         )
 
-                        toxicity: List[List[ToxicityClassification]] = await hugging_face_api.post(interaction.text)
+                        toxicity: List[List[Dict[str, Any]]] = await hugging_face_api.post(interaction.text)
                         toxicity = toxicity[0][0]
 
                         pr.insert_toxicity(message_id=new_message.id, model=model_name, toxicity=toxicity)
