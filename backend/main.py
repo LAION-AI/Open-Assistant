@@ -12,6 +12,7 @@ from fastapi_limiter import FastAPILimiter
 from loguru import logger
 from oasst_backend.api.deps import get_dummy_api_client
 from oasst_backend.api.v1.api import api_router
+from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
@@ -141,17 +142,7 @@ if settings.DEBUG_USE_SEED_DATA:
                                 msg.parent_message_id, fail_if_missing=True
                             )
                             conversation_messages = pr.fetch_message_conversation(parent_message)
-                            conversation = protocol_schema.Conversation(
-                                messages=[
-                                    protocol_schema.ConversationMessage(
-                                        text=cmsg.text,
-                                        is_assistant=cmsg.role == "assistant",
-                                        message_id=cmsg.id,
-                                        fronend_message_id=cmsg.frontend_message_id,
-                                    )
-                                    for cmsg in conversation_messages
-                                ]
-                            )
+                            conversation = prepare_conversation(conversation_messages)
                             task = tr.store_task(
                                 protocol_schema.AssistantReplyTask(conversation=conversation),
                                 message_tree_id=parent_message.message_tree_id,
