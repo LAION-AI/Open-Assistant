@@ -153,6 +153,34 @@ When writing code for the website, we have a few best practices:
 1.  Define functional React components (with types for all properties when
     feasible).
 
+### Developing New Features
+
+When working on new features or making significant changes that can't be done
+within a single Pull Request, we ask that you make use of Feature Flags.
+
+We've set up
+[`react-feature-flags`](https://www.npmjs.com/package/react-feature-flags) to
+make this easier. To get started:
+
+1.  Add a new flag entry to `website/src/flags.ts`. We have an example flag you
+    can copy as an example. Be sure to `isActive` to true when testing your
+    features but false when submitting your PR.
+1.  Use your flag wherever you add a new UI element. This can be done with:
+
+```js
+import { Flags } from "react-feature-flags";
+...
+      <Flags authorizedFlags={["yourFlagName"]}>
+        <YourNewComponent />
+      </Flags>
+```
+
+    You can see an example of how this works by checking `website/src/components/Header/Headers.tsx` where we use `flagTest`.
+
+1.  Once you've finished building out the feature and it is ready for everyone
+    to use, it's safe to remove the `Flag` wrappers around your component and
+    the entry in `flags.ts`.
+
 ### URL Paths
 
 To use stable and consistent URL paths, we recommend the following strategy for

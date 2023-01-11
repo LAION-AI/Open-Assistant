@@ -7,6 +7,9 @@ In root directory, run
 database. The default settings are already configured to connect to the database
 at `localhost:5432`.
 
+Python 3.10 is required. It is recommended to use `pyenv` which will recognise
+the `.python-version` in the project root directory.
+
 Make sure you have all requirements installed. You can do this by running
 `pip install -r requirements.txt` inside the `backend` folder and
 `pip install -e .` inside the `oasst-shared` folder. Then, run the backend using

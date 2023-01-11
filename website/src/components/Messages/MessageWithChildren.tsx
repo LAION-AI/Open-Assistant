@@ -64,7 +64,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
           <Flex justifyContent="center" pb="2">
             <Box maxWidth="container.sm" flex="1" px={isFirstOrOnly ? [4, 6, 8, 9] : "0"}>
               <Box px={isFirstOrOnly ? "2" : "0"}>
-                <MessageTableEntry item={message} idx={1} />
+                <MessageTableEntry item={message} idx={1} valid_labels={[]} />
               </Box>
             </Box>
           </Flex>
@@ -90,7 +90,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
             <HStack {...MessageStackProps}>
               {children.map((item, idx) => (
                 <Box maxWidth="container.sm" flex="1" key={`recursiveMessageWChildren_${idx}`}>
-                  <MessageTableEntry item={item} idx={idx * 2} />
+                  <MessageTableEntry item={item} idx={idx * 2} valid_labels={[]} />
                 </Box>
               ))}
             </HStack>

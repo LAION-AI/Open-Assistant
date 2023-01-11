@@ -1,7 +1,6 @@
 import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
 import { getCsrfToken, getProviders } from "next-auth/react";
-import { AuthLayout } from "src/components/AuthLayout";
 
 export default function Verify() {
   const { colorMode } = useColorMode();

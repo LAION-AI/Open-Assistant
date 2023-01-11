@@ -39,9 +39,9 @@ const RateSummary = () => {
 
   // Trigger a mutation that updates the current task.  We should probably
   // signal somewhere that this interaction is being processed.
-  const submitResponse = (t) => {
+  const submitResponse = () => {
     trigger({
-      id: t.id,
+      id: tasks[0].task.id,
       update_type: "message_rating",
       content: {
         rating: rating,
@@ -60,7 +60,7 @@ const RateSummary = () => {
     return <LoadingScreen text="Loading..." />;
   }
 
-  if (tasks.length == 0) {
+  if (tasks.length === 0) {
     return (
       <div className={`p-12 ${mainBgClasses}`}>
         <div className="flex h-full">
@@ -102,7 +102,13 @@ const RateSummary = () => {
           </section>
         </TwoColumnsWithCards>
 
-        <TaskControls tasks={tasks} onSubmitResponse={submitResponse} onSkip={fetchNextTask} />
+        <TaskControls
+          task={tasks[0].task}
+          taskStatus={"NOT_SUBMITTABLE"}
+          onSubmit={submitResponse}
+          onSkip={fetchNextTask}
+          onNextTask={fetchNextTask}
+        />
       </main>
     </>
   );

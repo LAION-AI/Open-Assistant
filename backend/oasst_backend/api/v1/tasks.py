@@ -5,8 +5,10 @@ from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
+from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
 from oasst_backend.tree_manager import TreeManager, TreeManagerConfiguration
+from oasst_backend.utils.hugging_face import HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -103,7 +105,7 @@ def tasks_acknowledge_failure(
 
 
 @router.post("/interaction", response_model=protocol_schema.TaskDone)
-def tasks_interaction(
+async def tasks_interaction(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
