@@ -8,12 +8,12 @@ from oasst_shared.exceptions import OasstError, OasstErrorCode
 
 
 class HfUrl(str, Enum):
-    HUGGINGFACE_TOXIC_ROBERTA = "https://api-inference.huggingface.co/models/unitary"
+    HUGGINGFACE_TOXIC_CLASSIFICATION = "https://api-inference.huggingface.co/models"
     HUGGINGFACE_FEATURE_EXTRACTION = "https://api-inference.huggingface.co/pipeline/feature-extraction"
 
 
 class HfClassificationModel(str, Enum):
-    TOXIC_ROBERTA = "multilingual-toxic-xlm-roberta"
+    TOXIC_ROBERTA = "unitary/multilingual-toxic-xlm-roberta"
 
 
 class HfEmbeddingModel(str, Enum):
