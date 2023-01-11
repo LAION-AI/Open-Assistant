@@ -118,8 +118,7 @@ async def tasks_interaction(
         pr = PromptRepository(db, api_client, client_user=interaction.user)
         tree_manager_config = TreeManagerConfiguration()
         tm = TreeManager(db, pr, tree_manager_config)
-
-        return tm.handle_interaction(interaction)
+        return await tm.handle_interaction(interaction)
 
     except OasstError:
         raise

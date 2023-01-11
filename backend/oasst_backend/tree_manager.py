@@ -10,6 +10,7 @@ from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversatio
 from oasst_backend.config import settings
 from oasst_backend.models import Message, MessageReaction, MessageTreeState, TextLabels, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.utils.hugging_face import HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlalchemy.sql import text
@@ -284,7 +285,7 @@ class TreeManager:
 
         return task, message_tree_id, parent_message_id
 
-    def handle_interaction(self, interaction: protocol_schema.AnyInteraction) -> protocol_schema.Task:
+    async def handle_interaction(self, interaction: protocol_schema.AnyInteraction) -> protocol_schema.Task:
         pr = self.pr
         match type(interaction):
             case protocol_schema.TextReplyToMessage:
@@ -303,6 +304,20 @@ class TreeManager:
                     logger.info(f"TreeManager: Inserting new tree state for initial prompt {message.id=}")
                     self._insert_default_state(message.id)
                     self.db.commit()
+
+                if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
+                    try:
+                        hugging_face_api = HuggingFaceAPI(
+                            f"{HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value}/{HfEmbeddingModel.MINILM.value}"
+                        )
+                        embedding = await hugging_face_api.post(interaction.text)
+                        pr.insert_message_embedding(
+                            message_id=message.id, model=HfEmbeddingModel.MINILM.value, embedding=embedding
+                        )
+                    except OasstError:
+                        logger.error(
+                            f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                        )
 
             case protocol_schema.MessageRating:
                 logger.info(
