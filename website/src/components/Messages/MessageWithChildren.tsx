@@ -68,7 +68,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
               {isFirst ? "Message" : depth === 1 ? "Children" : "Ancestor"}
             </Text>
             <Box width="fit-content" bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base">
-              <MessageTableEntry item={message} idx={1} />
+              <MessageTableEntry item={message} />
             </Box>
           </Box>
         </>
@@ -95,7 +95,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
             <Stack {...MessageStackProps}>
               {children.map((item, idx) => (
                 <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
-                  <MessageTableEntry item={item} idx={idx * 2} />
+                  <MessageTableEntry item={item} />
                 </Box>
               ))}
             </Stack>
