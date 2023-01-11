@@ -11,8 +11,6 @@ from transformers.training_args import OptimizerNames
 from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
 from functools import partial
 
-os.environ["WANDB_PROJECT"] = "supervised-finetuning"
-
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
     out = {}
@@ -102,6 +100,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
+    parser.add_argument("--wandb-entity", type=str, default="open-assistant")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -121,8 +120,10 @@ def argument_parsing(notebook=False, notebook_args=None):
         else:
             conf.update(configs[name])
 
+    conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
+
     # Override config from command-line
     parser = argparse.ArgumentParser()
     for key, value in conf.items():
@@ -177,6 +178,15 @@ if __name__ == "__main__":
     )
 
     assert len(evals) > 0
+
+    if not training_conf.deepspeed or training_conf.local_rank == 0:
+        import wandb
+
+        wandb.init(
+            project="supervised-finetuning",
+            entity=training_conf.wandb_entity,
+            name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
+        )
 
     trainer = SFTTrainer(
         model,
