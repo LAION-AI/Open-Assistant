@@ -188,10 +188,10 @@ new tasks:
 
 1.  For any task that involves writing a free-form response, put the page under
     `website/src/pages/create` with a page name matching the task type, such as
-    `summarize_story.tsx`.
+    `initial_prompt.tsx`.
 1.  For any task that evaluates, rates, or ranks content, put the page under
     `website/src/pages/evaluate` with a page name matching the task type such as
-    `rate_summary.tsx`.
+    `rank_initial_prompts.tsx`.
 
 With this we'll be able to ensure these contribution pages are hidden from
 logged out users but accessible to logged in users.
