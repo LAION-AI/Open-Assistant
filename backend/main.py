@@ -143,11 +143,18 @@ if settings.DEBUG_USE_SEED_DATA:
                             )
                             conversation_messages = pr.fetch_message_conversation(parent_message)
                             conversation = prepare_conversation(conversation_messages)
-                            task = tr.store_task(
-                                protocol_schema.AssistantReplyTask(conversation=conversation),
-                                message_tree_id=parent_message.message_tree_id,
-                                parent_message_id=parent_message.id,
-                            )
+                            if msg.role == "assistant":
+                                task = tr.store_task(
+                                    protocol_schema.AssistantReplyTask(conversation=conversation),
+                                    message_tree_id=parent_message.message_tree_id,
+                                    parent_message_id=parent_message.id,
+                                )
+                            else:
+                                task = tr.store_task(
+                                    protocol_schema.PrompterReplyTask(conversation=conversation),
+                                    message_tree_id=parent_message.message_tree_id,
+                                    parent_message_id=parent_message.id,
+                                )
                         tr.bind_frontend_message_id(task.id, msg.task_message_id)
                         message = pr.store_text_reply(
                             msg.text, msg.task_message_id, msg.user_message_id, review_count=5, review_result=True
