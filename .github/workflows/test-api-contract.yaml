@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'docs/**'
+      - 'notebooks/**'
+      - 'assets/**'
   pull_request:
   workflow_call:
 
