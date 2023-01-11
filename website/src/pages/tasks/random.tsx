@@ -1,18 +1,11 @@
 import { Container } from "@chakra-ui/react";
 import Head from "next/head";
-import { useEffect } from "react";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useGenericTaskAPI } from "src/hooks/tasks/useGenericTaskAPI";
 
 const RandomTask = () => {
   const { tasks, isLoading, trigger, reset } = useGenericTaskAPI("random");
-
-  useEffect(() => {
-    if (tasks.length === 0) {
-      reset();
-    }
-  }, [tasks, reset]);
 
   if (isLoading) {
     return <LoadingScreen text="Loading..." />;
