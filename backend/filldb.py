@@ -97,8 +97,8 @@ class FillDb:
     def fill_messages(self):
         realistic_data_path: str = settings.DEBUG_USE_SEED_DATA_PATH
 
-        with open(realistic_data_path, "r") as realistic_data_file:
-            reslistic_messages_raw = json.load(realistic_data_file)
+        with open(realistic_data_path) as f:
+            reslistic_messages_raw = json.load(f)
 
         try:
             logger.info("Seed data check began")
@@ -115,7 +115,12 @@ class FillDb:
 
                 mock_messages = [MockMessage(**dm) for dm in reslistic_messages_raw]
 
+                # First we upload the ones without parent_id
+                mock_messages = [msg for msg in mock_messages if msg.parent_message_id is None] + [
+                    msg for msg in mock_messages if msg.parent_message_id is not None
+                ]
                 for msg in mock_messages:
+                    print(msg, "msg")
                     task = tr.fetch_task_by_frontend_message_id(msg.task_message_id)
                     if task and not task.ack:
                         logger.warning("Deleting unacknowledged seed data task")
@@ -123,10 +128,12 @@ class FillDb:
                         task = None
                     if not task:
                         if msg.parent_message_id is None:
+                            # This is the initial message of a certain Task
                             task = tr.store_task(
                                 protocol_schema.InitialPromptTask(hint=""), message_tree_id=None, parent_message_id=None
                             )
                         else:
+                            print("parent msg id", msg.parent_message_id)
                             parent_message = pr.fetch_message_by_frontend_message_id(
                                 msg.parent_message_id, fail_if_missing=True
                             )
@@ -279,6 +286,6 @@ if __name__ == "__main__":
 
     fill_db = FillDb(engine, api_client, users, use_seed=use_seed, seed=seed)
 
-    fill_db.fill_api_client()
-    fill_db.fill_users()
+    # fill_db.fill_api_client()
+    # fill_db.fill_users()
     fill_db.fill_messages()
