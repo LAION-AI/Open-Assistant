@@ -27,6 +27,8 @@ summarization_config_mapping = {
     "reddit": (),
 }
 
+QA_DATASETS = ["squad_v2", "adversarial_qa", "trivia_qa_context", "trivia_qa_noconext"]
+SUMMARIZATION_DATASETS = ["xsum", "cnn_dailymail", "samsum", "multi_news"]
 
 def index_squad_v2(example):
     return example["title"] + ". " + example["context"] + " " + example["question"], example["answers"]["text"][0]

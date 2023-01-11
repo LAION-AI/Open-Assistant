@@ -7,15 +7,15 @@ import torch
 from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
+from functools import partial
 
 os.environ["WANDB_PROJECT"] = "supervised-finetuning"
 
 
-def compute_metrics(eval_pred, preprocess_fn, metrics):
-    preds, labels = preprocess_fn(eval_pred)
-
+def compute_metrics(eval_pred, preprocess_fns, metrics):
     out = {}
-    for metric in metrics:
+    for metric, preprocess_fn in zip(metrics, preprocess_fns):
+        preds, labels = preprocess_fn(eval_pred)
         out = dict(**out, **metric.compute(predictions=preds, references=labels))
 
     return out
@@ -44,7 +44,10 @@ class SFTTrainer(Trainer):
         labels_mask = inputs.pop("label_masks")
         targets = inputs.pop("targets")
 
-        outputs = model(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask", None))
+        outputs = model(
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs.get("attention_mask", None),
+        )
 
         loss = self.loss_fct(outputs.get("logits"), targets, mask=labels_mask)
 
@@ -56,7 +59,10 @@ class SFTTrainer(Trainer):
         labels_mask = inputs.pop("label_masks")
         targets = inputs.pop("targets")
 
-        outputs = model(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask", None))
+        outputs = model(
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs.get("attention_mask", None),
+        )
 
         logits = outputs.get("logits")
 
@@ -94,8 +100,6 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
-    parser.add_argument("--poly_eps", type=float, default=1.0)
-    parser.add_argument("--seq2seq_model", action="store_true")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -135,7 +139,7 @@ if __name__ == "__main__":
     model = get_model(training_conf, tokenizer)
 
     train, evals, collate_fn = get_dataset(training_conf, tokenizer)
-    metrics, preprocess_fn = get_metrics(training_conf)
+    metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
 
     args = TrainingArguments(
         output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
@@ -161,15 +165,17 @@ if __name__ == "__main__":
     )
 
     assert len(evals) > 0
+
     trainer = SFTTrainer(
         model,
         args,
         loss_function=training_conf.loss_fn,
+        poly_eps=training_conf.poly_eps,
         train_dataset=train,
         eval_dataset=evals,
         data_collator=collate_fn,
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
+        compute_metrics=partial(compute_metrics, metrics=metrics, preprocess_fns=preprocess_fns),
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
     trainer.train()

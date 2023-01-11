@@ -6,7 +6,7 @@ import nltk
 import numpy as np
 import transformers
 import yaml
-from custom_datasets import QA_SPECIAL_TOKENS, get_one_dataset
+from custom_datasets import QA_SPECIAL_TOKENS, QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from losses import CrossEntropyLoss, PolyLoss
 from models import freeze_top_n_layers, get_specific_model
@@ -36,6 +36,16 @@ def get_tokenizer(conf):
     return tokenizer
 
 
+def default_preprocess(eval_pred, ignote_negative_labels=True):
+    preds, labels = eval_pred.predictions, eval_pred.label_ids
+
+    if not ignote_negative_labels:
+        return preds, labels
+
+    mask = labels > 0
+    return preds[mask], labels[mask]
+
+
 # placeholder for now
 def preprocess_qa(eval_pred):
     return (eval_pred.predictions, eval_pred.label_ids)
@@ -63,20 +73,22 @@ def preprocess_summarization(eval_pred, tokenizer, ignore_pad_token_for_loss=Tru
 
 
 def get_metrics(conf, tokenizer):
-    qa_datasets = ["squad_v2", "adversarial_qa", "trivia_qa_context", "trivia_qa_noconext"]
-    summarization_datasets = ["xsum", "cnn_dailymail", "samsum", "multi_news"]
-
     # the reason behind using a list is that we might want to extend the list of our
     # metrics in the future for more thorough evaluation
-    if any(dataset in qa_datasets for dataset in conf.datasets):
-        metrics, preprocess_fn = [evaluate.load("squad_v2")], preprocess_qa
-    elif any(dataset in summarization_datasets for dataset in conf.datasets):
-        metrics, preprocess_fn = [evaluate.load("rouge")], partial(
-            preprocess_summarization, tokenizer, ignore_pad_token_for_loss=conf.ignore_pad_token_for_loss
+    metrics, preprocess_fns = [evaluate.load("accuracy")], [default_preprocess]
+
+    if any(dataset in QA_DATASETS for dataset in conf.datasets):
+        raise ValueError("TODO")
+        metrics.append(evaluate.load("squad_v2"))
+        preprocess_fns.append(preprocess_qa)
+    if any(dataset in SUMMARIZATION_DATASETS for dataset in conf.datasets):
+        raise ValueError("TODO")
+        metrics.append(evaluate.load("rouge"))
+        preprocess_fns.append(
+            partial(preprocess_summarization, tokenizer, ignore_pad_token_for_loss=conf.ignore_pad_token_for_loss)
         )
-    else:
-        raise ValueError("Unknown dataset / task")
-    return metrics, preprocess_fn
+
+    return metrics, preprocess_fns
 
 
 def get_model(conf, tokenizer):
