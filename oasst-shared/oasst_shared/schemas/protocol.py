@@ -29,13 +29,17 @@ class User(BaseModel):
     auth_method: Literal["discord", "local"]
 
 
+class FrontEndUser(User):
+    user_id: UUID
+
+
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
+    id: Optional[UUID] = None
+    frontend_message_id: Optional[str] = None
     text: str
     is_assistant: bool
-    message_id: Optional[UUID] = None
-    frontend_message_id: Optional[str] = None
 
 
 class Conversation(BaseModel):
@@ -45,7 +49,6 @@ class Conversation(BaseModel):
 
 
 class Message(ConversationMessage):
-    id: UUID
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
 

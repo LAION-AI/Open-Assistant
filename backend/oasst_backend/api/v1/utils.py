@@ -7,6 +7,7 @@ from oasst_shared.schemas import protocol
 def prepare_message(m: Message) -> protocol.Message:
     return protocol.Message(
         id=m.id,
+        frontend_message_id=m.frontend_message_id,
         parent_id=m.parent_id,
         text=m.text,
         is_assistant=(m.role == "assistant"),
@@ -23,7 +24,7 @@ def prepare_conversation_message_list(messages: list[Message]) -> list[protocol.
         protocol.ConversationMessage(
             text=message.text,
             is_assistant=(message.role == "assistant"),
-            message_id=message.id,
+            id=message.id,
             frontend_message_id=message.frontend_message_id,
         )
         for message in messages

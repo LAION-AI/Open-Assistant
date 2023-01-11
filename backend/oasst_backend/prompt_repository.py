@@ -245,10 +245,10 @@ class PromptRepository:
                     )
 
                 last_conv_message = task_payload.conversation.messages[-1]
-                parent_msg = self.fetch_message(last_conv_message.message_id)
+                parent_msg = self.fetch_message(last_conv_message.id)
 
                 # store reaction to message
-                ranked_message_ids = [task_payload.reply_messages[i].message_id for i in ranking.ranking]
+                ranked_message_ids = [task_payload.reply_messages[i].id for i in ranking.ranking]
                 for mid in ranked_message_ids:
                     message = self.fetch_message(mid)
                     if message.parent_id != parent_msg.id:
@@ -273,7 +273,7 @@ class PromptRepository:
                     )
 
                 # store reaction to message
-                ranked_message_ids = [task_payload.prompt_messages[i].message_id for i in ranking.ranking]
+                ranked_message_ids = [task_payload.prompt_messages[i].id for i in ranking.ranking]
                 reaction_payload = db_payload.RankingReactionPayload(
                     ranking=ranking.ranking, ranked_message_ids=ranked_message_ids
                 )
@@ -617,6 +617,7 @@ class PromptRepository:
     def query_messages(
         self,
         user_id: Optional[UUID] = None,
+        auth_method: Optional[str] = None,
         username: Optional[str] = None,
         api_client_id: Optional[UUID] = None,
         desc: bool = True,
@@ -637,9 +638,11 @@ class PromptRepository:
         messages = self.db.query(Message)
         if user_id:
             messages = messages.filter(Message.user_id == user_id)
-        if username:
+        if username or auth_method:
+            if not username and auth_method:
+                raise OasstError("Auth method or username missing.", OasstErrorCode.AUTH_AND_USERNAME_REQUIRED)
             messages = messages.join(User)
-            messages = messages.filter(User.username == username)
+            messages = messages.filter(User.username == username, User.auth_method == auth_method)
         if api_client_id:
             messages = messages.filter(Message.api_client_id == api_client_id)
 
@@ -662,7 +665,6 @@ class PromptRepository:
         if limit is not None:
             messages = messages.limit(limit)
 
-        # TODO: Pagination could be great at some point
         return messages.all()
 
     def mark_messages_deleted(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):
