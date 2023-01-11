@@ -35,11 +35,10 @@ import os
 from typing import Dict, List, Tuple
 
 import datasets
-
 from hub import OpenAssistantConfig
 
 # TODO: import the schema (i.e. features) that fits your dataset:
-from hub import
+from hub import lm_features
 
 # TODO: Add BibTeX citation where appropriate
 _CITATION = """\
@@ -58,7 +57,7 @@ _CITATION = """\
 
 # TODO: create a module level variable with your dataset name (should match the script name)
 #  E.g. The Pile: [dataset_name] --> the_pile
-_DATASETNAME = "[dataset_name]"
+_DATASETNAME = "nba_data"
 # TODO: create a pretty display name for your dataset
 _DISPLAYNAME = "Dataset Name"
 
@@ -85,21 +84,22 @@ _LICENSE = ""
 # However, if you need to access different files for each config you can have multiple entries in this dict.
 # This can be an arbitrarily nested dict/list of URLs (see below in `_split_generators` method)
 _URLS = {
-    _DATASETNAME: "url or list of urls or relative path like ./data ",
+    _DATASETNAME: 'data/What_ChatGPT_Could_Mean_for_the_Future_of_Artificial_Intelligence.vtt',
 }
 
+# print(_URLS[_DATASETNAME])
 # TODO: add supported task by dataset. One dataset may support multiple tasks
 _SUPPORTED_TASKS = []  # example: [Tasks.TRANSLATION, Tasks.NAMED_ENTITY_RECOGNITION, Tasks.RELATION_EXTRACTION]
 
 # TODO: set this to a version that is associated with the dataset. if none exists use "1.0.0"
 #  This version doesn't have to be consistent with semantic versioning. Anything that is
 #  provided by the original dataset as a version goes.
-_VERSION = ""
+_VERSION = "1.0.0"
 
 
 # TODO: Name the dataset class to match the script name using CamelCase instead of snake_case
 #  Append "Dataset" to the class name: ThePile --> ThePileDataset
-class NewDataset(datasets.GeneratorBasedBuilder):
+class NbaDataDataset(datasets.GeneratorBasedBuilder):
     """TODO: Short description of my dataset."""
 
     VERSION = datasets.Version(_VERSION)
@@ -119,10 +119,10 @@ class NewDataset(datasets.GeneratorBasedBuilder):
 
     BUILDER_CONFIGS = [
         OpenAssistantConfig(
-            name=f"{_DATASETNAME}_[schema_name]",
+            name=_DATASETNAME,
             version=VERSION,
             description=f"OpenAssistant dataset config for {_DATASETNAME}",
-            schema_name="[schema_name]",
+            schema_name=lm_features,
             subset_id=_DATASETNAME,
         )
     ]
@@ -131,11 +131,11 @@ class NewDataset(datasets.GeneratorBasedBuilder):
 
     def _info(self) -> datasets.DatasetInfo:
         # TODO: Implement the schema for your dataset here.
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
         return datasets.DatasetInfo(
             description=_DESCRIPTION,
-            features=features,
+            features=lm_features,
             homepage=_HOMEPAGE,
             license=_LICENSE,
             citation=_CITATION,
@@ -153,7 +153,6 @@ class NewDataset(datasets.GeneratorBasedBuilder):
 
         urls = _URLS[_DATASETNAME]
         data_dir = dl_manager.download_and_extract(urls)
-
         # Not all datasets have predefined canonical train/val/test splits.
         # If your dataset has no predefined splits, use datasets.Split.TRAIN for all of the data.
 
@@ -162,24 +161,24 @@ class NewDataset(datasets.GeneratorBasedBuilder):
                 name=datasets.Split.TRAIN,
                 # Whatever you put in gen_kwargs will be passed to _generate_examples
                 gen_kwargs={
-                    "filepath": os.path.join(data_dir, "train.jsonl"),
+                    "filepath": os.path.join( "raw_data2022.csv"),
                     "split": "train",
                 },
             ),
-            datasets.SplitGenerator(
-                name=datasets.Split.TEST,
-                gen_kwargs={
-                    "filepath": os.path.join(data_dir, "test.jsonl"),
-                    "split": "test",
-                },
-            ),
-            datasets.SplitGenerator(
-                name=datasets.Split.VALIDATION,
-                gen_kwargs={
-                    "filepath": os.path.join(data_dir, "dev.jsonl"),
-                    "split": "dev",
-                },
-            ),
+            # datasets.SplitGenerator(
+            #     name=datasets.Split.TEST,
+            #     gen_kwargs={
+            #         "filepath": os.path.join(data_dir, "test.jsonl"),
+            #         "split": "test",
+            #     },
+            # ),
+            # datasets.SplitGenerator(
+            #     name=datasets.Split.VALIDATION,
+            #     gen_kwargs={
+            #         "filepath": os.path.join(data_dir, "dev.jsonl"),
+            #         "split": "dev",
+            #     },
+            # ),
         ]
 
     # method parameters are unpacked from `gen_kwargs` as given in `_split_generators`
@@ -194,12 +193,12 @@ class NewDataset(datasets.GeneratorBasedBuilder):
 
         # NOTE: For local datasets you will have access to self.config.data_dir and self.config.data_files
 
-        if self.config.schema == "[schema_name]":
+        if self.config.name == lm_features:
             # TODO: yield (key, example) tuples in the given schema
-            for key, example in thing:
+            for key, example in lm_features:
                 yield key, example
-
 # This allows you to run your dataloader with `python [dataset_name].py` during development
 # TODO: Remove this before making your PR
 if __name__ == "__main__":
-    datasets.load_dataset(__file__)
+  print(__file__)
+  datasets.load_dataset(__file__)
