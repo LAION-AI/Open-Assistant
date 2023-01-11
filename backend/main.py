@@ -96,7 +96,7 @@ if settings.DEBUG_USE_SEED_DATA:
 
     @app.on_event("startup")
     def seed_data():
-        fill_db = FillDb()
+        fill_db = FillDb(engine)
         fill_db.fill_api_client()
         fill_db.fill_users()
         fill_db.fill_messages()
