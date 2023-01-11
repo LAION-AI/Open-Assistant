@@ -1,16 +1,31 @@
 import argparse
+import json
 import random
 import string
 import uuid
 from random import choice
-from typing import List
+from typing import List, Optional
 
-from oasst_backend.api.deps import api_auth
+from loguru import logger
+from oasst_backend.api.deps import api_auth, get_dummy_api_client
+from oasst_backend.api.v1.utils import prepare_conversation
+from oasst_backend.config import settings
 from oasst_backend.database import engine
-from oasst_backend.models import ApiClient
-from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.models import ApiClient, message_tree_state
+from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
+from oasst_backend.tree_manager import TreeManager, TreeManagerConfiguration
+from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import User as ProtocolUser
+from pydantic import BaseModel
 from sqlmodel import Session
+
+
+class MockMessage(BaseModel):
+    task_message_id: str
+    user_message_id: str
+    parent_message_id: Optional[str]
+    text: str
+    role: str
 
 
 class FillDb:
@@ -75,6 +90,74 @@ class FillDb:
                 PromptRepository(db, api_client, user=random_user)
 
         return self.users
+
+    def fill_messages(self):
+        realistic_data_path: str = settings.DEBUG_USE_SEED_DATA_PATH
+
+        with open(realistic_data_path, "r") as realistic_data_file:
+            reslistic_messages_raw = json.load(realistic_data_file)
+
+        try:
+            logger.info("Seed data check began")
+            with Session(engine) as db:
+                api_client = get_dummy_api_client(db)
+                dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
+
+                ur = UserRepository(db=db, api_client=api_client)
+                tr = TaskRepository(db=db, api_client=api_client, client_user=dummy_user, user_repository=ur)
+                pr = PromptRepository(
+                    db=db, api_client=api_client, client_user=dummy_user, user_repository=ur, task_repository=tr
+                )
+                tm = TreeManager(db, pr, TreeManagerConfiguration())
+
+                mock_messages = [MockMessage(**dm) for dm in reslistic_messages_raw]
+
+                for msg in mock_messages:
+                    task = tr.fetch_task_by_frontend_message_id(msg.task_message_id)
+                    if task and not task.ack:
+                        logger.warning("Deleting unacknowledged seed data task")
+                        db.delete(task)
+                        task = None
+                    if not task:
+                        if msg.parent_message_id is None:
+                            task = tr.store_task(
+                                protocol_schema.InitialPromptTask(hint=""), message_tree_id=None, parent_message_id=None
+                            )
+                        else:
+                            parent_message = pr.fetch_message_by_frontend_message_id(
+                                msg.parent_message_id, fail_if_missing=True
+                            )
+                            conversation_messages = pr.fetch_message_conversation(parent_message)
+                            conversation = prepare_conversation(conversation_messages)
+                            if msg.role == "assistant":
+                                task = tr.store_task(
+                                    protocol_schema.AssistantReplyTask(conversation=conversation),
+                                    message_tree_id=parent_message.message_tree_id,
+                                    parent_message_id=parent_message.id,
+                                )
+                            else:
+                                task = tr.store_task(
+                                    protocol_schema.PrompterReplyTask(conversation=conversation),
+                                    message_tree_id=parent_message.message_tree_id,
+                                    parent_message_id=parent_message.id,
+                                )
+                        tr.bind_frontend_message_id(task.id, msg.task_message_id)
+                        message = pr.store_text_reply(
+                            msg.text, msg.task_message_id, msg.user_message_id, review_count=5, review_result=True
+                        )
+                        if message.parent_id is None:
+                            tm._insert_default_state(root_message_id=message.id, state=message_tree_state.State.GROWING)
+                            db.commit()
+
+                        logger.info(
+                            f"Inserted: message_id: {message.id}, payload: {message.payload.payload}, parent_message_id: {message.parent_id}"
+                        )
+                    else:
+                        logger.debug(f"seed data task found: {task.id}")
+                logger.info("Seed data check completed")
+
+        except Exception:
+            logger.exception("Seed data insertion failed")
 
     def _create_random_user(
         self,
@@ -195,3 +278,4 @@ if __name__ == "__main__":
 
     fill_db.fill_api_client()
     fill_db.fill_users()
+    fill_db.fill_messages()
