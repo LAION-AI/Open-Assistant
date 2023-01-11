@@ -87,7 +87,10 @@ class FillDb:
                 self.users.append(random_user)
 
                 # First for that API Client, should create some random users
-                PromptRepository(db, api_client, user=random_user)
+                ur = UserRepository(db=db, api_client=api_client)
+
+                # Create new usser with that api client
+                ur.lookup_client_user(client_user=random_user)
 
         return self.users
 
