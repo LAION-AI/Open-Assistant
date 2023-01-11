@@ -29,7 +29,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
   const taskType = TaskTypes.find((taskType) => taskType.type === task.type);
 
   const { colorMode } = useColorMode();
-  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
+  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-900" : "bg-slate-900 text-white";
 
   const { trigger: sendRejection } = useSWRMutation("/api/reject_task", poster, {
     onSuccess: async () => {

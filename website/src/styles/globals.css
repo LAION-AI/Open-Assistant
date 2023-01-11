@@ -10,6 +10,7 @@
     font-named-instance: "Regular";
     src: url("/fonts/Inter-roman.var.woff2") format("woff2");
 }
+
 @font-face {
     font-family: "Inter";
     font-weight: 100 900;

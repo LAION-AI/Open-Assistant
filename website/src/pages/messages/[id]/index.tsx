@@ -1,6 +1,7 @@
-import { Box, Container, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
+import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { MessageWithChildren } from "src/components/Messages/MessageWithChildren";
@@ -8,7 +9,7 @@ import fetcher from "src/lib/fetcher";
 import useSWR from "swr";
 
 const MessageDetail = ({ id }) => {
-  const mainBg = useColorModeValue("bg-slate-300", "bg-slate-900");
+  const backgroundColor = useColorModeValue("white", "gray.700");
 
   const [parent, setParent] = useState(null);
 
@@ -22,7 +23,11 @@ const MessageDetail = ({ id }) => {
   });
 
   if (isLoadingParent) {
-    return <LoadingScreen text="Loading..." />;
+    return (
+      <Box className="w-full">
+        <LoadingScreen text="Loading..." />
+      </Box>
+    );
   }
   return (
     <>
@@ -33,23 +38,26 @@ const MessageDetail = ({ id }) => {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <main className={`${mainBg}`}>
-        <Container w="100%" pt={[2, 2, 4, 4]}>
+      <Box width="full">
+        <Box>
           {parent && (
             <>
-              <Text align="center" fontSize="xl">
-                Parent
-              </Text>
-              <Box rounded="lg" p="2">
-                <MessageTableEntry item={parent} idx={1} />
+              <Box pb="4">
+                <Text fontFamily="Inter" fontWeight="bold" fontSize="xl" pb="2">
+                  Parent
+                </Text>
+                <Box bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base" width="fit-content">
+                  {" "}
+                  <MessageTableEntry item={parent} idx={1} />
+                </Box>
               </Box>
             </>
           )}
-        </Container>
-        <Box pb="4" maxW="full" px="2">
+        </Box>
+        <Box pb="4">
           <MessageWithChildren id={id} maxDepth={2} />
         </Box>
-      </main>
+      </Box>
     </>
   );
 };
@@ -59,4 +67,5 @@ MessageDetail.getInitialProps = async ({ query }) => {
   return { id };
 };
 
+MessageDetail.getLayout = (page) => getDashboardLayout(page);
 export default MessageDetail;
