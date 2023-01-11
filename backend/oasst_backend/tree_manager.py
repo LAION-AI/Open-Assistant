@@ -1,5 +1,6 @@
 import random
 from enum import Enum
+from http import HTTPStatus
 from typing import Optional, Tuple
 from uuid import UUID
 
@@ -217,14 +218,16 @@ class TreeManager:
         if task_type == TaskType.NONE:
             raise OasstError(
                 f"No tasks of type '{desired_task_type.value}' are currently available.",
-                OasstErrorCode.TASK_REQUESTED_TYPE_UNAVAILABLE,
+                OasstErrorCode.TASK_REQUESTED_TYPE_NOT_AVAILABLE,
+                HTTPStatus.SERVICE_UNAVAILABLE,
             )
 
         if task_role != TaskRole.ANY:
             # Todo: Allow role specific message selection...
             raise OasstError(
                 f"No tasks of type '{desired_task_type.value}' are currently available.",
-                OasstErrorCode.TASK_REQUESTED_TYPE_UNAVAILABLE,
+                OasstErrorCode.TASK_REQUESTED_TYPE_NOT_AVAILABLE,
+                HTTPStatus.SERVICE_UNAVAILABLE,
             )
 
         message_tree_id = None
