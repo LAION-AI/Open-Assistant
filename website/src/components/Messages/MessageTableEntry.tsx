@@ -1,4 +1,5 @@
 import { Avatar, HStack, LinkBox, LinkOverlay, useColorModeValue } from "@chakra-ui/react";
+import Link from "next/link";
 import { boolean } from "boolean";
 import { FlaggableElement } from "src/components/FlaggableElement";
 
@@ -26,7 +27,9 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
           />
 
           <LinkBox bg={backgroundColor} fontFamily="Inter" className={`p-4 rounded-md whitespace-pre-wrap w-full`}>
-            <LinkOverlay href={`/messages/${item.id}`}>{item.text}</LinkOverlay>
+            <Link href={`/messages/${item.id}`}>
+              <LinkOverlay>{item.text}</LinkOverlay>
+            </Link>
           </LinkBox>
         </HStack>
       </FlaggableElement>
