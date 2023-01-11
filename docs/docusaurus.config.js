@@ -20,7 +20,7 @@ const config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: "LAION-AI", // Usually your GitHub org/user name.
   projectName: "Open-Assistant", // Usually your repo name.
-  deploymentBranch: "docs-site-poc",
+  deploymentBranch: "main",
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
@@ -62,7 +62,11 @@ const config = {
             position: "left",
             label: "Docs",
           },
-          //{ to: "/blog", label: "Blog", position: "left" },
+          {
+            href: "https://editor.swagger.io/?url=https://raw.githubusercontent.com/LAION-AI/Open-Assistant/main/docs/docs/api/openapi.json",
+            label: "API",
+            position: "left",
+          },
           {
             href: "https://github.com/LAION-AI/Open-Assistant",
             label: "GitHub",

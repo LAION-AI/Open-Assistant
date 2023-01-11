@@ -1,11 +1,13 @@
 import re
+from typing import AnyStr, List
 
 import yaml
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
 from transformers import AutoTokenizer, T5Tokenizer
 
-re_reference_remove = re.compile(r"\[([0-9])+\]|\[([0-9])+,([0-9])+\]")
+# @agoryuno contributed this
+re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
 
 
 def webgpt_return_format(row):
@@ -95,6 +97,32 @@ def argument_parsing(parser):
     params["per_device_train_batch_size"] = int(params["per_device_train_batch_size"])
     params["learning_rate"] = float(params["learning_rate"])
     return params
+
+
+def get_datasets(dataset_list: List[AnyStr]):
+    from rank_datasets import GPTJSynthetic, HFSummary, WebGPT
+    from torch.utils.data import ConcatDataset
+
+    train_datasets, evals = [], {}
+    for dataset_name in dataset_list:
+        if "webgpt" == dataset_name:
+            web_dataset = WebGPT()
+            train, eval = train_val_dataset(web_dataset, 0.2)
+            train_datasets.append(train)
+            evals["webgpt"] = eval
+        elif "hfsummary" == dataset_name:
+            sum_train = HFSummary(split="train")
+            train_datasets.append(sum_train)
+            sum_eval = HFSummary(split="valid1")
+            assert len(sum_eval) > 0
+            evals["hfsummary"] = sum_eval
+        elif "gptsynthetic" == dataset_name:
+            dataset = GPTJSynthetic()
+            train, eval = train_val_dataset(dataset, 0.1)
+            train_datasets.append(train)
+            evals["gptsynthetic"] = eval
+    train = ConcatDataset(train_datasets)
+    return train, evals
 
 
 if __name__ == "__main__":

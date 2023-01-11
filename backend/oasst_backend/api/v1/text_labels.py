@@ -3,6 +3,7 @@ from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.schemas.text_labels import LabelOption, ValidLabelsResponse
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
@@ -24,7 +25,7 @@ def label_text(
 
     try:
         logger.info(f"Labeling text {text_labels=}.")
-        pr = PromptRepository(db, api_client, user=text_labels.user)
+        pr = PromptRepository(db, api_client, client_user=text_labels.user)
         pr.store_text_labels(text_labels)
 
     except Exception:
@@ -32,3 +33,13 @@ def label_text(
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
         )
+
+
+@router.get("/valid_labels")
+def get_valid_lables() -> ValidLabelsResponse:
+    return ValidLabelsResponse(
+        valid_labels=[
+            LabelOption(name=l.value, display_text=l.display_text, help_text=l.help_text)
+            for l in protocol_schema.TextLabel
+        ]
+    )

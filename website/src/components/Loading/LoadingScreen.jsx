@@ -1,18 +1,14 @@
-import { Progress } from "@chakra-ui/react";
-import { useColorMode } from "@chakra-ui/react";
+import { Box, Progress, Text } from "@chakra-ui/react";
 
-export const LoadingScreen = ({ text }) => {
-  const { colorMode } = useColorMode();
-  const mainClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
-
+export const LoadingScreen = ({ text = "Loading..." } = {}) => {
   return (
-    <div className={`h-full ${mainClasses}`}>
+    <Box width="full">
       <Progress size="sm" isIndeterminate />
       {text && (
-        <div className="flex h-full">
-          <div className="text-xl font-bold  mx-auto my-auto">{text}</div>
-        </div>
+        <Box width="full">
+          <Text fontFamily="Inter">{text}</Text>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };

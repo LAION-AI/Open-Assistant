@@ -1,5 +1,5 @@
 from experimental_dataset import DataCollatorForSummaryScore, HFSummaryQuality
-from rank_datasets import DataCollatorForPairRank, HFSummary, WebGPT
+from rank_datasets import DataCollatorForPairRank, GPTJSynthetic, HFSummary, WebGPT
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
@@ -25,7 +25,7 @@ def test_webgpt():
         print(batch["input_ids"].shape)
 
 
-def test_hf_quality():
+def test_hf_summary_quality():
 
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForSummaryScore(tokenizer, max_length=200)
@@ -35,6 +35,12 @@ def test_hf_quality():
         print(batch["input_ids"].shape)
 
 
-if __name__ == "__main__":
-    test_hf_quality()
-    # test_webgpt()
+def test_gptj_dataset():
+    dataset = GPTJSynthetic()
+    tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
+    collate_fn = DataCollatorForPairRank(tokenizer, max_length=1024)
+
+    print(len(dataset))
+    dataloader = DataLoader(dataset, collate_fn=collate_fn, batch_size=32)
+    for batch in dataloader:
+        batch["input_ids"].shape

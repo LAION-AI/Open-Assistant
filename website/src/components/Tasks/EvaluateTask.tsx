@@ -1,46 +1,39 @@
-import { useState } from "react";
-import { ContextMessages } from "src/components/ContextMessages";
+import { useEffect } from "react";
+import { MessageTable } from "src/components/Messages/MessageTable";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
-import { TaskControlsOverridable } from "src/components/Survey/TaskControlsOverridable";
+import { TaskSurveyProps } from "src/components/Tasks/Task";
 
-export const EvaluateTask = ({ tasks, trigger, mutate, mainBgClasses }) => {
-  const [ranking, setRanking] = useState<number[]>([]);
-  const submitResponse = (task) => {
-    trigger({
-      id: task.id,
-      update_type: "message_ranking",
-      content: {
-        ranking,
-      },
+export const EvaluateTask = ({ task, onReplyChanged }: TaskSurveyProps<{ ranking: number[] }>) => {
+  let messages = [];
+  if (task.conversation) {
+    messages = task.conversation.messages;
+    messages = messages.map((message, index) => ({ ...message, id: index }));
+  }
+
+  useEffect(() => {
+    const conversationMsgs = task.conversation ? task.conversation.messages : [];
+    const defaultRanking = conversationMsgs.map((message, index) => index);
+    onReplyChanged({
+      content: { ranking: defaultRanking },
+      state: "DEFAULT",
     });
+  }, [task.conversation, onReplyChanged]);
+
+  const onRank = (newRanking: number[]) => {
+    onReplyChanged({ content: { ranking: newRanking }, state: "VALID" });
   };
 
-  const fetchNextTask = () => {
-    setRanking([]);
-    mutate();
-  };
-
-  const sortables = tasks[0].task.replies ? "replies" : "prompts";
+  const sortables = task.replies ? "replies" : "prompts";
 
   return (
-    <div className={`p-12 ${mainBgClasses}`}>
-      <SurveyCard className="max-w-7xl mx-auto h-fit mb-24">
-        <h5 className="text-lg font-semibold mb-4">Instructions</h5>
-        <p className="text-lg py-1">
-          Given the following {sortables}, sort them from best to worst, best being first, worst being last.
-        </p>
-        {tasks[0].task.conversation ? <ContextMessages messages={tasks[0].task.conversation.messages} /> : null}
-        <Sortable items={tasks[0].task[sortables]} onChange={setRanking} className="my-8" />
-      </SurveyCard>
-
-      <TaskControlsOverridable
-        tasks={tasks}
-        isValid={ranking.length == tasks[0].task[sortables].length}
-        prepareForSubmit={() => setRanking(tasks[0].task[sortables].map((_, idx) => idx))}
-        onSubmitResponse={submitResponse}
-        onSkip={fetchNextTask}
-      />
-    </div>
+    <SurveyCard className="max-w-7xl mx-auto h-fit mb-24">
+      <h5 className="text-lg font-semibold mb-4">Instructions</h5>
+      <p className="text-lg py-1">
+        Given the following {sortables}, sort them from best to worst, best being first, worst being last.
+      </p>
+      <MessageTable messages={messages} />
+      <Sortable items={task[sortables]} onChange={onRank} className="my-8" />
+    </SurveyCard>
   );
 };

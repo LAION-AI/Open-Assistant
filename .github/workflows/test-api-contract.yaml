@@ -4,7 +4,15 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "oasst-shared/**"
+      - "backend/**"
+      - "website/**"
   pull_request:
+    paths:
+      - "oasst-shared/**"
+      - "backend/**"
+      - "website/**"
   workflow_call:
 
 jobs:

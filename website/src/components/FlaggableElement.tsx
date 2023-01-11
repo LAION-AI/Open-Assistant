@@ -22,42 +22,74 @@ import {
   useId,
 } from "@chakra-ui/react";
 import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import { colors } from "styles/Theme/colors";
+import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
+interface textFlagLabels {
+  attributeName: string;
+  labelText: string;
+  additionalExplanation?: string;
+}
+
 export const FlaggableElement = (props) => {
+  const [labels, setLabels] = useState([]);
+  const [checkboxValues, setCheckboxValues] = useState([]);
+  const [sliderValues, setSliderValues] = useState([]);
   const [isEditing, setIsEditing] = useBoolean();
-  const { trigger } = useSWRMutation("/api/v1/text_labels", poster, {
+  const backgroundColor = useColorModeValue("gray.200", "gray.700");
+
+  const { data, isLoading } = useSWR("/api/valid_labels", fetcher);
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+    const { valid_labels } = data;
+    const newLabels = valid_labels.map((valid_label) => ({
+      attributeName: valid_label.name,
+      labelText: valid_label.display_text,
+      additionalExplanation: valid_label.help_text,
+    }));
+    setSliderValues(new Array(newLabels.length).fill(1));
+    setCheckboxValues(new Array(newLabels.length).fill(false));
+    setLabels(newLabels);
+  }, [data, isLoading]);
+
+  const { trigger } = useSWRMutation("/api/set_label", poster, {
     onSuccess: () => {
-      setIsEditing.off;
+      setIsEditing.off();
     },
   });
 
   const submitResponse = () => {
     const label_map: Map<string, number> = new Map();
-    TEXT_LABEL_FLAGS.forEach((flag, i) => {
+    labels.forEach((flag, i) => {
       if (checkboxValues[i]) {
         label_map.set(flag.attributeName, sliderValues[i]);
       }
     });
-    trigger({ post_id: props.post_id, label_map: Object.fromEntries(label_map), text: props.text });
+    trigger({
+      message_id: props.message_id,
+      post_id: props.post_id,
+      label_map: Object.fromEntries(label_map),
+      text: props.text,
+    });
   };
-  const [checkboxValues, setCheckboxValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(false));
-  const [sliderValues, setSliderValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(1));
 
   const handleCheckboxState = (isChecked, idx) => {
     setCheckboxValues(
       checkboxValues.map((val, i) => {
-        return i == idx ? isChecked : val;
+        return i === idx ? isChecked : val;
       })
     );
   };
   const handleSliderState = (newVal, idx) => {
     setSliderValues(
       sliderValues.map((val, i) => {
-        return i == idx ? newVal : val;
+        return i === idx ? newVal : val;
       })
     );
   };
@@ -73,10 +105,10 @@ export const FlaggableElement = (props) => {
     >
       <Grid templateColumns="1fr min-content" gap={2}>
         <PopoverAnchor>{props.children}</PopoverAnchor>
-        <Tooltip hasArrow label="Report" bg="red.600">
+        <Tooltip label="Report" bg="red.500">
           <div>
             <PopoverTrigger>
-              <Button h="full">
+              <Button h="full" bg={backgroundColor}>
                 <FlagIcon className="w-4 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
               </Button>
             </PopoverTrigger>
@@ -90,7 +122,7 @@ export const FlaggableElement = (props) => {
           <PopoverCloseButton />
         </div>
         <PopoverBody>
-          {TEXT_LABEL_FLAGS.map((option, i) => (
+          {labels.map((option, i) => (
             <FlagCheckbox
               option={option}
               key={i}
@@ -118,7 +150,8 @@ export const FlaggableElement = (props) => {
     </Popover>
   );
 };
-function FlagCheckbox(props: {
+
+export function FlagCheckbox(props: {
   option: textFlagLabels;
   idx: number;
   checkboxValues: boolean[];
@@ -175,48 +208,3 @@ function FlagCheckbox(props: {
     </Flex>
   );
 }
-interface textFlagLabels {
-  attributeName: string;
-  labelText: string;
-  additionalExplanation?: string;
-}
-const TEXT_LABEL_FLAGS: textFlagLabels[] = [
-  // For the time being this list is configured on the FE.
-  // In the future it may be provided by the API.
-  {
-    attributeName: "fails_task",
-    labelText: "Fails to follow the correct instruction / task",
-    additionalExplanation: "__TODO__",
-  },
-  {
-    attributeName: "not_customer_assistant_appropriate",
-    labelText: "Inappropriate for customer assistant",
-    additionalExplanation: "__TODO__",
-  },
-  {
-    attributeName: "contains_sexual_content",
-    labelText: "Contains sexual content",
-  },
-  {
-    attributeName: "contains_violent_content",
-    labelText: "Contains violent content",
-  },
-  {
-    attributeName: "encourages_violence",
-    labelText: "Encourages or fails to discourage violence/abuse/terrorism/self-harm",
-  },
-  {
-    attributeName: "denigrates_a_protected_class",
-    labelText: "Denigrates a protected class",
-  },
-  {
-    attributeName: "gives_harmful_advice",
-    labelText: "Fails to follow the correct instruction / task",
-    additionalExplanation:
-      "The advice given in the output is harmful or counter-productive. This may be in addition to, but is distinct from the question about encouraging violence/abuse/terrorism/self-harm.",
-  },
-  {
-    attributeName: "expresses_moral_judgement",
-    labelText: "Expresses moral judgement",
-  },
-];

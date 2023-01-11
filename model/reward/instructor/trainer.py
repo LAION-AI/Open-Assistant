@@ -1,37 +1,29 @@
 import os
 from argparse import ArgumentParser
-from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import evaluate
 import numpy as np
 import torch
 from models import RankGenModel
-from rank_datasets import DataCollatorForPairRank, HFSummary, RankGenCollator, WebGPT
+from rank_datasets import DataCollatorForPairRank, RankGenCollator
 from torch import nn
-from torch.utils.data import ConcatDataset, Dataset
 from transformers import (
+    AdamW,
     AutoModelForSequenceClassification,
-    DataCollator,
-    EvalPrediction,
     PreTrainedModel,
-    PreTrainedTokenizerBase,
     Trainer,
-    TrainerCallback,
     TrainingArguments,
+    get_cosine_schedule_with_warmup,
+    get_linear_schedule_with_warmup,
 )
-from utils import argument_parsing, freeze_top_n_layers, get_tokenizer, train_val_dataset
+from utils import argument_parsing, freeze_top_n_layers, get_datasets, get_tokenizer
 
 os.environ["WANDB_PROJECT"] = "reward-model"
 
 accuracy = evaluate.load("accuracy")
 parser = ArgumentParser()
 parser.add_argument("config", type=str)
-
-
-@dataclass
-class CustomTrainingArguments(TrainingArguments):
-    loss_function: str = "rank"
 
 
 def compute_metrics(eval_pred):
@@ -57,31 +49,12 @@ class RankTrainer(Trainer):
         model: Union[PreTrainedModel, nn.Module] = None,
         model_name: str = None,
         args: Optional[TrainingArguments] = None,
-        data_collator: Optional[DataCollator] = None,
-        train_dataset: Optional[Dataset] = None,
-        eval_dataset: Optional[Dataset] = None,
-        tokenizer: Optional[PreTrainedTokenizerBase] = None,
-        model_init: Callable[[], PreTrainedModel] = None,
-        compute_metrics: Optional[Callable[[EvalPrediction], Dict]] = None,
-        callbacks: Optional[List[TrainerCallback]] = None,
-        optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = (None, None),
-        preprocess_logits_for_metrics: Callable[[torch.Tensor, torch.Tensor], torch.Tensor] = None,
+        loss_function: str = "rank",
+        **kwargs,
     ):
-        super().__init__(
-            model,
-            args,
-            data_collator,
-            train_dataset,
-            eval_dataset,
-            tokenizer,
-            model_init,
-            compute_metrics,
-            callbacks,
-            optimizers,
-            preprocess_logits_for_metrics,
-        )
-        self.loss_fct = RankLoss() if args.loss_function == "rank" else nn.CrossEntropyLoss()
-        self.loss_function = args.loss_function
+        super().__init__(model, args, **kwargs)
+        self.loss_fct = RankLoss() if loss_function == "rank" else nn.CrossEntropyLoss()
+        self.loss_function = loss_function
         self.model_name = model_name
 
     def compute_loss(self, model, inputs, return_outputs=False):
@@ -160,11 +133,10 @@ if __name__ == "__main__":
         params = sum([np.prod(p.size()) for p in model_parameters])
         print("Number of trainable : {}M".format(int(params / 1e6)))
 
-    args = CustomTrainingArguments(
+    args = TrainingArguments(
         output_dir=f"{model_name}-finetuned",
         num_train_epochs=training_conf["num_train_epochs"],
         warmup_steps=500,
-        loss_function=training_conf["loss"],
         learning_rate=training_conf["learning_rate"],
         # half_precision_backend="apex",
         fp16=training_conf["fp16"],
@@ -179,38 +151,42 @@ if __name__ == "__main__":
         evaluation_strategy="steps",
         eval_steps=training_conf["eval_steps"],
         save_steps=1000,
-        report_to="local",
+        report_to="wandb",
     )
-    train_datasets, evals = [], {}
-    if "webgpt" in training_conf["datasets"]:
-        web_dataset = WebGPT()
-        train, eval = train_val_dataset(web_dataset)
-        train_datasets.append(train)
-        evals["webgpt"] = eval
-    if "hfsummary" in training_conf["datasets"]:
-        sum_train = HFSummary(split="train")
-        train_datasets.append(sum_train)
-        sum_eval = HFSummary(split="valid1")
-        assert len(sum_eval) > 0
-        evals["hfsummary"] = sum_eval
-    train = ConcatDataset(train_datasets)
 
     tokenizer = get_tokenizer(training_conf["tokenizer_name"])
-
+    train, evals = get_datasets(training_conf["datasets"])
     if "rankgen" in model_name:
         collate_fn = RankGenCollator(tokenizer, max_length=training_conf["max_length"])
     else:
         collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf["max_length"])
     assert len(evals) > 0
+
+    optimizer = AdamW(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
+    scheduler = None
+    if "scheduler" in training_conf:
+        if training_conf["scheduler"] == "linear":
+            scheduler = get_linear_schedule_with_warmup()
+        elif training_conf["scheduler"] == "cosine":
+            scheduler = get_cosine_schedule_with_warmup(
+                optimizer,
+                num_warmup_steps=args.warmup_steps,
+                num_training_steps=len(train)
+                * args.num_train_epochs
+                / (args.per_device_train_batch_size * args.gradient_accumulation_steps),
+            )
+
     trainer = RankTrainer(
         model=model,
         model_name=model_name,
         args=args,
+        loss_function=training_conf["loss"],
         train_dataset=train,
-        eval_dataset=eval,
+        eval_dataset=evals,
         data_collator=collate_fn,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
+        optimizers=(optimizer, scheduler),
     )
     # trainer.evaluate()
     trainer.train()

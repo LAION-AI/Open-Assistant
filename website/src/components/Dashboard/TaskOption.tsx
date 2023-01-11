@@ -1,20 +1,18 @@
 import { Box, Flex, GridItem, Heading, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Link from "next/link";
 
-import { TaskCategory, TaskTypes } from "../Tasks/TaskTypes";
+import { TaskTypes } from "../Tasks/TaskTypes";
 
-const displayTaskCategories = [TaskCategory.Create, TaskCategory.Evaluate];
-
-export const TaskOption = () => {
+export const TaskOption = ({ displayTaskCategories }) => {
   const backgroundColor = useColorModeValue("white", "gray.700");
 
   return (
     <Box className="flex flex-col gap-14" fontFamily="inter">
       {displayTaskCategories.map((category, categoryIndex) => (
         <div key={categoryIndex}>
-          <Text className="text-2xl font-bold pb-4">{TaskCategory[category]}</Text>
+          <Text className="text-2xl font-bold pb-4">{category}</Text>
           <SimpleGrid columns={[1, 2, 2, 3, 4]} gap={4}>
-            {TaskTypes.filter((task) => task.category == category).map((item, itemIndex) => (
+            {TaskTypes.filter((task) => task.category === category).map((item, itemIndex) => (
               <Link key={itemIndex} href={item.pathname}>
                 <GridItem
                   bg={backgroundColor}

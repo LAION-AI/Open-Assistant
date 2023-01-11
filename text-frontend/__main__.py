@@ -1,5 +1,6 @@
 """Simple REPL frontend."""
 
+import http
 import random
 
 import requests
@@ -30,10 +31,12 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
     def _post(path: str, json: dict) -> dict:
         response = requests.post(f"{backend_url}{path}", json=json, headers={"X-API-Key": api_key})
         response.raise_for_status()
+        if response.status_code == http.HTTPStatus.NO_CONTENT:
+            return None
         return response.json()
 
     typer.echo("Requesting work...")
-    tasks = [_post("/api/v1/tasks/", {"type": "random"})]
+    tasks = [_post("/api/v1/tasks/", {"type": "random", "user": USER})]
     while tasks:
         task = tasks.pop(0)
         match (task["type"]):
@@ -55,6 +58,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_reply_to_message",
                         "message_id": message_id,
+                        "task_id": task["id"],
                         "user_message_id": user_message_id,
                         "text": summary,
                         "user": USER,
@@ -99,6 +103,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_reply_to_message",
                         "message_id": message_id,
+                        "task_id": task["id"],
                         "user_message_id": user_message_id,
                         "text": prompt,
                         "user": USER,
@@ -147,6 +152,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                     {
                         "type": "text_reply_to_message",
                         "message_id": message_id,
+                        "task_id": task["id"],
                         "user_message_id": user_message_id,
                         "text": reply,
                         "user": USER,
@@ -191,12 +197,13 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 ranking_str = typer.prompt("Enter the reply numbers in order of preference, separated by commas")
                 ranking = [int(x) - 1 for x in ranking_str.split(",")]
 
-                # send ranking
+                # send labels
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
                         "type": "message_ranking",
                         "message_id": message_id,
+                        "task_id": task["id"],
                         "ranking": ranking,
                         "user": USER,
                     },
@@ -211,16 +218,25 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
 
                 valid_labels = task["valid_labels"]
-                labels_str: str = typer.prompt("Enter labels, separated by commas")
-                labels = labels_str.lower().replace(" ", "").split(",")
-                labels_dict = {label: "1" if label in labels else "0" for label in valid_labels}
 
-                # send ranking
+                labels_dict = None
+                while labels_dict is None:
+                    labels_str: str = typer.prompt("Enter labels, separated by commas")
+                    labels = labels_str.lower().replace(" ", "").split(",")
+
+                    if all([label in valid_labels for label in labels]):
+                        labels_dict = {label: "1" if label in labels else "0" for label in valid_labels}
+                    else:
+                        invalid_labels = [label for label in labels if label not in valid_labels]
+                        typer.echo(f"Invalid labels: {', '.join(invalid_labels)}. Valid: {', '.join(valid_labels)}")
+
+                # send labels
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
                         "type": "text_labels",
                         "message_id": task["message_id"],
+                        "task_id": task["id"],
                         "text": task["prompt"],
                         "labels": labels_dict,
                         "user": USER,
@@ -240,17 +256,26 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "DUMMY_KEY")
                 _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
 
                 valid_labels = task["valid_labels"]
-                labels_str: str = typer.prompt("Enter labels, separated by commas")
-                labels = labels_str.lower().replace(" ", "").split(",")
-                labels_dict = {label: "1" if label in labels else "0" for label in valid_labels}
 
-                # send ranking
+                labels_dict = None
+                while labels_dict is None:
+                    labels_str: str = typer.prompt("Enter labels, separated by commas")
+                    labels = labels_str.lower().replace(" ", "").split(",")
+
+                    if all([label in valid_labels for label in labels]):
+                        labels_dict = {label: "1" if label in labels else "0" for label in valid_labels}
+                    else:
+                        invalid_labels = [label for label in labels if label not in valid_labels]
+                        typer.echo(f"Invalid labels: {', '.join(invalid_labels)}. Valid: {', '.join(valid_labels)}")
+
+                # send labels
                 new_task = _post(
                     "/api/v1/tasks/interaction",
                     {
                         "type": "text_labels",
                         "message_id": task["message_id"],
-                        "text": task["prompt"],
+                        "task_id": task["id"],
+                        "text": task["reply"],
                         "labels": labels_dict,
                         "user": USER,
                     },

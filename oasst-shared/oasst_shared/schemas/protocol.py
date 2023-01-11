@@ -29,13 +29,17 @@ class User(BaseModel):
     auth_method: Literal["discord", "local"]
 
 
+class FrontEndUser(User):
+    user_id: UUID
+
+
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
+    id: Optional[UUID] = None
+    frontend_message_id: Optional[str] = None
     text: str
     is_assistant: bool
-    message_id: Optional[UUID] = None
-    frontend_message_id: Optional[str] = None
 
 
 class Conversation(BaseModel):
@@ -45,7 +49,6 @@ class Conversation(BaseModel):
 
 
 class Message(ConversationMessage):
-    id: UUID
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
 
@@ -151,7 +154,8 @@ class RankInitialPromptsTask(Task):
     """A task to rank a set of initial prompts."""
 
     type: Literal["rank_initial_prompts"] = "rank_initial_prompts"
-    prompts: list[str]
+    prompts: list[str]  # deprecated, use prompt_messages
+    prompt_messages: list[ConversationMessage]
 
 
 class RankConversationRepliesTask(Task):
@@ -159,7 +163,8 @@ class RankConversationRepliesTask(Task):
 
     type: Literal["rank_conversation_replies"] = "rank_conversation_replies"
     conversation: Conversation  # the conversation so far
-    replies: list[str]
+    replies: list[str]  # deprecated, use reply_messages
+    reply_messages: list[ConversationMessage]
 
 
 class RankPrompterRepliesTask(RankConversationRepliesTask):
@@ -181,6 +186,7 @@ class LabelInitialPromptTask(Task):
     message_id: UUID
     prompt: str
     valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
 
 
 class LabelConversationReplyTask(Task):
@@ -191,6 +197,7 @@ class LabelConversationReplyTask(Task):
     message_id: UUID
     reply: str
     valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):
@@ -265,28 +272,36 @@ class MessageRanking(Interaction):
 class TextLabel(str, enum.Enum):
     """A label for a piece of text."""
 
-    spam = "spam"
-    violence = "violence"
-    sexual_content = "sexual_content"
-    toxicity = "toxicity"
-    political_content = "political_content"
-    humor = "humor"
-    sarcasm = "sarcasm"
-    hate_speech = "hate_speech"
-    profanity = "profanity"
-    ad_hominem = "ad_hominem"
-    insult = "insult"
-    threat = "threat"
-    aggressive = "aggressive"
-    misleading = "misleading"
-    helpful = "helpful"
-    formal = "formal"
-    cringe = "cringe"
-    creative = "creative"
-    beautiful = "beautiful"
-    informative = "informative"
-    based = "based"
-    slang = "slang"
+    def __new__(cls, label: str, display_text: str = "", help_text: str = None):
+        obj = str.__new__(cls, label)
+        obj._value_ = label
+        obj.display_text = display_text
+        obj.help_text = help_text
+        return obj
+
+    spam = "spam", "Seems to be intentionally low-quality or irrelevant"
+    fails_task = "fails_task", "Fails to follow the correct instruction / task"
+    not_appropriate = "not_appropriate", "Inappropriate for customer assistant"
+    violence = "violence", "Encourages or fails to discourage violence/abuse/terrorism/self-harm"
+    excessive_harm = (
+        "excessive_harm",
+        "Content likely to cause excessive harm not justifiable in the context",
+        "Harm refers to physical or mental damage or injury to someone or something. Excessive refers to a reasonable threshold of harm in the context, for instance damaging skin is not excessive in the context of surgery.",
+    )
+    sexual_content = "sexual_content", "Contains sexual content"
+    toxicity = "toxicity", "Contains rude, abusive, profane or insulting content"
+    moral_judgement = "moral_judgement", "Expresses moral judgement"
+    political_content = "political_content", "Expresses political views"
+    humor = "humor", "Contains humorous content including sarcasm"
+    hate_speech = (
+        "hate_speech",
+        "Content is abusive or threatening and expresses prejudice against a protected characteristic",
+        "Prejudice refers to preconceived views not based on reason. Protected characteristics include gender, ethnicity, religion, sexual orientation, and similar characteristics.",
+    )
+    threat = "threat", "Contains a threat against a person or persons"
+    misleading = "misleading", "Contains text which is incorrect or misleading"
+    helpful = "helpful", "Completes the task to a high standard"
+    creative = "creative", "Expresses creativity in responding to the task"
 
 
 class TextLabels(Interaction):
@@ -296,6 +311,7 @@ class TextLabels(Interaction):
     text: str
     labels: dict[TextLabel, float]
     message_id: UUID
+    task_id: Optional[UUID]
 
     @property
     def has_message_id(self) -> bool:

@@ -96,8 +96,10 @@ The website is built using Next.js and is in the `website` folder.
 
 ### Pre-commit
 
-Install `pre-commit` and run `pre-commit install` to install the pre-commit
-hooks.
+We are using `pre-commit` to enforce code style and formatting.
+
+Install `pre-commit` from [its website](https://pre-commit.com) and run
+`pre-commit install` to install the pre-commit hooks.
 
 In case you haven't done this, have already committed, and CI is failing, you
 can run `pre-commit run --all-files` to run the pre-commit hooks on all files.
@@ -108,3 +110,8 @@ Upon making a release on GitHub, all docker images are automatically built and
 pushed to ghcr.io. The docker images are tagged with the release version, and
 the `latest` tag. Further, the ansible playbook in `ansible/dev.yaml` is run to
 automatically deploy the built release to the dev machine.
+
+### Contribute a Dataset
+
+See
+[here](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/data/datasets.md)
