@@ -16,7 +16,7 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
 
   return (
     <div>
-      <FlaggableElement text={item.text} post_id={item.id} key={`flag_${item.id}`}>
+      <FlaggableElement text={item.text} message_id={item.message_id} post_id={item.id} key={`flag_${item.id}`}>
         <HStack>
           <Avatar
             size="sm"
