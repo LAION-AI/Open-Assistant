@@ -7,8 +7,6 @@ import { TaskSurveyProps } from "src/components/Tasks/Task";
 export const CreateTask = ({ task, taskType, onReplyChanged }: TaskSurveyProps<{ text: string }>) => {
   const [inputText, setInputText] = useState("");
 
-  const valid_labels = task.valid_labels;
-
   const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
     onReplyChanged({ content: { text }, state: "VALID" });
@@ -20,9 +18,7 @@ export const CreateTask = ({ task, taskType, onReplyChanged }: TaskSurveyProps<{
       <>
         <h5 className="text-lg font-semibold">{taskType.label}</h5>
         <p className="text-lg py-1">{taskType.overview}</p>
-        {task.conversation ? (
-          <Messages messages={task.conversation.messages} post_id={task.id} valid_labels={valid_labels} />
-        ) : null}
+        {task.conversation ? <Messages messages={task.conversation.messages} post_id={task.id} /> : null}
       </>
       <>
         <h5 className="text-lg font-semibold">{taskType.instruction}</h5>

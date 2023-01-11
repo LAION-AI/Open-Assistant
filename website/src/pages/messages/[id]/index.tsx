@@ -48,7 +48,7 @@ const MessageDetail = ({ id }) => {
                 </Text>
                 <Box bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base" width="fit-content">
                   {" "}
-                  <MessageTableEntry item={parent} idx={1} valid_labels={[]} />
+                  <MessageTableEntry item={parent} />
                 </Box>
               </Box>
             </>

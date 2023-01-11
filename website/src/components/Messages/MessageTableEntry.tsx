@@ -1,25 +1,23 @@
 import { Avatar, HStack, LinkBox, LinkOverlay, useColorModeValue } from "@chakra-ui/react";
 import { boolean } from "boolean";
 import { FlaggableElement } from "src/components/FlaggableElement";
-import type { ValidLabel } from "src/types/Task";
 
 interface Message {
   text: string;
   id: string;
+  message_id: string;
   is_assistant: boolean;
 }
 interface MessageTableEntryProps {
   item: Message;
-  idx: number;
-  valid_labels: ValidLabel[];
 }
 export function MessageTableEntry(props: MessageTableEntryProps) {
-  const { item, valid_labels } = props;
+  const { item } = props;
   const backgroundColor = useColorModeValue("gray.50", "gray.800");
 
   return (
     <div>
-      <FlaggableElement text={item.text} post_id={item.id} key={`flag_${item.id}`} flaggable_labels={valid_labels}>
+      <FlaggableElement text={item.text} message_id={item.message_id} post_id={item.id} key={`flag_${item.id}`}>
         <HStack>
           <Avatar
             size="sm"

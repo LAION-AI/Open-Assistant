@@ -44,7 +44,6 @@ export const LabelTask = ({
                 message_id: task.message_id,
               },
             ]}
-            valid_labels={valid_labels}
           />
         ) : (
           <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />

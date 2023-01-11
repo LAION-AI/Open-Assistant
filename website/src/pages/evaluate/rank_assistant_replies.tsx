@@ -21,7 +21,7 @@ const RankAssistantReplies = () => {
         <title>Rank Assistant Replies</title>
         <meta name="description" content="Rank Assistant Replies." />
       </Head>
-      <Task key={tasks[0].task.id} task={tasks[0].task} trigger={trigger} mutate={reset} />
+      <Task key={tasks[0].task.id} frontendId={tasks[0].id} task={tasks[0].task} trigger={trigger} mutate={reset} />
     </>
   );
 };
