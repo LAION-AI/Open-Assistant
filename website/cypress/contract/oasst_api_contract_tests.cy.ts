@@ -1,4 +1,4 @@
-import { OasstApiClient, OasstError } from "src/lib/oasst_api_client";
+import { OasstApiClient, OasstError } from "../../src/lib/oasst_api_client";
 
 describe("Contract test for Oasst API", function () {
   // Assumes this is running the mock server.
