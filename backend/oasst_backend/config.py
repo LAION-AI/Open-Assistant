@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     DEBUG_SKIP_API_KEY_CHECK: bool = False
     DEBUG_USE_SEED_DATA: bool = False
     DEBUG_USE_SEED_DATA_PATH: Optional[FilePath] = (
-        Path(__file__).parent.parent / "test_data/generic/test_generic_data.json"
+        Path(__file__).parent.parent / "test_data/realistic/realistic_seed_data.json"
     )
     DEBUG_ALLOW_SELF_LABELING: bool = False  # allow users to label their own messages
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
