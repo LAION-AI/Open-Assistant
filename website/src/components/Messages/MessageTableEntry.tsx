@@ -5,6 +5,7 @@ import { FlaggableElement } from "src/components/FlaggableElement";
 interface Message {
   text: string;
   id: string;
+  message_id: string;
   is_assistant: boolean;
 }
 interface MessageTableEntryProps {
