@@ -423,7 +423,13 @@ class TreeManager:
             logger.debug(f"False {mts.active=}, {mts.state=}")
             return False
 
-        return False
+        rankings_by_message = self.query_tree_ranking_results(message_tree_id)
+        for parent_msg_id, ranking in rankings_by_message.items():
+            if len(ranking) < self.cfg.num_reviews_ranking:
+                logger.debug(f"False {len(ranking)=}")
+                return False
+        self._enter_state(mts, message_tree_state.State.READY_FOR_SCORING)
+        return True
 
     def _calculate_acceptance(self, labels: list[TextLabels]):
         # combine spam and helpful rating (either no spam or helpful both are sufficient)
