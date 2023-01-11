@@ -22,14 +22,12 @@ export function UserMenu() {
         href: "/dashboard",
         desc: "Dashboard",
         icon: FiLayout,
-        //For future use
       },
       {
         name: "Account Settings",
         href: "/account",
         desc: "Account Settings",
         icon: FiSettings,
-        //For future use
       },
     ];
     return (
