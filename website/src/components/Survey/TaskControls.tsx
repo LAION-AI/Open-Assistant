@@ -1,6 +1,4 @@
-import { useColorMode } from "@chakra-ui/react";
-import { Flex } from "@chakra-ui/react";
-import clsx from "clsx";
+import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
@@ -18,21 +16,21 @@ export interface TaskControlsProps {
 }
 
 export const TaskControls = (props: TaskControlsProps) => {
-  const { colorMode } = useColorMode();
-  const isLightMode = colorMode === "light";
+  const backgroundColor = useColorModeValue("white", "gray.800");
+
   return (
-    <section
-      className={clsx(
-        "flex-row justify-items-stretch mb-8 p-4 rounded-lg max-w-7xl mx-auto space-y-4 sm:space-y-0 sm:flex",
-        props.className,
-        {
-          "bg-white text-gray-800 shadow-lg": isLightMode,
-          "bg-slate-800 text-slate-400 shadow-xl ring-1 ring-white/10 ring-inset": !isLightMode,
-        }
-      )}
+    <Box
+      width="full"
+      bg={backgroundColor}
+      borderRadius="xl"
+      p="6"
+      display="flex"
+      flexDirection={["column", "row"]}
+      shadow="base"
+      gap="4"
     >
       <TaskInfo id={props.task.id} output="Submit your answer" />
-      <Flex justify="center" ml="auto" gap={2}>
+      <Flex width={["full", "fit-content"]} justify="center" ml="auto" gap={2}>
         <SkipButton onSkip={props.onSkip} disabled={props.taskStatus === "SUBMITTED"} />
         {props.taskStatus !== "SUBMITTED" ? (
           <SubmitButton
@@ -49,6 +47,6 @@ export const TaskControls = (props: TaskControlsProps) => {
           </SubmitButton>
         )}
       </Flex>
-    </section>
+    </Box>
   );
 };

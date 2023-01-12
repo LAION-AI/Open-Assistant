@@ -21,8 +21,8 @@ export interface TaskInfo {
 export const TaskTypes: TaskInfo[] = [
   // general/random
   {
-    label: "Grab a task",
-    desc: "Help us improve Open Assistant by grabbing a task ...",
+    label: "Start a Task",
+    desc: "Help us improve Open Assistant by starting a random task.",
     category: TaskCategory.Tasks,
     pathname: "/tasks/random",
     type: "random",
@@ -46,7 +46,7 @@ export const TaskTypes: TaskInfo[] = [
     pathname: "/create/user_reply",
     type: "prompter_reply",
     overview: "Given the following conversation, provide an adequate reply",
-    instruction: "Provide the user`s reply",
+    instruction: "Provide the user's reply",
     update_type: "text_reply_to_message",
   },
   {
@@ -56,7 +56,7 @@ export const TaskTypes: TaskInfo[] = [
     pathname: "/create/assistant_reply",
     type: "assistant_reply",
     overview: "Given the following conversation, provide an adequate reply",
-    instruction: "Provide the assistant`s reply",
+    instruction: "Provide the assistant's reply",
     update_type: "text_reply_to_message",
   },
   // evaluate
