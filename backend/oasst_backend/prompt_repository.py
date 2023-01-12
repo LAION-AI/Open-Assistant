@@ -14,6 +14,7 @@ from oasst_backend.models import (
     Message,
     MessageEmbedding,
     MessageReaction,
+    MessageToxicity,
     MessageTreeState,
     Task,
     TextLabels,
@@ -291,6 +292,26 @@ class PromptRepository:
 
         return reaction, task
 
+    def insert_toxicity(self, message_id: UUID, model: str, toxicity) -> MessageToxicity:
+        """Save the toxicity score of a new message in the database.
+        Args:
+            message_id (UUID): the identifier of the message we want to save its toxicity score
+            model (str): the model used for creating the toxicity score
+            toxicity (float): the values obtained from the message & model
+        Raises:
+            OasstError: if misses some of the before params
+        Returns:
+            MessageToxicity: the instance in the database of the score saved for that message
+        """
+
+        message_toxicity = MessageToxicity(
+            message_id=message_id, model=model, score=toxicity["score"], label=toxicity["label"]
+        )
+        self.db.add(message_toxicity)
+        self.db.commit()
+        self.db.refresh(message_toxicity)
+        return message_toxicity
+
     def insert_message_embedding(self, message_id: UUID, model: str, embedding: List[float]) -> MessageEmbedding:
         """Insert the embedding of a new message in the database.
 
@@ -305,9 +326,6 @@ class PromptRepository:
         Returns:
             MessageEmbedding: the instance in the database of the embedding saved for that message
         """
-
-        if None in (message_id, model, embedding):
-            raise OasstError("Paramters missing to add embedding", OasstErrorCode.GENERIC_ERROR)
 
         message_embedding = MessageEmbedding(message_id=message_id, model=model, embedding=embedding)
         self.db.add(message_embedding)

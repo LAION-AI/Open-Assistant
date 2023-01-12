@@ -101,6 +101,7 @@ services:
       - DEBUG_USE_SEED_DATA=True
       - DEBUG_ALLOW_SELF_LABELING=True
       - MAX_WORKERS=1
+      - DEBUG_SKIP_TOXICITY_CALCULATION=True
       - DEBUG_SKIP_EMBEDDING_COMPUTATION=True
     depends_on:
       db:
