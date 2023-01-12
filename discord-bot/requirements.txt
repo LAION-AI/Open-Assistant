@@ -1,9 +1,8 @@
-aiosqlite           # database
-hikari              # discord framework
-hikari-lightbulb    # command handler
-hikari-miru         # modals and buttons
-hikari[speedups]
-loguru
-pydantic[dotenv]
+aiosqlite == 0.18.0                 # database
+hikari-lightbulb == 2.3.1           # command handler
+hikari-miru == 2.0.2                # modals and buttons
+hikari[speedups] == 2.0.0.dev115    # discord framework
+loguru == 0.6.0
+pydantic[dotenv] == 1.10.4
 
-uvloop; os_name != 'nt'  # Faster drop-in replacement for asyncio event loop
+uvloop == 0.17.0; os_name != 'nt'   # Faster drop-in replacement for asyncio event loop
