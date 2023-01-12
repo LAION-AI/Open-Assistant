@@ -54,7 +54,7 @@ export function LeaderboardTable() {
       <div className="flex flex-col gap-4">
         <div className="flex items-end justify-between">
           <Text className="text-2xl font-bold">Top 5 Contributors</Text>
-          <Link href="#" _hover={{ textDecoration: "none" }}>
+          <Link href="/leaderboard" _hover={{ textDecoration: "none" }}>
             <Text color="blue.400" className="text-sm font-bold">
               View All -&gt;
             </Text>

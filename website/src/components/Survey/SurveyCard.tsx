@@ -1,4 +1,4 @@
-import { useColorMode } from "@chakra-ui/react";
+import { Box, BoxProps, useColorModeValue } from "@chakra-ui/react";
 
 interface SurveyCardProps {
   className?: string;
@@ -6,15 +6,18 @@ interface SurveyCardProps {
 }
 
 export const SurveyCard = (props: SurveyCardProps) => {
-  const extraClases = props.className || "";
-  const { colorMode } = useColorMode();
+  const backgroundColor = useColorModeValue("white", "gray.800");
 
-  const baseCardClasses = "rounded-lg h-full block p-6";
-  const cardClases =
-    colorMode === "light"
-      ? `${baseCardClasses} bg-slate-50 text-gray-800 shadow-lg ${extraClases}`
-      : // `${baseCardClasses} bg-slate-800 text-white shadow-xl${extraClases}`;
-        `${baseCardClasses} bg-slate-800 text-slate-400 shadow-xl ring-1 ring-white/10 ring-inset ${extraClases}`;
+  const BoxClasses: BoxProps = {
+    p: "6",
+    gap: "2",
+    borderRadius: "xl",
+    shadow: "base",
+  };
 
-  return <div className={cardClases}>{props.children}</div>;
+  return (
+    <Box bg={backgroundColor} {...BoxClasses}>
+      {props.children}
+    </Box>
+  );
 };

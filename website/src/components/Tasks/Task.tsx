@@ -1,4 +1,3 @@
-import { useColorMode } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { CreateTask } from "src/components/Tasks/CreateTask";
@@ -27,9 +26,6 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
   const [showUnchangedWarning, setShowUnchangedWarning] = useState(false);
 
   const taskType = TaskTypes.find((taskType) => taskType.type === task.type);
-
-  const { colorMode } = useColorMode();
-  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-900" : "bg-slate-900 text-white";
 
   const { trigger: sendRejection } = useSWRMutation("/api/reject_task", poster, {
     onSuccess: async () => {
@@ -90,7 +86,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
   }
 
   return (
-    <div className={`p-12 ${mainBgClasses}`}>
+    <div>
       {taskTypeComponent()}
       <TaskControls
         task={task}
