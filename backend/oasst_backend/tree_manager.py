@@ -793,7 +793,6 @@ WHERE t.done = TRUE
             max_children_count=max_children_count,
             state=state.value,
             active=active,
-            accepted_messages=0,
         )
 
         self.db.add(model)
