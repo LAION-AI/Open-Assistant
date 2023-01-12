@@ -1,15 +1,15 @@
+import argparse
 import random
 import string
 import uuid
-import argparse
 from random import choice
+
 import sqlalchemy as sa
-from oasst_backend.models import User, ApiClient
+from oasst_backend.api.v1.utils import prepare_conversation
+from oasst_backend.models import ApiClient, User, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
 from oasst_backend.tree_manager import TreeManager, TreeManagerConfiguration
 from oasst_shared.schemas import protocol as protocol_schema
-from oasst_backend.models import message_tree_state
-from oasst_backend.api.v1.utils import prepare_conversation
 
 
 def create_random_api_client(api_key_length: int = 512, description_length: int = 256, admin_email_length: int = 256):
@@ -119,7 +119,7 @@ def generate_random_message_nodes(
             tr.bind_frontend_message_id(task.id, frontend_message_id)
             num_sentences = random.randint(5, 10)
             text = " ".join(random.sample(sentences, num_sentences))
-            message = pr.store_text_reply(
+            pr.store_text_reply(
                 text,
                 frontend_message_id,
                 user_frontend_message_id,
