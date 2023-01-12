@@ -28,7 +28,7 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
 
           <Link href={`/messages/${item.id}`}>
             <LinkBox bg={backgroundColor} className={`p-4 rounded-md whitespace-pre-wrap w-full`}>
-              <LinkOverlay>{item.text}</LinkOverlay>
+              {item.text}
             </LinkBox>
           </Link>
         </HStack>
