@@ -1,13 +1,11 @@
 from typing import Generator
 
 import pytest
-
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlmodel import Session, create_engine
-
 from oasst_backend.api.v1 import text_labels
 from oasst_backend.schemas.text_labels import ValidLabelsResponse
+from sqlmodel import Session, create_engine
 
 
 def get_db() -> Generator:
