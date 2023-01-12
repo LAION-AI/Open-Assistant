@@ -1,7 +1,7 @@
 // https://nextjs.org/docs/basic-features/layouts
 
 import type { NextPage } from "next";
-import { FiLayout, FiMessageSquare, FiUsers } from "react-icons/fi";
+import { FiBarChart2, FiLayout, FiMessageSquare, FiUsers } from "react-icons/fi";
 import { Header } from "src/components/Header";
 
 import { Footer } from "./Footer";
@@ -43,6 +43,12 @@ export const getDashboardLayout = (page: React.ReactElement) => (
           pathname: "/messages",
           desc: "Messages Dashboard",
           icon: FiMessageSquare,
+        },
+        {
+          label: "Leaderboard",
+          pathname: "/leaderboard",
+          desc: "User Leaderboard",
+          icon: FiBarChart2,
         },
       ]}
     >

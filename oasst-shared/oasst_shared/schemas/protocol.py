@@ -179,6 +179,13 @@ class RankAssistantRepliesTask(RankConversationRepliesTask):
     type: Literal["rank_assistant_replies"] = "rank_assistant_replies"
 
 
+class LabelTaskMode(str, enum.Enum):
+    """Label task mode that allows frontends to select an appropriate UI."""
+
+    simple = "simple"
+    full = "full"
+
+
 class LabelInitialPromptTask(Task):
     """A task to label an initial prompt."""
 
@@ -187,6 +194,7 @@ class LabelInitialPromptTask(Task):
     prompt: str
     valid_labels: list[str]
     mandatory_labels: Optional[list[str]]
+    mode: Optional[LabelTaskMode]
 
 
 class LabelConversationReplyTask(Task):
@@ -198,6 +206,7 @@ class LabelConversationReplyTask(Task):
     reply: str
     valid_labels: list[str]
     mandatory_labels: Optional[list[str]]
+    mode: Optional[LabelTaskMode]
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):
