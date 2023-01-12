@@ -1,0 +1,10 @@
+.env
+*.egg-info/
+__pycache__/
+
+.venv
+.nox
+.env
+
+# Database files
+*.db

@@ -1,0 +1,41 @@
+# The manifest for the "web" service.
+# Read the full specification for the "Load Balanced Web Service" type at:
+#  https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/
+
+name: web
+type: Load Balanced Web Service
+
+http:
+  path: "/"
+
+image:
+  build:
+    dockerfile: docker/Dockerfile.website
+    context: ./
+  port: 3000
+
+cpu: 256
+memory: 512
+platform: linux/amd64
+count: 1
+exec: true
+network:
+  connect: true
+
+environments:
+  staging:
+    variables:
+      NEXTAUTH_URL: https://web.staging.open-assistant.surfacedata.org
+      FASTAPI_URL: https://api.staging.open-assistant.surfacedata.org
+
+secrets:
+  DATABASE_URL: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DATABASE_URL
+  DISCORD_CLIENT_ID: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DISCORD_CLIENT_ID
+  DISCORD_CLIENT_SECRET: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DISCORD_CLIENT_SECRET
+  EMAIL_SERVER_HOST: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/EMAIL_SERVER_HOST
+  EMAIL_SERVER_PASSWORD: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/EMAIL_SERVER_PASSWORD
+  EMAIL_SERVER_PORT: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/EMAIL_SERVER_PORT
+  EMAIL_SERVER_USER: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/EMAIL_SERVER_USER
+  EMAIL_FROM: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/EMAIL_FROM
+  FASTAPI_KEY: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/FASTAPI_KEY
+  NEXTAUTH_SECRET: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/NEXTAUTH_SECRET
