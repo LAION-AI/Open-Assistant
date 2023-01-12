@@ -15,7 +15,7 @@ import prisma from "src/lib/prismadb";
  */
 const handler = withoutRole("banned", async (req, res, token) => {
   // Parse out the local task ID and the interaction contents.
-  const { id: frontendId, content, update_type } = await JSON.parse(req.body);
+  const { id: frontendId, content, update_type } = req.body;
 
   // Accept the task so that we can complete it, this will probably go away soon.
   const registeredTask = await prisma.registeredTask.findUniqueOrThrow({ where: { id: frontendId } });

@@ -23,8 +23,7 @@ import {
 } from "@chakra-ui/react";
 import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import { useEffect, useReducer } from "react";
-import fetcher from "src/lib/fetcher";
-import poster from "src/lib/poster";
+import { get, post } from "src/lib/api";
 import { Message } from "src/types/Conversation";
 import { colors } from "styles/Theme/colors";
 import useSWR from "swr";
@@ -101,7 +100,7 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
   const [isEditing, setIsEditing] = useBoolean();
   const backgroundColor = useColorModeValue("gray.200", "gray.700");
 
-  const { data, isLoading } = useSWR("/api/valid_labels", fetcher);
+  const { data, isLoading } = useSWR("/api/valid_labels", get);
   useEffect(() => {
     if (isLoading) {
       return;
@@ -110,7 +109,7 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
     updateReport({ type: "load_labels", labels: valid_labels });
   }, [data, isLoading]);
 
-  const { trigger } = useSWRMutation("/api/set_label", poster, {
+  const { trigger } = useSWRMutation("/api/set_label", post, {
     onSuccess: () => {
       setIsEditing.off();
     },
