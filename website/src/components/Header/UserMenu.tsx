@@ -5,7 +5,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
-import { FiLayout, FiLogOut, FiSettings } from "react-icons/fi";
+import { FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
 
 export function UserMenu() {
   const { data: session } = useSession();
@@ -30,6 +30,16 @@ export function UserMenu() {
         icon: FiSettings,
       },
     ];
+
+    if (session.user.role === "admin") {
+      accountOptions.unshift({
+        name: "Admin Dashboard",
+        href: "/admin",
+        desc: "Admin Dashboard",
+        icon: FiShield,
+      });
+    }
+
     return (
       <Popover className="relative">
         {({ open }) => (
