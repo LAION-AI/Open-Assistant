@@ -1,6 +1,5 @@
 import React from "react";
-
-import { Container } from "../../src/components/Container";
+import { Container } from "src/components/Container";
 
 describe("<Container />", () => {
   it("renders", () => {
