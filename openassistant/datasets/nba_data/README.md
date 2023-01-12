@@ -15,4 +15,5 @@ NOTE: the second one currently returns an empty dataset dict but could be a help
 
 At the least, this will give people a place to upload their data, so others can see what has already been collected.
 
+At the least, this will give people a place to upload their data, so others can see what has already been collected.
 If you would want to generate more csv data for the nba specifically, run prepare.py and input the season you want.
