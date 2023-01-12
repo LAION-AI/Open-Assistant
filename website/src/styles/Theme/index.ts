@@ -22,6 +22,11 @@ const breakpoints = {
   "2xl": "1536px",
 };
 
+const fonts = {
+  heading: "Inter",
+  body: "Inter",
+};
+
 const styles: Styles = {
   global: (props) => ({
     "*": {
@@ -33,13 +38,7 @@ const styles: Styles = {
       bg: props.colorMode === "light" ? colors.light.bg : colors.dark.bg,
       color: props.colorMode === "light" ? colors.light.text : colors.dark.text,
     },
-    main: {
-      fontFamily: "Inter",
-    },
-    header: {
-      fontFamily: "Inter",
-    },
   }),
 };
 
-export const theme = extendTheme({ colors, config, styles, components, breakpoints });
+export const theme = extendTheme({ colors, config, fonts, styles, components, breakpoints });

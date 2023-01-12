@@ -2,7 +2,9 @@ accelerate==0.15.0
 bitsandbytes==0.36.0.post2
 datasets==2.8.0
 deepspeed==0.7.7
+evaluate==0.4.0
 mpi4py==3.1.4
+nltk==3.8.1
 numpy==1.23.0
 PyYAML==6.0
 scikit_learn==1.2.0

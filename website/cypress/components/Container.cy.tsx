@@ -1,6 +1,5 @@
 import React from "react";
-
-import { Container } from "./Container";
+import { Container } from "src/components/Container";
 
 describe("<Container />", () => {
   it("renders", () => {
@@ -8,6 +7,9 @@ describe("<Container />", () => {
     const className = "my-class";
     const text = "test_container";
     cy.mount(<Container className={className}>{text}</Container>);
-    cy.get(`div.${className}`).should("have.class", className).should("be.visible").should("contain", text);
+    cy.get(`div.${className}`)
+      .should("have.class", className)
+      .should("be.visible")
+      .should("contain", text);
   });
 });
