@@ -25,8 +25,16 @@ class User(SQLModel, table=True):
     )
     api_client_id: UUID = Field(foreign_key="api_client.id")
     enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
-    notes: str = Field(sa_column=sa.Column(AutoString(length=1024), nullable=False, server_default="''"))
+    notes: str = Field(sa_column=sa.Column(AutoString(length=1024), nullable=False, server_default=""))
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
 
-    def to_protocol_user(self):
-        return protocol.User(id=self.username, display_name=self.display_name, auth_method=self.auth_method)
+    def to_protocol_frontend_user(self):
+        return protocol.FrontEndUser(
+            user_id=self.id,
+            id=self.username,
+            display_name=self.display_name,
+            auth_method=self.auth_method,
+            enabled=self.enabled,
+            deleted=self.deleted,
+            notes=self.notes,
+        )

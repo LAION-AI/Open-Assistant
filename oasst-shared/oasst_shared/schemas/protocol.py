@@ -31,6 +31,9 @@ class User(BaseModel):
 
 class FrontEndUser(User):
     user_id: UUID
+    enabled: bool
+    deleted: bool
+    notes: str
 
 
 class ConversationMessage(BaseModel):

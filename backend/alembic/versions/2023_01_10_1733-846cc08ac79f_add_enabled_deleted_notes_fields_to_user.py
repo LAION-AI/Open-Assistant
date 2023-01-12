@@ -22,7 +22,7 @@ def upgrade() -> None:
     op.add_column("user", sa.Column("deleted", sa.Boolean(), server_default=sa.text("false"), nullable=False))
     op.add_column(
         "user",
-        sa.Column("notes", sqlmodel.sql.sqltypes.AutoString(length=1024), server_default=sa.text("''"), nullable=False),
+        sa.Column("notes", sqlmodel.sql.sqltypes.AutoString(length=1024), server_default="", nullable=False),
     )
     # ### end Alembic commands ###
 
