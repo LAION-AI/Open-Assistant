@@ -31,28 +31,30 @@ export const LabelTask = ({
   };
 
   return (
-    <TwoColumnsWithCards>
-      <>
-        <h5 className="text-lg font-semibold">{taskType.label}</h5>
-        <p className="text-lg py-1">{taskType.overview}</p>
+    <div data-cy="task" data-task-type="label-task">
+      <TwoColumnsWithCards>
+        <>
+          <h5 className="text-lg font-semibold">{taskType.label}</h5>
+          <p className="text-lg py-1">{taskType.overview}</p>
 
-        {task.conversation ? (
-          <MessageTable
-            messages={[
-              ...(task.conversation ? task.conversation.messages : []),
-              {
-                text: task.reply,
-                is_assistant: task.type === TaskType.label_assistant_reply,
-                message_id: task.message_id,
-              },
-            ]}
-          />
-        ) : (
-          <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />
-        )}
-      </>
-      <LabelSliderGroup labelIDs={task.valid_labels} onChange={onSliderChange} />
-    </TwoColumnsWithCards>
+          {task.conversation ? (
+            <MessageTable
+              messages={[
+                ...(task.conversation ? task.conversation.messages : []),
+                {
+                  text: task.reply,
+                  is_assistant: task.type === TaskType.label_assistant_reply,
+                  message_id: task.message_id,
+                },
+              ]}
+            />
+          ) : (
+            <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />
+          )}
+        </>
+        <LabelSliderGroup labelIDs={task.valid_labels} onChange={onSliderChange} />
+      </TwoColumnsWithCards>
+    </div>
   );
 };
 
