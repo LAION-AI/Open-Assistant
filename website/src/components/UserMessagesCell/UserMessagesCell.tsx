@@ -14,7 +14,7 @@ interface UserMessagesCellProps {
 /**
  * Fetches the messages corresponding to a user and presents them in a table.
  */
-const UserMessagesCell = ({ path }) => {
+const UserMessagesCell = ({ path }: UserMessagesCellProps) => {
   const url = path || "/api/messages/user";
   const { data: messages, isLoading } = useSWR(url, fetcher, {
     refreshInterval: 2000,

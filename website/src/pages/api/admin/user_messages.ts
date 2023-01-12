@@ -1,6 +1,6 @@
 import { withRole } from "src/lib/auth";
 
-const handler = withRole("admin", async (req, res, token) => {
+const handler = withRole("admin", async (req, res) => {
   const { user } = req.query;
 
   const messagesRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/frontend_users/local/${user}/messages`, {
