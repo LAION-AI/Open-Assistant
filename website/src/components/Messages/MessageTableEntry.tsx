@@ -1,4 +1,4 @@
-import { Avatar, HStack, LinkBox, LinkOverlay, useColorModeValue } from "@chakra-ui/react";
+import { Avatar, HStack, LinkBox, useColorModeValue } from "@chakra-ui/react";
 import { boolean } from "boolean";
 import Link from "next/link";
 import { FlaggableElement } from "src/components/FlaggableElement";
