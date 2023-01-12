@@ -1,11 +1,12 @@
 import { Box, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import { useState } from "react";
-import { Messages } from "src/components/Messages";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
+import { MessageTable } from "../Messages/MessageTable";
 
 export const CreateTask = ({ task, taskType, onReplyChanged }: TaskSurveyProps<{ text: string }>) => {
+  const cardColor = useColorModeValue("gray.100", "gray.700");
   const titleColor = useColorModeValue("gray.800", "gray.300");
   const labelColor = useColorModeValue("gray.600", "gray.400");
 
@@ -30,8 +31,8 @@ export const CreateTask = ({ task, taskType, onReplyChanged }: TaskSurveyProps<{
             </Text>
           </Stack>
           {task.conversation ? (
-            <Box mt="4">
-              <Messages messages={task.conversation.messages} post_id={task.id} />
+            <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
+              <MessageTable messages={task.conversation.messages} />
             </Box>
           ) : null}
         </>

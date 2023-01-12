@@ -25,6 +25,7 @@ import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import { useEffect, useState } from "react";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
+import { Message } from "src/types/Conversation";
 import { colors } from "styles/Theme/colors";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
@@ -35,7 +36,12 @@ interface textFlagLabels {
   additionalExplanation?: string;
 }
 
-export const FlaggableElement = (props) => {
+interface FlaggableElementProps {
+  children: React.ReactNode;
+  message: Message;
+}
+
+export const FlaggableElement = (props: FlaggableElementProps) => {
   const [labels, setLabels] = useState([]);
   const [checkboxValues, setCheckboxValues] = useState([]);
   const [sliderValues, setSliderValues] = useState([]);
@@ -72,10 +78,9 @@ export const FlaggableElement = (props) => {
       }
     });
     trigger({
-      message_id: props.message_id,
-      post_id: props.post_id,
+      message_id: props.message.id,
       label_map: Object.fromEntries(label_map),
-      text: props.text,
+      text: props.message.text,
     });
   };
 
@@ -151,14 +156,16 @@ export const FlaggableElement = (props) => {
   );
 };
 
-export function FlagCheckbox(props: {
+interface FlagCheckboxProps {
   option: textFlagLabels;
   idx: number;
   checkboxValues: boolean[];
   sliderValues: number[];
   checkboxHandler: (newVal: boolean, idx: number) => void;
   sliderHandler: (newVal: number, idx: number) => void;
-}): JSX.Element {
+}
+
+export function FlagCheckbox(props: FlagCheckboxProps): JSX.Element {
   let AdditionalExplanation = null;
   if (props.option.additionalExplanation) {
     AdditionalExplanation = (
