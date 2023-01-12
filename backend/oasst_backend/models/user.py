@@ -23,3 +23,6 @@ class User(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
     api_client_id: UUID = Field(foreign_key="api_client.id")
+    enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
+    notes: str = Field(nullable=False, max_length=1024, default="")
+    deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
