@@ -7,7 +7,7 @@ import urllib.request
 
 def get_NBA_stats():
     year=input('For which year would you like stats?')
-    player=input("For which player do you want to get stats?: ")        #print(player)
+    player="John Wall"        
         #fetch url
     url = 'https://www.basketball-reference.com/leagues/'
         #get it to readable form   
