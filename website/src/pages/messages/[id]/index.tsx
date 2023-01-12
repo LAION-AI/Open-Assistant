@@ -2,7 +2,7 @@ import { Box, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useState } from "react";
 import { getDashboardLayout } from "src/components/Layout";
-import { LoadingScreen } from "src/components/Loading/LoadingScreen";
+import { MessageLoading } from "src/components/Loading/MessageLoading";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { MessageWithChildren } from "src/components/Messages/MessageWithChildren";
 import fetcher from "src/lib/fetcher";
@@ -10,7 +10,6 @@ import useSWR from "swr";
 
 const MessageDetail = ({ id }) => {
   const backgroundColor = useColorModeValue("white", "gray.700");
-
   const [parent, setParent] = useState(null);
 
   const { isLoading: isLoadingParent } = useSWR(id ? `/api/messages/${id}/parent` : null, fetcher, {
@@ -23,11 +22,7 @@ const MessageDetail = ({ id }) => {
   });
 
   if (isLoadingParent) {
-    return (
-      <Box className="w-full">
-        <LoadingScreen text="Loading..." />
-      </Box>
-    );
+    return <MessageLoading />;
   }
   return (
     <>

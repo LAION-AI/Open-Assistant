@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { TaskEmptyState } from "src/components/EmptyState";
+import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useCreatePrompterReply } from "src/hooks/tasks/useCreateReply";
@@ -25,5 +26,7 @@ const UserReply = () => {
     </>
   );
 };
+
+UserReply.getLayout = getDashboardLayout;
 
 export default UserReply;
