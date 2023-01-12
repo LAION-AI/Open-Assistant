@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from sqlmodel import Field, Index, SQLModel
+from sqlmodel import AutoString, Field, Index, SQLModel
 
 
 class User(SQLModel, table=True):
@@ -24,5 +24,5 @@ class User(SQLModel, table=True):
     )
     api_client_id: UUID = Field(foreign_key="api_client.id")
     enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
-    notes: str = Field(nullable=False, max_length=1024, default="")
+    notes: str = Field(sa_column=sa.Column(AutoString(length=1024), nullable=False, server_default="''"))
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
