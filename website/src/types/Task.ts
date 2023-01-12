@@ -12,6 +12,10 @@ export const enum TaskType {
   label_assistant_reply = "label_assistant_reply",
 }
 
+// we need to reconsider how to handle task content types
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+export type TaskContent = any;
+
 export interface ValidLabel {
   name: string;
   display_text: string;
@@ -27,5 +31,4 @@ export interface TaskResponse<Task extends BaseTask> {
   id: string;
   userId: string;
   task: Task;
-  valid_labels: ValidLabel[];
 }

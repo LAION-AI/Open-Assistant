@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Flex, HStack, StackDivider, StackProps, Text, TextProps } from "@chakra-ui/react";
+import { Box, CircularProgress, Stack, StackProps, Text, TextProps, useColorModeValue } from "@chakra-ui/react";
 import { boolean } from "boolean";
 import { useState } from "react";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
@@ -6,8 +6,9 @@ import fetcher from "src/lib/fetcher";
 import useSWR from "swr";
 
 const MessageHeaderProps: TextProps = {
-  align: "center",
   fontSize: "xl",
+  fontWeight: "bold",
+  fontFamily: "Inter",
   py: "2",
 };
 
@@ -15,7 +16,6 @@ const MessageStackProps: StackProps = {
   spacing: "2",
   alignItems: "start",
   justifyContent: "center",
-  divider: <StackDivider />,
 };
 
 interface MessageWithChildrenProps {
@@ -26,6 +26,9 @@ interface MessageWithChildrenProps {
 }
 
 export function MessageWithChildren(props: MessageWithChildrenProps) {
+  const backgroundColor = useColorModeValue("white", "gray.700");
+  const childBackgroundColor = useColorModeValue("gray.200", "gray.800");
+
   const { id, depth, maxDepth, isOnlyChild = true } = props;
 
   const [message, setMessage] = useState(null);
@@ -60,40 +63,42 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
     <>
       {message && (
         <>
-          <Text {...MessageHeaderProps}>{isFirst ? "Message" : depth === 1 ? "Children" : "Ancestor"}</Text>
-          <Flex justifyContent="center" pb="2">
-            <Box maxWidth="container.sm" flex="1" px={isFirstOrOnly ? [4, 6, 8, 9] : "0"}>
-              <Box px={isFirstOrOnly ? "2" : "0"}>
-                <MessageTableEntry item={message} idx={1} valid_labels={[]} />
-              </Box>
+          <Box pb={isFirstOrOnly ? "4" : "0"}>
+            <Text textAlign="left" {...MessageHeaderProps}>
+              {isFirst ? "Message" : depth === 1 ? "Children" : "Ancestor"}
+            </Text>
+            <Box width="fit-content" bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base">
+              <MessageTableEntry item={message} />
             </Box>
-          </Flex>
+          </Box>
         </>
       )}
       {children && Array.isArray(children) && children.length > 0 ? (
         renderRecursive ? (
-          <HStack {...MessageStackProps}>
-            {children.map((item, idx) => (
-              <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
-                <MessageWithChildren
-                  id={item.id}
-                  depth={depth ? depth + 1 : 1}
-                  maxDepth={maxDepth}
-                  isOnlyChild={children.length === 1 && isOnlyChild}
-                />
-              </Box>
-            ))}
-          </HStack>
+          <Stack {...MessageStackProps}>
+            <Box bg={childBackgroundColor} padding="4" borderRadius="xl">
+              {children.map((item, idx) => (
+                <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
+                  <MessageWithChildren
+                    id={item.id}
+                    depth={depth ? depth + 1 : 1}
+                    maxDepth={maxDepth}
+                    isOnlyChild={children.length === 1 && isOnlyChild}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </Stack>
         ) : (
           <>
             <Text {...MessageHeaderProps}>{isFirstOrOnly ? "Children" : "Ancestor"}</Text>
-            <HStack {...MessageStackProps}>
+            <Stack {...MessageStackProps}>
               {children.map((item, idx) => (
-                <Box maxWidth="container.sm" flex="1" key={`recursiveMessageWChildren_${idx}`}>
-                  <MessageTableEntry item={item} idx={idx * 2} valid_labels={[]} />
+                <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
+                  <MessageTableEntry item={item} />
                 </Box>
               ))}
-            </HStack>
+            </Stack>
           </>
         )
       ) : (

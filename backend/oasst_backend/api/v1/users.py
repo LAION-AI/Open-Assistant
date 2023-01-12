@@ -1,16 +1,61 @@
 import datetime
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
-from oasst_backend.models import ApiClient
+from oasst_backend.models import ApiClient, User
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.user_repository import UserRepository
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
 router = APIRouter()
+
+
+@router.get("/users/{user_id}", response_model=protocol.User)
+def get_user(
+    user_id: UUID,
+    api_client_id: UUID = None,
+    db: Session = Depends(deps.get_db),
+    api_client: ApiClient = Depends(deps.get_api_client),
+):
+    """
+    Get a user by global user ID. Only trusted clients can resolve users they did not register.
+    """
+    ur = UserRepository(db, api_client)
+    user: User = ur.get_user(user_id, api_client_id)
+    return protocol.User(user.username, user.display_name, user.auth_method)
+
+
+@router.put("/users/{user_id}", status_code=HTTP_204_NO_CONTENT)
+def update_user(
+    user_id: UUID,
+    enabled: Optional[bool] = None,
+    notes: Optional[str] = None,
+    db: Session = Depends(deps.get_db),
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+):
+    """
+    Update a user by global user ID. Only trusted clients can update users.
+    """
+    ur = UserRepository(db, api_client)
+    ur.update_user(user_id, enabled, notes)
+
+
+@router.delete("/users/{user_id}", status_code=HTTP_204_NO_CONTENT)
+def delete_user(
+    user_id: UUID,
+    db: Session = Depends(deps.get_db),
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+):
+    """
+    Delete a user by global user ID. Only trusted clients can delete users.
+    """
+    ur = UserRepository(db, api_client)
+    ur.mark_user_deleted(user_id)
 
 
 @router.get("/{user_id}/messages", response_model=list[protocol.Message])

@@ -1,63 +1,54 @@
-import { useState } from "react";
+import { Box, Stack, Text, useColorModeValue } from "@chakra-ui/react";
+import { useEffect } from "react";
+import { MessageTable } from "src/components/Messages/MessageTable";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
-import { TaskControlsOverridable } from "src/components/Survey/TaskControlsOverridable";
+import { TaskSurveyProps } from "src/components/Tasks/Task";
 
-import { MessageTable } from "../Messages/MessageTable";
+export const EvaluateTask = ({ task, onReplyChanged }: TaskSurveyProps<{ ranking: number[] }>) => {
+  const cardColor = useColorModeValue("gray.100", "gray.700");
+  const titleColor = useColorModeValue("gray.800", "gray.300");
+  const labelColor = useColorModeValue("gray.600", "gray.400");
 
-export interface EvaluateTaskProps {
-  // we need a task type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  tasks: any[];
-  trigger: (update: { id: string; update_type: string; content: { ranking: number[] } }) => void;
-  onSkipTask: (task: { id: string }, reason: string) => void;
-  onNextTask: () => void;
-  mainBgClasses: string;
-}
-
-export const EvaluateTask = ({ tasks, trigger, onSkipTask, onNextTask, mainBgClasses }: EvaluateTaskProps) => {
-  const [ranking, setRanking] = useState<number[]>([]);
-  const submitResponse = (task) => {
-    trigger({
-      id: task.id,
-      update_type: "message_ranking",
-      content: {
-        ranking,
-      },
-    });
-  };
-
-  let messages = null;
-  if (tasks[0].task.conversation) {
-    messages = tasks[0].task.conversation.messages;
+  let messages = [];
+  if (task.conversation) {
+    messages = task.conversation.messages;
     messages = messages.map((message, index) => ({ ...message, id: index }));
   }
 
-  const valid_labels = tasks[0].valid_labels;
-  const sortables = tasks[0].task.replies ? "replies" : "prompts";
+  useEffect(() => {
+    const conversationMsgs = task.conversation ? task.conversation.messages : [];
+    const defaultRanking = conversationMsgs.map((message, index) => index);
+    onReplyChanged({
+      content: { ranking: defaultRanking },
+      state: "DEFAULT",
+    });
+  }, [task.conversation, onReplyChanged]);
+
+  const onRank = (newRanking: number[]) => {
+    onReplyChanged({ content: { ranking: newRanking }, state: "VALID" });
+  };
+
+  const sortables = task.replies ? "replies" : "prompts";
 
   return (
-    <div className={`p-12 ${mainBgClasses}`}>
-      <SurveyCard className="max-w-7xl mx-auto h-fit mb-24">
-        <h5 className="text-lg font-semibold mb-4">Instructions</h5>
-        <p className="text-lg py-1">
-          Given the following {sortables}, sort them from best to worst, best being first, worst being last.
-        </p>
-        {messages ? <MessageTable messages={messages} valid_labels={valid_labels} /> : null}
-        <Sortable items={tasks[0].task[sortables]} onChange={setRanking} className="my-8" />
-      </SurveyCard>
-
-      <TaskControlsOverridable
-        tasks={tasks}
-        isValid={ranking.length === tasks[0].task[sortables].length}
-        prepareForSubmit={() => setRanking(tasks[0].task[sortables].map((_, idx) => idx))}
-        onSubmitResponse={submitResponse}
-        onSkipTask={(task, reason) => {
-          setRanking([]);
-          onSkipTask(task, reason);
-        }}
-        onNextTask={onNextTask}
-      />
+    <div data-cy="task" data-task-type="evaluate-task">
+      <Box mb="4">
+        <SurveyCard>
+          <Stack spacing="1">
+            <Text fontSize="xl" fontWeight="bold" color={titleColor}>
+              Instructions
+            </Text>
+            <Text fontSize="md" color={labelColor}>
+              Given the following {sortables}, sort them from best to worst, best being first, worst being last.
+            </Text>
+          </Stack>
+          <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
+            <MessageTable messages={messages} />
+          </Box>
+          <Sortable items={task[sortables]} onChange={onRank} className="my-8" />
+        </SurveyCard>
+      </Box>
     </div>
   );
 };

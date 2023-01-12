@@ -16,7 +16,7 @@ export const SideMenuLayout = (props: SideMenuLayoutProps) => {
         <Box className="p-6 sm:pr-0">
           <SideMenu buttonOptions={props.menuButtonOptions} />
         </Box>
-        <Box className="flex flex-col overflow-auto p-6 sm:pl-0 gap-14">{props.children}</Box>
+        <Box className="flex flex-col overflow-y-auto p-6 sm:pl-0 gap-14 w-full">{props.children}</Box>
       </Box>
     </Box>
   );

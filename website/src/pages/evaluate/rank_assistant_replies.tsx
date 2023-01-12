@@ -1,5 +1,6 @@
 import Head from "next/head";
-import { Container } from "src/components/Container";
+import { TaskEmptyState } from "src/components/EmptyState";
+import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useRankAssistantRepliesTask } from "src/hooks/tasks/useRankReplies";
@@ -12,7 +13,7 @@ const RankAssistantReplies = () => {
   }
 
   if (tasks.length === 0) {
-    return <Container className="p-6 text-center">No tasks found...</Container>;
+    return <TaskEmptyState />;
   }
 
   return (
@@ -21,9 +22,11 @@ const RankAssistantReplies = () => {
         <title>Rank Assistant Replies</title>
         <meta name="description" content="Rank Assistant Replies." />
       </Head>
-      <Task tasks={tasks} trigger={trigger} mutate={reset} />
+      <Task key={tasks[0].task.id} frontendId={tasks[0].id} task={tasks[0].task} trigger={trigger} mutate={reset} />
     </>
   );
 };
+
+RankAssistantReplies.getLayout = getDashboardLayout;
 
 export default RankAssistantReplies;
