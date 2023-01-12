@@ -1,0 +1,10 @@
+# The manifest for the "staging" environment.
+# Read the full specification for the "Environment" type at:
+#  https://aws.github.io/copilot-cli/docs/manifest/environment/
+
+name: staging
+type: Environment
+
+# Configure observability for your environment resources.
+observability:
+  container_insights: false
