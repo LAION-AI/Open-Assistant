@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
+from oasst_shared.schemas import protocol
 from sqlmodel import AutoString, Field, Index, SQLModel
 
 
@@ -26,3 +27,6 @@ class User(SQLModel, table=True):
     enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
     notes: str = Field(sa_column=sa.Column(AutoString(length=1024), nullable=False, server_default="''"))
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
+
+    def to_protocol_user(self):
+        return protocol.User(id=self.username, display_name=self.display_name, auth_method=self.auth_method)

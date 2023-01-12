@@ -157,3 +157,39 @@ class UserRepository:
         ]
 
         return LeaderboardStats(leaderboard=result)
+
+    def query_users(
+        self,
+        api_client_id: Optional[UUID] = None,
+        limit: Optional[int] = 20,
+        gte: Optional[str] = None,
+        lt: Optional[str] = None,
+        auth_method: Optional[str] = None,
+    ) -> list[User]:
+        if not self.api_client.trusted:
+            if not api_client_id:
+                api_client_id = self.api_client.id
+
+            if api_client_id != self.api_client.id:
+                raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+
+        users = self.db.query(User)
+
+        if api_client_id:
+            users = users.filter(User.api_client_id == api_client_id)
+
+        if auth_method:
+            users = users.filter(User.auth_method == auth_method)
+
+        users = users.order_by(User.display_name)
+
+        if gte:
+            users = users.filter(User.display_name >= gte)
+
+        if lt:
+            users = users.filter(User.display_name < lt)
+
+        if limit is not None:
+            users = users.limit(limit)
+
+        return users.all()

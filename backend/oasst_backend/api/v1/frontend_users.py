@@ -15,6 +15,21 @@ from starlette.status import HTTP_204_NO_CONTENT
 router = APIRouter()
 
 
+@router.get("/", response_model=list[protocol.User])
+def get_users(
+    api_client_id: UUID = None,
+    max_count: int = Query(10, gt=0, le=20),  # TODO: refine bounds
+    gte: str = None,
+    lt: str = None,
+    auth_method: str = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    pr = UserRepository(db, api_client)
+    users = pr.query_users(api_client_id=api_client_id, limit=max_count, gte=gte, lt=lt, auth_method=auth_method)
+    return [u.to_protocol_user() for u in users]
+
+
 @router.get("/{auth_method}/{username}", response_model=protocol.FrontEndUser)
 def query_frontend_user(
     auth_method: str,
