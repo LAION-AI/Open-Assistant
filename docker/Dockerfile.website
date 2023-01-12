@@ -1,0 +1,53 @@
+# Note: node:16.18.0 works most reliably when using different platforms (namely
+# Mac M1) and avoids recent Prisma docker bugs that lead to segfaults.
+
+# Install dependencies only when needed
+FROM node:16.18.0 AS deps
+WORKDIR /app
+
+# Install dependencies based on the preferred package manager
+COPY ./website/package.json ./website/package-lock.json ./
+RUN \
+  if [ -f package-lock.json ]; then npm ci; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
+# Rebuild the source code only when needed
+FROM node:16.18.0 AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY ./website/ .
+
+RUN npx prisma generate
+RUN npm run build
+
+# Production image, copy all the files and run next
+FROM node:16.18.0 AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+
+# Copy over the prisma schema so we can to `npx prisma db push` and ensure the
+# database exists on startup.
+COPY --chown=nextjs:nodejs ./website/prisma/schema.prisma ./
+# Copy over a startup script that'll run `npx prisma db push` before starting
+# the webserver.  This ensures the webserver can actually check user accounts.
+# This is a prisma variant of the postgres solution suggested in
+#   https://docs.docker.com/compose/startup-order/
+COPY --chown=nextjs:nodejs ./website/wait-for-postgres.sh ./
+
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+
+CMD ["node", "server.js"]

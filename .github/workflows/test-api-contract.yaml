@@ -1,0 +1,46 @@
+name: Test API Contract
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "oasst-shared/**"
+      - "backend/**"
+      - "website/**"
+  pull_request:
+    paths:
+      - "oasst-shared/**"
+      - "backend/**"
+      - "website/**"
+  workflow_call:
+
+jobs:
+  test-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - run: cd oasst-shared && pip install -e .
+
+      - run: cd oasst-shared && pip install -r requirements.dev.txt
+
+      - run: cd backend && pip install -r requirements.txt
+
+      - run: cd website && npm ci
+
+      - run: ./scripts/backend-development/start-mock-server.sh
+
+      - name: Run Python OasstApiClient contract tests
+        run: ./scripts/oasst-shared-development/test.sh
+
+      - name: Run JavaScript OasstApiClient contract tests
+        run: ./scripts/frontend-development/run-contract-test.sh
+
+      - run: ./scripts/backend-development/stop-mock-server.sh
