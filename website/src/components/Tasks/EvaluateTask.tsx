@@ -32,21 +32,23 @@ export const EvaluateTask = ({ task, onReplyChanged }: TaskSurveyProps<{ ranking
   const sortables = task.replies ? "replies" : "prompts";
 
   return (
-    <Box mb="4">
-      <SurveyCard>
-        <Stack spacing="1">
-          <Text fontSize="xl" fontWeight="bold" color={titleColor}>
-            Instructions
-          </Text>
-          <Text fontSize="md" color={labelColor}>
-            Given the following {sortables}, sort them from best to worst, best being first, worst being last.
-          </Text>
-        </Stack>
-        <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
-          <MessageTable messages={messages} />
-        </Box>
-        <Sortable items={task[sortables]} onChange={onRank} className="my-8" />
-      </SurveyCard>
-    </Box>
+    <div data-cy="task" data-task-type="evaluate-task">
+      <Box mb="4">
+        <SurveyCard>
+          <Stack spacing="1">
+            <Text fontSize="xl" fontWeight="bold" color={titleColor}>
+              Instructions
+            </Text>
+            <Text fontSize="md" color={labelColor}>
+              Given the following {sortables}, sort them from best to worst, best being first, worst being last.
+            </Text>
+          </Stack>
+          <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
+            <MessageTable messages={messages} />
+          </Box>
+          <Sortable items={task[sortables]} onChange={onRank} className="my-8" />
+        </SurveyCard>
+      </Box>
+    </div>
   );
 };

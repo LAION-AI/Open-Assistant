@@ -18,35 +18,37 @@ export const CreateTask = ({ task, taskType, onReplyChanged }: TaskSurveyProps<{
   };
 
   return (
-    <TwoColumnsWithCards>
-      <>
-        <Stack spacing="1">
-          <Text fontSize="xl" fontWeight="bold" color={titleColor}>
-            {taskType.label}
-          </Text>
-          <Text fontSize="md" color={labelColor}>
-            {taskType.overview}
-          </Text>
-        </Stack>
-        {task.conversation ? (
-          <Box mt="4">
-            <Messages messages={task.conversation.messages} post_id={task.id} />
-          </Box>
-        ) : null}
-      </>
-      <>
-        <Stack spacing="4">
-          <Text fontSize="xl" fontWeight="bold" color={titleColor}>
-            {taskType.instruction}
-          </Text>
-          <TrackedTextarea
-            text={inputText}
-            onTextChange={textChangeHandler}
-            thresholds={{ low: 20, medium: 40, goal: 50 }}
-            textareaProps={{ placeholder: "Write your prompt here..." }}
-          />
-        </Stack>
-      </>
-    </TwoColumnsWithCards>
+    <div data-cy="task" data-task-type="create-task">
+      <TwoColumnsWithCards>
+        <>
+          <Stack spacing="1">
+            <Text fontSize="xl" fontWeight="bold" color={titleColor}>
+              {taskType.label}
+            </Text>
+            <Text fontSize="md" color={labelColor}>
+              {taskType.overview}
+            </Text>
+          </Stack>
+          {task.conversation ? (
+            <Box mt="4">
+              <Messages messages={task.conversation.messages} post_id={task.id} />
+            </Box>
+          ) : null}
+        </>
+        <>
+          <Stack spacing="4">
+            <Text fontSize="xl" fontWeight="bold" color={titleColor}>
+              {taskType.instruction}
+            </Text>
+            <TrackedTextarea
+              text={inputText}
+              onTextChange={textChangeHandler}
+              thresholds={{ low: 20, medium: 40, goal: 50 }}
+              textareaProps={{ placeholder: "Write your prompt here..." }}
+            />
+          </Stack>
+        </>
+      </TwoColumnsWithCards>
+    </div>
   );
 };

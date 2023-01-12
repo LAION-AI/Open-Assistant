@@ -35,36 +35,38 @@ export const LabelTask = ({
   const labelColor = useColorModeValue("gray.600", "gray.400");
 
   return (
-    <TwoColumnsWithCards>
-      <>
-        <Text fontSize="xl" fontWeight="bold" color={titleColor}>
-          {taskType.label}
-        </Text>
-        <Text fontSize="md" color={labelColor}>
-          {taskType.overview}
-        </Text>
+    <div data-cy="task" data-task-type="label-task">
+      <TwoColumnsWithCards>
+        <>
+          <Text fontSize="xl" fontWeight="bold" color={titleColor}>
+            {taskType.label}
+          </Text>
+          <Text fontSize="md" color={labelColor}>
+            {taskType.overview}
+          </Text>
 
-        {task.conversation ? (
-          <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
-            <MessageTable
-              messages={[
-                ...(task.conversation ? task.conversation.messages : []),
-                {
-                  text: task.reply,
-                  is_assistant: task.type === TaskType.label_assistant_reply,
-                  message_id: task.message_id,
-                },
-              ]}
-            />
-          </Box>
-        ) : (
-          <Box mt="4">
-            <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />
-          </Box>
-        )}
-      </>
-      <LabelSliderGroup labelIDs={task.valid_labels} onChange={onSliderChange} />
-    </TwoColumnsWithCards>
+          {task.conversation ? (
+            <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
+              <MessageTable
+                messages={[
+                  ...(task.conversation ? task.conversation.messages : []),
+                  {
+                    text: task.reply,
+                    is_assistant: task.type === TaskType.label_assistant_reply,
+                    message_id: task.message_id,
+                  },
+                ]}
+              />
+            </Box>
+          ) : (
+            <Box mt="4">
+              <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />
+            </Box>
+          )}
+        </>
+        <LabelSliderGroup labelIDs={task.valid_labels} onChange={onSliderChange} />
+      </TwoColumnsWithCards>
+    </div>
   );
 };
 
