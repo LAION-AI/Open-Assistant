@@ -35,12 +35,11 @@ import os
 from typing import Dict, List, Tuple
 
 import datasets
-<<<<<<< HEAD
 from .hub import OpenAssistantConfig
 
 # TODO: import the schema (i.e. features) that fits your dataset:
 from .hub import lm_features
-=======
+
 from hub import OpenAssistantConfig
 
 # TODO: import the schema (i.e. features) that fits your dataset:
@@ -57,7 +56,6 @@ _CITATION = """\
   year      = {},
   url       = {},
   doi       = {},
-<<<<<<< HEAD
   biburl    = {https://www.basketball-reference.com/},
 =======
   biburl    = {},
@@ -75,7 +73,6 @@ _DISPLAYNAME = "Dataset Name"
 # TODO: Add a description of the dataset here
 # You can copy an official description
 _DESCRIPTION = """\
-<<<<<<< HEAD
 This dataset is designed for providing a directory to upload datsets and a working example of a dataset loader.
 """
 
@@ -103,9 +100,6 @@ _LICENSE = ""
 # However, if you need to access different files for each config you can have multiple entries in this dict.
 # This can be an arbitrarily nested dict/list of URLs (see below in `_split_generators` method)
 _URLS = {
-<<<<<<< HEAD
-    _DATASETNAME :'data\What_ChatGPT_Could_Mean_for_the_Future_of_Artificial_Intelligence.vtt'
-=======
     _DATASETNAME: 'data/What_ChatGPT_Could_Mean_for_the_Future_of_Artificial_Intelligence.vtt',
 >>>>>>> d012548 (First Loading Script in Datasets)
 }
@@ -216,7 +210,6 @@ class NbaDataDataset(datasets.GeneratorBasedBuilder):
 
         # NOTE: For local datasets you will have access to self.config.data_dir and self.config.data_files
 
-<<<<<<< HEAD
         if self.config.name == _URLS[_DATASETNAME]:
             # TODO: yield (key, example) tuples in the given schema
             for key, example in _URLS[_DATASETNAME]:
