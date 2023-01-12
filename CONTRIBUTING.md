@@ -37,20 +37,20 @@ contributions smoothly we recommend the following:
 1.  Before working on any changes, try to
     [sync the forked repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
     to keep it up-to-date with the upstream repository.
-1.  Work on a small focused change that only touches on a few files.
+1.  On a new branch in your fork (a "feature branch") work on a small focused change that only touches on a few files.
 1.  Run `pre-commit` and make sure all files have formatting fixed. This
     simplifies life for reviewers.
 1.  Package up a small bit of work that solves part of the problem
     [into a Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork)
     and
-    [send it out for review](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/requesting-a-pull-request-review).
+    [send it out for review](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/requesting-a-pull-request-review). [Here](https://github.com/LAION-AI/Open-Assistant/pull/658) is an example PR for this project to illustrate this.
 1.  If you're lucky, we can merge your change into `main` without any problems.
     If there's changes to files you're working on, resolve them by:
 1.  First try rebase as suggested
     [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-rebase).
 1.  If rebase feels too painful, merge as suggested
     [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-merge).
-1.  Once you've resolved any conflicts, finish the review and merge into `main`.
+1.  Once you've resolved any conflicts, finish the review and merge your PR.
 1.  Merge in your change and move onto a new issue or the second step of your
     current issue.
 
@@ -58,6 +58,8 @@ Additionally, if someone is working on an issue that interests you, ask if they
 need help on it or would like suggestions on how to approach the issue. If so,
 share wildly. If they seem to have a good handle on it, let them work on their
 solution until a challenge comes up.
+
+Note: At any point you can compare your feature branch to the upstream/main of `LAION-AI/Open-Assistant` but using a URL like this: https://github.com/LAION-AI/Open-Assistant/compare/main...andrewm4894:Open-Assistant:my-example-feature-branch. Obviously just replace `andrewm4894` with your own GitHub user name and `my-example-feature-branch` with whatever you called the feature branch you are working on. 
 
 ### When does a review finish
 
