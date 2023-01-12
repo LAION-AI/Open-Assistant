@@ -14,6 +14,34 @@ class UserRepository:
         self.db = db
         self.api_client = api_client
 
+    def get_user(self, id: UUID, api_client_id: Optional[UUID] = None) -> User:
+        """
+        Get a user by global user ID. All clients may get users with the same API client ID as the querying client.
+        Trusted clients can get any user.
+
+        Raises:
+            OasstError: 403 if untrusted client attempts to query foreign users. 404 if user with ID not found.
+        """
+        if not self.api_client.trusted and api_client_id is None:
+            api_client_id = self.api_client.id
+
+        if not self.api_client.trusted and api_client_id != self.api_client.id:
+            # Unprivileged client requests foreign user
+            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+
+        # Will always be unique
+        user_query = self.db.query(User).filter(User.id == id)
+
+        if api_client_id:
+            user_query = user_query.filter(User.api_client_id == api_client_id)
+
+        user: User = user_query.first()
+
+        if user is None:
+            raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
+
+        return user
+
     def query_frontend_user(
         self, auth_method: str, username: str, api_client_id: Optional[UUID] = None
     ) -> Optional[User]:
@@ -34,6 +62,49 @@ class UserRepository:
             raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
 
         return user
+
+    def update_user(self, id: UUID, enabled: Optional[bool] = None, notes: Optional[str] = None) -> None:
+        """
+        Update a user by global user ID to disable or set admin notes. Only trusted clients may update users.
+
+        Raises:
+            OasstError: 403 if untrusted client attempts to update a user. 404 if user with ID not found.
+        """
+        if not self.api_client.trusted:
+            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+
+        user: User = self.db.query(User).filter(User.id == id).first()
+
+        if user is None:
+            raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
+
+        if enabled is not None:
+            user.enabled = enabled
+        if notes is not None:
+            user.notes = notes
+
+        self.db.add(user)
+        self.db.commit()
+
+    def mark_user_deleted(self, id: UUID) -> None:
+        """
+        Update a user by global user ID to set deleted flag. Only trusted clients may delete users.
+
+        Raises:
+            OasstError: 403 if untrusted client attempts to delete a user. 404 if user with ID not found.
+        """
+        if not self.api_client.trusted:
+            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+
+        user: User = self.db.query(User).filter(User.id == id).first()
+
+        if user is None:
+            raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
+
+        user.deleted = True
+
+        self.db.add(user)
+        self.db.commit()
 
     def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
         if not client_user:
