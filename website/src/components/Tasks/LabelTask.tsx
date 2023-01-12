@@ -60,7 +60,7 @@ export const LabelTask = ({
             </Box>
           ) : (
             <Box mt="4">
-              <MessageView text={task.prompt} is_assistant={false} message_id={task.message_id} />
+              <MessageView text={task.prompt} is_assistant={false} id={task.message_id} />
             </Box>
           )}
         </>

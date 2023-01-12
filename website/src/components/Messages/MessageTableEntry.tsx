@@ -2,23 +2,19 @@ import { Avatar, HStack, LinkBox, LinkOverlay, useColorModeValue } from "@chakra
 import { boolean } from "boolean";
 import Link from "next/link";
 import { FlaggableElement } from "src/components/FlaggableElement";
+import { Message } from "src/types/Conversation";
 
-interface Message {
-  text: string;
-  id: string;
-  message_id: string;
-  is_assistant: boolean;
-}
 interface MessageTableEntryProps {
   item: Message;
 }
+
 export function MessageTableEntry(props: MessageTableEntryProps) {
   const { item } = props;
   const backgroundColor = useColorModeValue("gray.50", "gray.800");
 
   return (
     <div>
-      <FlaggableElement text={item.text} message_id={item.message_id} post_id={item.id} key={`flag_${item.id}`}>
+      <FlaggableElement message={item} key={`flag_${item.id || item.frontend_message_id}`}>
         <HStack>
           <Avatar
             size="sm"

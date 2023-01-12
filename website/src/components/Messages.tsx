@@ -4,11 +4,14 @@ import { Message } from "src/types/Conversation";
 
 import { FlaggableElement } from "./FlaggableElement";
 
-export const Messages = ({ messages, post_id }: { messages: Message[]; post_id: string }) => {
+interface MessagesProps {
+  messages: Message[];
+}
+
+export const Messages = ({ messages }: MessagesProps) => {
   const items = messages.map((messageProps: Message, i: number) => {
-    const { message_id, text } = messageProps;
     return (
-      <FlaggableElement text={text} post_id={post_id} message_id={message_id} key={i + text}>
+      <FlaggableElement message={messageProps} key={i + messageProps.id}>
         <MessageView {...messageProps} />
       </FlaggableElement>
     );
@@ -17,20 +20,20 @@ export const Messages = ({ messages, post_id }: { messages: Message[]; post_id: 
   return <Grid gap={2}>{items}</Grid>;
 };
 
-export const MessageView = forwardRef<Message, "div">(({ is_assistant, text }: Message, ref) => {
+export const MessageView = forwardRef<Message, "div">((message: Message, ref) => {
   const { colorMode } = useColorMode();
 
   const bgColor = useMemo(() => {
     if (colorMode === "light") {
-      return is_assistant ? "gray.800" : "blue.600";
+      return message.is_assistant ? "gray.800" : "blue.600";
     } else {
-      return is_assistant ? "black" : "blue.600";
+      return message.is_assistant ? "black" : "blue.600";
     }
-  }, [colorMode, is_assistant]);
+  }, [colorMode, message.is_assistant]);
 
   return (
     <Box bg={bgColor} ref={ref} className={`p-4 rounded-md text-white whitespace-pre-wrap`}>
-      {text}
+      {message.text}
     </Box>
   );
 });
