@@ -1,5 +1,4 @@
-import { Grid } from "@chakra-ui/react";
-import { forwardRef, useColorMode } from "@chakra-ui/react";
+import { Box, forwardRef, Grid, useColorMode } from "@chakra-ui/react";
 import { useMemo } from "react";
 import { Message } from "src/types/Conversation";
 
@@ -23,16 +22,16 @@ export const MessageView = forwardRef<Message, "div">(({ is_assistant, text }: M
 
   const bgColor = useMemo(() => {
     if (colorMode === "light") {
-      return is_assistant ? "bg-slate-800" : "bg-sky-900";
+      return is_assistant ? "gray.800" : "blue.600";
     } else {
-      return is_assistant ? "bg-black" : "bg-sky-900";
+      return is_assistant ? "black" : "blue.600";
     }
   }, [colorMode, is_assistant]);
 
   return (
-    <div ref={ref} className={`${bgColor} p-4 rounded-md text-white whitespace-pre-wrap`}>
+    <Box bg={bgColor} ref={ref} className={`p-4 rounded-md text-white whitespace-pre-wrap`}>
       {text}
-    </div>
+    </Box>
   );
 });
 

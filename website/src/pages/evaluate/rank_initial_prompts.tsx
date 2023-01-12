@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { TaskEmptyState } from "src/components/EmptyState";
+import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useRankInitialPromptsTask } from "src/hooks/tasks/useRankReplies";
@@ -25,5 +26,7 @@ const RankInitialPrompts = () => {
     </>
   );
 };
+
+RankInitialPrompts.getLayout = getDashboardLayout;
 
 export default RankInitialPrompts;

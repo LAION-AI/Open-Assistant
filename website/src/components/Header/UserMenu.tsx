@@ -68,9 +68,8 @@ export function UserMenu() {
                   >
                     <Box
                       bg={backgroundColor}
-                      borderWidth="1px"
-                      borderColor={accentColor}
                       borderRadius="xl"
+                      shadow="base"
                       className="absolute right-0 mt-3 w-screen max-w-xs p-4"
                     >
                       <Box className="flex flex-col gap-1">
@@ -88,7 +87,7 @@ export function UserMenu() {
                               <item.icon className="text-blue-500" aria-hidden="true" />
                             </div>
                             <div>
-                              <Text fontFamily="inter">{item.name}</Text>
+                              <Text>{item.name}</Text>
                             </div>
                           </Link>
                         ))}
@@ -101,7 +100,7 @@ export function UserMenu() {
                             <FiLogOut className="text-blue-500" />
                           </div>
                           <div>
-                            <Text fontFamily="inter">Sign Out</Text>
+                            <Text>Sign Out</Text>
                           </div>
                         </Link>
                       </Box>
