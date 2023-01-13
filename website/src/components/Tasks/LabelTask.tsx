@@ -12,6 +12,7 @@ export const LabelTask = ({
   task,
   taskType,
   onReplyChanged,
+  isDisabled,
 }: TaskSurveyProps<{ text: string; labels: { [k: string]: number }; message_id: string }>) => {
   const valid_labels = task.valid_labels;
   const [sliderValues, setSliderValues] = useState<number[]>(new Array(valid_labels.length).fill(0));
@@ -64,7 +65,7 @@ export const LabelTask = ({
             </Box>
           )}
         </>
-        <LabelSliderGroup labelIDs={task.valid_labels} onChange={onSliderChange} />
+        <LabelSliderGroup labelIDs={task.valid_labels} isDisabled={isDisabled} onChange={onSliderChange} />
       </TwoColumnsWithCards>
     </div>
   );
@@ -74,9 +75,10 @@ export const LabelTask = ({
 interface LabelSliderGroupProps {
   labelIDs: Array<string>;
   onChange: (sliderValues: number[]) => unknown;
+  isDisabled?: boolean;
 }
 
-export const LabelSliderGroup = ({ labelIDs, onChange }: LabelSliderGroupProps) => {
+export const LabelSliderGroup = ({ labelIDs, onChange, isDisabled }: LabelSliderGroupProps) => {
   const [sliderValues, setSliderValues] = useState<number[]>(Array.from({ length: labelIDs.length }).map(() => 0));
 
   return (
@@ -92,6 +94,7 @@ export const LabelSliderGroup = ({ labelIDs, onChange }: LabelSliderGroupProps) 
             onChange(sliderValues);
             setSliderValues(newState);
           }}
+          isDisabled={isDisabled}
         />
       ))}
     </Grid>
@@ -102,6 +105,7 @@ function CheckboxSliderItem(props: {
   labelId: string;
   sliderValue: number;
   sliderHandler: (newVal: number) => unknown;
+  isDisabled: boolean;
 }) {
   const id = useId();
   const { colorMode } = useColorMode();
@@ -114,7 +118,7 @@ function CheckboxSliderItem(props: {
         {/* TODO: display real text instead of just the id */}
         <span className={labelTextClass}>{props.labelId}</span>
       </label>
-      <Slider defaultValue={0} onChangeEnd={(val) => props.sliderHandler(val / 100)}>
+      <Slider defaultValue={0} isDisabled={props.isDisabled} onChangeEnd={(val) => props.sliderHandler(val / 100)}>
         <SliderTrack>
           <SliderFilledTrack />
           <SliderThumb />

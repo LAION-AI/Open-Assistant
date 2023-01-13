@@ -17,7 +17,7 @@ from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
-from oasst_backend.tree_manager import TreeManager, TreeManagerConfiguration
+from oasst_backend.tree_manager import TreeManager
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from pydantic import BaseModel
@@ -107,6 +107,7 @@ if settings.DEBUG_USE_SEED_DATA:
             parent_message_id: Optional[str]
             text: str
             role: str
+            tree_state: Optional[message_tree_state.State]
 
         try:
             logger.info("Seed data check began")
@@ -119,7 +120,7 @@ if settings.DEBUG_USE_SEED_DATA:
                 pr = PromptRepository(
                     db=db, api_client=api_client, client_user=dummy_user, user_repository=ur, task_repository=tr
                 )
-                tm = TreeManager(db, pr, TreeManagerConfiguration())
+                tm = TreeManager(db, pr)
 
                 with open(settings.DEBUG_USE_SEED_DATA_PATH) as f:
                     dummy_messages_raw = json.load(f)
@@ -157,10 +158,17 @@ if settings.DEBUG_USE_SEED_DATA:
                                 )
                         tr.bind_frontend_message_id(task.id, msg.task_message_id)
                         message = pr.store_text_reply(
-                            msg.text, msg.task_message_id, msg.user_message_id, review_count=5, review_result=True
+                            msg.text,
+                            msg.task_message_id,
+                            msg.user_message_id,
+                            review_count=5,
+                            review_result=True,
+                            check_tree_state=False,
                         )
                         if message.parent_id is None:
-                            tm._insert_default_state(root_message_id=message.id, state=message_tree_state.State.GROWING)
+                            tm._insert_default_state(
+                                root_message_id=message.id, state=msg.tree_state or message_tree_state.State.GROWING
+                            )
                             db.commit()
 
                         logger.info(
@@ -168,6 +176,7 @@ if settings.DEBUG_USE_SEED_DATA:
                         )
                     else:
                         logger.debug(f"seed data task found: {task.id}")
+
                 logger.info("Seed data check completed")
 
         except Exception:
@@ -178,9 +187,8 @@ if settings.DEBUG_USE_SEED_DATA:
 def ensure_tree_states():
     try:
         logger.info("Startup: TreeManager.ensure_tree_states()")
-        cfg = TreeManagerConfiguration()  # TODO: decide where config is stored, e.g. load form json/yaml file
         with Session(engine) as db:
-            tm = TreeManager(db, None, configuration=cfg)
+            tm = TreeManager(db, None)
             tm.ensure_tree_states()
 
     except Exception:

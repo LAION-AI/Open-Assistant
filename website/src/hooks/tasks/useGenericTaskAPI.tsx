@@ -24,6 +24,7 @@ export const useGenericTaskAPI = <TaskType extends BaseTask>(taskApiEndpoint: st
     onSuccess: async (response) => {
       const newTask: ConcreteTaskResponse = await response.json();
       setTasks((oldTasks) => [...oldTasks, newTask]);
+      mutate();
     },
   });
 

@@ -6,5 +6,9 @@ export interface TaskReplyDefault<T> {
   content: T;
   state: "DEFAULT";
 }
+export interface TaskReplyInValid<T> {
+  content: T;
+  state: "INVALID";
+}
 
-export type TaskReplyState<T> = TaskReplyValid<T> | TaskReplyDefault<T>;
+export type TaskReplyState<T> = TaskReplyValid<T> | TaskReplyDefault<T> | TaskReplyInValid<T>;

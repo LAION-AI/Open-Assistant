@@ -6,7 +6,7 @@ from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
-from oasst_backend.tree_manager import TreeManager, TreeManagerConfiguration
+from oasst_backend.tree_manager import TreeManager
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -36,8 +36,7 @@ def request_task(
 
     try:
         pr = PromptRepository(db, api_client, client_user=request.user)
-        tree_manager_config = TreeManagerConfiguration()
-        tm = TreeManager(db, pr, tree_manager_config)
+        tm = TreeManager(db, pr)
         task, message_tree_id, parent_message_id = tm.next_task(request.type)
         pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
 
@@ -113,8 +112,7 @@ async def tasks_interaction(
 
     try:
         pr = PromptRepository(db, api_client, client_user=interaction.user)
-        tree_manager_config = TreeManagerConfiguration()
-        tm = TreeManager(db, pr, tree_manager_config)
+        tm = TreeManager(db, pr)
         return await tm.handle_interaction(interaction)
 
     except OasstError:

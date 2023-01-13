@@ -17,6 +17,7 @@ export interface TaskSurveyProps<T> {
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   task: any;
   taskType: TaskInfo;
+  isDisabled?: boolean;
   onReplyChanged: (state: TaskReplyState<T>) => void;
 }
 
@@ -50,6 +51,8 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       if (taskStatus !== "DEFAULT") setTaskStatus("DEFAULT");
     } else if (state.state === "VALID") {
       if (taskStatus !== "SUBMITABLE") setTaskStatus("SUBMITABLE");
+    } else if (state.state == "INVALID") {
+      setTaskStatus("NOT_SUBMITTABLE");
     }
   }).current;
 
@@ -77,24 +80,42 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
   function taskTypeComponent() {
     switch (taskType.category) {
       case TaskCategory.Create:
-        return <CreateTask key={task.id} task={task} taskType={taskType} onReplyChanged={onReplyChanged} />;
+        return (
+          <CreateTask
+            key={task.id}
+            task={task}
+            taskType={taskType}
+            isDisabled={taskStatus === "SUBMITTED"}
+            onReplyChanged={onReplyChanged}
+          />
+        );
       case TaskCategory.Evaluate:
-        return <EvaluateTask key={task.id} task={task} taskType={taskType} onReplyChanged={onReplyChanged} />;
+        return (
+          <EvaluateTask
+            key={task.id}
+            task={task}
+            taskType={taskType}
+            isDisabled={taskStatus === "SUBMITTED"}
+            onReplyChanged={onReplyChanged}
+          />
+        );
       case TaskCategory.Label:
-        return <LabelTask key={task.id} task={task} taskType={taskType} onReplyChanged={onReplyChanged} />;
+        return (
+          <LabelTask
+            key={task.id}
+            task={task}
+            taskType={taskType}
+            isDisabled={taskStatus === "SUBMITTED"}
+            onReplyChanged={onReplyChanged}
+          />
+        );
     }
   }
 
   return (
     <div>
       {taskTypeComponent()}
-      <TaskControls
-        task={task}
-        taskStatus={taskStatus}
-        onSubmit={submitResponse}
-        onSkip={rejectTask}
-        onNextTask={mutate}
-      />
+      <TaskControls task={task} taskStatus={taskStatus} onSubmit={submitResponse} onSkip={rejectTask} />
       <UnchangedWarning
         show={showUnchangedWarning}
         title={taskType.unchanged_title || "No changes"}

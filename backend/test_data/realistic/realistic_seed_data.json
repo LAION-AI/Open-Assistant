@@ -228,7 +228,8 @@
     "user_message_id": "rrbopvrb",
     "parent_message_id": null,
     "text": " How can I feed squirrels and make  more come to my home?",
-    "role": "prompter"
+    "role": "prompter",
+    "tree_state": "ranking"
   },
   {
     "task_message_id": "92w6z5iw",
@@ -1054,7 +1055,8 @@
     "user_message_id": "3pvmby5u",
     "parent_message_id": null,
     "text": " My 35 year old son is having pain from his jaw, neck and shoulder blade",
-    "role": "prompter"
+    "role": "prompter",
+    "tree_state": "ranking"
   },
   {
     "task_message_id": "v891mplm",
@@ -1418,7 +1420,8 @@
     "user_message_id": "4j9k8rqq",
     "parent_message_id": null,
     "text": " I have been gaining weight and want to start exercising.  How should I begin?",
-    "role": "prompter"
+    "role": "prompter",
+    "tree_state": "ranking"
   },
   {
     "task_message_id": "kfg4s8bg",
@@ -1600,7 +1603,8 @@
     "user_message_id": "vgtyn75k",
     "parent_message_id": null,
     "text": " What is macular degeneration?",
-    "role": "prompter"
+    "role": "prompter",
+    "tree_state": "ranking"
   },
   {
     "task_message_id": "zusgcbfj",
@@ -2041,7 +2045,8 @@
     "user_message_id": "vtaes87s",
     "parent_message_id": null,
     "text": " I keep biting the inside of my cheek when I'm sleeping. What can I do to prevent this in the future?",
-    "role": "prompter"
+    "role": "prompter",
+    "tree_state": "ranking"
   },
   {
     "task_message_id": "zxumt49x",
@@ -2636,7 +2641,8 @@
     "user_message_id": "v14u082o",
     "parent_message_id": null,
     "text": " Any tips on how to revise something you wrote?",
-    "role": "prompter"
+    "role": "prompter",
+    "tree_state": "ranking"
   },
   {
     "task_message_id": "bcw4led5",
@@ -2986,7 +2992,8 @@
     "user_message_id": "di54e1nb",
     "parent_message_id": null,
     "text": " I am going to Singapore on business.  Can you tell me what you know about Singapore?",
-    "role": "prompter"
+    "role": "prompter",
+    "tree_state": "ranking"
   },
   {
     "task_message_id": "z79vpkaj",
