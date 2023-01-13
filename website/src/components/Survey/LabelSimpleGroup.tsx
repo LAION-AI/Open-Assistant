@@ -25,8 +25,8 @@ export const LabelSimpleGroup = (props: LabelSimpleGroupProps) => {
             setLabelValues(newState);
           }}
           states={[
-            { text: "No", value: 0 },
-            { text: "Yes", value: 1 },
+            { text: "No", value: 0, colorScheme: "green" },
+            { text: "Yes", value: 1, colorScheme: "red" },
           ]}
           isDisabled={props.isDisabled}
         />
@@ -38,6 +38,7 @@ export const LabelSimpleGroup = (props: LabelSimpleGroupProps) => {
 interface ButtonState {
   text: string;
   value: number;
+  colorScheme: string;
 }
 
 interface LabelSimpleItemProps {
@@ -63,7 +64,7 @@ const LabelSimpleItem = (props: LabelSimpleItemProps) => {
       <Flex direction="row" gap={6} justify="center">
         {props.states.map((item, idx) => (
           <Button
-            colorScheme={item.value === props.labelValue ? "green" : "gray"}
+            colorScheme={item.value === props.labelValue ? item.colorScheme : "gray"}
             isDisabled={props.isDisabled}
             size="lg"
             key={idx}
