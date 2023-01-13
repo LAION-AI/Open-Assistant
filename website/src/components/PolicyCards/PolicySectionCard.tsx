@@ -10,7 +10,7 @@ export interface SectionProps {
   section: SectionInfo;
 }
 
-export const SectionCard = ({ section }: SectionProps) => {
+export const PolicySectionCard = ({ section }: SectionProps) => {
   const backgroundColor = useColorModeValue("gray.200", "gray.700");
 
   return (

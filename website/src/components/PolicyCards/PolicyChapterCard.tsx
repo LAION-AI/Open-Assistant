@@ -11,7 +11,7 @@ export interface ChapterProps {
   children: React.ReactNode;
 }
 
-export const ChapterCard = ({ chapter, children }: ChapterProps) => {
+export const PolicyChapterCard = ({ chapter, children }: ChapterProps) => {
   const backgroundColor = useColorModeValue("gray.100", "gray.800");
 
   return (

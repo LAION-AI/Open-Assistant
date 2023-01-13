@@ -1,8 +1,8 @@
 import { Box, Heading, Link, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { getTransparentHeaderLayout } from "src/components/Layout";
-import { ChapterCard } from "src/components/TOS/ChapterCard";
-import { SectionCard } from "src/components/TOS/SectionCard";
+import { PolicyChapterCard } from "src/components/PolicyCards/PolicyChapterCard";
+import { PolicySectionCard } from "src/components/PolicyCards/PolicySectionCard";
 
 const PrivacyPolicy = () => {
   const backgroundColor = useColorModeValue("gray.100", "gray.800");
@@ -193,13 +193,13 @@ const PrivacyPolicy = () => {
 
           <Stack spacing="8">
             {PrivacyPolicyData.map((chapter, chapterIndex) => (
-              <ChapterCard key={chapterIndex} chapter={chapter}>
+              <PolicyChapterCard key={chapterIndex} chapter={chapter}>
                 {chapter.sections && chapter.sections.length
                   ? chapter.sections.map((section, sectionIndex) => (
-                      <SectionCard key={sectionIndex} section={section} />
+                      <PolicySectionCard key={sectionIndex} section={section} />
                     ))
                   : ""}
-              </ChapterCard>
+              </PolicyChapterCard>
             ))}
           </Stack>
 
