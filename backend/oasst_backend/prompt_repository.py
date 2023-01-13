@@ -140,6 +140,7 @@ class PromptRepository:
         user_frontend_message_id: str,
         review_count: int = 0,
         review_result: bool = False,
+        check_tree_state: bool = True,
     ) -> Message:
         validate_frontend_message_id(frontend_message_id)
         validate_frontend_message_id(user_frontend_message_id)
@@ -155,12 +156,13 @@ class PromptRepository:
             parent_message = self.fetch_message(task.parent_message_id)
 
             # check tree state
-            ts = self.fetch_tree_state(parent_message.message_tree_id)
-            if not ts.active or ts.state != message_tree_state.State.GROWING:
-                raise OasstError(
-                    "Message insertion failed. Message tree is no longer in 'growing' state.",
-                    OasstErrorCode.TREE_NOT_IN_GROWING_STATE,
-                )
+            if check_tree_state:
+                ts = self.fetch_tree_state(parent_message.message_tree_id)
+                if not ts.active or ts.state != message_tree_state.State.GROWING:
+                    raise OasstError(
+                        "Message insertion failed. Message tree is no longer in 'growing' state.",
+                        OasstErrorCode.TREE_NOT_IN_GROWING_STATE,
+                    )
 
             parent_message.message_tree_id
             parent_message.children_count += 1

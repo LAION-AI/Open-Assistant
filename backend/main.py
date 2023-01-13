@@ -107,6 +107,7 @@ if settings.DEBUG_USE_SEED_DATA:
             parent_message_id: Optional[str]
             text: str
             role: str
+            tree_state: Optional[message_tree_state.State]
 
         try:
             logger.info("Seed data check began")
@@ -157,10 +158,17 @@ if settings.DEBUG_USE_SEED_DATA:
                                 )
                         tr.bind_frontend_message_id(task.id, msg.task_message_id)
                         message = pr.store_text_reply(
-                            msg.text, msg.task_message_id, msg.user_message_id, review_count=5, review_result=True
+                            msg.text,
+                            msg.task_message_id,
+                            msg.user_message_id,
+                            review_count=5,
+                            review_result=True,
+                            check_tree_state=False,
                         )
                         if message.parent_id is None:
-                            tm._insert_default_state(root_message_id=message.id, state=message_tree_state.State.GROWING)
+                            tm._insert_default_state(
+                                root_message_id=message.id, state=msg.tree_state or message_tree_state.State.GROWING
+                            )
                             db.commit()
 
                         logger.info(
@@ -168,6 +176,7 @@ if settings.DEBUG_USE_SEED_DATA:
                         )
                     else:
                         logger.debug(f"seed data task found: {task.id}")
+
                 logger.info("Seed data check completed")
 
         except Exception:
