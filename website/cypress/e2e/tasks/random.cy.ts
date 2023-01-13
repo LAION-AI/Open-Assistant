@@ -17,8 +17,6 @@ describe("handles random tasks", () => {
 
           cy.get('[data-cy="submit"]').click();
 
-          cy.get('[data-cy="next-task"]').click();
-
           cy.get('[data-cy="task-id]"').should((taskIdElement) => {
             expect(taskIdElement.text()).not.to.eq(taskId);
           });
@@ -41,8 +39,6 @@ describe("handles random tasks", () => {
             .type("{enter}");
 
           cy.get('[data-cy="submit"]').click();
-
-          cy.get('[data-cy="next-task"]').click();
 
           cy.get('[data-cy="task-id"]').should((taskIdElement) => {
             expect(taskIdElement.text()).not.to.eq(taskId);

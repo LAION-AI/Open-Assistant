@@ -12,7 +12,6 @@ export interface TaskControlsProps {
   taskStatus: TaskStatus;
   onSubmit: () => void;
   onSkip: (reason: string) => void;
-  onNextTask: () => void;
 }
 
 export const TaskControls = (props: TaskControlsProps) => {
@@ -31,21 +30,15 @@ export const TaskControls = (props: TaskControlsProps) => {
     >
       <TaskInfo id={props.task.id} output="Submit your answer" />
       <Flex width={["full", "fit-content"]} justify="center" ml="auto" gap={2}>
-        <SkipButton onSkip={props.onSkip} disabled={props.taskStatus === "SUBMITTED"} />
-        {props.taskStatus !== "SUBMITTED" ? (
-          <SubmitButton
-            colorScheme="blue"
-            data-cy="submit"
-            disabled={props.taskStatus === "NOT_SUBMITTABLE"}
-            onClick={props.onSubmit}
-          >
-            Submit
-          </SubmitButton>
-        ) : (
-          <SubmitButton colorScheme="green" data-cy="next-task" onClick={props.onNextTask}>
-            Next Task
-          </SubmitButton>
-        )}
+        <SkipButton onSkip={props.onSkip} />
+        <SubmitButton
+          colorScheme="blue"
+          data-cy="submit"
+          disabled={props.taskStatus === "NOT_SUBMITTABLE" || props.taskStatus === "SUBMITTED"}
+          onClick={props.onSubmit}
+        >
+          Submit
+        </SubmitButton>
       </Flex>
     </Box>
   );
