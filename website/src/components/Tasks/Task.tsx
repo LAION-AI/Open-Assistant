@@ -51,6 +51,8 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       if (taskStatus !== "DEFAULT") setTaskStatus("DEFAULT");
     } else if (state.state === "VALID") {
       if (taskStatus !== "SUBMITABLE") setTaskStatus("SUBMITABLE");
+    } else if (state.state == "INVALID") {
+      setTaskStatus("NOT_SUBMITTABLE");
     }
   }).current;
 
