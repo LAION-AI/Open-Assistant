@@ -14,8 +14,9 @@ interface UnchangedWarningProps {
   show: boolean;
   title: string;
   message: string;
+  continueButtonText: string;
   onClose: () => void;
-  onSubmitAnyway: () => void;
+  onContinueAnyway: () => void;
 }
 
 export const UnchangedWarning = (props: UnchangedWarningProps) => {
@@ -32,7 +33,7 @@ export const UnchangedWarning = (props: UnchangedWarningProps) => {
               <Button variant={"ghost"} onClick={props.onClose}>
                 Cancel
               </Button>
-              <Button onClick={props.onSubmitAnyway}>Submit anyway</Button>
+              <Button onClick={props.onContinueAnyway}>{props.continueButtonText}</Button>
             </Flex>
           </ModalFooter>
         </ModalContent>

@@ -8,7 +8,7 @@ import numpy as np
 import pydantic
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
-from oasst_backend.config import settings
+from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import Message, MessageReaction, MessageTreeState, TextLabels, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.utils.hugging_face import HfEmbeddingModel, HfUrl, HuggingFaceAPI
@@ -16,52 +16,6 @@ from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlalchemy.sql import text
 from sqlmodel import Session, func
-
-
-class TreeManagerConfiguration(pydantic.BaseModel):
-    """TreeManager configuration settings"""
-
-    max_active_trees: int = 10
-    """Maximum number of concurrently active message trees in the database.
-    No new initial prompt tasks are handed out to users if this
-    number is reached."""
-
-    max_tree_depth: int = 6
-    """Maximum depth of message tree."""
-
-    max_children_count: int = 5
-    """Maximum number of reply messages per tree node."""
-
-    goal_tree_size: int = 15
-    """Total number of messages to gather per tree"""
-
-    num_reviews_initial_prompt: int = 3
-    """Number of peer review checks to collect in INITIAL_PROMPT_REVIEW state."""
-
-    num_reviews_reply: int = 3
-    """Number of peer review checks to collect per reply (other than initial_prompt)"""
-
-    p_full_labeling_review_prompt: float = 0.1
-    """Probability of full text-labeling (instead of mandatory only) for initial prompts"""
-
-    p_full_labeling_review_reply_assistant: float = 0.1
-    """Probability of full text-labeling (instead of mandatory only) for assistant replies"""
-
-    p_full_labeling_review_reply_prompter: float = 0.1
-    """Probability of full text-labeling (instead of mandatory only) for prompter replies"""
-
-    acceptance_threshold_initial_prompt: float = 0.6
-    """Threshold for accepting an initial prompt"""
-
-    acceptance_threshold_reply: float = 0.6
-    """Threshold for accepting a reply"""
-
-    num_required_rankings: int = 3
-    """Number of rankings in which the message participated."""
-
-    mandatory_labels_initial_prompt: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
-    mandatory_labels_assistant_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
-    mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
 
 
 class TaskType(Enum):
@@ -114,9 +68,11 @@ class IncompleteRankingsRow(pydantic.BaseModel):
 class TreeManager:
     _all_text_labels = list(map(lambda x: x.value, protocol_schema.TextLabel))
 
-    def __init__(self, db: Session, prompt_repository: PromptRepository, configuration: TreeManagerConfiguration):
+    def __init__(
+        self, db: Session, prompt_repository: PromptRepository, cfg: Optional[TreeManagerConfiguration] = None
+    ):
         self.db = db
-        self.cfg = configuration
+        self.cfg = cfg or settings.tree_manager
         self.pr = prompt_repository
 
     def _task_selection(

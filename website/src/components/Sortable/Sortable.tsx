@@ -9,7 +9,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core/dist/types/events";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
@@ -24,6 +24,7 @@ import { SortableItem } from "./SortableItem";
 export interface SortableProps {
   items: ReactNode[];
   onChange?: (newSortedIndices: number[]) => void;
+  isEditable: boolean;
   isDisabled?: boolean;
   className?: string;
 }
@@ -60,12 +61,12 @@ export const Sortable = (props: SortableProps) => {
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
-      modifiers={[restrictToVerticalAxis]}
+      modifiers={[restrictToParentElement, restrictToVerticalAxis]}
     >
       <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
         <Flex direction="column" gap={2} className={extraClasses}>
-          {itemsWithIds.map(({ id, item }) => (
-            <SortableItem key={id} id={id} isDisabled={props.isDisabled}>
+          {itemsWithIds.map(({ id, item }, index) => (
+            <SortableItem key={id} id={id} index={index} isEditable={props.isEditable} isDisabled={props.isDisabled}>
               <CollapsableText text={item} isDisabled={props.isDisabled} />
             </SortableItem>
           ))}
