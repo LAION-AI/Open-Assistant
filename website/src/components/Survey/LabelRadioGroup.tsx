@@ -2,19 +2,19 @@ import { Box, Button, Flex, useColorMode } from "@chakra-ui/react";
 import { useId, useState } from "react";
 import { colors } from "src/styles/Theme/colors";
 
-interface LabelSimpleGroupProps {
+interface LabelRadioGroupProps {
   labelIDs: Array<string>;
   onChange: (sliderValues: number[]) => unknown;
   isDisabled?: boolean;
 }
 
-export const LabelSimpleGroup = (props: LabelSimpleGroupProps) => {
+export const LabelRadioGroup = (props: LabelRadioGroupProps) => {
   const [labelValues, setLabelValues] = useState<number[]>(Array.from({ length: props.labelIDs.length }).map(() => 0));
 
   return (
     <Flex direction="column" justify="center">
       {props.labelIDs.map((labelId, idx) => (
-        <LabelSimpleItem
+        <LabelRadioItem
           key={idx}
           labelId={labelId}
           labelValue={labelValues[idx]}
@@ -25,8 +25,8 @@ export const LabelSimpleGroup = (props: LabelSimpleGroupProps) => {
             setLabelValues(newState);
           }}
           states={[
-            { text: "No", value: 0, colorScheme: "green" },
-            { text: "Yes", value: 1, colorScheme: "red" },
+            { text: "No", value: 0, colorScheme: "blue" },
+            { text: "Yes", value: 1, colorScheme: "blue" },
           ]}
           isDisabled={props.isDisabled}
         />
@@ -41,7 +41,7 @@ interface ButtonState {
   colorScheme: string;
 }
 
-interface LabelSimpleItemProps {
+interface LabelRadioItemProps {
   labelId: string;
   labelValue: number;
   clickHandler: (newVal: number) => unknown;
@@ -49,7 +49,7 @@ interface LabelSimpleItemProps {
   isDisabled: boolean;
 }
 
-const LabelSimpleItem = (props: LabelSimpleItemProps) => {
+const LabelRadioItem = (props: LabelRadioItemProps) => {
   const id = useId();
   const { colorMode } = useColorMode();
 

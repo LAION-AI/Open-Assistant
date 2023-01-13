@@ -7,7 +7,7 @@ import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskType } from "src/types/Task";
 import { LabelSliderGroup } from "src/components/Survey/LabelSliderGroup";
-import { LabelSimpleGroup } from "src/components/Survey/LabelSimpleGroup";
+import { LabelRadioGroup } from "src/components/Survey/LabelRadioGroup";
 
 export const LabelTask = ({
   task,
@@ -67,7 +67,7 @@ export const LabelTask = ({
           )}
         </>
         {valid_labels.length === 1 ? (
-          <LabelSimpleGroup labelIDs={task.valid_labels} isDisabled={isDisabled} onChange={onSliderChange} />
+          <LabelRadioGroup labelIDs={task.valid_labels} isDisabled={isDisabled} onChange={onSliderChange} />
         ) : (
           <LabelSliderGroup labelIDs={task.valid_labels} isDisabled={isDisabled} onChange={onSliderChange} />
         )}
