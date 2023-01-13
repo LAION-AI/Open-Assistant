@@ -1,11 +1,16 @@
 import { Stack, StackDivider } from "@chakra-ui/react";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
+import { Message } from "src/types/Conversation";
 
-export function MessageTable({ messages }) {
+interface MessageTableProps {
+  messages: Message[];
+}
+
+export function MessageTable({ messages }: MessageTableProps) {
   return (
     <Stack divider={<StackDivider />} spacing="4">
       {messages.map((item) => (
-        <MessageTableEntry item={item} key={item.message_id || item.id} />
+        <MessageTableEntry item={item} key={item.id || item.frontend_message_id} />
       ))}
     </Stack>
   );
