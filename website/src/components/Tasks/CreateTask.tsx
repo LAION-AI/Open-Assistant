@@ -11,11 +11,16 @@ export const CreateTask = ({ task, taskType, onReplyChanged }: TaskSurveyProps<{
   const labelColor = useColorModeValue("gray.600", "gray.400");
 
   const [inputText, setInputText] = useState("");
-
   const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
-    onReplyChanged({ content: { text }, state: "VALID" });
-    setInputText(text);
+    const isTextBlank = (!text || /^\s*$/.test(text))?true:false;
+    if(!isTextBlank){
+      onReplyChanged({ content: { text }, state: "VALID" });
+      setInputText(text);
+    }else{
+      onReplyChanged({content: { text }, state: "INVALID"});
+      setInputText("");
+    }
   };
 
   return (
