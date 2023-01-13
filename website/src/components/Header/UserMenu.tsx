@@ -5,7 +5,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
-import { FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
+import { FiAlertTriangle, FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
 
 export function UserMenu() {
   const { data: session } = useSession();
@@ -28,6 +28,12 @@ export function UserMenu() {
         href: "/account",
         desc: "Account Settings",
         icon: FiSettings,
+      },
+      {
+        name: "Report a Bug",
+        href: "https://github.com/LAION-AI/Open-Assistant/issues/new/choose",
+        desc: "Report a Bug",
+        icon: FiAlertTriangle,
       },
     ];
 
