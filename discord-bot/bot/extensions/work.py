@@ -403,11 +403,11 @@ def _validate_user_input(content: str | None, task: protocol_schema.Task) -> tup
         logger.critical(f"Unknown task type {task.type}")
         raise ValueError(f"Unknown task type {task.type}")
 
+
 async def _send_messages_and_add_reactions(messages: list[str], bot: hikari.GatewayBot, channel_id: int) -> int:
     """Send a list of strings and add reactions to the last one."""
     ...
     return 0
-    
 
 
 class TaskAcceptView(miru.View):

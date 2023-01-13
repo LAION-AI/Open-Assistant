@@ -4,7 +4,7 @@ When sending a conversation
 - The function will return a list of strings
     - use asyncio.gather to send all messages
 
-- 
+-
 """
 
 from datetime import datetime
