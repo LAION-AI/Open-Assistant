@@ -67,9 +67,9 @@ export const LabelTask = ({
           )}
         </>
         {valid_labels.length === 1 ? (
-          <LabelRadioGroup labelIDs={task.valid_labels} isDisabled={isDisabled} onChange={onSliderChange} />
+          <LabelRadioGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />
         ) : (
-          <LabelSliderGroup labelIDs={task.valid_labels} isDisabled={isDisabled} onChange={onSliderChange} />
+          <LabelSliderGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />
         )}
       </TwoColumnsWithCards>
     </div>

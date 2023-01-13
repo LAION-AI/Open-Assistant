@@ -5,7 +5,7 @@ import { colors } from "src/styles/Theme/colors";
 interface LabelRadioGroupProps {
   labelIDs: Array<string>;
   onChange: (sliderValues: number[]) => unknown;
-  isDisabled?: boolean;
+  isEditable?: boolean;
 }
 
 export const LabelRadioGroup = (props: LabelRadioGroupProps) => {
@@ -30,7 +30,7 @@ export const LabelRadioGroup = (props: LabelRadioGroupProps) => {
             { text: "No", value: 0 },
             { text: "Yes", value: 1 },
           ]}
-          isDisabled={props.isDisabled}
+          isEditable={props.isEditable}
           interactionFlag={interactionFlag}
         />
       ))}
@@ -49,7 +49,7 @@ interface LabelRadioItemProps {
   labelValue: number;
   clickHandler: (newVal: number) => unknown;
   states: ButtonState[];
-  isDisabled: boolean;
+  isEditable: boolean;
   interactionFlag: boolean;
 }
 
@@ -69,7 +69,7 @@ const LabelRadioItem = (props: LabelRadioItemProps) => {
         {props.states.map((item, idx) => (
           <Button
             colorScheme={item.value === props.labelValue && props.interactionFlag ? item.colorScheme || "blue" : "gray"}
-            isDisabled={props.isDisabled}
+            isDisabled={!props.isEditable}
             size="lg"
             key={idx}
             onClick={() => props.clickHandler(item.value)}

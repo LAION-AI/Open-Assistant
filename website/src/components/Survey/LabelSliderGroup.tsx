@@ -6,10 +6,10 @@ import { colors } from "styles/Theme/colors";
 interface LabelSliderGroupProps {
   labelIDs: Array<string>;
   onChange: (sliderValues: number[]) => unknown;
-  isDisabled?: boolean;
+  isEditable?: boolean;
 }
 
-export const LabelSliderGroup = ({ labelIDs, onChange, isDisabled }: LabelSliderGroupProps) => {
+export const LabelSliderGroup = ({ labelIDs, onChange, isEditable }: LabelSliderGroupProps) => {
   const [sliderValues, setSliderValues] = useState<number[]>(Array.from({ length: labelIDs.length }).map(() => 0));
 
   return (
@@ -25,7 +25,7 @@ export const LabelSliderGroup = ({ labelIDs, onChange, isDisabled }: LabelSlider
             onChange(sliderValues);
             setSliderValues(newState);
           }}
-          isDisabled={isDisabled}
+          isEditable={isEditable}
         />
       ))}
     </Grid>
@@ -36,7 +36,7 @@ function CheckboxSliderItem(props: {
   labelId: string;
   sliderValue: number;
   sliderHandler: (newVal: number) => unknown;
-  isDisabled: boolean;
+  isEditable: boolean;
 }) {
   const id = useId();
   const { colorMode } = useColorMode();
@@ -49,7 +49,7 @@ function CheckboxSliderItem(props: {
         {/* TODO: display real text instead of just the id */}
         <span className={labelTextClass}>{props.labelId}</span>
       </label>
-      <Slider defaultValue={0} isDisabled={props.isDisabled} onChangeEnd={(val) => props.sliderHandler(val / 100)}>
+      <Slider defaultValue={0} isDisabled={!props.isEditable} onChangeEnd={(val) => props.sliderHandler(val / 100)}>
         <SliderTrack>
           <SliderFilledTrack />
           <SliderThumb />
