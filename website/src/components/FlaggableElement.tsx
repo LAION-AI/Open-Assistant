@@ -22,7 +22,7 @@ import {
   useId,
 } from "@chakra-ui/react";
 import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import fetcher from "src/lib/fetcher";
 import poster from "src/lib/poster";
 import { Message } from "src/types/Conversation";
@@ -30,10 +30,38 @@ import { colors } from "styles/Theme/colors";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
-interface textFlagLabels {
-  attributeName: string;
-  labelText: string;
-  additionalExplanation?: string;
+interface Label {
+  name: string;
+  display_text: string;
+  help_text: string;
+}
+
+interface LoadLabelsAction {
+  type: "load_labels";
+  labels: Label[];
+}
+
+interface UpdateValueAction {
+  type: "update_value";
+  label_index: number;
+  value: number;
+}
+
+interface ToggleLabelAction {
+  type: "toggle_label";
+  label_index: number;
+  check: boolean;
+}
+
+interface LabelValue {
+  label: Label;
+  checked: boolean;
+  value: number;
+}
+
+interface FlagReportState {
+  label_values: LabelValue[];
+  submittable: boolean;
 }
 
 interface FlaggableElementProps {
@@ -42,9 +70,34 @@ interface FlaggableElementProps {
 }
 
 export const FlaggableElement = (props: FlaggableElementProps) => {
-  const [labels, setLabels] = useState([]);
-  const [checkboxValues, setCheckboxValues] = useState([]);
-  const [sliderValues, setSliderValues] = useState([]);
+  const [report, updateReport] = useReducer(
+    (state: FlagReportState, action: LoadLabelsAction | UpdateValueAction | ToggleLabelAction): FlagReportState => {
+      const makeState = (label_values: LabelValue[]): FlagReportState => {
+        const submittable = label_values.map(({ checked }) => checked).some(Boolean);
+        return { label_values, submittable };
+      };
+
+      switch (action.type) {
+        case "load_labels":
+          return makeState(
+            action.labels.map((label) => {
+              return { label, checked: false, value: 1 };
+            })
+          );
+        case "toggle_label": {
+          const values_copy = state.label_values.slice();
+          values_copy[action.label_index].checked = action.check;
+          return makeState(values_copy);
+        }
+        case "update_value": {
+          const values_copy = state.label_values.slice();
+          values_copy[action.label_index].value = action.value;
+          return makeState(values_copy);
+        }
+      }
+    },
+    { label_values: [], submittable: false }
+  );
   const [isEditing, setIsEditing] = useBoolean();
   const backgroundColor = useColorModeValue("gray.200", "gray.700");
 
@@ -54,14 +107,7 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
       return;
     }
     const { valid_labels } = data;
-    const newLabels = valid_labels.map((valid_label) => ({
-      attributeName: valid_label.name,
-      labelText: valid_label.display_text,
-      additionalExplanation: valid_label.help_text,
-    }));
-    setSliderValues(new Array(newLabels.length).fill(1));
-    setCheckboxValues(new Array(newLabels.length).fill(false));
-    setLabels(newLabels);
+    updateReport({ type: "load_labels", labels: valid_labels });
   }, [data, isLoading]);
 
   const { trigger } = useSWRMutation("/api/set_label", poster, {
@@ -72,9 +118,9 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
 
   const submitResponse = () => {
     const label_map: Map<string, number> = new Map();
-    labels.forEach((flag, i) => {
-      if (checkboxValues[i]) {
-        label_map.set(flag.attributeName, sliderValues[i]);
+    report.label_values.forEach(({ label, checked, value }) => {
+      if (checked) {
+        label_map.set(label.name, value);
       }
     });
     trigger({
@@ -84,19 +130,11 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
     });
   };
 
-  const handleCheckboxState = (isChecked, idx) => {
-    setCheckboxValues(
-      checkboxValues.map((val, i) => {
-        return i === idx ? isChecked : val;
-      })
-    );
+  const handleCheckboxState = (checked, label_index) => {
+    updateReport({ type: "toggle_label", label_index, check: checked });
   };
-  const handleSliderState = (newVal, idx) => {
-    setSliderValues(
-      sliderValues.map((val, i) => {
-        return i === idx ? newVal : val;
-      })
-    );
+  const handleSliderState = (value, label_index) => {
+    updateReport({ type: "update_value", label_index, value });
   };
 
   return (
@@ -127,20 +165,20 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
           <PopoverCloseButton />
         </div>
         <PopoverBody>
-          {labels.map((option, i) => (
+          {report.label_values.map(({ label, checked, value }, i) => (
             <FlagCheckbox
-              option={option}
+              label={label}
               key={i}
               idx={i}
-              checkboxValues={checkboxValues}
-              sliderValues={sliderValues}
+              checked={checked}
+              sliderValue={value}
               checkboxHandler={handleCheckboxState}
               sliderHandler={handleSliderState}
             />
           ))}
           <Flex justify="center">
             <Button
-              isDisabled={!checkboxValues.some(Boolean)}
+              isDisabled={!report.submittable}
               onClick={submitResponse}
               className={`bg-indigo-600 text-${useColorModeValue(
                 colors.light.text,
@@ -157,17 +195,17 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
 };
 
 interface FlagCheckboxProps {
-  option: textFlagLabels;
+  label: Label;
   idx: number;
-  checkboxValues: boolean[];
-  sliderValues: number[];
+  checked: boolean;
+  sliderValue: number;
   checkboxHandler: (newVal: boolean, idx: number) => void;
   sliderHandler: (newVal: number, idx: number) => void;
 }
 
 export function FlagCheckbox(props: FlagCheckboxProps): JSX.Element {
   let AdditionalExplanation = null;
-  if (props.option.additionalExplanation) {
+  if (props.label.help_text) {
     AdditionalExplanation = (
       <a href="#" className="group flex items-center space-x-2.5 text-sm ">
         <QuestionMarkCircleIcon
@@ -190,28 +228,37 @@ export function FlagCheckbox(props: FlagCheckboxProps): JSX.Element {
     <Flex gap={1}>
       <Checkbox
         id={id}
+        isChecked={props.checked}
         onChange={(e) => {
           props.checkboxHandler(e.target.checked, props.idx);
         }}
       />
       <label className="text-sm form-check-label" htmlFor={id}>
-        <span className={labelTextClass}>{props.option.labelText}</span>
+        <span className={labelTextClass}>{props.label.display_text}</span>
         {AdditionalExplanation}
       </label>
       <Spacer />
-      <Slider
-        width="100px"
-        isDisabled={!props.checkboxValues[props.idx]}
-        defaultValue={100}
-        onChangeEnd={(val) => {
-          props.sliderHandler(val / 100, props.idx);
+      <div
+        onClick={() => {
+          if (!props.checked) {
+            props.checkboxHandler(true, props.idx);
+          }
         }}
       >
-        <SliderTrack>
-          <SliderFilledTrack />
-          <SliderThumb />
-        </SliderTrack>
-      </Slider>
+        <Slider
+          width="100px"
+          isDisabled={!props.checked}
+          defaultValue={100}
+          onChangeEnd={(val) => {
+            props.sliderHandler(val / 100, props.idx);
+          }}
+        >
+          <SliderTrack>
+            <SliderFilledTrack />
+            <SliderThumb />
+          </SliderTrack>
+        </Slider>
+      </div>
     </Flex>
   );
 }
