@@ -1,4 +1,5 @@
-import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, IconButton, Tooltip, useColorModeValue } from "@chakra-ui/react";
+import { FiEdit2 } from "react-icons/fi";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
@@ -10,6 +11,8 @@ export interface TaskControlsProps {
   task: any;
   className?: string;
   taskStatus: TaskStatus;
+  onEdit: () => void;
+  onReview: () => void;
   onSubmit: () => void;
   onSkip: (reason: string) => void;
 }
@@ -30,15 +33,33 @@ export const TaskControls = (props: TaskControlsProps) => {
     >
       <TaskInfo id={props.task.id} output="Submit your answer" />
       <Flex width={["full", "fit-content"]} justify="center" ml="auto" gap={2}>
-        <SkipButton onSkip={props.onSkip} />
-        <SubmitButton
-          colorScheme="blue"
-          data-cy="submit"
-          disabled={props.taskStatus === "NOT_SUBMITTABLE" || props.taskStatus === "SUBMITTED"}
-          onClick={props.onSubmit}
-        >
-          Submit
-        </SubmitButton>
+        {props.taskStatus === "REVIEW" || props.taskStatus === "SUBMITTED" ? (
+          <>
+            <Tooltip label="Edit">
+              <IconButton size="lg" data-cy="edit" aria-label="edit" onClick={props.onEdit} icon={<FiEdit2 />} />
+            </Tooltip>
+            <SubmitButton
+              colorScheme="green"
+              data-cy="submit"
+              disabled={props.taskStatus === "SUBMITTED"}
+              onClick={props.onSubmit}
+            >
+              Submit
+            </SubmitButton>
+          </>
+        ) : (
+          <>
+            <SkipButton onSkip={props.onSkip} />
+            <SubmitButton
+              colorScheme="blue"
+              data-cy="review"
+              disabled={props.taskStatus === "NOT_SUBMITTABLE"}
+              onClick={props.onReview}
+            >
+              Review
+            </SubmitButton>
+          </>
+        )}
       </Flex>
     </Box>
   );

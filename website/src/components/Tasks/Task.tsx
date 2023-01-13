@@ -10,13 +10,14 @@ import { TaskContent } from "src/types/Task";
 import { TaskReplyState } from "src/types/TaskReplyState";
 import useSWRMutation from "swr/mutation";
 
-export type TaskStatus = "NOT_SUBMITTABLE" | "DEFAULT" | "SUBMITABLE" | "SUBMITTED";
+export type TaskStatus = "NOT_SUBMITTABLE" | "DEFAULT" | "VALID" | "REVIEW" | "SUBMITTED";
 
 export interface TaskSurveyProps<T> {
   // we need a task type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   task: any;
   taskType: TaskInfo;
+  isEditable: boolean;
   isDisabled?: boolean;
   onReplyChanged: (state: TaskReplyState<T>) => void;
 }
@@ -50,20 +51,38 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
     } else if (state.state === "DEFAULT") {
       if (taskStatus !== "DEFAULT") setTaskStatus("DEFAULT");
     } else if (state.state === "VALID") {
-      if (taskStatus !== "SUBMITABLE") setTaskStatus("SUBMITABLE");
-    } else if (state.state == "INVALID") {
+      if (taskStatus !== "VALID") setTaskStatus("VALID");
+    } else if (state.state === "INVALID") {
       setTaskStatus("NOT_SUBMITTABLE");
     }
   }).current;
 
-  const submitResponse = () => {
+  const reviewResponse = () => {
     switch (taskStatus) {
-      case "NOT_SUBMITTABLE":
-        return;
       case "DEFAULT":
         setShowUnchangedWarning(true);
         break;
-      case "SUBMITABLE": {
+      case "VALID":
+        setTaskStatus("REVIEW");
+        break;
+      default:
+        return;
+    }
+  };
+
+  const editResponse = () => {
+    switch (taskStatus) {
+      case "REVIEW":
+        setTaskStatus("VALID");
+        break;
+      default:
+        return;
+    }
+  };
+
+  const submitResponse = () => {
+    switch (taskStatus) {
+      case "REVIEW": {
         trigger({
           id: frontendId,
           update_type: taskType.update_type,
@@ -72,10 +91,13 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
         setTaskStatus("SUBMITTED");
         break;
       }
-      case "SUBMITTED":
+      default:
         return;
     }
   };
+
+  const edit_mode = taskStatus === "NOT_SUBMITTABLE" || taskStatus === "DEFAULT" || taskStatus === "VALID";
+  const submitted = taskStatus === "SUBMITTED";
 
   function taskTypeComponent() {
     switch (taskType.category) {
@@ -85,7 +107,8 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
             key={task.id}
             task={task}
             taskType={taskType}
-            isDisabled={taskStatus === "SUBMITTED"}
+            isEditable={edit_mode}
+            isDisabled={submitted}
             onReplyChanged={onReplyChanged}
           />
         );
@@ -95,7 +118,8 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
             key={task.id}
             task={task}
             taskType={taskType}
-            isDisabled={taskStatus === "SUBMITTED"}
+            isEditable={edit_mode}
+            isDisabled={submitted}
             onReplyChanged={onReplyChanged}
           />
         );
@@ -105,7 +129,8 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
             key={task.id}
             task={task}
             taskType={taskType}
-            isDisabled={taskStatus === "SUBMITTED"}
+            isEditable={edit_mode}
+            isDisabled={submitted}
             onReplyChanged={onReplyChanged}
           />
         );
@@ -115,20 +140,23 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
   return (
     <div>
       {taskTypeComponent()}
-      <TaskControls task={task} taskStatus={taskStatus} onSubmit={submitResponse} onSkip={rejectTask} />
+      <TaskControls
+        task={task}
+        taskStatus={taskStatus}
+        onEdit={editResponse}
+        onReview={reviewResponse}
+        onSubmit={submitResponse}
+        onSkip={rejectTask}
+      />
       <UnchangedWarning
         show={showUnchangedWarning}
         title={taskType.unchanged_title || "No changes"}
-        message={taskType.unchanged_message || "Are you sure you would like to submit?"}
+        message={taskType.unchanged_message || "Are you sure you would like to continue?"}
+        continueButtonText={"Continue anyway"}
         onClose={() => setShowUnchangedWarning(false)}
-        onSubmitAnyway={() => {
+        onContinueAnyway={() => {
           if (taskStatus === "DEFAULT") {
-            trigger({
-              id: frontendId,
-              update_type: taskType.update_type,
-              content: replyContent.current,
-            });
-            setTaskStatus("SUBMITTED");
+            setTaskStatus("REVIEW");
             setShowUnchangedWarning(false);
           }
         }}
