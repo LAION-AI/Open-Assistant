@@ -68,9 +68,11 @@ class IncompleteRankingsRow(pydantic.BaseModel):
 class TreeManager:
     _all_text_labels = list(map(lambda x: x.value, protocol_schema.TextLabel))
 
-    def __init__(self, db: Session, prompt_repository: PromptRepository):
+    def __init__(
+        self, db: Session, prompt_repository: PromptRepository, cfg: Optional[TreeManagerConfiguration] = None
+    ):
         self.db = db
-        self.cfg = settings.tree_manager
+        self.cfg = cfg or settings.tree_manager
         self.pr = prompt_repository
 
     def _task_selection(

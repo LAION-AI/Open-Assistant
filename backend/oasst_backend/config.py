@@ -47,8 +47,13 @@ class TreeManagerConfiguration(BaseModel):
     """Number of rankings in which the message participated."""
 
     mandatory_labels_initial_prompt: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    """Mandatory labels in text-labeling tasks for initial prompts."""
+
     mandatory_labels_assistant_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    """Mandatory labels in text-labeling tasks for assistant reylies."""
+
     mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    """Mandatory labels in text-labeling tasks for prompter replies."""
 
 
 class Settings(BaseSettings):
