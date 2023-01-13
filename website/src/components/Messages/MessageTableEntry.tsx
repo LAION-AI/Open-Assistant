@@ -12,7 +12,6 @@ interface MessageTableEntryProps {
 export function MessageTableEntry(props: MessageTableEntryProps) {
   const { item } = props;
   const backgroundColor = useColorModeValue("gray.50", "gray.800");
-
   return (
     <div>
       <FlaggableElement message={item} key={`flag_${item.id || item.frontend_message_id}`}>

@@ -2,7 +2,7 @@ import { Box, CircularProgress, Stack, StackProps, Text, TextProps, useColorMode
 import { boolean } from "boolean";
 import { useState } from "react";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
-import fetcher from "src/lib/fetcher";
+import { get } from "src/lib/api";
 import useSWR from "swr";
 
 const MessageHeaderProps: TextProps = {
@@ -34,7 +34,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
   const [message, setMessage] = useState(null);
   const [children, setChildren] = useState(null);
 
-  const { isLoading } = useSWR(id ? `/api/messages/${id}` : null, fetcher, {
+  const { isLoading } = useSWR(id ? `/api/messages/${id}` : null, get, {
     onSuccess: (data) => {
       setMessage(data);
     },
@@ -42,7 +42,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
       setMessage(null);
     },
   });
-  const { isLoading: isLoadingChildren } = useSWR(id ? `/api/messages/${id}/children` : null, fetcher, {
+  const { isLoading: isLoadingChildren } = useSWR(id ? `/api/messages/${id}/children` : null, get, {
     onSuccess: (data) => {
       setChildren(data);
     },

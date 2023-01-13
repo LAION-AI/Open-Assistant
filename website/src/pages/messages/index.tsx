@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import { getDashboardLayout } from "src/components/Layout";
 import { MessageTable } from "src/components/Messages/MessageTable";
-import fetcher from "src/lib/fetcher";
+import { get } from "src/lib/api";
 import { Message } from "src/types/Conversation";
 import useSWRImmutable from "swr/immutable";
 
@@ -14,11 +14,11 @@ const MessagesDashboard = () => {
   const [messages, setMessages] = useState<Message[]>(null);
   const [userMessages, setUserMessages] = useState<Message[]>(null);
 
-  const { isLoading: isLoadingAll, mutate: mutateAll } = useSWRImmutable("/api/messages", fetcher, {
+  const { isLoading: isLoadingAll, mutate: mutateAll } = useSWRImmutable("/api/messages", get, {
     onSuccess: setMessages,
   });
 
-  const { isLoading: isLoadingUser, mutate: mutateUser } = useSWRImmutable(`/api/messages/user`, fetcher, {
+  const { isLoading: isLoadingUser, mutate: mutateUser } = useSWRImmutable(`/api/messages/user`, get, {
     onSuccess: setUserMessages,
   });
 

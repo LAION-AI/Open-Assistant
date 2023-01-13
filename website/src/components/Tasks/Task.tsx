@@ -5,7 +5,7 @@ import { EvaluateTask } from "src/components/Tasks/EvaluateTask";
 import { LabelTask } from "src/components/Tasks/LabelTask";
 import { TaskCategory, TaskInfo, TaskTypes } from "src/components/Tasks/TaskTypes";
 import { UnchangedWarning } from "src/components/Tasks/UnchangedWarning";
-import poster from "src/lib/poster";
+import { post } from "src/lib/api";
 import { TaskContent } from "src/types/Task";
 import { TaskReplyState } from "src/types/TaskReplyState";
 import useSWRMutation from "swr/mutation";
@@ -29,7 +29,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
 
   const taskType = TaskTypes.find((taskType) => taskType.type === task.type);
 
-  const { trigger: sendRejection } = useSWRMutation("/api/reject_task", poster, {
+  const { trigger: sendRejection } = useSWRMutation("/api/reject_task", post, {
     onSuccess: async () => {
       mutate();
     },

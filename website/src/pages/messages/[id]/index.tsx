@@ -5,14 +5,14 @@ import { getDashboardLayout } from "src/components/Layout";
 import { MessageLoading } from "src/components/Loading/MessageLoading";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { MessageWithChildren } from "src/components/Messages/MessageWithChildren";
-import fetcher from "src/lib/fetcher";
+import { get } from "src/lib/api";
 import useSWR from "swr";
 
 const MessageDetail = ({ id }) => {
   const backgroundColor = useColorModeValue("white", "gray.700");
   const [parent, setParent] = useState(null);
 
-  const { isLoading: isLoadingParent } = useSWR(id ? `/api/messages/${id}/parent` : null, fetcher, {
+  const { isLoading: isLoadingParent } = useSWR(id ? `/api/messages/${id}/parent` : null, get, {
     onSuccess: (data) => {
       setParent(data);
     },

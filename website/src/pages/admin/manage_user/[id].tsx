@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { getAdminLayout } from "src/components/Layout";
 import { UserMessagesCell } from "src/components/UserMessagesCell";
-import poster from "src/lib/poster";
+import { post } from "src/lib/api";
 import prisma from "src/lib/prismadb";
 import useSWRMutation from "swr/mutation";
 
@@ -31,7 +31,7 @@ const ManageUser = ({ user }) => {
   }, [router, session, status]);
 
   // Trigger to let us update the user's role.  Triggers a toast when complete.
-  const { trigger } = useSWRMutation("/api/admin/update_user", poster, {
+  const { trigger } = useSWRMutation("/api/admin/update_user", post, {
     onSuccess: () => {
       toast({
         title: "User Role Updated",

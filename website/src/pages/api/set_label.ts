@@ -6,8 +6,7 @@ import { withoutRole } from "src/lib/auth";
  */
 const handler = withoutRole("banned", async (req, res, token) => {
   // Parse out the local message_id, and the interaction contents.
-  const { message_id, label_map, text } = await JSON.parse(req.body);
-
+  const { message_id, label_map, text } = req.body;
   const interactionRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/text_labels`, {
     method: "POST",
     headers: {

@@ -5,7 +5,7 @@ export class OasstError {
   errorCode: number;
   httpStatusCode: number;
 
-  constructor(message: string, errorCode: number, httpStatusCode: number) {
+  constructor(message: string, errorCode: number, httpStatusCode?: number) {
     this.message = message;
     this.errorCode = errorCode;
     this.httpStatusCode = httpStatusCode;
