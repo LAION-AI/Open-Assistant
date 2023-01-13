@@ -60,7 +60,7 @@ const LabelRadioItem = (props: LabelRadioItemProps) => {
   const labelTextClass = colorMode === "light" ? `text-${colors.light.text}` : `text-${colors.dark.text}`;
 
   return (
-    <Box>
+    <Box data-cy="label-group-item" data-label-type="radio">
       <label className="text-sm" htmlFor={id}>
         {/* TODO: display real text instead of just the id */}
         <span className={labelTextClass}>{props.labelId}</span>
@@ -68,6 +68,7 @@ const LabelRadioItem = (props: LabelRadioItemProps) => {
       <Flex direction="row" gap={6} justify="center">
         {props.states.map((item, idx) => (
           <Button
+            aria-roledescription="radio-button"
             colorScheme={item.value === props.labelValue && props.interactionFlag ? item.colorScheme || "blue" : "gray"}
             isDisabled={!props.isEditable}
             size="lg"

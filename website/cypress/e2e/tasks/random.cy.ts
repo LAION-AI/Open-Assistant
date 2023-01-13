@@ -44,12 +44,44 @@ describe("handles random tasks", () => {
                 break;
               }
               case "label-task": {
-                // Clicking on the slider will set the value to about the middle where it clicks
-                cy.get('[aria-roledescription="slider"]').first().click();
+                cy.get('[data-cy="label-group-item"]')
+                  .first()
+                  .invoke("attr", "data-label-type")
+                  .then((label_type) => {
+                    const parent = cy
+                      .get('[data-cy="label-group-item"]')
+                      .first();
+                    cy.log("Label type", label_type);
 
-                cy.get('[data-cy="review"]').click();
+                    switch (label_type) {
+                      case "slider": {
+                        // Clicking on the slider will set the value to about the middle where it clicks
+                        parent
+                          .get('[aria-roledescription="slider"]')
+                          .first()
+                          .click();
 
-                cy.get('[data-cy="submit"]').click();
+                        cy.get('[data-cy="review"]').click();
+
+                        cy.get('[data-cy="submit"]').click();
+
+                        break;
+                      }
+                      case "radio": {
+                        // Clicking on the slider will set the value to about the middle where it clicks
+                        parent
+                          .get('[aria-roledescription="radio-button"]')
+                          .last()
+                          .click();
+
+                        cy.get('[data-cy="review"]').click();
+
+                        cy.get('[data-cy="submit"]').click();
+
+                        break;
+                      }
+                    }
+                  });
 
                 break;
               }

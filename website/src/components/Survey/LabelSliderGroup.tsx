@@ -1,4 +1,4 @@
-import { Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack, useColorMode } from "@chakra-ui/react";
+import { Box, Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack, useColorMode } from "@chakra-ui/react";
 import { useId, useState } from "react";
 import { colors } from "styles/Theme/colors";
 
@@ -44,7 +44,7 @@ function CheckboxSliderItem(props: {
   const labelTextClass = colorMode === "light" ? `text-${colors.light.text}` : `text-${colors.dark.text}`;
 
   return (
-    <>
+    <Box data-cy="label-group-item" data-label-type="slider">
       <label className="text-sm" htmlFor={id}>
         {/* TODO: display real text instead of just the id */}
         <span className={labelTextClass}>{props.labelId}</span>
@@ -60,6 +60,6 @@ function CheckboxSliderItem(props: {
           <SliderThumb />
         </SliderTrack>
       </Slider>
-    </>
+    </Box>
   );
 }
