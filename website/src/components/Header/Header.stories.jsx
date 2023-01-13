@@ -1,5 +1,6 @@
 import { SessionContext } from "next-auth/react";
 import React from "react";
+import { FlagsProvider } from "react-feature-flags";
 
 import { Header } from "./Header";
 
@@ -16,7 +17,9 @@ const Template = (args) => {
   var { session } = args;
   return (
     <SessionContext.Provider value={session}>
-      <Header {...args} />
+      <FlagsProvider value={[{ name: "flagTest", isActive: false }]}>
+        <Header {...args} />
+      </FlagsProvider>
     </SessionContext.Provider>
   );
 };
