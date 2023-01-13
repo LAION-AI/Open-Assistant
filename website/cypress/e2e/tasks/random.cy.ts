@@ -15,6 +15,8 @@ describe("handles random tasks", () => {
           cy.log("reply", reply);
           cy.get('[data-cy="reply"]').type(reply);
 
+          cy.get('[data-cy="review"]').click();
+
           cy.get('[data-cy="submit"]').click();
 
           cy.get('[data-cy="task-id]"').should((taskIdElement) => {
@@ -37,6 +39,8 @@ describe("handles random tasks", () => {
             .type("{downArrow}")
             .wait(100)
             .type("{enter}");
+
+          cy.get('[data-cy="review"]').click();
 
           cy.get('[data-cy="submit"]').click();
 

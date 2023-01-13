@@ -4,12 +4,18 @@ import { CSS } from "@dnd-kit/utilities";
 import { PropsWithChildren, useState } from "react";
 import { RxDragHandleDots2 } from "react-icons/rx";
 
-export const SortableItem = ({ children, id, isDisabled }: PropsWithChildren<{ id: number; isDisabled: boolean }>) => {
+export const SortableItem = ({
+  children,
+  id,
+  index,
+  isEditable,
+  isDisabled,
+}: PropsWithChildren<{ id: number; index: number; isEditable: boolean; isDisabled: boolean }>) => {
   const backgroundColor = useColorModeValue("gray.700", "gray.500");
   const disabledBackgroundColor = useColorModeValue("gray.400", "gray.700");
   const textColor = useColorModeValue("white", "white");
 
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id, disabled: isDisabled });
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id, disabled: !isEditable });
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -27,7 +33,7 @@ export const SortableItem = ({ children, id, isDisabled }: PropsWithChildren<{ i
       borderRadius="lg"
       p="4"
       color={textColor}
-      cursor={isDisabled ? "auto" : grabbing ? "grabbing" : "grab"}
+      cursor={isEditable ? (grabbing ? "grabbing" : "grab") : "auto"}
       onMouseDown={() => {
         setGrabbing(true);
       }}
@@ -38,9 +44,7 @@ export const SortableItem = ({ children, id, isDisabled }: PropsWithChildren<{ i
       style={style}
       shadow="base"
     >
-      <Box pr="4">
-        <RxDragHandleDots2 size="20px" />
-      </Box>
+      <Box pr="4">{isEditable ? <RxDragHandleDots2 size="20px" /> : `${index + 1}.`}</Box>
       {children}
     </Box>
   );

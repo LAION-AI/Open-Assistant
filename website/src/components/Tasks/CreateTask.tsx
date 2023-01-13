@@ -5,7 +5,13 @@ import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 
-export const CreateTask = ({ task, taskType, isDisabled, onReplyChanged }: TaskSurveyProps<{ text: string }>) => {
+export const CreateTask = ({
+  task,
+  taskType,
+  isEditable,
+  isDisabled,
+  onReplyChanged,
+}: TaskSurveyProps<{ text: string }>) => {
   const cardColor = useColorModeValue("gray.100", "gray.700");
   const titleColor = useColorModeValue("gray.800", "gray.300");
   const labelColor = useColorModeValue("gray.600", "gray.400");
@@ -50,7 +56,7 @@ export const CreateTask = ({ task, taskType, isDisabled, onReplyChanged }: TaskS
               text={inputText}
               onTextChange={textChangeHandler}
               thresholds={{ low: 20, medium: 40, goal: 50 }}
-              textareaProps={{ placeholder: "Write your prompt here...", isDisabled }}
+              textareaProps={{ placeholder: "Write your prompt here...", isDisabled, isReadOnly: !isEditable }}
             />
           </Stack>
         </>
