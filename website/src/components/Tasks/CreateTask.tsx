@@ -13,12 +13,12 @@ export const CreateTask = ({ task, taskType, onReplyChanged }: TaskSurveyProps<{
   const [inputText, setInputText] = useState("");
   const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
-    const isTextBlank = (!text || /^\s*$/.test(text))?true:false;
-    if(!isTextBlank){
+    const isTextBlank = !text || /^\s*$/.test(text) ? true : false;
+    if (!isTextBlank) {
       onReplyChanged({ content: { text }, state: "VALID" });
       setInputText(text);
-    }else{
-      onReplyChanged({content: { text }, state: "INVALID"});
+    } else {
+      onReplyChanged({ content: { text }, state: "INVALID" });
       setInputText("");
     }
   };
