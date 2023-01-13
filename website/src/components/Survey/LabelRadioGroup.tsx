@@ -22,7 +22,7 @@ export const LabelRadioGroup = (props: LabelRadioGroupProps) => {
           clickHandler={(newValue) => {
             const newState = labelValues.slice();
             newState[idx] = newValue;
-            props.onChange(labelValues);
+            props.onChange(newState);
             setLabelValues(newState);
             if (!interactionFlag) setInteractionFlag(true);
           }}
