@@ -10,6 +10,7 @@ interface LabelRadioGroupProps {
 
 export const LabelRadioGroup = (props: LabelRadioGroupProps) => {
   const [labelValues, setLabelValues] = useState<number[]>(Array.from({ length: props.labelIDs.length }).map(() => 0));
+  const [interactionFlag, setInteractionFlag] = useState(false);
 
   return (
     <Flex direction="column" justify="center">
@@ -23,12 +24,14 @@ export const LabelRadioGroup = (props: LabelRadioGroupProps) => {
             newState[idx] = newValue;
             props.onChange(labelValues);
             setLabelValues(newState);
+            if (!interactionFlag) setInteractionFlag(true);
           }}
           states={[
             { text: "No", value: 0 },
             { text: "Yes", value: 1 },
           ]}
           isDisabled={props.isDisabled}
+          interactionFlag={interactionFlag}
         />
       ))}
     </Flex>
@@ -47,6 +50,7 @@ interface LabelRadioItemProps {
   clickHandler: (newVal: number) => unknown;
   states: ButtonState[];
   isDisabled: boolean;
+  interactionFlag: boolean;
 }
 
 const LabelRadioItem = (props: LabelRadioItemProps) => {
@@ -64,7 +68,7 @@ const LabelRadioItem = (props: LabelRadioItemProps) => {
       <Flex direction="row" gap={6} justify="center">
         {props.states.map((item, idx) => (
           <Button
-            colorScheme={item.value === props.labelValue ? item.colorScheme || "blue" : "gray"}
+            colorScheme={item.value === props.labelValue && props.interactionFlag ? item.colorScheme || "blue" : "gray"}
             isDisabled={props.isDisabled}
             size="lg"
             key={idx}
