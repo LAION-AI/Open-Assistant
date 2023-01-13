@@ -97,7 +97,6 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
         onSubmit={submitResponse}
         onSkip={rejectTask}
         onNextTask={mutate}
-        key={taskStatus}
       />
       <UnchangedWarning
         show={showUnchangedWarning}
