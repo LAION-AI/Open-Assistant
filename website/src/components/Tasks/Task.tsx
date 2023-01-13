@@ -53,7 +53,6 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
     } else if (state.state == "INVALID") {
       setTaskStatus("NOT_SUBMITTABLE");
     }
-    console.log(taskStatus);
   }).current;
 
   const submitResponse = () => {
