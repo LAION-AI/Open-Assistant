@@ -5,7 +5,7 @@ import { Sortable } from "src/components/Sortable/Sortable";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 
-export const EvaluateTask = ({ task, onReplyChanged }: TaskSurveyProps<{ ranking: number[] }>) => {
+export const EvaluateTask = ({ task, isDisabled, onReplyChanged }: TaskSurveyProps<{ ranking: number[] }>) => {
   const cardColor = useColorModeValue("gray.100", "gray.700");
   const titleColor = useColorModeValue("gray.800", "gray.300");
   const labelColor = useColorModeValue("gray.600", "gray.400");
@@ -46,7 +46,7 @@ export const EvaluateTask = ({ task, onReplyChanged }: TaskSurveyProps<{ ranking
           <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
             <MessageTable messages={messages} />
           </Box>
-          <Sortable items={task[sortables]} onChange={onRank} className="my-8" />
+          <Sortable items={task[sortables]} isDisabled={isDisabled} onChange={onRank} className="my-8" />
         </SurveyCard>
       </Box>
     </div>

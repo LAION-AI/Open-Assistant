@@ -23,7 +23,8 @@ import { SortableItem } from "./SortableItem";
 
 export interface SortableProps {
   items: ReactNode[];
-  onChange: (newSortedIndices: number[]) => void;
+  onChange?: (newSortedIndices: number[]) => void;
+  isDisabled?: boolean;
   className?: string;
 }
 
@@ -64,8 +65,8 @@ export const Sortable = (props: SortableProps) => {
       <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
         <Flex direction="column" gap={2} className={extraClasses}>
           {itemsWithIds.map(({ id, item }) => (
-            <SortableItem key={id} id={id}>
-              <CollapsableText text={item} />
+            <SortableItem key={id} id={id} isDisabled={props.isDisabled}>
+              <CollapsableText text={item} isDisabled={props.isDisabled} />
             </SortableItem>
           ))}
         </Flex>
@@ -82,7 +83,7 @@ export const Sortable = (props: SortableProps) => {
       const oldIndex = items.findIndex((x) => x.id === active.id);
       const newIndex = items.findIndex((x) => x.id === over.id);
       const newArray = arrayMove(items, oldIndex, newIndex);
-      props.onChange(newArray.map((item) => item.originalIndex));
+      props.onChange && props.onChange(newArray.map((item) => item.originalIndex));
       return newArray;
     });
   }
