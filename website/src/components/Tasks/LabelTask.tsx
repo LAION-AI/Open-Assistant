@@ -118,7 +118,12 @@ function CheckboxSliderItem(props: {
         {/* TODO: display real text instead of just the id */}
         <span className={labelTextClass}>{props.labelId}</span>
       </label>
-      <Slider defaultValue={0} isDisabled={!props.isEditable} onChangeEnd={(val) => props.sliderHandler(val / 100)}>
+      <Slider
+        aria-roledescription="slider"
+        defaultValue={0}
+        isDisabled={!props.isEditable}
+        onChangeEnd={(val) => props.sliderHandler(val / 100)}
+      >
         <SliderTrack>
           <SliderFilledTrack />
           <SliderThumb />

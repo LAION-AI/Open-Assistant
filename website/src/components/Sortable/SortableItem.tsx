@@ -34,6 +34,7 @@ export const SortableItem = ({
       p="4"
       color={textColor}
       cursor={isEditable ? (grabbing ? "grabbing" : "grab") : "auto"}
+      aria-roledescription="sortable"
       onMouseDown={() => {
         setGrabbing(true);
       }}
