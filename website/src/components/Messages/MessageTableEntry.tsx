@@ -1,4 +1,4 @@
-import { Avatar, HStack, LinkBox, useColorModeValue } from "@chakra-ui/react";
+import { Avatar, Box, HStack, LinkBox, useColorModeValue } from "@chakra-ui/react";
 import { boolean } from "boolean";
 import Link from "next/link";
 import { FlaggableElement } from "src/components/FlaggableElement";
@@ -6,6 +6,7 @@ import { Message } from "src/types/Conversation";
 
 interface MessageTableEntryProps {
   item: Message;
+  enabled?: boolean;
 }
 
 export function MessageTableEntry(props: MessageTableEntryProps) {
@@ -22,11 +23,17 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
             src={`${boolean(item.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
           />
 
-          <Link href={`/messages/${item.id}`}>
-            <LinkBox bg={backgroundColor} className={`p-4 rounded-md whitespace-pre-wrap w-full`}>
+          {props.enabled ? (
+            <Link href={`/messages/${item.id}`}>
+              <LinkBox bg={backgroundColor} className={`p-4 rounded-md whitespace-pre-wrap w-full`}>
+                {item.text}
+              </LinkBox>
+            </Link>
+          ) : (
+            <Box bg={backgroundColor} className={`p-4 rounded-md whitespace-pre-wrap w-full`}>
               {item.text}
-            </LinkBox>
-          </Link>
+            </Box>
+          )}
         </HStack>
       </FlaggableElement>
     </div>
