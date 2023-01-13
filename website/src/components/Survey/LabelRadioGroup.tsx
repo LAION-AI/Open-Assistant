@@ -25,8 +25,8 @@ export const LabelRadioGroup = (props: LabelRadioGroupProps) => {
             setLabelValues(newState);
           }}
           states={[
-            { text: "No", value: 0, colorScheme: "blue" },
-            { text: "Yes", value: 1, colorScheme: "blue" },
+            { text: "No", value: 0 },
+            { text: "Yes", value: 1 },
           ]}
           isDisabled={props.isDisabled}
         />
@@ -38,7 +38,7 @@ export const LabelRadioGroup = (props: LabelRadioGroupProps) => {
 interface ButtonState {
   text: string;
   value: number;
-  colorScheme: string;
+  colorScheme?: string;
 }
 
 interface LabelRadioItemProps {
@@ -64,7 +64,7 @@ const LabelRadioItem = (props: LabelRadioItemProps) => {
       <Flex direction="row" gap={6} justify="center">
         {props.states.map((item, idx) => (
           <Button
-            colorScheme={item.value === props.labelValue ? item.colorScheme : "gray"}
+            colorScheme={item.value === props.labelValue ? item.colorScheme || "blue" : "gray"}
             isDisabled={props.isDisabled}
             size="lg"
             key={idx}
