@@ -112,7 +112,7 @@
           FASTAPI_KEY: "1234"
           NEXTAUTH_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
-          NEXTAUTH_URL: http://web.dev.open-assistant.io/
+          NEXTAUTH_URL: http://{{ stack_name }}.dev.open-assistant.io/
         ports:
           - "{{ website_port }}:3000"
         command: bash wait-for-postgres.sh node server.js
