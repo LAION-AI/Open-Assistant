@@ -11,9 +11,12 @@ echo "Generating OpenAPI schema..."
 python -m main --print-openapi-schema > $OPENAPI_JSON_FILE_NAME
 echo "Done!"
 
-echo "Copying OpenAPI schema to docs directory..."
-#cp $OPENAPI_JSON_FILE_NAME ../docs/docs/api/
+echo "Formatting & Copying OpenAPI schema to docs directory..."
 jq . $OPENAPI_JSON_FILE_NAME > ../docs/docs/api/openapi.json
+
+# run pre-commit hooks on openapi.json
+echo "Running pre-commit hooks on OpenAPI schema..."
+pre-commit run --files ../docs/docs/api/openapi.json
 
 # If oasst-mock-backend docker container is already running,
 # just restart it
