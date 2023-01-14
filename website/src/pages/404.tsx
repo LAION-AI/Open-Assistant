@@ -7,6 +7,7 @@ import { getTransparentHeaderLayout } from "src/components/Layout";
 function Error() {
   const router = useRouter();
   const backgroundColor = useColorModeValue("white", "gray.800");
+  const backgroundColor2 = useColorModeValue("gray.50", "gray.900");
 
   return (
     <>
@@ -14,7 +15,7 @@ function Error() {
         <title>404 - Open Assistant</title>
         <meta name="404" content="Sorry, this page doesn't exist." />
       </Head>
-      <Center flexDirection="column" gap="4" fontSize="lg" className="subpixel-antialiased">
+      <Center bg={backgroundColor2} flexDirection="column" gap="4" fontSize="lg" className="subpixel-antialiased">
         <Box bg={backgroundColor} p="10" borderRadius="xl" shadow="base">
           <Box display="flex" flexDirection="column" alignItems="center" gap="8">
             <FiAlertTriangle size="30" color="DarkOrange" />
