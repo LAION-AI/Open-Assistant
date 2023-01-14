@@ -28,8 +28,8 @@ defaults:
     - scitldr
     - soda
     - joke
-    -
-    - joke
+    - gsm8k
+    - samsum
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
   eval_size:
@@ -63,10 +63,10 @@ codegen:
   learning_rate: 8e-6
   model_name: Salesforce/codegen-2B-multi
   weight_decay: 0.01
-  max_length: 512
+  max_length: 520
   warmup_steps: 1000
   gradient_checkpointing: false
-  gradient_accumulation_steps: 10
+  gradient_accumulation_steps: 9
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 4
 
