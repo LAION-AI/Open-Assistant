@@ -6,7 +6,7 @@ import { oasstApiClient } from "src/lib/oasst_api_client";
  */
 const handler = withRole("admin", async (req, res) => {
   const { user } = req.query;
-  const messages = await oasstApiClient.fetch_user_messages(user);
+  const messages = await oasstApiClient.fetch_user_messages(user as string);
   res.status(200).json(messages);
 });
 
