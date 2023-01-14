@@ -148,20 +148,14 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
     >
       <Grid display="flex" alignItems="center" gap="1">
         <PopoverAnchor>{props.children}</PopoverAnchor>
-        <Tooltip label="Report" bg="red.500">
-          <PopoverTrigger>
-            <Box
-              as="button"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              borderRadius="full"
-              p="1"
-              _hover={{ bg: `${useColorModeValue("red.100", "#481A23")}` }}
-            >
-              <FiAlertCircle size="20" className="text-red-400" aria-hidden="true" />
-            </Box>
-          </PopoverTrigger>
+        <Tooltip label="Report" bg="red.500" aria-label="A tooltip">
+          <div>
+            <PopoverTrigger>
+              <Box as="button" display="flex" alignItems="center" justifyContent="center" borderRadius="full" p="1">
+                <FiAlertCircle size="20" className="text-red-400" aria-hidden="true" />
+              </Box>
+            </PopoverTrigger>
+          </div>
         </Tooltip>
       </Grid>
 
