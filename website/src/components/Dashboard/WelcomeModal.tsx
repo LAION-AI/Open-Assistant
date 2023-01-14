@@ -13,13 +13,22 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function WelcomeModal() {
   const backgroundColor = useColorModeValue("white", "gray.700");
   const { data: session } = useSession();
 
   const [showModal, setShowModal] = useState(true);
+
+  //   useEffect(() => {
+  //     if (!localStorage.getItem("welcomeModalSeen")) {
+  //       setShowModal(true);
+  //       localStorage.setItem("welcomeModalSeen", "true");
+  //     } else {
+  //       setShowModal(false);
+  //     }
+  //   }, []);
 
   if (!session) {
     return <></>;
@@ -39,7 +48,7 @@ export function WelcomeModal() {
                   understand and respond to humans.
                 </Text>
                 <Divider my="4" />
-                <Text>Do tasks to help train the model and earn points based on the amount of tasks you do.</Text>
+                <Text>Complete tasks to help train the model and earn points!</Text>
               </Box>
             </ModalBody>
             <ModalFooter>
