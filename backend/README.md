@@ -59,3 +59,6 @@ without having to actually set up and run a development backend.
 # save openapi.json to docs/docs/api
 wget localhost:8080/api/v1/openapi.json -O docs/docs/api/openapi.json
 ```
+
+Note: The api docs should be automatically updated by the
+`test-api-contract.yaml` workflow.

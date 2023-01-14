@@ -51,4 +51,4 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: auto update docs/docs/api/openapi.json
+          commit_message: update docs/docs/api/openapi.json
