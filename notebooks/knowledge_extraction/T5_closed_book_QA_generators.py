@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This notebook will run on a system with a single RTX3090 (24 GB vram) GPU.
 # You need to install accelerate, bitsandbytes, and transformers
 
