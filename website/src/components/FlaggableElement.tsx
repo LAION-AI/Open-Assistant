@@ -15,7 +15,6 @@ import {
   SliderFilledTrack,
   SliderThumb,
   SliderTrack,
-  Spacer,
   Tooltip,
   useBoolean,
   useColorMode,
@@ -23,6 +22,7 @@ import {
   useId,
 } from "@chakra-ui/react";
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import clsx from "clsx";
 import { useEffect, useReducer } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { get, post } from "src/lib/api";
@@ -159,7 +159,7 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
         </Tooltip>
       </Grid>
 
-      <PopoverContent width="fit-content" p="3">
+      <PopoverContent width="auto" p="3" m="4" maxWidth="calc(100vw - 2rem)">
         <PopoverArrow />
         <div className="relative h-4">
           <PopoverCloseButton />
@@ -207,9 +207,9 @@ export function FlagCheckbox(props: FlagCheckboxProps): JSX.Element {
   let AdditionalExplanation = null;
   if (props.label.help_text) {
     AdditionalExplanation = (
-      <a href="#" className="group flex items-center space-x-2.5 text-sm ">
+      <a href="#" className="text-sm inline group leading-4">
         <QuestionMarkCircleIcon
-          className="flex h-5 w-5 ml-3 text-gray-400 group-hover:text-gray-500"
+          className="h-5 w-5 ml-1 text-gray-400 group-hover:text-gray-500 inline"
           aria-hidden="true"
         />
       </a>
@@ -221,23 +221,30 @@ export function FlagCheckbox(props: FlagCheckboxProps): JSX.Element {
 
   const labelTextClass =
     colorMode === "light"
-      ? `text-${colors.light.text} hover:text-blue-700 float-left`
-      : `text-${colors.dark.text} hover:text-blue-400 float-left`;
+      ? `text-${colors.light.text} hover:text-blue-700`
+      : `text-${colors.dark.text} hover:text-blue-400`;
 
   return (
-    <Flex gap="2">
-      <Checkbox
-        id={id}
-        isChecked={props.checked}
-        onChange={(e) => {
-          props.checkboxHandler(e.target.checked, props.idx);
-        }}
-      />
-      <label className="text-sm form-check-label" htmlFor={id}>
-        <span className={labelTextClass}>{props.label.display_text}</span>
-        {AdditionalExplanation}
-      </label>
-      <Spacer />
+    <Flex gap="4" justifyContent="space-between" className="my-2">
+      <div className="flex items-start align-middle">
+        <Checkbox
+          id={id}
+          isChecked={props.checked}
+          onChange={(e) => {
+            props.checkboxHandler(e.target.checked, props.idx);
+          }}
+        />
+        <label
+          className={clsx(
+            "text-sm form-check-label ml-2 break-all inline align-middle first-line:leading-4",
+            labelTextClass
+          )}
+          htmlFor={id}
+        >
+          {props.label.display_text}
+          {AdditionalExplanation}
+        </label>
+      </div>
       <div
         onClick={() => {
           if (!props.checked) {
