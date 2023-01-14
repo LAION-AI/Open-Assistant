@@ -79,6 +79,7 @@ class Settings(BaseSettings):
     )
     DEBUG_ALLOW_SELF_LABELING: bool = False  # allow users to label their own messages
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
+    DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
 
     HUGGING_FACE_API_KEY: str = ""
 

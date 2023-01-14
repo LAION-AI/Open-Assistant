@@ -83,6 +83,7 @@
           MAX_WORKERS: "1"
           RATE_LIMIT: "false"
           DEBUG_SKIP_EMBEDDING_COMPUTATION: "true"
+          DEBUG_SKIP_TOXICITY_CALCULATION: "true"
         ports:
           - 8080:8080
 
