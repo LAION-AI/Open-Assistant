@@ -13,7 +13,7 @@ echo "Done!"
 
 echo "Copying OpenAPI schema to docs directory..."
 #cp $OPENAPI_JSON_FILE_NAME ../docs/docs/api/
-$OPENAPI_JSON_FILE_NAME | jq . > ../docs/docs/api/openapi.json
+$OPENAPI_JSON_FILE_NAME | jq . ../docs/docs/api/openapi.json
 
 # If oasst-mock-backend docker container is already running,
 # just restart it
