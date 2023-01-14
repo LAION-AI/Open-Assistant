@@ -14,48 +14,6 @@ export class OasstError {
   }
 }
 
-/**
- * Reports the Backend's knowledge of a user.
- */
-export interface BackendUser {
-  /**
-   * The user's unique ID according to the `auth_method`.
-   */
-  id: string;
-
-  /**
-   * The user's set name
-   */
-  display_name: string;
-
-  /**
-   * The authorization method.  One of:
-   *   - discord
-   *   - local
-   */
-  auth_method: string;
-
-  /**
-   * The backend's UUID for this user.
-   */
-  user_id: string;
-
-  /**
-   * Arbitrary notes about the user.
-   */
-  notes: string;
-
-  /**
-   * True when the user is able to access the platform.  False otherwise.
-   */
-  enabled: boolean;
-
-  /**
-   * True when the user is marked for deletion.  False otherwise.
-   */
-  deleted: boolean;
-}
-
 export class OasstApiClient {
   constructor(private readonly oasstApiUrl: string, private readonly oasstApiKey: string) {}
 
@@ -191,18 +149,30 @@ export class OasstApiClient {
     });
   }
 
+  /**
+   * Returns the `BackendUser` associated with `user_id`
+   */
   async fetch_user(user_id: string): Promise<BackendUser> {
     return this.get(`/api/v1/users/users/${user_id}`);
   }
 
+  /**
+   * Returns the `max_count` `BackendUser`s stored by the backend.
+   */
   async fetch_users(max_count: number): Promise<BackendUser[]> {
     return this.get(`/api/v1/frontend_users/?max_count=${max_count}`);
   }
 
+  /**
+   * Returns the `Message`s associated with `user_id` in the backend.
+   */
   async fetch_user_messages(user_id: string): Promise<Message[]> {
     return this.get(`/api/v1/users/${user_id}/messages`);
   }
 
+  /**
+   * Updates the backend's knowledge about the `user_id`.
+   */
   async set_user_status(user_id: string, is_enabled: boolean, notes): Promise<void> {
     return this.put(`/api/v1/users/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
   }
