@@ -1,4 +1,6 @@
 import { JWT } from "next-auth/jwt";
+import type { Message } from "src/types/Conversation";
+import type { BackendUser } from "src/types/Users";
 
 export class OasstError {
   message: string;
@@ -12,6 +14,48 @@ export class OasstError {
   }
 }
 
+/**
+ * Reports the Backend's knowledge of a user.
+ */
+export interface BackendUser {
+  /**
+   * The user's unique ID according to the `auth_method`.
+   */
+  id: string;
+
+  /**
+   * The user's set name
+   */
+  display_name: string;
+
+  /**
+   * The authorization method.  One of:
+   *   - discord
+   *   - local
+   */
+  auth_method: string;
+
+  /**
+   * The backend's UUID for this user.
+   */
+  user_id: string;
+
+  /**
+   * Arbitrary notes about the user.
+   */
+  notes: string;
+
+  /**
+   * True when the user is able to access the platform.  False otherwise.
+   */
+  enabled: boolean;
+
+  /**
+   * True when the user is marked for deletion.  False otherwise.
+   */
+  deleted: boolean;
+}
+
 export class OasstApiClient {
   constructor(private readonly oasstApiUrl: string, private readonly oasstApiKey: string) {}
 
@@ -23,6 +67,32 @@ export class OasstApiClient {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
+    });
+
+    if (resp.status === 204) {
+      return null;
+    }
+
+    if (resp.status >= 300) {
+      const errorText = await resp.text();
+      let error: any;
+      try {
+        error = JSON.parse(errorText);
+      } catch (e) {
+        throw new OasstError(errorText, 0, resp.status);
+      }
+      throw new OasstError(error.message ?? error, error.error_code, resp.status);
+    }
+
+    return await resp.json();
+  }
+
+  private async put(path: string, body: any): Promise<any> {
+    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
+      method: "PUT",
+      headers: {
+        "X-API-Key": this.oasstApiKey,
+      },
     });
 
     if (resp.status === 204) {
@@ -119,6 +189,22 @@ export class OasstApiClient {
       user_message_id: userMessageId,
       ...content,
     });
+  }
+
+  async fetch_user(user_id: string): Promise<BackendUser> {
+    return this.get(`/api/v1/users/users/${user_id}`);
+  }
+
+  async fetch_users(max_count: number): Promise<BackendUser[]> {
+    return this.get(`/api/v1/frontend_users/?max_count=${max_count}`);
+  }
+
+  async fetch_user_messages(user_id: string): Promise<Message[]> {
+    return this.get(`/api/v1/users/${user_id}/messages`);
+  }
+
+  async set_user_status(user_id: string, is_enabled: boolean, notes): Promise<void> {
+    return this.put(`/api/v1/users/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
   }
 
   //Fetch valid labels. This is called every task. though the call may be redundant

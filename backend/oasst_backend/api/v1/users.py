@@ -15,7 +15,7 @@ from starlette.status import HTTP_204_NO_CONTENT
 router = APIRouter()
 
 
-@router.get("/users/{user_id}", response_model=protocol.User)
+@router.get("/users/{user_id}", response_model=protocol.FrontEndUser)
 def get_user(
     user_id: UUID,
     api_client_id: UUID = None,
@@ -27,7 +27,7 @@ def get_user(
     """
     ur = UserRepository(db, api_client)
     user: User = ur.get_user(user_id, api_client_id)
-    return protocol.User(user.username, user.display_name, user.auth_method)
+    return user.to_protocol_frontend_user()
 
 
 @router.put("/users/{user_id}", status_code=HTTP_204_NO_CONTENT)

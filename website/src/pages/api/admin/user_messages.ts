@@ -1,15 +1,12 @@
+import { oasstApiClient } from "src/lib/oasst_api_client";
 import { withRole } from "src/lib/auth";
 
+/**
+ * Returns the messages recorded by the backend for a user.
+ */
 const handler = withRole("admin", async (req, res) => {
   const { user } = req.query;
-
-  const messagesRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/frontend_users/local/${user}/messages`, {
-    method: "GET",
-    headers: {
-      "X-API-Key": process.env.FASTAPI_KEY,
-    },
-  });
-  const messages = await messagesRes.json();
+  const messages = await oasstApiClient.fetch_user_messages(user);
   res.status(200).json(messages);
 });
 
