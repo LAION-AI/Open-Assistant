@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Divider,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -37,7 +38,8 @@ export function WelcomeModal() {
                   Open Assistant is an open-source AI assistant that uses and trains advanced language models to
                   understand and respond to humans.
                 </Text>
-                <Text>Help train</Text>
+                <Divider my="4" />
+                <Text>Do tasks to help train the model and earn points based on the amount of tasks you do.</Text>
               </Box>
             </ModalBody>
             <ModalFooter>
