@@ -38,6 +38,7 @@ jobs:
   deploy-dev:
     needs: [build-backend, build-web, build-bot]
     uses: ./.github/workflows/deploy-dev.yaml
+    secrets: inherit
     with:
       stack-name: ${{ github.event_name == 'release' && 'staging' || 'dev' }}
       image-tag:
