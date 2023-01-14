@@ -40,7 +40,7 @@ const MessagesDashboard = () => {
         <title>Messages - Open Assistant</title>
         <meta name="description" content="Chat with Open Assistant and provide feedback." />
       </Head>
-      <SimpleGrid fontFamily="Inter" columns={[1, 1, 1, 2]} gap={4}>
+      <SimpleGrid columns={[1, 1, 1, 2]} gap={4}>
         <Box>
           <Text className="text-2xl font-bold" pb="4">
             Recent messages
