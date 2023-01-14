@@ -1,13 +1,15 @@
-from functools import partial
+# from functools import partial
 from pathlib import Path
 
 import evaluate
-import nltk
-import numpy as np
+
+# import nltk
+# import numpy as np
 import transformers
 import yaml
-from custom_datasets import QA_DATASETS, QA_SPECIAL_TOKENS, SUMMARIZATION_DATASETS, get_one_dataset
+from custom_datasets import get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
+from custom_datasets.qa_datasets import QA_SPECIAL_TOKENS
 from losses import CrossEntropyLoss, PolyLoss
 from models import freeze_top_n_layers, get_specific_model
 from sklearn.model_selection import train_test_split
@@ -51,25 +53,25 @@ def preprocess_qa(eval_pred):
     return (eval_pred.predictions, eval_pred.label_ids)
 
 
-def postprocess_summarization(preds, labels):
-    preds = [pred.strip() for pred in preds]
-    labels = [label.strip() for label in labels]
+# def postprocess_summarization(preds, labels):
+#     preds = [pred.strip() for pred in preds]
+#     labels = [label.strip() for label in labels]
 
-    preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
-    labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
+#     preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
+#     labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
 
-    return preds, labels
+#     return preds, labels
 
 
-def preprocess_summarization(eval_pred, tokenizer, ignore_pad_token_for_loss=True):
-    preds, labels = eval_pred
-    decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
-    if ignore_pad_token_for_loss:
-        labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+# def preprocess_summarization(eval_pred, tokenizer, ignore_pad_token_for_loss=True):
+#     preds, labels = eval_pred
+#     decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+#     if ignore_pad_token_for_loss:
+#         labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
+#     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
-    decoded_preds, decoded_labels = postprocess_summarization(decoded_preds, decoded_labels)
-    return decoded_preds, decoded_labels
+#     decoded_preds, decoded_labels = postprocess_summarization(decoded_preds, decoded_labels)
+#     return decoded_preds, decoded_labels
 
 
 def get_metrics(conf, tokenizer):
@@ -77,16 +79,16 @@ def get_metrics(conf, tokenizer):
     # metrics in the future for more thorough evaluation
     metrics, preprocess_fns = [evaluate.load("accuracy")], [default_preprocess]
 
-    if any(dataset in QA_DATASETS for dataset in conf.datasets):
-        raise ValueError("TODO")
-        metrics.append(evaluate.load("squad_v2"))
-        preprocess_fns.append(preprocess_qa)
-    if any(dataset in SUMMARIZATION_DATASETS for dataset in conf.datasets):
-        raise ValueError("TODO")
-        metrics.append(evaluate.load("rouge"))
-        preprocess_fns.append(
-            partial(preprocess_summarization, tokenizer, ignore_pad_token_for_loss=conf.ignore_pad_token_for_loss)
-        )
+    # if any(dataset in QA_DATASETS for dataset in conf.datasets):
+    #     raise ValueError("TODO")
+    #     metrics.append(evaluate.load("squad_v2"))
+    #     preprocess_fns.append(preprocess_qa)
+    # if any(dataset in SUMMARIZATION_DATASETS for dataset in conf.datasets):
+    #     raise ValueError("TODO")
+    #     metrics.append(evaluate.load("rouge"))
+    #     preprocess_fns.append(
+    #         partial(preprocess_summarization, tokenizer, ignore_pad_token_for_loss=conf.ignore_pad_token_for_loss)
+    #     )
 
     return metrics, preprocess_fns
 
