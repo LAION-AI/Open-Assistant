@@ -1,13 +1,15 @@
 {
   "openapi": "3.0.2",
   "info": {
-    "title": "XXXX open-assistant backend",
+    "title": "open-assistant backend",
     "version": "0.1.0"
   },
   "paths": {
     "/api/v1/tasks/": {
       "post": {
-        "tags": ["tasks"],
+        "tags": [
+          "tasks"
+        ],
         "summary": "Request Task",
         "description": "Create new task.",
         "operationId": "request_task_api_v1_tasks__post",
@@ -102,7 +104,9 @@
     },
     "/api/v1/tasks/{task_id}/ack": {
       "post": {
-        "tags": ["tasks"],
+        "tags": [
+          "tasks"
+        ],
         "summary": "Tasks Acknowledge",
         "description": "The frontend acknowledges a task.",
         "operationId": "tasks_acknowledge_api_v1_tasks__task_id__ack_post",
@@ -155,7 +159,9 @@
     },
     "/api/v1/tasks/{task_id}/nack": {
       "post": {
-        "tags": ["tasks"],
+        "tags": [
+          "tasks"
+        ],
         "summary": "Tasks Acknowledge Failure",
         "description": "The frontend reports failure to implement a task.",
         "operationId": "tasks_acknowledge_failure_api_v1_tasks__task_id__nack_post",
@@ -208,7 +214,9 @@
     },
     "/api/v1/tasks/interaction": {
       "post": {
-        "tags": ["tasks"],
+        "tags": [
+          "tasks"
+        ],
         "summary": "Tasks Interaction",
         "description": "The frontend reports an interaction.",
         "operationId": "tasks_interaction_api_v1_tasks_interaction_post",
@@ -270,7 +278,9 @@
     },
     "/api/v1/tasks/close": {
       "post": {
-        "tags": ["tasks"],
+        "tags": [
+          "tasks"
+        ],
         "summary": "Close Collective Task",
         "operationId": "close_collective_task_api_v1_tasks_close_post",
         "requestBody": {
@@ -317,7 +327,9 @@
     },
     "/api/v1/text_labels/": {
       "post": {
-        "tags": ["text_labels"],
+        "tags": [
+          "text_labels"
+        ],
         "summary": "Label Text",
         "description": "Label a piece of text.",
         "operationId": "label_text_api_v1_text_labels__post",
@@ -358,7 +370,9 @@
     },
     "/api/v1/text_labels/valid_labels": {
       "get": {
-        "tags": ["text_labels"],
+        "tags": [
+          "text_labels"
+        ],
         "summary": "Get Valid Lables",
         "operationId": "get_valid_lables_api_v1_text_labels_valid_labels_get",
         "responses": {
@@ -375,7 +389,9 @@
     },
     "/api/v1/messages/": {
       "get": {
-        "tags": ["messages"],
+        "tags": [
+          "messages"
+        ],
         "summary": "Query Messages",
         "description": "Query messages.",
         "operationId": "query_messages_api_v1_messages__get",
@@ -499,7 +515,9 @@
     },
     "/api/v1/messages/{message_id}": {
       "get": {
-        "tags": ["messages"],
+        "tags": [
+          "messages"
+        ],
         "summary": "Get Message",
         "description": "Get a message by its internal ID.",
         "operationId": "get_message_api_v1_messages__message_id__get",
@@ -547,7 +565,9 @@
         ]
       },
       "delete": {
-        "tags": ["messages"],
+        "tags": [
+          "messages"
+        ],
         "summary": "Mark Message Deleted",
         "operationId": "mark_message_deleted_api_v1_messages__message_id__delete",
         "parameters": [
@@ -589,7 +609,9 @@
     },
     "/api/v1/messages/{message_id}/conversation": {
       "get": {
-        "tags": ["messages"],
+        "tags": [
+          "messages"
+        ],
         "summary": "Get Conv",
         "description": "Get a conversation from the tree root and up to the message with given internal ID.",
         "operationId": "get_conv_api_v1_messages__message_id__conversation_get",
@@ -639,7 +661,9 @@
     },
     "/api/v1/messages/{message_id}/tree": {
       "get": {
-        "tags": ["messages"],
+        "tags": [
+          "messages"
+        ],
         "summary": "Get Tree",
         "description": "Get all messages belonging to the same message tree.",
         "operationId": "get_tree_api_v1_messages__message_id__tree_get",
@@ -689,7 +713,9 @@
     },
     "/api/v1/messages/{message_id}/children": {
       "get": {
-        "tags": ["messages"],
+        "tags": [
+          "messages"
+        ],
         "summary": "Get Children",
         "description": "Get all messages belonging to the same message tree.",
         "operationId": "get_children_api_v1_messages__message_id__children_get",
@@ -743,7 +769,9 @@
     },
     "/api/v1/messages/{message_id}/descendants": {
       "get": {
-        "tags": ["messages"],
+        "tags": [
+          "messages"
+        ],
         "summary": "Get Descendants",
         "description": "Get a subtree which starts with this message.",
         "operationId": "get_descendants_api_v1_messages__message_id__descendants_get",
@@ -793,7 +821,9 @@
     },
     "/api/v1/messages/{message_id}/longest_conversation_in_tree": {
       "get": {
-        "tags": ["messages"],
+        "tags": [
+          "messages"
+        ],
         "summary": "Get Longest Conv",
         "description": "Get the longest conversation from the tree of the message.",
         "operationId": "get_longest_conv_api_v1_messages__message_id__longest_conversation_in_tree_get",
@@ -843,7 +873,9 @@
     },
     "/api/v1/messages/{message_id}/max_children_in_tree": {
       "get": {
-        "tags": ["messages"],
+        "tags": [
+          "messages"
+        ],
         "summary": "Get Max Children",
         "description": "Get message with the most children from the tree of the provided message.",
         "operationId": "get_max_children_api_v1_messages__message_id__max_children_in_tree_get",
@@ -893,7 +925,9 @@
     },
     "/api/v1/frontend_messages/{message_id}": {
       "get": {
-        "tags": ["frontend_messages"],
+        "tags": [
+          "frontend_messages"
+        ],
         "summary": "Get Message By Frontend Id",
         "description": "Get a message by its frontend ID.",
         "operationId": "get_message_by_frontend_id_api_v1_frontend_messages__message_id__get",
@@ -942,7 +976,9 @@
     },
     "/api/v1/frontend_messages/{message_id}/conversation": {
       "get": {
-        "tags": ["frontend_messages"],
+        "tags": [
+          "frontend_messages"
+        ],
         "summary": "Get Conv By Frontend Id",
         "description": "Get a conversation from the tree root and up to the message with given frontend ID.",
         "operationId": "get_conv_by_frontend_id_api_v1_frontend_messages__message_id__conversation_get",
@@ -991,7 +1027,9 @@
     },
     "/api/v1/frontend_messages/{message_id}/tree": {
       "get": {
-        "tags": ["frontend_messages"],
+        "tags": [
+          "frontend_messages"
+        ],
         "summary": "Get Tree By Frontend Id",
         "description": "Get all messages belonging to the same message tree.\nMessage is identified by its frontend ID.",
         "operationId": "get_tree_by_frontend_id_api_v1_frontend_messages__message_id__tree_get",
@@ -1040,7 +1078,9 @@
     },
     "/api/v1/frontend_messages/{message_id}/children": {
       "get": {
-        "tags": ["frontend_messages"],
+        "tags": [
+          "frontend_messages"
+        ],
         "summary": "Get Children By Frontend Id",
         "description": "Get all messages belonging to the same message tree.",
         "operationId": "get_children_by_frontend_id_api_v1_frontend_messages__message_id__children_get",
@@ -1093,7 +1133,9 @@
     },
     "/api/v1/frontend_messages/{message_id}/descendants": {
       "get": {
-        "tags": ["frontend_messages"],
+        "tags": [
+          "frontend_messages"
+        ],
         "summary": "Get Descendants By Frontend Id",
         "description": "Get a subtree which starts with this message.\nThe message is identified by its frontend ID.",
         "operationId": "get_descendants_by_frontend_id_api_v1_frontend_messages__message_id__descendants_get",
@@ -1142,7 +1184,9 @@
     },
     "/api/v1/frontend_messages/{message_id}/longest_conversation_in_tree": {
       "get": {
-        "tags": ["frontend_messages"],
+        "tags": [
+          "frontend_messages"
+        ],
         "summary": "Get Longest Conv By Frontend Id",
         "description": "Get the longest conversation from the tree of the message.\nThe message is identified by its frontend ID.",
         "operationId": "get_longest_conv_by_frontend_id_api_v1_frontend_messages__message_id__longest_conversation_in_tree_get",
@@ -1191,7 +1235,9 @@
     },
     "/api/v1/frontend_messages/{message_id}/max_children_in_tree": {
       "get": {
-        "tags": ["frontend_messages"],
+        "tags": [
+          "frontend_messages"
+        ],
         "summary": "Get Max Children By Frontend Id",
         "description": "Get message with the most children from the tree of the provided message.\nThe message is identified by its frontend ID.",
         "operationId": "get_max_children_by_frontend_id_api_v1_frontend_messages__message_id__max_children_in_tree_get",
@@ -1240,7 +1286,9 @@
     },
     "/api/v1/users/users/{user_id}": {
       "get": {
-        "tags": ["users"],
+        "tags": [
+          "users"
+        ],
         "summary": "Get User",
         "description": "Get a user by global user ID. Only trusted clients can resolve users they did not register.",
         "operationId": "get_user_api_v1_users_users__user_id__get",
@@ -1298,7 +1346,9 @@
         ]
       },
       "put": {
-        "tags": ["users"],
+        "tags": [
+          "users"
+        ],
         "summary": "Update User",
         "description": "Update a user by global user ID. Only trusted clients can update users.",
         "operationId": "update_user_api_v1_users_users__user_id__put",
@@ -1357,7 +1407,9 @@
         ]
       },
       "delete": {
-        "tags": ["users"],
+        "tags": [
+          "users"
+        ],
         "summary": "Delete User",
         "description": "Delete a user by global user ID. Only trusted clients can delete users.",
         "operationId": "delete_user_api_v1_users_users__user_id__delete",
@@ -1400,7 +1452,9 @@
     },
     "/api/v1/users/{user_id}/messages": {
       "get": {
-        "tags": ["users"],
+        "tags": [
+          "users"
+        ],
         "summary": "Query User Messages",
         "description": "Query user messages.",
         "operationId": "query_user_messages_api_v1_users__user_id__messages_get",
@@ -1524,7 +1578,9 @@
         ]
       },
       "delete": {
-        "tags": ["users"],
+        "tags": [
+          "users"
+        ],
         "summary": "Mark User Messages Deleted",
         "operationId": "mark_user_messages_deleted_api_v1_users__user_id__messages_delete",
         "parameters": [
@@ -1566,7 +1622,9 @@
     },
     "/api/v1/frontend_users/": {
       "get": {
-        "tags": ["frontend_users"],
+        "tags": [
+          "frontend_users"
+        ],
         "summary": "Get Users",
         "operationId": "get_users_api_v1_frontend_users__get",
         "parameters": [
@@ -1658,7 +1716,9 @@
     },
     "/api/v1/frontend_users/by_display_name": {
       "get": {
-        "tags": ["frontend_users"],
+        "tags": [
+          "frontend_users"
+        ],
         "summary": "Query Frontend Users By Display Name",
         "operationId": "query_frontend_users_by_display_name_api_v1_frontend_users_by_display_name_get",
         "parameters": [
@@ -1745,7 +1805,9 @@
     },
     "/api/v1/frontend_users/{auth_method}/{username}": {
       "get": {
-        "tags": ["frontend_users"],
+        "tags": [
+          "frontend_users"
+        ],
         "summary": "Query Frontend User",
         "description": "Query frontend user.",
         "operationId": "query_frontend_user_api_v1_frontend_users__auth_method___username__get",
@@ -1813,7 +1875,9 @@
     },
     "/api/v1/frontend_users/{auth_method}/{username}/messages": {
       "get": {
-        "tags": ["frontend_users"],
+        "tags": [
+          "frontend_users"
+        ],
         "summary": "Query Frontend User Messages",
         "description": "Query frontend user messages.",
         "operationId": "query_frontend_user_messages_api_v1_frontend_users__auth_method___username__messages_get",
@@ -1945,7 +2009,9 @@
         ]
       },
       "delete": {
-        "tags": ["frontend_users"],
+        "tags": [
+          "frontend_users"
+        ],
         "summary": "Mark Frontend User Messages Deleted",
         "operationId": "mark_frontend_user_messages_deleted_api_v1_frontend_users__auth_method___username__messages_delete",
         "parameters": [
@@ -1995,7 +2061,9 @@
     },
     "/api/v1/stats/": {
       "get": {
-        "tags": ["stats"],
+        "tags": [
+          "stats"
+        ],
         "summary": "Get Message Stats",
         "operationId": "get_message_stats_api_v1_stats__get",
         "responses": {
@@ -2022,7 +2090,9 @@
     },
     "/api/v1/experimental/leaderboards/create/assistant": {
       "get": {
-        "tags": ["leaderboards"],
+        "tags": [
+          "leaderboards"
+        ],
         "summary": "Get Assistant Leaderboard",
         "operationId": "get_assistant_leaderboard_api_v1_experimental_leaderboards_create_assistant_get",
         "responses": {
@@ -2047,7 +2117,9 @@
     },
     "/api/v1/experimental/leaderboards/create/prompter": {
       "get": {
-        "tags": ["leaderboards"],
+        "tags": [
+          "leaderboards"
+        ],
         "summary": "Get Prompter Leaderboard",
         "operationId": "get_prompter_leaderboard_api_v1_experimental_leaderboards_create_prompter_get",
         "responses": {
@@ -2072,7 +2144,9 @@
     },
     "/api/v1/hf/text_toxicity": {
       "get": {
-        "tags": ["hugging_face"],
+        "tags": [
+          "hugging_face"
+        ],
         "summary": "Get Text Toxicity",
         "description": "Get the Message Toxicity from HuggingFace Roberta model.\n\nArgs:\n    msg (str): the message that we want to analyze.\n    api_client (ApiClient, optional): authentification of the user of the request.\n        Defaults to Depends(deps.get_trusted_api_client).\n\nReturns:\n    ToxicityClassification: the score of toxicity of the message.",
         "operationId": "get_text_toxicity_api_v1_hf_text_toxicity_get",
@@ -2122,7 +2196,9 @@
     "schemas": {
       "AssistantReplyTask": {
         "title": "AssistantReplyTask",
-        "required": ["conversation"],
+        "required": [
+          "conversation"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2132,7 +2208,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["assistant_reply"],
+            "enum": [
+              "assistant_reply"
+            ],
             "type": "string",
             "default": "assistant_reply"
           },
@@ -2159,7 +2237,10 @@
       },
       "ConversationMessage": {
         "title": "ConversationMessage",
-        "required": ["text", "is_assistant"],
+        "required": [
+          "text",
+          "is_assistant"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2205,7 +2286,10 @@
           },
           "auth_method": {
             "title": "Auth Method",
-            "enum": ["discord", "local"],
+            "enum": [
+              "discord",
+              "local"
+            ],
             "type": "string"
           },
           "user_id": {
@@ -2260,7 +2344,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["initial_prompt"],
+            "enum": [
+              "initial_prompt"
+            ],
             "type": "string",
             "default": "initial_prompt"
           }
@@ -2269,7 +2355,12 @@
       },
       "LabelAssistantReplyTask": {
         "title": "LabelAssistantReplyTask",
-        "required": ["conversation", "message_id", "reply", "valid_labels"],
+        "required": [
+          "conversation",
+          "message_id",
+          "reply",
+          "valid_labels"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2279,7 +2370,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["label_assistant_reply"],
+            "enum": [
+              "label_assistant_reply"
+            ],
             "type": "string",
             "default": "label_assistant_reply"
           },
@@ -2317,7 +2410,12 @@
       },
       "LabelConversationReplyTask": {
         "title": "LabelConversationReplyTask",
-        "required": ["conversation", "message_id", "reply", "valid_labels"],
+        "required": [
+          "conversation",
+          "message_id",
+          "reply",
+          "valid_labels"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2327,7 +2425,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["label_conversation_reply"],
+            "enum": [
+              "label_conversation_reply"
+            ],
             "type": "string",
             "default": "label_conversation_reply"
           },
@@ -2365,7 +2465,11 @@
       },
       "LabelInitialPromptTask": {
         "title": "LabelInitialPromptTask",
-        "required": ["message_id", "prompt", "valid_labels"],
+        "required": [
+          "message_id",
+          "prompt",
+          "valid_labels"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2375,7 +2479,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["label_initial_prompt"],
+            "enum": [
+              "label_initial_prompt"
+            ],
             "type": "string",
             "default": "label_initial_prompt"
           },
@@ -2410,7 +2516,12 @@
       },
       "LabelPrompterReplyTask": {
         "title": "LabelPrompterReplyTask",
-        "required": ["conversation", "message_id", "reply", "valid_labels"],
+        "required": [
+          "conversation",
+          "message_id",
+          "reply",
+          "valid_labels"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2420,7 +2531,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["label_prompter_reply"],
+            "enum": [
+              "label_prompter_reply"
+            ],
             "type": "string",
             "default": "label_prompter_reply"
           },
@@ -2458,13 +2571,19 @@
       },
       "LabelTaskMode": {
         "title": "LabelTaskMode",
-        "enum": ["simple", "full"],
+        "enum": [
+          "simple",
+          "full"
+        ],
         "type": "string",
         "description": "Label task mode that allows frontends to select an appropriate UI."
       },
       "Message": {
         "title": "Message",
-        "required": ["text", "is_assistant"],
+        "required": [
+          "text",
+          "is_assistant"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2499,12 +2618,18 @@
       },
       "MessageRanking": {
         "title": "MessageRanking",
-        "required": ["user", "message_id", "ranking"],
+        "required": [
+          "user",
+          "message_id",
+          "ranking"
+        ],
         "type": "object",
         "properties": {
           "type": {
             "title": "Type",
-            "enum": ["message_ranking"],
+            "enum": [
+              "message_ranking"
+            ],
             "type": "string",
             "default": "message_ranking"
           },
@@ -2528,12 +2653,18 @@
       },
       "MessageRating": {
         "title": "MessageRating",
-        "required": ["user", "message_id", "rating"],
+        "required": [
+          "user",
+          "message_id",
+          "rating"
+        ],
         "type": "object",
         "properties": {
           "type": {
             "title": "Type",
-            "enum": ["message_rating"],
+            "enum": [
+              "message_rating"
+            ],
             "type": "string",
             "default": "message_rating"
           },
@@ -2554,7 +2685,9 @@
       },
       "MessageTree": {
         "title": "MessageTree",
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2575,7 +2708,9 @@
       },
       "PrompterReplyTask": {
         "title": "PrompterReplyTask",
-        "required": ["conversation"],
+        "required": [
+          "conversation"
+        ],
         "type": "object",
         "properties": {
           "hint": {
@@ -2589,7 +2724,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["prompter_reply"],
+            "enum": [
+              "prompter_reply"
+            ],
             "type": "string",
             "default": "prompter_reply"
           },
@@ -2601,7 +2738,11 @@
       },
       "RankAssistantRepliesTask": {
         "title": "RankAssistantRepliesTask",
-        "required": ["conversation", "replies", "reply_messages"],
+        "required": [
+          "conversation",
+          "replies",
+          "reply_messages"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2611,7 +2752,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["rank_assistant_replies"],
+            "enum": [
+              "rank_assistant_replies"
+            ],
             "type": "string",
             "default": "rank_assistant_replies"
           },
@@ -2637,7 +2780,11 @@
       },
       "RankConversationRepliesTask": {
         "title": "RankConversationRepliesTask",
-        "required": ["conversation", "replies", "reply_messages"],
+        "required": [
+          "conversation",
+          "replies",
+          "reply_messages"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2647,7 +2794,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["rank_conversation_replies"],
+            "enum": [
+              "rank_conversation_replies"
+            ],
             "type": "string",
             "default": "rank_conversation_replies"
           },
@@ -2673,7 +2822,10 @@
       },
       "RankInitialPromptsTask": {
         "title": "RankInitialPromptsTask",
-        "required": ["prompts", "prompt_messages"],
+        "required": [
+          "prompts",
+          "prompt_messages"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2683,7 +2835,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["rank_initial_prompts"],
+            "enum": [
+              "rank_initial_prompts"
+            ],
             "type": "string",
             "default": "rank_initial_prompts"
           },
@@ -2706,7 +2860,11 @@
       },
       "RankPrompterRepliesTask": {
         "title": "RankPrompterRepliesTask",
-        "required": ["conversation", "replies", "reply_messages"],
+        "required": [
+          "conversation",
+          "replies",
+          "reply_messages"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2716,7 +2874,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["rank_prompter_replies"],
+            "enum": [
+              "rank_prompter_replies"
+            ],
             "type": "string",
             "default": "rank_prompter_replies"
           },
@@ -2742,7 +2902,10 @@
       },
       "RateSummaryTask": {
         "title": "RateSummaryTask",
-        "required": ["full_text", "summary"],
+        "required": [
+          "full_text",
+          "summary"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2752,7 +2915,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["rate_summary"],
+            "enum": [
+              "rate_summary"
+            ],
             "type": "string",
             "default": "rate_summary"
           },
@@ -2781,7 +2946,10 @@
       },
       "RatingScale": {
         "title": "RatingScale",
-        "required": ["min", "max"],
+        "required": [
+          "min",
+          "max"
+        ],
         "type": "object",
         "properties": {
           "min": {
@@ -2796,7 +2964,9 @@
       },
       "ReplyToConversationTask": {
         "title": "ReplyToConversationTask",
-        "required": ["conversation"],
+        "required": [
+          "conversation"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2806,7 +2976,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["reply_to_conversation"],
+            "enum": [
+              "reply_to_conversation"
+            ],
             "type": "string",
             "default": "reply_to_conversation"
           },
@@ -2818,7 +2990,9 @@
       },
       "SummarizeStoryTask": {
         "title": "SummarizeStoryTask",
-        "required": ["story"],
+        "required": [
+          "story"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2828,7 +3002,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["summarize_story"],
+            "enum": [
+              "summarize_story"
+            ],
             "type": "string",
             "default": "summarize_story"
           },
@@ -2867,7 +3043,9 @@
       },
       "TaskAck": {
         "title": "TaskAck",
-        "required": ["message_id"],
+        "required": [
+          "message_id"
+        ],
         "type": "object",
         "properties": {
           "message_id": {
@@ -2879,7 +3057,9 @@
       },
       "TaskClose": {
         "title": "TaskClose",
-        "required": ["message_id"],
+        "required": [
+          "message_id"
+        ],
         "type": "object",
         "properties": {
           "message_id": {
@@ -2900,7 +3080,9 @@
           },
           "type": {
             "title": "Type",
-            "enum": ["task_done"],
+            "enum": [
+              "task_done"
+            ],
             "type": "string",
             "default": "task_done"
           }
@@ -2909,7 +3091,9 @@
       },
       "TaskNAck": {
         "title": "TaskNAck",
-        "required": ["reason"],
+        "required": [
+          "reason"
+        ],
         "type": "object",
         "properties": {
           "reason": {
@@ -2969,12 +3153,19 @@
       },
       "TextLabels": {
         "title": "TextLabels",
-        "required": ["user", "text", "labels", "message_id"],
+        "required": [
+          "user",
+          "text",
+          "labels",
+          "message_id"
+        ],
         "type": "object",
         "properties": {
           "type": {
             "title": "Type",
-            "enum": ["text_labels"],
+            "enum": [
+              "text_labels"
+            ],
             "type": "string",
             "default": "text_labels"
           },
@@ -3007,12 +3198,19 @@
       },
       "TextReplyToMessage": {
         "title": "TextReplyToMessage",
-        "required": ["user", "message_id", "user_message_id", "text"],
+        "required": [
+          "user",
+          "message_id",
+          "user_message_id",
+          "text"
+        ],
         "type": "object",
         "properties": {
           "type": {
             "title": "Type",
-            "enum": ["text_reply_to_message"],
+            "enum": [
+              "text_reply_to_message"
+            ],
             "type": "string",
             "default": "text_reply_to_message"
           },
@@ -3037,7 +3235,11 @@
       },
       "User": {
         "title": "User",
-        "required": ["id", "display_name", "auth_method"],
+        "required": [
+          "id",
+          "display_name",
+          "auth_method"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -3050,14 +3252,21 @@
           },
           "auth_method": {
             "title": "Auth Method",
-            "enum": ["discord", "local"],
+            "enum": [
+              "discord",
+              "local"
+            ],
             "type": "string"
           }
         }
       },
       "ValidationError": {
         "title": "ValidationError",
-        "required": ["loc", "msg", "type"],
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
         "type": "object",
         "properties": {
           "loc": {
