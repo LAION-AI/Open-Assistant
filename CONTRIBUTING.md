@@ -74,10 +74,11 @@ solution until a challenge comes up.
   https://github.com/LAION-AI/Open-Assistant/compare/main...andrewm4894:Open-Assistant:my-example-feature-branch.
   Obviously just replace `andrewm4894` with your own GitHub user name and
   `my-example-feature-branch` with whatever you called the feature branch you
-  are working on, so something like 
-  `https://github.com/LAION-AI/Open-Assistant/compare/main...<your_github_username>:Open-Assistant:<your_branch_name>`. This will show the changes that would appear in a PR, so you
-  can check this to make sure it just looks like only the files you have changed
-  or added will be part of the PR.
+  are working on, so something like
+  `https://github.com/LAION-AI/Open-Assistant/compare/main...<your_github_username>:Open-Assistant:<your_branch_name>`.
+  This will show the changes that would appear in a PR, so you can check this to
+  make sure it just looks like only the files you have changed or added will be
+  part of the PR.
 - Try not to work on the `main` branch in your fork - ideally you can keep this
   as just a updated copy of `main` from `LAION-AI/Open-Assistant`.
 - If your feature branch gets messed up, just update the `main` branch in your
