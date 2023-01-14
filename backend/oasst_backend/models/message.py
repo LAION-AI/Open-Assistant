@@ -45,6 +45,8 @@ class Message(SQLModel, table=True):
     review_result: bool = Field(sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False))
     ranking_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
 
+    rank: Optional[int] = Field(nullable=True)
+
     def ensure_is_message(self) -> None:
         if not self.payload or not isinstance(self.payload.payload, MessagePayload):
             raise OasstError("Invalid message", OasstErrorCode.INVALID_MESSAGE, HTTPStatus.INTERNAL_SERVER_ERROR)
