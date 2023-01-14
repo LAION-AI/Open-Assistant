@@ -27,7 +27,7 @@
 
     - name: Set up Redis
       community.docker.docker_container:
-        name: "oasst-redis-{{ stack_name }}"
+        name: "oasst-{{ stack_name }}-redis"
         image: redis
         state: started
         restart_policy: always
@@ -43,7 +43,7 @@
 
     - name: Create postgres containers
       community.docker.docker_container:
-        name: "{{ item.name }}-{{ stack_name }}"
+        name: "oasst-postgres-{{ stack_name }}-{{ item.name }}"
         image: postgres:15
         state: started
         restart_policy: always
@@ -58,12 +58,12 @@
           timeout: 2s
           retries: 10
       loop:
-        - name: oasst-postgres
-        - name: oasst-postgres-web
+        - name: backend
+        - name: web
 
     - name: Run the oasst oasst-backend
       community.docker.docker_container:
-        name: "oasst-backend-{{ stack_name }}"
+        name: "oasst-{{ stack_name }}-backend"
         image: "ghcr.io/laion-ai/open-assistant/oasst-backend:{{ image_tag }}"
         state: started
         recreate: true
@@ -71,8 +71,8 @@
         restart_policy: always
         network_mode: "oasst-{{ stack_name }}"
         env:
-          POSTGRES_HOST: "oasst-postgres-{{ stack_name }}"
-          REDIS_HOST: "oasst-redis-{{ stack_name }}"
+          POSTGRES_HOST: "oasst-postgres-{{ stack_name }}-backend"
+          REDIS_HOST: "oasst-{{ stack_name }}-redis"
           DEBUG_ALLOW_ANY_API_KEY: "true"
           DEBUG_USE_SEED_DATA: "true"
           DEBUG_ALLOW_SELF_LABELING: "true"
@@ -85,7 +85,7 @@
 
     - name: Run the oasst oasst-web frontend
       community.docker.docker_container:
-        name: "oasst-web-{{ stack_name }}"
+        name: "oasst-{{ stack_name }}-web"
         image: "ghcr.io/laion-ai/open-assistant/oasst-web:{{ image_tag }}"
         state: started
         recreate: true
@@ -95,8 +95,8 @@
         env:
           ADMIN_USERS: "{{ lookup('ansible.builtin.env', 'WEB_ADMIN_USERS') }}"
           DATABASE_URL:
-            "postgres://postgres:postgres@oasst-postgres-web-{{ stack_name
-            }}/postgres"
+            "postgres://postgres:postgres@oasst-postgres-{{ stack_name
+            }}-web/postgres"
           DEBUG_LOGIN: "true"
           DISCORD_CLIENT_ID:
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_ID') }}"
@@ -111,11 +111,11 @@
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_PORT') }}"
           EMAIL_SERVER_USER:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
-          FASTAPI_URL: "http://oasst-backend-{{ stack_name }}:8080"
+          FASTAPI_URL: "http://oasst-{{ stack_name }}-backend:8080"
           FASTAPI_KEY: "1234"
           NEXTAUTH_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
-          NEXTAUTH_URL: http://{{ stack_name }}.dev.open-assistant.io/
+          NEXTAUTH_URL: http://web.{{ stack_name }}.open-assistant.io/
         ports:
           - "{{ website_port }}:3000"
         command: bash wait-for-postgres.sh node server.js
