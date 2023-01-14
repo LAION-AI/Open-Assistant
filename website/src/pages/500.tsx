@@ -7,13 +7,13 @@ export default function Error() {
   return (
     <>
       <Head>
-        <title>404 - Open Assistant</title>
+        <title>500 - Open Assistant</title>
         <meta name="404" content="Sorry, this page doesn't exist." />
       </Head>
       <main className="flex h-3/4 items-center justify-center overflow-hidden subpixel-antialiased text-xl">
         <Stack>
-          <p>Sorry, the page you are looking for does not exist.</p>
-          <p>If you were trying to contribute data but ended up here, please file a bug</p>
+          <p>Sorry, We encountered a server error. We&apos;re not sure what went wrong</p>
+          <p>Please file a but below and describe what you were trying to accomplish</p>
           <Button leftIcon={<FiAlertTriangle className="text-blue-500" aria-hidden="true" />} variant="solid">
             <Link
               as={NextLink}
