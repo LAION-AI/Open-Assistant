@@ -38,18 +38,6 @@ def upgrade() -> None:
     op.create_index(op.f("ix_message_tree_state_active"), "message_tree_state", ["active"], unique=False)
     op.create_index(op.f("ix_message_tree_state_state"), "message_tree_state", ["state"], unique=False)
 
-    op.create_table(
-        "message_toxicity",
-        sa.Column("message_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("toxicity", sa.Float(), nullable=True),
-        sa.Column("created_date", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False),
-        sa.Column("model", sqlmodel.sql.sqltypes.AutoString(length=256), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["message_id"],
-            ["message.id"],
-        ),
-        sa.PrimaryKeyConstraint("message_id", "model"),
-    )
     # ### end Alembic commands ###
 
 
@@ -72,6 +60,4 @@ def downgrade() -> None:
         op.f("ix_message_tree_state_message_tree_id"), "message_tree_state", ["message_tree_id"], unique=False
     )
     op.create_index("ix_message_tree_state_tree_id", "message_tree_state", ["message_tree_id"], unique=True)
-
-    op.drop_table("message_toxicity")
     # ### end Alembic commands ###
