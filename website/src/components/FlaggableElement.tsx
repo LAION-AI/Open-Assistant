@@ -146,7 +146,7 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
       isLazy
       lazyBehavior="keepMounted"
     >
-      <Grid display="flex" alignItems="center" gap="1">
+      <Grid display="flex" alignItems="center" gap="2">
         <PopoverAnchor>{props.children}</PopoverAnchor>
         <Tooltip label="Report" bg="red.500" aria-label="A tooltip">
           <div>

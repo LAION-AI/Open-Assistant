@@ -1,4 +1,4 @@
-import { Box, Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack, useColorMode } from "@chakra-ui/react";
+import { Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack, useColorMode } from "@chakra-ui/react";
 import { useId, useState } from "react";
 import { colors } from "styles/Theme/colors";
 
@@ -13,7 +13,7 @@ export const LabelSliderGroup = ({ labelIDs, onChange, isEditable }: LabelSlider
   const [sliderValues, setSliderValues] = useState<number[]>(Array.from({ length: labelIDs.length }).map(() => 0));
 
   return (
-    <Grid templateColumns="auto 1fr" rowGap={1} columnGap={3}>
+    <Grid templateColumns="auto 1fr" rowGap={1} columnGap={4}>
       {labelIDs.map((labelId, idx) => (
         <CheckboxSliderItem
           key={idx}
@@ -44,12 +44,14 @@ function CheckboxSliderItem(props: {
   const labelTextClass = colorMode === "light" ? `text-${colors.light.text}` : `text-${colors.dark.text}`;
 
   return (
-    <Box data-cy="label-group-item" data-label-type="slider">
+    <>
       <label className="text-sm" htmlFor={id}>
         {/* TODO: display real text instead of just the id */}
         <span className={labelTextClass}>{props.labelId}</span>
       </label>
       <Slider
+        data-cy="label-group-item"
+        data-label-type="slider"
         aria-roledescription="slider"
         defaultValue={0}
         isDisabled={!props.isEditable}
@@ -60,6 +62,6 @@ function CheckboxSliderItem(props: {
           <SliderThumb />
         </SliderTrack>
       </Slider>
-    </Box>
+    </>
   );
 }

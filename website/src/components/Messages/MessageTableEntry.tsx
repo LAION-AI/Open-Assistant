@@ -18,8 +18,8 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
   const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
 
   return (
-    <FlaggableElement message={item} key={`flag_${item.id || item.frontend_message_id}`}>
-      <HStack>
+    <FlaggableElement message={item}>
+      <HStack w="100%" gap={2}>
         <Box borderRadius="full" border="solid" borderWidth="1px" borderColor={borderColor} bg={avatarColor}>
           <Avatar
             size="sm"
@@ -31,7 +31,7 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
           <Box maxWidth="xl">
             <Link href={`/messages/${item.id}`}>
               <LinkBox
-                bg={item.is_assistant ? `${backgroundColor}` : `${backgroundColor2}`}
+                bg={item.is_assistant ? backgroundColor : backgroundColor2}
                 className={`p-4 rounded-md whitespace-pre-wrap w-full`}
               >
                 {item.text}
@@ -39,13 +39,12 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
             </Link>
           </Box>
         ) : (
-          <Box maxWidth="xl">
-            <Box
-              bg={item.is_assistant ? `${backgroundColor}` : `${backgroundColor2}`}
-              className={`p-4 rounded-md whitespace-pre-wrap w-full`}
-            >
-              {item.text}
-            </Box>
+          <Box
+            maxWidth="xl"
+            bg={item.is_assistant ? backgroundColor : backgroundColor2}
+            className={`p-4 rounded-md whitespace-pre-wrap w-full`}
+          >
+            {item.text}
           </Box>
         )}
       </HStack>

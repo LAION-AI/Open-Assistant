@@ -11,7 +11,7 @@ export function MessageTable({ messages, enableLink }: MessageTableProps) {
   return (
     <Stack spacing="3">
       {messages.map((item) => (
-        <MessageTableEntry enabled={enableLink} item={item} key={item.id || item.frontend_message_id} />
+        <MessageTableEntry enabled={enableLink} item={item} key={item.id + item.frontend_message_id} />
       ))}
     </Stack>
   );
