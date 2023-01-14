@@ -6,13 +6,13 @@ interface SurveyCardProps {
 }
 
 export const SurveyCard = (props: SurveyCardProps) => {
-  const backgroundColor = useColorModeValue("white", "gray.800");
+  const backgroundColor = useColorModeValue("white", "gray.700");
 
   const BoxClasses: BoxProps = {
-    p: "6",
     gap: "2",
     borderRadius: "xl",
     shadow: "base",
+    className: "p-4 sm:p-6",
   };
 
   return (

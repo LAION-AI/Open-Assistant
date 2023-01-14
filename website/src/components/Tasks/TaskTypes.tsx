@@ -68,7 +68,7 @@ export const TaskTypes: TaskInfo[] = [
     type: "rank_prompter_replies",
     update_type: "message_ranking",
     unchanged_title: "Order Unchanged",
-    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to submit?",
+    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to continue?",
   },
   {
     label: "Rank Assistant Replies",
@@ -78,7 +78,7 @@ export const TaskTypes: TaskInfo[] = [
     type: "rank_assistant_replies",
     update_type: "message_ranking",
     unchanged_title: "Order Unchanged",
-    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to submit?",
+    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to continue?",
   },
   {
     label: "Rank Initial Prompts",
@@ -88,7 +88,7 @@ export const TaskTypes: TaskInfo[] = [
     type: "rank_initial_prompts",
     update_type: "message_ranking",
     unchanged_title: "Order Unchanged",
-    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to submit?",
+    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to continue?",
   },
   // label
   {

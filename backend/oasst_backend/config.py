@@ -1,7 +1,59 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, BaseSettings, FilePath, PostgresDsn, validator
+from oasst_shared.schemas import protocol as protocol_schema
+from pydantic import AnyHttpUrl, BaseModel, BaseSettings, FilePath, PostgresDsn, validator
+
+
+class TreeManagerConfiguration(BaseModel):
+    """TreeManager configuration settings"""
+
+    max_active_trees: int = 10
+    """Maximum number of concurrently active message trees in the database.
+    No new initial prompt tasks are handed out to users if this
+    number is reached."""
+
+    max_tree_depth: int = 6
+    """Maximum depth of message tree."""
+
+    max_children_count: int = 5
+    """Maximum number of reply messages per tree node."""
+
+    goal_tree_size: int = 15
+    """Total number of messages to gather per tree."""
+
+    num_reviews_initial_prompt: int = 3
+    """Number of peer review checks to collect in INITIAL_PROMPT_REVIEW state."""
+
+    num_reviews_reply: int = 3
+    """Number of peer review checks to collect per reply (other than initial_prompt)."""
+
+    p_full_labeling_review_prompt: float = 0.1
+    """Probability of full text-labeling (instead of mandatory only) for initial prompts."""
+
+    p_full_labeling_review_reply_assistant: float = 0.1
+    """Probability of full text-labeling (instead of mandatory only) for assistant replies."""
+
+    p_full_labeling_review_reply_prompter: float = 0.1
+    """Probability of full text-labeling (instead of mandatory only) for prompter replies."""
+
+    acceptance_threshold_initial_prompt: float = 0.6
+    """Threshold for accepting an initial prompt."""
+
+    acceptance_threshold_reply: float = 0.6
+    """Threshold for accepting a reply."""
+
+    num_required_rankings: int = 3
+    """Number of rankings in which the message participated."""
+
+    mandatory_labels_initial_prompt: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    """Mandatory labels in text-labeling tasks for initial prompts."""
+
+    mandatory_labels_assistant_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    """Mandatory labels in text-labeling tasks for assistant replies."""
+
+    mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    """Mandatory labels in text-labeling tasks for prompter replies."""
 
 
 class Settings(BaseSettings):
@@ -27,6 +79,7 @@ class Settings(BaseSettings):
     )
     DEBUG_ALLOW_SELF_LABELING: bool = False  # allow users to label their own messages
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
+    DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
 
     HUGGING_FACE_API_KEY: str = ""
 
@@ -54,5 +107,13 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
+    tree_manager: Optional[TreeManagerConfiguration] = TreeManagerConfiguration()
 
-settings = Settings(_env_file=".env")
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = False
+        env_nested_delimiter = "__"
+
+
+settings = Settings()

@@ -39,13 +39,8 @@ export interface LabelAssistantReplyTask extends BaseTask {
   conversation: Conversation;
   reply: string;
   valid_labels: string[];
-}
-
-export interface LabelInitialPromptTask extends BaseTask {
-  type: TaskType.label_initial_prompt;
-  message_id: string;
-  valid_labels: string[];
-  prompt: string;
+  mode: "simple" | "full";
+  mandatory_labels?: string[];
 }
 
 export interface LabelPrompterReplyTask extends BaseTask {
@@ -54,4 +49,13 @@ export interface LabelPrompterReplyTask extends BaseTask {
   conversation: Conversation;
   reply: string;
   valid_labels: string[];
+  mode: "simple" | "full";
+  mandatory_labels?: string[];
+}
+
+export interface LabelInitialPromptTask extends BaseTask {
+  type: TaskType.label_initial_prompt;
+  message_id: string;
+  valid_labels: string[];
+  prompt: string;
 }

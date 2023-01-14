@@ -1,29 +1,32 @@
 # ansible playbook to set up some docker containers
 
-- name: Set up a dev node
+- name: Deploy to dev node
   hosts: dev
   gather_facts: true
+  vars:
+    stack_name: "dev"
+    image_tag: latest
+    backend_port: 8080
+    website_port: 3000
   tasks:
     - name: Create network
       community.docker.docker_network:
-        name: oasst
+        name: "oasst-{{ stack_name }}"
         state: present
         driver: bridge
 
     - name: Copy redis.conf to managed node
       ansible.builtin.copy:
         src: ./redis.conf
-        dest: ./redis.conf
+        dest: "./{{ stack_name }}/redis.conf"
 
     - name: Set up Redis
       community.docker.docker_container:
-        name: oasst-redis
+        name: "oasst-redis-{{ stack_name }}"
         image: redis
         state: started
         restart_policy: always
-        network_mode: oasst
-        ports:
-          - 6379:6379
+        network_mode: "oasst-{{ stack_name }}"
         healthcheck:
           test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
           interval: 2s
@@ -31,31 +34,19 @@
           retries: 10
         command: redis-server /usr/local/etc/redis/redis.conf
         volumes:
-          - "./redis.conf:/usr/local/etc/redis/redis.conf"
-
-    - name: Set up Redis Insights
-      community.docker.docker_container:
-        name: oasst-redis-insights
-        image: redislabs/redisinsight:latest
-        state: started
-        restart_policy: always
-        network_mode: oasst
-        ports:
-          - 8001:8001
+          - "./{{ stack_name }}/redis.conf:/usr/local/etc/redis/redis.conf"
 
     - name: Create postgres containers
       community.docker.docker_container:
-        name: "{{ item.name }}"
+        name: "{{ item.name }}-{{ stack_name }}"
         image: postgres:15
         state: started
         restart_policy: always
-        network_mode: oasst
+        network_mode: "oasst-{{ stack_name }}"
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
-        volumes:
-          - "{{ item.name }}:/var/lib/postgresql/data"
         healthcheck:
           test: ["CMD", "pg_isready", "-U", "postgres"]
           interval: 2s
@@ -67,37 +58,42 @@
 
     - name: Run the oasst oasst-backend
       community.docker.docker_container:
-        name: oasst-backend
-        image: ghcr.io/laion-ai/open-assistant/oasst-backend
+        name: "oasst-backend-{{ stack_name }}"
+        image: "ghcr.io/laion-ai/open-assistant/oasst-backend:{{ image_tag }}"
         state: started
         recreate: true
         pull: true
         restart_policy: always
-        network_mode: oasst
+        network_mode: "oasst-{{ stack_name }}"
         env:
-          POSTGRES_HOST: oasst-postgres
-          REDIS_HOST: oasst-redis
+          PORT: "{{ backend_port }}"
+          POSTGRES_HOST: "oasst-postgres-{{ stack_name }}"
+          REDIS_HOST: "oasst-redis-{{ stack_name }}"
           DEBUG_ALLOW_ANY_API_KEY: "true"
           DEBUG_USE_SEED_DATA: "true"
           DEBUG_ALLOW_SELF_LABELING: "true"
           MAX_WORKERS: "1"
           RATE_LIMIT: "false"
           DEBUG_SKIP_EMBEDDING_COMPUTATION: "true"
+          DEBUG_SKIP_TOXICITY_CALCULATION: "true"
         ports:
-          - 8080:8080
+          - "{{ backend_port }}:8080"
 
     - name: Run the oasst oasst-web frontend
       community.docker.docker_container:
-        name: oasst-web
-        image: ghcr.io/laion-ai/open-assistant/oasst-web
+        name: "oasst-web-{{ stack_name }}"
+        image: "ghcr.io/laion-ai/open-assistant/oasst-web:{{ image_tag }}"
         state: started
         recreate: true
         pull: true
         restart_policy: always
-        network_mode: oasst
+        network_mode: "oasst-{{ stack_name }}"
         env:
+          PORT: "{{ website_port }}"
           ADMIN_USERS: "{{ lookup('ansible.builtin.env', 'WEB_ADMIN_USERS') }}"
-          DATABASE_URL: postgres://postgres:postgres@oasst-postgres-web/postgres
+          DATABASE_URL:
+            "postgres://postgres:postgres@oasst-postgres-web-{{ stack_name
+            }}/postgres"
           DEBUG_LOGIN: "true"
           DISCORD_CLIENT_ID:
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_ID') }}"
@@ -112,11 +108,11 @@
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_PORT') }}"
           EMAIL_SERVER_USER:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
-          FASTAPI_URL: http://oasst-backend:8080
+          FASTAPI_URL: "http://oasst-backend-{{ stack_name }}:8080"
           FASTAPI_KEY: "1234"
           NEXTAUTH_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
           NEXTAUTH_URL: http://web.dev.open-assistant.io/
         ports:
-          - 3000:3000
+          - "{{ website_port }}:3000"
         command: bash wait-for-postgres.sh node server.js

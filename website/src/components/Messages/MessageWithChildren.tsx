@@ -2,7 +2,7 @@ import { Box, CircularProgress, Stack, StackProps, Text, TextProps, useColorMode
 import { boolean } from "boolean";
 import { useState } from "react";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
-import fetcher from "src/lib/fetcher";
+import { get } from "src/lib/api";
 import useSWR from "swr";
 
 const MessageHeaderProps: TextProps = {
@@ -26,15 +26,15 @@ interface MessageWithChildrenProps {
 }
 
 export function MessageWithChildren(props: MessageWithChildrenProps) {
-  const backgroundColor = useColorModeValue("white", "gray.700");
-  const childBackgroundColor = useColorModeValue("gray.200", "gray.800");
+  const backgroundColor = useColorModeValue("white", "gray.800");
+  const childBackgroundColor = useColorModeValue("gray.200", "gray.700");
 
   const { id, depth, maxDepth, isOnlyChild = true } = props;
 
   const [message, setMessage] = useState(null);
   const [children, setChildren] = useState(null);
 
-  const { isLoading } = useSWR(id ? `/api/messages/${id}` : null, fetcher, {
+  const { isLoading } = useSWR(id ? `/api/messages/${id}` : null, get, {
     onSuccess: (data) => {
       setMessage(data);
     },
@@ -42,7 +42,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
       setMessage(null);
     },
   });
-  const { isLoading: isLoadingChildren } = useSWR(id ? `/api/messages/${id}/children` : null, fetcher, {
+  const { isLoading: isLoadingChildren } = useSWR(id ? `/api/messages/${id}/children` : null, get, {
     onSuccess: (data) => {
       setChildren(data);
     },
@@ -68,7 +68,7 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
               {isFirst ? "Message" : depth === 1 ? "Children" : "Ancestor"}
             </Text>
             <Box width="fit-content" bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base">
-              <MessageTableEntry item={message} />
+              <MessageTableEntry enabled item={message} />
             </Box>
           </Box>
         </>
@@ -93,11 +93,21 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
           <>
             <Text {...MessageHeaderProps}>{isFirstOrOnly ? "Children" : "Ancestor"}</Text>
             <Stack {...MessageStackProps}>
-              {children.map((item, idx) => (
-                <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
-                  <MessageTableEntry item={item} />
-                </Box>
-              ))}
+              <Box
+                bg={backgroundColor}
+                padding="4"
+                borderRadius="xl"
+                display="flex"
+                flexDirection="column"
+                gap="4"
+                shadow="base"
+              >
+                {children.map((item, idx) => (
+                  <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
+                    <MessageTableEntry enabled item={item} />
+                  </Box>
+                ))}
+              </Box>
             </Stack>
           </>
         )

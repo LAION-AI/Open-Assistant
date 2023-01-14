@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { useState } from "react";
-import fetcher from "src/lib/fetcher";
+import { get } from "src/lib/api";
 import useSWR from "swr";
 
 /**
@@ -27,7 +27,7 @@ const UsersCell = () => {
   // Fetch and save the users.
   // This follows useSWR's recommendation for simple pagination:
   //   https://swr.vercel.app/docs/pagination#when-to-use-useswr
-  useSWR(`/api/admin/users?pageIndex=${pageIndex}`, fetcher, {
+  useSWR(`/api/admin/users?pageIndex=${pageIndex}`, get, {
     onSuccess: setUsers,
   });
 

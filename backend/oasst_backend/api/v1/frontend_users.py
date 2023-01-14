@@ -15,6 +15,38 @@ from starlette.status import HTTP_204_NO_CONTENT
 router = APIRouter()
 
 
+@router.get("/", response_model=list[protocol.FrontEndUser])
+def get_users(
+    api_client_id: Optional[UUID] = None,
+    max_count: Optional[int] = Query(100, gt=0, le=10000),
+    gte: Optional[str] = None,
+    lt: Optional[str] = None,
+    auth_method: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    ur = UserRepository(db, api_client)
+    users = ur.query_users(api_client_id=api_client_id, limit=max_count, gte=gte, lt=lt, auth_method=auth_method)
+    return [u.to_protocol_frontend_user() for u in users]
+
+
+@router.get("/by_display_name")
+def query_frontend_users_by_display_name(
+    search_text: str,
+    exact: bool = False,
+    api_client_id: UUID = None,
+    max_count: int = Query(20, gt=0, le=1000),
+    auth_method: str = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    ur = UserRepository(db, api_client)
+    users = ur.query_users_by_display_name(
+        search_text=search_text, exact=exact, api_client_id=api_client_id, limit=max_count, auth_method=auth_method
+    )
+    return [u.to_protocol_frontend_user() for u in users]
+
+
 @router.get("/{auth_method}/{username}", response_model=protocol.FrontEndUser)
 def query_frontend_user(
     auth_method: str,
@@ -28,9 +60,7 @@ def query_frontend_user(
     """
     ur = UserRepository(db, api_client)
     user = ur.query_frontend_user(auth_method, username, api_client_id)
-    return protocol.FrontEndUser(
-        id=user.username, display_name=user.display_name, auth_method=user.auth_method, user_id=user.id
-    )
+    return user.to_protocol_frontend_user()
 
 
 @router.get("/{auth_method}/{username}/messages", response_model=list[protocol.Message])

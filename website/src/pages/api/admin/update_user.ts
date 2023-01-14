@@ -5,7 +5,7 @@ import prisma from "src/lib/prismadb";
  * Update's the user's data in the database.  Accessible only to admins.
  */
 const handler = withRole("admin", async (req, res) => {
-  const { id, role } = JSON.parse(req.body);
+  const { id, role } = req.body;
 
   await prisma.user.update({
     where: {
