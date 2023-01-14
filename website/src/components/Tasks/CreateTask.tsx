@@ -12,7 +12,7 @@ export const CreateTask = ({
   isDisabled,
   onReplyChanged,
 }: TaskSurveyProps<{ text: string }>) => {
-  const cardColor = useColorModeValue("gray.100", "gray.700");
+  const cardColor = useColorModeValue("gray.50", "gray.900");
   const titleColor = useColorModeValue("gray.800", "gray.300");
   const labelColor = useColorModeValue("gray.600", "gray.400");
 
@@ -42,7 +42,7 @@ export const CreateTask = ({
             </Text>
           </Stack>
           {task.conversation ? (
-            <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
+            <Box mt="4" borderRadius="lg" bg={cardColor} className="p-3 sm:p-6">
               <MessageTable messages={task.conversation.messages} />
             </Box>
           ) : null}

@@ -26,8 +26,8 @@ interface MessageWithChildrenProps {
 }
 
 export function MessageWithChildren(props: MessageWithChildrenProps) {
-  const backgroundColor = useColorModeValue("white", "gray.700");
-  const childBackgroundColor = useColorModeValue("gray.200", "gray.800");
+  const backgroundColor = useColorModeValue("white", "gray.800");
+  const childBackgroundColor = useColorModeValue("gray.200", "gray.700");
 
   const { id, depth, maxDepth, isOnlyChild = true } = props;
 
@@ -93,11 +93,21 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
           <>
             <Text {...MessageHeaderProps}>{isFirstOrOnly ? "Children" : "Ancestor"}</Text>
             <Stack {...MessageStackProps}>
-              {children.map((item, idx) => (
-                <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
-                  <MessageTableEntry enabled item={item} />
-                </Box>
-              ))}
+              <Box
+                bg={backgroundColor}
+                padding="4"
+                borderRadius="xl"
+                display="flex"
+                flexDirection="column"
+                gap="4"
+                shadow="base"
+              >
+                {children.map((item, idx) => (
+                  <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
+                    <MessageTableEntry enabled item={item} />
+                  </Box>
+                ))}
+              </Box>
             </Stack>
           </>
         )

@@ -9,7 +9,7 @@ import { get } from "src/lib/api";
 import useSWR from "swr";
 
 const MessageDetail = ({ id }) => {
-  const backgroundColor = useColorModeValue("white", "gray.700");
+  const backgroundColor = useColorModeValue("white", "gray.800");
   const [parent, setParent] = useState(null);
 
   const { isLoading: isLoadingParent } = useSWR(id ? `/api/messages/${id}/parent` : null, get, {
@@ -38,11 +38,10 @@ const MessageDetail = ({ id }) => {
           {parent && (
             <>
               <Box pb="4">
-                <Text fontFamily="Inter" fontWeight="bold" fontSize="xl" pb="2">
+                <Text fontWeight="bold" fontSize="xl" pb="2">
                   Parent
                 </Text>
                 <Box bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base" width="fit-content">
-                  {" "}
                   <MessageTableEntry enabled item={parent} />
                 </Box>
               </Box>

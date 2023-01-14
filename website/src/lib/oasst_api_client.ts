@@ -207,10 +207,18 @@ export class OasstApiClient {
     return this.put(`/api/v1/users/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
   }
 
-  //Fetch valid labels. This is called every task. though the call may be redundant
-  //keeping this for future where the valid labels may change per task
-  async fetch_valid_text(): Promise<void> {
+  /**
+   * Returns the valid labels for messages.
+   */
+  async fetch_valid_text(): Promise<any> {
     return this.get(`/api/v1/text_labels/valid_labels`);
+  }
+
+  /**
+   * Returns the current leaderboard ranking.
+   */
+  async fetch_leaderboard(): Promise<any> {
+    return this.get(`/api/v1/experimental/leaderboards/create/assistant`);
   }
 }
 
