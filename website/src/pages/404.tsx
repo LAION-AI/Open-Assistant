@@ -30,6 +30,8 @@ function Error() {
               href="https://github.com/LAION-AI/Open-Assistant/issues/new/choose"
               aria-label="Report a Bug"
               className="flex items-center"
+              _hover={{ textDecoration: "none" }}
+              isExternal
             >
               Report a Bug
             </Link>
