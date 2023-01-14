@@ -50,4 +50,4 @@ jobs:
         with:
           file_pattern: "docs/docs/api/openapi.json"
           commit_message:
-            update docs/docs/api/openapi.json by run ${{vars.GITHUB_RUN_ID}}
+            update docs/docs/api/openapi.json by run ${{GITHUB_RUN_ID}}
