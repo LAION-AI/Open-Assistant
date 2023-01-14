@@ -32,7 +32,7 @@ export function UserMenu() {
         icon: FiLayout,
       },
       {
-        name: "Settings",
+        name: "Account Settings",
         href: "/account",
         desc: "Account Settings",
         icon: FiSettings,
