@@ -27,7 +27,7 @@ def get_user(
     """
     ur = UserRepository(db, api_client)
     user: User = ur.get_user(user_id, api_client_id)
-    return protocol.User(user.username, user.display_name, user.auth_method)
+    return user.to_protocol_frontend_user()
 
 
 @router.put("/users/{user_id}", status_code=HTTP_204_NO_CONTENT)

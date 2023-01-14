@@ -193,3 +193,34 @@ class UserRepository:
             users = users.limit(limit)
 
         return users.all()
+
+    def query_users_by_display_name(
+        self,
+        search_text: str,
+        exact: Optional[bool] = False,
+        limit: Optional[int] = 20,
+        api_client_id: Optional[UUID] = None,
+        auth_method: Optional[str] = None,
+    ) -> list[User]:
+        if not self.api_client.trusted:
+            if not api_client_id:
+                api_client_id = self.api_client.id
+
+            if api_client_id != self.api_client.id:
+                raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+
+        qry = self.db.query(User).order_by(User.display_name)
+
+        if exact:
+            qry = qry.filter(User.display_name == search_text)
+        else:
+            pattern = "%{}%".format(search_text.replace("\\", "\\\\").replace("_", "\\_").replace("%", "\\%"))
+            qry = qry.filter(User.display_name.like(pattern))
+
+        if auth_method:
+            qry = qry.filter(User.auth_method == auth_method)
+
+        if limit is not None:
+            qry = qry.limit(limit)
+
+        return qry.all()
