@@ -916,6 +916,127 @@
         "security": [{ "APIKeyQuery": [] }, { "APIKeyHeader": [] }]
       }
     },
+    "/api/v1/users/users/{user_id}": {
+      "get": {
+        "tags": ["users"],
+        "summary": "Get User",
+        "description": "Get a user by global user ID. Only trusted clients can resolve users they did not register.",
+        "operationId": "get_user_api_v1_users_users__user_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Api Client Id",
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": "api_client_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "APIKeyQuery": [] }, { "APIKeyHeader": [] }]
+      },
+      "put": {
+        "tags": ["users"],
+        "summary": "Update User",
+        "description": "Update a user by global user ID. Only trusted clients can update users.",
+        "operationId": "update_user_api_v1_users_users__user_id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Enabled", "type": "boolean" },
+            "name": "enabled",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Notes", "type": "string" },
+            "name": "notes",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "204": { "description": "Successful Response" },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "APIKeyQuery": [] }, { "APIKeyHeader": [] }]
+      },
+      "delete": {
+        "tags": ["users"],
+        "summary": "Delete User",
+        "description": "Delete a user by global user ID. Only trusted clients can delete users.",
+        "operationId": "delete_user_api_v1_users_users__user_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": { "description": "Successful Response" },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "APIKeyQuery": [] }, { "APIKeyHeader": [] }]
+      }
+    },
     "/api/v1/users/{user_id}/messages": {
       "get": {
         "tags": ["users"],
@@ -1056,6 +1177,142 @@
         "security": [{ "APIKeyQuery": [] }, { "APIKeyHeader": [] }]
       }
     },
+    "/api/v1/frontend_users/": {
+      "get": {
+        "tags": ["frontend_users"],
+        "summary": "Get Users",
+        "operationId": "get_users_api_v1_frontend_users__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Api Client Id",
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": "api_client_id",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Max Count",
+              "maximum": 10000.0,
+              "exclusiveMinimum": 0.0,
+              "type": "integer",
+              "default": 100
+            },
+            "name": "max_count",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Gte", "type": "string" },
+            "name": "gte",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Lt", "type": "string" },
+            "name": "lt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Auth Method", "type": "string" },
+            "name": "auth_method",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Users Api V1 Frontend Users  Get",
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/FrontEndUser" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "APIKeyQuery": [] }, { "APIKeyHeader": [] }]
+      }
+    },
+    "/api/v1/frontend_users/by_display_name": {
+      "get": {
+        "tags": ["frontend_users"],
+        "summary": "Query Frontend Users By Display Name",
+        "operationId": "query_frontend_users_by_display_name_api_v1_frontend_users_by_display_name_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Search Text", "type": "string" },
+            "name": "search_text",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Exact", "type": "boolean", "default": false },
+            "name": "exact",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Api Client Id",
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": "api_client_id",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Max Count",
+              "maximum": 1000.0,
+              "exclusiveMinimum": 0.0,
+              "type": "integer",
+              "default": 20
+            },
+            "name": "max_count",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": { "title": "Auth Method", "type": "string" },
+            "name": "auth_method",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "APIKeyQuery": [] }, { "APIKeyHeader": [] }]
+      }
+    },
     "/api/v1/frontend_users/{auth_method}/{username}": {
       "get": {
         "tags": ["frontend_users"],
@@ -1091,7 +1348,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/User" }
+                "schema": { "$ref": "#/components/schemas/FrontEndUser" }
               }
             }
           },
@@ -1107,13 +1364,19 @@
         "security": [{ "APIKeyQuery": [] }, { "APIKeyHeader": [] }]
       }
     },
-    "/api/v1/frontend_users/{username}/messages": {
+    "/api/v1/frontend_users/{auth_method}/{username}/messages": {
       "get": {
         "tags": ["frontend_users"],
         "summary": "Query Frontend User Messages",
         "description": "Query frontend user messages.",
-        "operationId": "query_frontend_user_messages_api_v1_frontend_users__username__messages_get",
+        "operationId": "query_frontend_user_messages_api_v1_frontend_users__auth_method___username__messages_get",
         "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Auth Method", "type": "string" },
+            "name": "auth_method",
+            "in": "path"
+          },
           {
             "required": true,
             "schema": { "title": "Username", "type": "string" },
@@ -1195,7 +1458,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Query Frontend User Messages Api V1 Frontend Users  Username  Messages Get",
+                  "title": "Response Query Frontend User Messages Api V1 Frontend Users  Auth Method   Username  Messages Get",
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/Message" }
                 }
@@ -1216,8 +1479,14 @@
       "delete": {
         "tags": ["frontend_users"],
         "summary": "Mark Frontend User Messages Deleted",
-        "operationId": "mark_frontend_user_messages_deleted_api_v1_frontend_users__username__messages_delete",
+        "operationId": "mark_frontend_user_messages_deleted_api_v1_frontend_users__auth_method___username__messages_delete",
         "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Auth Method", "type": "string" },
+            "name": "auth_method",
+            "in": "path"
+          },
           {
             "required": true,
             "schema": { "title": "Username", "type": "string" },
@@ -1353,19 +1622,46 @@
         "required": ["text", "is_assistant"],
         "type": "object",
         "properties": {
-          "text": { "title": "Text", "type": "string" },
-          "is_assistant": { "title": "Is Assistant", "type": "boolean" },
-          "message_id": {
-            "title": "Message Id",
-            "type": "string",
-            "format": "uuid"
-          },
+          "id": { "title": "Id", "type": "string", "format": "uuid" },
           "frontend_message_id": {
             "title": "Frontend Message Id",
             "type": "string"
-          }
+          },
+          "text": { "title": "Text", "type": "string" },
+          "is_assistant": { "title": "Is Assistant", "type": "boolean" }
         },
         "description": "Represents a message in a conversation between the user and the assistant."
+      },
+      "FrontEndUser": {
+        "title": "FrontEndUser",
+        "required": [
+          "id",
+          "display_name",
+          "auth_method",
+          "user_id",
+          "enabled",
+          "deleted",
+          "notes"
+        ],
+        "type": "object",
+        "properties": {
+          "id": { "title": "Id", "type": "string" },
+          "display_name": { "title": "Display Name", "type": "string" },
+          "auth_method": {
+            "title": "Auth Method",
+            "enum": ["discord", "local"],
+            "type": "string"
+          },
+          "user_id": { "title": "User Id", "type": "string", "format": "uuid" },
+          "enabled": { "title": "Enabled", "type": "boolean" },
+          "deleted": { "title": "Deleted", "type": "boolean" },
+          "notes": { "title": "Notes", "type": "string" },
+          "created_date": {
+            "title": "Created Date",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
       },
       "HTTPValidationError": {
         "title": "HTTPValidationError",
@@ -1416,7 +1712,13 @@
             "title": "Valid Labels",
             "type": "array",
             "items": { "type": "string" }
-          }
+          },
+          "mandatory_labels": {
+            "title": "Mandatory Labels",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "mode": { "$ref": "#/components/schemas/LabelTaskMode" }
         },
         "description": "A task to label an assistant reply to a conversation."
       },
@@ -1443,7 +1745,13 @@
             "title": "Valid Labels",
             "type": "array",
             "items": { "type": "string" }
-          }
+          },
+          "mandatory_labels": {
+            "title": "Mandatory Labels",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "mode": { "$ref": "#/components/schemas/LabelTaskMode" }
         },
         "description": "A task to label a reply to a conversation."
       },
@@ -1469,7 +1777,13 @@
             "title": "Valid Labels",
             "type": "array",
             "items": { "type": "string" }
-          }
+          },
+          "mandatory_labels": {
+            "title": "Mandatory Labels",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "mode": { "$ref": "#/components/schemas/LabelTaskMode" }
         },
         "description": "A task to label an initial prompt."
       },
@@ -1496,27 +1810,34 @@
             "title": "Valid Labels",
             "type": "array",
             "items": { "type": "string" }
-          }
+          },
+          "mandatory_labels": {
+            "title": "Mandatory Labels",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "mode": { "$ref": "#/components/schemas/LabelTaskMode" }
         },
         "description": "A task to label a prompter reply to a conversation."
       },
+      "LabelTaskMode": {
+        "title": "LabelTaskMode",
+        "enum": ["simple", "full"],
+        "type": "string",
+        "description": "Label task mode that allows frontends to select an appropriate UI."
+      },
       "Message": {
         "title": "Message",
-        "required": ["text", "is_assistant", "id"],
+        "required": ["text", "is_assistant"],
         "type": "object",
         "properties": {
-          "text": { "title": "Text", "type": "string" },
-          "is_assistant": { "title": "Is Assistant", "type": "boolean" },
-          "message_id": {
-            "title": "Message Id",
-            "type": "string",
-            "format": "uuid"
-          },
+          "id": { "title": "Id", "type": "string", "format": "uuid" },
           "frontend_message_id": {
             "title": "Frontend Message Id",
             "type": "string"
           },
-          "id": { "title": "Id", "type": "string", "format": "uuid" },
+          "text": { "title": "Text", "type": "string" },
+          "is_assistant": { "title": "Is Assistant", "type": "boolean" },
           "parent_id": {
             "title": "Parent Id",
             "type": "string",
@@ -1607,7 +1928,7 @@
       },
       "RankAssistantRepliesTask": {
         "title": "RankAssistantRepliesTask",
-        "required": ["conversation", "replies"],
+        "required": ["conversation", "replies", "reply_messages"],
         "type": "object",
         "properties": {
           "id": { "title": "Id", "type": "string", "format": "uuid" },
@@ -1622,13 +1943,18 @@
             "title": "Replies",
             "type": "array",
             "items": { "type": "string" }
+          },
+          "reply_messages": {
+            "title": "Reply Messages",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConversationMessage" }
           }
         },
         "description": "A task to rank a set of assistant replies to a conversation."
       },
       "RankConversationRepliesTask": {
         "title": "RankConversationRepliesTask",
-        "required": ["conversation", "replies"],
+        "required": ["conversation", "replies", "reply_messages"],
         "type": "object",
         "properties": {
           "id": { "title": "Id", "type": "string", "format": "uuid" },
@@ -1643,13 +1969,18 @@
             "title": "Replies",
             "type": "array",
             "items": { "type": "string" }
+          },
+          "reply_messages": {
+            "title": "Reply Messages",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConversationMessage" }
           }
         },
         "description": "A task to rank a set of replies to a conversation."
       },
       "RankInitialPromptsTask": {
         "title": "RankInitialPromptsTask",
-        "required": ["prompts"],
+        "required": ["prompts", "prompt_messages"],
         "type": "object",
         "properties": {
           "id": { "title": "Id", "type": "string", "format": "uuid" },
@@ -1663,13 +1994,18 @@
             "title": "Prompts",
             "type": "array",
             "items": { "type": "string" }
+          },
+          "prompt_messages": {
+            "title": "Prompt Messages",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConversationMessage" }
           }
         },
         "description": "A task to rank a set of initial prompts."
       },
       "RankPrompterRepliesTask": {
         "title": "RankPrompterRepliesTask",
-        "required": ["conversation", "replies"],
+        "required": ["conversation", "replies", "reply_messages"],
         "type": "object",
         "properties": {
           "id": { "title": "Id", "type": "string", "format": "uuid" },
@@ -1684,6 +2020,11 @@
             "title": "Replies",
             "type": "array",
             "items": { "type": "string" }
+          },
+          "reply_messages": {
+            "title": "Reply Messages",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConversationMessage" }
           }
         },
         "description": "A task to rank a set of prompter replies to a conversation."
@@ -1866,7 +2207,8 @@
             "title": "Message Id",
             "type": "string",
             "format": "uuid"
-          }
+          },
+          "task_id": { "title": "Task Id", "type": "string", "format": "uuid" }
         },
         "description": "A set of labels for a piece of text."
       },
