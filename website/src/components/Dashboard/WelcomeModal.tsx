@@ -30,7 +30,7 @@ export function WelcomeModal() {
         <Modal isOpen={showModal} onClose={() => setShowModal(false)} isCentered>
           <ModalOverlay backdropFilter="auto" backdropBlur="2px" />
           <ModalContent>
-            <ModalHeader>Welcome, {session.user.name}!</ModalHeader>
+            <ModalHeader>Welcome, {session.user.name || "Contributor"}!</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <Box>
