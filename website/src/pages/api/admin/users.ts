@@ -2,19 +2,12 @@ import { withRole } from "src/lib/auth";
 import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
 
-// The number of users to fetch in any request.
-const PAGE_SIZE = 20;
-
 /**
  * Returns a list of user results from the database when the requesting user is
  * a logged in admin.
  */
 const handler = withRole("admin", async (req, res) => {
-  // Figure out the pagination index and skip that number of users.
-  //
-  // Note: with Prisma this isn't the most efficient but it's the only possible
-  // option with cuid based User IDs.
-  const { pageIndex } = req.query;
+  // TODO(#673): Update this to support pagination.
 
   // First, get all the users according to the backend.
   const all_users = await oasstApiClient.fetch_users(20);

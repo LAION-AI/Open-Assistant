@@ -87,7 +87,7 @@ export class OasstApiClient {
     return await resp.json();
   }
 
-  private async put(path: string, body: any): Promise<any> {
+  private async put(path: string): Promise<any> {
     const resp = await fetch(`${this.oasstApiUrl}${path}`, {
       method: "PUT",
       headers: {

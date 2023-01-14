@@ -1,5 +1,5 @@
-import { oasstApiClient } from "src/lib/oasst_api_client";
 import { withRole } from "src/lib/auth";
+import { oasstApiClient } from "src/lib/oasst_api_client";
 
 /**
  * Returns the messages recorded by the backend for a user.
