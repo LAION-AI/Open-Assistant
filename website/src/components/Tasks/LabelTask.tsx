@@ -1,12 +1,13 @@
-import { Box, Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack } from "@chakra-ui/react";
-import { Text, useColorMode, useColorModeValue } from "@chakra-ui/react";
-import { useEffect, useId, useState } from "react";
+import { Box } from "@chakra-ui/react";
+import { Text, useColorModeValue } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { MessageView } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskType } from "src/types/Task";
-import { colors } from "styles/Theme/colors";
+import { LabelSliderGroup } from "src/components/Survey/LabelSliderGroup";
+import { LabelRadioGroup } from "src/components/Survey/LabelRadioGroup";
 
 export const LabelTask = ({
   task,
@@ -65,70 +66,12 @@ export const LabelTask = ({
             </Box>
           )}
         </>
-        <LabelSliderGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />
+        {valid_labels.length === 1 ? (
+          <LabelRadioGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />
+        ) : (
+          <LabelSliderGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />
+        )}
       </TwoColumnsWithCards>
     </div>
   );
 };
-
-// TODO: consolidate with FlaggableElement
-interface LabelSliderGroupProps {
-  labelIDs: Array<string>;
-  onChange: (sliderValues: number[]) => unknown;
-  isEditable: boolean;
-}
-
-export const LabelSliderGroup = ({ labelIDs, onChange, isEditable }: LabelSliderGroupProps) => {
-  const [sliderValues, setSliderValues] = useState<number[]>(Array.from({ length: labelIDs.length }).map(() => 0));
-
-  return (
-    <Grid templateColumns="auto 1fr" rowGap={1} columnGap={3}>
-      {labelIDs.map((labelId, idx) => (
-        <CheckboxSliderItem
-          key={idx}
-          labelId={labelId}
-          sliderValue={sliderValues[idx]}
-          sliderHandler={(sliderValue) => {
-            const newState = sliderValues.slice();
-            newState[idx] = sliderValue;
-            onChange(sliderValues);
-            setSliderValues(newState);
-          }}
-          isEditable={isEditable}
-        />
-      ))}
-    </Grid>
-  );
-};
-
-function CheckboxSliderItem(props: {
-  labelId: string;
-  sliderValue: number;
-  sliderHandler: (newVal: number) => unknown;
-  isEditable: boolean;
-}) {
-  const id = useId();
-  const { colorMode } = useColorMode();
-
-  const labelTextClass = colorMode === "light" ? `text-${colors.light.text}` : `text-${colors.dark.text}`;
-
-  return (
-    <>
-      <label className="text-sm" htmlFor={id}>
-        {/* TODO: display real text instead of just the id */}
-        <span className={labelTextClass}>{props.labelId}</span>
-      </label>
-      <Slider
-        aria-roledescription="slider"
-        defaultValue={0}
-        isDisabled={!props.isEditable}
-        onChangeEnd={(val) => props.sliderHandler(val / 100)}
-      >
-        <SliderTrack>
-          <SliderFilledTrack />
-          <SliderThumb />
-        </SliderTrack>
-      </Slider>
-    </>
-  );
-}
