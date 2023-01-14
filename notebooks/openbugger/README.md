@@ -1,4 +1,4 @@
-# OpenBuggerNotebook
+# OpenBugger
 
 https://github.com/furlat/OpenBugger/blob/main/README.md is a Python package
 that allows you to inject syntax and logic errors into your code. This can be
