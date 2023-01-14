@@ -16,19 +16,18 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 
 export function WelcomeModal() {
-  const backgroundColor = useColorModeValue("white", "gray.700");
   const { data: session } = useSession();
 
-  const [showModal, setShowModal] = useState(true);
+  const [showModal, setShowModal] = useState(false);
 
-  //   useEffect(() => {
-  //     if (!localStorage.getItem("welcomeModalSeen")) {
-  //       setShowModal(true);
-  //       localStorage.setItem("welcomeModalSeen", "true");
-  //     } else {
-  //       setShowModal(false);
-  //     }
-  //   }, []);
+  useEffect(() => {
+    if (!localStorage.getItem("welcomeModalSeen")) {
+      setShowModal(true);
+      localStorage.setItem("welcomeModalSeen", "true");
+    } else {
+      setShowModal(false);
+    }
+  }, []);
 
   if (!session) {
     return <></>;
