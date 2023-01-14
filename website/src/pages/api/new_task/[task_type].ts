@@ -13,7 +13,14 @@ import prisma from "src/lib/prismadb";
 const handler = withoutRole("banned", async (req, res, token) => {
   // Fetch the new task.
   const { task_type } = req.query;
-  const task = await oasstApiClient.fetchTask(task_type as string, token);
+
+  let task;
+  try {
+    task = await oasstApiClient.fetchTask(task_type as string, token);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
 
   // Store the task and link it to the user..
   const registeredTask = await prisma.registeredTask.create({
