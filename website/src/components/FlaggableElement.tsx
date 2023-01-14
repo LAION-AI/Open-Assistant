@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Checkbox,
   Flex,
@@ -21,8 +22,9 @@ import {
   useColorModeValue,
   useId,
 } from "@chakra-ui/react";
-import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import { useEffect, useReducer } from "react";
+import { FiAlertCircle } from "react-icons/fi";
 import { get, post } from "src/lib/api";
 import { Message } from "src/types/Conversation";
 import { colors } from "styles/Theme/colors";
@@ -98,7 +100,6 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
     { label_values: [], submittable: false }
   );
   const [isEditing, setIsEditing] = useBoolean();
-  const backgroundColor = useColorModeValue("gray.200", "gray.700");
 
   const { data, isLoading } = useSWR("/api/valid_labels", get);
   useEffect(() => {
@@ -145,20 +146,20 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
       isLazy
       lazyBehavior="keepMounted"
     >
-      <Grid templateColumns="1fr min-content" gap={2}>
+      <Grid display="flex" alignItems="center" gap="1">
         <PopoverAnchor>{props.children}</PopoverAnchor>
-        <Tooltip label="Report" bg="red.500">
+        <Tooltip label="Report" bg="red.500" aria-label="A tooltip">
           <div>
             <PopoverTrigger>
-              <Button h="full" bg={backgroundColor}>
-                <FlagIcon className="w-4 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
-              </Button>
+              <Box as="button" display="flex" alignItems="center" justifyContent="center" borderRadius="full" p="1">
+                <FiAlertCircle size="20" className="text-red-400" aria-hidden="true" />
+              </Box>
             </PopoverTrigger>
           </div>
         </Tooltip>
       </Grid>
 
-      <PopoverContent width="fit-content">
+      <PopoverContent width="fit-content" p="3">
         <PopoverArrow />
         <div className="relative h-4">
           <PopoverCloseButton />
@@ -224,7 +225,7 @@ export function FlagCheckbox(props: FlagCheckboxProps): JSX.Element {
       : `text-${colors.dark.text} hover:text-blue-400 float-left`;
 
   return (
-    <Flex gap={1}>
+    <Flex gap="2">
       <Checkbox
         id={id}
         isChecked={props.checked}

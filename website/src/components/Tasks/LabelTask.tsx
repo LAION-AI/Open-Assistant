@@ -3,11 +3,11 @@ import { Text, useColorModeValue } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { MessageView } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
+import { LabelRadioGroup } from "src/components/Survey/LabelRadioGroup";
+import { LabelSliderGroup } from "src/components/Survey/LabelSliderGroup";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskType } from "src/types/Task";
-import { LabelSliderGroup } from "src/components/Survey/LabelSliderGroup";
-import { LabelRadioGroup } from "src/components/Survey/LabelRadioGroup";
 
 export const LabelTask = ({
   task,
