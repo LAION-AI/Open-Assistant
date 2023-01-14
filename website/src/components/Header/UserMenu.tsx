@@ -1,9 +1,23 @@
-import { Avatar, Box, Link, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Text } from "@chakra-ui/react";
+import {
+  Avatar,
+  Box,
+  Link,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuGroup,
+  MenuItem,
+  MenuList,
+  Text,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
-import { FiAlertTriangle, FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
+import { FiAlertTriangle, FiHelpCircle, FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
 
 export function UserMenu() {
+  const borderColor = useColorModeValue("gray.300", "gray.600");
+
   const { data: session } = useSession();
 
   if (!session) {
@@ -18,16 +32,24 @@ export function UserMenu() {
         icon: FiLayout,
       },
       {
-        name: "Account Settings",
+        name: "Settings",
         href: "/account",
         desc: "Account Settings",
         icon: FiSettings,
       },
+    ];
+    const helpOptions = [
       {
         name: "Report a Bug",
         href: "https://github.com/LAION-AI/Open-Assistant/issues/new/choose",
         desc: "Report a Bug",
         icon: FiAlertTriangle,
+      },
+      {
+        name: "FAQ",
+        href: "/faq",
+        desc: "Report a Bug",
+        icon: FiHelpCircle,
       },
     ];
 
@@ -43,32 +65,44 @@ export function UserMenu() {
     return (
       <>
         <Menu>
-          <MenuButton border="solid" borderRadius="full" borderWidth="thin" borderColor="blackAlpha.300">
+          <MenuButton border="solid" borderRadius="full" borderWidth="thin" borderColor={borderColor}>
             <Box display="flex" alignItems="center" gap="3" p="1" paddingRight={[1, 1, 1, 6, 6]}>
               <Avatar size="sm" bgImage={session.user.image}></Avatar>
-              <p data-cy="username" className="hidden lg:flex">
+              <Text data-cy="username" className="hidden lg:flex">
                 {session.user.name || session.user.email}
-              </p>
+              </Text>
             </Box>
           </MenuButton>
-          <MenuList p="2" borderRadius="xl">
+          <MenuList p="2" borderRadius="xl" shadow="none">
             <Box display="flex" flexDirection="column" alignItems="center" borderRadius="md" p="4">
-              <Text>Your Score</Text>
+              <Text>{session.user.name}</Text>
               <Text color="blue.500" fontWeight="bold" fontSize="xl">
                 3,200
               </Text>
             </Box>
-            <MenuDivider></MenuDivider>
-            {accountOptions.map((item) => (
-              <Link key={item.name} href={item.href} _hover={{ textDecoration: "none" }}>
-                <MenuItem gap="3" borderRadius="md" p="4">
-                  <item.icon className="text-blue-500" aria-hidden="true" />
-                  <Text>{item.name}</Text>
-                </MenuItem>
-              </Link>
-            ))}
-
-            <MenuDivider></MenuDivider>
+            <MenuDivider />
+            <MenuGroup>
+              {accountOptions.map((item) => (
+                <Link key={item.name} href={item.href} _hover={{ textDecoration: "none" }}>
+                  <MenuItem gap="3" borderRadius="md" p="4">
+                    <item.icon className="text-blue-500" aria-hidden="true" />
+                    <Text>{item.name}</Text>
+                  </MenuItem>
+                </Link>
+              ))}
+            </MenuGroup>
+            <MenuDivider />
+            <MenuGroup>
+              {helpOptions.map((item) => (
+                <Link key={item.name} href={item.href} isExternal _hover={{ textDecoration: "none" }}>
+                  <MenuItem gap="3" borderRadius="md" p="4">
+                    <item.icon className="text-blue-500" aria-hidden="true" />
+                    <Text>{item.name}</Text>
+                  </MenuItem>
+                </Link>
+              ))}
+            </MenuGroup>
+            <MenuDivider />
             <MenuItem gap="3" borderRadius="md" p="4" onClick={() => signOut({ callbackUrl: "/" })}>
               <FiLogOut className="text-blue-500" aria-hidden="true" />
               <Text>Sign Out</Text>
