@@ -12,11 +12,8 @@ python -m main --print-openapi-schema > $OPENAPI_JSON_FILE_NAME
 echo "Done!"
 
 echo "Copying OpenAPI schema to docs directory..."
-cp $OPENAPI_JSON_FILE_NAME ../docs/docs/api/
-
-echo "Pretty printing OpenAPI schema..."
-#python -m json.tool ../docs/docs/api/openapi.json > ../docs/docs/api/openapi.json
-jq ../docs/docs/api/openapi.json > ../docs/docs/api/openapi.json
+#cp $OPENAPI_JSON_FILE_NAME ../docs/docs/api/
+$OPENAPI_JSON_FILE_NAME | jq . > ../docs/docs/api/openapi.json
 
 # If oasst-mock-backend docker container is already running,
 # just restart it
