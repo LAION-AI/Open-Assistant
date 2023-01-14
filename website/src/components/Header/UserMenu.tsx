@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { signOut, useSession } from "next-auth/react";
 import React from "react";
-import { FiAlertTriangle, FiHelpCircle, FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
+import { FiAlertTriangle, FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
 
 export function UserMenu() {
   const borderColor = useColorModeValue("gray.300", "gray.600");
@@ -44,12 +44,6 @@ export function UserMenu() {
         href: "https://github.com/LAION-AI/Open-Assistant/issues/new/choose",
         desc: "Report a Bug",
         icon: FiAlertTriangle,
-      },
-      {
-        name: "FAQ",
-        href: "/faq",
-        desc: "Report a Bug",
-        icon: FiHelpCircle,
       },
     ];
 
