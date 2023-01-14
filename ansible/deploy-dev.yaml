@@ -15,6 +15,11 @@
         state: present
         driver: bridge
 
+    - name: Create stack files directory
+      ansible.builtin.file:
+        path: "./{{ stack_name }}"
+        state: directory
+
     - name: Copy redis.conf to managed node
       ansible.builtin.copy:
         src: ./redis.conf
