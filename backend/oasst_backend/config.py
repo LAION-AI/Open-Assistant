@@ -20,28 +20,28 @@ class TreeManagerConfiguration(BaseModel):
     """Maximum number of reply messages per tree node."""
 
     goal_tree_size: int = 15
-    """Total number of messages to gather per tree"""
+    """Total number of messages to gather per tree."""
 
     num_reviews_initial_prompt: int = 3
     """Number of peer review checks to collect in INITIAL_PROMPT_REVIEW state."""
 
     num_reviews_reply: int = 3
-    """Number of peer review checks to collect per reply (other than initial_prompt)"""
+    """Number of peer review checks to collect per reply (other than initial_prompt)."""
 
     p_full_labeling_review_prompt: float = 0.1
-    """Probability of full text-labeling (instead of mandatory only) for initial prompts"""
+    """Probability of full text-labeling (instead of mandatory only) for initial prompts."""
 
     p_full_labeling_review_reply_assistant: float = 0.1
-    """Probability of full text-labeling (instead of mandatory only) for assistant replies"""
+    """Probability of full text-labeling (instead of mandatory only) for assistant replies."""
 
     p_full_labeling_review_reply_prompter: float = 0.1
-    """Probability of full text-labeling (instead of mandatory only) for prompter replies"""
+    """Probability of full text-labeling (instead of mandatory only) for prompter replies."""
 
     acceptance_threshold_initial_prompt: float = 0.6
-    """Threshold for accepting an initial prompt"""
+    """Threshold for accepting an initial prompt."""
 
     acceptance_threshold_reply: float = 0.6
-    """Threshold for accepting a reply"""
+    """Threshold for accepting a reply."""
 
     num_required_rankings: int = 3
     """Number of rankings in which the message participated."""
@@ -50,7 +50,7 @@ class TreeManagerConfiguration(BaseModel):
     """Mandatory labels in text-labeling tasks for initial prompts."""
 
     mandatory_labels_assistant_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
-    """Mandatory labels in text-labeling tasks for assistant reylies."""
+    """Mandatory labels in text-labeling tasks for assistant replies."""
 
     mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
     """Mandatory labels in text-labeling tasks for prompter replies."""
