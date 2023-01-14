@@ -12,6 +12,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { signOut, useSession } from "next-auth/react";
+import NextLink from "next/link";
 import React from "react";
 import { FiAlertTriangle, FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
 
@@ -77,7 +78,7 @@ export function UserMenu() {
             <MenuDivider />
             <MenuGroup>
               {accountOptions.map((item) => (
-                <Link key={item.name} href={item.href} _hover={{ textDecoration: "none" }}>
+                <Link as={NextLink} key={item.name} href={item.href} _hover={{ textDecoration: "none" }}>
                   <MenuItem gap="3" borderRadius="md" p="4">
                     <item.icon className="text-blue-500" aria-hidden="true" />
                     <Text>{item.name}</Text>
@@ -88,7 +89,7 @@ export function UserMenu() {
             <MenuDivider />
             <MenuGroup>
               {helpOptions.map((item) => (
-                <Link key={item.name} href={item.href} isExternal _hover={{ textDecoration: "none" }}>
+                <Link as={NextLink} key={item.name} href={item.href} isExternal _hover={{ textDecoration: "none" }}>
                   <MenuItem gap="3" borderRadius="md" p="4">
                     <item.icon className="text-blue-500" aria-hidden="true" />
                     <Text>{item.name}</Text>
