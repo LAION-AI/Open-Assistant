@@ -13,6 +13,7 @@ jobs:
     uses: ./.github/workflows/pre-commit.yaml
   build-backend:
     uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
     with:
       image-name: oasst-backend
       context: .
@@ -20,6 +21,7 @@ jobs:
       build-args: ""
   build-web:
     uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
     with:
       image-name: oasst-web
       context: .
@@ -27,6 +29,7 @@ jobs:
       build-args: ""
   build-bot:
     uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
     with:
       image-name: oasst-discord-bot
       context: .
