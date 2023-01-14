@@ -44,8 +44,8 @@ jobs:
       - name: Run JavaScript OasstApiClient contract tests
         run: ./scripts/frontend-development/run-contract-test.sh
 
-      - name: Extract openapi.json to docs/docs/api/
-        run: ./scripts/backend-development/extract-openapi-json.sh
+      #- name: Extract openapi.json to docs/docs/api/
+      #  run: ./scripts/backend-development/extract-openapi-json.sh
 
       - run: ./scripts/backend-development/stop-mock-server.sh
 

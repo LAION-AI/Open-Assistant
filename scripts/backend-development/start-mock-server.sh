@@ -5,7 +5,7 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 pushd "$parent_path/../../backend"
 
 MOCK_SERVER_PORT=8080
-OPENAPI_JSON_FILE_NAME=openapi.json
+OPENAPI_JSON_FILE_NAME=../docs/docs/api/openapi.json
 
 echo "Generating OpenAPI schema..."
 python -m main --print-openapi-schema > $OPENAPI_JSON_FILE_NAME
