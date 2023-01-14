@@ -22,13 +22,9 @@ export const EvaluateTask = ({
   }
 
   useEffect(() => {
-    const conversationMsgs = task.conversation ? task.conversation.messages : [];
-    const defaultRanking = conversationMsgs.map((message, index) => index);
-    onReplyChanged({
-      content: { ranking: defaultRanking },
-      state: "DEFAULT",
-    });
-  }, [task.conversation, onReplyChanged]);
+    const ranking = (task.replies ?? task.prompts).map((_, idx) => idx);
+    onReplyChanged({ content: { ranking }, state: "DEFAULT" });
+  }, [task, onReplyChanged]);
 
   const onRank = (newRanking: number[]) => {
     onReplyChanged({ content: { ranking: newRanking }, state: "VALID" });
