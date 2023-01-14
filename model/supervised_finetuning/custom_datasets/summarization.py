@@ -8,6 +8,7 @@ SUMMARIZATION_SPECIAL_TOKENS = {"Text": "", "Summary": ["TL;DR:", "Summarize thi
 SUMMARY_SPECIAL_PROMPT = {
     "multi_news": ["Summarize in bullet points", "Generate summary in list of points"],
     "xsum": ["Give me summary in one sentence", "Short TLDR", "Give me a concise summary"],
+    "samsum": ["TLDR;", "Summarize this dialogue", "Summarize dialogue"],
 }
 
 summarization_config_mapping = {
