@@ -12,7 +12,7 @@ export const CreateTask = ({
   isDisabled,
   onReplyChanged,
 }: TaskSurveyProps<{ text: string }>) => {
-  const cardColor = useColorModeValue("gray.50", "gray.900");
+  const cardColor = useColorModeValue("gray.50", "gray.800");
   const titleColor = useColorModeValue("gray.800", "gray.300");
   const labelColor = useColorModeValue("gray.600", "gray.400");
 

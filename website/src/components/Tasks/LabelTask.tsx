@@ -32,7 +32,7 @@ export const LabelTask = ({
     setSliderValues(values);
   };
 
-  const cardColor = useColorModeValue("gray.100", "gray.700");
+  const cardColor = useColorModeValue("gray.50", "gray.800");
   const titleColor = useColorModeValue("gray.800", "gray.300");
   const labelColor = useColorModeValue("gray.600", "gray.400");
 
