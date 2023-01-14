@@ -71,7 +71,6 @@
         restart_policy: always
         network_mode: "oasst-{{ stack_name }}"
         env:
-          PORT: "{{ backend_port }}"
           POSTGRES_HOST: "oasst-postgres-{{ stack_name }}"
           REDIS_HOST: "oasst-redis-{{ stack_name }}"
           DEBUG_ALLOW_ANY_API_KEY: "true"
@@ -94,7 +93,6 @@
         restart_policy: always
         network_mode: "oasst-{{ stack_name }}"
         env:
-          PORT: "{{ website_port }}"
           ADMIN_USERS: "{{ lookup('ansible.builtin.env', 'WEB_ADMIN_USERS') }}"
           DATABASE_URL:
             "postgres://postgres:postgres@oasst-postgres-web-{{ stack_name

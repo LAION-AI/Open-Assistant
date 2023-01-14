@@ -44,5 +44,5 @@ jobs:
       image-tag:
         ${{ github.event_name == 'release' && github.event.release.tag_name ||
         'latest' }}
-      backend-port: ${{ github.event_name == 'release' && '8080' || '8180' }}
-      website-port: ${{ github.event_name == 'release' && '3000' || '3100' }}
+      backend-port: ${{ github.event_name == 'release' && '8180' || '8080' }}
+      website-port: ${{ github.event_name == 'release' && '3100' || '3000' }}
