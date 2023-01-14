@@ -1,22 +1,31 @@
-import { Button, Link, Stack } from "@chakra-ui/react";
+import { Box, Button, Center, Link, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
-import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { FiAlertTriangle } from "react-icons/fi";
+import { PageEmptyState } from "src/components/EmptyState";
+import { getTransparentHeaderLayout } from "src/components/Layout";
 
-export default function Error() {
+function Error() {
+  const router = useRouter();
+  const backgroundColor = useColorModeValue("white", "gray.800");
+
   return (
     <>
       <Head>
         <title>404 - Open Assistant</title>
         <meta name="404" content="Sorry, this page doesn't exist." />
       </Head>
-      <main className="flex h-3/4 items-center justify-center overflow-hidden subpixel-antialiased text-xl">
-        <Stack>
-          <p>Sorry, the page you are looking for does not exist.</p>
-          <p>If you were trying to contribute data but ended up here, please file a bug</p>
-          <Button leftIcon={<FiAlertTriangle className="text-blue-500" aria-hidden="true" />} variant="solid">
+      <Center flexDirection="column" gap="4" fontSize="lg" className="subpixel-antialiased">
+        <PageEmptyState />
+        <Box display="flex" flexDirection="column" alignItems="center" gap="2" mt="6">
+          <Text fontSize="sm">If you were trying to contribute data but ended up here, please file a bug.</Text>
+          <Button
+            width="fit-content"
+            leftIcon={<FiAlertTriangle className="text-blue-500" aria-hidden="true" />}
+            variant="solid"
+            size="xs"
+          >
             <Link
-              as={NextLink}
               key="Report a Bug"
               href="https://github.com/LAION-AI/Open-Assistant/issues/new/choose"
               aria-label="Report a Bug"
@@ -25,8 +34,12 @@ export default function Error() {
               Report a Bug
             </Link>
           </Button>
-        </Stack>
-      </main>
+        </Box>
+      </Center>
     </>
   );
 }
+
+Error.getLayout = getTransparentHeaderLayout;
+
+export default Error;
