@@ -16,10 +16,10 @@ class PromptGeneratedDataset(Dataset):
 
     url = "https://github.com/Rallio67/language-model-agents/raw/main/chat_dialogue_v2_c.txt"
 
-    def __init__(self) -> None:
+    def __init__(self, cache_dir) -> None:
         super().__init__()
-        os.makedirs("datasets", exist_ok=True)
-        chat_dialogue = os.path.join("datasets", "chat_dialogue_v2_c.txt")
+        os.makedirs(cache_dir, exist_ok=True)
+        chat_dialogue = os.path.join(cache_dir, "chat_dialogue_v2_c.txt")
         if not os.path.exists(chat_dialogue):
             with urlopen(self.url) as file:
                 content = file.read().decode()
@@ -49,18 +49,3 @@ class PromptGeneratedDataset(Dataset):
     def __getitem__(self, index):
         question, answer = self.pairs[index]
         return question, answer
-
-
-if __name__ == "__main__":
-    from torch.utils.data import DataLoader
-    from transformers import AutoTokenizer
-
-    from .dialogue_collator import DialogueDataCollator
-
-    tokenizer = AutoTokenizer.from_pretrained("Salesforce/codegen-2B-multi")
-    tokenizer.add_special_tokens({"pad_token": "<|endoftext|>", "sep_token": "<|endoftext|>"})
-    dataset = PromptGeneratedDataset()
-    collate_fn = DialogueDataCollator(tokenizer, padding=True, max_length=128)
-    dataloader = DataLoader(dataset, collate_fn=collate_fn, batch_size=5)
-    for batch in dataloader:
-        print(batch["input_ids"].shape)
