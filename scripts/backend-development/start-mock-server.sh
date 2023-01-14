@@ -14,9 +14,6 @@ echo "Done!"
 echo "Formatting & Copying OpenAPI schema to docs directory..."
 jq . $OPENAPI_JSON_FILE_NAME > ../docs/docs/api/openapi.json
 
-echo "Running pre-commit hooks on OpenAPI schema..."
-pre-commit run --files ../docs/docs/api/openapi.json
-
 # If oasst-mock-backend docker container is already running,
 # just restart it
 if [ "$(docker ps -q -f name=oasst-mock-backend)" ]; then
