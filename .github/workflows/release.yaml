@@ -13,6 +13,7 @@ jobs:
     uses: ./.github/workflows/pre-commit.yaml
   build-backend:
     uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
     with:
       image-name: oasst-backend
       context: .
@@ -20,6 +21,7 @@ jobs:
       build-args: ""
   build-web:
     uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
     with:
       image-name: oasst-web
       context: .
@@ -27,6 +29,7 @@ jobs:
       build-args: ""
   build-bot:
     uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
     with:
       image-name: oasst-discord-bot
       context: .
@@ -35,10 +38,11 @@ jobs:
   deploy-dev:
     needs: [build-backend, build-web, build-bot]
     uses: ./.github/workflows/deploy-dev.yaml
+    secrets: inherit
     with:
       stack-name: ${{ github.event_name == 'release' && 'staging' || 'dev' }}
       image-tag:
         ${{ github.event_name == 'release' && github.event.release.tag_name ||
         'latest' }}
-      backend-port: ${{ github.event_name == 'release' && '8080' || '8180' }}
-      website-port: ${{ github.event_name == 'release' && '3000' || '3100' }}
+      backend-port: ${{ github.event_name == 'release' && '8180' || '8080' }}
+      website-port: ${{ github.event_name == 'release' && '3100' || '3000' }}

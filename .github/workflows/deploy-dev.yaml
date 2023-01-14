@@ -47,4 +47,6 @@ jobs:
           # Optional, literal inventory file contents
           inventory: |
             [dev]
-            dev01 ansible_host=${{secrets.DEV_NODE_IP}} ansible_connection=ssh ansible_user=web-team stack_name=${{inputs.stack-name}} image_tag=${{inputs.image-tag}} backend_port=${{inputs.backend-port}} website_port=${{inputs.website-port}}
+            dev01 ansible_host=${{secrets.DEV_NODE_IP}} ansible_connection=ssh ansible_user=web-team
+          options: |
+            --extra-vars "stack_name=${{inputs.stack-name}} image_tag=${{inputs.image-tag}} backend_port=${{inputs.backend-port}} website_port=${{inputs.website-port}}"
