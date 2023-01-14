@@ -1,4 +1,6 @@
 import { JWT } from "next-auth/jwt";
+import type { Message } from "src/types/Conversation";
+import type { BackendUser } from "src/types/Users";
 
 export class OasstError {
   message: string;
@@ -23,6 +25,32 @@ export class OasstApiClient {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
+    });
+
+    if (resp.status === 204) {
+      return null;
+    }
+
+    if (resp.status >= 300) {
+      const errorText = await resp.text();
+      let error: any;
+      try {
+        error = JSON.parse(errorText);
+      } catch (e) {
+        throw new OasstError(errorText, 0, resp.status);
+      }
+      throw new OasstError(error.message ?? error, error.error_code, resp.status);
+    }
+
+    return await resp.json();
+  }
+
+  private async put(path: string): Promise<any> {
+    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
+      method: "PUT",
+      headers: {
+        "X-API-Key": this.oasstApiKey,
+      },
     });
 
     if (resp.status === 204) {
@@ -119,6 +147,34 @@ export class OasstApiClient {
       user_message_id: userMessageId,
       ...content,
     });
+  }
+
+  /**
+   * Returns the `BackendUser` associated with `user_id`
+   */
+  async fetch_user(user_id: string): Promise<BackendUser> {
+    return this.get(`/api/v1/users/users/${user_id}`);
+  }
+
+  /**
+   * Returns the `max_count` `BackendUser`s stored by the backend.
+   */
+  async fetch_users(max_count: number): Promise<BackendUser[]> {
+    return this.get(`/api/v1/frontend_users/?max_count=${max_count}`);
+  }
+
+  /**
+   * Returns the `Message`s associated with `user_id` in the backend.
+   */
+  async fetch_user_messages(user_id: string): Promise<Message[]> {
+    return this.get(`/api/v1/users/${user_id}/messages`);
+  }
+
+  /**
+   * Updates the backend's knowledge about the `user_id`.
+   */
+  async set_user_status(user_id: string, is_enabled: boolean, notes): Promise<void> {
+    return this.put(`/api/v1/users/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
   }
 
   /**

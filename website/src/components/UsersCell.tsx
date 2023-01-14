@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { get } from "src/lib/api";
+import type { User } from "src/types/Users";
 import useSWR from "swr";
 
 /**
@@ -22,7 +23,7 @@ import useSWR from "swr";
  */
 const UsersCell = () => {
   const [pageIndex, setPageIndex] = useState(0);
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   // Fetch and save the users.
   // This follows useSWR's recommendation for simple pagination:
@@ -53,21 +54,23 @@ const UsersCell = () => {
           <Thead>
             <Tr>
               <Th>Id</Th>
-              <Th>Email</Th>
+              <Th>Auth Id</Th>
+              <Th>Auth Method</Th>
               <Th>Name</Th>
               <Th>Role</Th>
               <Th>Update</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {users.map((user, index) => (
-              <Tr key={index}>
-                <Td>{user.id}</Td>
-                <Td>{user.email}</Td>
-                <Td>{user.name}</Td>
-                <Td>{user.role}</Td>
+            {users.map(({ id, user_id, auth_method, display_name, role }) => (
+              <Tr key={user_id}>
+                <Td>{user_id}</Td>
+                <Td>{id}</Td>
+                <Td>{auth_method}</Td>
+                <Td>{display_name}</Td>
+                <Td>{role}</Td>
                 <Td>
-                  <Link href={`/admin/manage_user/${user.id}`}>Manage</Link>
+                  <Link href={`/admin/manage_user/${user_id}`}>Manage</Link>
                 </Td>
               </Tr>
             ))}
