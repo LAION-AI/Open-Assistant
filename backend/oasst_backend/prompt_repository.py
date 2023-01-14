@@ -292,21 +292,20 @@ class PromptRepository:
 
         return reaction, task
 
-    def insert_toxicity(self, message_id: UUID, model: str, toxicity) -> MessageToxicity:
+    def insert_toxicity(self, message_id: UUID, model: str, score: float, label: str) -> MessageToxicity:
         """Save the toxicity score of a new message in the database.
         Args:
             message_id (UUID): the identifier of the message we want to save its toxicity score
             model (str): the model used for creating the toxicity score
-            toxicity (float): the values obtained from the message & model
+            score (float): the toxicity score that we obtained from the model
+            label (str): the final classification in toxicity of the model
         Raises:
             OasstError: if misses some of the before params
         Returns:
             MessageToxicity: the instance in the database of the score saved for that message
         """
 
-        message_toxicity = MessageToxicity(
-            message_id=message_id, model=model, score=toxicity["score"], label=toxicity["label"]
-        )
+        message_toxicity = MessageToxicity(message_id=message_id, model=model, score=score, label=label)
         self.db.add(message_toxicity)
         self.db.commit()
         self.db.refresh(message_toxicity)

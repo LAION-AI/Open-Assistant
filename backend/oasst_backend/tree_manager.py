@@ -417,7 +417,9 @@ class TreeManager:
                         toxicity: List[List[Dict[str, Any]]] = await hugging_face_api.post(interaction.text)
                         toxicity = toxicity[0][0]
 
-                        pr.insert_toxicity(message_id=message.id, model=model_name, toxicity=toxicity)
+                        pr.insert_toxicity(
+                            message_id=message.id, model=model_name, score=toxicity["score"], label=toxicity["label"]
+                        )
 
                     except OasstError:
                         logger.error(
