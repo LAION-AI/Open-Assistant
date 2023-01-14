@@ -4,8 +4,8 @@ from custom_datasets.summarization import SummarizationDataset
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
 
-QA_DATASETS = ["squad_v2", "adversarial_qa", "trivia_qa_context", "trivia_qa_nocontext"]
-SUMMARIZATION_DATASETS = ["xsum", "cnn_dailymail", "samsum", "multi_news", "scitldr", "billsum", "reddit"]
+QA_DATASETS = ["squad_v2", "adversarial_qa", "trivia_qa_context", "trivia_qa_nocontext", "gsm8k"]
+SUMMARIZATION_DATASETS = ["xsum", "cnn_dailymail", "samsum", "multi_news", "scitldr", "billsum"]
 
 
 def train_val_dataset(dataset, val_split=0.2):
@@ -20,11 +20,13 @@ def get_one_dataset(conf, dataset_name):
 
     if dataset_name in QA_DATASETS:
         train = QADataset(dataset_name, conf.cache_dir, "train")
-        eval = QADataset(dataset_name, conf.cache_dir, "validation")
+        val_name = "validation" if dataset_name not in ["gsm8k"] else "test"
+        eval = QADataset(dataset_name, conf.cache_dir, val_name)
 
     elif dataset_name in SUMMARIZATION_DATASETS:
         train = SummarizationDataset(dataset_name, conf.cache_dir, "train")
-        eval = SummarizationDataset(dataset_name, conf.cache_dir, "validation" if dataset_name != "billsum" else "test")
+        val_name = "validation" if dataset_name not in ["billsum"] else "test"
+        eval = SummarizationDataset(dataset_name, conf.cache_dir, val_name)
     elif dataset_name == "webgpt":
         dataset = WebGPT()
         train, eval = train_val_dataset(dataset, val_split=0.2)

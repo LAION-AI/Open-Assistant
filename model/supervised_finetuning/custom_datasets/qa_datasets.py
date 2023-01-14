@@ -39,6 +39,10 @@ def index_adversarial_qa(example):
     return example["title"] + ". " + example["context"] + " " + example["question"], example["answers"]["text"][0]
 
 
+def index_gsm8k(example):
+    return example["question"], example["answer"]
+
+
 class QADataset(Dataset):
     def __init__(self, dataset, cache_dir, split):
         if dataset == "squad_v2":
@@ -46,13 +50,19 @@ class QADataset(Dataset):
             self.dataset = load_dataset("squad_v2", cache_dir=cache_dir, split=split)
         elif dataset == "trivia_qa_nocontext":
             self.index_fn = index_trivia_qa_nocontext
-            self.dataset = load_dataset("trivia_qa", "rc.nocontext", split=split)
+            self.dataset = load_dataset("trivia_qa", "rc.nocontext", split=split, cache_dir=cache_dir)
         elif dataset == "trivia_qa_context":
             self.index_fn = index_trivia_qa_context
-            self.dataset = load_dataset("trivia_qa", "rc", split=split)
+            self.dataset = load_dataset("trivia_qa", "rc", split=split, cache_dir=cache_dir)
         elif dataset == "adversarial_qa":
             self.index_fn = index_adversarial_qa
-            self.dataset = load_dataset("adversarial_qa", "adversarialQA", split=split)
+            self.dataset = load_dataset("adversarial_qa", "adversarialQA", split=split, cache_dir=cache_dir)
+        elif dataset == "gsm8k":
+            self.index_fn = index_gsm8k
+            self.dataset = load_dataset("gsm8k", "main", split=split, cache_dir=cache_dir)
+        elif dataset == "adversarial_qa":
+            self.index_fn = index_adversarial_qa
+            self.dataset = load_dataset("adversarial_qa", "adversarialQA", split=split, cache_dir=cache_dir)
         else:
             raise ValueError("Unknown dataset : " + dataset)
 

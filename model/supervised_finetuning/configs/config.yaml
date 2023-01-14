@@ -18,6 +18,18 @@ defaults:
   datasets:
     - webgpt
     - prompt_dialogue
+    - squad_v2
+    - adversarial_qa
+    - trivia_qa_nocontext
+    - xsum
+    - cnn_dailymail
+    - prompt_dialogue
+    - multi_news
+    - scitldr
+    - soda
+    - joke
+    -
+    - joke
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
   eval_size:

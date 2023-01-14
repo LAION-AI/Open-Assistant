@@ -6,8 +6,9 @@ import nltk
 import numpy as np
 import transformers
 import yaml
-from custom_datasets import QA_DATASETS, QA_SPECIAL_TOKENS, SUMMARIZATION_DATASETS, get_one_dataset
+from custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
+from custom_datasets.qa_datasets import QA_SPECIAL_TOKENS
 from losses import CrossEntropyLoss, PolyLoss
 from models import freeze_top_n_layers, get_specific_model
 from sklearn.model_selection import train_test_split
