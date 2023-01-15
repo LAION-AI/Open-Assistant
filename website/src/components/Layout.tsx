@@ -53,8 +53,8 @@ export const getDashboardLayout = (page: React.ReactElement) => (
       ]}
     >
       {page}
+      <Footer />
     </SideMenuLayout>
-    <Footer />
   </div>
 );
 
