@@ -10,8 +10,8 @@ from sqlmodel import Session
 router = APIRouter()
 
 
-@router.get("/{time_frame}")
-def get_leaderboard_day(
+@router.get("/{time_frame}", response_model=LeaderboardStats)
+def get_leaderboard(
     time_frame: UserStatsTimeFrame,
     max_count: Optional[int] = Query(100, gt=0, le=10000),
     api_client: ApiClient = Depends(deps.get_api_client),
