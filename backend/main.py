@@ -198,27 +198,47 @@ def ensure_tree_states():
 
 
 @app.on_event("startup")
-@repeat_every(seconds=60 * 15, wait_first=False)  # 15 minues
-def update_leader_board_daily() -> None:
+@repeat_every(seconds=60 * 15, wait_first=False)  # 15 min
+def update_leader_board_day() -> None:
     try:
         with Session(engine) as session:
             usr = UserStatsRepository(session)
             usr.update_stats(time_frame=UserStatsTimeFrame.day)
     except Exception:
-        logger.exception("Error during user states update")
+        logger.exception("Error during leaderboard update (daily)")
 
 
 @app.on_event("startup")
-@repeat_every(seconds=60 * 60, wait_first=False)  # 1 hour
-def remove_expired_tokens_task() -> None:
+@repeat_every(seconds=60 * 60, wait_first=False)  # 1 h
+def update_leader_board_week() -> None:
     try:
         with Session(engine) as session:
             usr = UserStatsRepository(session)
-            usr.update_multiple_time_frames(
-                [UserStatsTimeFrame.week, UserStatsTimeFrame.month, UserStatsTimeFrame.total]
-            )
+            usr.update_stats(time_frame=UserStatsTimeFrame.week)
     except Exception:
-        logger.exception("Error during user states update")
+        logger.exception("Error during user states update (weekly)")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * 60 * 4, wait_first=False)  # 1h
+def update_leader_board_month() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.month)
+    except Exception:
+        logger.exception("Error during user states update (monthly)")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * 60 * 4, wait_first=False)  # 4h
+def update_leader_board_total() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.total)
+    except Exception:
+        logger.exception("Error during user states update (total)")
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
