@@ -3,7 +3,6 @@ import {
   Button,
   Checkbox,
   Flex,
-  Grid,
   Popover,
   PopoverAnchor,
   PopoverArrow,
@@ -146,24 +145,25 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
       isLazy
       lazyBehavior="keepMounted"
     >
-      <Grid display="flex" alignItems="center" gap="2">
+      <Box display="flex" alignItems="center" gap="2">
         <PopoverAnchor>{props.children}</PopoverAnchor>
+
         <Tooltip label="Report" bg="red.500" aria-label="A tooltip">
-          <div>
+          <Box>
             <PopoverTrigger>
               <Box as="button" display="flex" alignItems="center" justifyContent="center" borderRadius="full" p="1">
                 <FiAlertCircle size="20" className="text-red-400" aria-hidden="true" />
               </Box>
             </PopoverTrigger>
-          </div>
+          </Box>
         </Tooltip>
-      </Grid>
+      </Box>
 
       <PopoverContent width="auto" p="3" m="4" maxWidth="calc(100vw - 2rem)">
         <PopoverArrow />
-        <div className="relative h-4">
+        <Box className="relative h-4">
           <PopoverCloseButton />
-        </div>
+        </Box>
         <PopoverBody>
           {report.label_values.map(({ label, checked, value }, i) => (
             <FlagCheckbox

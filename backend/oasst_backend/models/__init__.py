@@ -8,12 +8,13 @@ from .message_tree_state import MessageTreeState
 from .task import Task
 from .text_labels import TextLabels
 from .user import User
-from .user_stats import UserStats
+from .user_stats import UserStats, UserStatsTimeFrame
 
 __all__ = [
     "ApiClient",
     "User",
     "UserStats",
+    "UserStatsTimeFrame",
     "Message",
     "MessageEmbedding",
     "MessageReaction",

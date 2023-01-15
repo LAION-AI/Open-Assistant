@@ -71,7 +71,7 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: str = "6379"
 
-    DEBUG_ALLOW_ANY_API_KEY: bool = False
+    DEBUG_ALLOW_DEBUG_API_KEY: bool = False
     DEBUG_SKIP_API_KEY_CHECK: bool = False
     DEBUG_USE_SEED_DATA: bool = False
     DEBUG_USE_SEED_DATA_PATH: Optional[FilePath] = (
@@ -82,6 +82,8 @@ class Settings(BaseSettings):
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
 
     HUGGING_FACE_API_KEY: str = ""
+
+    ROOT_TOKENS: List[str] = ["1234"]  # supply a string that can be parsed to a json list
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
@@ -108,6 +110,22 @@ class Settings(BaseSettings):
         raise ValueError(v)
 
     tree_manager: Optional[TreeManagerConfiguration] = TreeManagerConfiguration()
+
+    USER_STATS_INTERVAL_DAY: int = 15  # minutes
+    USER_STATS_INTERVAL_WEEK: int = 60  # minutes
+    USER_STATS_INTERVAL_MONTH: int = 120  # minutes
+    USER_STATS_INTERVAL_TOTAL: int = 240  # minutes
+
+    @validator(
+        "USER_STATS_INTERVAL_DAY",
+        "USER_STATS_INTERVAL_WEEK",
+        "USER_STATS_INTERVAL_MONTH",
+        "USER_STATS_INTERVAL_TOTAL",
+    )
+    def validate_user_stats_intervals(cls, v: int):
+        if v < 1:
+            raise ValueError(v)
+        return v
 
     class Config:
         env_file = ".env"

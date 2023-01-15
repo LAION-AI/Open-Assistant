@@ -9,6 +9,7 @@ import alembic.config
 import fastapi
 import redis.asyncio as redis
 from fastapi_limiter import FastAPILimiter
+from fastapi_utils.tasks import repeat_every
 from loguru import logger
 from oasst_backend.api.deps import get_dummy_api_client
 from oasst_backend.api.v1.api import api_router
@@ -18,6 +19,7 @@ from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
 from oasst_backend.tree_manager import TreeManager
+from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from pydantic import BaseModel
@@ -193,6 +195,54 @@ def ensure_tree_states():
 
     except Exception:
         logger.exception("TreeManager.ensure_tree_states() failed.")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_DAY, wait_first=False)
+def update_leader_board_day() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.day)
+            session.commit()
+    except Exception:
+        logger.exception("Error during leaderboard update (daily)")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_WEEK, wait_first=False)
+def update_leader_board_week() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.week)
+            session.commit()
+    except Exception:
+        logger.exception("Error during user states update (weekly)")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_MONTH, wait_first=False)
+def update_leader_board_month() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.month)
+            session.commit()
+    except Exception:
+        logger.exception("Error during user states update (monthly)")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_TOTAL, wait_first=False)
+def update_leader_board_total() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.total)
+            session.commit()
+    except Exception:
+        logger.exception("Error during user states update (total)")
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
