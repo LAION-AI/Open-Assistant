@@ -23,7 +23,7 @@ from oasst_backend.models import (
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
 from oasst_backend.user_repository import UserRepository
-from oasst_backend.utils.database_utils import manage_class_db_transaction
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
@@ -67,7 +67,7 @@ class PromptRepository:
             )
         return message
 
-    @manage_class_db_transaction(False)
+    @managed_tx_method(CommitMode.FLUSH)
     def insert_message(
         self,
         *,
@@ -105,7 +105,7 @@ class PromptRepository:
             review_result=review_result,
         )
         self.db.add(message)
-        # self.db.commit()
+
         # self.db.refresh(message)
         return message
 
@@ -135,7 +135,7 @@ class PromptRepository:
     def fetch_tree_state(self, message_tree_id: UUID) -> MessageTreeState:
         return self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one()
 
-    @manage_class_db_transaction(False)
+    @managed_tx_method(CommitMode.FLUSH)
     def store_text_reply(
         self,
         text: str,
@@ -194,11 +194,10 @@ class PromptRepository:
         if not task.collective:
             task.done = True
             self.db.add(task)
-        # self.db.commit()
         self.journal.log_text_reply(task=task, message_id=new_message_id, role=role, length=len(text))
         return user_message
 
-    @manage_class_db_transaction(False)
+    @managed_tx_method(CommitMode.FLUSH)
     def store_rating(self, rating: protocol_schema.MessageRating) -> MessageReaction:
         message = self.fetch_message_by_frontend_message_id(rating.message_id, fail_if_missing=True)
 
@@ -228,7 +227,7 @@ class PromptRepository:
         logger.info(f"Ranking {rating.rating} stored for task {task.id}.")
         return reaction
 
-    @manage_class_db_transaction(True)
+    @managed_tx_method(CommitMode.COMMIT)
     def store_ranking(self, ranking: protocol_schema.MessageRanking) -> Tuple[MessageReaction, Task]:
         # fetch task
         task = self.task_repository.fetch_task_by_frontend_message_id(ranking.message_id)
@@ -298,7 +297,7 @@ class PromptRepository:
 
         return reaction, task
 
-    @manage_class_db_transaction(False)
+    @managed_tx_method(CommitMode.FLUSH)
     def insert_message_embedding(self, message_id: UUID, model: str, embedding: List[float]) -> MessageEmbedding:
         """Insert the embedding of a new message in the database.
 
@@ -319,11 +318,9 @@ class PromptRepository:
 
         message_embedding = MessageEmbedding(message_id=message_id, model=model, embedding=embedding)
         self.db.add(message_embedding)
-        # self.db.commit()
-        # self.db.refresh(message_embedding)
         return message_embedding
 
-    @manage_class_db_transaction(False)
+    @managed_tx_method(CommitMode.FLUSH)
     def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
         if self.user_id is None:
             raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
@@ -337,11 +334,9 @@ class PromptRepository:
             payload_type=type(payload).__name__,
         )
         self.db.add(reaction)
-        # self.db.commit()
-        # self.db.refresh(reaction)
         return reaction
 
-    @manage_class_db_transaction(False)
+    @managed_tx_method(CommitMode.FLUSH)
     def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> Tuple[TextLabels, Task, Message]:
 
         valid_labels: Optional[list[str]] = None
@@ -411,8 +406,6 @@ class PromptRepository:
                 self.db.add(message)
 
         self.db.add(model)
-        # self.db.commit()
-        # self.db.refresh(model)
         return model, task, message
 
     def fetch_random_message_tree(self, require_role: str = None, reviewed: bool = True) -> list[Message]:
@@ -677,7 +670,7 @@ class PromptRepository:
 
         return messages.all()
 
-    @manage_class_db_transaction(True)
+    @managed_tx_method(CommitMode.COMMIT)
     def mark_messages_deleted(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):
         """
         Marks deleted messages and all their descendants.
@@ -705,8 +698,6 @@ class PromptRepository:
                 )
 
                 parent_ids = self.db.execute(query).scalars().all()
-
-        # self.db.commit()
 
     def get_stats(self) -> SystemStats:
         """

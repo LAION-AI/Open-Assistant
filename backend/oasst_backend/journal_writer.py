@@ -4,7 +4,7 @@ from uuid import UUID
 
 from oasst_backend.models import ApiClient, Journal, Task, User
 from oasst_backend.models.payload_column_type import PayloadContainer, payload_type
-from oasst_backend.utils.database_utils import manage_class_db_transaction
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.utils import utcnow
 from pydantic import BaseModel
 from sqlmodel import Session
@@ -81,7 +81,7 @@ class JournalWriter:
             message_id=message_id,
         )
 
-    @manage_class_db_transaction(False)
+    @managed_tx_method(CommitMode.FLUSH)
     def log(
         self,
         *,
@@ -117,7 +117,4 @@ class JournalWriter:
         )
 
         self.db.add(entry)
-        # if commit:
-        #     self.db.commit()
-
         return entry

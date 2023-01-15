@@ -6,7 +6,7 @@ from loguru import logger
 from oasst_backend.models import ApiClient, Task
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.user_repository import UserRepository
-from oasst_backend.utils.database_utils import manage_class_db_transaction
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -114,7 +114,7 @@ class TaskRepository:
         assert task_model.id == task.id
         return task_model
 
-    @manage_class_db_transaction(True)
+    @managed_tx_method(CommitMode.COMMIT)
     def bind_frontend_message_id(self, task_id: UUID, frontend_message_id: str):
         validate_frontend_message_id(frontend_message_id)
 
@@ -129,11 +129,9 @@ class TaskRepository:
 
         task.frontend_message_id = frontend_message_id
         task.ack = True
-        # ToDo: check race-condition, transaction
         self.db.add(task)
-        # self.db.commit()
 
-    @manage_class_db_transaction(True)
+    @managed_tx_method(CommitMode.COMMIT)
     def close_task(self, frontend_message_id: str, allow_personal_tasks: bool = False):
         """
         Mark task as done. No further messages will be accepted for this task.
@@ -154,9 +152,8 @@ class TaskRepository:
 
         task.done = True
         self.db.add(task)
-        # self.db.commit()
 
-    @manage_class_db_transaction(True)
+    @managed_tx_method(CommitMode.COMMIT)
     def acknowledge_task_failure(self, task_id):
         # find task
         task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
@@ -170,9 +167,8 @@ class TaskRepository:
         task.ack = False
         # ToDo: check race-condition, transaction
         self.db.add(task)
-        # self.db.commit()
 
-    @manage_class_db_transaction(True)
+    @managed_tx_method(CommitMode.COMMIT)
     def insert_task(
         self,
         payload: db_payload.TaskPayload,
@@ -194,8 +190,6 @@ class TaskRepository:
         )
         logger.debug(f"inserting {task=}")
         self.db.add(task)
-        # self.db.commit()
-        # self.db.refresh(task)
         return task
 
     def fetch_task_by_frontend_message_id(self, message_id: str) -> Task:
