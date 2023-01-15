@@ -3,7 +3,6 @@ from typing import Optional
 from uuid import UUID
 
 import sqlalchemy as sa
-from loguru import logger
 from oasst_backend.models import Message, MessageReaction, Task, User, UserStats, UserStatsTimeFrame
 from oasst_backend.models.db_payload import (
     LabelAssistantReplyPayload,
@@ -196,12 +195,11 @@ class UserStatsRepository:
         self.session.flush()
 
     def update_stats_time_frame(self, time_frame_key: str, reference_time: Optional[datetime] = None):
-        logger.info(f"update_stats({time_frame_key})")
         self._update_stats_internal(time_frame_key, reference_time)
         self.session.commit()
-        logger.info(f"update_stats({time_frame_key})... Done.")
 
-    def update_stats(self, time_frame: UserStatsTimeFrame):
+    @log_timing(log_kwargs=True, level="INFO")
+    def update_stats(self, *, time_frame: UserStatsTimeFrame):
         now = utcnow()
         match time_frame:
             case UserStatsTimeFrame.day:
@@ -221,11 +219,14 @@ class UserStatsRepository:
             case UserStatsTimeFrame.total:
                 self.update_stats_time_frame(time_frame.value, None)
 
-    @log_timing
+    @log_timing(level="INFO")
+    def update_multiple_time_frames(self, time_frames: list[UserStatsTimeFrame]):
+        for t in time_frames:
+            self.update_stats(time_frame=t)
+
+    @log_timing(level="INFO")
     def update_all_time_frames(self):
-        logger.info("update_all_time_frames")
-        for t in UserStatsTimeFrame:
-            self.update_stats(t)
+        self.update_multiple_time_frames(list(UserStatsTimeFrame))
 
 
 if __name__ == "__main__":

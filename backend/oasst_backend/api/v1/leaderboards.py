@@ -10,41 +10,12 @@ from sqlmodel import Session
 router = APIRouter()
 
 
-@router.get("/day")
+@router.get("/{time_frame}")
 def get_leaderboard_day(
+    time_frame: UserStatsTimeFrame,
     max_count: Optional[int] = Query(100, gt=0, le=10000),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ) -> LeaderboardStats:
     usr = UserStatsRepository(db)
-    return usr.get_leader_board(UserStatsTimeFrame.day, limit=max_count)
-
-
-@router.get("/week")
-def get_leaderboard_week(
-    max_count: Optional[int] = Query(100, gt=0, le=10000),
-    api_client: ApiClient = Depends(deps.get_api_client),
-    db: Session = Depends(deps.get_db),
-) -> LeaderboardStats:
-    usr = UserStatsRepository(db)
-    return usr.get_leader_board(UserStatsTimeFrame.week, limit=max_count)
-
-
-@router.get("/month")
-def get_leaderboard_month(
-    max_count: Optional[int] = Query(100, gt=0, le=10000),
-    api_client: ApiClient = Depends(deps.get_api_client),
-    db: Session = Depends(deps.get_db),
-) -> LeaderboardStats:
-    usr = UserStatsRepository(db)
-    return usr.get_leader_board(UserStatsTimeFrame.month, limit=max_count)
-
-
-@router.get("/total")
-def get_leaderboard_total(
-    max_count: Optional[int] = Query(100, gt=0, le=10000),
-    api_client: ApiClient = Depends(deps.get_api_client),
-    db: Session = Depends(deps.get_db),
-) -> LeaderboardStats:
-    usr = UserStatsRepository(db)
-    return usr.get_leader_board(UserStatsTimeFrame.total, limit=max_count)
+    return usr.get_leader_board(time_frame, limit=max_count)

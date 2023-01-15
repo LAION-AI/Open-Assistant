@@ -19,7 +19,7 @@ from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
 from oasst_backend.tree_manager import TreeManager
-from oasst_backend.user_stats_repository import UserStatsRepository
+from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from pydantic import BaseModel
@@ -198,12 +198,25 @@ def ensure_tree_states():
 
 
 @app.on_event("startup")
+@repeat_every(seconds=60 * 15, wait_first=False)  # 15 minues
+def update_leader_board_daily() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.day)
+    except Exception:
+        logger.exception("Error during user states update")
+
+
+@app.on_event("startup")
 @repeat_every(seconds=60 * 60, wait_first=False)  # 1 hour
 def remove_expired_tokens_task() -> None:
     try:
         with Session(engine) as session:
             usr = UserStatsRepository(session)
-            usr.update_all_time_frames()
+            usr.update_multiple_time_frames(
+                [UserStatsTimeFrame.week, UserStatsTimeFrame.month, UserStatsTimeFrame.total]
+            )
     except Exception:
         logger.exception("Error during user states update")
 
