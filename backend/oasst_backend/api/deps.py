@@ -37,8 +37,7 @@ async def get_api_key(
 
 def create_api_client(
     *,
-    db: Session,
-    added_by_root_token: str,
+    session: Session,
     description: str,
     frontend_type: str,
     trusted: bool | None = False,
@@ -55,30 +54,28 @@ def create_api_client(
         frontend_type=frontend_type,
         trusted=trusted,
         admin_email=admin_email,
-        added_by_root_token=added_by_root_token,
     )
-    db.add(api_client)
-    db.commit()
-    db.refresh(api_client)
+    session.add(api_client)
+    session.commit()
+    session.refresh(api_client)
     return api_client
 
 
-def get_dummy_api_client(db: Session) -> ApiClient:
+def get_dummy_api_client(session: Session) -> ApiClient:
     # make sure that a dummy api key exits in db (foreign key references)
     DUMMY_API_KEY = "1234"
-    api_client: ApiClient = db.query(ApiClient).filter(ApiClient.api_key == DUMMY_API_KEY).first()
+    api_client: ApiClient = session.query(ApiClient).filter(ApiClient.api_key == DUMMY_API_KEY).first()
     if api_client is None:
         logger.info(f"ANY_API_KEY missing, inserting api_key: {DUMMY_API_KEY}")
         api_client = create_api_client(
-            db=db,
-            added_by_root_token="1234",
+            session=session,
             api_key=DUMMY_API_KEY,
             description="ANY_API_KEY, random token",
             trusted=True,
             frontend_type="Test frontend",
         )
-        db.add(api_client)
-        db.commit()
+        session.add(api_client)
+        session.commit()
     return api_client
 
 

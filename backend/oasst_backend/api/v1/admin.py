@@ -17,12 +17,11 @@ class CreateApiClientRequest(pydantic.BaseModel):
 async def create_api_client(
     request: CreateApiClientRequest,
     root_token: str = Depends(deps.get_root_token),
-    db: deps.Session = Depends(deps.get_db),
+    session: deps.Session = Depends(deps.get_db),
 ) -> str:
     logger.info(f"Creating new api client with {request=}")
     api_client = deps.create_api_client(
-        db=db,
-        added_by_root_token=root_token,
+        session=session,
         description=request.description,
         frontend_type=request.frontend_type,
         trusted=request.trusted,
