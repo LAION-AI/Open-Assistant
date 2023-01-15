@@ -17,7 +17,10 @@ from sqlmodel import Session, delete, func, text
 
 
 def _create_user_score(r):
-    d = r["UserStats"].dict()
+    if r["UserStats"]:
+        d = r["UserStats"].dict()
+    else:
+        d = {}
     for k in ["user_id", "username", "auth_method", "display_name"]:
         d[k] = r[k]
     return UserScore(**d)
@@ -50,11 +53,13 @@ class UserStatsRepository:
             .filter(User.id == user_id)
         )
 
-        stats_by_timeframe = {tf.value: None for tf in UserStatsTimeFrame}
+        stats_by_timeframe = {}
         for r in self.session.exec(qry):
             us = r["UserStats"]
             if us is not None:
                 stats_by_timeframe[us.time_frame] = _create_user_score(r)
+            else:
+                stats_by_timeframe = {tf.value: _create_user_score(r) for tf in UserStatsTimeFrame}
         return stats_by_timeframe
 
     def query_total_prompts_per_user(

@@ -358,32 +358,32 @@ class SystemStats(BaseModel):
 
 
 class UserScore(BaseModel):
-    rank: int
+    rank: Optional[int]
     user_id: UUID
     username: str
     auth_method: str
     display_name: str
 
-    leader_score: int
+    leader_score: int = 0
 
     base_date: Optional[datetime]
-    modified_date: datetime
+    modified_date: Optional[datetime]
 
-    prompts: int
-    replies_assistant: int
-    replies_prompter: int
-    labels_simple: int
-    labels_full: int
-    rankings_total: int
-    rankings_good: int
+    prompts: int = 0
+    replies_assistant: int = 0
+    replies_prompter: int = 0
+    labels_simple: int = 0
+    labels_full: int = 0
+    rankings_total: int = 0
+    rankings_good: int = 0
 
-    accepted_prompts: int
-    accepted_replies_assistant: int
-    accepted_replies_prompter: int
+    accepted_prompts: int = 0
+    accepted_replies_assistant: int = 0
+    accepted_replies_prompter: int = 0
 
-    reply_ranked_1: int
-    reply_ranked_2: int
-    reply_ranked_3: int
+    reply_ranked_1: int = 0
+    reply_ranked_2: int = 0
+    reply_ranked_3: int = 0
 
     # only used for time frame "total"
     streak_last_day_date: Optional[datetime]
