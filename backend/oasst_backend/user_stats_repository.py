@@ -20,7 +20,7 @@ def _create_user_score(r):
     if r["UserStats"]:
         d = r["UserStats"].dict()
     else:
-        d = {}
+        d = {"modified_date": utcnow()}
     for k in ["user_id", "username", "auth_method", "display_name"]:
         d[k] = r[k]
     return UserScore(**d)
