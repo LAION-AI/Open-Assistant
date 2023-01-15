@@ -81,13 +81,17 @@ if settings.OFFICIAL_WEB_API_KEY:
     @app.on_event("startup")
     def create_official_web_api_client():
         with Session(engine) as session:
-            create_api_client(
-                session=session,
-                api_key=settings.OFFICIAL_WEB_API_KEY,
-                description="The official web client for the OASST backend.",
-                frontend_type="web",
-                trusted=True,
-            )
+            try:
+                api_auth(settings.OFFICIAL_WEB_API_KEY, db=session)
+            except OasstError:
+                logger.info("Creating official web API client")
+                create_api_client(
+                    session=session,
+                    api_key=settings.OFFICIAL_WEB_API_KEY,
+                    description="The official web client for the OASST backend.",
+                    frontend_type="web",
+                    trusted=True,
+                )
 
 
 if settings.RATE_LIMIT:
