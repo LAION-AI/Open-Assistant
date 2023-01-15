@@ -78,9 +78,9 @@
           DEBUG_ALLOW_DEBUG_API_KEY: "true"
           DEBUG_USE_SEED_DATA: "true"
           DEBUG_ALLOW_SELF_LABELING:
-            "{{ stack_name == 'dev' && 'True' || 'False' }}"
+            "{{ 'true' if stack_name == 'dev' else 'false' }}"
           MAX_WORKERS: "1"
-          RATE_LIMIT: "{{ stack_name == 'dev' && 'False' || 'True' }}"
+          RATE_LIMIT: "{{ 'false' if stack_name == 'dev' else 'true' }}"
           DEBUG_SKIP_EMBEDDING_COMPUTATION: "true"
           DEBUG_SKIP_TOXICITY_CALCULATION: "true"
         ports:
