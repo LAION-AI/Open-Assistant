@@ -204,6 +204,7 @@ def update_leader_board_day() -> None:
         with Session(engine) as session:
             usr = UserStatsRepository(session)
             usr.update_stats(time_frame=UserStatsTimeFrame.day)
+            session.commit()
     except Exception:
         logger.exception("Error during leaderboard update (daily)")
 
@@ -215,6 +216,7 @@ def update_leader_board_week() -> None:
         with Session(engine) as session:
             usr = UserStatsRepository(session)
             usr.update_stats(time_frame=UserStatsTimeFrame.week)
+            session.commit()
     except Exception:
         logger.exception("Error during user states update (weekly)")
 
@@ -226,6 +228,7 @@ def update_leader_board_month() -> None:
         with Session(engine) as session:
             usr = UserStatsRepository(session)
             usr.update_stats(time_frame=UserStatsTimeFrame.month)
+            session.commit()
     except Exception:
         logger.exception("Error during user states update (monthly)")
 
@@ -237,6 +240,7 @@ def update_leader_board_total() -> None:
         with Session(engine) as session:
             usr = UserStatsRepository(session)
             usr.update_stats(time_frame=UserStatsTimeFrame.total)
+            session.commit()
     except Exception:
         logger.exception("Error during user states update (total)")
 

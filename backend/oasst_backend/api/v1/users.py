@@ -8,6 +8,7 @@ from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient, User
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import UserRepository
+from oasst_backend.user_stats_repository import UserStatsRepository
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
@@ -96,3 +97,11 @@ def mark_user_messages_deleted(
     pr = PromptRepository(db, api_client)
     messages = pr.query_messages(user_id=user_id)
     pr.mark_messages_deleted(messages)
+
+
+@router.get("/{user_id}/stats", response_model=dict[str, protocol.UserScore | None])
+def query_user_stats(
+    user_id: UUID, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
+):
+    usr = UserStatsRepository(db)
+    return usr.get_user_stats_all_time_frames(user_id=user_id)

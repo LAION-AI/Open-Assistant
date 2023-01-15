@@ -358,7 +358,7 @@ class SystemStats(BaseModel):
 
 
 class UserScore(BaseModel):
-    user_rank: int
+    rank: int
     user_id: UUID
     username: str
     auth_method: str

@@ -3,6 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 import sqlalchemy as sa
+from loguru import logger
 from oasst_backend.models import Message, MessageReaction, Task, User, UserStats, UserStatsTimeFrame
 from oasst_backend.models.db_payload import (
     LabelAssistantReplyPayload,
@@ -12,14 +13,21 @@ from oasst_backend.models.db_payload import (
 from oasst_shared.schemas.protocol import LeaderboardStats, UserScore
 from oasst_shared.utils import log_timing, utcnow
 from sqlalchemy.dialects import postgresql
-from sqlmodel import Session, delete, func
+from sqlmodel import Session, delete, func, text
+
+
+def _create_user_score(r):
+    d = r["UserStats"].dict()
+    for k in ["user_id", "username", "auth_method", "display_name"]:
+        d[k] = r[k]
+    return UserScore(**d)
 
 
 class UserStatsRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_leader_board(self, time_frame: UserStatsTimeFrame, limit: int = 100) -> LeaderboardStats:
+    def get_leaderboard(self, time_frame: UserStatsTimeFrame, limit: int = 100) -> LeaderboardStats:
         """
         Get leaderboard stats for the specified time frame
         """
@@ -32,14 +40,22 @@ class UserStatsRepository:
             .limit(limit)
         )
 
-        def create_user_score(user_rank: int, r):
-            d = r["UserStats"].dict()
-            for k in ["user_id", "username", "auth_method", "display_name"]:
-                d[k] = r[k]
-            return UserScore(user_rank=user_rank, **d)
-
-        leaderboard = [create_user_score(i, r) for i, r in enumerate(self.session.exec(qry))]
+        leaderboard = [_create_user_score(r) for r in self.session.exec(qry)]
         return LeaderboardStats(time_frame=time_frame.value, leaderboard=leaderboard)
+
+    def get_user_stats_all_time_frames(self, user_id: UUID) -> dict[str, UserScore | None]:
+        qry = (
+            self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
+            .outerjoin(UserStats, User.id == UserStats.user_id)
+            .filter(User.id == user_id)
+        )
+
+        stats_by_timeframe = {tf.value: None for tf in UserStatsTimeFrame}
+        for r in self.session.exec(qry):
+            us = r["UserStats"]
+            if us is not None:
+                stats_by_timeframe[us.time_frame] = _create_user_score(r)
+        return stats_by_timeframe
 
     def query_total_prompts_per_user(
         self, reference_time: Optional[datetime] = None, only_reviewed: Optional[bool] = True
@@ -102,8 +118,10 @@ class UserStatsRepository:
         qry = qry.group_by(Message.user_id)
         return qry
 
-    def _update_stats_internal(self, time_frame_key: str, base_date: Optional[datetime] = None):
+    def _update_stats_internal(self, time_frame: UserStatsTimeFrame, base_date: Optional[datetime] = None):
         # gather user data
+
+        time_frame_key = time_frame.value
 
         stats_by_user: dict[UUID, UserStats] = dict()
         now = utcnow()
@@ -194,8 +212,46 @@ class UserStatsRepository:
         self.session.add_all(stats_by_user.values())
         self.session.flush()
 
-    def update_stats_time_frame(self, time_frame_key: str, reference_time: Optional[datetime] = None):
-        self._update_stats_internal(time_frame_key, reference_time)
+        self.update_ranks(time_frame=time_frame)
+
+    @log_timing(log_kwargs=True)
+    def update_ranks(self, time_frame: UserStatsTimeFrame = None):
+        """
+        Update user_stats ranks. The persisted rank values allow to
+        quickly the rank of a single user and to query nearby users.
+        """
+
+        # todo: convert sql to sqlalchemy query..
+        # ranks = self.session.query(
+        #     func.row_number()
+        #     .over(partition_by=UserStats.time_frame, order_by=[UserStats.leader_score.desc(), UserStats.user_id])
+        #     .label("rank"),
+        #     UserStats.user_id,
+        #     UserStats.time_frame,
+        # )
+
+        sql_update_rank = """
+-- update rank
+UPDATE user_stats us
+SET "rank" = r."rank"
+FROM
+    (SELECT
+        ROW_NUMBER () OVER(
+            PARTITION BY time_frame
+            ORDER BY leader_score DESC, user_id
+        ) AS "rank", user_id, time_frame
+    FROM user_stats
+    WHERE (:time_frame IS NULL OR time_frame = :time_frame)) AS r
+WHERE
+    us.user_id = r.user_id
+    AND us.time_frame = r.time_frame;"""
+        r = self.session.execute(
+            text(sql_update_rank), {"time_frame": time_frame.value if time_frame is not None else None}
+        )
+        logger.debug(f"pre_compute_ranks updated({time_frame=}) {r.rowcount} rows.")
+
+    def update_stats_time_frame(self, time_frame: UserStatsTimeFrame, reference_time: Optional[datetime] = None):
+        self._update_stats_internal(time_frame, reference_time)
         self.session.commit()
 
     @log_timing(log_kwargs=True, level="INFO")
@@ -204,20 +260,20 @@ class UserStatsRepository:
         match time_frame:
             case UserStatsTimeFrame.day:
                 r = now - timedelta(days=1)
-                self.update_stats_time_frame(time_frame.value, r)
+                self.update_stats_time_frame(time_frame, r)
 
             case UserStatsTimeFrame.week:
                 r = now.date() - timedelta(days=7)
                 r = datetime(r.year, r.month, r.day, tzinfo=now.tzinfo)
-                self.update_stats_time_frame(time_frame.value, r)
+                self.update_stats_time_frame(time_frame, r)
 
             case UserStatsTimeFrame.month:
                 r = now.date() - timedelta(days=30)
                 r = datetime(r.year, r.month, r.day, tzinfo=now.tzinfo)
-                self.update_stats_time_frame(time_frame.value, r)
+                self.update_stats_time_frame(time_frame, r)
 
             case UserStatsTimeFrame.total:
-                self.update_stats_time_frame(time_frame.value, None)
+                self.update_stats_time_frame(time_frame, None)
 
     @log_timing(level="INFO")
     def update_multiple_time_frames(self, time_frames: list[UserStatsTimeFrame]):
@@ -236,5 +292,7 @@ if __name__ == "__main__":
     with Session(engine) as session:
         api_client = get_dummy_api_client(session)
         usr = UserStatsRepository(session)
-        usr.update_all_time_frames()
-        usr.get_leader_board(UserStatsTimeFrame.total)
+        # usr.update_all_time_frames()
+        # session.commit()
+        # usr.get_leader_board(UserStatsTimeFrame.total)
+        usr.get_user_stats_all_time_frames(UUID("0d6ff62a-0bea-4c56-ade8-b3e0520a10ce"))

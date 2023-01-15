@@ -18,4 +18,4 @@ def get_leaderboard_day(
     db: Session = Depends(deps.get_db),
 ) -> LeaderboardStats:
     usr = UserStatsRepository(db)
-    return usr.get_leader_board(time_frame, limit=max_count)
+    return usr.get_leaderboard(time_frame, limit=max_count)
