@@ -140,7 +140,7 @@ class UserRepository:
         self,
         api_client_id: Optional[UUID] = None,
         limit: Optional[int] = 20,
-        gte: Optional[str] = None,
+        gt: Optional[str] = None,
         lt: Optional[str] = None,
         auth_method: Optional[str] = None,
     ) -> list[User]:
@@ -161,8 +161,8 @@ class UserRepository:
 
         users = users.order_by(User.display_name)
 
-        if gte:
-            users = users.filter(User.display_name >= gte)
+        if gt:
+            users = users.filter(User.display_name > gt)
 
         if lt:
             users = users.filter(User.display_name < lt)
