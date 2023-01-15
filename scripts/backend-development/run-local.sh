@@ -4,7 +4,7 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 # switch to backend directory
 pushd "$parent_path/../../backend"
 
-export DEBUG_SKIP_API_KEY_CHECK=True
+export DEBUG_SKIP_API_KEY_CHECK=False
 export DEBUG_USE_SEED_DATA=True
 export DEBUG_SKIP_TOXICITY_CALCULATION=True
 export DEBUG_ALLOW_SELF_LABELING=True

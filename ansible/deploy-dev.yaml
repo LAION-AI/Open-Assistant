@@ -32,6 +32,7 @@
         name: "oasst-{{ stack_name }}-redis"
         image: redis
         state: started
+        recreate: "{{ (stack_name == 'dev') | bool }}"
         restart_policy: always
         network_mode: "oasst-{{ stack_name }}"
         healthcheck:
@@ -48,6 +49,7 @@
         name: "oasst-{{ stack_name }}-postgres-{{ item.name }}"
         image: postgres:15
         state: started
+        recreate: "{{ (stack_name == 'dev') | bool }}"
         restart_policy: always
         network_mode: "oasst-{{ stack_name }}"
         env:
@@ -75,11 +77,12 @@
         env:
           POSTGRES_HOST: "oasst-{{ stack_name }}-postgres-backend"
           REDIS_HOST: "oasst-{{ stack_name }}-redis"
-          DEBUG_ALLOW_ANY_API_KEY: "true"
+          DEBUG_ALLOW_DEBUG_API_KEY: "true"
           DEBUG_USE_SEED_DATA: "true"
-          DEBUG_ALLOW_SELF_LABELING: "true"
+          DEBUG_ALLOW_SELF_LABELING:
+            "{{ 'true' if stack_name == 'dev' else 'false' }}"
           MAX_WORKERS: "1"
-          RATE_LIMIT: "false"
+          RATE_LIMIT: "{{ 'false' if stack_name == 'dev' else 'true' }}"
           DEBUG_SKIP_EMBEDDING_COMPUTATION: "true"
           DEBUG_SKIP_TOXICITY_CALCULATION: "true"
         ports:

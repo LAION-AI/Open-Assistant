@@ -71,7 +71,7 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: str = "6379"
 
-    DEBUG_ALLOW_ANY_API_KEY: bool = False
+    DEBUG_ALLOW_DEBUG_API_KEY: bool = False
     DEBUG_SKIP_API_KEY_CHECK: bool = False
     DEBUG_USE_SEED_DATA: bool = False
     DEBUG_USE_SEED_DATA_PATH: Optional[FilePath] = (
@@ -82,6 +82,8 @@ class Settings(BaseSettings):
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
 
     HUGGING_FACE_API_KEY: str = ""
+
+    ROOT_TOKENS: List[str] = ["1234"]  # supply a string that can be parsed to a json list
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
