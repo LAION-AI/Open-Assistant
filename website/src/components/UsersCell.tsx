@@ -62,17 +62,35 @@ const UsersCell = () => {
   });
 
   const toPreviousPage = () => {
-    setPagination({
-      cursor: users[0].display_name,
-      direction: "back",
-    });
+    if (users.length >= 0) {
+      setPagination({
+        cursor: users[0].display_name,
+        direction: "back",
+      });
+    } else {
+      toast({
+        title: "Can not paginate when no users are found",
+        status: "warning",
+        duration: 1000,
+        isClosable: true,
+      });
+    }
   };
 
   const toNextPage = () => {
-    setPagination({
-      cursor: users[users.length - 1].display_name,
-      direction: "forward",
-    });
+    if (users.length >= 0) {
+      setPagination({
+        cursor: users[users.length - 1].display_name,
+        direction: "forward",
+      });
+    } else {
+      toast({
+        title: "Can not paginate when no users are found",
+        status: "warning",
+        duration: 1000,
+        isClosable: true,
+      });
+    }
   };
 
   // Present users in a naive table.
