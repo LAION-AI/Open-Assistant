@@ -5,7 +5,11 @@ from uuid import UUID
 import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.models import Message, MessageReaction, Task, User, UserStats, UserStatsTimeFrame
-from oasst_backend.models.db_payload import LabelPrompterReplyPayload, RankingReactionPayload
+from oasst_backend.models.db_payload import (
+    LabelAssistantReplyPayload,
+    LabelPrompterReplyPayload,
+    RankingReactionPayload,
+)
 from oasst_shared.schemas.protocol import LeaderboardStats, UserScore
 from oasst_shared.utils import log_timing, utcnow
 from sqlalchemy.dialects import postgresql
@@ -65,7 +69,7 @@ class UserStatsRepository:
         return qry
 
     def query_labels_by_mode_per_user(
-        self, payload_type: str = LabelPrompterReplyPayload.__name__, reference_time: Optional[datetime] = None
+        self, payload_type: str = LabelAssistantReplyPayload.__name__, reference_time: Optional[datetime] = None
     ):
         qry = self.session.query(Task.user_id, Task.payload["payload", "mode"].astext, func.count()).filter(
             Task.done == sa.true(), Task.payload_type == payload_type
@@ -145,7 +149,9 @@ class UserStatsRepository:
                 s.accepted_replies_prompter += count
 
         # simple and full labels
-        qry = self.query_labels_by_mode_per_user(reference_time=base_date)
+        qry = self.query_labels_by_mode_per_user(
+            payload_type=LabelAssistantReplyPayload.__name__, reference_time=base_date
+        )
         for r in qry:
             uid, mode, count = r
             s = get_stats(uid)
@@ -153,6 +159,17 @@ class UserStatsRepository:
                 s.labels_simple = count
             elif mode == "full":
                 s.labels_full = count
+
+        qry = self.query_labels_by_mode_per_user(
+            payload_type=LabelPrompterReplyPayload.__name__, reference_time=base_date
+        )
+        for r in qry:
+            uid, mode, count = r
+            s = get_stats(uid)
+            if mode == "simple":
+                s.labels_simple += count
+            elif mode == "full":
+                s.labels_full += count
 
         qry = self.query_rankings_per_user(reference_time=base_date)
         for r in qry:
