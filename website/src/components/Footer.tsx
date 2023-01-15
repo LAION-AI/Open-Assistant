@@ -7,9 +7,9 @@ export function Footer() {
   return (
     <footer>
       <Divider />
-      <Box display="flex" gap="4" flexDir="column" alignItems="center" mt="10">
+      <Box display="flex" gap="4" flexDir="column" alignItems="center" my="8">
         <Box display="flex" alignItems="center">
-          <Link href="/" aria-label="Home" className="flex items-center">
+          <Link href="/" aria-label="Home" className="flex items-center gap-1">
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="48" height="48" alt="logo" />
           </Link>
         </Box>
