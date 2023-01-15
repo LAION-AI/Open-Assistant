@@ -17,6 +17,9 @@ const handler = withoutRole("banned", async (req, res, token) => {
   // Parse out the local task ID and the interaction contents.
   const { id: frontendId, content, update_type } = req.body;
 
+  // Record that the user has done meaningful work and is no longer new.
+  await prisma.user.update({ where: { id: token.sub }, data: { isNew: false } });
+
   // Accept the task so that we can complete it, this will probably go away soon.
   const registeredTask = await prisma.registeredTask.findUniqueOrThrow({ where: { id: frontendId } });
   const task = registeredTask.task as Prisma.JsonObject;

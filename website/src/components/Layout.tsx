@@ -54,6 +54,7 @@ export const getDashboardLayout = (page: React.ReactElement) => (
     >
       {page}
     </SideMenuLayout>
+    <Footer />
   </div>
 );
 

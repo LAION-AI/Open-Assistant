@@ -50,7 +50,7 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
           where: {
             id: user.id,
           },
-          update: {},
+          update: user,
           create: user,
         });
         return user;
@@ -86,6 +86,7 @@ export const authOptions: AuthOptions = {
      */
     async session({ session, token }) {
       session.user.role = token.role;
+      session.user.isNew = token.isNew;
       return session;
     },
     /**
@@ -93,11 +94,12 @@ export const authOptions: AuthOptions = {
      * This let's use forward the role to the session object.
      */
     async jwt({ token }) {
-      const { role } = await prisma.user.findUnique({
+      const { isNew, role } = await prisma.user.findUnique({
         where: { id: token.sub },
-        select: { role: true },
+        select: { role: true, isNew: true },
       });
       token.role = role;
+      token.isNew = isNew;
       return token;
     },
   },
