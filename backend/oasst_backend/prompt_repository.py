@@ -298,7 +298,6 @@ class PromptRepository:
 
         return reaction, task
 
-
     @managed_tx_method(CommitMode.FLUSH)
     def insert_toxicity(self, message_id: UUID, model: str, score: float, label: str) -> MessageToxicity:
         """Save the toxicity score of a new message in the database.
@@ -316,7 +315,7 @@ class PromptRepository:
         message_toxicity = MessageToxicity(message_id=message_id, model=model, score=score, label=label)
         self.db.add(message_toxicity)
         return message_toxicity
-        
+
     @managed_tx_method(CommitMode.FLUSH)
     def insert_message_embedding(self, message_id: UUID, model: str, embedding: List[float]) -> MessageEmbedding:
         """Insert the embedding of a new message in the database.
