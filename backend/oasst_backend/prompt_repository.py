@@ -260,7 +260,10 @@ class PromptRepository:
                     self.db.add(message)
 
                 reaction_payload = db_payload.RankingReactionPayload(
-                    ranking=ranking.ranking, ranked_message_ids=ranked_message_ids
+                    ranking=ranking.ranking,
+                    ranked_message_ids=ranked_message_ids,
+                    ranking_parent_id=task_payload.ranking_parent_id,
+                    message_tree_id=task_payload.message_tree_id,
                 )
                 reaction = self.insert_reaction(task.id, reaction_payload)
                 self.journal.log_ranking(task, message_id=parent_msg.id, ranking=ranking.ranking)
