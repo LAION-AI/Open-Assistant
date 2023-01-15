@@ -198,7 +198,7 @@ def ensure_tree_states():
 
 
 @app.on_event("startup")
-@repeat_every(seconds=60 * 15, wait_first=False)  # 15 min
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_DAY, wait_first=False)
 def update_leader_board_day() -> None:
     try:
         with Session(engine) as session:
@@ -209,7 +209,7 @@ def update_leader_board_day() -> None:
 
 
 @app.on_event("startup")
-@repeat_every(seconds=60 * 60, wait_first=False)  # 1 h
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_WEEK, wait_first=False)
 def update_leader_board_week() -> None:
     try:
         with Session(engine) as session:
@@ -220,7 +220,7 @@ def update_leader_board_week() -> None:
 
 
 @app.on_event("startup")
-@repeat_every(seconds=60 * 60 * 4, wait_first=False)  # 1h
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_MONTH, wait_first=False)
 def update_leader_board_month() -> None:
     try:
         with Session(engine) as session:
@@ -231,7 +231,7 @@ def update_leader_board_month() -> None:
 
 
 @app.on_event("startup")
-@repeat_every(seconds=60 * 60 * 4, wait_first=False)  # 4h
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_TOTAL, wait_first=False)
 def update_leader_board_total() -> None:
     try:
         with Session(engine) as session:
