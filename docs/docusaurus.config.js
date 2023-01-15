@@ -66,12 +66,6 @@ const config = {
             label: "Docs",
           },
           { to: "/api", label: "API", position: "left" },
-          //{
-          //  type: "doc",
-          //  docId: "api",
-          //  position: "left",
-          //  label: "API",
-          //},
           {
             href: "https://github.com/LAION-AI/Open-Assistant",
             label: "GitHub",
