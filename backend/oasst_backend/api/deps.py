@@ -61,33 +61,11 @@ def create_api_client(
     return api_client
 
 
-def get_dummy_api_client(session: Session) -> ApiClient:
-    # make sure that a dummy api key exits in db (foreign key references)
-    DUMMY_API_KEY = "1234"
-    api_client: ApiClient = session.query(ApiClient).filter(ApiClient.api_key == DUMMY_API_KEY).first()
-    if api_client is None:
-        logger.info(f"ANY_API_KEY missing, inserting api_key: {DUMMY_API_KEY}")
-        api_client = create_api_client(
-            session=session,
-            api_key=DUMMY_API_KEY,
-            description="Dummy api key for debugging",
-            trusted=True,
-            frontend_type="Test frontend",
-        )
-        session.add(api_client)
-        session.commit()
-    return api_client
-
-
 def api_auth(
     api_key: APIKey,
     db: Session,
 ) -> ApiClient:
-    if api_key or settings.DEBUG_SKIP_API_KEY_CHECK:
-
-        if settings.DEBUG_SKIP_API_KEY_CHECK or settings.DEBUG_ALLOW_DEBUG_API_KEY:
-            return get_dummy_api_client(db)
-
+    if api_key:
         api_client = db.query(ApiClient).filter(ApiClient.api_key == api_key).first()
         if api_client is not None and api_client.enabled:
             return api_client

@@ -1,4 +1,4 @@
-name: Deploy to dev machine
+name: Deploy to node
 
 on:
   workflow_call:
@@ -19,6 +19,14 @@ on:
         required: false
         type: string
         default: 3000
+      postgres-password:
+        required: false
+        type: string
+        default: postgres
+      web-api-key:
+        required: false
+        type: string
+        default: "1234"
 
 jobs:
   deploy:
@@ -39,7 +47,7 @@ jobs:
         uses: dawidd6/action-ansible-playbook@v2
         with:
           # Required, playbook filepath
-          playbook: deploy-dev.yaml
+          playbook: deploy-to-node.yaml
           # Optional, directory where playbooks live
           directory: ansible
           # Optional, SSH private key
@@ -49,4 +57,9 @@ jobs:
             [dev]
             dev01 ansible_host=${{secrets.DEV_NODE_IP}} ansible_connection=ssh ansible_user=web-team
           options: |
-            --extra-vars "stack_name=${{inputs.stack-name}} image_tag=${{inputs.image-tag}} backend_port=${{inputs.backend-port}} website_port=${{inputs.website-port}}"
+            --extra-vars "stack_name=${{inputs.stack-name}} \
+            image_tag=${{inputs.image-tag}} \
+            backend_port=${{inputs.backend-port}} \
+            website_port=${{inputs.website-port}} \
+            postgres_password=${{inputs.postgres-password}} \
+            web_api_key=${{inputs.web-api-key}}"

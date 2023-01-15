@@ -11,7 +11,7 @@ import redis.asyncio as redis
 from fastapi_limiter import FastAPILimiter
 from fastapi_utils.tasks import repeat_every
 from loguru import logger
-from oasst_backend.api.deps import get_dummy_api_client
+from oasst_backend.api.deps import api_auth, create_api_client
 from oasst_backend.api.v1.api import api_router
 from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
@@ -76,6 +76,20 @@ if settings.UPDATE_ALEMBIC:
             logger.exception("Alembic upgrade failed on startup")
 
 
+if settings.OFFICIAL_WEB_API_KEY:
+
+    @app.on_event("startup")
+    def create_official_web_api_client():
+        with Session(engine) as session:
+            create_api_client(
+                session=session,
+                api_key=settings.OFFICIAL_WEB_API_KEY,
+                description="The official web client for the OASST backend.",
+                frontend_type="web",
+                trusted=True,
+            )
+
+
 if settings.RATE_LIMIT:
 
     @app.on_event("startup")
@@ -111,10 +125,13 @@ if settings.DEBUG_USE_SEED_DATA:
             role: str
             tree_state: Optional[message_tree_state.State]
 
+        if not settings.OFFICIAL_WEB_API_KEY:
+            raise ValueError("Cannot use seed data without OFFICIAL_WEB_API_KEY")
+
         try:
             logger.info("Seed data check began")
             with Session(engine) as db:
-                api_client = get_dummy_api_client(db)
+                api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
                 dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
 
                 ur = UserRepository(db=db, api_client=api_client)
