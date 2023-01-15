@@ -70,7 +70,7 @@ def get_dummy_api_client(session: Session) -> ApiClient:
         api_client = create_api_client(
             session=session,
             api_key=DUMMY_API_KEY,
-            description="ANY_API_KEY, random token",
+            description="Dummy api key for debugging",
             trusted=True,
             frontend_type="Test frontend",
         )
