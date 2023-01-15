@@ -10,4 +10,4 @@ timezone = "Europe/London"
 enable_utc = True
 
 # Create the queues values
-task_routes = {"tasks.classify_toxicity": "toxicity", "tasks.create_embedding": "embedding"}
+task_routes = [("tasks.toxicity.*", {"queue": "toxicity"}), ("tasks.embedding.*", {"queue": "embedding"})]
