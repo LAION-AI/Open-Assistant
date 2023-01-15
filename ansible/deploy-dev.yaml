@@ -19,11 +19,13 @@
       ansible.builtin.file:
         path: "./{{ stack_name }}"
         state: directory
+        mode: 0755
 
     - name: Copy redis.conf to managed node
       ansible.builtin.copy:
         src: ./redis.conf
         dest: "./{{ stack_name }}/redis.conf"
+        mode: 0644
 
     - name: Set up Redis
       community.docker.docker_container:
