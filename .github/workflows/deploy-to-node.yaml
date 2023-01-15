@@ -19,18 +19,11 @@ on:
         required: false
         type: string
         default: 3000
-      postgres-password:
-        required: false
-        type: string
-        default: postgres
-      web-api-key:
-        required: false
-        type: string
-        default: "1234"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.stack-name }}
     env:
       WEB_ADMIN_USERS: ${{ secrets.DEV_WEB_ADMIN_USERS }}
       WEB_DISCORD_CLIENT_ID: ${{ secrets.DEV_WEB_DISCORD_CLIENT_ID }}
@@ -61,5 +54,5 @@ jobs:
             image_tag=${{inputs.image-tag}} \
             backend_port=${{inputs.backend-port}} \
             website_port=${{inputs.website-port}} \
-            postgres_password=${{inputs.postgres-password}} \
-            web_api_key=${{inputs.web-api-key}}"
+            postgres_password=${{secrets.POSTGRES_PASSWORD}} \
+            web_api_key=${{secrets.WEB_API_KEY}}"

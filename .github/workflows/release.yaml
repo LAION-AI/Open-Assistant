@@ -46,5 +46,3 @@ jobs:
         'latest' }}
       backend-port: ${{ github.event_name == 'release' && '8180' || '8080' }}
       website-port: ${{ github.event_name == 'release' && '3100' || '3000' }}
-      postgres-password: ${{ secrets.POSTGRES_PASSWORD }}
-      web-api-key: ${{ secrets.WEB_API_KEY }}
