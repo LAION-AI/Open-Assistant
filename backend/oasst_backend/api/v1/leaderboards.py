@@ -1,26 +1,50 @@
-from fastapi import APIRouter, Depends
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query
 from oasst_backend.api import deps
 from oasst_backend.models import ApiClient
-from oasst_backend.user_repository import UserRepository
+from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
 from oasst_shared.schemas.protocol import LeaderboardStats
 from sqlmodel import Session
 
 router = APIRouter()
 
 
-@router.get("/create/assistant")
-def get_assistant_leaderboard(
+@router.get("/day")
+def get_leaderboard_day(
+    max_count: Optional[int] = Query(100, gt=0, le=10000),
+    api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
-    api_client: ApiClient = Depends(deps.get_trusted_api_client),
 ) -> LeaderboardStats:
-    ur = UserRepository(db, api_client)
-    return ur.get_user_leaderboard(role="assistant")
+    usr = UserStatsRepository(db)
+    return usr.get_leader_board(UserStatsTimeFrame.day, limit=max_count)
 
 
-@router.get("/create/prompter")
-def get_prompter_leaderboard(
+@router.get("/week")
+def get_leaderboard_week(
+    max_count: Optional[int] = Query(100, gt=0, le=10000),
+    api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
-    api_client: ApiClient = Depends(deps.get_trusted_api_client),
 ) -> LeaderboardStats:
-    ur = UserRepository(db, api_client)
-    return ur.get_user_leaderboard(role="prompter")
+    usr = UserStatsRepository(db)
+    return usr.get_leader_board(UserStatsTimeFrame.week, limit=max_count)
+
+
+@router.get("/month")
+def get_leaderboard_month(
+    max_count: Optional[int] = Query(100, gt=0, le=10000),
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+) -> LeaderboardStats:
+    usr = UserStatsRepository(db)
+    return usr.get_leader_board(UserStatsTimeFrame.month, limit=max_count)
+
+
+@router.get("/total")
+def get_leaderboard_total(
+    max_count: Optional[int] = Query(100, gt=0, le=10000),
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+) -> LeaderboardStats:
+    usr = UserStatsRepository(db)
+    return usr.get_leader_board(UserStatsTimeFrame.total, limit=max_count)

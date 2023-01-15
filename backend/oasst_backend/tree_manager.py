@@ -207,6 +207,9 @@ class TreeManager:
                 ranking_parent_id = random.choice(incomplete_rankings).parent_id
 
                 messages = self.pr.fetch_message_conversation(ranking_parent_id)
+                assert len(messages) > 1 and messages[-1].id == ranking_parent_id
+                ranking_parent = messages[-1]
+                assert not ranking_parent.deleted and ranking_parent.review_result
                 conversation = prepare_conversation(messages)
                 replies = self.pr.fetch_message_children(ranking_parent_id, reviewed=True, exclude_deleted=True)
 
@@ -218,12 +221,20 @@ class TreeManager:
                 if messages[-1].role == "assistant":
                     logger.info("Generating a RankPrompterRepliesTask.")
                     task = protocol_schema.RankPrompterRepliesTask(
-                        conversation=conversation, replies=replies, reply_messages=reply_messages
+                        conversation=conversation,
+                        replies=replies,
+                        reply_messages=reply_messages,
+                        ranking_parent_id=ranking_parent.id,
+                        message_tree_id=ranking_parent.message_tree_id,
                     )
                 else:
                     logger.info("Generating a RankAssistantRepliesTask.")
                     task = protocol_schema.RankAssistantRepliesTask(
-                        conversation=conversation, replies=replies, reply_messages=reply_messages
+                        conversation=conversation,
+                        replies=replies,
+                        reply_messages=reply_messages,
+                        ranking_parent_id=ranking_parent.id,
+                        message_tree_id=ranking_parent.message_tree_id,
                     )
 
                 parent_message_id = ranking_parent_id

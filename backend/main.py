@@ -9,6 +9,7 @@ import alembic.config
 import fastapi
 import redis.asyncio as redis
 from fastapi_limiter import FastAPILimiter
+from fastapi_utils.tasks import repeat_every
 from loguru import logger
 from oasst_backend.api.deps import get_dummy_api_client
 from oasst_backend.api.v1.api import api_router
@@ -18,6 +19,7 @@ from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
 from oasst_backend.tree_manager import TreeManager
+from oasst_backend.user_stats_repository import UserStatsRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from pydantic import BaseModel
@@ -193,6 +195,17 @@ def ensure_tree_states():
 
     except Exception:
         logger.exception("TreeManager.ensure_tree_states() failed.")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * 60, wait_first=False)  # 1 hour
+def remove_expired_tokens_task() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_all_time_frames()
+    except Exception:
+        logger.exception("Error during user states update")
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

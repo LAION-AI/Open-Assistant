@@ -169,6 +169,8 @@ class RankConversationRepliesTask(Task):
     conversation: Conversation  # the conversation so far
     replies: list[str]  # deprecated, use reply_messages
     reply_messages: list[ConversationMessage]
+    message_tree_id: UUID
+    ranking_parent_id: UUID
 
 
 class RankPrompterRepliesTask(RankConversationRepliesTask):
@@ -356,14 +358,40 @@ class SystemStats(BaseModel):
 
 
 class UserScore(BaseModel):
-    ranking: int
+    user_rank: int
     user_id: UUID
     username: str
+    auth_method: str
     display_name: str
-    score: int
+
+    leader_score: int
+
+    base_date: Optional[datetime]
+    modified_date: datetime
+
+    prompts: int
+    replies_assistant: int
+    replies_prompter: int
+    labels_simple: int
+    labels_full: int
+    rankings_total: int
+    rankings_good: int
+
+    accepted_prompts: int
+    accepted_replies_assistant: int
+    accepted_replies_prompter: int
+
+    reply_ranked_1: int
+    reply_ranked_2: int
+    reply_ranked_3: int
+
+    # only used for time frame "total"
+    streak_last_day_date: Optional[datetime]
+    streak_days: Optional[int]
 
 
 class LeaderboardStats(BaseModel):
+    time_frame: str
     leaderboard: List[UserScore]
 
 

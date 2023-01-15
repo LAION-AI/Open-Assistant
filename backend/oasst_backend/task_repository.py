@@ -67,17 +67,30 @@ class TaskRepository:
 
             case protocol_schema.RankPrompterRepliesTask:
                 payload = db_payload.RankPrompterRepliesPayload(
-                    type=task.type, conversation=task.conversation, reply_messages=task.reply_messages
+                    type=task.type,
+                    conversation=task.conversation,
+                    reply_messages=task.reply_messages,
+                    ranking_parent_id=task.ranking_parent_id,
+                    message_tree_id=task.message_tree_id,
                 )
 
             case protocol_schema.RankAssistantRepliesTask:
                 payload = db_payload.RankAssistantRepliesPayload(
-                    type=task.type, conversation=task.conversation, reply_messages=task.reply_messages
+                    type=task.type,
+                    conversation=task.conversation,
+                    reply_messages=task.reply_messages,
+                    ranking_parent_id=task.ranking_parent_id,
+                    message_tree_id=task.message_tree_id,
                 )
 
             case protocol_schema.LabelInitialPromptTask:
                 payload = db_payload.LabelInitialPromptPayload(
-                    type=task.type, message_id=task.message_id, prompt=task.prompt, valid_labels=task.valid_labels
+                    type=task.type,
+                    message_id=task.message_id,
+                    prompt=task.prompt,
+                    valid_labels=task.valid_labels,
+                    mandatory_labels=task.mandatory_labels,
+                    mode=task.mode,
                 )
 
             case protocol_schema.LabelPrompterReplyTask:
@@ -88,6 +101,7 @@ class TaskRepository:
                     reply=task.reply,
                     valid_labels=task.valid_labels,
                     mandatory_labels=task.mandatory_labels,
+                    mode=task.mode,
                 )
 
             case protocol_schema.LabelAssistantReplyTask:
@@ -98,6 +112,7 @@ class TaskRepository:
                     reply=task.reply,
                     valid_labels=task.valid_labels,
                     mandatory_labels=task.mandatory_labels,
+                    mode=task.mode,
                 )
 
             case _:
