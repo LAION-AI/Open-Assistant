@@ -37,4 +37,5 @@ class User(SQLModel, table=True):
             enabled=self.enabled,
             deleted=self.deleted,
             notes=self.notes,
+            created_date=self.created_date,
         )

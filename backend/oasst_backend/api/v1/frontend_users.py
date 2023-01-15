@@ -17,16 +17,33 @@ router = APIRouter()
 
 @router.get("/", response_model=list[protocol.FrontEndUser])
 def get_users(
+    api_client_id: Optional[UUID] = None,
+    max_count: Optional[int] = Query(100, gt=0, le=10000),
+    gte: Optional[str] = None,
+    lt: Optional[str] = None,
+    auth_method: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    ur = UserRepository(db, api_client)
+    users = ur.query_users(api_client_id=api_client_id, limit=max_count, gte=gte, lt=lt, auth_method=auth_method)
+    return [u.to_protocol_frontend_user() for u in users]
+
+
+@router.get("/by_display_name")
+def query_frontend_users_by_display_name(
+    search_text: str,
+    exact: bool = False,
     api_client_id: UUID = None,
-    max_count: int = Query(100, gt=0, le=10000),
-    gte: str = None,
-    lt: str = None,
+    max_count: int = Query(20, gt=0, le=1000),
     auth_method: str = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
-    pr = UserRepository(db, api_client)
-    users = pr.query_users(api_client_id=api_client_id, limit=max_count, gte=gte, lt=lt, auth_method=auth_method)
+    ur = UserRepository(db, api_client)
+    users = ur.query_users_by_display_name(
+        search_text=search_text, exact=exact, api_client_id=api_client_id, limit=max_count, auth_method=auth_method
+    )
     return [u.to_protocol_frontend_user() for u in users]
 
 

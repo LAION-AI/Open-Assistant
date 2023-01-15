@@ -34,6 +34,7 @@ class FrontEndUser(User):
     enabled: bool
     deleted: bool
     notes: str
+    created_date: Optional[datetime] = None
 
 
 class ConversationMessage(BaseModel):

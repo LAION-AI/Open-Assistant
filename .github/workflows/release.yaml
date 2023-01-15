@@ -1,12 +1,19 @@
 name: Release
 
 on:
+  push:
+    branches:
+      - main
   release:
-    types: [released]
+    types:
+      - released
 
 jobs:
+  pre-commit:
+    uses: ./.github/workflows/pre-commit.yaml
   build-backend:
     uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
     with:
       image-name: oasst-backend
       context: .
@@ -14,6 +21,7 @@ jobs:
       build-args: ""
   build-web:
     uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
     with:
       image-name: oasst-web
       context: .
@@ -21,6 +29,7 @@ jobs:
       build-args: ""
   build-bot:
     uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
     with:
       image-name: oasst-discord-bot
       context: .
@@ -28,29 +37,12 @@ jobs:
       build-args: ""
   deploy-dev:
     needs: [build-backend, build-web, build-bot]
-    runs-on: ubuntu-latest
-    env:
-      WEB_ADMIN_USERS: ${{ secrets.DEV_WEB_ADMIN_USERS }}
-      WEB_DISCORD_CLIENT_ID: ${{ secrets.DEV_WEB_DISCORD_CLIENT_ID }}
-      WEB_DISCORD_CLIENT_SECRET: ${{ secrets.DEV_WEB_DISCORD_CLIENT_SECRET }}
-      WEB_EMAIL_SERVER_HOST: ${{ secrets.DEV_WEB_EMAIL_SERVER_HOST }}
-      WEB_EMAIL_SERVER_PASSWORD: ${{ secrets.DEV_WEB_EMAIL_SERVER_PASSWORD }}
-      WEB_EMAIL_SERVER_PORT: ${{ secrets.DEV_WEB_EMAIL_SERVER_PORT }}
-      WEB_EMAIL_SERVER_USER: ${{ secrets.DEV_WEB_EMAIL_SERVER_USER }}
-      WEB_NEXTAUTH_SECRET: ${{ secrets.DEV_WEB_NEXTAUTH_SECRET }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Run playbook
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          # Required, playbook filepath
-          playbook: dev.yaml
-          # Optional, directory where playbooks live
-          directory: ansible
-          # Optional, SSH private key
-          key: ${{secrets.DEV_NODE_PRIVATE_KEY}}
-          # Optional, literal inventory file contents
-          inventory: |
-            [dev]
-            dev01 ansible_host=${{secrets.DEV_NODE_IP}} ansible_connection=ssh ansible_user=web-team
+    uses: ./.github/workflows/deploy-dev.yaml
+    secrets: inherit
+    with:
+      stack-name: ${{ github.event_name == 'release' && 'staging' || 'dev' }}
+      image-tag:
+        ${{ github.event_name == 'release' && github.event.release.tag_name ||
+        'latest' }}
+      backend-port: ${{ github.event_name == 'release' && '8180' || '8080' }}
+      website-port: ${{ github.event_name == 'release' && '3100' || '3000' }}

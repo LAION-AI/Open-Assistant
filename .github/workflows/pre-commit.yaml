@@ -1,9 +1,7 @@
 name: pre-commit
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
   pull_request_target:
 
 jobs:
@@ -18,7 +16,7 @@ jobs:
 
       # in case of push, check out the main branch
       - uses: actions/checkout@v3
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request_target'
 
       - uses: actions/setup-python@v4
         with:

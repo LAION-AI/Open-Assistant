@@ -1,7 +1,7 @@
 import random
 from enum import Enum
 from http import HTTPStatus
-from typing import Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
 import numpy as np
@@ -12,7 +12,7 @@ from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import Message, MessageReaction, MessageTreeState, TextLabels, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_method, managed_tx_method
-from oasst_backend.utils.hugging_face import HfEmbeddingModel, HfUrl, HuggingFaceAPI
+from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlalchemy.sql import text
@@ -362,6 +362,25 @@ class TreeManager:
                     except OasstError:
                         logger.error(
                             f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                        )
+
+                if not settings.DEBUG_SKIP_TOXICITY_CALCULATION:
+                    try:
+                        model_name: str = HfClassificationModel.TOXIC_ROBERTA.value
+                        hugging_face_api: HuggingFaceAPI = HuggingFaceAPI(
+                            f"{HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value}/{model_name}"
+                        )
+
+                        toxicity: List[List[Dict[str, Any]]] = await hugging_face_api.post(interaction.text)
+                        toxicity = toxicity[0][0]
+
+                        pr.insert_toxicity(
+                            message_id=message.id, model=model_name, score=toxicity["score"], label=toxicity["label"]
+                        )
+
+                    except OasstError:
+                        logger.error(
+                            f"Could not compute toxicity for  text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                         )
 
             case protocol_schema.MessageRating:

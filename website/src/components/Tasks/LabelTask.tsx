@@ -14,13 +14,13 @@ export const LabelTask = ({
   taskType,
   onReplyChanged,
   isEditable,
-}: TaskSurveyProps<{ text: string; labels: { [k: string]: number }; message_id: string }>) => {
+}: TaskSurveyProps<{ text: string; labels: Record<string, number>; message_id: string }>) => {
   const valid_labels = task.valid_labels;
   const [sliderValues, setSliderValues] = useState<number[]>(new Array(valid_labels.length).fill(0));
 
   useEffect(() => {
     onReplyChanged({ content: { labels: {}, text: task.reply, message_id: task.message_id }, state: "DEFAULT" });
-  }, [task.reply, task.message_id, onReplyChanged]);
+  }, [task, onReplyChanged]);
 
   const onSliderChange = (values: number[]) => {
     console.assert(valid_labels.length === sliderValues.length);
@@ -32,7 +32,7 @@ export const LabelTask = ({
     setSliderValues(values);
   };
 
-  const cardColor = useColorModeValue("gray.100", "gray.700");
+  const cardColor = useColorModeValue("gray.50", "gray.800");
   const titleColor = useColorModeValue("gray.800", "gray.300");
   const labelColor = useColorModeValue("gray.600", "gray.400");
 
@@ -51,7 +51,7 @@ export const LabelTask = ({
             <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
               <MessageTable
                 messages={[
-                  ...(task.conversation ? task.conversation.messages : []),
+                  ...(task.conversation?.messages ?? []),
                   {
                     text: task.reply,
                     is_assistant: task.type === TaskType.label_assistant_reply,
