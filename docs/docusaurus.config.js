@@ -32,11 +32,14 @@ const config = {
 
   presets: [
     [
-      "classic",
+      "docusaurus-preset-openapi",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
+        },
+        api: {
+            path: "docs/api/openapi.json",
         },
         blog: false,
         theme: {
@@ -62,11 +65,13 @@ const config = {
             position: "left",
             label: "Docs",
           },
-          {
-            href: "https://editor.swagger.io/?url=https://raw.githubusercontent.com/LAION-AI/Open-Assistant/main/docs/docs/api/openapi.json",
-            label: "API",
-            position: "left",
-          },
+          { to: "/api", label: "API", position: "left" },
+          //{
+          //  type: "doc",
+          //  docId: "api",
+          //  position: "left",
+          //  label: "API",
+          //},
           {
             href: "https://github.com/LAION-AI/Open-Assistant",
             label: "GitHub",
