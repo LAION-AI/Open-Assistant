@@ -44,3 +44,9 @@ jobs:
         run: ./scripts/frontend-development/run-contract-test.sh
 
       - run: ./scripts/backend-development/stop-mock-server.sh
+
+      #- uses: stefanzweifel/git-auto-commit-action@v4
+      #  with:
+      #    file_pattern: "docs/docs/api/openapi.json"
+      #    commit_message:
+      #      update docs/docs/api/openapi.json by run ${{ github.run_id }}

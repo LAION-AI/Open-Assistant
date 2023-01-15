@@ -6,6 +6,8 @@ declare module "next-auth" {
     user: {
       /** The user's role. */
       role: string;
+      /** True when the user is new. */
+      isNew: boolean;
     } & DefaultSession["user"];
   }
 }
@@ -14,5 +16,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     /** The user's role. */
     role?: string;
+    /** True when the user is new. */
+    isNew?: boolean;
   }
 }

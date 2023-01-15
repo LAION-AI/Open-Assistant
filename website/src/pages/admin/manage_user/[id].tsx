@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { getAdminLayout } from "src/components/Layout";
 import { UserMessagesCell } from "src/components/UserMessagesCell";
 import { post } from "src/lib/api";
+import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
 import useSWRMutation from "swr/mutation";
 
@@ -68,24 +69,17 @@ const ManageUser = ({ user }) => {
             }}
           >
             <Form>
+              <Field name="user_id" type="hidden" />
               <Field name="id" type="hidden" />
-              <Field name="name">
+              <Field name="auth_method" type="hidden" />
+              <Field name="display_name">
                 {({ field }) => (
                   <FormControl>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Display Name</FormLabel>
                     <Input {...field} isDisabled />
                   </FormControl>
                 )}
               </Field>
-              <Field name="email">
-                {({ field }) => (
-                  <FormControl>
-                    <FormLabel>Email</FormLabel>
-                    <Input {...field} isDisabled />
-                  </FormControl>
-                )}
-              </Field>
-
               <Field name="role">
                 {({ field }) => (
                   <FormControl>
@@ -98,13 +92,21 @@ const ManageUser = ({ user }) => {
                   </FormControl>
                 )}
               </Field>
+              <Field name="notes">
+                {({ field }) => (
+                  <FormControl>
+                    <FormLabel>Notes</FormLabel>
+                    <Input {...field} />
+                  </FormControl>
+                )}
+              </Field>
               <Button mt={4} type="submit">
                 Update
               </Button>
             </Form>
           </Formik>
         </Container>
-        <UserMessagesCell path={`/api/admin/user_messages?user=${user.id}`} />
+        <UserMessagesCell path={`/api/admin/user_messages?user=${user.user_id}`} />
       </Stack>
     </>
   );
@@ -114,15 +116,17 @@ const ManageUser = ({ user }) => {
  * Fetch the user's data on the server side when rendering.
  */
 export async function getServerSideProps({ query }) {
-  const user = await prisma.user.findUnique({
-    where: { id: query.id },
+  const backend_user = await oasstApiClient.fetch_user(query.id);
+  const local_user = await prisma.user.findUnique({
+    where: { id: backend_user.id },
     select: {
-      id: true,
-      name: true,
-      email: true,
       role: true,
     },
   });
+  const user = {
+    ...backend_user,
+    role: local_user?.role || "general",
+  };
   return {
     props: {
       user,

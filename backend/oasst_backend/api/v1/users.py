@@ -15,7 +15,7 @@ from starlette.status import HTTP_204_NO_CONTENT
 router = APIRouter()
 
 
-@router.get("/users/{user_id}", response_model=protocol.User)
+@router.get("/users/{user_id}", response_model=protocol.FrontEndUser)
 def get_user(
     user_id: UUID,
     api_client_id: UUID = None,
