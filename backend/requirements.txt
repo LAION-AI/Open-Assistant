@@ -1,4 +1,5 @@
 alembic==1.8.1
+celery[redis]
 fastapi==0.88.0
 fastapi-limiter==0.1.5
 loguru==0.6.0
