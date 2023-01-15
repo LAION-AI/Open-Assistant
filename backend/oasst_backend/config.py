@@ -84,8 +84,8 @@ class Settings(BaseSettings):
     HUGGING_FACE_API_KEY: str = ""
 
     # For celery tasks queue
-    CELERY_BROKER_URL: str = ""
-    CELERY_RESULT_BACKEND: str = ""
+    CELERY_BROKER_URL: str = "redis://localhost:6379"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379"
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
