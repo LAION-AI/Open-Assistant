@@ -109,6 +109,22 @@ class Settings(BaseSettings):
 
     tree_manager: Optional[TreeManagerConfiguration] = TreeManagerConfiguration()
 
+    USER_STATS_INTERVAL_DAY: int = 15  # minutes
+    USER_STATS_INTERVAL_WEEK: int = 60  # minutes
+    USER_STATS_INTERVAL_MONTH: int = 120  # minutes
+    USER_STATS_INTERVAL_TOTAL: int = 240  # minutes
+
+    @validator(
+        "USER_STATS_INTERVAL_DAY",
+        "USER_STATS_INTERVAL_WEEK",
+        "USER_STATS_INTERVAL_MONTH",
+        "USER_STATS_INTERVAL_TOTAL",
+    )
+    def validate_user_stats_intervals(cls, v: int):
+        if v < 1:
+            raise ValueError(v)
+        return v
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

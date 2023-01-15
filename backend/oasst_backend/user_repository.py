@@ -2,11 +2,11 @@ from typing import Optional
 from uuid import UUID
 
 from oasst_backend.models import ApiClient, Message, User
+from oasst_backend.models import ApiClient, User
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from oasst_shared.schemas.protocol import LeaderboardStats
-from sqlmodel import Session, func
+from sqlmodel import Session
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -135,27 +135,6 @@ class UserRepository:
             user.display_name = client_user.display_name
             self.db.add(user)
         return user
-
-    def get_user_leaderboard(self, role: str) -> LeaderboardStats:
-        """
-        Get leaderboard stats for Messages created,
-        separate leaderboard for prompts & assistants
-
-        """
-        query = (
-            self.db.query(Message.user_id, User.username, User.display_name, func.count(Message.user_id))
-            .join(User, User.id == Message.user_id, isouter=True)
-            .filter(Message.deleted is not True, Message.role == role)
-            .group_by(Message.user_id, User.username, User.display_name)
-            .order_by(func.count(Message.user_id).desc())
-        )
-
-        result = [
-            {"ranking": i, "user_id": j[0], "username": j[1], "display_name": j[2], "score": j[3]}
-            for i, j in enumerate(query.all(), start=1)
-        ]
-
-        return LeaderboardStats(leaderboard=result)
 
     def query_users(
         self,

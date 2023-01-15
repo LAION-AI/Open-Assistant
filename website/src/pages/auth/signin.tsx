@@ -94,7 +94,14 @@ function Signin({ csrfToken, providers }) {
           {email && (
             <form onSubmit={signinWithEmail}>
               <Stack>
-                <Input data-cy="email-address" variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
+                <Input
+                  type="email"
+                  data-cy="email-address"
+                  variant="outline"
+                  size="lg"
+                  placeholder="Email Address"
+                  ref={emailEl}
+                />
                 <Button
                   data-cy="signin-email-button"
                   size={"lg"}
