@@ -1,71 +1,66 @@
+import { Box, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import { useState } from "react";
-
-import { Messages } from "src/components/Messages";
-import { TaskControls } from "src/components/Survey/TaskControls";
+import { MessageTable } from "src/components/Messages/MessageTable";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
-import { TaskType } from "./TaskTypes";
+import { TaskSurveyProps } from "src/components/Tasks/Task";
 
-export interface CreateTaskProps {
-  // we need a task type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  tasks: any[];
-  taskType: TaskType;
-  trigger: (update: { id: string; update_type: string; content: { text: string } }) => void;
-  onSkipTask: (task: { id: string }, reason: string) => void;
-  onNextTask: () => void;
-  mainBgClasses: string;
-}
-export const CreateTask = ({ tasks, taskType, trigger, onSkipTask, onNextTask, mainBgClasses }: CreateTaskProps) => {
-  const task = tasks[0].task;
-  const valid_labels = tasks[0].valid_labels;
+export const CreateTask = ({
+  task,
+  taskType,
+  isEditable,
+  isDisabled,
+  onReplyChanged,
+}: TaskSurveyProps<{ text: string }>) => {
+  const cardColor = useColorModeValue("gray.50", "gray.800");
+  const titleColor = useColorModeValue("gray.800", "gray.300");
+  const labelColor = useColorModeValue("gray.600", "gray.400");
+
   const [inputText, setInputText] = useState("");
-
-  const submitResponse = (task: { id: string }) => {
-    const text = inputText.trim();
-    trigger({
-      id: task.id,
-      update_type: "text_reply_to_message",
-      content: {
-        text,
-      },
-    });
-  };
-
   const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputText(event.target.value);
+    const text = event.target.value;
+    const isTextBlank = !text || /^\s*$/.test(text) ? true : false;
+    if (!isTextBlank) {
+      onReplyChanged({ content: { text }, state: "VALID" });
+      setInputText(text);
+    } else {
+      onReplyChanged({ content: { text }, state: "INVALID" });
+      setInputText("");
+    }
   };
 
   return (
-    <div className={`p-12 ${mainBgClasses}`}>
+    <div data-cy="task" data-task-type="create-task">
       <TwoColumnsWithCards>
         <>
-          <h5 className="text-lg font-semibold">{taskType.label}</h5>
-          <p className="text-lg py-1">{taskType.overview}</p>
+          <Stack spacing="1">
+            <Text fontSize="xl" fontWeight="bold" color={titleColor}>
+              {taskType.label}
+            </Text>
+            <Text fontSize="md" color={labelColor}>
+              {taskType.overview}
+            </Text>
+          </Stack>
           {task.conversation ? (
-            <Messages messages={task.conversation.messages} post_id={task.id} valid_labels={valid_labels} />
+            <Box mt="4" borderRadius="lg" bg={cardColor} className="p-3 sm:p-6">
+              <MessageTable messages={task.conversation.messages} />
+            </Box>
           ) : null}
         </>
         <>
-          <h5 className="text-lg font-semibold">{taskType.instruction}</h5>
-          <TrackedTextarea
-            text={inputText}
-            onTextChange={textChangeHandler}
-            thresholds={{ low: 20, medium: 40, goal: 50 }}
-            textareaProps={{ placeholder: "Reply..." }}
-          />
+          <Stack spacing="4">
+            <Text fontSize="xl" fontWeight="bold" color={titleColor}>
+              {taskType.instruction}
+            </Text>
+            <TrackedTextarea
+              text={inputText}
+              onTextChange={textChangeHandler}
+              thresholds={{ low: 20, medium: 40, goal: 50 }}
+              textareaProps={{ placeholder: "Write your prompt here...", isDisabled, isReadOnly: !isEditable }}
+            />
+          </Stack>
         </>
       </TwoColumnsWithCards>
-
-      <TaskControls
-        tasks={tasks}
-        onSubmitResponse={submitResponse}
-        onSkipTask={(task, reason) => {
-          setInputText("");
-          onSkipTask(task, reason);
-        }}
-        onNextTask={onNextTask}
-      />
     </div>
   );
 };

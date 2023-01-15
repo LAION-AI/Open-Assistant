@@ -33,6 +33,7 @@ describe("Contract test for Oasst API", function () {
       await oasstApiClient.interactTask(
         "text_reply_to_message",
         task.id,
+        "321",
         "1",
         { text: "Test" },
         {

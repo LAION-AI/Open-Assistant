@@ -26,6 +26,20 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "Tasks",
+      link: {
+        type: "doc",
+        id: "tasks/README",
+      },
+      items: [
+        "tasks/label_assistant_reply",
+        "tasks/label_prompter_reply",
+        "tasks/reply_as_assistant",
+        "tasks/reply_as_user",
+      ],
+    },
+    {
+      type: "category",
       label: "Data",
       link: {
         type: "doc",

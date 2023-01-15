@@ -30,7 +30,7 @@ class Message(SQLModel, table=True):
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")
     frontend_message_id: str = Field(max_length=200, nullable=False)
     created_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
+        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp(), index=True)
     )
     payload_type: str = Field(nullable=False, max_length=200)
     payload: Optional[PayloadContainer] = Field(
@@ -40,6 +40,12 @@ class Message(SQLModel, table=True):
     depth: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
     children_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
+
+    review_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
+    review_result: bool = Field(sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False))
+    ranking_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
+
+    rank: Optional[int] = Field(nullable=True)
 
     def ensure_is_message(self) -> None:
         if not self.payload or not isinstance(self.payload.payload, MessagePayload):

@@ -2,6 +2,7 @@ from typing import Optional
 from uuid import UUID
 
 import oasst_backend.models.db_payload as db_payload
+from loguru import logger
 from oasst_backend.models import ApiClient, Task
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.user_repository import UserRepository
@@ -62,21 +63,34 @@ class TaskRepository:
                 payload = db_payload.AssistantReplyPayload(type=task.type, conversation=task.conversation)
 
             case protocol_schema.RankInitialPromptsTask:
-                payload = db_payload.RankInitialPromptsPayload(type=task.type, prompts=task.prompts)
+                payload = db_payload.RankInitialPromptsPayload(type=task.type, prompt_messages=task.prompt_messages)
 
             case protocol_schema.RankPrompterRepliesTask:
                 payload = db_payload.RankPrompterRepliesPayload(
-                    type=task.type, conversation=task.conversation, replies=task.replies
+                    type=task.type,
+                    conversation=task.conversation,
+                    reply_messages=task.reply_messages,
+                    ranking_parent_id=task.ranking_parent_id,
+                    message_tree_id=task.message_tree_id,
                 )
 
             case protocol_schema.RankAssistantRepliesTask:
                 payload = db_payload.RankAssistantRepliesPayload(
-                    type=task.type, conversation=task.conversation, replies=task.replies
+                    type=task.type,
+                    conversation=task.conversation,
+                    reply_messages=task.reply_messages,
+                    ranking_parent_id=task.ranking_parent_id,
+                    message_tree_id=task.message_tree_id,
                 )
 
             case protocol_schema.LabelInitialPromptTask:
                 payload = db_payload.LabelInitialPromptPayload(
-                    type=task.type, message_id=task.message_id, prompt=task.prompt, valid_labels=task.valid_labels
+                    type=task.type,
+                    message_id=task.message_id,
+                    prompt=task.prompt,
+                    valid_labels=task.valid_labels,
+                    mandatory_labels=task.mandatory_labels,
+                    mode=task.mode,
                 )
 
             case protocol_schema.LabelPrompterReplyTask:
@@ -86,6 +100,8 @@ class TaskRepository:
                     conversation=task.conversation,
                     reply=task.reply,
                     valid_labels=task.valid_labels,
+                    mandatory_labels=task.mandatory_labels,
+                    mode=task.mode,
                 )
 
             case protocol_schema.LabelAssistantReplyTask:
@@ -95,20 +111,22 @@ class TaskRepository:
                     conversation=task.conversation,
                     reply=task.reply,
                     valid_labels=task.valid_labels,
+                    mandatory_labels=task.mandatory_labels,
+                    mode=task.mode,
                 )
 
             case _:
                 raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
 
-        task = self.insert_task(
+        task_model = self.insert_task(
             payload=payload,
             id=task.id,
             message_tree_id=message_tree_id,
             parent_message_id=parent_message_id,
             collective=collective,
         )
-        assert task.id == task.id
-        return task
+        assert task_model.id == task.id
+        return task_model
 
     def bind_frontend_message_id(self, task_id: UUID, frontend_message_id: str):
         validate_frontend_message_id(frontend_message_id)
@@ -184,6 +202,7 @@ class TaskRepository:
             parent_message_id=parent_message_id,
             collective=collective,
         )
+        logger.debug(f"inserting {task=}")
         self.db.add(task)
         self.db.commit()
         self.db.refresh(task)
@@ -196,4 +215,8 @@ class TaskRepository:
             .filter(Task.api_client_id == self.api_client.id, Task.frontend_message_id == message_id)
             .one_or_none()
         )
+        return task
+
+    def fetch_task_by_id(self, task_id: UUID) -> Task:
+        task = self.db.query(Task).filter(Task.api_client_id == self.api_client.id, Task.id == task_id).one_or_none()
         return task

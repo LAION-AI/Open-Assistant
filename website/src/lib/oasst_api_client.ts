@@ -1,16 +1,13 @@
 import { JWT } from "next-auth/jwt";
-
-declare global {
-  // eslint-disable-next-line no-var
-  var oasstApiClient: OasstApiClient | undefined;
-}
+import type { Message } from "src/types/Conversation";
+import type { BackendUser } from "src/types/Users";
 
 export class OasstError {
   message: string;
   errorCode: number;
   httpStatusCode: number;
 
-  constructor(message: string, errorCode: number, httpStatusCode: number) {
+  constructor(message: string, errorCode: number, httpStatusCode?: number) {
     this.message = message;
     this.errorCode = errorCode;
     this.httpStatusCode = httpStatusCode;
@@ -30,7 +27,33 @@ export class OasstApiClient {
       body: JSON.stringify(body),
     });
 
-    if (resp.status == 204) {
+    if (resp.status === 204) {
+      return null;
+    }
+
+    if (resp.status >= 300) {
+      const errorText = await resp.text();
+      let error: any;
+      try {
+        error = JSON.parse(errorText);
+      } catch (e) {
+        throw new OasstError(errorText, 0, resp.status);
+      }
+      throw new OasstError(error.message ?? error, error.error_code, resp.status);
+    }
+
+    return await resp.json();
+  }
+
+  private async put(path: string): Promise<any> {
+    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
+      method: "PUT",
+      headers: {
+        "X-API-Key": this.oasstApiKey,
+      },
+    });
+
+    if (resp.status === 204) {
       return null;
     }
 
@@ -57,7 +80,7 @@ export class OasstApiClient {
       },
     });
 
-    if (resp.status == 204) {
+    if (resp.status === 204) {
       return null;
     }
 
@@ -106,6 +129,7 @@ export class OasstApiClient {
   // This is a raw Json type, so we can't use it to strongly type the task.
   async interactTask(
     updateType: string,
+    taskId: string,
     messageId: string,
     userMessageId: string,
     content: object,
@@ -118,21 +142,56 @@ export class OasstApiClient {
         display_name: userToken.name || userToken.email,
         auth_method: "local",
       },
+      task_id: taskId,
       message_id: messageId,
       user_message_id: userMessageId,
       ...content,
     });
   }
 
-  //Fetch valid labels. This is called every task. though the call may be redundant
-  //keeping this for future where the valid labels may change per task
-  async fetch_valid_text(): Promise<void> {
+  /**
+   * Returns the `BackendUser` associated with `user_id`
+   */
+  async fetch_user(user_id: string): Promise<BackendUser> {
+    return this.get(`/api/v1/users/users/${user_id}`);
+  }
+
+  /**
+   * Returns the `max_count` `BackendUser`s stored by the backend.
+   */
+  async fetch_users(max_count: number): Promise<BackendUser[]> {
+    return this.get(`/api/v1/frontend_users/?max_count=${max_count}`);
+  }
+
+  /**
+   * Returns the `Message`s associated with `user_id` in the backend.
+   */
+  async fetch_user_messages(user_id: string): Promise<Message[]> {
+    return this.get(`/api/v1/users/${user_id}/messages`);
+  }
+
+  /**
+   * Updates the backend's knowledge about the `user_id`.
+   */
+  async set_user_status(user_id: string, is_enabled: boolean, notes): Promise<void> {
+    return this.put(`/api/v1/users/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
+  }
+
+  /**
+   * Returns the valid labels for messages.
+   */
+  async fetch_valid_text(): Promise<any> {
     return this.get(`/api/v1/text_labels/valid_labels`);
+  }
+
+  /**
+   * Returns the current leaderboard ranking.
+   */
+  async fetch_leaderboard(): Promise<any> {
+    return this.get(`/api/v1/experimental/leaderboards/create/assistant`);
   }
 }
 
-export const oasstApiClient =
-  globalThis.oasstApiClient || new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
-if (process.env.NODE_ENV !== "production") {
-  globalThis.oasstApiClient = oasstApiClient;
-}
+const oasstApiClient = new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
+
+export { oasstApiClient };

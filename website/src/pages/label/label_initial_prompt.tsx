@@ -1,42 +1,32 @@
-import { useState } from "react";
+import Head from "next/head";
+import { TaskEmptyState } from "src/components/EmptyState";
+import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
-import { MessageView } from "src/components/Messages";
-import { TaskControls } from "src/components/Survey/TaskControls";
-import { LabelSliderGroup, LabelTask } from "src/components/Tasks/LabelTask";
-import {
-  LabelInitialPromptTaskResponse,
-  useLabelInitialPromptTask,
-} from "src/hooks/tasks/labeling/useLabelInitialPrompt";
+import { Task } from "src/components/Tasks/Task";
+import { useLabelInitialPromptTask } from "src/hooks/tasks/useLabelingTask";
 
 const LabelInitialPrompt = () => {
-  const [sliderValues, setSliderValues] = useState<number[]>([]);
+  const { tasks, isLoading, trigger, reset } = useLabelInitialPromptTask();
 
-  const { tasks, isLoading, submit, reset } = useLabelInitialPromptTask();
-
-  if (isLoading || tasks.length === 0) {
+  if (isLoading) {
     return <LoadingScreen />;
   }
 
-  const task = tasks[0].task;
+  if (tasks.length === 0) {
+    return <TaskEmptyState />;
+  }
 
   return (
-    <LabelTask
-      title="Label Initial Prompt"
-      desc="Provide labels for the following prompt"
-      messages={<MessageView text={task.prompt} is_assistant message_id={task.message_id} />}
-      inputs={<LabelSliderGroup labelIDs={task.valid_labels} onChange={setSliderValues} />}
-      controls={
-        <TaskControls
-          tasks={tasks}
-          onSkipTask={() => reset()}
-          onNextTask={reset}
-          onSubmitResponse={({ id, task }: LabelInitialPromptTaskResponse) =>
-            submit(id, task.message_id, task.prompt, task.valid_labels, sliderValues)
-          }
-        />
-      }
-    />
+    <>
+      <Head>
+        <title>Label Initial Prompt</title>
+        <meta name="description" content="Label Initial Prompt" />
+      </Head>
+      <Task key={tasks[0].task.id} frontendId={tasks[0].id} task={tasks[0].task} trigger={trigger} mutate={reset} />
+    </>
   );
 };
+
+LabelInitialPrompt.getLayout = getDashboardLayout;
 
 export default LabelInitialPrompt;

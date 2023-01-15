@@ -1,11 +1,13 @@
-import { Button, Container, FormControl, FormLabel, Input, Select, useToast } from "@chakra-ui/react";
+import { Button, Container, FormControl, FormLabel, Input, Select, Stack, useToast } from "@chakra-ui/react";
 import { Field, Form, Formik } from "formik";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { getAdminLayout } from "src/components/Layout";
-import poster from "src/lib/poster";
+import { UserMessagesCell } from "src/components/UserMessagesCell";
+import { post } from "src/lib/api";
+import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
 import useSWRMutation from "swr/mutation";
 
@@ -30,7 +32,7 @@ const ManageUser = ({ user }) => {
   }, [router, session, status]);
 
   // Trigger to let us update the user's role.  Triggers a toast when complete.
-  const { trigger } = useSWRMutation("/api/admin/update_user", poster, {
+  const { trigger } = useSWRMutation("/api/admin/update_user", post, {
     onSuccess: () => {
       toast({
         title: "User Role Updated",
@@ -58,50 +60,54 @@ const ManageUser = ({ user }) => {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <Container className="oa-basic-theme">
-        <Formik
-          initialValues={user}
-          onSubmit={(values) => {
-            trigger(values);
-          }}
-        >
-          <Form>
-            <Field name="id" type="hidden" />
-            <Field name="name">
-              {({ field }) => (
-                <FormControl>
-                  <FormLabel>Username</FormLabel>
-                  <Input {...field} isDisabled />
-                </FormControl>
-              )}
-            </Field>
-            <Field name="email">
-              {({ field }) => (
-                <FormControl>
-                  <FormLabel>Email</FormLabel>
-                  <Input {...field} isDisabled />
-                </FormControl>
-              )}
-            </Field>
-
-            <Field name="role">
-              {({ field }) => (
-                <FormControl>
-                  <FormLabel>Role</FormLabel>
-                  <Select {...field}>
-                    <option value="banned">Banned</option>
-                    <option value="general">General</option>
-                    <option value="admin">Admin</option>
-                  </Select>
-                </FormControl>
-              )}
-            </Field>
-            <Button mt={4} type="submit">
-              Update
-            </Button>
-          </Form>
-        </Formik>
-      </Container>
+      <Stack gap="4">
+        <Container className="oa-basic-theme">
+          <Formik
+            initialValues={user}
+            onSubmit={(values) => {
+              trigger(values);
+            }}
+          >
+            <Form>
+              <Field name="user_id" type="hidden" />
+              <Field name="id" type="hidden" />
+              <Field name="auth_method" type="hidden" />
+              <Field name="display_name">
+                {({ field }) => (
+                  <FormControl>
+                    <FormLabel>Display Name</FormLabel>
+                    <Input {...field} isDisabled />
+                  </FormControl>
+                )}
+              </Field>
+              <Field name="role">
+                {({ field }) => (
+                  <FormControl>
+                    <FormLabel>Role</FormLabel>
+                    <Select {...field}>
+                      <option value="banned">Banned</option>
+                      <option value="general">General</option>
+                      <option value="admin">Admin</option>
+                    </Select>
+                  </FormControl>
+                )}
+              </Field>
+              <Field name="notes">
+                {({ field }) => (
+                  <FormControl>
+                    <FormLabel>Notes</FormLabel>
+                    <Input {...field} />
+                  </FormControl>
+                )}
+              </Field>
+              <Button mt={4} type="submit">
+                Update
+              </Button>
+            </Form>
+          </Formik>
+        </Container>
+        <UserMessagesCell path={`/api/admin/user_messages?user=${user.user_id}`} />
+      </Stack>
     </>
   );
 };
@@ -110,15 +116,17 @@ const ManageUser = ({ user }) => {
  * Fetch the user's data on the server side when rendering.
  */
 export async function getServerSideProps({ query }) {
-  const user = await prisma.user.findUnique({
-    where: { id: query.id },
+  const backend_user = await oasstApiClient.fetch_user(query.id);
+  const local_user = await prisma.user.findUnique({
+    where: { id: backend_user.id },
     select: {
-      id: true,
-      name: true,
-      email: true,
       role: true,
     },
   });
+  const user = {
+    ...backend_user,
+    role: local_user?.role || "general",
+  };
   return {
     props: {
       user,

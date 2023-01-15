@@ -1,4 +1,4 @@
-import { Progress, Stack, Textarea, TextareaProps } from "@chakra-ui/react";
+import { Progress, Stack, Textarea, TextareaProps, useColorModeValue } from "@chakra-ui/react";
 
 interface TrackedTextboxProps {
   text: string;
@@ -12,6 +12,8 @@ interface TrackedTextboxProps {
 }
 
 export const TrackedTextarea = (props: TrackedTextboxProps) => {
+  const backgroundColor = useColorModeValue("gray.100", "gray.900");
+
   const wordCount = (props.text.match(/\w+/g) || []).length;
 
   let progressColor: string;
@@ -28,8 +30,23 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
 
   return (
     <Stack direction={"column"}>
-      <Textarea data-cy="reply" value={props.text} onChange={props.onTextChange} {...props.textareaProps} />
-      <Progress size={"md"} rounded={"md"} value={wordCount} colorScheme={progressColor} max={props.thresholds.goal} />
+      <Textarea
+        backgroundColor={backgroundColor}
+        border="none"
+        data-cy="reply"
+        p="4"
+        value={props.text}
+        onChange={props.onTextChange}
+        {...props.textareaProps}
+      />
+      <Progress
+        size={"md"}
+        height={"2"}
+        rounded={"md"}
+        value={wordCount}
+        colorScheme={progressColor}
+        max={props.thresholds.goal}
+      />
     </Stack>
   );
 };

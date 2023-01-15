@@ -1,100 +1,77 @@
-import { Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack } from "@chakra-ui/react";
-import { useColorMode } from "@chakra-ui/react";
-import { ReactNode, useEffect, useId, useMemo, useState } from "react";
+import { Box } from "@chakra-ui/react";
+import { Text, useColorModeValue } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { MessageView } from "src/components/Messages";
+import { MessageTable } from "src/components/Messages/MessageTable";
+import { LabelRadioGroup } from "src/components/Survey/LabelRadioGroup";
+import { LabelSliderGroup } from "src/components/Survey/LabelSliderGroup";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
-import { colors } from "styles/Theme/colors";
+import { TaskSurveyProps } from "src/components/Tasks/Task";
+import { TaskType } from "src/types/Task";
 
 export const LabelTask = ({
-  title,
-  desc,
-  messages,
-  inputs,
-  controls,
-}: {
-  title: string;
-  desc: string;
-  messages: ReactNode;
-  inputs: ReactNode;
-  controls: ReactNode;
-}) => {
-  const { colorMode } = useColorMode();
-  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-800" : "bg-slate-900 text-white";
+  task,
+  taskType,
+  onReplyChanged,
+  isEditable,
+}: TaskSurveyProps<{ text: string; labels: Record<string, number>; message_id: string }>) => {
+  const valid_labels = task.valid_labels;
+  const [sliderValues, setSliderValues] = useState<number[]>(new Array(valid_labels.length).fill(0));
 
-  const card = useMemo(
-    () => (
-      <>
-        <h5 className="text-lg font-semibold">{title}</h5>
-        <p className="text-lg py-1">{desc}</p>
-        {messages}
-      </>
-    ),
-    [title, desc, messages]
-  );
+  useEffect(() => {
+    onReplyChanged({ content: { labels: {}, text: task.reply, message_id: task.message_id }, state: "DEFAULT" });
+  }, [task, onReplyChanged]);
+
+  const onSliderChange = (values: number[]) => {
+    console.assert(valid_labels.length === sliderValues.length);
+    const labels = Object.fromEntries(valid_labels.map((label, i) => [label, sliderValues[i]]));
+    onReplyChanged({
+      content: { labels, text: task.reply || task.prompt, message_id: task.message_id },
+      state: "VALID",
+    });
+    setSliderValues(values);
+  };
+
+  const cardColor = useColorModeValue("gray.50", "gray.800");
+  const titleColor = useColorModeValue("gray.800", "gray.300");
+  const labelColor = useColorModeValue("gray.600", "gray.400");
 
   return (
-    <div className={`p-12 ${mainBgClasses}`}>
+    <div data-cy="task" data-task-type="label-task">
       <TwoColumnsWithCards>
-        {card}
-        {inputs}
+        <>
+          <Text fontSize="xl" fontWeight="bold" color={titleColor}>
+            {taskType.label}
+          </Text>
+          <Text fontSize="md" color={labelColor}>
+            {taskType.overview}
+          </Text>
+
+          {task.conversation ? (
+            <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
+              <MessageTable
+                messages={[
+                  ...(task.conversation?.messages ?? []),
+                  {
+                    text: task.reply,
+                    is_assistant: task.type === TaskType.label_assistant_reply,
+                    message_id: task.message_id,
+                  },
+                ]}
+              />
+            </Box>
+          ) : (
+            <Box mt="4">
+              <MessageView text={task.prompt} is_assistant={false} id={task.message_id} />
+            </Box>
+          )}
+        </>
+        {valid_labels.length === 1 ? (
+          <LabelRadioGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />
+        ) : (
+          <LabelSliderGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />
+        )}
       </TwoColumnsWithCards>
-      {controls}
     </div>
   );
 };
-
-// TODO: consolidate with FlaggableElement
-interface LabelSliderGroupProps {
-  labelIDs: Array<string>;
-  onChange: (sliderValues: number[]) => unknown;
-}
-
-export const LabelSliderGroup = ({ labelIDs, onChange }: LabelSliderGroupProps) => {
-  const [sliderValues, setSliderValues] = useState<number[]>(Array.from({ length: labelIDs.length }).map(() => 0));
-
-  useEffect(() => {
-    onChange(sliderValues);
-  }, [sliderValues, onChange]);
-
-  return (
-    <Grid templateColumns="auto 1fr" rowGap={1} columnGap={3}>
-      {labelIDs.map((labelId, idx) => (
-        <CheckboxSliderItem
-          key={idx}
-          labelId={labelId}
-          sliderValue={sliderValues[idx]}
-          sliderHandler={(sliderValue) => {
-            const newState = sliderValues.slice();
-            newState[idx] = sliderValue;
-            setSliderValues(newState);
-          }}
-        />
-      ))}
-    </Grid>
-  );
-};
-
-function CheckboxSliderItem(props: {
-  labelId: string;
-  sliderValue: number;
-  sliderHandler: (newVal: number) => unknown;
-}) {
-  const id = useId();
-  const { colorMode } = useColorMode();
-
-  const labelTextClass = colorMode === "light" ? `text-${colors.light.text}` : `text-${colors.dark.text}`;
-
-  return (
-    <>
-      <label className="text-sm" htmlFor={id}>
-        {/* TODO: display real text instead of just the id */}
-        <span className={labelTextClass}>{props.labelId}</span>
-      </label>
-      <Slider defaultValue={0} onChangeEnd={(val) => props.sliderHandler(val / 100)}>
-        <SliderTrack>
-          <SliderFilledTrack />
-          <SliderThumb />
-        </SliderTrack>
-      </Slider>
-    </>
-  );
-}

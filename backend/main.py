@@ -9,12 +9,17 @@ import alembic.config
 import fastapi
 import redis.asyncio as redis
 from fastapi_limiter import FastAPILimiter
+from fastapi_utils.tasks import repeat_every
 from loguru import logger
 from oasst_backend.api.deps import get_dummy_api_client
 from oasst_backend.api.v1.api import api_router
+from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
 from oasst_backend.database import engine
+from oasst_backend.models import message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
+from oasst_backend.tree_manager import TreeManager
+from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from pydantic import BaseModel
@@ -104,6 +109,7 @@ if settings.DEBUG_USE_SEED_DATA:
             parent_message_id: Optional[str]
             text: str
             role: str
+            tree_state: Optional[message_tree_state.State]
 
         try:
             logger.info("Seed data check began")
@@ -116,6 +122,7 @@ if settings.DEBUG_USE_SEED_DATA:
                 pr = PromptRepository(
                     db=db, api_client=api_client, client_user=dummy_user, user_repository=ur, task_repository=tr
                 )
+                tm = TreeManager(db, pr)
 
                 with open(settings.DEBUG_USE_SEED_DATA_PATH) as f:
                     dummy_messages_raw = json.load(f)
@@ -138,34 +145,104 @@ if settings.DEBUG_USE_SEED_DATA:
                                 msg.parent_message_id, fail_if_missing=True
                             )
                             conversation_messages = pr.fetch_message_conversation(parent_message)
-                            conversation = protocol_schema.Conversation(
-                                messages=[
-                                    protocol_schema.ConversationMessage(
-                                        text=cmsg.text,
-                                        is_assistant=cmsg.role == "assistant",
-                                        message_id=cmsg.id,
-                                        fronend_message_id=cmsg.frontend_message_id,
-                                    )
-                                    for cmsg in conversation_messages
-                                ]
-                            )
-                            task = tr.store_task(
-                                protocol_schema.AssistantReplyTask(conversation=conversation),
-                                message_tree_id=parent_message.message_tree_id,
-                                parent_message_id=parent_message.id,
-                            )
+                            conversation = prepare_conversation(conversation_messages)
+                            if msg.role == "assistant":
+                                task = tr.store_task(
+                                    protocol_schema.AssistantReplyTask(conversation=conversation),
+                                    message_tree_id=parent_message.message_tree_id,
+                                    parent_message_id=parent_message.id,
+                                )
+                            else:
+                                task = tr.store_task(
+                                    protocol_schema.PrompterReplyTask(conversation=conversation),
+                                    message_tree_id=parent_message.message_tree_id,
+                                    parent_message_id=parent_message.id,
+                                )
                         tr.bind_frontend_message_id(task.id, msg.task_message_id)
-                        message = pr.store_text_reply(msg.text, msg.task_message_id, msg.user_message_id)
+                        message = pr.store_text_reply(
+                            msg.text,
+                            msg.task_message_id,
+                            msg.user_message_id,
+                            review_count=5,
+                            review_result=True,
+                            check_tree_state=False,
+                        )
+                        if message.parent_id is None:
+                            tm._insert_default_state(
+                                root_message_id=message.id, state=msg.tree_state or message_tree_state.State.GROWING
+                            )
+                            db.commit()
 
                         logger.info(
                             f"Inserted: message_id: {message.id}, payload: {message.payload.payload}, parent_message_id: {message.parent_id}"
                         )
                     else:
                         logger.debug(f"seed data task found: {task.id}")
+
                 logger.info("Seed data check completed")
 
         except Exception:
             logger.exception("Seed data insertion failed")
+
+
+@app.on_event("startup")
+def ensure_tree_states():
+    try:
+        logger.info("Startup: TreeManager.ensure_tree_states()")
+        with Session(engine) as db:
+            tm = TreeManager(db, None)
+            tm.ensure_tree_states()
+
+    except Exception:
+        logger.exception("TreeManager.ensure_tree_states() failed.")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_DAY, wait_first=False)
+def update_leader_board_day() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.day)
+            session.commit()
+    except Exception:
+        logger.exception("Error during leaderboard update (daily)")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_WEEK, wait_first=False)
+def update_leader_board_week() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.week)
+            session.commit()
+    except Exception:
+        logger.exception("Error during user states update (weekly)")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_MONTH, wait_first=False)
+def update_leader_board_month() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.month)
+            session.commit()
+    except Exception:
+        logger.exception("Error during user states update (monthly)")
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.USER_STATS_INTERVAL_TOTAL, wait_first=False)
+def update_leader_board_total() -> None:
+    try:
+        with Session(engine) as session:
+            usr = UserStatsRepository(session)
+            usr.update_stats(time_frame=UserStatsTimeFrame.total)
+            session.commit()
+    except Exception:
+        logger.exception("Error during user states update (total)")
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
@@ -175,7 +252,7 @@ def get_openapi_schema():
     return json.dumps(app.openapi())
 
 
-if __name__ == "__main__":
+def main():
     # Importing here so we don't import packages unnecessarily if we're
     # importing main as a module.
     import argparse
@@ -198,3 +275,7 @@ if __name__ == "__main__":
         print(get_openapi_schema())
     else:
         uvicorn.run(app, host=args.host, port=args.port)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID
 
 from oasst_backend.models.payload_column_type import payload_type
@@ -28,7 +28,7 @@ class RateSummaryPayload(TaskPayload):
 @payload_type
 class InitialPromptPayload(TaskPayload):
     type: Literal["initial_prompt"] = "initial_prompt"
-    hint: str
+    hint: str | None
 
 
 @payload_type
@@ -64,12 +64,17 @@ class RatingReactionPayload(ReactionPayload):
 class RankingReactionPayload(ReactionPayload):
     type: Literal["message_ranking"] = "message_ranking"
     ranking: list[int]
+    ranked_message_ids: list[UUID]
+    ranking_parent_id: Optional[UUID]
+    message_tree_id: Optional[UUID]
 
 
 @payload_type
 class RankConversationRepliesPayload(TaskPayload):
     conversation: protocol_schema.Conversation  # the conversation so far
-    replies: list[str]
+    reply_messages: list[protocol_schema.ConversationMessage]
+    ranking_parent_id: Optional[UUID]
+    message_tree_id: Optional[UUID]
 
 
 @payload_type
@@ -77,7 +82,7 @@ class RankInitialPromptsPayload(TaskPayload):
     """A task to rank a set of initial prompts."""
 
     type: Literal["rank_initial_prompts"] = "rank_initial_prompts"
-    prompts: list[str]
+    prompt_messages: list[protocol_schema.ConversationMessage]
 
 
 @payload_type
@@ -102,6 +107,8 @@ class LabelInitialPromptPayload(TaskPayload):
     message_id: UUID
     prompt: str
     valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
+    mode: Optional[protocol_schema.LabelTaskMode]
 
 
 @payload_type
@@ -112,6 +119,8 @@ class LabelConversationReplyPayload(TaskPayload):
     conversation: protocol_schema.Conversation
     reply: str
     valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
+    mode: Optional[protocol_schema.LabelTaskMode]
 
 
 @payload_type

@@ -1,33 +1,51 @@
-import { Avatar, HStack, LinkBox, useColorModeValue } from "@chakra-ui/react";
+import { Avatar, Box, HStack, LinkBox, useColorModeValue } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import NextLink from "next/link";
+import Link from "next/link";
 import { FlaggableElement } from "src/components/FlaggableElement";
+import { Message } from "src/types/Conversation";
 
-interface Message {
-  text: string;
-  id: string;
-  is_assistant: boolean;
-}
 interface MessageTableEntryProps {
   item: Message;
-  idx: number;
+  enabled?: boolean;
 }
+
 export function MessageTableEntry(props: MessageTableEntryProps) {
-  const { item, idx } = props;
-  const bgColor = useColorModeValue(idx % 2 === 0 ? "bg-slate-800" : "bg-black", "bg-sky-900");
+  const { item } = props;
+  const backgroundColor = useColorModeValue("gray.100", "gray.700");
+  const backgroundColor2 = useColorModeValue("#DFE8F1", "#42536B");
+
+  const avatarColor = useColorModeValue("white", "black");
+  const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
 
   return (
-    <FlaggableElement text={item.text} post_id={item.id} key={`flag_${item.id}`}>
-      <HStack>
-        <Avatar
-          name={`${boolean(item.is_assistant) ? "Assitant" : "User"}`}
-          src={`${boolean(item.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
-        />
-        <LinkBox className={`p-4 rounded-md text-white whitespace-pre-wrap ${bgColor} text-white w-full`}>
-          <NextLink href={`/messages/${item.id}`} passHref>
+    <FlaggableElement message={item}>
+      <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
+        <Box borderRadius="full" border="solid" borderWidth="1px" borderColor={borderColor} bg={avatarColor}>
+          <Avatar
+            size="sm"
+            name={`${boolean(item.is_assistant) ? "Assistant" : "User"}`}
+            src={`${boolean(item.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
+          />
+        </Box>
+        {props.enabled ? (
+          <Box width={["full", "full", "full", "fit-content"]} maxWidth={["full", "full", "full", "2xl"]}>
+            <Link href={`/messages/${item.id}`}>
+              <LinkBox bg={item.is_assistant ? backgroundColor : backgroundColor2} p="4" borderRadius="md">
+                {item.text}
+              </LinkBox>
+            </Link>
+          </Box>
+        ) : (
+          <Box
+            width={["full", "full", "full", "fit-content"]}
+            maxWidth={["full", "full", "full", "2xl"]}
+            bg={item.is_assistant ? backgroundColor : backgroundColor2}
+            p="4"
+            borderRadius="md"
+          >
             {item.text}
-          </NextLink>
-        </LinkBox>
+          </Box>
+        )}
       </HStack>
     </FlaggableElement>
   );

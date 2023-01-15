@@ -1,21 +1,23 @@
 import argparse
-import os
 from distutils.util import strtobool
+from functools import partial
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import bitsandbytes
 import torch
 from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
-from utils import get_dataset, get_loss, get_model, get_tokenizer, read_yamls
+from transformers.training_args import OptimizerNames
+from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
 
-os.environ["WANDB_PROJECT"] = "supervised-finetuning"
 
+def compute_metrics(eval_pred, preprocess_fns, metrics):
+    out = {}
+    for metric, preprocess_fn in zip(metrics, preprocess_fns):
+        preds, labels = preprocess_fn(eval_pred)
+        out = dict(**out, **metric.compute(predictions=preds, references=labels))
 
-def compute_metrics(eval_pred):
-    pred_ids = eval_pred.predictions
-    labels = eval_pred.label_ids
-
-    return {"accuracy": (pred_ids[labels > 0] == labels[labels > 0]).mean()}
+    return out
 
 
 def preprocess_logits_for_metrics(logits, labels):
@@ -29,18 +31,22 @@ class SFTTrainer(Trainer):
         model: Union[PreTrainedModel, nn.Module] = None,
         args: TrainingArguments = None,
         loss_function: str = "CrossEntropyLoss",
+        poly_eps: float = 1.0,
         **kwargs,
     ):
         super().__init__(model, args, **kwargs)
 
         # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
-        self.loss_fct = get_loss(loss_function)
+        self.loss_fct = get_loss(loss_function, poly_eps)
 
     def compute_loss(self, model, inputs, return_outputs=False):
         labels_mask = inputs.pop("label_masks")
         targets = inputs.pop("targets")
 
-        outputs = model(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask", None))
+        outputs = model(
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs.get("attention_mask", None),
+        )
 
         loss = self.loss_fct(outputs.get("logits"), targets, mask=labels_mask)
 
@@ -52,7 +58,10 @@ class SFTTrainer(Trainer):
         labels_mask = inputs.pop("label_masks")
         targets = inputs.pop("targets")
 
-        outputs = model(input_ids=inputs["input_ids"], attention_mask=inputs.get("attention_mask", None))
+        outputs = model(
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs.get("attention_mask", None),
+        )
 
         logits = outputs.get("logits")
 
@@ -90,6 +99,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
+    parser.add_argument("--wandb-entity", type=str, default="open-assistant")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -109,8 +119,10 @@ def argument_parsing(notebook=False, notebook_args=None):
         else:
             conf.update(configs[name])
 
+    conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
+
     # Override config from command-line
     parser = argparse.ArgumentParser()
     for key, value in conf.items():
@@ -129,6 +141,16 @@ if __name__ == "__main__":
     model = get_model(training_conf, tokenizer)
 
     train, evals, collate_fn = get_dataset(training_conf, tokenizer)
+    metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
+
+    optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
+
+    if training_conf.quantization:
+        for module in model.modules():
+            if isinstance(module, torch.nn.Embedding):
+                bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
+                    module, "weight", {"optim_bits": 32}
+                )
 
     args = TrainingArguments(
         output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
@@ -136,6 +158,7 @@ if __name__ == "__main__":
         warmup_steps=training_conf.warmup_steps,
         learning_rate=float(training_conf.learning_rate),
         deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
+        optim=optimizer,
         fp16=True,
         local_rank=training_conf.local_rank,
         gradient_checkpointing=training_conf.gradient_checkpointing,
@@ -154,15 +177,26 @@ if __name__ == "__main__":
     )
 
     assert len(evals) > 0
+
+    if not training_conf.deepspeed or training_conf.local_rank == 0:
+        import wandb
+
+        wandb.init(
+            project="supervised-finetuning",
+            entity=training_conf.wandb_entity,
+            name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
+        )
+
     trainer = SFTTrainer(
         model,
         args,
         loss_function=training_conf.loss_fn,
+        poly_eps=training_conf.poly_eps,
         train_dataset=train,
         eval_dataset=evals,
         data_collator=collate_fn,
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
+        compute_metrics=partial(compute_metrics, metrics=metrics, preprocess_fns=preprocess_fns),
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
     trainer.train()

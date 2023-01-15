@@ -1,8 +1,8 @@
 import {
+  Box,
   Button,
   Checkbox,
   Flex,
-  Grid,
   Popover,
   PopoverAnchor,
   PopoverArrow,
@@ -14,71 +14,126 @@ import {
   SliderFilledTrack,
   SliderThumb,
   SliderTrack,
-  Spacer,
   Tooltip,
   useBoolean,
   useColorMode,
   useColorModeValue,
   useId,
 } from "@chakra-ui/react";
-import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
-import { useState } from "react";
-import poster from "src/lib/poster";
+import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import clsx from "clsx";
+import { useEffect, useReducer } from "react";
+import { FiAlertCircle } from "react-icons/fi";
+import { get, post } from "src/lib/api";
+import { Message } from "src/types/Conversation";
 import { colors } from "styles/Theme/colors";
+import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
-interface textFlagLabels {
-  attributeName: string;
-  labelText: string;
-  additionalExplanation?: string;
+interface Label {
+  name: string;
+  display_text: string;
+  help_text: string;
 }
 
-export const FlaggableElement = (props) => {
+interface LoadLabelsAction {
+  type: "load_labels";
+  labels: Label[];
+}
+
+interface UpdateValueAction {
+  type: "update_value";
+  label_index: number;
+  value: number;
+}
+
+interface ToggleLabelAction {
+  type: "toggle_label";
+  label_index: number;
+  check: boolean;
+}
+
+interface LabelValue {
+  label: Label;
+  checked: boolean;
+  value: number;
+}
+
+interface FlagReportState {
+  label_values: LabelValue[];
+  submittable: boolean;
+}
+
+interface FlaggableElementProps {
+  children: React.ReactNode;
+  message: Message;
+}
+
+export const FlaggableElement = (props: FlaggableElementProps) => {
+  const [report, updateReport] = useReducer(
+    (state: FlagReportState, action: LoadLabelsAction | UpdateValueAction | ToggleLabelAction): FlagReportState => {
+      const makeState = (label_values: LabelValue[]): FlagReportState => {
+        const submittable = label_values.map(({ checked }) => checked).some(Boolean);
+        return { label_values, submittable };
+      };
+
+      switch (action.type) {
+        case "load_labels":
+          return makeState(
+            action.labels.map((label) => {
+              return { label, checked: false, value: 1 };
+            })
+          );
+        case "toggle_label": {
+          const values_copy = state.label_values.slice();
+          values_copy[action.label_index].checked = action.check;
+          return makeState(values_copy);
+        }
+        case "update_value": {
+          const values_copy = state.label_values.slice();
+          values_copy[action.label_index].value = action.value;
+          return makeState(values_copy);
+        }
+      }
+    },
+    { label_values: [], submittable: false }
+  );
   const [isEditing, setIsEditing] = useBoolean();
-  const flaggable_labels = props.flaggable_labels;
-  const TEXT_LABEL_FLAGS = flaggable_labels.valid_labels.map((valid_label) => {
-    return {
-      attributeName: valid_label.name,
-      labelText: valid_label.display_text,
-      additionalExplanation: valid_label.help_text,
-    };
-  });
-  const { trigger } = useSWRMutation("/api/set_label", poster, {
+
+  const { data, isLoading } = useSWR("/api/valid_labels", get);
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+    const { valid_labels } = data;
+    updateReport({ type: "load_labels", labels: valid_labels });
+  }, [data, isLoading]);
+
+  const { trigger } = useSWRMutation("/api/set_label", post, {
     onSuccess: () => {
-      setIsEditing.off;
+      setIsEditing.off();
     },
   });
 
   const submitResponse = () => {
     const label_map: Map<string, number> = new Map();
-    TEXT_LABEL_FLAGS.forEach((flag, i) => {
-      if (checkboxValues[i]) {
-        label_map.set(flag.attributeName, sliderValues[i]);
+    report.label_values.forEach(({ label, checked, value }) => {
+      if (checked) {
+        label_map.set(label.name, value);
       }
     });
     trigger({
-      message_id: props.message_id,
-      post_id: props.post_id,
+      message_id: props.message.id,
       label_map: Object.fromEntries(label_map),
-      text: props.text,
+      text: props.message.text,
     });
   };
-  const [checkboxValues, setCheckboxValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(false));
-  const [sliderValues, setSliderValues] = useState(new Array(TEXT_LABEL_FLAGS.length).fill(1));
 
-  const handleCheckboxState = (isChecked, idx) => {
-    setCheckboxValues(
-      checkboxValues.map((val, i) => {
-        return i == idx ? isChecked : val;
-      })
-    );
+  const handleCheckboxState = (checked, label_index) => {
+    updateReport({ type: "toggle_label", label_index, check: checked });
   };
-  const handleSliderState = (newVal, idx) => {
-    setSliderValues(
-      sliderValues.map((val, i) => {
-        return i == idx ? newVal : val;
-      })
-    );
+  const handleSliderState = (value, label_index) => {
+    updateReport({ type: "update_value", label_index, value });
   };
 
   return (
@@ -90,39 +145,40 @@ export const FlaggableElement = (props) => {
       isLazy
       lazyBehavior="keepMounted"
     >
-      <Grid templateColumns="1fr min-content" gap={2}>
+      <Box display="flex" alignItems="center" gap="2">
         <PopoverAnchor>{props.children}</PopoverAnchor>
-        <Tooltip hasArrow label="Report" bg="red.600">
-          <div>
-            <PopoverTrigger>
-              <Button h="full">
-                <FlagIcon className="w-4 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
-              </Button>
-            </PopoverTrigger>
-          </div>
-        </Tooltip>
-      </Grid>
 
-      <PopoverContent width="fit-content">
+        <Tooltip label="Report" bg="red.500" aria-label="A tooltip">
+          <Box>
+            <PopoverTrigger>
+              <Box as="button" display="flex" alignItems="center" justifyContent="center" borderRadius="full" p="1">
+                <FiAlertCircle size="20" className="text-red-400" aria-hidden="true" />
+              </Box>
+            </PopoverTrigger>
+          </Box>
+        </Tooltip>
+      </Box>
+
+      <PopoverContent width="auto" p="3" m="4" maxWidth="calc(100vw - 2rem)">
         <PopoverArrow />
-        <div className="relative h-4">
+        <Box className="relative h-4">
           <PopoverCloseButton />
-        </div>
+        </Box>
         <PopoverBody>
-          {TEXT_LABEL_FLAGS.map((option, i) => (
+          {report.label_values.map(({ label, checked, value }, i) => (
             <FlagCheckbox
-              option={option}
+              label={label}
               key={i}
               idx={i}
-              checkboxValues={checkboxValues}
-              sliderValues={sliderValues}
+              checked={checked}
+              sliderValue={value}
               checkboxHandler={handleCheckboxState}
               sliderHandler={handleSliderState}
             />
           ))}
           <Flex justify="center">
             <Button
-              isDisabled={!checkboxValues.some(Boolean)}
+              isDisabled={!report.submittable}
               onClick={submitResponse}
               className={`bg-indigo-600 text-${useColorModeValue(
                 colors.light.text,
@@ -138,20 +194,22 @@ export const FlaggableElement = (props) => {
   );
 };
 
-export function FlagCheckbox(props: {
-  option: textFlagLabels;
+interface FlagCheckboxProps {
+  label: Label;
   idx: number;
-  checkboxValues: boolean[];
-  sliderValues: number[];
+  checked: boolean;
+  sliderValue: number;
   checkboxHandler: (newVal: boolean, idx: number) => void;
   sliderHandler: (newVal: number, idx: number) => void;
-}): JSX.Element {
+}
+
+export function FlagCheckbox(props: FlagCheckboxProps): JSX.Element {
   let AdditionalExplanation = null;
-  if (props.option.additionalExplanation) {
+  if (props.label.help_text) {
     AdditionalExplanation = (
-      <a href="#" className="group flex items-center space-x-2.5 text-sm ">
+      <a href="#" className="text-sm inline group leading-4">
         <QuestionMarkCircleIcon
-          className="flex h-5 w-5 ml-3 text-gray-400 group-hover:text-gray-500"
+          className="h-5 w-5 ml-1 text-gray-400 group-hover:text-gray-500 inline"
           aria-hidden="true"
         />
       </a>
@@ -163,35 +221,51 @@ export function FlagCheckbox(props: {
 
   const labelTextClass =
     colorMode === "light"
-      ? `text-${colors.light.text} hover:text-blue-700 float-left`
-      : `text-${colors.dark.text} hover:text-blue-400 float-left`;
+      ? `text-${colors.light.text} hover:text-blue-700`
+      : `text-${colors.dark.text} hover:text-blue-400`;
 
   return (
-    <Flex gap={1}>
-      <Checkbox
-        id={id}
-        onChange={(e) => {
-          props.checkboxHandler(e.target.checked, props.idx);
-        }}
-      />
-      <label className="text-sm form-check-label" htmlFor={id}>
-        <span className={labelTextClass}>{props.option.labelText}</span>
-        {AdditionalExplanation}
-      </label>
-      <Spacer />
-      <Slider
-        width="100px"
-        isDisabled={!props.checkboxValues[props.idx]}
-        defaultValue={100}
-        onChangeEnd={(val) => {
-          props.sliderHandler(val / 100, props.idx);
+    <Flex gap="4" justifyContent="space-between" className="my-2">
+      <div className="flex items-start align-middle">
+        <Checkbox
+          id={id}
+          isChecked={props.checked}
+          onChange={(e) => {
+            props.checkboxHandler(e.target.checked, props.idx);
+          }}
+        />
+        <label
+          className={clsx(
+            "text-sm form-check-label ml-2 break-all inline align-middle first-line:leading-4",
+            labelTextClass
+          )}
+          htmlFor={id}
+        >
+          {props.label.display_text}
+          {AdditionalExplanation}
+        </label>
+      </div>
+      <div
+        onClick={() => {
+          if (!props.checked) {
+            props.checkboxHandler(true, props.idx);
+          }
         }}
       >
-        <SliderTrack>
-          <SliderFilledTrack />
-          <SliderThumb />
-        </SliderTrack>
-      </Slider>
+        <Slider
+          width="100px"
+          isDisabled={!props.checked}
+          defaultValue={100}
+          onChangeEnd={(val) => {
+            props.sliderHandler(val / 100, props.idx);
+          }}
+        >
+          <SliderTrack>
+            <SliderFilledTrack />
+            <SliderThumb />
+          </SliderTrack>
+        </Slider>
+      </div>
     </Flex>
   );
 }

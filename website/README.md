@@ -137,6 +137,17 @@ A few npm scripts are available for convenience:
 
 Read more in the [./cypress README](cypress/).
 
+## Unit testing
+
+Jest and React Testing Library are used for unit testing JS/TS/TSX code.
+
+- Store unit test files adjacent to the file being tested and have the filename
+  end with `.test.ts` for non-React code or `.test.tsx` for React code.
+- `npm run jest`: automatically runs tests and watches for any relevant changes
+  to rerun tests.
+
+Read more in the [./src/README.md](src/README.md).
+
 ## Best Practices
 
 When writing code for the website, we have a few best practices:
@@ -188,10 +199,10 @@ new tasks:
 
 1.  For any task that involves writing a free-form response, put the page under
     `website/src/pages/create` with a page name matching the task type, such as
-    `summarize_story.tsx`.
+    `initial_prompt.tsx`.
 1.  For any task that evaluates, rates, or ranks content, put the page under
     `website/src/pages/evaluate` with a page name matching the task type such as
-    `rate_summary.tsx`.
+    `rank_initial_prompts.tsx`.
 
 With this we'll be able to ensure these contribution pages are hidden from
 logged out users but accessible to logged in users.

@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
+from oasst_shared.utils import utcnow
 from sqlalchemy import false
 from sqlmodel import Field, SQLModel
 
@@ -35,4 +36,4 @@ class Task(SQLModel, table=True):
 
     @property
     def expired(self) -> bool:
-        return self.expiry_date is not None and datetime.utcnow() > self.expiry_date
+        return self.expiry_date is not None and utcnow() > self.expiry_date

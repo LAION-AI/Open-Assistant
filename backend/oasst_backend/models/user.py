@@ -4,7 +4,8 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from sqlmodel import Field, Index, SQLModel
+from oasst_shared.schemas import protocol
+from sqlmodel import AutoString, Field, Index, SQLModel
 
 
 class User(SQLModel, table=True):
@@ -23,3 +24,18 @@ class User(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
     api_client_id: UUID = Field(foreign_key="api_client.id")
+    enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
+    notes: str = Field(sa_column=sa.Column(AutoString(length=1024), nullable=False, server_default=""))
+    deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
+
+    def to_protocol_frontend_user(self):
+        return protocol.FrontEndUser(
+            user_id=self.id,
+            id=self.username,
+            display_name=self.display_name,
+            auth_method=self.auth_method,
+            enabled=self.enabled,
+            deleted=self.deleted,
+            notes=self.notes,
+            created_date=self.created_date,
+        )

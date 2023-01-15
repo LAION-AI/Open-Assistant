@@ -32,11 +32,14 @@ const config = {
 
   presets: [
     [
-      "classic",
+      "docusaurus-preset-openapi",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
+        },
+        api: {
+          path: "docs/api/openapi.json",
         },
         blog: false,
         theme: {
@@ -62,7 +65,7 @@ const config = {
             position: "left",
             label: "Docs",
           },
-          //{ to: "/blog", label: "Blog", position: "left" },
+          { to: "/api", label: "API", position: "left" },
           {
             href: "https://github.com/LAION-AI/Open-Assistant",
             label: "GitHub",

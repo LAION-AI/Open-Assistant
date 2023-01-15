@@ -1,4 +1,4 @@
-import { getToken } from "next-auth/jwt";
+import { withoutRole } from "src/lib/auth";
 import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
 
@@ -10,20 +10,17 @@ import prisma from "src/lib/prismadb";
  * 3) Send and Ack to the Task Backend with our local id for the task.
  * 4) Return everything to the client.
  */
-const handler = async (req, res) => {
+const handler = withoutRole("banned", async (req, res, token) => {
+  // Fetch the new task.
   const { task_type } = req.query;
 
-  const token = await getToken({ req });
-
-  // Return nothing if the user isn't registered.
-  if (!token) {
-    res.status(401).end();
-    return;
+  let task;
+  try {
+    task = await oasstApiClient.fetchTask(task_type as string, token);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
   }
-
-  // Fetch the new task.
-  const task = await oasstApiClient.fetchTask(task_type, token);
-  const valid_labels = await oasstApiClient.fetch_valid_text();
 
   // Store the task and link it to the user..
   const registeredTask = await prisma.registeredTask.create({
@@ -37,13 +34,8 @@ const handler = async (req, res) => {
     },
   });
 
-  // Add the valid labels that can be used to flag messages in this Task
-  registeredTask["valid_labels"] = valid_labels;
-  // Update the backend with our Task ID
-  await oasstApiClient.ackTask(task.id, registeredTask.id);
-
   // Send the results to the client.
   res.status(200).json(registeredTask);
-};
+});
 
 export default handler;
