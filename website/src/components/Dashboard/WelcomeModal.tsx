@@ -10,29 +10,19 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export function WelcomeModal() {
   const { data: session } = useSession();
 
   const [showModal, setShowModal] = useState(true);
 
-  // useEffect(() => {
-  //   if (!localStorage.getItem("welcomeModalSeen")) {
-  //     setShowModal(true);
-  //     localStorage.setItem("welcomeModalSeen", "true");
-  //   } else {
-  //     setShowModal(false);
-  //   }
-  // }, []);
-
   if (!session) {
     return <></>;
   }
-  if (session && session.user)
+  if (session && session.user && session.user.isNew)
     return (
       <>
         <Modal isOpen={showModal} onClose={() => setShowModal(false)} isCentered>
