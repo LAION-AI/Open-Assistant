@@ -1,7 +1,6 @@
 from typing import Optional
 from uuid import UUID
 
-from oasst_backend.models import ApiClient, Message, User
 from oasst_backend.models import ApiClient, User
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
