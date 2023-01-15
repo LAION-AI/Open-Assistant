@@ -1,9 +1,9 @@
 from http import HTTPStatus
 from secrets import token_hex
 from typing import Generator
-from uuid import UUID
 
 from fastapi import Depends, Request, Response, Security
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
 from fastapi_limiter.depends import RateLimiter
 from loguru import logger
@@ -22,6 +22,8 @@ def get_db() -> Generator:
 api_key_query = APIKeyQuery(name="api_key", auto_error=False)
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
+bearer_token = HTTPBearer(auto_error=False)
+
 
 async def get_api_key(
     api_key_query: str = Security(api_key_query),
@@ -33,16 +35,44 @@ async def get_api_key(
         return api_key_header
 
 
+def create_api_client(
+    *,
+    db: Session,
+    added_by_root_token: str,
+    description: str,
+    frontend_type: str,
+    trusted: bool | None = False,
+    admin_email: str | None = None,
+    api_key: str | None = None,
+) -> ApiClient:
+    if api_key is None:
+        api_key = token_hex(32)
+
+    logger.info(f"Creating new api client with {api_key=}")
+    api_client = ApiClient(
+        api_key=api_key,
+        description=description,
+        frontend_type=frontend_type,
+        trusted=trusted,
+        admin_email=admin_email,
+        added_by_root_token=added_by_root_token,
+    )
+    db.add(api_client)
+    db.commit()
+    db.refresh(api_client)
+    return api_client
+
+
 def get_dummy_api_client(db: Session) -> ApiClient:
     # make sure that a dummy api key exits in db (foreign key references)
-    ANY_API_KEY_ID = UUID("00000000-1111-2222-3333-444444444444")
-    api_client: ApiClient = db.query(ApiClient).filter(ApiClient.id == ANY_API_KEY_ID).first()
+    DUMMY_API_KEY = "1234"
+    api_client: ApiClient = db.query(ApiClient).filter(ApiClient.api_key == DUMMY_API_KEY).first()
     if api_client is None:
-        token = token_hex(32)
-        logger.info(f"ANY_API_KEY missing, inserting api_key: {token}")
-        api_client = ApiClient(
-            id=ANY_API_KEY_ID,
-            api_key=token,
+        logger.info(f"ANY_API_KEY missing, inserting api_key: {DUMMY_API_KEY}")
+        api_client = create_api_client(
+            db=db,
+            added_by_root_token="1234",
+            api_key=DUMMY_API_KEY,
             description="ANY_API_KEY, random token",
             trusted=True,
             frontend_type="Test frontend",
@@ -58,7 +88,7 @@ def api_auth(
 ) -> ApiClient:
     if api_key or settings.DEBUG_SKIP_API_KEY_CHECK:
 
-        if settings.DEBUG_SKIP_API_KEY_CHECK or settings.DEBUG_ALLOW_ANY_API_KEY:
+        if settings.DEBUG_SKIP_API_KEY_CHECK or settings.DEBUG_ALLOW_DEBUG_API_KEY:
             return get_dummy_api_client(db)
 
         api_client = db.query(ApiClient).filter(ApiClient.api_key == api_key).first()
@@ -91,6 +121,18 @@ def get_trusted_api_client(
             http_status_code=HTTPStatus.FORBIDDEN,
         )
     return client
+
+
+def get_root_token(bearer_token: HTTPAuthorizationCredentials = Security(bearer_token)) -> str:
+    if bearer_token:
+        token = bearer_token.credentials
+        if token and token in settings.ROOT_TOKENS:
+            return token
+    raise OasstError(
+        "Could not validate credentials",
+        error_code=OasstErrorCode.ROOT_TOKEN_NOT_AUTHORIZED,
+        http_status_code=HTTPStatus.FORBIDDEN,
+    )
 
 
 class UserRateLimiter(RateLimiter):
