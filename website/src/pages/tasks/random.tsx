@@ -27,6 +27,6 @@ const RandomTask = () => {
   );
 };
 
-RandomTask.getLayout = getDashboardLayout;
+RandomTask.getLayout = (page) => getDashboardLayout(page);
 
 export default RandomTask;
