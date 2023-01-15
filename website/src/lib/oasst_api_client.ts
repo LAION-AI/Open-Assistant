@@ -1,5 +1,6 @@
 import { JWT } from "next-auth/jwt";
 import type { Message } from "src/types/Conversation";
+import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { BackendUser } from "src/types/Users";
 
 export class OasstError {
@@ -187,8 +188,8 @@ export class OasstApiClient {
   /**
    * Returns the current leaderboard ranking.
    */
-  async fetch_leaderboard(): Promise<any> {
-    return this.get(`/api/v1/experimental/leaderboards/create/assistant`);
+  async fetch_leaderboard(time_frame: LeaderboardTimeFrame): Promise<LeaderboardReply> {
+    return this.get(`/api/v1/leaderboards/${time_frame}`);
   }
 }
 

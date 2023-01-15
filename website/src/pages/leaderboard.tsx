@@ -1,7 +1,8 @@
-import { Box, Heading } from "@chakra-ui/react";
+import { Box, Heading, Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 import Head from "next/head";
 import { getDashboardLayout } from "src/components/Layout";
 import { LeaderboardGridCell } from "src/components/LeaderboardGridCell";
+import { LeaderboardTimeFrame } from "src/types/Leaderboard";
 
 const Leaderboard = () => {
   return (
@@ -14,7 +15,29 @@ const Leaderboard = () => {
         <Heading fontSize="2xl" fontWeight="bold" pb="4">
           Leaderboard
         </Heading>
-        <LeaderboardGridCell />
+        <Tabs isFitted isLazy>
+          <TabList>
+            <Tab>Daily</Tab>
+            <Tab>Weekly</Tab>
+            <Tab>Monthly</Tab>
+            <Tab>Overall</Tab>
+          </TabList>
+
+          <TabPanels>
+            <TabPanel p="0">
+              <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.day} />
+            </TabPanel>
+            <TabPanel p="0">
+              <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.week} />
+            </TabPanel>
+            <TabPanel p="0">
+              <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.month} />
+            </TabPanel>
+            <TabPanel p="0">
+              <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.total} />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </Box>
     </>
   );
