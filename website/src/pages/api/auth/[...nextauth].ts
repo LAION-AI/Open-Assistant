@@ -50,7 +50,7 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
           where: {
             id: user.id,
           },
-          update: {},
+          update: user,
           create: user,
         });
         return user;
