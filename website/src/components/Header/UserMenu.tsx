@@ -81,9 +81,9 @@ export function UserMenu() {
       <MenuList p="2" borderRadius="xl" shadow="none">
         <Box display="flex" flexDirection="column" alignItems="center" borderRadius="md" p="4">
           <Text>{session.user.name}</Text>
-          <Text color="blue.500" fontWeight="bold" fontSize="xl">
+          {/* <Text color="blue.500" fontWeight="bold" fontSize="xl">
             3,200
-          </Text>
+          </Text> */}
         </Box>
         <MenuDivider />
         <MenuGroup>
