@@ -1320,7 +1320,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FrontEndUser"
+                  "$ref": "#/components/schemas/User"
                 }
               }
             }
@@ -1653,10 +1653,10 @@
           {
             "required": false,
             "schema": {
-              "title": "Gt",
+              "title": "Gte",
               "type": "string"
             },
-            "name": "gt",
+            "name": "gte",
             "in": "query"
           },
           {
