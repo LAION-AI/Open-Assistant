@@ -67,6 +67,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "postgres"
     DATABASE_URI: Optional[PostgresDsn] = None
+    DATABASE_MAX_TX_RETRY_COUNT: int = 3
 
     RATE_LIMIT: bool = True
     REDIS_HOST: str = "localhost"
