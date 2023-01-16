@@ -27,6 +27,6 @@ Default.args = {
     console.log(content);
   },
   mutate: () => {
-    console.log(mutate);
+    console.log("mutate");
   },
 };
