@@ -613,16 +613,17 @@ class TreeManager:
         for parent_msg_id, ranking in rankings_by_message.items():
             unordered_ranking = []
             for msg_reaction in ranking:
-                 unordered_ranking.append([msg_reaction.payload.payload.ranking, msg_reaction.payload.payload.ranked_message_ids])
+                unordered_ranking.append(
+                    [msg_reaction.payload.payload.ranking, msg_reaction.payload.payload.ranked_message_ids]
+                )
             sorted_ranking = self.sort_uuid_rankings(unordered_ranking)
             sorted_ranking, sorted_uuids = zip(*sorted_ranking)
             consensus = ranked_pairs(sorted_ranking)
             for rank, uuid in zip(consensus, sorted_uuids[0]):
-                #set rank for each message_id for Message rows
+                # set rank for each message_id for Message rows
                 msg = self.db.query(Message).filter(Message.id == uuid).one()
                 msg.rank = rank
                 self.db.add(msg)
-
 
     def sort_uuid_rankings(self, data: List[Tuple[List[float], List[str]]]) -> List[Tuple[List[float], List[str]]]:
         sorted_data = []
@@ -930,11 +931,11 @@ if __name__ == "__main__":
 
         print("query_num_active_trees", tm.query_num_active_trees())
         print("query_incomplete_rankings", tm.query_incomplete_rankings())
-        #print("query_incomplete_reply_reviews", tm.query_replies_need_review())
-        #print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
-        #print("query_extendible_trees", tm.query_extendible_trees())
-        #print("query_extendible_parents", tm.query_extendible_parents())
-        '''
+        # print("query_incomplete_reply_reviews", tm.query_replies_need_review())
+        # print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
+        # print("query_extendible_trees", tm.query_extendible_trees())
+        # print("query_extendible_parents", tm.query_extendible_parents())
+        """
         print("next_task:", tm.next_task())
 
         # print("query_num_active_trees", tm.query_num_active_trees())
@@ -949,9 +950,5 @@ if __name__ == "__main__":
             "query_reviews_for_message",
             tm.query_reviews_for_message(message_id=UUID("6a444493-0d48-4316-a9f1-7e263f5a2473")),
         )
-
-        # print("next_task:", tm.next_task())
-
-        # print(
-        #     "query_tree_ranking_results", tm.query_tree_ranking_results(UUID("6036f58f-41b5-48c4-bdd9-b16f34ab1312"))
-        # )
+        """
+        print(tm.check_condition_for_scoring_state("6d9baece-0308-4ee9-a5d4-15851b2ccf8f"))
