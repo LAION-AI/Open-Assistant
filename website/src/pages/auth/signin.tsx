@@ -164,7 +164,6 @@ const SigninButton = (props: ButtonProps) => {
 
   return (
     <Button
-      data-cy="signin-email-button"
       size={"lg"}
       leftIcon={<FaEnvelope />}
       type="submit"
