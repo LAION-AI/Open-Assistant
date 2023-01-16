@@ -44,6 +44,7 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
         const user = {
           id: credentials.username,
           name: credentials.username,
+          role: "admin",
         };
         // save the user to the database
         await prisma.user.upsert({
