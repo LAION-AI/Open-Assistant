@@ -1,10 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getToken, JWT } from "next-auth/jwt";
-import { ElementOf } from "src/types/utils";
+import { Role } from "src/components/RoleSelect";
 
-export const roles = ["general", "admin", "banned"] as const;
-
-export type Role = ElementOf<typeof roles>;
 /**
  * Wraps any API Route handler and verifies that the user does not have the
  * specified role.  Returns a 403 if they do, otherwise runs the handler.

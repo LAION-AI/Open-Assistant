@@ -1,6 +1,9 @@
 import { Select, SelectProps } from "@chakra-ui/react";
 import { forwardRef } from "react";
-import { Role, roles } from "src/lib/auth";
+import { ElementOf } from "src/types/utils";
+
+export const roles = ["general", "admin", "banned"] as const;
+export type Role = ElementOf<typeof roles>;
 
 type RoleSelectProps = Omit<SelectProps, "defaultValue"> & {
   defaultValue?: Role;
