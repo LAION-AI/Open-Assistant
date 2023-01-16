@@ -16,7 +16,7 @@ export interface LeaderboardReply {
 }
 
 export interface LeaderboardEntity {
-  user_rank: number;
+  rank: number;
   user_id: string;
   username: string;
   auth_method: string;
