@@ -88,8 +88,9 @@
       community.docker.docker_container:
         name: "oasst-{{ stack_name }}-pgbackrest"
         image: woblerr/pgbackrest:2.43
-        state: "{{ 'stopped' if stack_name == 'production' else 'absent' }}"
+        state: "{{ 'started' if stack_name == 'production' else 'absent' }}"
         network_mode: "oasst-{{ stack_name }}"
+        command: "/bin/bash"
         volumes:
           - "./{{ stack_name }}/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf"
           - "oasst-{{ stack_name }}-postgres-backend:/var/lib/postgresql/data"
