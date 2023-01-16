@@ -90,7 +90,7 @@
         image: woblerr/pgbackrest:2.43
         state: "{{ 'started' if stack_name == 'production' else 'absent' }}"
         network_mode: "oasst-{{ stack_name }}"
-        command: [sleep, infinity]
+        entrypoint: ["/bin/bash", "-c", "sleep infinity"]
         volumes:
           - "./{{ stack_name }}/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf"
           - "oasst-{{ stack_name }}-postgres-backend:/var/lib/postgresql/data"
