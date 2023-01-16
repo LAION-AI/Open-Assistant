@@ -19,8 +19,8 @@ const InitialPrompt = () => {
   return (
     <>
       <Head>
-        <title>Reply as Assistant</title>
-        <meta name="description" content="Reply as Assistant." />
+        <title>Initial Prompt</title>
+        <meta name="description" content="Add an initial Prompt." />
       </Head>
       <Task key={tasks[0].task.id} frontendId={tasks[0].id} task={tasks[0].task} trigger={trigger} mutate={reset} />
     </>

@@ -176,7 +176,7 @@ export class OasstApiClient {
     const params = new URLSearchParams();
     params.append("max_count", max_count.toString());
 
-    // The backend API uses different query paramters depending on the
+    // The backend API uses different query parameters depending on the
     // pagination direction but they both take the same cursor value.
     // Depending on direction, pick the right query param.
     if (cursor !== "") {

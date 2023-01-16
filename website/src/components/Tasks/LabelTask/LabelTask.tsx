@@ -69,7 +69,7 @@ export const LabelTask = ({
             </Box>
           )}
         </>
-        {valid_labels.length === 1 ? (
+        {task.mode === "simple" ? (
           <LabelRadioGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />
         ) : (
           <LabelSliderGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />

@@ -42,7 +42,7 @@ const errorMessages: Record<SignInErrorTypes, string> = {
 interface SigninProps {
   providers: Awaited<ReturnType<typeof getProviders>>;
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 function Signin({ providers }: SigninProps) {
   const router = useRouter();
   const { discord, email, github, credentials } = providers;
