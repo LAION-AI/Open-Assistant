@@ -72,17 +72,17 @@ models, among other things.
 > (natural language critical comments) using behavioral cloning. On a
 > topic-based summarization task, critiques written by our models help humans
 > find flaws in summaries that they would have otherwise missed. We study
-> scaling properties of critiquing with both topic-based summarization
-> and synthetic tasks. Finally, we motivate and introduce a framework for
-> comparing critiquing ability to generation and discrimination ability. These
-> results are a proof of concept for using AI-assisted human feedback to
-> scale the supervision of machine learning systems to tasks that are
-> difficult for humans to evaluate directly. We release our training datasets.
+> scaling properties of critiquing with both topic-based summarization and
+> synthetic tasks. Finally, we motivate and introduce a framework for comparing
+> critiquing ability to generation and discrimination ability. These results are
+> a proof of concept for using AI-assisted human feedback to scale the
+> supervision of machine learning systems to tasks that are difficult for humans
+> to evaluate directly. We release our training datasets.
 
 ### Is Reinforcement Learning (Not) for Natural Language Processing?: Benchmarks, Baselines, and Building Blocks for Natural Language Policy Optimization [[ArXiv](https://arxiv.org/abs/2210.01241)]
 
-> We tackle the problem of aligning pre-trained large language models (LMs)
-> with human preferences. We present the GRUE (General Reinforced-language
+> We tackle the problem of aligning pre-trained large language models (LMs) with
+> human preferences. We present the GRUE (General Reinforced-language
 > Understanding Evaluation) benchmark, a set of 6 language generation tasks
 > which are supervised by reward functions which capture automated measures of
 > human preference. Finally, we introduce an easy-to-use, performant RL
@@ -151,7 +151,6 @@ models.
 > distribution shift, and is sensitive to uncertainty in its own answers, rather
 > than imitating human examples.
 
-
 ## Evidence-Guided Text Generation
 
 ### WebGPT: Browser-assisted question-answering with human feedback [[ArXiv](https://arxiv.org/abs/2112.09332)]
@@ -194,8 +193,8 @@ models.
 > humans "in the wild" remains a formidable challenge. In this work we develop a
 > real-time, open-ended dialogue system that uses reinforcement learning (RL) to
 > power a bot's conversational skill at scale. Trained using crowd-sourced data,
-> our novel system is able to substantially exceeds several metrics of
-> interest in a live experiment with real users of the Google Assistant.
+> our novel system is able to substantially exceeds several metrics of interest
+> in a live experiment with real users of the Google Assistant.
 
 ### Improving alignment of dialogue agents via targeted human judgements [[ArXiv](https://arxiv.org/abs/2209.14375)]
 
