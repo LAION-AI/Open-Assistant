@@ -27,7 +27,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
   const replyContent = useRef<TaskContent>(null);
   const [showUnchangedWarning, setShowUnchangedWarning] = useState(false);
 
-  const taskType = TaskTypes.find((taskType) => taskType.type === task.type);
+  const taskType = TaskTypes.find((taskType) => taskType.type === task.type && taskType.mode === task.mode);
 
   const { trigger: sendRejection } = useSWRMutation("/api/reject_task", post, {
     onSuccess: async () => {
