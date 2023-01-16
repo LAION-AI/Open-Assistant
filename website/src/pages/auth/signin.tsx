@@ -68,7 +68,6 @@ function Signin({ providers }: SigninProps) {
   const { colorMode } = useColorMode();
   const bgColorClass = colorMode === "light" ? "bg-gray-50" : "bg-chakra-gray-900";
   const buttonBgColor = colorMode === "light" ? "#2563eb" : "#2563eb";
-  console.log(credentials);
 
   return (
     <div className={bgColorClass}>
