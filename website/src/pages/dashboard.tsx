@@ -1,3 +1,4 @@
+import { Flex } from "@chakra-ui/react";
 import Head from "next/head";
 import { useSession } from "next-auth/react";
 import { LeaderboardTable, TaskOption } from "src/components/Dashboard";
@@ -16,8 +17,10 @@ const Dashboard = () => {
         <title>Dashboard - Open Assistant</title>
         <meta name="description" content="Chat with Open Assistant and provide feedback." />
       </Head>
-      <TaskOption displayTaskCategories={[TaskCategory.Tasks]} />
-      <LeaderboardTable />
+      <Flex direction="column" gap="10">
+        <TaskOption displayTaskCategories={[TaskCategory.Tasks]} />
+        <LeaderboardTable />
+      </Flex>
     </>
   );
 };
