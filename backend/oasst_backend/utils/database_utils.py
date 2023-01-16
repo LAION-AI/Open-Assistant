@@ -5,6 +5,7 @@ from http import HTTPStatus
 from loguru import logger
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from sqlalchemy.exc import OperationalError
+from sqlmodel import SQLModel
 
 MAX_DB_RETRY_COUNT = 3
 
@@ -39,6 +40,8 @@ def managed_tx_method(auto_commit: CommitMode = CommitMode.COMMIT, num_retries=M
                             self.db.commit()
                         elif auto_commit == CommitMode.FLUSH:
                             self.db.flush()
+                        if isinstance(result, SQLModel):
+                            self.db.refresh(result)
                         return result
                     except OperationalError:
                         logger.info(f"Retrying count: {i+1} after possible db concurrent update conflict")
