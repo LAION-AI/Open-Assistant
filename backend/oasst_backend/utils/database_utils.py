@@ -73,6 +73,8 @@ def async_managed_tx_method(auto_commit: CommitMode = CommitMode.COMMIT, num_ret
                             self.db.commit()
                         elif auto_commit == CommitMode.FLUSH:
                             self.db.flush()
+                        if isinstance(result, SQLModel):
+                            self.db.refresh(result)
                         return result
                     except OperationalError:
                         logger.info(f"Retrying count: {i+1} after possible db concurrent update conflict")
