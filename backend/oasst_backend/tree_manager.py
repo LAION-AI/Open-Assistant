@@ -76,12 +76,10 @@ class TreeManager:
         db: Session,
         prompt_repository: PromptRepository,
         cfg: Optional[TreeManagerConfiguration] = None,
-        rank_prompter_replies: bool = False,
     ):
         self.db = db
         self.cfg = cfg or settings.tree_manager
         self.pr = prompt_repository
-        self.rank_prompter_replies = rank_prompter_replies
 
     def _random_task_selection(
         self,
@@ -141,7 +139,7 @@ class TreeManager:
         replies_need_review: list[Message],
         incomplete_rankings: list[IncompleteRankingsRow],
     ) -> dict[protocol_schema.TaskRequestType, int]:
-        task_count_by_type: dict[protocol_schema.TaskRequestType, int] = {}
+        task_count_by_type: dict[protocol_schema.TaskRequestType, int] = {t: 0 for t in protocol_schema.TaskRequestType}
 
         num_missing_prompts = max(0, self.cfg.max_active_trees - num_active_trees)
         task_count_by_type[protocol_schema.TaskRequestType.initial_prompt] = num_missing_prompts
@@ -161,9 +159,7 @@ class TreeManager:
             list(filter(lambda m: m.role == "prompter", replies_need_review))
         )
 
-        if self.rank_prompter_replies:
-            task_count_by_type[protocol_schema.TaskRequestType.rank_prompter_replies] = 0
-        else:
+        if self.cfg.rank_prompter_replies:
             task_count_by_type[protocol_schema.TaskRequestType.rank_prompter_replies] = len(
                 list(filter(lambda r: r.role == "prompter", incomplete_rankings))
             )
@@ -171,11 +167,6 @@ class TreeManager:
         task_count_by_type[protocol_schema.TaskRequestType.rank_assistant_replies] = len(
             list(filter(lambda r: r.role == "assistant", incomplete_rankings))
         )
-
-        # not implemented
-        task_count_by_type[protocol_schema.TaskRequestType.rank_initial_prompts] = 0
-        task_count_by_type[protocol_schema.TaskRequestType.summarize_story] = 0
-        task_count_by_type[protocol_schema.TaskRequestType.rate_summary] = 0
 
         task_count_by_type[protocol_schema.TaskRequestType.random] = sum(
             task_count_by_type[t] for t in protocol_schema.TaskRequestType if t in task_count_by_type
@@ -210,7 +201,7 @@ class TreeManager:
         extensible_parents = self.query_extendible_parents()
 
         incomplete_rankings = self.query_incomplete_rankings()
-        if not self.rank_prompter_replies:
+        if not self.cfg.rank_prompter_replies:
             incomplete_rankings = list(filter(lambda r: r.role == "assistant", incomplete_rankings))
 
         active_tree_sizes = self.query_extendible_trees()
@@ -603,7 +594,7 @@ class TreeManager:
             logger.debug(f"False {mts.active=}, {mts.state=}")
             return False
 
-        ranking_role_filter = None if self.rank_prompter_replies else "assistant"
+        ranking_role_filter = None if self.cfg.rank_prompter_replies else "assistant"
         rankings_by_message = self.query_tree_ranking_results(message_tree_id, role_filter=ranking_role_filter)
         for parent_msg_id, ranking in rankings_by_message.items():
             if len(ranking) < self.cfg.num_required_rankings:

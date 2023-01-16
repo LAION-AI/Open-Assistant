@@ -55,6 +55,8 @@ class TreeManagerConfiguration(BaseModel):
     mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
     """Mandatory labels in text-labeling tasks for prompter replies."""
 
+    rank_prompter_replies: bool = False
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"
