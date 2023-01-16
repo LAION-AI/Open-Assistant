@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
-import { useEffect, useReducer } from "react";
+import { useReducer } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { get, post } from "src/lib/api";
 import { Message } from "src/types/Conversation";
@@ -100,14 +100,12 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
   );
   const [isEditing, setIsEditing] = useBoolean();
 
-  const { data, isLoading } = useSWR("/api/valid_labels", get);
-  useEffect(() => {
-    if (isLoading) {
-      return;
-    }
-    const { valid_labels } = data;
-    updateReport({ type: "load_labels", labels: valid_labels });
-  }, [data, isLoading]);
+  useSWR("/api/valid_labels", get, {
+    onSuccess: (data) => {
+      const { valid_labels } = data;
+      updateReport({ type: "load_labels", labels: valid_labels });
+    },
+  });
 
   const { trigger } = useSWRMutation("/api/set_label", post, {
     onSuccess: () => {
