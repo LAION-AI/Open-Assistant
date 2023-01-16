@@ -55,10 +55,13 @@ class TreeManagerConfiguration(BaseModel):
     mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
     """Mandatory labels in text-labeling tasks for prompter replies."""
 
+    rank_prompter_replies: bool = False
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"
     API_V1_STR: str = "/api/v1"
+    OFFICIAL_WEB_API_KEY: str = "1234"
 
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5432"
@@ -66,13 +69,12 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "postgres"
     DATABASE_URI: Optional[PostgresDsn] = None
+    DATABASE_MAX_TX_RETRY_COUNT: int = 3
 
     RATE_LIMIT: bool = True
     REDIS_HOST: str = "localhost"
     REDIS_PORT: str = "6379"
 
-    DEBUG_ALLOW_DEBUG_API_KEY: bool = False
-    DEBUG_SKIP_API_KEY_CHECK: bool = False
     DEBUG_USE_SEED_DATA: bool = False
     DEBUG_USE_SEED_DATA_PATH: Optional[FilePath] = (
         Path(__file__).parent.parent / "test_data/realistic/realistic_seed_data.json"
@@ -80,6 +82,7 @@ class Settings(BaseSettings):
     DEBUG_ALLOW_SELF_LABELING: bool = False  # allow users to label their own messages
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
+    DEBUG_DATABASE_ECHO: bool = False
 
     HUGGING_FACE_API_KEY: str = ""
 

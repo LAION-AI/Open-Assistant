@@ -2,12 +2,13 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { boolean } from "boolean";
 import type { AuthOptions } from "next-auth";
 import NextAuth from "next-auth";
+import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 import prisma from "src/lib/prismadb";
 
-const providers = [];
+const providers: Provider[] = [];
 
 // Register an email magic link auth method.
 providers.push(
@@ -39,11 +40,13 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
       name: "Debug Credentials",
       credentials: {
         username: { label: "Username", type: "text" },
+        role: { label: "Role", type: "text" },
       },
       async authorize(credentials) {
         const user = {
           id: credentials.username,
           name: credentials.username,
+          role: credentials.role,
         };
         // save the user to the database
         await prisma.user.upsert({

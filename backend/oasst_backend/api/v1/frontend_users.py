@@ -19,14 +19,14 @@ router = APIRouter()
 def get_users(
     api_client_id: Optional[UUID] = None,
     max_count: Optional[int] = Query(100, gt=0, le=10000),
-    gte: Optional[str] = None,
+    gt: Optional[str] = None,
     lt: Optional[str] = None,
     auth_method: Optional[str] = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
     ur = UserRepository(db, api_client)
-    users = ur.query_users(api_client_id=api_client_id, limit=max_count, gte=gte, lt=lt, auth_method=auth_method)
+    users = ur.query_users(api_client_id=api_client_id, limit=max_count, gt=gt, lt=lt, auth_method=auth_method)
     return [u.to_protocol_frontend_user() for u in users]
 
 

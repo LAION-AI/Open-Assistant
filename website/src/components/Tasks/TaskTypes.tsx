@@ -11,6 +11,7 @@ export interface TaskInfo {
   category: TaskCategory;
   pathname: string;
   type: string;
+  mode?: string;
   overview?: string;
   instruction?: string;
   update_type: string;
@@ -90,7 +91,7 @@ export const TaskTypes: TaskInfo[] = [
     unchanged_title: "Order Unchanged",
     unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to continue?",
   },
-  // label
+  // label (fuill)
   {
     label: "Label Initial Prompt",
     desc: "Provide labels for a prompt.",
@@ -98,6 +99,7 @@ export const TaskTypes: TaskInfo[] = [
     pathname: "/label/label_initial_prompt",
     overview: "Provide labels for the following prompt",
     type: "label_initial_prompt",
+    mode: "full",
     update_type: "text_labels",
   },
   {
@@ -107,6 +109,7 @@ export const TaskTypes: TaskInfo[] = [
     pathname: "/label/label_prompter_reply",
     overview: "Given the following discussion, provide labels for the final promp",
     type: "label_prompter_reply",
+    mode: "full",
     update_type: "text_labels",
   },
   {
@@ -116,6 +119,38 @@ export const TaskTypes: TaskInfo[] = [
     pathname: "/label/label_assistant_reply",
     overview: "Given the following discussion, provide labels for the final prompt.",
     type: "label_assistant_reply",
+    mode: "full",
+    update_type: "text_labels",
+  },
+  // label (simple)
+  {
+    label: "Classify Initial Prompt",
+    desc: "Provide labels for a prompt.",
+    category: TaskCategory.Label,
+    pathname: "/label/label_initial_prompt",
+    overview: "Read the following prompt and then answer the question about it.",
+    type: "label_initial_prompt",
+    mode: "simple",
+    update_type: "text_labels",
+  },
+  {
+    label: "Classify Prompter Reply",
+    desc: "Provide labels for a prompt.",
+    category: TaskCategory.Label,
+    pathname: "/label/label_prompter_reply",
+    overview: "Read the following conversation and then answer the question about the last prompt in the disscusion.",
+    type: "label_prompter_reply",
+    mode: "simple",
+    update_type: "text_labels",
+  },
+  {
+    label: "Classify Assistant Reply",
+    desc: "Provide labels for a prompt.",
+    category: TaskCategory.Label,
+    pathname: "/label/label_assistant_reply",
+    overview: "Read the following conversation and then answer the question about the last prompt in the disscusion.",
+    type: "label_assistant_reply",
+    mode: "simple",
     update_type: "text_labels",
   },
 ];

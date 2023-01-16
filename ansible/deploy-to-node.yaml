@@ -1,6 +1,6 @@
 # ansible playbook to set up some docker containers
 
-- name: Deploy to dev node
+- name: Deploy to node
   hosts: dev
   gather_facts: true
   vars:
@@ -8,6 +8,8 @@
     image_tag: latest
     backend_port: 8080
     website_port: 3000
+    postgres_password: postgres
+    web_api_key: "1234"
   tasks:
     - name: Create network
       community.docker.docker_network:
@@ -44,6 +46,14 @@
         volumes:
           - "./{{ stack_name }}/redis.conf:/usr/local/etc/redis/redis.conf"
 
+    - name: Create volumes for postgres
+      community.docker.docker_volume:
+        name: "oasst-{{ stack_name }}-postgres-{{ item.name }}"
+        state: present
+      loop:
+        - name: backend
+        - name: web
+
     - name: Create postgres containers
       community.docker.docker_container:
         name: "oasst-{{ stack_name }}-postgres-{{ item.name }}"
@@ -54,8 +64,11 @@
         network_mode: "oasst-{{ stack_name }}"
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
           POSTGRES_DB: postgres
+        volumes:
+          - "oasst-{{ stack_name }}-postgres-{{ item.name
+            }}:/var/lib/postgresql/data"
         healthcheck:
           test: ["CMD", "pg_isready", "-U", "postgres"]
           interval: 2s
@@ -64,6 +77,29 @@
       loop:
         - name: backend
         - name: web
+
+    - name: Copy pgbackrest.conf to managed node
+      ansible.builtin.copy:
+        src: ./pgbackrest.conf
+        dest: "./{{ stack_name }}/pgbackrest.conf"
+        mode: 0644
+
+    - name: Create pgbackrest container
+      community.docker.docker_container:
+        name: "oasst-{{ stack_name }}-pgbackrest"
+        image: woblerr/pgbackrest:2.43
+        state: "{{ 'stopped' if stack_name == 'production' else 'absent' }}"
+        network_mode: "oasst-{{ stack_name }}"
+        volumes:
+          - "./{{ stack_name }}/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf"
+          - "oasst-{{ stack_name }}-postgres-backend:/var/lib/postgresql/data"
+        env:
+          PGBACKREST_REPO1_S3_BUCKET:
+            "{{ lookup('ansible.builtin.env', 'S3_BUCKET_NAME') }}"
+          PGBACKREST_REPO1_S3_KEY:
+            "{{ lookup('ansible.builtin.env', 'AWS_ACCESS_KEY') }}"
+          PGBACKREST_REPO1_S3_KEY_SECRET:
+            "{{ lookup('ansible.builtin.env', 'AWS_SECRET_KEY') }}"
 
     - name: Run the oasst oasst-backend
       community.docker.docker_container:
@@ -76,15 +112,18 @@
         network_mode: "oasst-{{ stack_name }}"
         env:
           POSTGRES_HOST: "oasst-{{ stack_name }}-postgres-backend"
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
           REDIS_HOST: "oasst-{{ stack_name }}-redis"
-          DEBUG_ALLOW_DEBUG_API_KEY: "true"
-          DEBUG_USE_SEED_DATA: "true"
+          DEBUG_USE_SEED_DATA:
+            "{{ 'true' if stack_name == 'dev' else 'false' }}"
           DEBUG_ALLOW_SELF_LABELING:
             "{{ 'true' if stack_name == 'dev' else 'false' }}"
           MAX_WORKERS: "1"
           RATE_LIMIT: "{{ 'false' if stack_name == 'dev' else 'true' }}"
           DEBUG_SKIP_EMBEDDING_COMPUTATION: "true"
-          DEBUG_SKIP_TOXICITY_CALCULATION: "true"
+          DEBUG_SKIP_TOXICITY_CALCULATION:
+            "{{ 'true' if stack_name == 'dev' else 'false' }}"
+          OFFICIAL_WEB_API_KEY: "{{ web_api_key }}"
         ports:
           - "{{ backend_port }}:8080"
 
@@ -100,9 +139,9 @@
         env:
           ADMIN_USERS: "{{ lookup('ansible.builtin.env', 'WEB_ADMIN_USERS') }}"
           DATABASE_URL:
-            "postgres://postgres:postgres@oasst-{{ stack_name
+            "postgres://postgres:{{ postgres_password }}@oasst-{{ stack_name
             }}-postgres-web/postgres"
-          DEBUG_LOGIN: "true"
+          DEBUG_LOGIN: "{{ 'true' if stack_name == 'dev' else 'false' }}"
           DISCORD_CLIENT_ID:
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_ID') }}"
           DISCORD_CLIENT_SECRET:
@@ -117,10 +156,12 @@
           EMAIL_SERVER_USER:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
           FASTAPI_URL: "http://oasst-{{ stack_name }}-backend:8080"
-          FASTAPI_KEY: "1234"
+          FASTAPI_KEY: "{{ web_api_key }}"
           NEXTAUTH_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
-          NEXTAUTH_URL: http://web.{{ stack_name }}.open-assistant.io/
+          NEXTAUTH_URL:
+            "{{ 'https://open-assistant.io/' if stack_name == 'production' else
+            ('https://web.' + stack_name + '.open-assistant.io/') }}"
         ports:
           - "{{ website_port }}:3000"
         command: bash wait-for-postgres.sh node server.js
