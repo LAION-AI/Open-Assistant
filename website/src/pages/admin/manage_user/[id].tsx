@@ -1,4 +1,4 @@
-import { Button, Container, FormControl, FormLabel, Input, Select, Stack, useToast } from "@chakra-ui/react";
+import { Button, Container, FormControl, FormLabel, Input, Stack, useToast } from "@chakra-ui/react";
 import { Field, Form, Formik } from "formik";
 import { InferGetServerSidePropsType } from "next";
 import Head from "next/head";
@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { getAdminLayout } from "src/components/Layout";
+import { RoleSelect } from "src/components/RoleSelect";
 import { UserMessagesCell } from "src/components/UserMessagesCell";
 import { post } from "src/lib/api";
 import { oasstApiClient } from "src/lib/oasst_api_client";
@@ -99,11 +100,7 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
                 {({ field }) => (
                   <FormControl>
                     <FormLabel>Role</FormLabel>
-                    <Select {...field}>
-                      <option value="banned">Banned</option>
-                      <option value="general">General</option>
-                      <option value="admin">Admin</option>
-                    </Select>
+                    <RoleSelect {...field}></RoleSelect>
                   </FormControl>
                 )}
               </Field>
