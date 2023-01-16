@@ -318,7 +318,10 @@ class TreeManager:
                     valid_labels = self._all_text_labels
 
                     if message.role == "assistant":
-                        if random.random() > self.cfg.p_full_labeling_review_reply_assistant:
+                        if (
+                            desired_task_type == protocol_schema.TaskRequestType.random
+                            and random.random() > self.cfg.p_full_labeling_review_reply_assistant
+                        ):
                             valid_labels = list(map(lambda x: x.value, self.cfg.mandatory_labels_assistant_reply))
                             label_mode = protocol_schema.LabelTaskMode.simple
                         logger.info(f"Generating a LabelAssistantReplyTask. ({label_mode=:s})")
@@ -331,7 +334,10 @@ class TreeManager:
                             mode=label_mode,
                         )
                     else:
-                        if random.random() > self.cfg.p_full_labeling_review_reply_prompter:
+                        if (
+                            desired_task_type == protocol_schema.TaskRequestType.random
+                            and random.random() > self.cfg.p_full_labeling_review_reply_prompter
+                        ):
                             valid_labels = list(map(lambda x: x.value, self.cfg.mandatory_labels_prompter_reply))
                             label_mode = protocol_schema.LabelTaskMode.simple
                         logger.info(f"Generating a LabelPrompterReplyTask. ({label_mode=:s})")
@@ -734,21 +740,27 @@ HAVING COUNT(m.id) < mts.goal_tree_size
         )
         return [ActiveTreeSizeRow.from_orm(x) for x in r.all()]
 
-    _sql_get_tree_size = """
-SELECT mts.message_tree_id, mts.goal_tree_size, COUNT(m.id) AS tree_size
-FROM message_tree_state mts
-    LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
-WHERE mts.active
-    AND NOT m.deleted
-    AND m.review_result
-    AND mts.message_tree_id = :message_tree_id
-GROUP BY mts.message_tree_id, mts.goal_tree_size
-"""
-
     def query_tree_size(self, message_tree_id: UUID) -> ActiveTreeSizeRow:
         """Returns the number of reviewed not deleted messages in the message tree."""
-        r = self.db.execute(text(self._sql_get_tree_size), {"message_tree_id": message_tree_id})
-        return ActiveTreeSizeRow.from_orm(r.one())
+
+        qry = (
+            self.db.query(
+                MessageTreeState.message_tree_id.label("message_tree_id"),
+                MessageTreeState.goal_tree_size.label("goal_tree_size"),
+                func.count(Message.id).label("tree_size"),
+            )
+            .select_from(MessageTreeState)
+            .outerjoin(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
+            .filter(
+                MessageTreeState.active,
+                not_(Message.deleted),
+                Message.review_result,
+                MessageTreeState.message_tree_id == message_tree_id,
+            )
+            .group_by(MessageTreeState.message_tree_id, MessageTreeState.goal_tree_size)
+        )
+
+        return ActiveTreeSizeRow.from_orm(qry.one())
 
     def query_misssing_tree_states(self) -> list[UUID]:
         """Find all initial prompt messages that have no associated message tree state"""
@@ -892,14 +904,15 @@ if __name__ == "__main__":
         tm.ensure_tree_states()
 
         # print("query_num_active_trees", tm.query_num_active_trees())
-        # print("query_incomplete_rankings", tm.query_incomplete_rankings("assistant"))
+        # print("query_incomplete_rankings", tm.query_incomplete_rankings())
         # print("query_replies_need_review", tm.query_replies_need_review())
-        print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
+        # print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
         # print("query_extendible_trees", tm.query_extendible_trees())
         # print("query_extendible_parents", tm.query_extendible_parents())
+        # print("query_tree_size", tm.query_tree_size(message_tree_id=UUID("bdf434cf-4df5-4b74-949c-a5a157bc3292")))
 
-        # print("next_task:", tm.next_task())
+        print("next_task:", tm.next_task())
 
         # print(
-        #     ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("6036f58f-41b5-48c4-bdd9-b16f34ab1312"))
+        #     "query_tree_ranking_results", tm.query_tree_ranking_results(UUID("6036f58f-41b5-48c4-bdd9-b16f34ab1312"))
         # )
