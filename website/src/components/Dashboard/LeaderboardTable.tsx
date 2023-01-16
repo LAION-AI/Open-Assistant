@@ -1,6 +1,7 @@
 import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { LeaderboardGridCell } from "src/components/LeaderboardGridCell";
+import { LeaderboardTimeFrame } from "src/types/Leaderboard";
 
 export function LeaderboardTable() {
   const backgroundColor = useColorModeValue("white", "gray.700");
@@ -23,7 +24,7 @@ export function LeaderboardTable() {
           borderRadius="xl"
           className="p-6 shadow-sm"
         >
-          <LeaderboardGridCell timeFrame="day" />
+          <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.day} />
         </Box>
       </div>
     </main>
