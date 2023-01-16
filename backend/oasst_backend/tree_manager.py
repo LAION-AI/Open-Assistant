@@ -83,7 +83,6 @@ class TreeManager:
 
     def _random_task_selection(
         self,
-        desired_task_type: protocol_schema.TaskRequestType,
         num_ranking_tasks: int,
         num_replies_need_review: int,
         num_prompts_need_review: int,
@@ -102,31 +101,28 @@ class TreeManager:
         )
 
         task_type = TaskType.NONE
-        if desired_task_type == protocol_schema.TaskRequestType.random:
-            task_weights = [0] * 5
+        task_weights = [0] * 5
 
-            if num_ranking_tasks > 0:
-                task_weights[TaskType.RANKING.value] = 10
+        if num_ranking_tasks > 0:
+            task_weights[TaskType.RANKING.value] = 10
 
-            if num_replies_need_review > 0:
-                task_weights[TaskType.LABEL_REPLY.value] = 5
+        if num_replies_need_review > 0:
+            task_weights[TaskType.LABEL_REPLY.value] = 5
 
-            if num_prompts_need_review > 0:
-                task_weights[TaskType.LABEL_PROMPT.value] = 5
+        if num_prompts_need_review > 0:
+            task_weights[TaskType.LABEL_PROMPT.value] = 5
 
-            if num_missing_replies > 0:
-                task_weights[TaskType.REPLY.value] = 2
+        if num_missing_replies > 0:
+            task_weights[TaskType.REPLY.value] = 2
 
-            if num_missing_prompts > 0:
-                task_weights[TaskType.PROMPT.value] = 1
+        if num_missing_prompts > 0:
+            task_weights[TaskType.PROMPT.value] = 1
 
-            task_weights = np.array(task_weights)
-            weight_sum = task_weights.sum()
-            if weight_sum < 1e-8:
-                task_type = TaskType.NONE
-            else:
-                task_weights = task_weights / weight_sum
-                task_type = TaskType(np.random.choice(a=len(task_weights), p=task_weights))
+        task_weights = np.array(task_weights)
+        weight_sum = task_weights.sum()
+        if weight_sum > 1e-8:
+            task_weights = task_weights / weight_sum
+            task_type = TaskType(np.random.choice(a=len(task_weights), p=task_weights))
 
         logger.debug(f"Selected {task_type=}")
         return task_type
@@ -212,7 +208,6 @@ class TreeManager:
         task_role = TaskRole.ANY
         if desired_task_type == protocol_schema.TaskRequestType.random:
             task_type = self._random_task_selection(
-                desired_task_type,
                 num_ranking_tasks=len(incomplete_rankings),
                 num_replies_need_review=len(replies_need_review),
                 num_prompts_need_review=len(prompts_need_review),
