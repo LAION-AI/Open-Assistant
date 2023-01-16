@@ -11,6 +11,7 @@ from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversatio
 from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import Message, MessageReaction, MessageTreeState, TextLabels, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_method, managed_tx_method
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -340,6 +341,7 @@ class TreeManager:
 
         return task, message_tree_id, parent_message_id
 
+    @async_managed_tx_method(CommitMode.COMMIT)
     async def handle_interaction(self, interaction: protocol_schema.AnyInteraction) -> protocol_schema.Task:
         pr = self.pr
         match type(interaction):
@@ -358,7 +360,6 @@ class TreeManager:
                 if not message.parent_id:
                     logger.info(f"TreeManager: Inserting new tree state for initial prompt {message.id=}")
                     self._insert_default_state(message.id)
-                    self.db.commit()
 
                 if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
                     try:
@@ -428,7 +429,6 @@ class TreeManager:
                             if acceptance_score > self.cfg.acceptance_threshold_initial_prompt:
                                 msg.review_result = True
                                 self.db.add(msg)
-                                self.db.commit()
                                 logger.info(
                                     f"Initial prompt message was accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
                                 )
@@ -439,7 +439,6 @@ class TreeManager:
                         if not msg.review_result and acceptance_score > self.cfg.acceptance_threshold_reply:
                             msg.review_result = True
                             self.db.add(msg)
-                            self.db.commit()
                             logger.info(
                                 f"Reply message message accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
                             )
@@ -451,6 +450,7 @@ class TreeManager:
 
         return protocol_schema.TaskDone()
 
+    @managed_tx_method(CommitMode.FLUSH)
     def _enter_state(self, mts: MessageTreeState, state: message_tree_state.State):
         assert mts and mts.active
 
@@ -460,7 +460,6 @@ class TreeManager:
             mts.active = False
         mts.state = state.value
         self.db.add(mts)
-        self.db.commit()
 
         if is_terminal:
             logger.info(f"Tree entered terminal '{mts.state}' state ({mts.message_tree_id=})")
@@ -472,6 +471,7 @@ class TreeManager:
         mts = self.pr.fetch_tree_state(message_tree_id)
         self._enter_state(mts, message_tree_state.State.ABORTED_LOW_GRADE)
 
+    @managed_tx_method(CommitMode.COMMIT)
     def check_condition_for_growing_state(self, message_tree_id: UUID) -> bool:
         logger.debug(f"check_condition_for_growing_state({message_tree_id=})")
 
@@ -489,6 +489,7 @@ class TreeManager:
         self._enter_state(mts, message_tree_state.State.GROWING)
         return True
 
+    @managed_tx_method(CommitMode.COMMIT)
     def check_condition_for_ranking_state(self, message_tree_id: UUID) -> bool:
         logger.debug(f"check_condition_for_ranking_state({message_tree_id=})")
 
@@ -735,6 +736,7 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
                 rankings_by_message[parent_id].append(MessageReaction.from_orm(x))
         return rankings_by_message
 
+    @managed_tx_method(CommitMode.COMMIT)
     def ensure_tree_states(self):
         """Add message tree state rows for all root nodes (inital prompt messages)."""
 
@@ -746,7 +748,6 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
                 state = message_tree_state.State.GROWING
                 logger.info(f"Inserting missing message tree state for message: {id} ({tree_size=}, {state=})")
             self._insert_default_state(id, state=state)
-        self.db.commit()
 
     def query_num_active_trees(self) -> int:
         query = self.db.query(func.count(MessageTreeState.message_tree_id)).filter(MessageTreeState.active)
@@ -763,6 +764,7 @@ WHERE t.done = TRUE
         r = self.db.execute(text(sql_qry), {"message_id": message_id})
         return [TextLabels.from_orm(x) for x in r.all()]
 
+    @managed_tx_method(CommitMode.FLUSH)
     def _insert_tree_state(
         self,
         root_message_id: UUID,
@@ -784,6 +786,7 @@ WHERE t.done = TRUE
         self.db.add(model)
         return model
 
+    @managed_tx_method(CommitMode.FLUSH)
     def _insert_default_state(
         self,
         root_message_id: UUID,
