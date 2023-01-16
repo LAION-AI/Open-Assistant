@@ -26,7 +26,7 @@ import { useEffect, useReducer } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { get, post } from "src/lib/api";
 import { Message } from "src/types/Conversation";
-import { colors } from "styles/Theme/colors";
+import { colors } from "src/styles/Theme/colors";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
@@ -103,6 +103,10 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
   const { data, isLoading } = useSWR("/api/valid_labels", get);
   useEffect(() => {
     if (isLoading) {
+      return;
+    }
+    if (!data) {
+      updateReport({ type: "load_labels", labels: [] });
       return;
     }
     const { valid_labels } = data;

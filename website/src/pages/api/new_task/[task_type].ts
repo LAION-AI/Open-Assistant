@@ -20,6 +20,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   } catch (err) {
     console.error(err);
     res.status(500).json(err);
+    return;
   }
 
   // Store the task and link it to the user..
