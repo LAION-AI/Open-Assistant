@@ -1,4 +1,4 @@
-import { Box, Heading, Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
+import { Box, Heading, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
 import Head from "next/head";
 import { getDashboardLayout } from "src/components/Layout";
 import { LeaderboardGridCell } from "src/components/LeaderboardGridCell";

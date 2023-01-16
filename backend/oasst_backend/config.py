@@ -55,6 +55,8 @@ class TreeManagerConfiguration(BaseModel):
     mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
     """Mandatory labels in text-labeling tasks for prompter replies."""
 
+    rank_prompter_replies: bool = False
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"
@@ -67,6 +69,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "postgres"
     DATABASE_URI: Optional[PostgresDsn] = None
+    DATABASE_MAX_TX_RETRY_COUNT: int = 3
 
     RATE_LIMIT: bool = True
     REDIS_HOST: str = "localhost"
@@ -79,6 +82,7 @@ class Settings(BaseSettings):
     DEBUG_ALLOW_SELF_LABELING: bool = False  # allow users to label their own messages
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
+    DEBUG_DATABASE_ECHO: bool = False
 
     HUGGING_FACE_API_KEY: str = ""
 
