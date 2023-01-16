@@ -13,6 +13,7 @@ from oasst_backend.models import Message, MessageReaction, MessageTreeState, Tas
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_method, managed_tx_method
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
+from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlalchemy.sql import text
@@ -587,6 +588,7 @@ class TreeManager:
         self._enter_state(mts, message_tree_state.State.RANKING)
         return True
 
+    @managed_tx_method(CommitMode.COMMIT)
     def check_condition_for_scoring_state(self, message_tree_id: UUID) -> bool:
         logger.debug(f"check_condition_for_scoring_state({message_tree_id=})")
         mts: MessageTreeState
@@ -603,7 +605,32 @@ class TreeManager:
                 return False
 
         self._enter_state(mts, message_tree_state.State.READY_FOR_SCORING)
+        self.update_message_ranks(rankings_by_message)
         return True
+
+    @managed_tx_method(CommitMode.COMMIT)
+    def update_message_ranks(self, rankings_by_message: Dict[int, int]) -> None:
+        for parent_msg_id, ranking in rankings_by_message.items():
+            unordered_ranking = []
+            for msg_reaction in ranking:
+                 unordered_ranking.append([msg_reaction.payload.payload.ranking, msg_reaction.payload.payload.ranked_message_ids])
+            sorted_ranking = self.sort_uuid_rankings(unordered_ranking)
+            sorted_ranking, sorted_uuids = zip(*sorted_ranking)
+            consensus = ranked_pairs(sorted_ranking)
+            for rank, uuid in zip(consensus, sorted_uuids[0]):
+                #set rank for each message_id for Message rows
+                msg = self.db.query(Message).filter(Message.id == uuid).one()
+                msg.rank = rank
+                self.db.add(msg)
+
+
+    def sort_uuid_rankings(self, data: List[Tuple[List[float], List[str]]]) -> List[Tuple[List[float], List[str]]]:
+        sorted_data = []
+        for rankings, uuids in data:
+            sorted_uuids = sorted(uuids)
+            sorted_rankings = [rankings[uuids.index(sorted_uuid)] for sorted_uuid in sorted_uuids]
+            sorted_data.append((sorted_rankings, sorted_uuids))
+        return sorted_data
 
     def _calculate_acceptance(self, labels: list[TextLabels]):
         # calculate acceptance based on spam label
@@ -900,6 +927,15 @@ if __name__ == "__main__":
         cfg = TreeManagerConfiguration()
         tm = TreeManager(db, pr, cfg)
         tm.ensure_tree_states()
+
+        print("query_num_active_trees", tm.query_num_active_trees())
+        print("query_incomplete_rankings", tm.query_incomplete_rankings())
+        #print("query_incomplete_reply_reviews", tm.query_replies_need_review())
+        #print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
+        #print("query_extendible_trees", tm.query_extendible_trees())
+        #print("query_extendible_parents", tm.query_extendible_parents())
+        '''
+        print("next_task:", tm.next_task())
 
         # print("query_num_active_trees", tm.query_num_active_trees())
         # print("query_incomplete_rankings", tm.query_incomplete_rankings())
