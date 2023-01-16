@@ -8,7 +8,7 @@ import useSWRImmutable from "swr/immutable";
 const columns = [
   {
     Header: "Rank",
-    accessor: (item: LeaderboardEntity, rowIndex: number) => "#" + (item.rank + 1),
+    accessor: (item: LeaderboardEntity, rowIndex: number) => "#" + item.rank,
     style: { width: "90px" },
   },
   {
