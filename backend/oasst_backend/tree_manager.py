@@ -127,7 +127,7 @@ class TreeManager:
         logger.debug(f"Selected {task_type=}")
         return task_type
 
-    def _determine_task_availablity_internal(
+    def _determine_task_availability_internal(
         self,
         num_active_trees: int,
         extensible_parents: list[ExtendibleParentRow],
@@ -170,14 +170,14 @@ class TreeManager:
 
         return task_count_by_type
 
-    def determine_task_availablity(self) -> dict[protocol_schema.TaskRequestType, int]:
+    def determine_task_availability(self) -> dict[protocol_schema.TaskRequestType, int]:
         num_active_trees = self.query_num_active_trees()
         extensible_parents = self.query_extendible_parents()
         prompts_need_review = self.query_prompts_need_review()
         replies_need_review = self.query_replies_need_review()
         incomplete_rankings = self.query_incomplete_rankings()
 
-        return self._determine_task_availablity_internal(
+        return self._determine_task_availability_internal(
             num_active_trees=num_active_trees,
             extensible_parents=extensible_parents,
             prompts_need_review=prompts_need_review,
@@ -222,7 +222,7 @@ class TreeManager:
                     HTTPStatus.SERVICE_UNAVAILABLE,
                 )
         else:
-            task_count_by_type = self._determine_task_availablity_internal(
+            task_count_by_type = self._determine_task_availability_internal(
                 num_active_trees=num_active_trees,
                 extensible_parents=extensible_parents,
                 prompts_need_review=prompts_need_review,

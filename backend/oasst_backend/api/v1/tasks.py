@@ -60,7 +60,7 @@ def tasks_availability(
     try:
         pr = PromptRepository(db, api_client, client_user=user)
         tm = TreeManager(db, pr)
-        return tm.determine_task_availablity()
+        return tm.determine_task_availability()
 
     except OasstError:
         raise
