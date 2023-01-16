@@ -89,7 +89,7 @@ class TreeManager:
         num_prompts_need_review: int,
         num_missing_prompts: int,
         num_missing_replies: int,
-    ) -> Tuple[TaskType]:
+    ) -> TaskType:
         """
         Determines which task to hand out to human worker.
         The task type is drawn with relative weight (e.g. ranking has highest priority)
