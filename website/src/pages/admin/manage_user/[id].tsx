@@ -1,5 +1,4 @@
-import { Button, Container, FormControl, FormLabel, Input, Stack, useToast } from "@chakra-ui/react";
-import { Field, Form, Formik } from "formik";
+import { Button, Card, CardBody, Container, FormControl, FormLabel, Input, Stack, useToast } from "@chakra-ui/react";
 import { InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -7,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { getAdminLayout } from "src/components/Layout";
-import { RoleSelect } from "src/components/RoleSelect";
+import { Role, RoleSelect } from "src/components/RoleSelect";
 import { UserMessagesCell } from "src/components/UserMessagesCell";
 import { post } from "src/lib/api";
 import { oasstApiClient } from "src/lib/oasst_api_client";
@@ -19,7 +18,7 @@ interface UserForm {
   id: string;
   auth_method: string;
   display_name: string;
-  role: string;
+  role: Role;
   notes: string;
 }
 
@@ -63,7 +62,7 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
     },
   });
 
-  const { register } = useForm<UserForm>({
+  const { register, handleSubmit } = useForm<UserForm>({
     defaultValues: user,
   });
 
@@ -77,55 +76,31 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
         />
       </Head>
       <Stack gap="4">
-        <Container className="oa-basic-theme">
-          <Formik
-            initialValues={user}
-            onSubmit={(values) => {
-              trigger(values);
-            }}
-          >
-            <Form>
-              <Field name="user_id" type="hidden" />
-              <Field name="id" type="hidden" />
-              <Field name="auth_method" type="hidden" />
-              <Field name="display_name">
-                {({ field }) => (
-                  <FormControl>
-                    <FormLabel>Display Name</FormLabel>
-                    <Input {...field} isDisabled />
-                  </FormControl>
-                )}
-              </Field>
-              <Field name="role">
-                {({ field }) => (
-                  <FormControl>
-                    <FormLabel>Role</FormLabel>
-                    <RoleSelect {...field}></RoleSelect>
-                  </FormControl>
-                )}
-              </Field>
-              <Field name="notes">
-                {({ field }) => (
-                  <FormControl>
-                    <FormLabel>Notes</FormLabel>
-                    <Input {...field} />
-                  </FormControl>
-                )}
-              </Field>
-              <Button mt={4} type="submit">
-                Update
-              </Button>
-            </Form>
-          </Formik>
-          <form>
-            <input type="hidden" readOnly {...register("user_id")}></input>
-            <input type="hidden" readOnly {...register("id")}></input>
-            <input type="hidden" readOnly {...register("auth_method")}></input>
-            <FormControl>
-              <FormLabel>Display Name</FormLabel>
-              <Input {...register("display_name")} isDisabled />
-            </FormControl>
-          </form>
+        <Container>
+          <Card>
+            <CardBody>
+              <form onSubmit={handleSubmit((data) => trigger(data))}>
+                <input type="hidden" {...register("user_id")}></input>
+                <input type="hidden" {...register("id")}></input>
+                <input type="hidden" {...register("auth_method")}></input>
+                <FormControl>
+                  <FormLabel>Display Name</FormLabel>
+                  <Input {...register("display_name")} isDisabled />
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Role</FormLabel>
+                  <RoleSelect {...register("role")}></RoleSelect>
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Notes</FormLabel>
+                  <Input {...register("notes")} />
+                </FormControl>
+                <Button mt={4} type="submit">
+                  Update
+                </Button>
+              </form>
+            </CardBody>
+          </Card>
         </Container>
         <UserMessagesCell path={`/api/admin/user_messages?user=${user.user_id}`} />
       </Stack>
@@ -146,7 +121,7 @@ export async function getServerSideProps({ query }) {
   });
   const user = {
     ...backend_user,
-    role: local_user?.role || "general",
+    role: (local_user?.role || "general") as Role,
   };
   return {
     props: {
