@@ -14,7 +14,7 @@ const TermsOfService = () => {
         {
           number: "1.1",
           title: "",
-          desc: `LAION (association in formation), Marie-Henning-Weg 143, 21035 Hamburg (hereinafter referred to as: "LAION") operates an online portal for the producing a machine learning model called Open Assistant using crowdsourced data.`,
+          desc: `LAION (association in formation), Marie-Henning-Weg 143, 21035 Hamburg (hereinafter referred to as: "LAION") operates an online portal for the producing a machine learning model called Open Assistant using crowd-sourced data.`,
         },
         {
           number: "1.2",
