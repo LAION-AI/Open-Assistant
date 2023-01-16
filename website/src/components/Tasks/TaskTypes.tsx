@@ -91,7 +91,7 @@ export const TaskTypes: TaskInfo[] = [
     unchanged_title: "Order Unchanged",
     unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to continue?",
   },
-  // label (fuill)
+  // label (full)
   {
     label: "Label Initial Prompt",
     desc: "Provide labels for a prompt.",
@@ -107,7 +107,7 @@ export const TaskTypes: TaskInfo[] = [
     desc: "Provide labels for a prompt.",
     category: TaskCategory.Label,
     pathname: "/label/label_prompter_reply",
-    overview: "Given the following discussion, provide labels for the final promp",
+    overview: "Given the following discussion, provide labels for the final prompt",
     type: "label_prompter_reply",
     mode: "full",
     update_type: "text_labels",
@@ -138,7 +138,7 @@ export const TaskTypes: TaskInfo[] = [
     desc: "Provide labels for a prompt.",
     category: TaskCategory.Label,
     pathname: "/label/label_prompter_reply",
-    overview: "Read the following conversation and then answer the question about the last prompt in the disscusion.",
+    overview: "Read the following conversation and then answer the question about the last prompt in the discussion.",
     type: "label_prompter_reply",
     mode: "simple",
     update_type: "text_labels",
@@ -148,7 +148,7 @@ export const TaskTypes: TaskInfo[] = [
     desc: "Provide labels for a prompt.",
     category: TaskCategory.Label,
     pathname: "/label/label_assistant_reply",
-    overview: "Read the following conversation and then answer the question about the last prompt in the disscusion.",
+    overview: "Read the following conversation and then answer the question about the last prompt in the discussion.",
     type: "label_assistant_reply",
     mode: "simple",
     update_type: "text_labels",
