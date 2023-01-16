@@ -24,7 +24,6 @@ def _render_message(message: dict) -> str:
     return f"Prompter: {message['text']}"
 
 
-
 @app.command()
 def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234"):
     """automates tasks"""
@@ -49,7 +48,6 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234"):
         print(ranks)
         print(shuffled)
         return ranks
-
 
     tasks = [_post("/api/v1/tasks/", {"type": "random", "user": USER})]
     q = 0
@@ -137,7 +135,6 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234"):
                 )
                 tasks.append(new_task)
 
-                
             case "assistant_reply":
                 # acknowledge task
                 message_id = _random_message_id()
@@ -176,7 +173,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234"):
                     },
                 )
                 tasks.append(new_task)
-            
+
             case "rank_initial_prompts":
                 # acknowledge task
                 message_id = _random_message_id()
@@ -236,9 +233,9 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234"):
                 tasks.append(new_task)
             case "task_done":
                 typer.echo("Task done!")
-                #rerun with new task slected from above cases
-                #add a new task
-                q+=  1
+                # rerun with new task slected from above cases
+                # add a new task
+                q += 1
                 if q == 10:
                     typer.echo("Task done!")
                     break
@@ -246,11 +243,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234"):
                 #
             case _:
                 typer.echo(f"Unknown task type {task['type']}")
-                #rerun with new task slected from above cases
-
-
-
-
+                # rerun with new task slected from above cases
 
 
 if __name__ == "__main__":
