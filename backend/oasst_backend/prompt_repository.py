@@ -153,7 +153,7 @@ class PromptRepository:
         self._validate_task(task)
 
         # If there's no parent message assume user started new conversation
-        role = "prompter"
+        role = None
         depth = 0
 
         if task.parent_message_id:
@@ -173,10 +173,23 @@ class PromptRepository:
             self.db.add(parent_message)
 
             depth = parent_message.depth + 1
-            if parent_message.role == "assistant":
-                role = "prompter"
-            else:
-                role = "assistant"
+
+        task_payload: db_payload.TaskPayload = task.payload.payload
+        if isinstance(task_payload, db_payload.InitialPromptPayload):
+            role = "prompter"
+        elif isinstance(task_payload, db_payload.PrompterReplyPayload):
+            role = "prompter"
+        elif isinstance(task_payload, db_payload.AssistantReplyPayload):
+            role = "assistant"
+        elif isinstance(task_payload, db_payload.SummarizationStoryPayload):
+            raise NotImplementedError("SummarizationStory task not implemented.")
+        else:
+            raise OasstError(
+                f"Unexpected task payload type: {type(task_payload).__name__}",
+                OasstErrorCode.TASK_UNEXPECTED_PAYLOAD_TYPE_,
+            )
+
+        assert role in ("assistant", "prompter")
 
         # create reply message
         new_message_id = uuid4()

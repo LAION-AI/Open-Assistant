@@ -1,5 +1,6 @@
 import { JWT } from "next-auth/jwt";
 import type { Message } from "src/types/Conversation";
+import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { BackendUser } from "src/types/Users";
 
 export class OasstError {
@@ -157,10 +158,27 @@ export class OasstApiClient {
   }
 
   /**
-   * Returns the `max_count` `BackendUser`s stored by the backend.
+   * Returns the set of `BackendUser`s stored by the backend.
+   *
+   * @param {number} max_count - The maximum number of users to fetch.
+   * @param {string} cursor - The user's `display_name` to use when paginating.
+   * @param {boolean} isForward - If true and `cursor` is not empty, pages
+   *        forward.  If false and `cursor` is not empty, pages backwards.
+   * @returns {Promise<BackendUser[]>} A Promise that returns an array of `BackendUser` objects.
    */
-  async fetch_users(max_count: number): Promise<BackendUser[]> {
-    return this.get(`/api/v1/frontend_users/?max_count=${max_count}`);
+  async fetch_users(max_count: number, cursor: string, isForward: boolean): Promise<BackendUser[]> {
+    const params = new URLSearchParams();
+    params.append("max_count", max_count.toString());
+
+    // The backend API uses different query paramters depending on the
+    // pagination direction but they both take the same cursor value.
+    // Depending on direction, pick the right query param.
+    if (cursor !== "") {
+      params.append(isForward ? "gt" : "lt", cursor);
+    }
+    const BASE_URL = `/api/v1/frontend_users`;
+    const url = `${BASE_URL}/?${params.toString()}`;
+    return this.get(url);
   }
 
   /**
@@ -187,8 +205,8 @@ export class OasstApiClient {
   /**
    * Returns the current leaderboard ranking.
    */
-  async fetch_leaderboard(): Promise<any> {
-    return this.get(`/api/v1/experimental/leaderboards/create/assistant`);
+  async fetch_leaderboard(time_frame: LeaderboardTimeFrame): Promise<LeaderboardReply> {
+    return this.get(`/api/v1/leaderboards/${time_frame}`);
   }
 }
 
