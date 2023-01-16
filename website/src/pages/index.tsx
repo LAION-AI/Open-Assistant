@@ -1,6 +1,9 @@
+import { Box } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "next-i18next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useEffect } from "react";
 import { CallToAction } from "src/components/CallToAction";
 import { Faq } from "src/components/Faq";
@@ -10,6 +13,7 @@ import { getTransparentHeaderLayout } from "src/components/Layout";
 const Home = () => {
   const router = useRouter();
   const { status } = useSession();
+  const { t } = useTranslation("index");
   useEffect(() => {
     if (status === "authenticated") {
       router.push("/dashboard");
@@ -19,21 +23,24 @@ const Home = () => {
   return (
     <>
       <Head>
-        <title>Open Assistant</title>
-        <meta
-          name="description"
-          content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
-        />
+        <title>{t("title")}</title>
+        <meta name="description" content={t("description")} />
       </Head>
-      <main className="oa-basic-theme">
+      <Box as="main" className="oa-basic-theme">
         <Hero />
         <CallToAction />
         <Faq />
-      </main>
+      </Box>
     </>
   );
 };
 
 Home.getLayout = getTransparentHeaderLayout;
+
+export const getStaticProps = async ({ locale }) => ({
+  props: {
+    ...(await serverSideTranslations(locale, ["index", "common"])),
+  },
+});
 
 export default Home;
