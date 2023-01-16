@@ -1,6 +1,6 @@
 import { Flex } from "@chakra-ui/react";
 import Head from "next/head";
-import { LeaderboardTable, TaskOption, WelcomeModal } from "src/components/Dashboard";
+import { LeaderboardTable, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { getDashboardLayout } from "src/components/Layout";
 import { TaskCategory } from "src/components/Tasks/TaskTypes";
 
@@ -12,7 +12,7 @@ const Dashboard = () => {
         <meta name="description" content="Chat with Open Assistant and provide feedback." />
       </Head>
       <Flex direction="column" gap="10">
-        <WelcomeModal />
+        <WelcomeCard />
         <TaskOption displayTaskCategories={[TaskCategory.Tasks]} />
         <LeaderboardTable />
       </Flex>
