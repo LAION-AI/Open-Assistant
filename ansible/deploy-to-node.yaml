@@ -88,8 +88,7 @@
       community.docker.docker_container:
         name: "oasst-{{ stack_name }}-pgbackrest"
         image: woblerr/pgbackrest:2.43
-        state: "{{ 'started' if stack_name == 'production' else 'absent' }}"
-        restart_policy: always
+        state: "{{ 'stopped' if stack_name == 'production' else 'absent' }}"
         network_mode: "oasst-{{ stack_name }}"
         volumes:
           - "./{{ stack_name }}/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf"
