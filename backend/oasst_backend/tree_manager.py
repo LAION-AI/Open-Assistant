@@ -70,11 +70,16 @@ class TreeManager:
     _all_text_labels = list(map(lambda x: x.value, protocol_schema.TextLabel))
 
     def __init__(
-        self, db: Session, prompt_repository: PromptRepository, cfg: Optional[TreeManagerConfiguration] = None
+        self,
+        db: Session,
+        prompt_repository: PromptRepository,
+        cfg: Optional[TreeManagerConfiguration] = None,
+        rank_prompter_replies: bool = False,
     ):
         self.db = db
         self.cfg = cfg or settings.tree_manager
         self.pr = prompt_repository
+        self.rank_prompter_replies = rank_prompter_replies
 
     def _task_selection(
         self,
@@ -160,7 +165,7 @@ class TreeManager:
         return task_type, task_role
 
     def next_task(
-        self, desired_task_type: protocol_schema.TaskRequestType
+        self, desired_task_type: protocol_schema.TaskRequestType = protocol_schema.TaskRequestType.random
     ) -> Tuple[protocol_schema.Task, Optional[UUID], Optional[UUID]]:
 
         logger.debug("TreeManager.next_task()")
@@ -168,7 +173,9 @@ class TreeManager:
         num_active_trees = self.query_num_active_trees()
         prompts_need_review = self.query_prompts_need_review()
         replies_need_review = self.query_replies_need_review()
-        incomplete_rankings = self.query_incomplete_rankings()
+
+        ranking_role_filter = None if self.rank_prompter_replies else "assistant"
+        incomplete_rankings = self.query_incomplete_rankings(role_filter=ranking_role_filter)
         active_tree_sizes = self.query_extendible_trees()
 
         # determine type of task to generate
@@ -515,7 +522,8 @@ class TreeManager:
             logger.debug(f"False {mts.active=}, {mts.state=}")
             return False
 
-        rankings_by_message = self.query_tree_ranking_results(message_tree_id)
+        ranking_role_filter = None if self.rank_prompter_replies else "assistant"
+        rankings_by_message = self.query_tree_ranking_results(message_tree_id, role_filter=ranking_role_filter)
         for parent_msg_id, ranking in rankings_by_message.items():
             if len(ranking) < self.cfg.num_required_rankings:
                 logger.debug(f"False {parent_msg_id=} {len(ranking)=}")
@@ -598,18 +606,22 @@ WHERE mts.active                        -- only consider active trees
     AND m.review_result                 -- must be reviewed
     AND NOT m.deleted                   -- not deleted
     AND m.parent_id IS NOT NULL         -- ignore initial prompts
+    AND (:role IS NULL OR m.role = :role) -- children with matching role
 GROUP BY m.parent_id
 HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
 """
 
-    def query_incomplete_rankings(self) -> list[IncompleteRankingsRow]:
+    def query_incomplete_rankings(self, role_filter: str = "assistant") -> list[IncompleteRankingsRow]:
         """Query parents which have childern that need further rankings"""
+
+        assert role_filter in (None, "assistant", "prompter")
 
         r = self.db.execute(
             text(self._sql_find_incomplete_rankings),
             {
                 "num_required_rankings": self.cfg.num_required_rankings,
                 "ranking_state": message_tree_state.State.RANKING,
+                "role": role_filter,
             },
         )
         return [IncompleteRankingsRow.from_orm(x) for x in r.all()]
@@ -702,7 +714,7 @@ GROUP BY mts.message_tree_id, mts.goal_tree_size
         return [m.id for m in qry_missing_tree_states.all()]
 
     _sql_find_tree_ranking_results = """
--- get all ranking results of completed tasks for all parents with >=2 children
+-- get all ranking results of completed tasks for all parents with >= 2 children
 SELECT p.parent_id, mr.* FROM
 (
     -- find parents with > 1 children
@@ -712,7 +724,8 @@ SELECT p.parent_id, mr.* FROM
     WHERE m.review_result                  -- must be reviewed
        AND NOT m.deleted                   -- not deleted
        AND m.parent_id IS NOT NULL         -- ignore initial prompts
-      AND mts.message_tree_id = :message_tree_id
+       AND (:role IS NULL OR m.role = :role) -- children with matching role
+       AND mts.message_tree_id = :message_tree_id
     GROUP BY m.parent_id, m.message_tree_id
     HAVING COUNT(m.id) > 1
 ) as p
@@ -720,11 +733,21 @@ LEFT JOIN task t ON p.parent_id = t.parent_message_id AND t.done AND (t.payload_
 LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'RankingReactionPayload'
 """
 
-    def query_tree_ranking_results(self, message_tree_id: UUID) -> dict[UUID, list[MessageReaction]]:
+    def query_tree_ranking_results(
+        self,
+        message_tree_id: UUID,
+        role_filter: str = "assistant",
+    ) -> dict[UUID, list[MessageReaction]]:
         """Finds all completed ranking restuls for a message_tree"""
+
+        assert role_filter in (None, "assistant", "prompter")
+
         r = self.db.execute(
             text(self._sql_find_tree_ranking_results),
-            {"message_tree_id": message_tree_id},
+            {
+                "message_tree_id": message_tree_id,
+                "role": role_filter,
+            },
         )
 
         rankings_by_message = {}
@@ -803,12 +826,12 @@ WHERE t.done = TRUE
 
 
 if __name__ == "__main__":
-    from oasst_backend.api.deps import get_dummy_api_client
+    from oasst_backend.api.deps import api_auth
     from oasst_backend.database import engine
     from oasst_backend.prompt_repository import PromptRepository
 
     with Session(engine) as db:
-        api_client = get_dummy_api_client(db)
+        api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
         dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
 
         pr = PromptRepository(db=db, api_client=api_client, client_user=dummy_user)
@@ -818,7 +841,7 @@ if __name__ == "__main__":
         tm.ensure_tree_states()
 
         print("query_num_active_trees", tm.query_num_active_trees())
-        print("query_incomplete_rankings", tm.query_incomplete_rankings())
+        print("query_incomplete_rankings", tm.query_incomplete_rankings("assistant"))
         print("query_incomplete_reply_reviews", tm.query_replies_need_review())
         print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
         print("query_extendible_trees", tm.query_extendible_trees())
@@ -827,5 +850,5 @@ if __name__ == "__main__":
         print("next_task:", tm.next_task())
 
         print(
-            ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("2ac20d38-6650-43aa-8bb3-f61080c0d921"))
+            ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("6036f58f-41b5-48c4-bdd9-b16f34ab1312"))
         )
