@@ -51,7 +51,7 @@ const Roadmap = () => {
             </div>
             <h4 className="font-bold text-xl text-[#858585] text-center max-w-[10rem]">Growing Up</h4>
             <ul className="ml-6 md:ml-8 lg:ml-6 space-y-4 text-[#858585] list-disc">
-              <li>Third-Party Extentions</li>
+              <li>Third-Party Extensions</li>
               <li>Device Control</li>
               <li>Multi-Modality</li>
             </ul>

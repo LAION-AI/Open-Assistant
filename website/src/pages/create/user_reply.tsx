@@ -19,8 +19,8 @@ const UserReply = () => {
   return (
     <>
       <Head>
-        <title>Reply as Assistant</title>
-        <meta name="description" content="Reply as Assistant." />
+        <title>Reply as User</title>
+        <meta name="description" content="Reply as User." />
       </Head>
       <Task key={tasks[0].task.id} frontendId={tasks[0].id} task={tasks[0].task} trigger={trigger} mutate={reset} />
     </>
