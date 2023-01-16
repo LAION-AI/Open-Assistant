@@ -170,9 +170,7 @@ const SigninButton = (props: ButtonProps) => {
       colorScheme={buttonColorScheme}
       color="white"
       {...props}
-    >
-      Continue with Email
-    </Button>
+    ></Button>
   );
 };
 
