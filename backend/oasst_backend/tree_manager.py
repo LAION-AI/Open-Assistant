@@ -636,7 +636,7 @@ class TreeManager:
         qry = (
             self.db.query(Message)
             .select_from(MessageTreeState)
-            .outerjoin(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
+            .join(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
             .filter(
                 MessageTreeState.active,
                 MessageTreeState.state == message_tree_state.State.INITIAL_PROMPT_REVIEW,
@@ -661,7 +661,7 @@ class TreeManager:
         qry = (
             self.db.query(Message)
             .select_from(MessageTreeState)
-            .outerjoin(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
+            .join(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
             .filter(
                 MessageTreeState.active,
                 MessageTreeState.state == message_tree_state.State.GROWING,
@@ -682,7 +682,7 @@ class TreeManager:
 SELECT m.parent_id, m.role, COUNT(m.id) children_count, MIN(m.ranking_count) child_min_ranking_count,
     COUNT(m.id) FILTER (WHERE m.ranking_count >= :num_required_rankings) as completed_rankings
 FROM message_tree_state mts
-    LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
+    INNER JOIN message m ON mts.message_tree_id = m.message_tree_id
 WHERE mts.active                        -- only consider active trees
     AND mts.state = :ranking_state      -- message tree must be in ranking state
     AND m.review_result                 -- must be reviewed
@@ -708,7 +708,7 @@ HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
 -- find all extendible parent nodes
 SELECT m.id as parent_id, m.role as parent_role, m.depth, m.message_tree_id, COUNT(c.id) active_children_count
 FROM message_tree_state mts
-    LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id	-- all elements of message tree
+    INNER JOIN message m ON mts.message_tree_id = m.message_tree_id	-- all elements of message tree
     LEFT JOIN message c ON m.id = c.parent_id  -- child nodes
 WHERE mts.active                        -- only consider active trees
     AND mts.state = :growing_state      -- message tree must be growing
@@ -738,8 +738,8 @@ HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
 SELECT m.message_tree_id, mts.goal_tree_size, COUNT(m.id) AS tree_size
 FROM (
         SELECT DISTINCT message_tree_id FROM ({_sql_find_extendible_parents}) extendible_parents
-    ) trees LEFT JOIN message_tree_state mts ON trees.message_tree_id = mts.message_tree_id
-    LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
+    ) trees INNER JOIN message_tree_state mts ON trees.message_tree_id = mts.message_tree_id
+    INNER JOIN message m ON mts.message_tree_id = m.message_tree_id
 WHERE NOT m.deleted
     AND (
         m.parent_id IS NOT NULL AND (m.review_result OR m.review_count < :num_reviews_reply) -- children
@@ -787,7 +787,7 @@ HAVING COUNT(m.id) < mts.goal_tree_size
         """Find all initial prompt messages that have no associated message tree state"""
         qry_missing_tree_states = (
             self.db.query(Message.id)
-            .join(MessageTreeState, isouter=True)
+            .outerjoin(MessageTreeState, Message.message_tree_id == MessageTreeState.message_tree_id)
             .filter(
                 Message.parent_id.is_(None),
                 Message.message_tree_id == Message.id,
@@ -804,7 +804,7 @@ SELECT p.parent_id, mr.* FROM
     -- find parents with > 1 children
     SELECT m.parent_id, m.message_tree_id, COUNT(m.id) children_count
     FROM message_tree_state mts
-       LEFT JOIN message m ON mts.message_tree_id = m.message_tree_id
+       INNER JOIN message m ON mts.message_tree_id = m.message_tree_id
     WHERE m.review_result                  -- must be reviewed
        AND NOT m.deleted                   -- not deleted
        AND m.parent_id IS NOT NULL         -- ignore initial prompts
@@ -813,8 +813,8 @@ SELECT p.parent_id, mr.* FROM
     GROUP BY m.parent_id, m.message_tree_id
     HAVING COUNT(m.id) > 1
 ) as p
-LEFT JOIN task t ON p.parent_id = t.parent_message_id AND t.done AND (t.payload_type = 'RankPrompterRepliesPayload' OR t.payload_type = 'RankAssistantRepliesPayload')
-LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'RankingReactionPayload'
+INNER JOIN task t ON p.parent_id = t.parent_message_id AND t.done AND (t.payload_type = 'RankPrompterRepliesPayload' OR t.payload_type = 'RankAssistantRepliesPayload')
+INNER JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'RankingReactionPayload'
 """
 
     def query_tree_ranking_results(
@@ -925,7 +925,7 @@ if __name__ == "__main__":
         # print("query_num_active_trees", tm.query_num_active_trees())
         # print("query_incomplete_rankings", tm.query_incomplete_rankings())
         print("query_replies_need_review", tm.query_replies_need_review())
-        print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
+        # print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
         # print("query_extendible_trees", tm.query_extendible_trees())
         # print("query_extendible_parents", tm.query_extendible_parents())
         # print("query_tree_size", tm.query_tree_size(message_tree_id=UUID("bdf434cf-4df5-4b74-949c-a5a157bc3292")))
