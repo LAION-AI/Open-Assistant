@@ -48,7 +48,6 @@ export function Header(props) {
           <UserMenu />
         </Flex>
       </Box>
-      <Divider />
     </nav>
   );
 }
