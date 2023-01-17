@@ -73,6 +73,8 @@
             "{{ lookup('ansible.builtin.env', 'AWS_ACCESS_KEY') }}"
           AWS_SECRET_ACCESS_KEY:
             "{{ lookup('ansible.builtin.env', 'AWS_SECRET_KEY') }}"
+          AWS_DEFAULT_REGION:
+            "{{ lookup('ansible.builtin.env', 'S3_REGION') }}"
         volumes:
           - "oasst-{{ stack_name }}-postgres-{{ item.name
             }}:/var/lib/postgresql/data"
