@@ -610,21 +610,30 @@ class TreeManager:
 
     @managed_tx_method(CommitMode.COMMIT)
     def update_message_ranks(self, rankings_by_message: Dict[int, int]) -> None:
+        def sort_uuid_rankings(data):
+            sorted_messages = []
+            for ranking, msgs in data:
+                sorted_uuids = []
+                for rank in ranking:
+                    sorted_uuids.append(msgs[rank])
+                sorted_messages.append(sorted_uuids)
+            return sorted_messages
         for parent_msg_id, ranking in rankings_by_message.items():
             unordered_ranking = []
             for msg_reaction in ranking:
                 unordered_ranking.append(
                     [msg_reaction.payload.payload.ranking, msg_reaction.payload.payload.ranked_message_ids]
                 )
-            sorted_ranking = self.sort_uuid_rankings(unordered_ranking)
-            sorted_ranking, sorted_uuids = zip(*sorted_ranking)
-            consensus = ranked_pairs(sorted_ranking)
-            for rank, uuid in zip(consensus, sorted_uuids[0]):
+            sorted_messages = sort_uuid_rankings(unordered_ranking)
+            consensus = ranked_pairs(sorted_messages)
+            for rank, uuid in enumerate(consensus):
                 # set rank for each message_id for Message rows
                 msg = self.db.query(Message).filter(Message.id == uuid).one()
                 msg.rank = rank
                 self.db.add(msg)
 
+    
+    '''
     def sort_uuid_rankings(self, data: List[Tuple[List[float], List[str]]]) -> List[Tuple[List[float], List[str]]]:
         sorted_data = []
         for rankings, uuids in data:
@@ -632,7 +641,7 @@ class TreeManager:
             sorted_rankings = [rankings[uuids.index(sorted_uuid)] for sorted_uuid in sorted_uuids]
             sorted_data.append((sorted_rankings, sorted_uuids))
         return sorted_data
-
+    '''
     def _calculate_acceptance(self, labels: list[TextLabels]):
         # calculate acceptance based on spam label
         return np.mean([1 - l.labels[protocol_schema.TextLabel.spam] for l in labels])
