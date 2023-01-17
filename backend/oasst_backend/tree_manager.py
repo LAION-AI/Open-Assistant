@@ -131,7 +131,7 @@ class TreeManager:
     def _determine_task_availability_internal(
         self,
         num_active_trees: int,
-        extensible_parents: list[ExtendibleParentRow],
+        extendible_parents: list[ExtendibleParentRow],
         prompts_need_review: list[Message],
         replies_need_review: list[Message],
         incomplete_rankings: list[IncompleteRankingsRow],
@@ -142,10 +142,10 @@ class TreeManager:
         task_count_by_type[protocol_schema.TaskRequestType.initial_prompt] = num_missing_prompts
 
         task_count_by_type[protocol_schema.TaskRequestType.prompter_reply] = len(
-            list(filter(lambda x: x.parent_role == "assistant", extensible_parents))
+            list(filter(lambda x: x.parent_role == "assistant", extendible_parents))
         )
         task_count_by_type[protocol_schema.TaskRequestType.assistant_reply] = len(
-            list(filter(lambda x: x.parent_role == "prompter", extensible_parents))
+            list(filter(lambda x: x.parent_role == "prompter", extendible_parents))
         )
 
         task_count_by_type[protocol_schema.TaskRequestType.label_initial_prompt] = len(prompts_need_review)
@@ -173,14 +173,14 @@ class TreeManager:
 
     def determine_task_availability(self) -> dict[protocol_schema.TaskRequestType, int]:
         num_active_trees = self.query_num_active_trees()
-        extensible_parents = self.query_extendible_parents()
+        extendible_parents = self.query_extendible_parents()
         prompts_need_review = self.query_prompts_need_review()
         replies_need_review = self.query_replies_need_review()
         incomplete_rankings = self.query_incomplete_rankings()
 
         return self._determine_task_availability_internal(
             num_active_trees=num_active_trees,
-            extensible_parents=extensible_parents,
+            extendible_parents=extendible_parents,
             prompts_need_review=prompts_need_review,
             replies_need_review=replies_need_review,
             incomplete_rankings=incomplete_rankings,
@@ -195,7 +195,7 @@ class TreeManager:
         num_active_trees = self.query_num_active_trees()
         prompts_need_review = self.query_prompts_need_review()
         replies_need_review = self.query_replies_need_review()
-        extensible_parents = self.query_extendible_parents()
+        extendible_parents = self.query_extendible_parents()
 
         incomplete_rankings = self.query_incomplete_rankings()
         if not self.cfg.rank_prompter_replies:
@@ -225,7 +225,7 @@ class TreeManager:
         else:
             task_count_by_type = self._determine_task_availability_internal(
                 num_active_trees=num_active_trees,
-                extensible_parents=extensible_parents,
+                extendible_parents=extendible_parents,
                 prompts_need_review=prompts_need_review,
                 replies_need_review=replies_need_review,
                 incomplete_rankings=incomplete_rankings,
@@ -357,12 +357,12 @@ class TreeManager:
             case TaskType.REPLY:
                 # select a tree with missing replies
                 if task_role == TaskRole.PROMPTER:
-                    extensible_parents = list(filter(lambda x: x.parent_role == "assistant", extensible_parents))
+                    extendible_parents = list(filter(lambda x: x.parent_role == "assistant", extendible_parents))
                 elif task_role == TaskRole.ASSISTANT:
-                    extensible_parents = list(filter(lambda x: x.parent_role == "prompter", extensible_parents))
+                    extendible_parents = list(filter(lambda x: x.parent_role == "prompter", extendible_parents))
 
-                if len(extensible_parents) > 0:
-                    random_parent = random.choice(extensible_parents)
+                if len(extendible_parents) > 0:
+                    random_parent = random.choice(extendible_parents)
 
                     # fetch random conversation to extend
                     logger.debug(f"selected {random_parent=}")
