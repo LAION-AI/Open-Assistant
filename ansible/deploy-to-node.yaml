@@ -57,8 +57,9 @@
     - name: Create postgres containers
       community.docker.docker_container:
         name: "oasst-{{ stack_name }}-postgres-{{ item.name }}"
-        image: postgres:15
+        image: ghcr.io/laion-ai/open-assistant/oasst-postgres
         state: started
+        pull: true
         recreate: "{{ (stack_name == 'dev') | bool }}"
         restart_policy: always
         network_mode: "oasst-{{ stack_name }}"
@@ -66,6 +67,12 @@
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: "{{ postgres_password }}"
           POSTGRES_DB: postgres
+          S3_BUCKET_NAME:
+            "{{ lookup('ansible.builtin.env', 'S3_BUCKET_NAME') }}"
+          AWS_ACCESS_KEY_ID:
+            "{{ lookup('ansible.builtin.env', 'AWS_ACCESS_KEY') }}"
+          AWS_SECRET_ACCESS_KEY:
+            "{{ lookup('ansible.builtin.env', 'AWS_SECRET_KEY') }}"
         volumes:
           - "oasst-{{ stack_name }}-postgres-{{ item.name
             }}:/var/lib/postgresql/data"
@@ -77,30 +84,6 @@
       loop:
         - name: backend
         - name: web
-
-    - name: Copy pgbackrest.conf to managed node
-      ansible.builtin.copy:
-        src: ./pgbackrest.conf
-        dest: "./{{ stack_name }}/pgbackrest.conf"
-        mode: 0644
-
-    - name: Create pgbackrest container
-      community.docker.docker_container:
-        name: "oasst-{{ stack_name }}-pgbackrest"
-        image: woblerr/pgbackrest:2.43
-        state: "{{ 'started' if stack_name == 'production' else 'absent' }}"
-        network_mode: "oasst-{{ stack_name }}"
-        entrypoint: ["/bin/bash", "-c", "sleep infinity"]
-        volumes:
-          - "./{{ stack_name }}/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf"
-          - "oasst-{{ stack_name }}-postgres-backend:/var/lib/postgresql/data"
-        env:
-          PGBACKREST_REPO1_S3_BUCKET:
-            "{{ lookup('ansible.builtin.env', 'S3_BUCKET_NAME') }}"
-          PGBACKREST_REPO1_S3_KEY:
-            "{{ lookup('ansible.builtin.env', 'AWS_ACCESS_KEY') }}"
-          PGBACKREST_REPO1_S3_KEY_SECRET:
-            "{{ lookup('ansible.builtin.env', 'AWS_SECRET_KEY') }}"
 
     - name: Run the oasst oasst-backend
       community.docker.docker_container:

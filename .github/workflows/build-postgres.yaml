@@ -1,0 +1,17 @@
+name: Build OASST Postgres image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - docker/Dockerfile.postgres
+
+jobs:
+  build-postgres:
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      image-name: oasst-postgres
+      context: ./docker/
+      dockerfile: docker/Dockerfile.postgres
+      build-args: ""
