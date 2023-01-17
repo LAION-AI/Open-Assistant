@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 from enum import Enum
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional, Tuple
@@ -67,6 +68,25 @@ class IncompleteRankingsRow(pydantic.BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class TreeMessageCountStats(pydantic.BaseModel):
+    message_tree_id: UUID
+    state: str
+    depth: int
+    oldest: datetime
+    youngest: datetime
+    count: int
+    goal_tree_size: int
+
+    @property
+    def completed(self) -> int:
+        return self.count / self.goal_tree_size
+
+
+class TreeManagerStats(pydantic.BaseModel):
+    state_counts: dict[str, int]
+    message_counts: list[TreeMessageCountStats]
 
 
 class TreeManager:
@@ -924,6 +944,40 @@ INNER JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Ranki
             active=True,
         )
 
+    def tree_counts_by_state(self) -> dict[str, int]:
+        qry = self.db.query(
+            MessageTreeState.state, func.count(MessageTreeState.message_tree_id).label("count")
+        ).group_by(MessageTreeState.state)
+        return {x["state"]: x["count"] for x in qry}
+
+    def tree_message_count_stats(self, only_active: bool = True) -> list[TreeMessageCountStats]:
+        qry = (
+            self.db.query(
+                MessageTreeState.message_tree_id,
+                func.max(Message.depth).label("depth"),
+                func.min(Message.created_date).label("oldest"),
+                func.max(Message.created_date).label("youngest"),
+                func.count(Message.id).label("count"),
+                MessageTreeState.goal_tree_size,
+                MessageTreeState.state,
+            )
+            .select_from(MessageTreeState)
+            .join(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
+            .filter(not_(Message.deleted))
+            .group_by(MessageTreeState.message_tree_id)
+        )
+
+        if only_active:
+            qry.filter(MessageTreeState.active)
+
+        return [TreeMessageCountStats(**x) for x in qry]
+
+    def stats(self) -> TreeManagerStats:
+        return TreeManagerStats(
+            state_counts=self.tree_counts_by_state(),
+            message_counts=self.tree_message_count_stats(only_active=True),
+        )
+
 
 if __name__ == "__main__":
     from oasst_backend.api.deps import api_auth
@@ -942,7 +996,7 @@ if __name__ == "__main__":
 
         # print("query_num_active_trees", tm.query_num_active_trees())
         # print("query_incomplete_rankings", tm.query_incomplete_rankings())
-        print("query_replies_need_review", tm.query_replies_need_review())
+        # print("query_replies_need_review", tm.query_replies_need_review())
         # print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
         # print("query_extendible_trees", tm.query_extendible_trees())
         # print("query_extendible_parents", tm.query_extendible_parents())
