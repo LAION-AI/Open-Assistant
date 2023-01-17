@@ -38,12 +38,13 @@ def update_user(
     notes: Optional[str] = None,
     db: Session = Depends(deps.get_db),
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
+    stats_enabled: Optional[bool] = None
 ):
     """
     Update a user by global user ID. Only trusted clients can update users.
     """
     ur = UserRepository(db, api_client)
-    ur.update_user(user_id, enabled, notes)
+    ur.update_user(user_id, enabled, notes, stats_enabled)
 
 
 @router.delete("/users/{user_id}", status_code=HTTP_204_NO_CONTENT)

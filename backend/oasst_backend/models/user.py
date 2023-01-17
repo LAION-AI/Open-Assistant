@@ -23,6 +23,8 @@ class User(SQLModel, table=True):
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
+    stats_enabled: bool = Field(nullable=False, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
+
     api_client_id: UUID = Field(foreign_key="api_client.id")
     enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
     notes: str = Field(sa_column=sa.Column(AutoString(length=1024), nullable=False, server_default=""))
