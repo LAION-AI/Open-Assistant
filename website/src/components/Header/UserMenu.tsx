@@ -74,7 +74,7 @@ export function UserMenu() {
         <Box display="flex" alignItems="center" gap="3" p="1" paddingRight={[1, 1, 1, 6, 6]}>
           <Avatar size="sm" bgImage={session.user.image}></Avatar>
           <Text data-cy="username" className="hidden lg:flex">
-            {session.user.name || session.user.email}
+            {session.user.name || "New User"}
           </Text>
         </Box>
       </MenuButton>
