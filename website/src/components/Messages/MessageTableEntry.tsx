@@ -1,6 +1,7 @@
 import { Avatar, Box, HStack, LinkBox, useColorModeValue } from "@chakra-ui/react";
 import { boolean } from "boolean";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { FlaggableElement } from "src/components/FlaggableElement";
 import { Message } from "src/types/Conversation";
 
@@ -11,9 +12,11 @@ interface MessageTableEntryProps {
 
 export function MessageTableEntry(props: MessageTableEntryProps) {
   const { item } = props;
+  const router = useRouter();
+  const { id } = router.query;
   const backgroundColor = useColorModeValue("gray.100", "gray.700");
   const backgroundColor2 = useColorModeValue("#DFE8F1", "#42536B");
-
+  const isClickable = props.enabled && !id;
   const avatarColor = useColorModeValue("white", "black");
   const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
 
@@ -27,10 +30,15 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
             src={`${boolean(item.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
           />
         </Box>
-        {props.enabled ? (
+        {isClickable ? (
           <Box width={["full", "full", "full", "fit-content"]} maxWidth={["full", "full", "full", "2xl"]}>
             <Link href={`/messages/${item.id}`}>
-              <LinkBox bg={item.is_assistant ? backgroundColor : backgroundColor2} p="4" borderRadius="md">
+              <LinkBox
+                bg={item.is_assistant ? backgroundColor : backgroundColor2}
+                p="4"
+                borderRadius="md"
+                className="whitespace-pre-wrap"
+              >
                 {item.text}
               </LinkBox>
             </Link>
@@ -42,6 +50,7 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
             bg={item.is_assistant ? backgroundColor : backgroundColor2}
             p="4"
             borderRadius="md"
+            className="whitespace-pre-wrap"
           >
             {item.text}
           </Box>
