@@ -14,7 +14,6 @@ from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_method, managed_tx_method
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_backend.utils.ranking import ranked_pairs
-from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlalchemy.sql import text
@@ -607,28 +606,14 @@ class TreeManager:
 
         self._enter_state(mts, message_tree_state.State.READY_FOR_SCORING)
         self.update_message_ranks(rankings_by_message)
-        self.update_message_ranks(rankings_by_message)
         return True
 
     @managed_tx_method(CommitMode.COMMIT)
     def update_message_ranks(self, rankings_by_message: Dict[int, int]) -> None:
-        def sort_uuid_rankings(data):
-            sorted_messages = []
-            for ranking, msgs in data:
-                sorted_uuids = []
-                for rank in ranking:
-                    sorted_uuids.append(msgs[rank])
-                sorted_messages.append(sorted_uuids)
-            return sorted_messages
-
         for parent_msg_id, ranking in rankings_by_message.items():
-            unordered_ranking = []
+            sorted_messages = []
             for msg_reaction in ranking:
-                unordered_ranking.append(
-                    [msg_reaction.payload.payload.ranking, msg_reaction.payload.payload.ranked_message_ids]
-                )
-            sorted_messages = sort_uuid_rankings(unordered_ranking)
-            logger.debug(f"\n\nRAW MESSAGE {unordered_ranking}")
+                sorted_messages.append(msg_reaction.payload.payload.ranked_message_ids)
             logger.debug(f"SORTED MESSAGE {sorted_messages}")
             consensus = ranked_pairs(sorted_messages)
             logger.debug(f"CONSENSUS: {consensus}\n\n")
