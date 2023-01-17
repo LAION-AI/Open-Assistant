@@ -267,7 +267,7 @@ class TreeManager:
                     ranking_parent_id = random.choice(incomplete_rankings).parent_id
 
                     messages = self.pr.fetch_message_conversation(ranking_parent_id)
-                    assert len(messages) > 1 and messages[-1].id == ranking_parent_id
+                    assert len(messages) > 0 and messages[-1].id == ranking_parent_id
                     ranking_parent = messages[-1]
                     assert not ranking_parent.deleted and ranking_parent.review_result
                     conversation = prepare_conversation(messages)
