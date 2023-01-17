@@ -109,6 +109,15 @@
           DEBUG_SKIP_TOXICITY_CALCULATION:
             "{{ 'true' if stack_name == 'dev' else 'false' }}"
           OFFICIAL_WEB_API_KEY: "{{ web_api_key }}"
+          TREE_MANAGER__MAX_ACTIVE_TREES:
+            "{{ lookup('ansible.builtin.env', 'MAX_ACTIVE_TREES') |
+            default('10', true) }}"
+          TREE_MANAGER__MAX_TREE_DEPTH:
+            "{{ lookup('ansible.builtin.env', 'MAX_TREE_DEPTH') | default('5',
+            true) }}"
+          TREE_MANAGER__GOAL_TREE_SIZE:
+            "{{ lookup('ansible.builtin.env', 'GOAL_TREE_SIZE') | default('15',
+            true) }}"
         ports:
           - "{{ backend_port }}:8080"
 

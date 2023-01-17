@@ -37,6 +37,9 @@ jobs:
       S3_REGION: ${{ secrets.S3_REGION }}
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      MAX_ACTIVE_TREES: ${{ vars.MAX_ACTIVE_TREES }}
+      MAX_TREE_DEPTH: ${{ vars.MAX_TREE_DEPTH }}
+      GOAL_TREE_SIZE: ${{ vars.GOAL_TREE_SIZE }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
