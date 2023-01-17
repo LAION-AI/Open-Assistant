@@ -524,7 +524,7 @@ class PromptRepository:
             qry = qry.filter(Message.deleted)
         return qry.all()
 
-    def fetch_user_message_trees(user_id: Message.user_id):
+    def fetch_user_message_trees(self, user_id: Message.user_id):
         qry = self.db.query(Message).filter(Message.user_id == user_id)
         return qry.all()
 

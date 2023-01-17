@@ -21,6 +21,8 @@ from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session, func, not_, text, update
+from sqlalchemy.sql import text
+from fastapi.encoders import jsonable_encoder
 
 
 class TaskType(Enum):
@@ -1167,7 +1169,7 @@ DELETE FROM user_stats WHERE user_id = :user_id;
     def export_trees_to_file(
         self,
         message_tree_ids: list[str],
-        file,
+        file=None,
         reviewed: bool = True,
         deleted: bool = False,
         use_compression: bool = True,
@@ -1175,7 +1177,10 @@ DELETE FROM user_stats WHERE user_id = :user_id;
         for message_tree_id in message_tree_ids:
             messages: List[Message] = pr.fetch_message_tree(message_tree_id, reviewed, deleted)
             tree: tree_export.ExportMessageTree = tree_export.build_export_tree(message_tree_id, messages)
-            tree_export.write_tree_to_file(file, tree, use_compression)
+            if file:
+                tree_export.write_tree_to_file(file, tree, use_compression)
+            else:
+                logger.info(json.dumps(jsonable_encoder(tree), indent=2))
 
     def export_all_ready_trees(
         self, file: str, reviewed: bool = True, deleted: bool = False, use_compression: bool = True
@@ -1224,9 +1229,5 @@ if __name__ == "__main__":
         # print(
         #     ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("2ac20d38-6650-43aa-8bb3-f61080c0d921"))
         # )
-        print(
-            tm.export_trees_to_file(
-                message_tree_ids=["7e75fb38-e664-4e2b-817c-b9a0b01b0074"],
-                file="lol.json.gzip",
-            )
-        )
+
+        print(tm.export_trees_to_file(message_tree_ids=["7e75fb38-e664-4e2b-817c-b9a0b01b0074"]))
