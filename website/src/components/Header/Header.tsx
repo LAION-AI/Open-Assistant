@@ -35,7 +35,7 @@ export function Header(props) {
   return (
     <nav className="oa-basic-theme">
       <Box position="relative" display="flex" z="10" justifyContent="space-between" p="4">
-        <Link href="/" aria-label="Home">
+        <Link href={homeURL} aria-label="Home">
           <Flex alignItems="center">
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
             <Text fontFamily="inter" fontSize="2xl" fontWeight="bold" ml="3">
@@ -52,6 +52,7 @@ export function Header(props) {
           <UserMenu />
         </Flex>
       </Box>
+      <Divider />
     </nav>
   );
 }
