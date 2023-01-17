@@ -16,7 +16,13 @@ export class OasstError {
 }
 
 export class OasstApiClient {
-  constructor(private readonly oasstApiUrl: string, private readonly oasstApiKey: string) {}
+  oasstApiUrl: string;
+  oasstApiKey: string;
+
+  constructor(oasstApiUrl: string, oasstApiKey: string) {
+    this.oasstApiUrl = oasstApiUrl;
+    this.oasstApiKey = oasstApiKey;
+  }
 
   private async post(path: string, body: any): Promise<any> {
     const resp = await fetch(`${this.oasstApiUrl}${path}`, {
@@ -170,7 +176,7 @@ export class OasstApiClient {
     const params = new URLSearchParams();
     params.append("max_count", max_count.toString());
 
-    // The backend API uses different query paramters depending on the
+    // The backend API uses different query parameters depending on the
     // pagination direction but they both take the same cursor value.
     // Depending on direction, pick the right query param.
     if (cursor !== "") {

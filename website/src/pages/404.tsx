@@ -6,9 +6,6 @@ import { PageEmptyState } from "src/components/EmptyState";
 import { getTransparentHeaderLayout } from "src/components/Layout";
 
 function Error() {
-  const router = useRouter();
-  const backgroundColor = useColorModeValue("white", "gray.800");
-
   return (
     <>
       <Head>

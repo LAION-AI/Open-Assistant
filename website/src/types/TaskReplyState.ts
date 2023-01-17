@@ -1,3 +1,7 @@
+export interface TaskReplyNotSubmittable<T> {
+  content: T;
+  state: "NOT_SUBMITTABLE";
+}
 export interface TaskReplyValid<T> {
   content: T;
   state: "VALID";
@@ -11,4 +15,8 @@ export interface TaskReplyInValid<T> {
   state: "INVALID";
 }
 
-export type TaskReplyState<T> = TaskReplyValid<T> | TaskReplyDefault<T> | TaskReplyInValid<T>;
+export type TaskReplyState<T> =
+  | TaskReplyNotSubmittable<T>
+  | TaskReplyValid<T>
+  | TaskReplyDefault<T>
+  | TaskReplyInValid<T>;
