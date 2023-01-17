@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import { LeaderboardTable, TaskOption } from "src/components/Dashboard";
 import { getDashboardLayout } from "src/components/Layout";
 import { TaskCategory } from "src/components/Tasks/TaskTypes";
+import {ComponentModal} from "src/components/Modal/Modal";
 
 const Dashboard = () => {
   const { data: session } = useSession();
@@ -18,6 +19,9 @@ const Dashboard = () => {
       </Head>
       <TaskOption displayTaskCategories={[TaskCategory.Tasks]} />
       <LeaderboardTable />
+      <ComponentModal onSkip={() => {
+        console.log("Skip");
+      }} />
     </>
   );
 };
