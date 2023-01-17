@@ -69,7 +69,7 @@ export function UserMenu() {
   }
 
   return (
-    <Menu z="20">
+    <Menu>
       <MenuButton border="solid" borderRadius="full" borderWidth="thin" borderColor={borderColor}>
         <Box display="flex" alignItems="center" gap="3" p="1" paddingRight={[1, 1, 1, 6, 6]}>
           <Avatar size="sm" bgImage={session.user.image}></Avatar>
