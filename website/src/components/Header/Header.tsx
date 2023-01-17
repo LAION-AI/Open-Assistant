@@ -27,11 +27,7 @@ export function Header(props) {
   const homeURL = session ? "/dashboard" : "/";
 
   const { colorMode } = useColorMode();
-  const borderClass = props.transparent
-    ? ""
-    : colorMode === "light"
-    ? "border-b border-gray-400"
-    : "border-b border-zinc-800";
+
   return (
     <nav className="oa-basic-theme">
       <Box position="relative" display="flex" z="10" justifyContent="space-between" p="4">
