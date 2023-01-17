@@ -618,6 +618,7 @@ class TreeManager:
                     sorted_uuids.append(msgs[rank])
                 sorted_messages.append(sorted_uuids)
             return sorted_messages
+
         for parent_msg_id, ranking in rankings_by_message.items():
             unordered_ranking = []
             for msg_reaction in ranking:
@@ -625,23 +626,16 @@ class TreeManager:
                     [msg_reaction.payload.payload.ranking, msg_reaction.payload.payload.ranked_message_ids]
                 )
             sorted_messages = sort_uuid_rankings(unordered_ranking)
+            logger.debug(f"\n\nRAW MESSAGE {unordered_ranking}")
+            logger.debug(f"SORTED MESSAGE {sorted_messages}")
             consensus = ranked_pairs(sorted_messages)
+            logger.debug(f"CONSENSUS: {consensus}\n\n")
             for rank, uuid in enumerate(consensus):
                 # set rank for each message_id for Message rows
                 msg = self.db.query(Message).filter(Message.id == uuid).one()
                 msg.rank = rank
                 self.db.add(msg)
 
-    
-    '''
-    def sort_uuid_rankings(self, data: List[Tuple[List[float], List[str]]]) -> List[Tuple[List[float], List[str]]]:
-        sorted_data = []
-        for rankings, uuids in data:
-            sorted_uuids = sorted(uuids)
-            sorted_rankings = [rankings[uuids.index(sorted_uuid)] for sorted_uuid in sorted_uuids]
-            sorted_data.append((sorted_rankings, sorted_uuids))
-        return sorted_data
-    '''
     def _calculate_acceptance(self, labels: list[TextLabels]):
         # calculate acceptance based on spam label
         return np.mean([1 - l.labels[protocol_schema.TextLabel.spam] for l in labels])
