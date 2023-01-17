@@ -4,6 +4,7 @@ import { Styles } from "@chakra-ui/theme-tools";
 import { colors } from "./colors";
 import { cardTheme } from "./components/Card";
 import { containerTheme } from "./components/Container";
+import { textTheme } from "./components/Text";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
@@ -14,6 +15,7 @@ const config: ThemeConfig = {
 const components = {
   Container: containerTheme,
   Card: cardTheme,
+  Text: textTheme,
 };
 
 const breakpoints = {

@@ -9,11 +9,10 @@ export const cardTheme = defineMultiStyleConfig({
     return {
       container: {
         backgroundColor: isLightMode ? "white" : "gray.700",
+        p: "6",
       },
       header: {},
-      body: {
-        padding: 6,
-      },
+      body: {},
       footer: {},
     };
   }),
@@ -21,6 +20,12 @@ export const cardTheme = defineMultiStyleConfig({
     elevated: definePartsStyle({
       container: {
         borderRadius: "xl",
+      },
+    }),
+    task: definePartsStyle({
+      container: {
+        borderRadius: "xl",
+        borderBottomRadius: "none",
       },
     }),
   },
