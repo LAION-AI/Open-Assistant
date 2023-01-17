@@ -18,7 +18,8 @@ services:
 
   # This DB is for the FastAPI Backend.
   db:
-    image: postgres
+    image: ghcr.io/laion-ai/open-assistant/oasst-postgres
+    pull_policy: always
     restart: always
     ports:
       - 5432:5432
