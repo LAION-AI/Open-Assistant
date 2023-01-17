@@ -6,11 +6,12 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { ClientSafeProvider, getProviders, signIn } from "next-auth/react";
 import React, { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { AuthLayout } from "src/components/AuthLayout";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
-import { RoleSelect } from "src/components/RoleSelect";
+import { Role, RoleSelect } from "src/components/RoleSelect";
 
 export type SignInErrorTypes =
   | "Signin"
@@ -60,15 +61,14 @@ function Signin({ providers }: SigninProps) {
     }
   }, [router]);
 
-  const signinWithEmail = (ev: React.FormEvent) => {
-    ev.preventDefault();
-    signIn(email.id, { callbackUrl: "/dashboard", email: emailEl.current.value });
+  const signinWithEmail = (data: { email: string }) => {
+    signIn(email.id, { callbackUrl: "/dashboard", email: data.email });
   };
 
   const { colorMode } = useColorMode();
   const bgColorClass = colorMode === "light" ? "bg-gray-50" : "bg-chakra-gray-900";
   const buttonBgColor = colorMode === "light" ? "#2563eb" : "#2563eb";
-
+  const { register, handleSubmit } = useForm<{ email: string }>();
   return (
     <div className={bgColorClass}>
       <Head>
@@ -79,7 +79,7 @@ function Signin({ providers }: SigninProps) {
         <Stack spacing="2">
           {credentials && <DebugSigninForm credentials={credentials} bgColorClass={bgColorClass} />}
           {email && (
-            <form onSubmit={signinWithEmail}>
+            <form onSubmit={handleSubmit(signinWithEmail)}>
               <Stack>
                 <Input
                   type="email"
@@ -87,7 +87,7 @@ function Signin({ providers }: SigninProps) {
                   variant="outline"
                   size="lg"
                   placeholder="Email Address"
-                  ref={emailEl}
+                  {...register("email")}
                 />
                 <SigninButton data-cy="signin-email-button" leftIcon={<FaEnvelope />}>
                   Continue with Email
@@ -174,23 +174,35 @@ const SigninButton = (props: ButtonProps) => {
   );
 };
 
+interface DebugSigninFormData {
+  username: string;
+  role: Role;
+}
+
 const DebugSigninForm = ({ credentials, bgColorClass }: { credentials: ClientSafeProvider; bgColorClass: string }) => {
-  const debugUsernameEl = useRef(null);
-  const roleRef = useRef(null);
-  function signinWithDebugCredentials(ev: React.FormEvent) {
-    ev.preventDefault();
+  const { register, handleSubmit } = useForm<DebugSigninFormData>({
+    defaultValues: {
+      role: "general",
+      username: "dev",
+    },
+  });
+
+  function signinWithDebugCredentials(data: DebugSigninFormData) {
     signIn(credentials.id, {
       callbackUrl: "/dashboard",
-      username: debugUsernameEl.current.value,
-      role: roleRef.current.value,
+      ...data,
     });
   }
+
   return (
-    <form onSubmit={signinWithDebugCredentials} className="border-2 border-orange-600 rounded-md p-4 relative">
+    <form
+      onSubmit={handleSubmit(signinWithDebugCredentials)}
+      className="border-2 border-orange-600 rounded-md p-4 relative"
+    >
       <span className={`text-orange-600 absolute -top-3 left-5 ${bgColorClass} px-1`}>For Debugging Only</span>
       <Stack>
-        <Input variant="outline" size="lg" placeholder="Username" ref={debugUsernameEl} />
-        <RoleSelect defaultValue={"general"} ref={roleRef}></RoleSelect>
+        <Input variant="outline" size="lg" placeholder="Username" {...register("username")} />
+        <RoleSelect {...register("role")}></RoleSelect>
         <SigninButton leftIcon={<FaBug />}>Continue with Debug User</SigninButton>
       </Stack>
     </form>
