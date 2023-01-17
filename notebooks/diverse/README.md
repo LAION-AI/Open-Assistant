@@ -1,7 +1,7 @@
 # DIVERSE Downloader
 
-Diverse is a notebook that downloads the DIVERSE dataset and converts it 
-into OpenAssistant Data Scheme formats. 
+Diverse is a notebook that downloads the DIVERSE dataset and converts it into
+OpenAssistant Data Scheme formats.
 
 ---
 
