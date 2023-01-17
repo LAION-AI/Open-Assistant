@@ -56,7 +56,8 @@ from a title or theme.
 
 This data was created by synthesizing the dialogues in
 [🥤Soda](https://huggingface.co/datasets/allenai/soda) and applying a set of
-templates to generate the conversation.
+templates to generate the conversation. The original research paper can be
+found [here](https://arxiv.org/pdf/2212.10465v1.pdf).
 
 Example:
 
