@@ -13,7 +13,7 @@ export const EmptyState = (props: EmptyStateProps) => {
   const router = useRouter();
 
   return (
-    <Box bg={backgroundColor} p="10" borderRadius="xl" shadow="base">
+    <Box bg={backgroundColor} p="10" borderRadius="xl" shadow="base" maxWidth="3xl">
       <Box display="flex" flexDirection="column" alignItems="center" gap="8" fontSize="lg">
         <props.icon size="30" color="DarkOrange" />
         <Text>{props.text}</Text>
@@ -31,4 +31,10 @@ export const TaskEmptyState = () => {
 
 export const PageEmptyState = () => {
   return <EmptyState text="Sorry, the page you are looking for does not exist." icon={FiAlertTriangle} />;
+};
+
+export const ServerEmptyState = () => {
+  return (
+    <EmptyState text="Sorry, we encountered a server error. We're not sure what went wrong." icon={FiAlertTriangle} />
+  );
 };
