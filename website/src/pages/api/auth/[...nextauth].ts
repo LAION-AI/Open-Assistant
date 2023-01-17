@@ -7,6 +7,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 import prisma from "src/lib/prismadb";
+import { generateUsername } from "unique-username-generator";
 
 const providers: Provider[] = [];
 
@@ -96,12 +97,12 @@ export const authOptions: AuthOptions = {
      * When creating a token, fetch the user's role and inject it in the token.
      * This let's use forward the role to the session object.
      */
-    async jwt({ token }) {
-      const { isNew, role } = await prisma.user.findUnique({
+    async jwt({ user, token }) {
+      const { isNew, name, role } = await prisma.user.findUnique({
         where: { id: token.sub },
-        select: { role: true, isNew: true },
+        select: { name: true, role: true, isNew: true },
       });
-      token.role = role;
+      (token.name = name), (token.role = role);
       token.isNew = isNew;
       return token;
     },
@@ -110,7 +111,18 @@ export const authOptions: AuthOptions = {
     /**
      * Update the user's role after they have successfully signed in
      */
-    async signIn({ user, account }) {
+    async signIn({ user, account, isNewUser }) {
+      if (isNewUser && account.provider === "email") {
+        await prisma.user.update({
+          data: {
+            name: generateUsername(),
+          },
+          where: {
+            id: user.id,
+          },
+        });
+      }
+
       // Get the admin list for the user's auth type.
       const adminForAccountType = adminUserMap.get(account.provider);
 
