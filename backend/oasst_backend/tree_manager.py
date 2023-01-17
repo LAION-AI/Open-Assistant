@@ -715,8 +715,8 @@ WHERE mts.active                        -- only consider active trees
     AND NOT m.deleted                   -- ignore deleted messages as parents
     AND m.depth < mts.max_depth         -- ignore leaf nodes as parents
     AND m.review_result                 -- parent node must have positive review
-    AND NOT c.deleted                   -- don't count deleted children
-    AND (c.review_result OR c.review_count < :num_reviews_reply) -- don't count children with negative review but count elements under review
+    AND NOT coalesce(c.deleted, FALSE)  -- don't count deleted children
+    AND (c.review_result OR coalesce(c.review_count, 0) < :num_reviews_reply) -- don't count children with negative review but count elements under review
 GROUP BY m.id, m.role, m.depth, m.message_tree_id, mts.max_children_count
 HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
 """
