@@ -64,7 +64,13 @@ class UserRepository:
         return user
 
     @managed_tx_method(CommitMode.COMMIT)
-    def update_user(self, id: UUID, enabled: Optional[bool] = None, notes: Optional[str] = None, stats_enabled: Optional[bool] = None) -> None:
+    def update_user(
+        self,
+        id: UUID,
+        enabled: Optional[bool] = None,
+        notes: Optional[str] = None,
+        stats_enabled: Optional[bool] = None,
+    ) -> None:
         """
         Update a user by global user ID to disable or set admin notes. Only trusted clients may update users.
 

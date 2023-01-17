@@ -38,7 +38,7 @@ def update_user(
     notes: Optional[str] = None,
     db: Session = Depends(deps.get_db),
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
-    stats_enabled: Optional[bool] = None
+    stats_enabled: Optional[bool] = None,
 ):
     """
     Update a user by global user ID. Only trusted clients can update users.
