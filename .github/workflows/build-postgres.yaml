@@ -5,13 +5,13 @@ on:
     branches:
       - main
     paths:
-      - docker/Dockerfile.postgres
+      - docker/oasst-postgres/**
 
 jobs:
   build-postgres:
     uses: ./.github/workflows/docker-build.yaml
     with:
       image-name: oasst-postgres
-      context: ./docker/
-      dockerfile: docker/Dockerfile.postgres
+      context: ./docker/oasst-postgres
+      dockerfile: docker/oasst-postgres/Dockerfile
       build-args: ""
