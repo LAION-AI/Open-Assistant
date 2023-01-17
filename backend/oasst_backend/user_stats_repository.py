@@ -300,5 +300,3 @@ if __name__ == "__main__":
         usr = UserStatsRepository(db)
         usr.update_all_time_frames()
         db.commit()
-        # usr.get_leader_board(UserStatsTimeFrame.total)
-        print(usr.get_user_stats_all_time_frames(UUID("0d6ff62a-0bea-4c56-ade8-b3e0520a10ce")))
