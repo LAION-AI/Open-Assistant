@@ -16,7 +16,13 @@ export class OasstError {
 }
 
 export class OasstApiClient {
-  constructor(private readonly oasstApiUrl: string, private readonly oasstApiKey: string) {}
+  oasstApiUrl: string;
+  oasstApiKey: string;
+
+  constructor(oasstApiUrl: string, oasstApiKey: string) {
+    this.oasstApiUrl = oasstApiUrl;
+    this.oasstApiKey = oasstApiKey;
+  }
 
   private async post(path: string, body: any): Promise<any> {
     const resp = await fetch(`${this.oasstApiUrl}${path}`, {

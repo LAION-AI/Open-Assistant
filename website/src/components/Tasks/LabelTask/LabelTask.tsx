@@ -19,7 +19,10 @@ export const LabelTask = ({
   const [sliderValues, setSliderValues] = useState<number[]>(new Array(valid_labels.length).fill(0));
 
   useEffect(() => {
-    onReplyChanged({ content: { labels: {}, text: task.reply, message_id: task.message_id }, state: "DEFAULT" });
+    onReplyChanged({
+      content: { labels: {}, text: task.reply, message_id: task.message_id },
+      state: "NOT_SUBMITTABLE",
+    });
   }, [task, onReplyChanged]);
 
   const onSliderChange = (values: number[]) => {
