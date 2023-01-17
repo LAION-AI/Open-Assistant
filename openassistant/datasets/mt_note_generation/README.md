@@ -45,9 +45,9 @@ dataset_info:
 
 ## Dataset Summary
 
-MT Note Generation is a set of synthetic dialogues between Assistant and
-User where the user asks the assistant to generate a clinical note for a patient persona.
-
+MT Note Generation is a set of synthetic dialogues between Assistant and User
+where the user asks the assistant to generate a clinical note for a patient
+persona.
 
 This data was created by synthesizing the dialogues in
 [MT Samples](https://mtsamples.com/) for clinical note generation.
@@ -57,7 +57,7 @@ Example:
 ```
 User: Write a clinical note about a patient with the following chief complaint:  Stomach pain for 2 weeks.
 
-ASSISTANT: 
+ASSISTANT:
 
 CHIEF COMPLAINT: Stomach pain for 2 weeks. HISTORY OF PRESENT ILLNESS: The patient is a 45yo Mexican man without significant past medical history who presents to the emergency room with complaints of mid-epigastric and right upper quadrant abdominal pain for the last 14 days. The pain was initially crampy and burning in character and was relieved with food intake. He also reports that it initially was associated with a sour taste in his mouth. He went to his primary care physician who prescribed cimetidine 400mg qhs x 5 days; however, this did not relieve his symptoms. In fact, the pain has worsened such that the pain now radiates to the back but is waxing and waning in duration. It is relieved with standing and ambulation and exacerbated when lying in a supine position. He reports a decrease in appetite associated with a 4 lb. wt loss over the last 2 wks. He does have nausea with only one episode of non-bilious, non-bloody emesis on day of admission. He reports a 2 wk history of subjective fever and diaphoresis. He denies any diarrhea, constipation, dysuria, melena, or hematochezia. His last bowel movement was during the morning of admission and was normal. He denies any travel in the last 9 years and sick contacts.PAST MEDICAL HISTORY: Right inguinal groin cyst removal 15 years ago. Unknown etiology. No recurrence.
 
@@ -84,7 +84,9 @@ The dataset contains one configuration, `dialogue_modeling`, which has a single
 text `conversation` feature.
 
 ## Source data
-The script modifies data from mtsamples.csv which is hosted in Kaggle: https://www.kaggle.com/datasets/tboyle10/medicaltranscriptions
+
+The script modifies data from mtsamples.csv which is hosted in Kaggle:
+https://www.kaggle.com/datasets/tboyle10/medicaltranscriptions
 
 ## Citation
 

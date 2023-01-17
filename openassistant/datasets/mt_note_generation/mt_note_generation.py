@@ -42,9 +42,11 @@ _HOMEPAGE = ""
 _LICENSE = "mit"
 
 _URLS = {
-   _DATASETNAME: {"train": "./data/mt_note_generation_train.jsonl",
-                  "test": "./data/mt_note_generation_test.jsonl",
-                  "validation": "./data/mt_note_generation_validation.jsonl"}
+    _DATASETNAME: {
+        "train": "./data/mt_note_generation_train.jsonl",
+        "test": "./data/mt_note_generation_test.jsonl",
+        "validation": "./data/mt_note_generation_validation.jsonl",
+    }
 }
 
 _SUPPORTED_TASKS = ["dialogue-modeling"]
