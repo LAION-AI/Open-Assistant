@@ -1,20 +1,22 @@
+import gzip
 import json
 import random
 from datetime import datetime
 from enum import Enum
 from http import HTTPStatus
+from itertools import groupby
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
-from itertools import groupby
 
 import numpy as np
 import pydantic
+from fastapi.encoders import jsonable_encoder
 from loguru import logger
-from oasst_backend.utils import tree_export
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import Message, MessageReaction, MessageTreeState, Task, TextLabels, User, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.utils import tree_export
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_method, managed_tx_method
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_backend.utils.ranking import ranked_pairs
