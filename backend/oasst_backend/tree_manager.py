@@ -14,6 +14,7 @@ from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_method, managed_tx_method
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_backend.utils.ranking import ranked_pairs
+from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlalchemy.sql import text
@@ -605,6 +606,7 @@ class TreeManager:
                 return False
 
         self._enter_state(mts, message_tree_state.State.READY_FOR_SCORING)
+        self.update_message_ranks(rankings_by_message)
         self.update_message_ranks(rankings_by_message)
         return True
 
