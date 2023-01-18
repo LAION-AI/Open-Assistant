@@ -968,7 +968,7 @@ INNER JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Ranki
         )
 
         if only_active:
-            qry.filter(MessageTreeState.active)
+            qry = qry.filter(MessageTreeState.active)
 
         return [TreeMessageCountStats(**x) for x in qry]
 
