@@ -1,0 +1,66 @@
+name: Deploy to node
+
+on:
+  workflow_call:
+    inputs:
+      stack-name:
+        required: false
+        type: string
+        default: dev
+      image-tag:
+        required: false
+        type: string
+        default: latest
+      backend-port:
+        required: false
+        type: string
+        default: 8080
+      website-port:
+        required: false
+        type: string
+        default: 3000
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.stack-name }}
+    env:
+      WEB_ADMIN_USERS: ${{ secrets.DEV_WEB_ADMIN_USERS }}
+      WEB_DISCORD_CLIENT_ID: ${{ secrets.DEV_WEB_DISCORD_CLIENT_ID }}
+      WEB_DISCORD_CLIENT_SECRET: ${{ secrets.DEV_WEB_DISCORD_CLIENT_SECRET }}
+      WEB_EMAIL_SERVER_HOST: ${{ secrets.DEV_WEB_EMAIL_SERVER_HOST }}
+      WEB_EMAIL_SERVER_PASSWORD: ${{ secrets.DEV_WEB_EMAIL_SERVER_PASSWORD }}
+      WEB_EMAIL_SERVER_PORT: ${{ secrets.DEV_WEB_EMAIL_SERVER_PORT }}
+      WEB_EMAIL_SERVER_USER: ${{ secrets.DEV_WEB_EMAIL_SERVER_USER }}
+      WEB_NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      S3_REGION: ${{ secrets.S3_REGION }}
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      MAX_ACTIVE_TREES: ${{ vars.MAX_ACTIVE_TREES }}
+      MAX_TREE_DEPTH: ${{ vars.MAX_TREE_DEPTH }}
+      GOAL_TREE_SIZE: ${{ vars.GOAL_TREE_SIZE }}
+      SKIP_TOXICITY_CALCULATION: ${{ vars.SKIP_TOXICITY_CALCULATION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          # Required, playbook filepath
+          playbook: deploy-to-node.yaml
+          # Optional, directory where playbooks live
+          directory: ansible
+          # Optional, SSH private key
+          key: ${{secrets.DEV_NODE_PRIVATE_KEY}}
+          # Optional, literal inventory file contents
+          inventory: |
+            [dev]
+            dev01 ansible_host=${{secrets.DEV_NODE_IP}} ansible_connection=ssh ansible_user=web-team
+          options: |
+            --extra-vars "stack_name=${{inputs.stack-name}} \
+            image_tag=${{inputs.image-tag}} \
+            backend_port=${{inputs.backend-port}} \
+            website_port=${{inputs.website-port}} \
+            postgres_password=${{secrets.POSTGRES_PASSWORD}} \
+            web_api_key=${{secrets.WEB_API_KEY}}"

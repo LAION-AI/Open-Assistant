@@ -1,35 +1,74 @@
-import { Button, Input, Stack } from "@chakra-ui/react";
+import { Button, ButtonProps, Input, Stack, useColorModeValue } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { getCsrfToken, getProviders, signIn } from "next-auth/react";
-import React, { useRef } from "react";
+import { useRouter } from "next/router";
+import { ClientSafeProvider, getProviders, signIn } from "next-auth/react";
+import React, { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { AuthLayout } from "src/components/AuthLayout";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
+import { Role, RoleSelect } from "src/components/RoleSelect";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function Signin({ csrfToken, providers }) {
+export type SignInErrorTypes =
+  | "Signin"
+  | "OAuthSignin"
+  | "OAuthCallback"
+  | "OAuthCreateAccount"
+  | "EmailCreateAccount"
+  | "Callback"
+  | "OAuthAccountNotLinked"
+  | "EmailSignin"
+  | "CredentialsSignin"
+  | "SessionRequired"
+  | "default";
+
+const errorMessages: Record<SignInErrorTypes, string> = {
+  Signin: "Try signing in with a different account.",
+  OAuthSignin: "Try signing in with a different account.",
+  OAuthCallback: "Try signing in with the same account you used originally.",
+  OAuthCreateAccount: "Try signing in with a different account.",
+  EmailCreateAccount: "Try signing in with a different account.",
+  Callback: "Try signing in with a different account.",
+  OAuthAccountNotLinked: "To confirm your identity, sign in with the same account you used originally.",
+  EmailSignin: "The e-mail could not be sent.",
+  CredentialsSignin: "Sign in failed. Check the details you provided are correct.",
+  SessionRequired: "Please sign in to access this page.",
+  default: "Unable to sign in.",
+};
+
+interface SigninProps {
+  providers: Awaited<ReturnType<typeof getProviders>>;
+}
+
+function Signin({ providers }: SigninProps) {
+  const router = useRouter();
   const { discord, email, github, credentials } = providers;
   const emailEl = useRef(null);
-  const signinWithEmail = (ev: React.FormEvent) => {
-    ev.preventDefault();
-    signIn(email.id, { callbackUrl: "/dashboard", email: emailEl.current.value });
-  };
+  const [error, setError] = useState("");
 
-  const debugUsernameEl = useRef(null);
-  function signinWithDebugCredentials(ev: React.FormEvent) {
-    ev.preventDefault();
-    signIn(credentials.id, { callbackUrl: "/dashboard", username: debugUsernameEl.current.value });
-  }
+  useEffect(() => {
+    const err = router?.query?.error;
+    if (err) {
+      if (typeof err === "string") {
+        setError(errorMessages[err]);
+      } else {
+        setError(errorMessages[err[0]]);
+      }
+    }
+  }, [router]);
+
+  const signinWithEmail = (data: { email: string }) => {
+    signIn(email.id, { callbackUrl: "/dashboard", email: data.email });
+  };
 
   const { colorMode } = useColorMode();
   const bgColorClass = colorMode === "light" ? "bg-gray-50" : "bg-chakra-gray-900";
   const buttonBgColor = colorMode === "light" ? "#2563eb" : "#2563eb";
-
-  const buttonColorScheme = colorMode === "light" ? "blue" : "dark-blue-btn";
-
+  const { register, handleSubmit } = useForm<{ email: string }>();
   return (
     <div className={bgColorClass}>
       <Head>
@@ -38,31 +77,21 @@ function Signin({ csrfToken, providers }) {
       </Head>
       <AuthLayout>
         <Stack spacing="2">
-          {credentials && (
-            <form onSubmit={signinWithDebugCredentials} className="border-2 border-orange-600 rounded-md p-4 relative">
-              <span className={`text-orange-600 absolute -top-3 left-5 ${bgColorClass} px-1`}>For Debugging Only</span>
-              <Stack>
-                <Input variant="outline" size="lg" placeholder="Username" ref={debugUsernameEl} />
-                <Button size={"lg"} leftIcon={<FaBug />} colorScheme={buttonColorScheme} color="white" type="submit">
-                  Continue with Debug User
-                </Button>
-              </Stack>
-            </form>
-          )}
+          {credentials && <DebugSigninForm credentials={credentials} bgColorClass={bgColorClass} />}
           {email && (
-            <form onSubmit={signinWithEmail}>
+            <form onSubmit={handleSubmit(signinWithEmail)}>
               <Stack>
-                <Input data-cy="email-address" variant="outline" size="lg" placeholder="Email Address" ref={emailEl} />
-                <Button
-                  data-cy="signin-email-button"
-                  size={"lg"}
-                  leftIcon={<FaEnvelope />}
-                  type="submit"
-                  colorScheme={buttonColorScheme}
-                  color="white"
-                >
+                <Input
+                  type="email"
+                  data-cy="email-address"
+                  variant="outline"
+                  size="lg"
+                  placeholder="Email Address"
+                  {...register("email")}
+                />
+                <SigninButton data-cy="signin-email-button" leftIcon={<FaEnvelope />}>
                   Continue with Email
-                </Button>
+                </SigninButton>
               </Stack>
             </form>
           )}
@@ -110,6 +139,11 @@ function Signin({ csrfToken, providers }) {
           </Link>
           .
         </div>
+        {error && (
+          <div className="text-center mt-8">
+            <p className="text-orange-600">Error: {error}</p>
+          </div>
+        )}
       </AuthLayout>
     </div>
   );
@@ -125,13 +159,61 @@ Signin.getLayout = (page) => (
 
 export default Signin;
 
-export async function getServerSideProps() {
-  const csrfToken = await getCsrfToken();
+const SigninButton = (props: ButtonProps) => {
+  const buttonColorScheme = useColorModeValue("blue", "dark-blue-btn");
+
+  return (
+    <Button
+      size={"lg"}
+      leftIcon={<FaEnvelope />}
+      type="submit"
+      colorScheme={buttonColorScheme}
+      color="white"
+      {...props}
+    ></Button>
+  );
+};
+
+interface DebugSigninFormData {
+  username: string;
+  role: Role;
+}
+
+const DebugSigninForm = ({ credentials, bgColorClass }: { credentials: ClientSafeProvider; bgColorClass: string }) => {
+  const { register, handleSubmit } = useForm<DebugSigninFormData>({
+    defaultValues: {
+      role: "general",
+      username: "dev",
+    },
+  });
+
+  function signinWithDebugCredentials(data: DebugSigninFormData) {
+    signIn(credentials.id, {
+      callbackUrl: "/dashboard",
+      ...data,
+    });
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit(signinWithDebugCredentials)}
+      className="border-2 border-orange-600 rounded-md p-4 relative"
+    >
+      <span className={`text-orange-600 absolute -top-3 left-5 ${bgColorClass} px-1`}>For Debugging Only</span>
+      <Stack>
+        <Input variant="outline" size="lg" placeholder="Username" {...register("username")} />
+        <RoleSelect {...register("role")}></RoleSelect>
+        <SigninButton leftIcon={<FaBug />}>Continue with Debug User</SigninButton>
+      </Stack>
+    </form>
+  );
+};
+
+export const getServerSideProps: GetServerSideProps<SigninProps> = async () => {
   const providers = await getProviders();
   return {
     props: {
-      csrfToken,
       providers,
     },
   };
-}
+};

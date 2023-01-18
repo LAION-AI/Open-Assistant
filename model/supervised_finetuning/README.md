@@ -23,7 +23,42 @@ open-asisstant dataset are available it will be added here.
 
 ## Model
 
-TBD
+Normally you should be able to add new models in configs/config.yml
+
+```
+your-model-name:
+  learning_rate: 2e-6
+  model_name: <huggingface model name>
+  weight_decay: 0.01
+  max_length: 812
+  warmup_steps: 600
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 5
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+```
+
+```
+python trainer.py --configs defaults your-model-name
+```
+
+However, if the model of your choice doesn't have pad_token, eos_token,
+sep_token, you have to update utils.py `get_tokenizer` to use the right token.
+
+## Deepspeed support
+
+You can edit the configs/zero_config.json and use any stage you wish. The
+current config uses zero-stage 3. For more details on how to setup the config
+checkout [this page](https://www.deepspeed.ai/tutorials/zero/)
+
+Once you are satisfy with your deepzero config, you can add --deepspeed flag at
+the end to trigger deepspeed
+
+```
+python trainer.py --configs defaults your-model-name --deepspeed
+```
+
+## Dataset choices
 
 ## Results
 
@@ -33,6 +68,6 @@ Experimental results in wandb
 ## TODOS
 
 - decide on a model
-- add special token to declare prompt and reply. Do nto freeze the weights for
-  these
 - Merge utils etc with reward model
+- Casual Modelling for GPT-JT does not leverage the bidirectional mask for the
+  prompt? (https://huggingface.co/togethercomputer/GPT-JT-6B-v1)

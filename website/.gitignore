@@ -39,5 +39,7 @@ next-env.d.ts
 *.swp
 
 # cypress
+/cypress/screenshots
+/cypress/videos
 /cypress-visual-screenshots/diff
 /cypress-visual-screenshots/comparison
