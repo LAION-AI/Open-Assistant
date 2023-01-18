@@ -33,9 +33,30 @@ async def create_api_client(
     return api_client.api_key
 
 
-@router.get("/backend_settings", response_model=Settings)
-async def get_backend_settings(api_client: ApiClient = Depends(deps.get_trusted_api_client)) -> Settings:
+@router.get("/backend_settings/full", response_model=Settings)
+async def get_backend_settings_full(api_client: ApiClient = Depends(deps.get_trusted_api_client)) -> Settings:
     logger.info(
         f"Backend settings requested by trusted api_client {api_client.id} (admin_email: {api_client.admin_email}, frontend_type: {api_client.frontend_type})"
     )
     return settings
+
+
+class PublicSettings(pydantic.BaseModel):
+    """Subset of backend settings which can be retrieved by untrusted API clients."""
+
+    PROJECT_NAME: str
+    API_V1_STR: str
+    DEBUG_USE_SEED_DATA: bool
+    DEBUG_ALLOW_SELF_LABELING: bool
+    DEBUG_SKIP_EMBEDDING_COMPUTATION: bool
+    DEBUG_SKIP_TOXICITY_CALCULATION: bool
+    DEBUG_DATABASE_ECHO: bool
+    USER_STATS_INTERVAL_DAY: int
+    USER_STATS_INTERVAL_WEEK: int
+    USER_STATS_INTERVAL_MONTH: int
+    USER_STATS_INTERVAL_TOTAL: int
+
+
+@router.get("/backend_settings/public", response_model=PublicSettings)
+async def get_backend_settings_public(api_client: ApiClient = Depends(deps.get_api_client)) -> PublicSettings:
+    return PublicSettings(**settings.dict())
