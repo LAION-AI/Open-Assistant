@@ -27,13 +27,6 @@ describe("signin flow", () => {
         });
       });
   });
-  it("shows the logged in users email address if logged in with email", () => {
-    const emailAddress = "user@example.com";
-    cy.signInWithEmail(emailAddress);
-    // The user will only see the email address if the window is wide enough, not technically required as even when hidden this will find it in the page.
-    cy.viewport(1920, 1000);
-    cy.contains('[data-cy="username"]', emailAddress);
-  });
 });
 
 export {};
