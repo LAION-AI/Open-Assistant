@@ -88,7 +88,7 @@ export const authOptions: AuthOptions = {
      * Ensure we propagate the user's role when creating the session from the
      * token.
      */
-    async session({ session, user, token }) {
+    async session({ session, token }) {
       session.user.role = token.role;
       session.user.isNew = token.isNew;
       session.user.name = token.name;
@@ -98,7 +98,7 @@ export const authOptions: AuthOptions = {
      * When creating a token, fetch the user's role and inject it in the token.
      * This let's use forward the role to the session object.
      */
-    async jwt({ token, user, account }) {
+    async jwt({ token }) {
       const { isNew, name, role } = await prisma.user.findUnique({
         where: { id: token.sub },
         select: { name: true, role: true, isNew: true },
