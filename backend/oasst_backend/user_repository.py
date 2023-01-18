@@ -158,7 +158,7 @@ class UserRepository:
         if auth_method:
             users = users.filter(User.auth_method == auth_method)
 
-        users = users.order_by(User.display_name)
+        users = users.order_by(User.id)
 
         if gt:
             users = users.filter(User.id > gt)
