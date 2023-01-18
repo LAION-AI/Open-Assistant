@@ -1,20 +1,20 @@
-import { getSession } from "next-auth/react";
+import { withoutRole } from "src/lib/auth";
 import prisma from "src/lib/prismadb";
 
-// POST /api/post
-// Required fields in body: title
-// Optional fields in body: content
-export default async function handle(req, res) {
+/**
+ * Updates the user's `name` field in the `User` table.
+ */
+const handler = withoutRole("banned", async (req, res, token) => {
   const { username } = req.body;
-
-  const session = await getSession({ req });
-  const result = await prisma.user.update({
+  const { name } = await prisma.user.update({
     where: {
-      email: session.user.email,
+      id: token.sub,
     },
     data: {
       name: username,
     },
   });
-  res.json({ name: result.name });
-}
+  res.json({ name });
+});
+
+export default handler;
