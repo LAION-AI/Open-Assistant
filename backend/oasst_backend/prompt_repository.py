@@ -2,104 +2,59 @@ import datetime
 import random
 from collections import defaultdict
 from http import HTTPStatus
-from typing import Optional
+from typing import List, Optional, Tuple
 from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
+import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.journal_writer import JournalWriter
-from oasst_backend.models import ApiClient, Message, MessageReaction, Task, TextLabels, User
+from oasst_backend.models import (
+    ApiClient,
+    Message,
+    MessageEmbedding,
+    MessageReaction,
+    MessageToxicity,
+    MessageTreeState,
+    Task,
+    TextLabels,
+    User,
+    message_tree_state,
+)
 from oasst_backend.models.payload_column_type import PayloadContainer
+from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
+from oasst_backend.user_repository import UserRepository
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from oasst_shared.schemas.protocol import LeaderboardStats, SystemStats
+from oasst_shared.schemas.protocol import SystemStats
 from sqlalchemy import update
 from sqlmodel import Session, func
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
 class PromptRepository:
-    def __init__(self, db: Session, api_client: ApiClient, user: Optional[protocol_schema.User]):
+    def __init__(
+        self,
+        db: Session,
+        api_client: ApiClient,
+        client_user: Optional[protocol_schema.User] = None,
+        user_repository: Optional[UserRepository] = None,
+        task_repository: Optional[TaskRepository] = None,
+    ):
         self.db = db
         self.api_client = api_client
-        self.user = self.lookup_user(user)
+        self.user_repository = user_repository or UserRepository(db, api_client)
+        self.user = self.user_repository.lookup_client_user(client_user, create_missing=True)
         self.user_id = self.user.id if self.user else None
+        logger.debug(f"PromptRepository(api_client_id={self.api_client.id}, {self.user_id=})")
+        self.task_repository = task_repository or TaskRepository(
+            db, api_client, client_user, user_repository=self.user_repository
+        )
         self.journal = JournalWriter(db, api_client, self.user)
 
-    def lookup_user(self, client_user: protocol_schema.User) -> Optional[User]:
-        if not client_user:
-            return None
-        user: User = (
-            self.db.query(User)
-            .filter(
-                User.api_client_id == self.api_client.id,
-                User.username == client_user.id,
-                User.auth_method == client_user.auth_method,
-            )
-            .first()
-        )
-        if user is None:
-            # user is unknown, create new record
-            user = User(
-                username=client_user.id,
-                display_name=client_user.display_name,
-                api_client_id=self.api_client.id,
-                auth_method=client_user.auth_method,
-            )
-            self.db.add(user)
-            self.db.commit()
-            self.db.refresh(user)
-        elif client_user.display_name and client_user.display_name != user.display_name:
-            # we found the user but the display name changed
-            user.display_name = client_user.display_name
-            self.db.add(user)
-            self.db.commit()
-        return user
-
-    def validate_frontend_message_id(self, message_id: str) -> None:
-        # TODO: Should it be replaced with fastapi/pydantic validation?
-        if not isinstance(message_id, str):
-            raise OasstError(
-                f"message_id must be string, not {type(message_id)}", OasstErrorCode.INVALID_FRONTEND_MESSAGE_ID
-            )
-        if not message_id:
-            raise OasstError("message_id must not be empty", OasstErrorCode.INVALID_FRONTEND_MESSAGE_ID)
-
-    def bind_frontend_message_id(self, task_id: UUID, frontend_message_id: str):
-        self.validate_frontend_message_id(frontend_message_id)
-
-        # find task
-        task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
-        if task is None:
-            raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND)
-        if task.expired:
-            raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
-        if task.done or task.ack is not None:
-            raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
-
-        task.frontend_message_id = frontend_message_id
-        task.ack = True
-        # ToDo: check race-condition, transaction
-        self.db.add(task)
-        self.db.commit()
-
-    def acknowledge_task_failure(self, task_id):
-        # find task
-        task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
-        if task is None:
-            raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND)
-        if task.expired:
-            raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
-        if task.done or task.ack is not None:
-            raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
-
-        task.ack = False
-        # ToDo: check race-condition, transaction
-        self.db.add(task)
-        self.db.commit()
-
     def fetch_message_by_frontend_message_id(self, frontend_message_id: str, fail_if_missing: bool = True) -> Message:
-        self.validate_frontend_message_id(frontend_message_id)
+        validate_frontend_message_id(frontend_message_id)
         message: Message = (
             self.db.query(Message)
             .filter(Message.api_client_id == self.api_client.id, Message.frontend_message_id == frontend_message_id)
@@ -113,23 +68,58 @@ class PromptRepository:
             )
         return message
 
-    def fetch_task_by_frontend_message_id(self, message_id: str) -> Task:
-        self.validate_frontend_message_id(message_id)
-        task = (
-            self.db.query(Task)
-            .filter(Task.api_client_id == self.api_client.id, Task.frontend_message_id == message_id)
-            .one_or_none()
+    @managed_tx_method(CommitMode.FLUSH)
+    def insert_message(
+        self,
+        *,
+        message_id: UUID,
+        frontend_message_id: str,
+        parent_id: UUID,
+        message_tree_id: UUID,
+        task_id: UUID,
+        role: str,
+        payload: db_payload.MessagePayload,
+        payload_type: str = None,
+        depth: int = 0,
+        review_count: int = 0,
+        review_result: bool = False,
+    ) -> Message:
+        if payload_type is None:
+            if payload is None:
+                payload_type = "null"
+            else:
+                payload_type = type(payload).__name__
+
+        message = Message(
+            id=message_id,
+            parent_id=parent_id,
+            message_tree_id=message_tree_id,
+            task_id=task_id,
+            user_id=self.user_id,
+            role=role,
+            frontend_message_id=frontend_message_id,
+            api_client_id=self.api_client.id,
+            payload_type=payload_type,
+            payload=PayloadContainer(payload=payload),
+            depth=depth,
+            review_count=review_count,
+            review_result=review_result,
         )
-        return task
+        self.db.add(message)
 
-    def store_text_reply(self, text: str, frontend_message_id: str, user_frontend_message_id: str) -> Message:
-        self.validate_frontend_message_id(frontend_message_id)
-        self.validate_frontend_message_id(user_frontend_message_id)
+        # self.db.refresh(message)
+        return message
 
-        task = self.fetch_task_by_frontend_message_id(frontend_message_id)
-
+    def _validate_task(
+        self, task: Task, *, task_id: Optional[UUID] = None, frontend_message_id: Optional[str] = None
+    ) -> Task:
         if task is None:
-            raise OasstError(f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+            if task_id:
+                raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+            if frontend_message_id:
+                raise OasstError(f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND)
+            raise OasstError("Task not found", OasstErrorCode.TASK_NOT_FOUND)
+
         if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
         if not task.ack:
@@ -137,20 +127,69 @@ class PromptRepository:
         if task.done:
             raise OasstError("Task already done.", OasstErrorCode.TASK_ALREADY_DONE)
 
+        if (not task.collective or task.user_id is None) and task.user_id != self.user_id:
+            logger.warning(f"Task was assigned to a different user (expected: {task.user_id}; actual: {self.user_id}).")
+            raise OasstError("Task was assigned to a different user.", OasstErrorCode.TASK_NOT_ASSIGNED_TO_USER)
+
+        return task
+
+    def fetch_tree_state(self, message_tree_id: UUID) -> MessageTreeState:
+        return self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one()
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def store_text_reply(
+        self,
+        text: str,
+        frontend_message_id: str,
+        user_frontend_message_id: str,
+        review_count: int = 0,
+        review_result: bool = False,
+        check_tree_state: bool = True,
+    ) -> Message:
+        validate_frontend_message_id(frontend_message_id)
+        validate_frontend_message_id(user_frontend_message_id)
+
+        task = self.task_repository.fetch_task_by_frontend_message_id(frontend_message_id)
+        self._validate_task(task)
+
         # If there's no parent message assume user started new conversation
-        role = "prompter"
+        role = None
         depth = 0
 
         if task.parent_message_id:
             parent_message = self.fetch_message(task.parent_message_id)
+
+            # check tree state
+            if check_tree_state:
+                ts = self.fetch_tree_state(parent_message.message_tree_id)
+                if not ts.active or ts.state != message_tree_state.State.GROWING:
+                    raise OasstError(
+                        "Message insertion failed. Message tree is no longer in 'growing' state.",
+                        OasstErrorCode.TREE_NOT_IN_GROWING_STATE,
+                    )
+
+            parent_message.message_tree_id
             parent_message.children_count += 1
             self.db.add(parent_message)
 
             depth = parent_message.depth + 1
-            if parent_message.role == "assistant":
-                role = "prompter"
-            else:
-                role = "assistant"
+
+        task_payload: db_payload.TaskPayload = task.payload.payload
+        if isinstance(task_payload, db_payload.InitialPromptPayload):
+            role = "prompter"
+        elif isinstance(task_payload, db_payload.PrompterReplyPayload):
+            role = "prompter"
+        elif isinstance(task_payload, db_payload.AssistantReplyPayload):
+            role = "assistant"
+        elif isinstance(task_payload, db_payload.SummarizationStoryPayload):
+            raise NotImplementedError("SummarizationStory task not implemented.")
+        else:
+            raise OasstError(
+                f"Unexpected task payload type: {type(task_payload).__name__}",
+                OasstErrorCode.TASK_UNEXPECTED_PAYLOAD_TYPE_,
+            )
+
+        assert role in ("assistant", "prompter")
 
         # create reply message
         new_message_id = uuid4()
@@ -163,18 +202,21 @@ class PromptRepository:
             role=role,
             payload=db_payload.MessagePayload(text=text),
             depth=depth,
+            review_count=review_count,
+            review_result=review_result,
         )
         if not task.collective:
             task.done = True
             self.db.add(task)
-        self.db.commit()
         self.journal.log_text_reply(task=task, message_id=new_message_id, role=role, length=len(text))
         return user_message
 
+    @managed_tx_method(CommitMode.FLUSH)
     def store_rating(self, rating: protocol_schema.MessageRating) -> MessageReaction:
         message = self.fetch_message_by_frontend_message_id(rating.message_id, fail_if_missing=True)
 
-        task = self.fetch_task_by_frontend_message_id(rating.message_id)
+        task = self.task_repository.fetch_task_by_frontend_message_id(rating.message_id)
+        self._validate_task(task)
         task_payload: db_payload.RateSummaryPayload = task.payload.payload
         if type(task_payload) != db_payload.RateSummaryPayload:
             raise OasstError(
@@ -199,9 +241,11 @@ class PromptRepository:
         logger.info(f"Ranking {rating.rating} stored for task {task.id}.")
         return reaction
 
-    def store_ranking(self, ranking: protocol_schema.MessageRanking) -> MessageReaction:
+    @managed_tx_method(CommitMode.COMMIT)
+    def store_ranking(self, ranking: protocol_schema.MessageRanking) -> Tuple[MessageReaction, Task]:
         # fetch task
-        task = self.fetch_task_by_frontend_message_id(ranking.message_id)
+        task = self.task_repository.fetch_task_by_frontend_message_id(ranking.message_id)
+        self._validate_task(task, frontend_message_id=ranking.message_id)
         if not task.collective:
             task.done = True
             self.db.add(task)
@@ -214,40 +258,53 @@ class PromptRepository:
 
             case db_payload.RankPrompterRepliesPayload | db_payload.RankAssistantRepliesPayload:
                 # validate ranking
-                num_replies = len(task_payload.replies)
-                if sorted(ranking.ranking) != list(range(num_replies)):
+                if sorted(ranking.ranking) != list(range(num_replies := len(task_payload.reply_messages))):
                     raise OasstError(
                         f"Invalid ranking submitted. Each reply index must appear exactly once ({num_replies=}).",
                         OasstErrorCode.INVALID_RANKING_VALUE,
                     )
 
+                last_conv_message = task_payload.conversation.messages[-1]
+                parent_msg = self.fetch_message(last_conv_message.id)
+
                 # store reaction to message
-                reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
+                ranked_message_ids = [task_payload.reply_messages[i].id for i in ranking.ranking]
+                for mid in ranked_message_ids:
+                    message = self.fetch_message(mid)
+                    if message.parent_id != parent_msg.id:
+                        raise OasstError("Corrupt reply ranking result", OasstErrorCode.CORRUPT_RANKING_RESULT)
+                    message.ranking_count += 1
+                    self.db.add(message)
+
+                reaction_payload = db_payload.RankingReactionPayload(
+                    ranking=ranking.ranking,
+                    ranked_message_ids=ranked_message_ids,
+                    ranking_parent_id=task_payload.ranking_parent_id,
+                    message_tree_id=task_payload.message_tree_id,
+                )
                 reaction = self.insert_reaction(task.id, reaction_payload)
-                # TODO: resolve message_id
-                self.journal.log_ranking(task, message_id=None, ranking=ranking.ranking)
+                self.journal.log_ranking(task, message_id=parent_msg.id, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for task {task.id}.")
 
-                return reaction
-
             case db_payload.RankInitialPromptsPayload:
                 # validate ranking
-                if sorted(ranking.ranking) != list(range(num_prompts := len(task_payload.prompts))):
+                if sorted(ranking.ranking) != list(range(num_prompts := len(task_payload.prompt_messages))):
                     raise OasstError(
                         f"Invalid ranking submitted. Each reply index must appear exactly once ({num_prompts=}).",
                         OasstErrorCode.INVALID_RANKING_VALUE,
                     )
 
                 # store reaction to message
-                reaction_payload = db_payload.RankingReactionPayload(ranking=ranking.ranking)
+                ranked_message_ids = [task_payload.prompt_messages[i].id for i in ranking.ranking]
+                reaction_payload = db_payload.RankingReactionPayload(
+                    ranking=ranking.ranking, ranked_message_ids=ranked_message_ids
+                )
                 reaction = self.insert_reaction(task.id, reaction_payload)
                 # TODO: resolve message_id
                 self.journal.log_ranking(task, message_id=None, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for task {task.id}.")
-
-                return reaction
 
             case _:
                 raise OasstError(
@@ -255,119 +312,47 @@ class PromptRepository:
                     OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
                 )
 
-    def store_task(
-        self,
-        task: protocol_schema.Task,
-        message_tree_id: UUID = None,
-        parent_message_id: UUID = None,
-        collective: bool = False,
-    ) -> Task:
-        payload: db_payload.TaskPayload
-        match type(task):
-            case protocol_schema.SummarizeStoryTask:
-                payload = db_payload.SummarizationStoryPayload(story=task.story)
+        return reaction, task
 
-            case protocol_schema.RateSummaryTask:
-                payload = db_payload.RateSummaryPayload(
-                    full_text=task.full_text, summary=task.summary, scale=task.scale
-                )
+    @managed_tx_method(CommitMode.FLUSH)
+    def insert_toxicity(self, message_id: UUID, model: str, score: float, label: str) -> MessageToxicity:
+        """Save the toxicity score of a new message in the database.
+        Args:
+            message_id (UUID): the identifier of the message we want to save its toxicity score
+            model (str): the model used for creating the toxicity score
+            score (float): the toxicity score that we obtained from the model
+            label (str): the final classification in toxicity of the model
+        Raises:
+            OasstError: if misses some of the before params
+        Returns:
+            MessageToxicity: the instance in the database of the score saved for that message
+        """
 
-            case protocol_schema.InitialPromptTask:
-                payload = db_payload.InitialPromptPayload(hint=task.hint)
+        message_toxicity = MessageToxicity(message_id=message_id, model=model, score=score, label=label)
+        self.db.add(message_toxicity)
+        return message_toxicity
 
-            case protocol_schema.PrompterReplyTask:
-                payload = db_payload.PrompterReplyPayload(conversation=task.conversation, hint=task.hint)
+    @managed_tx_method(CommitMode.FLUSH)
+    def insert_message_embedding(self, message_id: UUID, model: str, embedding: List[float]) -> MessageEmbedding:
+        """Insert the embedding of a new message in the database.
 
-            case protocol_schema.AssistantReplyTask:
-                payload = db_payload.AssistantReplyPayload(type=task.type, conversation=task.conversation)
+        Args:
+            message_id (UUID): the identifier of the message we want to save its embedding
+            model (str): the model used for creating the embedding
+            embedding (List[float]): the values obtained from the message & model
 
-            case protocol_schema.RankInitialPromptsTask:
-                payload = db_payload.RankInitialPromptsPayload(tpye=task.type, prompts=task.prompts)
+        Raises:
+            OasstError: if misses some of the before params
 
-            case protocol_schema.RankPrompterRepliesTask:
-                payload = db_payload.RankPrompterRepliesPayload(
-                    tpye=task.type, conversation=task.conversation, replies=task.replies
-                )
+        Returns:
+            MessageEmbedding: the instance in the database of the embedding saved for that message
+        """
 
-            case protocol_schema.RankAssistantRepliesTask:
-                payload = db_payload.RankAssistantRepliesPayload(
-                    tpye=task.type, conversation=task.conversation, replies=task.replies
-                )
+        message_embedding = MessageEmbedding(message_id=message_id, model=model, embedding=embedding)
+        self.db.add(message_embedding)
+        return message_embedding
 
-            case _:
-                raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
-
-        task = self.insert_task(
-            payload=payload,
-            id=task.id,
-            message_tree_id=message_tree_id,
-            parent_message_id=parent_message_id,
-            collective=collective,
-        )
-        assert task.id == task.id
-        return task
-
-    def insert_task(
-        self,
-        payload: db_payload.TaskPayload,
-        id: UUID = None,
-        message_tree_id: UUID = None,
-        parent_message_id: UUID = None,
-        collective: bool = False,
-    ) -> Task:
-        c = PayloadContainer(payload=payload)
-        task = Task(
-            id=id,
-            user_id=self.user_id,
-            payload_type=type(payload).__name__,
-            payload=c,
-            api_client_id=self.api_client.id,
-            message_tree_id=message_tree_id,
-            parent_message_id=parent_message_id,
-            collective=collective,
-        )
-        self.db.add(task)
-        self.db.commit()
-        self.db.refresh(task)
-        return task
-
-    def insert_message(
-        self,
-        *,
-        message_id: UUID,
-        frontend_message_id: str,
-        parent_id: UUID,
-        message_tree_id: UUID,
-        task_id: UUID,
-        role: str,
-        payload: db_payload.MessagePayload,
-        payload_type: str = None,
-        depth: int = 0,
-    ) -> Message:
-        if payload_type is None:
-            if payload is None:
-                payload_type = "null"
-            else:
-                payload_type = type(payload).__name__
-
-        message = Message(
-            id=message_id,
-            parent_id=parent_id,
-            message_tree_id=message_tree_id,
-            task_id=task_id,
-            user_id=self.user_id,
-            role=role,
-            frontend_message_id=frontend_message_id,
-            api_client_id=self.api_client.id,
-            payload_type=payload_type,
-            payload=PayloadContainer(payload=payload),
-            depth=depth,
-        )
-        self.db.add(message)
-        self.db.commit()
-        self.db.refresh(message)
-        return message
-
+    @managed_tx_method(CommitMode.FLUSH)
     def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
         if self.user_id is None:
             raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
@@ -381,25 +366,81 @@ class PromptRepository:
             payload_type=type(payload).__name__,
         )
         self.db.add(reaction)
-        self.db.commit()
-        self.db.refresh(reaction)
         return reaction
 
-    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> TextLabels:
+    @managed_tx_method(CommitMode.FLUSH)
+    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> Tuple[TextLabels, Task, Message]:
+
+        valid_labels: Optional[list[str]] = None
+        mandatory_labels: Optional[list[str]] = None
+        text_labels_id: Optional[UUID] = None
+        message_id: Optional[UUID] = text_labels.message_id
+
+        task: Task = None
+        if text_labels.task_id:
+            logger.debug(f"text_labels reply has task_id {text_labels.task_id}")
+            task = self.task_repository.fetch_task_by_id(text_labels.task_id)
+            self._validate_task(task, task_id=text_labels.task_id)
+
+            task_payload: db_payload.TaskPayload = task.payload.payload
+            if isinstance(task_payload, db_payload.LabelInitialPromptPayload):
+                if message_id and task_payload.message_id != message_id:
+                    raise OasstError("Task message id mismatch", OasstErrorCode.TEXT_LABELS_WRONG_MESSAGE_ID)
+                message_id = task_payload.message_id
+                valid_labels = task_payload.valid_labels
+                mandatory_labels = task_payload.mandatory_labels
+            elif isinstance(task_payload, db_payload.LabelConversationReplyPayload):
+                if message_id and message_id != message_id:
+                    raise OasstError("Task message id mismatch", OasstErrorCode.TEXT_LABELS_WRONG_MESSAGE_ID)
+                message_id = task_payload.message_id
+                valid_labels = task_payload.valid_labels
+                mandatory_labels = task_payload.mandatory_labels
+            else:
+                raise OasstError(
+                    "Unexpected text_labels task payload",
+                    OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
+                )
+
+            logger.debug(f"text_labels relpy: {valid_labels=}, {mandatory_labels=}")
+
+            if valid_labels:
+                if not all([label in valid_labels for label in text_labels.labels.keys()]):
+                    raise OasstError("Invalid text label specified", OasstErrorCode.TEXT_LABELS_INVALID_LABEL)
+
+            if isinstance(mandatory_labels, list):
+                mandatory_set = set(mandatory_labels)
+                if not mandatory_set.issubset(text_labels.labels.keys()):
+                    missing = ", ".join(mandatory_set - text_labels.labels.keys())
+                    raise OasstError(
+                        f"Mandatory text labels missing: {missing}", OasstErrorCode.TEXT_LABELS_MANDATORY_LABEL_MISSING
+                    )
+
+            text_labels_id = task.id  # associate with task by sharing the id
+
+            if not task.collective:
+                task.done = True
+                self.db.add(task)
+
+        logger.debug(f"inserting TextLabels for {message_id=}, {text_labels_id=}")
         model = TextLabels(
+            id=text_labels_id,
             api_client_id=self.api_client.id,
+            message_id=message_id,
+            user_id=self.user_id,
             text=text_labels.text,
             labels=text_labels.labels,
         )
-        if text_labels.has_message_id:
-            self.fetch_message_by_frontend_message_id(text_labels.message_id, fail_if_missing=True)
-            model.message_id = text_labels.message_id
-        self.db.add(model)
-        self.db.commit()
-        self.db.refresh(model)
-        return model
 
-    def fetch_random_message_tree(self, require_role: str = None) -> list[Message]:
+        if message_id:
+            message = self.fetch_message(message_id)
+            if task:
+                message.review_count += 1
+                self.db.add(message)
+
+        self.db.add(model)
+        return model, task, message
+
+    def fetch_random_message_tree(self, require_role: str = None, reviewed: bool = True) -> list[Message]:
         """
         Loads all messages of a random message_tree.
 
@@ -409,13 +450,18 @@ class PromptRepository:
         distinct_message_trees = self.db.query(Message.message_tree_id).distinct(Message.message_tree_id)
         if require_role:
             distinct_message_trees = distinct_message_trees.filter(Message.role == require_role)
+        if reviewed:
+            distinct_message_trees = distinct_message_trees.filter(Message.review_result)
         distinct_message_trees = distinct_message_trees.subquery()
 
-        random_message_tree = self.db.query(distinct_message_trees).order_by(func.random()).limit(1)
-        message_tree_messages = self.db.query(Message).filter(Message.message_tree_id.in_(random_message_tree)).all()
-        return message_tree_messages
+        random_message_tree_id = self.db.query(distinct_message_trees).order_by(func.random()).limit(1).scalar()
+        if random_message_tree_id:
+            return self.fetch_message_tree(random_message_tree_id, reviewed)
+        return None
 
-    def fetch_random_conversation(self, last_message_role: str = None) -> list[Message]:
+    def fetch_random_conversation(
+        self, last_message_role: str = None, message_tree_id: Optional[UUID] = None, reviewed: bool = True
+    ) -> list[Message]:
         """
         Picks a random linear conversation starting from any root message
         and ending somewhere in the message_tree, possibly at the root itself.
@@ -425,9 +471,13 @@ class PromptRepository:
             the user should reply as a human and hence the last message of the conversation
             needs to have "assistant" role.
         """
-        messages_tree = self.fetch_random_message_tree(last_message_role)
+        if message_tree_id:
+            messages_tree = self.fetch_message_tree(message_tree_id, reviewed)
+        else:
+            messages_tree = self.fetch_random_message_tree(last_message_role)
         if not messages_tree:
             raise OasstError("No message tree found", OasstErrorCode.NO_MESSAGE_TREE_FOUND)
+
         if last_message_role:
             conv_messages = [m for m in messages_tree if m.role == last_message_role]
             conv_messages = [random.choice(conv_messages)]
@@ -449,8 +499,11 @@ class PromptRepository:
         messages = self.db.query(Message).filter(Message.parent_id.is_(None)).order_by(func.random()).limit(size).all()
         return messages
 
-    def fetch_message_tree(self, message_tree_id: UUID):
-        return self.db.query(Message).filter(Message.message_tree_id == message_tree_id).all()
+    def fetch_message_tree(self, message_tree_id: UUID, reviewed: bool = True):
+        qry = self.db.query(Message).filter(Message.message_tree_id == message_tree_id)
+        if reviewed:
+            qry = qry.filter(Message.review_result)
+        return qry.all()
 
     def fetch_multiple_random_replies(self, max_size: int = 5, message_role: str = None):
         """
@@ -492,28 +545,6 @@ class PromptRepository:
             raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
         return message
 
-    def close_task(self, frontend_message_id: str, allow_personal_tasks: bool = False):
-        """
-        Mark task as done. No further messages will be accepted for this task.
-        """
-        self.validate_frontend_message_id(frontend_message_id)
-        task = self.fetch_task_by_frontend_message_id(frontend_message_id)
-
-        if not task:
-            raise OasstError(
-                f"Task for {frontend_message_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND
-            )
-        if task.expired:
-            raise OasstError("Task already expired", OasstErrorCode.TASK_EXPIRED)
-        if not allow_personal_tasks and not task.collective:
-            raise OasstError("This is not a collective task", OasstErrorCode.TASK_NOT_COLLECTIVE)
-        if task.done:
-            raise OasstError("Allready closed", OasstErrorCode.TASK_ALREADY_DONE)
-
-        task.done = True
-        self.db.add(task)
-        self.db.commit()
-
     @staticmethod
     def trace_conversation(messages: list[Message] | dict[UUID, Message], last_message: Message) -> list[Message]:
         """
@@ -525,13 +556,15 @@ class PromptRepository:
             messages = {m.id: m for m in messages}
         if not isinstance(messages, dict):
             # This should not normally happen
-            raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+            raise OasstError("Server error", OasstErrorCode.SERVER_ERROR0, HTTPStatus.INTERNAL_SERVER_ERROR)
 
         conv = [last_message]
         while conv[-1].parent_id:
             if conv[-1].parent_id not in messages:
                 # Can't form a continuous conversation
-                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+                raise OasstError(
+                    "Broken conversation", OasstErrorCode.BROKEN_CONVERSATION, HTTPStatus.INTERNAL_SERVER_ERROR
+                )
 
             parent_message = messages[conv[-1].parent_id]
             conv.append(parent_message)
@@ -554,16 +587,24 @@ class PromptRepository:
         """
         if isinstance(message, UUID):
             message = self.fetch_message(message)
+        logger.debug(f"fetch_message_tree({message.message_tree_id=})")
         return self.fetch_message_tree(message.message_tree_id)
 
-    def fetch_message_children(self, message: Message | UUID) -> list[Message]:
+    def fetch_message_children(
+        self, message: Message | UUID, reviewed: bool = True, exclude_deleted: bool = True
+    ) -> list[Message]:
         """
         Get all direct children of this message
         """
         if isinstance(message, Message):
             message = message.id
 
-        children = self.db.query(Message).filter(Message.parent_id == message).all()
+        qry = self.db.query(Message).filter(Message.parent_id == message)
+        if reviewed:
+            qry = qry.filter(Message.review_result)
+        if exclude_deleted:
+            qry = qry.filter(Message.deleted == sa.false())
+        children = qry.all()
         return children
 
     @staticmethod
@@ -611,6 +652,7 @@ class PromptRepository:
     def query_messages(
         self,
         user_id: Optional[UUID] = None,
+        auth_method: Optional[str] = None,
         username: Optional[str] = None,
         api_client_id: Optional[UUID] = None,
         desc: bool = True,
@@ -631,9 +673,11 @@ class PromptRepository:
         messages = self.db.query(Message)
         if user_id:
             messages = messages.filter(Message.user_id == user_id)
-        if username:
+        if username or auth_method:
+            if not username and auth_method:
+                raise OasstError("Auth method or username missing.", OasstErrorCode.AUTH_AND_USERNAME_REQUIRED)
             messages = messages.join(User)
-            messages = messages.filter(User.username == username)
+            messages = messages.filter(User.username == username, User.auth_method == auth_method)
         if api_client_id:
             messages = messages.filter(Message.api_client_id == api_client_id)
 
@@ -656,9 +700,9 @@ class PromptRepository:
         if limit is not None:
             messages = messages.limit(limit)
 
-        # TODO: Pagination could be great at some point
         return messages.all()
 
+    @managed_tx_method(CommitMode.COMMIT)
     def mark_messages_deleted(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):
         """
         Marks deleted messages and all their descendants.
@@ -673,7 +717,7 @@ class PromptRepository:
             elif isinstance(message, Message):
                 ids.append(message.id)
             else:
-                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR1, HTTPStatus.INTERNAL_SERVER_ERROR)
 
         query = update(Message).where(Message.id.in_(ids)).values(deleted=True)
         self.db.execute(query)
@@ -686,8 +730,6 @@ class PromptRepository:
                 )
 
                 parent_ids = self.db.execute(query).scalars().all()
-
-        self.db.commit()
 
     def get_stats(self) -> SystemStats:
         """
@@ -705,24 +747,3 @@ class PromptRepository:
             deleted=result.get(True, 0),
             message_trees=result.get(None, 0),
         )
-
-    def get_user_leaderboard(self, role: str) -> LeaderboardStats:
-        """
-        Get leaderboard stats for Messages created,
-        separate leaderboard for prompts & assistants
-
-        """
-        query = (
-            self.db.query(Message.user_id, User.username, User.display_name, func.count(Message.user_id))
-            .join(User, User.id == Message.user_id, isouter=True)
-            .filter(Message.deleted is not True, Message.role == role)
-            .group_by(Message.user_id, User.username, User.display_name)
-            .order_by(func.count(Message.user_id).desc())
-        )
-
-        result = [
-            {"ranking": i, "user_id": j[0], "username": j[1], "display_name": j[2], "score": j[3]}
-            for i, j in enumerate(query.all(), start=1)
-        ]
-
-        return LeaderboardStats(leaderboard=result)

@@ -1,0 +1,39 @@
+name: E2E Tests (Website)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - oasst-shared/**
+      - backend/**
+      - website/**
+  pull_request:
+    paths:
+      - oasst-shared/**
+      - backend/**
+      - website/**
+
+jobs:
+  test-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Start website, backend, etc
+        run: docker compose up ci --build -d
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v5.0.2
+        with:
+          browser: chrome
+          working-directory: website
+      - uses: actions/upload-artifact@v3
+        if: failure() # NOTE: screenshots will be generated only if E2E test failed
+        with:
+          name: cypress-screenshots
+          path: website/cypress/screenshots
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: cypress-videos
+          path: website/cypress/videos

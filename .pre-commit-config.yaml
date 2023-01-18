@@ -26,7 +26,7 @@
 #
 # /WARNING!
 
-exclude: build|stubs|^bot/templates/$|openassistant/templates
+exclude: build|stubs|^bot/templates/$|openassistant/templates|docs/docs/api/openapi.json
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

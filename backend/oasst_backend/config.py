@@ -1,11 +1,67 @@
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
+from oasst_shared.schemas import protocol as protocol_schema
+from pydantic import AnyHttpUrl, BaseModel, BaseSettings, FilePath, PostgresDsn, validator
+
+
+class TreeManagerConfiguration(BaseModel):
+    """TreeManager configuration settings"""
+
+    max_active_trees: int = 10
+    """Maximum number of concurrently active message trees in the database.
+    No new initial prompt tasks are handed out to users if this
+    number is reached."""
+
+    max_tree_depth: int = 6
+    """Maximum depth of message tree."""
+
+    max_children_count: int = 5
+    """Maximum number of reply messages per tree node."""
+
+    goal_tree_size: int = 15
+    """Total number of messages to gather per tree."""
+
+    num_reviews_initial_prompt: int = 3
+    """Number of peer review checks to collect in INITIAL_PROMPT_REVIEW state."""
+
+    num_reviews_reply: int = 3
+    """Number of peer review checks to collect per reply (other than initial_prompt)."""
+
+    p_full_labeling_review_prompt: float = 0.1
+    """Probability of full text-labeling (instead of mandatory only) for initial prompts."""
+
+    p_full_labeling_review_reply_assistant: float = 0.1
+    """Probability of full text-labeling (instead of mandatory only) for assistant replies."""
+
+    p_full_labeling_review_reply_prompter: float = 0.1
+    """Probability of full text-labeling (instead of mandatory only) for prompter replies."""
+
+    acceptance_threshold_initial_prompt: float = 0.6
+    """Threshold for accepting an initial prompt."""
+
+    acceptance_threshold_reply: float = 0.6
+    """Threshold for accepting a reply."""
+
+    num_required_rankings: int = 3
+    """Number of rankings in which the message participated."""
+
+    mandatory_labels_initial_prompt: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    """Mandatory labels in text-labeling tasks for initial prompts."""
+
+    mandatory_labels_assistant_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    """Mandatory labels in text-labeling tasks for assistant replies."""
+
+    mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    """Mandatory labels in text-labeling tasks for prompter replies."""
+
+    rank_prompter_replies: bool = False
 
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"
     API_V1_STR: str = "/api/v1"
+    OFFICIAL_WEB_API_KEY: str = "1234"
 
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5432"
@@ -13,14 +69,24 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "postgres"
     DATABASE_URI: Optional[PostgresDsn] = None
+    DATABASE_MAX_TX_RETRY_COUNT: int = 3
 
     RATE_LIMIT: bool = True
     REDIS_HOST: str = "localhost"
     REDIS_PORT: str = "6379"
 
-    DEBUG_ALLOW_ANY_API_KEY: bool = False
-    DEBUG_SKIP_API_KEY_CHECK: bool = False
     DEBUG_USE_SEED_DATA: bool = False
+    DEBUG_USE_SEED_DATA_PATH: Optional[FilePath] = (
+        Path(__file__).parent.parent / "test_data/realistic/realistic_seed_data.json"
+    )
+    DEBUG_ALLOW_SELF_LABELING: bool = False  # allow users to label their own messages
+    DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
+    DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
+    DEBUG_DATABASE_ECHO: bool = False
+
+    HUGGING_FACE_API_KEY: str = ""
+
+    ROOT_TOKENS: List[str] = ["1234"]  # supply a string that can be parsed to a json list
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
@@ -46,5 +112,29 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
+    tree_manager: Optional[TreeManagerConfiguration] = TreeManagerConfiguration()
 
-settings = Settings(_env_file=".env")
+    USER_STATS_INTERVAL_DAY: int = 15  # minutes
+    USER_STATS_INTERVAL_WEEK: int = 60  # minutes
+    USER_STATS_INTERVAL_MONTH: int = 120  # minutes
+    USER_STATS_INTERVAL_TOTAL: int = 240  # minutes
+
+    @validator(
+        "USER_STATS_INTERVAL_DAY",
+        "USER_STATS_INTERVAL_WEEK",
+        "USER_STATS_INTERVAL_MONTH",
+        "USER_STATS_INTERVAL_TOTAL",
+    )
+    def validate_user_stats_intervals(cls, v: int):
+        if v < 1:
+            raise ValueError(v)
+        return v
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = False
+        env_nested_delimiter = "__"
+
+
+settings = Settings()
