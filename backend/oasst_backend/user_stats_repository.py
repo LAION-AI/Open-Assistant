@@ -40,7 +40,7 @@ class UserStatsRepository:
             self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
             .join(UserStats, User.id == UserStats.user_id)
             .filter(UserStats.time_frame == time_frame.value)
-            .order_by(UserStats.leader_score.desc())
+            .order_by(UserStats.rank)
             .limit(limit)
         )
 
