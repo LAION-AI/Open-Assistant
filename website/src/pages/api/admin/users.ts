@@ -6,7 +6,7 @@ import { BackendUser } from "src/types/Users";
 /**
  * The number of users to fetch in a single request.  Could later be a query parameter.
  */
-const PAGE_SIZE = 1;
+const PAGE_SIZE = 20;
 
 /**
  * Returns a list of user results from the database when the requesting user is
