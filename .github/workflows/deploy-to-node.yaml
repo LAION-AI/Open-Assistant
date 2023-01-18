@@ -32,10 +32,14 @@ jobs:
       WEB_EMAIL_SERVER_PASSWORD: ${{ secrets.DEV_WEB_EMAIL_SERVER_PASSWORD }}
       WEB_EMAIL_SERVER_PORT: ${{ secrets.DEV_WEB_EMAIL_SERVER_PORT }}
       WEB_EMAIL_SERVER_USER: ${{ secrets.DEV_WEB_EMAIL_SERVER_USER }}
-      WEB_NEXTAUTH_SECRET: ${{ secrets.DEV_WEB_NEXTAUTH_SECRET }}
+      WEB_NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
       S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      S3_REGION: ${{ secrets.S3_REGION }}
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      MAX_ACTIVE_TREES: ${{ vars.MAX_ACTIVE_TREES }}
+      MAX_TREE_DEPTH: ${{ vars.MAX_TREE_DEPTH }}
+      GOAL_TREE_SIZE: ${{ vars.GOAL_TREE_SIZE }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
