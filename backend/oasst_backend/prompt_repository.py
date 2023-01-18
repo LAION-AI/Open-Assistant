@@ -368,7 +368,7 @@ class PromptRepository:
         self.db.add(reaction)
         return reaction
 
-    @managed_tx_method(CommitMode.FLUSH)
+    @managed_tx_method(CommitMode.COMMIT)
     def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> Tuple[TextLabels, Task, Message]:
 
         valid_labels: Optional[list[str]] = None
@@ -436,6 +436,10 @@ class PromptRepository:
             if task:
                 message.review_count += 1
                 self.db.add(message)
+            existing_text_labels = self.fetch_text_labels(message_id)
+            if existing_text_labels is not None:
+                existing_text_labels.labels = text_labels.labels
+                model = existing_text_labels
 
         self.db.add(model)
         return model, task, message
@@ -544,6 +548,10 @@ class PromptRepository:
         if fail_if_missing and not message:
             raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
         return message
+
+    def fetch_text_labels(self, message_id: UUID, fail_if_missing: bool = True) -> Optional[TextLabels]:
+        text_labels = self.db.query(TextLabels).filter(Message.id == message_id).one_or_none()
+        return text_labels
 
     @staticmethod
     def trace_conversation(messages: list[Message] | dict[UUID, Message], last_message: Message) -> list[Message]:
