@@ -40,6 +40,7 @@ jobs:
       MAX_ACTIVE_TREES: ${{ vars.MAX_ACTIVE_TREES }}
       MAX_TREE_DEPTH: ${{ vars.MAX_TREE_DEPTH }}
       GOAL_TREE_SIZE: ${{ vars.GOAL_TREE_SIZE }}
+      SKIP_TOXICITY_CALCULATION: ${{ vars.SKIP_TOXICITY_CALCULATION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
