@@ -227,28 +227,30 @@ class UserStatsRepository:
         Update user_stats ranks. The persisted rank values allow to
         quickly the rank of a single user and to query nearby users.
         """
+        try:
+            #sql alchemy implementation
+            subquery = (
+                select([
+                    func.row_number()
+                    .over(partition_by=UserStats.time_frame, order_by=[UserStats.leader_score.desc(), UserStats.user_id])
+                    .label('rank'),
+                    UserStats.user_id,
+                    UserStats.time_frame
+                ])
+                .where(UserStats.time_frame == time_frame.value if time_frame is not None else None)
+                .alias()
+            )
 
-        #sql alchemy implementation
-        subquery = (
-            select([
-                func.row_number()
-                .over(partition_by=UserStats.time_frame, order_by=[UserStats.leader_score.desc(), UserStats.user_id])
-                .label('rank'),
-                UserStats.user_id,
-                UserStats.time_frame
-            ])
-            .where(UserStats.time_frame == time_frame.value if time_frame is not None else None)
-            .alias()
-        )
-
-        update_stmt = (
-            update(UserStats)
-            .where(UserStats.user_id == subquery.c.user_id)
-            .where(UserStats.time_frame == subquery.c.time_frame)
-            .values(rank= subquery.c.rank)
-        )
-        qry = self.session.execute(update_stmt)
-        logger.debug(f"pre_compute_ranks updated({time_frame=}) {qry.rowcount} rows.")
+            update_stmt = (
+                update(UserStats)
+                .where(UserStats.user_id == subquery.c.user_id)
+                .where(UserStats.time_frame == subquery.c.time_frame)
+                .values(rank= subquery.c.rank)
+            )
+            qry = self.session.execute(update_stmt)
+            logger.debug(f"pre_compute_ranks updated({time_frame=}) {qry.rowcount} rows.")
+        except Exception:
+            logger.error(f"pre_compute_ranks failed({time_frame=})")
 
 
     def update_stats_time_frame(self, time_frame: UserStatsTimeFrame, reference_time: Optional[datetime] = None):
