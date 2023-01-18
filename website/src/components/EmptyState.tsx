@@ -1,5 +1,6 @@
 import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
 import { useRouter } from "next/router";
+import { FiAlertTriangle } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
 
 type EmptyStateProps = {
@@ -12,7 +13,7 @@ export const EmptyState = (props: EmptyStateProps) => {
   const router = useRouter();
 
   return (
-    <Box bg={backgroundColor} p="10" borderRadius="xl" shadow="base" maxWidth="3xl">
+    <Box bg={backgroundColor} p="10" borderRadius="xl" shadow="base">
       <Box display="flex" flexDirection="column" alignItems="center" gap="8" fontSize="lg">
         <props.icon size="30" color="DarkOrange" />
         <Text>{props.text}</Text>
@@ -22,4 +23,8 @@ export const EmptyState = (props: EmptyStateProps) => {
       </Box>
     </Box>
   );
+};
+
+export const TaskEmptyState = () => {
+  return <EmptyState text="Looks like no tasks were found." icon={FiAlertTriangle} />;
 };

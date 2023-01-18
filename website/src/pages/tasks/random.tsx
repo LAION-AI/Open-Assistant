@@ -1,6 +1,5 @@
 import Head from "next/head";
-import { FiAlertTriangle } from "react-icons/fi";
-import { EmptyState } from "src/components/EmptyState";
+import { TaskEmptyState } from "src/components/EmptyState";
 import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
@@ -14,7 +13,7 @@ const RandomTask = () => {
   }
 
   if (tasks.length === 0) {
-    return <EmptyState text="Looks like no tasks were found." icon={FiAlertTriangle} />;
+    return <TaskEmptyState />;
   }
 
   return (
