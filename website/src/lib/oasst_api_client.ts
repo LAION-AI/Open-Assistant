@@ -187,6 +187,16 @@ export class OasstApiClient {
     return this.get(url);
   }
 
+  async fetch_user_by_display_name(name: string): Promise<BackendUser[]> {
+    const params = new URLSearchParams({
+      search_text: name,
+    });
+
+    const endpoint = `/api/v1/frontend_users/by_display_name`;
+
+    return this.get(`${endpoint}?${params.toString()}`);
+  }
+
   /**
    * Returns the `Message`s associated with `user_id` in the backend.
    */

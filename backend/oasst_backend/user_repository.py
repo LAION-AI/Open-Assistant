@@ -161,10 +161,10 @@ class UserRepository:
         users = users.order_by(User.display_name)
 
         if gt:
-            users = users.filter(User.display_name > gt)
+            users = users.filter(User.id > gt)
 
         if lt:
-            users = users.filter(User.display_name < lt)
+            users = users.filter(User.id < lt).order_by(None).order_by(User.id.desc())
 
         if limit is not None:
             users = users.limit(limit)
