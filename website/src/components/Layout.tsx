@@ -2,7 +2,9 @@
 
 import { Box, Grid } from "@chakra-ui/react";
 import type { NextPage } from "next";
-import { FiBarChart2, FiLayout, FiMessageSquare, FiUsers } from "react-icons/fi";
+import { FiAlertTriangle, FiBarChart2, FiLayout, FiMessageSquare, FiUsers } from "react-icons/fi";
+import { FaQuestionCircle } from "react-icons/fa";
+
 import { Header } from "src/components/Header";
 
 import { SlimFooter } from "./Dashboard/SlimFooter";
@@ -51,6 +53,12 @@ export const getDashboardLayout = (page: React.ReactElement) => (
           pathname: "/leaderboard",
           desc: "User Leaderboard",
           icon: FiBarChart2,
+        },
+        {
+          label: "Guide",
+          pathname: "/guide",
+          desc: "Guide to the App",
+          icon: FaQuestionCircle,
         },
       ]}
     >

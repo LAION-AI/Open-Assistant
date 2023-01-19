@@ -47,6 +47,7 @@
     "eslint-plugin-simple-import-sort": "^8.0.0",
     "focus-visible": "^5.2.0",
     "framer-motion": "^6.5.1",
+    "i18next": "^22.4.9",
     "install": "^0.13.0",
     "next": "13.0.6",
     "next-auth": "^4.18.6",
