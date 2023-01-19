@@ -1,5 +1,5 @@
 from custom_datasets.prompt_dialogue import PromptGeneratedDataset
-from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, WebGPT
+from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, WebGPT
 from custom_datasets.summarization import SummarizationDataset
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
@@ -35,6 +35,9 @@ def get_one_dataset(conf, dataset_name):
         train, eval = train_val_dataset(dataset, val_split=0.2)
     elif dataset_name == "soda":
         dataset = SODA(conf.cache_dir)
+        train, eval = train_val_dataset(dataset, val_split=0.1)
+    elif dataset_name == "soda_dialogue":
+        dataset = SODADialogue(conf.cache_dir)
         train, eval = train_val_dataset(dataset, val_split=0.1)
     elif dataset_name == "joke":
         dataset = JokeExplaination(conf.cache_dir)
