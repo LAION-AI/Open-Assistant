@@ -1075,7 +1075,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
             bad_parent_ids = set(m.id for m in replies)
             logger.debug(f"patching tree {tree_id=}, {bad_parent_ids=}")
 
-            tree_messages = self.pr.fetch_message_tree(tree_id)
+            tree_messages = self.pr.fetch_message_tree(tree_id, reviewed=False, include_deleted=True)
             logger.debug(f"{tree_id=}, {len(bad_parent_ids)=}, {len(tree_messages)=}")
             by_id = {m.id: m for m in tree_messages}
 

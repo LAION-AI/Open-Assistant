@@ -82,7 +82,7 @@ def get_tree(
     """
     pr = PromptRepository(db, api_client)
     message = pr.fetch_message(message_id)
-    tree = pr.fetch_message_tree(message.message_tree_id)
+    tree = pr.fetch_message_tree(message.message_tree_id, reviewed=False)
     return utils.prepare_tree(tree, message.message_tree_id)
 
 

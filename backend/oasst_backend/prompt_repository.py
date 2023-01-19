@@ -28,7 +28,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
-from sqlmodel import Session, func, text, update
+from sqlmodel import Session, func, not_, text, update
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -506,10 +506,14 @@ class PromptRepository:
         messages = self.db.query(Message).filter(Message.parent_id.is_(None)).order_by(func.random()).limit(size).all()
         return messages
 
-    def fetch_message_tree(self, message_tree_id: UUID, reviewed: bool = True) -> list[Message]:
+    def fetch_message_tree(
+        self, message_tree_id: UUID, reviewed: bool = True, include_deleted: bool = False
+    ) -> list[Message]:
         qry = self.db.query(Message).filter(Message.message_tree_id == message_tree_id)
         if reviewed:
             qry = qry.filter(Message.review_result)
+        if not include_deleted:
+            qry = qry.filter(not_(Message.deleted))
         return qry.all()
 
     def fetch_multiple_random_replies(self, max_size: int = 5, message_role: str = None):
