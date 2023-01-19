@@ -1,4 +1,5 @@
 import Head from "next/head";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { TaskEmptyState } from "src/components/EmptyState";
 import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
@@ -28,5 +29,11 @@ const RankAssistantReplies = () => {
 };
 
 RankAssistantReplies.getLayout = getDashboardLayout;
+
+export const getStaticProps = async ({ locale }) => ({
+  props: {
+    ...(await serverSideTranslations(locale, ["common"])),
+  },
+});
 
 export default RankAssistantReplies;

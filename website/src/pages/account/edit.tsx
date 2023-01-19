@@ -2,6 +2,7 @@ import { Button, Input, InputGroup } from "@chakra-ui/react";
 import Head from "next/head";
 import Router from "next/router";
 import { useSession } from "next-auth/react";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import React from "react";
 import { Control, useForm, useWatch } from "react-hook-form";
 
@@ -29,6 +30,12 @@ export default function Account() {
     </>
   );
 }
+
+export const getStaticProps = async ({ locale }) => ({
+  props: {
+    ...(await serverSideTranslations(locale, ["common"])),
+  },
+});
 
 const EditForm = () => {
   const { data: session } = useSession();

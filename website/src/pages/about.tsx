@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { CallToAction } from "src/components/CallToAction";
 import { Container } from "src/components/Container";
 import Roadmap from "src/components/Roadmap";
@@ -35,5 +36,11 @@ const AboutPage = () => {
     </div>
   );
 };
+
+export const getStaticProps = async ({ locale }) => ({
+  props: {
+    ...(await serverSideTranslations(locale, ["common"])),
+  },
+});
 
 export default AboutPage;

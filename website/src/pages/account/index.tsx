@@ -2,6 +2,7 @@ import { Button } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import React from "react";
 
 export default function Account() {
@@ -31,3 +32,9 @@ export default function Account() {
     </>
   );
 }
+
+export const getStaticProps = async ({ locale }) => ({
+  props: {
+    ...(await serverSideTranslations(locale, ["common"])),
+  },
+});

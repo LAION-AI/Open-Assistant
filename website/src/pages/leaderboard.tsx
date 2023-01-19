@@ -1,5 +1,6 @@
 import { Box, Heading, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
 import Head from "next/head";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { getDashboardLayout } from "src/components/Layout";
 import { LeaderboardGridCell } from "src/components/LeaderboardGridCell";
 import { LeaderboardTimeFrame } from "src/types/Leaderboard";
@@ -44,5 +45,11 @@ const Leaderboard = () => {
 };
 
 Leaderboard.getLayout = getDashboardLayout;
+
+export const getStaticProps = async ({ locale }) => ({
+  props: {
+    ...(await serverSideTranslations(locale, ["common"])),
+  },
+});
 
 export default Leaderboard;

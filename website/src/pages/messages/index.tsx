@@ -1,5 +1,6 @@
 import { Box, CircularProgress, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { getDashboardLayout } from "src/components/Layout";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { get } from "src/lib/api";
@@ -53,5 +54,11 @@ const MessagesDashboard = () => {
 };
 
 MessagesDashboard.getLayout = getDashboardLayout;
+
+export const getStaticProps = async ({ locale }) => ({
+  props: {
+    ...(await serverSideTranslations(locale, ["common"])),
+  },
+});
 
 export default MessagesDashboard;

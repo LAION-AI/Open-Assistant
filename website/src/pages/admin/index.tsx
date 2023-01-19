@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useEffect } from "react";
 import { getAdminLayout } from "src/components/Layout";
 import UsersCell from "src/components/UsersCell";
@@ -43,5 +44,11 @@ const AdminIndex = () => {
 };
 
 AdminIndex.getLayout = getAdminLayout;
+
+export const getStaticProps = async ({ locale }) => ({
+  props: {
+    ...(await serverSideTranslations(locale, ["common"])),
+  },
+});
 
 export default AdminIndex;

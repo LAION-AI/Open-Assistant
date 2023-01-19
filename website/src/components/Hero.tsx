@@ -2,8 +2,8 @@ import { Box, Text, useColorMode } from "@chakra-ui/react";
 import Image from "next/image";
 import { useTranslation } from "next-i18next";
 
-import { Container } from "./Container";
 import { AnimatedCircles } from "./AnimatedCircles";
+import { Container } from "./Container";
 
 export function Hero() {
   const { t } = useTranslation("index");

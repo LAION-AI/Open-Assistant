@@ -1,5 +1,6 @@
 import { Box, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { getDashboardLayout } from "src/components/Layout";
 import { MessageLoading } from "src/components/Loading/MessageLoading";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
@@ -48,10 +49,13 @@ const MessageDetail = ({ id }: { id: string }) => {
   );
 };
 
-MessageDetail.getInitialProps = async ({ query }) => {
-  const { id } = query;
-  return { id };
-};
-
 MessageDetail.getLayout = (page) => getDashboardLayout(page);
+
+export const getServerSideProps = async ({ locale, query }) => ({
+  props: {
+    id: query.id,
+    ...(await serverSideTranslations(locale, ["common"])),
+  },
+});
+
 export default MessageDetail;
