@@ -1,6 +1,8 @@
+from __future__ import annotations
+from collections import defaultdict
 import gzip
 import json
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TextIO
 
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
@@ -15,14 +17,14 @@ class ExportMessageNode(BaseModel):
     role: str
     review_count: Optional[int]
     rank: Optional[int]
-    replies: Optional[List["ExportMessageNode"]]
+    replies: Optional[List[ExportMessageNode]]
 
     @classmethod
-    def prep_message_export(cls, message: Message) -> "ExportMessageNode":
+    def prep_message_export(cls, message: Message) -> ExportMessageNode:
         return cls(
             message_id=str(message.id),
             parent_id=str(message.parent_id),
-            text=str(message.payload),
+            text=str(message.payload.payload.text),
             role=message.role,
             review_count=message.review_count,
             rank=message.rank,
@@ -30,16 +32,20 @@ class ExportMessageNode(BaseModel):
 
 
 class ExportMessageTree(BaseModel):
-    replies: Optional[ExportMessageNode]
     message_tree_id: str
+    replies: Optional[ExportMessageNode]
 
 
 def build_export_tree(message_tree_id: str, messages: List[Message]) -> ExportMessageTree:
-    export_tree = ExportMessageTree(message_tree_id=message_tree_id)
+    export_tree = ExportMessageTree(message_tree_id=str(message_tree_id))
     export_tree_data = [ExportMessageNode.prep_message_export(m) for m in messages]
 
-    def build_tree(tree: Dict, parent, messages):
-        children = [m for m in messages if m.parent_id == parent]
+    message_parents = defaultdict(list)
+    for message in export_tree_data:
+        message_parents[str(message.parent_id)].append(message)
+
+    def build_tree(tree: Dict, parent: str, messages: List[Message]):
+        children = message_parents[parent]
         tree.replies = children
 
         for idx, child in enumerate(tree.replies):
@@ -50,13 +56,16 @@ def build_export_tree(message_tree_id: str, messages: List[Message]) -> ExportMe
     return export_tree
 
 
-def write_tree_to_file(file, tree: ExportMessageTree, use_compression: bool = True) -> None:
+def write_trees_to_file(file, trees: List[ExportMessageTree], use_compression: bool = True) -> None:
 
+    out_buff: TextIO
     if use_compression:
-        with gzip.open(file, "wt+", encoding="UTF-8") as comp_f:
-            file_data = jsonable_encoder(tree)
-            json.dump(file_data, comp_f, indent=2)
+        out_buff = gzip.open(file, "wt", encoding="UTF-8")
     else:
-        with open(file, "wt+", encoding="UTF-8") as f:
+        out_buff = open(file, "wt", encoding="UTF-8")
+
+    with out_buff as f:
+        for tree in trees:
             file_data = jsonable_encoder(tree)
-            json.dump(file_data, f, indent=2)
+            json.dump(file_data, f)
+            f.write("\n")

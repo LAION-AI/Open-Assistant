@@ -5,6 +5,7 @@ from datetime import datetime
 from enum import Enum
 from http import HTTPStatus
 from itertools import groupby
+import sys
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
@@ -1174,27 +1175,30 @@ DELETE FROM user_stats WHERE user_id = :user_id;
         file=None,
         reviewed: bool = True,
         deleted: bool = False,
-        use_compression: bool = True,
+        use_compression: bool = False,
     ) -> None:
+        trees_to_export: List[tree_export.ExportMessageTree] = []
+
         for message_tree_id in message_tree_ids:
-            messages: List[Message] = pr.fetch_message_tree(message_tree_id, reviewed, deleted)
-            tree: tree_export.ExportMessageTree = tree_export.build_export_tree(message_tree_id, messages)
-            if file:
-                tree_export.write_tree_to_file(file, tree, use_compression)
-            else:
-                logger.info(json.dumps(jsonable_encoder(tree), indent=2))
+            messages: List[Message] = self.pr.fetch_message_tree(message_tree_id, reviewed, deleted)
+            trees_to_export.append(tree_export.build_export_tree(message_tree_id, messages))
+
+        if file:
+            tree_export.write_trees_to_file(file, trees_to_export, use_compression)
+        else:
+            sys.stdout.write(json.dumps(jsonable_encoder(trees_to_export), indent=2))
 
     def export_all_ready_trees(
-        self, file: str, reviewed: bool = True, deleted: bool = False, use_compression: bool = True
+        self, file: str, reviewed: bool = True, deleted: bool = False, use_compression: bool = False
     ) -> None:
-        message_tree_states: MessageTreeState = pr.fetch_message_trees_ready_for_export()
+        message_tree_states: MessageTreeState = self.pr.fetch_message_trees_ready_for_export()
         message_tree_ids = [ms.message_tree_id for ms in message_tree_states]
         self.export_trees_to_file(message_tree_ids, file, reviewed, deleted, use_compression)
 
     def export_all_user_trees(
-        self, user_id: str, file: str, reviewed: bool = True, deleted: bool = False, use_compression: bool = True
+        self, user_id: str, file: str, reviewed: bool = True, deleted: bool = False, use_compression: bool = False
     ) -> None:
-        messages = pr.fetch_user_message_trees(UUID(user_id))
+        messages = self.pr.fetch_user_message_trees(UUID(user_id))
         message_tree_ids = [ms.message_tree_id for ms in messages]
         self.export_trees_to_file(message_tree_ids, file, reviewed, deleted, use_compression)
 

@@ -524,12 +524,16 @@ class PromptRepository:
             qry = qry.filter(Message.deleted)
         return qry.all()
 
-    def fetch_user_message_trees(self, user_id: Message.user_id):
+    def fetch_user_message_trees(self, user_id: Message.user_id, reviewed: bool = True, deleted: bool = False):
         qry = self.db.query(Message).filter(Message.user_id == user_id)
+        if reviewed:
+            qry = qry.filter(Message.review_result)
+        if deleted:
+            qry = qry.filter(Message.deleted)
         return qry.all()
 
     def fetch_message_trees_ready_for_export(self) -> List[MessageTreeState]:
-        qry = self.db.query(MessageTreeState).filter(MessageTreeState.state == "ready_for_export")
+        qry = self.db.query(MessageTreeState).filter(MessageTreeState.state == message_tree_state.State.READY_FOR_EXPORT)
         return qry.all()
 
     def fetch_multiple_random_replies(self, max_size: int = 5, message_role: str = None):
