@@ -28,8 +28,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
-from sqlalchemy import update
-from sqlmodel import Session, func
+from sqlmodel import Session, func, text, update
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -709,6 +708,21 @@ class PromptRepository:
             messages = messages.limit(limit)
 
         return messages.all()
+
+    def update_children_counts(self, message_tree_id: UUID):
+        sql_update_children_count = """
+UPDATE message SET children_count = cc.children_count
+FROM (
+    SELECT m.id, count(c.id) - COALESCE(SUM(c.deleted::int), 0) AS children_count
+    FROM message m
+        LEFT JOIN message c ON m.id = c.parent_id
+    WHERE m.message_tree_id  = :message_tree_id
+    GROUP BY m.id
+) AS cc
+WHERE message.id = cc.id;
+"""
+        r = self.db.execute(text(sql_update_children_count), {"message_tree_id": message_tree_id})
+        logger.debug(f"update_children_count({message_tree_id=}): {r.rowcount} rows.")
 
     @managed_tx_method(CommitMode.COMMIT)
     def mark_messages_deleted(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):

@@ -17,8 +17,7 @@ from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingM
 from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from sqlalchemy.sql import text
-from sqlmodel import Session, func, not_
+from sqlmodel import Session, func, not_, text
 
 
 class TaskType(Enum):
@@ -1046,7 +1045,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         logger.debug(f"purge_message_tree updated({message_tree_id=}) {r.rowcount} rows.")
 
     @managed_tx_method(CommitMode.FLUSH)
-    def purge_messages_of_user(self, user_id: UUID, purge_initial_prompts: bool = True):
+    def purge_user_messages(self, user_id: UUID, purge_initial_prompts: bool = True):
 
         # find all affected message trees
         replies_by_tree, prompts = self.get_user_messages_by_tree(user_id)
@@ -1086,16 +1085,8 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
                 if is_descendant_of_deleted(m):
                     self._purge_message_internal(m.id)
 
-                # try to update child count
-                if m.id in bad_parent_ids:
-                    assert m.parent_id is not None
-                    parent = by_id[m.parent_id]
-                    if parent and not is_descendant_of_deleted(parent):
-                        parent.children_count -= 1
-                        self.db.add(parent)
-
             # update childern counts
-            self.db.flush()
+            self.pr.update_children_counts(m.message_tree_id)
 
             # reactivate tree
             logger.info(f"reactivating message tree {tree_id}")
@@ -1106,7 +1097,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
 
     @managed_tx_method(CommitMode.FLUSH)
     def purge_user(self, user_id: UUID) -> None:
-        self.purge_messages_of_user(user_id, purge_initial_prompts=True)
+        self.purge_user_messages(user_id, purge_initial_prompts=True)
 
         # delete all remaining rows and ban user
         sql_purge_user = """
@@ -1137,6 +1128,7 @@ if __name__ == "__main__":
         tm = TreeManager(db, pr, cfg)
         tm.ensure_tree_states()
 
+        # tm.purge_user_messages(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"), purge_initial_prompts=False)
         # tm.purge_user(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"))
         # db.commit()
 

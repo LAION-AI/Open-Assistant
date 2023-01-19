@@ -61,21 +61,23 @@ async def purge_user(
         stats_before = pr.get_stats()
 
         user = pr.user_repository.get_user(user_id)
-        if preview:
-            logger.info(
-                f"PURGE USER PREVIEW: '{user.display_name}' (id: {str(user_id)}; username: '{user.username}'; auth-method: '{user.auth_method}')"
-            )
-        else:
-            logger.warning(
-                f"PURGE USER: '{user.display_name}' (id: {str(user_id)}; username: '{user.username}'; auth-method: '{user.auth_method}')"
-            )
         tm = TreeManager(session, pr)
         tm.purge_user(user_id)
 
-        return stats_before, pr.get_stats()
+        return user, stats_before, pr.get_stats()
 
     timer = ScopeTimer()
-    before, after = purge_tx()
+    user, before, after = purge_tx()
     timer.stop()
+
+    if preview:
+        logger.info(
+            f"PURGE USER PREVIEW: '{user.display_name}' (id: {str(user_id)}; username: '{user.username}'; auth-method: '{user.auth_method}')"
+        )
+    else:
+        logger.warning(
+            f"PURGE USER: '{user.display_name}' (id: {str(user_id)}; username: '{user.username}'; auth-method: '{user.auth_method}')"
+        )
+
     logger.info(f"{before=}; {after=}")
     return PurgeResultModel(before=before, after=after, preview=preview, duration=timer.elapsed)
