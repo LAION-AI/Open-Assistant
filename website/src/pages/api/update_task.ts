@@ -3,7 +3,6 @@ import { withoutRole } from "src/lib/auth";
 import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
 import { getBackendUserCore } from "src/lib/users";
-import type { BackendUserCore } from "src/types/Users";
 
 /**
  * Stores the task interaction with the Task Backend and then returns the next task generated.
