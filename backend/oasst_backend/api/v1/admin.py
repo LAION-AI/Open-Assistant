@@ -77,7 +77,7 @@ class PurgeResultModel(pydantic.BaseModel):
     duration: float
 
 
-@router.post("/purge/{user_id}", response_model=PurgeResultModel)
+@router.post("/purge_user/{user_id}", response_model=PurgeResultModel)
 async def purge_user(
     user_id: UUID,
     preview: bool = True,
@@ -116,7 +116,7 @@ async def purge_user(
     return PurgeResultModel(before=before, after=after, preview=preview, duration=timer.elapsed)
 
 
-@router.post("/purge/{user_id}/messages", response_model=PurgeResultModel)
+@router.post("/purge_user/{user_id}/messages", response_model=PurgeResultModel)
 async def purge_user_messages(
     user_id: UUID,
     purge_initial_prompts: bool = False,
