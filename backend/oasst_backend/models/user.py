@@ -12,7 +12,7 @@ class User(SQLModel, table=True):
     __tablename__ = "user"
     __table_args__ = (
         Index("ix_user_username", "api_client_id", "username", "auth_method", unique=True),
-        Index("ix_user_display_name_id", "display_name", "id"),
+        Index("ix_user_display_name_id", "display_name", "id", unique=True),
     )
 
     id: Optional[UUID] = Field(

@@ -15,7 +15,7 @@ from starlette.status import HTTP_204_NO_CONTENT
 router = APIRouter()
 
 
-@router.get("/", response_model=list[protocol.FrontEndUser])
+@router.get("/", response_model=list[protocol.FrontEndUser], deprecated=True)
 def get_users_ordered_by_username(
     api_client_id: Optional[UUID] = None,
     gte_username: Optional[str] = None,
