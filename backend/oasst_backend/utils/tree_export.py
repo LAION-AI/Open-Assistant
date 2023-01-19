@@ -1,11 +1,11 @@
 from __future__ import annotations
-from collections import defaultdict
+
 import gzip
 import json
+from collections import defaultdict
 from typing import Dict, List, Optional, TextIO
 
 from fastapi.encoders import jsonable_encoder
-from loguru import logger
 from oasst_backend.models import Message
 from pydantic import BaseModel
 

@@ -533,7 +533,9 @@ class PromptRepository:
         return qry.all()
 
     def fetch_message_trees_ready_for_export(self) -> List[MessageTreeState]:
-        qry = self.db.query(MessageTreeState).filter(MessageTreeState.state == message_tree_state.State.READY_FOR_EXPORT)
+        qry = self.db.query(MessageTreeState).filter(
+            MessageTreeState.state == message_tree_state.State.READY_FOR_EXPORT
+        )
         return qry.all()
 
     def fetch_multiple_random_replies(self, max_size: int = 5, message_role: str = None):

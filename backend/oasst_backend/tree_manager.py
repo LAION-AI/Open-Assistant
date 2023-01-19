@@ -1,11 +1,9 @@
-import gzip
 import json
 import random
 from datetime import datetime
+import sys
 from enum import Enum
 from http import HTTPStatus
-from itertools import groupby
-import sys
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
