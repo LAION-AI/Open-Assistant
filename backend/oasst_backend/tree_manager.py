@@ -1047,7 +1047,7 @@ DELETE FROM message_tree_state WHERE message_tree_id = :message_tree_id;
 DELETE FROM message WHERE message_tree_id = :message_tree_id;
 """
         r = self.db.execute(text(sql_purge_message_tree), {"message_tree_id": message_tree_id})
-        logger.debug(f"purge_message_tree updated({message_tree_id=}) {r.rowcount} rows.")
+        logger.debug(f"purge_message_tree({message_tree_id=}) {r.rowcount} rows.")
 
     @managed_tx_method(CommitMode.FLUSH)
     def purge_user_messages(
@@ -1060,6 +1060,8 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
 
         # find all affected message trees
         replies_by_tree, prompts = self.get_user_messages_by_tree(user_id, min_date, max_date)
+        total_messages = sum(len(x) for x in replies_by_tree.values())
+        logger.debug(f"found: {len(replies_by_tree)} trees; {len(prompts)} prompts; {total_messages} messages;")
 
         # remove all trees based on inital prompts of the user
         if purge_initial_prompts:
@@ -1071,8 +1073,10 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         # patch all affected message trees
         for tree_id, replies in replies_by_tree.items():
             bad_parent_ids = set(m.id for m in replies)
+            logger.debug(f"patching tree {tree_id=}, {bad_parent_ids=}")
 
             tree_messages = self.pr.fetch_message_tree(tree_id)
+            logger.debug(f"{tree_id=}, {len(bad_parent_ids)=}, {len(tree_messages)=}")
             by_id = {m.id: m for m in tree_messages}
 
             def ancestor_ids(msg: Message) -> list[UUID]:
@@ -1094,6 +1098,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
             tree_messages.sort(key=lambda x: x.depth, reverse=True)
             for m in tree_messages:
                 if is_descendant_of_deleted(m):
+                    logger.debug(f"purging message: {m.id}")
                     self._purge_message_internal(m.id)
 
             # update childern counts
