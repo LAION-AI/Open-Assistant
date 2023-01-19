@@ -26,11 +26,11 @@ class UserStats(SQLModel, table=True):
     user_id: Optional[UUID] = Field(
         sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("user.id"), primary_key=True)
     )
-    base_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(), nullable=True))
+    base_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True))
 
     leader_score: int = 0
     modified_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
+        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp())
     )
 
     rank: int = Field(nullable=True)

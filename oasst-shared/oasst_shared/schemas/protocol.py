@@ -392,6 +392,7 @@ class UserScore(BaseModel):
 
 class LeaderboardStats(BaseModel):
     time_frame: str
+    last_updated: datetime
     leaderboard: List[UserScore]
 
 
