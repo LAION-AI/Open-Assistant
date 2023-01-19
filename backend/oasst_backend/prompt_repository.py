@@ -53,6 +53,13 @@ class PromptRepository:
         )
         self.journal = JournalWriter(db, api_client, self.user)
 
+    def ensure_user_is_enabled(self):
+        if self.user is None or self.user_id is None:
+            raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
+
+        if self.user.deleted or not self.user.enabled:
+            raise OasstError("User account disabled", OasstErrorCode.USER_DISABLED)
+
     def fetch_message_by_frontend_message_id(self, frontend_message_id: str, fail_if_missing: bool = True) -> Message:
         validate_frontend_message_id(frontend_message_id)
         message: Message = (
@@ -146,6 +153,8 @@ class PromptRepository:
         review_result: bool = False,
         check_tree_state: bool = True,
     ) -> Message:
+        self.ensure_user_is_enabled()
+
         validate_frontend_message_id(frontend_message_id)
         validate_frontend_message_id(user_frontend_message_id)
 
@@ -354,8 +363,7 @@ class PromptRepository:
 
     @managed_tx_method(CommitMode.FLUSH)
     def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
-        if self.user_id is None:
-            raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
+        self.ensure_user_is_enabled()
 
         container = PayloadContainer(payload=payload)
         reaction = MessageReaction(

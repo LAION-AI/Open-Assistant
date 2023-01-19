@@ -192,6 +192,8 @@ class TreeManager:
         return task_count_by_type
 
     def determine_task_availability(self) -> dict[protocol_schema.TaskRequestType, int]:
+        self.pr.ensure_user_is_enabled()
+
         num_active_trees = self.query_num_active_trees()
         extendible_parents = self.query_extendible_parents()
         prompts_need_review = self.query_prompts_need_review()
@@ -211,6 +213,8 @@ class TreeManager:
     ) -> Tuple[protocol_schema.Task, Optional[UUID], Optional[UUID]]:
 
         logger.debug("TreeManager.next_task()")
+
+        self.pr.ensure_user_is_enabled()
 
         num_active_trees = self.query_num_active_trees()
         prompts_need_review = self.query_prompts_need_review()
@@ -445,6 +449,7 @@ class TreeManager:
     @async_managed_tx_method(CommitMode.COMMIT)
     async def handle_interaction(self, interaction: protocol_schema.AnyInteraction) -> protocol_schema.Task:
         pr = self.pr
+        pr.ensure_user_is_enabled()
         match type(interaction):
             case protocol_schema.TextReplyToMessage:
                 logger.info(
