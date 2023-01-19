@@ -1055,7 +1055,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
 
         # patch all affected message trees
         for tree_id, replies in replies_by_tree.items():
-            bad_parents_ids = set(m.id for m in replies)
+            bad_parent_ids = set(m.id for m in replies)
 
             tree_messages = self.pr.fetch_message_tree(tree_id)
             by_id = {m.id: m for m in tree_messages}
@@ -1068,10 +1068,10 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
                 return t
 
             def is_descendant_of_deleted(m: Message) -> bool:
-                if m.id in bad_parents_ids:
+                if m.id in bad_parent_ids:
                     return True
                 ancestors = ancestor_ids(m)
-                if any(a in bad_parents_ids for a in ancestors):
+                if any(a in bad_parent_ids for a in ancestors):
                     return True
                 return False
 
@@ -1082,7 +1082,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
                     self._purge_message_internal(m.id)
 
                 # try to update child count
-                if m.id in bad_parents_ids:
+                if m.id in bad_parent_ids:
                     assert m.parent_id is not None
                     parent = by_id[m.parent_id]
                     if parent and not is_descendant_of_deleted(parent):
@@ -1105,7 +1105,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
 
         # delete all remaining rows and ban user
         sql_purge_user = """
-DELETE FROM journal  WHERE user_id = :user_id;
+DELETE FROM journal WHERE user_id = :user_id;
 DELETE FROM message_reaction WHERE user_id = :user_id;
 DELETE FROM task WHERE user_id = :user_id;
 DELETE FROM message WHERE user_id = :user_id;
