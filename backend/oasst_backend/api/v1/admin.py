@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 import pydantic
@@ -5,12 +6,12 @@ from fastapi import APIRouter, Depends
 from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.config import Settings, settings
-from oasst_backend.models.api_client import ApiClient
+from oasst_backend.models import ApiClient, User
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.tree_manager import TreeManager
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.schemas.protocol import SystemStats
-from oasst_shared.utils import ScopeTimer
+from oasst_shared.utils import ScopeTimer, unaware_to_utc
 
 router = APIRouter()
 
@@ -76,24 +77,26 @@ class PurgeResultModel(pydantic.BaseModel):
     duration: float
 
 
-@router.post("/purge_user/{user_id}", response_model=PurgeResultModel)
+@router.post("/purge/{user_id}", response_model=PurgeResultModel)
 async def purge_user(
     user_id: UUID,
     preview: bool = True,
+    ban: bool = True,
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
 ) -> str:
     assert api_client.trusted
 
-    @managed_tx_function(CommitMode.NONE if preview else CommitMode.COMMIT)
-    def purge_tx(session: deps.Session):
+    @managed_tx_function(CommitMode.ROLLBACK if preview else CommitMode.COMMIT)
+    def purge_tx(session: deps.Session) -> tuple[User, SystemStats, SystemStats]:
         pr = PromptRepository(session, api_client)
 
         stats_before = pr.get_stats()
 
         user = pr.user_repository.get_user(user_id)
         tm = TreeManager(session, pr)
-        tm.purge_user(user_id)
+        tm.purge_user(user_id=user_id, ban=ban)
 
+        session.expunge(user)
         return user, stats_before, pr.get_stats()
 
     timer = ScopeTimer()
@@ -107,6 +110,53 @@ async def purge_user(
     else:
         logger.warning(
             f"PURGE USER: '{user.display_name}' (id: {str(user_id)}; username: '{user.username}'; auth-method: '{user.auth_method}')"
+        )
+
+    logger.info(f"{before=}; {after=}")
+    return PurgeResultModel(before=before, after=after, preview=preview, duration=timer.elapsed)
+
+
+@router.post("/purge/{user_id}/messages", response_model=PurgeResultModel)
+async def purge_user_messages(
+    user_id: UUID,
+    purge_initial_prompts: bool = False,
+    min_date: datetime = None,
+    max_date: datetime = None,
+    preview: bool = True,
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+) -> str:
+    assert api_client.trusted
+
+    min_date = unaware_to_utc(min_date)
+    max_date = unaware_to_utc(max_date)
+
+    @managed_tx_function(CommitMode.ROLLBACK if preview else CommitMode.COMMIT)
+    def purge_user_messages_tx(session: deps.Session):
+        pr = PromptRepository(session, api_client)
+
+        stats_before = pr.get_stats()
+
+        user = pr.user_repository.get_user(user_id)
+
+        tm = TreeManager(session, pr)
+        tm.purge_user_messages(
+            user_id, purge_initial_prompts=purge_initial_prompts, min_date=min_date, max_date=max_date
+        )
+
+        session.expunge(user)
+        return user, stats_before, pr.get_stats()
+
+    timer = ScopeTimer()
+    user, before, after = purge_user_messages_tx()
+    timer.stop()
+
+    if preview:
+        logger.info(
+            f"PURGE USER MESSAGES PREVIEW: '{user.display_name}' (id: {str(user_id)}; username: '{user.username}'; auth-method: '{user.auth_method}')"
+        )
+    else:
+        logger.warning(
+            f"PURGE USER MESSAGES: '{user.display_name}' (id: {str(user_id)}; username: '{user.username}'; auth-method: '{user.auth_method}')"
         )
 
     logger.info(f"{before=}; {after=}")

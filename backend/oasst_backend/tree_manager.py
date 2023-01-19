@@ -10,14 +10,14 @@ import pydantic
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
-from oasst_backend.models import Message, MessageReaction, MessageTreeState, Task, TextLabels, message_tree_state
+from oasst_backend.models import Message, MessageReaction, MessageTreeState, Task, TextLabels, User, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_method, managed_tx_method
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from sqlmodel import Session, func, not_, text
+from sqlmodel import Session, func, not_, text, update
 
 
 class TaskType(Enum):
@@ -577,7 +577,6 @@ class TreeManager:
         mts = self.pr.fetch_tree_state(message_tree_id)
         self._enter_state(mts, message_tree_state.State.ABORTED_LOW_GRADE)
 
-    @managed_tx_method(CommitMode.COMMIT)
     def check_condition_for_growing_state(self, message_tree_id: UUID) -> bool:
         logger.debug(f"check_condition_for_growing_state({message_tree_id=})")
 
@@ -595,7 +594,6 @@ class TreeManager:
         self._enter_state(mts, message_tree_state.State.GROWING)
         return True
 
-    @managed_tx_method(CommitMode.COMMIT)
     def check_condition_for_ranking_state(self, message_tree_id: UUID) -> bool:
         logger.debug(f"check_condition_for_ranking_state({message_tree_id=})")
 
@@ -613,7 +611,6 @@ class TreeManager:
         self._enter_state(mts, message_tree_state.State.RANKING)
         return True
 
-    @managed_tx_method(CommitMode.COMMIT)
     def check_condition_for_scoring_state(
         self, message_tree_id: UUID
     ) -> Tuple[bool, dict[UUID, list[MessageReaction]]]:
@@ -634,7 +631,6 @@ class TreeManager:
         self._enter_state(mts, message_tree_state.State.READY_FOR_SCORING)
         return True, rankings_by_message
 
-    @managed_tx_method(CommitMode.COMMIT)
     def update_message_ranks(self, message_tree_id: UUID, rankings_by_message: Dict[int, int]) -> bool:
 
         mts = self.pr.fetch_tree_state(message_tree_id)
@@ -982,12 +978,21 @@ INNER JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Ranki
             message_counts=self.tree_message_count_stats(only_active=True),
         )
 
-    def get_user_messages_by_tree(self, user_id: UUID) -> Tuple[dict[UUID, list[Message]], list[Message]]:
+    def get_user_messages_by_tree(
+        self,
+        user_id: UUID,
+        min_date: datetime = None,
+        max_date: datetime = None,
+    ) -> Tuple[dict[UUID, list[Message]], list[Message]]:
         """Returns a dict with replies by tree (excluding initial prompts) and list of initial prompts
         associated with user_id."""
 
         # query all messages of the user
         qry = self.db.query(Message).filter(Message.user_id == user_id)
+        if min_date:
+            qry = qry.filter(Message.created_date >= min_date)
+        if max_date:
+            qry = qry.filter(Message.created_date <= max_date)
 
         prompts: list[Message] = []
         replies_by_tree: dict[UUID, list[Message]] = {}
@@ -1045,10 +1050,16 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         logger.debug(f"purge_message_tree updated({message_tree_id=}) {r.rowcount} rows.")
 
     @managed_tx_method(CommitMode.FLUSH)
-    def purge_user_messages(self, user_id: UUID, purge_initial_prompts: bool = True):
+    def purge_user_messages(
+        self,
+        user_id: UUID,
+        purge_initial_prompts: bool = True,
+        min_date: datetime = None,
+        max_date: datetime = None,
+    ):
 
         # find all affected message trees
-        replies_by_tree, prompts = self.get_user_messages_by_tree(user_id)
+        replies_by_tree, prompts = self.get_user_messages_by_tree(user_id, min_date, max_date)
 
         # remove all trees based on inital prompts of the user
         if purge_initial_prompts:
@@ -1094,9 +1105,11 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
             mts.active = True
             self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
             self.check_condition_for_growing_state(tree_id)
+            self.check_condition_for_ranking_state(tree_id)
+            self.check_condition_for_scoring_state(tree_id)
 
     @managed_tx_method(CommitMode.FLUSH)
-    def purge_user(self, user_id: UUID) -> None:
+    def purge_user(self, user_id: UUID, ban: bool = True) -> None:
         self.purge_user_messages(user_id, purge_initial_prompts=True)
 
         # delete all remaining rows and ban user
@@ -1106,11 +1119,13 @@ DELETE FROM message_reaction WHERE user_id = :user_id;
 DELETE FROM task WHERE user_id = :user_id;
 DELETE FROM message WHERE user_id = :user_id;
 DELETE FROM user_stats WHERE user_id = :user_id;
-UPDATE "user" SET deleted = TRUE, enabled = FALSE WHERE id = :user_id;
 """
 
         r = self.db.execute(text(sql_purge_user), {"user_id": user_id})
         logger.debug(f"purge_user({user_id=}): {r.rowcount} rows.")
+
+        if ban:
+            self.db.execute(update(User).filter(User.id == user_id).values(deleted=True, enabled=False))
 
 
 if __name__ == "__main__":
@@ -1128,7 +1143,7 @@ if __name__ == "__main__":
         tm = TreeManager(db, pr, cfg)
         tm.ensure_tree_states()
 
-        # tm.purge_user_messages(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"), purge_initial_prompts=False)
+        tm.purge_user_messages(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"), purge_initial_prompts=False)
         # tm.purge_user(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"))
         # db.commit()
 

@@ -10,6 +10,13 @@ def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def unaware_to_utc(d: datetime | None) -> datetime:
+    """Set timezeno to UTC if datetime is unaware (tzinfo == None)."""
+    if d and d.tzinfo is None:
+        return d.replace(tzinfo=timezone.utc)
+    return d
+
+
 class TimerError(Exception):
     """A custom exception used to report errors in use of Timer class"""
 
