@@ -981,10 +981,14 @@ INNER JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Ranki
     def get_user_messages_by_tree(self, user_id: UUID) -> Tuple[dict[UUID, list[Message]], list[Message]]:
         """Returns a dict with replies by tree (excluding initial prompts) and list of initial prompts
         associated with user_id."""
+
+        # query all messages of the user
         qry = self.db.query(Message).filter(Message.user_id == user_id)
 
         prompts: list[Message] = []
         replies_by_tree: dict[UUID, list[Message]] = {}
+
+        # walk over result set and distinguish between initial prompts and replies
         for m in qry:
             m: Message
 
@@ -1001,7 +1005,9 @@ INNER JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Ranki
         return replies_by_tree, prompts
 
     def _purge_message_internal(self, message_id: UUID) -> None:
-        """This function deletes a single message. It does not take care of children."""
+        """This internal function deletes a single message. It does not take care of
+        descendants, children_count in parent etc."""
+
         sql_purge_message = """
 DELETE FROM journal j USING message m WHERE j.message_id = :message_id;
 DELETE FROM message_embedding e WHERE e.message_id = :message_id;
@@ -1012,7 +1018,7 @@ DELETE FROM message_reaction r WHERE r.payload_type = 'RankingReactionPayload' A
         SELECT t.id FROM message m
             JOIN task t ON m.parent_id = t.parent_message_id
         WHERE m.id = :message_id);
--- delete all task which inserted message
+-- delete task which inserted message
 DELETE FROM task t using message m WHERE t.id = m.task_id AND m.id = :message_id;
 DELETE FROM task t WHERE t.parent_message_id = :message_id;
 DELETE FROM message WHERE id = :message_id;
@@ -1087,7 +1093,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
             self.db.flush()
 
             # reactivate tree
-            logger.info(f"reactivating tree {tree_id}")
+            logger.info(f"reactivating message tree {tree_id}")
             mts = self.pr.fetch_tree_state(tree_id)
             mts.active = True
             self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
