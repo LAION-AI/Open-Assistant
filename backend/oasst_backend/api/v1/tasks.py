@@ -36,6 +36,8 @@ def request_task(
 
     try:
         pr = PromptRepository(db, api_client, client_user=request.user)
+        pr.ensure_user_is_enabled()
+
         tm = TreeManager(db, pr)
         task, message_tree_id, parent_message_id = tm.next_task(request.type)
         pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
@@ -85,6 +87,7 @@ def tasks_acknowledge(
 
     try:
         pr = PromptRepository(db, api_client)
+        pr.ensure_user_is_enabled()
 
         # here we store the message id in the database for the task
         logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
@@ -113,6 +116,7 @@ def tasks_acknowledge_failure(
         logger.info(f"Frontend reports failure to implement task {task_id=}, {nack_request=}.")
         api_client = deps.api_auth(api_key, db)
         pr = PromptRepository(db, api_client)
+        pr.ensure_user_is_enabled()
         pr.task_repository.acknowledge_task_failure(task_id)
     except (KeyError, RuntimeError):
         logger.exception("Failed to not acknowledge task.")
