@@ -2,14 +2,14 @@
 
 Revision ID: 4f26fec4d204
 Revises: 0964ac95170d
-Create Date: 2023-01-19 19:37:44.376346
+Create Date: 2023-01-19 22:00:00
 
 """
 from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "4f26fec4d204"
-down_revision = "0964ac95170d"
+down_revision = "7f0a28a156f4"
 branch_labels = None
 depends_on = None
 
