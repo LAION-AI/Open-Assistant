@@ -978,6 +978,138 @@ INNER JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Ranki
             message_counts=self.tree_message_count_stats(only_active=True),
         )
 
+    def get_user_messages_by_tree(self, user_id: UUID) -> Tuple[dict[UUID, list[Message]], list[Message]]:
+        """Returns a dict with replies by tree (excluding initial prompts) and list of initial prompts
+        associated with user_id."""
+        qry = self.db.query(Message).filter(Message.user_id == user_id)
+
+        prompts: list[Message] = []
+        replies_by_tree: dict[UUID, list[Message]] = {}
+        for m in qry:
+            m: Message
+
+            if m.message_tree_id == m.id:
+                prompts.append(m)
+            else:
+                message_list = replies_by_tree.get(m.message_tree_id)
+                if message_list is None:
+                    message_list = [m]
+                    replies_by_tree[m.message_tree_id] = message_list
+                else:
+                    message_list.append(m)
+
+        return replies_by_tree, prompts
+
+    def _purge_message_internal(self, message_id: UUID) -> None:
+        """This function deletes a single message. It does not take care of children."""
+        sql_purge_message = """
+DELETE FROM journal j USING message m WHERE j.message_id = :message_id;
+DELETE FROM message_embedding e WHERE e.message_id = :message_id;
+DELETE FROM message_toxicity t WHERE t.message_id = :message_id;
+DELETE FROM text_labels l WHERE l.message_id = :message_id;
+-- delete all ranking results that contain message
+DELETE FROM message_reaction r WHERE r.payload_type = 'RankingReactionPayload' AND r.task_id IN (
+        SELECT t.id FROM message m
+            JOIN task t ON m.parent_id = t.parent_message_id
+        WHERE m.id = :message_id);
+-- delete all task which inserted message
+DELETE FROM task t using message m WHERE t.id = m.task_id AND m.id = :message_id;
+DELETE FROM task t WHERE t.parent_message_id = :message_id;
+DELETE FROM message WHERE id = :message_id;
+"""
+        r = self.db.execute(text(sql_purge_message), {"message_id": message_id})
+        logger.debug(f"purge_message({message_id=}): {r.rowcount} rows.")
+
+    def purge_message_tree(self, message_tree_id: UUID) -> None:
+        sql_purge_message_tree = """
+DELETE FROM journal j USING message m WHERE j.message_id = m.Id AND m.message_tree_id = :message_tree_id;
+DELETE FROM message_embedding e USING message m WHERE e.message_id = m.Id AND m.message_tree_id = :message_tree_id;
+DELETE FROM message_toxicity t USING message m WHERE t.message_id = m.Id AND m.message_tree_id = :message_tree_id;
+DELETE FROM text_labels l USING message m WHERE l.message_id = m.Id AND m.message_tree_id = :message_tree_id;
+DELETE FROM message_reaction r USING task t WHERE r.task_id = t.id AND t.message_tree_id = :message_tree_id;
+DELETE FROM task t WHERE t.message_tree_id = :message_tree_id;
+DELETE FROM message_tree_state WHERE message_tree_id = :message_tree_id;
+DELETE FROM message WHERE message_tree_id = :message_tree_id;
+"""
+        r = self.db.execute(text(sql_purge_message_tree), {"message_tree_id": message_tree_id})
+        logger.debug(f"purge_message_tree updated({message_tree_id=}) {r.rowcount} rows.")
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def purge_messages_of_user(self, user_id: UUID, purge_initial_prompts: bool = True):
+
+        # find all affected message trees
+        replies_by_tree, prompts = self.get_user_messages_by_tree(user_id)
+
+        # remove all trees based on inital prompts of the user
+        if purge_initial_prompts:
+            for p in prompts:
+                self.purge_message_tree(p.message_tree_id)
+                if p.message_tree_id in replies_by_tree:
+                    del replies_by_tree[p.message_tree_id]
+
+        # patch all affected message trees
+        for tree_id, replies in replies_by_tree.items():
+            bad_parents_ids = set(m.id for m in replies)
+
+            tree_messages = self.pr.fetch_message_tree(tree_id)
+            by_id = {m.id: m for m in tree_messages}
+
+            def ancestor_ids(msg: Message) -> list[UUID]:
+                t = []
+                while msg.parent_id is not None:
+                    msg = by_id[msg.parent_id]
+                    t.append(msg.id)
+                return t
+
+            def is_descendant_of_deleted(m: Message) -> bool:
+                if m.id in bad_parents_ids:
+                    return True
+                ancestors = ancestor_ids(m)
+                if any(a in bad_parents_ids for a in ancestors):
+                    return True
+                return False
+
+            # start with deepest messages first
+            tree_messages.sort(key=lambda x: x.depth, reverse=True)
+            for m in tree_messages:
+                if is_descendant_of_deleted(m):
+                    self._purge_message_internal(m.id)
+
+                # try to update child count
+                if m.id in bad_parents_ids:
+                    assert m.parent_id is not None
+                    parent = by_id[m.parent_id]
+                    if parent and not is_descendant_of_deleted(parent):
+                        parent.children_count -= 1
+                        self.db.add(parent)
+
+            # update childern counts
+            self.db.flush()
+
+            # reactivate tree
+            logger.info(f"reactivating tree {tree_id}")
+            mts = self.pr.fetch_tree_state(tree_id)
+            mts.active = True
+            self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
+            self.check_condition_for_growing_state(tree_id)
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def purge_user(self, user_id: UUID) -> None:
+        self.purge_messages_of_user(user_id, purge_initial_prompts=True)
+
+        # delete all remaining rows and ban user
+        sql_purge_user = """
+DELETE FROM journal  WHERE user_id = :user_id;
+DELETE FROM message_reaction WHERE user_id = :user_id;
+DELETE FROM task WHERE user_id = :user_id;
+DELETE FROM message WHERE user_id = :user_id;
+DELETE FROM user_stats WHERE user_id = :user_id;
+UPDATE "user" SET deleted = TRUE, enabled = FALSE WHERE id = :user_id;
+"""
+
+        r = self.db.execute(text(sql_purge_user), {"user_id": user_id})
+        logger.debug(f"purge_user({user_id=}): {r.rowcount} rows.")
+
 
 if __name__ == "__main__":
     from oasst_backend.api.deps import api_auth
@@ -993,6 +1125,9 @@ if __name__ == "__main__":
         cfg = TreeManagerConfiguration()
         tm = TreeManager(db, pr, cfg)
         tm.ensure_tree_states()
+
+        # tm.purge_user(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"))
+        # db.commit()
 
         # print("query_num_active_trees", tm.query_num_active_trees())
         # print("query_incomplete_rankings", tm.query_incomplete_rankings())

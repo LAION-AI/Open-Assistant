@@ -499,7 +499,7 @@ class PromptRepository:
         messages = self.db.query(Message).filter(Message.parent_id.is_(None)).order_by(func.random()).limit(size).all()
         return messages
 
-    def fetch_message_tree(self, message_tree_id: UUID, reviewed: bool = True):
+    def fetch_message_tree(self, message_tree_id: UUID, reviewed: bool = True) -> list[Message]:
         qry = self.db.query(Message).filter(Message.message_tree_id == message_tree_id)
         if reviewed:
             qry = qry.filter(Message.review_result)
