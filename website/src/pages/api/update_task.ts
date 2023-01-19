@@ -2,6 +2,8 @@ import { Prisma } from "@prisma/client";
 import { withoutRole } from "src/lib/auth";
 import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
+import { getBackendUserCore } from "src/lib/users";
+import type { BackendUserCore } from "src/types/Users";
 
 /**
  * Stores the task interaction with the Task Backend and then returns the next task generated.
@@ -39,9 +41,10 @@ const handler = withoutRole("banned", async (req, res, token) => {
     },
   });
 
+  const user = await getBackendUserCore(token.sub);
   let newTask;
   try {
-    newTask = await oasstApiClient.interactTask(update_type, taskId, frontendId, interaction.id, content, token);
+    newTask = await oasstApiClient.interactTask(update_type, taskId, frontendId, interaction.id, content, user);
   } catch (err) {
     console.error(JSON.stringify(err));
     return res.status(500).json(err);
