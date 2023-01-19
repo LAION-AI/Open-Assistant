@@ -24,7 +24,7 @@ interface LabelRadioGroupProps {
 
 const label_messages: { [label: string]: { description: string; explanation: string[] } } = {
   spam: {
-    description: "The message is spam?",
+    description: "Is the message spam?",
     explanation: [
       'We consider the following unwanted content as spam: trolling, intentional undermining of our purpose, illegal material, material that violates our code of conduct, and other things that are inappropriate for our dataset. We collect these under the common heading of "spam".',
       "This is not an assessment of whether this message is the best possible answer. Especially for prompts or user-replies, we very much want to retain all kinds of responses in the dataset, so that the assistant can learn to reply appropriately.",
