@@ -2,7 +2,7 @@
 
 import { Box, Grid } from "@chakra-ui/react";
 import type { NextPage } from "next";
-import { FiAlertTriangle, FiBarChart2, FiLayout, FiMessageSquare, FiUsers } from "react-icons/fi";
+import { FiBarChart2, FiLayout, FiMessageSquare, FiUsers } from "react-icons/fi";
 import { FaQuestionCircle } from "react-icons/fa";
 
 import { Header } from "src/components/Header";
