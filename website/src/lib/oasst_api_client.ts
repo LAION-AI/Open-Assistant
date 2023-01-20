@@ -1,7 +1,7 @@
-import { JWT } from "next-auth/jwt";
 import type { Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
-import type { BackendUser } from "src/types/Users";
+import type { AvailableTasks } from "src/types/Task";
+import type { BackendUser, BackendUserCore } from "src/types/Users";
 
 export class OasstError {
   message: string;
@@ -108,14 +108,10 @@ export class OasstApiClient {
   // TODO return a strongly typed Task?
   // This method is used to store a task in RegisteredTask.task.
   // This is a raw Json type, so we can't use it to strongly type the task.
-  async fetchTask(taskType: string, userToken: JWT): Promise<any> {
+  async fetchTask(taskType: string, user: BackendUserCore): Promise<any> {
     return this.post("/api/v1/tasks/", {
       type: taskType,
-      user: {
-        id: userToken.sub,
-        display_name: userToken.name,
-        auth_method: "local",
-      },
+      user,
     });
   }
 
@@ -140,15 +136,11 @@ export class OasstApiClient {
     messageId: string,
     userMessageId: string,
     content: object,
-    userToken: JWT
+    user: BackendUserCore
   ): Promise<any> {
     return this.post("/api/v1/tasks/interaction", {
       type: updateType,
-      user: {
-        id: userToken.sub,
-        display_name: userToken.name,
-        auth_method: "local",
-      },
+      user,
       task_id: taskId,
       message_id: messageId,
       user_message_id: userMessageId,
@@ -213,6 +205,13 @@ export class OasstApiClient {
    */
   async fetch_leaderboard(time_frame: LeaderboardTimeFrame): Promise<LeaderboardReply> {
     return this.get(`/api/v1/leaderboards/${time_frame}`);
+  }
+
+  /**
+   * Returns the counts of all tasks (some might be zero)
+   */
+  async fetch_available_tasks(user: BackendUserCore): Promise<AvailableTasks> {
+    return this.post(`/api/v1/tasks/availability`, user);
   }
 }
 

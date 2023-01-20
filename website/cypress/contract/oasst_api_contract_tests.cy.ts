@@ -1,34 +1,27 @@
 import { OasstApiClient, OasstError } from "src/lib/oasst_api_client";
+import type { BackendUserCore } from "src/types/Users";
 
 describe("Contract test for Oasst API", function () {
   // Assumes this is running the mock server.
   const oasstApiClient = new OasstApiClient("http://localhost:8080", "test");
 
+  const testUser = {
+    id: "abcd",
+    display_name: "test",
+    auth_method: "local",
+  } as BackendUserCore;
+
   it("can fetch a task", async () => {
-    expect(
-      await oasstApiClient.fetchTask("random", {
-        sub: "test",
-        name: "test",
-        email: "test",
-      })
-    ).to.be.not.null;
+    expect(await oasstApiClient.fetchTask("random", testUser)).to.be.not.null;
   });
 
   it("can ack a task", async () => {
-    const task = await oasstApiClient.fetchTask("random", {
-      sub: "test",
-      name: "test",
-      email: "test",
-    });
+    const task = await oasstApiClient.fetchTask("random", testUser);
     expect(await oasstApiClient.ackTask(task.id, "321")).to.be.null;
   });
 
   it("can record a taskInteraction", async () => {
-    const task = await oasstApiClient.fetchTask("random", {
-      sub: "test",
-      name: "test",
-      email: "test",
-    });
+    const task = await oasstApiClient.fetchTask("random", testUser);
     expect(
       await oasstApiClient.interactTask(
         "text_reply_to_message",
@@ -36,11 +29,7 @@ describe("Contract test for Oasst API", function () {
         "321",
         "1",
         { text: "Test" },
-        {
-          sub: "test",
-          name: "test",
-          email: "test",
-        }
+        testUser
       )
     ).to.be.not.null;
   });

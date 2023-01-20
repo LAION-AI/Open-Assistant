@@ -15,34 +15,29 @@ from starlette.status import HTTP_204_NO_CONTENT
 router = APIRouter()
 
 
-@router.get("/", response_model=list[protocol.FrontEndUser])
-def get_users(
+@router.get("/", response_model=list[protocol.FrontEndUser], deprecated=True)
+def get_users_ordered_by_username(
     api_client_id: Optional[UUID] = None,
-    max_count: Optional[int] = Query(100, gt=0, le=10000),
-    gt: Optional[str] = None,
-    lt: Optional[str] = None,
+    gte_username: Optional[str] = None,
+    gt_id: Optional[UUID] = None,
+    lte_username: Optional[str] = None,
+    lt_id: Optional[UUID] = None,
+    search_text: Optional[str] = None,
     auth_method: Optional[str] = None,
+    max_count: Optional[int] = Query(100, gt=0, le=10000),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
     ur = UserRepository(db, api_client)
-    users = ur.query_users(api_client_id=api_client_id, limit=max_count, gt=gt, lt=lt, auth_method=auth_method)
-    return [u.to_protocol_frontend_user() for u in users]
-
-
-@router.get("/by_display_name")
-def query_frontend_users_by_display_name(
-    search_text: str,
-    exact: bool = False,
-    api_client_id: UUID = None,
-    max_count: int = Query(20, gt=0, le=1000),
-    auth_method: str = None,
-    api_client: ApiClient = Depends(deps.get_api_client),
-    db: Session = Depends(deps.get_db),
-):
-    ur = UserRepository(db, api_client)
-    users = ur.query_users_by_display_name(
-        search_text=search_text, exact=exact, api_client_id=api_client_id, limit=max_count, auth_method=auth_method
+    users = ur.query_users_ordered_by_username(
+        api_client_id=api_client_id,
+        gte_username=gte_username,
+        gt_id=gt_id,
+        lte_username=lte_username,
+        lt_id=lt_id,
+        auth_method=auth_method,
+        search_text=search_text,
+        limit=max_count,
     )
     return [u.to_protocol_frontend_user() for u in users]
 

@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { getAdminLayout } from "src/components/Layout";
 import UsersCell from "src/components/UsersCell";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 /**
  * Provides the admin index page that will display a list of users and give

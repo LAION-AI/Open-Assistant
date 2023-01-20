@@ -23,7 +23,7 @@ export const getDefaultLayout = (page: React.ReactElement) => (
 
 export const getTransparentHeaderLayout = (page: React.ReactElement) => (
   <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
-    <Header transparent={true} />
+    <Header />
     {page}
     <Footer />
   </div>
@@ -31,7 +31,7 @@ export const getTransparentHeaderLayout = (page: React.ReactElement) => (
 
 export const getDashboardLayout = (page: React.ReactElement) => (
   <Grid templateRows="min-content 1fr" h="full">
-    <Header transparent={true} />
+    <Header />
     <SideMenuLayout
       menuButtonOptions={[
         {
@@ -66,7 +66,7 @@ export const getDashboardLayout = (page: React.ReactElement) => (
 
 export const getAdminLayout = (page: React.ReactElement) => (
   <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
-    <Header transparent={true} />
+    <Header />
     <SideMenuLayout
       menuButtonOptions={[
         {

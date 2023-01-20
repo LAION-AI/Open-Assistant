@@ -4,6 +4,7 @@ import Router from "next/router";
 import { useSession } from "next-auth/react";
 import React from "react";
 import { Control, useForm, useWatch } from "react-hook-form";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 export default function Account() {
   const { data: session } = useSession();

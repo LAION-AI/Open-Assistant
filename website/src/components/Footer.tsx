@@ -1,9 +1,11 @@
 import { Box, Divider, Flex, Text, useColorMode } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
 
 export function Footer() {
+  const { t } = useTranslation();
   const { colorMode } = useColorMode();
   const backgroundColor = colorMode === "light" ? "white" : "gray.800";
   const textColor = colorMode === "light" ? "black" : "gray.300";
@@ -33,10 +35,10 @@ export function Footer() {
 
             <Box>
               <Text fontSize="md" fontWeight="bold">
-                Open Assistant
+                {t("title")}
               </Text>
               <Text fontSize="sm" color="gray.500">
-                Conversational AI for everyone.
+                {t("conversational")}
               </Text>
             </Box>
           </Flex>
@@ -45,23 +47,23 @@ export function Footer() {
             <Box display="flex" flexDirection={["column", "row"]} gap={["6", "14"]} fontSize="sm">
               <Flex direction="column" alignItems={["center", "start"]}>
                 <Text fontWeight="bold" color={textColor}>
-                  Legal
+                  {t("legal")}
                 </Text>
-                <FooterLink href="/privacy-policy" label="Privacy Policy" />
-                <FooterLink href="/terms-of-service" label="Terms of Service" />
+                <FooterLink href="/privacy-policy" label={t("privacy_policy")} />
+                <FooterLink href="/terms-of-service" label={t("terms_of_service")} />
               </Flex>
               <Flex direction="column" alignItems={["center", "start"]}>
                 <Text fontWeight="bold" color={textColor}>
-                  Connect
+                  {t("connect")}
                 </Text>
-                <FooterLink href="https://github.com/LAION-AI/Open-Assistant" label="Github" />
-                <FooterLink href="https://ykilcher.com/open-assistant-discord" label="Discord" />
+                <FooterLink href="https://github.com/LAION-AI/Open-Assistant" label={t("github")} />
+                <FooterLink href="https://ykilcher.com/open-assistant-discord" label={t("discord")} />
               </Flex>
               <Flex direction="column" alignItems={["center", "start"]}>
                 <Text fontWeight="bold" color={textColor}>
-                  About
+                  {t("about")}
                 </Text>
-                <FooterLink href="https://projects.laion.ai/Open-Assistant" label="Docs" />
+                <FooterLink href="https://projects.laion.ai/Open-Assistant" label={t("docs")} />
               </Flex>
             </Box>
           </nav>

@@ -9,7 +9,7 @@ interface MessageTableProps {
 
 export function MessageTable({ messages, enableLink }: MessageTableProps) {
   return (
-    <Stack spacing="3">
+    <Stack spacing="4">
       {messages.map((item) => (
         <MessageTableEntry enabled={enableLink} item={item} key={item.id + item.frontend_message_id} />
       ))}

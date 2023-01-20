@@ -4,6 +4,7 @@ import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useLabelPrompterReplyTask } from "src/hooks/tasks/useLabelingTask";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const LabelPrompterReply = () => {
   const { tasks, isLoading, trigger, reset } = useLabelPrompterReplyTask();

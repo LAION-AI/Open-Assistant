@@ -1,7 +1,4 @@
-/**
- * Reports the Backend's knowledge of a user.
- */
-export interface BackendUser {
+export interface BackendUserCore {
   /**
    * The user's unique ID according to the `auth_method`.
    */
@@ -18,7 +15,12 @@ export interface BackendUser {
    *   - local
    */
   auth_method: string;
+}
 
+/**
+ * Reports the Backend's knowledge of a user.
+ */
+export interface BackendUser extends BackendUserCore {
   /**
    * The backend's UUID for this user.
    */

@@ -25,6 +25,7 @@ class DialogueDataCollator:
 
         for feature_one in features:
             assert len(feature_one) % 2 == 0, "Number of messages must be even"
+            # TODO: we should push this to dataset __getitem__
             messages = [
                 (QA_SPECIAL_TOKENS["Question"] if i % 2 == 0 else "")
                 + x

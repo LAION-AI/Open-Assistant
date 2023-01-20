@@ -4,9 +4,10 @@ import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useGenericTaskAPI } from "src/hooks/tasks/useGenericTaskAPI";
+import { TaskType } from "src/types/Task";
 
 const RandomTask = () => {
-  const { tasks, isLoading, trigger, reset } = useGenericTaskAPI("random");
+  const { tasks, isLoading, trigger, reset } = useGenericTaskAPI(TaskType.random);
 
   if (isLoading) {
     return <LoadingScreen text="Loading..." />;
