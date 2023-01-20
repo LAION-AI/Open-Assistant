@@ -1,0 +1,4 @@
+fastapi[all]
+loguru
+redis
+sse-starlette
