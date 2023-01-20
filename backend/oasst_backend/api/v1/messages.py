@@ -58,8 +58,8 @@ def get_messages_cursor(
     only_roots: Optional[bool] = False,
     include_deleted: Optional[bool] = False,
     max_count: Optional[int] = Query(10, gt=0, le=1000),
-    api_client: ApiClient = Depends(deps.get_api_client),
     desc: Optional[bool] = False,
+    api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
     def split_cursor(x: str | None) -> tuple[datetime.datetime, UUID]:

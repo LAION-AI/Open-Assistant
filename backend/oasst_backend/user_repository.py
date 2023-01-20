@@ -202,10 +202,11 @@ class UserRepository:
     ) -> list[User]:
         if not self.api_client.trusted:
             if not api_client_id:
-                # Let unprivileged api clients query their own users
+                # Let unprivileged api clients query their own users without api_client_id being set
                 api_client_id = self.api_client.id
 
             if api_client_id != self.api_client.id:
+                # Unprivileged api client asks for foreign users
                 raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
 
         qry = self.db.query(User).order_by(User.display_name, User.id)

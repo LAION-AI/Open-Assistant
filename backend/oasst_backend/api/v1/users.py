@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
+from oasst_backend.api.v1.messages import get_messages_cursor
 from oasst_backend.models import ApiClient, User
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import UserRepository
@@ -208,6 +209,31 @@ def query_user_messages(
     )
 
     return utils.prepare_message_list(messages)
+
+
+@router.get("/{user_id}/messages/cursor", response_model=protocol.MessagePage)
+def query_user_messages_cursor(
+    user_id: Optional[UUID],
+    lt: Optional[str] = None,
+    gt: Optional[str] = None,
+    only_roots: Optional[bool] = False,
+    include_deleted: Optional[bool] = False,
+    max_count: Optional[int] = Query(10, gt=0, le=1000),
+    desc: Optional[bool] = False,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    return get_messages_cursor(
+        lt=lt,
+        gt=gt,
+        user_id=user_id,
+        only_roots=only_roots,
+        include_deleted=include_deleted,
+        max_count=max_count,
+        desc=desc,
+        api_client=api_client,
+        db=db,
+    )
 
 
 @router.delete("/{user_id}/messages", status_code=HTTP_204_NO_CONTENT)
