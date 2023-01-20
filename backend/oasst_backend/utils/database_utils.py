@@ -19,6 +19,7 @@ class CommitMode(IntEnum):
     NONE = 0
     FLUSH = 1
     COMMIT = 2
+    ROLLBACK = 3
 
 
 """
@@ -41,6 +42,8 @@ def managed_tx_method(auto_commit: CommitMode = CommitMode.COMMIT, num_retries=s
                             self.db.commit()
                         elif auto_commit == CommitMode.FLUSH:
                             self.db.flush()
+                        elif auto_commit == CommitMode.ROLLBACK:
+                            self.db.rollback()
                         if isinstance(result, SQLModel):
                             self.db.refresh(result)
                         return result
@@ -75,6 +78,8 @@ def async_managed_tx_method(
                             self.db.commit()
                         elif auto_commit == CommitMode.FLUSH:
                             self.db.flush()
+                        elif auto_commit == CommitMode.ROLLBACK:
+                            self.db.rollback()
                         if isinstance(result, SQLModel):
                             self.db.refresh(result)
                         return result
@@ -118,8 +123,8 @@ def managed_tx_function(
                                 session.commit()
                             elif auto_commit == CommitMode.FLUSH:
                                 session.flush()
-                            if isinstance(result, SQLModel):
-                                session.refresh(result)
+                            elif auto_commit == CommitMode.ROLLBACK:
+                                session.rollback()
                             return result
                         except OperationalError:
                             logger.info(f"Retry {i+1}/{num_retries} after possible DB concurrent update conflict.")

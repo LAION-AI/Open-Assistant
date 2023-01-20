@@ -30,6 +30,7 @@ defaults:
     - joke
     - gsm8k
     - samsum
+    - soda_dialogue
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
   eval_size:

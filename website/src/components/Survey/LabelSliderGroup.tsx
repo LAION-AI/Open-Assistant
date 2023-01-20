@@ -59,8 +59,8 @@ function CheckboxSliderItem(props: {
       >
         <SliderTrack>
           <SliderFilledTrack />
-          <SliderThumb />
         </SliderTrack>
+        <SliderThumb bg="gainsboro" />
       </Slider>
     </>
   );

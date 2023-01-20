@@ -42,7 +42,7 @@ export function Footer() {
           </Flex>
 
           <nav>
-            <Box display="flex" flexDirection={["column", "row"]} gap={["6", "14"]} alignItems="center" fontSize="sm">
+            <Box display="flex" flexDirection={["column", "row"]} gap={["6", "14"]} fontSize="sm">
               <Flex direction="column" alignItems={["center", "start"]}>
                 <Text fontWeight="bold" color={textColor}>
                   Legal
@@ -56,6 +56,12 @@ export function Footer() {
                 </Text>
                 <FooterLink href="https://github.com/LAION-AI/Open-Assistant" label="Github" />
                 <FooterLink href="https://ykilcher.com/open-assistant-discord" label="Discord" />
+              </Flex>
+              <Flex direction="column" alignItems={["center", "start"]}>
+                <Text fontWeight="bold" color={textColor}>
+                  About
+                </Text>
+                <FooterLink href="https://projects.laion.ai/Open-Assistant" label="Docs" />
               </Flex>
             </Box>
           </nav>

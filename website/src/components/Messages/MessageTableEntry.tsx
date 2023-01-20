@@ -30,7 +30,12 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
         {props.enabled ? (
           <Box width={["full", "full", "full", "fit-content"]} maxWidth={["full", "full", "full", "2xl"]}>
             <Link href={`/messages/${item.id}`}>
-              <LinkBox bg={item.is_assistant ? backgroundColor : backgroundColor2} p="4" borderRadius="md">
+              <LinkBox
+                bg={item.is_assistant ? backgroundColor : backgroundColor2}
+                p="4"
+                borderRadius="md"
+                whiteSpace="pre-line"
+              >
                 {item.text}
               </LinkBox>
             </Link>

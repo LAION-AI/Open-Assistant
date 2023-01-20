@@ -7,6 +7,7 @@ from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.schemas import protocol
+from oasst_shared.utils import unaware_to_utc
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
@@ -29,6 +30,9 @@ def query_messages(
     """
     Query messages.
     """
+    start_date = unaware_to_utc(start_date)
+    end_date = unaware_to_utc(end_date)
+
     pr = PromptRepository(db, api_client)
     messages = pr.query_messages(
         username=username,
@@ -78,7 +82,7 @@ def get_tree(
     """
     pr = PromptRepository(db, api_client)
     message = pr.fetch_message(message_id)
-    tree = pr.fetch_message_tree(message.message_tree_id)
+    tree = pr.fetch_message_tree(message.message_tree_id, reviewed=False)
     return utils.prepare_tree(tree, message.message_tree_id)
 
 

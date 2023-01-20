@@ -1,5 +1,4 @@
-import { Box } from "@chakra-ui/react";
-import { Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, useColorModeValue } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { MessageView } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
@@ -7,6 +6,7 @@ import { LabelRadioGroup } from "src/components/Survey/LabelRadioGroup";
 import { LabelSliderGroup } from "src/components/Survey/LabelSliderGroup";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
+import { TaskHeader } from "src/components/Tasks/TaskHeader";
 import { TaskType } from "src/types/Task";
 
 export const LabelTask = ({
@@ -36,20 +36,12 @@ export const LabelTask = ({
   };
 
   const cardColor = useColorModeValue("gray.50", "gray.800");
-  const titleColor = useColorModeValue("gray.800", "gray.300");
-  const labelColor = useColorModeValue("gray.600", "gray.400");
 
   return (
     <div data-cy="task" data-task-type="label-task">
       <TwoColumnsWithCards>
         <>
-          <Text fontSize="xl" fontWeight="bold" color={titleColor}>
-            {taskType.label}
-          </Text>
-          <Text fontSize="md" color={labelColor}>
-            {taskType.overview}
-          </Text>
-
+          <TaskHeader taskType={taskType} />
           {task.conversation ? (
             <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
               <MessageTable

@@ -36,6 +36,8 @@ def request_task(
 
     try:
         pr = PromptRepository(db, api_client, client_user=request.user)
+        pr.ensure_user_is_enabled()
+
         tm = TreeManager(db, pr)
         task, message_tree_id, parent_message_id = tm.next_task(request.type)
         pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)

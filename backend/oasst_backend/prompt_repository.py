@@ -28,8 +28,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
-from sqlalchemy import update
-from sqlmodel import Session, func
+from sqlmodel import Session, func, not_, text, update
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -52,6 +51,13 @@ class PromptRepository:
             db, api_client, client_user, user_repository=self.user_repository
         )
         self.journal = JournalWriter(db, api_client, self.user)
+
+    def ensure_user_is_enabled(self):
+        if self.user is None or self.user_id is None:
+            raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
+
+        if self.user.deleted or not self.user.enabled:
+            raise OasstError("User account disabled", OasstErrorCode.USER_DISABLED)
 
     def fetch_message_by_frontend_message_id(self, frontend_message_id: str, fail_if_missing: bool = True) -> Message:
         validate_frontend_message_id(frontend_message_id)
@@ -146,6 +152,8 @@ class PromptRepository:
         review_result: bool = False,
         check_tree_state: bool = True,
     ) -> Message:
+        self.ensure_user_is_enabled()
+
         validate_frontend_message_id(frontend_message_id)
         validate_frontend_message_id(user_frontend_message_id)
 
@@ -354,8 +362,7 @@ class PromptRepository:
 
     @managed_tx_method(CommitMode.FLUSH)
     def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
-        if self.user_id is None:
-            raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
+        self.ensure_user_is_enabled()
 
         container = PayloadContainer(payload=payload)
         reaction = MessageReaction(
@@ -499,10 +506,14 @@ class PromptRepository:
         messages = self.db.query(Message).filter(Message.parent_id.is_(None)).order_by(func.random()).limit(size).all()
         return messages
 
-    def fetch_message_tree(self, message_tree_id: UUID, reviewed: bool = True):
+    def fetch_message_tree(
+        self, message_tree_id: UUID, reviewed: bool = True, include_deleted: bool = False
+    ) -> list[Message]:
         qry = self.db.query(Message).filter(Message.message_tree_id == message_tree_id)
         if reviewed:
             qry = qry.filter(Message.review_result)
+        if not include_deleted:
+            qry = qry.filter(not_(Message.deleted))
         return qry.all()
 
     def fetch_multiple_random_replies(self, max_size: int = 5, message_role: str = None):
@@ -701,6 +712,21 @@ class PromptRepository:
             messages = messages.limit(limit)
 
         return messages.all()
+
+    def update_children_counts(self, message_tree_id: UUID):
+        sql_update_children_count = """
+UPDATE message SET children_count = cc.children_count
+FROM (
+    SELECT m.id, count(c.id) - COALESCE(SUM(c.deleted::int), 0) AS children_count
+    FROM message m
+        LEFT JOIN message c ON m.id = c.parent_id
+    WHERE m.message_tree_id  = :message_tree_id
+    GROUP BY m.id
+) AS cc
+WHERE message.id = cc.id;
+"""
+        r = self.db.execute(text(sql_update_children_count), {"message_tree_id": message_tree_id})
+        logger.debug(f"update_children_count({message_tree_id=}): {r.rowcount} rows.")
 
     @managed_tx_method(CommitMode.COMMIT)
     def mark_messages_deleted(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):

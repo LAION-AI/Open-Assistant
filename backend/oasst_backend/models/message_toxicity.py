@@ -20,5 +20,5 @@ class MessageToxicity(SQLModel, table=True):
 
     # In the case that the Message Embedding is created afterwards
     created_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
+        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp())
     )
