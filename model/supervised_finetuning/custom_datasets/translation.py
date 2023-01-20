@@ -63,10 +63,11 @@ TRANSLATION_PROMPT = {
         "{}, jemahkan ayat ini kepada bahasa melayu"
     ],
     "en": ["{}. translate to english", "{} write in english", "english translation: '{}'"],
-    "tr": ["{}. translate to turkish", "{} write in turkish", "turkish translation: '{}'"],
+    "ru": ["помогите мне перевести это на русский : {}", "{} перевести на русский язык", "russian translation: '{}'"],
+    "tr": ["{}. türkçeye çevi̇ri̇n", "{} write in turkish", "turkish translation: '{}'", "türkçeye çevi̇rmek: {}"],
     "it": ["{}. translate to italian", "{} write in italian", "italian translation: '{}'"],
     "nl": ["{}. translate to dutch", "{} write in dutch", "dutch translation: '{}'"],
-    "vi": ["{}. translate to vietnamese", "{} write in vietnamese", "vietnamese translation: '{}'"],
+    "vi": ["{}. Dịch sang tiếng việt nam", "{} write in vietnamese", "vietnamese translation: '{}'"],
     "ar": ["{}. translate to arabic", "{} write in arabic", "arabic translation: '{}'"],
 }
 class TranslationPair(Dataset):
