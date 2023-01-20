@@ -1,10 +1,17 @@
+"""
+    Open / close book QA datasets
+"""
 import json
 import os
+import re
 from urllib.request import urlopen
 
 import numpy as np
 from datasets import load_dataset
 from torch.utils.data import Dataset
+
+# @agoryuno contributed this
+re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
 
 QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
 
@@ -75,6 +82,9 @@ class QADataset(Dataset):
 
 
 class WebGPT(Dataset):
+
+    name = "webgpt"
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -89,7 +99,9 @@ class WebGPT(Dataset):
                 self.index2question[len(self.index2question)] = question
 
             # only keep the best answer
-            questions[question] = row["answer_0" if row["score_0"] > row["score_1"] else "answer_1"]
+            questions[question] = re_reference_remove.sub(
+                "", row["answer_0" if row["score_0"] > row["score_1"] else "answer_1"]
+            )
 
         self.questions = questions
 
@@ -103,6 +115,9 @@ class WebGPT(Dataset):
 
 
 class SODA(Dataset):
+
+    name = "soda"
+
     def process_soda_convo(self, data):
         pairs = []
         play_as = data["speakers"][1]
@@ -149,8 +164,8 @@ class SODA(Dataset):
 
 
 class JokeExplaination(Dataset):
-    """ """
 
+    name = "joke"
     url = "https://gist.github.com/theblackcat102/42b697e24a13fdb499e20edfbf618361/raw/1834dca207898c15f93b809d1195f6f6e47c9e1e/joke_explained.jsonl"
 
     def __init__(self, cache_dir) -> None:
@@ -182,3 +197,6 @@ class JokeExplaination(Dataset):
     def __getitem__(self, index):
         question, answer = self.pairs[index]
         return question, answer
+
+
+# https://huggingface.co/datasets/aquamuse
