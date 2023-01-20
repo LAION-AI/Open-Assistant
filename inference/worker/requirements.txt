@@ -1,3 +1,6 @@
+loguru
 redis
+requests
+torch
 transformers
 typer

@@ -1,4 +1,5 @@
 fastapi[all]
 loguru
+pydantic
 redis
 sse-starlette
