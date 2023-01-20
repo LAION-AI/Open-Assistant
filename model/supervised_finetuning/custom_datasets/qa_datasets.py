@@ -106,7 +106,12 @@ class SODA(Dataset):
     def process_soda_convo(self, data):
         pairs = []
         play_as = data["speakers"][1]
-        prefix = "<prefix>{}. {}</prefix>".format(data["narrative"], "your name {}".format(play_as))
+        prefix = "{}{}. {}{}".format(
+            QA_SPECIAL_TOKENS["StartPrefix"],
+            data["narrative"],
+            "your name {}".format(play_as),
+            QA_SPECIAL_TOKENS["EndPrefix"],
+        )
         question, answer = "", ""
         prefix, postfix = "", ""
         previous_chat = []
@@ -119,7 +124,9 @@ class SODA(Dataset):
                 answer = convo
                 postfix = data["speakers"][idx]
             if len(question) and len(answer) and prefix != postfix and postfix == play_as:
-                history = "<sep>".join(["{}<bot>{}".format(*p) for p in previous_chat])
+                history = "<sep>".join(
+                    ["{}{}{}".format(p[0], QA_SPECIAL_TOKENS["Answer"], p[1]) for p in previous_chat]
+                )
                 if len(history):
                     history += "<sep>"
                 pairs.append((prefix + history + question, answer))
@@ -146,6 +153,57 @@ class SODA(Dataset):
     def __getitem__(self, index):
         question, answer = self.pairs[index]
         return question, answer
+
+
+class SODADialogue(Dataset):
+    url = "https://drive.google.com/uc?id=1TOGQfr419n8wpzJpYLLw4nB3tSKD8zXV"
+
+    def __init__(self, cache_dir, verbose=True):
+
+        path = os.path.join(cache_dir, "soda_dialog.jsonl")
+
+        if not os.path.exists(path):
+            import gzip
+            import shutil
+
+            import gdown
+
+            gdown.download(self.url, output=os.path.join(cache_dir, "soda_dialog.jsonl.gz"))
+
+            with gzip.open(os.path.join(cache_dir, "soda_dialog.jsonl.gz"), "rb") as f_in:
+                with open(path, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+
+        self.pairs = []
+        faulty = 0
+        with open(path) as fin:
+            for line in fin:
+                conversation = json.loads(line)
+                question_answer_pairs = ()
+
+                question_answers = conversation["text"].split("User: ")
+                for question_answer in question_answers[1:]:  # first element is empty
+                    try:
+                        question, answer = question_answer.split("\nAssistant: ")
+                        question_answer_pairs += (
+                            question,
+                            answer,
+                        )
+                    except ValueError:
+                        # there might be some extra 'User: ' or 'Assistant: ' tokens in the dataset that cause trouble..
+                        faulty += 1
+                        continue
+
+                self.pairs.append(question_answer_pairs)
+
+        if verbose:
+            print("For SODA dialogue dataset found {} faults within the total {} dialogs".format(faulty, len(self)))
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, index):
+        return self.pairs[index]
 
 
 class JokeExplaination(Dataset):
