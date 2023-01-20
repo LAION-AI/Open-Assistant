@@ -1,5 +1,6 @@
 import type { Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
+import type { AvailableTasks } from "src/types/Task";
 import type { BackendUser, BackendUserCore } from "src/types/Users";
 
 export class OasstError {
@@ -204,6 +205,13 @@ export class OasstApiClient {
    */
   async fetch_leaderboard(time_frame: LeaderboardTimeFrame): Promise<LeaderboardReply> {
     return this.get(`/api/v1/leaderboards/${time_frame}`);
+  }
+
+  /**
+   * Returns the counts of all tasks (some might be zero)
+   */
+  async fetch_available_tasks(user: BackendUserCore): Promise<AvailableTasks> {
+    return this.post(`/api/v1/tasks/availability`, user);
   }
 }
 

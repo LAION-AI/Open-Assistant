@@ -1,5 +1,5 @@
 export enum TaskCategory {
-  Tasks = "Tasks",
+  Random = "Random",
   Create = "Create",
   Evaluate = "Evaluate",
   Label = "Label",
@@ -20,12 +20,19 @@ export interface TaskInfo {
   unchanged_message?: string;
 }
 
+export const TaskCategoryLabels: { [key in TaskCategory]: string } = {
+  [TaskCategory.Random]: "I'm feeling lucky",
+  [TaskCategory.Create]: "Create",
+  [TaskCategory.Evaluate]: "Evaluate",
+  [TaskCategory.Label]: "Label",
+};
+
 export const TaskTypes: TaskInfo[] = [
   // general/random
   {
     label: "Start a Task",
     desc: "Help us improve Open Assistant by starting a random task.",
-    category: TaskCategory.Tasks,
+    category: TaskCategory.Random,
     pathname: "/tasks/random",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
     type: "random",
