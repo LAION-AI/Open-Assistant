@@ -43,6 +43,7 @@ class ConversationMessage(BaseModel):
     id: Optional[UUID] = None
     frontend_message_id: Optional[str] = None
     text: str
+    lang: Optional[str]  # ISO 639-1 two-letter language code
     is_assistant: bool
 
 
@@ -72,6 +73,7 @@ class TaskRequest(BaseModel):
     # this is optional. https://github.com/pydantic/pydantic/issues/1270
     user: Optional[User] = Field(None, nullable=True)
     collective: bool = False
+    lang: Optional[str]  # ISO 639-1 two-letter language code
 
 
 class TaskAck(BaseModel):
@@ -266,6 +268,7 @@ class TextReplyToMessage(Interaction):
     message_id: str
     user_message_id: str
     text: constr(min_length=1, strip_whitespace=True)
+    lang: Optional[str]  # ISO 639-1 two-letter language code (Optional[] will be removed after frontend changes)
 
 
 class MessageRating(Interaction):

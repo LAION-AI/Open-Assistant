@@ -10,6 +10,7 @@ def prepare_message(m: Message) -> protocol.Message:
         frontend_message_id=m.frontend_message_id,
         parent_id=m.parent_id,
         text=m.text,
+        lang=m.lang,
         is_assistant=(m.role == "assistant"),
         created_date=m.created_date,
     )
@@ -22,10 +23,11 @@ def prepare_message_list(messages: list[Message]) -> list[protocol.Message]:
 def prepare_conversation_message_list(messages: list[Message]) -> list[protocol.ConversationMessage]:
     return [
         protocol.ConversationMessage(
-            text=message.text,
-            is_assistant=(message.role == "assistant"),
             id=message.id,
             frontend_message_id=message.frontend_message_id,
+            text=message.text,
+            lang=message.lang,
+            is_assistant=(message.role == "assistant"),
         )
         for message in messages
     ]

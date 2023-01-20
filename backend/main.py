@@ -128,6 +128,7 @@ if settings.DEBUG_USE_SEED_DATA:
             user_message_id: str
             parent_message_id: Optional[str]
             text: str
+            lang: Optional[str]
             role: str
             tree_state: Optional[message_tree_state.State]
 
@@ -184,6 +185,7 @@ if settings.DEBUG_USE_SEED_DATA:
                     tr.bind_frontend_message_id(task.id, msg.task_message_id)
                     message = pr.store_text_reply(
                         msg.text,
+                        msg.lang,
                         msg.task_message_id,
                         msg.user_message_id,
                         review_count=5,
