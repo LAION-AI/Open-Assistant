@@ -1,4 +1,5 @@
 import { Box, BoxProps, useColorModeValue } from "@chakra-ui/react";
+import clsx from "clsx";
 import { PropsWithChildren } from "react";
 
 export const SurveyCard = (props: PropsWithChildren<{ className?: string }>) => {
@@ -8,7 +9,7 @@ export const SurveyCard = (props: PropsWithChildren<{ className?: string }>) => 
     gap: "2",
     borderRadius: "xl",
     shadow: "base",
-    className: "p-4 sm:p-6 " + (props.className ?? ""),
+    className: clsx("p-4 sm:p-6", props.className),
   };
 
   return (
