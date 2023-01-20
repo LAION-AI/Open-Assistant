@@ -37,6 +37,18 @@ class FrontEndUser(User):
     created_date: Optional[datetime] = None
 
 
+class PageResult(BaseModel):
+    prev: str | None
+    next: str | None
+    sort_key: str
+    items: list
+    order: Literal["asc", "desc"]
+
+
+class FrontEndUserPage(PageResult):
+    items: list[FrontEndUser]
+
+
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
@@ -56,6 +68,10 @@ class Conversation(BaseModel):
 class Message(ConversationMessage):
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
+
+
+class MessagePage(PageResult):
+    items: list[Message]
 
 
 class MessageTree(BaseModel):
