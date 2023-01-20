@@ -2,6 +2,7 @@ from typing import Optional
 from uuid import UUID
 
 from oasst_backend.models import ApiClient, User
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -62,6 +63,7 @@ class UserRepository:
 
         return user
 
+    @managed_tx_method(CommitMode.COMMIT)
     def update_user(self, id: UUID, enabled: Optional[bool] = None, notes: Optional[str] = None) -> None:
         """
         Update a user by global user ID to disable or set admin notes. Only trusted clients may update users.
@@ -83,8 +85,8 @@ class UserRepository:
             user.notes = notes
 
         self.db.add(user)
-        self.db.commit()
 
+    @managed_tx_method(CommitMode.COMMIT)
     def mark_user_deleted(self, id: UUID) -> None:
         """
         Update a user by global user ID to set deleted flag. Only trusted clients may delete users.
@@ -103,8 +105,8 @@ class UserRepository:
         user.deleted = True
 
         self.db.add(user)
-        self.db.commit()
 
+    @managed_tx_method(CommitMode.COMMIT)
     def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
         if not client_user:
             return None
@@ -127,13 +129,10 @@ class UserRepository:
                     auth_method=client_user.auth_method,
                 )
                 self.db.add(user)
-                self.db.commit()
-                self.db.refresh(user)
         elif client_user.display_name and client_user.display_name != user.display_name:
             # we found the user but the display name changed
             user.display_name = client_user.display_name
             self.db.add(user)
-            self.db.commit()
         return user
 
     def query_users(

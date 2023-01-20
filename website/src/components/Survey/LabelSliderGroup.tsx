@@ -1,6 +1,6 @@
 import { Grid, Slider, SliderFilledTrack, SliderThumb, SliderTrack, useColorMode } from "@chakra-ui/react";
 import { useId, useState } from "react";
-import { colors } from "styles/Theme/colors";
+import { colors } from "src/styles/Theme/colors";
 
 // TODO: consolidate with FlaggableElement
 interface LabelSliderGroupProps {
@@ -59,8 +59,8 @@ function CheckboxSliderItem(props: {
       >
         <SliderTrack>
           <SliderFilledTrack />
-          <SliderThumb />
         </SliderTrack>
+        <SliderThumb bg="gainsboro" />
       </Slider>
     </>
   );

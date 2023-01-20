@@ -38,6 +38,7 @@ defaults:
     - instruct_tuning
     - wmt2019_de-en
     - samsum
+    - soda_dialogue
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
   eval_size:

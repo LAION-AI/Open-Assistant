@@ -4,6 +4,7 @@ from uuid import UUID
 
 import sqlalchemy as sa
 from loguru import logger
+from oasst_backend.config import settings
 from oasst_backend.models import Message, MessageReaction, Task, User, UserStats, UserStatsTimeFrame
 from oasst_backend.models.db_payload import (
     LabelAssistantReplyPayload,
@@ -39,12 +40,16 @@ class UserStatsRepository:
             self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
             .join(UserStats, User.id == UserStats.user_id)
             .filter(UserStats.time_frame == time_frame.value)
-            .order_by(UserStats.leader_score.desc())
+            .order_by(UserStats.rank)
             .limit(limit)
         )
 
         leaderboard = [_create_user_score(r) for r in self.session.exec(qry)]
-        return LeaderboardStats(time_frame=time_frame.value, leaderboard=leaderboard)
+        if len(leaderboard) > 0:
+            last_update = max(x.modified_date for x in leaderboard)
+        else:
+            last_update = utcnow()
+        return LeaderboardStats(time_frame=time_frame.value, leaderboard=leaderboard, last_updated=last_update)
 
     def get_user_stats_all_time_frames(self, user_id: UUID) -> dict[str, UserScore | None]:
         qry = (
@@ -291,13 +296,11 @@ WHERE
 
 
 if __name__ == "__main__":
-    from oasst_backend.api.deps import get_dummy_api_client
+    from oasst_backend.api.deps import api_auth
     from oasst_backend.database import engine
 
-    with Session(engine) as session:
-        api_client = get_dummy_api_client(session)
-        usr = UserStatsRepository(session)
-        # usr.update_all_time_frames()
-        # session.commit()
-        # usr.get_leader_board(UserStatsTimeFrame.total)
-        usr.get_user_stats_all_time_frames(UUID("0d6ff62a-0bea-4c56-ade8-b3e0520a10ce"))
+    with Session(engine) as db:
+        api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
+        usr = UserStatsRepository(db)
+        usr.update_all_time_frames()
+        db.commit()

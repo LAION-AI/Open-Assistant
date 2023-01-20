@@ -28,7 +28,3 @@ export const EmptyState = (props: EmptyStateProps) => {
 export const TaskEmptyState = () => {
   return <EmptyState text="Looks like no tasks were found." icon={FiAlertTriangle} />;
 };
-
-export const PageEmptyState = () => {
-  return <EmptyState text="Sorry, the page you are looking for does not exist." icon={FiAlertTriangle} />;
-};

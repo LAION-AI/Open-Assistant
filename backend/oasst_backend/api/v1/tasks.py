@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -36,6 +36,8 @@ def request_task(
 
     try:
         pr = PromptRepository(db, api_client, client_user=request.user)
+        pr.ensure_user_is_enabled()
+
         tm = TreeManager(db, pr)
         task, message_tree_id, parent_message_id = tm.next_task(request.type)
         pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
@@ -46,6 +48,27 @@ def request_task(
         logger.exception("Failed to generate task..")
         raise OasstError("Failed to generate task.", OasstErrorCode.TASK_GENERATION_FAILED)
     return task
+
+
+@router.post("/availability", response_model=dict[protocol_schema.TaskRequestType, int])
+def tasks_availability(
+    *,
+    user: Optional[protocol_schema.User] = None,
+    db: Session = Depends(deps.get_db),
+    api_key: APIKey = Depends(deps.get_api_key),
+):
+    api_client = deps.api_auth(api_key, db)
+
+    try:
+        pr = PromptRepository(db, api_client, client_user=user)
+        tm = TreeManager(db, pr)
+        return tm.determine_task_availability()
+
+    except OasstError:
+        raise
+    except Exception:
+        logger.exception("Task availability query failed.")
+        raise OasstError("Task availability query failed.", OasstErrorCode.TASK_AVAILABILITY_QUERY_FAILED)
 
 
 @router.post("/{task_id}/ack", response_model=None, status_code=HTTP_204_NO_CONTENT)

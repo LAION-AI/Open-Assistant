@@ -2,7 +2,7 @@
     High level functions for model training
 """
 from custom_datasets.prompt_dialogue import InstructionTuning, PromptGeneratedDataset
-from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, WebGPT
+from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, WebGPT, SODADialogue
 from custom_datasets.summarization import SummarizationDataset
 from custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
 from custom_datasets.translation import WMT2019, DiveMT, TEDTalk
@@ -70,6 +70,9 @@ def get_one_dataset(conf, dataset_name):
         eval = ProsocialDialogueExplaination(cache_dir=conf.cache_dir, split="validation")
     elif dataset_name == "soda":
         dataset = SODA(conf.cache_dir)
+        train, eval = train_val_dataset(dataset, val_split=0.1)
+    elif dataset_name == "soda_dialogue":
+        dataset = SODADialogue(conf.cache_dir)
         train, eval = train_val_dataset(dataset, val_split=0.1)
     elif dataset_name == "joke":
         dataset = JokeExplaination(conf.cache_dir)

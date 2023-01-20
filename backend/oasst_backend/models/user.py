@@ -21,7 +21,7 @@ class User(SQLModel, table=True):
     auth_method: str = Field(nullable=False, max_length=128, default="local")
     display_name: str = Field(nullable=False, max_length=256)
     created_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
+        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp())
     )
     api_client_id: UUID = Field(foreign_key="api_client.id")
     enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))

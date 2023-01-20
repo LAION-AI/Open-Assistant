@@ -27,7 +27,9 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
   const replyContent = useRef<TaskContent>(null);
   const [showUnchangedWarning, setShowUnchangedWarning] = useState(false);
 
-  const taskType = TaskTypes.find((taskType) => taskType.type === task.type);
+  const rootEl = useRef<HTMLDivElement>(null);
+
+  const taskType = TaskTypes.find((taskType) => taskType.type === task.type && taskType.mode === task.mode);
 
   const { trigger: sendRejection } = useSWRMutation("/api/reject_task", post, {
     onSuccess: async () => {
@@ -89,6 +91,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
           content: replyContent.current,
         });
         setTaskStatus("SUBMITTED");
+        scrollToTop(rootEl.current);
         break;
       }
       default:
@@ -138,7 +141,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
   }
 
   return (
-    <div>
+    <div ref={rootEl}>
       {taskTypeComponent()}
       <TaskControls
         task={task}
@@ -163,4 +166,11 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       />
     </div>
   );
+};
+
+const scrollToTop = (element: HTMLElement) => {
+  while (element) {
+    element.scrollTop = 0;
+    element = element.parentElement;
+  }
 };
