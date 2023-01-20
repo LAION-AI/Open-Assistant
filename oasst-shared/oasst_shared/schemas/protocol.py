@@ -37,6 +37,17 @@ class FrontEndUser(User):
     created_date: Optional[datetime] = None
 
 
+class PageResult(BaseModel):
+    prev: str
+    next: str
+    sort_key: str
+    items: list
+
+
+class FrontEndUserPage(PageResult):
+    items: list[FrontEndUser]
+
+
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 

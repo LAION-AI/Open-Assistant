@@ -9,6 +9,7 @@ from oasst_backend.models import ApiClient, User
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import UserRepository
 from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
+from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
@@ -68,6 +69,69 @@ def get_users_ordered_by_display_name(
         limit=max_count,
     )
     return [u.to_protocol_frontend_user() for u in users]
+
+
+@router.get("/cursor", response_model=protocol.FrontEndUserPage)
+def get_users_cursor(
+    lt: Optional[str] = None,
+    gt: Optional[str] = None,
+    sort_key: Optional[str] = Query("username", max_length=32),
+    max_count: Optional[int] = Query(100, gt=0, le=10000),
+    api_client_id: Optional[UUID] = None,
+    search_text: Optional[str] = None,
+    auth_method: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    def split_cursor(x: str | None):
+        if not x:
+            return None, None
+        id, k = x.split("$", maxsplit=1)
+        id = UUID(id)
+        return k, id
+
+    items: list[protocol.FrontEndUser]
+    n, p = None, None
+    if sort_key == "username":
+        lte_username, lt_id = split_cursor(lt)
+        gte_username, gt_id = split_cursor(gt)
+        items = get_users_ordered_by_username(
+            api_client_id=api_client_id,
+            gte_username=gte_username,
+            gt_id=gt_id,
+            lte_username=lte_username,
+            lt_id=lt_id,
+            auth_method=auth_method,
+            search_text=search_text,
+            max_count=max_count,
+            api_client=api_client,
+            db=db,
+        )
+        if len(items) > 0:
+            p = str(items[0].user_id) + "$" + items[0].id
+            n = str(items[-1].user_id) + "$" + items[-1].id
+    elif sort_key == "display_name":
+        lte_display_name, lt_id = split_cursor(lt)
+        gte_display_name, gt_id = split_cursor(gt)
+        items = get_users_ordered_by_display_name(
+            api_client_id=api_client_id,
+            gte_display_name=gte_display_name,
+            gt_id=gt_id,
+            lte_display_name=lte_display_name,
+            lt_id=lt_id,
+            auth_method=auth_method,
+            search_text=search_text,
+            max_count=max_count,
+            api_client=api_client,
+            db=db,
+        )
+        if len(items) > 0:
+            p = str(items[0].user_id) + "$" + items[0].display_name
+            n = str(items[-1].user_id) + "$" + items[-1].display_name
+    else:
+        raise OasstError(f"Unsupported sort key: '{sort_key}'", OasstErrorCode.SORT_KEY_UNSUPPORTED)
+
+    return protocol.FrontEndUserPage(prev=p, next=n, sort_key=sort_key, items=items)
 
 
 @router.get("/{user_id}", response_model=protocol.FrontEndUser)
