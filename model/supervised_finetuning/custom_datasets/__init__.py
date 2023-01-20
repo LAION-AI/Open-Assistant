@@ -2,7 +2,7 @@
     High level functions for model training
 """
 from custom_datasets.prompt_dialogue import InstructionTuning, PromptGeneratedDataset
-from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, WebGPT, SODADialogue
+from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, WebGPT
 from custom_datasets.summarization import SummarizationDataset
 from custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
 from custom_datasets.translation import WMT2019, DiveMT, TEDTalk

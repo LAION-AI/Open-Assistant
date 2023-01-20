@@ -60,7 +60,10 @@ python trainer.py --configs defaults your-model-name --deepspeed
 
 ## Dataset choices
 
-To specify which translation pair for [WMT](https://huggingface.co/datasets/wmt19) and [TED Talk](https://huggingface.co/datasets/ted_talks_iwslt) translation simply add the supported language pair at the postfix
+To specify which translation pair for
+[WMT](https://huggingface.co/datasets/wmt19) and
+[TED Talk](https://huggingface.co/datasets/ted_talks_iwslt) translation simply
+add the supported language pair at the postfix
 
 ```
   datasets:
