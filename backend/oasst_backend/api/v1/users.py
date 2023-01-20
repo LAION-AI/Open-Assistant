@@ -83,12 +83,14 @@ def get_users_cursor(
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
-    def split_cursor(x: str | None):
+    def split_cursor(x: str | None) -> tuple[str, UUID]:
         if not x:
             return None, None
-        id, k = x.split("$", maxsplit=1)
-        id = UUID(id)
-        return k, id
+        f = x.split("$", maxsplit=1)
+        if len(f) == 2 and len(f[0]) == 36:
+            id, k = f
+            return k, UUID(id)
+        return x, None
 
     items: list[protocol.FrontEndUser]
     n, p = None, None
@@ -131,7 +133,7 @@ def get_users_cursor(
     else:
         raise OasstError(f"Unsupported sort key: '{sort_key}'", OasstErrorCode.SORT_KEY_UNSUPPORTED)
 
-    return protocol.FrontEndUserPage(prev=p, next=n, sort_key=sort_key, items=items)
+    return protocol.FrontEndUserPage(prev=p, next=n, sort_key=sort_key, order="asc", items=items)
 
 
 @router.get("/{user_id}", response_model=protocol.FrontEndUser)
@@ -194,13 +196,13 @@ def query_user_messages(
     Query user messages.
     """
     pr = PromptRepository(db, api_client)
-    messages = pr.query_messages(
+    messages = pr.query_messages_ordered_by_created_date(
         user_id=user_id,
         api_client_id=api_client_id,
         desc=desc,
         limit=max_count,
-        start_date=start_date,
-        end_date=end_date,
+        gte_created_date=start_date,
+        lte_created_date=end_date,
         only_roots=only_roots,
         deleted=None if include_deleted else False,
     )
@@ -213,7 +215,7 @@ def mark_user_messages_deleted(
     user_id: UUID, api_client: ApiClient = Depends(deps.get_trusted_api_client), db: Session = Depends(deps.get_db)
 ):
     pr = PromptRepository(db, api_client)
-    messages = pr.query_messages(user_id=user_id)
+    messages = pr.query_messages_ordered_by_created_date(user_id=user_id, limit=None)
     pr.mark_messages_deleted(messages)
 
 

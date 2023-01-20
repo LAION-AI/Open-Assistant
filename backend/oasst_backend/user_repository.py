@@ -202,6 +202,7 @@ class UserRepository:
     ) -> list[User]:
         if not self.api_client.trusted:
             if not api_client_id:
+                # Let unprivileged api clients query their own users
                 api_client_id = self.api_client.id
 
             if api_client_id != self.api_client.id:

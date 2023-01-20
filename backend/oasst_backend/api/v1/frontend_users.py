@@ -76,14 +76,14 @@ def query_frontend_user_messages(
     Query frontend user messages.
     """
     pr = PromptRepository(db, api_client)
-    messages = pr.query_messages(
+    messages = pr.query_messages_ordered_by_created_date(
         auth_method=auth_method,
         username=username,
         api_client_id=api_client_id,
         desc=desc,
         limit=max_count,
-        start_date=start_date,
-        end_date=end_date,
+        gte_created_date=start_date,
+        lte_created_date=end_date,
         only_roots=only_roots,
         deleted=None if include_deleted else False,
     )
@@ -98,5 +98,10 @@ def mark_frontend_user_messages_deleted(
     db: Session = Depends(deps.get_db),
 ):
     pr = PromptRepository(db, api_client)
-    messages = pr.query_messages(auth_method=auth_method, username=username, api_client_id=api_client.id)
+    messages = pr.query_messages_ordered_by_created_date(
+        auth_method=auth_method,
+        username=username,
+        api_client_id=api_client.id,
+        limit=None,
+    )
     pr.mark_messages_deleted(messages)

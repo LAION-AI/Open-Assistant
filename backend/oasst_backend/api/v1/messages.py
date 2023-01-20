@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -7,7 +8,6 @@ from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_shared.schemas import protocol
-from oasst_shared.utils import unaware_to_utc
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
@@ -16,36 +16,88 @@ router = APIRouter()
 
 @router.get("/", response_model=list[protocol.Message])
 def query_messages(
-    username: str = None,
-    api_client_id: str = None,
-    max_count: int = Query(10, gt=0, le=1000),
-    start_date: datetime.datetime = None,
-    end_date: datetime.datetime = None,
-    only_roots: bool = False,
-    desc: bool = True,
-    allow_deleted: bool = False,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client_id: Optional[str] = None,
+    max_count: Optional[int] = Query(10, gt=0, le=1000),
+    start_date: Optional[datetime.datetime] = None,
+    end_date: Optional[datetime.datetime] = None,
+    only_roots: Optional[bool] = False,
+    desc: Optional[bool] = True,
+    allow_deleted: Optional[bool] = False,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
     """
     Query messages.
     """
-    start_date = unaware_to_utc(start_date)
-    end_date = unaware_to_utc(end_date)
-
     pr = PromptRepository(db, api_client)
-    messages = pr.query_messages(
+    messages = pr.query_messages_ordered_by_created_date(
+        auth_method=auth_method,
         username=username,
         api_client_id=api_client_id,
         desc=desc,
         limit=max_count,
-        start_date=start_date,
-        end_date=end_date,
+        gte_created_date=start_date,
+        lte_created_date=end_date,
         only_roots=only_roots,
         deleted=None if allow_deleted else False,
     )
 
     return utils.prepare_message_list(messages)
+
+
+@router.get("/cursor", response_model=protocol.MessagePage)
+def get_messages_cursor(
+    lt: Optional[str] = None,
+    gt: Optional[str] = None,
+    user_id: Optional[UUID] = None,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client_id: Optional[str] = None,
+    only_roots: Optional[bool] = False,
+    include_deleted: Optional[bool] = False,
+    max_count: Optional[int] = Query(10, gt=0, le=1000),
+    api_client: ApiClient = Depends(deps.get_api_client),
+    desc: Optional[bool] = False,
+    db: Session = Depends(deps.get_db),
+):
+    def split_cursor(x: str | None) -> tuple[datetime.datetime, UUID]:
+        if not x:
+            return None, None
+        f = x.split("$", maxsplit=1)
+        if len(f) == 2 and len(f[0]) == 36:
+            id, k = f
+            return datetime.datetime.fromisoformat(k), UUID(id)
+        return datetime.datetime.fromisoformat(x), None
+
+    lte_created_date, lt_id = split_cursor(lt)
+    gte_created_date, gt_id = split_cursor(gt)
+
+    pr = PromptRepository(db, api_client)
+    messages = pr.query_messages_ordered_by_created_date(
+        user_id=user_id,
+        auth_method=auth_method,
+        username=username,
+        api_client_id=api_client_id,
+        gte_created_date=gte_created_date,
+        gt_id=gt_id,
+        lte_created_date=lte_created_date,
+        lt_id=lt_id,
+        only_roots=only_roots,
+        deleted=None if include_deleted else False,
+        desc=desc,
+        limit=max_count,
+    )
+
+    items = utils.prepare_message_list(messages)
+    n, p = None, None
+    if len(items) > 0:
+        p = str(items[0].id) + "$" + items[0].created_date.isoformat()
+        n = str(items[-1].id) + "$" + items[-1].created_date.isoformat()
+
+    order = "desc" if desc else "asc"
+    return protocol.MessagePage(prev=p, next=n, sort_key="created_date", order=order, items=items)
 
 
 @router.get("/{message_id}", response_model=protocol.Message)
