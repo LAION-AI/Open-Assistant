@@ -3,6 +3,7 @@ import Head from "next/head";
 import { FiAlertTriangle } from "react-icons/fi";
 import { EmptyState } from "src/components/EmptyState";
 import { getTransparentHeaderLayout } from "src/components/Layout";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 function Error() {
   return (

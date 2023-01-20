@@ -2,6 +2,7 @@ import { Box, Heading, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-u
 import Head from "next/head";
 import { getDashboardLayout } from "src/components/Layout";
 import { LeaderboardGridCell } from "src/components/LeaderboardGridCell";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import { LeaderboardTimeFrame } from "src/types/Leaderboard";
 
 const Leaderboard = () => {

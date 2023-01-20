@@ -5,6 +5,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ClientSafeProvider, getProviders, signIn } from "next-auth/react";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
@@ -47,7 +48,6 @@ interface SigninProps {
 function Signin({ providers }: SigninProps) {
   const router = useRouter();
   const { discord, email, github, credentials } = providers;
-  const emailEl = useRef(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -151,7 +151,7 @@ function Signin({ providers }: SigninProps) {
 
 Signin.getLayout = (page) => (
   <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
-    <Header transparent={true} />
+    <Header />
     {page}
     <Footer />
   </div>
@@ -209,11 +209,12 @@ const DebugSigninForm = ({ credentials, bgColorClass }: { credentials: ClientSaf
   );
 };
 
-export const getServerSideProps: GetServerSideProps<SigninProps> = async () => {
+export const getServerSideProps: GetServerSideProps<SigninProps> = async ({ locale }) => {
   const providers = await getProviders();
   return {
     props: {
       providers,
+      ...(await serverSideTranslations(locale, ["common"])),
     },
   };
 };

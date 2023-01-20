@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React from "react";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 export default function Account() {
   const { data: session } = useSession();

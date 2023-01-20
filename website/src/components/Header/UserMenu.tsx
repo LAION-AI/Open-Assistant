@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { signOut, useSession } from "next-auth/react";
+import { useTranslation } from "next-i18next";
 import React, { ElementType, useCallback } from "react";
 import { FiAlertTriangle, FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
 
@@ -25,6 +26,7 @@ interface MenuOption {
 }
 
 export function UserMenu() {
+  const { t } = useTranslation();
   const borderColor = useColorModeValue("gray.300", "gray.600");
   const handleSignOut = useCallback(() => {
     signOut({ callbackUrl: "/" });
@@ -36,23 +38,23 @@ export function UserMenu() {
   }
   const options: MenuOption[] = [
     {
-      name: "Dashboard",
+      name: t("dashboard"),
       href: "/dashboard",
-      desc: "Dashboard",
+      desc: t("dashboard"),
       icon: FiLayout,
       isExternal: false,
     },
     {
-      name: "Account Settings",
+      name: t("account_settings"),
       href: "/account",
-      desc: "Account Settings",
+      desc: t("account_settings"),
       icon: FiSettings,
       isExternal: false,
     },
     {
-      name: "Report a Bug",
+      name: t("report_a_bug"),
       href: "https://github.com/LAION-AI/Open-Assistant/issues/new/choose",
-      desc: "Report a Bug",
+      desc: t("report_a_bug"),
       icon: FiAlertTriangle,
       isExternal: true,
     },
@@ -60,9 +62,9 @@ export function UserMenu() {
 
   if (session.user.role === "admin") {
     options.unshift({
-      name: "Admin Dashboard",
+      name: t("admin_dashboard"),
       href: "/admin",
-      desc: "Admin Dashboard",
+      desc: t("admin_dashboard"),
       icon: FiShield,
       isExternal: false,
     });
@@ -105,7 +107,7 @@ export function UserMenu() {
         <MenuDivider />
         <MenuItem gap="3" borderRadius="md" p="4" onClick={handleSignOut}>
           <FiLogOut className="text-blue-500" aria-hidden="true" />
-          <Text>Sign Out</Text>
+          <Text>{t("sign_out")}</Text>
         </MenuItem>
       </MenuList>
     </Menu>
