@@ -1,7 +1,7 @@
 import { withRole } from "src/lib/auth";
 
 /**
- * Returns the messages recorded by the backend for a user.
+ * Returns result of tasks availability query using a dummy user.
  */
 const handler = withRole("admin", async (req, res) => {
   const tasksAvailabilityRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/tasks/availability`, {

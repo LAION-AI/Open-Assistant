@@ -1,7 +1,7 @@
 import { withRole } from "src/lib/auth";
 
 /**
- * Returns the messages recorded by the backend for a user.
+ * Returns tree manager stats.
  */
 const handler = withRole("admin", async (req, res) => {
   const treeManagerRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/stats/tree_manager`, {
