@@ -10,6 +10,7 @@ const handler = withRole("admin", async (req, res) => {
       "X-API-Key": process.env.FASTAPI_KEY,
     },
   });
+
   const stats = await statsRes.json();
 
   res.status(statsRes.status).json(stats);
