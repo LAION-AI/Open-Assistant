@@ -121,7 +121,7 @@ export const TaskTypes: TaskInfo[] = [
     category: TaskCategory.Label,
     pathname: "/label/label_prompter_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/label_prompter_reply",
-    overview: "Given the following discussion, provide labels for the final prompt",
+    overview: "Given the following discussion, provide labels for the final prompt.",
     type: "label_prompter_reply",
     mode: "full",
     update_type: "text_labels",

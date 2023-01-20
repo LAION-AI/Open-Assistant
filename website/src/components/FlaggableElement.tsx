@@ -25,8 +25,8 @@ import clsx from "clsx";
 import { useEffect, useReducer } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { get, post } from "src/lib/api";
-import { Message } from "src/types/Conversation";
 import { colors } from "src/styles/Theme/colors";
+import { Message } from "src/types/Conversation";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
@@ -114,9 +114,7 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
   }, [data, isLoading]);
 
   const { trigger } = useSWRMutation("/api/set_label", post, {
-    onSuccess: () => {
-      setIsEditing.off();
-    },
+    onSuccess: setIsEditing.off,
   });
 
   const submitResponse = () => {
@@ -149,7 +147,7 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
       isLazy
       lazyBehavior="keepMounted"
     >
-      <Box display="flex" alignItems="center" gap="2">
+      <Box display="flex" alignItems="center" flexDirection={["column", "row"]} gap="2">
         <PopoverAnchor>{props.children}</PopoverAnchor>
 
         <Tooltip label="Report" bg="red.500" aria-label="A tooltip">
