@@ -1,9 +1,9 @@
 import { Box, Button, Center, Link, Text } from "@chakra-ui/react";
 import Head from "next/head";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { FiAlertTriangle } from "react-icons/fi";
 import { EmptyState } from "src/components/EmptyState";
 import { getTransparentHeaderLayout } from "src/components/Layout";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 function ServerError() {
   return (
@@ -43,11 +43,5 @@ function ServerError() {
 }
 
 ServerError.getLayout = getTransparentHeaderLayout;
-
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ["common"])),
-  },
-});
 
 export default ServerError;

@@ -1,10 +1,10 @@
 import Head from "next/head";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { TaskEmptyState } from "src/components/EmptyState";
 import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useCreateInitialPrompt } from "src/hooks/tasks/useCreateReply";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const InitialPrompt = () => {
   const { tasks, isLoading, reset, trigger } = useCreateInitialPrompt();
@@ -29,11 +29,5 @@ const InitialPrompt = () => {
 };
 
 InitialPrompt.getLayout = getDashboardLayout;
-
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ["common"])),
-  },
-});
 
 export default InitialPrompt;

@@ -1,10 +1,10 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useEffect } from "react";
 import { getAdminLayout } from "src/components/Layout";
 import UsersCell from "src/components/UsersCell";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 /**
  * Provides the admin index page that will display a list of users and give
@@ -44,11 +44,5 @@ const AdminIndex = () => {
 };
 
 AdminIndex.getLayout = getAdminLayout;
-
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ["common"])),
-  },
-});
 
 export default AdminIndex;

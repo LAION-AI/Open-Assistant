@@ -1,9 +1,9 @@
 import { Box, Heading, Link, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { getTransparentHeaderLayout } from "src/components/Layout";
 import { PolicyChapterCard } from "src/components/PolicyCards/PolicyChapterCard";
 import { PolicySectionCard } from "src/components/PolicyCards/PolicySectionCard";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const PrivacyPolicy = () => {
   const backgroundColor = useColorModeValue("gray.100", "gray.800");
@@ -224,11 +224,5 @@ const PrivacyPolicy = () => {
 };
 
 PrivacyPolicy.getLayout = getTransparentHeaderLayout;
-
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ["common"])),
-  },
-});
 
 export default PrivacyPolicy;

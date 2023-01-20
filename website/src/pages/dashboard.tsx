@@ -1,9 +1,9 @@
 import { Flex } from "@chakra-ui/react";
 import Head from "next/head";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { LeaderboardTable, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { getDashboardLayout } from "src/components/Layout";
 import { TaskCategory } from "src/components/Tasks/TaskTypes";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const Dashboard = () => {
   return (
@@ -22,11 +22,5 @@ const Dashboard = () => {
 };
 
 Dashboard.getLayout = (page) => getDashboardLayout(page);
-
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ["common"])),
-  },
-});
 
 export default Dashboard;

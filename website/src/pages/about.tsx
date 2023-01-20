@@ -1,10 +1,10 @@
 import Image from "next/image";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { CallToAction } from "src/components/CallToAction";
 import { Container } from "src/components/Container";
 import Roadmap from "src/components/Roadmap";
 import Services from "src/components/Services";
 import Vision from "src/components/Vision";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const AboutPage = () => {
   return (
@@ -36,11 +36,5 @@ const AboutPage = () => {
     </div>
   );
 };
-
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ["common"])),
-  },
-});
 
 export default AboutPage;
