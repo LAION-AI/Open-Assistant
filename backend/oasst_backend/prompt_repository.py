@@ -1,6 +1,6 @@
-import datetime
 import random
 from collections import defaultdict
+from datetime import datetime
 from http import HTTPStatus
 from typing import List, Optional, Tuple
 from uuid import UUID, uuid4
@@ -667,9 +667,9 @@ class PromptRepository:
         auth_method: Optional[str] = None,
         username: Optional[str] = None,
         api_client_id: Optional[UUID] = None,
-        gte_created_date: Optional[datetime.datetime] = None,
+        gte_created_date: Optional[datetime] = None,
         gt_id: Optional[UUID] = None,
-        lte_created_date: Optional[datetime.datetime] = None,
+        lte_created_date: Optional[datetime] = None,
         lt_id: Optional[UUID] = None,
         only_roots: bool = False,
         deleted: Optional[bool] = None,

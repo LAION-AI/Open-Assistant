@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
@@ -7,6 +7,7 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
@@ -20,8 +21,8 @@ def query_messages(
     username: Optional[str] = None,
     api_client_id: Optional[str] = None,
     max_count: Optional[int] = Query(10, gt=0, le=1000),
-    start_date: Optional[datetime.datetime] = None,
-    end_date: Optional[datetime.datetime] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
     only_roots: Optional[bool] = False,
     desc: Optional[bool] = True,
     allow_deleted: Optional[bool] = False,
@@ -62,14 +63,16 @@ def get_messages_cursor(
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
-    def split_cursor(x: str | None) -> tuple[datetime.datetime, UUID]:
+    def split_cursor(x: str | None) -> tuple[datetime, UUID]:
         if not x:
             return None, None
-        f = x.split("$", maxsplit=1)
-        if len(f) == 2 and len(f[0]) == 36:
-            id, k = f
-            return datetime.datetime.fromisoformat(k), UUID(id)
-        return datetime.datetime.fromisoformat(x), None
+        try:
+            m = utils.split_uuid_pattern.match(x)
+            if m:
+                return datetime.fromisoformat(m[2]), UUID(m[1])
+            return datetime.fromisoformat(x), None
+        except ValueError:
+            raise OasstError("Invalid cursor value", OasstErrorCode.INVALID_CURSOR_VALUE)
 
     lte_created_date, lt_id = split_cursor(lt)
     gte_created_date, gt_id = split_cursor(gt)

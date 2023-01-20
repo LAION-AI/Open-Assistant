@@ -87,10 +87,9 @@ def get_users_cursor(
     def split_cursor(x: str | None) -> tuple[str, UUID]:
         if not x:
             return None, None
-        f = x.split("$", maxsplit=1)
-        if len(f) == 2 and len(f[0]) == 36:
-            id, k = f
-            return k, UUID(id)
+        m = utils.split_uuid_pattern.match(x)
+        if m:
+            return m[2], UUID(m[1])
         return x, None
 
     items: list[protocol.FrontEndUser]
