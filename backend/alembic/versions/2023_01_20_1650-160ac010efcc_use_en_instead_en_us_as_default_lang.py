@@ -1,8 +1,8 @@
 """use 'en' instead 'en-US' as default lang
 
 Revision ID: 160ac010efcc
-Revises: 7f0a28a156f4
-Create Date: 2023-01-20 14:54:09.168217
+Revises: 4f26fec4d204
+Create Date: 2023-01-20 16:50:00
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "160ac010efcc"
-down_revision = "7f0a28a156f4"
+down_revision = "4f26fec4d204"
 branch_labels = None
 depends_on = None
 
