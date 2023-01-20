@@ -1,12 +1,9 @@
 import { withRole } from "src/lib/auth";
-import { oasstApiClient } from "src/lib/oasst_api_client";
-import type { Message } from "src/types/Conversation";
 
 /**
  * Returns the messages recorded by the backend for a user.
  */
 const handler = withRole("admin", async (req, res) => {
-
   const tasksAvailabilityRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/tasks/availability`, {
     method: "POST",
     headers: {
@@ -18,7 +15,6 @@ const handler = withRole("admin", async (req, res) => {
       display_name: "Dummy User",
       auth_method: "local",
     }),
-
   });
   const tasksAvailability = await tasksAvailabilityRes.json();
 
