@@ -1,7 +1,6 @@
 """Simple REPL frontend."""
 
 import json
-import time
 
 import requests
 import sseclient
@@ -15,19 +14,14 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
     """Simple REPL client."""
     while True:
         prompt = typer.prompt("Enter text to complete").strip()
-        complete_response = requests.post(f"{backend_url}/complete", json={"prompt": prompt}).json()
-        completion_id = complete_response["completion_id"]
+        id = requests.post(f"{backend_url}/complete", json={"prompt": prompt}).json()["id"]
 
         # wait for stream to be ready
         # could implement a queue position indicator
         # could be implemented with long polling
         # but server load needs to be considered
-        while True:
-            headers = {"Accept": "text/event-stream"}
-            response = requests.get(f"{backend_url}/stream/{completion_id}", stream=True, headers=headers)
-            if response.status_code == 200:
-                break
-            time.sleep(0.25)
+        response = requests.get(f"{backend_url}/stream/{id}", stream=True, headers={"Accept": "text/event-stream"})
+        response.raise_for_status()
 
         client = sseclient.SSEClient(response)
         for event in client.events():

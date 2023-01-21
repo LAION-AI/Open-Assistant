@@ -1,6 +1,6 @@
 loguru
-redis
-requests
+rel
 torch
 transformers
 typer
+websocket-client

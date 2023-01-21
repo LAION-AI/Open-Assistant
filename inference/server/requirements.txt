@@ -3,3 +3,4 @@ loguru
 pydantic
 redis
 sse-starlette
+websockets

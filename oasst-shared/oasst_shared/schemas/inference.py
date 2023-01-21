@@ -6,7 +6,6 @@ class WorkerConfig(pydantic.BaseModel):
 
 
 class WorkRequest(pydantic.BaseModel):
-    stream_queue_id: str
     prompt: str = pydantic.Field(..., repr=False)
     model_name: str = "distilgpt2"
     max_length: int = 100
