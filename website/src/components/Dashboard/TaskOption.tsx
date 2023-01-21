@@ -1,4 +1,4 @@
-import { Box, Flex, GridItem, Heading, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Card, CardBody, Flex, GridItem, Heading, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { TaskType } from "src/types/Task";
@@ -41,18 +41,37 @@ export const TaskOption = ({ content }: TasksOptionProps) => {
                     boxShadow="base"
                     className="flex flex-col justify-between h-full"
                   >
-                    <Flex className="p-6 pb-10" flexDir="column" gap="3">
-                      <Heading size="md">{item.label}</Heading>
-                      <Text size="sm">{item.desc}</Text>
-                    </Flex>
-                    <Text
-                      fontWeight="bold"
-                      color="white"
+                    <Card variant="task">
+                      <CardBody>
+                        <Flex flexDir="column" gap="3">
+                          <Heading size="md" fontFamily="inter">
+                            {item.label}
+                          </Heading>
+                          <Text size="sm" opacity="80%">
+                            {item.desc}
+                          </Text>
+                        </Flex>
+                      </CardBody>
+                    </Card>
+                    <Box
+                      bg="blue.500"
                       borderBottomRadius="xl"
-                      className="px-6 py-2 transition-colors duration-300 bg-blue-500 hover:bg-blue-600"
+                      className="px-6 py-2 transition-colors duration-300"
+                      _hover={{ backgroundColor: "blue.600" }}
                     >
-                      Go -&gt;
-                    </Text>
+                      <Flex className="p-6 pb-10" flexDir="column" gap="3">
+                        <Heading size="md">{item.label}</Heading>
+                        <Text size="sm">{item.desc}</Text>
+                      </Flex>
+                      <Text
+                        fontWeight="bold"
+                        color="white"
+                        borderBottomRadius="xl"
+                        className="px-6 py-2 transition-colors duration-300 bg-blue-500 hover:bg-blue-600"
+                      >
+                        Go -&gt;
+                      </Text>
+                    </Box>
                   </GridItem>
                 </Link>
               ))}
