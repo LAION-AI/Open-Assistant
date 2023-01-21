@@ -200,6 +200,7 @@ class UserRepository:
         search_text: Optional[str] = None,
         limit: Optional[int] = 100,
     ) -> list[User]:
+
         if not self.api_client.trusted:
             if not api_client_id:
                 # Let unprivileged api clients query their own users without api_client_id being set
@@ -226,11 +227,15 @@ class UserRepository:
 
         if lte_display_name is not None:
             if lt_id:
-                qry = qry.filter(
-                    or_(
-                        User.display_name < lte_display_name,
-                        and_(User.display_name == lte_display_name, User.id < lt_id),
+                qry = (
+                    qry.filter(
+                        or_(
+                            User.display_name < lte_display_name,
+                            and_(User.display_name == lte_display_name, User.id < lt_id),
+                        )
                     )
+                    .order_by(None)
+                    .order_by(User.display_name.desc(), User.id.desc())
                 )
             else:
                 qry = qry.filter(User.display_name <= lte_display_name)
@@ -252,4 +257,9 @@ class UserRepository:
         if limit is not None:
             qry = qry.limit(limit)
 
-        return qry.all()
+        users = qry.all()
+
+        if lte_display_name and lt_id:
+            users.reverse()
+
+        return users
