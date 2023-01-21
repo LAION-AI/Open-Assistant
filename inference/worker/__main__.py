@@ -6,7 +6,7 @@ import torch
 import typer
 import websocket
 from loguru import logger
-from oasst_shared.schemas import inference
+from oasst_shared.schemas import inference, protocol
 from transformers import pipeline
 
 app = typer.Typer()
@@ -28,19 +28,30 @@ def main(
         # also need to think of enabling batching
         work_request = inference.WorkRequest.parse_raw(message)
 
+        def _prepare_message(message: protocol.ConversationMessage) -> str:
+            prefix = "Assistant: " if message.is_assistant else "User: "
+            return prefix + message.text
+
+        # construct prompt
+        messages = [_prepare_message(message) for message in work_request.conversation.messages]
+
+        prompt = "\n".join(messages) + "\nAssistant:"
+
         # TODO: replace this with incremental generation
         torch.manual_seed(work_request.seed)
-        model_output = pipe(
-            work_request.prompt, max_length=work_request.max_length, do_sample=True, return_full_text=False
-        )[0]["generated_text"]
+        model_output = pipe(prompt, max_new_tokens=work_request.max_new_tokens, do_sample=True, return_full_text=False)[
+            0
+        ]["generated_text"]
         model_output = model_output.strip()
 
         # fake streaming
-        split_idcs = [m.start() for m in re.finditer(r"(\w+)", model_output)]
+        split_idcs = [m.start() for m in re.finditer(r"([\w:]+)", model_output)]
         pieces = [model_output[a:b] for a, b in zip([0] + split_idcs, split_idcs + [None])]
         for piece in pieces:
             if not piece:
                 continue
+            if piece.strip() in ("User:", "Assistant:"):
+                break
             ws.send(inference.WorkResponsePacket(token=piece).json())
             time.sleep(0.1)
         ws.send(inference.WorkResponsePacket(is_end=True).json())

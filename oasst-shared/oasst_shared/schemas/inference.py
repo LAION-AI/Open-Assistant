@@ -1,4 +1,8 @@
+import random
+
 import pydantic
+
+from . import protocol
 
 
 class WorkerConfig(pydantic.BaseModel):
@@ -6,10 +10,10 @@ class WorkerConfig(pydantic.BaseModel):
 
 
 class WorkRequest(pydantic.BaseModel):
-    prompt: str = pydantic.Field(..., repr=False)
+    conversation: protocol.Conversation = pydantic.Field(..., repr=False)
     model_name: str = "distilgpt2"
-    max_length: int = 100
-    seed: int = 42
+    max_new_tokens: int = 100
+    seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 2**32 - 1))
 
 
 class WorkResponsePacket(pydantic.BaseModel):

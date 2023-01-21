@@ -1,6 +1,5 @@
 import asyncio
 import enum
-import random
 import uuid
 
 import fastapi
@@ -8,7 +7,7 @@ import pydantic
 import redis.asyncio as redis
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from oasst_shared.schemas import inference
+from oasst_shared.schemas import inference, protocol
 from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
@@ -39,114 +38,89 @@ redisClient = redis.Redis(
 )
 
 
-class CompletionRequest(pydantic.BaseModel):
-    prompt: str = pydantic.Field(..., repr=False)
+class CreateChatRequest(pydantic.BaseModel):
+    pass
+
+
+class CreateChatResponse(pydantic.BaseModel):
+    id: str
+
+
+class MessageRequest(pydantic.BaseModel):
+    message: str = pydantic.Field(..., repr=False)
     model_name: str = "distilgpt2"
-    max_length: int = 100
+    max_new_tokens: int = 100
 
     def compatible_with(self, worker_config: inference.WorkerConfig) -> bool:
         return self.model_name == worker_config.model_name
 
 
-class CompletionResponse(pydantic.BaseModel):
-    id: str
-
-
-class ResponseEvent(pydantic.BaseModel):
+class TokenResponseEvent(pydantic.BaseModel):
     token: str
 
 
-class CompletionState(str, enum.Enum):
+class MessageRequestState(str, enum.Enum):
     pending = "pending"
     in_progress = "in_progress"
     complete = "complete"
 
 
-class DbEntry(pydantic.BaseModel):
+class DbChatEntry(pydantic.BaseModel):
     id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
-    completion_request: CompletionRequest
-    seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 2**32 - 1))
-    result_data: list[inference.WorkResponsePacket] | None = None
-    state: CompletionState = CompletionState.pending
+    conversation: protocol.Conversation = pydantic.Field(default_factory=protocol.Conversation)
+    pending_message_request: MessageRequest | None = None
+    message_request_state: MessageRequestState | None = None
 
 
 # TODO: make real database
-DATABASE: dict[str, DbEntry] = {}
+CHATS: dict[str, DbChatEntry] = {}
 
 
-@app.post("/complete")
-async def complete(request: CompletionRequest) -> CompletionResponse:
-    """Allows a client to request completion of a prompt."""
+@app.post("/chat")
+async def create_chat(request: CreateChatRequest) -> CreateChatResponse:
+    """Allows a client to create a new chat."""
     logger.info(f"Received {request}")
-
-    db_entry = DbEntry(
-        completion_request=request,
-    )
-    DATABASE[db_entry.id] = db_entry
-    return CompletionResponse(id=db_entry.id)
+    chat = DbChatEntry()
+    CHATS[chat.id] = chat
+    return CreateChatResponse(id=chat.id)
 
 
-@app.websocket("/work")
-async def work(websocket: fastapi.WebSocket):
-    await websocket.accept()
-    worker_config = inference.WorkerConfig.parse_raw(await websocket.receive_text())
-    while True:
-        # find a pending task that matches the worker's config
-        # could also be implemented using task queues
-        # but general compatibility matching is tricky
-        for db_entry in DATABASE.values():
-            if db_entry.state == CompletionState.pending:
-                if db_entry.completion_request.compatible_with(worker_config):
-                    break
-        else:
-            logger.debug("No pending tasks")
-            await asyncio.sleep(1)
-            continue
-
-        request = db_entry.completion_request
-
-        work_request = inference.WorkRequest(
-            prompt=request.prompt,
-            model_name=request.model_name,
-            max_length=request.max_length,
-            seed=db_entry.seed,
-        )
-
-        logger.info(f"Created {work_request}")
-        db_entry.state = CompletionState.in_progress
-        try:
-            await websocket.send_text(work_request.json())
-            while True:
-                # maybe unnecessary to parse and re-serialize
-                # could just pass the raw string and mark end via empty string
-                response_packet = inference.WorkResponsePacket.parse_raw(await websocket.receive_text())
-                await redisClient.rpush(db_entry.id, response_packet.json())
-                if response_packet.is_end:
-                    break
-        except fastapi.WebSocketException:
-            # TODO: handle this better
-            logger.exception(f"Websocket closed during handling of {db_entry.id}")
+@app.get("/chat/{id}")
+async def get_chat(id: str) -> protocol.Conversation:
+    """Allows a client to get the current state of a chat."""
+    return CHATS[id].conversation
 
 
-@app.get("/stream/{id}")
-async def message_stream(id: str, request: fastapi.Request):
+@app.post("/chat/{id}/message")
+async def create_message(id: str, message_request: MessageRequest, fastapi_request: fastapi.Request):
     """Allows the client to stream the results of a request."""
 
-    db_entry = DATABASE[id]
+    chat = CHATS[id]
+    if not chat.conversation.is_prompter_turn:
+        raise fastapi.HTTPException(status_code=400, detail="Not your turn")
+    if chat.pending_message_request is not None:
+        raise fastapi.HTTPException(status_code=400, detail="Already pending")
 
-    if db_entry.state not in (CompletionState.pending, CompletionState.in_progress):
-        raise fastapi.HTTPException(status_code=404, detail="Request not found")
+    chat.conversation.messages.append(
+        protocol.ConversationMessage(
+            text=message_request.message,
+            is_assistant=False,
+        )
+    )
+
+    chat.pending_message_request = message_request
+    chat.message_request_state = MessageRequestState.pending
 
     async def event_generator():
         result_data = []
 
         try:
             while True:
-                if await request.is_disconnected():
+                if await fastapi_request.is_disconnected():
                     logger.warning("Client disconnected")
                     break
 
-                item = await redisClient.blpop(db_entry.id, 1)
+                item = await redisClient.blpop(chat.id, 1)
                 if item is None:
                     continue
 
@@ -159,14 +133,61 @@ async def message_stream(id: str, request: fastapi.Request):
 
                 yield {
                     "retry": settings.sse_retry_timeout,
-                    "data": ResponseEvent(token=response_packet.token).json(),
+                    "data": TokenResponseEvent(token=response_packet.token).json(),
                 }
-            logger.info(f"Finished streaming {db_entry.id} {len(result_data)=}")
+            logger.info(f"Finished streaming {chat.id} {len(result_data)=}")
         except Exception:
-            logger.exception(f"Error streaming {db_entry.id}")
+            logger.exception(f"Error streaming {chat.id}")
 
-        # store the generated data in the database
-        db_entry.result_data = result_data
-        db_entry.state = CompletionState.complete
+        chat.conversation.messages.append(
+            protocol.ConversationMessage(
+                text="".join([d.token for d in result_data[:-1]]),
+                is_assistant=True,
+            )
+        )
+        chat.pending_message_request = None
 
     return EventSourceResponse(event_generator())
+
+
+@app.websocket("/work")
+async def work(websocket: fastapi.WebSocket):
+    await websocket.accept()
+    worker_config = inference.WorkerConfig.parse_raw(await websocket.receive_text())
+    while True:
+        # find a pending task that matches the worker's config
+        # could also be implemented using task queues
+        # but general compatibility matching is tricky
+        for chat in CHATS.values():
+            if (request := chat.pending_message_request) is not None:
+                if chat.message_request_state == MessageRequestState.pending:
+                    if request.compatible_with(worker_config):
+                        break
+        else:
+            logger.debug("No pending tasks")
+            await asyncio.sleep(1)
+            continue
+
+        chat.message_request_state = MessageRequestState.in_progress
+
+        work_request = inference.WorkRequest(
+            conversation=chat.conversation,
+            model_name=request.model_name,
+            max_new_tokens=request.max_new_tokens,
+        )
+
+        logger.info(f"Created {work_request}")
+        try:
+            await websocket.send_text(work_request.json())
+            while True:
+                # maybe unnecessary to parse and re-serialize
+                # could just pass the raw string and mark end via empty string
+                response_packet = inference.WorkResponsePacket.parse_raw(await websocket.receive_text())
+                await redisClient.rpush(chat.id, response_packet.json())
+                if response_packet.is_end:
+                    break
+        except fastapi.WebSocketException:
+            # TODO: handle this better
+            logger.exception(f"Websocket closed during handling of {chat.id}")
+
+        chat.message_request_state = MessageRequestState.complete
