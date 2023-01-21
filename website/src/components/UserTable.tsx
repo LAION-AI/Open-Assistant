@@ -4,6 +4,7 @@ import Link from "next/link";
 import { memo, useState } from "react";
 import { FaPen } from "react-icons/fa";
 import { get } from "src/lib/api";
+import { FetchUsersResponse } from "src/lib/oasst_api_client";
 import type { User } from "src/types/Users";
 import useSWR from "swr";
 
@@ -58,39 +59,43 @@ const columns: DataTableColumnDef<User>[] = [
 export const UserTable = memo(function UserTable() {
   const toast = useToast();
   const [pagination, setPagination] = useState<Pagination>({ cursor: "", direction: "forward" });
-  const [users, setUsers] = useState<User[]>([]);
+  const [response, setResponse] = useState<Omit<FetchUsersResponse<User>, "sort_key" | "order">>({
+    items: [],
+  });
   const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
+  const handleFilterValuesChange = (values: FilterItem[]) => {
+    setFilterValues(values);
+    setPagination((old) => ({ ...old, cursor: "" }));
+  };
   // Fetch and save the users.
   // This follows useSWR's recommendation for simple pagination:
   //   https://swr.vercel.app/docs/pagination#when-to-use-useswr
   const display_name = filterValues.find((value) => value.id === "display_name")?.value ?? "";
-  useSWR(
-    `/api/admin/users?direction=${pagination.direction}&cursor=${pagination.cursor}&display_name=${display_name}`,
-    get,
-    {
-      onSuccess: (data) => {
-        // When no more users can be found, trigger a toast to indicate why no
-        // changes have taken place.  We have to maintain a non-empty set of
-        // users otherwise we can't paginate using a cursor (since we've lost the
-        // cursor).
-        if (data.length === 0) {
-          toast({
-            title: "No more users",
-            status: "warning",
-            duration: 1000,
-            isClosable: true,
-          });
-          return;
-        }
-        setUsers(data);
-      },
-    }
-  );
+  useSWR<
+    FetchUsersResponse<User>
+  >(`/api/admin/users?direction=${pagination.direction}&cursor=${pagination.cursor}&searchDisplayName=${display_name}&sortKey=display_name`, get, {
+    onSuccess: (data) => {
+      // When no more users can be found, trigger a toast to indicate why no
+      // changes have taken place.  We have to maintain a non-empty set of
+      // users otherwise we can't paginate using a cursor (since we've lost the
+      // cursor).
+      if (data.items.length === 0) {
+        toast({
+          title: "No more users",
+          status: "warning",
+          duration: 1000,
+          isClosable: true,
+        });
+        return;
+      }
+      setResponse(data);
+    },
+  });
 
   const toPreviousPage = () => {
-    if (users.length >= 0) {
+    if (response.items.length >= 0) {
       setPagination({
-        cursor: users[0].user_id,
+        cursor: response.prev,
         direction: "back",
       });
     } else {
@@ -104,9 +109,9 @@ export const UserTable = memo(function UserTable() {
   };
 
   const toNextPage = () => {
-    if (users.length >= 0) {
+    if (response.items.length >= 0) {
       setPagination({
-        cursor: users[users.length - 1].user_id,
+        cursor: response.next,
         direction: "forward",
       });
     } else {
@@ -121,13 +126,13 @@ export const UserTable = memo(function UserTable() {
 
   return (
     <DataTable
-      data={users}
+      data={response.items}
       columns={columns}
       caption="Users"
       onNextClick={toNextPage}
       onPreviousClick={toPreviousPage}
       filterValues={filterValues}
-      onFilterChange={setFilterValues}
+      onFilterChange={handleFilterValuesChange}
     ></DataTable>
   );
 });
