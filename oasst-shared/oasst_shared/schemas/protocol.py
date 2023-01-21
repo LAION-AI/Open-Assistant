@@ -37,12 +37,25 @@ class FrontEndUser(User):
     created_date: Optional[datetime] = None
 
 
+class PageResult(BaseModel):
+    prev: str | None
+    next: str | None
+    sort_key: str
+    items: list
+    order: Literal["asc", "desc"]
+
+
+class FrontEndUserPage(PageResult):
+    items: list[FrontEndUser]
+
+
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
     id: Optional[UUID] = None
     frontend_message_id: Optional[str] = None
     text: str
+    lang: Optional[str]  # BCP 47
     is_assistant: bool
 
 
@@ -55,6 +68,10 @@ class Conversation(BaseModel):
 class Message(ConversationMessage):
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
+
+
+class MessagePage(PageResult):
+    items: list[Message]
 
 
 class MessageTree(BaseModel):
@@ -72,6 +89,7 @@ class TaskRequest(BaseModel):
     # this is optional. https://github.com/pydantic/pydantic/issues/1270
     user: Optional[User] = Field(None, nullable=True)
     collective: bool = False
+    lang: Optional[str] = Field(None, nullable=True)  # BCP 47
 
 
 class TaskAck(BaseModel):
@@ -266,6 +284,7 @@ class TextReplyToMessage(Interaction):
     message_id: str
     user_message_id: str
     text: constr(min_length=1, strip_whitespace=True)
+    lang: Optional[str]  # BCP 47
 
 
 class MessageRating(Interaction):
