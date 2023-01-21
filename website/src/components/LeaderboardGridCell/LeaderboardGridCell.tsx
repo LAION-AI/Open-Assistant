@@ -1,8 +1,9 @@
-import { Table, TableContainer, Tbody, Td, Th, Thead, Tr, useColorModeValue } from "@chakra-ui/react";
-import React from "react";
+import { Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, useColorModeValue } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
+import React, { useMemo } from "react";
 import { useTable } from "react-table";
 import { get } from "src/lib/api";
-import { LeaderboardEntity, LeaderboardTimeFrame } from "src/types/Leaderboard";
+import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import useSWRImmutable from "swr/immutable";
 
 const columns = [
@@ -26,13 +27,26 @@ const columns = [
  * Presents a grid of leaderboard entries with more detailed information.
  */
 const LeaderboardGridCell = ({ timeFrame }: { timeFrame: LeaderboardTimeFrame }) => {
-  const { data } = useSWRImmutable<LeaderboardEntity[]>(`/api/leaderboard?time_frame=${timeFrame}`, get, {
-    fallbackData: [],
+  const { t } = useTranslation();
+  const { data: reply } = useSWRImmutable<LeaderboardReply>(`/api/leaderboard?time_frame=${timeFrame}`, get, {
     revalidateOnMount: true,
   });
+
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
+    columns,
+    data: reply?.leaderboard ?? [],
+  });
+
   const backgroundColor = useColorModeValue("white", "gray.800");
 
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({ columns, data });
+  const lastUpdated = useMemo(() => {
+    const val = new Date(reply?.last_updated);
+    return t("last_updated_at", { val, formatParams: { val: { dateStyle: "full", timeStyle: "short" } } });
+  }, [t, reply?.last_updated]);
+
+  if (!reply) {
+    return null;
+  }
 
   return (
     <TableContainer>
@@ -66,6 +80,7 @@ const LeaderboardGridCell = ({ timeFrame }: { timeFrame: LeaderboardTimeFrame })
           })}
         </Tbody>
       </Table>
+      <Text p="2">{lastUpdated}</Text>
     </TableContainer>
   );
 };
