@@ -4,6 +4,7 @@ from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.schemas.text_labels import LabelOption, ValidLabelsResponse
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
@@ -23,10 +24,14 @@ def label_text(
     """
     api_client = deps.api_auth(api_key, db)
 
+    @managed_tx_function(CommitMode.COMMIT)
+    def store_text_labels(session: deps.Session):
+        pr = PromptRepository(session, api_client, client_user=text_labels.user)
+        pr.store_text_labels(text_labels)
+
     try:
         logger.info(f"Labeling text {text_labels=}.")
-        pr = PromptRepository(db, api_client, client_user=text_labels.user)
-        pr.store_text_labels(text_labels)
+        store_text_labels()
 
     except Exception:
         logger.exception("Failed to store label.")
