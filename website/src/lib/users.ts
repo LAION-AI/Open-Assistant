@@ -1,5 +1,19 @@
+import parser from "accept-language-parser";
+import type { NextApiRequest } from "next";
 import prisma from "src/lib/prismadb";
 import type { BackendUserCore } from "src/types/Users";
+
+const getUserLanguage = (req: NextApiRequest) => {
+  const cookieLanguage = req.cookies["NEXT_LOCALE"];
+  if (cookieLanguage) {
+    return cookieLanguage;
+  }
+  const headerLanguages = parser.parse(req.headers["accept-language"]);
+  if (headerLanguages.length > 0) {
+    return headerLanguages[0].code;
+  }
+  return "en";
+};
 
 /**
  * Returns a `BackendUserCore` that can be used for interacting with the Backend service.
@@ -35,4 +49,4 @@ const getBackendUserCore = async (id: string) => {
   } as BackendUserCore;
 };
 
-export { getBackendUserCore };
+export { getBackendUserCore, getUserLanguage };
