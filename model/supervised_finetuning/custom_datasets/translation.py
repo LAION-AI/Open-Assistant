@@ -8,6 +8,7 @@
 """
 import random
 
+from custom_datasets.formatting import format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -82,7 +83,7 @@ class TranslationPair(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        return self.pairs[index]
+        return format_pair(self.pairs[index])
 
 
 class WMT2019(TranslationPair):

@@ -4,12 +4,13 @@
 """
 import random
 
+from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
 
 class ProsocialDialogueExplaination(Dataset):
-    name = "prosocial_explain"
+    name = "explain_prosocial"
     TEMPLATE = [
         # 0 : reply or sentence of interest, 1 : reason of caution
         ("'{0}' Why is this sentence {1}", "This sentence is {1} because {0}"),
@@ -36,7 +37,7 @@ class ProsocialDialogueExplaination(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, idx):
-        return self.pairs[idx]
+        return format_pair(self.pairs[idx])
 
 
 class ProsocialDialogue(Dataset):
@@ -58,11 +59,12 @@ class ProsocialDialogue(Dataset):
         dataset = load_dataset("allenai/prosocial-dialog", cache_dir=cache_dir)[split]
         self.pairs = []
         for row in dataset:
+            prompt = QA_SPECIAL_TOKENS["Question"] + row["context"] + QA_SPECIAL_TOKENS["Answer"]
             for answer in row["rots"]:
-                self.pairs.append((self.PREFIX + row["context"], answer))
+                self.pairs.append((self.PREFIX + prompt, answer))
 
     def __len__(self):
         return len(self.pairs)
 
     def __getitem__(self, idx):
-        return self.pairs[idx]
+        return format_pair(self.pairs[idx])
