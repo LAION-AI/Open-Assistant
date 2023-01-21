@@ -152,7 +152,7 @@ export class OasstApiClient {
    * Returns the `BackendUser` associated with `user_id`
    */
   async fetch_user(user_id: string): Promise<BackendUser> {
-    return this.get(`/api/v1/users/users/${user_id}`);
+    return this.get(`/api/v1/users/${user_id}`);
   }
 
   /**

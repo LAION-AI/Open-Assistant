@@ -1,3 +1,4 @@
+import re
 from uuid import UUID
 
 from oasst_backend.models import Message
@@ -43,3 +44,8 @@ def prepare_tree(tree: list[Message], tree_id: UUID) -> protocol.MessageTree:
         tree_messages.append(prepare_message(message))
 
     return protocol.MessageTree(id=tree_id, messages=tree_messages)
+
+
+split_uuid_pattern = re.compile(
+    r"^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\$(.*)$"
+)

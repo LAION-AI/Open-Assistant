@@ -12,6 +12,7 @@ export const enum LeaderboardTimeFrame {
 }
 export interface LeaderboardReply {
   time_frame: LeaderboardTimeFrame;
+  last_updated: string; // date time iso string
   leaderboard: LeaderboardEntity[];
 }
 

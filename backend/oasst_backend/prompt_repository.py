@@ -1,6 +1,6 @@
-import datetime
 import random
 from collections import defaultdict
+from datetime import datetime
 from http import HTTPStatus
 from typing import List, Optional, Tuple
 from uuid import UUID, uuid4
@@ -28,7 +28,8 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
-from sqlmodel import Session, func, not_, text, update
+from oasst_shared.utils import unaware_to_utc
+from sqlmodel import Session, and_, func, not_, or_, text, update
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -664,58 +665,85 @@ class PromptRepository:
         max_message = max(tree, key=lambda m: m.children_count)
         return max_message, [m for m in tree if m.parent_id == max_message.id]
 
-    def query_messages(
+    def query_messages_ordered_by_created_date(
         self,
         user_id: Optional[UUID] = None,
         auth_method: Optional[str] = None,
         username: Optional[str] = None,
         api_client_id: Optional[UUID] = None,
-        desc: bool = True,
-        limit: Optional[int] = 10,
-        start_date: Optional[datetime.datetime] = None,
-        end_date: Optional[datetime.datetime] = None,
+        gte_created_date: Optional[datetime] = None,
+        gt_id: Optional[UUID] = None,
+        lte_created_date: Optional[datetime] = None,
+        lt_id: Optional[UUID] = None,
         only_roots: bool = False,
         deleted: Optional[bool] = None,
+        desc: bool = False,
+        limit: Optional[int] = 100,
     ) -> list[Message]:
-        if not self.api_client.trusted and not api_client_id:
-            # Let unprivileged api clients query their own messages without api_client_id being set
-            api_client_id = self.api_client.id
+        if not self.api_client.trusted:
+            if not api_client_id:
+                # Let unprivileged api clients query their own messages without api_client_id being set
+                api_client_id = self.api_client.id
 
-        if not self.api_client.trusted and api_client_id != self.api_client.id:
-            # Unprivileged api client asks for foreign messages
-            raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+            if api_client_id != self.api_client.id:
+                # Unprivileged api client asks for foreign messages
+                raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
 
-        messages = self.db.query(Message)
+        qry = self.db.query(Message)
         if user_id:
-            messages = messages.filter(Message.user_id == user_id)
+            qry = qry.filter(Message.user_id == user_id)
         if username or auth_method:
             if not username and auth_method:
                 raise OasstError("Auth method or username missing.", OasstErrorCode.AUTH_AND_USERNAME_REQUIRED)
-            messages = messages.join(User)
-            messages = messages.filter(User.username == username, User.auth_method == auth_method)
+            qry = qry.join(User)
+            qry = qry.filter(User.username == username, User.auth_method == auth_method)
         if api_client_id:
-            messages = messages.filter(Message.api_client_id == api_client_id)
+            qry = qry.filter(Message.api_client_id == api_client_id)
 
-        if start_date:
-            messages = messages.filter(Message.created_date >= start_date)
-        if end_date:
-            messages = messages.filter(Message.created_date < end_date)
+        gte_created_date = unaware_to_utc(gte_created_date)
+        lte_created_date = unaware_to_utc(lte_created_date)
+
+        if gte_created_date is not None:
+            if gt_id:
+                qry = qry.filter(
+                    or_(
+                        Message.created_date > gte_created_date,
+                        and_(Message.created_date == gte_created_date, Message.id > gt_id),
+                    )
+                )
+            else:
+                qry = qry.filter(Message.created_date >= gte_created_date)
+        elif gt_id:
+            raise OasstError("Need id and date for keyset pagination", OasstErrorCode.GENERIC_ERROR)
+
+        if lte_created_date is not None:
+            if lt_id:
+                qry = qry.filter(
+                    or_(
+                        Message.created_date < lte_created_date,
+                        and_(Message.created_date == lte_created_date, Message.id < lt_id),
+                    )
+                )
+            else:
+                qry = qry.filter(Message.created_date <= lte_created_date)
+        elif lt_id:
+            raise OasstError("Need id and date for keyset pagination", OasstErrorCode.GENERIC_ERROR)
 
         if only_roots:
-            messages = messages.filter(Message.parent_id.is_(None))
+            qry = qry.filter(Message.parent_id.is_(None))
 
         if deleted is not None:
-            messages = messages.filter(Message.deleted == deleted)
+            qry = qry.filter(Message.deleted == deleted)
 
         if desc:
-            messages = messages.order_by(Message.created_date.desc())
+            qry = qry.order_by(Message.created_date.desc(), Message.id.desc())
         else:
-            messages = messages.order_by(Message.created_date.asc())
+            qry = qry.order_by(Message.created_date.asc(), Message.id.asc())
 
         if limit is not None:
-            messages = messages.limit(limit)
+            qry = qry.limit(limit)
 
-        return messages.all()
+        return qry.all()
 
     def update_children_counts(self, message_tree_id: UUID):
         sql_update_children_count = """
