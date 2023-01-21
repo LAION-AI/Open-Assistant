@@ -111,7 +111,7 @@ def get_users_cursor(
                 n = lt
         return p, n
 
-    def remove_extra_item(items: list[protocol.FrontEndUser], lt: str | None, gt: str):
+    def remove_extra_item(items: list[protocol.FrontEndUser], lt: str | None, gt: str | None):
         num_rows = len(items)
         if qry_max_count > max_count and num_rows == qry_max_count:
             assert not (lt and gt)
