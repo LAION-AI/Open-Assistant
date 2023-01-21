@@ -1,4 +1,4 @@
-import { Box, Flex, Card, Link, Text, useColorModeValue } from "@chakra-ui/react";
+import { Card, CardBody, Flex, Link, Text } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { LeaderboardGridCell } from "src/components/LeaderboardGridCell";
 import { LeaderboardTimeFrame } from "src/types/Leaderboard";
@@ -16,7 +16,9 @@ export function LeaderboardTable() {
           </Link>
         </Flex>
         <Card>
-          <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.day} />
+          <CardBody>
+            <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.day} />
+          </CardBody>
         </Card>
       </Flex>
     </main>

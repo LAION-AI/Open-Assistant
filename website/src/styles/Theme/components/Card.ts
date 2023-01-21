@@ -9,11 +9,17 @@ export const cardTheme = defineMultiStyleConfig({
     return {
       container: {
         backgroundColor: isLightMode ? "white" : "gray.700",
+        p: "0",
+      },
+      header: {
         p: "6",
       },
-      header: {},
-      body: {},
-      footer: {},
+      body: {
+        p: "6",
+      },
+      footer: {
+        p: "6",
+      },
     };
   }),
   variants: {
