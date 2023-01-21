@@ -1,5 +1,6 @@
 import {
   Box,
+  Card,
   Button,
   CircularProgress,
   Container,
@@ -107,7 +108,7 @@ const StatusIndex = ({ user }) => {
       </Head>
 
       <SimpleGrid columns={[1, 1, 1, 1, 1, 2]} gap={4}>
-        <Box bg={backgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
+        <Card bg={backgroundColor} p="6" pt="4" pr="6">
           <Text as="h1" fontSize="3xl" textAlign="center">
             /api/v1/tasks/availability
           </Text>
@@ -116,19 +117,19 @@ const StatusIndex = ({ user }) => {
               {availability ? JSON.stringify(availability, null, 2) : <CircularProgress isIndeterminate />}
             </pre>
           </Box>
-        </Box>
+        </Card>
 
-        <Box bg={backgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
+        <Card bg={backgroundColor} p="6" pt="4" pr="6">
           <Text as="h1" fontSize="3xl" textAlign="center">
             /api/v1/stats/
           </Text>
           <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
             <pre id="json">{stats ? JSON.stringify(stats, null, 2) : <CircularProgress isIndeterminate />}</pre>
           </Box>
-        </Box>
+        </Card>
       </SimpleGrid>
       <br />
-      <Box bg={backgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
+      <Card bg={backgroundColor} p="6" pt="4" pr="6">
         <Text as="h1" fontSize="3xl" textAlign="center">
           /api/v1/stats/tree_manager
         </Text>
@@ -180,7 +181,7 @@ const StatusIndex = ({ user }) => {
         ) : (
           <CircularProgress isIndeterminate />
         )}
-      </Box>
+      </Card>
     </>
   );
 };
