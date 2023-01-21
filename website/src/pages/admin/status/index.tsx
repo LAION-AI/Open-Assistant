@@ -1,9 +1,8 @@
 import {
   Box,
   Card,
-  Button,
+  CardBody,
   CircularProgress,
-  Container,
   SimpleGrid,
   Text,
   Table,
@@ -14,7 +13,6 @@ import {
   Th,
   Thead,
   Tr,
-  View,
   useColorMode,
   useToast,
 } from "@chakra-ui/react";
@@ -81,9 +79,13 @@ const StatusIndex = ({ user }) => {
               /api/v1/tasks/availability
             </Text>
             <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-              <pre>
-                {tasksAvailability ? JSON.stringify(tasksAvailability, null, 2) : <CircularProgress isIndeterminate />}
-              </pre>
+              {tasksAvailability ? (
+                <pre>{JSON.stringify(tasksAvailability, null, 2)}</pre>
+              ) : errorStatus ? (
+                <pre>{JSON.stringify(errorStatus, null, 2)}</pre>
+              ) : (
+                <CircularProgress isIndeterminate />
+              )}
             </Box>
           </CardBody>
         </Card>
@@ -94,7 +96,13 @@ const StatusIndex = ({ user }) => {
               /api/v1/stats/
             </Text>
             <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-              <pre>{stats ? JSON.stringify(stats, null, 2) : <CircularProgress isIndeterminate />}</pre>
+              {stats ? (
+                <pre>{JSON.stringify(stats, null, 2)}</pre>
+              ) : errorStatus ? (
+                <pre>{JSON.stringify(errorStatus, null, 2)}</pre>
+              ) : (
+                <CircularProgress isIndeterminate />
+              )}
             </Box>
           </CardBody>
         </Card>
@@ -149,6 +157,8 @@ const StatusIndex = ({ user }) => {
                 </Table>
               </TableContainer>
             </Box>
+          ) : errorStatus ? (
+            <pre>{JSON.stringify(errorStatus, null, 2)}</pre>
           ) : (
             <CircularProgress isIndeterminate />
           )}
