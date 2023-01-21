@@ -10,7 +10,7 @@ import kaggle
 import pandas as pd
 
 CLINICAL_NOTE_GENERATION_TEMPLATE = """User: Write a clinical note about a patient with the following {section}: {section_information}.
-ASSISTANT: {note}"""
+Rosey: {note}"""
 
 
 def preprocess(mt_dataset):
@@ -31,7 +31,13 @@ def is_chief_complaint(section):
 
 def get_conversations(dataset):
     def normalize_transcript(x):
-        return x.replace(":,", ":").replace(": ,", ": ").replace(":  ,", ":  ").replace(".,", ".").replace("..", ".")
+        x = re.sub(r"\.+", ".", x)
+        x = re.sub(r"\,+", ",", x)
+        x = re.sub(r":\s+", ": ", x)
+        x = re.sub(r"\.\s+", ". ", x)
+        x = re.sub(r":(\s)*\,+", ": ", x)
+        x = re.sub(r"\.\,+", ". ", x)
+        return x
 
     conversations = []
     for idx in range(len(dataset)):
@@ -39,7 +45,7 @@ def get_conversations(dataset):
         sections = re.findall(r"\b[A-Z]+(?: [A-Z]+)*:", transcript)
         if len(sections) >= 2:
             note_prompt = transcript.split(sections[0])[1].split(sections[1])[0]
-        if len(note_prompt) < 2:
+        else:
             continue
         section_name = sections[0].lower().strip(punctuation)
         if len(note_prompt.split(" ")) > 30 and is_chief_complaint(section_name):
