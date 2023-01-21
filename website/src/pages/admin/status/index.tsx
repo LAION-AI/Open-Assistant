@@ -100,58 +100,59 @@ const StatusIndex = ({ user }) => {
         </Card>
       </SimpleGrid>
       <br />
-      <Card bg={backgroundColor} p="6" pt="4" pr="6">
-        <Text as="h1" fontSize="3xl" textAlign="center">
-          /api/v1/stats/tree_manager
-        </Text>
-
-        {treeManager ? (
-          <Box>
-            <Text as="h2" fontSize="2xl">
-              state_counts
-            </Text>
-            <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-              <pre id="json">{JSON.stringify(treeManager.state_counts, null, 2)}</pre>
-            </Box>
-            <TableContainer>
-              <br />
+      <Card>
+        <CardBody>
+          <Text as="h1" fontSize="3xl" textAlign="center">
+            /api/v1/stats/tree_manager
+          </Text>
+          {treeManager ? (
+            <Box>
               <Text as="h2" fontSize="2xl">
-                message_counts
+                state_counts
               </Text>
-              <Table variant="simple">
-                <TableCaption>Tree Manager</TableCaption>
-                <Thead>
-                  <Tr>
-                    <Th>Message Tree ID</Th>
-                    <Th>State</Th>
-                    <Th>Depth</Th>
-                    <Th>Oldest</Th>
-                    <Th>Youngest</Th>
-                    <Th>Count</Th>
-                    <Th>Goal Tree Size</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {treeManager.message_counts.map(
-                    ({ message_tree_id, state, depth, oldest, youngest, count, goal_tree_size }) => (
-                      <Tr key={message_tree_id}>
-                        <Td>{message_tree_id}</Td>
-                        <Td>{state}</Td>
-                        <Td>{depth}</Td>
-                        <Td>{oldest}</Td>
-                        <Td>{youngest}</Td>
-                        <Td>{count}</Td>
-                        <Td>{goal_tree_size}</Td>
-                      </Tr>
-                    )
-                  )}
-                </Tbody>
-              </Table>
-            </TableContainer>
-          </Box>
-        ) : (
-          <CircularProgress isIndeterminate />
-        )}
+              <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
+                <pre id="json">{JSON.stringify(treeManager.state_counts, null, 2)}</pre>
+              </Box>
+              <TableContainer>
+                <br />
+                <Text as="h2" fontSize="2xl">
+                  message_counts
+                </Text>
+                <Table variant="simple">
+                  <TableCaption>Tree Manager</TableCaption>
+                  <Thead>
+                    <Tr>
+                      <Th>Message Tree ID</Th>
+                      <Th>State</Th>
+                      <Th>Depth</Th>
+                      <Th>Oldest</Th>
+                      <Th>Youngest</Th>
+                      <Th>Count</Th>
+                      <Th>Goal Tree Size</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {treeManager.message_counts.map(
+                      ({ message_tree_id, state, depth, oldest, youngest, count, goal_tree_size }) => (
+                        <Tr key={message_tree_id}>
+                          <Td>{message_tree_id}</Td>
+                          <Td>{state}</Td>
+                          <Td>{depth}</Td>
+                          <Td>{oldest}</Td>
+                          <Td>{youngest}</Td>
+                          <Td>{count}</Td>
+                          <Td>{goal_tree_size}</Td>
+                        </Tr>
+                      )
+                    )}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+            </Box>
+          ) : (
+            <CircularProgress isIndeterminate />
+          )}
+        </CardBody>
       </Card>
     </>
   );
