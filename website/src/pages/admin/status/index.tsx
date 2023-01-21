@@ -56,46 +56,13 @@ const StatusIndex = ({ user }) => {
     router.push("/");
   }, [router, session, status]);
 
-  const [availability, setAvailability] = useState(0);
-  const [stats, setStats] = useState(0);
-  const [treeManager, setTreeManager] = useState(0);
+  const {
+    data: dataStatus,
+    error: errorStatus,
+    isLoading: isLoadingStatus,
+  } = useSWRImmutable("/api/admin/status", get);
 
-  const {
-    data: dataAvailability,
-    error: errorAvailability,
-    isLoading: isLoadingAvailability,
-  } = useSWRImmutable("/api/admin/tasks_availability", get, {
-    onSuccess: (data) => {
-      setAvailability(data);
-    },
-    onError: (error) => {
-      setAvailability(error);
-    },
-  });
-  const {
-    data: dataStats,
-    error: errorStats,
-    isLoading: isLoadingStats,
-  } = useSWRImmutable("/api/admin/stats", get, {
-    onSuccess: (data) => {
-      setStats(data);
-    },
-    onError: (error) => {
-      setStats(error);
-    },
-  });
-  const {
-    data: dataTreeManager,
-    error: errorTreeManager,
-    isLoading: isLoadingTreeManager,
-  } = useSWRImmutable("/api/admin/tree_manager", get, {
-    onSuccess: (data) => {
-      setTreeManager(data);
-    },
-    onError: (error) => {
-      setTreeManager(error);
-    },
-  });
+  const { tasksAvailability, stats, treeManager } = dataStatus || {};
 
   return (
     <>
@@ -114,7 +81,7 @@ const StatusIndex = ({ user }) => {
           </Text>
           <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
             <pre id="json">
-              {availability ? JSON.stringify(availability, null, 2) : <CircularProgress isIndeterminate />}
+              {tasksAvailability ? JSON.stringify(tasksAvailability, null, 2) : <CircularProgress isIndeterminate />}
             </pre>
           </Box>
         </Card>
