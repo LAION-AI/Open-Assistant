@@ -58,6 +58,28 @@ the end to trigger deepspeed
 python trainer.py --configs defaults your-model-name --deepspeed
 ```
 
+## Dataset choices
+
+To specify which translation pair for
+[WMT](https://huggingface.co/datasets/wmt19) and
+[TED Talk](https://huggingface.co/datasets/ted_talks_iwslt) translation simply
+add the supported language pair at the postfix
+
+```
+  datasets:
+    - wmt2019_zh-en
+    - wmt2019_ru-en
+    - wmt2019_de-en
+    - ted_trans_nl-en
+    - ted_trans_de-ja
+```
+
+Currently only these languages are supported via prompt translation:
+
+```
+ar,de,fr,en,it,nl,tr,ru,ms,ko,ja,zh
+```
+
 ## Results
 
 Experimental results in wandb

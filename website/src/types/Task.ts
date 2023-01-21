@@ -10,6 +10,8 @@ export const enum TaskType {
   label_initial_prompt = "label_initial_prompt",
   label_prompter_reply = "label_prompter_reply",
   label_assistant_reply = "label_assistant_reply",
+
+  random = "random",
 }
 
 // we need to reconsider how to handle task content types
@@ -32,3 +34,5 @@ export interface TaskResponse<Task extends BaseTask> {
   userId: string;
   task: Task;
 }
+
+export type AvailableTasks = { [taskType in TaskType]: number };

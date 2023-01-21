@@ -5,7 +5,7 @@ import prisma from "src/lib/prismadb";
 
 const handler = withoutRole("banned", async (req, res) => {
   // Parse out the local task ID and the interaction contents.
-  const { id: frontendId, reason } = await JSON.parse(req.body);
+  const { id: frontendId, reason } = req.body;
 
   const registeredTask = await prisma.registeredTask.findUniqueOrThrow({ where: { id: frontendId } });
 

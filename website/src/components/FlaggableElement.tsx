@@ -1,8 +1,8 @@
 import {
+  Box,
   Button,
   Checkbox,
   Flex,
-  Grid,
   Popover,
   PopoverAnchor,
   PopoverArrow,
@@ -14,19 +14,19 @@ import {
   SliderFilledTrack,
   SliderThumb,
   SliderTrack,
-  Spacer,
   Tooltip,
   useBoolean,
   useColorMode,
   useColorModeValue,
   useId,
 } from "@chakra-ui/react";
-import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import clsx from "clsx";
 import { useEffect, useReducer } from "react";
-import fetcher from "src/lib/fetcher";
-import poster from "src/lib/poster";
+import { FiAlertCircle } from "react-icons/fi";
+import { get, post } from "src/lib/api";
+import { colors } from "src/styles/Theme/colors";
 import { Message } from "src/types/Conversation";
-import { colors } from "styles/Theme/colors";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
@@ -99,21 +99,22 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
     { label_values: [], submittable: false }
   );
   const [isEditing, setIsEditing] = useBoolean();
-  const backgroundColor = useColorModeValue("gray.200", "gray.700");
 
-  const { data, isLoading } = useSWR("/api/valid_labels", fetcher);
+  const { data, isLoading } = useSWR("/api/valid_labels", get);
   useEffect(() => {
     if (isLoading) {
+      return;
+    }
+    if (!data) {
+      updateReport({ type: "load_labels", labels: [] });
       return;
     }
     const { valid_labels } = data;
     updateReport({ type: "load_labels", labels: valid_labels });
   }, [data, isLoading]);
 
-  const { trigger } = useSWRMutation("/api/set_label", poster, {
-    onSuccess: () => {
-      setIsEditing.off();
-    },
+  const { trigger } = useSWRMutation("/api/set_label", post, {
+    onSuccess: setIsEditing.off,
   });
 
   const submitResponse = () => {
@@ -146,24 +147,25 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
       isLazy
       lazyBehavior="keepMounted"
     >
-      <Grid templateColumns="1fr min-content" gap={2}>
+      <Box display="flex" alignItems="center" flexDirection={["column", "row"]} gap="2">
         <PopoverAnchor>{props.children}</PopoverAnchor>
-        <Tooltip label="Report" bg="red.500">
-          <div>
-            <PopoverTrigger>
-              <Button h="full" bg={backgroundColor}>
-                <FlagIcon className="w-4 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
-              </Button>
-            </PopoverTrigger>
-          </div>
-        </Tooltip>
-      </Grid>
 
-      <PopoverContent width="fit-content">
+        <Tooltip label="Report" bg="red.500" aria-label="A tooltip">
+          <Box>
+            <PopoverTrigger>
+              <Box as="button" display="flex" alignItems="center" justifyContent="center" borderRadius="full" p="1">
+                <FiAlertCircle size="20" className="text-red-400" aria-hidden="true" />
+              </Box>
+            </PopoverTrigger>
+          </Box>
+        </Tooltip>
+      </Box>
+
+      <PopoverContent width="auto" p="3" m="4" maxWidth="calc(100vw - 2rem)">
         <PopoverArrow />
-        <div className="relative h-4">
+        <Box className="relative h-4">
           <PopoverCloseButton />
-        </div>
+        </Box>
         <PopoverBody>
           {report.label_values.map(({ label, checked, value }, i) => (
             <FlagCheckbox
@@ -207,9 +209,9 @@ export function FlagCheckbox(props: FlagCheckboxProps): JSX.Element {
   let AdditionalExplanation = null;
   if (props.label.help_text) {
     AdditionalExplanation = (
-      <a href="#" className="group flex items-center space-x-2.5 text-sm ">
+      <a href="#" className="text-sm inline group leading-4">
         <QuestionMarkCircleIcon
-          className="flex h-5 w-5 ml-3 text-gray-400 group-hover:text-gray-500"
+          className="h-5 w-5 ml-1 text-gray-400 group-hover:text-gray-500 inline"
           aria-hidden="true"
         />
       </a>
@@ -221,23 +223,30 @@ export function FlagCheckbox(props: FlagCheckboxProps): JSX.Element {
 
   const labelTextClass =
     colorMode === "light"
-      ? `text-${colors.light.text} hover:text-blue-700 float-left`
-      : `text-${colors.dark.text} hover:text-blue-400 float-left`;
+      ? `text-${colors.light.text} hover:text-blue-700`
+      : `text-${colors.dark.text} hover:text-blue-400`;
 
   return (
-    <Flex gap={1}>
-      <Checkbox
-        id={id}
-        isChecked={props.checked}
-        onChange={(e) => {
-          props.checkboxHandler(e.target.checked, props.idx);
-        }}
-      />
-      <label className="text-sm form-check-label" htmlFor={id}>
-        <span className={labelTextClass}>{props.label.display_text}</span>
-        {AdditionalExplanation}
-      </label>
-      <Spacer />
+    <Flex gap="4" justifyContent="space-between" className="my-2">
+      <div className="flex items-start align-middle">
+        <Checkbox
+          id={id}
+          isChecked={props.checked}
+          onChange={(e) => {
+            props.checkboxHandler(e.target.checked, props.idx);
+          }}
+        />
+        <label
+          className={clsx(
+            "text-sm form-check-label ml-2 break-all inline align-middle first-line:leading-4",
+            labelTextClass
+          )}
+          htmlFor={id}
+        >
+          {props.label.display_text}
+          {AdditionalExplanation}
+        </label>
+      </div>
       <div
         onClick={() => {
           if (!props.checked) {

@@ -5,52 +5,96 @@ describe("handles random tasks", () => {
     cy.signInWithEmail("cypress@example.com");
     cy.visit("/tasks/random");
 
-    // Check all create tasks.
-    cy.get('[data-cy="task"]').then((createTaskElement) => {
-      if (createTaskElement.find('[data-task-type="create-task"]').length) {
-        cy.get('[data-cy="task-id"]').then((taskIdElement) => {
-          const taskId = taskIdElement.text();
+    // Do some tasks
+    for (let taskNum = 0; taskNum < 10; taskNum++) {
+      cy.get('[data-cy="task"]')
+        .invoke("attr", "data-task-type")
+        .then((type) => {
+          cy.log("Task type", type);
 
-          const reply = faker.lorem.sentence();
-          cy.log("reply", reply);
-          cy.get('[data-cy="reply"]').type(reply);
+          cy.get('[data-cy="task-id"]').then((taskIdElement) => {
+            const taskId = taskIdElement.text();
 
-          cy.get('[data-cy="submit"]').click();
+            switch (type) {
+              case "create-task": {
+                const reply = faker.lorem.sentence();
+                cy.log("reply", reply);
+                cy.get('[data-cy="reply"]').type(reply);
 
-          cy.get('[data-cy="task-id]"').should((taskIdElement) => {
-            expect(taskIdElement.text()).not.to.eq(taskId);
+                cy.get('[data-cy="review"]').click();
+
+                cy.get('[data-cy="submit"]').click();
+                break;
+              }
+              case "evaluate-task": {
+                // Rank an item using the keyboard so that the submit button is enabled
+                cy.get('[aria-roledescription="sortable"]')
+                  .first()
+                  .click()
+                  .type("{enter}")
+                  .wait(100)
+                  .type("{downArrow}")
+                  .wait(100)
+                  .type("{enter}");
+
+                cy.get('[data-cy="review"]').click();
+
+                cy.get('[data-cy="submit"]').click();
+
+                break;
+              }
+              case "label-task": {
+                cy.get('[data-cy="label-group-item"]')
+                  .first()
+                  .invoke("attr", "data-label-type")
+                  .then((label_type) => {
+                    const parent = cy
+                      .get('[data-cy="label-group-item"]')
+                      .first();
+                    cy.log("Label type", label_type);
+
+                    switch (label_type) {
+                      case "slider": {
+                        // Clicking on the slider will set the value to about the middle where it clicks
+                        parent
+                          .get('[aria-roledescription="slider"]')
+                          .first()
+                          .click();
+
+                        cy.get('[data-cy="review"]').click();
+
+                        cy.get('[data-cy="submit"]').click();
+
+                        break;
+                      }
+                      case "radio": {
+                        // Clicking on the slider will set the value to about the middle where it clicks
+                        parent
+                          .get('[aria-roledescription="radio-button"]')
+                          .last()
+                          .click();
+
+                        cy.get('[data-cy="review"]').click();
+
+                        cy.get('[data-cy="submit"]').click();
+
+                        break;
+                      }
+                    }
+                  });
+
+                break;
+              }
+              default:
+                throw new Error(`Unexpected task type: ${type}`);
+            }
+
+            cy.get('[data-cy="task-id"]').should((taskIdElement) => {
+              expect(taskIdElement.text()).not.to.eq(taskId);
+            });
           });
         });
-      }
-
-      // Check all Evaluate tasks.
-      if (createTaskElement.find('[data-task-type="evaluate-task"]').length) {
-        cy.get('[data-cy="task-id"]').then((taskIdElement) => {
-          const taskId = taskIdElement.text();
-
-          // Rank an item using the keyboard so that the submit button is enabled
-          cy.get('button[aria-roledescription="sortable"]')
-            .first()
-            .click()
-            .type("{enter}")
-            .wait(100)
-            .type("{downArrow}")
-            .wait(100)
-            .type("{enter}");
-
-          cy.get('[data-cy="submit"]').click();
-
-          cy.get('[data-cy="task-id"]').should((taskIdElement) => {
-            expect(taskIdElement.text()).not.to.eq(taskId);
-          });
-        });
-      }
-
-      if (createTaskElement.find('[data-task-type="label-task"]').length) {
-      }
-
-      // TODO(#623): Figure out how to fail the test if none of the checks above pass.
-    });
+    }
   });
 });
 

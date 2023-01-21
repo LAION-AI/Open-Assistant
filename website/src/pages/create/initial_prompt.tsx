@@ -4,6 +4,7 @@ import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useCreateInitialPrompt } from "src/hooks/tasks/useCreateReply";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const InitialPrompt = () => {
   const { tasks, isLoading, reset, trigger } = useCreateInitialPrompt();
@@ -19,8 +20,8 @@ const InitialPrompt = () => {
   return (
     <>
       <Head>
-        <title>Reply as Assistant</title>
-        <meta name="description" content="Reply as Assistant." />
+        <title>Initial Prompt</title>
+        <meta name="description" content="Add an initial Prompt." />
       </Head>
       <Task key={tasks[0].task.id} frontendId={tasks[0].id} task={tasks[0].task} trigger={trigger} mutate={reset} />
     </>

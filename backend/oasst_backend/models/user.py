@@ -10,7 +10,10 @@ from sqlmodel import AutoString, Field, Index, SQLModel
 
 class User(SQLModel, table=True):
     __tablename__ = "user"
-    __table_args__ = (Index("ix_user_username", "api_client_id", "username", "auth_method", unique=True),)
+    __table_args__ = (
+        Index("ix_user_username", "api_client_id", "username", "auth_method", unique=True),
+        Index("ix_user_display_name_id", "display_name", "id", unique=True),
+    )
 
     id: Optional[UUID] = Field(
         sa_column=sa.Column(
@@ -21,7 +24,7 @@ class User(SQLModel, table=True):
     auth_method: str = Field(nullable=False, max_length=128, default="local")
     display_name: str = Field(nullable=False, max_length=256)
     created_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
+        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp())
     )
     api_client_id: UUID = Field(foreign_key="api_client.id")
     enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
@@ -37,4 +40,5 @@ class User(SQLModel, table=True):
             enabled=self.enabled,
             deleted=self.deleted,
             notes=self.notes,
+            created_date=self.created_date,
         )

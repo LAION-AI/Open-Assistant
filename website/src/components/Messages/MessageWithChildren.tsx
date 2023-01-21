@@ -1,9 +1,8 @@
 import { Box, CircularProgress, Stack, StackProps, Text, TextProps, useColorModeValue } from "@chakra-ui/react";
-import { boolean } from "boolean";
-import { useState } from "react";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
-import fetcher from "src/lib/fetcher";
-import useSWR from "swr";
+import { get } from "src/lib/api";
+import { Message } from "src/types/Conversation";
+import useSWRImmutable from "swr/immutable";
 
 const MessageHeaderProps: TextProps = {
   fontSize: "xl",
@@ -21,39 +20,24 @@ const MessageStackProps: StackProps = {
 interface MessageWithChildrenProps {
   id: string;
   depth?: number;
-  maxDepth?: number;
+  maxDepth: number;
   isOnlyChild?: boolean;
 }
 
 export function MessageWithChildren(props: MessageWithChildrenProps) {
-  const backgroundColor = useColorModeValue("white", "gray.700");
-  const childBackgroundColor = useColorModeValue("gray.200", "gray.800");
+  const backgroundColor = useColorModeValue("white", "gray.800");
+  const childBackgroundColor = useColorModeValue("gray.200", "gray.700");
+  const { id, depth = 0, maxDepth, isOnlyChild = true } = props;
 
-  const { id, depth, maxDepth, isOnlyChild = true } = props;
+  const { isLoading, data: message } = useSWRImmutable<Message>(`/api/messages/${id}`, get);
+  const { isLoading: isLoadingChildren, data: children = [] } = useSWRImmutable<Message[]>(
+    `/api/messages/${id}/children`,
+    get
+  );
 
-  const [message, setMessage] = useState(null);
-  const [children, setChildren] = useState(null);
-
-  const { isLoading } = useSWR(id ? `/api/messages/${id}` : null, fetcher, {
-    onSuccess: (data) => {
-      setMessage(data);
-    },
-    onError: () => {
-      setMessage(null);
-    },
-  });
-  const { isLoading: isLoadingChildren } = useSWR(id ? `/api/messages/${id}/children` : null, fetcher, {
-    onSuccess: (data) => {
-      setChildren(data);
-    },
-    onError: () => {
-      setChildren(null);
-    },
-  });
-
-  const renderRecursive = maxDepth && ((depth && depth < maxDepth) || !depth);
-  const isFirst = depth === 0 || !depth;
-  const isFirstOrOnly = isFirst || boolean(isOnlyChild);
+  const renderRecursive = depth < maxDepth || depth === 0;
+  const isFirst = depth === 0;
+  const isFirstOrOnly = isFirst || !!isOnlyChild;
 
   if (isLoading || isLoadingChildren) {
     return <CircularProgress isIndeterminate />;
@@ -73,15 +57,15 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
           </Box>
         </>
       )}
-      {children && Array.isArray(children) && children.length > 0 ? (
-        renderRecursive ? (
+      {children.length > 0 &&
+        (renderRecursive ? (
           <Stack {...MessageStackProps}>
             <Box bg={childBackgroundColor} padding="4" borderRadius="xl">
-              {children.map((item, idx) => (
-                <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
+              {children.map((item) => (
+                <Box flex="1" key={`recursiveMessageWChildren_${item.id}`}>
                   <MessageWithChildren
                     id={item.id}
-                    depth={depth ? depth + 1 : 1}
+                    depth={depth + 1}
                     maxDepth={maxDepth}
                     isOnlyChild={children.length === 1 && isOnlyChild}
                   />
@@ -93,17 +77,24 @@ export function MessageWithChildren(props: MessageWithChildrenProps) {
           <>
             <Text {...MessageHeaderProps}>{isFirstOrOnly ? "Children" : "Ancestor"}</Text>
             <Stack {...MessageStackProps}>
-              {children.map((item, idx) => (
-                <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
-                  <MessageTableEntry enabled item={item} />
-                </Box>
-              ))}
+              <Box
+                bg={backgroundColor}
+                padding="4"
+                borderRadius="xl"
+                display="flex"
+                flexDirection="column"
+                gap="4"
+                shadow="base"
+              >
+                {children.map((item, idx) => (
+                  <Box flex="1" key={`recursiveMessageWChildren_${idx}`}>
+                    <MessageTableEntry enabled item={item} />
+                  </Box>
+                ))}
+              </Box>
             </Stack>
           </>
-        )
-      ) : (
-        <></>
-      )}
+        ))}
     </>
   );
 }

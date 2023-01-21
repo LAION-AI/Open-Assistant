@@ -1,0 +1,18 @@
+{
+  "about": "About",
+  "account_settings": "Account",
+  "connect": "Connect",
+  "conversational": "Conversational AI for everyone.",
+  "dashboard": "Dashboard",
+  "discord": "Discord",
+  "docs": "Docs",
+  "github": "GitHub",
+  "legal": "Legal",
+  "privacy_policy": "Privacy Policy",
+  "report_a_bug": "Report a Bug",
+  "sign_in": "Sign In",
+  "sign_out": "Sign Out",
+  "terms_of_service": "Terms of Service",
+  "title": "Open Assistant",
+  "last_updated_at": "Last updated at: {{val, datetime}}"
+}

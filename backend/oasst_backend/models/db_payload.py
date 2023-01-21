@@ -65,12 +65,16 @@ class RankingReactionPayload(ReactionPayload):
     type: Literal["message_ranking"] = "message_ranking"
     ranking: list[int]
     ranked_message_ids: list[UUID]
+    ranking_parent_id: Optional[UUID]
+    message_tree_id: Optional[UUID]
 
 
 @payload_type
 class RankConversationRepliesPayload(TaskPayload):
     conversation: protocol_schema.Conversation  # the conversation so far
     reply_messages: list[protocol_schema.ConversationMessage]
+    ranking_parent_id: Optional[UUID]
+    message_tree_id: Optional[UUID]
 
 
 @payload_type
@@ -104,6 +108,7 @@ class LabelInitialPromptPayload(TaskPayload):
     prompt: str
     valid_labels: list[str]
     mandatory_labels: Optional[list[str]]
+    mode: Optional[protocol_schema.LabelTaskMode]
 
 
 @payload_type
@@ -115,6 +120,7 @@ class LabelConversationReplyPayload(TaskPayload):
     reply: str
     valid_labels: list[str]
     mandatory_labels: Optional[list[str]]
+    mode: Optional[protocol_schema.LabelTaskMode]
 
 
 @payload_type

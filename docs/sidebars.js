@@ -26,6 +26,20 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "Tasks",
+      link: {
+        type: "doc",
+        id: "tasks/README",
+      },
+      items: [
+        "tasks/label_assistant_reply",
+        "tasks/label_prompter_reply",
+        "tasks/reply_as_assistant",
+        "tasks/reply_as_user",
+      ],
+    },
+    {
+      type: "category",
       label: "Data",
       link: {
         type: "doc",
@@ -55,6 +69,15 @@ const sidebars = {
         id: "presentations/README",
       },
       items: ["presentations/list"],
+    },
+    {
+      type: "category",
+      label: "FAQ",
+      link: {
+        type: "doc",
+        id: "faq/README",
+      },
+      items: ["faq/faq"],
     },
   ],
 };

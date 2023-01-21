@@ -1,0 +1,6 @@
+loguru
+rel
+torch
+transformers
+typer
+websocket-client

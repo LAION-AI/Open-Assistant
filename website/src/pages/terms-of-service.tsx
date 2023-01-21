@@ -3,6 +3,7 @@ import Head from "next/head";
 import { getTransparentHeaderLayout } from "src/components/Layout";
 import { PolicyChapterCard } from "src/components/PolicyCards/PolicyChapterCard";
 import { PolicySectionCard } from "src/components/PolicyCards/PolicySectionCard";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const TermsOfService = () => {
   const TermsData = [
@@ -14,7 +15,7 @@ const TermsOfService = () => {
         {
           number: "1.1",
           title: "",
-          desc: `LAION (association in formation), Marie-Henning-Weg 143, 21035 Hamburg (hereinafter referred to as: "LAION") operates an online portal for the producing a machine learning model called Open Assistant using crowdsourced data.`,
+          desc: `LAION (association in formation), Marie-Henning-Weg 143, 21035 Hamburg (hereinafter referred to as: "LAION") operates an online portal for the producing a machine learning model called Open Assistant using crowd-sourced data.`,
         },
         {
           number: "1.2",

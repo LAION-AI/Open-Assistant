@@ -1,5 +1,6 @@
-import { Center, Text, useColorMode, useColorModeValue } from "@chakra-ui/react";
-import { FiFileText } from "react-icons/fi";
+import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
+import { useRouter } from "next/router";
+import { FiAlertTriangle } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
 
 type EmptyStateProps = {
@@ -8,25 +9,22 @@ type EmptyStateProps = {
 };
 
 export const EmptyState = (props: EmptyStateProps) => {
-  const { colorMode } = useColorMode();
-  const mainBgClasses = colorMode === "light" ? "bg-slate-300 text-gray-900" : "bg-slate-900 text-white";
-
-  const widgetClasses = useColorModeValue("border-gray-700 text-gray-700", "border-gray-300 text-gray-300");
+  const backgroundColor = useColorModeValue("white", "gray.800");
+  const router = useRouter();
 
   return (
-    <div className={`p-12 ${mainBgClasses}`}>
-      <Center>
-        <div className={`block border-2 border-dotted rounded-lg p-24 text-center ${widgetClasses}`}>
-          <props.icon className="mx-auto h-16 w-16" />
-          <Text fontFamily="inter" fontSize="2xl">
-            {props.text}
-          </Text>
-        </div>
-      </Center>
-    </div>
+    <Box bg={backgroundColor} p="10" borderRadius="xl" shadow="base">
+      <Box display="flex" flexDirection="column" alignItems="center" gap="8" fontSize="lg">
+        <props.icon size="30" color="DarkOrange" />
+        <Text>{props.text}</Text>
+        <Link onClick={() => router.back()} color="blue.500" textUnderlineOffset="3px">
+          <Text>Click here to go back</Text>
+        </Link>
+      </Box>
+    </Box>
   );
 };
 
 export const TaskEmptyState = () => {
-  return <EmptyState text="No tasks found!" icon={FiFileText} />;
+  return <EmptyState text="Looks like no tasks were found." icon={FiAlertTriangle} />;
 };

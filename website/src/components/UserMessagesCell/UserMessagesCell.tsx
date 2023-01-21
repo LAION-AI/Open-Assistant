@@ -1,6 +1,6 @@
 import { Box, CircularProgress, useColorModeValue } from "@chakra-ui/react";
 import { MessageTable } from "src/components/Messages/MessageTable";
-import fetcher from "src/lib/fetcher";
+import { get } from "src/lib/api";
 import useSWR from "swr";
 
 interface UserMessagesCellProps {
@@ -16,7 +16,7 @@ interface UserMessagesCellProps {
  */
 const UserMessagesCell = ({ path }: UserMessagesCellProps) => {
   const url = path || "/api/messages/user";
-  const { data: messages, isLoading } = useSWR(url, fetcher, {
+  const { data: messages, isLoading } = useSWR(url, get, {
     refreshInterval: 2000,
   });
   // TODO(#651): This box coloring and styling is used in multiple places.  We
