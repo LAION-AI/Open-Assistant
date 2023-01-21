@@ -1,70 +1,86 @@
-import { useColorMode } from "@chakra-ui/react";
+import { Box, Divider, Flex, Text, useColorMode } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslation } from "next-i18next";
+import { useMemo } from "react";
 
 export function Footer() {
+  const { t } = useTranslation();
   const { colorMode } = useColorMode();
-  const bgColorClass = colorMode === "light" ? "bg-transparent" : "bg-gray-800";
-  const borderClass = colorMode === "light" ? "border-slate-200" : "border-transparent";
+  const backgroundColor = colorMode === "light" ? "white" : "gray.800";
+  const textColor = colorMode === "light" ? "black" : "gray.300";
 
   return (
-    <footer className={bgColorClass}>
-      <div className={`flex mx-auto max-w-7xl justify-between py-10 px-10 border-t ${borderClass}`}>
-        <div className="flex items-center pr-8">
-          <Link href="/" aria-label="Home" className="flex items-center">
-            <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="52" height="52" alt="logo" />
-          </Link>
+    <footer>
+      <Box bg={backgroundColor}>
+        <Divider />
+        <Box
+          display="flex"
+          flexDirection={["column", "row"]}
+          justifyContent="space-between"
+          alignItems="center"
+          gap="6"
+          p="8"
+          pb={["14", "8"]}
+          w="full"
+          mx="auto"
+          maxWidth="7xl"
+        >
+          <Flex alignItems="center">
+            <Box pr="2">
+              <Link href="/" aria-label="Home">
+                <Image src="/images/logos/logo.svg" width="52" height="52" alt="logo" />
+              </Link>
+            </Box>
 
-          <div className="ml-2">
-            <p className="text-base font-bold">Open Assistant</p>
-            <p className="text-sm">Conversational AI for everyone.</p>
-          </div>
-        </div>
+            <Box>
+              <Text fontSize="md" fontWeight="bold">
+                {t("title")}
+              </Text>
+              <Text fontSize="sm" color="gray.500">
+                {t("conversational")}
+              </Text>
+            </Box>
+          </Flex>
 
-        <nav className="flex justify-center gap-20">
-          <nav className="flex justify-center gap-20">
-            <div className="flex flex-col text-sm leading-7">
-              <b>Legal</b>
-              <div className="flex flex-col leading-5">
-                <Link href="/privacy-policy" aria-label="Privacy Policy" className="hover:underline underline-offset-2">
-                  Privacy Policy
-                </Link>
-                <Link
-                  href="/terms-of-service"
-                  aria-label="Terms of Service"
-                  className="hover:underline underline-offset-2"
-                >
-                  Terms of Service
-                </Link>
-              </div>
-            </div>
-            <div className="flex flex-col text-sm leading-7">
-              <b>Connect</b>
-              <div className="flex flex-col leading-5">
-                <Link
-                  href="https://github.com/LAION-AI/Open-Assistant"
-                  rel="noopener noreferrer nofollow"
-                  target="_blank"
-                  aria-label="Privacy Policy"
-                  className="hover:underline underline-offset-2"
-                >
-                  Github
-                </Link>
-                <Link
-                  href="https://discord.gg/pXtnYk9c"
-                  rel="noopener noreferrer nofollow"
-                  target="_blank"
-                  aria-label="Terms of Service"
-                  className="hover:underline underline-offset-2"
-                >
-                  Discord
-                </Link>
-              </div>
-            </div>
+          <nav>
+            <Box display="flex" flexDirection={["column", "row"]} gap={["6", "14"]} fontSize="sm">
+              <Flex direction="column" alignItems={["center", "start"]}>
+                <Text fontWeight="bold" color={textColor}>
+                  {t("legal")}
+                </Text>
+                <FooterLink href="/privacy-policy" label={t("privacy_policy")} />
+                <FooterLink href="/terms-of-service" label={t("terms_of_service")} />
+              </Flex>
+              <Flex direction="column" alignItems={["center", "start"]}>
+                <Text fontWeight="bold" color={textColor}>
+                  {t("connect")}
+                </Text>
+                <FooterLink href="https://github.com/LAION-AI/Open-Assistant" label={t("github")} />
+                <FooterLink href="https://ykilcher.com/open-assistant-discord" label={t("discord")} />
+              </Flex>
+              <Flex direction="column" alignItems={["center", "start"]}>
+                <Text fontWeight="bold" color={textColor}>
+                  {t("about")}
+                </Text>
+                <FooterLink href="https://projects.laion.ai/Open-Assistant" label={t("docs")} />
+              </Flex>
+            </Box>
           </nav>
-          {/* </div> */}
-        </nav>
-      </div>
+        </Box>
+      </Box>
     </footer>
   );
 }
+
+const FooterLink = ({ href, label }: { href: string; label: string }) =>
+  useMemo(
+    () => (
+      <Link href={href} rel="noopener noreferrer nofollow" target="_blank" aria-label={label}>
+        <Text color="blue.500" textUnderlineOffset={2} _hover={{ textDecoration: "underline" }}>
+          {label}
+        </Text>
+      </Link>
+    ),
+    [href, label]
+  );

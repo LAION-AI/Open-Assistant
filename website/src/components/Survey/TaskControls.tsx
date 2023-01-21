@@ -1,44 +1,66 @@
-import { useColorMode } from "@chakra-ui/react";
-import { Flex } from "@chakra-ui/react";
+import { Box, Flex, IconButton, Tooltip, useColorModeValue } from "@chakra-ui/react";
+import { FiEdit2 } from "react-icons/fi";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
+import { TaskStatus } from "src/components/Tasks/Task";
 
 export interface TaskControlsProps {
   // we need a task type
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  tasks: any[];
+  task: any;
   className?: string;
-  onSubmitResponse: (task: { id: string }) => void;
-  onSkip: () => void;
+  taskStatus: TaskStatus;
+  onEdit: () => void;
+  onReview: () => void;
+  onSubmit: () => void;
+  onSkip: (reason: string) => void;
 }
 
 export const TaskControls = (props: TaskControlsProps) => {
-  const extraClases = props.className || "";
-  const { colorMode } = useColorMode();
+  const backgroundColor = useColorModeValue("white", "gray.800");
 
-  const baseClasses = "flex flex-row justify-items-stretch mb-8 p-4 rounded-lg max-w-7xl mx-auto";
-  const taskControlClases =
-    colorMode === "light"
-      ? `${baseClasses} bg-white text-gray-800 shadow-lg ${extraClases}`
-      : `${baseClasses} bg-slate-800 text-slate-400 shadow-xl ring-1 ring-white/10 ring-inset ${extraClases}`;
-
-  const endTask = props.tasks[props.tasks.length - 1];
   return (
-    <section className={taskControlClases}>
-      <TaskInfo id={props.tasks[0].id} output="Submit your answer" />
-      <Flex justify="center" ml="auto" gap={2}>
-        <SkipButton>Skip</SkipButton>
-        {endTask.task.type !== "task_done" ? (
-          <SubmitButton colorScheme="blue" data-cy="submit" onClick={() => props.onSubmitResponse(props.tasks[0])}>
-            Submit
-          </SubmitButton>
+    <Box
+      width="full"
+      bg={backgroundColor}
+      borderRadius="xl"
+      p="6"
+      display="flex"
+      flexDirection={["column", "row"]}
+      shadow="base"
+      gap="4"
+    >
+      <TaskInfo id={props.task.id} output="Submit your answer" />
+      <Flex width={["full", "fit-content"]} justify="center" ml="auto" gap={2}>
+        {props.taskStatus === "REVIEW" || props.taskStatus === "SUBMITTED" ? (
+          <>
+            <Tooltip label="Edit">
+              <IconButton size="lg" data-cy="edit" aria-label="edit" onClick={props.onEdit} icon={<FiEdit2 />} />
+            </Tooltip>
+            <SubmitButton
+              colorScheme="green"
+              data-cy="submit"
+              disabled={props.taskStatus === "SUBMITTED"}
+              onClick={props.onSubmit}
+            >
+              Submit
+            </SubmitButton>
+          </>
         ) : (
-          <SubmitButton colorScheme="green" data-cy="next-task" onClick={props.onSkip}>
-            Next Task
-          </SubmitButton>
+          <>
+            <SkipButton onSkip={props.onSkip} />
+            <SubmitButton
+              colorScheme="blue"
+              data-cy="review"
+              disabled={props.taskStatus === "NOT_SUBMITTABLE"}
+              onClick={props.onReview}
+            >
+              Review
+            </SubmitButton>
+          </>
         )}
       </Flex>
-    </section>
+    </Box>
   );
 };

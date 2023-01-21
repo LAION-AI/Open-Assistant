@@ -1,33 +1,41 @@
-import { Box, useColorMode } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 import Head from "next/head";
-
+import { useMemo } from "react";
+import { LeaderboardTable, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { getDashboardLayout } from "src/components/Layout";
-import { LeaderboardTable, SideMenu, TaskOption } from "src/components/Dashboard";
-import { colors } from "styles/Theme/colors";
+import { TaskCategory } from "src/components/Tasks/TaskTypes";
+import { get } from "src/lib/api";
+import type { AvailableTasks, TaskType } from "src/types/Task";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+import useSWRImmutable from "swr/immutable";
 
 const Dashboard = () => {
-  const { colorMode } = useColorMode();
+  const { data } = useSWRImmutable<AvailableTasks>("/api/available_tasks", get);
+
+  // TODO: show only these tasks:
+  const availableTasks = useMemo(() => filterAvailableTasks(data ?? {}), [data]);
+
   return (
     <>
       <Head>
         <title>Dashboard - Open Assistant</title>
         <meta name="description" content="Chat with Open Assistant and provide feedback." />
       </Head>
-      <Box backgroundColor={colorMode === "light" ? colors.light.bg : colors.dark.bg} className="sm:overflow-hidden">
-        <Box className="sm:flex h-full gap-6">
-          <Box className="p-6 sm:pr-0">
-            <SideMenu />
-          </Box>
-          <Box className="flex flex-col overflow-auto p-6 sm:pl-0 gap-14">
-            <TaskOption />
-            <LeaderboardTable />
-          </Box>
-        </Box>
-      </Box>
+      <Flex direction="column" gap="10">
+        <WelcomeCard />
+        <TaskOption displayTaskCategories={[TaskCategory.Random]} />
+        <LeaderboardTable />
+      </Flex>
     </>
   );
 };
 
-Dashboard.getLayout = (page) => getDashboardLayout(page);
+Dashboard.getLayout = getDashboardLayout;
 
 export default Dashboard;
+
+const filterAvailableTasks = (availableTasks: Partial<AvailableTasks>) =>
+  Object.entries(availableTasks)
+    .filter(([_, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1])
+    .map(([taskType]) => taskType) as TaskType[];

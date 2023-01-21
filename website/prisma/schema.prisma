@@ -41,6 +41,8 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  isNew         Boolean   @default(true)
+  role          String    @default("general")
 
   accounts      Account[]
   sessions      Session[]

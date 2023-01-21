@@ -1,0 +1,162 @@
+# ansible playbook to set up some docker containers
+
+- name: Deploy to node
+  hosts: dev
+  gather_facts: true
+  vars:
+    stack_name: "dev"
+    image_tag: latest
+    backend_port: 8080
+    website_port: 3000
+    postgres_password: postgres
+    web_api_key: "1234"
+  tasks:
+    - name: Create network
+      community.docker.docker_network:
+        name: "oasst-{{ stack_name }}"
+        state: present
+        driver: bridge
+
+    - name: Create stack files directory
+      ansible.builtin.file:
+        path: "./{{ stack_name }}"
+        state: directory
+        mode: 0755
+
+    - name: Copy redis.conf to managed node
+      ansible.builtin.copy:
+        src: ./redis.conf
+        dest: "./{{ stack_name }}/redis.conf"
+        mode: 0644
+
+    - name: Set up Redis
+      community.docker.docker_container:
+        name: "oasst-{{ stack_name }}-redis"
+        image: redis
+        state: started
+        recreate: "{{ (stack_name == 'dev') | bool }}"
+        restart_policy: always
+        network_mode: "oasst-{{ stack_name }}"
+        healthcheck:
+          test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+          interval: 2s
+          timeout: 2s
+          retries: 10
+        command: redis-server /usr/local/etc/redis/redis.conf
+        volumes:
+          - "./{{ stack_name }}/redis.conf:/usr/local/etc/redis/redis.conf"
+
+    - name: Create volumes for postgres
+      community.docker.docker_volume:
+        name: "oasst-{{ stack_name }}-postgres-{{ item.name }}"
+        state: present
+      loop:
+        - name: backend
+        - name: web
+
+    - name: Create postgres containers
+      community.docker.docker_container:
+        name: "oasst-{{ stack_name }}-postgres-{{ item.name }}"
+        image: ghcr.io/laion-ai/open-assistant/oasst-postgres
+        state: started
+        pull: true
+        recreate: "{{ (stack_name == 'dev') | bool }}"
+        restart_policy: always
+        network_mode: "oasst-{{ stack_name }}"
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
+          POSTGRES_DB: postgres
+          S3_BUCKET_NAME:
+            "{{ lookup('ansible.builtin.env', 'S3_BUCKET_NAME') }}"
+          AWS_ACCESS_KEY_ID:
+            "{{ lookup('ansible.builtin.env', 'AWS_ACCESS_KEY') }}"
+          AWS_SECRET_ACCESS_KEY:
+            "{{ lookup('ansible.builtin.env', 'AWS_SECRET_KEY') }}"
+          AWS_DEFAULT_REGION: "{{ lookup('ansible.builtin.env', 'S3_REGION') }}"
+        volumes:
+          - "oasst-{{ stack_name }}-postgres-{{ item.name
+            }}:/var/lib/postgresql/data"
+        healthcheck:
+          test: ["CMD", "pg_isready", "-U", "postgres"]
+          interval: 2s
+          timeout: 2s
+          retries: 10
+      loop:
+        - name: backend
+        - name: web
+
+    - name: Run the oasst oasst-backend
+      community.docker.docker_container:
+        name: "oasst-{{ stack_name }}-backend"
+        image: "ghcr.io/laion-ai/open-assistant/oasst-backend:{{ image_tag }}"
+        state: started
+        recreate: true
+        pull: true
+        restart_policy: always
+        network_mode: "oasst-{{ stack_name }}"
+        env:
+          POSTGRES_HOST: "oasst-{{ stack_name }}-postgres-backend"
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
+          REDIS_HOST: "oasst-{{ stack_name }}-redis"
+          DEBUG_USE_SEED_DATA:
+            "{{ 'true' if stack_name == 'dev' else 'false' }}"
+          DEBUG_ALLOW_SELF_LABELING:
+            "{{ 'true' if stack_name == 'dev' else 'false' }}"
+          MAX_WORKERS: "1"
+          RATE_LIMIT: "{{ 'false' if stack_name == 'dev' else 'true' }}"
+          DEBUG_SKIP_EMBEDDING_COMPUTATION: "true"
+          DEBUG_SKIP_TOXICITY_CALCULATION:
+            "{{ lookup('ansible.builtin.env', 'SKIP_TOXICITY_CALCULATION') |
+            default('true', true) }}"
+          OFFICIAL_WEB_API_KEY: "{{ web_api_key }}"
+          TREE_MANAGER__MAX_ACTIVE_TREES:
+            "{{ lookup('ansible.builtin.env', 'MAX_ACTIVE_TREES') |
+            default('10', true) }}"
+          TREE_MANAGER__MAX_TREE_DEPTH:
+            "{{ lookup('ansible.builtin.env', 'MAX_TREE_DEPTH') | default('5',
+            true) }}"
+          TREE_MANAGER__GOAL_TREE_SIZE:
+            "{{ lookup('ansible.builtin.env', 'GOAL_TREE_SIZE') | default('15',
+            true) }}"
+        ports:
+          - "{{ backend_port }}:8080"
+
+    - name: Run the oasst oasst-web frontend
+      community.docker.docker_container:
+        name: "oasst-{{ stack_name }}-web"
+        image: "ghcr.io/laion-ai/open-assistant/oasst-web:{{ image_tag }}"
+        state: started
+        recreate: true
+        pull: true
+        restart_policy: always
+        network_mode: "oasst-{{ stack_name }}"
+        env:
+          ADMIN_USERS: "{{ lookup('ansible.builtin.env', 'WEB_ADMIN_USERS') }}"
+          DATABASE_URL:
+            "postgres://postgres:{{ postgres_password }}@oasst-{{ stack_name
+            }}-postgres-web/postgres"
+          DEBUG_LOGIN: "{{ 'true' if stack_name == 'dev' else 'false' }}"
+          DISCORD_CLIENT_ID:
+            "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_ID') }}"
+          DISCORD_CLIENT_SECRET:
+            "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_SECRET') }}"
+          EMAIL_FROM: open-assistent@laion.ai
+          EMAIL_SERVER_HOST:
+            "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_HOST') }}"
+          EMAIL_SERVER_PASSWORD:
+            "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_PASSWORD') }}"
+          EMAIL_SERVER_PORT:
+            "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_PORT') }}"
+          EMAIL_SERVER_USER:
+            "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
+          FASTAPI_URL: "http://oasst-{{ stack_name }}-backend:8080"
+          FASTAPI_KEY: "{{ web_api_key }}"
+          NEXTAUTH_SECRET:
+            "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
+          NEXTAUTH_URL:
+            "{{ 'https://open-assistant.io/' if stack_name == 'production' else
+            ('https://web.' + stack_name + '.open-assistant.io/') }}"
+        ports:
+          - "{{ website_port }}:3000"
+        command: bash wait-for-postgres.sh node server.js

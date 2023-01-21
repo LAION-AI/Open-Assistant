@@ -1,21 +1,30 @@
+# from functools import partial
 from pathlib import Path
 
+import evaluate
+
+# import nltk
+# import numpy as np
+import transformers
 import yaml
-from custom_datasets import QA_SPECIAL_TOKENS, get_one_dataset
+from custom_datasets import get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
-from losses import CrossEntropyLoss
+from custom_datasets.qa_datasets import QA_SPECIAL_TOKENS
+from losses import CrossEntropyLoss, PolyLoss
+from models import freeze_top_n_layers, get_specific_model
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-SUPPORTED_MODELS = ["galactica", "GPT-JT"]  # deprecated ..
 
 
 def get_tokenizer(conf):
-    tokenizer = AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
 
     if "galactica" in conf.model_name:
         tokenizer.add_special_tokens({"pad_token": "<pad>", "eos_token": "</s>"})
+    elif "GPT-JT" in conf.model_name:
+        tokenizer.add_special_tokens({"pad_token": tokenizer.eos_token, "sep_token": "<|extratoken_100|>"})
+    elif "codegen" in conf.model_name:
+        tokenizer.add_special_tokens({"pad_token": "<|endoftext|>", "sep_token": "<|endoftext|>"})
 
     additional_special_tokens = (
         []
@@ -29,14 +38,63 @@ def get_tokenizer(conf):
     return tokenizer
 
 
-def get_model(conf, tokenizer):
-    if not any([x in conf.model_name for x in SUPPORTED_MODELS]):
-        raise ValueError(
-            f"Model {conf.model_name} not supported. Supported models: {SUPPORTED_MODELS}. "
-            "To include more make sure the masking is dne correctly... (decoder only supported for now)"
-        )
+def default_preprocess(eval_pred, ignote_negative_labels=True):
+    preds, labels = eval_pred.predictions, eval_pred.label_ids
 
-    model = AutoModelForCausalLM.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    if not ignote_negative_labels:
+        return preds, labels
+
+    mask = labels > 0
+    return preds[mask], labels[mask]
+
+
+# placeholder for now
+def preprocess_qa(eval_pred):
+    return (eval_pred.predictions, eval_pred.label_ids)
+
+
+# def postprocess_summarization(preds, labels):
+#     preds = [pred.strip() for pred in preds]
+#     labels = [label.strip() for label in labels]
+
+#     preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
+#     labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
+
+#     return preds, labels
+
+
+# def preprocess_summarization(eval_pred, tokenizer, ignore_pad_token_for_loss=True):
+#     preds, labels = eval_pred
+#     decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+#     if ignore_pad_token_for_loss:
+#         labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
+#     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+
+#     decoded_preds, decoded_labels = postprocess_summarization(decoded_preds, decoded_labels)
+#     return decoded_preds, decoded_labels
+
+
+def get_metrics(conf, tokenizer):
+    # the reason behind using a list is that we might want to extend the list of our
+    # metrics in the future for more thorough evaluation
+    metrics, preprocess_fns = [evaluate.load("accuracy")], [default_preprocess]
+
+    # if any(dataset in QA_DATASETS for dataset in conf.datasets):
+    #     raise ValueError("TODO")
+    #     metrics.append(evaluate.load("squad_v2"))
+    #     preprocess_fns.append(preprocess_qa)
+    # if any(dataset in SUMMARIZATION_DATASETS for dataset in conf.datasets):
+    #     raise ValueError("TODO")
+    #     metrics.append(evaluate.load("rouge"))
+    #     preprocess_fns.append(
+    #         partial(preprocess_summarization, tokenizer, ignore_pad_token_for_loss=conf.ignore_pad_token_for_loss)
+    #     )
+
+    return metrics, preprocess_fns
+
+
+def get_model(conf, tokenizer):
+    model = get_specific_model(conf.model_name, conf.cache_dir, conf.quantization, conf.seq2seqmodel)
 
     if len(tokenizer) != model.get_input_embeddings().num_embeddings:
         assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
@@ -68,9 +126,11 @@ def get_dataset(conf, tokenizer):
     return train, evals, collate_fn
 
 
-def get_loss(loss):
+def get_loss(loss, poly_eps):
     if loss == "CrossEntropyLoss":
         return CrossEntropyLoss()
+    elif loss == "Poly":
+        return PolyLoss(epsilon=poly_eps)
     else:
         raise ValueError(f"Loss {loss} not supported")
 
@@ -95,31 +155,3 @@ def train_val_dataset(dataset, val_split=0.2):
         list(range(len(dataset))), test_size=val_split, random_state=666, shuffle=True
     )
     return Subset(dataset, train_idx), Subset(dataset, val_idx)
-
-
-def freeze_top_n_layers(model, target_layers):
-    # its possible we can simply detect which module is a ModuleList
-    # and simply freeze the module without doing string parsing
-    for name, param in model.named_parameters():
-        if "embed" in name:
-            param.requires_grad = False
-        elif ".layer" in name or ".h." in name:
-            tokens = name.split(".")
-            layer_ = None
-            for token in tokens:
-                if token.isdigit():
-                    layer_ = int(token)
-                    break
-
-            if layer_ is not None and layer_ < target_layers:
-                # print('freeze ', layer_, name)
-                param.requires_grad = False
-    return model
-
-
-if __name__ == "__main__":
-    from transformers import AutoModelForSequenceClassification
-
-    model = AutoModelForSequenceClassification.from_pretrained("bigscience/bloomz-560m")
-    freeze_top_n_layers(model, 10)
-    print(model.state_dict().keys())

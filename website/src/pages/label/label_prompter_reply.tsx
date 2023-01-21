@@ -1,0 +1,33 @@
+import Head from "next/head";
+import { TaskEmptyState } from "src/components/EmptyState";
+import { getDashboardLayout } from "src/components/Layout";
+import { LoadingScreen } from "src/components/Loading/LoadingScreen";
+import { Task } from "src/components/Tasks/Task";
+import { useLabelPrompterReplyTask } from "src/hooks/tasks/useLabelingTask";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+
+const LabelPrompterReply = () => {
+  const { tasks, isLoading, trigger, reset } = useLabelPrompterReplyTask();
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (tasks.length === 0) {
+    return <TaskEmptyState />;
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Label Prompter Reply</title>
+        <meta name="description" content="Label Prompter Reply" />
+      </Head>
+      <Task key={tasks[0].task.id} frontendId={tasks[0].id} task={tasks[0].task} trigger={trigger} mutate={reset} />
+    </>
+  );
+};
+
+LabelPrompterReply.getLayout = getDashboardLayout;
+
+export default LabelPrompterReply;
