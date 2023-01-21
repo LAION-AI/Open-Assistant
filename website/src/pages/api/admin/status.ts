@@ -9,16 +9,16 @@ import { getBackendUserCore } from "src/lib/users";
 const handler = withRole("admin", async (req, res) => {
   const token = await getToken({ req });
   const currentUser = await getBackendUserCore(token.sub);
-  const [tasksAvailabilityData, statsData, treeManagerData] = await Promise.all([
+  const [tasksAvailabilityOutcome, statsOutcome, treeManagerOutcome] = await Promise.allSettled([
     oasstApiClient.fetch_tasks_availability(currentUser),
     oasstApiClient.fetch_stats(),
     oasstApiClient.fetch_tree_manager(),
   ]);
 
   const status = {
-    tasksAvailability: tasksAvailabilityData,
-    stats: statsData,
-    treeManager: treeManagerData,
+    tasksAvailability: tasksAvailabilityOutcome,
+    stats: statsOutcome,
+    treeManager: treeManagerOutcome,
   };
 
   res.status(200).json(status);

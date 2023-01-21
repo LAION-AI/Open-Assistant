@@ -79,8 +79,10 @@ const StatusIndex = ({ user }) => {
               /api/v1/tasks/availability
             </Text>
             <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-              {tasksAvailability ? (
-                <pre>{JSON.stringify(tasksAvailability, null, 2)}</pre>
+              {tasksAvailability?.status === "fulfilled" ? (
+                <pre>{JSON.stringify(tasksAvailability.value, null, 2)}</pre>
+              ) : tasksAvailability?.status === "rejected" ? (
+                <pre>{JSON.stringify(tasksAvailability.reason, null, 2)}</pre>
               ) : errorStatus ? (
                 <pre>{JSON.stringify(errorStatus, null, 2)}</pre>
               ) : (
@@ -96,8 +98,10 @@ const StatusIndex = ({ user }) => {
               /api/v1/stats/
             </Text>
             <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-              {stats ? (
-                <pre>{JSON.stringify(stats, null, 2)}</pre>
+              {stats?.status === "fulfilled" ? (
+                <pre>{JSON.stringify(stats.value, null, 2)}</pre>
+              ) : stats?.status === "rejected" ? (
+                <pre>{JSON.stringify(stats.reason, null, 2)}</pre>
               ) : errorStatus ? (
                 <pre>{JSON.stringify(errorStatus, null, 2)}</pre>
               ) : (
@@ -113,13 +117,13 @@ const StatusIndex = ({ user }) => {
           <Text as="h1" fontSize="3xl" textAlign="center">
             /api/v1/stats/tree_manager
           </Text>
-          {treeManager ? (
+          {treeManager?.status === "fulfilled" ? (
             <Box>
               <Text as="h2" fontSize="2xl">
                 state_counts
               </Text>
               <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-                <pre>{JSON.stringify(treeManager.state_counts, null, 2)}</pre>
+                <pre>{JSON.stringify(treeManager.value.state_counts, null, 2)}</pre>
               </Box>
               <TableContainer>
                 <br />
@@ -140,7 +144,7 @@ const StatusIndex = ({ user }) => {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {treeManager.message_counts.map(
+                    {treeManager.value.message_counts.map(
                       ({ message_tree_id, state, depth, oldest, youngest, count, goal_tree_size }) => (
                         <Tr key={message_tree_id}>
                           <Td>{message_tree_id}</Td>
@@ -157,6 +161,8 @@ const StatusIndex = ({ user }) => {
                 </Table>
               </TableContainer>
             </Box>
+          ) : treeManager?.status === "rejected" ? (
+            <pre>{JSON.stringify(treeManager.reason, null, 2)}</pre>
           ) : errorStatus ? (
             <pre>{JSON.stringify(errorStatus, null, 2)}</pre>
           ) : (
