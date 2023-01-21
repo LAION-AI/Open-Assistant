@@ -6,19 +6,19 @@ import { get } from "src/lib/api";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import useSWRImmutable from "swr/immutable";
 
-const columns = [
+const getColumns = (t) => [
   {
-    Header: "Rank",
+    Header: t("rank"),
     accessor: "rank",
     style: { width: "90px" },
   },
   {
-    Header: "Score",
+    Header: t("score"),
     accessor: "leader_score",
     style: { width: "90px" },
   },
   {
-    Header: "User",
+    Header: t("user"),
     accessor: "display_name",
   },
 ];
@@ -27,10 +27,12 @@ const columns = [
  * Presents a grid of leaderboard entries with more detailed information.
  */
 const LeaderboardGridCell = ({ timeFrame }: { timeFrame: LeaderboardTimeFrame }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["leaderboard", "common"]);
   const { data: reply } = useSWRImmutable<LeaderboardReply>(`/api/leaderboard?time_frame=${timeFrame}`, get, {
     revalidateOnMount: true,
   });
+
+  const columns = useMemo(() => getColumns(t), [t]);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
     columns,

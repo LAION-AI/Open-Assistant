@@ -1,5 +1,6 @@
 {
   "daily": "Daily",
+  "last_updated_at": "Last updated at: {{val, datetime}}",
   "leaderboard": "Leaderboard",
   "monthly": "Monthly",
   "overall": "Overall",
