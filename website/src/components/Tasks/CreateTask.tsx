@@ -12,6 +12,7 @@ export const CreateTask = ({
   isEditable,
   isDisabled,
   onReplyChanged,
+  onValidityChanged,
 }: TaskSurveyProps<{ text: string }>) => {
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const titleColor = useColorModeValue("gray.800", "gray.300");
@@ -20,11 +21,12 @@ export const CreateTask = ({
   const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
     const isTextBlank = !text || /^\s*$/.test(text) ? true : false;
+    onReplyChanged({ text });
     if (!isTextBlank) {
-      onReplyChanged({ content: { text }, state: "VALID" });
+      onValidityChanged("VALID");
       setInputText(text);
     } else {
-      onReplyChanged({ content: { text }, state: "INVALID" });
+      onValidityChanged("INVALID");
       setInputText("");
     }
   };

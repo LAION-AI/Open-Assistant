@@ -6,8 +6,7 @@ import { LabelTask } from "src/components/Tasks/LabelTask";
 import { TaskCategory, TaskInfo, TaskInfos } from "src/components/Tasks/TaskTypes";
 import { UnchangedWarning } from "src/components/Tasks/UnchangedWarning";
 import { post } from "src/lib/api";
-import { TaskContent } from "src/types/Task";
-import { TaskReplyState } from "src/types/TaskReplyState";
+import { TaskContent, TaskReplyValidity } from "src/types/Task";
 import useSWRMutation from "swr/mutation";
 
 export type TaskStatus = "NOT_SUBMITTABLE" | "DEFAULT" | "VALID" | "REVIEW" | "SUBMITTED";
@@ -19,7 +18,8 @@ export interface TaskSurveyProps<T> {
   taskType: TaskInfo;
   isEditable: boolean;
   isDisabled?: boolean;
-  onReplyChanged: (state: TaskReplyState<T>) => void;
+  onReplyChanged: (content: T) => void;
+  onValidityChanged: (validity: TaskReplyValidity) => void;
 }
 
 export const Task = ({ frontendId, task, trigger, mutate }) => {
@@ -44,20 +44,27 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
     });
   };
 
-  const onReplyChanged = useRef((state: TaskReplyState<TaskContent>) => {
-    if (taskStatus === "SUBMITTED") return;
+  const edit_mode = taskStatus === "NOT_SUBMITTABLE" || taskStatus === "DEFAULT" || taskStatus === "VALID";
+  const submitted = taskStatus === "SUBMITTED";
 
-    replyContent.current = state?.content;
-    if (state === null) {
-      if (taskStatus !== "NOT_SUBMITTABLE") setTaskStatus("NOT_SUBMITTABLE");
-    } else if (state.state === "DEFAULT") {
-      if (taskStatus !== "DEFAULT") setTaskStatus("DEFAULT");
-    } else if (state.state === "VALID") {
-      if (taskStatus !== "VALID") setTaskStatus("VALID");
-    } else if (state.state === "INVALID") {
-      setTaskStatus("NOT_SUBMITTABLE");
+  const onValidityChanged = (validity: TaskReplyValidity) => {
+    if (!edit_mode) return;
+    switch (validity) {
+      case "DEFAULT":
+        if (taskStatus !== "DEFAULT") setTaskStatus("DEFAULT");
+        break;
+      case "VALID":
+        if (taskStatus !== "VALID") setTaskStatus("VALID");
+        break;
+      case "INVALID":
+        if (taskStatus !== "NOT_SUBMITTABLE") setTaskStatus("NOT_SUBMITTABLE");
+        break;
     }
-  }).current;
+  };
+
+  const onReplyChanged = (content: TaskContent) => {
+    replyContent.current = content;
+  };
 
   const reviewResponse = () => {
     switch (taskStatus) {
@@ -99,9 +106,6 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
     }
   };
 
-  const edit_mode = taskStatus === "NOT_SUBMITTABLE" || taskStatus === "DEFAULT" || taskStatus === "VALID";
-  const submitted = taskStatus === "SUBMITTED";
-
   function taskTypeComponent() {
     switch (taskType.category) {
       case TaskCategory.Create:
@@ -113,6 +117,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
             isEditable={edit_mode}
             isDisabled={submitted}
             onReplyChanged={onReplyChanged}
+            onValidityChanged={onValidityChanged}
           />
         );
       case TaskCategory.Evaluate:
@@ -124,6 +129,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
             isEditable={edit_mode}
             isDisabled={submitted}
             onReplyChanged={onReplyChanged}
+            onValidityChanged={onValidityChanged}
           />
         );
       case TaskCategory.Label:
@@ -135,6 +141,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
             isEditable={edit_mode}
             isDisabled={submitted}
             onReplyChanged={onReplyChanged}
+            onValidityChanged={onValidityChanged}
           />
         );
     }

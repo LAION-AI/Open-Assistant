@@ -47,7 +47,7 @@ export const TaskControls = (props: TaskControlsProps) => {
             <SubmitButton
               colorScheme="green"
               data-cy="submit"
-              disabled={props.taskStatus === "SUBMITTED"}
+              isDisabled={props.taskStatus === "SUBMITTED"}
               onClick={props.onSubmit}
             >
               Submit
@@ -59,7 +59,7 @@ export const TaskControls = (props: TaskControlsProps) => {
             <SubmitButton
               colorScheme="blue"
               data-cy="review"
-              disabled={props.taskStatus === "NOT_SUBMITTABLE"}
+              isDisabled={props.taskStatus === "NOT_SUBMITTABLE"}
               onClick={props.onReview}
             >
               Review
