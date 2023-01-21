@@ -73,6 +73,7 @@ class TaskHandler:
     async def check_user_input(self, content: str) -> bool:
         ...
 
+
 class RankAssistantReplyHandler(TaskHandler):
     def __init__(self, ctx: lightbulb.Context, task: protocol_schema.RankAssistantRepliesTask) -> None:
         super().__init__(ctx, task)
@@ -80,6 +81,7 @@ class RankAssistantReplyHandler(TaskHandler):
     @staticmethod
     def get_task_messages(task: protocol_schema.RankAssistantRepliesTask) -> list[str]:
         return [rank_assistant_reply_message(task)]
+
 
 class InitialPromptHandler:
     def __init__(self, ctx: lightbulb.Context, task: protocol_schema.InitialPromptTask) -> None:
@@ -171,8 +173,8 @@ async def work2(ctx: lightbulb.Context) -> None:
 
     while True:
         task = await oasst_api.fetch_random_task(
-        # task = await oasst_api.fetch_task(
-        #     task_type=protocol_schema.TaskRequestType.random,
+            # task = await oasst_api.fetch_task(
+            #     task_type=protocol_schema.TaskRequestType.random,
             user=protocol_schema.User(id=f"{ctx.author.id}", display_name=ctx.author.username, auth_method="discord"),
         )
 
