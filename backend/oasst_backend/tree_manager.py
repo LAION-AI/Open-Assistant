@@ -465,6 +465,11 @@ class TreeManager:
                     f"Frontend reports text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                 )
 
+                # ensure message size is below the predefined limit
+                if len(interaction.text) > settings.MESSAGE_SIZE_LIMIT:
+                    logger.error(f"Message size {len(interaction.text)=} exceeds size limit of {settings.MESSAGE_SIZE_LIMIT=}.")
+                    raise OasstError("Message size too long.", OasstErrorCode.TASK_MESSAGE_TOO_LONG)
+
                 # here we store the text reply in the database
                 message = pr.store_text_reply(
                     text=interaction.text,

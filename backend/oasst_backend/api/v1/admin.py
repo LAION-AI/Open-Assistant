@@ -54,6 +54,7 @@ class PublicSettings(pydantic.BaseModel):
 
     PROJECT_NAME: str
     API_V1_STR: str
+    MESSAGE_SIZE_LIMIT: int
     DEBUG_USE_SEED_DATA: bool
     DEBUG_ALLOW_SELF_LABELING: bool
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool
