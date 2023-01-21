@@ -1,4 +1,4 @@
-import { IconButton, useToast } from "@chakra-ui/react";
+import { Card, CardBody, IconButton } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
 import Link from "next/link";
 import { memo, useState } from "react";
@@ -57,11 +57,7 @@ const columns: DataTableColumnDef<User>[] = [
 ];
 
 export const UserTable = memo(function UserTable() {
-  const toast = useToast();
   const [pagination, setPagination] = useState<Pagination>({ cursor: "", direction: "forward" });
-  const [response, setResponse] = useState<Omit<FetchUsersResponse<User>, "sort_key" | "order">>({
-    items: [],
-  });
   const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
   const handleFilterValuesChange = (values: FilterItem[]) => {
     setFilterValues(values);
@@ -71,68 +67,46 @@ export const UserTable = memo(function UserTable() {
   // This follows useSWR's recommendation for simple pagination:
   //   https://swr.vercel.app/docs/pagination#when-to-use-useswr
   const display_name = filterValues.find((value) => value.id === "display_name")?.value ?? "";
-  useSWR<
-    FetchUsersResponse<User>
-  >(`/api/admin/users?direction=${pagination.direction}&cursor=${pagination.cursor}&searchDisplayName=${display_name}&sortKey=display_name`, get, {
-    onSuccess: (data) => {
-      // When no more users can be found, trigger a toast to indicate why no
-      // changes have taken place.  We have to maintain a non-empty set of
-      // users otherwise we can't paginate using a cursor (since we've lost the
-      // cursor).
-      if (data.items.length === 0) {
-        toast({
-          title: "No more users",
-          status: "warning",
-          duration: 1000,
-          isClosable: true,
-        });
-        return;
-      }
-      setResponse(data);
-    },
-  });
+  const { data, error } = useSWR<FetchUsersResponse<User>>(
+    `/api/admin/users?direction=${pagination.direction}&cursor=${pagination.cursor}&searchDisplayName=${display_name}&sortKey=display_name`,
+    get,
+    {
+      keepPreviousData: true,
+    }
+  );
 
   const toPreviousPage = () => {
-    if (response.items.length >= 0) {
-      setPagination({
-        cursor: response.prev,
-        direction: "back",
-      });
-    } else {
-      toast({
-        title: "Can not paginate when no users are found",
-        status: "warning",
-        duration: 1000,
-        isClosable: true,
-      });
-    }
+    setPagination({
+      cursor: data.prev,
+      direction: "back",
+    });
   };
 
   const toNextPage = () => {
-    if (response.items.length >= 0) {
-      setPagination({
-        cursor: response.next,
-        direction: "forward",
-      });
-    } else {
-      toast({
-        title: "Can not paginate when no users are found",
-        status: "warning",
-        duration: 1000,
-        isClosable: true,
-      });
-    }
+    setPagination({
+      cursor: data.next,
+      direction: "forward",
+    });
   };
 
   return (
-    <DataTable
-      data={response.items}
-      columns={columns}
-      caption="Users"
-      onNextClick={toNextPage}
-      onPreviousClick={toPreviousPage}
-      filterValues={filterValues}
-      onFilterChange={handleFilterValuesChange}
-    ></DataTable>
+    <Card>
+      <CardBody>
+        {data && (
+          <DataTable
+            data={data.items}
+            columns={columns}
+            caption="Users"
+            onNextClick={toNextPage}
+            onPreviousClick={toPreviousPage}
+            disableNext={!data.next}
+            disablePrevious={!data.prev}
+            filterValues={filterValues}
+            onFilterChange={handleFilterValuesChange}
+          ></DataTable>
+        )}
+        {error && "Unable to load users."}
+      </CardBody>
+    </Card>
   );
 });

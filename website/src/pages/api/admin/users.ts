@@ -5,7 +5,7 @@ import prisma from "src/lib/prismadb";
 /**
  * The number of users to fetch in a single request.  Could later be a query parameter.
  */
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 2;
 
 /**
  * Returns a list of user results from the database when the requesting user is

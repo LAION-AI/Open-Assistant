@@ -1,8 +1,6 @@
 import {
   Box,
   Button,
-  Card,
-  CardBody,
   Flex,
   FormControl,
   FormLabel,
@@ -47,6 +45,8 @@ export type DataTableProps<T> = {
   onNextClick?: () => void;
   onPreviousClick?: () => void;
   onFilterChange?: (items: FilterItem[]) => void;
+  disableNext?: boolean;
+  disablePrevious?: boolean;
 };
 
 export const DataTable = <T,>({
@@ -57,6 +57,8 @@ export const DataTable = <T,>({
   onNextClick,
   onPreviousClick,
   onFilterChange,
+  disableNext,
+  disablePrevious,
 }: DataTableProps<T>) => {
   const { getHeaderGroups, getRowModel } = useReactTable<T>({
     data,
@@ -75,49 +77,51 @@ export const DataTable = <T,>({
     onFilterChange(newValues);
   };
   return (
-    <Card>
-      <CardBody>
-        <Flex mb="2">
-          <Button onClick={onPreviousClick}>Previous</Button>
-          <Spacer />
-          <Button onClick={onNextClick}>Next</Button>
-        </Flex>
-        <TableContainer>
-          <Table variant="simple">
-            <TableCaption>{caption}</TableCaption>
-            <Thead>
-              {getHeaderGroups().map((headerGroup) => (
-                <Tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <Th key={header.id}>
-                      <Box display="flex" alignItems="center">
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                        {(header.column.columnDef as DataTableColumnDef<T>).filterable && (
-                          <FilterModal
-                            value={filterValues.find((value) => value.id === header.id)?.value ?? ""}
-                            onChange={(value) => handleFilterChange({ id: header.id, value })}
-                            label={flexRender(header.column.columnDef.header, header.getContext())}
-                          ></FilterModal>
-                        )}
-                      </Box>
-                    </Th>
-                  ))}
-                </Tr>
-              ))}
-            </Thead>
-            <Tbody>
-              {getRowModel().rows.map((row) => (
-                <Tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Td>
-                  ))}
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-      </CardBody>
-    </Card>
+    <>
+      <Flex mb="2">
+        <Button onClick={onPreviousClick} disabled={disablePrevious}>
+          Previous
+        </Button>
+        <Spacer />
+        <Button onClick={onNextClick} disabled={disableNext}>
+          Next
+        </Button>
+      </Flex>
+      <TableContainer>
+        <Table variant="simple">
+          <TableCaption>{caption}</TableCaption>
+          <Thead>
+            {getHeaderGroups().map((headerGroup) => (
+              <Tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <Th key={header.id}>
+                    <Box display="flex" alignItems="center">
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                      {(header.column.columnDef as DataTableColumnDef<T>).filterable && (
+                        <FilterModal
+                          value={filterValues.find((value) => value.id === header.id)?.value ?? ""}
+                          onChange={(value) => handleFilterChange({ id: header.id, value })}
+                          label={flexRender(header.column.columnDef.header, header.getContext())}
+                        ></FilterModal>
+                      )}
+                    </Box>
+                  </Th>
+                ))}
+              </Tr>
+            ))}
+          </Thead>
+          <Tbody>
+            {getRowModel().rows.map((row) => (
+              <Tr key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Td>
+                ))}
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
+    </>
   );
 };
 
