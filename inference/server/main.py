@@ -1,3 +1,4 @@
+import enum
 import random
 import uuid
 
@@ -54,11 +55,19 @@ class ResponseEvent(pydantic.BaseModel):
     token: str
 
 
+class CompletionState(str, enum.Enum):
+    pending = "pending"
+    in_progress = "in_progress"
+    complete = "complete"
+
+
 class DbEntry(pydantic.BaseModel):
-    completion_id: str
     completion_request: CompletionRequest
-    work_request: inference.WorkRequest | None = None
+    completion_id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
+    stream_queue_id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
+    seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 2**32 - 1))
     result_data: list[inference.WorkResponsePacket] | None = None
+    state: CompletionState = CompletionState.pending
 
 
 # TODO: make real database
@@ -69,9 +78,12 @@ DATABASE: dict[str, DbEntry] = {}
 async def complete(request: CompletionRequest) -> CompletionResponse:
     """Allows a client to request completion of a prompt."""
     logger.info(f"Received {request}")
-    completion_id = str(uuid.uuid4())
-    DATABASE[completion_id] = DbEntry(completion_id=completion_id, completion_request=request)
-    return CompletionResponse(completion_id=completion_id)
+
+    db_entry = DbEntry(
+        completion_request=request,
+    )
+    DATABASE[db_entry.completion_id] = db_entry
+    return CompletionResponse(completion_id=db_entry.completion_id)
 
 
 class StartWorkRequest(pydantic.BaseModel):
@@ -88,7 +100,7 @@ async def work(start_work_request: StartWorkRequest) -> inference.WorkRequest:
     # but we need to know which worker is dequeueing a particular request
     # to do proper credit assignment and load balancing (+ security)
     for db_entry in DATABASE.values():
-        if db_entry.completion_request and not db_entry.work_request:
+        if db_entry.state == CompletionState.pending:
             if db_entry.completion_request.compatible_with(start_work_request.worker_config):
                 break
     else:
@@ -96,21 +108,16 @@ async def work(start_work_request: StartWorkRequest) -> inference.WorkRequest:
 
     request = db_entry.completion_request
 
-    # generate a stream id to use for this request
-    stream_queue_id = str(uuid.uuid4())
-    seed = random.randint(0, 2**32 - 1)
     work_request = inference.WorkRequest(
-        stream_queue_id=stream_queue_id,
-        model_name=request.model_name,
+        stream_queue_id=db_entry.stream_queue_id,
         prompt=request.prompt,
+        model_name=request.model_name,
         max_length=request.max_length,
-        seed=seed,
+        seed=db_entry.seed,
     )
 
-    # store the work request in the database
-    db_entry.work_request = work_request
-
     logger.info(f"Created {work_request}")
+    db_entry.state = CompletionState.in_progress
     return work_request
 
 
@@ -119,10 +126,11 @@ async def message_stream(db_id: str, request: fastapi.Request):
     """Allows the client to stream the results of a request."""
 
     db_entry = DATABASE[db_id]
-    if not db_entry.work_request:
-        raise fastapi.HTTPException(status_code=202, detail="Not ready")
 
-    stream_queue_id = db_entry.work_request.stream_queue_id
+    if db_entry.state not in (CompletionState.pending, CompletionState.in_progress):
+        raise fastapi.HTTPException(status_code=404, detail="Request not found")
+
+    stream_queue_id = db_entry.stream_queue_id
 
     async def event_generator():
         result_data = []
@@ -142,7 +150,6 @@ async def message_stream(db_id: str, request: fastapi.Request):
                 result_data.append(response_packet)
 
                 if response_packet.is_end:
-                    await redisClient.delete(stream_queue_id)
                     break
 
                 yield {
@@ -155,5 +162,6 @@ async def message_stream(db_id: str, request: fastapi.Request):
 
         # store the generated data in the database
         db_entry.result_data = result_data
+        db_entry.state = CompletionState.complete
 
     return EventSourceResponse(event_generator())
