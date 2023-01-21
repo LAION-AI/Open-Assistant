@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Callable, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -93,6 +93,21 @@ def get_users_cursor(
         return x, None
 
     items: list[protocol.FrontEndUser]
+
+    def get_next_prev(lte: str | None, gte: str | None, key_fn: Callable[[protocol.FrontEndUser], str]):
+        p, n = None, None
+        if len(items) > 0:
+            if len(items) == max_count or gte:
+                p = str(items[0].user_id) + "$" + key_fn(items[0])
+            if len(items) == max_count or lte:
+                n = str(items[-1].user_id) + "$" + key_fn(items[-1])
+        else:
+            if gte:
+                p = gte
+            if lte:
+                n = lte
+        return p, n
+
     n, p = None, None
     if sort_key == "username":
         lte_username, lt_id = split_cursor(lt)
@@ -109,9 +124,8 @@ def get_users_cursor(
             api_client=api_client,
             db=db,
         )
-        if len(items) > 0:
-            p = str(items[0].user_id) + "$" + items[0].id
-            n = str(items[-1].user_id) + "$" + items[-1].id
+        p, n = get_next_prev(lte_username, gte_username, lambda x: x.id)
+
     elif sort_key == "display_name":
         lte_display_name, lt_id = split_cursor(lt)
         gte_display_name, gt_id = split_cursor(gt)
@@ -127,9 +141,8 @@ def get_users_cursor(
             api_client=api_client,
             db=db,
         )
-        if len(items) > 0:
-            p = str(items[0].user_id) + "$" + items[0].display_name
-            n = str(items[-1].user_id) + "$" + items[-1].display_name
+        p, n = get_next_prev(lte_display_name, gte_display_name, lambda x: x.display_name)
+
     else:
         raise OasstError(f"Unsupported sort key: '{sort_key}'", OasstErrorCode.SORT_KEY_UNSUPPORTED)
 
