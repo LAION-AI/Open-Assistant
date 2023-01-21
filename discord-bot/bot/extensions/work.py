@@ -39,6 +39,163 @@ MAX_TASK_ACCEPT_TIME = 60 * 10  # seconds
 settings = Settings()
 
 
+class TaskHandler:
+    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.Task) -> None:
+        self.ctx = ctx
+        self.task = task
+        self.task_messages = self.get_task_messages(task)
+        self.sent_messages: list[hikari.Message] = []
+
+    @staticmethod
+    def get_task_messages(task: protocol_schema.Task) -> list[str]:
+        raise NotImplemented
+
+    async def send(self) -> t.Literal["accept", "next", "cancel"] | None:
+        for task_msg in self.task_messages[:-1]:
+            self.sent_messages.append(await self.ctx.author.send(task_msg))
+        task_accept_view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
+        logger.debug(f"TH Message length {len(self.task_messages[-1])}")
+        last_msg = await self.ctx.author.send(self.task_messages[-1][1999:], components=task_accept_view)
+        await task_accept_view.start(last_msg)
+        await task_accept_view.wait()
+
+        return task_accept_view.choice
+
+    async def handle(self) -> None:
+        ...
+
+    async def notify(self) -> protocol_schema.Task:
+        ...
+
+    async def confirm_user_input(self, content: str) -> bool:
+        ...
+
+    async def check_user_input(self, content: str) -> bool:
+        ...
+
+class RankAssistantReplyHandler(TaskHandler):
+    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.RankAssistantRepliesTask) -> None:
+        super().__init__(ctx, task)
+
+    @staticmethod
+    def get_task_messages(task: protocol_schema.RankAssistantRepliesTask) -> list[str]:
+        return [rank_assistant_reply_message(task)]
+
+class InitialPromptHandler:
+    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.InitialPromptTask) -> None:
+        self.ctx = ctx
+        self.task = task
+        self.task_messages = self.get_task_messages(task)
+        self.sent_messages: list[hikari.Message] = []
+
+    @staticmethod
+    def get_task_messages(task: protocol_schema.InitialPromptTask) -> list[str]:
+        return [initial_prompt_message(task)]
+
+    async def send(self) -> t.Literal["accept", "next", "cancel"] | None:
+        for task_msg in self.task_messages[:-1]:
+            self.sent_messages.append(await self.ctx.author.send(task_msg))
+        task_accept_view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
+        logger.debug(f"Message length {len(self.task_messages[-1])}")
+        last_msg = await self.ctx.author.send(self.task_messages[-1][1999:], components=task_accept_view)
+        await task_accept_view.start(last_msg)
+        await task_accept_view.wait()
+
+        return task_accept_view.choice
+
+    async def handle(self):
+        while True:
+            try:
+                # Wait for user to send a message
+                event = await self.ctx.bot.wait_for(
+                    hikari.DMMessageCreateEvent,
+                    predicate=lambda e: (
+                        e.author_id == self.ctx.author.id
+                        and e.message.content is not None
+                        and not e.message.content.startswith(settings.prefix)
+                    ),
+                    timeout=MAX_TASK_TIME,
+                )
+
+                # Validate the message
+                if event.content is None or not self.check_user_input(event.message.content):
+                    await self.ctx.author.send("Invalid input")
+                    continue
+
+                # Confirm user input
+                if not (await self.confirm_user_input(event.content)):
+                    continue
+
+                # Message is valid and confirmed by user
+                break
+
+            except asyncio.TimeoutError:
+                return
+
+        next_task = await self.notify(event.content, event)
+        if not isinstance(next_task, protocol_schema.TaskDone):
+            raise TypeError(f"Unkown task type: {next_task!r}")
+
+        return
+
+    async def notify(self, content: str, event: hikari.DMMessageCreateEvent) -> protocol_schema.Task:
+        oasst_api: OasstApiClient = self.ctx.bot.d.oasst_api
+        return await oasst_api.post_interaction(
+            protocol_schema.TextReplyToMessage(
+                user=protocol_schema.User(
+                    id=f"{self.ctx.author.id}", display_name=self.ctx.author.username, auth_method="discord"
+                ),
+                message_id=f"{self.sent_messages[0].id}",
+                text=content,
+                user_message_id=f"{event.message_id}",
+            )
+        )
+
+    async def confirm_user_input(self, content: str) -> bool:
+        await self.ctx.author.send(confirm_text_response_message(content))
+        return True  # TODO: View
+
+    def check_user_input(self, content: str | None) -> bool:
+        if not content:
+            return False
+
+        return True
+
+
+@plugin.command
+@lightbulb.command("work2", "Complete a task.")
+@lightbulb.implements(lightbulb.SlashCommand, lightbulb.PrefixCommand)
+async def work2(ctx: lightbulb.Context) -> None:
+    """Work 2."""
+    oasst_api: OasstApiClient = ctx.bot.d.oasst_api
+
+    while True:
+        task = await oasst_api.fetch_random_task(
+        # task = await oasst_api.fetch_task(
+        #     task_type=protocol_schema.TaskRequestType.random,
+            user=protocol_schema.User(id=f"{ctx.author.id}", display_name=ctx.author.username, auth_method="discord"),
+        )
+
+        if isinstance(task, protocol_schema.InitialPromptTask):
+            task_handler = InitialPromptHandler(ctx, task)
+            resp = await task_handler.send()
+        elif isinstance(task, protocol_schema.RankAssistantRepliesTask):
+            task_handler = RankAssistantReplyHandler(ctx, task)
+            resp = await task_handler.send()
+        else:
+            raise ValueError(f"Unknown task type: {type(task)}")
+
+        match resp:
+            case "accept":
+                await task_handler.handle()
+            case "next":
+                continue
+            case "cancel":
+                break
+            case None:
+                break
+
+
 @plugin.command
 @lightbulb.option(
     "type",
