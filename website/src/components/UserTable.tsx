@@ -1,4 +1,4 @@
-import { Card, CardBody, IconButton } from "@chakra-ui/react";
+import { IconButton } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
 import Link from "next/link";
 import { memo, useState } from "react";
@@ -90,23 +90,19 @@ export const UserTable = memo(function UserTable() {
   };
 
   return (
-    <Card>
-      <CardBody>
-        {data && (
-          <DataTable
-            data={data.items}
-            columns={columns}
-            caption="Users"
-            onNextClick={toNextPage}
-            onPreviousClick={toPreviousPage}
-            disableNext={!data.next}
-            disablePrevious={!data.prev}
-            filterValues={filterValues}
-            onFilterChange={handleFilterValuesChange}
-          ></DataTable>
-        )}
-        {error && "Unable to load users."}
-      </CardBody>
-    </Card>
+    <>
+      <DataTable
+        data={data?.items || []}
+        columns={columns}
+        caption="Users"
+        onNextClick={toNextPage}
+        onPreviousClick={toPreviousPage}
+        disableNext={!data?.next}
+        disablePrevious={!data?.prev}
+        filterValues={filterValues}
+        onFilterChange={handleFilterValuesChange}
+      ></DataTable>
+      {error && "Unable to load users."}
+    </>
   );
 });
