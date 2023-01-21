@@ -75,15 +75,17 @@ const StatusIndex = ({ user }) => {
       </Head>
 
       <SimpleGrid columns={[1, 1, 1, 1, 1, 2]} gap={4}>
-        <Card bg={backgroundColor} p="6" pt="4" pr="6">
-          <Text as="h1" fontSize="3xl" textAlign="center">
-            /api/v1/tasks/availability
-          </Text>
-          <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-            <pre id="json">
-              {tasksAvailability ? JSON.stringify(tasksAvailability, null, 2) : <CircularProgress isIndeterminate />}
-            </pre>
-          </Box>
+        <Card>
+          <CardBody>
+            <Text as="h1" fontSize="3xl" textAlign="center">
+              /api/v1/tasks/availability
+            </Text>
+            <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
+              <pre id="json">
+                {tasksAvailability ? JSON.stringify(tasksAvailability, null, 2) : <CircularProgress isIndeterminate />}
+              </pre>
+            </Box>
+          </CardBody>
         </Card>
 
         <Card bg={backgroundColor} p="6" pt="4" pr="6">
