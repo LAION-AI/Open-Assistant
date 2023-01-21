@@ -88,13 +88,15 @@ const StatusIndex = ({ user }) => {
           </CardBody>
         </Card>
 
-        <Card bg={backgroundColor} p="6" pt="4" pr="6">
-          <Text as="h1" fontSize="3xl" textAlign="center">
-            /api/v1/stats/
-          </Text>
-          <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-            <pre id="json">{stats ? JSON.stringify(stats, null, 2) : <CircularProgress isIndeterminate />}</pre>
-          </Box>
+        <Card>
+          <CardBody>
+            <Text as="h1" fontSize="3xl" textAlign="center">
+              /api/v1/stats/
+            </Text>
+            <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
+              <pre id="json">{stats ? JSON.stringify(stats, null, 2) : <CircularProgress isIndeterminate />}</pre>
+            </Box>
+          </CardBody>
         </Card>
       </SimpleGrid>
       <br />
