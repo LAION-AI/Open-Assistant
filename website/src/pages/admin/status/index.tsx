@@ -81,7 +81,7 @@ const StatusIndex = ({ user }) => {
               /api/v1/tasks/availability
             </Text>
             <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-              <pre id="json">
+              <pre>
                 {tasksAvailability ? JSON.stringify(tasksAvailability, null, 2) : <CircularProgress isIndeterminate />}
               </pre>
             </Box>
@@ -94,7 +94,7 @@ const StatusIndex = ({ user }) => {
               /api/v1/stats/
             </Text>
             <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-              <pre id="json">{stats ? JSON.stringify(stats, null, 2) : <CircularProgress isIndeterminate />}</pre>
+              <pre>{stats ? JSON.stringify(stats, null, 2) : <CircularProgress isIndeterminate />}</pre>
             </Box>
           </CardBody>
         </Card>
@@ -111,7 +111,7 @@ const StatusIndex = ({ user }) => {
                 state_counts
               </Text>
               <Box bg={dataBackgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-                <pre id="json">{JSON.stringify(treeManager.state_counts, null, 2)}</pre>
+                <pre>{JSON.stringify(treeManager.state_counts, null, 2)}</pre>
               </Box>
               <TableContainer>
                 <br />
