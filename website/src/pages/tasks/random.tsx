@@ -5,6 +5,7 @@ import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useGenericTaskAPI } from "src/hooks/tasks/useGenericTaskAPI";
 import { TaskType } from "src/types/Task";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const RandomTask = () => {
   const { tasks, isLoading, trigger, reset } = useGenericTaskAPI(TaskType.random);

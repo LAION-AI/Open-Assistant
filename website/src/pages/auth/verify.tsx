@@ -1,6 +1,7 @@
 import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
 import { getCsrfToken, getProviders } from "next-auth/react";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 export default function Verify() {
   const { colorMode } = useColorMode();
