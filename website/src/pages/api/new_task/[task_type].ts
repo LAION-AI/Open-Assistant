@@ -1,5 +1,7 @@
-import { getToken } from "next-auth/jwt";
+import { withoutRole } from "src/lib/auth";
+import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
+import { getBackendUserCore } from "src/lib/users";
 
 /**
  * Returns a new task created from the Task Backend.  We do a few things here:
@@ -9,36 +11,19 @@ import prisma from "src/lib/prismadb";
  * 3) Send and Ack to the Task Backend with our local id for the task.
  * 4) Return everything to the client.
  */
-const handler = async (req, res) => {
+const handler = withoutRole("banned", async (req, res, token) => {
+  // Fetch the new task.
   const { task_type } = req.query;
 
-  const token = await getToken({ req });
-
-  // Return nothing if the user isn't registered.
-  if (!token) {
-    res.status(401).end();
+  const user = await getBackendUserCore(token.sub);
+  let task;
+  try {
+    task = await oasstApiClient.fetchTask(task_type as string, user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
     return;
   }
-
-  // Fetch the new task.
-  //
-  // This needs to be refactored into an easier to use library.
-  const taskRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/tasks/`, {
-    method: "POST",
-    headers: {
-      "X-API-Key": process.env.FASTAPI_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      type: task_type,
-      user: {
-        id: token.sub,
-        display_name: token.name || token.email,
-        auth_method: "local",
-      },
-    }),
-  });
-  const task = await taskRes.json();
 
   // Store the task and link it to the user..
   const registeredTask = await prisma.registeredTask.create({
@@ -52,20 +37,8 @@ const handler = async (req, res) => {
     },
   });
 
-  // Update the backend with our Task ID
-  await fetch(`${process.env.FASTAPI_URL}/api/v1/tasks/${task.id}/ack`, {
-    method: "POST",
-    headers: {
-      "X-API-Key": process.env.FASTAPI_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      message_id: registeredTask.id,
-    }),
-  });
-
   // Send the results to the client.
   res.status(200).json(registeredTask);
-};
+});
 
 export default handler;

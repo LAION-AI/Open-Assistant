@@ -1,4 +1,11 @@
-"""All user-facing messages and embeds."""
+"""All user-facing messages and embeds.
+
+When sending a conversation
+- The function will return a list of strings
+    - use asyncio.gather to send all messages
+
+-
+"""
 
 from datetime import datetime
 
@@ -33,6 +40,10 @@ def _ranking_prompt(text: str) -> str:
     return f":trophy: _{text}_"
 
 
+def _label_prompt(text: str) -> str:
+    return f":question: _{text}"
+
+
 def _response_prompt(text: str) -> str:
     return f":speech_balloon: _{text}_"
 
@@ -61,12 +72,25 @@ def _ordered_list(items: list[str]) -> str:
     return "\n\n".join(_make_ordered_list(items))
 
 
-def _conversation(conv: protocol_schema.Conversation) -> str:
-    return "\n".join([_assistant(msg.text) if msg.is_assistant else _user(msg.text) for msg in conv.messages])
+def _conversation(conv: protocol_schema.Conversation) -> list[str]:
+    # return "\n".join([_assistant(msg.text) if msg.is_assistant else _user(msg.text) for msg in conv.messages])
+    messages = map(
+        lambda m: f"""\
+:robot: __Assistant__:
+{m.text}
+"""
+        if m.is_assistant
+        else f"""\
+:person_red_hair: __User__:
+{m.text}
+""",
+        conv.messages,
+    )
+    return list(messages)
 
 
-def _hint(hint: str | None) -> str:
-    return f"{NL}Hint: {hint}" if hint else ""
+def _li(text: str) -> str:
+    return f":small_blue_diamond: {text}"
 
 
 ###
@@ -74,42 +98,46 @@ def _hint(hint: str | None) -> str:
 ###
 
 
-def initial_prompt_message(task: protocol_schema.InitialPromptTask) -> str:
+def initial_prompt_messages(task: protocol_schema.InitialPromptTask) -> list[str]:
     """Creates the message that gets sent to users when they request an `initial_prompt` task."""
-    return f"""\
+    return [
+        f"""\
 
-{_h1("INITIAL PROMPT")}
+:small_blue_diamond: __**INITIAL PROMPT**__ :small_blue_diamond:
 
-{_writing_prompt("Please provide an initial prompt to the assistant.")}
-{_hint(task.hint)}
+
+:pencil: _Please provide an initial prompt to the assistant._{f"{NL}Hint: {task.hint}" if task.hint else ""}
 """
+    ]
 
 
-def rank_initial_prompts_message(task: protocol_schema.RankInitialPromptsTask) -> str:
+def rank_initial_prompts_messages(task: protocol_schema.RankInitialPromptsTask) -> list[str]:
     """Creates the message that gets sent to users when they request a `rank_initial_prompts` task."""
-    return f"""\
+    return [
+        f"""\
 
-{_h1("RANK INITIAL PROMPTS")}
-
-{_ranking_prompt("Reply with the numbers of best to worst prompts separated by commas (example: '4,1,3,2')")}
+:small_blue_diamond: __**RANK INITIAL PROMPTS**__ :small_blue_diamond:
 
 
 {_ordered_list(task.prompts)}
+
+:trophy: _Reply with the numbers of best to worst prompts separated by commas (example: '4,1,3,2')_
 """
+    ]
 
 
 def rank_prompter_reply_message(task: protocol_schema.RankPrompterRepliesTask) -> str:
     """Creates the message that gets sent to users when they request a `rank_prompter_replies` task."""
     return f"""\
 
-{_h1("RANK PROMPTER REPLIES")}
-
-{_ranking_prompt("Reply with the numbers of best to worst replies separated by commas (example: '4,1,3,2')")}
+:small_blue_diamond: __**RANK PROMPTER REPLIES**__ :small_blue_diamond:
 
 
 {_conversation(task.conversation)}
-{_user(None)}
+:person_red_hair: __User__:
 {_ordered_list(task.replies)}
+
+:trophy: _Reply with the numbers of best to worst replies separated by commas (example: '4,1,3,2')_
 """
 
 
@@ -117,41 +145,97 @@ def rank_assistant_reply_message(task: protocol_schema.RankAssistantRepliesTask)
     """Creates the message that gets sent to users when they request a `rank_assistant_replies` task."""
     return f"""\
 
-{_h1("RANK ASSISTANT REPLIES")}
+:small_blue_diamond: __**RANK ASSISTANT REPLIES**__ :small_blue_diamond:
 
-{_ranking_prompt("Reply with the numbers of best to worst replies separated by commas (example: '4,1,3,2')")}
+
+{_conversation(task.conversation)}
+:robot: __Assistant__:
+{_ordered_list(task.replies)}
+
+:trophy: _Reply with the numbers of best to worst replies separated by commas (example: '4,1,3,2')_
+"""
+
+
+def label_initial_prompt_message(task: protocol_schema.LabelInitialPromptTask) -> str:
+    """Creates the message that gets sent to users when they request a `label_initial_prompt` task."""
+    return f"""\
+
+{_h1("LABEL INITIAL PROMPT")}
+
+
+{task.prompt}
+
+{_label_prompt("Reply with labels for the prompt separated by commas (example: 'profanity,misleading')")}
+"""
+
+
+def label_prompter_reply_message(task: protocol_schema.LabelPrompterReplyTask) -> str:
+    """Creates the message that gets sent to users when they request a `label_prompter_reply` task."""
+    return f"""\
+
+{_h1("LABEL PROMPTER REPLY")}
+
+
+{_conversation(task.conversation)}
+{_user(None)}
+{task.reply}
+
+{_label_prompt("Reply with labels for the reply separated by commas (example: 'profanity,misleading')")}
+"""
+
+
+def label_assistant_reply_message(task: protocol_schema.LabelAssistantReplyTask) -> str:
+    """Creates the message that gets sent to users when they request a `label_assistant_reply` task."""
+    return f"""\
+
+{_h1("LABEL ASSISTANT REPLY")}
 
 
 {_conversation(task.conversation)}
 {_assistant(None)}
-{_ordered_list(task.replies)}
+{task.reply}
+
+{_label_prompt("Reply with labels for the reply separated by commas (example: 'profanity,misleading')")}
 """
 
 
-def prompter_reply_message(task: protocol_schema.PrompterReplyTask) -> str:
+def prompter_reply_message(task: protocol_schema.PrompterReplyTask) -> list[str]:
     """Creates the message that gets sent to users when they request a `prompter_reply` task."""
-    return f"""\
+    return [
+        """\
+:small_blue_diamond: __**PROMPTER REPLY**__ :small_blue_diamond:
 
-{_h1("PROMPTER REPLY")}
+""",
+        *_conversation(task.conversation),
+        f"""{f"{NL}Hint: {task.hint}" if task.hint else ""}
 
-{_response_prompt("Please provide a reply to the assistant.")}
+:speech_balloon: _Please provide a reply to the assistant._
+""",
+    ]
 
 
-{_conversation(task.conversation)}
-{_hint(task.hint)}
-"""
+# def prompter_reply_messages2(task: protocol_schema.PrompterReplyTask) -> list[str]:
+#     """Creates the message that gets sent to users when they request a `prompter_reply` task."""
+#     return [
+#         message_templates.render("title.msg", "PROMPTER REPLY"),
+#         *[message_templates.render("conversation_message.msg", conv) for conv in task.conversation],
+#         message_templates.render("prompter_reply_task.msg", task.hint),
+#     ]
 
 
-def assistant_reply_message(task: protocol_schema.AssistantReplyTask) -> str:
+def assistant_reply_messages(task: protocol_schema.AssistantReplyTask) -> list[str]:
     """Creates the message that gets sent to users when they request a `assistant_reply` task."""
-    return f"""\
-{_h1("ASSISTANT REPLY")}
+    return [
+        """\
+:small_blue_diamond: __**ASSISTANT REPLY**__ :small_blue_diamond:
 
-{_response_prompt("Please provide a reply to the assistant.")}
+""",
+        *_conversation(task.conversation),
+        """\
 
-
-{_conversation(task.conversation)}
-"""
+:speech_balloon: _Please provide a reply to the user as the assistant._
+""",
+    ]
 
 
 def confirm_text_response_message(content: str) -> str:
@@ -171,6 +255,71 @@ def confirm_ranking_response_message(content: str, items: list[str]) -> str:
 {_h2("CONFIRM RESPONSE")}
 
 {user_ranked_list}
+"""
+
+
+def help_message(can_manage_guild: bool, is_dev: bool) -> str:
+    """The /help command message."""
+    content = f"""\
+{_h1("HELP")}
+
+{_li("**`/help`**")}
+Show this message.
+
+{_li("**`/work [type]`**")}
+Start a new task.
+**`[type]`**:
+The type of task to start. If not provided, a random task will be selected. The different types are
+:small_orange_diamond: `random`: A random task type
+:small_orange_diamond: ~~`summarize_story`~~ (coming soon)
+:small_orange_diamond: ~~`rate_summary`~~ (coming soon)
+:small_orange_diamond: `initial_prompt`: Ask the assistant something
+:small_orange_diamond: `prompter_reply`: Reply to the assistant
+:small_orange_diamond: `assistant_reply`: Reply to the user
+:small_orange_diamond: `rank_initial_prompts`: Rank some initial prompts
+:small_orange_diamond: `rank_prompter_replies`: Rank some prompter replies
+:small_orange_diamond: `rank_assistant_replies`: Rank some assistant replies
+
+To learn how to complete tasks, run `/tutorial`.
+"""
+    if can_manage_guild:
+        content += f"""\
+
+{_li("**`/settings log_channel <channel>`**")}
+Set the channel that the bot logs completed task messages in.
+**`<channel>`**: The channel to log completed tasks in. The bot needs to be able to send messages in this channel.
+
+{_li("**`/settings get`**")}
+Get the current settings.
+"""
+    if is_dev:
+        content += f"""\
+
+{_li("**`/reload [plugin]`**")}
+Hot-reload a plugin. Only code *inside* of function bodies will be updated.
+Any changes to __function signatures__, __other files__, __decorators__, or __imports__ will require a restart.
+**`[plugin]`**:
+The plugin to hot-reload. If no plugin is provided, all plugins are hot-reload.
+"""
+    return content
+
+
+def tutorial_message() -> str:
+    """The /tutorial command message."""
+    # TODO: Finish message
+    return f"""\
+{_h1("TUTORIAL")}
+"""
+
+
+def confirm_label_response_message(content: str) -> str:
+    user_labels = content.lower().replace(" ", "").split(",")
+    user_labels_str = ", ".join(user_labels)
+
+    return f"""\
+{_h2("CONFIRM RESPONSE")}
+
+{user_labels_str}
 """
 
 

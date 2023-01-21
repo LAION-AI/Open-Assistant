@@ -53,7 +53,7 @@ If you're doing active development we suggest the following workflow:
 1.  Run `docker compose up frontend-dev --build --attach-dependencies`. You can
     optionally include `-d` to detach and later track the logs if desired.
 1.  In another tab navigate to `${OPEN_ASSISTANT_ROOT/website`.
-1.  Run `npm install`
+1.  Run `npm ci`
 1.  Run `npx prisma db push` (This is also needed when you restart the docker
     stack from scratch).
 1.  Run `npm run dev`. Now the website is up and running locally at
@@ -137,6 +137,17 @@ A few npm scripts are available for convenience:
 
 Read more in the [./cypress README](cypress/).
 
+## Unit testing
+
+Jest and React Testing Library are used for unit testing JS/TS/TSX code.
+
+- Store unit test files adjacent to the file being tested and have the filename
+  end with `.test.ts` for non-React code or `.test.tsx` for React code.
+- `npm run jest`: automatically runs tests and watches for any relevant changes
+  to rerun tests.
+
+Read more in the [./src/README.md](src/README.md).
+
 ## Best Practices
 
 When writing code for the website, we have a few best practices:
@@ -153,6 +164,34 @@ When writing code for the website, we have a few best practices:
 1.  Define functional React components (with types for all properties when
     feasible).
 
+### Developing New Features
+
+When working on new features or making significant changes that can't be done
+within a single Pull Request, we ask that you make use of Feature Flags.
+
+We've set up
+[`react-feature-flags`](https://www.npmjs.com/package/react-feature-flags) to
+make this easier. To get started:
+
+1.  Add a new flag entry to `website/src/flags.ts`. We have an example flag you
+    can copy as an example. Be sure to `isActive` to true when testing your
+    features but false when submitting your PR.
+1.  Use your flag wherever you add a new UI element. This can be done with:
+
+```js
+import { Flags } from "react-feature-flags";
+...
+      <Flags authorizedFlags={["yourFlagName"]}>
+        <YourNewComponent />
+      </Flags>
+```
+
+    You can see an example of how this works by checking `website/src/components/Header/Headers.tsx` where we use `flagTest`.
+
+1.  Once you've finished building out the feature and it is ready for everyone
+    to use, it's safe to remove the `Flag` wrappers around your component and
+    the entry in `flags.ts`.
+
 ### URL Paths
 
 To use stable and consistent URL paths, we recommend the following strategy for
@@ -160,10 +199,10 @@ new tasks:
 
 1.  For any task that involves writing a free-form response, put the page under
     `website/src/pages/create` with a page name matching the task type, such as
-    `summarize_story.tsx`.
+    `initial_prompt.tsx`.
 1.  For any task that evaluates, rates, or ranks content, put the page under
     `website/src/pages/evaluate` with a page name matching the task type such as
-    `rate_summary.tsx`.
+    `rank_initial_prompts.tsx`.
 
 With this we'll be able to ensure these contribution pages are hidden from
 logged out users but accessible to logged in users.

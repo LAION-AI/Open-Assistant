@@ -29,10 +29,9 @@ environments:
     variables:
       # Note: this has to be a valid JSON list for Pydantic to parse it.
       BACKEND_CORS_ORIGINS: '["https://web.staging.open-assistant.surfacedata.org"]'
-      DEBUG_ALLOW_ANY_API_KEY: True
-      DEBUG_SKIP_API_KEY_CHECK: True
       MAX_WORKERS: 1
 
 secrets:
   # Note: URI, not URL.
   DATABASE_URI: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/API_DATABASE_URL
+  REDIS_HOST: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/REDIS_HOST

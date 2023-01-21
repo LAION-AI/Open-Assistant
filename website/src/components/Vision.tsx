@@ -1,5 +1,5 @@
-import { Container } from "./Container";
 import Image from "next/image";
+import { Container } from "src/components/Container";
 
 const Vision = () => {
   return (

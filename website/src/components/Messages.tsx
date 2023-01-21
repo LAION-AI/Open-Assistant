@@ -1,36 +1,41 @@
-import { Grid } from "@chakra-ui/react";
-import { useColorMode } from "@chakra-ui/react";
+import { Box, forwardRef, Grid, useColorMode } from "@chakra-ui/react";
+import { useMemo } from "react";
+import { Message } from "src/types/Conversation";
 
 import { FlaggableElement } from "./FlaggableElement";
 
-export interface Message {
-  text: string;
-  is_assistant: boolean;
+interface MessagesProps {
+  messages: Message[];
 }
 
-const getBgColor = (isAssistant: boolean, colorMode: "light" | "dark") => {
-  if (colorMode === "light") {
-    return isAssistant ? "bg-slate-800" : "bg-sky-900";
-  } else {
-    return isAssistant ? "bg-black" : "bg-sky-900";
-  }
-};
-
-export const Messages = ({ messages, post_id }: { messages: Message[]; post_id: string }) => {
-  const { colorMode } = useColorMode();
-
-  const items = messages.map(({ text, is_assistant }: Message, i: number) => {
+export const Messages = ({ messages }: MessagesProps) => {
+  const items = messages.map((messageProps: Message, i: number) => {
     return (
-      <FlaggableElement text={text} post_id={post_id} key={i + text}>
-        <div
-          key={i + text}
-          className={`${getBgColor(is_assistant, colorMode)} p-4 rounded-md text-white whitespace-pre-wrap`}
-        >
-          {text}
-        </div>
+      <FlaggableElement message={messageProps} key={i + messageProps.id}>
+        <MessageView {...messageProps} />
       </FlaggableElement>
     );
   });
   // Maybe also show a legend of the colors?
   return <Grid gap={2}>{items}</Grid>;
 };
+
+export const MessageView = forwardRef<Message, "div">((message: Message, ref) => {
+  const { colorMode } = useColorMode();
+
+  const bgColor = useMemo(() => {
+    if (colorMode === "light") {
+      return message.is_assistant ? "gray.800" : "blue.600";
+    } else {
+      return message.is_assistant ? "black" : "blue.600";
+    }
+  }, [colorMode, message.is_assistant]);
+
+  return (
+    <Box bg={bgColor} ref={ref} className={`p-4 rounded-md text-white whitespace-pre-wrap`}>
+      {message.text}
+    </Box>
+  );
+});
+
+MessageView.displayName = "MessageView";

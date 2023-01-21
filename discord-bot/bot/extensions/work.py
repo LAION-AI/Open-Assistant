@@ -9,15 +9,19 @@ import lightbulb.decorators
 import miru
 from aiosqlite import Connection
 from bot.messages import (
-    assistant_reply_message,
+    assistant_reply_messages,
+    confirm_label_response_message,
     confirm_ranking_response_message,
     confirm_text_response_message,
-    initial_prompt_message,
+    initial_prompt_messages,
     invalid_user_input_embed,
+    label_assistant_reply_message,
+    label_initial_prompt_message,
+    label_prompter_reply_message,
     plain_embed,
     prompter_reply_message,
     rank_assistant_reply_message,
-    rank_initial_prompts_message,
+    rank_initial_prompts_messages,
     rank_prompter_reply_message,
     task_complete_embed,
 )
@@ -29,8 +33,8 @@ from oasst_shared.schemas.protocol import TaskRequestType
 
 plugin = lightbulb.Plugin("WorkPlugin")
 
-MAX_TASK_TIME = 60 * 60  # 1 hour
-MAX_TASK_ACCEPT_TIME = 60  # 1 minute
+MAX_TASK_TIME = 60 * 60  # seconds
+MAX_TASK_ACCEPT_TIME = 60 * 10  # seconds
 
 settings = Settings()
 
@@ -117,7 +121,7 @@ async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> No
         # Task action loop
         completed = False
         while not completed:
-            await ctx.author.send(embed=plain_embed("Please type your response here"))
+            await ctx.author.send(embed=plain_embed("Please type your response below:"))
             try:
                 event = await ctx.bot.wait_for(
                     hikari.DMMessageCreateEvent,
@@ -145,6 +149,8 @@ async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> No
                 content = confirm_ranking_response_message(event.content, task.replies)
             elif isinstance(task, protocol_schema.RankInitialPromptsTask):
                 content = confirm_ranking_response_message(event.content, task.prompts)
+            elif isinstance(task, protocol_schema.LabelConversationReplyTask | protocol_schema.LabelInitialPromptTask):
+                content = confirm_label_response_message(event.content)
             elif isinstance(task, protocol_schema.ReplyToConversationTask | protocol_schema.InitialPromptTask):
                 content = confirm_text_response_message(event.content)
             else:
@@ -171,8 +177,22 @@ async def _handle_task(ctx: lightbulb.Context, task_type: TaskRequestType) -> No
                         auth_method="discord", id=str(ctx.author.id), display_name=ctx.author.username
                     ),
                 )
+            elif isinstance(task, protocol_schema.LabelConversationReplyTask | protocol_schema.LabelInitialPromptTask):
+                labels = event.content.replace(" ", "").split(",")
+                labels_dict = {label: 1 if label in labels else 0 for label in task.valid_labels}
+
+                reply = protocol_schema.TextLabels(
+                    task_id=task.id,
+                    message_id=task.message_id,
+                    labels=labels_dict,  # type: ignore
+                    text=event.content,
+                    user=protocol_schema.User(
+                        auth_method="discord", id=str(ctx.author.id), display_name=ctx.author.username
+                    ),
+                )
             elif isinstance(task, protocol_schema.ReplyToConversationTask | protocol_schema.InitialPromptTask):
                 reply = protocol_schema.TextReplyToMessage(
+                    lang=None,
                     message_id=str(msg_id),
                     user_message_id=str(event.message_id),
                     user=protocol_schema.User(
@@ -278,17 +298,18 @@ async def _send_task(
 
     embed: hikari.UndefinedOr[hikari.Embed] = hikari.UNDEFINED
     content: hikari.UndefinedOr[str] = hikari.UNDEFINED
+    messages: list[str] | None = None
 
     # Create an embed based on the task's type
     if task.type == TaskRequestType.initial_prompt:
         assert isinstance(task, protocol_schema.InitialPromptTask)
         logger.debug("sending initial prompt task")
-        content = initial_prompt_message(task)
+        messages = initial_prompt_messages(task)
 
     elif task.type == TaskRequestType.rank_initial_prompts:
         assert isinstance(task, protocol_schema.RankInitialPromptsTask)
         logger.debug("sending rank initial prompt task")
-        content = rank_initial_prompts_message(task)
+        content = rank_initial_prompts_messages(task)
 
     elif task.type == TaskRequestType.rank_prompter_replies:
         assert isinstance(task, protocol_schema.RankPrompterRepliesTask)
@@ -300,15 +321,30 @@ async def _send_task(
         logger.debug("sending rank assistant reply task")
         content = rank_assistant_reply_message(task)
 
+    elif task.type == TaskRequestType.label_initial_prompt:
+        assert isinstance(task, protocol_schema.LabelInitialPromptTask)
+        logger.debug("sending label initial prompt task")
+        content = label_initial_prompt_message(task)
+
+    elif task.type == TaskRequestType.label_prompter_reply:
+        assert isinstance(task, protocol_schema.LabelPrompterReplyTask)
+        logger.debug("sending label prompter reply task")
+        content = label_prompter_reply_message(task)
+
+    elif task.type == TaskRequestType.label_assistant_reply:
+        assert isinstance(task, protocol_schema.LabelAssistantReplyTask)
+        logger.debug("sending label assistant reply task")
+        content = label_assistant_reply_message(task)
+
     elif task.type == TaskRequestType.prompter_reply:
         assert isinstance(task, protocol_schema.PrompterReplyTask)
         logger.debug("sending user reply task")
-        content = prompter_reply_message(task)
+        messages = prompter_reply_message(task)
 
     elif task.type == TaskRequestType.assistant_reply:
         assert isinstance(task, protocol_schema.AssistantReplyTask)
         logger.debug("sending assistant reply task")
-        content = assistant_reply_message(task)
+        messages = assistant_reply_messages(task)
 
     elif task.type == TaskRequestType.summarize_story:
         raise NotImplementedError
@@ -319,27 +355,38 @@ async def _send_task(
         logger.critical(f"unknown task type {task.type}")
         raise ValueError(f"unknown task type {task.type}")
 
-    view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
-    if not msg:
-        msg = await ctx.author.send(
-            content,
-            embed=embed,
-            components=view,
-        )
+    # Send all messages and attach buttons to the last one
+    if messages is not None:
+        for message in messages[:-1]:
+            await ctx.author.send(message)
+        view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
+        msg = await ctx.author.send(messages[-1], components=view)
+        ctx.bot.d.currently_working[ctx.author.id] = (msg, task.id)
+
+        await view.start(msg)
+        await view.wait()
     else:
-        await msg.edit(
-            content,
-            embed=embed,
-            components=view,
-        )
+        view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
+        if not msg:
+            msg = await ctx.author.send(
+                content,
+                embed=embed,
+                components=view,
+            )
+        else:
+            await msg.edit(
+                content,
+                embed=embed,
+                components=view,
+            )
 
-    assert msg is not None
+        assert msg is not None
 
-    # Set the choice id as the current msg id
-    ctx.bot.d.currently_working[ctx.author.id] = (msg, task.id)
+        # Set the choice id as the current msg id
+        ctx.bot.d.currently_working[ctx.author.id] = (msg, task.id)
 
-    await view.start(msg)
-    await view.wait()
+        await view.start(msg)
+        await view.wait()
 
     return view.choice, msg
 
@@ -382,6 +429,26 @@ def _validate_user_input(content: str | None, task: protocol_schema.Task) -> tup
             "Message must contain numbers for all prompts.",
         )
 
+    # Labels tasks
+    elif task.type in (
+        TaskRequestType.label_initial_prompt,
+        TaskRequestType.label_prompter_reply,
+        TaskRequestType.label_assistant_reply,
+    ):
+        assert isinstance(
+            task,
+            protocol_schema.LabelInitialPromptTask
+            | protocol_schema.LabelPrompterReplyTask
+            | protocol_schema.LabelAssistantReplyTask,
+        )
+
+        labels = content.replace(" ", "").split(",")
+        valid_labels = set(task.valid_labels)
+        return (
+            set(labels).issubset(valid_labels),
+            "Message must only contain labels from predefined set of labels.",
+        )
+
     elif task.type == TaskRequestType.summarize_story:
         raise NotImplementedError
     elif task.type == TaskRequestType.rate_summary:
@@ -390,6 +457,12 @@ def _validate_user_input(content: str | None, task: protocol_schema.Task) -> tup
     else:
         logger.critical(f"Unknown task type {task.type}")
         raise ValueError(f"Unknown task type {task.type}")
+
+
+async def _send_messages_and_add_reactions(messages: list[str], bot: hikari.GatewayBot, channel_id: int) -> int:
+    """Send a list of strings and add reactions to the last one."""
+    ...
+    return 0
 
 
 class TaskAcceptView(miru.View):

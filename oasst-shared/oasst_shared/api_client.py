@@ -24,6 +24,9 @@ class TaskType(str, enum.Enum):
     rank_initial_prompts = "rank_initial_prompts"
     rank_prompter_replies = "rank_prompter_replies"
     rank_assistant_replies = "rank_assistant_replies"
+    label_initial_prompt = "label_initial_prompt"
+    label_assistant_reply = "label_assistant_reply"
+    label_prompter_reply = "label_prompter_reply"
     done = "task_done"
 
 
@@ -56,6 +59,9 @@ class OasstApiClient:
             TaskType.rank_initial_prompts: protocol_schema.RankInitialPromptsTask,
             TaskType.rank_prompter_replies: protocol_schema.RankPrompterRepliesTask,
             TaskType.rank_assistant_replies: protocol_schema.RankAssistantRepliesTask,
+            TaskType.label_initial_prompt: protocol_schema.LabelInitialPromptTask,
+            TaskType.label_prompter_reply: protocol_schema.LabelPrompterReplyTask,
+            TaskType.label_assistant_reply: protocol_schema.LabelAssistantReplyTask,
             TaskType.done: protocol_schema.TaskDone,
         }
 

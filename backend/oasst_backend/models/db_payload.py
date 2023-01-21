@@ -1,4 +1,5 @@
-from typing import Literal
+from typing import Literal, Optional
+from uuid import UUID
 
 from oasst_backend.models.payload_column_type import payload_type
 from oasst_shared.schemas import protocol as protocol_schema
@@ -27,7 +28,7 @@ class RateSummaryPayload(TaskPayload):
 @payload_type
 class InitialPromptPayload(TaskPayload):
     type: Literal["initial_prompt"] = "initial_prompt"
-    hint: str
+    hint: str | None
 
 
 @payload_type
@@ -63,12 +64,17 @@ class RatingReactionPayload(ReactionPayload):
 class RankingReactionPayload(ReactionPayload):
     type: Literal["message_ranking"] = "message_ranking"
     ranking: list[int]
+    ranked_message_ids: list[UUID]
+    ranking_parent_id: Optional[UUID]
+    message_tree_id: Optional[UUID]
 
 
 @payload_type
 class RankConversationRepliesPayload(TaskPayload):
     conversation: protocol_schema.Conversation  # the conversation so far
-    replies: list[str]
+    reply_messages: list[protocol_schema.ConversationMessage]
+    ranking_parent_id: Optional[UUID]
+    message_tree_id: Optional[UUID]
 
 
 @payload_type
@@ -76,7 +82,7 @@ class RankInitialPromptsPayload(TaskPayload):
     """A task to rank a set of initial prompts."""
 
     type: Literal["rank_initial_prompts"] = "rank_initial_prompts"
-    prompts: list[str]
+    prompt_messages: list[protocol_schema.ConversationMessage]
 
 
 @payload_type
@@ -91,3 +97,41 @@ class RankAssistantRepliesPayload(RankConversationRepliesPayload):
     """A task to rank a set of assistant replies to a conversation."""
 
     type: Literal["rank_assistant_replies"] = "rank_assistant_replies"
+
+
+@payload_type
+class LabelInitialPromptPayload(TaskPayload):
+    """A task to label an initial prompt."""
+
+    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    message_id: UUID
+    prompt: str
+    valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
+    mode: Optional[protocol_schema.LabelTaskMode]
+
+
+@payload_type
+class LabelConversationReplyPayload(TaskPayload):
+    """A task to label a conversation reply."""
+
+    message_id: UUID
+    conversation: protocol_schema.Conversation
+    reply: str
+    valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
+    mode: Optional[protocol_schema.LabelTaskMode]
+
+
+@payload_type
+class LabelPrompterReplyPayload(LabelConversationReplyPayload):
+    """A task to label a prompter reply."""
+
+    type: Literal["label_prompter_reply"] = "label_prompter_reply"
+
+
+@payload_type
+class LabelAssistantReplyPayload(LabelConversationReplyPayload):
+    """A task to label an assistant reply."""
+
+    type: Literal["label_assistant_reply"] = "label_assistant_reply"

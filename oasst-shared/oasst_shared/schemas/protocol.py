@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 
 import pydantic
 from oasst_shared.exceptions import OasstErrorCode
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, conint, conlist, constr
 
 
 class TaskRequestType(str, enum.Enum):
@@ -18,6 +18,9 @@ class TaskRequestType(str, enum.Enum):
     rank_initial_prompts = "rank_initial_prompts"
     rank_prompter_replies = "rank_prompter_replies"
     rank_assistant_replies = "rank_assistant_replies"
+    label_initial_prompt = "label_initial_prompt"
+    label_assistant_reply = "label_assistant_reply"
+    label_prompter_reply = "label_prompter_reply"
 
 
 class User(BaseModel):
@@ -26,10 +29,33 @@ class User(BaseModel):
     auth_method: Literal["discord", "local"]
 
 
+class FrontEndUser(User):
+    user_id: UUID
+    enabled: bool
+    deleted: bool
+    notes: str
+    created_date: Optional[datetime] = None
+
+
+class PageResult(BaseModel):
+    prev: str | None
+    next: str | None
+    sort_key: str
+    items: list
+    order: Literal["asc", "desc"]
+
+
+class FrontEndUserPage(PageResult):
+    items: list[FrontEndUser]
+
+
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
+    id: Optional[UUID] = None
+    frontend_message_id: Optional[str] = None
     text: str
+    lang: Optional[str]  # BCP 47
     is_assistant: bool
 
 
@@ -38,11 +64,26 @@ class Conversation(BaseModel):
 
     messages: list[ConversationMessage] = []
 
+    def __len__(self):
+        return len(self.messages)
+
+    @property
+    def is_prompter_turn(self) -> bool:
+        if len(self) == 0:
+            return True
+        last_message = self.messages[-1]
+        if last_message.is_assistant:
+            return True
+        return False
+
 
 class Message(ConversationMessage):
-    id: UUID
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
+
+
+class MessagePage(PageResult):
+    items: list[Message]
 
 
 class MessageTree(BaseModel):
@@ -60,6 +101,7 @@ class TaskRequest(BaseModel):
     # this is optional. https://github.com/pydantic/pydantic/issues/1270
     user: Optional[User] = Field(None, nullable=True)
     collective: bool = False
+    lang: Optional[str] = Field(None, nullable=True)  # BCP 47
 
 
 class TaskAck(BaseModel):
@@ -146,7 +188,8 @@ class RankInitialPromptsTask(Task):
     """A task to rank a set of initial prompts."""
 
     type: Literal["rank_initial_prompts"] = "rank_initial_prompts"
-    prompts: list[str]
+    prompts: list[str]  # deprecated, use prompt_messages
+    prompt_messages: list[ConversationMessage]
 
 
 class RankConversationRepliesTask(Task):
@@ -154,7 +197,10 @@ class RankConversationRepliesTask(Task):
 
     type: Literal["rank_conversation_replies"] = "rank_conversation_replies"
     conversation: Conversation  # the conversation so far
-    replies: list[str]
+    replies: list[str]  # deprecated, use reply_messages
+    reply_messages: list[ConversationMessage]
+    message_tree_id: UUID
+    ranking_parent_id: UUID
 
 
 class RankPrompterRepliesTask(RankConversationRepliesTask):
@@ -167,6 +213,48 @@ class RankAssistantRepliesTask(RankConversationRepliesTask):
     """A task to rank a set of assistant replies to a conversation."""
 
     type: Literal["rank_assistant_replies"] = "rank_assistant_replies"
+
+
+class LabelTaskMode(str, enum.Enum):
+    """Label task mode that allows frontends to select an appropriate UI."""
+
+    simple = "simple"
+    full = "full"
+
+
+class LabelInitialPromptTask(Task):
+    """A task to label an initial prompt."""
+
+    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    message_id: UUID
+    prompt: str
+    valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
+    mode: Optional[LabelTaskMode]
+
+
+class LabelConversationReplyTask(Task):
+    """A task to label a reply to a conversation."""
+
+    type: Literal["label_conversation_reply"] = "label_conversation_reply"
+    conversation: Conversation  # the conversation so far
+    message_id: UUID
+    reply: str
+    valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
+    mode: Optional[LabelTaskMode]
+
+
+class LabelPrompterReplyTask(LabelConversationReplyTask):
+    """A task to label a prompter reply to a conversation."""
+
+    type: Literal["label_prompter_reply"] = "label_prompter_reply"
+
+
+class LabelAssistantReplyTask(LabelConversationReplyTask):
+    """A task to label an assistant reply to a conversation."""
+
+    type: Literal["label_assistant_reply"] = "label_assistant_reply"
 
 
 class TaskDone(Task):
@@ -187,6 +275,10 @@ AnyTask = Union[
     RankConversationRepliesTask,
     RankPrompterRepliesTask,
     RankAssistantRepliesTask,
+    LabelInitialPromptTask,
+    LabelConversationReplyTask,
+    LabelPrompterReplyTask,
+    LabelAssistantReplyTask,
 ]
 
 
@@ -203,7 +295,8 @@ class TextReplyToMessage(Interaction):
     type: Literal["text_reply_to_message"] = "text_reply_to_message"
     message_id: str
     user_message_id: str
-    text: str
+    text: constr(min_length=1, strip_whitespace=True)
+    lang: Optional[str]  # BCP 47
 
 
 class MessageRating(Interaction):
@@ -211,7 +304,7 @@ class MessageRating(Interaction):
 
     type: Literal["message_rating"] = "message_rating"
     message_id: str
-    rating: int
+    rating: conint(gt=0)
 
 
 class MessageRanking(Interaction):
@@ -219,49 +312,52 @@ class MessageRanking(Interaction):
 
     type: Literal["message_ranking"] = "message_ranking"
     message_id: str
-    ranking: list[int]
-
-
-AnyInteraction = Union[
-    TextReplyToMessage,
-    MessageRating,
-    MessageRanking,
-]
+    ranking: conlist(item_type=int, min_items=1)
 
 
 class TextLabel(str, enum.Enum):
     """A label for a piece of text."""
 
-    spam = "spam"
-    violence = "violence"
-    sexual_content = "sexual_content"
-    toxicity = "toxicity"
-    political_content = "political_content"
-    humor = "humor"
-    sarcasm = "sarcasm"
-    hate_speech = "hate_speech"
-    profanity = "profanity"
-    ad_hominem = "ad_hominem"
-    insult = "insult"
-    threat = "threat"
-    aggressive = "aggressive"
-    misleading = "misleading"
-    helpful = "helpful"
-    formal = "formal"
-    cringe = "cringe"
-    creative = "creative"
-    beautiful = "beautiful"
-    informative = "informative"
-    based = "based"
-    slang = "slang"
+    def __new__(cls, label: str, display_text: str = "", help_text: str = None):
+        obj = str.__new__(cls, label)
+        obj._value_ = label
+        obj.display_text = display_text
+        obj.help_text = help_text
+        return obj
+
+    spam = "spam", "Seems to be intentionally low-quality or irrelevant"
+    fails_task = "fails_task", "Fails to follow the correct instruction / task"
+    not_appropriate = "not_appropriate", "Inappropriate for customer assistant"
+    violence = "violence", "Encourages or fails to discourage violence/abuse/terrorism/self-harm"
+    excessive_harm = (
+        "excessive_harm",
+        "Content likely to cause excessive harm not justifiable in the context",
+        "Harm refers to physical or mental damage or injury to someone or something. Excessive refers to a reasonable threshold of harm in the context, for instance damaging skin is not excessive in the context of surgery.",
+    )
+    sexual_content = "sexual_content", "Contains sexual content"
+    toxicity = "toxicity", "Contains rude, abusive, profane or insulting content"
+    moral_judgement = "moral_judgement", "Expresses moral judgement"
+    political_content = "political_content", "Expresses political views"
+    humor = "humor", "Contains humorous content including sarcasm"
+    hate_speech = (
+        "hate_speech",
+        "Content is abusive or threatening and expresses prejudice against a protected characteristic",
+        "Prejudice refers to preconceived views not based on reason. Protected characteristics include gender, ethnicity, religion, sexual orientation, and similar characteristics.",
+    )
+    threat = "threat", "Contains a threat against a person or persons"
+    misleading = "misleading", "Contains text which is incorrect or misleading"
+    helpful = "helpful", "Completes the task to a high standard"
+    creative = "creative", "Expresses creativity in responding to the task"
 
 
-class TextLabels(BaseModel):
+class TextLabels(Interaction):
     """A set of labels for a piece of text."""
 
+    type: Literal["text_labels"] = "text_labels"
     text: str
     labels: dict[TextLabel, float]
-    message_id: str | None = None
+    message_id: UUID
+    task_id: Optional[UUID]
 
     @property
     def has_message_id(self) -> bool:
@@ -277,6 +373,14 @@ class TextLabels(BaseModel):
         return v
 
 
+AnyInteraction = Union[
+    TextReplyToMessage,
+    MessageRating,
+    MessageRanking,
+    TextLabels,
+]
+
+
 class SystemStats(BaseModel):
     all: int = 0
     active: int = 0
@@ -285,14 +389,41 @@ class SystemStats(BaseModel):
 
 
 class UserScore(BaseModel):
-    ranking: int
+    rank: Optional[int]
     user_id: UUID
     username: str
+    auth_method: str
     display_name: str
-    score: int
+
+    leader_score: int = 0
+
+    base_date: Optional[datetime]
+    modified_date: Optional[datetime]
+
+    prompts: int = 0
+    replies_assistant: int = 0
+    replies_prompter: int = 0
+    labels_simple: int = 0
+    labels_full: int = 0
+    rankings_total: int = 0
+    rankings_good: int = 0
+
+    accepted_prompts: int = 0
+    accepted_replies_assistant: int = 0
+    accepted_replies_prompter: int = 0
+
+    reply_ranked_1: int = 0
+    reply_ranked_2: int = 0
+    reply_ranked_3: int = 0
+
+    # only used for time frame "total"
+    streak_last_day_date: Optional[datetime]
+    streak_days: Optional[int]
 
 
 class LeaderboardStats(BaseModel):
+    time_frame: str
+    last_updated: datetime
     leaderboard: List[UserScore]
 
 

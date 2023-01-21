@@ -1,8 +1,18 @@
 export { default } from "next-auth/middleware";
 
 /**
- * Guards all pages under `/grading` and redirects them to the sign in page.
+ * Guards these pages and redirects them to the sign in page.
  */
 export const config = {
-  matcher: ["/create/:path*", "/evaluate/:path*", "/account/:path*"],
+  matcher: [
+    "/create/:path*",
+    "/evaluate/:path*",
+    "/label/:path*",
+    "/account/:path*",
+    "/dashboard",
+    "/admin/:path*",
+    "/tasks/:path*",
+    "/leaderboard",
+    "/messages/:path*",
+  ],
 };
