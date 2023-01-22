@@ -233,15 +233,11 @@ class UserRepository:
 
         if lte_display_name is not None:
             if lt_id:
-                qry = (
-                    qry.filter(
-                        or_(
-                            User.display_name < lte_display_name,
-                            and_(User.display_name == lte_display_name, User.id < lt_id),
-                        )
+                qry = qry.filter(
+                    or_(
+                        User.display_name < lte_display_name,
+                        and_(User.display_name == lte_display_name, User.id < lt_id),
                     )
-                    .order_by(None)
-                    .order_by(User.display_name.desc(), User.id.desc())
                 )
             else:
                 qry = qry.filter(User.display_name <= lte_display_name)
