@@ -27,10 +27,10 @@ export function Faq() {
             return (
               <ListItem className="space-y-10" key={`question_${index}`}>
                 <Text as="h3" className={`text-lg font-semibold leading-6 ${headingColorClass}`}>
-                  {t(`faq_items.q${index}`)}
+                  {t(`faq_items.q${index as 0}`)}
                 </Text>
                 <Text as="p" className={`mt-4 text-sm ${textColorClass}`}>
-                  {t(`faq_items.a${index}`)}
+                  {t(`faq_items.a${index as 0}`)}
                 </Text>
               </ListItem>
             );
