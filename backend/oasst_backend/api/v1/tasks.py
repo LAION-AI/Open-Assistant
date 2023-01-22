@@ -1,4 +1,5 @@
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Any, Callable, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -9,10 +10,34 @@ from oasst_backend.prompt_repository import PromptRepository, TaskRepository
 from oasst_backend.tree_manager import TreeManager
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
+from oasst_shared.schemas.protocol import User
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
 router = APIRouter()
+
+
+@dataclass
+class TaskContext:  # todo: come up with a better name?
+    pr: PromptRepository
+    tm: TreeManager
+
+
+TaskContextFactory = Callable[[Optional[User]], PromptRepository]
+
+
+def get_task_context_factory(
+    db: Session = Depends(deps.get_db),
+    api_key: APIKey = Depends(deps.get_api_key),
+) -> TaskContextFactory:
+    api_client = deps.api_auth(api_key, db)
+
+    def factory(client_user: Optional[User]) -> TaskContext:
+        pr = PromptRepository(db, api_client, client_user)
+        tm = TreeManager(db, pr)
+        return TaskContext(pr, tm)
+
+    return factory
 
 
 @router.post(
@@ -25,22 +50,17 @@ router = APIRouter()
 )  # work with Union once more types are added
 def request_task(
     *,
-    db: Session = Depends(deps.get_db),
-    api_key: APIKey = Depends(deps.get_api_key),
+    task_context_factory: TaskContextFactory = Depends(get_task_context_factory),
     request: protocol_schema.TaskRequest,
 ) -> Any:
     """
     Create new task.
     """
-    api_client = deps.api_auth(api_key, db)
-
     try:
-        pr = PromptRepository(db, api_client, client_user=request.user)
-        pr.ensure_user_is_enabled()
-
-        tm = TreeManager(db, pr)
-        task, message_tree_id, parent_message_id = tm.next_task(desired_task_type=request.type, lang=request.lang)
-        pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
+        ctx: TaskContext = task_context_factory(request.user)
+        ctx.pr.ensure_user_is_enabled()
+        task, message_tree_id, parent_message_id = ctx.tm.next_task(desired_task_type=request.type, lang=request.lang)
+        ctx.pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
 
     except OasstError:
         raise
