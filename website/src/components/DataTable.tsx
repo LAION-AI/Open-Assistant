@@ -25,8 +25,8 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { Filter } from "lucide-react";
 import { ChangeEvent, ReactNode } from "react";
-import { FaFilter } from "react-icons/fa";
 import { useDebouncedCallback } from "use-debounce";
 
 export type DataTableColumnDef<T> = ColumnDef<T> & {
@@ -148,7 +148,7 @@ const FilterModal = ({
     <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
       <PopoverTrigger>
         <Button variant={"unstyled"} ml="2">
-          <FaFilter></FaFilter>
+          <Filter size="1em"></Filter>
         </Button>
       </PopoverTrigger>
       <PopoverContent w="fit-content">

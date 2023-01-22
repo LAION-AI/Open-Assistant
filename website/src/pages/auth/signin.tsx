@@ -1,17 +1,18 @@
 import { Button, ButtonProps, Input, Stack, useColorModeValue } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
+import { Bug, Github, Mail } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ClientSafeProvider, getProviders, signIn } from "next-auth/react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FaBug, FaDiscord, FaEnvelope, FaGithub } from "react-icons/fa";
 import { AuthLayout } from "src/components/AuthLayout";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
+import { Discord } from "src/components/Icons/Discord";
 import { Role, RoleSelect } from "src/components/RoleSelect";
 
 export type SignInErrorTypes =
@@ -89,7 +90,7 @@ function Signin({ providers }: SigninProps) {
                   placeholder="Email Address"
                   {...register("email")}
                 />
-                <SigninButton data-cy="signin-email-button" leftIcon={<FaEnvelope />}>
+                <SigninButton data-cy="signin-email-button" leftIcon={<Mail />}>
                   Continue with Email
                 </SigninButton>
               </Stack>
@@ -103,7 +104,7 @@ function Signin({ providers }: SigninProps) {
                 bg: "#454FBF",
               }}
               size="lg"
-              leftIcon={<FaDiscord />}
+              leftIcon={<Discord />}
               color="white"
               onClick={() => signIn(discord.id, { callbackUrl: "/" })}
               // isDisabled="false"
@@ -119,7 +120,7 @@ function Signin({ providers }: SigninProps) {
                 bg: "#101010",
               }}
               size={"lg"}
-              leftIcon={<FaGithub />}
+              leftIcon={<Github />}
               colorScheme="blue"
               // isDisabled="false"
             >
@@ -165,7 +166,7 @@ const SigninButton = (props: ButtonProps) => {
   return (
     <Button
       size={"lg"}
-      leftIcon={<FaEnvelope />}
+      leftIcon={<Mail />}
       type="submit"
       colorScheme={buttonColorScheme}
       color="white"
@@ -203,7 +204,7 @@ const DebugSigninForm = ({ credentials, bgColorClass }: { credentials: ClientSaf
       <Stack>
         <Input variant="outline" size="lg" placeholder="Username" {...register("username")} />
         <RoleSelect {...register("role")}></RoleSelect>
-        <SigninButton leftIcon={<FaBug />}>Continue with Debug User</SigninButton>
+        <SigninButton leftIcon={<Bug />}>Continue with Debug User</SigninButton>
       </Stack>
     </form>
   );
