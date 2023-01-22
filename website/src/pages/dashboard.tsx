@@ -5,15 +5,17 @@ import { LeaderboardTable, TaskOption, WelcomeCard } from "src/components/Dashbo
 import { getDashboardLayout } from "src/components/Layout";
 import { TaskCategory } from "src/components/Tasks/TaskTypes";
 import { get } from "src/lib/api";
-import type { AvailableTasks, TaskType } from "src/types/Task";
+import { AvailableTasks, TaskType } from "src/types/Task";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import useSWRImmutable from "swr/immutable";
 
 const Dashboard = () => {
   const { data } = useSWRImmutable<AvailableTasks>("/api/available_tasks", get);
 
-  // TODO: show only these tasks:
-  const availableTasks = useMemo(() => filterAvailableTasks(data ?? {}), [data]);
+  const availableTaskTypes = useMemo(() => {
+    const taskTypes = filterAvailableTasks(data ?? {});
+    return { [TaskCategory.Random]: taskTypes };
+  }, [data]);
 
   return (
     <>
@@ -23,7 +25,7 @@ const Dashboard = () => {
       </Head>
       <Flex direction="column" gap="10">
         <WelcomeCard />
-        <TaskOption displayTaskCategories={[TaskCategory.Random]} />
+        <TaskOption content={availableTaskTypes} />
         <LeaderboardTable />
       </Flex>
     </>

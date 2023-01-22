@@ -1,6 +1,7 @@
 import { useColorMode } from "@chakra-ui/react";
 import Head from "next/head";
 import { getCsrfToken, getProviders } from "next-auth/react";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 export default function Verify() {
   const { colorMode } = useColorMode();
@@ -21,14 +22,14 @@ export default function Verify() {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function getServerSideProps(context) {
+export async function getServerSideProps({ locale }) {
   const csrfToken = await getCsrfToken();
   const providers = await getProviders();
   return {
     props: {
       csrfToken,
       providers,
+      ...(await serverSideTranslations(locale, ["common"])),
     },
   };
 }

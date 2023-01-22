@@ -96,8 +96,15 @@ def get_messages_cursor(
     items = utils.prepare_message_list(messages)
     n, p = None, None
     if len(items) > 0:
-        p = str(items[0].id) + "$" + items[0].created_date.isoformat()
-        n = str(items[-1].id) + "$" + items[-1].created_date.isoformat()
+        if len(items) == max_count or gte_created_date:
+            p = str(items[0].id) + "$" + items[0].created_date.isoformat()
+        if len(items) == max_count or lte_created_date:
+            n = str(items[-1].id) + "$" + items[-1].created_date.isoformat()
+    else:
+        if gte_created_date:
+            p = gte_created_date.isoformat()
+        if lte_created_date:
+            n = lte_created_date.isoformat()
 
     order = "desc" if desc else "asc"
     return protocol.MessagePage(prev=p, next=n, sort_key="created_date", order=order, items=items)

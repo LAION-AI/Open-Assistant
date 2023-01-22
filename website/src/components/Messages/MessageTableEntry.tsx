@@ -50,6 +50,7 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
           bg={item.is_assistant ? backgroundColor : backgroundColor2}
           onClick={props.enabled && goToMessage}
           _hover={props.enabled && { cursor: "pointer", opacity: 0.9 }}
+          whiteSpace="pre-wrap"
         >
           {inlineAvatar && avatar}
           {item.text}

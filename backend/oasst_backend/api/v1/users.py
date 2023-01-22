@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Callable, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -28,6 +28,7 @@ def get_users_ordered_by_username(
     search_text: Optional[str] = None,
     auth_method: Optional[str] = None,
     max_count: Optional[int] = Query(100, gt=0, le=10000),
+    desc: Optional[bool] = False,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -41,6 +42,7 @@ def get_users_ordered_by_username(
         auth_method=auth_method,
         search_text=search_text,
         limit=max_count,
+        desc=desc,
     )
     return [u.to_protocol_frontend_user() for u in users]
 
@@ -55,6 +57,7 @@ def get_users_ordered_by_display_name(
     auth_method: Optional[str] = None,
     search_text: Optional[str] = None,
     max_count: Optional[int] = Query(100, gt=0, le=10000),
+    desc: Optional[bool] = False,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -68,6 +71,7 @@ def get_users_ordered_by_display_name(
         auth_method=auth_method,
         search_text=search_text,
         limit=max_count,
+        desc=desc,
     )
     return [u.to_protocol_frontend_user() for u in users]
 
@@ -84,6 +88,8 @@ def get_users_cursor(
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
+    assert max_count is not None
+
     def split_cursor(x: str | None) -> tuple[str, UUID]:
         if not x:
             return None, None
@@ -93,6 +99,32 @@ def get_users_cursor(
         return x, None
 
     items: list[protocol.FrontEndUser]
+    qry_max_count = max_count + 1 if lt is None or gt is None else max_count
+    desc = lt and not gt
+
+    def get_next_prev(num_rows: int, lt: str | None, gt: str | None, key_fn: Callable[[protocol.FrontEndUser], str]):
+        p, n = None, None
+        if len(items) > 0:
+            if (num_rows > max_count and lt) or gt:
+                p = str(items[0].user_id) + "$" + key_fn(items[0])
+            if num_rows > max_count or lt:
+                n = str(items[-1].user_id) + "$" + key_fn(items[-1])
+        else:
+            if gt:
+                p = gt
+            if lt:
+                n = lt
+        return p, n
+
+    def remove_extra_item(items: list[protocol.FrontEndUser], lt: str | None, gt: str | None):
+        num_rows = len(items)
+        if qry_max_count > max_count and num_rows == qry_max_count:
+            assert not (lt and gt)
+            items = items[:-1]
+        if desc:
+            items.reverse()
+        return items, num_rows
+
     n, p = None, None
     if sort_key == "username":
         lte_username, lt_id = split_cursor(lt)
@@ -105,13 +137,14 @@ def get_users_cursor(
             lt_id=lt_id,
             auth_method=auth_method,
             search_text=search_text,
-            max_count=max_count,
+            max_count=qry_max_count,
+            desc=desc,
             api_client=api_client,
             db=db,
         )
-        if len(items) > 0:
-            p = str(items[0].user_id) + "$" + items[0].id
-            n = str(items[-1].user_id) + "$" + items[-1].id
+        items, num_rows = remove_extra_item(items, lte_username, gte_username)
+        p, n = get_next_prev(num_rows, lte_username, gte_username, lambda x: x.id)
+
     elif sort_key == "display_name":
         lte_display_name, lt_id = split_cursor(lt)
         gte_display_name, gt_id = split_cursor(gt)
@@ -123,13 +156,14 @@ def get_users_cursor(
             lt_id=lt_id,
             auth_method=auth_method,
             search_text=search_text,
-            max_count=max_count,
+            max_count=qry_max_count,
+            desc=desc,
             api_client=api_client,
             db=db,
         )
-        if len(items) > 0:
-            p = str(items[0].user_id) + "$" + items[0].display_name
-            n = str(items[-1].user_id) + "$" + items[-1].display_name
+        items, num_rows = remove_extra_item(items, lte_display_name, gte_display_name)
+        p, n = get_next_prev(num_rows, lte_display_name, gte_display_name, lambda x: x.display_name)
+
     else:
         raise OasstError(f"Unsupported sort key: '{sort_key}'", OasstErrorCode.SORT_KEY_UNSUPPORTED)
 
