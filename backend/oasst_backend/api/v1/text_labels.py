@@ -15,7 +15,6 @@ router = APIRouter()
 @router.post("/", status_code=HTTP_204_NO_CONTENT)
 def label_text(
     *,
-    # db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
     text_labels: protocol_schema.TextLabels,
 ) -> None:
@@ -24,14 +23,14 @@ def label_text(
     """
 
     @managed_tx_function(CommitMode.COMMIT)
-    def store_text_labels(session: deps.Session, api_key):
+    def store_text_labels(session: deps.Session):
         api_client = deps.api_auth(api_key, session)
         pr = PromptRepository(session, api_client, client_user=text_labels.user)
         pr.store_text_labels(text_labels)
 
     try:
         logger.info(f"Labeling text {text_labels=}.")
-        store_text_labels(api_key=api_key)
+        store_text_labels()
 
     except OasstError:
         raise
