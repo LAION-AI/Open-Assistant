@@ -269,8 +269,8 @@ export class OasstApiClient {
   /**
    * Returns the counts of all tasks (some might be zero)
    */
-  async fetch_available_tasks(user: BackendUserCore): Promise<AvailableTasks> {
-    return this.post(`/api/v1/tasks/availability`, user);
+  async fetch_available_tasks(user: BackendUserCore, lang: string): Promise<AvailableTasks> {
+    return this.post(`/api/v1/tasks/availability`, { ...user, lang });
   }
 }
 

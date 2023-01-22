@@ -15,7 +15,7 @@ const LOCALE_SET = new Set(i18n.locales);
  *    the i18n module.
  * 3. "en" as a final fallback.
  */
-const getUserLanguage = (req: NextApiRequest) => {
+const getUserLanguage = (req: NextApiRequest): string => {
   const cookieLanguage = req.cookies["NEXT_LOCALE"];
   if (cookieLanguage) {
     return cookieLanguage;
