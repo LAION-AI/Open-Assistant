@@ -7,10 +7,13 @@ import { getBackendUserCore } from "src/lib/users";
  * Returns tasks availability, stats, and tree manager stats.
  */
 const handler = withRole("admin", async (req, res) => {
-  const token = await getToken({ req });
-  const currentUser = await getBackendUserCore(token.sub);
+  const dummyUser = {
+    id: "__dummy_user__",
+    display_name: "Dummy User",
+    auth_method: "local",
+  };
   const [tasksAvailabilityOutcome, statsOutcome, treeManagerOutcome] = await Promise.allSettled([
-    oasstApiClient.fetch_tasks_availability(currentUser),
+    oasstApiClient.fetch_tasks_availability(dummyUser),
     oasstApiClient.fetch_stats(),
     oasstApiClient.fetch_tree_manager(),
   ]);
