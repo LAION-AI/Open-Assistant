@@ -67,4 +67,4 @@ class ProsocialDialogue(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, idx):
-        return format_pair(self.pairs[idx])
+        return self.pairs[idx]
