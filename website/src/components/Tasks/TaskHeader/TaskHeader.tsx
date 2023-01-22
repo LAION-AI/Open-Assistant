@@ -1,5 +1,5 @@
 import { HStack, IconButton, Link, Stack, Text, useColorModeValue } from "@chakra-ui/react";
-import { FiHelpCircle } from "react-icons/fi";
+import { HelpCircle } from "lucide-react";
 import type { TaskInfo } from "src/components/Tasks/TaskTypes";
 
 interface TaskHeaderProps {
@@ -22,7 +22,7 @@ const TaskHeader = ({ taskType }: TaskHeaderProps) => {
           {taskType.label}
         </Text>
         <Link href={taskType.help_link} isExternal>
-          <IconButton variant="ghost" aria-label="More Information" icon={<FiHelpCircle />} />
+          <IconButton variant="ghost" aria-label="More Information" icon={<HelpCircle size="1em" />} />
         </Link>
       </HStack>
       <Text fontSize="md" color={labelColor}>

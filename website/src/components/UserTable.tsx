@@ -1,8 +1,8 @@
 import { IconButton } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
+import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { memo, useState } from "react";
-import { FaPen } from "react-icons/fa";
 import { get } from "src/lib/api";
 import { FetchUsersResponse } from "src/lib/oasst_api_client";
 import type { User } from "src/types/Users";
@@ -49,7 +49,7 @@ const columns: DataTableColumnDef<User>[] = [
         as={Link}
         href={`/admin/manage_user/${getValue()}`}
         aria-label="Manage"
-        icon={<FaPen></FaPen>}
+        icon={<Pencil size="1em"></Pencil>}
       ></IconButton>
     ),
     header: "Update",

@@ -1,11 +1,10 @@
 import { Box, Text, useColorModeValue } from "@chakra-ui/react";
+import { AlertTriangle, LucideIcon } from "lucide-react";
 import NextLink from "next/link";
-import { FiAlertTriangle } from "react-icons/fi";
-import { IconType } from "react-icons/lib";
 
 type EmptyStateProps = {
   text: string;
-  icon: IconType;
+  icon: LucideIcon;
 };
 
 export const EmptyState = (props: EmptyStateProps) => {
@@ -25,5 +24,5 @@ export const EmptyState = (props: EmptyStateProps) => {
 };
 
 export const TaskEmptyState = () => {
-  return <EmptyState text="Looks like no tasks were found." icon={FiAlertTriangle} />;
+  return <EmptyState text="Looks like no tasks were found." icon={AlertTriangle} />;
 };
