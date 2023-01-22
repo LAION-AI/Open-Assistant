@@ -20,7 +20,6 @@ import { FiAlertTriangle, FiLayout, FiLogOut, FiSettings, FiShield } from "react
 interface MenuOption {
   name: string;
   href: string;
-  desc: string;
   icon: ElementType;
   isExternal: boolean;
 }
@@ -40,21 +39,18 @@ export function UserMenu() {
     {
       name: t("dashboard"),
       href: "/dashboard",
-      desc: t("dashboard"),
       icon: FiLayout,
       isExternal: false,
     },
     {
       name: t("account_settings"),
       href: "/account",
-      desc: t("account_settings"),
       icon: FiSettings,
       isExternal: false,
     },
     {
       name: t("report_a_bug"),
       href: "https://github.com/LAION-AI/Open-Assistant/issues/new/choose",
-      desc: t("report_a_bug"),
       icon: FiAlertTriangle,
       isExternal: true,
     },
@@ -64,7 +60,6 @@ export function UserMenu() {
     options.unshift({
       name: t("admin_dashboard"),
       href: "/admin",
-      desc: t("admin_dashboard"),
       icon: FiShield,
       isExternal: false,
     });
