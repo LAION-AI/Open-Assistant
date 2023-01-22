@@ -4,6 +4,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   //TODO: add params if needed
   const params = new URLSearchParams({
     username: token.sub,
+    auth_method: "local",
   });
 
   const messagesRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/messages?${params}`, {
