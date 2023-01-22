@@ -14,16 +14,13 @@ import {
   Thead,
   Tr,
   useColorMode,
-  useToast,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useSWRImmutable from "swr/immutable";
 import { getAdminLayout } from "src/components/Layout";
-import poster from "src/lib/poster";
-import prisma from "src/lib/prismadb";
 import { get } from "src/lib/api";
 
 /**
@@ -31,13 +28,11 @@ import { get } from "src/lib/api";
  * namely /api/v1/tasks/availability, /api/v1/stats/, /api/v1/stats/tree_manager
  */
 
-const StatusIndex = ({ user }) => {
-  const toast = useToast();
+const StatusIndex = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
 
   const { colorMode } = useColorMode();
-  const backgroundColor = colorMode === "light" ? "white" : "gray.700";
   const dataBackgroundColor = colorMode === "light" ? "gray.100" : "gray.800";
   // Check when the user session is loaded and re-route if the user is not an
   // admin.  This follows the suggestion by NextJS for handling private pages:
