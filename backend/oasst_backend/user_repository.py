@@ -145,6 +145,7 @@ class UserRepository:
         auth_method: Optional[str] = None,
         search_text: Optional[str] = None,
         limit: Optional[int] = 100,
+        desc: bool = False,
     ) -> list[User]:
         if not self.api_client.trusted:
             if not api_client_id:
@@ -184,14 +185,13 @@ class UserRepository:
             pattern = "%{}%".format(search_text.replace("\\", "\\\\").replace("_", "\\_").replace("%", "\\%"))
             qry = qry.filter(User.username.like(pattern))
 
-        if limit is not None and lte_username and not gte_username:
-            # select top rows but return results in ascernding order
-            sub_qry = qry.order_by(User.username.desc(), User.id.desc()).limit(limit).subquery("u")
-            qry = self.db.query(User).select_entity_from(sub_qry).order_by(User.username, User.id)
+        if desc:
+            qry = qry.order_by(User.username.desc(), User.id.desc())
         else:
             qry = qry.order_by(User.username, User.id)
-            if limit is not None:
-                qry = qry.limit(limit)
+
+        if limit is not None:
+            qry = qry.limit(limit)
 
         return qry.all()
 
@@ -205,6 +205,7 @@ class UserRepository:
         auth_method: Optional[str] = None,
         search_text: Optional[str] = None,
         limit: Optional[int] = 100,
+        desc: bool = False,
     ) -> list[User]:
         if not self.api_client.trusted:
             if not api_client_id:
@@ -255,13 +256,12 @@ class UserRepository:
         if auth_method:
             qry = qry.filter(User.auth_method == auth_method)
 
-        if limit is not None and lte_display_name and not gte_display_name:
-            # select top rows but return results in ascernding order
-            sub_qry = qry.order_by(User.display_name.desc(), User.id.desc()).limit(limit).subquery("u")
-            qry = self.db.query(User).select_entity_from(sub_qry).order_by(User.display_name, User.id)
+        if desc:
+            qry = qry.order_by(User.display_name.desc(), User.id.desc())
         else:
             qry = qry.order_by(User.display_name, User.id)
-            if limit is not None:
-                qry = qry.limit(limit)
+
+        if limit is not None:
+            qry = qry.limit(limit)
 
         return qry.all()
