@@ -448,6 +448,11 @@ class PromptRepository:
             if task:
                 message.review_count += 1
                 self.db.add(message)
+            # for the same User id with no task id associated with the message, then update existing record for repeated updates
+            existing_text_label = self.fetch_non_task_text_labels(message_id, self.user_id)
+            if existing_text_label is not None:
+                existing_text_label.labels = text_labels.labels
+                model = existing_text_label
 
         self.db.add(model)
         return model, task, message
@@ -560,6 +565,16 @@ class PromptRepository:
         if fail_if_missing and not message:
             raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
         return message
+
+    def fetch_non_task_text_labels(self, message_id: UUID, user_id: UUID) -> Optional[TextLabels]:
+
+        query = (
+            self.db.query(TextLabels)
+            .outerjoin(Task, Task.id == TextLabels.id)
+            .filter(Task.id.is_(None), TextLabels.message_id == message_id, TextLabels.user_id == user_id)
+        )
+        text_label = query.one_or_none()
+        return text_label
 
     @staticmethod
     def trace_conversation(messages: list[Message] | dict[UUID, Message], last_message: Message) -> list[Message]:
@@ -693,7 +708,7 @@ class PromptRepository:
         if user_id:
             qry = qry.filter(Message.user_id == user_id)
         if username or auth_method:
-            if not username and auth_method:
+            if not (username and auth_method):
                 raise OasstError("Auth method or username missing.", OasstErrorCode.AUTH_AND_USERNAME_REQUIRED)
             qry = qry.join(User)
             qry = qry.filter(User.username == username, User.auth_method == auth_method)

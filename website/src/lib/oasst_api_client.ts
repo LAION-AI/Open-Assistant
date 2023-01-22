@@ -124,10 +124,11 @@ export class OasstApiClient {
   // TODO return a strongly typed Task?
   // This method is used to store a task in RegisteredTask.task.
   // This is a raw Json type, so we can't use it to strongly type the task.
-  async fetchTask(taskType: string, user: BackendUserCore): Promise<any> {
+  async fetchTask(taskType: string, user: BackendUserCore, lang: string): Promise<any> {
     return this.post("/api/v1/tasks/", {
       type: taskType,
       user,
+      lang,
     });
   }
 
@@ -152,7 +153,8 @@ export class OasstApiClient {
     messageId: string,
     userMessageId: string,
     content: object,
-    user: BackendUserCore
+    user: BackendUserCore,
+    lang: string
   ): Promise<any> {
     return this.post("/api/v1/tasks/interaction", {
       type: updateType,
@@ -160,6 +162,7 @@ export class OasstApiClient {
       task_id: taskId,
       message_id: messageId,
       user_message_id: userMessageId,
+      lang,
       ...content,
     });
   }
