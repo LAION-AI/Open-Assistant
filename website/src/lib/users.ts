@@ -3,13 +3,26 @@ import type { NextApiRequest } from "next";
 import prisma from "src/lib/prismadb";
 import type { BackendUserCore } from "src/types/Users";
 
+import { i18n } from "src/../next-i18next.config";
+
+const LOCALE_SET = new Set(i18n.locales);
+
+/**
+ * Returns the most appropriate user language using the following priority:
+ *
+ * 1. The `NEXT_LOCALE` cookie which is set by the client side and will be in
+ *    the set of supported locales.
+ * 2. The `accept-language` header if it contains a supported locale as set by
+ *    the i18n module.
+ * 3. "en" as a final fallback.
+ */
 const getUserLanguage = (req: NextApiRequest) => {
   const cookieLanguage = req.cookies["NEXT_LOCALE"];
   if (cookieLanguage) {
     return cookieLanguage;
   }
   const headerLanguages = parser.parse(req.headers["accept-language"]);
-  if (headerLanguages.length > 0) {
+  if (headerLanguages.length > 0 && LOCALE_SET.has(headerLanguages[0].code)) {
     return headerLanguages[0].code;
   }
   return "en";
