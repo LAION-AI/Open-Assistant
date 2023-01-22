@@ -449,7 +449,7 @@ class PromptRepository:
                 message.review_count += 1
                 self.db.add(message)
             # for the same User id with no task id associated with the message, then update existing record for repeated updates
-            existing_text_label = self.fetch_task_of_text_labels(message_id, self.user_id)
+            existing_text_label = self.fetch_non_task_text_labels(message_id, self.user_id)
             if existing_text_label is not None:
                 existing_text_label.labels = text_labels.labels
                 model = existing_text_label
@@ -566,7 +566,7 @@ class PromptRepository:
             raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
         return message
 
-    def fetch_task_of_text_labels(self, message_id: UUID, user_id: UUID) -> Optional[TextLabels]:
+    def fetch_non_task_text_labels(self, message_id: UUID, user_id: UUID) -> Optional[TextLabels]:
 
         query = (
             self.db.query(TextLabels)

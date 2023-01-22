@@ -5,6 +5,7 @@ from oasst_backend.api import deps
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.schemas.text_labels import LabelOption, ValidLabelsResponse
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
+from oasst_shared.exceptions import OasstError
 from oasst_shared.schemas import protocol as protocol_schema
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
@@ -32,6 +33,8 @@ def label_text(
         logger.info(f"Labeling text {text_labels=}.")
         store_text_labels(api_key=api_key)
 
+    except OasstError:
+        raise
     except Exception:
         logger.exception("Failed to store label.")
         raise HTTPException(
