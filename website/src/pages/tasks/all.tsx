@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { TaskOption } from "src/components/Dashboard";
+import { allTaskOptions } from "src/components/Dashboard/TaskOption";
 import { getDashboardLayout } from "src/components/Layout";
-import { TaskCategory } from "src/components/Tasks/TaskTypes";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const AllTasks = () => {
@@ -11,7 +11,7 @@ const AllTasks = () => {
         <title>All Tasks - Open Assistant</title>
         <meta name="description" content="All tasks for Open Assistant." />
       </Head>
-      <TaskOption displayTaskCategories={[TaskCategory.Create, TaskCategory.Evaluate, TaskCategory.Label]} />
+      <TaskOption content={allTaskOptions} />
     </>
   );
 };
