@@ -693,7 +693,7 @@ class PromptRepository:
         if user_id:
             qry = qry.filter(Message.user_id == user_id)
         if username or auth_method:
-            if not username and auth_method:
+            if not (username and auth_method):
                 raise OasstError("Auth method or username missing.", OasstErrorCode.AUTH_AND_USERNAME_REQUIRED)
             qry = qry.join(User)
             qry = qry.filter(User.username == username, User.auth_method == auth_method)
