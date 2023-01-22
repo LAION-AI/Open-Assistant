@@ -62,3 +62,14 @@ export const TaskOption = ({ content }: TasksOptionProps) => {
     </Box>
   );
 };
+
+export const allTaskOptions: TasksOptionProps["content"] = {
+  [TaskCategory.Random]: [TaskType.random],
+  [TaskCategory.Create]: [TaskType.initial_prompt, TaskType.prompter_reply, TaskType.assistant_reply],
+  [TaskCategory.Evaluate]: [
+    TaskType.rank_initial_prompts,
+    TaskType.rank_prompter_replies,
+    TaskType.rank_assistant_replies,
+  ],
+  [TaskCategory.Label]: [TaskType.label_initial_prompt, TaskType.label_prompter_reply, TaskType.label_assistant_reply],
+};
