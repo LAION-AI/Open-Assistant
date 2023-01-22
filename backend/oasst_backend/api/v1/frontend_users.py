@@ -105,8 +105,8 @@ def query_frontend_user_messages_cursor(
     db: Session = Depends(deps.get_db),
 ):
     return get_messages_cursor(
-        lt=lt,
-        gt=gt,
+        before=lt,
+        after=gt,
         auth_method=auth_method,
         username=username,
         only_roots=only_roots,

@@ -100,7 +100,7 @@ def get_users_cursor(
 
     items: list[protocol.FrontEndUser]
     qry_max_count = max_count + 1 if lt is None or gt is None else max_count
-    desc = lt and not gt
+    desc = lt is not None and not gt
 
     def get_next_prev(num_rows: int, lt: str | None, gt: str | None, key_fn: Callable[[protocol.FrontEndUser], str]):
         p, n = None, None
@@ -119,7 +119,7 @@ def get_users_cursor(
     def remove_extra_item(items: list[protocol.FrontEndUser], lt: str | None, gt: str | None):
         num_rows = len(items)
         if qry_max_count > max_count and num_rows == qry_max_count:
-            assert not (lt and gt)
+            assert not (lt is not None and gt is not None)
             items = items[:-1]
         if desc:
             items.reverse()
@@ -257,8 +257,8 @@ def query_user_messages_cursor(
     db: Session = Depends(deps.get_db),
 ):
     return get_messages_cursor(
-        lt=lt,
-        gt=gt,
+        before=lt,
+        after=gt,
         user_id=user_id,
         only_roots=only_roots,
         include_deleted=include_deleted,
