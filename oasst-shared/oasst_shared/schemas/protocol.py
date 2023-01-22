@@ -64,6 +64,18 @@ class Conversation(BaseModel):
 
     messages: list[ConversationMessage] = []
 
+    def __len__(self):
+        return len(self.messages)
+
+    @property
+    def is_prompter_turn(self) -> bool:
+        if len(self) == 0:
+            return True
+        last_message = self.messages[-1]
+        if last_message.is_assistant:
+            return True
+        return False
+
 
 class Message(ConversationMessage):
     parent_id: Optional[UUID] = None

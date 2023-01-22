@@ -1,0 +1,11 @@
+{
+  "daily": "Daily",
+  "last_updated_at": "Last updated at: {{val, datetime}}",
+  "leaderboard": "Leaderboard",
+  "monthly": "Monthly",
+  "overall": "Overall",
+  "rank": "Rank",
+  "score": "Score",
+  "user": "User",
+  "weekly": "Weekly"
+}

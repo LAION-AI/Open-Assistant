@@ -153,7 +153,7 @@ class UserRepository:
             if api_client_id != self.api_client.id:
                 raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
 
-        qry = self.db.query(User).order_by(User.username, User.id)
+        qry = self.db.query(User)
 
         if gte_username is not None:
             if gt_id:
@@ -184,8 +184,14 @@ class UserRepository:
             pattern = "%{}%".format(search_text.replace("\\", "\\\\").replace("_", "\\_").replace("%", "\\%"))
             qry = qry.filter(User.username.like(pattern))
 
-        if limit is not None:
-            qry = qry.limit(limit)
+        if limit is not None and lte_username and not gte_username:
+            # select top rows but return results in ascernding order
+            sub_qry = qry.order_by(User.username.desc(), User.id.desc()).limit(limit).subquery("u")
+            qry = self.db.query(User).select_entity_from(sub_qry).order_by(User.username, User.id)
+        else:
+            qry = qry.order_by(User.username, User.id)
+            if limit is not None:
+                qry = qry.limit(limit)
 
         return qry.all()
 
@@ -210,7 +216,7 @@ class UserRepository:
                 # Unprivileged api client asks for foreign users
                 raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
 
-        qry = self.db.query(User).order_by(User.display_name, User.id)
+        qry = self.db.query(User)
 
         if gte_display_name is not None:
             if gt_id:
@@ -254,8 +260,14 @@ class UserRepository:
         if auth_method:
             qry = qry.filter(User.auth_method == auth_method)
 
-        if limit is not None:
-            qry = qry.limit(limit)
+        if limit is not None and lte_display_name and not gte_display_name:
+            # select top rows but return results in ascernding order
+            sub_qry = qry.order_by(User.display_name.desc(), User.id.desc()).limit(limit).subquery("u")
+            qry = self.db.query(User).select_entity_from(sub_qry).order_by(User.display_name, User.id)
+        else:
+            qry = qry.order_by(User.display_name, User.id)
+            if limit is not None:
+                qry = qry.limit(limit)
 
         users = qry.all()
 
