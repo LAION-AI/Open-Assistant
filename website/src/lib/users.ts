@@ -1,9 +1,8 @@
 import parser from "accept-language-parser";
 import type { NextApiRequest } from "next";
+import { i18n } from "src/../next-i18next.config";
 import prisma from "src/lib/prismadb";
 import type { BackendUserCore } from "src/types/Users";
-
-import { i18n } from "src/../next-i18next.config";
 
 const LOCALE_SET = new Set(i18n.locales);
 

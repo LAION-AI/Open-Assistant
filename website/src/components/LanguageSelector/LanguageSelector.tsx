@@ -1,7 +1,7 @@
 import { Select } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import cookie from "react-cookies";
 
 const LanguageSelector = () => {
