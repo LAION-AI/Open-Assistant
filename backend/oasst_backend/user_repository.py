@@ -269,9 +269,4 @@ class UserRepository:
             if limit is not None:
                 qry = qry.limit(limit)
 
-        users = qry.all()
-
-        if lte_display_name and lt_id:
-            users.reverse()
-
-        return users
+        return qry.all()
