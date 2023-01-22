@@ -5,7 +5,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   //TODO: add params if needed
   const user = await getBackendUserCore(token.sub);
   const params = new URLSearchParams({
-    username: token.sub,
+    username: user.id,
     auth_method: user.auth_method,
   });
 
