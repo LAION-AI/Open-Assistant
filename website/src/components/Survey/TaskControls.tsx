@@ -1,5 +1,5 @@
 import { Box, Flex, IconButton, Tooltip, useColorModeValue } from "@chakra-ui/react";
-import { FiEdit2 } from "react-icons/fi";
+import { Edit2 } from "lucide-react";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
@@ -36,7 +36,13 @@ export const TaskControls = (props: TaskControlsProps) => {
         {props.taskStatus === "REVIEW" || props.taskStatus === "SUBMITTED" ? (
           <>
             <Tooltip label="Edit">
-              <IconButton size="lg" data-cy="edit" aria-label="edit" onClick={props.onEdit} icon={<FiEdit2 />} />
+              <IconButton
+                size="lg"
+                data-cy="edit"
+                aria-label="edit"
+                onClick={props.onEdit}
+                icon={<Edit2 size="1em" />}
+              />
             </Tooltip>
             <SubmitButton
               colorScheme="green"

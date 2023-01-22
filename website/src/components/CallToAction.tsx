@@ -1,7 +1,8 @@
 import { Box, Link, Text, useColorMode } from "@chakra-ui/react";
+import { Github } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { useId } from "react";
-import { FaDiscord, FaGithub } from "react-icons/fa";
+import { FaDiscord } from "react-icons/fa";
 
 import { Container } from "./Container";
 
@@ -81,7 +82,7 @@ export function CallToAction() {
                 type="button"
                 className="mb-2 ml-6 flex items-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                <FaGithub size={25} />
+                <Github size={25} />
                 <Text as="span" className="text-lg ml-3">
                   {t("github")}
                 </Text>

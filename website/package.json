@@ -49,6 +49,7 @@
     "focus-visible": "^5.2.0",
     "framer-motion": "^6.5.1",
     "install": "^0.13.0",
+    "lucide-react": "^0.105.0",
     "next": "13.0.6",
     "next-auth": "^4.18.6",
     "next-i18next": "^13.0.3",

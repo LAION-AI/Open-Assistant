@@ -1,10 +1,10 @@
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { Flags } from "react-feature-flags";
-import { FaUser } from "react-icons/fa";
 import { LanguageSelector } from "src/components/LanguageSelector";
 
 import { UserMenu } from "./UserMenu";
@@ -17,7 +17,7 @@ function AccountButton() {
   return (
     <Link href="/auth/signin" aria-label="Home">
       <Flex alignItems="center">
-        <Button variant="outline" leftIcon={<FaUser />}>
+        <Button variant="outline" leftIcon={<User size={"20"} />}>
           Sign in
         </Button>
       </Flex>
