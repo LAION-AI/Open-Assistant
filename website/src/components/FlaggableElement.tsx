@@ -22,8 +22,8 @@ import {
 } from "@chakra-ui/react";
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
+import { AlertCircle } from "lucide-react";
 import { useEffect, useReducer } from "react";
-import { FiAlertCircle } from "react-icons/fi";
 import { get, post } from "src/lib/api";
 import { colors } from "src/styles/Theme/colors";
 import { Message } from "src/types/Conversation";
@@ -154,7 +154,7 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
           <Box>
             <PopoverTrigger>
               <Box as="button" display="flex" alignItems="center" justifyContent="center" borderRadius="full" p="1">
-                <FiAlertCircle size="20" className="text-red-400" aria-hidden="true" />
+                <AlertCircle size="20" className="text-red-400" aria-hidden="true" />
               </Box>
             </PopoverTrigger>
           </Box>

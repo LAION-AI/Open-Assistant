@@ -1,7 +1,7 @@
 import { withoutRole } from "src/lib/auth";
 import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
-import { getBackendUserCore } from "src/lib/users";
+import { getBackendUserCore, getUserLanguage } from "src/lib/users";
 
 /**
  * Returns a new task created from the Task Backend.  We do a few things here:
@@ -14,11 +14,12 @@ import { getBackendUserCore } from "src/lib/users";
 const handler = withoutRole("banned", async (req, res, token) => {
   // Fetch the new task.
   const { task_type } = req.query;
+  const userLanguage = getUserLanguage(req);
 
   const user = await getBackendUserCore(token.sub);
   let task;
   try {
-    task = await oasstApiClient.fetchTask(task_type as string, user);
+    task = await oasstApiClient.fetchTask(task_type as string, user, userLanguage);
   } catch (err) {
     console.error(err);
     res.status(500).json(err);

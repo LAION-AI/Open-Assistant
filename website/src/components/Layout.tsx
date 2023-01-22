@@ -1,8 +1,8 @@
 // https://nextjs.org/docs/basic-features/layouts
 
 import { Box, Grid } from "@chakra-ui/react";
+import { Activity, BarChart2, Layout, MessageSquare, Users } from "lucide-react";
 import type { NextPage } from "next";
-import { FiBarChart2, FiLayout, FiMessageSquare, FiUsers } from "react-icons/fi";
 import { Header } from "src/components/Header";
 
 import { SlimFooter } from "./Dashboard/SlimFooter";
@@ -38,19 +38,19 @@ export const getDashboardLayout = (page: React.ReactElement) => (
           label: "Dashboard",
           pathname: "/dashboard",
           desc: "Dashboard Home",
-          icon: FiLayout,
+          icon: Layout,
         },
         {
           label: "Messages",
           pathname: "/messages",
           desc: "Messages Dashboard",
-          icon: FiMessageSquare,
+          icon: MessageSquare,
         },
         {
           label: "Leaderboard",
           pathname: "/leaderboard",
           desc: "User Leaderboard",
-          icon: FiBarChart2,
+          icon: BarChart2,
         },
       ]}
     >
@@ -73,7 +73,13 @@ export const getAdminLayout = (page: React.ReactElement) => (
           label: "Users",
           pathname: "/admin",
           desc: "Users Dashboard",
-          icon: FiUsers,
+          icon: Users,
+        },
+        {
+          label: "Status",
+          pathname: "/admin/status",
+          desc: "Status Dashboard",
+          icon: Activity,
         },
       ]}
     >

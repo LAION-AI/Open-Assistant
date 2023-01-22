@@ -3,7 +3,7 @@ import { TaskControls } from "src/components/Survey/TaskControls";
 import { CreateTask } from "src/components/Tasks/CreateTask";
 import { EvaluateTask } from "src/components/Tasks/EvaluateTask";
 import { LabelTask } from "src/components/Tasks/LabelTask";
-import { TaskCategory, TaskInfo, TaskTypes } from "src/components/Tasks/TaskTypes";
+import { TaskCategory, TaskInfo, TaskInfos } from "src/components/Tasks/TaskTypes";
 import { UnchangedWarning } from "src/components/Tasks/UnchangedWarning";
 import { post } from "src/lib/api";
 import { TaskContent } from "src/types/Task";
@@ -29,7 +29,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
 
   const rootEl = useRef<HTMLDivElement>(null);
 
-  const taskType = TaskTypes.find((taskType) => taskType.type === task.type && taskType.mode === task.mode);
+  const taskType = TaskInfos.find((taskType) => taskType.type === task.type && taskType.mode === task.mode);
 
   const { trigger: sendRejection } = useSWRMutation("/api/reject_task", post, {
     onSuccess: async () => {
