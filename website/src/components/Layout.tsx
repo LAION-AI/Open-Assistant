@@ -2,7 +2,7 @@
 
 import { Box, Grid } from "@chakra-ui/react";
 import type { NextPage } from "next";
-import { FiBarChart2, FiLayout, FiMessageSquare, FiUsers } from "react-icons/fi";
+import { FiBarChart2, FiLayout, FiMessageSquare, FiUsers, FiActivity } from "react-icons/fi";
 import { Header } from "src/components/Header";
 
 import { SlimFooter } from "./Dashboard/SlimFooter";
@@ -74,6 +74,12 @@ export const getAdminLayout = (page: React.ReactElement) => (
           pathname: "/admin",
           desc: "Users Dashboard",
           icon: FiUsers,
+        },
+        {
+          label: "Status",
+          pathname: "/admin/status",
+          desc: "Status Dashboard",
+          icon: FiActivity,
         },
       ]}
     >

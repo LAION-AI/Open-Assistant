@@ -149,6 +149,27 @@ export class OasstApiClient {
   }
 
   /**
+   * Returns the tasks availability information for given `user`.
+   */
+  async fetch_tasks_availability(user: object): Promise<any> {
+    return this.post("/api/v1/tasks/availability", user);
+  }
+
+  /**
+   * Returns the message stats from the backend.
+   */
+  async fetch_stats(): Promise<any> {
+    return this.get("/api/v1/stats/");
+  }
+
+  /**
+   * Returns the tree manager stats from the backend.
+   */
+  async fetch_tree_manager(): Promise<any> {
+    return this.get("/api/v1/stats/tree_manager");
+  }
+
+  /**
    * Returns the `BackendUser` associated with `user_id`
    */
   async fetch_user(user_id: string): Promise<BackendUser> {
