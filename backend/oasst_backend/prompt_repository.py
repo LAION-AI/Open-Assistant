@@ -448,12 +448,11 @@ class PromptRepository:
             if task:
                 message.review_count += 1
                 self.db.add(message)
-            # in case where there was no task id associated with the message, then update existing record
-            existing_text_labels, associated_tasks = self.fetch_task_of_text_labels(message_id)
-            task_id_of_existing_labels = existing_text_labels.id if existing_text_labels is not None else None
-            if task_id_of_existing_labels is not None and len(associated_tasks) == 0:
-                existing_text_labels.labels = text_labels.labels
-                model = existing_text_labels
+            # for the same User id with no task id associated with the message, then update existing record for repeated updates
+            existing_text_label = self.fetch_task_of_text_labels(message_id, self.user_id)
+            if existing_text_label is not None:
+                existing_text_label.labels = text_labels.labels
+                model = existing_text_label
 
         self.db.add(model)
         return model, task, message
@@ -567,13 +566,15 @@ class PromptRepository:
             raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
         return message
 
-    def fetch_task_of_text_labels(self, message_id: UUID, fail_if_missing: bool = True) -> Optional[TextLabels]:
-        text_labels = self.db.query(TextLabels).filter(Message.id == message_id).one_or_none()
-        associated_task_ids = None
-        if text_labels is not None:
-            query = self.db.query(Task.id).join(TextLabels, Task.id == TextLabels.id).filter(Task.id == text_labels.id)
-            associated_task_ids = query.all()
-        return text_labels, associated_task_ids
+    def fetch_task_of_text_labels(self, message_id: UUID, user_id: UUID) -> Optional[TextLabels]:
+
+        query = (
+            self.db.query(TextLabels)
+            .outerjoin(Task, Task.id == TextLabels.id)
+            .filter(Task.id.is_(None), TextLabels.message_id == message_id, TextLabels.user_id == user_id)
+        )
+        text_label = query.one_or_none()
+        return text_label
 
     @staticmethod
     def trace_conversation(messages: list[Message] | dict[UUID, Message], last_message: Message) -> list[Message]:
