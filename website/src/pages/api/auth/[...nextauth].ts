@@ -148,6 +148,17 @@ export const authOptions: AuthOptions = {
       }
     },
   },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: true,
+      },
+    },
+  },
   session: {
     strategy: "jwt",
   },

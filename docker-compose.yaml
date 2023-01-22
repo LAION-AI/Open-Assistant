@@ -4,7 +4,7 @@ services:
   # Use `docker compose up backend-dev --build --attach-dependencies` to start a database and work and the backend.
   backend-dev:
     image: sverrirab/sleep
-    depends_on: [db, adminer, redis, redis-insights]
+    depends_on: [db, adminer, redis, redis-insights, webdb, maildev]
 
   # Use `docker compose up frontend-dev --build --attach-dependencies` to start all services needed to work on the frontend.
   frontend-dev:
