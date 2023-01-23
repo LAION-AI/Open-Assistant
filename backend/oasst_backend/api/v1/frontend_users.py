@@ -70,9 +70,9 @@ def query_frontend_user_messages(
     only_roots: bool = False,
     desc: bool = True,
     include_deleted: bool = False,
+    lang: Optional[str] = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
-    lang: Optional[str] = None,
 ):
     """
     Query frontend user messages.
