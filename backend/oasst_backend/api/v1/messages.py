@@ -26,6 +26,7 @@ def query_messages(
     only_roots: Optional[bool] = False,
     desc: Optional[bool] = True,
     allow_deleted: Optional[bool] = False,
+    lang: Optional[str] = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -43,6 +44,7 @@ def query_messages(
         lte_created_date=end_date,
         only_roots=only_roots,
         deleted=None if allow_deleted else False,
+        lang=lang,
     )
 
     return utils.prepare_message_list(messages)
@@ -60,6 +62,7 @@ def get_messages_cursor(
     include_deleted: Optional[bool] = False,
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
+    lang: Optional[str] = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -103,6 +106,7 @@ def get_messages_cursor(
         deleted=None if include_deleted else False,
         desc=query_desc,
         limit=qry_max_count,
+        lang=lang,
     )
 
     num_rows = len(items)
