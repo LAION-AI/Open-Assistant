@@ -1,6 +1,8 @@
 import { HStack, IconButton, Link, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import { HelpCircle } from "lucide-react";
+import { useTranslation } from "next-i18next";
 import type { TaskInfo } from "src/components/Tasks/TaskTypes";
+import { normalizei18nKey } from "src/lib/i18n";
 
 interface TaskHeaderProps {
   /**
@@ -13,20 +15,21 @@ interface TaskHeaderProps {
  * Presents the Task label, instructions, and help link
  */
 const TaskHeader = ({ taskType }: TaskHeaderProps) => {
+  const { t } = useTranslation(["tasks", "common"]);
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const titleColor = useColorModeValue("gray.800", "gray.300");
   return (
     <Stack spacing="1">
       <HStack>
         <Text fontSize="xl" fontWeight="bold" color={titleColor}>
-          {taskType.label}
+          {t(normalizei18nKey(`${taskType.id}.label`))}
         </Text>
         <Link href={taskType.help_link} isExternal>
           <IconButton variant="ghost" aria-label="More Information" icon={<HelpCircle size="1em" />} />
         </Link>
       </HStack>
       <Text fontSize="md" color={labelColor}>
-        {taskType.overview}
+        {t(normalizei18nKey(`${taskType.id}.overview`))}
       </Text>
     </Stack>
   );

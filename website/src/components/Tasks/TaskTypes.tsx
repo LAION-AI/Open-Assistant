@@ -1,181 +1,161 @@
 export enum TaskCategory {
-  Random = "Random",
   Create = "Create",
   Evaluate = "Evaluate",
   Label = "Label",
+  Random = "Random",
+}
+
+export enum TaskUpdateType {
+  MessageRanking = "message_ranking",
+  Random = "random",
+  TextLabels = "text_labels",
+  TextReplyToMessage = "text_reply_to_message",
+}
+
+export enum TaskType {
+  AssistantReply = "assistant_reply",
+  InitialPrompt = "initial_prompt",
+  LabelAssistantReply = "label_assistant_reply",
+  LabelInitialPrompt = "label_initial_prompt",
+  LabelPrompterReply = "label_prompter_reply",
+  PrompterReply = "prompter_reply",
+  Random = "random",
+  RankAssistantReplies = "rank_assistant_replies",
+  RankInitialPrompts = "rank_initial_prompts",
+  RankPrompterReplies = "rank_prompter_replies",
 }
 
 export interface TaskInfo {
-  label: string;
-  desc: string;
   category: TaskCategory;
+  help_link: string;
+  id: string;
+  mode?: string;
   pathname: string;
   type: string;
-  help_link: string;
-  mode?: string;
-  overview?: string;
-  instruction?: string;
   update_type: string;
-  unchanged_title?: string;
-  unchanged_message?: string;
 }
 
 export const TaskCategoryLabels: { [key in TaskCategory]: string } = {
-  [TaskCategory.Random]: "Grab a task!",
-  [TaskCategory.Create]: "Create",
-  [TaskCategory.Evaluate]: "Evaluate",
-  [TaskCategory.Label]: "Label",
+  [TaskCategory.Random]: "grab_a_task",
+  [TaskCategory.Create]: "create",
+  [TaskCategory.Evaluate]: "evaluate",
+  [TaskCategory.Label]: "label",
 };
 
 export const TaskInfos: TaskInfo[] = [
   // general/random
   {
-    label: "I'm feeling lucky",
-    desc: "Help us improve Open Assistant by starting a random task.",
+    id: "random",
     category: TaskCategory.Random,
     pathname: "/tasks/random",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: "random",
-    update_type: "random",
+    type: TaskType.Random,
+    update_type: TaskUpdateType.Random,
   },
   // create
   {
-    label: "Create Initial Prompts",
-    desc: "Write initial prompts to help Open Assistant to try replying to diverse messages.",
+    id: "create_initial_prompt",
     category: TaskCategory.Create,
     pathname: "/create/initial_prompt",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: "initial_prompt",
-    overview: "Create an initial message to send to the assistant",
-    instruction: "Provide the initial prompt",
-    update_type: "text_reply_to_message",
+    type: TaskType.InitialPrompt,
+    update_type: TaskUpdateType.TextReplyToMessage,
   },
   {
-    label: "Reply as User",
-    desc: "Chat with Open Assistant and help improve it’s responses as you interact with it.",
+    id: "reply_as_user",
     category: TaskCategory.Create,
     pathname: "/create/user_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/reply_as_user",
-    type: "prompter_reply",
-    overview: "Given the following conversation, provide an adequate reply",
-    instruction: "Provide the user's reply",
-    update_type: "text_reply_to_message",
+    type: TaskType.PrompterReply,
+    update_type: TaskUpdateType.TextReplyToMessage,
   },
   {
-    label: "Reply as Assistant",
-    desc: "Help Open Assistant improve its responses to conversations with other users.",
+    id: "reply_as_assistant",
     category: TaskCategory.Create,
     pathname: "/create/assistant_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/reply_as_assistant",
-    type: "assistant_reply",
-    overview: "Given the following conversation, provide an adequate reply",
-    instruction: "Provide the assistant's reply",
-    update_type: "text_reply_to_message",
+    type: TaskType.AssistantReply,
+    update_type: TaskUpdateType.TextReplyToMessage,
   },
   // evaluate
   {
-    label: "Rank User Replies",
+    id: "rank_user_replies",
     category: TaskCategory.Evaluate,
-    desc: "Help Open Assistant improve its responses to conversations with other users.",
     pathname: "/evaluate/rank_user_replies",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    overview: "Given the following User replies, sort them from best to worst, best being first, worst being last.",
-    type: "rank_prompter_replies",
-    update_type: "message_ranking",
-    unchanged_title: "Order Unchanged",
-    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to continue?",
+    type: TaskType.RankPrompterReplies,
+    update_type: TaskUpdateType.MessageRanking,
   },
   {
-    label: "Rank Assistant Replies",
-    desc: "Score prompts given by Open Assistant based on their accuracy and readability.",
+    id: "rank_assistant_replies",
     category: TaskCategory.Evaluate,
     pathname: "/evaluate/rank_assistant_replies",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    overview:
-      "Given the following Assistant replies, sort them from best to worst, best being first, worst being last.",
-    type: "rank_assistant_replies",
-    update_type: "message_ranking",
-    unchanged_title: "Order Unchanged",
-    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to continue?",
+    type: TaskType.RankAssistantReplies,
+    update_type: TaskUpdateType.MessageRanking,
   },
   {
-    label: "Rank Initial Prompts",
-    desc: "Score prompts given by Open Assistant based on their accuracy and readability.",
+    id: "rank_initial_prompts",
     category: TaskCategory.Evaluate,
     pathname: "/evaluate/rank_initial_prompts",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    overview: "Given the following initial prompts, sort them from best to worst, best being first, worst being last.",
-    type: "rank_initial_prompts",
-    update_type: "message_ranking",
-    unchanged_title: "Order Unchanged",
-    unchanged_message: "You have not changed the order of the prompts. Are you sure you would like to continue?",
+    type: TaskType.RankInitialPrompts,
+    update_type: TaskUpdateType.MessageRanking,
   },
   // label (full)
   {
-    label: "Label Initial Prompt",
-    desc: "Provide labels for a prompt.",
+    id: "label_initial_prompt",
     category: TaskCategory.Label,
     pathname: "/label/label_initial_prompt",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    overview: "Provide labels for the following prompt",
-    type: "label_initial_prompt",
+    type: TaskType.LabelInitialPrompt,
     mode: "full",
-    update_type: "text_labels",
+    update_type: TaskUpdateType.TextLabels,
   },
   {
-    label: "Label Prompter Reply",
-    desc: "Provide labels for a prompt.",
+    id: "label_prompter_reply",
     category: TaskCategory.Label,
     pathname: "/label/label_prompter_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/label_prompter_reply",
-    overview: "Given the following discussion, provide labels for the final prompt.",
-    type: "label_prompter_reply",
+    type: TaskType.LabelPrompterReply,
     mode: "full",
-    update_type: "text_labels",
+    update_type: TaskUpdateType.TextLabels,
   },
   {
-    label: "Label Assistant Reply",
-    desc: "Provide labels for a prompt.",
+    id: "label_assistant_reply",
     category: TaskCategory.Label,
     pathname: "/label/label_assistant_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/label_assistant_reply",
-    overview: "Given the following discussion, provide labels for the final prompt.",
-    type: "label_assistant_reply",
+    type: TaskType.LabelAssistantReply,
     mode: "full",
-    update_type: "text_labels",
+    update_type: TaskUpdateType.TextLabels,
   },
   // label (simple)
   {
-    label: "Classify Initial Prompt",
-    desc: "Provide labels for a prompt.",
+    id: "classify_initial_prompt",
     category: TaskCategory.Label,
     pathname: "/label/label_initial_prompt",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    overview: "Read the following prompt and then answer the question about it.",
-    type: "label_initial_prompt",
+    type: TaskType.LabelInitialPrompt,
     mode: "simple",
-    update_type: "text_labels",
+    update_type: TaskUpdateType.TextLabels,
   },
   {
-    label: "Classify Prompter Reply",
-    desc: "Provide labels for a prompt.",
+    id: "classify_prompter_reply",
     category: TaskCategory.Label,
     pathname: "/label/label_prompter_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    overview: "Read the following conversation and then answer the question about the last reply in the discussion.",
-    type: "label_prompter_reply",
+    type: TaskType.LabelPrompterReply,
     mode: "simple",
-    update_type: "text_labels",
+    update_type: TaskUpdateType.TextLabels,
   },
   {
-    label: "Classify Assistant Reply",
-    desc: "Provide labels for a prompt.",
+    id: "classify_assistant_reply",
     category: TaskCategory.Label,
     pathname: "/label/label_assistant_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    overview: "Read the following conversation and then answer the question about the last reply in the discussion.",
-    type: "label_assistant_reply",
+    type: TaskType.LabelAssistantReply,
     mode: "simple",
-    update_type: "text_labels",
+    update_type: TaskUpdateType.TextLabels,
   },
 ];

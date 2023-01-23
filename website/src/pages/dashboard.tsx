@@ -12,8 +12,9 @@ import useSWR from "swr";
 
 const Dashboard = () => {
   const {
+    t,
     i18n: { language },
-  } = useTranslation();
+  } = useTranslation(["dashboard", "common", "tasks"]);
   const [activeLang, setLang] = useState<string>(null);
   const { data, mutate: fetchTasks } = useSWR<AvailableTasks>("/api/available_tasks", get, {
     refreshInterval: 2 * 60 * 1000, //2 minutes
@@ -36,7 +37,7 @@ const Dashboard = () => {
   return (
     <>
       <Head>
-        <title>Dashboard - Open Assistant</title>
+        <title>{`${t("dashboard")} - ${t("common:title")}`}</title>
         <meta name="description" content="Chat with Open Assistant and provide feedback." />
       </Head>
       <Flex direction="column" gap="10">
@@ -54,6 +55,6 @@ export default Dashboard;
 
 const filterAvailableTasks = (availableTasks: Partial<AvailableTasks>) =>
   Object.entries(availableTasks)
-    .filter(([_, count]) => count > 0)
+    .filter(([, count]) => count > 0)
     .sort((a, b) => b[1] - a[1])
     .map(([taskType]) => taskType) as TaskType[];
