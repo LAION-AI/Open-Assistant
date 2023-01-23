@@ -53,6 +53,7 @@ export const LabelTask = ({
                     message_id: task.message_id,
                   },
                 ]}
+                highlightLastMessage
               />
             </Box>
           ) : (

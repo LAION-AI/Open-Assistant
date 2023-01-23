@@ -38,7 +38,7 @@ export const EvaluateTask = ({
         <SurveyCard>
           <TaskHeader taskType={taskType} />
           <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
-            <MessageTable messages={messages} />
+            <MessageTable messages={messages} highlightLastMessage />
           </Box>
           <Sortable
             items={task[sortables]}
