@@ -25,6 +25,10 @@ def get_tokenizer(conf):
         tokenizer.add_special_tokens({"pad_token": tokenizer.eos_token, "sep_token": "<|extratoken_100|>"})
     elif "codegen" in conf.model_name:
         tokenizer.add_special_tokens({"pad_token": "<|endoftext|>", "sep_token": "<|endoftext|>"})
+    elif "pythia" in conf.model_name:
+        tokenizer.add_special_tokens(
+            {"pad_token": "<|padding|>", "sep_token": "<|endoftext|>", "eos_token": "<|endoftext|>"}
+        )
 
     additional_special_tokens = (
         []
