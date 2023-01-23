@@ -1,16 +1,32 @@
 import { Flex } from "@chakra-ui/react";
 import Head from "next/head";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LeaderboardTable, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { getDashboardLayout } from "src/components/Layout";
 import { TaskCategory } from "src/components/Tasks/TaskTypes";
 import { get } from "src/lib/api";
 import { AvailableTasks, TaskType } from "src/types/Task";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
-import useSWRImmutable from "swr/immutable";
+import useSWR from "swr";
 
 const Dashboard = () => {
-  const { data } = useSWRImmutable<AvailableTasks>("/api/available_tasks", get);
+  const {
+    i18n: { language },
+  } = useTranslation();
+  const [activeLang, setLang] = useState<string>(null);
+  const { data, mutate: fetchTasks } = useSWR<AvailableTasks>("/api/available_tasks", get, {
+    refreshInterval: 2 * 60 * 1000, //2 minutes
+    revalidateOnMount: false, // triggered in the hook below
+  });
+
+  useEffect(() => {
+    // re-fetch tasks if the language has changed
+    if (activeLang !== language) {
+      setLang(language);
+      fetchTasks();
+    }
+  }, [activeLang, setLang, language, fetchTasks]);
 
   const availableTaskTypes = useMemo(() => {
     const taskTypes = filterAvailableTasks(data ?? {});

@@ -7,13 +7,12 @@ import re
 from urllib.request import urlopen
 
 import numpy as np
+from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
-
-QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
 
 
 def index_squad_v2(example):
@@ -78,7 +77,7 @@ class QADataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.dataset[idx]
-        return self.index_fn(data)
+        return format_pair(self.index_fn(data))
 
 
 class WebGPT(Dataset):
@@ -111,7 +110,7 @@ class WebGPT(Dataset):
     def __getitem__(self, index):
         question = self.index2question[index]
         answer = self.questions[question]
-        return [question, answer]
+        return format_pair((question, answer))
 
 
 class SODA(Dataset):
@@ -121,14 +120,14 @@ class SODA(Dataset):
     def process_soda_convo(self, data):
         pairs = []
         play_as = data["speakers"][1]
-        prefix = "{}{}. {}{}".format(
-            QA_SPECIAL_TOKENS["StartPrefix"],
-            data["narrative"],
-            "your name {}".format(play_as),
-            QA_SPECIAL_TOKENS["EndPrefix"],
-        )
         question, answer = "", ""
         prefix, postfix = "", ""
+        dialogue_bg = "{}{} {}{}".format(
+            QA_SPECIAL_TOKENS["StartPrefix"],
+            data["narrative"],
+            "your are {}".format(play_as),
+            QA_SPECIAL_TOKENS["EndPrefix"],
+        )
         previous_chat = []
 
         for idx, convo in enumerate(data["dialogue"]):
@@ -138,14 +137,20 @@ class SODA(Dataset):
             else:
                 answer = convo
                 postfix = data["speakers"][idx]
+
             if len(question) and len(answer) and prefix != postfix and postfix == play_as:
                 history = "<sep>".join(
-                    ["{}{}{}".format(p[0], QA_SPECIAL_TOKENS["Answer"], p[1]) for p in previous_chat]
+                    [
+                        "{}{}{}{}".format(QA_SPECIAL_TOKENS["Question"], p[0], QA_SPECIAL_TOKENS["Answer"], p[1])
+                        for p in previous_chat
+                    ]
                 )
                 if len(history):
                     history += "<sep>"
-                pairs.append((prefix + history + question, answer))
+                prompt = QA_SPECIAL_TOKENS["Question"] + question + QA_SPECIAL_TOKENS["Answer"]
+                pairs.append((dialogue_bg + history + prompt, answer))
                 previous_chat.append((question, answer))
+
         return pairs
 
     def __init__(self, cache_dir, max_sample_size=10000, input_max_length=1024) -> None:
@@ -166,8 +171,8 @@ class SODA(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        question, answer = self.pairs[index]
-        return question, answer
+        # special token added during preprocess
+        return self.pairs[index]
 
 
 class SODADialogue(Dataset):
@@ -218,7 +223,7 @@ class SODADialogue(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        return self.pairs[index]
+        return format_pair(self.pairs[index])
 
 
 class JokeExplaination(Dataset):
@@ -253,8 +258,7 @@ class JokeExplaination(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        question, answer = self.pairs[index]
-        return question, answer
+        return format_pair(self.pairs[index])
 
 
 # https://huggingface.co/datasets/aquamuse

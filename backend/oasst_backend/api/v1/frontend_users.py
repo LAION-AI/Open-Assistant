@@ -95,8 +95,8 @@ def query_frontend_user_messages(
 def query_frontend_user_messages_cursor(
     auth_method: str,
     username: str,
-    lt: Optional[str] = None,
-    gt: Optional[str] = None,
+    before: Optional[str] = None,
+    after: Optional[str] = None,
     only_roots: Optional[bool] = False,
     include_deleted: Optional[bool] = False,
     max_count: Optional[int] = Query(10, gt=0, le=1000),
@@ -105,8 +105,8 @@ def query_frontend_user_messages_cursor(
     db: Session = Depends(deps.get_db),
 ):
     return get_messages_cursor(
-        lt=lt,
-        gt=gt,
+        before=before,
+        after=after,
         auth_method=auth_method,
         username=username,
         only_roots=only_roots,

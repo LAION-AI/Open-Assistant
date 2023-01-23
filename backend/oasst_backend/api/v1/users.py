@@ -78,8 +78,8 @@ def get_users_ordered_by_display_name(
 
 @router.get("/cursor", response_model=protocol.FrontEndUserPage)
 def get_users_cursor(
-    lt: Optional[str] = None,
-    gt: Optional[str] = None,
+    before: Optional[str] = None,
+    after: Optional[str] = None,
     sort_key: Optional[str] = Query("username", max_length=32),
     max_count: Optional[int] = Query(100, gt=0, le=10000),
     api_client_id: Optional[UUID] = None,
@@ -99,8 +99,8 @@ def get_users_cursor(
         return x, None
 
     items: list[protocol.FrontEndUser]
-    qry_max_count = max_count + 1 if lt is None or gt is None else max_count
-    desc = lt and not gt
+    qry_max_count = max_count + 1 if before is None or after is None else max_count
+    desc = before is not None and not after
 
     def get_next_prev(num_rows: int, lt: str | None, gt: str | None, key_fn: Callable[[protocol.FrontEndUser], str]):
         p, n = None, None
@@ -119,7 +119,7 @@ def get_users_cursor(
     def remove_extra_item(items: list[protocol.FrontEndUser], lt: str | None, gt: str | None):
         num_rows = len(items)
         if qry_max_count > max_count and num_rows == qry_max_count:
-            assert not (lt and gt)
+            assert not (lt is not None and gt is not None)
             items = items[:-1]
         if desc:
             items.reverse()
@@ -127,8 +127,8 @@ def get_users_cursor(
 
     n, p = None, None
     if sort_key == "username":
-        lte_username, lt_id = split_cursor(lt)
-        gte_username, gt_id = split_cursor(gt)
+        lte_username, lt_id = split_cursor(before)
+        gte_username, gt_id = split_cursor(after)
         items = get_users_ordered_by_username(
             api_client_id=api_client_id,
             gte_username=gte_username,
@@ -146,8 +146,8 @@ def get_users_cursor(
         p, n = get_next_prev(num_rows, lte_username, gte_username, lambda x: x.id)
 
     elif sort_key == "display_name":
-        lte_display_name, lt_id = split_cursor(lt)
-        gte_display_name, gt_id = split_cursor(gt)
+        lte_display_name, lt_id = split_cursor(before)
+        gte_display_name, gt_id = split_cursor(after)
         items = get_users_ordered_by_display_name(
             api_client_id=api_client_id,
             gte_display_name=gte_display_name,
@@ -247,8 +247,8 @@ def query_user_messages(
 @router.get("/{user_id}/messages/cursor", response_model=protocol.MessagePage)
 def query_user_messages_cursor(
     user_id: Optional[UUID],
-    lt: Optional[str] = None,
-    gt: Optional[str] = None,
+    before: Optional[str] = None,
+    after: Optional[str] = None,
     only_roots: Optional[bool] = False,
     include_deleted: Optional[bool] = False,
     max_count: Optional[int] = Query(10, gt=0, le=1000),
@@ -257,8 +257,8 @@ def query_user_messages_cursor(
     db: Session = Depends(deps.get_db),
 ):
     return get_messages_cursor(
-        lt=lt,
-        gt=gt,
+        before=before,
+        after=after,
         user_id=user_id,
         only_roots=only_roots,
         include_deleted=include_deleted,

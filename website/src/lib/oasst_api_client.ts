@@ -221,7 +221,7 @@ export class OasstApiClient {
     // pagination direction but they both take the same cursor value.
     // Depending on direction, pick the right query param.
     if (cursor !== "") {
-      params.append(direction === "forward" ? "gt" : "lt", cursor);
+      params.append(direction === "forward" ? "after" : "before", cursor);
     }
     const BASE_URL = `/api/v1/users/cursor`;
     const url = `${BASE_URL}/?${params.toString()}`;
@@ -269,8 +269,8 @@ export class OasstApiClient {
   /**
    * Returns the counts of all tasks (some might be zero)
    */
-  async fetch_available_tasks(user: BackendUserCore): Promise<AvailableTasks> {
-    return this.post(`/api/v1/tasks/availability`, user);
+  async fetch_available_tasks(user: BackendUserCore, lang: string): Promise<AvailableTasks> {
+    return this.post(`/api/v1/tasks/availability`, { ...user, lang });
   }
 }
 

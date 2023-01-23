@@ -8,12 +8,13 @@ const LanguageSelector = () => {
   const router = useRouter();
   const { i18n } = useTranslation();
 
-  const { language: currentLanguage } = i18n;
-  const languageNames = useMemo(() => {
-    return new Intl.DisplayNames([currentLanguage], {
-      type: "language",
-    });
-  }, [currentLanguage]);
+  // Memo the set of locales and their display names.
+  const localesAndNames = useMemo(() => {
+    return router.locales.map((locale) => ({
+      locale,
+      name: new Intl.DisplayNames([locale], { type: "language" }).of(locale),
+    }));
+  }, [router.locales]);
 
   const languageChanged = useCallback(
     async (option) => {
@@ -25,12 +26,12 @@ const LanguageSelector = () => {
     [router]
   );
 
-  const locales = router.locales;
+  const { language: currentLanguage } = i18n;
   return (
     <Select onChange={languageChanged} defaultValue={currentLanguage}>
-      {locales.map((locale) => (
+      {localesAndNames.map(({ locale, name }) => (
         <option key={locale} value={locale}>
-          {languageNames.of(locale) ?? locale}
+          {name}
         </option>
       ))}
     </Select>
