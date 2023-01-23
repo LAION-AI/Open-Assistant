@@ -1,90 +1,61 @@
-import { Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, useColorModeValue } from "@chakra-ui/react";
+import { CircularProgress } from "@chakra-ui/react";
+import { createColumnHelper } from "@tanstack/react-table";
 import { useTranslation } from "next-i18next";
 import React, { useMemo } from "react";
-import { useTable } from "react-table";
 import { get } from "src/lib/api";
-import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
+import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import useSWRImmutable from "swr/immutable";
 
-const getColumns = (t) => [
-  {
-    Header: t("rank"),
-    accessor: "rank",
-    style: { width: "90px" },
-  },
-  {
-    Header: t("score"),
-    accessor: "leader_score",
-    style: { width: "90px" },
-  },
-  {
-    Header: t("user"),
-    accessor: "display_name",
-  },
-];
+import { DataTable } from "../DataTable";
+
+const columnHelper = createColumnHelper<LeaderboardEntity>();
 
 /**
  * Presents a grid of leaderboard entries with more detailed information.
  */
 const LeaderboardGridCell = ({ timeFrame }: { timeFrame: LeaderboardTimeFrame }) => {
-  const { t } = useTranslation(["leaderboard", "common"]);
-  const { data: reply } = useSWRImmutable<LeaderboardReply>(`/api/leaderboard?time_frame=${timeFrame}`, get, {
+  const { t } = useTranslation("leaderboard");
+  const {
+    data: reply,
+    isLoading,
+    error,
+  } = useSWRImmutable<LeaderboardReply>(`/api/leaderboard?time_frame=${timeFrame}`, get, {
     revalidateOnMount: true,
   });
 
-  const columns = useMemo(() => getColumns(t), [t]);
-
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
-    columns,
-    data: reply?.leaderboard ?? [],
-  });
-
-  const backgroundColor = useColorModeValue("white", "gray.800");
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("rank", {
+        header: t("rank"),
+      }),
+      columnHelper.accessor("display_name", {
+        header: t("user"),
+      }),
+      columnHelper.accessor("leader_score", {
+        header: t("score"),
+      }),
+      columnHelper.accessor("prompts", {
+        header: t("pro"),
+      }),
+    ],
+    [t]
+  );
 
   const lastUpdated = useMemo(() => {
     const val = new Date(reply?.last_updated);
     return t("last_updated_at", { val, formatParams: { val: { dateStyle: "full", timeStyle: "short" } } });
   }, [t, reply?.last_updated]);
+  console.log(reply, isLoading);
 
-  if (!reply) {
-    return null;
+  if (isLoading) {
+    return <CircularProgress isIndeterminate></CircularProgress>;
   }
 
-  return (
-    <TableContainer>
-      <Table {...getTableProps()}>
-        <Thead bg={backgroundColor}>
-          {headerGroups.map((headerGroup, idx) => (
-            <Tr key={idx} {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <Th {...column.getHeaderProps([{ style: column.style }])} key={column.id}>
-                  {column.render("Header")}
-                </Th>
-              ))}
-            </Tr>
-          ))}
-        </Thead>
+  if (error) {
+    return <span>Unable to load leaderboard</span>;
+  }
 
-        <Tbody {...getTableBodyProps()}>
-          {rows.map((row) => {
-            prepareRow(row);
-            return (
-              <Tr key={row.id} {...row.getRowProps()}>
-                {row.cells.map((cell, idx) => {
-                  return (
-                    <Td key={row.id + idx} {...cell.getCellProps([{ style: cell.column.style }])}>
-                      {cell.render("Cell")}
-                    </Td>
-                  );
-                })}
-              </Tr>
-            );
-          })}
-        </Tbody>
-      </Table>
-      <Text p="2">{lastUpdated}</Text>
-    </TableContainer>
-  );
+  return <DataTable data={reply?.leaderboard || []} columns={columns} caption={lastUpdated}></DataTable>;
 };
 
 export { LeaderboardGridCell };
