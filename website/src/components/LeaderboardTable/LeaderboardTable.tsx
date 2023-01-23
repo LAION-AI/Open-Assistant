@@ -60,5 +60,5 @@ export const LeaderboardTable = ({ timeFrame, limit }: { timeFrame: LeaderboardT
     return <span>Unable to load leaderboard</span>;
   }
 
-  return <DataTable data={reply.leaderboard} columns={columns} caption={lastUpdated}></DataTable>;
+  return <DataTable data={reply.leaderboard} columns={columns} caption={lastUpdated} disablePagination></DataTable>;
 };

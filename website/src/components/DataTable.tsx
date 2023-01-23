@@ -80,7 +80,7 @@ export const DataTable = <T,>({
   };
   return (
     <>
-      {disablePagination && (
+      {!disablePagination && (
         <Flex mb="2">
           <Button onClick={onPreviousClick} disabled={disablePrevious}>
             Previous
