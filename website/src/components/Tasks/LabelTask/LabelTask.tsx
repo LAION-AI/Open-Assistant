@@ -1,9 +1,8 @@
-import { Box, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { MessageView } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
-import { LabelRadioGroup } from "src/components/Survey/LabelRadioGroup";
-import { LabelSliderGroup } from "src/components/Survey/LabelSliderGroup";
+import { LabelInputGroup } from "src/components/Survey/LabelInputGroup";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
@@ -12,28 +11,18 @@ import { TaskType } from "src/types/Task";
 export const LabelTask = ({
   task,
   taskType,
-  onReplyChanged,
   isEditable,
+  onReplyChanged,
+  onValidityChanged,
 }: TaskSurveyProps<{ text: string; labels: Record<string, number>; message_id: string }>) => {
-  const valid_labels = task.valid_labels;
-  const [sliderValues, setSliderValues] = useState<number[]>(new Array(valid_labels.length).fill(0));
+  const [sliderValues, setSliderValues] = useState<number[]>(new Array(task.valid_labels.length).fill(null));
 
   useEffect(() => {
-    onReplyChanged({
-      content: { labels: {}, text: task.reply, message_id: task.message_id },
-      state: "NOT_SUBMITTABLE",
-    });
-  }, [task, onReplyChanged]);
-
-  const onSliderChange = (values: number[]) => {
-    console.assert(valid_labels.length === sliderValues.length);
-    const labels = Object.fromEntries(valid_labels.map((label, i) => [label, sliderValues[i]]));
-    onReplyChanged({
-      content: { labels, text: task.reply || task.prompt, message_id: task.message_id },
-      state: "VALID",
-    });
-    setSliderValues(values);
-  };
+    console.assert(task.valid_labels.length === sliderValues.length);
+    const labels = Object.fromEntries(task.valid_labels.map((label, i) => [label, sliderValues[i]]));
+    onReplyChanged({ labels, text: task.reply || task.prompt, message_id: task.message_id });
+    onValidityChanged(sliderValues.every((value) => value !== null) ? "VALID" : "INVALID");
+  }, [task, sliderValues, onReplyChanged, onValidityChanged]);
 
   const cardColor = useColorModeValue("gray.50", "gray.800");
 
@@ -43,7 +32,7 @@ export const LabelTask = ({
         <>
           <TaskHeader taskType={taskType} />
           {task.conversation ? (
-            <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
+            <Box mt="4" p={[4, 6]} borderRadius="lg" bg={cardColor}>
               <MessageTable
                 messages={[
                   ...(task.conversation?.messages ?? []),
@@ -62,11 +51,15 @@ export const LabelTask = ({
             </Box>
           )}
         </>
-        {task.mode === "simple" ? (
-          <LabelRadioGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />
-        ) : (
-          <LabelSliderGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={onSliderChange} />
-        )}
+        <Flex direction="column" alignItems="stretch">
+          <Text>The highlighted message:</Text>
+          <LabelInputGroup
+            simple={task.mode === "simple"}
+            labelIDs={task.valid_labels}
+            isEditable={isEditable}
+            onChange={setSliderValues}
+          />
+        </Flex>
       </TwoColumnsWithCards>
     </div>
   );

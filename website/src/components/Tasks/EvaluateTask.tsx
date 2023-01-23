@@ -1,5 +1,5 @@
 import { Box, useColorModeValue } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
@@ -12,8 +12,10 @@ export const EvaluateTask = ({
   isEditable,
   isDisabled,
   onReplyChanged,
+  onValidityChanged,
 }: TaskSurveyProps<{ ranking: number[] }>) => {
   const cardColor = useColorModeValue("gray.50", "gray.800");
+  const [ranking, setRanking] = useState<number[]>(null);
 
   let messages = [];
   if (task.conversation) {
@@ -22,13 +24,15 @@ export const EvaluateTask = ({
   }
 
   useEffect(() => {
-    const ranking = (task.replies ?? task.prompts).map((_, idx) => idx);
-    onReplyChanged({ content: { ranking }, state: "DEFAULT" });
-  }, [task, onReplyChanged]);
-
-  const onRank = (newRanking: number[]) => {
-    onReplyChanged({ content: { ranking: newRanking }, state: "VALID" });
-  };
+    if (ranking === null) {
+      const defaultRanking = (task.replies ?? task.prompts).map((_, idx) => idx);
+      onReplyChanged({ ranking: defaultRanking });
+      onValidityChanged("DEFAULT");
+    } else {
+      onReplyChanged({ ranking });
+      onValidityChanged("VALID");
+    }
+  }, [task, ranking, onReplyChanged, onValidityChanged]);
 
   const sortables = task.replies ? "replies" : "prompts";
 
@@ -44,7 +48,7 @@ export const EvaluateTask = ({
             items={task[sortables]}
             isDisabled={isDisabled}
             isEditable={isEditable}
-            onChange={onRank}
+            onChange={setRanking}
             className="my-8"
           />
         </SurveyCard>
