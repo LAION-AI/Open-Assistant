@@ -14,7 +14,7 @@ from oasst_backend.models.db_payload import (
 from oasst_shared.schemas.protocol import LeaderboardStats, UserScore
 from oasst_shared.utils import log_timing, utcnow
 from sqlalchemy.dialects import postgresql
-from sqlmodel import Session, delete, func, text
+from sqlmodel import Session, delete, func, select, update
 
 
 def _create_user_score(r):
@@ -230,35 +230,35 @@ class UserStatsRepository:
         Update user_stats ranks. The persisted rank values allow to
         quickly the rank of a single user and to query nearby users.
         """
+        try:
+            # sql alchemy implementation
+            subquery = (
+                select(
+                    [
+                        func.row_number()
+                        .over(
+                            partition_by=UserStats.time_frame,
+                            order_by=[UserStats.leader_score.desc(), UserStats.user_id],
+                        )
+                        .label("rank"),
+                        UserStats.user_id,
+                        UserStats.time_frame,
+                    ]
+                )
+                .where(UserStats.time_frame == time_frame.value if time_frame is not None else None)
+                .alias()
+            )
 
-        # todo: convert sql to sqlalchemy query..
-        # ranks = self.session.query(
-        #     func.row_number()
-        #     .over(partition_by=UserStats.time_frame, order_by=[UserStats.leader_score.desc(), UserStats.user_id])
-        #     .label("rank"),
-        #     UserStats.user_id,
-        #     UserStats.time_frame,
-        # )
-
-        sql_update_rank = """
--- update rank
-UPDATE user_stats us
-SET "rank" = r."rank"
-FROM
-    (SELECT
-        ROW_NUMBER () OVER(
-            PARTITION BY time_frame
-            ORDER BY leader_score DESC, user_id
-        ) AS "rank", user_id, time_frame
-    FROM user_stats
-    WHERE (:time_frame IS NULL OR time_frame = :time_frame)) AS r
-WHERE
-    us.user_id = r.user_id
-    AND us.time_frame = r.time_frame;"""
-        r = self.session.execute(
-            text(sql_update_rank), {"time_frame": time_frame.value if time_frame is not None else None}
-        )
-        logger.debug(f"pre_compute_ranks updated({time_frame=}) {r.rowcount} rows.")
+            update_stmt = (
+                update(UserStats)
+                .where(UserStats.user_id == subquery.c.user_id)
+                .where(UserStats.time_frame == subquery.c.time_frame)
+                .values(rank=subquery.c.rank)
+            )
+            qry = self.session.execute(update_stmt)
+            logger.debug(f"pre_compute_ranks updated({time_frame=}) {qry.rowcount} rows.")
+        except Exception:
+            logger.error(f"pre_compute_ranks failed({time_frame=})")
 
     def update_stats_time_frame(self, time_frame: UserStatsTimeFrame, reference_time: Optional[datetime] = None):
         self._update_stats_internal(time_frame, reference_time)
