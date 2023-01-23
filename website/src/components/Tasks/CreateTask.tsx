@@ -36,7 +36,7 @@ export const CreateTask = ({
           <TaskHeader taskType={taskType} />
           {task.conversation ? (
             <Box mt="4" borderRadius="lg" bg={cardColor} className="p-3 sm:p-6">
-              <MessageTable messages={task.conversation.messages} />
+              <MessageTable messages={task.conversation.messages} highlightLastMessage />
             </Box>
           ) : null}
         </>
