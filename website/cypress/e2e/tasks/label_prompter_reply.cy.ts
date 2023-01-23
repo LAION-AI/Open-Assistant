@@ -13,7 +13,7 @@ describe("labeling prompter replies", () => {
 
         cy.get('[data-cy="label-options"]').each((label) => {
           // Click the 4th option
-          cy.wrap(label).find('[aria-roledescription="radio"]').eq(3).click();
+          cy.wrap(label).find('[data-cy="radio-option"]').eq(3).click();
         });
 
         cy.get('[data-cy="review"]').click();

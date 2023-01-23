@@ -1,38 +1,31 @@
-import { Button, SimpleGrid } from "@chakra-ui/react";
-import { PropsWithChildren, ReactNode } from "react";
+import { Radio, RadioGroup } from "@chakra-ui/react";
+import { PropsWithChildren } from "react";
 
 export const LikertButtons = ({
   isDisabled,
-  options,
-  value,
+  count,
   onChange,
   "data-cy": dataCy,
 }: PropsWithChildren<{
   isDisabled: boolean;
-  options: ReactNode[];
-  value: number;
+  count: number;
   onChange: (value: number) => void;
   "data-cy"?: string;
 }>) => {
+  const valueMap = Object.fromEntries(Array.from({ length: count }, (_, idx) => [`${idx}`, idx / (count - 1)]));
+
   return (
-    <SimpleGrid aria-roledescription="radiogroup" columns={options.length} spacing={[1, 4]} data-cy={dataCy}>
-      {options.map((option, idx) => {
-        const indexValue = idx / (options.length - 1);
-        return (
-          <Button
-            aria-roledescription="radio"
-            aria-checked={indexValue === value}
-            key={idx}
-            onClick={() => {
-              onChange(indexValue === value ? null : indexValue);
-            }}
-            isDisabled={isDisabled}
-            isActive={indexValue === value}
-          >
-            {option}
-          </Button>
-        );
+    <RadioGroup
+      data-cy={dataCy}
+      isDisabled={isDisabled}
+      onChange={(value) => {
+        onChange(valueMap[value]);
+      }}
+      style={{ display: "flex", justifyContent: "space-between" }}
+    >
+      {Object.keys(valueMap).map((value) => {
+        return <Radio key={value} value={value} data-cy="radio-option" size="md" padding="0.6em" />;
       })}
-    </SimpleGrid>
+    </RadioGroup>
   );
 };

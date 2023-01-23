@@ -1,7 +1,6 @@
-import { Box, Flex, Grid, Spacer, Text, useColorModeValue, VStack } from "@chakra-ui/react";
+import { Box, Grid, GridItem, Text, useColorModeValue } from "@chakra-ui/react";
 import React from "react";
 import { useState } from "react";
-import { TbChevronLeft, TbChevronRight, TbChevronsLeft, TbChevronsRight } from "react-icons/tb";
 import { LikertButtons } from "src/components/Buttons/LikertButtons";
 import { Explain } from "src/components/Explain";
 
@@ -25,7 +24,7 @@ const label_messages: {
   [label: string]: LabelInfo;
 } = {
   spam: {
-    zeroText: "Suitable for Training",
+    zeroText: "Not Spam",
     zeroDescription: ["Suitable for training Open Assistant."],
     oneText: "Spam",
     oneDescription: [
@@ -53,14 +52,14 @@ const label_messages: {
   violence: {
     zeroText: "Harmless",
     zeroDescription: [],
-    oneText: "Encourages Violence",
+    oneText: "Violent",
     oneDescription: ["Encourages or fails to discourage violence/abuse/terrorism/self-harm"],
     inverted: true,
   },
   excessive_harm: {
     zeroText: "Safe",
     zeroDescription: [],
-    oneText: "Causes Harm",
+    oneText: "Harmful",
     oneDescription: [
       "Content likely to cause excessive harm not justifiable in the context",
       "Harm refers to physical or mental damage or injury to someone or something. Excessive refers to a reasonable threshold of harm in the context, for instance damaging skin is not excessive in the context of surgery.",
@@ -70,14 +69,14 @@ const label_messages: {
   sexual_content: {
     zeroText: "Non Sexual",
     zeroDescription: [],
-    oneText: "Sexual Content",
+    oneText: "Sexual",
     oneDescription: ["Contains sexual content"],
     inverted: true,
   },
   toxicity: {
-    zeroText: "Non Toxic",
+    zeroText: "Polite",
     zeroDescription: [],
-    oneText: "Rude / Toxic",
+    oneText: "Rude",
     oneDescription: ["Contains rude, abusive, profane or insulting content"],
     inverted: true,
   },
@@ -98,7 +97,7 @@ const label_messages: {
   humor: {
     zeroText: "Serious",
     zeroDescription: [],
-    oneText: "Humorous / Sarcastic",
+    oneText: "Humorous",
     oneDescription: ["Contains humorous content including sarcasm"],
     inverted: false,
   },
@@ -115,7 +114,7 @@ const label_messages: {
   threat: {
     zeroText: "Safe",
     zeroDescription: [],
-    oneText: "Contains Threat",
+    oneText: "Threatening",
     oneDescription: ["Contains a threat against a person or persons"],
     inverted: true,
   },
@@ -159,34 +158,38 @@ export const LabelInputGroup = ({ labelIDs, onChange, isEditable = true }: Label
         if (inverted) [textA, textB, descriptionA, descriptionB] = [textB, textA, descriptionB, descriptionA];
 
         return (
-          <Box key={idx} padding={2} bg={cardColor} borderRadius="md">
-            <VStack alignItems="stretch" spacing={1}>
-              <Flex>
-                <Text>{textA}</Text>
+          <Box key={idx} padding={2} bg={cardColor} borderRadius="md" position="relative">
+            <Grid
+              templateColumns={{
+                base: "minmax(0, 1fr) minmax(0, 1fr)",
+                sm: "minmax(0, 1fr) auto minmax(0, 1fr)",
+              }}
+              alignItems="center"
+            >
+              <Text>
+                {textA}
                 {descriptionA.length > 0 ? <Explain explanation={descriptionA} /> : null}
-                <Spacer minWidth="1em" />
-                <Text textAlign="right">{textB}</Text>
-                {descriptionB.length > 0 ? <Explain explanation={descriptionB} /> : null}
-              </Flex>
-              <LikertButtons
-                isDisabled={!isEditable}
-                options={[
-                  <TbChevronsLeft key="<<" />,
-                  <TbChevronLeft key="<" />,
-                  "",
-                  <TbChevronRight key=">" />,
-                  <TbChevronsRight key=">>" />,
-                ]}
-                data-cy="label-options"
-                value={labelValues[idx] === null ? null : inverted ? 1 - labelValues[idx] : labelValues[idx]}
-                onChange={(value) => {
-                  const newState = labelValues.slice();
-                  newState[idx] = value === null ? null : inverted ? 1 - value : value;
-                  onChange(newState);
-                  setLabelValues(newState);
-                }}
-              />
-            </VStack>
+              </Text>
+              <GridItem colSpan={{ base: 2, sm: 1 }} gridColumnStart={{ base: 1, sm: 2 }} gridRow={{ base: 2, sm: 1 }}>
+                <LikertButtons
+                  isDisabled={!isEditable}
+                  count={5}
+                  data-cy="label-options"
+                  onChange={(value) => {
+                    const newState = labelValues.slice();
+                    newState[idx] = value === null ? null : inverted ? 1 - value : value;
+                    onChange(newState);
+                    setLabelValues(newState);
+                  }}
+                />
+              </GridItem>
+              <GridItem>
+                <Text textAlign="right">
+                  {textB}
+                  {descriptionB.length > 0 ? <Explain explanation={descriptionB} /> : null}
+                </Text>
+              </GridItem>
+            </Grid>
           </Box>
         );
       })}
