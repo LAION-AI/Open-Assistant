@@ -1,7 +1,7 @@
 import { Flex } from "@chakra-ui/react";
 import Head from "next/head";
+import { useTranslation } from "next-i18next";
 import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { LeaderboardTable, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { getDashboardLayout } from "src/components/Layout";
 import { TaskCategory } from "src/components/Tasks/TaskTypes";
