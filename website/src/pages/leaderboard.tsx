@@ -2,8 +2,8 @@ import { Box, Card, CardBody, Heading, Tab, TabList, TabPanel, TabPanels, Tabs }
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import { getDashboardLayout } from "src/components/Layout";
-import { LeaderboardGridCell } from "src/components/LeaderboardGridCell";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+import { LeaderboardTable } from "src/components/LeaderboardTable";
 import { LeaderboardTimeFrame } from "src/types/Leaderboard";
 
 const Leaderboard = () => {
@@ -30,16 +30,16 @@ const Leaderboard = () => {
 
               <TabPanels>
                 <TabPanel p="0">
-                  <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.day} />
+                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.day} limit={20} />
                 </TabPanel>
                 <TabPanel p="0">
-                  <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.week} />
+                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.week} limit={20} />
                 </TabPanel>
                 <TabPanel p="0">
-                  <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.month} />
+                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.month} limit={20} />
                 </TabPanel>
                 <TabPanel p="0">
-                  <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.total} />
+                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.total} limit={20} />
                 </TabPanel>
               </TabPanels>
             </Tabs>

@@ -8,5 +8,7 @@
   "score": "Score",
   "user": "User",
   "weekly": "Weekly",
-  "prompt_tasks": "Prompt Tasks"
+  "prompt": "Prompts",
+  "reply": "Replies",
+  "label": "Labels"
 }

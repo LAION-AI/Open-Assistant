@@ -13,13 +13,13 @@ const columnHelper = createColumnHelper<LeaderboardEntity>();
 /**
  * Presents a grid of leaderboard entries with more detailed information.
  */
-const LeaderboardGridCell = ({ timeFrame }: { timeFrame: LeaderboardTimeFrame }) => {
+export const LeaderboardTable = ({ timeFrame, limit }: { timeFrame: LeaderboardTimeFrame; limit: number }) => {
   const { t } = useTranslation("leaderboard");
   const {
     data: reply,
     isLoading,
     error,
-  } = useSWRImmutable<LeaderboardReply>(`/api/leaderboard?time_frame=${timeFrame}`, get, {
+  } = useSWRImmutable<LeaderboardReply>(`/api/leaderboard?time_frame=${timeFrame}&limit=${limit}`, get, {
     revalidateOnMount: true,
   });
 
@@ -35,7 +35,13 @@ const LeaderboardGridCell = ({ timeFrame }: { timeFrame: LeaderboardTimeFrame })
         header: t("score"),
       }),
       columnHelper.accessor("prompts", {
-        header: t("pro"),
+        header: t("prompt"),
+      }),
+      columnHelper.accessor((row) => row.replies_assistant + row.replies_prompter, {
+        header: t("reply"),
+      }),
+      columnHelper.accessor((row) => row.labels_full + row.labels_simple, {
+        header: t("label"),
       }),
     ],
     [t]
@@ -45,7 +51,6 @@ const LeaderboardGridCell = ({ timeFrame }: { timeFrame: LeaderboardTimeFrame })
     const val = new Date(reply?.last_updated);
     return t("last_updated_at", { val, formatParams: { val: { dateStyle: "full", timeStyle: "short" } } });
   }, [t, reply?.last_updated]);
-  console.log(reply, isLoading);
 
   if (isLoading) {
     return <CircularProgress isIndeterminate></CircularProgress>;
@@ -55,7 +60,5 @@ const LeaderboardGridCell = ({ timeFrame }: { timeFrame: LeaderboardTimeFrame })
     return <span>Unable to load leaderboard</span>;
   }
 
-  return <DataTable data={reply?.leaderboard || []} columns={columns} caption={lastUpdated}></DataTable>;
+  return <DataTable data={reply.leaderboard} columns={columns} caption={lastUpdated}></DataTable>;
 };
-
-export { LeaderboardGridCell };
