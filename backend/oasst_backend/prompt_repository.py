@@ -694,6 +694,7 @@ class PromptRepository:
         deleted: Optional[bool] = None,
         desc: bool = False,
         limit: Optional[int] = 100,
+        lang: Optional[str] = None,
     ) -> list[Message]:
         if not self.api_client.trusted:
             if not api_client_id:
@@ -757,6 +758,9 @@ class PromptRepository:
 
         if limit is not None:
             qry = qry.limit(limit)
+
+        if lang is not None:
+            qry = qry.filter(Message.lang == lang)
 
         return qry.all()
 

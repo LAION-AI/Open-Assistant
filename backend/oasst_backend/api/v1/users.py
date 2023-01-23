@@ -223,6 +223,7 @@ def query_user_messages(
     only_roots: bool = False,
     desc: bool = True,
     include_deleted: bool = False,
+    lang: Optional[str] = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -239,6 +240,7 @@ def query_user_messages(
         lte_created_date=end_date,
         only_roots=only_roots,
         deleted=None if include_deleted else False,
+        lang=lang,
     )
 
     return utils.prepare_message_list(messages)
@@ -253,6 +255,7 @@ def query_user_messages_cursor(
     include_deleted: Optional[bool] = False,
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
+    lang: Optional[str] = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -264,6 +267,7 @@ def query_user_messages_cursor(
         include_deleted=include_deleted,
         max_count=max_count,
         desc=desc,
+        lang=lang,
         api_client=api_client,
         db=db,
     )
