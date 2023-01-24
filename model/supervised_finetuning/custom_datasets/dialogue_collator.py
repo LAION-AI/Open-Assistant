@@ -3,7 +3,6 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
-from custom_datasets.qa_datasets import QA_SPECIAL_TOKENS
 from torch.nn import functional as F
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
 
@@ -23,15 +22,8 @@ class DialogueDataCollator:
         flatten_messages = []
         label_masks = []
 
-        for feature_one in features:
-            assert len(feature_one) % 2 == 0, "Number of messages must be even"
-            # TODO: we should push this to dataset __getitem__
-            messages = [
-                (QA_SPECIAL_TOKENS["Question"] if i % 2 == 0 else "")
-                + x
-                + (QA_SPECIAL_TOKENS["Answer"] if i % 2 == 0 else "")
-                for i, x in enumerate(feature_one)
-            ]
+        for messages in features:
+            messages = list(messages)
 
             # Add a way for the model to terminate generation
             # When we predict the start of a new expected question, we want to be able to stop generation

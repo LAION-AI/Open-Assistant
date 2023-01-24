@@ -21,16 +21,16 @@ export interface TaskInfo {
 }
 
 export const TaskCategoryLabels: { [key in TaskCategory]: string } = {
-  [TaskCategory.Random]: "I'm feeling lucky",
+  [TaskCategory.Random]: "Grab a task!",
   [TaskCategory.Create]: "Create",
   [TaskCategory.Evaluate]: "Evaluate",
   [TaskCategory.Label]: "Label",
 };
 
-export const TaskTypes: TaskInfo[] = [
+export const TaskInfos: TaskInfo[] = [
   // general/random
   {
-    label: "Start a Task",
+    label: "I'm feeling lucky",
     desc: "Help us improve Open Assistant by starting a random task.",
     category: TaskCategory.Random,
     pathname: "/tasks/random",
@@ -104,7 +104,7 @@ export const TaskTypes: TaskInfo[] = [
     category: TaskCategory.Evaluate,
     pathname: "/evaluate/rank_initial_prompts",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    overview: "Given the following inital prompts, sort them from best to worst, best being first, worst being last.",
+    overview: "Given the following initial prompts, sort them from best to worst, best being first, worst being last.",
     type: "rank_initial_prompts",
     update_type: "message_ranking",
     unchanged_title: "Order Unchanged",
@@ -162,7 +162,7 @@ export const TaskTypes: TaskInfo[] = [
     category: TaskCategory.Label,
     pathname: "/label/label_prompter_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    overview: "Read the following conversation and then answer the question about the last prompt in the discussion.",
+    overview: "Read the following conversation and then answer the question about the last reply in the discussion.",
     type: "label_prompter_reply",
     mode: "simple",
     update_type: "text_labels",
@@ -173,7 +173,7 @@ export const TaskTypes: TaskInfo[] = [
     category: TaskCategory.Label,
     pathname: "/label/label_assistant_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    overview: "Read the following conversation and then answer the question about the last prompt in the discussion.",
+    overview: "Read the following conversation and then answer the question about the last reply in the discussion.",
     type: "label_assistant_reply",
     mode: "simple",
     update_type: "text_labels",

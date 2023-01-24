@@ -35,4 +35,6 @@ export interface TaskResponse<Task extends BaseTask> {
   task: Task;
 }
 
+export type TaskReplyValidity = "DEFAULT" | "VALID" | "INVALID";
+
 export type AvailableTasks = { [taskType in TaskType]: number };

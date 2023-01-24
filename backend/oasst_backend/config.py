@@ -72,6 +72,7 @@ class Settings(BaseSettings):
     DATABASE_MAX_TX_RETRY_COUNT: int = 3
 
     RATE_LIMIT: bool = True
+    MESSAGE_SIZE_LIMIT: int = 2000
     REDIS_HOST: str = "localhost"
     REDIS_PORT: str = "6379"
 

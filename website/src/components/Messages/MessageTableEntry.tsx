@@ -1,14 +1,15 @@
-import { Avatar, Box, HStack, LinkBox, useBreakpoint, useBreakpointValue, useColorModeValue } from "@chakra-ui/react";
+import { Avatar, Box, HStack, useBreakpointValue, useColorModeValue } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";
 import { FlaggableElement } from "src/components/FlaggableElement";
 import { Message } from "src/types/Conversation";
+import { colors } from "styles/Theme/colors";
 
 interface MessageTableEntryProps {
   item: Message;
   enabled?: boolean;
+  highlight?: boolean;
 }
 
 export function MessageTableEntry(props: MessageTableEntryProps) {
@@ -37,6 +38,7 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
     ),
     [borderColor, inlineAvatar, item.is_assistant]
   );
+  const highlightColor = useColorModeValue(colors.light.highlight, colors.dark.highlight);
 
   return (
     <FlaggableElement message={item}>
@@ -48,6 +50,8 @@ export function MessageTableEntry(props: MessageTableEntryProps) {
           p="4"
           borderRadius="md"
           bg={item.is_assistant ? backgroundColor : backgroundColor2}
+          outline={props.highlight && "2px solid black"}
+          outlineColor={highlightColor}
           onClick={props.enabled && goToMessage}
           _hover={props.enabled && { cursor: "pointer", opacity: 0.9 }}
           whiteSpace="pre-wrap"

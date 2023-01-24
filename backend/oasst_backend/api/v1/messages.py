@@ -26,6 +26,7 @@ def query_messages(
     only_roots: Optional[bool] = False,
     desc: Optional[bool] = True,
     allow_deleted: Optional[bool] = False,
+    lang: Optional[str] = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -43,6 +44,7 @@ def query_messages(
         lte_created_date=end_date,
         only_roots=only_roots,
         deleted=None if allow_deleted else False,
+        lang=lang,
     )
 
     return utils.prepare_message_list(messages)
@@ -50,8 +52,8 @@ def query_messages(
 
 @router.get("/cursor", response_model=protocol.MessagePage)
 def get_messages_cursor(
-    lt: Optional[str] = None,
-    gt: Optional[str] = None,
+    before: Optional[str] = None,
+    after: Optional[str] = None,
     user_id: Optional[UUID] = None,
     auth_method: Optional[str] = None,
     username: Optional[str] = None,
@@ -60,9 +62,12 @@ def get_messages_cursor(
     include_deleted: Optional[bool] = False,
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
+    lang: Optional[str] = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
+    assert max_count is not None
+
     def split_cursor(x: str | None) -> tuple[datetime, UUID]:
         if not x:
             return None, None
@@ -74,11 +79,21 @@ def get_messages_cursor(
         except ValueError:
             raise OasstError("Invalid cursor value", OasstErrorCode.INVALID_CURSOR_VALUE)
 
-    lte_created_date, lt_id = split_cursor(lt)
-    gte_created_date, gt_id = split_cursor(gt)
+    if desc:
+        gte_created_date, gt_id = split_cursor(before)
+        lte_created_date, lt_id = split_cursor(after)
+        query_desc = not (before is not None and not after)
+    else:
+        lte_created_date, lt_id = split_cursor(before)
+        gte_created_date, gt_id = split_cursor(after)
+        query_desc = before is not None and not after
+
+    print(f"{desc=} {query_desc=} {gte_created_date=} {lte_created_date=}")
+
+    qry_max_count = max_count + 1 if before is None or after is None else max_count
 
     pr = PromptRepository(db, api_client)
-    messages = pr.query_messages_ordered_by_created_date(
+    items = pr.query_messages_ordered_by_created_date(
         user_id=user_id,
         auth_method=auth_method,
         username=username,
@@ -89,15 +104,31 @@ def get_messages_cursor(
         lt_id=lt_id,
         only_roots=only_roots,
         deleted=None if include_deleted else False,
-        desc=desc,
-        limit=max_count,
+        desc=query_desc,
+        limit=qry_max_count,
+        lang=lang,
     )
 
-    items = utils.prepare_message_list(messages)
+    num_rows = len(items)
+    if qry_max_count > max_count and num_rows == qry_max_count:
+        assert not (before and after)
+        items = items[:-1]
+
+    if desc != query_desc:
+        items.reverse()
+
+    items = utils.prepare_message_list(items)
     n, p = None, None
     if len(items) > 0:
-        p = str(items[0].id) + "$" + items[0].created_date.isoformat()
-        n = str(items[-1].id) + "$" + items[-1].created_date.isoformat()
+        if (num_rows > max_count and before) or after:
+            p = str(items[0].id) + "$" + items[0].created_date.isoformat()
+        if num_rows > max_count or before:
+            n = str(items[-1].id) + "$" + items[-1].created_date.isoformat()
+    else:
+        if after:
+            p = lte_created_date.isoformat() if desc else gte_created_date.isoformat()
+        if before:
+            n = gte_created_date.isoformat() if desc else lte_created_date.isoformat()
 
     order = "desc" if desc else "asc"
     return protocol.MessagePage(prev=p, next=n, sort_key="created_date", order=order, items=items)
