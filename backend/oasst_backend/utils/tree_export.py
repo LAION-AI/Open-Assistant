@@ -3,7 +3,7 @@ from __future__ import annotations
 import gzip
 import json
 from collections import defaultdict
-from typing import Dict, List, Optional, TextIO
+from typing import Optional, TextIO
 
 from fastapi.encoders import jsonable_encoder
 from oasst_backend.models import Message
@@ -17,7 +17,7 @@ class ExportMessageNode(BaseModel):
     role: str
     review_count: Optional[int]
     rank: Optional[int]
-    replies: Optional[List[ExportMessageNode]]
+    replies: Optional[list[ExportMessageNode]]
 
     @classmethod
     def prep_message_export(cls, message: Message) -> ExportMessageNode:
@@ -36,7 +36,7 @@ class ExportMessageTree(BaseModel):
     replies: Optional[ExportMessageNode]
 
 
-def build_export_tree(message_tree_id: str, messages: List[Message]) -> ExportMessageTree:
+def build_export_tree(message_tree_id: str, messages: list[Message]) -> ExportMessageTree:
     export_tree = ExportMessageTree(message_tree_id=str(message_tree_id))
     export_tree_data = [ExportMessageNode.prep_message_export(m) for m in messages]
 
@@ -44,7 +44,7 @@ def build_export_tree(message_tree_id: str, messages: List[Message]) -> ExportMe
     for message in export_tree_data:
         message_parents[message.parent_id].append(message)
 
-    def build_tree(tree: Dict, parent: Optional[str], messages: List[Message]):
+    def build_tree(tree: dict, parent: Optional[str], messages: list[Message]):
         children = message_parents[parent]
         tree.replies = children
 
@@ -56,7 +56,7 @@ def build_export_tree(message_tree_id: str, messages: List[Message]) -> ExportMe
     return export_tree
 
 
-def write_trees_to_file(file, trees: List[ExportMessageTree], use_compression: bool = True) -> None:
+def write_trees_to_file(file, trees: list[ExportMessageTree], use_compression: bool = True) -> None:
 
     out_buff: TextIO
     if use_compression:
