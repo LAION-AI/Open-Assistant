@@ -7,7 +7,7 @@ import { LabelTask } from "src/components/Tasks/LabelTask";
 import { TaskCategory, TaskInfo, TaskInfos } from "src/components/Tasks/TaskTypes";
 import { UnchangedWarning } from "src/components/Tasks/UnchangedWarning";
 import { post } from "src/lib/api";
-import { normalizei18nKey } from "src/lib/i18n";
+import { getTypeSafei18nKey } from "src/lib/i18n";
 import { TaskContent, TaskReplyValidity } from "src/types/Task";
 import useSWRMutation from "swr/mutation";
 
@@ -160,8 +160,8 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       />
       <UnchangedWarning
         show={showUnchangedWarning}
-        title={t(normalizei18nKey(`${taskType.id}.unchanged_title`)) || t("default.unchanged_title")}
-        message={t(normalizei18nKey(`${taskType.id}.unchanged_message`)) || t("default.unchanged_message")}
+        title={t(getTypeSafei18nKey(`${taskType.id}.unchanged_title`)) || t("default.unchanged_title")}
+        message={t(getTypeSafei18nKey(`${taskType.id}.unchanged_message`)) || t("default.unchanged_message")}
         continueButtonText={"Continue anyway"}
         onClose={() => setShowUnchangedWarning(false)}
         onContinueAnyway={() => {

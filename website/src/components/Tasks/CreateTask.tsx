@@ -6,7 +6,7 @@ import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
-import { normalizei18nKey } from "src/lib/i18n";
+import { getTypeSafei18nKey } from "src/lib/i18n";
 
 export const CreateTask = ({
   task,
@@ -49,7 +49,7 @@ export const CreateTask = ({
           <Stack spacing="4">
             {!!i18n.exists(`task.${taskType.id}.instruction`) && (
               <Text fontSize="xl" fontWeight="bold" color={titleColor}>
-                {t(normalizei18nKey(`${taskType.id}.instruction`))}
+                {t(getTypeSafei18nKey(`${taskType.id}.instruction`))}
               </Text>
             )}
             <TrackedTextarea

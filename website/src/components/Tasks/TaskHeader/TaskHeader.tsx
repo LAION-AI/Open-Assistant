@@ -2,7 +2,7 @@ import { HStack, IconButton, Link, Stack, Text, useColorModeValue } from "@chakr
 import { HelpCircle } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import type { TaskInfo } from "src/components/Tasks/TaskTypes";
-import { normalizei18nKey } from "src/lib/i18n";
+import { getTypeSafei18nKey } from "src/lib/i18n";
 
 interface TaskHeaderProps {
   /**
@@ -22,14 +22,14 @@ const TaskHeader = ({ taskType }: TaskHeaderProps) => {
     <Stack spacing="1">
       <HStack>
         <Text fontSize="xl" fontWeight="bold" color={titleColor}>
-          {t(normalizei18nKey(`${taskType.id}.label`))}
+          {t(getTypeSafei18nKey(`${taskType.id}.label`))}
         </Text>
         <Link href={taskType.help_link} isExternal>
           <IconButton variant="ghost" aria-label="More Information" icon={<HelpCircle size="1em" />} />
         </Link>
       </HStack>
       <Text fontSize="md" color={labelColor}>
-        {t(normalizei18nKey(`${taskType.id}.overview`))}
+        {t(getTypeSafei18nKey(`${taskType.id}.overview`))}
       </Text>
     </Stack>
   );

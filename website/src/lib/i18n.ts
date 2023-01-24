@@ -1,1 +1,1 @@
-export const normalizei18nKey = (key: string) => key as unknown as TemplateStringsArray;
+export const getTypeSafei18nKey = (key: string) => key as unknown as TemplateStringsArray;

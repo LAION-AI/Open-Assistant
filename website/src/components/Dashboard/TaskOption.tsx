@@ -14,7 +14,7 @@ import { HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
-import { normalizei18nKey } from "src/lib/i18n";
+import { getTypeSafei18nKey } from "src/lib/i18n";
 import { TaskType } from "src/types/Task";
 
 import { TaskCategory, TaskCategoryLabels, TaskInfo, TaskInfos } from "../Tasks/TaskTypes";
@@ -63,8 +63,8 @@ export const TaskOption = ({ content }: TasksOptionProps) => {
                     className="flex flex-col justify-between h-full"
                   >
                     <Flex className="p-6 pb-10" flexDir="column" gap="3">
-                      <Heading size="md">{t(normalizei18nKey(`tasks:${item.id}.label`))}</Heading>
-                      <Text size="sm">{t(normalizei18nKey(`tasks:${item.id}.desc`))}</Text>
+                      <Heading size="md">{t(getTypeSafei18nKey(`tasks:${item.id}.label`))}</Heading>
+                      <Text size="sm">{t(getTypeSafei18nKey(`tasks:${item.id}.desc`))}</Text>
                     </Flex>
                     <Text
                       fontWeight="bold"
