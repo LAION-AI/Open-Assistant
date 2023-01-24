@@ -2,7 +2,7 @@ import random
 from collections import defaultdict
 from datetime import datetime
 from http import HTTPStatus
-from typing import List, Optional, Tuple
+from typing import Optional
 from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
@@ -255,7 +255,7 @@ class PromptRepository:
         return reaction
 
     @managed_tx_method(CommitMode.COMMIT)
-    def store_ranking(self, ranking: protocol_schema.MessageRanking) -> Tuple[MessageReaction, Task]:
+    def store_ranking(self, ranking: protocol_schema.MessageRanking) -> tuple[MessageReaction, Task]:
         # fetch task
         task = self.task_repository.fetch_task_by_frontend_message_id(ranking.message_id)
         self._validate_task(task, frontend_message_id=ranking.message_id)
@@ -345,13 +345,13 @@ class PromptRepository:
         return message_toxicity
 
     @managed_tx_method(CommitMode.FLUSH)
-    def insert_message_embedding(self, message_id: UUID, model: str, embedding: List[float]) -> MessageEmbedding:
+    def insert_message_embedding(self, message_id: UUID, model: str, embedding: list[float]) -> MessageEmbedding:
         """Insert the embedding of a new message in the database.
 
         Args:
             message_id (UUID): the identifier of the message we want to save its embedding
             model (str): the model used for creating the embedding
-            embedding (List[float]): the values obtained from the message & model
+            embedding (list[float]): the values obtained from the message & model
 
         Raises:
             OasstError: if misses some of the before params
@@ -383,7 +383,7 @@ class PromptRepository:
         return reaction
 
     @managed_tx_method(CommitMode.FLUSH)
-    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> Tuple[TextLabels, Task, Message]:
+    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> tuple[TextLabels, Task, Message]:
 
         valid_labels: Optional[list[str]] = None
         mandatory_labels: Optional[list[str]] = None
@@ -527,6 +527,22 @@ class PromptRepository:
             qry = qry.filter(Message.review_result)
         if not include_deleted:
             qry = qry.filter(not_(Message.deleted))
+        return qry.all()
+
+    def fetch_user_message_trees(
+        self, user_id: Message.user_id, reviewed: bool = True, include_deleted: bool = False
+    ) -> list[Message]:
+        qry = self.db.query(Message).filter(Message.user_id == user_id)
+        if reviewed:
+            qry = qry.filter(Message.review_result)
+        if not include_deleted:
+            qry = qry.filter(not_(Message.deleted))
+        return qry.all()
+
+    def fetch_message_trees_ready_for_export(self) -> list[MessageTreeState]:
+        qry = self.db.query(MessageTreeState).filter(
+            MessageTreeState.state == message_tree_state.State.READY_FOR_EXPORT
+        )
         return qry.all()
 
     def fetch_multiple_random_replies(self, max_size: int = 5, message_role: str = None):
