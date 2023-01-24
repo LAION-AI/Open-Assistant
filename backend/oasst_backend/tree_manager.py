@@ -1206,6 +1206,7 @@ DELETE FROM user_stats WHERE user_id = :user_id;
 
 if __name__ == "__main__":
     from oasst_backend.api.deps import api_auth
+
     # from oasst_backend.api.deps import create_api_client
     from oasst_backend.database import engine
     from oasst_backend.prompt_repository import PromptRepository
