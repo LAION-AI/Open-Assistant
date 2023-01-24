@@ -1,3 +1,5 @@
+import { TaskType } from "src/types/Task";
+
 export enum TaskCategory {
   Create = "Create",
   Evaluate = "Evaluate",
@@ -10,19 +12,6 @@ export enum TaskUpdateType {
   Random = "random",
   TextLabels = "text_labels",
   TextReplyToMessage = "text_reply_to_message",
-}
-
-export enum TaskType {
-  AssistantReply = "assistant_reply",
-  InitialPrompt = "initial_prompt",
-  LabelAssistantReply = "label_assistant_reply",
-  LabelInitialPrompt = "label_initial_prompt",
-  LabelPrompterReply = "label_prompter_reply",
-  PrompterReply = "prompter_reply",
-  Random = "random",
-  RankAssistantReplies = "rank_assistant_replies",
-  RankInitialPrompts = "rank_initial_prompts",
-  RankPrompterReplies = "rank_prompter_replies",
 }
 
 export interface TaskInfo {
@@ -49,7 +38,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Random,
     pathname: "/tasks/random",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: TaskType.Random,
+    type: TaskType.random,
     update_type: TaskUpdateType.Random,
   },
   // create
@@ -58,7 +47,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Create,
     pathname: "/create/initial_prompt",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: TaskType.InitialPrompt,
+    type: TaskType.initial_prompt,
     update_type: TaskUpdateType.TextReplyToMessage,
   },
   {
@@ -66,7 +55,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Create,
     pathname: "/create/user_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/reply_as_user",
-    type: TaskType.PrompterReply,
+    type: TaskType.prompter_reply,
     update_type: TaskUpdateType.TextReplyToMessage,
   },
   {
@@ -74,7 +63,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Create,
     pathname: "/create/assistant_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/reply_as_assistant",
-    type: TaskType.AssistantReply,
+    type: TaskType.assistant_reply,
     update_type: TaskUpdateType.TextReplyToMessage,
   },
   // evaluate
@@ -83,7 +72,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Evaluate,
     pathname: "/evaluate/rank_user_replies",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: TaskType.RankPrompterReplies,
+    type: TaskType.rank_prompter_replies,
     update_type: TaskUpdateType.MessageRanking,
   },
   {
@@ -91,7 +80,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Evaluate,
     pathname: "/evaluate/rank_assistant_replies",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: TaskType.RankAssistantReplies,
+    type: TaskType.rank_assistant_replies,
     update_type: TaskUpdateType.MessageRanking,
   },
   {
@@ -99,7 +88,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Evaluate,
     pathname: "/evaluate/rank_initial_prompts",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: TaskType.RankInitialPrompts,
+    type: TaskType.rank_initial_prompts,
     update_type: TaskUpdateType.MessageRanking,
   },
   // label (full)
@@ -108,7 +97,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Label,
     pathname: "/label/label_initial_prompt",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: TaskType.LabelInitialPrompt,
+    type: TaskType.label_initial_prompt,
     mode: "full",
     update_type: TaskUpdateType.TextLabels,
   },
@@ -117,7 +106,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Label,
     pathname: "/label/label_prompter_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/label_prompter_reply",
-    type: TaskType.LabelPrompterReply,
+    type: TaskType.label_prompter_reply,
     mode: "full",
     update_type: TaskUpdateType.TextLabels,
   },
@@ -126,7 +115,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Label,
     pathname: "/label/label_assistant_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/tasks/label_assistant_reply",
-    type: TaskType.LabelAssistantReply,
+    type: TaskType.label_assistant_reply,
     mode: "full",
     update_type: TaskUpdateType.TextLabels,
   },
@@ -136,7 +125,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Label,
     pathname: "/label/label_initial_prompt",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: TaskType.LabelInitialPrompt,
+    type: TaskType.label_initial_prompt,
     mode: "simple",
     update_type: TaskUpdateType.TextLabels,
   },
@@ -145,7 +134,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Label,
     pathname: "/label/label_prompter_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: TaskType.LabelPrompterReply,
+    type: TaskType.label_prompter_reply,
     mode: "simple",
     update_type: TaskUpdateType.TextLabels,
   },
@@ -154,7 +143,7 @@ export const TaskInfos: TaskInfo[] = [
     category: TaskCategory.Label,
     pathname: "/label/label_assistant_reply",
     help_link: "https://projects.laion.ai/Open-Assistant/docs/guides/prompting",
-    type: TaskType.LabelAssistantReply,
+    type: TaskType.label_assistant_reply,
     mode: "simple",
     update_type: TaskUpdateType.TextLabels,
   },
