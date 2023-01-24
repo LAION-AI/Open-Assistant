@@ -763,10 +763,9 @@ HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
 -- incomplete rankings but exclude of current user
 WITH incomplete_rankings AS ({_sql_find_incomplete_rankings})
 SELECT ir.* FROM incomplete_rankings ir
-    LEFT JOIN message_reaction mr ON ir.parent_id = mr.message_id
-WHERE mr.payload_type = 'RankingReactionPayload'
+    LEFT JOIN message_reaction mr ON ir.parent_id = mr.message_id AND mr.payload_type = 'RankingReactionPayload'
 GROUP BY ir.parent_id, ir.role, ir.children_count, ir.child_min_ranking_count, ir.completed_rankings
-HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0);
+HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
 """
 
     def query_incomplete_rankings(self, lang: str) -> list[IncompleteRankingsRow]:
