@@ -502,19 +502,18 @@ class TreeManager:
                     try:
                         model_name: str = HfClassificationModel.TOXIC_ROBERTA.value
                         hugging_face_api: HuggingFaceAPI = HuggingFaceAPI(
-                            f"{HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value}/{model_name}"
+                            f"{HfUrl.HUGGINGFACE_TOXIC_CLASSIFICATION.value}/{model_name}"
                         )
 
                         toxicity: List[List[Dict[str, Any]]] = await hugging_face_api.post(interaction.text)
                         toxicity = toxicity[0][0]
-
                         pr.insert_toxicity(
                             message_id=message.id, model=model_name, score=toxicity["score"], label=toxicity["label"]
                         )
 
                     except OasstError:
                         logger.error(
-                            f"Could not compute toxicity for  text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                            f"Could not compute toxicity for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                         )
 
             case protocol_schema.MessageRating:
