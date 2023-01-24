@@ -245,7 +245,7 @@ class PromptRepository:
 
         # store reaction to message
         reaction_payload = db_payload.RatingReactionPayload(rating=rating.rating)
-        reaction = self.insert_reaction(message.id, reaction_payload)
+        reaction = self.insert_reaction(task_id=task.id, payload=reaction_payload, message_id=message.id)
         if not task.collective:
             task.done = True
             self.db.add(task)
@@ -295,7 +295,7 @@ class PromptRepository:
                     ranking_parent_id=task_payload.ranking_parent_id,
                     message_tree_id=task_payload.message_tree_id,
                 )
-                reaction = self.insert_reaction(task.id, reaction_payload)
+                reaction = self.insert_reaction(task_id=task.id, payload=reaction_payload, message_id=parent_msg.id)
                 self.journal.log_ranking(task, message_id=parent_msg.id, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for task {task.id}.")
@@ -313,9 +313,8 @@ class PromptRepository:
                 reaction_payload = db_payload.RankingReactionPayload(
                     ranking=ranking.ranking, ranked_message_ids=ranked_message_ids
                 )
-                reaction = self.insert_reaction(task.id, reaction_payload)
-                # TODO: resolve message_id
-                self.journal.log_ranking(task, message_id=None, ranking=ranking.ranking)
+                reaction = self.insert_reaction(task_id=task.id, payload=reaction_payload, message_id=None)
+                # self.journal.log_ranking(task, message_id=None, ranking=ranking.ranking)
 
                 logger.info(f"Ranking {ranking.ranking} stored for task {task.id}.")
 
@@ -366,7 +365,9 @@ class PromptRepository:
         return message_embedding
 
     @managed_tx_method(CommitMode.FLUSH)
-    def insert_reaction(self, task_id: UUID, payload: db_payload.ReactionPayload) -> MessageReaction:
+    def insert_reaction(
+        self, task_id: UUID, payload: db_payload.ReactionPayload, message_id: Optional[UUID]
+    ) -> MessageReaction:
         self.ensure_user_is_enabled()
 
         container = PayloadContainer(payload=payload)
@@ -376,6 +377,7 @@ class PromptRepository:
             payload=container,
             api_client_id=self.api_client.id,
             payload_type=type(payload).__name__,
+            message_id=message_id,
         )
         self.db.add(reaction)
         return reaction
@@ -441,6 +443,7 @@ class PromptRepository:
             user_id=self.user_id,
             text=text_labels.text,
             labels=text_labels.labels,
+            task_id=task.id if task else None,
         )
 
         if message_id:
