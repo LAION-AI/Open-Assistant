@@ -476,7 +476,10 @@ class TreeManager:
                     )
                     raise OasstError("Message size too long.", OasstErrorCode.TASK_MESSAGE_TOO_LONG)
 
-                # here we store the text reply in the database
+                ### Check to prevent user from sending the same message twice
+                if pr.check_users_recent_replies_for_duplicates(interaction):
+                    raise OasstError("User recent messages have duplicates", OasstErrorCode.TASK_MESSAGE_DUPLICATED)
+
                 message = pr.store_text_reply(
                     text=interaction.text,
                     lang=interaction.lang,

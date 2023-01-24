@@ -344,6 +344,19 @@ class PromptRepository:
         self.db.add(message_toxicity)
         return message_toxicity
 
+    def check_users_recent_replies_for_duplicates(self, task_interaction) -> bool:
+        """Check if the user has a task of the same type with the same text in the last 24 hours."""
+        username = task_interaction.user.id
+        user = self.db.query(User).filter(User.username == username).first()
+        user_id = user.id
+        logger.debug(f"Checking for duplicate tasks for user {user_id}")
+        messages = self.db.query(Message).filter(Message.user_id == user.id).order_by(Message.created_date.desc()).limit(10).all()
+        for msg in messages:
+            if msg.text == task_interaction.text:
+                return True
+        return False
+
+
     @managed_tx_method(CommitMode.FLUSH)
     def insert_message_embedding(self, message_id: UUID, model: str, embedding: list[float]) -> MessageEmbedding:
         """Insert the embedding of a new message in the database.
