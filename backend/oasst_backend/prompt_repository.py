@@ -30,6 +30,7 @@ from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
 from oasst_shared.utils import unaware_to_utc
 from sqlmodel import Session, and_, func, not_, or_, text, update
+from datetime import timedelta
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -350,7 +351,10 @@ class PromptRepository:
         user = self.db.query(User).filter(User.username == username).first()
         user_id = user.id
         logger.debug(f"Checking for duplicate tasks for user {user_id}")
-        messages = self.db.query(Message).filter(Message.user_id == user.id).order_by(Message.created_date.desc()).limit(10).all()
+        #messages = self.db.query(Message).filter(Message.user_id == user.id).order_by(Message.created_date.desc()).limit(10).all()
+        #messages in the past 24 hours
+        messages = self.db.query(Message).filter(Message.user_id == user.id).order_by(Message.created_date.desc()).filter(Message.created_date > datetime.now() - timedelta(days=1)).all()
+
         for msg in messages:
             if msg.text == task_interaction.text:
                 return True
