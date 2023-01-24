@@ -516,20 +516,24 @@ class PromptRepository:
         messages = self.db.query(Message).filter(Message.parent_id.is_(None)).order_by(func.random()).limit(size).all()
         return messages
 
-    def fetch_message_tree(self, message_tree_id: UUID, reviewed: bool = True, deleted: bool = False):
+    def fetch_message_tree(
+        self, message_tree_id: UUID, reviewed: bool = True, include_deleted: bool = False
+    ) -> List[Message]:
         qry = self.db.query(Message).filter(Message.message_tree_id == message_tree_id)
         if reviewed:
             qry = qry.filter(Message.review_result)
-        if deleted:
-            qry = qry.filter(Message.deleted)
+        if not include_deleted:
+            qry = qry.filter(not_(Message.deleted))
         return qry.all()
 
-    def fetch_user_message_trees(self, user_id: Message.user_id, reviewed: bool = True, deleted: bool = False):
+    def fetch_user_message_trees(
+        self, user_id: Message.user_id, reviewed: bool = True, include_deleted: bool = False
+    ) -> List[Message]:
         qry = self.db.query(Message).filter(Message.user_id == user_id)
         if reviewed:
             qry = qry.filter(Message.review_result)
-        if deleted:
-            qry = qry.filter(Message.deleted)
+        if not include_deleted:
+            qry = qry.filter(not_(Message.deleted))
         return qry.all()
 
     def fetch_message_trees_ready_for_export(self) -> List[MessageTreeState]:

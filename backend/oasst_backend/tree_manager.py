@@ -1,7 +1,7 @@
 import json
 import random
-from datetime import datetime
 import sys
+from datetime import datetime
 from enum import Enum
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional, Tuple
@@ -22,8 +22,6 @@ from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session, func, not_, text, update
-from sqlalchemy.sql import text
-from fastapi.encoders import jsonable_encoder
 
 
 class TaskType(Enum):
@@ -1172,13 +1170,13 @@ DELETE FROM user_stats WHERE user_id = :user_id;
         message_tree_ids: list[str],
         file=None,
         reviewed: bool = True,
-        deleted: bool = False,
+        include_deleted: bool = False,
         use_compression: bool = False,
     ) -> None:
         trees_to_export: List[tree_export.ExportMessageTree] = []
 
         for message_tree_id in message_tree_ids:
-            messages: List[Message] = self.pr.fetch_message_tree(message_tree_id, reviewed, deleted)
+            messages: List[Message] = self.pr.fetch_message_tree(message_tree_id, reviewed, include_deleted)
             trees_to_export.append(tree_export.build_export_tree(message_tree_id, messages))
 
         if file:
@@ -1187,18 +1185,23 @@ DELETE FROM user_stats WHERE user_id = :user_id;
             sys.stdout.write(json.dumps(jsonable_encoder(trees_to_export), indent=2))
 
     def export_all_ready_trees(
-        self, file: str, reviewed: bool = True, deleted: bool = False, use_compression: bool = False
+        self, file: str, reviewed: bool = True, include_deleted: bool = False, use_compression: bool = False
     ) -> None:
         message_tree_states: MessageTreeState = self.pr.fetch_message_trees_ready_for_export()
         message_tree_ids = [ms.message_tree_id for ms in message_tree_states]
-        self.export_trees_to_file(message_tree_ids, file, reviewed, deleted, use_compression)
+        self.export_trees_to_file(message_tree_ids, file, reviewed, include_deleted, use_compression)
 
     def export_all_user_trees(
-        self, user_id: str, file: str, reviewed: bool = True, deleted: bool = False, use_compression: bool = False
+        self,
+        user_id: str,
+        file: str,
+        reviewed: bool = True,
+        include_deleted: bool = False,
+        use_compression: bool = False,
     ) -> None:
         messages = self.pr.fetch_user_message_trees(UUID(user_id))
         message_tree_ids = [ms.message_tree_id for ms in messages]
-        self.export_trees_to_file(message_tree_ids, file, reviewed, deleted, use_compression)
+        self.export_trees_to_file(message_tree_ids, file, reviewed, include_deleted, use_compression)
 
 
 if __name__ == "__main__":
@@ -1216,7 +1219,7 @@ if __name__ == "__main__":
         tm = TreeManager(db, pr, cfg)
         tm.ensure_tree_states()
 
-        tm.purge_user_messages(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"), purge_initial_prompts=False)
+        # tm.purge_user_messages(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"), purge_initial_prompts=False)
         # tm.purge_user(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"))
         # db.commit()
 
@@ -1234,4 +1237,4 @@ if __name__ == "__main__":
         #     ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("2ac20d38-6650-43aa-8bb3-f61080c0d921"))
         # )
 
-        print(tm.export_trees_to_file(message_tree_ids=["7e75fb38-e664-4e2b-817c-b9a0b01b0074"]))
+        print(tm.export_trees_to_file(message_tree_ids=["7e75fb38-e664-4e2b-817c-b9a0b01b0074"], file="lol.jsonl"))

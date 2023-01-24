@@ -23,7 +23,7 @@ class ExportMessageNode(BaseModel):
     def prep_message_export(cls, message: Message) -> ExportMessageNode:
         return cls(
             message_id=str(message.id),
-            parent_id=str(message.parent_id),
+            parent_id=str(message.parent_id) if message.parent_id else None,
             text=str(message.payload.payload.text),
             role=message.role,
             review_count=message.review_count,
@@ -42,16 +42,16 @@ def build_export_tree(message_tree_id: str, messages: List[Message]) -> ExportMe
 
     message_parents = defaultdict(list)
     for message in export_tree_data:
-        message_parents[str(message.parent_id)].append(message)
+        message_parents[message.parent_id].append(message)
 
-    def build_tree(tree: Dict, parent: str, messages: List[Message]):
+    def build_tree(tree: Dict, parent: Optional[str], messages: List[Message]):
         children = message_parents[parent]
         tree.replies = children
 
         for idx, child in enumerate(tree.replies):
             build_tree(tree.replies[idx], child.message_id, messages)
 
-    build_tree(export_tree, "None", export_tree_data)
+    build_tree(export_tree, None, export_tree_data)
 
     return export_tree
 
