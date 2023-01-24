@@ -107,6 +107,7 @@ def managed_tx_function(
     auto_commit: CommitMode = CommitMode.COMMIT,
     num_retries=settings.DATABASE_MAX_TX_RETRY_COUNT,
     session_factory: Callable[..., Session] = default_session_factor,
+    refresh_result: bool = True,
 ):
     """Passes Session object as first argument to wrapped function."""
 
@@ -124,9 +125,8 @@ def managed_tx_function(
                                 session.flush()
                             elif auto_commit == CommitMode.ROLLBACK:
                                 session.rollback()
-                            if isinstance(result, SQLModel):
+                            if refresh_result and isinstance(result, SQLModel):
                                 session.refresh(result)
-                                session.expunge(result)
                             return result
                         except OperationalError:
                             logger.info(f"Retry {i+1}/{num_retries} after possible DB concurrent update conflict.")

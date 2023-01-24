@@ -902,4 +902,5 @@ WHERE message.id = cc.id;
 
         flag_modified(message, "emojis")
         self.db.add(message)
+        self.db.flush()
         return message
