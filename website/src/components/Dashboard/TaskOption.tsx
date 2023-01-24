@@ -1,4 +1,16 @@
-import { Box, Flex, GridItem, Heading, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  GridItem,
+  Heading,
+  IconButton,
+  Link as ExternalLink,
+  SimpleGrid,
+  Spacer,
+  Text,
+  useColorModeValue,
+} from "@chakra-ui/react";
+import { HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { TaskType } from "src/types/Task";
@@ -27,9 +39,15 @@ export const TaskOption = ({ content }: TasksOptionProps) => {
     <Box className="flex flex-col gap-14">
       {Object.entries(content).map(([category, taskTypes]) => (
         <div key={category}>
-          <Heading size="lg" className="pb-4">
-            {TaskCategoryLabels[category]}
-          </Heading>
+          <Flex>
+            <Heading size="lg" className="pb-4">
+              {TaskCategoryLabels[category]}
+            </Heading>
+            <Spacer />
+            <ExternalLink href="https://projects.laion.ai/Open-Assistant/" isExternal>
+              <IconButton variant="ghost" aria-label="More Information" icon={<HelpCircle size="2em" />} />
+            </ExternalLink>
+          </Flex>
           <SimpleGrid columns={[1, 1, 2, 2, 3, 4]} gap={4}>
             {taskTypes
               .map((taskType) => taskInfoMap[taskType])
