@@ -11,23 +11,22 @@ const Leaderboard = () => {
   return (
     <>
       <Head>
-        <title>{`${t("leaderboard:leaderboard")} - ${t("common:title")}`}</title>
+        <title>{`${t("leaderboard")} - ${t("common:title")}`}</title>
         <meta name="description" content="Leaderboard Rankings" charSet="UTF-8" />
       </Head>
       <Box display="flex" flexDirection="column">
         <Heading fontSize="2xl" fontWeight="bold" pb="4">
-          {t("leaderboard:leaderboard")}
+          {t("leaderboard")}
         </Heading>
         <Card>
           <CardBody>
             <Tabs isFitted isLazy>
               <TabList>
-                <Tab>{t("leaderboard:daily")}</Tab>
-                <Tab>{t("leaderboard:weekly")}</Tab>
-                <Tab>{t("leaderboard:monthly")}</Tab>
-                <Tab>{t("leaderboard:overall")}</Tab>
+                <Tab>{t("daily")}</Tab>
+                <Tab>{t("weekly")}</Tab>
+                <Tab>{t("monthly")}</Tab>
+                <Tab>{t("overall")}</Tab>
               </TabList>
-
               <TabPanels>
                 <TabPanel p="0">
                   <LeaderboardTable timeFrame={LeaderboardTimeFrame.day} limit={20} />

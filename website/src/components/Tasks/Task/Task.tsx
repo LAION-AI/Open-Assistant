@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { useRef, useState } from "react";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { CreateTask } from "src/components/Tasks/CreateTask";
@@ -6,6 +7,7 @@ import { LabelTask } from "src/components/Tasks/LabelTask";
 import { TaskCategory, TaskInfo, TaskInfos } from "src/components/Tasks/TaskTypes";
 import { UnchangedWarning } from "src/components/Tasks/UnchangedWarning";
 import { post } from "src/lib/api";
+import { getTypeSafei18nKey } from "src/lib/i18n";
 import { TaskContent, TaskReplyValidity } from "src/types/Task";
 import useSWRMutation from "swr/mutation";
 
@@ -23,6 +25,7 @@ export interface TaskSurveyProps<T> {
 }
 
 export const Task = ({ frontendId, task, trigger, mutate }) => {
+  const { t } = useTranslation("tasks");
   const [taskStatus, setTaskStatus] = useState<TaskStatus>("NOT_SUBMITTABLE");
   const replyContent = useRef<TaskContent>(null);
   const [showUnchangedWarning, setShowUnchangedWarning] = useState(false);
@@ -111,7 +114,6 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       case TaskCategory.Create:
         return (
           <CreateTask
-            key={task.id}
             task={task}
             taskType={taskType}
             isEditable={edit_mode}
@@ -123,7 +125,6 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       case TaskCategory.Evaluate:
         return (
           <EvaluateTask
-            key={task.id}
             task={task}
             taskType={taskType}
             isEditable={edit_mode}
@@ -135,7 +136,6 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       case TaskCategory.Label:
         return (
           <LabelTask
-            key={task.id}
             task={task}
             taskType={taskType}
             isEditable={edit_mode}
@@ -160,8 +160,8 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       />
       <UnchangedWarning
         show={showUnchangedWarning}
-        title={taskType.unchanged_title || "No changes"}
-        message={taskType.unchanged_message || "Are you sure you would like to continue?"}
+        title={t(getTypeSafei18nKey(`${taskType.id}.unchanged_title`)) || t("default.unchanged_title")}
+        message={t(getTypeSafei18nKey(`${taskType.id}.unchanged_message`)) || t("default.unchanged_message")}
         continueButtonText={"Continue anyway"}
         onClose={() => setShowUnchangedWarning(false)}
         onContinueAnyway={() => {
