@@ -1210,7 +1210,8 @@ if __name__ == "__main__":
     from oasst_backend.prompt_repository import PromptRepository
 
     with Session(engine) as db:
-        api_client = create_api_client(session=db, description="test", frontend_type="bot")
+        api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
+        # api_client = create_api_client(session=db, description="test", frontend_type="bot")
         dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
 
         pr = PromptRepository(db=db, api_client=api_client, client_user=dummy_user)
