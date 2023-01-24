@@ -49,6 +49,8 @@ class Message(SQLModel, table=True):
 
     rank: Optional[int] = Field(nullable=True)
 
+    emojis: dict[str, int] = Field(default={}, sa_column=sa.Column(pg.JSONB), nullable=False)
+
     def ensure_is_message(self) -> None:
         if not self.payload or not isinstance(self.payload.payload, MessagePayload):
             raise OasstError("Invalid message", OasstErrorCode.INVALID_MESSAGE, HTTPStatus.INTERNAL_SERVER_ERROR)

@@ -76,6 +76,8 @@ class OasstErrorCode(IntEnum):
     USER_DISABLED = 4001
     USER_NOT_FOUND = 4002
 
+    EMOJI_OP_UNSUPPORTED = 5000
+
 
 class OasstError(Exception):
     """Base class for Open-Assistant exceptions."""

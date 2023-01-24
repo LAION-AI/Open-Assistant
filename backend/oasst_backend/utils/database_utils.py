@@ -124,6 +124,9 @@ def managed_tx_function(
                                 session.flush()
                             elif auto_commit == CommitMode.ROLLBACK:
                                 session.rollback()
+                            if isinstance(result, SQLModel):
+                                session.refresh(result)
+                                session.expunge(result)
                             return result
                         except OperationalError:
                             logger.info(f"Retry {i+1}/{num_retries} after possible DB concurrent update conflict.")

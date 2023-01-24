@@ -13,6 +13,7 @@ from oasst_backend.models import (
     ApiClient,
     Message,
     MessageEmbedding,
+    MessageEmoji,
     MessageReaction,
     MessageToxicity,
     MessageTreeState,
@@ -29,6 +30,7 @@ from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
 from oasst_shared.utils import unaware_to_utc
+from sqlalchemy.orm.attributes import flag_modified
 from sqlmodel import Session, and_, func, not_, or_, text, update
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
@@ -843,3 +845,61 @@ WHERE message.id = cc.id;
             deleted=result.get(True, 0),
             message_trees=result.get(None, 0),
         )
+
+    def handle_message_emoji(self, message_id: UUID, op: protocol_schema.EmojiOp, emoji: protocol_schema) -> Message:
+        self.ensure_user_is_enabled()
+
+        message = self.fetch_message(message_id)
+
+        # check if emoji exists
+        existing_emoji = (
+            self.db.query(MessageEmoji)
+            .filter(
+                MessageEmoji.message_id == message_id, MessageEmoji.user_id == self.user_id, MessageEmoji.emoji == emoji
+            )
+            .one_or_none()
+        )
+
+        if existing_emoji:
+            if op == protocol_schema.EmojiOp.add:
+                logger.info(f"Emoji record already exists {message_id=}, {emoji=}, {self.user_id=}")
+                return message
+            elif op == protocol_schema.EmojiOp.togggle:
+                op = protocol_schema.EmojiOp.remove
+
+        if existing_emoji is None:
+            if op == protocol_schema.EmojiOp.remove:
+                logger.info(f"Emoji record not found {message_id=}, {emoji=}, {self.user_id=}")
+                return message
+            elif op == protocol_schema.EmojiOp.togggle:
+                op = protocol_schema.EmojiOp.add
+
+        if op == protocol_schema.EmojiOp.add:
+            # insert emoji record & increment count
+            message_emoji = MessageEmoji(message_id=message.id, user_id=self.user_id, emoji=emoji)
+            self.db.add(message_emoji)
+            emoji_counts = message.emojis
+            if not emoji_counts:
+                message.emojis = {emoji.value: 1}
+            else:
+                count = emoji_counts.get(emoji.value) or 0
+                emoji_counts[emoji.value] = count + 1
+        elif op == protocol_schema.EmojiOp.remove:
+            # remove emoji record and & decrement count
+            message = self.fetch_message(message_id)
+            self.db.delete(existing_emoji)
+            emoji_counts = message.emojis
+            count = emoji_counts.get(emoji.value)
+            if count is not None:
+                if count == 1:
+                    del emoji_counts[emoji.value]
+                else:
+                    emoji_counts[emoji.value] = count - 1
+                flag_modified(message, "emojis")
+                self.db.add(message)
+        else:
+            raise OasstError("Emoji op not supported", OasstErrorCode.EMOJI_OP_UNSUPPORTED)
+
+        flag_modified(message, "emojis")
+        self.db.add(message)
+        return message

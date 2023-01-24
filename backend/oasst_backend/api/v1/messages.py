@@ -7,6 +7,7 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
@@ -229,3 +230,22 @@ def mark_message_deleted(
 ):
     pr = PromptRepository(db, api_client)
     pr.mark_messages_deleted(message_id)
+
+
+@router.post("/{message_id}/emoji", response_model=protocol.Message)
+def post_message_emoji(
+    *,
+    message_id: UUID,
+    request: protocol.MessageEmojiRequest,
+    api_client: ApiClient = Depends(deps.get_api_client),
+) -> protocol.Message:
+    """
+    Toggle, add or remove message emoji.
+    """
+
+    @managed_tx_function(CommitMode.COMMIT)
+    def emoji_tx(session: deps.Session):
+        pr = PromptRepository(session, api_client, client_user=request.user)
+        return pr.handle_message_emoji(message_id, request.op, request.emoji)
+
+    return utils.prepare_message(emoji_tx())
