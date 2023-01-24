@@ -26,7 +26,6 @@ class CommitMode(IntEnum):
 * managed_tx_method and async_managed_tx_method methods are decorators functions
 * to be used on class functions. It expects the Class to have a 'db' Session object
 * initialised
-* TODO: tx method decorator for non class methods
 """
 
 

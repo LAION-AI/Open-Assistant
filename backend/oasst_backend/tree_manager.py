@@ -682,57 +682,65 @@ class TreeManager:
         # calculate acceptance based on spam label
         return np.mean([1 - l.labels[protocol_schema.TextLabel.spam] for l in labels])
 
-    def query_prompts_need_review(self, lang: str) -> list[Message]:
-        """
-        Select initial prompt messages with less then required rankings in active message tree
-        (active == True in message_tree_state)
-        """
+    def _query_need_review(
+        self, state: message_tree_state.State, required_reviews: int, root: bool, lang: str
+    ) -> list[Message]:
 
-        qry = (
+        need_review = (
             self.db.query(Message)
             .select_from(MessageTreeState)
             .join(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
             .filter(
                 MessageTreeState.active,
-                MessageTreeState.state == message_tree_state.State.INITIAL_PROMPT_REVIEW,
+                MessageTreeState.state == state,
                 not_(Message.review_result),
                 not_(Message.deleted),
-                Message.review_count < self.cfg.num_reviews_initial_prompt,
-                Message.parent_id.is_(None),
+                Message.review_count < required_reviews,
                 Message.lang == lang,
             )
         )
 
+        if root:
+            need_review = need_review.filter(Message.parent_id.is_(None))
+        else:
+            need_review = need_review.filter(Message.parent_id.is_not(None))
+
         if not settings.DEBUG_ALLOW_SELF_LABELING:
-            qry = qry.filter(Message.user_id != self.pr.user_id)
+            need_review = need_review.filter(Message.user_id != self.pr.user_id)
+
+        if settings.DEBUG_ALLOW_DUPLICATE_TASKS:
+            qry = need_review
+        else:
+            user_id = self.pr.user_id
+            need_review = need_review.cte(name="need_review")
+            qry = (
+                self.db.query(Message)
+                .select_entity_from(need_review)
+                .outerjoin(TextLabels, need_review.c.id == TextLabels.message_id)
+                .group_by(need_review)
+                .having(
+                    func.count(TextLabels.id).filter(TextLabels.task_id.is_not(None), TextLabels.user_id == user_id)
+                    == 0
+                )
+            )
 
         return qry.all()
+
+    def query_prompts_need_review(self, lang: str) -> list[Message]:
+        """
+        Select initial prompt messages with less then required rankings in active message tree
+        (active == True in message_tree_state)
+        """
+        return self._query_need_review(
+            message_tree_state.State.INITIAL_PROMPT_REVIEW, self.cfg.num_reviews_initial_prompt, True, lang
+        )
 
     def query_replies_need_review(self, lang: str) -> list[Message]:
         """
         Select child messages (parent_id IS NOT NULL) with less then required rankings
         in active message tree (active == True in message_tree_state)
         """
-
-        qry = (
-            self.db.query(Message)
-            .select_from(MessageTreeState)
-            .join(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
-            .filter(
-                MessageTreeState.active,
-                MessageTreeState.state == message_tree_state.State.GROWING,
-                not_(Message.review_result),
-                not_(Message.deleted),
-                Message.review_count < self.cfg.num_reviews_reply,
-                Message.parent_id.is_not(None),
-                Message.lang == lang,
-            )
-        )
-
-        if not settings.DEBUG_ALLOW_SELF_LABELING:
-            qry = qry.filter(Message.user_id != self.pr.user_id)
-
-        return qry.all()
+        return self._query_need_review(message_tree_state.State.GROWING, self.cfg.num_reviews_reply, False, lang)
 
     _sql_find_incomplete_rankings = """
 -- find incomplete rankings
@@ -750,15 +758,26 @@ GROUP BY m.parent_id, m.role
 HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
 """
 
+    _sql_find_incomplete_rankings_ex = f"""
+-- incomplete rankings but exclude of current user
+WITH incomplete_rankings AS ({_sql_find_incomplete_rankings})
+SELECT ir.* FROM incomplete_rankings ir
+    LEFT JOIN message_reaction mr ON ir.parent_id = mr.message_id AND mr.payload_type = 'RankingReactionPayload'
+GROUP BY ir.parent_id, ir.role, ir.children_count, ir.child_min_ranking_count, ir.completed_rankings
+HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
+"""
+
     def query_incomplete_rankings(self, lang: str) -> list[IncompleteRankingsRow]:
         """Query parents which have childern that need further rankings"""
 
+        user_id = self.pr.user_id if not settings.DEBUG_ALLOW_DUPLICATE_TASKS else None
         r = self.db.execute(
-            text(self._sql_find_incomplete_rankings),
+            text(self._sql_find_incomplete_rankings_ex),
             {
                 "num_required_rankings": self.cfg.num_required_rankings,
                 "ranking_state": message_tree_state.State.RANKING,
                 "lang": lang,
+                "user_id": user_id,
             },
         )
         return [IncompleteRankingsRow.from_orm(x) for x in r.all()]
@@ -779,17 +798,20 @@ WHERE mts.active                        -- only consider active trees
     AND (c.review_result OR coalesce(c.review_count, 0) < :num_reviews_reply) -- don't count children with negative review but count elements under review
 GROUP BY m.id, m.role, m.depth, m.message_tree_id, mts.max_children_count
 HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
+    AND COUNT(c.id) FILTER (WHERE c.user_id = :user_id) = 0  -- without reply by user
 """
 
     def query_extendible_parents(self, lang: str) -> list[ExtendibleParentRow]:
         """Query parent messages that have not reached the maximum number of replies."""
 
+        user_id = self.pr.user_id if not settings.DEBUG_ALLOW_DUPLICATE_TASKS else None
         r = self.db.execute(
             text(self._sql_find_extendible_parents),
             {
                 "growing_state": message_tree_state.State.GROWING,
                 "num_reviews_reply": self.cfg.num_reviews_reply,
                 "lang": lang,
+                "user_id": user_id,
             },
         )
         return [ExtendibleParentRow.from_orm(x) for x in r.all()]
@@ -813,12 +835,14 @@ HAVING COUNT(m.id) < mts.goal_tree_size
     def query_extendible_trees(self, lang: str) -> list[ActiveTreeSizeRow]:
         """Query size of active message trees in growing state."""
 
+        user_id = self.pr.user_id if not settings.DEBUG_ALLOW_DUPLICATE_TASKS else None
         r = self.db.execute(
             text(self._sql_find_extendible_trees),
             {
                 "growing_state": message_tree_state.State.GROWING,
                 "num_reviews_reply": self.cfg.num_reviews_reply,
                 "lang": lang,
+                "user_id": user_id,
             },
         )
         return [ActiveTreeSizeRow.from_orm(x) for x in r.all()]

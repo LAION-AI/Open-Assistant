@@ -26,3 +26,4 @@ class MessageReaction(SQLModel, table=True):
     payload_type: str = Field(nullable=False, max_length=200)
     payload: PayloadContainer = Field(sa_column=sa.Column(payload_column_type(PayloadContainer), nullable=False))
     api_client_id: UUID = Field(nullable=False, foreign_key="api_client.id")
+    message_id: Optional[UUID] = Field(nullable=True, index=True)
