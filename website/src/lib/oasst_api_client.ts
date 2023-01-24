@@ -262,8 +262,14 @@ export class OasstApiClient {
   /**
    * Returns the current leaderboard ranking.
    */
-  async fetch_leaderboard(time_frame: LeaderboardTimeFrame): Promise<LeaderboardReply> {
-    return this.get(`/api/v1/leaderboards/${time_frame}`);
+  async fetch_leaderboard(
+    time_frame: LeaderboardTimeFrame,
+    { limit = 20 }: { limit?: number }
+  ): Promise<LeaderboardReply> {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+    });
+    return this.get(`/api/v1/leaderboards/${time_frame}?${params.toString()}`);
   }
 
   /**

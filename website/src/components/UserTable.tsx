@@ -1,4 +1,4 @@
-import { IconButton } from "@chakra-ui/react";
+import { Card, CardBody, IconButton } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
@@ -90,19 +90,21 @@ export const UserTable = memo(function UserTable() {
   };
 
   return (
-    <>
-      <DataTable
-        data={data?.items || []}
-        columns={columns}
-        caption="Users"
-        onNextClick={toNextPage}
-        onPreviousClick={toPreviousPage}
-        disableNext={!data?.next}
-        disablePrevious={!data?.prev}
-        filterValues={filterValues}
-        onFilterChange={handleFilterValuesChange}
-      ></DataTable>
-      {error && "Unable to load users."}
-    </>
+    <Card>
+      <CardBody>
+        <DataTable
+          data={data?.items || []}
+          columns={columns}
+          caption="Users"
+          onNextClick={toNextPage}
+          onPreviousClick={toPreviousPage}
+          disableNext={!data?.next}
+          disablePrevious={!data?.prev}
+          filterValues={filterValues}
+          onFilterChange={handleFilterValuesChange}
+        ></DataTable>
+        {error && "Unable to load users."}
+      </CardBody>
+    </Card>
   );
 });

@@ -2,7 +2,7 @@ import { Flex } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import { useEffect, useMemo, useState } from "react";
-import { LeaderboardTable, TaskOption, WelcomeCard } from "src/components/Dashboard";
+import { LeaderboardWidget, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { getDashboardLayout } from "src/components/Layout";
 import { TaskCategory } from "src/components/Tasks/TaskTypes";
 import { get } from "src/lib/api";
@@ -42,7 +42,7 @@ const Dashboard = () => {
       <Flex direction="column" gap="10">
         <WelcomeCard />
         <TaskOption content={availableTaskTypes} />
-        <LeaderboardTable />
+        <LeaderboardWidget />
       </Flex>
     </>
   );
