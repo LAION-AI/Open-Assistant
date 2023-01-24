@@ -1193,35 +1193,6 @@ if __name__ == "__main__":
     from oasst_backend.prompt_repository import PromptRepository
 
     with Session(engine) as db:
-        qry = (
-            db.query(Message)
-            .select_from(MessageTreeState)
-            .join(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
-            .filter(
-                MessageTreeState.active,
-                MessageTreeState.state == message_tree_state.State.GROWING,
-                not_(Message.review_result),
-                not_(Message.deleted),
-                Message.review_count < 10,
-                Message.parent_id.is_not(None),
-                Message.lang == "en",
-            )
-        )
-        qry = qry.cte(name="missing")
-        user_id = UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f")
-        qry = (
-            db.query(Message)
-            .select_entity_from(qry)
-            .outerjoin(TextLabels, qry.c.id == TextLabels.message_id)
-            .having(
-                func.count(TextLabels.id).filter(TextLabels.task_id.is_not(None), TextLabels.user_id == user_id) == 0
-            )
-        )
-
-        print(qry)
-
-        exit()
-
         api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
         dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
 
