@@ -99,8 +99,8 @@ def argument_parsing(parser):
     return params
 
 
-def get_datasets(dataset_list: List[AnyStr]):
-    from rank_datasets import GPTJSynthetic, HFSummary, WebGPT
+def get_datasets(dataset_list: List[AnyStr], tokenizer):
+    from rank_datasets import AnthropicRLHF, GPTJSynthetic, HFSummary, WebGPT
     from torch.utils.data import ConcatDataset
 
     train_datasets, evals = [], {}
@@ -121,6 +121,11 @@ def get_datasets(dataset_list: List[AnyStr]):
             train, eval = train_val_dataset(dataset, 0.1)
             train_datasets.append(train)
             evals["gptsynthetic"] = eval
+        elif "anthropic_rlhf" == dataset_name:
+            train = AnthropicRLHF("train", tokenizer.sep_token)
+            eval = AnthropicRLHF("test", tokenizer.sep_token)
+            train_datasets.append(train)
+            evals["anthropic_rlhf"] = eval
     train = ConcatDataset(train_datasets)
     return train, evals
 

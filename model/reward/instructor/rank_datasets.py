@@ -237,3 +237,39 @@ class HFDataset(Dataset):
 class GPTJSynthetic(HFDataset):
     def __init__(self) -> None:
         super().__init__("Dahoas/synthetic-instruct-gptj-pairwise", "prompt", "chosen", "rejected", None, "train")
+
+
+class AnthropicRLHF(Dataset):
+    """
+    The data are described in the paper:
+    Training a Helpful and Harmless Assistant with Reinforcement Learning from Human Feedback.
+    If you find the data useful, please cite the paper.
+    The data format is very simple -- each line of the jsonl files contains a pair of texts,
+    one "chosen" and one "rejected".
+
+    """
+
+    def __init__(self, split="train", sep_token="<sep>") -> None:
+        super().__init__()
+        assert split in ("train", "test")
+        if sep_token is None:
+            sep_token = " . "
+        self.pairs = []
+        # using prompt as our index will allows us
+        # to add additional generated prompt later
+        major_split = split if "train" == split else "test"
+        dataset = load_dataset("Anthropic/hh-rlhf")[major_split]
+        for data in dataset:
+            prompt, pos_postfix = data["chosen"].split("Assistant:", maxsplit=1)
+            pos_postfix = pos_postfix.replace("\n\nHuman: ", sep_token).replace("\n\nAssistant: ", sep_token)
+            _, neg_postfix = data["rejected"].split("Assistant:", maxsplit=1)
+            neg_postfix = neg_postfix.replace("\n\nHuman: ", sep_token).replace("\n\nAssistant: ", sep_token)
+            self.pairs.append((prompt, (pos_postfix.strip(), neg_postfix.strip())))
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, index):
+        context, pair = self.pairs[index]
+
+        return context, [pair]

@@ -155,7 +155,7 @@ if __name__ == "__main__":
     )
 
     tokenizer = get_tokenizer(training_conf["tokenizer_name"])
-    train, evals = get_datasets(training_conf["datasets"])
+    train, evals = get_datasets(training_conf["datasets"], tokenizer)
     if "rankgen" in model_name:
         collate_fn = RankGenCollator(tokenizer, max_length=training_conf["max_length"])
     else:
