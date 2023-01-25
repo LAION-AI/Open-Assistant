@@ -659,6 +659,24 @@ class PromptRepository:
         children = qry.all()
         return children
 
+    def fetch_message_siblings(
+        self, message: Message | UUID, reviewed: Optional[bool] = True, deleted: Optional[bool] = False
+    ) -> list[Message]:
+        """
+        Get siblings of a message (other messages with the same parent_id)
+        """
+        if isinstance(message, Message):
+            message = message.id
+
+        parent_qry = self.db.query(Message.parent_id).filter(Message.id == message).subquery()
+        qry = self.db.query(Message).filter(Message.parent_id == parent_qry.c.parent_id)
+        if reviewed is not None:
+            qry = qry.filter(Message.review_result == reviewed)
+        if deleted is not None:
+            qry = qry.filter(Message.deleted == deleted)
+        siblings = qry.all()
+        return siblings
+
     @staticmethod
     def trace_descendants(root: Message, messages: list[Message]) -> list[Message]:
         children = defaultdict(list)
