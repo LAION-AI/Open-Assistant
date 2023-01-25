@@ -344,7 +344,7 @@ class PromptRepository:
         self.db.add(message_toxicity)
         return message_toxicity
 
-    def check_users_recent_replies_for_duplicates(self, task_interaction) -> bool:
+    def check_users_recent_replies_for_duplicates(self, task_interaction: protocol_schema.AnyInteraction) -> bool:
         """Check if the user has a task of the same type with the same text in the last 24 hours."""
         username = task_interaction.user.id
         user = self.db.query(User).filter(User.username == username).first()
