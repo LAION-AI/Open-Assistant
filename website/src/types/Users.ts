@@ -51,3 +51,19 @@ export interface User extends BackendUser {
    */
   role: string;
 }
+
+export type FetchUsersParams = {
+  limit: number;
+  cursor?: string;
+  direction: "forward" | "back";
+  searchDisplayName?: string;
+  sortKey?: "username" | "display_name";
+};
+
+export type FetchUsersResponse<T extends User | BackendUser = BackendUser> = {
+  items: T[];
+  next?: string;
+  prev?: string;
+  sort_key: "username" | "display_name";
+  order: "asc" | "desc";
+};
