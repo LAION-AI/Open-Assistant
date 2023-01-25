@@ -34,14 +34,14 @@ export class OasstApiClient {
     });
   }
 
-  async ackTask(taskId: string, messageId: string): Promise<void> {
-    await this.post(`/api/v1/tasks/${taskId}/ack`, {
+  async ackTask(taskId: string, messageId: string): Promise<null> {
+    return this.post(`/api/v1/tasks/${taskId}/ack`, {
       message_id: messageId,
     });
   }
 
-  async nackTask(taskId: string, reason: string): Promise<void> {
-    await this.post(`/api/v1/tasks/${taskId}/nack`, {
+  async nackTask(taskId: string, reason: string): Promise<null> {
+    return this.post(`/api/v1/tasks/${taskId}/nack`, {
       reason,
     });
   }

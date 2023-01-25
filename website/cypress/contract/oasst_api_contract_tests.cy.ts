@@ -17,7 +17,7 @@ describe("Contract test for Oasst API", function () {
 
   it("can ack a task", async () => {
     const task = await oasstApiClient.fetchTask("random", testUser, "en");
-    expect(await oasstApiClient.ackTask(task.id, "321")).to.be.undefined;
+    expect(await oasstApiClient.ackTask(task.id, "321")).to.be.null;
   });
 
   it("can record a taskInteraction", async () => {
