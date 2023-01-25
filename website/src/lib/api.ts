@@ -17,7 +17,7 @@ export const post = (url: string, { arg: data }) => api.post(url, data).then((re
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    throw new OasstError(error.message ?? error, error.error_code);
+    throw new OasstError(error.message ?? error, error.error_code, error?.response?.status || -1);
   }
 );
 

@@ -12,25 +12,18 @@ describe("Contract test for Oasst API", function () {
   } as BackendUserCore;
 
   it("can fetch a task", async () => {
-    expect(await oasstApiClient.fetchTask("random", testUser)).to.be.not.null;
+    expect(await oasstApiClient.fetchTask("random", testUser, "en")).to.be.not.null;
   });
 
   it("can ack a task", async () => {
-    const task = await oasstApiClient.fetchTask("random", testUser);
-    expect(await oasstApiClient.ackTask(task.id, "321")).to.be.null;
+    const task = await oasstApiClient.fetchTask("random", testUser, "en");
+    expect(await oasstApiClient.ackTask(task.id, "321")).to.be.undefined;
   });
 
   it("can record a taskInteraction", async () => {
-    const task = await oasstApiClient.fetchTask("random", testUser);
+    const task = await oasstApiClient.fetchTask("random", testUser, "en");
     expect(
-      await oasstApiClient.interactTask(
-        "text_reply_to_message",
-        task.id,
-        "321",
-        "1",
-        { text: "Test" },
-        testUser
-      )
+      await oasstApiClient.interactTask("text_reply_to_message", task.id, "321", "1", { text: "Test" }, testUser, "en")
     ).to.be.not.null;
   });
 
