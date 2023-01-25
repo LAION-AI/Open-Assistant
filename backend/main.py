@@ -291,6 +291,20 @@ def export_ready_trees(file: Optional[str] = None, use_compression: bool = False
         logger.exception("Error exporting trees.")
 
 
+def retry_scoring_failed_message_trees():
+    try:
+        logger.info("TreeManager.retry_scoring_failed_message_trees()")
+        with Session(engine) as db:
+            api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
+
+            pr = PromptRepository(db=db, api_client=api_client)
+            tm = TreeManager(db, pr)
+            tm.retry_scoring_failed_message_trees()
+
+    except Exception:
+        logger.exception("TreeManager.retry_scoring_failed_message_trees() failed.")
+
+
 def main():
     # Importing here so we don't import packages unnecessarily if we're
     # importing main as a module.
@@ -314,6 +328,11 @@ def main():
         "--export-file",
         help="Name of file to export trees to. If not provided when exporting, output will be send to STDOUT",
     )
+    parser.add_argument(
+        "--retry-scoring",
+        help="Retry scoring failed message trees",
+        action=argparse.BooleanOptionalAction,
+    )
 
     args = parser.parse_args()
 
@@ -322,6 +341,8 @@ def main():
     elif args.export:
         use_compression: bool = ".gz" in args.export_file
         export_ready_trees(file=args.export_file, use_compression=use_compression)
+    elif args.retry_scoring:
+        retry_scoring_failed_message_trees()
     else:
         uvicorn.run(app, host=args.host, port=args.port)
 
