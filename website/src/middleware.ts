@@ -23,7 +23,7 @@ export const config = {
 const middleware = async (req: NextRequestWithAuth) => {
   if (req.method === "POST" && req.nextUrl.pathname === "/api/auth/signin/email") {
     const data = await req.formData();
-    const res = await checkCaptcha(data.get("captcha").toString(), req.ip);
+    const res = await checkCaptcha(data.get("captcha")?.toString(), req.ip);
 
     if (res.success) {
       return NextResponse.next();
