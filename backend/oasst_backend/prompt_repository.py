@@ -2,7 +2,7 @@ import random
 from collections import defaultdict
 from datetime import datetime
 from http import HTTPStatus
-from typing import List, Optional, Tuple
+from typing import Optional
 from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
@@ -13,6 +13,7 @@ from oasst_backend.models import (
     ApiClient,
     Message,
     MessageEmbedding,
+    MessageEmoji,
     MessageReaction,
     MessageToxicity,
     MessageTreeState,
@@ -29,6 +30,7 @@ from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
 from oasst_shared.utils import unaware_to_utc
+from sqlalchemy.orm.attributes import flag_modified
 from sqlmodel import Session, and_, func, not_, or_, text, update
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
@@ -255,7 +257,7 @@ class PromptRepository:
         return reaction
 
     @managed_tx_method(CommitMode.COMMIT)
-    def store_ranking(self, ranking: protocol_schema.MessageRanking) -> Tuple[MessageReaction, Task]:
+    def store_ranking(self, ranking: protocol_schema.MessageRanking) -> tuple[MessageReaction, Task]:
         # fetch task
         task = self.task_repository.fetch_task_by_frontend_message_id(ranking.message_id)
         self._validate_task(task, frontend_message_id=ranking.message_id)
@@ -345,13 +347,13 @@ class PromptRepository:
         return message_toxicity
 
     @managed_tx_method(CommitMode.FLUSH)
-    def insert_message_embedding(self, message_id: UUID, model: str, embedding: List[float]) -> MessageEmbedding:
+    def insert_message_embedding(self, message_id: UUID, model: str, embedding: list[float]) -> MessageEmbedding:
         """Insert the embedding of a new message in the database.
 
         Args:
             message_id (UUID): the identifier of the message we want to save its embedding
             model (str): the model used for creating the embedding
-            embedding (List[float]): the values obtained from the message & model
+            embedding (list[float]): the values obtained from the message & model
 
         Raises:
             OasstError: if misses some of the before params
@@ -383,7 +385,7 @@ class PromptRepository:
         return reaction
 
     @managed_tx_method(CommitMode.FLUSH)
-    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> Tuple[TextLabels, Task, Message]:
+    def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> tuple[TextLabels, Task, Message]:
 
         valid_labels: Optional[list[str]] = None
         mandatory_labels: Optional[list[str]] = None
@@ -527,6 +529,22 @@ class PromptRepository:
             qry = qry.filter(Message.review_result)
         if not include_deleted:
             qry = qry.filter(not_(Message.deleted))
+        return qry.all()
+
+    def fetch_user_message_trees(
+        self, user_id: Message.user_id, reviewed: bool = True, include_deleted: bool = False
+    ) -> list[Message]:
+        qry = self.db.query(Message).filter(Message.user_id == user_id)
+        if reviewed:
+            qry = qry.filter(Message.review_result)
+        if not include_deleted:
+            qry = qry.filter(not_(Message.deleted))
+        return qry.all()
+
+    def fetch_message_trees_ready_for_export(self) -> list[MessageTreeState]:
+        qry = self.db.query(MessageTreeState).filter(
+            MessageTreeState.state == message_tree_state.State.READY_FOR_EXPORT
+        )
         return qry.all()
 
     def fetch_multiple_random_replies(self, max_size: int = 5, message_role: str = None):
@@ -827,3 +845,62 @@ WHERE message.id = cc.id;
             deleted=result.get(True, 0),
             message_trees=result.get(None, 0),
         )
+
+    def handle_message_emoji(self, message_id: UUID, op: protocol_schema.EmojiOp, emoji: protocol_schema) -> Message:
+        self.ensure_user_is_enabled()
+
+        message = self.fetch_message(message_id)
+
+        # check if emoji exists
+        existing_emoji = (
+            self.db.query(MessageEmoji)
+            .filter(
+                MessageEmoji.message_id == message_id, MessageEmoji.user_id == self.user_id, MessageEmoji.emoji == emoji
+            )
+            .one_or_none()
+        )
+
+        if existing_emoji:
+            if op == protocol_schema.EmojiOp.add:
+                logger.info(f"Emoji record already exists {message_id=}, {emoji=}, {self.user_id=}")
+                return message
+            elif op == protocol_schema.EmojiOp.togggle:
+                op = protocol_schema.EmojiOp.remove
+
+        if existing_emoji is None:
+            if op == protocol_schema.EmojiOp.remove:
+                logger.info(f"Emoji record not found {message_id=}, {emoji=}, {self.user_id=}")
+                return message
+            elif op == protocol_schema.EmojiOp.togggle:
+                op = protocol_schema.EmojiOp.add
+
+        if op == protocol_schema.EmojiOp.add:
+            # insert emoji record & increment count
+            message_emoji = MessageEmoji(message_id=message.id, user_id=self.user_id, emoji=emoji)
+            self.db.add(message_emoji)
+            emoji_counts = message.emojis
+            if not emoji_counts:
+                message.emojis = {emoji.value: 1}
+            else:
+                count = emoji_counts.get(emoji.value) or 0
+                emoji_counts[emoji.value] = count + 1
+        elif op == protocol_schema.EmojiOp.remove:
+            # remove emoji record and & decrement count
+            message = self.fetch_message(message_id)
+            self.db.delete(existing_emoji)
+            emoji_counts = message.emojis
+            count = emoji_counts.get(emoji.value)
+            if count is not None:
+                if count == 1:
+                    del emoji_counts[emoji.value]
+                else:
+                    emoji_counts[emoji.value] = count - 1
+                flag_modified(message, "emojis")
+                self.db.add(message)
+        else:
+            raise OasstError("Emoji op not supported", OasstErrorCode.EMOJI_OP_UNSUPPORTED)
+
+        flag_modified(message, "emojis")
+        self.db.add(message)
+        self.db.flush()
+        return message

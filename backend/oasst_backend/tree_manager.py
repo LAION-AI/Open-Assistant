@@ -1,4 +1,6 @@
+import json
 import random
+import sys
 from datetime import datetime
 from enum import Enum
 from http import HTTPStatus
@@ -7,11 +9,13 @@ from uuid import UUID
 
 import numpy as np
 import pydantic
+from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import Message, MessageReaction, MessageTreeState, Task, TextLabels, User, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.utils import tree_export
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_method, managed_tx_method
 from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_backend.utils.ranking import ranked_pairs
@@ -1184,14 +1188,55 @@ DELETE FROM user_stats WHERE user_id = :user_id;
         if ban:
             self.db.execute(update(User).filter(User.id == user_id).values(deleted=True, enabled=False))
 
+    def export_trees_to_file(
+        self,
+        message_tree_ids: list[str],
+        file=None,
+        reviewed: bool = True,
+        include_deleted: bool = False,
+        use_compression: bool = False,
+    ) -> None:
+        trees_to_export: List[tree_export.ExportMessageTree] = []
+
+        for message_tree_id in message_tree_ids:
+            messages: List[Message] = self.pr.fetch_message_tree(message_tree_id, reviewed, include_deleted)
+            trees_to_export.append(tree_export.build_export_tree(message_tree_id, messages))
+
+        if file:
+            tree_export.write_trees_to_file(file, trees_to_export, use_compression)
+        else:
+            sys.stdout.write(json.dumps(jsonable_encoder(trees_to_export), indent=2))
+
+    def export_all_ready_trees(
+        self, file: str, reviewed: bool = True, include_deleted: bool = False, use_compression: bool = False
+    ) -> None:
+        message_tree_states: MessageTreeState = self.pr.fetch_message_trees_ready_for_export()
+        message_tree_ids = [ms.message_tree_id for ms in message_tree_states]
+        self.export_trees_to_file(message_tree_ids, file, reviewed, include_deleted, use_compression)
+
+    def export_all_user_trees(
+        self,
+        user_id: str,
+        file: str,
+        reviewed: bool = True,
+        include_deleted: bool = False,
+        use_compression: bool = False,
+    ) -> None:
+        messages = self.pr.fetch_user_message_trees(UUID(user_id))
+        message_tree_ids = [ms.message_tree_id for ms in messages]
+        self.export_trees_to_file(message_tree_ids, file, reviewed, include_deleted, use_compression)
+
 
 if __name__ == "__main__":
     from oasst_backend.api.deps import api_auth
+
+    # from oasst_backend.api.deps import create_api_client
     from oasst_backend.database import engine
     from oasst_backend.prompt_repository import PromptRepository
 
     with Session(engine) as db:
         api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
+        # api_client = create_api_client(session=db, description="test", frontend_type="bot")
         dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
 
         pr = PromptRepository(db=db, api_client=api_client, client_user=dummy_user)
@@ -1200,25 +1245,22 @@ if __name__ == "__main__":
         tm = TreeManager(db, pr, cfg)
         tm.ensure_tree_states()
 
-        tm.purge_user_messages(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"), purge_initial_prompts=False)
+        # tm.purge_user_messages(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"), purge_initial_prompts=False)
         # tm.purge_user(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"))
         # db.commit()
 
         # print("query_num_active_trees", tm.query_num_active_trees())
         # print("query_incomplete_rankings", tm.query_incomplete_rankings())
         # print("query_replies_need_review", tm.query_replies_need_review())
+        # print("query_incomplete_reply_reviews", tm.query_replies_need_review())
         # print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
         # print("query_extendible_trees", tm.query_extendible_trees())
         # print("query_extendible_parents", tm.query_extendible_parents())
-        # print("query_tree_size", tm.query_tree_size(message_tree_id=UUID("bdf434cf-4df5-4b74-949c-a5a157bc3292")))
-
-        # print(
-        #     "query_reviews_for_message",
-        #     tm.query_reviews_for_message(message_id=UUID("6a444493-0d48-4316-a9f1-7e263f5a2473")),
-        # )
 
         # print("next_task:", tm.next_task())
 
         # print(
-        #     "query_tree_ranking_results", tm.query_tree_ranking_results(UUID("6036f58f-41b5-48c4-bdd9-b16f34ab1312"))
+        #     ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("2ac20d38-6650-43aa-8bb3-f61080c0d921"))
         # )
+
+        print(tm.export_trees_to_file(message_tree_ids=["7e75fb38-e664-4e2b-817c-b9a0b01b0074"], file="lol.jsonl"))

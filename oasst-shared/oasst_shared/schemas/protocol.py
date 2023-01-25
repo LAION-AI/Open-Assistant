@@ -80,6 +80,7 @@ class Conversation(BaseModel):
 class Message(ConversationMessage):
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
+    emojis: Optional[dict] = None
 
 
 class MessagePage(PageResult):
@@ -432,3 +433,27 @@ class OasstErrorResponse(BaseModel):
 
     error_code: OasstErrorCode
     message: str
+
+
+class EmojiCode(str, enum.Enum):
+    thumbs_up = "+1"  # 👍
+    thumbs_down = "-1"  # 👎
+    red_flag = "red_flag"  # 🚩
+    hundred = "100"  # 💯
+    rofl = "rofl"  # 🤣"
+    heart_eyes = "heart_eyes"  # 😍
+    disappointed = "disappointed"  # 😞
+    poop = "poop"  # 💩
+    skull = "skull"  # 💀
+
+
+class EmojiOp(str, enum.Enum):
+    togggle = "toggle"
+    add = "add"
+    remove = "remove"
+
+
+class MessageEmojiRequest(BaseModel):
+    user: User
+    op: EmojiOp = EmojiOp.togggle
+    emoji: EmojiCode
