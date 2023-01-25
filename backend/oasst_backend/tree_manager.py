@@ -476,7 +476,7 @@ class TreeManager:
                     )
                     raise OasstError("Message size too long.", OasstErrorCode.TASK_MESSAGE_TOO_LONG)
 
-                ### Check to prevent user from sending the same message twice
+                # Check to prevent user from sending the same message twice
                 if pr.check_users_recent_replies_for_duplicates(interaction):
                     raise OasstError("User recent messages have duplicates", OasstErrorCode.TASK_MESSAGE_DUPLICATED)
 
