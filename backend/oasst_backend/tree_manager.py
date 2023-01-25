@@ -652,7 +652,9 @@ class TreeManager:
         self._enter_state(mts, message_tree_state.State.READY_FOR_SCORING)
         return True, rankings_by_message
 
-    def update_message_ranks(self, message_tree_id: UUID, rankings_by_message: Dict[int, int]) -> bool:
+    def update_message_ranks(
+        self, message_tree_id: UUID, rankings_by_message: dict[UUID, list[MessageReaction]]
+    ) -> bool:
 
         mts = self.pr.fetch_tree_state(message_tree_id)
         # check state, allow retry if in SCORING_FAILED state
@@ -1225,6 +1227,20 @@ DELETE FROM user_stats WHERE user_id = :user_id;
         messages = self.pr.fetch_user_message_trees(UUID(user_id))
         message_tree_ids = [ms.message_tree_id for ms in messages]
         self.export_trees_to_file(message_tree_ids, file, reviewed, include_deleted, use_compression)
+
+    @managed_tx_method(CommitMode.COMMIT)
+    def retry_scoring_failed_message_trees(self):
+        query = self.db.query(MessageTreeState.message_tree_id).filter(
+            MessageTreeState.state == message_tree_state.State.SCORING_FAILED
+        )
+        ranking_role_filter = None if self.cfg.rank_prompter_replies else "assistant"
+        for row in query.all():
+            try:
+                message_tree_id = row["message_tree_id"]
+                rankings_by_message = self.query_tree_ranking_results(message_tree_id, role_filter=ranking_role_filter)
+                self.update_message_ranks(message_tree_id=message_tree_id, rankings_by_message=rankings_by_message)
+            except Exception:
+                logger.exception(f"retry_scoring_failed_message_trees failed for ({message_tree_id=})")
 
 
 if __name__ == "__main__":
