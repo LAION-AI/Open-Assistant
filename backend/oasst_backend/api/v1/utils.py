@@ -14,6 +14,7 @@ def prepare_message(m: Message) -> protocol.Message:
         lang=m.lang,
         is_assistant=(m.role == "assistant"),
         created_date=m.created_date,
+        emojis=m.emojis,
     )
 
 
