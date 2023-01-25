@@ -164,14 +164,18 @@ export class OasstApiClient {
     return this.request<T>("PUT", path);
   }
 
-  private async get<T>(path: string, query: Record<string, string | number | boolean | undefined> = {}) {
+  private async get<T>(path: string, query?: Record<string, string | number | boolean | undefined>) {
+    if (!query) {
+      return this.request<T>("GET", path);
+    }
+
     const filteredQuery = Object.fromEntries(
       Object.entries(query).filter(([, value]) => value !== undefined)
     ) as Record<string, string>;
 
     const params = new URLSearchParams(filteredQuery).toString();
 
-    return this.request<T>("GET", `${path}${query ? `?${params}` : ""}`);
+    return this.request<T>("GET", `${path}?${params}`);
   }
 
   private async request<T>(method: "GET" | "POST" | "PUT", path: string, init?: RequestInit): Promise<T | null> {
