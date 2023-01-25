@@ -23,7 +23,12 @@ module.exports = {
     config.resolve.alias = {
       ...config.resolve.alias,
       src: path.resolve(__dirname, "../src"),
+      styles: path.resolve(__dirname, "../styles"),
     };
+    config.resolve.fallback = {
+      fs: false,
+      path: require.resolve('path-browserify'),
+    }
     return config;
   },
   features: {
