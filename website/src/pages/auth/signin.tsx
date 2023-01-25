@@ -66,13 +66,12 @@ function Signin({ providers }: SigninProps) {
     }
   }, [router]);
 
-  const signinWithEmail = async (data: { email: string }) => {
-    const res = await signIn(email.id, {
+  const signinWithEmail = (data: { email: string }) => {
+    signIn(email.id, {
       callbackUrl: "/dashboard",
       email: data.email,
       captcha: captcha.current?.getResponse(),
     });
-    console.log(res);
   };
 
   const { colorMode } = useColorMode();
