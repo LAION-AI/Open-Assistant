@@ -22,8 +22,8 @@ export const config = {
 
 const middleware = async (req: NextRequestWithAuth) => {
   if (req.method === "POST" && req.nextUrl.pathname === "/api/auth/signin/email") {
-    const data = await req.formData();
-    const res = await checkCaptcha(data.get("captcha")?.toString(), req.ip);
+    const data = await getBody(req);
+    const res = await checkCaptcha(data?.captcha, req.ip);
 
     if (res.success) {
       return NextResponse.next();
@@ -37,5 +37,17 @@ const middleware = async (req: NextRequestWithAuth) => {
 
   return withAuth(req);
 };
+
+async function getBody(req: Request): Promise<Record<string, any> | undefined> {
+  if (!("body" in req) || !req.body || req.method !== "POST") return;
+
+  const contentType = req.headers.get("content-type");
+  if (contentType?.includes("application/json")) {
+    return await req.json();
+  } else if (contentType?.includes("application/x-www-form-urlencoded")) {
+    const params = new URLSearchParams(await req.text());
+    return Object.fromEntries(params);
+  }
+}
 
 export default middleware;

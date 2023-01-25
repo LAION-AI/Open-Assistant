@@ -15,7 +15,6 @@ describe("signin flow", () => {
       .then((response) => {
         const csrfToken = response.body.csrfToken;
         cy.request({
-          form: true,
           method: "POST",
           url: "/api/auth/signin/email",
           body: {
@@ -24,9 +23,6 @@ describe("signin flow", () => {
             csrfToken,
             json: "true",
             captcha: "XXXX.DUMMY.TOKEN.XXXX",
-          },
-          headers: {
-            "content-type": "application/x-www-form-urlencoded",
           },
         });
       })
