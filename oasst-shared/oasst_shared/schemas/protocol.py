@@ -440,7 +440,9 @@ class EmojiCode(str, enum.Enum):
     thumbs_down = "-1"  # 👎
     red_flag = "red_flag"  # 🚩
     hundred = "100"  # 💯
-    rofl = "rofl"  # 🤣"
+    rofl = "rofl"  # 🤣
+    clap = "clap"  # 👏
+    diamond = "diamond"  # 💎
     heart_eyes = "heart_eyes"  # 😍
     disappointed = "disappointed"  # 😞
     poop = "poop"  # 💩

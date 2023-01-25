@@ -41,8 +41,9 @@ class TaskRole(Enum):
 
 class ActiveTreeSizeRow(pydantic.BaseModel):
     message_tree_id: UUID
-    tree_size: int
     goal_tree_size: int
+    tree_size: int
+    awaiting_review: Optional[int]
 
     @property
     def remaining_messages(self) -> int:
@@ -625,8 +626,8 @@ class TreeManager:
 
         # check if desired tree size has been reached and all nodes have been reviewed
         tree_size = self.query_tree_size(message_tree_id)
-        if tree_size.remaining_messages > 0:
-            logger.debug(f"False {tree_size.remaining_messages=}")
+        if tree_size.remaining_messages > 0 or tree_size.awaiting_review > 0:
+            logger.debug(f"False {tree_size.remaining_messages=}, {tree_size.awaiting_review=}")
             return False
 
         self._enter_state(mts, message_tree_state.State.RANKING)
@@ -884,18 +885,21 @@ HAVING COUNT(m.id) < mts.goal_tree_size
     def query_tree_size(self, message_tree_id: UUID) -> ActiveTreeSizeRow:
         """Returns the number of reviewed not deleted messages in the message tree."""
 
+        required_reviews = settings.tree_manager.num_reviews_reply
         qry = (
             self.db.query(
                 MessageTreeState.message_tree_id.label("message_tree_id"),
                 MessageTreeState.goal_tree_size.label("goal_tree_size"),
-                func.count(Message.id).label("tree_size"),
+                func.count(Message.id).filter(Message.review_result).label("tree_size"),
+                func.count(Message.id)
+                .filter(not_(Message.review_result), Message.review_count < required_reviews)
+                .label("awaiting_review"),
             )
             .select_from(MessageTreeState)
             .outerjoin(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
             .filter(
                 MessageTreeState.active,
                 not_(Message.deleted),
-                Message.review_result,
                 MessageTreeState.message_tree_id == message_tree_id,
             )
             .group_by(MessageTreeState.message_tree_id, MessageTreeState.goal_tree_size)
@@ -1207,6 +1211,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         sql_purge_user = """
 DELETE FROM journal WHERE user_id = :user_id;
 DELETE FROM message_reaction WHERE user_id = :user_id;
+DELETE FROM message_emoji WHERE user_id = :user_id;
 DELETE FROM task WHERE user_id = :user_id;
 DELETE FROM message WHERE user_id = :user_id;
 DELETE FROM user_stats WHERE user_id = :user_id;
