@@ -50,6 +50,6 @@ class JournalIntegration(SQLModel, table=True):
     )
     description: str = Field(max_length=512, primary_key=True)
     last_journal_id: Optional[UUID] = Field(foreign_key="journal.id", nullable=True)
-    last_run: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(), nullable=True))
+    last_run: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True))
     last_error: Optional[str] = Field(nullable=True)
     next_run: Optional[datetime] = Field(nullable=True)

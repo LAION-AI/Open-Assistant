@@ -1,3 +1,4 @@
+import re
 from uuid import UUID
 
 from oasst_backend.models import Message
@@ -10,8 +11,10 @@ def prepare_message(m: Message) -> protocol.Message:
         frontend_message_id=m.frontend_message_id,
         parent_id=m.parent_id,
         text=m.text,
+        lang=m.lang,
         is_assistant=(m.role == "assistant"),
         created_date=m.created_date,
+        emojis=m.emojis,
     )
 
 
@@ -22,10 +25,11 @@ def prepare_message_list(messages: list[Message]) -> list[protocol.Message]:
 def prepare_conversation_message_list(messages: list[Message]) -> list[protocol.ConversationMessage]:
     return [
         protocol.ConversationMessage(
-            text=message.text,
-            is_assistant=(message.role == "assistant"),
             id=message.id,
             frontend_message_id=message.frontend_message_id,
+            text=message.text,
+            lang=message.lang,
+            is_assistant=(message.role == "assistant"),
         )
         for message in messages
     ]
@@ -41,3 +45,8 @@ def prepare_tree(tree: list[Message], tree_id: UUID) -> protocol.MessageTree:
         tree_messages.append(prepare_message(message))
 
     return protocol.MessageTree(id=tree_id, messages=tree_messages)
+
+
+split_uuid_pattern = re.compile(
+    r"^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\$(.*)$"
+)

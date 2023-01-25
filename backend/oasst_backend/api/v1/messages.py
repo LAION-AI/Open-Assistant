@@ -1,4 +1,5 @@
-import datetime
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -6,6 +7,8 @@ from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
+from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
@@ -15,14 +18,16 @@ router = APIRouter()
 
 @router.get("/", response_model=list[protocol.Message])
 def query_messages(
-    username: str = None,
-    api_client_id: str = None,
-    max_count: int = Query(10, gt=0, le=1000),
-    start_date: datetime.datetime = None,
-    end_date: datetime.datetime = None,
-    only_roots: bool = False,
-    desc: bool = True,
-    allow_deleted: bool = False,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client_id: Optional[str] = None,
+    max_count: Optional[int] = Query(10, gt=0, le=1000),
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    only_roots: Optional[bool] = False,
+    desc: Optional[bool] = True,
+    allow_deleted: Optional[bool] = False,
+    lang: Optional[str] = None,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -30,18 +35,104 @@ def query_messages(
     Query messages.
     """
     pr = PromptRepository(db, api_client)
-    messages = pr.query_messages(
+    messages = pr.query_messages_ordered_by_created_date(
+        auth_method=auth_method,
         username=username,
         api_client_id=api_client_id,
         desc=desc,
         limit=max_count,
-        start_date=start_date,
-        end_date=end_date,
+        gte_created_date=start_date,
+        lte_created_date=end_date,
         only_roots=only_roots,
         deleted=None if allow_deleted else False,
+        lang=lang,
     )
 
     return utils.prepare_message_list(messages)
+
+
+@router.get("/cursor", response_model=protocol.MessagePage)
+def get_messages_cursor(
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+    user_id: Optional[UUID] = None,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client_id: Optional[str] = None,
+    only_roots: Optional[bool] = False,
+    include_deleted: Optional[bool] = False,
+    max_count: Optional[int] = Query(10, gt=0, le=1000),
+    desc: Optional[bool] = False,
+    lang: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    assert max_count is not None
+
+    def split_cursor(x: str | None) -> tuple[datetime, UUID]:
+        if not x:
+            return None, None
+        try:
+            m = utils.split_uuid_pattern.match(x)
+            if m:
+                return datetime.fromisoformat(m[2]), UUID(m[1])
+            return datetime.fromisoformat(x), None
+        except ValueError:
+            raise OasstError("Invalid cursor value", OasstErrorCode.INVALID_CURSOR_VALUE)
+
+    if desc:
+        gte_created_date, gt_id = split_cursor(before)
+        lte_created_date, lt_id = split_cursor(after)
+        query_desc = not (before is not None and not after)
+    else:
+        lte_created_date, lt_id = split_cursor(before)
+        gte_created_date, gt_id = split_cursor(after)
+        query_desc = before is not None and not after
+
+    print(f"{desc=} {query_desc=} {gte_created_date=} {lte_created_date=}")
+
+    qry_max_count = max_count + 1 if before is None or after is None else max_count
+
+    pr = PromptRepository(db, api_client)
+    items = pr.query_messages_ordered_by_created_date(
+        user_id=user_id,
+        auth_method=auth_method,
+        username=username,
+        api_client_id=api_client_id,
+        gte_created_date=gte_created_date,
+        gt_id=gt_id,
+        lte_created_date=lte_created_date,
+        lt_id=lt_id,
+        only_roots=only_roots,
+        deleted=None if include_deleted else False,
+        desc=query_desc,
+        limit=qry_max_count,
+        lang=lang,
+    )
+
+    num_rows = len(items)
+    if qry_max_count > max_count and num_rows == qry_max_count:
+        assert not (before and after)
+        items = items[:-1]
+
+    if desc != query_desc:
+        items.reverse()
+
+    items = utils.prepare_message_list(items)
+    n, p = None, None
+    if len(items) > 0:
+        if (num_rows > max_count and before) or after:
+            p = str(items[0].id) + "$" + items[0].created_date.isoformat()
+        if num_rows > max_count or before:
+            n = str(items[-1].id) + "$" + items[-1].created_date.isoformat()
+    else:
+        if after:
+            p = lte_created_date.isoformat() if desc else gte_created_date.isoformat()
+        if before:
+            n = gte_created_date.isoformat() if desc else lte_created_date.isoformat()
+
+    order = "desc" if desc else "asc"
+    return protocol.MessagePage(prev=p, next=n, sort_key="created_date", order=order, items=items)
 
 
 @router.get("/{message_id}", response_model=protocol.Message)
@@ -78,7 +169,7 @@ def get_tree(
     """
     pr = PromptRepository(db, api_client)
     message = pr.fetch_message(message_id)
-    tree = pr.fetch_message_tree(message.message_tree_id)
+    tree = pr.fetch_message_tree(message.message_tree_id, reviewed=False)
     return utils.prepare_tree(tree, message.message_tree_id)
 
 
@@ -139,3 +230,22 @@ def mark_message_deleted(
 ):
     pr = PromptRepository(db, api_client)
     pr.mark_messages_deleted(message_id)
+
+
+@router.post("/{message_id}/emoji", response_model=protocol.Message)
+def post_message_emoji(
+    *,
+    message_id: UUID,
+    request: protocol.MessageEmojiRequest,
+    api_client: ApiClient = Depends(deps.get_api_client),
+) -> protocol.Message:
+    """
+    Toggle, add or remove message emoji.
+    """
+
+    @managed_tx_function(CommitMode.COMMIT)
+    def emoji_tx(session: deps.Session):
+        pr = PromptRepository(session, api_client, client_user=request.user)
+        return pr.handle_message_emoji(message_id, request.op, request.emoji)
+
+    return utils.prepare_message(emoji_tx())

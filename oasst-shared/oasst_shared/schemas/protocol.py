@@ -37,12 +37,25 @@ class FrontEndUser(User):
     created_date: Optional[datetime] = None
 
 
+class PageResult(BaseModel):
+    prev: str | None
+    next: str | None
+    sort_key: str
+    items: list
+    order: Literal["asc", "desc"]
+
+
+class FrontEndUserPage(PageResult):
+    items: list[FrontEndUser]
+
+
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
     id: Optional[UUID] = None
     frontend_message_id: Optional[str] = None
     text: str
+    lang: Optional[str]  # BCP 47
     is_assistant: bool
 
 
@@ -51,10 +64,27 @@ class Conversation(BaseModel):
 
     messages: list[ConversationMessage] = []
 
+    def __len__(self):
+        return len(self.messages)
+
+    @property
+    def is_prompter_turn(self) -> bool:
+        if len(self) == 0:
+            return True
+        last_message = self.messages[-1]
+        if last_message.is_assistant:
+            return True
+        return False
+
 
 class Message(ConversationMessage):
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
+    emojis: Optional[dict] = None
+
+
+class MessagePage(PageResult):
+    items: list[Message]
 
 
 class MessageTree(BaseModel):
@@ -72,6 +102,7 @@ class TaskRequest(BaseModel):
     # this is optional. https://github.com/pydantic/pydantic/issues/1270
     user: Optional[User] = Field(None, nullable=True)
     collective: bool = False
+    lang: Optional[str] = Field(None, nullable=True)  # BCP 47
 
 
 class TaskAck(BaseModel):
@@ -266,6 +297,7 @@ class TextReplyToMessage(Interaction):
     message_id: str
     user_message_id: str
     text: constr(min_length=1, strip_whitespace=True)
+    lang: Optional[str]  # BCP 47
 
 
 class MessageRating(Interaction):
@@ -392,6 +424,7 @@ class UserScore(BaseModel):
 
 class LeaderboardStats(BaseModel):
     time_frame: str
+    last_updated: datetime
     leaderboard: List[UserScore]
 
 
@@ -400,3 +433,29 @@ class OasstErrorResponse(BaseModel):
 
     error_code: OasstErrorCode
     message: str
+
+
+class EmojiCode(str, enum.Enum):
+    thumbs_up = "+1"  # 👍
+    thumbs_down = "-1"  # 👎
+    red_flag = "red_flag"  # 🚩
+    hundred = "100"  # 💯
+    rofl = "rofl"  # 🤣
+    clap = "clap"  # 👏
+    diamond = "diamond"  # 💎
+    heart_eyes = "heart_eyes"  # 😍
+    disappointed = "disappointed"  # 😞
+    poop = "poop"  # 💩
+    skull = "skull"  # 💀
+
+
+class EmojiOp(str, enum.Enum):
+    togggle = "toggle"
+    add = "add"
+    remove = "remove"
+
+
+class MessageEmojiRequest(BaseModel):
+    user: User
+    op: EmojiOp = EmojiOp.togggle
+    emoji: EmojiCode

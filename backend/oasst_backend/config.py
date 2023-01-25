@@ -72,6 +72,7 @@ class Settings(BaseSettings):
     DATABASE_MAX_TX_RETRY_COUNT: int = 3
 
     RATE_LIMIT: bool = True
+    MESSAGE_SIZE_LIMIT: int = 2000
     REDIS_HOST: str = "localhost"
     REDIS_PORT: str = "6379"
 
@@ -80,6 +81,7 @@ class Settings(BaseSettings):
         Path(__file__).parent.parent / "test_data/realistic/realistic_seed_data.json"
     )
     DEBUG_ALLOW_SELF_LABELING: bool = False  # allow users to label their own messages
+    DEBUG_ALLOW_DUPLICATE_TASKS: bool = False  # offer users tasks to which they already responded
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
     DEBUG_DATABASE_ECHO: bool = False

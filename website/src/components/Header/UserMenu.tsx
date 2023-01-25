@@ -11,20 +11,21 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { AlertTriangle, Layout, LogOut, Settings, Shield } from "lucide-react";
 import NextLink from "next/link";
 import { signOut, useSession } from "next-auth/react";
+import { useTranslation } from "next-i18next";
 import React, { ElementType, useCallback } from "react";
-import { FiAlertTriangle, FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
 
 interface MenuOption {
   name: string;
   href: string;
-  desc: string;
   icon: ElementType;
   isExternal: boolean;
 }
 
 export function UserMenu() {
+  const { t } = useTranslation();
   const borderColor = useColorModeValue("gray.300", "gray.600");
   const handleSignOut = useCallback(() => {
     signOut({ callbackUrl: "/" });
@@ -36,34 +37,30 @@ export function UserMenu() {
   }
   const options: MenuOption[] = [
     {
-      name: "Dashboard",
+      name: t("dashboard"),
       href: "/dashboard",
-      desc: "Dashboard",
-      icon: FiLayout,
+      icon: Layout,
       isExternal: false,
     },
     {
-      name: "Account Settings",
+      name: t("account_settings"),
       href: "/account",
-      desc: "Account Settings",
-      icon: FiSettings,
+      icon: Settings,
       isExternal: false,
     },
     {
-      name: "Report a Bug",
+      name: t("report_a_bug"),
       href: "https://github.com/LAION-AI/Open-Assistant/issues/new/choose",
-      desc: "Report a Bug",
-      icon: FiAlertTriangle,
+      icon: AlertTriangle,
       isExternal: true,
     },
   ];
 
   if (session.user.role === "admin") {
     options.unshift({
-      name: "Admin Dashboard",
+      name: t("admin_dashboard"),
       href: "/admin",
-      desc: "Admin Dashboard",
-      icon: FiShield,
+      icon: Shield,
       isExternal: false,
     });
   }
@@ -96,7 +93,7 @@ export function UserMenu() {
               _hover={{ textDecoration: "none" }}
             >
               <MenuItem gap="3" borderRadius="md" p="4">
-                <item.icon className="text-blue-500" aria-hidden="true" />
+                <item.icon size="1em" className="text-blue-500" aria-hidden="true" />
                 <Text>{item.name}</Text>
               </MenuItem>
             </Link>
@@ -104,8 +101,8 @@ export function UserMenu() {
         </MenuGroup>
         <MenuDivider />
         <MenuItem gap="3" borderRadius="md" p="4" onClick={handleSignOut}>
-          <FiLogOut className="text-blue-500" aria-hidden="true" />
-          <Text>Sign Out</Text>
+          <LogOut size="1em" className="text-blue-500" aria-hidden="true" />
+          <Text>{t("sign_out")}</Text>
         </MenuItem>
       </MenuList>
     </Menu>

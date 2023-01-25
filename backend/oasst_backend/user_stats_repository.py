@@ -45,7 +45,11 @@ class UserStatsRepository:
         )
 
         leaderboard = [_create_user_score(r) for r in self.session.exec(qry)]
-        return LeaderboardStats(time_frame=time_frame.value, leaderboard=leaderboard)
+        if len(leaderboard) > 0:
+            last_update = max(x.modified_date for x in leaderboard)
+        else:
+            last_update = utcnow()
+        return LeaderboardStats(time_frame=time_frame.value, leaderboard=leaderboard, last_updated=last_update)
 
     def get_user_stats_all_time_frames(self, user_id: UUID) -> dict[str, UserScore | None]:
         qry = (

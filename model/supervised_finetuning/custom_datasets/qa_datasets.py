@@ -1,12 +1,18 @@
+"""
+    Open / close book QA datasets
+"""
 import json
 import os
+import re
 from urllib.request import urlopen
 
 import numpy as np
+from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
-QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
+# @agoryuno contributed this
+re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
 
 
 def index_squad_v2(example):
@@ -71,10 +77,13 @@ class QADataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.dataset[idx]
-        return self.index_fn(data)
+        return format_pair(self.index_fn(data))
 
 
 class WebGPT(Dataset):
+
+    name = "webgpt"
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -89,7 +98,9 @@ class WebGPT(Dataset):
                 self.index2question[len(self.index2question)] = question
 
             # only keep the best answer
-            questions[question] = row["answer_0" if row["score_0"] > row["score_1"] else "answer_1"]
+            questions[question] = re_reference_remove.sub(
+                "", row["answer_0" if row["score_0"] > row["score_1"] else "answer_1"]
+            )
 
         self.questions = questions
 
@@ -99,16 +110,24 @@ class WebGPT(Dataset):
     def __getitem__(self, index):
         question = self.index2question[index]
         answer = self.questions[question]
-        return [question, answer]
+        return format_pair((question, answer))
 
 
 class SODA(Dataset):
+
+    name = "soda"
+
     def process_soda_convo(self, data):
         pairs = []
         play_as = data["speakers"][1]
-        prefix = "<prefix>{}. {}</prefix>".format(data["narrative"], "your name {}".format(play_as))
         question, answer = "", ""
         prefix, postfix = "", ""
+        dialogue_bg = "{}{} {}{}".format(
+            QA_SPECIAL_TOKENS["StartPrefix"],
+            data["narrative"],
+            "your are {}".format(play_as),
+            QA_SPECIAL_TOKENS["EndPrefix"],
+        )
         previous_chat = []
 
         for idx, convo in enumerate(data["dialogue"]):
@@ -118,12 +137,20 @@ class SODA(Dataset):
             else:
                 answer = convo
                 postfix = data["speakers"][idx]
+
             if len(question) and len(answer) and prefix != postfix and postfix == play_as:
-                history = "<sep>".join(["{}<bot>{}".format(*p) for p in previous_chat])
+                history = "<sep>".join(
+                    [
+                        "{}{}{}{}".format(QA_SPECIAL_TOKENS["Question"], p[0], QA_SPECIAL_TOKENS["Answer"], p[1])
+                        for p in previous_chat
+                    ]
+                )
                 if len(history):
                     history += "<sep>"
-                pairs.append((prefix + history + question, answer))
+                prompt = QA_SPECIAL_TOKENS["Question"] + question + QA_SPECIAL_TOKENS["Answer"]
+                pairs.append((dialogue_bg + history + prompt, answer))
                 previous_chat.append((question, answer))
+
         return pairs
 
     def __init__(self, cache_dir, max_sample_size=10000, input_max_length=1024) -> None:
@@ -144,13 +171,64 @@ class SODA(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        question, answer = self.pairs[index]
-        return question, answer
+        # special token added during preprocess
+        return self.pairs[index]
+
+
+class SODADialogue(Dataset):
+    url = "https://drive.google.com/uc?id=1TOGQfr419n8wpzJpYLLw4nB3tSKD8zXV"
+
+    def __init__(self, cache_dir, verbose=True):
+
+        path = os.path.join(cache_dir, "soda_dialog.jsonl")
+
+        if not os.path.exists(path):
+            import gzip
+            import shutil
+
+            import gdown
+
+            gdown.download(self.url, output=os.path.join(cache_dir, "soda_dialog.jsonl.gz"))
+
+            with gzip.open(os.path.join(cache_dir, "soda_dialog.jsonl.gz"), "rb") as f_in:
+                with open(path, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+
+        self.pairs = []
+        faulty = 0
+        with open(path) as fin:
+            for line in fin:
+                conversation = json.loads(line)
+                question_answer_pairs = ()
+
+                question_answers = conversation["text"].split("User: ")
+                for question_answer in question_answers[1:]:  # first element is empty
+                    try:
+                        question, answer = question_answer.split("\nAssistant: ")
+                        question_answer_pairs += (
+                            question,
+                            answer,
+                        )
+                    except ValueError:
+                        # there might be some extra 'User: ' or 'Assistant: ' tokens in the dataset that cause trouble..
+                        faulty += 1
+                        continue
+
+                self.pairs.append(question_answer_pairs)
+
+        if verbose:
+            print("For SODA dialogue dataset found {} faults within the total {} dialogs".format(faulty, len(self)))
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, index):
+        return format_pair(self.pairs[index])
 
 
 class JokeExplaination(Dataset):
-    """ """
 
+    name = "joke"
     url = "https://gist.github.com/theblackcat102/42b697e24a13fdb499e20edfbf618361/raw/1834dca207898c15f93b809d1195f6f6e47c9e1e/joke_explained.jsonl"
 
     def __init__(self, cache_dir) -> None:
@@ -180,5 +258,7 @@ class JokeExplaination(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        question, answer = self.pairs[index]
-        return question, answer
+        return format_pair(self.pairs[index])
+
+
+# https://huggingface.co/datasets/aquamuse
