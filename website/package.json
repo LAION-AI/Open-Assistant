@@ -34,6 +34,7 @@
     "@emotion/styled": "^11.10.5",
     "@headlessui/react": "^1.7.7",
     "@heroicons/react": "^2.0.13",
+    "@marsidev/react-turnstile": "^0.0.7",
     "@next-auth/prisma-adapter": "^1.0.5",
     "@next/font": "^13.1.0",
     "@prisma/client": "^4.7.1",
