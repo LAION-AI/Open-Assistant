@@ -408,13 +408,12 @@ class TreeManager:
                     random_parent: ExtendibleParentRow = None
                     if self.cfg.p_lonely_child_extension > 0 and self.cfg.lonely_children_count > 1:
                         # check if we have extendible parents with a small number of replies
-                        for i in range(1, self.cfg.lonely_children_count):
-                            lonely_children_parents = [
-                                p for p in extendible_parents if 0 < p.active_children_count <= i
-                            ]
-                            if len(lonely_children_parents) > 0 and random.random() < self.cfg.p_lonely_child_extension:
-                                random_parent = random.choice(lonely_children_parents)
-                                break
+
+                        lonely_children_parents = [
+                            p for p in extendible_parents if p.active_children_count < self.cfg.lonely_children_count
+                        ]
+                        if len(lonely_children_parents) > 0 and random.random() < self.cfg.p_lonely_child_extension:
+                            random_parent = random.choice(lonely_children_parents)
 
                     if random_parent is None:
                         random_parent = random.choice(extendible_parents)
