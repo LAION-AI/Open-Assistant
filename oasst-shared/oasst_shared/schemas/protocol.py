@@ -57,7 +57,7 @@ class ConversationMessage(BaseModel):
     text: str
     lang: Optional[str]  # BCP 47
     is_assistant: bool
-    emojis: Optional[dict] = None
+    emojis: Optional[dict[str, int]] = None
     user_emojis: Optional[list[str]] = None
 
 

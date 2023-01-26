@@ -15,6 +15,7 @@ def prepare_message(m: Message) -> protocol.Message:
         is_assistant=(m.role == "assistant"),
         created_date=m.created_date,
         emojis=m.emojis,
+        user_emojis=m.user_emojis,
     )
 
 
@@ -31,6 +32,7 @@ def prepare_conversation_message_list(messages: list[Message]) -> list[protocol.
             lang=message.lang,
             is_assistant=(message.role == "assistant"),
             emojis=message.emojis,
+            user_emojis=message.user_emojis,
         )
         for message in messages
     ]

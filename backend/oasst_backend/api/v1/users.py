@@ -231,6 +231,7 @@ def query_user_messages(
     Query user messages.
     """
     pr = PromptRepository(db, api_client)
+    pr.init_user(user_id=user_id)
     messages = pr.query_messages_ordered_by_created_date(
         user_id=user_id,
         api_client_id=api_client_id,

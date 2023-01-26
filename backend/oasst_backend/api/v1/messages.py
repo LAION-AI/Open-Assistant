@@ -35,6 +35,7 @@ def query_messages(
     Query messages.
     """
     pr = PromptRepository(db, api_client)
+    pr.init_user(authmethod=auth_method, username=username)
     messages = pr.query_messages_ordered_by_created_date(
         auth_method=auth_method,
         username=username,
@@ -94,6 +95,7 @@ def get_messages_cursor(
     qry_max_count = max_count + 1 if before is None or after is None else max_count
 
     pr = PromptRepository(db, api_client)
+    pr.init_user(authmethod=auth_method, username=username, user_id=user_id)
     items = pr.query_messages_ordered_by_created_date(
         user_id=user_id,
         auth_method=auth_method,

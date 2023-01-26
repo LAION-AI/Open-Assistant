@@ -30,8 +30,9 @@ from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
 from oasst_shared.utils import unaware_to_utc
+from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
-from sqlmodel import Session, and_, func, not_, or_, text, update
+from sqlmodel import Session, and_, func, literal_column, not_, or_, text, update
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -54,6 +55,20 @@ class PromptRepository:
             db, api_client, client_user, user_repository=self.user_repository
         )
         self.journal = JournalWriter(db, api_client, self.user)
+
+    def init_user(
+        self,
+        *,
+        user_id: Optional[UUID] = None,
+        auth_method: Optional[str] = None,
+        username: Optional[str] = None,
+    ):
+        if user_id:
+            self.user = self.user_repository.get_user(id=user_id)
+            self.user_id = self.user.id
+        elif auth_method and username:
+            self.user = self.user_repository.query_frontend_user(auth_method=auth_method, username=username)
+            self.user_id = self.user.id
 
     def ensure_user_is_enabled(self):
         if self.user is None or self.user_id is None:
@@ -529,7 +544,7 @@ class PromptRepository:
             qry = qry.filter(Message.review_result)
         if not include_deleted:
             qry = qry.filter(not_(Message.deleted))
-        return qry.all()
+        return self._add_user_emojis_all(qry)
 
     def fetch_user_message_trees(
         self, user_id: Message.user_id, reviewed: bool = True, include_deleted: bool = False
@@ -539,7 +554,7 @@ class PromptRepository:
             qry = qry.filter(Message.review_result)
         if not include_deleted:
             qry = qry.filter(not_(Message.deleted))
-        return qry.all()
+        return self._add_user_emojis_all(qry)
 
     def fetch_message_trees_ready_for_export(self) -> list[MessageTreeState]:
         qry = self.db.query(MessageTreeState).filter(
@@ -582,6 +597,10 @@ class PromptRepository:
         return conversation, replies
 
     def fetch_message(self, message_id: UUID, fail_if_missing: bool = True) -> Optional[Message]:
+        qry = self.db.query(Message).filter(Message.id == message_id)
+        messages = self._add_user_emojis_all(qry)
+        message = messages[0] if messages else None
+
         message = self.db.query(Message).filter(Message.id == message_id).one_or_none()
         if fail_if_missing and not message:
             raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
@@ -656,7 +675,7 @@ class PromptRepository:
             qry = qry.filter(Message.review_result)
         if exclude_deleted:
             qry = qry.filter(Message.deleted == sa.false())
-        children = qry.all()
+        children = self._add_user_emojis_all(qry)
         return children
 
     def fetch_message_siblings(
@@ -674,7 +693,7 @@ class PromptRepository:
             qry = qry.filter(Message.review_result == reviewed)
         if deleted is not None:
             qry = qry.filter(Message.deleted == deleted)
-        siblings = qry.all()
+        siblings = self._add_user_emojis_all(qry)
         return siblings
 
     @staticmethod
@@ -705,7 +724,7 @@ class PromptRepository:
         if max_depth is not None:
             desc = desc.filter(Message.depth <= max_depth)
 
-        desc = desc.all()
+        desc = self._add_user_emojis_all(desc)
 
         return self.trace_descendants(message, desc)
 
@@ -718,6 +737,26 @@ class PromptRepository:
         tree = self.fetch_tree_from_message(message)
         max_message = max(tree, key=lambda m: m.children_count)
         return max_message, [m for m in tree if m.parent_id == max_message.id]
+
+    def _add_user_emojis_all(self, qry: Query) -> list[Message]:
+        if self.user_id is None:
+            return qry.all()
+
+        sq = qry.subquery("m")
+        qry = (
+            self.db.query(Message, func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis"))
+            .select_entity_from(sq)
+            .outerjoin(MessageEmoji, and_(sq.c.id == MessageEmoji.message_id, MessageEmoji.user_id == self.user_id))
+            .group_by(sq)
+        )
+        messages: list[Message] = []
+        for x in qry:
+            m: Message = x.Message
+            user_emojis = x["user_emojis"]
+            if user_emojis:
+                m._user_emojis = user_emojis.split(",")
+            messages.append(m)
+        return messages
 
     def query_messages_ordered_by_created_date(
         self,
@@ -801,7 +840,7 @@ class PromptRepository:
         if lang is not None:
             qry = qry.filter(Message.lang == lang)
 
-        return qry.all()
+        return self._add_user_emojis_all(qry)
 
     def update_children_counts(self, message_tree_id: UUID):
         sql_update_children_count = """
@@ -902,9 +941,15 @@ WHERE message.id = cc.id;
             else:
                 count = emoji_counts.get(emoji.value) or 0
                 emoji_counts[emoji.value] = count + 1
+            if message._user_emojis is None:
+                message._user_emojis = []
+            if emoji.value not in message._user_emojis:
+                message._user_emojis.append(emoji.value)
         elif op == protocol_schema.EmojiOp.remove:
             # remove emoji record and & decrement count
             message = self.fetch_message(message_id)
+            if message._user_emojis and emoji.value in message._user_emojis:
+                message._user_emojis.remove(emoji.value)
             self.db.delete(existing_emoji)
             emoji_counts = message.emojis
             count = emoji_counts.get(emoji.value)
