@@ -42,3 +42,22 @@ class User(SQLModel, table=True):
             notes=self.notes,
             created_date=self.created_date,
         )
+
+
+class AuthenticatedUser(SQLModel, table=True):
+    __tablename__ = "authenticated_user"
+    __table_args__ = (Index("username", unique=True),)
+
+    id: Optional[UUID] = Field(
+        sa_column=sa.Column(
+            pg.UUID(as_uuid=True), primary_key=True, default=uuid4, server_default=sa.text("gen_random_uuid()")
+        ),
+    )
+    username: str = Field(nullable=False, max_length=128)
+    auth_method: str = Field(nullable=False, max_length=128, default="email")  # discord or email
+    created_date: Optional[datetime] = Field(
+        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp())
+    )
+    enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
+    notes: str = Field(sa_column=sa.Column(AutoString(length=1024), nullable=False, server_default=""))
+    deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
