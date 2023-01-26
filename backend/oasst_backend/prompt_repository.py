@@ -32,7 +32,7 @@ from oasst_shared.schemas.protocol import SystemStats
 from oasst_shared.utils import unaware_to_utc
 from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
-from sqlmodel import Session, and_, func, literal_column, not_, or_, text, update
+from sqlmodel import JSON, Session, and_, func, literal_column, not_, or_, text, update
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -746,7 +746,12 @@ class PromptRepository:
         qry = (
             self.db.query(Message, func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis"))
             .select_entity_from(sq)
-            .outerjoin(MessageEmoji, and_(sq.c.id == MessageEmoji.message_id, MessageEmoji.user_id == self.user_id))
+            .outerjoin(
+                MessageEmoji,
+                and_(
+                    sq.c.id == MessageEmoji.message_id, MessageEmoji.user_id == self.user_id, sq.c.emojis != JSON.NULL
+                ),
+            )
             .group_by(sq)
         )
         messages: list[Message] = []
