@@ -1,6 +1,7 @@
 import { withRole } from "src/lib/auth";
-import { FetchUsersParams, oasstApiClient } from "src/lib/oasst_api_client";
+import { oasstApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
+import { FetchUsersParams } from "src/types/Users";
 
 /**
  * The number of users to fetch in a single request.  Could later be a query parameter.
