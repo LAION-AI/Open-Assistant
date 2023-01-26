@@ -139,12 +139,17 @@ def get_messages_cursor(
 
 @router.get("/{message_id}", response_model=protocol.Message)
 def get_message(
-    message_id: UUID, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
+    message_id: UUID,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
 ):
     """
     Get a message by its internal ID.
     """
     pr = PromptRepository(db, api_client)
+    pr.init_user(auth_method=auth_method, username=username)
     message = pr.fetch_message(message_id)
     return utils.prepare_message(message)
 
