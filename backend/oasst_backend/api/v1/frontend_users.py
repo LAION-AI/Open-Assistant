@@ -77,7 +77,7 @@ def query_frontend_user_messages(
     """
     Query frontend user messages.
     """
-    pr = PromptRepository(db, api_client)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username)
     messages = pr.query_messages_ordered_by_created_date(
         auth_method=auth_method,
         username=username,

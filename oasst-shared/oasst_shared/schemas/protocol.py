@@ -57,6 +57,8 @@ class ConversationMessage(BaseModel):
     text: str
     lang: Optional[str]  # BCP 47
     is_assistant: bool
+    emojis: Optional[dict[str, int]] = None
+    user_emojis: Optional[list[str]] = None
 
 
 class Conversation(BaseModel):
@@ -80,7 +82,6 @@ class Conversation(BaseModel):
 class Message(ConversationMessage):
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
-    emojis: Optional[dict] = None
 
 
 class MessagePage(PageResult):
@@ -223,27 +224,34 @@ class LabelTaskMode(str, enum.Enum):
     full = "full"
 
 
-class LabelInitialPromptTask(Task):
-    """A task to label an initial prompt."""
+class LabelTaskDisposition(str, enum.Enum):
+    """Reason why the task was issued."""
 
-    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    quality = "quality"
+    spam = "spam"
+
+
+class AbstractLabelTask(Task):
     message_id: UUID
-    prompt: str
     valid_labels: list[str]
     mandatory_labels: Optional[list[str]]
     mode: Optional[LabelTaskMode]
+    disposition: Optional[LabelTaskDisposition]
 
 
-class LabelConversationReplyTask(Task):
+class LabelInitialPromptTask(AbstractLabelTask):
+    """A task to label an initial prompt."""
+
+    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    prompt: str
+
+
+class LabelConversationReplyTask(AbstractLabelTask):
     """A task to label a reply to a conversation."""
 
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
     conversation: Conversation  # the conversation so far
-    message_id: UUID
     reply: str
-    valid_labels: list[str]
-    mandatory_labels: Optional[list[str]]
-    mode: Optional[LabelTaskMode]
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):
