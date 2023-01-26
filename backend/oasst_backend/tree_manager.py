@@ -214,6 +214,7 @@ class TreeManager:
             incomplete_rankings=incomplete_rankings,
         )
 
+    @staticmethod
     def _get_label_descriptions(valid_labels: list[TextLabels]) -> list[protocol_schema.LabelDescription]:
         return [
             protocol_schema.LabelDescription(
@@ -369,7 +370,7 @@ class TreeManager:
                             desired_task_type == protocol_schema.TaskRequestType.random
                             and random.random() > self.cfg.p_full_labeling_review_reply_assistant
                         ):
-                            valid_labels = list(map(lambda x: x.value, self.cfg.mandatory_labels_assistant_reply))
+                            valid_labels = self.cfg.mandatory_labels_assistant_reply
                             label_mode = protocol_schema.LabelTaskMode.simple
                             label_disposition = protocol_schema.LabelTaskDisposition.spam
 
@@ -378,7 +379,7 @@ class TreeManager:
                             message_id=message.id,
                             conversation=conversation,
                             reply=message.text,
-                            valid_labels=valid_labels,
+                            valid_labels=list(map(lambda x: x.value, valid_labels)),
                             mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_assistant_reply)),
                             mode=label_mode,
                             disposition=label_disposition,
@@ -390,14 +391,14 @@ class TreeManager:
                             desired_task_type == protocol_schema.TaskRequestType.random
                             and random.random() > self.cfg.p_full_labeling_review_reply_prompter
                         ):
-                            valid_labels = list(map(lambda x: x.value, self.cfg.mandatory_labels_prompter_reply))
+                            valid_labels = self.cfg.mandatory_labels_prompter_reply
                             label_mode = protocol_schema.LabelTaskMode.simple
                         logger.info(f"Generating a LabelPrompterReplyTask. ({label_mode=:s})")
                         task = protocol_schema.LabelPrompterReplyTask(
                             message_id=message.id,
                             conversation=conversation,
                             reply=message.text,
-                            valid_labels=valid_labels,
+                            valid_labels=list(map(lambda x: x.value, valid_labels)),
                             mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_prompter_reply)),
                             mode=label_mode,
                             disposition=label_disposition,
@@ -468,7 +469,7 @@ class TreeManager:
                 valid_labels = self.cfg.labels_initial_prompt
 
                 if random.random() > self.cfg.p_full_labeling_review_prompt:
-                    valid_labels = list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt))
+                    valid_labels = self.cfg.mandatory_labels_initial_prompt
                     label_mode = protocol_schema.LabelTaskMode.simple
                     label_disposition = protocol_schema.LabelTaskDisposition.spam
 
@@ -476,7 +477,7 @@ class TreeManager:
                 task = protocol_schema.LabelInitialPromptTask(
                     message_id=message.id,
                     prompt=message.text,
-                    valid_labels=valid_labels,
+                    valid_labels=list(map(lambda x: x.value, valid_labels)),
                     mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt)),
                     mode=label_mode,
                     disposition=label_disposition,
