@@ -103,7 +103,7 @@ def ranked_pairs(ranks: List[List[int]]):
         for j in range(len(ranks[0])):
             # you can never prefer yourself over yourself
             # we also have to pick one of the two choices,
-            # if the prefernce is exactly zero...
+            # if the preference is exactly zero...
             if tallies[i, j] >= 0 and i != j:
                 sorted_majorities.append((i, j, tallies[i, j]))
     # we don't explicitly deal with tied majorities here
