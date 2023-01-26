@@ -936,6 +936,20 @@ WHERE message.id = cc.id;
                 op = protocol_schema.EmojiOp.add
 
         if op == protocol_schema.EmojiOp.add:
+            # hard coded exclusivity of thumbs_up & thumbs_down
+            if emoji == protocol_schema.EmojiCode.thumbs_up and message.has_user_emoji(
+                protocol_schema.EmojiCode.thumbs_down.value
+            ):
+                message = self.handle_message_emoji(
+                    message_id, protocol_schema.EmojiOp.remove, protocol_schema.EmojiCode.thumbs_down
+                )
+            elif emoji == protocol_schema.EmojiCode.thumbs_down and message.has_user_emoji(
+                protocol_schema.EmojiCode.thumbs_up.value
+            ):
+                message = self.handle_message_emoji(
+                    message_id, protocol_schema.EmojiOp.remove, protocol_schema.EmojiCode.thumbs_up
+                )
+
             # insert emoji record & increment count
             message_emoji = MessageEmoji(message_id=message.id, user_id=self.user_id, emoji=emoji)
             self.db.add(message_emoji)
