@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Optional
 from uuid import UUID
 
@@ -9,7 +10,7 @@ from oasst_backend.user_repository import UserRepository
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from sqlmodel import Session
+from sqlmodel import Session, func, or_
 from starlette.status import HTTP_404_NOT_FOUND
 
 
@@ -219,3 +220,12 @@ class TaskRepository:
     def fetch_task_by_id(self, task_id: UUID) -> Task:
         task = self.db.query(Task).filter(Task.api_client_id == self.api_client.id, Task.id == task_id).one_or_none()
         return task
+
+    def fetch_recent_reply_tasks(self, max_age: timedelta = timedelta(minutes=5), limit: int = 100) -> list[Task]:
+        qry = self.db.query(Task).filter(
+            func.age(Task.created_date) < max_age,
+            or_(Task.payload_type == "AssistantReplyPayload", Task.payload_type == "PrompterReplyPayload"),
+        )
+        if limit:
+            qry = qry.limit(limit)
+        return qry.all()
