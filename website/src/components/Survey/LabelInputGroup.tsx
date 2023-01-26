@@ -6,7 +6,6 @@ import { Explain } from "src/components/Explain";
 
 interface LabelInputGroupProps {
   labelIDs: Array<string>;
-  simple?: boolean;
   onChange: (values: number[]) => unknown;
   isEditable?: boolean;
 }

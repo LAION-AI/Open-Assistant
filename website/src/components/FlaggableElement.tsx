@@ -95,7 +95,7 @@ export const FlaggableElement = (props: FlaggableElementProps) => {
           <ModalHeader>Select one or more labels that apply.</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <LabelInputGroup simple labelIDs={valid_labels.map(({ name }) => name)} onChange={setValues} />
+            <LabelInputGroup labelIDs={valid_labels.map(({ name }) => name)} onChange={setValues} />
           </ModalBody>
           <ModalFooter>
             <Button

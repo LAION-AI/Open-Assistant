@@ -55,6 +55,15 @@ describe("handles random tasks", () => {
 
                 break;
               }
+              case "spam-task": {
+                cy.get('[data-cy="not-spam-button"]').click();
+
+                cy.get('[data-cy="review"]').click();
+
+                cy.get('[data-cy="submit"]').click();
+
+                break;
+              }
               case undefined: {
                 throw new Error(
                   "No tasks available, but at least create initial prompt expected"
