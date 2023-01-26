@@ -63,6 +63,9 @@ class TreeManagerConfiguration(BaseModel):
     p_lonely_child_extension: float = 0.25
     """Probability to select a parent with less than lonely_children_count children."""
 
+    recent_tasks_span_sec: int = 2 * 60
+    """Time in seconds of recent tasks to consider for exclusion during task selection."""
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"

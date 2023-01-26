@@ -221,11 +221,15 @@ class TaskRepository:
         task = self.db.query(Task).filter(Task.api_client_id == self.api_client.id, Task.id == task_id).one_or_none()
         return task
 
-    def fetch_recent_reply_tasks(self, max_age: timedelta = timedelta(minutes=5), limit: int = 100) -> list[Task]:
+    def fetch_recent_reply_tasks(
+        self, max_age: timedelta = timedelta(minutes=5), done: bool = False, limit: int = 100
+    ) -> list[Task]:
         qry = self.db.query(Task).filter(
             func.age(Task.created_date) < max_age,
             or_(Task.payload_type == "AssistantReplyPayload", Task.payload_type == "PrompterReplyPayload"),
         )
+        if done is not None:
+            qry = qry.filter(Task.done == done)
         if limit:
             qry = qry.limit(limit)
         return qry.all()
