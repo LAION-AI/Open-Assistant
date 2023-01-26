@@ -1,4 +1,4 @@
-import { Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Button, Flex, HStack, Text, useColorModeValue } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { MessageView } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
@@ -25,9 +25,10 @@ export const LabelTask = ({
   }, [task, sliderValues, onReplyChanged, onValidityChanged]);
 
   const cardColor = useColorModeValue("gray.50", "gray.800");
+  const isSpamTask = task.mode === "simple" && task.valid_labels.length === 1 && task.valid_labels[0] === "spam";
 
   return (
-    <div data-cy="task" data-task-type="label-task">
+    <div data-cy="task" data-task-type={isSpamTask ? "spam-task" : "label-task"}>
       <TwoColumnsWithCards>
         <>
           <TaskHeader taskType={taskType} />
@@ -51,16 +52,51 @@ export const LabelTask = ({
             </Box>
           )}
         </>
-        <Flex direction="column" alignItems="stretch">
-          <Text>The highlighted message:</Text>
-          <LabelInputGroup
-            simple={task.mode === "simple"}
-            labelIDs={task.valid_labels}
+        {isSpamTask ? (
+          <SpamTaskInput
+            value={sliderValues[0]}
+            onChange={(value) => setSliderValues([value])}
             isEditable={isEditable}
-            onChange={setSliderValues}
           />
-        </Flex>
+        ) : (
+          <Flex direction="column" alignItems="stretch">
+            <Text>The highlighted message:</Text>
+            <LabelInputGroup labelIDs={task.valid_labels} isEditable={isEditable} onChange={setSliderValues} />
+          </Flex>
+        )}
       </TwoColumnsWithCards>
     </div>
+  );
+};
+
+const SpamTaskInput = ({
+  isEditable,
+  value,
+  onChange,
+}: {
+  isEditable: boolean;
+  value: number;
+  onChange: (number) => void;
+}) => {
+  return (
+    <HStack>
+      <Text>Is the highlighted message spam?</Text>
+      <Button
+        data-cy="spam-button"
+        isDisabled={!isEditable}
+        colorScheme={value === 1 ? "blue" : undefined}
+        onClick={() => onChange(1)}
+      >
+        Yes
+      </Button>
+      <Button
+        data-cy="not-spam-button"
+        isDisabled={!isEditable}
+        colorScheme={value === 0 ? "blue" : undefined}
+        onClick={() => onChange(0)}
+      >
+        No
+      </Button>
+    </HStack>
   );
 };
