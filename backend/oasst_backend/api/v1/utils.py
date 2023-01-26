@@ -4,6 +4,9 @@ from uuid import UUID
 from oasst_backend.models import Message
 from oasst_shared.schemas import protocol
 
+EMPTY_LIST = []
+EMPTY_DICT = {}
+
 
 def prepare_message(m: Message) -> protocol.Message:
     return protocol.Message(
@@ -14,8 +17,8 @@ def prepare_message(m: Message) -> protocol.Message:
         lang=m.lang,
         is_assistant=(m.role == "assistant"),
         created_date=m.created_date,
-        emojis=m.emojis,
-        user_emojis=m.user_emojis,
+        emojis=m.emojis if m.emojis else EMPTY_DICT,
+        user_emojis=m.user_emojis if m.user_emojis else EMPTY_LIST,
     )
 
 
@@ -31,8 +34,8 @@ def prepare_conversation_message_list(messages: list[Message]) -> list[protocol.
             text=message.text,
             lang=message.lang,
             is_assistant=(message.role == "assistant"),
-            emojis=message.emojis,
-            user_emojis=message.user_emojis,
+            emojis=message.emojis if message.emojis else EMPTY_DICT,
+            user_emojis=message.user_emojis if message.user_emojis else EMPTY_LIST,
         )
         for message in messages
     ]
