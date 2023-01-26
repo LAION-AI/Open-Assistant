@@ -64,6 +64,12 @@ class Message(SQLModel, table=True):
         if not self.payload or not isinstance(self.payload.payload, MessagePayload):
             raise OasstError("Invalid message", OasstErrorCode.INVALID_MESSAGE, HTTPStatus.INTERNAL_SERVER_ERROR)
 
+    def has_emoji(self, emoji_code: str) -> bool:
+        return self.emojis and emoji_code in self.emojis and self.emojis[emoji_code] > 0
+
+    def has_user_emoji(self, emoji_code: str) -> bool:
+        return self._user_emojis and emoji_code in self._user_emojis
+
     @property
     def text(self) -> str:
         self.ensure_is_message()
