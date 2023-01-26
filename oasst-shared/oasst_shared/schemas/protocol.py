@@ -29,6 +29,11 @@ class User(BaseModel):
     auth_method: Literal["discord", "local"]
 
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
 class FrontEndUser(User):
     user_id: UUID
     enabled: bool
