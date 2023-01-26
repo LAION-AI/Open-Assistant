@@ -34,8 +34,7 @@ def query_messages(
     """
     Query messages.
     """
-    pr = PromptRepository(db, api_client)
-    pr.init_user(auth_method=auth_method, username=username)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username)
     messages = pr.query_messages_ordered_by_created_date(
         auth_method=auth_method,
         username=username,
@@ -94,8 +93,7 @@ def get_messages_cursor(
 
     qry_max_count = max_count + 1 if before is None or after is None else max_count
 
-    pr = PromptRepository(db, api_client)
-    pr.init_user(auth_method=auth_method, username=username, user_id=user_id)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username, user_id=user_id)
     items = pr.query_messages_ordered_by_created_date(
         user_id=user_id,
         auth_method=auth_method,
@@ -148,8 +146,7 @@ def get_message(
     """
     Get a message by its internal ID.
     """
-    pr = PromptRepository(db, api_client)
-    pr.init_user(auth_method=auth_method, username=username)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username)
     message = pr.fetch_message(message_id)
     return utils.prepare_message(message)
 
@@ -166,8 +163,7 @@ def get_conv(
     Get a conversation from the tree root and up to the message with given internal ID.
     """
 
-    pr = PromptRepository(db, api_client)
-    pr.init_user(auth_method=auth_method, username=username)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username)
     messages = pr.fetch_message_conversation(message_id)
     return utils.prepare_conversation(messages)
 
@@ -183,8 +179,7 @@ def get_tree(
     """
     Get all messages belonging to the same message tree.
     """
-    pr = PromptRepository(db, api_client)
-    pr.init_user(auth_method=auth_method, username=username)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username)
     message = pr.fetch_message(message_id)
     tree = pr.fetch_message_tree(message.message_tree_id, reviewed=False)
     return utils.prepare_tree(tree, message.message_tree_id)
@@ -201,8 +196,7 @@ def get_children(
     """
     Get all messages belonging to the same message tree.
     """
-    pr = PromptRepository(db, api_client)
-    pr.init_user(auth_method=auth_method, username=username)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username)
     messages = pr.fetch_message_children(message_id)
     return utils.prepare_message_list(messages)
 
@@ -218,8 +212,7 @@ def get_descendants(
     """
     Get a subtree which starts with this message.
     """
-    pr = PromptRepository(db, api_client)
-    pr.init_user(auth_method=auth_method, username=username)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username)
     message = pr.fetch_message(message_id)
     descendants = pr.fetch_message_descendants(message)
     return utils.prepare_tree(descendants, message.id)
@@ -236,8 +229,7 @@ def get_longest_conv(
     """
     Get the longest conversation from the tree of the message.
     """
-    pr = PromptRepository(db, api_client)
-    pr.init_user(auth_method=auth_method, username=username)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username)
     message = pr.fetch_message(message_id)
     conv = pr.fetch_longest_conversation(message.message_tree_id)
     return utils.prepare_conversation(conv)
@@ -254,8 +246,7 @@ def get_max_children(
     """
     Get message with the most children from the tree of the provided message.
     """
-    pr = PromptRepository(db, api_client)
-    pr.init_user(auth_method=auth_method, username=username)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username)
     message = pr.fetch_message(message_id)
     message, children = pr.fetch_message_with_max_children(message.message_tree_id)
     return utils.prepare_tree([message, *children], message.id)

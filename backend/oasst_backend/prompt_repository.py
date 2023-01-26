@@ -42,33 +42,30 @@ class PromptRepository:
         db: Session,
         api_client: ApiClient,
         client_user: Optional[protocol_schema.User] = None,
+        *,
         user_repository: Optional[UserRepository] = None,
         task_repository: Optional[TaskRepository] = None,
-    ):
-        self.db = db
-        self.api_client = api_client
-        self.user_repository = user_repository or UserRepository(db, api_client)
-        self.user = self.user_repository.lookup_client_user(client_user, create_missing=True)
-        self.user_id = self.user.id if self.user else None
-        logger.debug(f"PromptRepository(api_client_id={self.api_client.id}, {self.user_id=})")
-        self.task_repository = task_repository or TaskRepository(
-            db, api_client, client_user, user_repository=self.user_repository
-        )
-        self.journal = JournalWriter(db, api_client, self.user)
-
-    def init_user(
-        self,
-        *,
         user_id: Optional[UUID] = None,
         auth_method: Optional[str] = None,
         username: Optional[str] = None,
     ):
+        self.db = db
+        self.api_client = api_client
+        self.user_repository = user_repository or UserRepository(db, api_client)
         if user_id:
             self.user = self.user_repository.get_user(id=user_id)
             self.user_id = self.user.id
         elif auth_method and username:
             self.user = self.user_repository.query_frontend_user(auth_method=auth_method, username=username)
             self.user_id = self.user.id
+        else:
+            self.user = self.user_repository.lookup_client_user(client_user, create_missing=True)
+            self.user_id = self.user.id if self.user else None
+        logger.debug(f"PromptRepository(api_client_id={self.api_client.id}, {self.user_id=})")
+        self.task_repository = task_repository or TaskRepository(
+            db, api_client, client_user, user_repository=self.user_repository
+        )
+        self.journal = JournalWriter(db, api_client, self.user)
 
     def ensure_user_is_enabled(self):
         if self.user is None or self.user_id is None:
