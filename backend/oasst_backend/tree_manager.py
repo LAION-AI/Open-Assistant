@@ -417,7 +417,7 @@ class TreeManager:
                         lonely_children_parents = [
                             p
                             for p in extendible_parents
-                            if p.active_children_count < self.cfg.lonely_children_count
+                            if 0 < p.active_children_count < self.cfg.lonely_children_count
                             and p.parent_id not in recent_reply_task_parents
                         ]
                         if len(lonely_children_parents) > 0 and random.random() < self.cfg.p_lonely_child_extension:
