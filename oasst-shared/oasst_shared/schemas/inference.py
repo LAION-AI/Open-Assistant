@@ -14,6 +14,10 @@ class WorkRequest(pydantic.BaseModel):
     model_name: str = "distilgpt2"
     max_new_tokens: int = 100
     seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 2**32 - 1))
+    do_sample: bool = True
+    top_k: int = 50
+    top_p: float = 0.9
+    temperature: float = 1.0
 
 
 class WorkResponsePacket(pydantic.BaseModel):
