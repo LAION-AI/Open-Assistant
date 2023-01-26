@@ -384,6 +384,7 @@ class TextLabels(Interaction):
     labels: dict[TextLabel, float]
     message_id: UUID
     task_id: Optional[UUID]
+    is_report: Optional[bool]
 
     @property
     def has_message_id(self) -> bool:

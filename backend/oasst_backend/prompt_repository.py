@@ -461,15 +461,22 @@ class PromptRepository:
         )
 
         if message_id:
-            message = self.fetch_message(message_id)
-            if task:
+            if not task:
+                if text_labels.is_report is True:
+                    message = self.handle_message_emoji(
+                        message_id, protocol_schema.EmojiOp.add, protocol_schema.EmojiCode.red_flag
+                    )
+
+                # update existing record for repeated updates (same user no task associated)
+                existing_text_label = self.fetch_non_task_text_labels(message_id, self.user_id)
+                if existing_text_label is not None:
+                    existing_text_label.labels = text_labels.labels
+                    model = existing_text_label
+
+            else:
+                message = self.fetch_message(message_id)
                 message.review_count += 1
                 self.db.add(message)
-            # for the same User id with no task id associated with the message, then update existing record for repeated updates
-            existing_text_label = self.fetch_non_task_text_labels(message_id, self.user_id)
-            if existing_text_label is not None:
-                existing_text_label.labels = text_labels.labels
-                model = existing_text_label
 
         self.db.add(model)
         return model, task, message
