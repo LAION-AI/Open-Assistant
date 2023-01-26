@@ -749,7 +749,9 @@ class PromptRepository:
             .outerjoin(
                 MessageEmoji,
                 and_(
-                    sq.c.id == MessageEmoji.message_id, MessageEmoji.user_id == self.user_id, sq.c.emojis != JSON.NULL
+                    sq.c.id == MessageEmoji.message_id,
+                    MessageEmoji.user_id == self.user_id,
+                    sq.c.emojis != JSON.NULL,
                 ),
             )
             .group_by(sq)
