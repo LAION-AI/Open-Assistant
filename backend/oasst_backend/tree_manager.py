@@ -94,8 +94,6 @@ class TreeManagerStats(pydantic.BaseModel):
 
 
 class TreeManager:
-    _all_text_labels = list(map(lambda x: x.value, protocol_schema.TextLabel))
-
     def __init__(
         self,
         db: Session,
@@ -215,6 +213,14 @@ class TreeManager:
             replies_need_review=replies_need_review,
             incomplete_rankings=incomplete_rankings,
         )
+
+    def _get_label_descriptions(valid_labels: list[TextLabels]) -> list[protocol_schema.LabelDescription]:
+        return [
+            protocol_schema.LabelDescription(
+                name=l.value, widget=l.widget.value, display_text=l.display_text, help_text=l.help_text
+            )
+            for l in valid_labels
+        ]
 
     def next_task(
         self,
@@ -356,9 +362,9 @@ class TreeManager:
 
                     label_mode = protocol_schema.LabelTaskMode.full
                     label_disposition = protocol_schema.LabelTaskDisposition.quality
-                    valid_labels = self._all_text_labels
 
                     if message.role == "assistant":
+                        valid_labels = self.cfg.labels_assistant_reply
                         if (
                             desired_task_type == protocol_schema.TaskRequestType.random
                             and random.random() > self.cfg.p_full_labeling_review_reply_assistant
@@ -376,8 +382,10 @@ class TreeManager:
                             mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_assistant_reply)),
                             mode=label_mode,
                             disposition=label_disposition,
+                            labels=self._get_label_descriptions(valid_labels),
                         )
                     else:
+                        valid_labels = self.cfg.labels_prompter_reply
                         if (
                             desired_task_type == protocol_schema.TaskRequestType.random
                             and random.random() > self.cfg.p_full_labeling_review_reply_prompter
@@ -393,6 +401,7 @@ class TreeManager:
                             mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_prompter_reply)),
                             mode=label_mode,
                             disposition=label_disposition,
+                            labels=self._get_label_descriptions(valid_labels),
                         )
 
                     parent_message_id = message.id
@@ -456,7 +465,7 @@ class TreeManager:
 
                 label_mode = protocol_schema.LabelTaskMode.full
                 label_disposition = protocol_schema.LabelTaskDisposition.quality
-                valid_labels = self._all_text_labels
+                valid_labels = self.cfg.labels_initial_prompt
 
                 if random.random() > self.cfg.p_full_labeling_review_prompt:
                     valid_labels = list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt))
@@ -471,6 +480,7 @@ class TreeManager:
                     mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt)),
                     mode=label_mode,
                     disposition=label_disposition,
+                    labels=self._get_label_descriptions(valid_labels),
                 )
 
                 parent_message_id = message.id

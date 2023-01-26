@@ -3,10 +3,11 @@ from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.schemas.text_labels import LabelOption, ValidLabelsResponse
+from oasst_backend.schemas.text_labels import LabelDescription, ValidLabelsResponse
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions import OasstError
 from oasst_shared.schemas import protocol as protocol_schema
+from oasst_shared.schemas.protocol import TextLabel
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
 router = APIRouter()
@@ -45,7 +46,29 @@ def label_text(
 def get_valid_lables() -> ValidLabelsResponse:
     return ValidLabelsResponse(
         valid_labels=[
-            LabelOption(name=l.value, display_text=l.display_text, help_text=l.help_text)
-            for l in protocol_schema.TextLabel
+            LabelDescription(name=l.value, widget=l.widget.value, display_text=l.display_text, help_text=l.help_text)
+            for l in TextLabel
+        ]
+    )
+
+
+@router.get("/report_labels")
+def get_report_lables() -> ValidLabelsResponse:
+    report_labels = [
+        TextLabel.spam,
+        TextLabel.not_appropriate,
+        TextLabel.pii,
+        TextLabel.hate_speech,
+        TextLabel.sexual_content,
+        TextLabel.moral_judgement,
+        TextLabel.political_content,
+        TextLabel.toxicity,
+        TextLabel.violence,
+        TextLabel.quality,
+    ]
+    return ValidLabelsResponse(
+        valid_labels=[
+            LabelDescription(name=l.value, widget=l.widget.value, display_text=l.display_text, help_text=l.help_text)
+            for l in report_labels
         ]
     )
