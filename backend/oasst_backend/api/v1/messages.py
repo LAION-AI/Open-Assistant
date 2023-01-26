@@ -151,25 +151,35 @@ def get_message(
 
 @router.get("/{message_id}/conversation", response_model=protocol.Conversation)
 def get_conv(
-    message_id: UUID, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
+    message_id: UUID,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
 ):
     """
     Get a conversation from the tree root and up to the message with given internal ID.
     """
 
     pr = PromptRepository(db, api_client)
+    pr.init_user(auth_method=auth_method, username=username)
     messages = pr.fetch_message_conversation(message_id)
     return utils.prepare_conversation(messages)
 
 
 @router.get("/{message_id}/tree", response_model=protocol.MessageTree)
 def get_tree(
-    message_id: UUID, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
+    message_id: UUID,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
 ):
     """
     Get all messages belonging to the same message tree.
     """
     pr = PromptRepository(db, api_client)
+    pr.init_user(auth_method=auth_method, username=username)
     message = pr.fetch_message(message_id)
     tree = pr.fetch_message_tree(message.message_tree_id, reviewed=False)
     return utils.prepare_tree(tree, message.message_tree_id)
@@ -177,24 +187,34 @@ def get_tree(
 
 @router.get("/{message_id}/children", response_model=list[protocol.Message])
 def get_children(
-    message_id: UUID, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
+    message_id: UUID,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
 ):
     """
     Get all messages belonging to the same message tree.
     """
     pr = PromptRepository(db, api_client)
+    pr.init_user(auth_method=auth_method, username=username)
     messages = pr.fetch_message_children(message_id)
     return utils.prepare_message_list(messages)
 
 
 @router.get("/{message_id}/descendants", response_model=protocol.MessageTree)
 def get_descendants(
-    message_id: UUID, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
+    message_id: UUID,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
 ):
     """
     Get a subtree which starts with this message.
     """
     pr = PromptRepository(db, api_client)
+    pr.init_user(auth_method=auth_method, username=username)
     message = pr.fetch_message(message_id)
     descendants = pr.fetch_message_descendants(message)
     return utils.prepare_tree(descendants, message.id)
@@ -202,12 +222,17 @@ def get_descendants(
 
 @router.get("/{message_id}/longest_conversation_in_tree", response_model=protocol.Conversation)
 def get_longest_conv(
-    message_id: UUID, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
+    message_id: UUID,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
 ):
     """
     Get the longest conversation from the tree of the message.
     """
     pr = PromptRepository(db, api_client)
+    pr.init_user(auth_method=auth_method, username=username)
     message = pr.fetch_message(message_id)
     conv = pr.fetch_longest_conversation(message.message_tree_id)
     return utils.prepare_conversation(conv)
@@ -215,12 +240,17 @@ def get_longest_conv(
 
 @router.get("/{message_id}/max_children_in_tree", response_model=protocol.MessageTree)
 def get_max_children(
-    message_id: UUID, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
+    message_id: UUID,
+    auth_method: Optional[str] = None,
+    username: Optional[str] = None,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
 ):
     """
     Get message with the most children from the tree of the provided message.
     """
     pr = PromptRepository(db, api_client)
+    pr.init_user(auth_method=auth_method, username=username)
     message = pr.fetch_message(message_id)
     message, children = pr.fetch_message_with_max_children(message.message_tree_id)
     return utils.prepare_tree([message, *children], message.id)
