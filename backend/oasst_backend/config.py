@@ -57,6 +57,15 @@ class TreeManagerConfiguration(BaseModel):
 
     rank_prompter_replies: bool = False
 
+    lonely_children_count: int = 3
+    """Number of children below which parents are preferred during sampling for reply tasks."""
+
+    p_lonely_child_extension: float = 0.8
+    """Probability to select a parent with less than lonely_children_count children."""
+
+    recent_tasks_span_sec: int = 3 * 60  # 3 min
+    """Time in seconds of recent tasks to consider for exclusion during task selection."""
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"

@@ -1,7 +1,7 @@
 import json
 import random
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional, Tuple
@@ -339,6 +339,7 @@ class TreeManager:
                     message_tree_id = messages[-1].message_tree_id
 
             case TaskType.LABEL_REPLY:
+
                 if task_role == TaskRole.PROMPTER:
                     replies_need_review = list(filter(lambda m: m.role == "prompter", replies_need_review))
                 elif task_role == TaskRole.ASSISTANT:
@@ -398,19 +399,44 @@ class TreeManager:
                     message_tree_id = message.message_tree_id
 
             case TaskType.REPLY:
-                # select a tree with missing replies
+
+                recent_reply_tasks = self.pr.task_repository.fetch_recent_reply_tasks(
+                    max_age=timedelta(seconds=self.cfg.recent_tasks_span_sec), done=False
+                )
+                recent_reply_task_parents = {t.parent_message_id for t in recent_reply_tasks}
+
                 if task_role == TaskRole.PROMPTER:
                     extendible_parents = list(filter(lambda x: x.parent_role == "assistant", extendible_parents))
                 elif task_role == TaskRole.ASSISTANT:
                     extendible_parents = list(filter(lambda x: x.parent_role == "prompter", extendible_parents))
 
+                # select a tree with missing replies
                 if len(extendible_parents) > 0:
-                    random_parent = random.choice(extendible_parents)
+                    random_parent: ExtendibleParentRow = None
+                    if self.cfg.p_lonely_child_extension > 0 and self.cfg.lonely_children_count > 1:
+                        # check if we have extendible parents with a small number of replies
+
+                        lonely_children_parents = [
+                            p
+                            for p in extendible_parents
+                            if 0 < p.active_children_count < self.cfg.lonely_children_count
+                            and p.parent_id not in recent_reply_task_parents
+                        ]
+                        if len(lonely_children_parents) > 0 and random.random() < self.cfg.p_lonely_child_extension:
+                            random_parent = random.choice(lonely_children_parents)
+
+                    if random_parent is None:
+                        # try to exclude parents for which tasks were recently handed out
+                        fresh_parents = [p for p in extendible_parents if p.parent_id not in recent_reply_task_parents]
+                        if len(fresh_parents) > 0:
+                            random_parent = random.choice(fresh_parents)
+                        else:
+                            random_parent = random.choice(extendible_parents)
 
                     # fetch random conversation to extend
                     logger.debug(f"selected {random_parent=}")
                     messages = self.pr.fetch_message_conversation(random_parent.parent_id)
-                    assert all(m.review_result for m in messages)  # ensure all messages have positive review
+                    assert all(m.review_result for m in messages)  # ensure all messages have positive reviews
                     conversation = prepare_conversation(messages)
 
                     # generate reply task depending on last message
