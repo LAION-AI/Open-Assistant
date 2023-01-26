@@ -26,6 +26,13 @@ pip install -r requirements.txt
 python __main__.py
 ```
 
+For the worker, you'll also want to have the text-generation-inference server
+running:
+
+```bash
+docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 ykilcher/text-generation-inference
+```
+
 Run the client:
 
 ```bash
