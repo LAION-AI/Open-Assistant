@@ -405,12 +405,24 @@ class TreeManager:
                     extendible_parents = list(filter(lambda x: x.parent_role == "prompter", extendible_parents))
 
                 if len(extendible_parents) > 0:
-                    random_parent = random.choice(extendible_parents)
+                    random_parent: ExtendibleParentRow = None
+                    if self.cfg.p_lonely_child_extension > 0 and self.cfg.lonely_children_count > 1:
+                        # check if we have extendible parents with a small number of replies
+                        for i in range(1, self.cfg.lonely_children_count):
+                            lonely_children_parents = [
+                                p for p in extendible_parents if 0 < p.active_children_count <= i
+                            ]
+                            if len(lonely_children_parents) > 0 and random.random() < self.cfg.p_lonely_child_extension:
+                                random_parent = random.choice(lonely_children_parents)
+                                break
+
+                    if random_parent is None:
+                        random_parent = random.choice(extendible_parents)
 
                     # fetch random conversation to extend
                     logger.debug(f"selected {random_parent=}")
                     messages = self.pr.fetch_message_conversation(random_parent.parent_id)
-                    assert all(m.review_result for m in messages)  # ensure all messages have positive review
+                    assert all(m.review_result for m in messages)  # ensure all messages have positive reviews
                     conversation = prepare_conversation(messages)
 
                     # generate reply task depending on last message

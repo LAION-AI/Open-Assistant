@@ -57,6 +57,12 @@ class TreeManagerConfiguration(BaseModel):
 
     rank_prompter_replies: bool = False
 
+    lonely_children_count: int = 3
+    """Number of children below which parents are preferred for reply tasks."""
+
+    p_lonely_child_extension: float = 0.5
+    """Probability to select a parent with less than lonely_children_count children."""
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"
