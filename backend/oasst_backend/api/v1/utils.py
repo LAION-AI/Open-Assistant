@@ -30,6 +30,7 @@ def prepare_conversation_message_list(messages: list[Message]) -> list[protocol.
             text=message.text,
             lang=message.lang,
             is_assistant=(message.role == "assistant"),
+            emojis=message.emojis,
         )
         for message in messages
     ]
