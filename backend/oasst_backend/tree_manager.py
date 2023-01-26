@@ -588,7 +588,7 @@ class TreeManager:
 
                 _, task, msg = pr.store_text_labels(interaction)
 
-                # if it was a respones for a task, check if we have enough reviews to calc review_result
+                # if it was a response for a task, check if we have enough reviews to calc review_result
                 if task and msg:
                     reviews = self.query_reviews_for_message(msg.id)
                     acceptance_score = self._calculate_acceptance(reviews)
