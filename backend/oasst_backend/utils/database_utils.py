@@ -98,7 +98,7 @@ def async_managed_tx_method(
                     retry_exhausted = True
                     for i in range(num_retries):
                         try:
-                            result = f(self, *args, **kwargs)
+                            result = await f(self, *args, **kwargs)
                             self.db.commit()
                             if isinstance(result, SQLModel):
                                 self.db.refresh(result)
