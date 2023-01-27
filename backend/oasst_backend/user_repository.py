@@ -110,8 +110,6 @@ class UserRepository:
 
     @managed_tx_method(CommitMode.COMMIT)
     def _lookup_client_user_tx(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
-        if not client_user:
-            return None
         user: User = (
             self.db.query(User)
             .filter(
@@ -138,6 +136,8 @@ class UserRepository:
         return user
 
     def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
+        if not client_user:
+            return None
         num_retries = settings.DATABASE_MAX_TX_RETRY_COUNT
         for i in range(num_retries):
             try:
