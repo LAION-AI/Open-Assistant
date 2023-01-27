@@ -15,6 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { boolean } from "boolean";
 import { ClipboardList, Flag, MessageSquare, MoreHorizontal } from "lucide-react";
+import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
@@ -149,13 +150,15 @@ const MessageActions = ({
   onReport: () => void;
   messageId: string;
 }) => {
+  const { t } = useTranslation("message");
+
   return (
     <Menu>
       <MenuButton>
         <MoreHorizontal />
       </MenuButton>
       <MenuList>
-        <MenuGroup title="Reactions">
+        <MenuGroup title={t("reactions")}>
           <SimpleGrid columns={4}>
             {["+1", "-1"].map((emoji) => (
               <EmojiMenuItem key={emoji} emoji={emoji} checked={userEmoji.includes(emoji)} react={react} />
@@ -164,14 +167,14 @@ const MessageActions = ({
         </MenuGroup>
         <MenuDivider />
         <MenuItem onClick={onLabel} icon={<ClipboardList />}>
-          Label
+          {t("label_action")}
         </MenuItem>
         <MenuItem onClick={onReport} icon={<Flag />}>
-          Report
+          {t("report_action")}
         </MenuItem>
         <MenuDivider />
         <MenuItem as="a" href={`/messages/${messageId}`} target="_blank" icon={<MessageSquare />}>
-          Open in new tab
+          {t("open_new_tab_action")}
         </MenuItem>
       </MenuList>
     </Menu>

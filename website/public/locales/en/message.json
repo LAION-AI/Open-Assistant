@@ -1,0 +1,11 @@
+{
+  "reactions": "Reactions",
+  "label_action": "Label",
+  "label_title": "Label",
+  "submit_labels": "Sumbit",
+  "open_new_tab_action": "Open in new tab",
+  "report_title": "Report",
+  "report_action": "Report",
+  "report_placeholder": "Why should this message be reviewed?",
+  "send_report": "Send"
+}

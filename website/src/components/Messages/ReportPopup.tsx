@@ -9,6 +9,7 @@ import {
   ModalOverlay,
   Textarea,
 } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 import { useState } from "react";
 import { post } from "src/lib/api";
 import useSWRMutation from "swr/mutation";
@@ -20,6 +21,7 @@ interface ReportPopupProps {
 }
 
 export const ReportPopup = ({ messageId, show, onClose }: ReportPopupProps) => {
+  const { t } = useTranslation("message");
   const [text, setText] = useState("");
   const { trigger } = useSWRMutation("/api/report", post);
 
@@ -37,19 +39,15 @@ export const ReportPopup = ({ messageId, show, onClose }: ReportPopupProps) => {
     <Modal isOpen={show} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Report</ModalHeader>
+        <ModalHeader>{t("report_title")}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Textarea
-            onChange={(e) => setText(e.target.value)}
-            resize="none"
-            placeholder="Why should this message be reviewed?"
-          />
+          <Textarea onChange={(e) => setText(e.target.value)} resize="none" placeholder={t("report_placeholder")} />
         </ModalBody>
 
         <ModalFooter>
           <Button colorScheme="blue" mr={3} onClick={submit}>
-            Send
+            {t("send_report")}
           </Button>
         </ModalFooter>
       </ModalContent>

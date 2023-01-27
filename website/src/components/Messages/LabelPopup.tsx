@@ -8,6 +8,7 @@ import {
   ModalHeader,
   ModalOverlay,
 } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 import { useState } from "react";
 import { LabelInputGroup } from "src/components/Survey/LabelInputGroup";
 import { get, post } from "src/lib/api";
@@ -31,6 +32,7 @@ interface ValidLabelsResponse {
 }
 
 export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopupProps) => {
+  const { t } = useTranslation("message");
   const { data: response } = useSWRImmutable<ValidLabelsResponse>("/api/valid_labels", get);
   const { valid_labels } = response || { valid_labels: [] };
   const [values, setValues] = useState<number[]>(null);
@@ -58,14 +60,14 @@ export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopu
     <Modal isOpen={show} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Label</ModalHeader>
+        <ModalHeader>{t("label_title")}Label</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <LabelInputGroup labelIDs={valid_labels.map(({ name }) => name)} onChange={setValues} />
         </ModalBody>
         <ModalFooter>
           <Button colorScheme="blue" mr={3} onClick={submit}>
-            Submit
+            {t("submit_labels")}
           </Button>
         </ModalFooter>
       </ModalContent>
