@@ -53,6 +53,8 @@ class PromptRepository:
     ):
         self.db = db
         self.api_client = api_client
+        self.auth_method = auth_method
+        self.username = username
         self.user_repository = user_repository or UserRepository(db, api_client)
         if user_id:
             self.user = self.user_repository.get_user(id=user_id)
@@ -560,13 +562,15 @@ class PromptRepository:
         """
         Checks if the user has recently replied with the same text within a given time period.
         """
-        user = self.user_repository.lookup_client_user(task_interaction.user)
-        user_id = user.id
+
+        assert task_interaction.user.auth_method == self.auth_method
+        assert task_interaction.user.username == self.username
+        user_id = self.user_id
         logger.debug(f"Checking for duplicate tasks for user {user_id}")
         # messages in the past 24 hours
         messages = (
             self.db.query(Message)
-            .filter(Message.user_id == user.id)
+            .filter(Message.user_id == user_id)
             .order_by(Message.created_date.desc())
             .filter(
                 Message.created_date > utcnow() - timedelta(minutes=settings.DUPLICATE_MESSAGE_FILTER_WINDOW_MINUTES)
