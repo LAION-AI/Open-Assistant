@@ -1,4 +1,5 @@
 import React from "react";
+import { Message } from "src/types/Conversation";
 
 import { MessageTableEntry } from "./MessageTableEntry";
 
@@ -8,14 +9,8 @@ export default {
   component: MessageTableEntry,
 };
 
-const Template = ({ text, is_assistant, id, frontend_message_id, emojis, user_emojis, enabled, highlight }) => {
-  return (
-    <MessageTableEntry
-      message={{ text, is_assistant, id, frontend_message_id, emojis, user_emojis }}
-      enabled={enabled}
-      highlight={highlight}
-    />
-  );
+const Template = ({ enabled, highlight, ...message }) => {
+  return <MessageTableEntry message={message as Message} enabled={enabled} highlight={highlight} />;
 };
 
 export const Default = Template.bind({});

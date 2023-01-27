@@ -20,7 +20,7 @@ export const Messages = ({ messages }: MessagesProps) => {
   return <Grid gap={2}>{items}</Grid>;
 };
 
-export const MessageView = forwardRef<Message, "div">((message: Message, ref) => {
+export const MessageView = forwardRef<Partial<Message>, "div">((message: Partial<Message>, ref) => {
   const { colorMode } = useColorMode();
 
   const bgColor = useMemo(() => {
