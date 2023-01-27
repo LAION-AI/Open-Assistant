@@ -1,6 +1,7 @@
 import random
+import re
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Optional
 from uuid import UUID, uuid4
@@ -8,6 +9,7 @@ from uuid import UUID, uuid4
 import oasst_backend.models.db_payload as db_payload
 import sqlalchemy as sa
 from loguru import logger
+from oasst_backend.config import settings
 from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import (
     ApiClient,
@@ -29,7 +31,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
-from oasst_shared.utils import unaware_to_utc
+from oasst_shared.utils import unaware_to_utc, utcnow
 from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
 from sqlmodel import JSON, Session, and_, func, literal_column, not_, or_, text, update
@@ -181,6 +183,10 @@ class PromptRepository:
         # If there's no parent message assume user started new conversation
         role = None
         depth = 0
+
+        # reject whitespaces match with ^\s+$
+        if re.match(r"^\s+$", text):
+            raise OasstError("Message text is empty", OasstErrorCode.TASK_MESSAGE_TEXT_EMPTY)
 
         if task.parent_message_id:
             parent_message = self.fetch_message(task.parent_message_id)
@@ -549,6 +555,32 @@ class PromptRepository:
         if not include_deleted:
             qry = qry.filter(not_(Message.deleted))
         return self._add_user_emojis_all(qry)
+
+    def check_users_recent_replies_for_duplicates(self, task_interaction: protocol_schema.AnyInteraction) -> bool:
+        """
+        Checks if the user has recently replied with the same text within a given time period.
+        """
+        user = self.user_repository.lookup_client_user(task_interaction.user)
+        logger.debug(f"HERE\n\n\n\n\n\n\n\n\n\n\n\n\n")
+        logger.debug(f"Checking for duplicate tasks for user {user.id}")
+        user_id = user.id
+        logger.debug(f"Checking for duplicate tasks for user {user_id}")
+        # messages in the past 24 hours
+        messages = (
+            self.db.query(Message)
+            .filter(Message.user_id == user.id)
+            .order_by(Message.created_date.desc())
+            .filter(
+                Message.created_date > utcnow() - timedelta(minutes=settings.DUPLICATE_MESSAGE_FILTER_WINDOW_MINUTES)
+            )
+            .all()
+        )
+        if not messages:
+            return False
+        for msg in messages:
+            if msg.text == task_interaction.text:
+                return True
+        return False
 
     def fetch_user_message_trees(
         self, user_id: Message.user_id, reviewed: bool = True, include_deleted: bool = False
