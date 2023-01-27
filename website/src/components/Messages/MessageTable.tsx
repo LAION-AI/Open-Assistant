@@ -11,11 +11,11 @@ interface MessageTableProps {
 export function MessageTable({ messages, enableLink, highlightLastMessage }: MessageTableProps) {
   return (
     <Stack spacing="4">
-      {messages.map((item, idx) => (
+      {messages.map((message, idx) => (
         <MessageTableEntry
           enabled={enableLink}
-          item={item}
-          key={item.id + item.frontend_message_id}
+          message={message}
+          key={message.id + message.frontend_message_id}
           highlight={highlightLastMessage && idx === messages.length - 1}
         />
       ))}

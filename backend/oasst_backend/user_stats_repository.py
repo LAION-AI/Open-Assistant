@@ -39,7 +39,7 @@ class UserStatsRepository:
         qry = (
             self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
             .join(UserStats, User.id == UserStats.user_id)
-            .filter(UserStats.time_frame == time_frame.value)
+            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard)
             .order_by(UserStats.rank)
             .limit(limit)
         )
@@ -250,7 +250,8 @@ FROM
             PARTITION BY time_frame
             ORDER BY leader_score DESC, user_id
         ) AS "rank", user_id, time_frame
-    FROM user_stats
+    FROM user_stats us2
+    INNER JOIN "user" u ON us2.user_id = u.id AND u.show_on_leaderboard
     WHERE (:time_frame IS NULL OR time_frame = :time_frame)) AS r
 WHERE
     us.user_id = r.user_id

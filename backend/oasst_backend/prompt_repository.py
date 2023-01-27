@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 import oasst_backend.models.db_payload as db_payload
 import sqlalchemy as sa
 from loguru import logger
+from oasst_backend.api.deps import FrontendUserId
 from oasst_backend.config import settings
 from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import (
@@ -50,10 +51,15 @@ class PromptRepository:
         user_id: Optional[UUID] = None,
         auth_method: Optional[str] = None,
         username: Optional[str] = None,
+        frontend_user: Optional[FrontendUserId] = None,
     ):
         self.db = db
         self.api_client = api_client
         self.user_repository = user_repository or UserRepository(db, api_client)
+
+        if frontend_user and not auth_method and not username:
+            auth_method, username = frontend_user
+
         if user_id:
             self.user = self.user_repository.get_user(id=user_id)
             self.user_id = self.user.id

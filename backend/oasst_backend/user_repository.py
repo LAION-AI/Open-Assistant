@@ -66,7 +66,13 @@ class UserRepository:
         return user
 
     @managed_tx_method(CommitMode.COMMIT)
-    def update_user(self, id: UUID, enabled: Optional[bool] = None, notes: Optional[str] = None) -> None:
+    def update_user(
+        self,
+        id: UUID,
+        enabled: Optional[bool] = None,
+        notes: Optional[str] = None,
+        show_on_leaderboard: Optional[bool] = None,
+    ) -> None:
         """
         Update a user by global user ID to disable or set admin notes. Only trusted clients may update users.
 
@@ -85,6 +91,8 @@ class UserRepository:
             user.enabled = enabled
         if notes is not None:
             user.notes = notes
+        if show_on_leaderboard is not None:
+            user.show_on_leaderboard = show_on_leaderboard
 
         self.db.add(user)
 
@@ -110,8 +118,6 @@ class UserRepository:
 
     @managed_tx_method(CommitMode.COMMIT)
     def _lookup_client_user_tx(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
-        if not client_user:
-            return None
         user: User = (
             self.db.query(User)
             .filter(
@@ -138,6 +144,8 @@ class UserRepository:
         return user
 
     def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
+        if not client_user:
+            return None
         num_retries = settings.DATABASE_MAX_TX_RETRY_COUNT
         for i in range(num_retries):
             try:
