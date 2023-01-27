@@ -23,7 +23,7 @@ class User(SQLModel, table=True):
     created_date: Optional[datetime] = Field(
         sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp())
     )
-    stats_enabled: bool = Field(
+    visible_in_public_leaderboards: bool = Field(
         nullable=False, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true())
     )
 

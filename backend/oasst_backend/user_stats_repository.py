@@ -40,8 +40,8 @@ class UserStatsRepository:
             self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
             .join(UserStats, User.id == UserStats.user_id)
             .filter(UserStats.time_frame == time_frame.value)
-            .filter(User.stats_enabled)
-            .order_by(UserStats.leader_score.desc())
+            .filter(User.visible_in_public_leaderboards == sa.true())
+            .order_by(UserStats.rank)
             .limit(limit)
         )
 
@@ -241,14 +241,18 @@ class UserStatsRepository:
 -- update rank
 UPDATE user_stats us
 SET "rank" = r."rank"
-FROM
-    (SELECT
-        ROW_NUMBER () OVER(
-            PARTITION BY time_frame
-            ORDER BY leader_score DESC, user_id
-        ) AS "rank", user_id, time_frame
+FROM (
+    SELECT ROW_NUMBER () OVER(
+        PARTITION BY time_frame
+        ORDER BY leader_score DESC, user_id
+    ) AS "rank", user_id, time_frame
     FROM user_stats
-    WHERE (:time_frame IS NULL OR time_frame = :time_frame)) AS r
+    WHERE (
+        SELECT "visible_in_public_leaderboards" FROM "user" 
+        WHERE id = user_id LIMIT 1
+    ) = true
+    AND (:time_frame IS NULL OR time_frame = :time_frame)
+) AS r
 WHERE
     us.user_id = r.user_id
     AND us.time_frame = r.time_frame;"""

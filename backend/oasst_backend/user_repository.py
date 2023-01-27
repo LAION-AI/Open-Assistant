@@ -69,7 +69,7 @@ class UserRepository:
         id: UUID,
         enabled: Optional[bool] = None,
         notes: Optional[str] = None,
-        stats_enabled: Optional[bool] = None,
+        visible_in_public_leaderboards: Optional[bool] = None,
     ) -> None:
         """
         Update a user by global user ID to disable or set admin notes. Only trusted clients may update users.
@@ -89,8 +89,8 @@ class UserRepository:
             user.enabled = enabled
         if notes is not None:
             user.notes = notes
-        if stats_enabled is not None:
-            user.stats_enabled = stats_enabled
+        if visible_in_public_leaderboards is not None:
+            user.visible_in_public_leaderboards = visible_in_public_leaderboards
 
         self.db.add(user)
 
