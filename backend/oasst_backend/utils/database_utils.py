@@ -46,10 +46,12 @@ def managed_tx_method(auto_commit: CommitMode = CommitMode.COMMIT, num_retries=s
                         try:
                             result = f(self, *args, **kwargs)
                             self.db.commit()
+                            if isinstance(result, SQLModel):
+                                self.db.refresh(result)
                             retry_exhausted = False
                             break
                         except PendingRollbackError as e:
-                            logger.info(f"{e}")
+                            logger.info(str(e))
                             self.db.rollback()
                         except OperationalError as e:
                             if e.orig is not None and isinstance(
@@ -57,6 +59,8 @@ def managed_tx_method(auto_commit: CommitMode = CommitMode.COMMIT, num_retries=s
                             ):
                                 logger.info(f"{type(e.orig)} Inner {e.orig.pgcode} {type(e.orig.pgcode)}")
                                 self.db.rollback()
+                            else:
+                                raise e
                         logger.info(f"Retry {i+1}/{num_retries}")
                     if retry_exhausted:
                         raise OasstError(
@@ -68,13 +72,13 @@ def managed_tx_method(auto_commit: CommitMode = CommitMode.COMMIT, num_retries=s
                     result = f(self, *args, **kwargs)
                     if auto_commit == CommitMode.FLUSH:
                         self.db.flush()
+                        if isinstance(result, SQLModel):
+                            self.db.refresh(result)
                     elif auto_commit == CommitMode.ROLLBACK:
                         self.db.rollback()
-                if isinstance(result, SQLModel):
-                    self.db.refresh(result)
                 return result
             except Exception as e:
-                logger.error(f"{str(e)}")
+                logger.info(str(e))
                 raise e
 
         return wrapped_f
@@ -96,10 +100,12 @@ def async_managed_tx_method(
                         try:
                             result = f(self, *args, **kwargs)
                             self.db.commit()
+                            if isinstance(result, SQLModel):
+                                self.db.refresh(result)
                             retry_exhausted = False
                             break
                         except PendingRollbackError as e:
-                            logger.info(f"{e}")
+                            logger.info(str(e))
                             self.db.rollback()
                         except OperationalError as e:
                             if e.orig is not None and isinstance(
@@ -107,6 +113,8 @@ def async_managed_tx_method(
                             ):
                                 logger.info(f"{type(e.orig)} Inner {e.orig.pgcode} {type(e.orig.pgcode)}")
                                 self.db.rollback()
+                            else:
+                                raise e
                         logger.info(f"Retry {i+1}/{num_retries}")
                     if retry_exhausted:
                         raise OasstError(
@@ -118,13 +126,13 @@ def async_managed_tx_method(
                     result = f(self, *args, **kwargs)
                     if auto_commit == CommitMode.FLUSH:
                         self.db.flush()
+                        if isinstance(result, SQLModel):
+                            self.db.refresh(result)
                     elif auto_commit == CommitMode.ROLLBACK:
                         self.db.rollback()
-                if isinstance(result, SQLModel):
-                    self.db.refresh(result)
                 return result
             except Exception as e:
-                logger.error(f"{str(e)}")
+                logger.info(str(e))
                 raise e
 
         return wrapped_f
@@ -156,10 +164,12 @@ def managed_tx_function(
                             try:
                                 result = f(session, *args, **kwargs)
                                 session.commit()
+                                if isinstance(result, SQLModel):
+                                    session.refresh(result)
                                 retry_exhausted = False
                                 break
                             except PendingRollbackError as e:
-                                logger.info(f"{e}")
+                                logger.info(str(e))
                                 session.rollback()
                             except OperationalError as e:
                                 if e.orig is not None and isinstance(
@@ -168,6 +178,8 @@ def managed_tx_function(
                                 ):
                                     logger.info(f"{type(e.orig)} Inner {e.orig.pgcode} {type(e.orig.pgcode)}")
                                     session.rollback()
+                                else:
+                                    raise e
                         logger.info(f"Retry {i+1}/{num_retries}")
                     if retry_exhausted:
                         raise OasstError(
@@ -180,13 +192,13 @@ def managed_tx_function(
                         result = f(session, *args, **kwargs)
                     if auto_commit == CommitMode.FLUSH:
                         session.flush()
+                        if isinstance(result, SQLModel):
+                            session.refresh(result)
                     elif auto_commit == CommitMode.ROLLBACK:
                         session.rollback()
-                if isinstance(result, SQLModel):
-                    session.refresh(result)
                 return result
             except Exception as e:
-                logger.error(f"{str(e)}")
+                logger.info(str(e))
                 raise e
 
         return wrapped_f
