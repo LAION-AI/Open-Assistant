@@ -165,7 +165,7 @@ export class OasstApiClient {
     time_frame: LeaderboardTimeFrame,
     { limit = 20 }: { limit?: number }
   ): Promise<LeaderboardReply | null> {
-    return this.get<LeaderboardReply>(`/api/v1/leaderboards/${time_frame}`, { limit });
+    return this.get<LeaderboardReply>(`/api/v1/leaderboards/${time_frame}`, { max_count: limit });
   }
 
   /**
