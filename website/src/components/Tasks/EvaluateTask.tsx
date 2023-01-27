@@ -20,7 +20,6 @@ export const EvaluateTask = ({
   let messages = [];
   if (task.conversation) {
     messages = task.conversation.messages;
-    messages = messages.map((message, index) => ({ ...message, id: index }));
   }
 
   useEffect(() => {

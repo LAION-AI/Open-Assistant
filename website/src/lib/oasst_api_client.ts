@@ -1,4 +1,4 @@
-import type { Message } from "src/types/Conversation";
+import type { EmojiOp, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
@@ -77,6 +77,27 @@ export class OasstApiClient {
   }
 
   /**
+   * Returns the `Message`s associated with `user_id` in the backend.
+   */
+  async fetch_message(message_id: string, user: BackendUserCore): Promise<Message> {
+    return this.get<Message>(`/api/v1/messages/${message_id}?username=${user.id}&auth_method=${user.auth_method}`);
+  }
+
+  /**
+   * Send a report about a message
+   */
+  async send_report(message_id: string, user: BackendUserCore, text: string) {
+    return this.post("/api/v1/text_labels", {
+      type: "text_labels",
+      message_id,
+      labels: [], // Not yet implemented
+      text,
+      is_report: true,
+      user,
+    });
+  }
+
+  /**
    * Returns the message stats from the backend.
    */
   async fetch_stats(): Promise<any> {
@@ -152,6 +173,17 @@ export class OasstApiClient {
    */
   async fetch_available_tasks(user: BackendUserCore, lang: string): Promise<AvailableTasks | null> {
     return this.post<AvailableTasks>(`/api/v1/tasks/availability?lang=${lang}`, user);
+  }
+
+  /**
+   * Add/remove an emoji on a message for a user
+   */
+  async set_user_message_emoji(message_id: string, user: BackendUserCore, emoji: string, op: EmojiOp): Promise<void> {
+    await this.post(`/api/v1/messages/${message_id}/emoji`, {
+      user,
+      emoji,
+      op,
+    });
   }
 
   private async post<T>(path: string, body: unknown) {
