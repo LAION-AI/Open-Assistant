@@ -42,7 +42,7 @@ export const MessageEmojiButton = ({ emoji, checked, onClick }: MessageEmojiButt
       padding="0"
     >
       {getEmojiIcon(emoji.name, "MINI_BUTTON")}
-      <span style={{ position: "relative", left: "-0.2em", marginRight: "0.25em" }}>{emoji.count}</span>
+      <span style={{ marginInlineEnd: "0.25em" }}>{emoji.count}</span>
     </Button>
   );
 };

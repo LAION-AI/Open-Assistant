@@ -15,8 +15,8 @@ import {
 } from "@chakra-ui/react";
 import { boolean } from "boolean";
 import { ClipboardList, Flag, MessageSquare, MoreHorizontal } from "lucide-react";
-import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
+import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { getEmojiIcon, MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
@@ -65,10 +65,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
   const highlightColor = useColorModeValue(colors.light.highlight, colors.dark.highlight);
 
   const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
-    onSuccess(data) {
-      const { emojis, user_emojis } = data;
-      setEmojis({ emojis, user_emojis });
-    },
+    onSuccess: setEmojis,
   });
   const react = (emoji: string, state: boolean) => {
     sendEmojiChange({ op: state ? "add" : "remove", emoji });

@@ -34,10 +34,10 @@ interface ValidLabelsResponse {
 export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopupProps) => {
   const { t } = useTranslation("message");
   const { data: response } = useSWRImmutable<ValidLabelsResponse>("/api/valid_labels", get);
-  const { valid_labels } = response || { valid_labels: [] };
+  const valid_labels = response?.valid_labels ?? [];
   const [values, setValues] = useState<number[]>(null);
 
-  const { trigger } = useSWRMutation("/api/set_label", post);
+  const { trigger: setLabels } = useSWRMutation("/api/set_label", post);
 
   const submit = () => {
     const label_map: Map<string, number> = new Map();
@@ -47,7 +47,7 @@ export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopu
         label_map.set(valid_labels[idx].name, value);
       }
     });
-    trigger({
+    setLabels({
       message_id: messageId,
       label_map: Object.fromEntries(label_map),
     });
@@ -60,7 +60,7 @@ export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopu
     <Modal isOpen={show} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{t("label_title")}Label</ModalHeader>
+        <ModalHeader>{t("label_title")}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <LabelInputGroup labelIDs={valid_labels.map(({ name }) => name)} onChange={setValues} />

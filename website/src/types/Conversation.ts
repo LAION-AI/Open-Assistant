@@ -14,6 +14,8 @@ export interface Message extends MessageEmojis {
   text: string;
   is_assistant: boolean;
   id: string;
+  created_date: string; // iso date string
+  lang: string;
   frontend_message_id?: string;
 }
 
