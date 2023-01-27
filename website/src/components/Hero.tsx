@@ -2,11 +2,11 @@ import { Box, Text, useColorMode } from "@chakra-ui/react";
 import Image from "next/image";
 import { useTranslation } from "next-i18next";
 
-import { Container } from "./Container";
 import { AnimatedCircles } from "./AnimatedCircles";
+import { Container } from "./Container";
 
 export function Hero() {
-  const { t } = useTranslation("index");
+  const { t } = useTranslation(["index", "common"]);
   const { colorMode } = useColorMode();
   const pTextColor = colorMode === "light" ? "text-gray-600" : "text-white";
   const fancyTextGradientClasses =
@@ -17,7 +17,7 @@ export function Hero() {
         <Box className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
           <Box className="relative mx-auto max-w-2xl lg:col-span-7 lg:max-w-none lg:pt-6 xl:col-span-6">
             <Text as="h1" className="text-5xl mb-6 font-bold tracking-tight">
-              {t("title")}
+              {t("common:title")}
             </Text>
             <Text
               as="h2"

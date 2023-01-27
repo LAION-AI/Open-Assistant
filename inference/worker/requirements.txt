@@ -1,0 +1,6 @@
+loguru
+rel
+requests
+sseclient-py
+typer
+websocket-client

@@ -3,6 +3,7 @@ import { InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { getAdminLayout } from "src/components/Layout";
@@ -111,7 +112,7 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
 /**
  * Fetch the user's data on the server side when rendering.
  */
-export async function getServerSideProps({ query }) {
+export async function getServerSideProps({ query, locale }) {
   const backend_user = await oasstApiClient.fetch_user(query.id);
   const local_user = await prisma.user.findUnique({
     where: { id: backend_user.id },
@@ -126,6 +127,7 @@ export async function getServerSideProps({ query }) {
   return {
     props: {
       user,
+      ...(await serverSideTranslations(locale, ["common"])),
     },
   };
 }

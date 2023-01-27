@@ -91,6 +91,7 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       session.user.role = token.role;
       session.user.isNew = token.isNew;
+      session.user.name = token.name;
       return session;
     },
     /**

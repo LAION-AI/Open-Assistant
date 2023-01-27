@@ -4,6 +4,7 @@ import { getDashboardLayout } from "src/components/Layout";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { get } from "src/lib/api";
 import useSWRImmutable from "swr/immutable";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const MessagesDashboard = () => {
   const boxBgColor = useColorModeValue("white", "gray.800");

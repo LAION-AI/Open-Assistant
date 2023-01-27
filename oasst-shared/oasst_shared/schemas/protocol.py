@@ -37,13 +37,28 @@ class FrontEndUser(User):
     created_date: Optional[datetime] = None
 
 
+class PageResult(BaseModel):
+    prev: str | None
+    next: str | None
+    sort_key: str
+    items: list
+    order: Literal["asc", "desc"]
+
+
+class FrontEndUserPage(PageResult):
+    items: list[FrontEndUser]
+
+
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
     id: Optional[UUID] = None
     frontend_message_id: Optional[str] = None
     text: str
+    lang: Optional[str]  # BCP 47
     is_assistant: bool
+    emojis: Optional[dict[str, int]] = None
+    user_emojis: Optional[list[str]] = None
 
 
 class Conversation(BaseModel):
@@ -51,10 +66,26 @@ class Conversation(BaseModel):
 
     messages: list[ConversationMessage] = []
 
+    def __len__(self):
+        return len(self.messages)
+
+    @property
+    def is_prompter_turn(self) -> bool:
+        if len(self) == 0:
+            return True
+        last_message = self.messages[-1]
+        if last_message.is_assistant:
+            return True
+        return False
+
 
 class Message(ConversationMessage):
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
+
+
+class MessagePage(PageResult):
+    items: list[Message]
 
 
 class MessageTree(BaseModel):
@@ -72,6 +103,7 @@ class TaskRequest(BaseModel):
     # this is optional. https://github.com/pydantic/pydantic/issues/1270
     user: Optional[User] = Field(None, nullable=True)
     collective: bool = False
+    lang: Optional[str] = Field(None, nullable=True)  # BCP 47
 
 
 class TaskAck(BaseModel):
@@ -192,27 +224,42 @@ class LabelTaskMode(str, enum.Enum):
     full = "full"
 
 
-class LabelInitialPromptTask(Task):
-    """A task to label an initial prompt."""
+class LabelTaskDisposition(str, enum.Enum):
+    """Reason why the task was issued."""
 
-    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    quality = "quality"
+    spam = "spam"
+
+
+class LabelDescription(BaseModel):
+    name: str
+    widget: str
+    display_text: str
+    help_text: Optional[str]
+
+
+class AbstractLabelTask(Task):
     message_id: UUID
-    prompt: str
     valid_labels: list[str]
     mandatory_labels: Optional[list[str]]
     mode: Optional[LabelTaskMode]
+    disposition: Optional[LabelTaskDisposition]
+    labels: Optional[list[LabelDescription]]
 
 
-class LabelConversationReplyTask(Task):
+class LabelInitialPromptTask(AbstractLabelTask):
+    """A task to label an initial prompt."""
+
+    type: Literal["label_initial_prompt"] = "label_initial_prompt"
+    prompt: str
+
+
+class LabelConversationReplyTask(AbstractLabelTask):
     """A task to label a reply to a conversation."""
 
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
     conversation: Conversation  # the conversation so far
-    message_id: UUID
     reply: str
-    valid_labels: list[str]
-    mandatory_labels: Optional[list[str]]
-    mode: Optional[LabelTaskMode]
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):
@@ -266,6 +313,7 @@ class TextReplyToMessage(Interaction):
     message_id: str
     user_message_id: str
     text: constr(min_length=1, strip_whitespace=True)
+    lang: Optional[str]  # BCP 47
 
 
 class MessageRating(Interaction):
@@ -284,39 +332,48 @@ class MessageRanking(Interaction):
     ranking: conlist(item_type=int, min_items=1)
 
 
+class LabelWidget(str, enum.Enum):
+    yes_no = "yes_no"
+    flag = "flag"
+    likert = "likert"
+
+
 class TextLabel(str, enum.Enum):
     """A label for a piece of text."""
 
-    def __new__(cls, label: str, display_text: str = "", help_text: str = None):
+    def __new__(cls, label: str, widget: LabelWidget, display_text: str = "", help_text: str = None):
         obj = str.__new__(cls, label)
         obj._value_ = label
+        obj.widget = widget
         obj.display_text = display_text
         obj.help_text = help_text
         return obj
 
-    spam = "spam", "Seems to be intentionally low-quality or irrelevant"
-    fails_task = "fails_task", "Fails to follow the correct instruction / task"
-    not_appropriate = "not_appropriate", "Inappropriate for customer assistant"
-    violence = "violence", "Encourages or fails to discourage violence/abuse/terrorism/self-harm"
-    excessive_harm = (
-        "excessive_harm",
-        "Content likely to cause excessive harm not justifiable in the context",
-        "Harm refers to physical or mental damage or injury to someone or something. Excessive refers to a reasonable threshold of harm in the context, for instance damaging skin is not excessive in the context of surgery.",
-    )
-    sexual_content = "sexual_content", "Contains sexual content"
-    toxicity = "toxicity", "Contains rude, abusive, profane or insulting content"
-    moral_judgement = "moral_judgement", "Expresses moral judgement"
-    political_content = "political_content", "Expresses political views"
-    humor = "humor", "Contains humorous content including sarcasm"
+    # yes/no questions
+    spam = "spam", LabelWidget.yes_no, "Seems to be intentionally low-quality or irrelevant"
+    fails_task = "fails_task", LabelWidget.yes_no, "Fails to follow the correct instruction / task"
+
+    # flags
+    pii = "pii", LabelWidget.flag, "Contains personal identifiable information (PII)"
+    not_appropriate = "not_appropriate", LabelWidget.flag, "Inappropriate"
     hate_speech = (
         "hate_speech",
+        LabelWidget.flag,
         "Content is abusive or threatening and expresses prejudice against a protected characteristic",
-        "Prejudice refers to preconceived views not based on reason. Protected characteristics include gender, ethnicity, religion, sexual orientation, and similar characteristics.",
+        "Prejudice refers to preconceived views not based on reason. Protected characteristics "
+        "include gender, ethnicity, religion, sexual orientation, and similar characteristics.",
     )
-    threat = "threat", "Contains a threat against a person or persons"
-    misleading = "misleading", "Contains text which is incorrect or misleading"
-    helpful = "helpful", "Completes the task to a high standard"
-    creative = "creative", "Expresses creativity in responding to the task"
+    sexual_content = "sexual_content", LabelWidget.flag, "Contains sexual content"
+    moral_judgement = "moral_judgement", LabelWidget.flag, "Expresses moral judgement"
+    political_content = "political_content", LabelWidget.flag, "Expresses political views"
+
+    # likert
+    quality = "quality", LabelWidget.likert, "Overall subjective quality rating of the message"
+    toxicity = "toxicity", LabelWidget.likert, "Rude, abusive, profane or insulting content"
+    humor = "humor", LabelWidget.likert, "Humorous content including sarcasm"
+    helpfulness = "helpfulness", LabelWidget.likert, "Helpfulness of the message"
+    creativity = "creativity", LabelWidget.likert, "Creativity"
+    violence = "violence", LabelWidget.likert, "Violence/abuse/terrorism/self-harm"
 
 
 class TextLabels(Interaction):
@@ -327,6 +384,7 @@ class TextLabels(Interaction):
     labels: dict[TextLabel, float]
     message_id: UUID
     task_id: Optional[UUID]
+    is_report: Optional[bool]
 
     @property
     def has_message_id(self) -> bool:
@@ -392,6 +450,7 @@ class UserScore(BaseModel):
 
 class LeaderboardStats(BaseModel):
     time_frame: str
+    last_updated: datetime
     leaderboard: List[UserScore]
 
 
@@ -400,3 +459,29 @@ class OasstErrorResponse(BaseModel):
 
     error_code: OasstErrorCode
     message: str
+
+
+class EmojiCode(str, enum.Enum):
+    thumbs_up = "+1"  # 👍
+    thumbs_down = "-1"  # 👎
+    red_flag = "red_flag"  # 🚩
+    hundred = "100"  # 💯
+    rofl = "rofl"  # 🤣
+    clap = "clap"  # 👏
+    diamond = "diamond"  # 💎
+    heart_eyes = "heart_eyes"  # 😍
+    disappointed = "disappointed"  # 😞
+    poop = "poop"  # 💩
+    skull = "skull"  # 💀
+
+
+class EmojiOp(str, enum.Enum):
+    togggle = "toggle"
+    add = "add"
+    remove = "remove"
+
+
+class MessageEmojiRequest(BaseModel):
+    user: User
+    op: EmojiOp = EmojiOp.togggle
+    emoji: EmojiCode

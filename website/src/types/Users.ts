@@ -1,7 +1,4 @@
-/**
- * Reports the Backend's knowledge of a user.
- */
-export interface BackendUser {
+export interface BackendUserCore {
   /**
    * The user's unique ID according to the `auth_method`.
    */
@@ -18,7 +15,12 @@ export interface BackendUser {
    *   - local
    */
   auth_method: string;
+}
 
+/**
+ * Reports the Backend's knowledge of a user.
+ */
+export interface BackendUser extends BackendUserCore {
   /**
    * The backend's UUID for this user.
    */
@@ -49,3 +51,19 @@ export interface User extends BackendUser {
    */
   role: string;
 }
+
+export type FetchUsersParams = {
+  limit: number;
+  cursor?: string;
+  direction: "forward" | "back";
+  searchDisplayName?: string;
+  sortKey?: "username" | "display_name";
+};
+
+export type FetchUsersResponse<T extends User | BackendUser = BackendUser> = {
+  items: T[];
+  next?: string;
+  prev?: string;
+  sort_key: "username" | "display_name";
+  order: "asc" | "desc";
+};

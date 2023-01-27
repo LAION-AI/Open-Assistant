@@ -45,7 +45,7 @@ def get_tree_by_frontend_id(
     """
     pr = PromptRepository(db, api_client)
     message = pr.fetch_message_by_frontend_message_id(message_id)
-    tree = pr.fetch_message_tree(message.message_tree_id)
+    tree = pr.fetch_message_tree(message.message_tree_id, reviewed=False)
     return utils.prepare_tree(tree, message.message_tree_id)
 
 

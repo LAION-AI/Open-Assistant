@@ -1,11 +1,13 @@
 from typing import Optional
 from uuid import UUID
 
+from oasst_backend.config import settings
 from oasst_backend.models import ApiClient, User
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from sqlmodel import Session
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import Session, and_, or_
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -115,7 +117,7 @@ class UserRepository:
         self.db.add(user)
 
     @managed_tx_method(CommitMode.COMMIT)
-    def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
+    def _lookup_client_user_tx(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
         if not client_user:
             return None
         user: User = (
@@ -143,13 +145,27 @@ class UserRepository:
             self.db.add(user)
         return user
 
-    def query_users(
+    def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
+        num_retries = settings.DATABASE_MAX_TX_RETRY_COUNT
+        for i in range(num_retries):
+            try:
+                return self._lookup_client_user_tx(client_user, create_missing)
+            except IntegrityError:
+                # catch UniqueViolation exception, for concurrent requests due to conflicts in ix_user_username
+                if i + 1 == num_retries:
+                    raise
+
+    def query_users_ordered_by_username(
         self,
         api_client_id: Optional[UUID] = None,
-        limit: Optional[int] = 20,
-        gt: Optional[str] = None,
-        lt: Optional[str] = None,
+        gte_username: Optional[str] = None,
+        gt_id: Optional[UUID] = None,
+        lte_username: Optional[str] = None,
+        lt_id: Optional[UUID] = None,
         auth_method: Optional[str] = None,
+        search_text: Optional[str] = None,
+        limit: Optional[int] = 100,
+        desc: bool = False,
     ) -> list[User]:
         if not self.api_client.trusted:
             if not api_client_id:
@@ -158,52 +174,113 @@ class UserRepository:
             if api_client_id != self.api_client.id:
                 raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
 
-        users = self.db.query(User)
+        qry = self.db.query(User)
 
-        if api_client_id:
-            users = users.filter(User.api_client_id == api_client_id)
+        if gte_username is not None:
+            if gt_id:
+                qry = qry.filter(
+                    or_(User.username > gte_username, and_(User.username == gte_username, User.id > gt_id))
+                )
+            else:
+                qry = qry.filter(User.username >= gte_username)
+        elif gt_id:
+            raise OasstError("Need id and name for keyset pagination", OasstErrorCode.GENERIC_ERROR)
+
+        if lte_username is not None:
+            if lt_id:
+                qry = qry.filter(
+                    or_(User.username < lte_username, and_(User.username == lte_username, User.id < lt_id))
+                )
+            else:
+                qry = qry.filter(User.username <= lte_username)
+        elif lt_id:
+            raise OasstError("Need id and name for keyset pagination", OasstErrorCode.GENERIC_ERROR)
 
         if auth_method:
-            users = users.filter(User.auth_method == auth_method)
+            qry = qry.filter(User.auth_method == auth_method)
+        if api_client_id:
+            qry = qry.filter(User.api_client_id == api_client_id)
 
-        users = users.order_by(User.display_name)
+        if search_text:
+            pattern = "%{}%".format(search_text.replace("\\", "\\\\").replace("_", "\\_").replace("%", "\\%"))
+            qry = qry.filter(User.username.like(pattern))
 
-        if gt:
-            users = users.filter(User.display_name > gt)
-
-        if lt:
-            users = users.filter(User.display_name < lt)
+        if desc:
+            qry = qry.order_by(User.username.desc(), User.id.desc())
+        else:
+            qry = qry.order_by(User.username, User.id)
 
         if limit is not None:
-            users = users.limit(limit)
+            qry = qry.limit(limit)
 
-        return users.all()
+        return qry.all()
 
-    def query_users_by_display_name(
+    def query_users_ordered_by_display_name(
         self,
-        search_text: str,
-        exact: Optional[bool] = False,
-        limit: Optional[int] = 20,
+        gte_display_name: Optional[str] = None,
+        gt_id: Optional[UUID] = None,
+        lte_display_name: Optional[str] = None,
+        lt_id: Optional[UUID] = None,
         api_client_id: Optional[UUID] = None,
         auth_method: Optional[str] = None,
+        search_text: Optional[str] = None,
+        limit: Optional[int] = 100,
+        desc: bool = False,
     ) -> list[User]:
+
         if not self.api_client.trusted:
             if not api_client_id:
+                # Let unprivileged api clients query their own users without api_client_id being set
                 api_client_id = self.api_client.id
 
             if api_client_id != self.api_client.id:
+                # Unprivileged api client asks for foreign users
                 raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
 
-        qry = self.db.query(User).order_by(User.display_name)
+        qry = self.db.query(User)
 
-        if exact:
-            qry = qry.filter(User.display_name == search_text)
-        else:
+        if gte_display_name is not None:
+            if gt_id:
+                qry = qry.filter(
+                    or_(
+                        User.display_name > gte_display_name,
+                        and_(User.display_name == gte_display_name, User.id > gt_id),
+                    )
+                )
+            else:
+                qry = qry.filter(User.display_name >= gte_display_name)
+        elif gt_id:
+            raise OasstError("Need id and name for keyset pagination", OasstErrorCode.GENERIC_ERROR)
+
+        if lte_display_name is not None:
+            if lt_id:
+                qry = qry.filter(
+                    or_(
+                        User.display_name < lte_display_name,
+                        and_(User.display_name == lte_display_name, User.id < lt_id),
+                    )
+                )
+            else:
+                qry = qry.filter(User.display_name <= lte_display_name)
+        elif lt_id:
+            raise OasstError("Need id and name for keyset pagination", OasstErrorCode.GENERIC_ERROR)
+
+        if auth_method:
+            qry = qry.filter(User.auth_method == auth_method)
+        if api_client_id:
+            qry = qry.filter(User.api_client_id == api_client_id)
+
+        if search_text:
             pattern = "%{}%".format(search_text.replace("\\", "\\\\").replace("_", "\\_").replace("%", "\\%"))
             qry = qry.filter(User.display_name.like(pattern))
 
         if auth_method:
             qry = qry.filter(User.auth_method == auth_method)
+
+        if desc:
+            qry = qry.order_by(User.display_name.desc(), User.id.desc())
+        else:
+            qry = qry.order_by(User.display_name, User.id)
 
         if limit is not None:
             qry = qry.limit(limit)

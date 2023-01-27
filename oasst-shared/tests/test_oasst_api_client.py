@@ -73,6 +73,7 @@ async def test_can_post_interaction(oasst_api_client_mocked: OasstApiClient):
                 message_id="123",
                 user_message_id="321",
                 text="This is my reply",
+                lang="en",
                 user=protocol_schema.User(
                     id="123",
                     display_name="lomz",

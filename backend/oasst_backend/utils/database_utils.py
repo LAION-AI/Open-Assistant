@@ -19,13 +19,13 @@ class CommitMode(IntEnum):
     NONE = 0
     FLUSH = 1
     COMMIT = 2
+    ROLLBACK = 3
 
 
 """
 * managed_tx_method and async_managed_tx_method methods are decorators functions
 * to be used on class functions. It expects the Class to have a 'db' Session object
 * initialised
-* TODO: tx method decorator for non class methods
 """
 
 
@@ -41,6 +41,8 @@ def managed_tx_method(auto_commit: CommitMode = CommitMode.COMMIT, num_retries=s
                             self.db.commit()
                         elif auto_commit == CommitMode.FLUSH:
                             self.db.flush()
+                        elif auto_commit == CommitMode.ROLLBACK:
+                            self.db.rollback()
                         if isinstance(result, SQLModel):
                             self.db.refresh(result)
                         return result
@@ -75,6 +77,8 @@ def async_managed_tx_method(
                             self.db.commit()
                         elif auto_commit == CommitMode.FLUSH:
                             self.db.flush()
+                        elif auto_commit == CommitMode.ROLLBACK:
+                            self.db.rollback()
                         if isinstance(result, SQLModel):
                             self.db.refresh(result)
                         return result
@@ -103,6 +107,7 @@ def managed_tx_function(
     auto_commit: CommitMode = CommitMode.COMMIT,
     num_retries=settings.DATABASE_MAX_TX_RETRY_COUNT,
     session_factory: Callable[..., Session] = default_session_factor,
+    refresh_result: bool = True,
 ):
     """Passes Session object as first argument to wrapped function."""
 
@@ -118,7 +123,9 @@ def managed_tx_function(
                                 session.commit()
                             elif auto_commit == CommitMode.FLUSH:
                                 session.flush()
-                            if isinstance(result, SQLModel):
+                            elif auto_commit == CommitMode.ROLLBACK:
+                                session.rollback()
+                            if refresh_result and isinstance(result, SQLModel):
                                 session.refresh(result)
                             return result
                         except OperationalError:

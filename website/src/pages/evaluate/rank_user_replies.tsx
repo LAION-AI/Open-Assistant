@@ -4,6 +4,7 @@ import { getDashboardLayout } from "src/components/Layout";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { useRankPrompterRepliesTask } from "src/hooks/tasks/useRankReplies";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const RankUserReplies = () => {
   const { tasks, isLoading, reset, trigger } = useRankPrompterRepliesTask();

@@ -10,6 +10,7 @@ module.exports = {
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
     "@chakra-ui/storybook-addon",
+    "storybook-addon-next-router",
   ],
   framework: "@storybook/react",
   core: {
@@ -23,7 +24,12 @@ module.exports = {
     config.resolve.alias = {
       ...config.resolve.alias,
       src: path.resolve(__dirname, "../src"),
+      styles: path.resolve(__dirname, "../styles"),
     };
+    config.resolve.fallback = {
+      fs: false,
+      path: require.resolve('path-browserify'),
+    }
     return config;
   },
   features: {

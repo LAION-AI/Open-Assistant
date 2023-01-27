@@ -76,7 +76,12 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        args: [--prose-wrap=always, --write]
+        args:
+          [
+            --prose-wrap=always,
+            --write,
+            --ignore-path=./website/.prettierignore,
+          ]
 
   - repo: local
     hooks:

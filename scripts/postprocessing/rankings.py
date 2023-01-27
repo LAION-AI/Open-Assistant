@@ -101,7 +101,7 @@ def ranked_pairs(ranks: List[List[int]]):
     # order by strength of victory (using tideman's original method, don't think it would make a difference for us)
     sorted_majorities = []
     for i in range(len(ranks[0])):
-        for j in range(len(ranks[i])):
+        for j in range(len(ranks[0])):
             if tallies[i, j] > 0:
                 sorted_majorities.append((i, j, tallies[i, j]))
     # we don't explicitly deal with tied majorities here
@@ -132,8 +132,8 @@ if __name__ == "__main__":
         [("w", "x", "z", "y") for _ in range(1)]
         + [("w", "y", "x", "z") for _ in range(2)]
         # + [("x","y","z","w") for _ in range(4)]
-        + [("x", "z", "w", "y") for _ in range(5)]
-        + [("y", "w", "x", "z") for _ in range(1)]
+        # + [("x", "z", "w", "y") for _ in range(5)]
+        # + [("y", "w", "x", "z") for _ in range(1)]
         # [("y","z","w","x") for _ in range(1000)]
     )
     rp = ranked_pairs(ranks)

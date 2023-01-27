@@ -1,5 +1,9 @@
+"""
+    Summarize different spectrum of documents
+"""
 import random
 
+from custom_datasets.formatting import format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -12,13 +16,21 @@ SUMMARY_SPECIAL_PROMPT = {
 }
 
 summarization_config_mapping = {
-    "cnn_dailymail": ("3.0.0",),
-    "samsum": (),
-    "xsum": (),
-    "multi_news": (),
-    "scitldr": ("AIC",),
-    "billsum": (),
-    "reddit": (),
+    "cnn_dailymail": (
+        "cnn_dailymail",
+        "3.0.0",
+    ),
+    "samsum": ("samsum",),
+    "xsum": ("xsum",),
+    "multi_news": ("multi_news",),
+    "scitldr": (
+        "scitldr",
+        "AIC",
+    ),
+    "billsum": ("billsum",),
+    "reddit": ("reddit",),
+    "tldr_news": ("JulesBelveze/tldr_news",),  # need to fix : JulesBelveze/tldr_news
+    "debate_sum": ("Hellisotherpeople/DebateSum",),  # Hellisotherpeople/DebateSum
 }
 
 summarization_name_mapping = {
@@ -29,6 +41,8 @@ summarization_name_mapping = {
     "scitldr": ("source", "target"),
     "billsum": ("text", "summary"),
     "reddit": ("content", "summary"),
+    "tldr_news": ("content", "headline"),
+    "debate_sum": ("Full-Document", "Extract"),
 }
 
 
@@ -41,11 +55,12 @@ def index_summary_merge(text, summary):
 
 
 class SummarizationDataset(Dataset):
-    def __init__(self, dataset, cache_dir, split):
+    def __init__(self, dataset, cache_dir, split, max_words=512):
         self.name = dataset
-        self.dataset = load_dataset(dataset, *summarization_config_mapping[dataset], cache_dir=cache_dir, split=split)
+        self.dataset = load_dataset(*summarization_config_mapping[dataset], cache_dir=cache_dir, split=split)
         self.text_column, self.summary_column = summarization_name_mapping[dataset]
         self.preprocess_fn = index_summary_merge if dataset == "scitldr" else index_summary_default
+        self.max_words = max_words
 
     def __len__(self):
         return len(self.dataset)
@@ -59,4 +74,5 @@ class SummarizationDataset(Dataset):
         else:
             prompt = random.choice(SUMMARIZATION_SPECIAL_TOKENS["Summary"])
 
-        return ("".join([SUMMARIZATION_SPECIAL_TOKENS["Text"], " ".join(text.split(" ")[:256]), prompt]), summary)
+        context = "".join([SUMMARIZATION_SPECIAL_TOKENS["Text"], " ".join(text.split(" ")[: self.max_words]), prompt])
+        return format_pair((context, summary))
