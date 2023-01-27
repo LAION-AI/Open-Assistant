@@ -18,8 +18,10 @@ def main(
     inference_server_url: str = "http://localhost:8001",
 ):
     def on_open(ws: websocket.WebSocket):
+        logger.info("Connected to backend, sending config...")
         worker_config = inference.WorkerConfig(model_name=model_name)
         ws.send(worker_config.json())
+        logger.info("Config sent, waiting for work...")
 
     def on_message(ws: websocket.WebSocket, message: str):
         # TODO: what if this comes in, but one is already in progress?
