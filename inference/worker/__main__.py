@@ -41,25 +41,6 @@ def main(
 
         prompt = prefix + "\n".join(messages) + "\nAssistant:"
 
-        # TODO: use the seed
-        # torch.manual_seed(work_request.seed)
-        # model_output = pipe(prompt, max_new_tokens=work_request.max_new_tokens, do_sample=True, return_full_text=False)[
-        #     0
-        # ]["generated_text"]
-        # model_output = model_output.strip()
-
-        # # fake streaming
-        # split_idcs = [m.start() for m in re.finditer(r"([\w:]+)", model_output)]
-        # pieces = [model_output[a:b] for a, b in zip([0] + split_idcs, split_idcs + [None])]
-        # for piece in pieces:
-        #     if not piece:
-        #         continue
-        #     if piece.strip() in ("User:", "Assistant:"):
-        #         break
-        #     ws.send(inference.WorkResponsePacket(token=piece).json())
-        #     time.sleep(0.1)
-        # ws.send(inference.WorkResponsePacket(is_end=True).json())
-
         response = requests.post(
             f"{inference_server_url}/generate_stream",
             json={
@@ -70,6 +51,7 @@ def main(
                     "top_k": work_request.top_k,
                     "top_p": work_request.top_p,
                     "temperature": work_request.temperature,
+                    "seed": work_request.seed,
                 },
             },
             stream=True,
