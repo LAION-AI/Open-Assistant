@@ -138,6 +138,8 @@ class Settings(BaseSettings):
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
     DEBUG_DATABASE_ECHO: bool = False
 
+    DUPLICATE_MESSAGE_FILTER_WINDOW_MINUTES: int = 120
+
     HUGGING_FACE_API_KEY: str = ""
 
     ROOT_TOKENS: List[str] = ["1234"]  # supply a string that can be parsed to a json list
