@@ -1,11 +1,13 @@
 import { Box, Button, Flex, HStack, Text, useColorModeValue } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MessageView } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { LabelInputGroup } from "src/components/Survey/LabelInputGroup";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
+import { Message } from "src/types/Conversation";
 import { TaskType } from "src/types/Task";
 
 export const LabelTask = ({
@@ -15,6 +17,7 @@ export const LabelTask = ({
   onReplyChanged,
   onValidityChanged,
 }: TaskSurveyProps<{ text: string; labels: Record<string, number>; message_id: string }>) => {
+  const { i18n } = useTranslation();
   const [sliderValues, setSliderValues] = useState<number[]>(new Array(task.valid_labels.length).fill(null));
 
   useEffect(() => {
@@ -27,6 +30,23 @@ export const LabelTask = ({
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const isSpamTask = task.mode === "simple" && task.valid_labels.length === 1 && task.valid_labels[0] === "spam";
 
+  // TODO: remove as soon as the backend delivers
+  // real information about the current message
+  const additionMessage: Message = useMemo(
+    () => ({
+      text: task.reply,
+      is_assistant: task.type === TaskType.label_assistant_reply,
+      message_id: task.message_id,
+      created_date: new Date().toISOString(),
+      emojis: {},
+      user_emojis: [],
+      id: "dummy",
+      lang: i18n.language,
+      parent_id: "dummy",
+    }),
+    [task.reply, task.type, task.message_id, i18n.language]
+  );
+
   return (
     <div data-cy="task" data-task-type={isSpamTask ? "spam-task" : "label-task"}>
       <TwoColumnsWithCards>
@@ -34,17 +54,7 @@ export const LabelTask = ({
           <TaskHeader taskType={taskType} />
           {task.conversation ? (
             <Box mt="4" p={[4, 6]} borderRadius="lg" bg={cardColor}>
-              <MessageTable
-                messages={[
-                  ...(task.conversation?.messages ?? []),
-                  {
-                    text: task.reply,
-                    is_assistant: task.type === TaskType.label_assistant_reply,
-                    message_id: task.message_id,
-                  },
-                ]}
-                highlightLastMessage
-              />
+              <MessageTable messages={[...(task.conversation?.messages ?? []), additionMessage]} highlightLastMessage />
             </Box>
           ) : (
             <Box mt="4">
