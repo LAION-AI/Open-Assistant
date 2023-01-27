@@ -1,14 +1,11 @@
 import { Box, Button, Flex, HStack, Text, useColorModeValue } from "@chakra-ui/react";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 import { MessageView } from "src/components/Messages";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { LabelInputGroup } from "src/components/Survey/LabelInputGroup";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
-import { Message } from "src/types/Conversation";
-import { TaskType } from "src/types/Task";
 
 export const LabelTask = ({
   task,
@@ -17,7 +14,6 @@ export const LabelTask = ({
   onReplyChanged,
   onValidityChanged,
 }: TaskSurveyProps<{ text: string; labels: Record<string, number>; message_id: string }>) => {
-  const { i18n } = useTranslation();
   const [sliderValues, setSliderValues] = useState<number[]>(new Array(task.valid_labels.length).fill(null));
 
   useEffect(() => {
