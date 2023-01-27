@@ -1,14 +1,12 @@
 """Add visible_in_public_leaderboards column
 
 Revision ID: 2c93612eab47
-Revises: 
+Revises:
 Create Date: 2023-01-26 21:38:44.384491
 
 """
-from alembic import op
 import sqlalchemy as sa
-import sqlmodel
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "2c93612eab47"

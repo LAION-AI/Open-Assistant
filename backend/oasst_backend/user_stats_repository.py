@@ -252,7 +252,7 @@ FROM (
     ) AS "rank", user_id, time_frame
     FROM user_stats
     WHERE (
-        SELECT "visible_in_public_leaderboards" FROM "user" 
+        SELECT "visible_in_public_leaderboards" FROM "user"
         WHERE id = user_id LIMIT 1
     ) = true
     AND (:time_frame IS NULL OR time_frame = :time_frame)
