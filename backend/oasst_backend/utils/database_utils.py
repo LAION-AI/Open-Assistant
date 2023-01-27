@@ -148,7 +148,6 @@ def managed_tx_function(
     auto_commit: CommitMode = CommitMode.COMMIT,
     num_retries=settings.DATABASE_MAX_TX_RETRY_COUNT,
     session_factory: Callable[..., Session] = default_session_factor,
-    refresh_result: bool = True,
 ):
     """Passes Session object as first argument to wrapped function."""
 
