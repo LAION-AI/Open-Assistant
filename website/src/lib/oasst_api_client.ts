@@ -1,7 +1,10 @@
+import { JWT } from "next-auth/jwt";
 import type { EmojiOp, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
+
+import { getBackendUserCore } from "./users";
 
 export class OasstError {
   message: string;
@@ -18,10 +21,16 @@ export class OasstError {
 export class OasstApiClient {
   oasstApiUrl: string;
   oasstApiKey: string;
+  userHeaders: Record<string, string> = {};
 
-  constructor(oasstApiUrl: string, oasstApiKey: string) {
+  constructor(oasstApiUrl: string, oasstApiKey: string, user?: BackendUserCore) {
     this.oasstApiUrl = oasstApiUrl;
     this.oasstApiKey = oasstApiKey;
+    if (user) {
+      this.userHeaders = {
+        "X-OASST-USER": `${user.auth_method}:${user.id}`,
+      };
+    }
   }
   // TODO return a strongly typed Task?
   // This method is used to store a task in RegisteredTask.task.
@@ -215,9 +224,10 @@ export class OasstApiClient {
       method,
       ...init,
       headers: {
+        ...init?.headers,
+        ...this.userHeaders,
         "X-API-Key": this.oasstApiKey,
         "Content-Type": "application/json",
-        ...init?.headers,
       },
     });
 
@@ -227,8 +237,7 @@ export class OasstApiClient {
 
     if (resp.status >= 300) {
       const errorText = await resp.text();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let error: any;
+      let error;
       try {
         error = JSON.parse(errorText);
       } catch (e) {
@@ -241,6 +250,9 @@ export class OasstApiClient {
   }
 }
 
-const oasstApiClient = new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
+export const createApiClientFromUser = (user: BackendUserCore) =>
+  new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY, user);
 
-export { oasstApiClient };
+export const createApiClient = async (token: JWT) => createApiClientFromUser(await getBackendUserCore(token.sub));
+
+export const userlessApiClient = new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);

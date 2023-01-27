@@ -1,6 +1,8 @@
 import { withoutRole } from "src/lib/auth";
 
 const handler = withoutRole("banned", async (req, res) => {
+  // TODO: move to oasst_api_client
+
   const messagesRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/messages`, {
     method: "GET",
     headers: {
