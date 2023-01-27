@@ -245,4 +245,24 @@ export class OasstApiClient {
 
     return await resp.json();
   }
+
+  fetch_my_messages(user: BackendUserCore) {
+    const params = new URLSearchParams({
+      username: user.id,
+      auth_method: user.auth_method,
+    });
+    return this.get<Message[]>(`/api/v1/messages?${params}`);
+  }
+
+  fetch_recent_messages() {
+    return this.get<Message[]>(`/api/v1/messages`);
+  }
+
+  fetch_message_children(messageId: string) {
+    return this.get<Message[]>(`/api/v1/messages/${messageId}/children`);
+  }
+
+  fetch_conversation(messageId: string) {
+    return this.get(`/api/v1/messages/${messageId}/conversation`);
+  }
 }

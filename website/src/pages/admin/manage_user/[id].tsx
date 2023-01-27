@@ -10,7 +10,7 @@ import { getAdminLayout } from "src/components/Layout";
 import { Role, RoleSelect } from "src/components/RoleSelect";
 import { UserMessagesCell } from "src/components/UserMessagesCell";
 import { post } from "src/lib/api";
-import { userlessApiClient } from "src/lib/oasst_api_client";
+import { userlessApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import useSWRMutation from "swr/mutation";
 
