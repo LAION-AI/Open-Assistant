@@ -354,12 +354,6 @@ class TextLabel(str, enum.Enum):
     fails_task = "fails_task", LabelWidget.yes_no, "Fails to follow the correct instruction / task"
 
     # flags
-    lang_mismatch = (
-        "lang_mismatch",
-        LabelWidget.flag,
-        "Language mismatch",
-        "The message is not written in the currently selected language.",
-    )
     pii = "pii", LabelWidget.flag, "Contains personal identifiable information (PII)"
     not_appropriate = "not_appropriate", LabelWidget.flag, "Inappropriate"
     hate_speech = (
