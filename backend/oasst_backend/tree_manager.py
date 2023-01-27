@@ -377,7 +377,7 @@ class TreeManager:
                             label_mode = protocol_schema.LabelTaskMode.simple
                             label_disposition = protocol_schema.LabelTaskDisposition.spam
                             valid_labels = list(self.cfg.mandatory_labels_assistant_reply)
-                            if protocol_schema.LabelTaskDisposition.quality not in valid_labels:
+                            if protocol_schema.TextLabel.quality not in valid_labels:
                                 valid_labels.append(protocol_schema.TextLabel.quality)
 
                         logger.info(f"Generating a LabelAssistantReplyTask. ({label_mode=:s})")
@@ -401,7 +401,7 @@ class TreeManager:
                             label_mode = protocol_schema.LabelTaskMode.simple
                             label_disposition = protocol_schema.LabelTaskDisposition.spam
                             valid_labels = list(self.cfg.mandatory_labels_prompter_reply)
-                            if protocol_schema.LabelTaskDisposition.quality not in valid_labels:
+                            if protocol_schema.TextLabel.quality not in valid_labels:
                                 valid_labels.append(protocol_schema.TextLabel.quality)
 
                         logger.info(f"Generating a LabelPrompterReplyTask. ({label_mode=:s})")
