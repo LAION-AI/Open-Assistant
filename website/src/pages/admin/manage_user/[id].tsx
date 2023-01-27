@@ -10,7 +10,7 @@ import { getAdminLayout } from "src/components/Layout";
 import { Role, RoleSelect } from "src/components/RoleSelect";
 import { UserMessagesCell } from "src/components/UserMessagesCell";
 import { post } from "src/lib/api";
-import { oasstApiClient } from "src/lib/oasst_api_client";
+import { userlessApiClient } from "src/lib/oasst_api_client";
 import prisma from "src/lib/prismadb";
 import useSWRMutation from "swr/mutation";
 
@@ -113,7 +113,7 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
  * Fetch the user's data on the server side when rendering.
  */
 export async function getServerSideProps({ query, locale }) {
-  const backend_user = await oasstApiClient.fetch_user(query.id);
+  const backend_user = await userlessApiClient.fetch_user(query.id);
   const local_user = await prisma.user.findUnique({
     where: { id: backend_user.id },
     select: {
