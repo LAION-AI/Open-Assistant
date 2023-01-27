@@ -188,6 +188,14 @@ class PromptRepository:
         if re.match(r"^\s+$", text):
             raise OasstError("Message text is empty", OasstErrorCode.TASK_MESSAGE_TEXT_EMPTY)
 
+        # ensure message size is below the predefined limit
+        if len(text) > settings.MESSAGE_SIZE_LIMIT:
+            logger.error(f"Message size {len(text)=} exceeds size limit of {settings.MESSAGE_SIZE_LIMIT=}.")
+            raise OasstError("Message size too long.", OasstErrorCode.TASK_MESSAGE_TOO_LONG)
+
+        if self.check_users_recent_replies_for_duplicates(text):
+            raise OasstError("User recent messages have duplicates", OasstErrorCode.TASK_MESSAGE_DUPLICATED)
+
         if task.parent_message_id:
             parent_message = self.fetch_message(task.parent_message_id)
 
@@ -556,7 +564,7 @@ class PromptRepository:
             qry = qry.filter(not_(Message.deleted))
         return self._add_user_emojis_all(qry)
 
-    def check_users_recent_replies_for_duplicates(self, task_interaction: protocol_schema.AnyInteraction) -> bool:
+    def check_users_recent_replies_for_duplicates(self, text: str) -> bool:
         """
         Checks if the user has recently replied with the same text within a given time period.
         """
@@ -576,7 +584,7 @@ class PromptRepository:
         if not messages:
             return False
         for msg in messages:
-            if msg.text == task_interaction.text:
+            if msg.text == text:
                 return True
         return False
 
