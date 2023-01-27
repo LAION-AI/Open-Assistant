@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from oasst_shared.schemas import protocol as protocol_schema
+from oasst_shared.schemas.protocol import TextLabel
 from pydantic import AnyHttpUrl, BaseModel, BaseSettings, FilePath, PostgresDsn, validator
 
 
@@ -46,16 +46,68 @@ class TreeManagerConfiguration(BaseModel):
     num_required_rankings: int = 3
     """Number of rankings in which the message participated."""
 
-    mandatory_labels_initial_prompt: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    labels_initial_prompt: list[TextLabel] = [
+        TextLabel.spam,
+        TextLabel.quality,
+        TextLabel.helpfulness,
+        TextLabel.creativity,
+        TextLabel.humor,
+        TextLabel.toxicity,
+        TextLabel.violence,
+        TextLabel.not_appropriate,
+        TextLabel.pii,
+        TextLabel.hate_speech,
+        TextLabel.sexual_content,
+    ]
+
+    labels_assistant_reply: list[TextLabel] = [
+        TextLabel.spam,
+        TextLabel.fails_task,
+        TextLabel.quality,
+        TextLabel.helpfulness,
+        TextLabel.creativity,
+        TextLabel.humor,
+        TextLabel.toxicity,
+        TextLabel.violence,
+        TextLabel.not_appropriate,
+        TextLabel.pii,
+        TextLabel.hate_speech,
+        TextLabel.sexual_content,
+    ]
+
+    labels_prompter_reply: list[TextLabel] = [
+        TextLabel.spam,
+        TextLabel.quality,
+        TextLabel.helpfulness,
+        TextLabel.humor,
+        TextLabel.creativity,
+        TextLabel.toxicity,
+        TextLabel.violence,
+        TextLabel.not_appropriate,
+        TextLabel.pii,
+        TextLabel.hate_speech,
+        TextLabel.sexual_content,
+    ]
+
+    mandatory_labels_initial_prompt: Optional[list[TextLabel]] = [TextLabel.spam]
     """Mandatory labels in text-labeling tasks for initial prompts."""
 
-    mandatory_labels_assistant_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    mandatory_labels_assistant_reply: Optional[list[TextLabel]] = [TextLabel.spam]
     """Mandatory labels in text-labeling tasks for assistant replies."""
 
-    mandatory_labels_prompter_reply: Optional[list[protocol_schema.TextLabel]] = [protocol_schema.TextLabel.spam]
+    mandatory_labels_prompter_reply: Optional[list[TextLabel]] = [TextLabel.spam]
     """Mandatory labels in text-labeling tasks for prompter replies."""
 
     rank_prompter_replies: bool = False
+
+    lonely_children_count: int = 3
+    """Number of children below which parents are preferred during sampling for reply tasks."""
+
+    p_lonely_child_extension: float = 0.8
+    """Probability to select a parent with less than lonely_children_count children."""
+
+    recent_tasks_span_sec: int = 3 * 60  # 3 min
+    """Time in seconds of recent tasks to consider for exclusion during task selection."""
 
 
 class Settings(BaseSettings):

@@ -1,7 +1,7 @@
 import json
 import random
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional, Tuple
@@ -94,8 +94,6 @@ class TreeManagerStats(pydantic.BaseModel):
 
 
 class TreeManager:
-    _all_text_labels = list(map(lambda x: x.value, protocol_schema.TextLabel))
-
     def __init__(
         self,
         db: Session,
@@ -215,6 +213,15 @@ class TreeManager:
             replies_need_review=replies_need_review,
             incomplete_rankings=incomplete_rankings,
         )
+
+    @staticmethod
+    def _get_label_descriptions(valid_labels: list[TextLabels]) -> list[protocol_schema.LabelDescription]:
+        return [
+            protocol_schema.LabelDescription(
+                name=l.value, widget=l.widget.value, display_text=l.display_text, help_text=l.help_text
+            )
+            for l in valid_labels
+        ]
 
     def next_task(
         self,
@@ -339,6 +346,7 @@ class TreeManager:
                     message_tree_id = messages[-1].message_tree_id
 
             case TaskType.LABEL_REPLY:
+
                 if task_role == TaskRole.PROMPTER:
                     replies_need_review = list(filter(lambda m: m.role == "prompter", replies_need_review))
                 elif task_role == TaskRole.ASSISTANT:
@@ -355,14 +363,14 @@ class TreeManager:
 
                     label_mode = protocol_schema.LabelTaskMode.full
                     label_disposition = protocol_schema.LabelTaskDisposition.quality
-                    valid_labels = self._all_text_labels
 
                     if message.role == "assistant":
+                        valid_labels = self.cfg.labels_assistant_reply
                         if (
                             desired_task_type == protocol_schema.TaskRequestType.random
                             and random.random() > self.cfg.p_full_labeling_review_reply_assistant
                         ):
-                            valid_labels = list(map(lambda x: x.value, self.cfg.mandatory_labels_assistant_reply))
+                            valid_labels = self.cfg.mandatory_labels_assistant_reply
                             label_mode = protocol_schema.LabelTaskMode.simple
                             label_disposition = protocol_schema.LabelTaskDisposition.spam
 
@@ -371,46 +379,74 @@ class TreeManager:
                             message_id=message.id,
                             conversation=conversation,
                             reply=message.text,
-                            valid_labels=valid_labels,
+                            valid_labels=list(map(lambda x: x.value, valid_labels)),
                             mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_assistant_reply)),
                             mode=label_mode,
                             disposition=label_disposition,
+                            labels=self._get_label_descriptions(valid_labels),
                         )
                     else:
+                        valid_labels = self.cfg.labels_prompter_reply
                         if (
                             desired_task_type == protocol_schema.TaskRequestType.random
                             and random.random() > self.cfg.p_full_labeling_review_reply_prompter
                         ):
-                            valid_labels = list(map(lambda x: x.value, self.cfg.mandatory_labels_prompter_reply))
+                            valid_labels = self.cfg.mandatory_labels_prompter_reply
                             label_mode = protocol_schema.LabelTaskMode.simple
                         logger.info(f"Generating a LabelPrompterReplyTask. ({label_mode=:s})")
                         task = protocol_schema.LabelPrompterReplyTask(
                             message_id=message.id,
                             conversation=conversation,
                             reply=message.text,
-                            valid_labels=valid_labels,
+                            valid_labels=list(map(lambda x: x.value, valid_labels)),
                             mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_prompter_reply)),
                             mode=label_mode,
                             disposition=label_disposition,
+                            labels=self._get_label_descriptions(valid_labels),
                         )
 
                     parent_message_id = message.id
                     message_tree_id = message.message_tree_id
 
             case TaskType.REPLY:
-                # select a tree with missing replies
+
+                recent_reply_tasks = self.pr.task_repository.fetch_recent_reply_tasks(
+                    max_age=timedelta(seconds=self.cfg.recent_tasks_span_sec), done=False
+                )
+                recent_reply_task_parents = {t.parent_message_id for t in recent_reply_tasks}
+
                 if task_role == TaskRole.PROMPTER:
                     extendible_parents = list(filter(lambda x: x.parent_role == "assistant", extendible_parents))
                 elif task_role == TaskRole.ASSISTANT:
                     extendible_parents = list(filter(lambda x: x.parent_role == "prompter", extendible_parents))
 
+                # select a tree with missing replies
                 if len(extendible_parents) > 0:
-                    random_parent = random.choice(extendible_parents)
+                    random_parent: ExtendibleParentRow = None
+                    if self.cfg.p_lonely_child_extension > 0 and self.cfg.lonely_children_count > 1:
+                        # check if we have extendible parents with a small number of replies
+
+                        lonely_children_parents = [
+                            p
+                            for p in extendible_parents
+                            if 0 < p.active_children_count < self.cfg.lonely_children_count
+                            and p.parent_id not in recent_reply_task_parents
+                        ]
+                        if len(lonely_children_parents) > 0 and random.random() < self.cfg.p_lonely_child_extension:
+                            random_parent = random.choice(lonely_children_parents)
+
+                    if random_parent is None:
+                        # try to exclude parents for which tasks were recently handed out
+                        fresh_parents = [p for p in extendible_parents if p.parent_id not in recent_reply_task_parents]
+                        if len(fresh_parents) > 0:
+                            random_parent = random.choice(fresh_parents)
+                        else:
+                            random_parent = random.choice(extendible_parents)
 
                     # fetch random conversation to extend
                     logger.debug(f"selected {random_parent=}")
                     messages = self.pr.fetch_message_conversation(random_parent.parent_id)
-                    assert all(m.review_result for m in messages)  # ensure all messages have positive review
+                    assert all(m.review_result for m in messages)  # ensure all messages have positive reviews
                     conversation = prepare_conversation(messages)
 
                     # generate reply task depending on last message
@@ -430,10 +466,10 @@ class TreeManager:
 
                 label_mode = protocol_schema.LabelTaskMode.full
                 label_disposition = protocol_schema.LabelTaskDisposition.quality
-                valid_labels = self._all_text_labels
+                valid_labels = self.cfg.labels_initial_prompt
 
                 if random.random() > self.cfg.p_full_labeling_review_prompt:
-                    valid_labels = list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt))
+                    valid_labels = self.cfg.mandatory_labels_initial_prompt
                     label_mode = protocol_schema.LabelTaskMode.simple
                     label_disposition = protocol_schema.LabelTaskDisposition.spam
 
@@ -441,10 +477,11 @@ class TreeManager:
                 task = protocol_schema.LabelInitialPromptTask(
                     message_id=message.id,
                     prompt=message.text,
-                    valid_labels=valid_labels,
+                    valid_labels=list(map(lambda x: x.value, valid_labels)),
                     mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt)),
                     mode=label_mode,
                     disposition=label_disposition,
+                    labels=self._get_label_descriptions(valid_labels),
                 )
 
                 parent_message_id = message.id
@@ -551,7 +588,7 @@ class TreeManager:
 
                 _, task, msg = pr.store_text_labels(interaction)
 
-                # if it was a respones for a task, check if we have enough reviews to calc review_result
+                # if it was a response for a task, check if we have enough reviews to calc review_result
                 if task and msg:
                     reviews = self.query_reviews_for_message(msg.id)
                     acceptance_score = self._calculate_acceptance(reviews)
