@@ -225,13 +225,14 @@ def query_user_messages(
     desc: bool = True,
     include_deleted: bool = False,
     lang: Optional[str] = None,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
     """
     Query user messages.
     """
-    pr = PromptRepository(db, api_client, user_id=user_id)
+    pr = PromptRepository(db, api_client, frontend_user=frontend_user)
     messages = pr.query_messages_ordered_by_created_date(
         user_id=user_id,
         api_client_id=api_client_id,
@@ -257,6 +258,7 @@ def query_user_messages_cursor(
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
     lang: Optional[str] = None,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -269,6 +271,7 @@ def query_user_messages_cursor(
         max_count=max_count,
         desc=desc,
         lang=lang,
+        frontend_user=frontend_user,
         api_client=api_client,
         db=db,
     )
@@ -276,9 +279,12 @@ def query_user_messages_cursor(
 
 @router.delete("/{user_id}/messages", status_code=HTTP_204_NO_CONTENT)
 def mark_user_messages_deleted(
-    user_id: UUID, api_client: ApiClient = Depends(deps.get_trusted_api_client), db: Session = Depends(deps.get_db)
+    user_id: UUID,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+    db: Session = Depends(deps.get_db),
 ):
-    pr = PromptRepository(db, api_client)
+    pr = PromptRepository(db, api_client, frontend_user=frontend_user)
     messages = pr.query_messages_ordered_by_created_date(user_id=user_id, limit=None)
     pr.mark_messages_deleted(messages)
 

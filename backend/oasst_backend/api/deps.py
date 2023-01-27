@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from secrets import token_hex
-from typing import Generator
+from typing import Generator, NamedTuple
 
 from fastapi import Depends, Request, Response, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -19,20 +19,44 @@ def get_db() -> Generator:
         yield db
 
 
-api_key_query = APIKeyQuery(name="api_key", auto_error=False)
-api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+api_key_query = APIKeyQuery(name="api_key", scheme_name="api-key", auto_error=False)
+api_key_header = APIKeyHeader(name="X-API-Key", scheme_name="api-key", auto_error=False)
+oasst_user_query = APIKeyQuery(name="oasst_user", scheme_name="oasst-user", auto_error=False)
+oasst_user_header = APIKeyHeader(name="x-oasst-user", scheme_name="oasst-user", auto_error=False)
 
 bearer_token = HTTPBearer(auto_error=False)
 
 
-async def get_api_key(
+def get_api_key(
     api_key_query: str = Security(api_key_query),
     api_key_header: str = Security(api_key_header),
-):
+) -> str:
     if api_key_query:
         return api_key_query
     else:
         return api_key_header
+
+
+class FrontendUserId(NamedTuple):
+    auth_method: str
+    username: str
+
+
+def get_frontend_user_id(
+    user_query: str = Security(oasst_user_query),
+    user_header: str = Security(oasst_user_header),
+) -> FrontendUserId:
+    def split_user(v: str) -> tuple[str, str]:
+        if type(v) is str:
+            v = v.split(":", maxsplit=1)
+            if len(v) == 2:
+                return FrontendUserId(auth_method=v[0], username=v[1])
+        return FrontendUserId(auth_method=None, username=None)
+
+    if user_query:
+        return split_user(user_query)
+    else:
+        return split_user(user_header)
 
 
 def create_api_client(
