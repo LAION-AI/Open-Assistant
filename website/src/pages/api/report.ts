@@ -1,4 +1,6 @@
 import { withoutRole } from "src/lib/auth";
+import { oasstApiClient } from "src/lib/oasst_api_client";
+import { getBackendUserCore } from "src/lib/users";
 
 /**
  * Adds a report for a message
@@ -8,30 +10,15 @@ const handler = withoutRole("banned", async (req, res, token) => {
   // Parse out the local message_id, and the interaction contents.
   const { message_id, text } = req.body;
 
-  const interactionRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/text_labels`, {
-    method: "POST",
-    headers: {
-      "X-API-Key": process.env.FASTAPI_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      type: "text_labels",
-      message_id: message_id,
-      labels: [], // Not yet implemented
-      text,
-      is_report: true,
-      user: {
-        id: token.sub,
-        display_name: token.name || token.email,
-        auth_method: "local",
-      },
-    }),
-  });
-  if (interactionRes.status !== 204) {
-    const r = await interactionRes.json();
-    console.error(JSON.stringify(r));
+  const user = await getBackendUserCore(token.sub);
+  try {
+    await oasstApiClient.send_report(message_id, user, text);
+  } catch (err) {
+    console.error(JSON.stringify(err));
+    return res.status(500).json(err);
   }
-  res.status(interactionRes.status).end();
+
+  res.status(200).end();
 });
 
 export default handler;
