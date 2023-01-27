@@ -50,8 +50,8 @@ def get_frontend_user_id(
         if type(v) is str:
             v = v.split(":", maxsplit=1)
             if len(v) == 2:
-                return FrontendUserId(v[0], v[1])
-        return FrontendUserId(None, None)
+                return FrontendUserId(auth_method=v[0], username=v[1])
+        return FrontendUserId(auth_method=None, username=None)
 
     if user_query:
         return split_user(user_query)
