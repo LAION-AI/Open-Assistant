@@ -2,7 +2,13 @@
 
 Preliminary implementation of the inference engine for OpenAssistant.
 
-## Development (you'll need multiple terminals)
+## Development Variant 1 (you'll need tmux)
+
+Run `./full-dev-setup.sh` to start the full development setup. Make sure to wait
+until the 2nd terminal is ready and says `{"message":"Connected"}` before
+entering input into the last terminal.
+
+## Development Variant 2 (you'll need multiple terminals)
 
 Run a redis container (or use the one of the general docker compose file):
 
