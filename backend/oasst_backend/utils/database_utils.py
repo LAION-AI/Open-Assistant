@@ -41,10 +41,12 @@ def managed_tx_method(auto_commit: CommitMode = CommitMode.COMMIT, num_retries=s
             try:
                 result = None
                 if auto_commit == CommitMode.COMMIT:
+                    retry_exhausted = True
                     for i in range(num_retries):
                         try:
                             result = f(self, *args, **kwargs)
                             self.db.commit()
+                            retry_exhausted = False
                             break
                         except PendingRollbackError as e:
                             logger.info(f"{e}")
@@ -56,11 +58,12 @@ def managed_tx_method(auto_commit: CommitMode = CommitMode.COMMIT, num_retries=s
                                 logger.info(f"{type(e.orig)} Inner {e.orig.pgcode} {type(e.orig.pgcode)}")
                                 self.db.rollback()
                         logger.info(f"Retry {i+1}/{num_retries}")
-                    raise OasstError(
-                        "DATABASE_MAX_RETIRES_EXHAUSTED",
-                        error_code=OasstErrorCode.DATABASE_MAX_RETRIES_EXHAUSTED,
-                        http_status_code=HTTPStatus.SERVICE_UNAVAILABLE,
-                    )
+                    if retry_exhausted:
+                        raise OasstError(
+                            "DATABASE_MAX_RETIRES_EXHAUSTED",
+                            error_code=OasstErrorCode.DATABASE_MAX_RETRIES_EXHAUSTED,
+                            http_status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+                        )
                 else:
                     result = f(self, *args, **kwargs)
                     if auto_commit == CommitMode.FLUSH:
@@ -88,10 +91,12 @@ def async_managed_tx_method(
             try:
                 result = None
                 if auto_commit == CommitMode.COMMIT:
+                    retry_exhausted = True
                     for i in range(num_retries):
                         try:
                             result = f(self, *args, **kwargs)
                             self.db.commit()
+                            retry_exhausted = False
                             break
                         except PendingRollbackError as e:
                             logger.info(f"{e}")
@@ -103,11 +108,12 @@ def async_managed_tx_method(
                                 logger.info(f"{type(e.orig)} Inner {e.orig.pgcode} {type(e.orig.pgcode)}")
                                 self.db.rollback()
                         logger.info(f"Retry {i+1}/{num_retries}")
-                    raise OasstError(
-                        "DATABASE_MAX_RETIRES_EXHAUSTED",
-                        error_code=OasstErrorCode.DATABASE_MAX_RETRIES_EXHAUSTED,
-                        http_status_code=HTTPStatus.SERVICE_UNAVAILABLE,
-                    )
+                    if retry_exhausted:
+                        raise OasstError(
+                            "DATABASE_MAX_RETIRES_EXHAUSTED",
+                            error_code=OasstErrorCode.DATABASE_MAX_RETRIES_EXHAUSTED,
+                            http_status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+                        )
                 else:
                     result = f(self, *args, **kwargs)
                     if auto_commit == CommitMode.FLUSH:
@@ -144,28 +150,31 @@ def managed_tx_function(
             try:
                 result = None
                 if auto_commit == CommitMode.COMMIT:
+                    retry_exhausted = True
                     for i in range(num_retries):
                         with session_factory() as session:
                             try:
                                 result = f(session, *args, **kwargs)
-                                session.db.commit()
+                                session.commit()
+                                retry_exhausted = False
                                 break
                             except PendingRollbackError as e:
                                 logger.info(f"{e}")
-                                session.db.rollback()
+                                session.rollback()
                             except OperationalError as e:
                                 if e.orig is not None and isinstance(
                                     e.orig,
                                     (SerializationFailure, DeadlockDetected, UniqueViolation, ExclusionViolation),
                                 ):
                                     logger.info(f"{type(e.orig)} Inner {e.orig.pgcode} {type(e.orig.pgcode)}")
-                                    session.db.rollback()
+                                    session.rollback()
                         logger.info(f"Retry {i+1}/{num_retries}")
-                    raise OasstError(
-                        "DATABASE_MAX_RETIRES_EXHAUSTED",
-                        error_code=OasstErrorCode.DATABASE_MAX_RETRIES_EXHAUSTED,
-                        http_status_code=HTTPStatus.SERVICE_UNAVAILABLE,
-                    )
+                    if retry_exhausted:
+                        raise OasstError(
+                            "DATABASE_MAX_RETIRES_EXHAUSTED",
+                            error_code=OasstErrorCode.DATABASE_MAX_RETRIES_EXHAUSTED,
+                            http_status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+                        )
                 else:
                     with session_factory() as session:
                         result = f(session, *args, **kwargs)
