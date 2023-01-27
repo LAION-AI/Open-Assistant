@@ -561,8 +561,6 @@ class PromptRepository:
         Checks if the user has recently replied with the same text within a given time period.
         """
         user = self.user_repository.lookup_client_user(task_interaction.user)
-        logger.debug(f"HERE\n\n\n\n\n\n\n\n\n\n\n\n\n")
-        logger.debug(f"Checking for duplicate tasks for user {user.id}")
         user_id = user.id
         logger.debug(f"Checking for duplicate tasks for user {user_id}")
         # messages in the past 24 hours
