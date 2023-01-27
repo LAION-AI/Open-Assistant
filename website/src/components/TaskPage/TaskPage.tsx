@@ -4,7 +4,7 @@ import { TaskEmptyState } from "src/components/EmptyState";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { TaskInfos } from "src/components/Tasks/TaskTypes";
-import { apiHooksByType, ERROR_CODES } from "src/lib/constants";
+import { ERROR_CODES, taskApiHooks } from "src/lib/constants";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { TaskType } from "src/types/Task";
 
@@ -14,8 +14,8 @@ type TaskPageProps = {
 
 export const TaskPage = ({ type }: TaskPageProps) => {
   const { t } = useTranslation(["tasks", "common"]);
-  const apiHook = apiHooksByType[type];
-  const { tasks, isLoading, reset, trigger, error } = apiHook(type);
+  const taskApiHook = taskApiHooks[type];
+  const { tasks, isLoading, reset, trigger, error } = taskApiHook(type);
   const taskInfo = TaskInfos.find((taskType) => taskType.type === type);
 
   if (isLoading) {

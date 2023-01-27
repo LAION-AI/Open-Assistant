@@ -14,6 +14,7 @@ import {
   useRankInitialPromptsTask,
   useRankPrompterRepliesTask,
 } from "src/hooks/tasks/useRankReplies";
+import { TaskApiHooks } from "src/types/Hooks";
 import { TaskType } from "src/types/Task";
 
 export const ERROR_CODES = {
@@ -28,7 +29,7 @@ export const ERROR_CODES = {
   TASK_MESSAGE_TOO_LONG: 1008,
 };
 
-export const apiHooksByType = {
+export const taskApiHooks: TaskApiHooks = {
   [TaskType.random]: useGenericTaskAPI,
   [TaskType.assistant_reply]: useCreateAssistantReply,
   [TaskType.initial_prompt]: useCreateInitialPrompt,
