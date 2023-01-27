@@ -16,7 +16,7 @@ export const TaskPage = ({ type }: TaskPageProps) => {
   const { t } = useTranslation(["tasks", "common"]);
   const apiHook = apiHooksByType[type];
   const { tasks, isLoading, reset, trigger, error } = apiHook(type);
-  const taskType = TaskInfos.find((taskType) => taskType.type === type);
+  const taskInfo = TaskInfos.find((taskType) => taskType.type === type);
 
   if (isLoading) {
     return <LoadingScreen text={t("common:loading")} />;
@@ -31,8 +31,8 @@ export const TaskPage = ({ type }: TaskPageProps) => {
   return (
     <>
       <Head>
-        <title>{t(getTypeSafei18nKey(`${taskType.id}.label`))}</title>
-        <meta name="description" content={t(getTypeSafei18nKey(`${taskType.id}.desc`))} />
+        <title>{t(getTypeSafei18nKey(`${taskInfo.id}.label`))}</title>
+        <meta name="description" content={t(getTypeSafei18nKey(`${taskInfo.id}.desc`))} />
       </Head>
       <Task key={task.task.id} frontendId={task.id} task={task.task} trigger={trigger} mutate={reset} />
     </>
