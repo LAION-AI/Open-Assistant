@@ -35,7 +35,7 @@ const MessageDetail = ({ id }: { id: string }) => {
                   Parent
                 </Text>
                 <Box bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base" width="fit-content">
-                  <MessageTableEntry enabled item={parent} />
+                  <MessageTableEntry enabled message={parent} />
                 </Box>
               </Box>
             </>

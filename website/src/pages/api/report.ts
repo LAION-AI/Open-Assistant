@@ -1,12 +1,12 @@
 import { withoutRole } from "src/lib/auth";
 
 /**
- * Sets the Label in the Backend.
+ * Adds a report for a message
  *
  */
 const handler = withoutRole("banned", async (req, res, token) => {
   // Parse out the local message_id, and the interaction contents.
-  const { message_id, label_map } = req.body;
+  const { message_id, text } = req.body;
 
   const interactionRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/text_labels`, {
     method: "POST",
@@ -17,9 +17,9 @@ const handler = withoutRole("banned", async (req, res, token) => {
     body: JSON.stringify({
       type: "text_labels",
       message_id: message_id,
-      labels: label_map,
-      text: "", // used only in reporting
-      is_report: false,
+      labels: [], // Not yet implemented
+      text,
+      is_report: true,
       user: {
         id: token.sub,
         display_name: token.name || token.email,
