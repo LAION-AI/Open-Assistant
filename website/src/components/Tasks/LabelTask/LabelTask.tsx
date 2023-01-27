@@ -30,23 +30,6 @@ export const LabelTask = ({
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const isSpamTask = task.mode === "simple" && task.valid_labels.length === 1 && task.valid_labels[0] === "spam";
 
-  // TODO: remove as soon as the backend delivers
-  // real information about the current message
-  const additionMessage: Message = useMemo(
-    () => ({
-      text: task.reply,
-      is_assistant: task.type === TaskType.label_assistant_reply,
-      message_id: task.message_id,
-      created_date: new Date().toISOString(),
-      emojis: {},
-      user_emojis: [],
-      id: "dummy",
-      lang: i18n.language,
-      parent_id: "dummy",
-    }),
-    [task.reply, task.type, task.message_id, i18n.language]
-  );
-
   return (
     <div data-cy="task" data-task-type={isSpamTask ? "spam-task" : "label-task"}>
       <TwoColumnsWithCards>
@@ -54,7 +37,10 @@ export const LabelTask = ({
           <TaskHeader taskType={taskType} />
           {task.conversation ? (
             <Box mt="4" p={[4, 6]} borderRadius="lg" bg={cardColor}>
-              <MessageTable messages={[...(task.conversation?.messages ?? []), additionMessage]} highlightLastMessage />
+              <MessageTable
+                messages={[...(task.conversation?.messages ?? []), task.reply_message]}
+                highlightLastMessage
+              />
             </Box>
           ) : (
             <Box mt="4">
