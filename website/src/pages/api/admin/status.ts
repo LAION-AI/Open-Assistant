@@ -1,5 +1,5 @@
 import { withRole } from "src/lib/auth";
-import { createApiClientFromUser } from "src/lib/oasst_api_client";
+import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 
 /**
  * Returns tasks availability, stats, and tree manager stats.

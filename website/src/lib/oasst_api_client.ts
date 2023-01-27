@@ -1,10 +1,7 @@
-import { JWT } from "next-auth/jwt";
 import type { EmojiOp, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
-
-import { getBackendUserCore } from "./users";
 
 export class OasstError {
   message: string;
@@ -249,10 +246,3 @@ export class OasstApiClient {
     return await resp.json();
   }
 }
-
-export const createApiClientFromUser = (user: BackendUserCore) =>
-  new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY, user);
-
-export const createApiClient = async (token: JWT) => createApiClientFromUser(await getBackendUserCore(token.sub));
-
-export const userlessApiClient = new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);

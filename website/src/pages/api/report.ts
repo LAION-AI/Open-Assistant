@@ -1,5 +1,5 @@
 import { withoutRole } from "src/lib/auth";
-import { oasstApiClient } from "src/lib/oasst_api_client";
+import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import { getBackendUserCore } from "src/lib/users";
 
 /**
@@ -11,6 +11,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   const { message_id, text } = req.body;
 
   const user = await getBackendUserCore(token.sub);
+  const oasstApiClient = createApiClientFromUser(user);
   try {
     await oasstApiClient.send_report(message_id, user, text);
   } catch (err) {

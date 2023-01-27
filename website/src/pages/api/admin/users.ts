@@ -1,5 +1,5 @@
 import { withRole } from "src/lib/auth";
-import { createApiClient } from "src/lib/oasst_api_client";
+import { createApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { FetchUsersParams } from "src/types/Users";
 

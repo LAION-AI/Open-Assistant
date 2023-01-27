@@ -1,5 +1,5 @@
 import { withRole } from "src/lib/auth";
-import { createApiClient } from "src/lib/oasst_api_client";
+import { createApiClient } from "src/lib/oasst_client_factory";
 import type { Message } from "src/types/Conversation";
 
 /**

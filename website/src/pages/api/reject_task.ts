@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { withoutRole } from "src/lib/auth";
-import { createApiClient } from "src/lib/oasst_api_client";
+import { createApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 
 const handler = withoutRole("banned", async (req, res, token) => {

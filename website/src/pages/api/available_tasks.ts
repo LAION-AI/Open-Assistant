@@ -1,5 +1,5 @@
 import { withoutRole } from "src/lib/auth";
-import { createApiClientFromUser } from "src/lib/oasst_api_client";
+import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import { getBackendUserCore, getUserLanguage } from "src/lib/users";
 
 const handler = withoutRole("banned", async (req, res, token) => {
