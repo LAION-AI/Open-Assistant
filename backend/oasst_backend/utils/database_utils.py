@@ -123,7 +123,7 @@ def async_managed_tx_method(
                             http_status_code=HTTPStatus.SERVICE_UNAVAILABLE,
                         )
                 else:
-                    result = f(self, *args, **kwargs)
+                    result = await f(self, *args, **kwargs)
                     if auto_commit == CommitMode.FLUSH:
                         self.db.flush()
                         if isinstance(result, SQLModel):
