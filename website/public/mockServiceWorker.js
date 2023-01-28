@@ -98,7 +98,7 @@ self.addEventListener('fetch', function (event) {
     return
   }
 
-  // Opening the DevTools triggers the 'only-if-cached' request
+  // Opening the DevTools triggers the "only-if-cached" request
   // that cannot be handled by the worker. Bypass such requests.
   if (request.cache === 'only-if-cached' && request.mode !== 'same-origin') {
     return
@@ -118,9 +118,9 @@ self.addEventListener('fetch', function (event) {
     handleRequest(event, requestId).catch((error) => {
       if (error.name === 'NetworkError') {
         console.warn(
-          '[MSW] Successfully emulated a network error for the '%s %s' request.',
+          '[MSW] Successfully emulated a network error for the "%s %s" request.',
           request.method,
-          request.url
+          request.url,
         )
         return
       }
@@ -128,12 +128,12 @@ self.addEventListener('fetch', function (event) {
       // At this point, any exception indicates an issue with the original request/response.
       console.error(
         `\
-[MSW] Caught an exception from the '%s %s' request (%s). This is probably not a problem with Mock Service Worker. There is likely an additional logging output above.`,
+[MSW] Caught an exception from the "%s %s" request (%s). This is probably not a problem with Mock Service Worker. There is likely an additional logging output above.`,
         request.method,
         request.url,
-        `${error.name}: ${error.message}`
+        `${error.name}: ${error.message}`,
       )
-    })
+    }),
   )
 })
 
@@ -141,7 +141,7 @@ async function handleRequest(event, requestId) {
   const client = await resolveMainClient(event)
   const response = await getResponse(event, client, requestId)
 
-  // Send back the response clone for the 'response:*' life-cycle events.
+  // Send back the response clone for the "response:*" life-cycle events.
   // Ensure MSW is active and ready to handle the message, otherwise
   // this message will pend indefinitely.
   if (client && activeClientIds.has(client.id)) {
@@ -155,7 +155,8 @@ async function handleRequest(event, requestId) {
           ok: clonedResponse.ok,
           status: clonedResponse.status,
           statusText: clonedResponse.statusText,
-          body: clonedResponse.body === null ? null : await clonedResponse.text(),
+          body:
+            clonedResponse.body === null ? null : await clonedResponse.text(),
           headers: Object.fromEntries(clonedResponse.headers.entries()),
           redirected: clonedResponse.redirected,
         },
@@ -204,7 +205,7 @@ async function getResponse(event, client, requestId) {
 
     // Remove MSW-specific request headers so the bypassed requests
     // comply with the server's CORS preflight check.
-    // Operate with the headers as an object because request 'Headers'
+    // Operate with the headers as an object because request "Headers"
     // are immutable.
     delete headers['x-msw-bypass']
 
@@ -218,14 +219,14 @@ async function getResponse(event, client, requestId) {
 
   // Bypass initial page load requests (i.e. static assets).
   // The absence of the immediate/parent client in the map of the active clients
-  // means that MSW hasn't dispatched the 'MOCK_ACTIVATE' event yet
+  // means that MSW hasn't dispatched the "MOCK_ACTIVATE" event yet
   // and is not ready to handle requests.
   if (!activeClientIds.has(client.id)) {
     return passthrough()
   }
 
   // Bypass requests with the explicit bypass header.
-  // Such requests can be issued by 'ctx.fetch()'.
+  // Such requests can be issued by "ctx.fetch()".
   if (request.headers.get('x-msw-bypass') === 'true') {
     return passthrough()
   }
@@ -266,7 +267,7 @@ async function getResponse(event, client, requestId) {
       const networkError = new Error(message)
       networkError.name = name
 
-      // Rejecting a 'respondWith' promise emulates a network error.
+      // Rejecting a "respondWith" promise emulates a network error.
       throw networkError
     }
   }
