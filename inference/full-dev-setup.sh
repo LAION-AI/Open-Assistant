@@ -16,4 +16,5 @@ tmux split-window -h
 tmux send-keys "cd text-client" C-m
 tmux send-keys "sleep 5" C-m
 tmux send-keys "python __main__.py" C-m
+tmux select-layout even-horizontal
 tmux attach-session -t "inference-dev-setup"
