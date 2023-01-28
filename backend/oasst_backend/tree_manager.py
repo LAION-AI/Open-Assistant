@@ -73,6 +73,7 @@ class IncompleteRankingsRow(pydantic.BaseModel):
     role: str
     children_count: int
     child_min_ranking_count: int
+    message_tree_id: UUID
 
     class Config:
         orm_mode = True
@@ -632,8 +633,15 @@ class TreeManager:
 
         if is_terminal:
             logger.info(f"Tree entered terminal '{mts.state}' state ({mts.message_tree_id=})")
-            if was_active and random.random() < self.cfg.p_activate_backlog_tree:
-                self.activate_backlog_tree()
+            root_msg = self.pr.fetch_message(message_id=mts.message_tree_id, fail_if_missing=False)
+            if root_msg and was_active:
+                if random.random() < self.cfg.p_activate_backlog_tree:
+                    self.activate_backlog_tree(lang=root_msg.lang)
+
+                if self.cfg.min_active_rankings_per_lang > 0:
+                    incomplete_rankings = self.query_incomplete_rankings(lang=root_msg.lang)
+                    if len(incomplete_rankings) < self.cfg.min_active_rankings_per_lang:
+                        self.activate_backlog_tree(lang=root_msg.lang)
         else:
             logger.info(f"Tree entered '{mts.state}' state ({mts.message_tree_id=})")
 
@@ -764,12 +772,14 @@ class TreeManager:
 
         return True
 
-    def activate_backlog_tree(self) -> MessageTreeState:
+    def activate_backlog_tree(self, lang: str) -> MessageTreeState:
         while True:
             # find tree in backlog state
             backlog_tree: MessageTreeState = (
                 self.db.query(MessageTreeState)
+                .join(Message, MessageTreeState.message_tree_id == Message.id)  # root msg
                 .filter(MessageTreeState.state == message_tree_state.State.BACKLOG_RANKING)
+                .filter(Message.lang == lang)
                 .limit(1)
                 .one_or_none()
             )
@@ -855,7 +865,8 @@ class TreeManager:
     _sql_find_incomplete_rankings = """
 -- find incomplete rankings
 SELECT m.parent_id, m.role, COUNT(m.id) children_count, MIN(m.ranking_count) child_min_ranking_count,
-    COUNT(m.id) FILTER (WHERE m.ranking_count >= :num_required_rankings) as completed_rankings
+    COUNT(m.id) FILTER (WHERE m.ranking_count >= :num_required_rankings) as completed_rankings,
+    mts.message_tree_id
 FROM message_tree_state mts
     INNER JOIN message m ON mts.message_tree_id = m.message_tree_id
 WHERE mts.active                        -- only consider active trees
@@ -864,7 +875,7 @@ WHERE mts.active                        -- only consider active trees
     AND m.lang = :lang                  -- matches lang
     AND NOT m.deleted                   -- not deleted
     AND m.parent_id IS NOT NULL         -- ignore initial prompts
-GROUP BY m.parent_id, m.role
+GROUP BY m.parent_id, m.role, mts.message_tree_id
 HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
 """
 
@@ -873,7 +884,8 @@ HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
 WITH incomplete_rankings AS ({_sql_find_incomplete_rankings})
 SELECT ir.* FROM incomplete_rankings ir
     LEFT JOIN message_reaction mr ON ir.parent_id = mr.message_id AND mr.payload_type = 'RankingReactionPayload'
-GROUP BY ir.parent_id, ir.role, ir.children_count, ir.child_min_ranking_count, ir.completed_rankings
+GROUP BY ir.parent_id, ir.role, ir.children_count, ir.child_min_ranking_count, ir.completed_rankings,
+    ir.message_tree_id
 HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
 """
 

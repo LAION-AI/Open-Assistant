@@ -51,6 +51,8 @@ class TreeManagerConfiguration(BaseModel):
     a terminal state. Use this settting to control ratio of initial prompts and backlog tree
     activations."""
 
+    min_active_rankings_per_lang: int = 2
+
     labels_initial_prompt: list[TextLabel] = [
         TextLabel.spam,
         TextLabel.quality,
