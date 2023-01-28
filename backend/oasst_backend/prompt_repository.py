@@ -177,6 +177,7 @@ class PromptRepository:
         review_count: int = 0,
         review_result: bool = False,
         check_tree_state: bool = True,
+        check_duplicate: bool = True,
     ) -> Message:
         self.ensure_user_is_enabled()
 
@@ -199,7 +200,7 @@ class PromptRepository:
             logger.error(f"Message size {len(text)=} exceeds size limit of {settings.MESSAGE_SIZE_LIMIT=}.")
             raise OasstError("Message size too long.", OasstErrorCode.TASK_MESSAGE_TOO_LONG)
 
-        if self.check_users_recent_replies_for_duplicates(text):
+        if check_duplicate and self.check_users_recent_replies_for_duplicates(text):
             raise OasstError("User recent messages have duplicates", OasstErrorCode.TASK_MESSAGE_DUPLICATED)
 
         if task.parent_message_id:
@@ -909,8 +910,7 @@ FROM (
 ) AS cc
 WHERE message.id = cc.id;
 """
-        r = self.db.execute(text(sql_update_children_count), {"message_tree_id": message_tree_id})
-        logger.debug(f"update_children_count({message_tree_id=}): {r.rowcount} rows.")
+        self.db.execute(text(sql_update_children_count), {"message_tree_id": message_tree_id})
 
     @managed_tx_method(CommitMode.COMMIT)
     def mark_messages_deleted(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):

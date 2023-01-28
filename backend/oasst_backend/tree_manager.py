@@ -25,7 +25,7 @@ from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingM
 from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from sqlmodel import Session, func, not_, text, update
+from sqlmodel import Session, func, not_, or_, text, update
 
 
 class TaskType(Enum):
@@ -73,6 +73,7 @@ class IncompleteRankingsRow(pydantic.BaseModel):
     role: str
     children_count: int
     child_min_ranking_count: int
+    message_tree_id: UUID
 
     class Config:
         orm_mode = True
@@ -625,19 +626,28 @@ class TreeManager:
 
         return protocol_schema.TaskDone()
 
-    @managed_tx_method(CommitMode.FLUSH)
     def _enter_state(self, mts: MessageTreeState, state: message_tree_state.State):
-        assert mts and mts.active
+        assert mts
 
         is_terminal = state in message_tree_state.TERMINAL_STATES
-
+        was_active = mts.active
         if is_terminal:
             mts.active = False
         mts.state = state.value
         self.db.add(mts)
+        self.db.flush
 
         if is_terminal:
             logger.info(f"Tree entered terminal '{mts.state}' state ({mts.message_tree_id=})")
+            root_msg = self.pr.fetch_message(message_id=mts.message_tree_id, fail_if_missing=False)
+            if root_msg and was_active:
+                if random.random() < self.cfg.p_activate_backlog_tree:
+                    self.activate_backlog_tree(lang=root_msg.lang)
+
+                if self.cfg.min_active_rankings_per_lang > 0:
+                    incomplete_rankings = self.query_incomplete_rankings(lang=root_msg.lang)
+                    if len(incomplete_rankings) < self.cfg.min_active_rankings_per_lang:
+                        self.activate_backlog_tree(lang=root_msg.lang)
         else:
             logger.info(f"Tree entered '{mts.state}' state ({mts.message_tree_id=})")
 
@@ -680,24 +690,30 @@ class TreeManager:
         self._enter_state(mts, message_tree_state.State.RANKING)
         return True
 
-    def check_condition_for_scoring_state(
-        self, message_tree_id: UUID
-    ) -> Tuple[bool, dict[UUID, list[MessageReaction]]]:
+    def check_condition_for_scoring_state(self, message_tree_id: UUID) -> bool:
         logger.debug(f"check_condition_for_scoring_state({message_tree_id=})")
 
         mts = self.pr.fetch_tree_state(message_tree_id)
-        if not mts.active or mts.state != message_tree_state.State.RANKING:
-            logger.debug(f"False {mts.active=}, {mts.state=}")
-            return False, None
+        if mts.state != message_tree_state.State.SCORING_FAILED:
+            if not mts.active or mts.state not in (
+                message_tree_state.State.RANKING,
+                message_tree_state.State.READY_FOR_SCORING,
+            ):
+                logger.debug(f"False {mts.active=}, {mts.state=}")
+                return False
 
         ranking_role_filter = None if self.cfg.rank_prompter_replies else "assistant"
         rankings_by_message = self.query_tree_ranking_results(message_tree_id, role_filter=ranking_role_filter)
         for parent_msg_id, ranking in rankings_by_message.items():
             if len(ranking) < self.cfg.num_required_rankings:
                 logger.debug(f"False {parent_msg_id=} {len(ranking)=}")
-                return False, None
+                return False
 
-        self._enter_state(mts, message_tree_state.State.READY_FOR_SCORING)
+        if (
+            mts.state != message_tree_state.State.SCORING_FAILED
+            and mts.state != message_tree_state.State.READY_FOR_SCORING
+        ):
+            self._enter_state(mts, message_tree_state.State.READY_FOR_SCORING)
         self.update_message_ranks(message_tree_id, rankings_by_message)
         return True
 
@@ -759,7 +775,34 @@ class TreeManager:
             return False
 
         self._enter_state(mts, message_tree_state.State.READY_FOR_EXPORT)
+
         return True
+
+    def activate_backlog_tree(self, lang: str) -> MessageTreeState:
+        while True:
+            # find tree in backlog state
+            backlog_tree: MessageTreeState = (
+                self.db.query(MessageTreeState)
+                .join(Message, MessageTreeState.message_tree_id == Message.id)  # root msg
+                .filter(MessageTreeState.state == message_tree_state.State.BACKLOG_RANKING)
+                .filter(Message.lang == lang)
+                .limit(1)
+                .one_or_none()
+            )
+
+            if not backlog_tree:
+                return None
+
+            if len(self.query_tree_ranking_results(message_tree_id=backlog_tree.message_tree_id)) == 0:
+                logger.info(
+                    f"Backlog tree {backlog_tree.message_tree_id} has no children to rank, aborting with 'aborted_low_grade' state."
+                )
+                self._enter_state(backlog_tree, message_tree_state.State.ABORTED_LOW_GRADE)
+            else:
+                logger.info(f"Activating backlog tree {backlog_tree.message_tree_id}")
+                backlog_tree.active = True
+                self._enter_state(backlog_tree, message_tree_state.State.RANKING)
+                return backlog_tree
 
     def _calculate_acceptance(self, labels: list[TextLabels]):
         # calculate acceptance based on spam label
@@ -828,7 +871,8 @@ class TreeManager:
     _sql_find_incomplete_rankings = """
 -- find incomplete rankings
 SELECT m.parent_id, m.role, COUNT(m.id) children_count, MIN(m.ranking_count) child_min_ranking_count,
-    COUNT(m.id) FILTER (WHERE m.ranking_count >= :num_required_rankings) as completed_rankings
+    COUNT(m.id) FILTER (WHERE m.ranking_count >= :num_required_rankings) as completed_rankings,
+    mts.message_tree_id
 FROM message_tree_state mts
     INNER JOIN message m ON mts.message_tree_id = m.message_tree_id
 WHERE mts.active                        -- only consider active trees
@@ -837,7 +881,7 @@ WHERE mts.active                        -- only consider active trees
     AND m.lang = :lang                  -- matches lang
     AND NOT m.deleted                   -- not deleted
     AND m.parent_id IS NOT NULL         -- ignore initial prompts
-GROUP BY m.parent_id, m.role
+GROUP BY m.parent_id, m.role, mts.message_tree_id
 HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
 """
 
@@ -846,7 +890,8 @@ HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
 WITH incomplete_rankings AS ({_sql_find_incomplete_rankings})
 SELECT ir.* FROM incomplete_rankings ir
     LEFT JOIN message_reaction mr ON ir.parent_id = mr.message_id AND mr.payload_type = 'RankingReactionPayload'
-GROUP BY ir.parent_id, ir.role, ir.children_count, ir.child_min_ranking_count, ir.completed_rankings
+GROUP BY ir.parent_id, ir.role, ir.children_count, ir.child_min_ranking_count, ir.completed_rankings,
+    ir.message_tree_id
 HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
 """
 
@@ -985,8 +1030,8 @@ SELECT p.parent_id, mr.* FROM
     GROUP BY m.parent_id, m.message_tree_id
     HAVING COUNT(m.id) > 1
 ) as p
-INNER JOIN task t ON p.parent_id = t.parent_message_id AND t.done AND (t.payload_type = 'RankPrompterRepliesPayload' OR t.payload_type = 'RankAssistantRepliesPayload')
-INNER JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'RankingReactionPayload'
+LEFT JOIN task t ON p.parent_id = t.parent_message_id AND t.done AND (t.payload_type = 'RankPrompterRepliesPayload' OR t.payload_type = 'RankAssistantRepliesPayload')
+LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'RankingReactionPayload'
 """
 
     def query_tree_ranking_results(
@@ -1029,7 +1074,14 @@ INNER JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Ranki
             self._insert_default_state(id, state=state)
 
         rankings = (
-            self.db.query(MessageTreeState).filter(MessageTreeState.state == message_tree_state.State.RANKING).all()
+            self.db.query(MessageTreeState)
+            .filter(
+                or_(
+                    MessageTreeState.state == message_tree_state.State.RANKING,
+                    MessageTreeState.state == message_tree_state.State.READY_FOR_SCORING,
+                )
+            )
+            .all()
         )
         if len(rankings) > 0:
             logger.info(f"Checking state of {len(rankings)} message trees in ranking state.")
@@ -1322,17 +1374,17 @@ DELETE FROM user_stats WHERE user_id = :user_id;
 
     @managed_tx_method(CommitMode.COMMIT)
     def retry_scoring_failed_message_trees(self):
-        query = self.db.query(MessageTreeState.message_tree_id).filter(
+        query = self.db.query(MessageTreeState).filter(
             MessageTreeState.state == message_tree_state.State.SCORING_FAILED
         )
-        ranking_role_filter = None if self.cfg.rank_prompter_replies else "assistant"
-        for row in query.all():
+        for mts in query.all():
+            mts: MessageTreeState
             try:
-                message_tree_id = row["message_tree_id"]
-                rankings_by_message = self.query_tree_ranking_results(message_tree_id, role_filter=ranking_role_filter)
-                self.update_message_ranks(message_tree_id=message_tree_id, rankings_by_message=rankings_by_message)
+                if not self.check_condition_for_scoring_state(mts.message_tree_id):
+                    mts.active = True
+                    self._enter_state(message_tree_state.State.RANKING)
             except Exception:
-                logger.exception(f"retry_scoring_failed_message_trees failed for ({message_tree_id=})")
+                logger.exception(f"retry_scoring_failed_message_trees failed for ({mts.message_tree_id=})")
 
 
 if __name__ == "__main__":
@@ -1366,8 +1418,8 @@ if __name__ == "__main__":
 
         # print("next_task:", tm.next_task())
 
-        # print(
-        #     ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("2ac20d38-6650-43aa-8bb3-f61080c0d921"))
-        # )
+        print(
+            ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("21f9d585-d22c-44ab-a696-baa3d83b5f1b"))
+        )
 
         # print(tm.export_trees_to_file(message_tree_ids=["7e75fb38-e664-4e2b-817c-b9a0b01b0074"], file="lol.jsonl"))
