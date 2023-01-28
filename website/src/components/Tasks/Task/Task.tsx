@@ -106,7 +106,6 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
   );
 
   const replyContent = useRef<TaskContent>(null);
-  console.log("RENDER", taskStatus);
   const updateValidity = useCallback(
     (replyValidity: TaskReplyValidity) => taskEvent({ action: "UPDATE_VALIDITY", replyValidity }),
     [taskEvent]
