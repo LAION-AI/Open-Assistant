@@ -258,7 +258,8 @@ class LabelConversationReplyTask(AbstractLabelTask):
     """A task to label a reply to a conversation."""
 
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
-    conversation: Conversation  # the conversation so far
+    conversation: Conversation  # the conversation so far (new: including the reply message)
+    reply_message: Optional[ConversationMessage]
     reply: str
 
 

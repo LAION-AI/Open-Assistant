@@ -9,11 +9,14 @@
   "docs": "Docs",
   "github": "GitHub",
   "legal": "Legal",
+  "loading": "Loading...",
+  "more_information": "More Information",
+  "no": "No",
   "privacy_policy": "Privacy Policy",
   "report_a_bug": "Report a Bug",
   "sign_in": "Sign In",
   "sign_out": "Sign Out",
   "terms_of_service": "Terms of Service",
   "title": "Open Assistant",
-  "more_information": "More Information"
+  "yes": "Yes"
 }

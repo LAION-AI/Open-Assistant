@@ -1,4 +1,4 @@
-import { Conversation } from "./Conversation";
+import { Conversation, Message } from "./Conversation";
 import { BaseTask, TaskType } from "./Task";
 
 export interface CreateInitialPromptTask extends BaseTask {
@@ -33,29 +33,39 @@ export interface RankPrompterRepliesTask extends BaseTask {
   replies: string[];
 }
 
-export interface LabelAssistantReplyTask extends BaseTask {
+export interface Label {
+  display_text: string;
+  help_text: string;
+  name: string;
+  widget: "flag" | "yes_no" | "likert";
+}
+
+export interface BaseLabelTask extends BaseTask {
+  message_id: string;
+  labels: Label[];
+  valid_labels: string[];
+  disposition: "spam" | "quality";
+  mode: "simple" | "full";
+  mandatory_labels?: string[];
+}
+
+export interface LabelAssistantReplyTask extends BaseLabelTask {
   type: TaskType.label_assistant_reply;
-  message_id: string;
   conversation: Conversation;
+  reply_message: Message;
   reply: string;
-  valid_labels: string[];
-  mode: "simple" | "full";
-  mandatory_labels?: string[];
 }
 
-export interface LabelPrompterReplyTask extends BaseTask {
+export interface LabelPrompterReplyTask extends BaseLabelTask {
   type: TaskType.label_prompter_reply;
-  message_id: string;
   conversation: Conversation;
+  reply_message: Message;
   reply: string;
-  valid_labels: string[];
-  mode: "simple" | "full";
-  mandatory_labels?: string[];
 }
 
-export interface LabelInitialPromptTask extends BaseTask {
+export interface LabelInitialPromptTask extends BaseLabelTask {
   type: TaskType.label_initial_prompt;
-  message_id: string;
-  valid_labels: string[];
   prompt: string;
 }
+
+export type LabelTaskType = LabelAssistantReplyTask | LabelPrompterReplyTask | LabelInitialPromptTask;

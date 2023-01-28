@@ -5,6 +5,8 @@ import { Sortable } from "src/components/Sortable/Sortable";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
+import { TaskType } from "src/types/Task";
+import { RankAssistantRepliesTask, RankInitialPromptsTask, RankPrompterRepliesTask } from "src/types/Tasks";
 
 export const EvaluateTask = ({
   task,
@@ -13,20 +15,25 @@ export const EvaluateTask = ({
   isDisabled,
   onReplyChanged,
   onValidityChanged,
-}: TaskSurveyProps<{ ranking: number[] }>) => {
+}: TaskSurveyProps<
+  RankInitialPromptsTask | RankAssistantRepliesTask | RankPrompterRepliesTask,
+  { ranking: number[] }
+>) => {
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const [ranking, setRanking] = useState<number[]>(null);
 
   let messages = [];
-  if (task.conversation) {
+  if (task.type !== TaskType.rank_initial_prompts) {
     messages = task.conversation.messages;
-    messages = messages.map((message, index) => ({ ...message, id: index }));
   }
 
   useEffect(() => {
     if (ranking === null) {
-      const defaultRanking = (task.replies ?? task.prompts).map((_, idx) => idx);
-      onReplyChanged({ ranking: defaultRanking });
+      if (task.type === TaskType.rank_initial_prompts) {
+        onReplyChanged({ ranking: task.prompts.map((_, idx) => idx) });
+      } else {
+        onReplyChanged({ ranking: task.replies.map((_, idx) => idx) });
+      }
       onValidityChanged("DEFAULT");
     } else {
       onReplyChanged({ ranking });
@@ -34,7 +41,7 @@ export const EvaluateTask = ({
     }
   }, [task, ranking, onReplyChanged, onValidityChanged]);
 
-  const sortables = task.replies ? "replies" : "prompts";
+  const sortables = task.type === TaskType.rank_initial_prompts ? "prompts" : "replies";
 
   return (
     <div data-cy="task" data-task-type="evaluate-task">

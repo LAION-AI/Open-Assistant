@@ -46,6 +46,15 @@ class TreeManagerConfiguration(BaseModel):
     num_required_rankings: int = 3
     """Number of rankings in which the message participated."""
 
+    p_activate_backlog_tree: float = 0.8
+    """Probability to activate a message tree in BACKLOG_RANKING state when another tree enters
+    a terminal state. Use this settting to control ratio of initial prompts and backlog tree
+    activations."""
+
+    min_active_rankings_per_lang: int = 2
+    """When the number of active ranking tasks is below this value when a tree enters a terminal
+    state an available trees in BACKLOG_RANKING will be actived (i.e. enters the RANKING state)."""
+
     labels_initial_prompt: list[TextLabel] = [
         TextLabel.spam,
         TextLabel.quality,
@@ -138,6 +147,8 @@ class Settings(BaseSettings):
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
     DEBUG_DATABASE_ECHO: bool = False
 
+    DUPLICATE_MESSAGE_FILTER_WINDOW_MINUTES: int = 120
+
     HUGGING_FACE_API_KEY: str = ""
 
     ROOT_TOKENS: List[str] = ["1234"]  # supply a string that can be parsed to a json list
@@ -168,9 +179,9 @@ class Settings(BaseSettings):
 
     tree_manager: Optional[TreeManagerConfiguration] = TreeManagerConfiguration()
 
-    USER_STATS_INTERVAL_DAY: int = 15  # minutes
-    USER_STATS_INTERVAL_WEEK: int = 60  # minutes
-    USER_STATS_INTERVAL_MONTH: int = 120  # minutes
+    USER_STATS_INTERVAL_DAY: int = 5  # minutes
+    USER_STATS_INTERVAL_WEEK: int = 15  # minutes
+    USER_STATS_INTERVAL_MONTH: int = 60  # minutes
     USER_STATS_INTERVAL_TOTAL: int = 240  # minutes
 
     @validator(

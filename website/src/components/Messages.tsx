@@ -1,26 +1,8 @@
-import { Box, forwardRef, Grid, useColorMode } from "@chakra-ui/react";
+import { Box, forwardRef, useColorMode } from "@chakra-ui/react";
 import { useMemo } from "react";
 import { Message } from "src/types/Conversation";
 
-import { FlaggableElement } from "./FlaggableElement";
-
-interface MessagesProps {
-  messages: Message[];
-}
-
-export const Messages = ({ messages }: MessagesProps) => {
-  const items = messages.map((messageProps: Message, i: number) => {
-    return (
-      <FlaggableElement message={messageProps} key={i + messageProps.id}>
-        <MessageView {...messageProps} />
-      </FlaggableElement>
-    );
-  });
-  // Maybe also show a legend of the colors?
-  return <Grid gap={2}>{items}</Grid>;
-};
-
-export const MessageView = forwardRef<Message, "div">((message: Message, ref) => {
+export const MessageView = forwardRef<Partial<Message>, "div">((message: Partial<Message>, ref) => {
   const { colorMode } = useColorMode();
 
   const bgColor = useMemo(() => {

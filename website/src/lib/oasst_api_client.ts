@@ -1,4 +1,4 @@
-import type { Message } from "src/types/Conversation";
+import type { EmojiOp, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
@@ -18,10 +18,16 @@ export class OasstError {
 export class OasstApiClient {
   oasstApiUrl: string;
   oasstApiKey: string;
+  userHeaders: Record<string, string> = {};
 
-  constructor(oasstApiUrl: string, oasstApiKey: string) {
+  constructor(oasstApiUrl: string, oasstApiKey: string, user?: BackendUserCore) {
     this.oasstApiUrl = oasstApiUrl;
     this.oasstApiKey = oasstApiKey;
+    if (user) {
+      this.userHeaders = {
+        "X-OASST-USER": `${user.auth_method}:${user.id}`,
+      };
+    }
   }
   // TODO return a strongly typed Task?
   // This method is used to store a task in RegisteredTask.task.
@@ -74,6 +80,27 @@ export class OasstApiClient {
    */
   async fetch_tasks_availability(user: object): Promise<AvailableTasks | null> {
     return this.post<AvailableTasks>("/api/v1/tasks/availability", user);
+  }
+
+  /**
+   * Returns the `Message`s associated with `user_id` in the backend.
+   */
+  async fetch_message(message_id: string, user: BackendUserCore): Promise<Message> {
+    return this.get<Message>(`/api/v1/messages/${message_id}?username=${user.id}&auth_method=${user.auth_method}`);
+  }
+
+  /**
+   * Send a report about a message
+   */
+  async send_report(message_id: string, user: BackendUserCore, text: string) {
+    return this.post("/api/v1/text_labels", {
+      type: "text_labels",
+      message_id,
+      labels: [], // Not yet implemented
+      text,
+      is_report: true,
+      user,
+    });
   }
 
   /**
@@ -144,7 +171,7 @@ export class OasstApiClient {
     time_frame: LeaderboardTimeFrame,
     { limit = 20 }: { limit?: number }
   ): Promise<LeaderboardReply | null> {
-    return this.get<LeaderboardReply>(`/api/v1/leaderboards/${time_frame}`, { limit });
+    return this.get<LeaderboardReply>(`/api/v1/leaderboards/${time_frame}`, { max_count: limit });
   }
 
   /**
@@ -152,6 +179,17 @@ export class OasstApiClient {
    */
   async fetch_available_tasks(user: BackendUserCore, lang: string): Promise<AvailableTasks | null> {
     return this.post<AvailableTasks>(`/api/v1/tasks/availability?lang=${lang}`, user);
+  }
+
+  /**
+   * Add/remove an emoji on a message for a user
+   */
+  async set_user_message_emoji(message_id: string, user: BackendUserCore, emoji: string, op: EmojiOp): Promise<void> {
+    await this.post(`/api/v1/messages/${message_id}/emoji`, {
+      user,
+      emoji,
+      op,
+    });
   }
 
   private async post<T>(path: string, body: unknown) {
@@ -183,9 +221,10 @@ export class OasstApiClient {
       method,
       ...init,
       headers: {
+        ...init?.headers,
+        ...this.userHeaders,
         "X-API-Key": this.oasstApiKey,
         "Content-Type": "application/json",
-        ...init?.headers,
       },
     });
 
@@ -195,8 +234,7 @@ export class OasstApiClient {
 
     if (resp.status >= 300) {
       const errorText = await resp.text();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let error: any;
+      let error;
       try {
         error = JSON.parse(errorText);
       } catch (e) {
@@ -207,8 +245,24 @@ export class OasstApiClient {
 
     return await resp.json();
   }
+
+  fetch_my_messages(user: BackendUserCore) {
+    const params = new URLSearchParams({
+      username: user.id,
+      auth_method: user.auth_method,
+    });
+    return this.get<Message[]>(`/api/v1/messages?${params}`);
+  }
+
+  fetch_recent_messages() {
+    return this.get<Message[]>(`/api/v1/messages`);
+  }
+
+  fetch_message_children(messageId: string) {
+    return this.get<Message[]>(`/api/v1/messages/${messageId}/children`);
+  }
+
+  fetch_conversation(messageId: string) {
+    return this.get(`/api/v1/messages/${messageId}/conversation`);
+  }
 }
-
-const oasstApiClient = new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
-
-export { oasstApiClient };

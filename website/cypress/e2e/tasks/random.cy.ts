@@ -44,19 +44,14 @@ describe("handles random tasks", () => {
                 break;
               }
               case "label-task": {
+                cy.get('[data-cy="label-question"]').each((label) => {
+                  // Click the no button, this generally approves the spam check
+                  cy.wrap(label).find('[data-cy="no"]').click();
+                });
                 cy.get('[data-cy="label-options"]').each((label) => {
                   // Click the 4th option
                   cy.wrap(label).find('[data-cy="radio-option"]').eq(3).click();
                 });
-
-                cy.get('[data-cy="review"]').click();
-
-                cy.get('[data-cy="submit"]').click();
-
-                break;
-              }
-              case "spam-task": {
-                cy.get('[data-cy="not-spam-button"]').click();
 
                 cy.get('[data-cy="review"]').click();
 

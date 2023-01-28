@@ -1,6 +1,7 @@
 import random
+import re
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Optional
 from uuid import UUID, uuid4
@@ -8,6 +9,8 @@ from uuid import UUID, uuid4
 import oasst_backend.models.db_payload as db_payload
 import sqlalchemy as sa
 from loguru import logger
+from oasst_backend.api.deps import FrontendUserId
+from oasst_backend.config import settings
 from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import (
     ApiClient,
@@ -29,7 +32,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
-from oasst_shared.utils import unaware_to_utc
+from oasst_shared.utils import unaware_to_utc, utcnow
 from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
 from sqlmodel import JSON, Session, and_, func, literal_column, not_, or_, text, update
@@ -48,10 +51,15 @@ class PromptRepository:
         user_id: Optional[UUID] = None,
         auth_method: Optional[str] = None,
         username: Optional[str] = None,
+        frontend_user: Optional[FrontendUserId] = None,
     ):
         self.db = db
         self.api_client = api_client
         self.user_repository = user_repository or UserRepository(db, api_client)
+
+        if frontend_user and not auth_method and not username:
+            auth_method, username = frontend_user
+
         if user_id:
             self.user = self.user_repository.get_user(id=user_id)
             self.user_id = self.user.id
@@ -169,6 +177,7 @@ class PromptRepository:
         review_count: int = 0,
         review_result: bool = False,
         check_tree_state: bool = True,
+        check_duplicate: bool = True,
     ) -> Message:
         self.ensure_user_is_enabled()
 
@@ -181,6 +190,18 @@ class PromptRepository:
         # If there's no parent message assume user started new conversation
         role = None
         depth = 0
+
+        # reject whitespaces match with ^\s+$
+        if re.match(r"^\s+$", text):
+            raise OasstError("Message text is empty", OasstErrorCode.TASK_MESSAGE_TEXT_EMPTY)
+
+        # ensure message size is below the predefined limit
+        if len(text) > settings.MESSAGE_SIZE_LIMIT:
+            logger.error(f"Message size {len(text)=} exceeds size limit of {settings.MESSAGE_SIZE_LIMIT=}.")
+            raise OasstError("Message size too long.", OasstErrorCode.TASK_MESSAGE_TOO_LONG)
+
+        if check_duplicate and self.check_users_recent_replies_for_duplicates(text):
+            raise OasstError("User recent messages have duplicates", OasstErrorCode.TASK_MESSAGE_DUPLICATED)
 
         if task.parent_message_id:
             parent_message = self.fetch_message(task.parent_message_id)
@@ -460,6 +481,7 @@ class PromptRepository:
             task_id=task.id if task else None,
         )
 
+        message: Message = None
         if message_id:
             if not task:
                 if text_labels.is_report is True:
@@ -549,6 +571,30 @@ class PromptRepository:
         if not include_deleted:
             qry = qry.filter(not_(Message.deleted))
         return self._add_user_emojis_all(qry)
+
+    def check_users_recent_replies_for_duplicates(self, text: str) -> bool:
+        """
+        Checks if the user has recently replied with the same text within a given time period.
+        """
+
+        user_id = self.user_id
+        logger.debug(f"Checking for duplicate tasks for user {user_id}")
+        # messages in the past 24 hours
+        messages = (
+            self.db.query(Message)
+            .filter(Message.user_id == user_id)
+            .order_by(Message.created_date.desc())
+            .filter(
+                Message.created_date > utcnow() - timedelta(minutes=settings.DUPLICATE_MESSAGE_FILTER_WINDOW_MINUTES)
+            )
+            .all()
+        )
+        if not messages:
+            return False
+        for msg in messages:
+            if msg.text == text:
+                return True
+        return False
 
     def fetch_user_message_trees(
         self, user_id: Message.user_id, reviewed: bool = True, include_deleted: bool = False
@@ -865,8 +911,7 @@ FROM (
 ) AS cc
 WHERE message.id = cc.id;
 """
-        r = self.db.execute(text(sql_update_children_count), {"message_tree_id": message_tree_id})
-        logger.debug(f"update_children_count({message_tree_id=}): {r.rowcount} rows.")
+        self.db.execute(text(sql_update_children_count), {"message_tree_id": message_tree_id})
 
     @managed_tx_method(CommitMode.COMMIT)
     def mark_messages_deleted(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):
