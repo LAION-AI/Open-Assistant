@@ -179,9 +179,9 @@ class Settings(BaseSettings):
 
     tree_manager: Optional[TreeManagerConfiguration] = TreeManagerConfiguration()
 
-    USER_STATS_INTERVAL_DAY: int = 15  # minutes
-    USER_STATS_INTERVAL_WEEK: int = 60  # minutes
-    USER_STATS_INTERVAL_MONTH: int = 120  # minutes
+    USER_STATS_INTERVAL_DAY: int = 5  # minutes
+    USER_STATS_INTERVAL_WEEK: int = 15  # minutes
+    USER_STATS_INTERVAL_MONTH: int = 60  # minutes
     USER_STATS_INTERVAL_TOTAL: int = 240  # minutes
 
     @validator(

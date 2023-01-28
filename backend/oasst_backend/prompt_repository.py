@@ -481,6 +481,7 @@ class PromptRepository:
             task_id=task.id if task else None,
         )
 
+        message: Message = None
         if message_id:
             if not task:
                 if text_labels.is_report is True:
