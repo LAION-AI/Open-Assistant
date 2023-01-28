@@ -7,8 +7,10 @@ export default {
   component: Task,
 };
 
-const Template = ({ frontendId, task, trigger, mutate }) => {
-  return <Task frontendId={frontendId} task={task} trigger={trigger} mutate={mutate} />;
+const Template = ({ frontendId, task, isLoading, completeTask, skipTask }) => {
+  return (
+    <Task frontendId={frontendId} task={task} isLoading={isLoading} completeTask={completeTask} skipTask={skipTask} />
+  );
 };
 
 export const Default = Template.bind({});
@@ -23,10 +25,11 @@ Default.args = {
     type: "label_prompter_reply",
     valid_labels: ["spam", "fails_task"],
   },
-  trigger: (id, update_type, content) => {
+  isLoading: false,
+  completeTask: (id, update_type, content) => {
     console.log(content);
   },
-  mutate: () => {
-    console.log("mutate");
+  skipTask: () => {
+    console.log("skip");
   },
 };

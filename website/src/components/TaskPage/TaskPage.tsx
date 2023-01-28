@@ -4,9 +4,10 @@ import { TaskEmptyState } from "src/components/EmptyState";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { TaskInfos } from "src/components/Tasks/TaskTypes";
-import { ERROR_CODES, taskApiHooks } from "src/lib/constants";
+import { taskApiHooks } from "src/lib/constants";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { TaskType } from "src/types/Task";
+import { KnownTaskType } from "src/types/Tasks";
 
 type TaskPageProps = {
   type: TaskType;
@@ -15,26 +16,30 @@ type TaskPageProps = {
 export const TaskPage = ({ type }: TaskPageProps) => {
   const { t } = useTranslation(["tasks", "common"]);
   const taskApiHook = taskApiHooks[type];
-  const { tasks, isLoading, reset, trigger, error } = taskApiHook(type);
+  const { response, isLoading, completeTask, skipTask } = taskApiHook(type);
   const taskInfo = TaskInfos.find((taskType) => taskType.type === type);
 
-  if (isLoading) {
-    return <LoadingScreen text={t("common:loading")} />;
+  switch (response.status) {
+    case "AWAITING_INITIAL":
+      return <LoadingScreen text={t("common:loading")} />;
+    case "NONE_AVAILABLE":
+      return <TaskEmptyState />;
+    case "AVAILABLE":
+      return (
+        <>
+          <Head>
+            <title>{t(getTypeSafei18nKey(`${taskInfo.id}.label`))}</title>
+            <meta name="description" content={t(getTypeSafei18nKey(`${taskInfo.id}.desc`))} />
+          </Head>
+          <Task
+            key={response.task.id}
+            frontendId={response.id}
+            task={response.task as KnownTaskType}
+            isLoading={isLoading}
+            completeTask={completeTask}
+            skipTask={skipTask}
+          />
+        </>
+      );
   }
-
-  if (tasks.length === 0 || error?.errorCode === ERROR_CODES.TASK_REQUESTED_TYPE_NOT_AVAILABLE) {
-    return <TaskEmptyState />;
-  }
-
-  const task = tasks[0];
-
-  return (
-    <>
-      <Head>
-        <title>{t(getTypeSafei18nKey(`${taskInfo.id}.label`))}</title>
-        <meta name="description" content={t(getTypeSafei18nKey(`${taskInfo.id}.desc`))} />
-      </Head>
-      <Task key={task.task.id} frontendId={task.id} task={task.task} trigger={trigger} mutate={reset} />
-    </>
-  );
 };

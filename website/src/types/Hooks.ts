@@ -1,26 +1,16 @@
-import { MutatorCallback, MutatorOptions } from "swr";
+import { BaseTask, TaskContent, TaskResponse, TaskType } from "src/types/Task";
 
-import { BaseTask, TaskResponse, TaskType } from "./Task";
+interface TaskInteraction {
+  id: string;
+  update_type: string;
+  content: TaskContent;
+}
 
-type ConcreteTaskResponse = TaskResponse<BaseTask>;
-type TaskError = { errorCode: number; message: string };
-
-type Trigger = (
-  extraArgument?: unknown,
-  options?: MutatorOptions<ConcreteTaskResponse>
-) => Promise<ConcreteTaskResponse>;
-
-type Reset = (
-  data?: ConcreteTaskResponse | Promise<ConcreteTaskResponse> | MutatorCallback<ConcreteTaskResponse>,
-  opts?: boolean | MutatorOptions<ConcreteTaskResponse>
-) => Promise<ConcreteTaskResponse>;
-
-type TaskAPIHook = {
-  tasks: TaskResponse<BaseTask>[];
+export type TaskApiHook<Task extends BaseTask> = {
+  response: TaskResponse<Task>;
   isLoading: boolean;
-  error: TaskError;
-  trigger: Trigger;
-  reset: Reset;
+  completeTask: (interaction: TaskInteraction) => void;
+  skipTask: () => void;
 };
 
-export type TaskApiHooks = Record<TaskType, (args: TaskType) => TaskAPIHook>;
+export type TaskApiHooks = Record<TaskType, (args: TaskType) => TaskApiHook<BaseTask>>;
