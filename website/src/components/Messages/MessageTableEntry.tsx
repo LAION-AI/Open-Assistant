@@ -71,6 +71,8 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
     sendEmojiChange({ op: state ? "add" : "remove", emoji });
   };
 
+  console.log(emojiState);
+  console.log(message);
   return (
     <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
       {!inlineAvatar && avatar}
@@ -93,7 +95,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
           style={{ float: "right", position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
           onClick={(e) => e.stopPropagation()}
         >
-          {Object.entries(emojiState.emojis).map(([emoji, count]) => (
+          {Object.entries(emojiState?.emojis || {}).map(([emoji, count]) => (
             <MessageEmojiButton
               key={emoji}
               emoji={{ name: emoji, count }}
@@ -158,7 +160,7 @@ const MessageActions = ({
         <MenuGroup title={t("reactions")}>
           <SimpleGrid columns={4}>
             {["+1", "-1"].map((emoji) => (
-              <EmojiMenuItem key={emoji} emoji={emoji} checked={userEmoji.includes(emoji)} react={react} />
+              <EmojiMenuItem key={emoji} emoji={emoji} checked={userEmoji?.includes(emoji)} react={react} />
             ))}
           </SimpleGrid>
         </MenuGroup>
