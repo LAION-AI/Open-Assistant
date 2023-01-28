@@ -211,7 +211,7 @@ export const LabelInputGroup = ({ labelIDs, onChange, isEditable = true }: Label
               }}
               alignItems="center"
             >
-              <Text>
+              <Text as="div">
                 {textA}
                 {descriptionA.length > 0 ? <Explain explanation={descriptionA} /> : null}
               </Text>
@@ -229,7 +229,7 @@ export const LabelInputGroup = ({ labelIDs, onChange, isEditable = true }: Label
                 />
               </GridItem>
               <GridItem>
-                <Text textAlign="right">
+                <Text textAlign="right" as="div">
                   {textB}
                   {descriptionB.length > 0 ? <Explain explanation={descriptionB} /> : null}
                 </Text>

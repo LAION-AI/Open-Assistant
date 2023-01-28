@@ -34,7 +34,7 @@ interface MessageTableEntryProps {
 
 export function MessageTableEntry({ message, enabled, highlight }: MessageTableEntryProps) {
   const router = useRouter();
-  const [emojis, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
+  const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
     setEmojis({ emojis: message.emojis, user_emojis: message.user_emojis });
   }, [message.emojis, message.user_emojis]);
@@ -93,17 +93,17 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
           style={{ float: "right", position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
           onClick={(e) => e.stopPropagation()}
         >
-          {Object.entries(emojis.emojis).map(([emoji, count]) => (
+          {Object.entries(emojiState.emojis).map(([emoji, count]) => (
             <MessageEmojiButton
               key={emoji}
               emoji={{ name: emoji, count }}
-              checked={emojis.user_emojis.includes(emoji)}
-              onClick={() => react(emoji, !emojis.user_emojis.includes(emoji))}
+              checked={emojiState.user_emojis.includes(emoji)}
+              onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
             />
           ))}
           <MessageActions
             react={react}
-            userEmoji={emojis.user_emojis}
+            userEmoji={emojiState.user_emojis}
             onLabel={showLabelPopup}
             onReport={showReportPopup}
             messageId={message.id}

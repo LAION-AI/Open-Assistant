@@ -6,7 +6,6 @@ import { LabelInputGroup } from "src/components/Survey/LabelInputGroup";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
-import { TaskType } from "src/types/Task";
 
 export const LabelTask = ({
   task,
@@ -35,14 +34,7 @@ export const LabelTask = ({
           {task.conversation ? (
             <Box mt="4" p={[4, 6]} borderRadius="lg" bg={cardColor}>
               <MessageTable
-                messages={[
-                  ...(task.conversation?.messages ?? []),
-                  {
-                    text: task.reply,
-                    is_assistant: task.type === TaskType.label_assistant_reply,
-                    message_id: task.message_id,
-                  },
-                ]}
+                messages={[...(task.conversation?.messages ?? []), task.reply_message]}
                 highlightLastMessage
               />
             </Box>

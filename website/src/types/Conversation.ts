@@ -11,11 +11,12 @@ export interface MessageEmojis {
 }
 
 export interface Message extends MessageEmojis {
+  id: string;
   text: string;
   is_assistant: boolean;
-  id: string;
-  created_date: string; // iso date string
   lang: string;
+  created_date: string; // iso date string
+  parent_id: string;
   frontend_message_id?: string;
 }
 

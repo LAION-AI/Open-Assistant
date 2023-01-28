@@ -18,10 +18,16 @@ export class OasstError {
 export class OasstApiClient {
   oasstApiUrl: string;
   oasstApiKey: string;
+  userHeaders: Record<string, string> = {};
 
-  constructor(oasstApiUrl: string, oasstApiKey: string) {
+  constructor(oasstApiUrl: string, oasstApiKey: string, user?: BackendUserCore) {
     this.oasstApiUrl = oasstApiUrl;
     this.oasstApiKey = oasstApiKey;
+    if (user) {
+      this.userHeaders = {
+        "X-OASST-USER": `${user.auth_method}:${user.id}`,
+      };
+    }
   }
   // TODO return a strongly typed Task?
   // This method is used to store a task in RegisteredTask.task.
@@ -215,9 +221,10 @@ export class OasstApiClient {
       method,
       ...init,
       headers: {
+        ...init?.headers,
+        ...this.userHeaders,
         "X-API-Key": this.oasstApiKey,
         "Content-Type": "application/json",
-        ...init?.headers,
       },
     });
 
@@ -227,8 +234,7 @@ export class OasstApiClient {
 
     if (resp.status >= 300) {
       const errorText = await resp.text();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let error: any;
+      let error;
       try {
         error = JSON.parse(errorText);
       } catch (e) {
@@ -239,8 +245,24 @@ export class OasstApiClient {
 
     return await resp.json();
   }
+
+  fetch_my_messages(user: BackendUserCore) {
+    const params = new URLSearchParams({
+      username: user.id,
+      auth_method: user.auth_method,
+    });
+    return this.get<Message[]>(`/api/v1/messages?${params}`);
+  }
+
+  fetch_recent_messages() {
+    return this.get<Message[]>(`/api/v1/messages`);
+  }
+
+  fetch_message_children(messageId: string) {
+    return this.get<Message[]>(`/api/v1/messages/${messageId}/children`);
+  }
+
+  fetch_conversation(messageId: string) {
+    return this.get(`/api/v1/messages/${messageId}/conversation`);
+  }
 }
-
-const oasstApiClient = new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
-
-export { oasstApiClient };

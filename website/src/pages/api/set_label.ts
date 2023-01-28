@@ -5,6 +5,7 @@ import { withoutRole } from "src/lib/auth";
  *
  */
 const handler = withoutRole("banned", async (req, res, token) => {
+  // TODO: move to oasst_api_client
   // Parse out the local message_id, and the interaction contents.
   const { message_id, label_map } = req.body;
 
