@@ -7,12 +7,11 @@ import { TaskCategory } from "src/components/Tasks/TaskTypes";
 import { get } from "src/lib/api";
 import type { AvailableTasks, TaskType } from "src/types/Task";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
-import useSWR from "swr";
 import useSWRImmutable from "swr/immutable";
 
 const Dashboard = () => {
   // Adding a demonstrative call to the backend that includes the web's JWT.
-  useSWR(`${process.env.BACKEND_URL}/api/v1/auth/check`, get);
+  useSWRImmutable(`${process.env.FASTAPI_URL}/api/v1/auth/check`, get);
 
   const { data } = useSWRImmutable<AvailableTasks>("/api/available_tasks", get);
 
