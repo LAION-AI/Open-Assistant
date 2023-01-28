@@ -12,7 +12,7 @@ import useSWR from "swr";
 
 const Dashboard = () => {
   // Adding a demonstrative call to the backend that includes the web's JWT.
-  useSWRImmutable(`${process.env.FASTAPI_URL}/api/v1/auth/check`, get);
+  useSWR(`${process.env.FASTAPI_URL}/api/v1/auth/check`, get);
 
   const {
     t,
