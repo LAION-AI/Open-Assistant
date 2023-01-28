@@ -1,4 +1,5 @@
 alembic==1.8.1
+cryptography==39.0.0
 fastapi==0.88.0
 fastapi-limiter==0.1.5
 fastapi-utils==0.2.1
@@ -6,8 +7,8 @@ loguru==0.6.0
 numpy==1.22.4
 psycopg2-binary==2.9.5
 pydantic==1.9.1
-pyjwt
 python-dotenv==0.21.0
+python-jose[cryptography]==3.3.0
 redis
 scipy==1.8.1
 SQLAlchemy==1.4.41

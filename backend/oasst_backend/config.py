@@ -63,6 +63,15 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     OFFICIAL_WEB_API_KEY: str = "1234"
 
+    # Encryption fields for handling the web generated JSON Web Tokens.
+    # These fields need to be shared with the web's auth settings in order to
+    # correctly decrypt the web tokens.
+    AUTH_INFO: bytes = b"NextAuth.js Generated Encryption Key"
+    AUTH_SALT: bytes = b""
+    AUTH_LENGTH: int = 32
+    AUTH_SECRET: bytes = b"O/M2uIbGj+lDD2oyNa8ax4jEOJqCPJzO53UbWShmq98="
+    AUTH_COOKIE_NAME: str = "next-auth.session-token"
+
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5432"
     POSTGRES_USER: str = "postgres"
