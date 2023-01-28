@@ -1,17 +1,17 @@
-import { getToken } from "next-auth/jwt";
 import { withRole } from "src/lib/auth";
-import { oasstApiClient } from "src/lib/oasst_api_client";
-import { getBackendUserCore } from "src/lib/users";
+import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 
 /**
  * Returns tasks availability, stats, and tree manager stats.
  */
 const handler = withRole("admin", async (req, res) => {
+  // NOTE: why are we using a dummy user here?
   const dummyUser = {
     id: "__dummy_user__",
     display_name: "Dummy User",
     auth_method: "local",
   };
+  const oasstApiClient = createApiClientFromUser(dummyUser);
   const [tasksAvailabilityOutcome, statsOutcome, treeManagerOutcome] = await Promise.allSettled([
     oasstApiClient.fetch_tasks_availability(dummyUser),
     oasstApiClient.fetch_stats(),

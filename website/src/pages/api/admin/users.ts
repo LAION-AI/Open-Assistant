@@ -1,6 +1,7 @@
 import { withRole } from "src/lib/auth";
-import { oasstApiClient } from "src/lib/oasst_api_client";
+import { createApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
+import { FetchUsersParams } from "src/types/Users";
 
 /**
  * The number of users to fetch in a single request.  Could later be a query parameter.
@@ -16,11 +17,18 @@ const PAGE_SIZE = 20;
  * - `direction`: Either "forward" or "backward" representing the pagination
  *   direction.
  */
-const handler = withRole("admin", async (req, res) => {
-  const { cursor, direction } = req.query;
+const handler = withRole("admin", async (req, res, token) => {
+  const { cursor, direction, searchDisplayName = "", sortKey = "username" } = req.query;
 
+  const oasstApiClient = await createApiClient(token);
   // First, get all the users according to the backend.
-  const all_users = await oasstApiClient.fetch_users(PAGE_SIZE, cursor as string, direction === "forward");
+  const { items: all_users, ...rest } = await oasstApiClient.fetch_users({
+    searchDisplayName: searchDisplayName as FetchUsersParams["searchDisplayName"],
+    direction: direction as FetchUsersParams["direction"],
+    limit: PAGE_SIZE,
+    cursor: cursor as FetchUsersParams["cursor"],
+    sortKey: sortKey === "username" || sortKey === "display_name" ? sortKey : undefined,
+  });
 
   // Next, get all the users stored in the web's auth database to fetch their role.
   const local_user_ids = all_users.map(({ id }) => id);
@@ -51,7 +59,10 @@ const handler = withRole("admin", async (req, res) => {
     };
   });
 
-  res.status(200).json(users);
+  res.status(200).json({
+    items: users,
+    ...rest,
+  });
 });
 
 export default handler;

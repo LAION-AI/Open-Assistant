@@ -2,6 +2,7 @@ import json
 import os
 from urllib.request import urlopen
 
+from custom_datasets.formatting import format_pair
 from torch.utils.data import Dataset
 
 
@@ -49,8 +50,7 @@ class PromptGeneratedDataset(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        question, answer = self.pairs[index]
-        return question, answer
+        return format_pair(self.pairs[index])
 
 
 class InstructionTuning(Dataset):
@@ -101,5 +101,4 @@ class InstructionTuning(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        question, answer = self.pairs[index]
-        return question, answer
+        return format_pair(self.pairs[index])

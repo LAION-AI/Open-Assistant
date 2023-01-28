@@ -1,10 +1,10 @@
-import { Button, Divider, Flex, Grid, Icon, Text } from "@chakra-ui/react";
+import { Divider, Flex, Grid, Icon, Text } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React from "react";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
-import { MdOutlineEdit } from "react-icons/md";
+import { Pencil } from "lucide-react";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 
 export default function Account() {
@@ -34,7 +34,7 @@ export default function Account() {
               <Flex gap={2}>
                 {session.user.name ?? "(No username)"}
                 <Link href="/account/edit">
-                  <Icon boxSize={5} as={MdOutlineEdit} />
+                  <Icon boxSize={5} as={Pencil} size="1em" />
                 </Link>
               </Flex>
               <Text as="b">Email</Text>

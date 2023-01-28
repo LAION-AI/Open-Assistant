@@ -1,6 +1,7 @@
 {
   "about": "About",
   "account_settings": "Account",
+  "admin_dashboard": "Admin Dashboard",
   "connect": "Connect",
   "conversational": "Conversational AI for everyone.",
   "dashboard": "Dashboard",
@@ -8,6 +9,8 @@
   "docs": "Docs",
   "github": "GitHub",
   "legal": "Legal",
+  "loading": "Loading...",
+  "more_information": "More Information",
   "privacy_policy": "Privacy Policy",
   "report_a_bug": "Report a Bug",
   "sign_in": "Sign In",

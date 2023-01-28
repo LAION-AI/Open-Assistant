@@ -1,10 +1,12 @@
 from typing import Optional
 from uuid import UUID
 
+from oasst_backend.config import settings
 from oasst_backend.models import ApiClient, User
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, and_, or_
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
@@ -64,7 +66,13 @@ class UserRepository:
         return user
 
     @managed_tx_method(CommitMode.COMMIT)
-    def update_user(self, id: UUID, enabled: Optional[bool] = None, notes: Optional[str] = None) -> None:
+    def update_user(
+        self,
+        id: UUID,
+        enabled: Optional[bool] = None,
+        notes: Optional[str] = None,
+        show_on_leaderboard: Optional[bool] = None,
+    ) -> None:
         """
         Update a user by global user ID to disable or set admin notes. Only trusted clients may update users.
 
@@ -83,6 +91,8 @@ class UserRepository:
             user.enabled = enabled
         if notes is not None:
             user.notes = notes
+        if show_on_leaderboard is not None:
+            user.show_on_leaderboard = show_on_leaderboard
 
         self.db.add(user)
 
@@ -107,9 +117,7 @@ class UserRepository:
         self.db.add(user)
 
     @managed_tx_method(CommitMode.COMMIT)
-    def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
-        if not client_user:
-            return None
+    def _lookup_client_user_tx(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
         user: User = (
             self.db.query(User)
             .filter(
@@ -135,6 +143,18 @@ class UserRepository:
             self.db.add(user)
         return user
 
+    def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
+        if not client_user:
+            return None
+        num_retries = settings.DATABASE_MAX_TX_RETRY_COUNT
+        for i in range(num_retries):
+            try:
+                return self._lookup_client_user_tx(client_user, create_missing)
+            except IntegrityError:
+                # catch UniqueViolation exception, for concurrent requests due to conflicts in ix_user_username
+                if i + 1 == num_retries:
+                    raise
+
     def query_users_ordered_by_username(
         self,
         api_client_id: Optional[UUID] = None,
@@ -145,6 +165,7 @@ class UserRepository:
         auth_method: Optional[str] = None,
         search_text: Optional[str] = None,
         limit: Optional[int] = 100,
+        desc: bool = False,
     ) -> list[User]:
         if not self.api_client.trusted:
             if not api_client_id:
@@ -184,14 +205,13 @@ class UserRepository:
             pattern = "%{}%".format(search_text.replace("\\", "\\\\").replace("_", "\\_").replace("%", "\\%"))
             qry = qry.filter(User.username.like(pattern))
 
-        if limit is not None and lte_username and not gte_username:
-            # select top rows but return results in ascernding order
-            sub_qry = qry.order_by(User.username.desc(), User.id.desc()).limit(limit).subquery("u")
-            qry = self.db.query(User).select_entity_from(sub_qry).order_by(User.username, User.id)
+        if desc:
+            qry = qry.order_by(User.username.desc(), User.id.desc())
         else:
             qry = qry.order_by(User.username, User.id)
-            if limit is not None:
-                qry = qry.limit(limit)
+
+        if limit is not None:
+            qry = qry.limit(limit)
 
         return qry.all()
 
@@ -205,7 +225,9 @@ class UserRepository:
         auth_method: Optional[str] = None,
         search_text: Optional[str] = None,
         limit: Optional[int] = 100,
+        desc: bool = False,
     ) -> list[User]:
+
         if not self.api_client.trusted:
             if not api_client_id:
                 # Let unprivileged api clients query their own users without api_client_id being set
@@ -255,13 +277,12 @@ class UserRepository:
         if auth_method:
             qry = qry.filter(User.auth_method == auth_method)
 
-        if limit is not None and lte_display_name and not gte_display_name:
-            # select top rows but return results in ascernding order
-            sub_qry = qry.order_by(User.display_name.desc(), User.id.desc()).limit(limit).subquery("u")
-            qry = self.db.query(User).select_entity_from(sub_qry).order_by(User.display_name, User.id)
+        if desc:
+            qry = qry.order_by(User.display_name.desc(), User.id.desc())
         else:
             qry = qry.order_by(User.display_name, User.id)
-            if limit is not None:
-                qry = qry.limit(limit)
+
+        if limit is not None:
+            qry = qry.limit(limit)
 
         return qry.all()

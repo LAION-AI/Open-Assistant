@@ -1,4 +1,4 @@
-export const enum TaskType {
+export enum TaskType {
   initial_prompt = "initial_prompt",
   assistant_reply = "assistant_reply",
   prompter_reply = "prompter_reply",
@@ -34,5 +34,7 @@ export interface TaskResponse<Task extends BaseTask> {
   userId: string;
   task: Task;
 }
+
+export type TaskReplyValidity = "DEFAULT" | "VALID" | "INVALID";
 
 export type AvailableTasks = { [taskType in TaskType]: number };

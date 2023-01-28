@@ -4,12 +4,12 @@ import {
   CardBody,
   CircularProgress,
   SimpleGrid,
-  Text,
   Table,
   TableCaption,
   TableContainer,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
@@ -19,9 +19,10 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
-import useSWRImmutable from "swr/immutable";
 import { getAdminLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
+import useSWRImmutable from "swr/immutable";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 /**
  * Provides the admin status page that shows result of calls to several backend API endpoints,

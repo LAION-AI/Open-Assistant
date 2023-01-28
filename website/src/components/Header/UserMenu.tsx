@@ -11,16 +11,15 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { AlertTriangle, Layout, LogOut, Settings, Shield } from "lucide-react";
 import NextLink from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import React, { ElementType, useCallback } from "react";
-import { FiAlertTriangle, FiLayout, FiLogOut, FiSettings, FiShield } from "react-icons/fi";
 
 interface MenuOption {
   name: string;
   href: string;
-  desc: string;
   icon: ElementType;
   isExternal: boolean;
 }
@@ -40,22 +39,19 @@ export function UserMenu() {
     {
       name: t("dashboard"),
       href: "/dashboard",
-      desc: t("dashboard"),
-      icon: FiLayout,
+      icon: Layout,
       isExternal: false,
     },
     {
       name: t("account_settings"),
       href: "/account",
-      desc: t("account_settings"),
-      icon: FiSettings,
+      icon: Settings,
       isExternal: false,
     },
     {
       name: t("report_a_bug"),
       href: "https://github.com/LAION-AI/Open-Assistant/issues/new/choose",
-      desc: t("report_a_bug"),
-      icon: FiAlertTriangle,
+      icon: AlertTriangle,
       isExternal: true,
     },
   ];
@@ -64,8 +60,7 @@ export function UserMenu() {
     options.unshift({
       name: t("admin_dashboard"),
       href: "/admin",
-      desc: t("admin_dashboard"),
-      icon: FiShield,
+      icon: Shield,
       isExternal: false,
     });
   }
@@ -98,7 +93,7 @@ export function UserMenu() {
               _hover={{ textDecoration: "none" }}
             >
               <MenuItem gap="3" borderRadius="md" p="4">
-                <item.icon className="text-blue-500" aria-hidden="true" />
+                <item.icon size="1em" className="text-blue-500" aria-hidden="true" />
                 <Text>{item.name}</Text>
               </MenuItem>
             </Link>
@@ -106,7 +101,7 @@ export function UserMenu() {
         </MenuGroup>
         <MenuDivider />
         <MenuItem gap="3" borderRadius="md" p="4" onClick={handleSignOut}>
-          <FiLogOut className="text-blue-500" aria-hidden="true" />
+          <LogOut size="1em" className="text-blue-500" aria-hidden="true" />
           <Text>{t("sign_out")}</Text>
         </MenuItem>
       </MenuList>

@@ -1,15 +1,9 @@
 import { withoutRole } from "src/lib/auth";
+import { createApiClient } from "src/lib/oasst_client_factory";
 
-const handler = withoutRole("banned", async (req, res) => {
-  const messagesRes = await fetch(`${process.env.FASTAPI_URL}/api/v1/messages`, {
-    method: "GET",
-    headers: {
-      "X-API-Key": process.env.FASTAPI_KEY,
-    },
-  });
-  const messages = await messagesRes.json();
-
-  // Send recieved messages to the client.
+const handler = withoutRole("banned", async (req, res, token) => {
+  const client = await createApiClient(token);
+  const messages = await client.fetch_recent_messages();
   res.status(200).json(messages);
 });
 

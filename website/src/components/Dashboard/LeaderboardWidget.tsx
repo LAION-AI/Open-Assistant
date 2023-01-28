@@ -1,11 +1,9 @@
-import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
+import { Card, CardBody, Link, Text } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { LeaderboardGridCell } from "src/components/LeaderboardGridCell";
+import { LeaderboardTable } from "src/components/LeaderboardTable";
 import { LeaderboardTimeFrame } from "src/types/Leaderboard";
 
-export function LeaderboardTable() {
-  const backgroundColor = useColorModeValue("white", "gray.700");
-  const accentColor = useColorModeValue("gray.200", "gray.900");
+export function LeaderboardWidget() {
   return (
     <main className="h-fit col-span-3">
       <div className="flex flex-col gap-4">
@@ -17,15 +15,11 @@ export function LeaderboardTable() {
             </Text>
           </Link>
         </div>
-        <Box
-          backgroundColor={backgroundColor}
-          boxShadow="base"
-          dropShadow={accentColor}
-          borderRadius="xl"
-          className="p-6 shadow-sm"
-        >
-          <LeaderboardGridCell timeFrame={LeaderboardTimeFrame.day} />
-        </Box>
+        <Card>
+          <CardBody>
+            <LeaderboardTable timeFrame={LeaderboardTimeFrame.day} limit={5} />
+          </CardBody>
+        </Card>
       </div>
     </main>
   );

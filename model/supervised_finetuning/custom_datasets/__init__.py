@@ -43,7 +43,7 @@ def get_one_dataset(conf, dataset_name):
         if dataset_name == "debate_sum":
             train, eval = train_val_dataset(train, val_split=0.2)
         else:
-            val_name = "validation" if dataset_name not in ["billsum"] else "test"
+            val_name = "validation" if dataset_name not in ["billsum", "tldr_news"] else "test"
             eval = SummarizationDataset(dataset_name, conf.cache_dir, val_name)
     elif "ted_trans" in dataset_name:
         language_pair = dataset_name.split("_")[-1]

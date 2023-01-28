@@ -1,4 +1,4 @@
-import { Conversation } from "./Conversation";
+import { Conversation, Message } from "./Conversation";
 import { BaseTask, TaskType } from "./Task";
 
 export interface CreateInitialPromptTask extends BaseTask {
@@ -37,6 +37,7 @@ export interface LabelAssistantReplyTask extends BaseTask {
   type: TaskType.label_assistant_reply;
   message_id: string;
   conversation: Conversation;
+  reply_message: Message;
   reply: string;
   valid_labels: string[];
   mode: "simple" | "full";
@@ -47,6 +48,7 @@ export interface LabelPrompterReplyTask extends BaseTask {
   type: TaskType.label_prompter_reply;
   message_id: string;
   conversation: Conversation;
+  reply_message: Message;
   reply: string;
   valid_labels: string[];
   mode: "simple" | "full";
