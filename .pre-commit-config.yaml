@@ -88,7 +88,7 @@ repos:
       - id: next-lint-website
         name: Lint website
         files: ^website/
-        exclude: ^website/node_modules/
+        exclude: ^website/node_modules/|^website/public
         types_or: [javascript, jsx, ts, tsx]
         language: node
         pass_filenames: false
