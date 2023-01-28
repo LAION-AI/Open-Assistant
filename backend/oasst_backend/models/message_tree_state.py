@@ -71,3 +71,4 @@ class MessageTreeState(SQLModel, table=True):
     max_children_count: int = Field(nullable=False)
     state: str = Field(nullable=False, max_length=128, index=True)
     active: bool = Field(nullable=False, index=True)
+    origin: str = Field(sa_column=sa.Column(sa.String(1024), nullable=True))

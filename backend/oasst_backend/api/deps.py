@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from secrets import token_hex
-from typing import Generator, NamedTuple
+from typing import Generator, NamedTuple, Optional
+from uuid import UUID
 
 from fastapi import Depends, Request, Response, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -67,6 +68,7 @@ def create_api_client(
     trusted: bool | None = False,
     admin_email: str | None = None,
     api_key: str | None = None,
+    force_id: Optional[UUID] = None,
 ) -> ApiClient:
     if api_key is None:
         api_key = token_hex(32)
@@ -79,6 +81,8 @@ def create_api_client(
         trusted=trusted,
         admin_email=admin_email,
     )
+    if force_id:
+        api_client.id = force_id
     session.add(api_client)
     session.commit()
     session.refresh(api_client)

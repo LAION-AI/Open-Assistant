@@ -56,7 +56,11 @@ class Message(SQLModel, table=True):
     ranking_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
 
     rank: Optional[int] = Field(nullable=True)
-    origin: str = Field(sa_column=sa.Column(sa.String(1024), server_default="oasst_user", nullable=False))
+
+    synthetic: Optional[bool] = Field(
+        sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False)
+    )
+    model_name: Optional[str] = Field(sa_column=sa.Column(sa.String(1024), nullable=True))
 
     emojis: Optional[dict[str, int]] = Field(default=None, sa_column=sa.Column(pg.JSONB), nullable=False)
     _user_emojis: Optional[list[str]] = PrivateAttr(default=None)

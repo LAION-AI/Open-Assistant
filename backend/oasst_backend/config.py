@@ -47,8 +47,9 @@ class TreeManagerConfiguration(BaseModel):
     """Number of rankings in which the message participated."""
 
     p_activate_backlog_tree: float = 0.8
-    """Probability to activate a message tree in backlog_ranking state when a tree enters
-    a terminal state. Use this settting to control ratio of initial prompts and backlog trees."""
+    """Probability to activate a message tree in backlog_ranking state when another tree enters
+    a terminal state. Use this settting to control ratio of initial prompts and backlog tree
+    activations."""
 
     labels_initial_prompt: list[TextLabel] = [
         TextLabel.spam,
