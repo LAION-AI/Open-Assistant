@@ -48,6 +48,7 @@ def get_valid_lables() -> ValidLabelsResponse:
         valid_labels=[
             LabelDescription(name=l.value, widget=l.widget.value, display_text=l.display_text, help_text=l.help_text)
             for l in TextLabel
+            if l != TextLabel.fails_task
         ]
     )
 
