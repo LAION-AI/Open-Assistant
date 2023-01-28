@@ -361,7 +361,7 @@ class TreeManager:
                     random_reply_message = random.choice(replies_need_review)
                     messages = self.pr.fetch_message_conversation(random_reply_message)
 
-                    conversation = prepare_conversation(messages[:-1])
+                    conversation = prepare_conversation(messages)
                     message = messages[-1]
 
                     self.cfg.p_full_labeling_review_reply_prompter: float = 0.1
