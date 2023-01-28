@@ -28,7 +28,7 @@ interface ValidLabelsResponse {
 
 export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopupProps) => {
   const { t } = useTranslation();
-  const { data: response } = useSWRImmutable<ValidLabelsResponse>("/api/valid_labels", get);
+  const { data: response } = useSWRImmutable<ValidLabelsResponse>(`/api/valid_labels?message_id=${messageId}`, get);
   const valid_labels = response?.valid_labels ?? [];
   const [values, setValues] = useState<number[]>(new Array(valid_labels.length).fill(null));
 
