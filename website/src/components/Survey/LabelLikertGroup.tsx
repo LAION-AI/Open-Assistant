@@ -135,7 +135,7 @@ const getLabelInfo = (label: string): LabelInfo => {
         oneDescription: ["Contains text which is incorrect or misleading"],
         inverted: true,
       };
-    case "helpful":
+    case "helpfulness":
       return {
         zeroText: "Unhelful",
         zeroDescription: [],

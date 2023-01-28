@@ -55,28 +55,30 @@ const YesNoQuestion = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <HStack data-cy="label-question">
-      <Text>
+    <div data-cy="label-question" style={{ maxWidth: "30em" }}>
+      <Text display="inline">
         {question}
         {isRequired ? <RequiredMark /> : undefined}
       </Text>
-      <Button
-        data-cy="yes"
-        isDisabled={!isEditable}
-        colorScheme={value === true ? "blue" : undefined}
-        onClick={() => onChange(isRequired ? true : value === null ? true : null)}
-      >
-        {t("yes")}
-      </Button>
-      <Button
-        data-cy="no"
-        isDisabled={!isEditable}
-        colorScheme={value === false ? "blue" : undefined}
-        onClick={() => onChange(isRequired ? false : value === null ? false : null)}
-      >
-        {t("no")}
-      </Button>
-    </HStack>
+      <HStack style={{ float: "right" }}>
+        <Button
+          data-cy="yes"
+          isDisabled={!isEditable}
+          colorScheme={value === true ? "blue" : undefined}
+          onClick={() => onChange(isRequired ? true : value === null ? true : null)}
+        >
+          {t("yes")}
+        </Button>
+        <Button
+          data-cy="no"
+          isDisabled={!isEditable}
+          colorScheme={value === false ? "blue" : undefined}
+          onClick={() => onChange(isRequired ? false : value === null ? false : null)}
+        >
+          {t("no")}
+        </Button>
+      </HStack>
+    </div>
   );
 };
 

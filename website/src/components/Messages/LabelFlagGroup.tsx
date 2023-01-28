@@ -23,7 +23,6 @@ export const LabelFlagGroup = ({ values, labelNames, isEditable = true, onChange
           }}
           isDisabled={!isEditable}
           colorScheme={values[idx] === 1 ? "blue" : undefined}
-          style={{ wordWrap: "break-word" }}
         >
           {t(getTypeSafei18nKey(name))}
         </Button>

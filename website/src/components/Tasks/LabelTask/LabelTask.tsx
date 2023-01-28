@@ -1,4 +1,5 @@
 import { Box, useBoolean, useColorModeValue } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
 import { MessageView } from "src/components/Messages";
 import { LabelInputGroup } from "src/components/Messages/LabelInputGroup";
@@ -20,6 +21,7 @@ export const LabelTask = ({
   onReplyChanged,
   onValidityChanged,
 }: TaskSurveyProps<LabelTaskType, { text: string; labels: Record<string, number>; message_id: string }>) => {
+  const { t } = useTranslation("labelling");
   const [values, setValues] = useState<number[]>(new Array(task.labels.length).fill(null));
   const [userInputMade, setUserInputMade] = useBoolean(false);
 
@@ -69,6 +71,11 @@ export const LabelTask = ({
           values={values}
           requiredLabels={task.mandatory_labels}
           isEditable={isEditable}
+          instructions={{
+            yesNoInstruction: t("label_highlighted_yes_no_instruction"),
+            flagInstruction: t("label_highlighted_flag_instruction"),
+            likertInstruction: t("label_highlighted_likert_instruction"),
+          }}
           onChange={(values) => {
             setValues(values);
             setUserInputMade.on();

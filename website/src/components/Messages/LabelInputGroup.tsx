@@ -1,21 +1,33 @@
 import { Text, VStack } from "@chakra-ui/react";
-import { useTranslation } from "next-i18next";
 import { Label } from "src/types/Tasks";
 
 import { LabelLikertGroup } from "../Survey/LabelLikertGroup";
 import { LabelFlagGroup } from "./LabelFlagGroup";
 import { LabelYesNoGroup } from "./LabelYesNoGroup";
 
+export interface LabelInputInstructions {
+  yesNoInstruction: string;
+  flagInstruction: string;
+  likertInstruction: string;
+}
+
 interface LabelInputGroupProps {
   values: number[];
   labels: Label[];
   requiredLabels?: string[];
   isEditable?: boolean;
+  instructions: LabelInputInstructions;
   onChange: (values: number[]) => void;
 }
 
-export const LabelInputGroup = ({ labels, values, requiredLabels, isEditable, onChange }: LabelInputGroupProps) => {
-  const { t } = useTranslation("labelling");
+export const LabelInputGroup = ({
+  labels,
+  values,
+  requiredLabels,
+  isEditable,
+  instructions,
+  onChange,
+}: LabelInputGroupProps) => {
   const yesNoIndexes = labels.map((label, idx) => (label.widget === "yes_no" ? idx : null)).filter((v) => v !== null);
   const flagIndexes = labels.map((label, idx) => (label.widget === "flag" ? idx : null)).filter((v) => v !== null);
   const likertIndexes = labels.map((label, idx) => (label.widget === "likert" ? idx : null)).filter((v) => v !== null);
@@ -24,7 +36,7 @@ export const LabelInputGroup = ({ labels, values, requiredLabels, isEditable, on
     <VStack alignItems="stretch" spacing={6}>
       {yesNoIndexes.length > 0 && (
         <VStack alignItems="stretch" spacing={2}>
-          <Text>{t("label_yes_no_instruction")}</Text>
+          <Text>{instructions.yesNoInstruction}</Text>
           <LabelYesNoGroup
             values={yesNoIndexes.map((idx) => values[idx])}
             labelNames={yesNoIndexes.map((idx) => labels[idx].name)}
@@ -40,7 +52,7 @@ export const LabelInputGroup = ({ labels, values, requiredLabels, isEditable, on
       )}
       {flagIndexes.length > 0 && (
         <VStack alignItems="stretch" spacing={2}>
-          <Text>{t("label_flag_instruction")}</Text>
+          <Text>{instructions.flagInstruction}</Text>
           <LabelFlagGroup
             values={flagIndexes.map((idx) => values[idx])}
             labelNames={flagIndexes.map((idx) => labels[idx].name)}
@@ -55,7 +67,7 @@ export const LabelInputGroup = ({ labels, values, requiredLabels, isEditable, on
       )}
       {likertIndexes.length > 0 && (
         <VStack alignItems="stretch" spacing={2}>
-          <Text>{t("label_likert_instruction")}</Text>
+          <Text>{instructions.likertInstruction}</Text>
           <LabelLikertGroup
             labelIDs={likertIndexes.map((idx) => labels[idx].name)}
             isEditable={isEditable}
