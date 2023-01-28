@@ -19,7 +19,7 @@ devcontainers in this repo.
 pre-commit run --all-files
 ```
 
-A successfull run should look something like this:
+A successful run should look something like this:
 
 ```
 @andrewm4894 ➜ /workspaces/Open-Assistant (devcontainer-improvements) $ pre-commit run --all-files
