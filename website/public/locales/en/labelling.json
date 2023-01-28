@@ -1,0 +1,11 @@
+{
+  "label_yes_no_instruction": "Answer the following question(s) about the highlighted message:",
+  "label_flag_instruction": "Select any that apply to the highlighted message:",
+  "label_likert_instruction": "Rate the highlighted message:",
+  "spam.question": "Is the message spam?",
+  "fails_task.question": "Does the reply fail the propmpters task?",
+  "not_appropriate": "Not Appropriate",
+  "pii": "Contains PII",
+  "hate_speech": "Hate Speech",
+  "sexual_content": "Sexual Content"
+}

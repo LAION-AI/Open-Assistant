@@ -10,21 +10,16 @@ import {
 } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { useState } from "react";
-import { LabelInputGroup } from "src/components/Survey/LabelInputGroup";
 import { get, post } from "src/lib/api";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
+import { LabelInputGroup } from "src/components/Messages/LabelInputGroup";
+import { Label } from "src/types/Tasks";
 
 interface LabelMessagePopupProps {
   messageId: string;
   show: boolean;
   onClose: () => void;
-}
-
-interface Label {
-  name: string;
-  display_text: string;
-  help_text: string;
 }
 
 interface ValidLabelsResponse {
@@ -35,7 +30,7 @@ export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopu
   const { t } = useTranslation("message");
   const { data: response } = useSWRImmutable<ValidLabelsResponse>("/api/valid_labels", get);
   const valid_labels = response?.valid_labels ?? [];
-  const [values, setValues] = useState<number[]>(null);
+  const [values, setValues] = useState<number[]>(new Array(valid_labels.length).fill(null));
 
   const { trigger: setLabels } = useSWRMutation("/api/set_label", post);
 
@@ -63,7 +58,7 @@ export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopu
         <ModalHeader>{t("label_title")}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <LabelInputGroup labelIDs={valid_labels.map(({ name }) => name)} onChange={setValues} />
+          <LabelInputGroup labels={valid_labels} values={values} onChange={setValues} />
         </ModalBody>
         <ModalFooter>
           <Button colorScheme="blue" mr={3} onClick={submit}>

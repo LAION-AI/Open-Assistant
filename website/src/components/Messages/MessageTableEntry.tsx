@@ -36,7 +36,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
   const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
-    setEmojis({ emojis: message.emojis, user_emojis: message.user_emojis });
+    setEmojis({ emojis: message.emojis || {}, user_emojis: message.user_emojis || [] });
   }, [message.emojis, message.user_emojis]);
 
   const goToMessage = useCallback(() => router.push(`/messages/${message.id}`), [router, message.id]);
