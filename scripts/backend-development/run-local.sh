@@ -8,7 +8,6 @@ export DEBUG_USE_SEED_DATA=True
 export DEBUG_SKIP_TOXICITY_CALCULATION=True
 export DEBUG_ALLOW_SELF_LABELING=True
 export DEBUG_SKIP_EMBEDDING_COMPUTATION=True
-export BACKEND_CORS_ORIGINS='["http://localhost:3000"]'
 
 uvicorn main:app --reload --port 8080 --host 0.0.0.0
 

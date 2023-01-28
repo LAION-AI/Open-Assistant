@@ -11,7 +11,8 @@ import useSWR from "swr";
 import useSWRImmutable from "swr/immutable";
 
 const Dashboard = () => {
-  useSWR("http://localhost:8080/api/v1/auth/check", get);
+  // Adding a demonstrative call to the backend that includes the web's JWT.
+  useSWR(`${process.env.BACKEND_URL}/api/v1/auth/check`, get);
 
   const { data } = useSWRImmutable<AvailableTasks>("/api/available_tasks", get);
 
