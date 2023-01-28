@@ -81,21 +81,35 @@ def argument_parsing(parser):
         "learning_rate": 3e-5,
         "eval_steps": 500,
         "loss": "rank",
+        "warmup_steps": 500,
         "max_length": 440,
+        "weight_decay": 0.01,
+        "max_grad_norm": 2.0,
+        "save_steps": 500,
         "per_device_eval_batch_size": 5,
         "per_device_train_batch_size": 8,
         "gradient_accumulation_steps": 8,
         "gradient_checkpointing": False,
+        "deepspeed": args.deepspeed,
+        "local_rank": args.local_rank,
         "datasets": ["webgpt"],
+        "wandb_entity": args.wandb_entity,
         "fp16": True,
         "tokenizer_name": training_conf["model_name"],
     }
 
     params = {**default_params, **training_conf}
-    params["gradient_accumulation_steps"] = int(params["gradient_accumulation_steps"])
-    params["num_train_epochs"] = int(params["num_train_epochs"])
-    params["per_device_train_batch_size"] = int(params["per_device_train_batch_size"])
-    params["learning_rate"] = float(params["learning_rate"])
+    for name in [
+        "gradient_accumulation_steps",
+        "num_train_epochs",
+        "save_steps",
+        "per_device_train_batch_size",
+        "per_device_eval_batch_size",
+    ]:
+        params[name] = int(params[name])
+    for name in ["learning_rate", "weight_decay", "max_grad_norm"]:
+        params[name] = float(params[name])
+
     return params
 
 

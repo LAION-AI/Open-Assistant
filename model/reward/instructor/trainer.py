@@ -8,15 +8,8 @@ import torch
 from models import RankGenModel
 from rank_datasets import DataCollatorForPairRank, RankGenCollator
 from torch import nn
-from transformers import (
-    AdamW,
-    AutoModelForSequenceClassification,
-    PreTrainedModel,
-    Trainer,
-    TrainingArguments,
-    get_cosine_schedule_with_warmup,
-    get_linear_schedule_with_warmup,
-)
+from transformers import AutoModelForSequenceClassification, PreTrainedModel, Trainer, TrainingArguments
+from transformers.training_args import OptimizerNames
 from utils import argument_parsing, freeze_top_n_layers, get_datasets, get_tokenizer
 
 os.environ["WANDB_PROJECT"] = "reward-model"
@@ -24,6 +17,11 @@ os.environ["WANDB_PROJECT"] = "reward-model"
 accuracy = evaluate.load("accuracy")
 parser = ArgumentParser()
 parser.add_argument("config", type=str)
+parser.add_argument("--local_rank", type=int, default=-1)
+parser.add_argument("--deepspeed", action="store_true")
+parser.set_defaults(deepspeed=False)
+parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
+parser.add_argument("--wandb-entity", type=str, default="open-assistant")
 
 
 def compute_metrics(eval_pred):
@@ -133,24 +131,29 @@ if __name__ == "__main__":
         params = sum([np.prod(p.size()) for p in model_parameters])
         print("Number of trainable : {}M".format(int(params / 1e6)))
 
+    optimizer = OptimizerNames.ADAMW_HF
     args = TrainingArguments(
         output_dir=f"{model_name}-finetuned",
         num_train_epochs=training_conf["num_train_epochs"],
-        warmup_steps=500,
+        warmup_steps=training_conf["warmup_steps"],
+        optim=optimizer,
+        lr_scheduler_type=training_conf["scheduler"],
         learning_rate=training_conf["learning_rate"],
         # half_precision_backend="apex",
+        deepspeed="configs/zero_config.json" if training_conf["deepspeed"] else None,
         fp16=training_conf["fp16"],
+        local_rank=training_conf["local_rank"],
         gradient_checkpointing=training_conf["gradient_checkpointing"],
         gradient_accumulation_steps=training_conf["gradient_accumulation_steps"],
         per_device_train_batch_size=training_conf["per_device_train_batch_size"],
         per_device_eval_batch_size=training_conf["per_device_eval_batch_size"],
-        weight_decay=0.01,
-        max_grad_norm=2.0,
+        weight_decay=training_conf["weight_decay"],
+        max_grad_norm=training_conf["max_grad_norm"],
         logging_steps=10,
         save_total_limit=4,
         evaluation_strategy="steps",
         eval_steps=training_conf["eval_steps"],
-        save_steps=1000,
+        save_steps=training_conf["save_steps"],
         report_to="wandb",
     )
 
@@ -162,19 +165,12 @@ if __name__ == "__main__":
         collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf["max_length"])
     assert len(evals) > 0
 
-    optimizer = AdamW(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
-    scheduler = None
-    if "scheduler" in training_conf:
-        if training_conf["scheduler"] == "linear":
-            scheduler = get_linear_schedule_with_warmup()
-        elif training_conf["scheduler"] == "cosine":
-            scheduler = get_cosine_schedule_with_warmup(
-                optimizer,
-                num_warmup_steps=args.warmup_steps,
-                num_training_steps=len(train)
-                * args.num_train_epochs
-                / (args.per_device_train_batch_size * args.gradient_accumulation_steps),
-            )
+    if not training_conf["deepspeed"] or training_conf["local_rank"] == 0:
+        import wandb
+
+        wandb.init(
+            project=os.environ["WANDB_PROJECT"], name=f"{model_name}-finetuned", entity=training_conf["wandb_entity"]
+        )
 
     trainer = RankTrainer(
         model=model,
@@ -186,7 +182,7 @@ if __name__ == "__main__":
         data_collator=collate_fn,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
-        optimizers=(optimizer, scheduler),
+        # optimizers=(optimizer, scheduler),
     )
     # trainer.evaluate()
     trainer.train()
