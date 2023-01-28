@@ -1,4 +1,3 @@
-import json
 from typing import Union
 
 from cryptography.hazmat.primitives import hashes
@@ -7,7 +6,7 @@ from fastapi import APIRouter, Depends, Security
 from fastapi.security import APIKeyCookie
 from jose import jwe
 from oasst_backend.config import settings
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 router = APIRouter()
 
@@ -19,7 +18,7 @@ class TokenData(BaseModel):
     A minimal re-creation of the web's token type.  To be expanded later.
     """
 
-    email: Union[str, None] = None
+    email: Union[EmailStr, None] = None
 
 
 async def get_current_user(token: str = Security(oauth2_scheme)):
@@ -38,9 +37,7 @@ async def get_current_user(token: str = Security(oauth2_scheme)):
     # Next we decrypt the JWE token.
     payload = jwe.decrypt(token, key)
     # Finally we have the real token JSON payload and can do whatever we want.
-    content = json.loads(payload)
-    email = content["email"]
-    return TokenData(email=email)
+    return TokenData.parse_raw(payload)
 
 
 @router.get("/check", response_model=str)
