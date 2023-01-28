@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Optional
+from uuid import UUID
 
 from jose import JWTError, jwt
-from oasst_backend.models import AuthenticatedUser
+from oasst_backend.models import Account
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from sqlmodel import Session
 from starlette.status import HTTP_401_UNAUTHORIZED
@@ -13,8 +14,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 def authenticate_user(db: Session, placeholder) -> ...:  # TODO
-    user = ...  # TODO: we want to authenticate with discord?
-    return user
+    account = ...  # TODO: we want to authenticate with discord?
+    return account
 
 
 def create_access_token(data: dict) -> str:
@@ -26,21 +27,21 @@ def create_access_token(data: dict) -> str:
     return encoded_jwt
 
 
-def get_current_user(db: Session, token: str) -> AuthenticatedUser:
+def get_current_user(db: Session, token: str) -> Account:
     try:
         payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        account_id: UUID = payload.get("sub")
+        if account_id is None:
             raise OasstError("Invalid authentication", OasstErrorCode.INVALID_AUTHENTICATION, HTTP_401_UNAUTHORIZED)
     except JWTError:
         raise OasstError("Invalid authentication", OasstErrorCode.INVALID_AUTHENTICATION, HTTP_401_UNAUTHORIZED)
-    user = get_user_by_username(db, username)
+    user = get_account_by_id(db, account_id)
     if user is None:
         raise OasstError("Invalid authentication", OasstErrorCode.INVALID_AUTHENTICATION, HTTP_401_UNAUTHORIZED)
     return user
 
 
-def get_user_by_username(db: Session, username: str) -> Optional[AuthenticatedUser]:
-    user: AuthenticatedUser = db.query(AuthenticatedUser).filter(AuthenticatedUser.username == username).first()
+def get_account_by_id(db: Session, id: UUID) -> Optional[Account]:
+    account: Account = db.query(Account).filter(Account.id == id).first()
 
-    return user
+    return account

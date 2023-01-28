@@ -29,10 +29,10 @@ class User(BaseModel):
     auth_method: Literal["discord", "local"]
 
 
-class AuthenticatedUser(BaseModel):
+class Account(BaseModel):
     id: UUID
-    username: str
-    auth_method: Literal["discord", "email"]
+    provider: str
+    provider_account_id: str
 
 
 class Token(BaseModel):
