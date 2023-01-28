@@ -214,6 +214,10 @@ class UserStatsRepository:
         d = delete(UserStats).where(UserStats.time_frame == time_frame_key)
         self.session.execute(d)
 
+        if None in stats_by_user:
+            logger.warning("Some messages in DB have NULL values in user_id column.")
+            del stats_by_user[None]
+
         # compute magic leader score
         for v in stats_by_user.values():
             v.leader_score = v.compute_leader_score()

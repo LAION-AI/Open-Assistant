@@ -12,6 +12,7 @@ from oasst_backend.api.deps import create_api_client
 from oasst_backend.models import ApiClient, Message
 from oasst_backend.models.message_tree_state import MessageTreeState
 from oasst_backend.models.message_tree_state import State as TreeState
+from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import UserRepository
 from oasst_backend.utils.tree_export import ExportMessageNode, ExportMessageTree
@@ -22,13 +23,10 @@ IMPORT_API_CLIENT_ID = UUID("bd8fde8b-1d8e-4e9a-9966-e96d000f8363")
 
 
 class Importer:
-    def __init__(
-        self, db: Session, origin: str, model_name: Optional[str] = None, state: TreeState = TreeState.BACKLOG_RANKING
-    ):
+    def __init__(self, db: Session, origin: str, model_name: Optional[str] = None):
         self.db = db
         self.origin = origin
         self.model_name = model_name
-        self.state = state
 
         # get import api client
         api_client = db.query(ApiClient).filter(ApiClient.id == IMPORT_API_CLIENT_ID).first()
@@ -65,7 +63,8 @@ class Importer:
             role=message.role,
             api_client_id=self.api_client.id,
             payload_type=type(payload).__name__,
-            payload=payload,
+            payload=PayloadContainer(payload=payload),
+            user_id=self.import_user.id,
         )
         self.db.add(msg)
         if message.replies:
@@ -77,17 +76,21 @@ class Importer:
         self.db.refresh(msg)
         return msg
 
-    def import_tree(self, tree: ExportMessageTree) -> tuple[MessageTreeState, Message]:
+    def import_tree(
+        self, tree: ExportMessageTree, state: TreeState = TreeState.BACKLOG_RANKING
+    ) -> tuple[MessageTreeState, Message]:
         assert tree.message_tree_id is not None and tree.message_tree_id == tree.prompt.message_id
         root_msg = self.import_message(tree.prompt, message_tree_id=tree.prompt.message_id)
+        assert state == TreeState.BACKLOG_RANKING or state == TreeState.RANKING, f"{state} not supported for import"
+        active = state == TreeState.RANKING
         mts = MessageTreeState(
             message_tree_id=root_msg.id,
             goal_tree_size=0,
             max_depth=0,
             max_children_count=0,
-            state=self.state,
+            state=state,
             origin=self.origin,
-            active=False,
+            active=active,
         )
         self.db.add(mts)
         return mts, root_msg
@@ -98,6 +101,7 @@ def import_file(
     origin: str,
     *,
     model_name: Optional[str] = None,
+    num_activate: int = 0,
     max_count: Optional[int] = None,
     dry_run: bool = False,
 ) -> int:
@@ -116,9 +120,12 @@ def import_file(
                 if existing_mts:
                     logger.info(f"Skipping existing message tree: {tree.message_tree_id}")
                 else:
-                    mts, root_msg = importer.import_tree(tree)
+                    state = TreeState.BACKLOG_RANKING if i >= num_activate else TreeState.RANKING
+                    mts, root_msg = importer.import_tree(tree, state=state)
                     i += 1
-                    logger.info(f"imported tree: {mts.message_tree_id}, {root_msg.children_count=}")
+                    logger.info(
+                        f"imported tree: {mts.message_tree_id}, {mts.state=}, {mts.active=}, {root_msg.children_count=}"
+                    )
 
                 if max_count and i >= max_count:
                     logger.info(f"Reached max count {max_count} of trees to import.")
@@ -148,6 +155,7 @@ def parse_args():
     )
     parser.add_argument("--origin", type=str, default=None, help="Value for origin of message trees")
     parser.add_argument("--model_name", type=str, default=None, help="Default name of model (if missing in messages)")
+    parser.add_argument("--num_activate", type=int, default=0, help="Number of trees to add in ranking state")
     parser.add_argument("--max_count", type=int, default=None, help="Maximum number of message trees to import")
     parser.add_argument("--dry_run", type=str2bool, default=False)
     args = parser.parse_args()
@@ -167,6 +175,7 @@ def main():
         input_file_path,
         origin=args.origin or input_file_path.name,
         model_name=args.model_name,
+        num_activate=args.num_activate,
         max_count=args.max_count,
         dry_run=dry_run,
     )
