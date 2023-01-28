@@ -137,7 +137,7 @@ const getLabelInfo = (label: string): LabelInfo => {
       };
     case "helpfulness":
       return {
-        zeroText: "Unhelful",
+        zeroText: "Unhelpful",
         zeroDescription: [],
         oneText: "Helpful",
         oneDescription: ["Completes the task to a high standard"],
