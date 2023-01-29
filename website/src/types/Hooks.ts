@@ -1,16 +1,11 @@
-import { BaseTask, TaskContent, TaskResponse, TaskType } from "src/types/Task";
+import { BaseTask, TaskResponse, TaskType } from "src/types/Task";
 
-interface TaskInteraction {
-  id: string;
-  update_type: string;
-  content: TaskContent;
-}
-
-export type TaskApiHook<Task extends BaseTask> = {
+export type TaskApiHook<Task extends BaseTask, ResponseContent> = {
   response: TaskResponse<Task>;
   isLoading: boolean;
-  completeTask: (interaction: TaskInteraction) => void;
-  skipTask: () => void;
+  completeTask: (interaction: ResponseContent) => Promise<void>;
+  skipTask: () => Promise<void>;
+  rejectTask: (reason: string) => Promise<void>;
 };
 
-export type TaskApiHooks = Record<TaskType, (args: TaskType) => TaskApiHook<BaseTask>>;
+export type TaskApiHooks = Record<TaskType, (args: TaskType) => TaskApiHook<BaseTask, any>>;

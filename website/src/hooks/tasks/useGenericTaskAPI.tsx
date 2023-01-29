@@ -1,38 +1,74 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { TaskInfos } from "src/components/Tasks/TaskTypes";
 import { get, post } from "src/lib/api";
 import { TaskApiHook } from "src/types/Hooks";
-import { BaseTask, TaskAvailableResponse, TaskResponse, TaskType as TaskTypeEnum } from "src/types/Task";
+import { BaseTask, ServerTaskResponse, TaskResponse, TaskType as TaskTypeEnum } from "src/types/Task";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
-export const useGenericTaskAPI = <TaskType extends BaseTask>(taskType: TaskTypeEnum): TaskApiHook<TaskType> => {
-  const [response, setReponse] = useState<TaskResponse<TaskType>>({ taskAvailability: "AWAITING_INITIAL" });
+export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent>(
+  taskType: TaskTypeEnum
+): TaskApiHook<TaskType, ResponseContent> => {
+  const [response, setResponse] = useState<TaskResponse<TaskType>>({ taskAvailability: "AWAITING_INITIAL" });
+
   // Note: We use isValidating to indiate we are loading beause it signals eash load, not just the first one.
-  const { isValidating: isLoading, mutate: requestNewTask } = useSWRImmutable<TaskAvailableResponse<TaskType>>(
+  const { isValidating: isLoading, mutate: requestNewTask } = useSWRImmutable<ServerTaskResponse<TaskType>>(
     "/api/new_task/" + taskType,
     get,
     {
-      onSuccess: (response) => {
-        setReponse({ taskAvailability: "AVAILABLE", ...response });
+      onSuccess: (taskResponse) => {
+        setResponse({
+          ...taskResponse,
+          taskAvailability: "AVAILABLE",
+          taskInfo: TaskInfos.find((taskType) => taskType.type === taskResponse.task.type),
+        });
       },
       onError: () => {
-        // We could check for code 503 here for truely unavailable, but we need to do something with other errors anyway.
-        setReponse({ taskAvailability: "NONE_AVAILABLE" });
+        // We could check for code 503 here for truly unavailable, but we need to do something with other errors anyway.
+        setResponse({ taskAvailability: "NONE_AVAILABLE" });
       },
       revalidateOnMount: true,
       dedupingInterval: 500,
     }
   );
 
-  const { trigger: completeTask } = useSWRMutation<TaskAvailableResponse<TaskType>>("/api/update_task", post, {
+  const { trigger: sendTaskContent } = useSWRMutation("/api/update_task", post, {
     onSuccess: () => {
       requestNewTask();
     },
     onError: () => {
-      // We could check for code 503 here for truely unavailable, but we need to do something with other errors anyway.
-      setReponse({ taskAvailability: "NONE_AVAILABLE" });
+      // We could check for code 503 here for truly unavailable, but we need to do something with other errors anyway.
+      setResponse({ taskAvailability: "NONE_AVAILABLE" });
     },
   });
 
-  return { response, isLoading, completeTask, skipTask: requestNewTask };
+  // NOTE: it might make sense to split this hook into 2 parts
+
+  // makes sure that requestNewTask is always called without parameters:
+  const skipTask = useCallback(async () => {
+    await requestNewTask();
+  }, [requestNewTask]);
+
+  const { trigger: sendRejection } = useSWRMutation("/api/reject_task", post, { onSuccess: skipTask });
+  const rejectTask = useCallback(
+    async (reason: string) => {
+      if (response.taskAvailability !== "AVAILABLE") {
+        throw new Error("Cannot reject task that is not yet ready");
+      }
+      await sendRejection({ id: response.id, reason });
+    },
+    [response, sendRejection]
+  );
+
+  const completeTask = useCallback(
+    async (content: ResponseContent) => {
+      if (response.taskAvailability !== "AVAILABLE") {
+        throw new Error("Cannot complete task that is not yet ready");
+      }
+      await sendTaskContent({ id: response.id, update_type: response.taskInfo.update_type, content });
+    },
+    [response, sendTaskContent]
+  );
+
+  return { response, isLoading, rejectTask, completeTask, skipTask };
 };
