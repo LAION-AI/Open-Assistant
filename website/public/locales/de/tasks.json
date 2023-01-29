@@ -8,11 +8,11 @@
     "desc": "Helfen Sie uns, Open Assistant zu verbessern, indem Sie eine zufällige Aufgabe starten."
   },
   "create_initial_prompt": {
-    "label": "Erste Aufforderung",
-    "desc": "Schreiben Sie erste Aufforderungen, um Open Assistant dabei zu helfen, auf verschiedene Nachrichten zu antworten.",
+    "label": "Initialer Prompt",
+    "desc": "Schreiben Sie initiale Prompts, um Open Assistant dabei zu helfen, auf verschiedene Nachrichten zu antworten.",
     "overview": "Erstellen Sie eine erste Nachricht, die an den Assistenten gesendet werden soll",
-    "instruction": "Geben Sie die ersten Aufforderung ein",
-    "response_placeholder": "Schreiben Sie hier Ihre Aufforderung..."
+    "instruction": "Geben Sie den initialen Prompt ein",
+    "response_placeholder": "Schreiben Sie hier Ihren Prompt..."
   },
   "reply_as_user": {
     "label": "Als Benutzer antworten",
@@ -42,31 +42,31 @@
     "unchanged_message": "Sie haben die Reihenfolge nicht geändert. Möchten Sie wirklich fortfahren?"
   },
   "rank_initial_prompts": {
-    "label": "Initiale Aufforderung einstufen",
-    "desc": "Bewerten Sie die initiale Aufforderungen basierend auf ihrer Genauigkeit und Lesbarkeit.",
-    "overview": "Sortieren Sie die folgenden initiale Aufforderungen von der Besten zur Schlechtesten, wobei die Beste zuerst und die Schlechteste zuletzt kommt.",
+    "label": "Initialen Prompt einstufen",
+    "desc": "Bewerten Sie die initialen Prompts basierend auf ihrer Genauigkeit und Lesbarkeit.",
+    "overview": "Sortieren Sie die folgenden initialen Prompts vom Besten zum Schlechtesten, wobei der Beste zuerst und der Schlechteste zuletzt kommt.",
     "unchanged_title": "Reihenfolge unverändert",
     "unchanged_message": "Sie haben die Reihenfolge nicht geändert. Möchten Sie wirklich fortfahren?"
   },
   "label_initial_prompt": {
-    "label": "Initiale Aufforderung labeln",
-    "desc": "Labeln Sie die initiale Aufforderung.",
-    "overview": "Geben Sie Labels für die folgende Aufforderung an."
+    "label": "Initiale Prompts labeln",
+    "desc": "Labeln Sie die initialen Prompts.",
+    "overview": "Wählen Sie Labels für den folgenden Prompt."
   },
   "label_prompter_reply": {
     "label": "Prompter-Antwort labeln",
     "desc": "Labeln Sie die Antwort.",
-    "overview": "Geben Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht an."
+    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht."
   },
   "label_assistant_reply": {
     "label": "Antwort des Assistenten labeln",
     "desc": "Labeln Sie die Antwort.",
-    "overview": "Geben Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht an."
+    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht."
   },
   "classify_initial_prompt": {
-    "label": "Initiale Aufforderung klassifizieren",
-    "desc": "Labeln Sie die initiale Aufforderung.",
-    "overview": "Lesen Sie die folgende Aufforderung und beantworten Sie dann die Frage dazu."
+    "label": "Initialen Prompt klassifizieren",
+    "desc": "Labeln Sie den initialen Prompt.",
+    "overview": "Lesen Sie den folgenden Prompt und beantworten Sie dann die Frage dazu."
   },
   "classify_prompter_reply": {
     "label": "Prompter-Antwort klassifizieren",
