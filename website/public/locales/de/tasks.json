@@ -1,0 +1,81 @@
+{
+  "default": {
+    "unchanged_title": "Keine Änderungen",
+    "unchanged_message": "Möchten Sie wirklich fortfahren?"
+  },
+  "random": {
+    "label": "Auf gut Glück",
+    "desc": "Helfen Sie uns, Open Assistant zu verbessern, indem Sie eine zufällige Aufgabe starten."
+  },
+  "create_initial_prompt": {
+    "label": "Erste Aufforderung",
+    "desc": "Schreiben Sie erste Aufforderungen, um Open Assistant dabei zu helfen, auf verschiedene Nachrichten zu antworten.",
+    "overview": "Erstellen Sie eine erste Nachricht, die an den Assistenten gesendet werden soll",
+    "instruction": "Geben Sie die ersten Aufforderung ein",
+    "response_placeholder": "Schreiben Sie hier Ihre Aufforderung..."
+  },
+  "reply_as_user": {
+    "label": "Als Benutzer antworten",
+    "desc": "Chatten Sie mit Open Assistant und helfen Sie, seine Antworten zu verbessern, während Sie damit interagieren.",
+    "overview": "Geben Sie angesichts des folgenden Gesprächs eine angemessene Antwort.",
+    "instruction": "Geben Sie die Antwort des Benutzers an",
+    "response_placeholder": "Schreiben Sie hier Ihre Antwort..."
+  },
+  "reply_as_assistant": {
+    "label": "Als Assistent antworten",
+    "desc": "Helfen Sie Open Assistant dabei, seine Antworten auf Gespräche mit anderen Benutzern zu verbessern.",
+    "overview": "Geben Sie angesichts des folgenden Gesprächs eine angemessene Antwort.",
+    "response_placeholder": "Schreiben Sie hier Ihre Antwort..."
+  },
+  "rank_user_replies": {
+    "label": "Benutzerantworten einstufen",
+    "desc": "Helfen Sie Open Assistant dabei, seine Antworten auf Gespräche mit anderen Benutzern zu verbessern.",
+    "overview": "Sortieren Sie die folgenden Benutzerantworten von der Besten zur Schlechtesten, wobei die Beste zuerst und die Schlechteste zuletzt kommt.",
+    "unchanged_title": "Reihenfolge unverändert",
+    "unchanged_message": "Sie haben die Reihenfolge nicht geändert. Möchten Sie wirklich fortfahren?"
+  },
+  "rank_assistant_replies": {
+    "label": "Assistentenantworten einstufen",
+    "desc": "Bewerten Sie die Antwort des Assistenten basierend auf ihrer Genauigkeit und Lesbarkeit.",
+    "overview": "Sortieren Sie die folgenden Assistant-Antworten von der Besten zur Schlechtesten, wobei die Beste zuerst und die Schlechteste zuletzt kommt.",
+    "unchanged_title": "Reihenfolge unverändert",
+    "unchanged_message": "Sie haben die Reihenfolge nicht geändert. Möchten Sie wirklich fortfahren?"
+  },
+  "rank_initial_prompts": {
+    "label": "Rank Initial Prompts",
+    "desc": "Bewerten Sie die initiale Aufforderungen basierend auf ihrer Genauigkeit und Lesbarkeit.",
+    "overview": "Sortieren Sie die folgenden initiale Aufforderungen von der Besten zur Schlechtesten, wobei die Beste zuerst und die Schlechteste zuletzt kommt.",
+    "unchanged_title": "Reihenfolge unverändert",
+    "unchanged_message": "Sie haben die Reihenfolge nicht geändert. Möchten Sie wirklich fortfahren?"
+  },
+  "label_initial_prompt": {
+    "label": "Initiale Aufforderung labeln",
+    "desc": "Labeln Sie die initiale Aufforderung.",
+    "overview": "Geben Sie Labels für die folgende Aufforderung an."
+  },
+  "label_prompter_reply": {
+    "label": "Prompter-Antwort labeln",
+    "desc": "Labeln Sie die Antwort.",
+    "overview": "Geben Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht an."
+  },
+  "label_assistant_reply": {
+    "label": "Antwort des Assistenten labeln",
+    "desc": "Labeln Sie die Antwort.",
+    "overview": "Geben Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht an."
+  },
+  "classify_initial_prompt": {
+    "label": "Initiale Aufforderung klassifizieren",
+    "desc": "Labeln Sie die initiale Aufforderung.",
+    "overview": "Lesen Sie die folgende Aufforderung und beantworten Sie dann die Frage dazu."
+  },
+  "classify_prompter_reply": {
+    "label": "Prompter-Antwort klassifizieren",
+    "desc": "Labeln Sie die Antwort.",
+    "overview": "Lesen Sie das folgende Gespräch und beantworten Sie die Frage zur letzten Antwort in der Diskussion."
+  },
+  "classify_assistant_reply": {
+    "label": "Antwort des Assistenten klassifizieren",
+    "desc": "Labeln Sie die Antwort.",
+    "overview": "Lesen Sie das folgende Gespräch und beantworten Sie die Frage zur letzten Antwort in der Diskussion."
+  }
+}
