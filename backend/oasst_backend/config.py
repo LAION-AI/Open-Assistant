@@ -57,6 +57,7 @@ class TreeManagerConfiguration(BaseModel):
 
     labels_initial_prompt: list[TextLabel] = [
         TextLabel.spam,
+        TextLabel.lang_mismatch,
         TextLabel.quality,
         TextLabel.helpfulness,
         TextLabel.creativity,
@@ -71,6 +72,7 @@ class TreeManagerConfiguration(BaseModel):
 
     labels_assistant_reply: list[TextLabel] = [
         TextLabel.spam,
+        TextLabel.lang_mismatch,
         TextLabel.fails_task,
         TextLabel.quality,
         TextLabel.helpfulness,
@@ -86,6 +88,7 @@ class TreeManagerConfiguration(BaseModel):
 
     labels_prompter_reply: list[TextLabel] = [
         TextLabel.spam,
+        TextLabel.lang_mismatch,
         TextLabel.quality,
         TextLabel.helpfulness,
         TextLabel.humor,
