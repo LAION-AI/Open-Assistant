@@ -117,7 +117,8 @@ class LabelConversationReplyPayload(TaskPayload):
 
     message_id: UUID
     conversation: protocol_schema.Conversation
-    reply: str
+    reply: str  # deprecated
+    reply_message: Optional[protocol_schema.ConversationMessage]
     valid_labels: list[str]
     mandatory_labels: Optional[list[str]]
     mode: Optional[protocol_schema.LabelTaskMode]

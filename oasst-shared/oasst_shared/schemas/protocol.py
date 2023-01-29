@@ -57,12 +57,26 @@ class ConversationMessage(BaseModel):
     text: str
     lang: Optional[str]  # BCP 47
     is_assistant: bool
+    emojis: Optional[dict[str, int]] = None
+    user_emojis: Optional[list[str]] = None
 
 
 class Conversation(BaseModel):
     """Represents a conversation between the prompter and the assistant."""
 
     messages: list[ConversationMessage] = []
+
+    def __len__(self):
+        return len(self.messages)
+
+    @property
+    def is_prompter_turn(self) -> bool:
+        if len(self) == 0:
+            return True
+        last_message = self.messages[-1]
+        if last_message.is_assistant:
+            return True
+        return False
 
 
 class Message(ConversationMessage):
@@ -210,27 +224,43 @@ class LabelTaskMode(str, enum.Enum):
     full = "full"
 
 
-class LabelInitialPromptTask(Task):
+class LabelTaskDisposition(str, enum.Enum):
+    """Reason why the task was issued."""
+
+    quality = "quality"
+    spam = "spam"
+
+
+class LabelDescription(BaseModel):
+    name: str
+    widget: str
+    display_text: str
+    help_text: Optional[str]
+
+
+class AbstractLabelTask(Task):
+    message_id: UUID
+    valid_labels: list[str]
+    mandatory_labels: Optional[list[str]]
+    mode: Optional[LabelTaskMode]
+    disposition: Optional[LabelTaskDisposition]
+    labels: Optional[list[LabelDescription]]
+
+
+class LabelInitialPromptTask(AbstractLabelTask):
     """A task to label an initial prompt."""
 
     type: Literal["label_initial_prompt"] = "label_initial_prompt"
-    message_id: UUID
     prompt: str
-    valid_labels: list[str]
-    mandatory_labels: Optional[list[str]]
-    mode: Optional[LabelTaskMode]
 
 
-class LabelConversationReplyTask(Task):
+class LabelConversationReplyTask(AbstractLabelTask):
     """A task to label a reply to a conversation."""
 
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
-    conversation: Conversation  # the conversation so far
-    message_id: UUID
+    conversation: Conversation  # the conversation so far (new: including the reply message)
+    reply_message: Optional[ConversationMessage]
     reply: str
-    valid_labels: list[str]
-    mandatory_labels: Optional[list[str]]
-    mode: Optional[LabelTaskMode]
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):
@@ -303,39 +333,54 @@ class MessageRanking(Interaction):
     ranking: conlist(item_type=int, min_items=1)
 
 
+class LabelWidget(str, enum.Enum):
+    yes_no = "yes_no"
+    flag = "flag"
+    likert = "likert"
+
+
 class TextLabel(str, enum.Enum):
     """A label for a piece of text."""
 
-    def __new__(cls, label: str, display_text: str = "", help_text: str = None):
+    def __new__(cls, label: str, widget: LabelWidget, display_text: str = "", help_text: str = None):
         obj = str.__new__(cls, label)
         obj._value_ = label
+        obj.widget = widget
         obj.display_text = display_text
         obj.help_text = help_text
         return obj
 
-    spam = "spam", "Seems to be intentionally low-quality or irrelevant"
-    fails_task = "fails_task", "Fails to follow the correct instruction / task"
-    not_appropriate = "not_appropriate", "Inappropriate for customer assistant"
-    violence = "violence", "Encourages or fails to discourage violence/abuse/terrorism/self-harm"
-    excessive_harm = (
-        "excessive_harm",
-        "Content likely to cause excessive harm not justifiable in the context",
-        "Harm refers to physical or mental damage or injury to someone or something. Excessive refers to a reasonable threshold of harm in the context, for instance damaging skin is not excessive in the context of surgery.",
+    # yes/no questions
+    spam = "spam", LabelWidget.yes_no, "Seems to be intentionally low-quality or irrelevant"
+    fails_task = "fails_task", LabelWidget.yes_no, "Fails to follow the correct instruction / task"
+
+    # flags
+    lang_mismatch = (
+        "lang_mismatch",
+        LabelWidget.flag,
+        "Language mismatch",
+        "The message is written in language that differs from the currently selected language.",
     )
-    sexual_content = "sexual_content", "Contains sexual content"
-    toxicity = "toxicity", "Contains rude, abusive, profane or insulting content"
-    moral_judgement = "moral_judgement", "Expresses moral judgement"
-    political_content = "political_content", "Expresses political views"
-    humor = "humor", "Contains humorous content including sarcasm"
+    pii = "pii", LabelWidget.flag, "Contains personal identifiable information (PII)"
+    not_appropriate = "not_appropriate", LabelWidget.flag, "Inappropriate"
     hate_speech = (
         "hate_speech",
+        LabelWidget.flag,
         "Content is abusive or threatening and expresses prejudice against a protected characteristic",
-        "Prejudice refers to preconceived views not based on reason. Protected characteristics include gender, ethnicity, religion, sexual orientation, and similar characteristics.",
+        "Prejudice refers to preconceived views not based on reason. Protected characteristics "
+        "include gender, ethnicity, religion, sexual orientation, and similar characteristics.",
     )
-    threat = "threat", "Contains a threat against a person or persons"
-    misleading = "misleading", "Contains text which is incorrect or misleading"
-    helpful = "helpful", "Completes the task to a high standard"
-    creative = "creative", "Expresses creativity in responding to the task"
+    sexual_content = "sexual_content", LabelWidget.flag, "Contains sexual content"
+    moral_judgement = "moral_judgement", LabelWidget.flag, "Expresses moral judgement"
+    political_content = "political_content", LabelWidget.flag, "Expresses political views"
+
+    # likert
+    quality = "quality", LabelWidget.likert, "Overall subjective quality rating of the message"
+    toxicity = "toxicity", LabelWidget.likert, "Rude, abusive, profane or insulting content"
+    humor = "humor", LabelWidget.likert, "Humorous content including sarcasm"
+    helpfulness = "helpfulness", LabelWidget.likert, "Helpfulness of the message"
+    creativity = "creativity", LabelWidget.likert, "Creativity"
+    violence = "violence", LabelWidget.likert, "Violence/abuse/terrorism/self-harm"
 
 
 class TextLabels(Interaction):
@@ -346,6 +391,7 @@ class TextLabels(Interaction):
     labels: dict[TextLabel, float]
     message_id: UUID
     task_id: Optional[UUID]
+    is_report: Optional[bool]
 
     @property
     def has_message_id(self) -> bool:
@@ -420,3 +466,29 @@ class OasstErrorResponse(BaseModel):
 
     error_code: OasstErrorCode
     message: str
+
+
+class EmojiCode(str, enum.Enum):
+    thumbs_up = "+1"  # 👍
+    thumbs_down = "-1"  # 👎
+    red_flag = "red_flag"  # 🚩
+    hundred = "100"  # 💯
+    rofl = "rofl"  # 🤣
+    clap = "clap"  # 👏
+    diamond = "diamond"  # 💎
+    heart_eyes = "heart_eyes"  # 😍
+    disappointed = "disappointed"  # 😞
+    poop = "poop"  # 💩
+    skull = "skull"  # 💀
+
+
+class EmojiOp(str, enum.Enum):
+    togggle = "toggle"
+    add = "add"
+    remove = "remove"
+
+
+class MessageEmojiRequest(BaseModel):
+    user: User
+    op: EmojiOp = EmojiOp.togggle
+    emoji: EmojiCode

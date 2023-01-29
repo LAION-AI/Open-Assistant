@@ -191,6 +191,7 @@ if settings.DEBUG_USE_SEED_DATA:
                         review_count=5,
                         review_result=True,
                         check_tree_state=False,
+                        check_duplicate=False,
                     )
                     if message.parent_id is None:
                         tm._insert_default_state(
@@ -215,7 +216,8 @@ def ensure_tree_states():
     try:
         logger.info("Startup: TreeManager.ensure_tree_states()")
         with Session(engine) as db:
-            tm = TreeManager(db, None)
+            api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
+            tm = TreeManager(db, PromptRepository(db, api_client=api_client))
             tm.ensure_tree_states()
 
     except Exception:
@@ -273,6 +275,38 @@ def get_openapi_schema():
     return json.dumps(app.openapi())
 
 
+def export_ready_trees(file: Optional[str] = None, use_compression: bool = False):
+    try:
+        with Session(engine) as db:
+            api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
+            dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
+
+            ur = UserRepository(db=db, api_client=api_client)
+            tr = TaskRepository(db=db, api_client=api_client, client_user=dummy_user, user_repository=ur)
+            pr = PromptRepository(
+                db=db, api_client=api_client, client_user=dummy_user, user_repository=ur, task_repository=tr
+            )
+            tm = TreeManager(db, pr)
+
+            tm.export_all_ready_trees(file, use_compression=use_compression)
+    except Exception:
+        logger.exception("Error exporting trees.")
+
+
+def retry_scoring_failed_message_trees():
+    try:
+        logger.info("TreeManager.retry_scoring_failed_message_trees()")
+        with Session(engine) as db:
+            api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
+
+            pr = PromptRepository(db=db, api_client=api_client)
+            tm = TreeManager(db, pr)
+            tm.retry_scoring_failed_message_trees()
+
+    except Exception:
+        logger.exception("TreeManager.retry_scoring_failed_message_trees() failed.")
+
+
 def main():
     # Importing here so we don't import packages unnecessarily if we're
     # importing main as a module.
@@ -289,11 +323,28 @@ def main():
     )
     parser.add_argument("--host", help="The host to run the server", default="0.0.0.0")
     parser.add_argument("--port", help="The port to run the server", default=8080)
+    parser.add_argument(
+        "--export", help="Export all trees which are ready for exporting.", action=argparse.BooleanOptionalAction
+    )
+    parser.add_argument(
+        "--export-file",
+        help="Name of file to export trees to. If not provided when exporting, output will be send to STDOUT",
+    )
+    parser.add_argument(
+        "--retry-scoring",
+        help="Retry scoring failed message trees",
+        action=argparse.BooleanOptionalAction,
+    )
 
     args = parser.parse_args()
 
     if args.print_openapi_schema:
         print(get_openapi_schema())
+    elif args.export:
+        use_compression: bool = ".gz" in args.export_file
+        export_ready_trees(file=args.export_file, use_compression=use_compression)
+    elif args.retry_scoring:
+        retry_scoring_failed_message_trees()
     else:
         uvicorn.run(app, host=args.host, port=args.port)
 

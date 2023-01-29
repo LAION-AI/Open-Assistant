@@ -50,12 +50,12 @@ contributions smoothly we recommend the following:
     [Here](https://github.com/LAION-AI/Open-Assistant/pull/658) is an example PR
     for this project to illustrate this flow.
 1.  If you're lucky, we can merge your change into `main` without any problems.
-    If there's changes to files you're working on, resolve them by:
-1.  First try rebase as suggested
-    [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-rebase).
-1.  If rebase feels too painful, merge as suggested
-    [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-merge).
-1.  Once you've resolved any conflicts, finish the review and
+    If there's changes to files you're working on, resolve them by :
+    1.  First try rebase as suggested
+        [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-rebase).
+    1.  If rebase feels too painful, merge as suggested
+        [in these instructions](https://timwise.co.uk/2019/10/14/merge-vs-rebase/#should-you-merge).
+1.  Once you've resolved conflicts (if any), finish the review and
     [squash and merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#squash-and-merge-your-commits)
     your PR (when squashing try to clean up or update the individual commit
     messages to be one sensible single one).

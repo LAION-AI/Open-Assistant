@@ -1,8 +1,4 @@
-import {
-  type ThemeConfig,
-  extendTheme,
-  usePrefersReducedMotion,
-} from "@chakra-ui/react";
+import { type ThemeConfig, extendTheme, usePrefersReducedMotion } from "@chakra-ui/react";
 import { containerTheme } from "./Components/Container";
 import { StyleFunctionProps, Styles } from "@chakra-ui/theme-tools";
 

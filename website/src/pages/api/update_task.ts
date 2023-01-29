@@ -1,8 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { withoutRole } from "src/lib/auth";
-import { oasstApiClient } from "src/lib/oasst_api_client";
+import { createApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
-import { getBackendUserCore } from "src/lib/users";
+import { getBackendUserCore, getUserLanguage } from "src/lib/users";
 
 /**
  * Stores the task interaction with the Task Backend and then returns the next task generated.
@@ -18,13 +18,18 @@ const handler = withoutRole("banned", async (req, res, token) => {
   // Parse out the local task ID and the interaction contents.
   const { id: frontendId, content, update_type } = req.body;
 
-  // Record that the user has done meaningful work and is no longer new.
-  await prisma.user.update({ where: { id: token.sub }, data: { isNew: false } });
+  // do in parallel since they are independent
+  const [_, registeredTask, oasstApiClient] = await Promise.all([
+    // Record that the user has done meaningful work and is no longer new.
+    prisma.user.update({ where: { id: token.sub }, data: { isNew: false } }),
+    // Accept the task so that we can complete it, this will probably go away soon.
+    prisma.registeredTask.findUniqueOrThrow({ where: { id: frontendId } }),
+    // Create client for upcoming requests
+    createApiClient(token),
+  ]);
 
-  // Accept the task so that we can complete it, this will probably go away soon.
-  const registeredTask = await prisma.registeredTask.findUniqueOrThrow({ where: { id: frontendId } });
-  const task = registeredTask.task as Prisma.JsonObject;
-  const taskId = task.id as string;
+  const taskId = (registeredTask.task as Prisma.JsonObject).id as string;
+
   await oasstApiClient.ackTask(taskId, registeredTask.id);
 
   // Log the interaction locally to create our user_post_id needed by the Task
@@ -41,9 +46,18 @@ const handler = withoutRole("banned", async (req, res, token) => {
   });
 
   const user = await getBackendUserCore(token.sub);
+  const userLanguage = getUserLanguage(req);
   let newTask;
   try {
-    newTask = await oasstApiClient.interactTask(update_type, taskId, frontendId, interaction.id, content, user);
+    newTask = await oasstApiClient.interactTask(
+      update_type,
+      taskId,
+      frontendId,
+      interaction.id,
+      content,
+      user,
+      userLanguage
+    );
   } catch (err) {
     console.error(JSON.stringify(err));
     return res.status(500).json(err);

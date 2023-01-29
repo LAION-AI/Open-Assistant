@@ -4,11 +4,15 @@ export const colors = {
     btn: "gray.50",
     div: "white",
     text: "black",
+    highlight: "blue.400",
+    active: "blue.400",
   },
   dark: {
     bg: "gray.900",
     btn: "gray.600",
     div: "gray.700",
     text: "gray.200",
+    highlight: "blue.500",
+    active: "blue.500",
   },
 };

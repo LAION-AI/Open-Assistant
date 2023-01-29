@@ -148,6 +148,21 @@ export const authOptions: AuthOptions = {
       }
     },
   },
+  /*
+   * We maybe need this, we maybe don't.  Checking in this uncommented until
+   * it's confirmed we can drop this.
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: true,
+      },
+    },
+  },
+  */
   session: {
     strategy: "jwt",
   },
