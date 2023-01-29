@@ -1,11 +1,13 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { boolean } from "boolean";
+import { NextApiRequest, NextApiResponse } from "next";
 import type { AuthOptions } from "next-auth";
 import NextAuth from "next-auth";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
+import { checkCaptcha } from "src/lib/captcha";
 import prisma from "src/lib/prismadb";
 import { generateUsername } from "unique-username-generator";
 
@@ -74,7 +76,7 @@ const adminUserMap = process.env.ADMIN_USERS.split(",").reduce((result, entry) =
   return result;
 }, new Map());
 
-export const authOptions: AuthOptions = {
+const authOptions: AuthOptions = {
   // Ensure we can store user data in a database.
   adapter: PrismaAdapter(prisma),
   providers,
@@ -153,4 +155,29 @@ export const authOptions: AuthOptions = {
   },
 };
 
-export default NextAuth(authOptions);
+export default function auth(req: NextApiRequest, res: NextApiResponse) {
+  return NextAuth(req, res, {
+    ...authOptions,
+    callbacks: {
+      ...authOptions.callbacks,
+      async signIn({ account }) {
+        if (account.provider !== "email") {
+          return true;
+        }
+
+        const captcha = req.body.captcha;
+        // https://stackoverflow.com/questions/66111742/get-the-client-ip-on-nextjs-and-use-ssr
+        const forwarded = req.headers["x-forwarded-for"];
+        const ip = typeof forwarded === "string" ? forwarded.split(/, /)[0] : req.socket.remoteAddress;
+
+        const res = await checkCaptcha(captcha, ip);
+
+        if (res.success) {
+          return true;
+        }
+
+        return "/auth/signin?error=InvalidCaptcha";
+      },
+    },
+  });
+}
