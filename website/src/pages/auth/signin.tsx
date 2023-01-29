@@ -6,7 +6,7 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { ClientSafeProvider, getProviders, signIn } from "next-auth/react";
+import { getProviders, signIn } from "next-auth/react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -66,19 +66,10 @@ function Signin({ providers }: SigninProps) {
     }
   }, [router]);
 
-  const signinWithEmail = (data: { email: string }) => {
-    signIn(email.id, {
-      callbackUrl: "/dashboard",
-      email: data.email,
-      captcha: captcha.current?.getResponse(),
-    });
-  };
-
   const { colorMode } = useColorMode();
   const bgColorClass = colorMode === "light" ? "bg-gray-50" : "bg-chakra-gray-900";
   const buttonBgColor = colorMode === "light" ? "#2563eb" : "#2563eb";
-  const { register, handleSubmit } = useForm<{ email: string }>();
-  const captcha = useRef<TurnstileInstance>();
+
   return (
     <div className={bgColorClass}>
       <Head>
@@ -87,25 +78,8 @@ function Signin({ providers }: SigninProps) {
       </Head>
       <AuthLayout>
         <Stack spacing="2">
-          {credentials && <DebugSigninForm credentials={credentials} bgColorClass={bgColorClass} />}
-          {email && (
-            <form onSubmit={handleSubmit(signinWithEmail)}>
-              <Stack>
-                <Input
-                  type="email"
-                  data-cy="email-address"
-                  variant="outline"
-                  size="lg"
-                  placeholder="Email Address"
-                  {...register("email")}
-                />
-                <CloudFlareCatpcha options={{ size: "invisible" }} ref={captcha}></CloudFlareCatpcha>
-                <SigninButton data-cy="signin-email-button" leftIcon={<Mail />} mt="4">
-                  Continue with Email
-                </SigninButton>
-              </Stack>
-            </form>
-          )}
+          {credentials && <DebugSigninForm providerId={credentials.id} bgColorClass={bgColorClass} />}
+          {email && <EmailSignInForm providerId={email.id}></EmailSignInForm>}
           {discord && (
             <Button
               bg={buttonBgColor}
@@ -170,6 +144,41 @@ Signin.getLayout = (page) => (
 
 export default Signin;
 
+const EmailSignInForm = ({ providerId }: { providerId: string }) => {
+  const { register, handleSubmit } = useForm<{ email: string }>();
+  const captcha = useRef<TurnstileInstance>();
+  const [captchaSuccess, setCaptchaSuccess] = useState(false);
+  const signinWithEmail = (data: { email: string }) => {
+    signIn(providerId, {
+      callbackUrl: "/dashboard",
+      email: data.email,
+      captcha: captcha.current?.getResponse(),
+    });
+  };
+  return (
+    <form onSubmit={handleSubmit(signinWithEmail)}>
+      <Stack>
+        <Input
+          type="email"
+          data-cy="email-address"
+          variant="outline"
+          size="lg"
+          placeholder="Email Address"
+          {...register("email")}
+        />
+        <CloudFlareCatpcha
+          options={{ size: "invisible" }}
+          ref={captcha}
+          onSuccess={() => setCaptchaSuccess(true)}
+        ></CloudFlareCatpcha>
+        <SigninButton data-cy="signin-email-button" leftIcon={<Mail />} mt="4" disabled={!captchaSuccess}>
+          Continue with Email
+        </SigninButton>
+      </Stack>
+    </form>
+  );
+};
+
 const SigninButton = (props: ButtonProps) => {
   const buttonColorScheme = useColorModeValue("blue", "dark-blue-btn");
 
@@ -190,7 +199,7 @@ interface DebugSigninFormData {
   role: Role;
 }
 
-const DebugSigninForm = ({ credentials, bgColorClass }: { credentials: ClientSafeProvider; bgColorClass: string }) => {
+const DebugSigninForm = ({ providerId, bgColorClass }: { providerId: string; bgColorClass: string }) => {
   const { register, handleSubmit } = useForm<DebugSigninFormData>({
     defaultValues: {
       role: "general",
@@ -199,7 +208,7 @@ const DebugSigninForm = ({ credentials, bgColorClass }: { credentials: ClientSaf
   });
 
   function signinWithDebugCredentials(data: DebugSigninFormData) {
-    signIn(credentials.id, {
+    signIn(providerId, {
       callbackUrl: "/dashboard",
       ...data,
     });
