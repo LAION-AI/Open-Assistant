@@ -9,6 +9,31 @@ initialize();
 // Provide the MSW addon decorator globally
 export const decorators = [mswDecorator];
 
+const MOCK_VALID_LABELS= [
+  {
+    name: "spam",
+    display_text: "Seems to be intentionally low-quality or irrelevant",
+    help_text: null,
+  },
+  {
+    name: "fails_task",
+    display_text:
+      "Fails to follow the correct instruction / task",
+    help_text: null,
+  },
+  {
+    name: "not_appropriate",
+    display_text: "Inappropriate for customer assistant",
+    help_text: null,
+  },
+  {
+    name: "violence",
+    display_text:
+      "Encourages or fails to discourage violence/abuse/terrorism/self-harm",
+    help_text: null,
+  },
+];
+
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {
@@ -26,31 +51,7 @@ export const parameters = {
         rest.get("/api/valid_labels", (req, res, ctx) => {
           return res(
             ctx.json({
-              valid_labels: [
-                {
-                  name: "spam",
-                  display_text:
-                    "Seems to be intentionally low-quality or irrelevant",
-                  help_text: null,
-                },
-                {
-                  name: "fails_task",
-                  display_text:
-                    "Fails to follow the correct instruction / task",
-                  help_text: null,
-                },
-                {
-                  name: "not_appropriate",
-                  display_text: "Inappropriate for customer assistant",
-                  help_text: null,
-                },
-                {
-                  name: "violence",
-                  display_text:
-                    "Encourages or fails to discourage violence/abuse/terrorism/self-harm",
-                  help_text: null,
-                },
-              ],
+              valid_labels: MOCK_VALID_LABELS
             })
           );
         }),

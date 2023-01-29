@@ -36,7 +36,10 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
   const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
-    setEmojis({ emojis: message.emojis, user_emojis: message.user_emojis });
+    setEmojis({
+      emojis: message?.emojis || {},
+      user_emojis: message?.user_emojis || [],
+    });
   }, [message.emojis, message.user_emojis]);
 
   const goToMessage = useCallback(() => router.push(`/messages/${message.id}`), [router, message.id]);
@@ -71,8 +74,6 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
     sendEmojiChange({ op: state ? "add" : "remove", emoji });
   };
 
-  console.log(emojiState);
-  console.log(message);
   return (
     <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
       {!inlineAvatar && avatar}
@@ -95,7 +96,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
           style={{ float: "right", position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
           onClick={(e) => e.stopPropagation()}
         >
-          {Object.entries(emojiState?.emojis || {}).map(([emoji, count]) => (
+          {Object.entries(emojiState.emojis).map(([emoji, count]) => (
             <MessageEmojiButton
               key={emoji}
               emoji={{ name: emoji, count }}
