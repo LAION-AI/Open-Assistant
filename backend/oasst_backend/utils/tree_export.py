@@ -12,12 +12,15 @@ from pydantic import BaseModel
 
 class ExportMessageNode(BaseModel):
     message_id: str
-    parent_id: Optional[str]
-    text: Optional[str]
+    parent_id: str | None
+    text: str
     role: str
-    review_count: Optional[int]
-    rank: Optional[int]
-    replies: Optional[list[ExportMessageNode]]
+    lang: str | None
+    review_count: int | None
+    rank: int | None
+    synthetic: bool | None
+    model_name: str | None
+    replies: list[ExportMessageNode] | None
 
     @classmethod
     def prep_message_export(cls, message: Message) -> ExportMessageNode:
@@ -26,14 +29,17 @@ class ExportMessageNode(BaseModel):
             parent_id=str(message.parent_id) if message.parent_id else None,
             text=str(message.payload.payload.text),
             role=message.role,
+            lang=message.lang,
             review_count=message.review_count,
+            synthetic=message.synthetic,
+            model_name=message.model_name,
             rank=message.rank,
         )
 
 
 class ExportMessageTree(BaseModel):
     message_tree_id: str
-    replies: Optional[ExportMessageNode]
+    prompt: Optional[ExportMessageNode]
 
 
 def build_export_tree(message_tree_id: str, messages: list[Message]) -> ExportMessageTree:

@@ -4,12 +4,10 @@ import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 import { TaskStatus } from "src/components/Tasks/Task";
+import { BaseTask } from "src/types/Task";
 
 export interface TaskControlsProps {
-  // we need a task type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  task: any;
-  className?: string;
+  task: BaseTask;
   taskStatus: TaskStatus;
   onEdit: () => void;
   onReview: () => void;
@@ -17,7 +15,7 @@ export interface TaskControlsProps {
   onSkip: (reason: string) => void;
 }
 
-export const TaskControls = (props: TaskControlsProps) => {
+export const TaskControls = ({ task, taskStatus, onEdit, onReview, onSubmit, onSkip }: TaskControlsProps) => {
   const backgroundColor = useColorModeValue("white", "gray.800");
 
   return (
@@ -31,38 +29,32 @@ export const TaskControls = (props: TaskControlsProps) => {
       shadow="base"
       gap="4"
     >
-      <TaskInfo id={props.task.id} output="Submit your answer" />
+      <TaskInfo id={task.id} output="Submit your answer" />
       <Flex width={["full", "fit-content"]} justify="center" ml="auto" gap={2}>
-        {props.taskStatus === "REVIEW" || props.taskStatus === "SUBMITTED" ? (
+        {taskStatus.mode === "EDIT" ? (
           <>
-            <Tooltip label="Edit">
-              <IconButton
-                size="lg"
-                data-cy="edit"
-                aria-label="edit"
-                onClick={props.onEdit}
-                icon={<Edit2 size="1em" />}
-              />
-            </Tooltip>
+            <SkipButton onSkip={onSkip} />
             <SubmitButton
-              colorScheme="green"
-              data-cy="submit"
-              isDisabled={props.taskStatus === "SUBMITTED"}
-              onClick={props.onSubmit}
+              colorScheme="blue"
+              data-cy="review"
+              isDisabled={taskStatus.replyValidity === "INVALID"}
+              onClick={onReview}
             >
-              Submit
+              Review
             </SubmitButton>
           </>
         ) : (
           <>
-            <SkipButton onSkip={props.onSkip} />
+            <Tooltip label="Edit">
+              <IconButton size="lg" data-cy="edit" aria-label="edit" onClick={onEdit} icon={<Edit2 size="1em" />} />
+            </Tooltip>
             <SubmitButton
-              colorScheme="blue"
-              data-cy="review"
-              isDisabled={props.taskStatus === "NOT_SUBMITTABLE"}
-              onClick={props.onReview}
+              colorScheme="green"
+              data-cy="submit"
+              isDisabled={taskStatus.mode === "SUBMITTED"}
+              onClick={onSubmit}
             >
-              Review
+              Submit
             </SubmitButton>
           </>
         )}

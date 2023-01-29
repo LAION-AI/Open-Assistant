@@ -7,6 +7,8 @@ import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
 import { getTypeSafei18nKey } from "src/lib/i18n";
+import { TaskType } from "src/types/Task";
+import { CreateAssistantReplyTask, CreateInitialPromptTask, CreatePrompterReplyTask } from "src/types/Tasks";
 
 export const CreateTask = ({
   task,
@@ -15,7 +17,7 @@ export const CreateTask = ({
   isDisabled,
   onReplyChanged,
   onValidityChanged,
-}: TaskSurveyProps<{ text: string }>) => {
+}: TaskSurveyProps<CreateInitialPromptTask | CreateAssistantReplyTask | CreatePrompterReplyTask, { text: string }>) => {
   const { t, i18n } = useTranslation(["tasks", "common"]);
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const titleColor = useColorModeValue("gray.800", "gray.300");
@@ -39,7 +41,7 @@ export const CreateTask = ({
       <TwoColumnsWithCards>
         <>
           <TaskHeader taskType={taskType} />
-          {!!task.conversation && (
+          {task.type !== TaskType.initial_prompt && (
             <Box mt="4" borderRadius="lg" bg={cardColor} className="p-3 sm:p-6">
               <MessageTable messages={task.conversation.messages} highlightLastMessage />
             </Box>
@@ -56,7 +58,11 @@ export const CreateTask = ({
               text={inputText}
               onTextChange={textChangeHandler}
               thresholds={{ low: 20, medium: 40, goal: 50 }}
-              textareaProps={{ placeholder: t("tasks:write_initial_prompt"), isDisabled, isReadOnly: !isEditable }}
+              textareaProps={{
+                placeholder: t(getTypeSafei18nKey(`tasks:${taskType.id}.response_placeholder`)),
+                isDisabled,
+                isReadOnly: !isEditable,
+              }}
             />
           </Stack>
         </>

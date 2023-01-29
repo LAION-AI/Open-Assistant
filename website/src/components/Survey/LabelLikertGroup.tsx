@@ -135,9 +135,9 @@ const getLabelInfo = (label: string): LabelInfo => {
         oneDescription: ["Contains text which is incorrect or misleading"],
         inverted: true,
       };
-    case "helpful":
+    case "helpfulness":
       return {
-        zeroText: "Unhelful",
+        zeroText: "Unhelpful",
         zeroDescription: [],
         oneText: "Helpful",
         oneDescription: ["Completes the task to a high standard"],
@@ -186,7 +186,7 @@ const getLabelInfo = (label: string): LabelInfo => {
   }
 };
 
-export const LabelInputGroup = ({ labelIDs, onChange, isEditable = true }: LabelInputGroupProps) => {
+export const LabelLikertGroup = ({ labelIDs, onChange, isEditable = true }: LabelInputGroupProps) => {
   const [labelValues, setLabelValues] = useState<number[]>(Array.from({ length: labelIDs.length }).map(() => null));
 
   const cardColor = useColorModeValue("gray.50", "gray.800");
