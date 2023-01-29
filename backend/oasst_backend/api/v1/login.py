@@ -2,6 +2,7 @@ import requests
 from fastapi import APIRouter, Depends, HTTPException
 from oasst_backend import auth
 from oasst_backend.api import deps
+from oasst_backend.config import Settings
 from oasst_backend.models import Account
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -10,16 +11,15 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 router = APIRouter()
 
-# TODO: get actual values and read from config
-CLIENT_ID = "temp"
-CLIENT_SECRET = "temp"
+# TODO: replace placeholder
+REDIRECT_URI = "http://localhost:8000/api/v1/callback_discord"
 
 
 # TODO: make this not only discord
 @router.get("/login_discord")
 def login_discord():
-    # TODO: remove hardcoded discord URLs
-    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri=http://localhost:8000/callback&response_type=code&scope=identify"
+    # TODO: remove hardcoded URLs
+    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={Settings.DISCORD_CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
@@ -33,12 +33,12 @@ def callback_discord(
     token_response = requests.post(
         "https://discord.com/api/oauth2/token",
         data={
-            "client_id": CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
+            "client_id": Settings.DISCORD_CLIENT_ID,
+            "client_secret": Settings.DISCORD_CLIENT_SECRET,
             "grant_type": "authorization_code",
             "code": auth_code,
             # TODO replace this with the URI we want to redirect to, must match the one used when setting up OAuth2 client with Discord
-            "redirect_uri": "http://localhost:8000/callback",
+            "redirect_uri": REDIRECT_URI,
             "scope": "identify",
         },
     )
