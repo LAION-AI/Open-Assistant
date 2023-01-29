@@ -16,6 +16,8 @@ export interface CreatePrompterReplyTask extends BaseTask {
   conversation: Conversation;
 }
 
+export type CreateTaskType = CreateInitialPromptTask | CreateAssistantReplyTask | CreatePrompterReplyTask;
+
 export interface RankInitialPromptsTask extends BaseTask {
   type: TaskType.rank_initial_prompts;
   prompts: string[];
@@ -32,6 +34,8 @@ export interface RankPrompterRepliesTask extends BaseTask {
   conversation: Conversation;
   replies: string[];
 }
+
+export type RankTaskType = RankInitialPromptsTask | RankAssistantRepliesTask | RankPrompterRepliesTask;
 
 export interface Label {
   display_text: string;
@@ -68,4 +72,6 @@ export interface LabelInitialPromptTask extends BaseLabelTask {
   prompt: string;
 }
 
-export type LabelTaskType = LabelAssistantReplyTask | LabelPrompterReplyTask | LabelInitialPromptTask;
+export type LabelTaskType = LabelInitialPromptTask | LabelAssistantReplyTask | LabelPrompterReplyTask;
+
+export type KnownTaskType = CreateTaskType | RankTaskType | LabelTaskType;

@@ -6,7 +6,7 @@ import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
 import { TaskType } from "src/types/Task";
-import { RankAssistantRepliesTask, RankInitialPromptsTask, RankPrompterRepliesTask } from "src/types/Tasks";
+import { RankTaskType } from "src/types/Tasks";
 
 export const EvaluateTask = ({
   task,
@@ -15,10 +15,7 @@ export const EvaluateTask = ({
   isDisabled,
   onReplyChanged,
   onValidityChanged,
-}: TaskSurveyProps<
-  RankInitialPromptsTask | RankAssistantRepliesTask | RankPrompterRepliesTask,
-  { ranking: number[] }
->) => {
+}: TaskSurveyProps<RankTaskType, { ranking: number[] }>) => {
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const [ranking, setRanking] = useState<number[]>(null);
 

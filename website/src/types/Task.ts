@@ -29,11 +29,25 @@ export interface BaseTask {
   type: TaskType;
 }
 
-export interface TaskResponse<Task extends BaseTask> {
+export interface TaskAvailableResponse<Task extends BaseTask> {
   id: string;
   userId: string;
   task: Task;
 }
+
+interface TaskAvailable<Task extends BaseTask> extends TaskAvailableResponse<Task> {
+  taskAvailability: "AVAILABLE";
+}
+
+interface AwaitingInitialTask {
+  taskAvailability: "AWAITING_INITIAL";
+}
+
+interface NoTaskAvailable {
+  taskAvailability: "NONE_AVAILABLE";
+}
+
+export type TaskResponse<Task extends BaseTask> = TaskAvailable<Task> | AwaitingInitialTask | NoTaskAvailable;
 
 export type TaskReplyValidity = "DEFAULT" | "VALID" | "INVALID";
 

@@ -10,6 +10,7 @@ import { UnchangedWarning } from "src/components/Tasks/UnchangedWarning";
 import { post } from "src/lib/api";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { BaseTask, TaskContent, TaskReplyValidity } from "src/types/Task";
+import { CreateTaskType, KnownTaskType, LabelTaskType, RankTaskType } from "src/types/Tasks";
 import useSWRMutation from "swr/mutation";
 
 interface EditMode {
@@ -62,7 +63,15 @@ export interface TaskSurveyProps<TaskType extends BaseTask, T> {
   onValidityChanged: (validity: TaskReplyValidity) => void;
 }
 
-export const Task = ({ frontendId, task, trigger, mutate }) => {
+interface TaskProps {
+  frontendId: string;
+  task: KnownTaskType;
+  isLoading: boolean;
+  completeTask: (TaskContent) => void;
+  skipTask: () => void;
+}
+
+export const Task = ({ frontendId, task, isLoading, completeTask, skipTask }: TaskProps) => {
   const { t } = useTranslation("tasks");
   const [taskStatus, taskEvent] = useReducer(
     (
@@ -117,14 +126,13 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
 
   const rootEl = useRef<HTMLDivElement>(null);
 
-  const taskType = useMemo(
-    () => TaskInfos.find((taskType) => taskType.type === task.type && taskType.mode === task.mode),
-    [task.type, task.mode]
-  );
+  const taskType = useMemo(() => {
+    return TaskInfos.find((taskType) => taskType.type === task.type);
+  }, [task.type]);
 
   const { trigger: sendRejection } = useSWRMutation("/api/reject_task", post, {
     onSuccess: async () => {
-      mutate();
+      skipTask();
     },
   });
 
@@ -144,7 +152,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
 
   const submitResponse = () => {
     if (taskStatus.mode === "REVIEW") {
-      trigger({
+      completeTask({
         id: frontendId,
         update_type: taskType.update_type,
         content: replyContent.current,
@@ -159,7 +167,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       case TaskCategory.Create:
         return (
           <CreateTask
-            task={task}
+            task={task as CreateTaskType}
             taskType={taskType}
             isEditable={taskStatus.mode === "EDIT"}
             isDisabled={taskStatus.mode === "SUBMITTED"}
@@ -170,7 +178,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       case TaskCategory.Evaluate:
         return (
           <EvaluateTask
-            task={task}
+            task={task as RankTaskType}
             taskType={taskType}
             isEditable={taskStatus.mode === "EDIT"}
             isDisabled={taskStatus.mode === "SUBMITTED"}
@@ -181,7 +189,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       case TaskCategory.Label:
         return (
           <LabelTask
-            task={task}
+            task={task as LabelTaskType}
             taskType={taskType}
             isEditable={taskStatus.mode === "EDIT"}
             isDisabled={taskStatus.mode === "SUBMITTED"}
@@ -198,6 +206,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       <TaskControls
         task={task}
         taskStatus={taskStatus}
+        isLoading={isLoading}
         onEdit={() => taskEvent({ action: "RETURN_EDIT" })}
         onReview={() => taskEvent({ action: "REVIEW" })}
         onSubmit={submitResponse}
