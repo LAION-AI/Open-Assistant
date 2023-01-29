@@ -58,7 +58,11 @@ export const CreateTask = ({
               text={inputText}
               onTextChange={textChangeHandler}
               thresholds={{ low: 20, medium: 40, goal: 50 }}
-              textareaProps={{ placeholder: t("tasks:write_initial_prompt"), isDisabled, isReadOnly: !isEditable }}
+              textareaProps={{
+                placeholder: t(getTypeSafei18nKey(`tasks:${taskType.id}.response_placeholder`)),
+                isDisabled,
+                isReadOnly: !isEditable,
+              }}
             />
           </Stack>
         </>
