@@ -16,7 +16,7 @@ CLIENT_SECRET = "temp"
 
 
 # TODO: make this not only discord
-@router.get("/login_discord", response_model=protocol_schema.Token)
+@router.get("/login_discord")
 def login_discord():
     # TODO: remove hardcoded discord URLs
     auth_url = f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri=http://localhost:8000/callback&response_type=code&scope=identify"
