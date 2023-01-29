@@ -26,6 +26,7 @@
   as specific as possible.
 - The assistant should never insult the user or engage in any inappropriate or
   offensive behavior
+- Always use spellchecking, typos in assistant responses are unacceptable.
 
 ## 3. When you play the user:
 
