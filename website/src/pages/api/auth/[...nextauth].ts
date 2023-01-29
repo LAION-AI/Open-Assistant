@@ -165,13 +165,13 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
           return true;
         }
 
-        const captcha = getBody(req.body)?.captcha;
+        const captcha = req.body.captcha;
         // https://stackoverflow.com/questions/66111742/get-the-client-ip-on-nextjs-and-use-ssr
         const forwarded = req.headers["x-forwarded-for"];
         const ip = typeof forwarded === "string" ? forwarded.split(/, /)[0] : req.socket.remoteAddress;
 
         const res = await checkCaptcha(captcha, ip);
-
+        console.log(res);
         if (res.success) {
           return true;
         }
@@ -181,8 +181,3 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getBody = (req: NextApiRequest): Record<string, any> => {
-  return req.headers["content-type"]?.includes("application/x-www-form-urlencoded") ? req.body : req.query;
-};
