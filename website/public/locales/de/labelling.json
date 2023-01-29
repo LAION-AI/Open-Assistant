@@ -12,5 +12,6 @@
   "hate_speech": "Hassrede",
   "sexual_content": "Sexueller Inhalt",
   "moral_judgement": "Moralisches Urteil",
-  "political_content": "Politisch"
+  "political_content": "Politisch",
+  "lang_mismatch": "Sprachkonflikt"
 }
