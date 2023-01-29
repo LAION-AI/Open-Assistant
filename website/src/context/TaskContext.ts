@@ -1,7 +1,13 @@
 import { createContext, useContext } from "react";
 import { TaskApiHook } from "src/types/Hooks";
-import { BaseTask } from "src/types/Task";
+import { BaseTask, TaskInfo } from "src/types/Task";
 
-export const TaskContext = createContext<TaskApiHook<BaseTask, unknown>>(null);
+export interface TaskContextType<Task extends BaseTask, ResponseContent>
+  extends Omit<TaskApiHook<Task, ResponseContent>, "response"> {
+  task: Task;
+  taskInfo: TaskInfo;
+}
+
+export const TaskContext = createContext<TaskContextType<BaseTask, unknown>>(null);
 
 export const useTaskContext = () => useContext(TaskContext);

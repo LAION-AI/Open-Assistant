@@ -19,9 +19,8 @@ export const TaskPage = ({ type }: TaskPageProps) => {
   const taskApiHook = useMemo(() => taskApiHooks[type], [type]);
   const hookState = taskApiHook(type);
 
-  const { response } = hookState;
-
   const body = useMemo(() => {
+    const { response } = hookState;
     switch (response.taskAvailability) {
       case "AWAITING_INITIAL":
         return <LoadingScreen text={t("common:loading")} />;
@@ -29,10 +28,17 @@ export const TaskPage = ({ type }: TaskPageProps) => {
       case "NONE_AVAILABLE":
         return <TaskEmptyState />;
 
-      case "AVAILABLE":
-        return <Task key={response.id} />;
+      case "AVAILABLE": {
+        const { task, taskInfo } = response;
+        const context = { ...hookState, task, taskInfo };
+        return (
+          <TaskContext.Provider value={context}>
+            <Task key={response.id} />
+          </TaskContext.Provider>
+        );
+      }
     }
-  }, [response, t]);
+  }, [hookState, t]);
 
   // NOTE: this is independent of the fetched task type, it is usually identical, but not for the random task.
   const taskInfo = TaskInfos.find((taskType) => taskType.type === type);
@@ -42,7 +48,7 @@ export const TaskPage = ({ type }: TaskPageProps) => {
         <title>{t(getTypeSafei18nKey(`${taskInfo.id}.label`))}</title>
         <meta name="description" content={t(getTypeSafei18nKey(`${taskInfo.id}.desc`))} />
       </Head>
-      <TaskContext.Provider value={hookState}>{body}</TaskContext.Provider>
+      {body}
     </>
   );
 };

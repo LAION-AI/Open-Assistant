@@ -1,20 +1,22 @@
 import React from "react";
-
-import { Task } from "./Task";
+import { Task } from "src/components/Tasks/Task";
+import { TaskInfos } from "src/components/Tasks/TaskTypes";
+import { TaskContext } from "src/context/TaskContext";
 
 export default {
   title: "tasks/Task",
   component: Task,
 };
 
-const Template = ({ frontendId, task, isLoading, completeTask, skipTask }) => {
+const Template = ({ providerValue }) => {
   return (
-    <Task frontendId={frontendId} task={task} isLoading={isLoading} completeTask={completeTask} skipTask={skipTask} />
+    <TaskContext.Provider value={providerValue}>
+      <Task />
+    </TaskContext.Provider>
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {
+const exampleProviderValue = {
   frontendId: "1234",
   task: {
     conversation: [],
@@ -25,11 +27,18 @@ Default.args = {
     type: "label_prompter_reply",
     valid_labels: ["spam", "fails_task"],
   },
+  taskInfo: TaskInfos.find((t) => t.type === "label_prompter_reply"),
   isLoading: false,
-  completeTask: (id, update_type, content) => {
+  completeTask: (content) => {
     console.log(content);
   },
   skipTask: () => {
     console.log("skip");
   },
+  rejectTask: () => {
+    console.log("reject");
+  },
 };
+
+export const Default = Template.bind({});
+Default.args = { providerValue: exampleProviderValue };

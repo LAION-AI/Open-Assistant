@@ -66,7 +66,7 @@ export const Task = () => {
   const { t } = useTranslation("tasks");
   const rootEl = useRef<HTMLDivElement>(null);
   const replyContent = useRef<TaskContent>(null);
-  const { rejectTask, completeTask, response, isLoading } = useTaskContext();
+  const { rejectTask, completeTask, isLoading, task, taskInfo } = useTaskContext();
   const [taskStatus, taskEvent] = useReducer(
     (
       status: TaskStatus,
@@ -108,11 +108,6 @@ export const Task = () => {
     { mode: "EDIT", replyValidity: "INVALID" }
   );
 
-  if (response.taskAvailability !== "AVAILABLE") {
-    throw new Error("Cannot render task when it is unavailable yet");
-  }
-  const { task, taskInfo } = response;
-
   const updateValidity = useCallback(
     (replyValidity: TaskReplyValidity) => taskEvent({ action: "UPDATE_VALIDITY", replyValidity }),
     [taskEvent]
@@ -129,10 +124,10 @@ export const Task = () => {
     [replyContent]
   );
 
-  const submitResponse = useCallback(() => {
+  const submitResponse = useCallback(async () => {
     if (taskStatus.mode === "REVIEW") {
-      completeTask(replyContent.current);
       taskEvent({ action: "SET_SUBMITTED" });
+      await completeTask(replyContent.current);
       scrollToTop(rootEl.current);
     }
   }, [taskStatus.mode, completeTask]);

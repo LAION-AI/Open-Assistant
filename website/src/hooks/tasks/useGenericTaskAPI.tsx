@@ -6,7 +6,8 @@ import { BaseTask, ServerTaskResponse, TaskResponse, TaskType as TaskTypeEnum } 
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
-export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent>(
+// TODO: provide type for the content reply, this will be much harder since the replies vary vastly
+export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = any>(
   taskType: TaskTypeEnum
 ): TaskApiHook<TaskType, ResponseContent> => {
   const [response, setResponse] = useState<TaskResponse<TaskType>>({ taskAvailability: "AWAITING_INITIAL" });
