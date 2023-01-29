@@ -1,0 +1,17 @@
+{
+  "label_highlighted_yes_no_instruction": "Beantworten Sie die folgende(n) Frage(n) zu der markierten Nachricht:",
+  "label_highlighted_flag_instruction": "Wählen Sie aus, was auf die markierte Nachricht zutrifft:",
+  "label_highlighted_likert_instruction": "Bewerten Sie die markierte Nachricht:",
+  "label_message_yes_no_instruction": "Beantworten Sie die folgende(n) Frage(n) zur Nachricht:",
+  "label_message_flag_instruction": "Wählen Sie aus, was auf die Nachricht zutrifft:",
+  "label_message_likert_instruction": "Nachricht bewerten:",
+  "spam.question": "Ist die Nachricht Spam?",
+  "fails_task.question": "Verfehlt die Antwort die Aufgabe des Nutzers?",
+  "not_appropriate": "Nicht angemessen",
+  "pii": "Personenbezogene Daten",
+  "hate_speech": "Hassrede",
+  "sexual_content": "Sexueller Inhalt",
+  "moral_judgement": "Moralisches Urteil",
+  "political_content": "Politisch",
+  "lang_mismatch": "Sprachkonflikt"
+}

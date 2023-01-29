@@ -12,5 +12,6 @@
   "hate_speech": "Hate Speech",
   "sexual_content": "Sexual Content",
   "moral_judgement": "Judges Morality",
-  "political_content": "Political"
+  "political_content": "Political",
+  "lang_mismatch": "Language Mismatch"
 }
