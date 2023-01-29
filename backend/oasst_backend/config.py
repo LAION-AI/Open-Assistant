@@ -16,7 +16,7 @@ class TreeManagerConfiguration(BaseModel):
     max_tree_depth: int = 6
     """Maximum depth of message tree."""
 
-    max_children_count: int = 5
+    max_children_count: int = 3
     """Maximum number of reply messages per tree node."""
 
     goal_tree_size: int = 15
@@ -109,7 +109,7 @@ class TreeManagerConfiguration(BaseModel):
 
     rank_prompter_replies: bool = False
 
-    lonely_children_count: int = 3
+    lonely_children_count: int = 2
     """Number of children below which parents are preferred during sampling for reply tasks."""
 
     p_lonely_child_extension: float = 0.8
