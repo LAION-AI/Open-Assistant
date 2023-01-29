@@ -13,17 +13,13 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
-def authenticate_user(db: Session, placeholder) -> ...:  # TODO
-    account = ...  # TODO: we want to authenticate with discord?
-    return account
-
-
 def create_access_token(data: dict) -> str:
     expires_delta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET, algorithm=ALGORITHM)
+    # TODO store JWT here?
     return encoded_jwt
 
 
@@ -41,7 +37,19 @@ def get_current_user(db: Session, token: str) -> Account:
     return user
 
 
+def get_account_from_discord_user(db: Session, discord_user: dict) -> Optional[Account]:
+    account: Account = (
+        db.query(Account)
+        .filter(
+            Account.provider == "discord",
+            Account.provider_account_id == discord_user["id"],
+        )
+        .first()
+    )
+
+    return account
+
+
 def get_account_by_id(db: Session, id: UUID) -> Optional[Account]:
     account: Account = db.query(Account).filter(Account.id == id).first()
-
     return account
