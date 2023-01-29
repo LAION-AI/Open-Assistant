@@ -353,14 +353,14 @@ class TextLabel(str, enum.Enum):
     # yes/no questions
     spam = "spam", LabelWidget.yes_no, "Seems to be intentionally low-quality or irrelevant"
     fails_task = "fails_task", LabelWidget.yes_no, "Fails to follow the correct instruction / task"
+
+    # flags
     lang_mismatch = (
         "lang_mismatch",
-        LabelWidget.yes_no,
+        LabelWidget.flag,
         "Language mismatch",
         "The message is written in language that differs from the currently selected language.",
     )
-
-    # flags
     pii = "pii", LabelWidget.flag, "Contains personal identifiable information (PII)"
     not_appropriate = "not_appropriate", LabelWidget.flag, "Inappropriate"
     hate_speech = (
