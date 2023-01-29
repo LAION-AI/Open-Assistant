@@ -161,7 +161,7 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
     callbacks: {
       ...authOptions.callbacks,
       async signIn({ account }) {
-        if (account.provider !== "email") {
+        if (account.provider !== "email" || !boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA)) {
           return true;
         }
 

@@ -1,6 +1,7 @@
 import { Button, ButtonProps, Input, Stack, useColorModeValue } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
 import { TurnstileInstance } from "@marsidev/react-turnstile";
+import { boolean } from "boolean";
 import { Bug, Github, Mail } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -144,6 +145,8 @@ Signin.getLayout = (page) => (
 
 export default Signin;
 
+const emailSigninCaptcha = boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA);
+
 const EmailSignInForm = ({ providerId }: { providerId: string }) => {
   const { register, handleSubmit } = useForm<{ email: string }>();
   const captcha = useRef<TurnstileInstance>();
@@ -166,12 +169,19 @@ const EmailSignInForm = ({ providerId }: { providerId: string }) => {
           placeholder="Email Address"
           {...register("email")}
         />
-        <CloudFlareCatpcha
-          options={{ size: "invisible" }}
-          ref={captcha}
-          onSuccess={() => setCaptchaSuccess(true)}
-        ></CloudFlareCatpcha>
-        <SigninButton data-cy="signin-email-button" leftIcon={<Mail />} mt="4" disabled={!captchaSuccess}>
+        {emailSigninCaptcha && (
+          <CloudFlareCatpcha
+            options={{ size: "invisible" }}
+            ref={captcha}
+            onSuccess={() => setCaptchaSuccess(true)}
+          ></CloudFlareCatpcha>
+        )}
+        <SigninButton
+          data-cy="signin-email-button"
+          leftIcon={<Mail />}
+          mt="4"
+          disabled={!captchaSuccess && emailSigninCaptcha}
+        >
           Continue with Email
         </SigninButton>
       </Stack>
