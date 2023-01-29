@@ -40,6 +40,7 @@ export const checkCaptcha = async (
   };
 };
 
+// This function hasn't been tested yet, Cloudflare doesn't send `action` and `cdata` with a demo key.
 const getSuccess = (response: CheckCaptchaResponse, action: string | undefined, cdata: string | undefined) => {
   if (action === undefined && cdata === undefined) {
     return response.success;
