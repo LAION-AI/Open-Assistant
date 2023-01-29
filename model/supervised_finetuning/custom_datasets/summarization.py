@@ -57,6 +57,8 @@ def index_summary_merge(text, summary):
 class SummarizationDataset(Dataset):
     def __init__(self, dataset, cache_dir, split, max_words=512):
         self.name = dataset
+        if summarization_config_mapping[dataset][0] in ["billsum", "tldr_news"] & split == "validation":
+            split = "test"
         self.dataset = load_dataset(*summarization_config_mapping[dataset], cache_dir=cache_dir, split=split)
         self.text_column, self.summary_column = summarization_name_mapping[dataset]
         self.preprocess_fn = index_summary_merge if dataset == "scitldr" else index_summary_default
