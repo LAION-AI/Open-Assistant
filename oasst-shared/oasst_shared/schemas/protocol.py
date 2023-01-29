@@ -358,8 +358,8 @@ class TextLabel(str, enum.Enum):
     lang_mismatch = (
         "lang_mismatch",
         LabelWidget.flag,
-        "Language mismatch",
-        "The message is written in language that differs from the currently selected language.",
+        "Wrong Language",
+        "The message is written in a language that differs from the currently selected language.",
     )
     pii = "pii", LabelWidget.flag, "Contains personal identifiable information (PII)"
     not_appropriate = "not_appropriate", LabelWidget.flag, "Inappropriate"
