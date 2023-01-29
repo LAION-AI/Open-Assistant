@@ -3,7 +3,6 @@ from typing import Callable, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
-
 from oasst_backend.api import deps
 from oasst_backend.api.frontend_user import FrontendUserId
 from oasst_backend.api.v1 import utils

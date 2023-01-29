@@ -3,7 +3,6 @@ from unittest import mock
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import text_labels
 from oasst_backend.schemas.text_labels import ValidLabelsResponse

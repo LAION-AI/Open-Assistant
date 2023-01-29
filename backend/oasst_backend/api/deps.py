@@ -8,8 +8,6 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
 from fastapi_limiter.depends import RateLimiter
 from loguru import logger
-from sqlmodel import Session
-
 from oasst_backend.api.frontend_user import FrontendUserId
 from oasst_backend.config import settings
 from oasst_backend.database import engine
@@ -20,6 +18,7 @@ from oasst_backend.tree_manager import TreeManager
 from oasst_backend.user_repository import UserRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
+from sqlmodel import Session
 
 
 def get_db() -> Generator:
@@ -200,21 +199,20 @@ def get_user(request: protocol_schema.TaskRequest) -> Optional[protocol_schema.U
 
 
 def get_user_repository(
-    db: Session = Depends(get_db),
-    api_client: ApiClient = Depends(get_api_client)
+    db: Session = Depends(get_db), api_client: ApiClient = Depends(get_api_client)
 ) -> UserRepository:
     return UserRepository(db, api_client)
 
 
 def get_task_repository(
     client_user: Optional[protocol_schema.User] = Depends(get_user),
-    user_repository: UserRepository = Depends(get_user_repository)
+    user_repository: UserRepository = Depends(get_user_repository),
 ) -> TaskRepository:
     return TaskRepository(
         db=user_repository.db,
         api_client=user_repository.api_client,
         client_user=client_user,
-        user_repository=user_repository
+        user_repository=user_repository,
     )
 
 
@@ -228,7 +226,7 @@ def get_prompt_repository(
         api_client=user_repository.api_client,
         client_user=client_user,
         user_repository=user_repository,
-        task_repository=task_repository
+        task_repository=task_repository,
     )
 
 

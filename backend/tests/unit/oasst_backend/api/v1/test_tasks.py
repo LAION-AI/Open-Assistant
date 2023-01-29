@@ -1,14 +1,13 @@
 import json
 from unittest import mock
 
+import oasst_backend.api.deps
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from starlette.status import HTTP_200_OK, HTTP_422_UNPROCESSABLE_ENTITY
-
-import oasst_backend.api.deps
 from oasst_backend.api.v1 import tasks
 from oasst_shared.schemas.protocol import TaskDone, TaskRequest
+from starlette.status import HTTP_200_OK, HTTP_422_UNPROCESSABLE_ENTITY
 
 
 class FakeApp:

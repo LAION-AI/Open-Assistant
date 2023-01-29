@@ -4,7 +4,6 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
-
 from oasst_backend.api import deps
 from oasst_backend.api.frontend_user import FrontendUserId
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
@@ -35,7 +34,9 @@ def request_task(
     """
     try:
         tree_manager.pr.ensure_user_is_enabled()
-        task, message_tree_id, parent_message_id = tree_manager.next_task(desired_task_type=request.type, lang=request.lang)
+        task, message_tree_id, parent_message_id = tree_manager.next_task(
+            desired_task_type=request.type, lang=request.lang
+        )
         tree_manager.pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
 
     except OasstError:

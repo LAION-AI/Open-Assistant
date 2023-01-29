@@ -4,8 +4,6 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey
 from loguru import logger
-from starlette.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
-
 from oasst_backend.api import deps
 from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository
@@ -14,6 +12,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions import OasstError
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import TextLabel
+from starlette.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
 router = APIRouter()
 
