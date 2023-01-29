@@ -171,7 +171,7 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
         const ip = typeof forwarded === "string" ? forwarded.split(/, /)[0] : req.socket.remoteAddress;
 
         const res = await checkCaptcha(captcha, ip);
-        console.log(res);
+
         if (res.success) {
           return true;
         }
