@@ -206,7 +206,7 @@ class TreeManager:
             logger.warning("Task availability request without lang tag received, assuming lang='en'.")
 
         num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
-        extendible_parents = self.query_extendible_parents(lang=lang)
+        extendible_parents, _ = self.query_extendible_parents(lang=lang)
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
         incomplete_rankings = self.query_incomplete_rankings(lang=lang)
@@ -245,13 +245,11 @@ class TreeManager:
         num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
-        extendible_parents = self.query_extendible_parents(lang=lang)
+        extendible_parents, active_tree_sizes = self.query_extendible_parents(lang=lang)
 
         incomplete_rankings = self.query_incomplete_rankings(lang=lang)
         if not self.cfg.rank_prompter_replies:
             incomplete_rankings = list(filter(lambda r: r.role == "assistant", incomplete_rankings))
-
-        active_tree_sizes = self.query_extendible_trees(lang=lang)
 
         # determine type of task to generate
         num_missing_replies = sum(x.remaining_messages for x in active_tree_sizes)
@@ -929,7 +927,7 @@ HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
     AND COUNT(c.id) FILTER (WHERE c.user_id = :user_id) = 0  -- without reply by user
 """
 
-    def query_extendible_parents(self, lang: str) -> list[ExtendibleParentRow]:
+    def query_extendible_parents(self, lang: str) -> tuple[list[ExtendibleParentRow], list[ActiveTreeSizeRow]]:
         """Query parent messages that have not reached the maximum number of replies."""
 
         user_id = self.pr.user_id if not settings.DEBUG_ALLOW_DUPLICATE_TASKS else None
@@ -942,7 +940,13 @@ HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
                 "user_id": user_id,
             },
         )
-        return [ExtendibleParentRow.from_orm(x) for x in r.all()]
+
+        potential_parents = [ExtendibleParentRow.from_orm(x) for x in r.all()]
+        extendible_trees = self.query_extendible_trees(lang=lang)
+        extendible_tree_ids = set(t.message_tree_id for t in extendible_trees)
+        extendible_parents = list(p for p in potential_parents if p.message_tree_id in extendible_tree_ids)
+
+        return extendible_parents, extendible_trees
 
     _sql_find_extendible_trees = f"""
 -- find extendible trees
@@ -1073,20 +1077,44 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
                 logger.info(f"Inserting missing message tree state for message: {id} ({tree_size=}, {state=:s})")
             self._insert_default_state(id, state=state)
 
-        rankings = (
+        # check tree state transitions (maybe variables haves changes): prompt review -> growing -> ranking -> scoring
+        prompt_review_trees: list[MessageTreeState] = (
+            self.db.query(MessageTreeState)
+            .filter(MessageTreeState.state == message_tree_state.State.INITIAL_PROMPT_REVIEW, MessageTreeState.active)
+            .all()
+        )
+        if len(prompt_review_trees) > 0:
+            logger.info(
+                f"Checking state of {len(prompt_review_trees)} active message trees in 'initial_prompt_review' state."
+            )
+            for t in prompt_review_trees:
+                self.check_condition_for_growing_state(t.message_tree_id)
+
+        growing_trees: list[MessageTreeState] = (
+            self.db.query(MessageTreeState)
+            .filter(MessageTreeState.state == message_tree_state.State.GROWING, MessageTreeState.active)
+            .all()
+        )
+        if len(growing_trees) > 0:
+            logger.info(f"Checking state of {len(growing_trees)} active message trees in 'growing' state.")
+            for t in growing_trees:
+                self.check_condition_for_ranking_state(t.message_tree_id)
+
+        ranking_trees: list[MessageTreeState] = (
             self.db.query(MessageTreeState)
             .filter(
                 or_(
                     MessageTreeState.state == message_tree_state.State.RANKING,
                     MessageTreeState.state == message_tree_state.State.READY_FOR_SCORING,
-                )
+                ),
+                MessageTreeState.active,
             )
             .all()
         )
-        if len(rankings) > 0:
-            logger.info(f"Checking state of {len(rankings)} message trees in ranking state.")
-            for r in rankings:
-                self.check_condition_for_scoring_state(r.message_tree_id)
+        if len(ranking_trees) > 0:
+            logger.info(f"Checking state of {len(ranking_trees)} active message trees in 'ranking' state.")
+            for t in ranking_trees:
+                self.check_condition_for_scoring_state(t.message_tree_id)
 
     def query_num_active_trees(self, lang: str, exclude_ranking: bool = True) -> int:
         """Count all active trees (optionally exclude those in ranking state)."""
