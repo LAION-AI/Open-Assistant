@@ -20,12 +20,12 @@ def create_access_token(data: dict) -> str:
     return encoded_jwt
 
 
-def get_account_from_discord_user(db: Session, discord_user: dict) -> Optional[Account]:
+def get_account_from_discord_id(db: Session, discord_id: str) -> Optional[Account]:
     account: Account = (
         db.query(Account)
         .filter(
             Account.provider == "discord",
-            Account.provider_account_id == discord_user["id"],
+            Account.provider_account_id == discord_id,
         )
         .first()
     )

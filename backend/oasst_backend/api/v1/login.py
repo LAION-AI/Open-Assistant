@@ -54,8 +54,9 @@ def callback_discord(
 
     user_response.raise_for_status()
     discord_user = user_response.json()
+    discord_user_id = discord_user["id"]
 
-    account: Account = auth.get_account_from_discord_user(db, discord_user)
+    account: Account = auth.get_account_from_discord_id(db, discord_user_id)
 
     if not account:
         # Discord account is not linked to an OA account
