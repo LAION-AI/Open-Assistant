@@ -318,34 +318,43 @@ def main():
 
     parser.add_argument(
         "--print-openapi-schema",
+        default=False,
         help="Dumps the openapi schema to stdout",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
     )
     parser.add_argument("--host", help="The host to run the server", default="0.0.0.0")
     parser.add_argument("--port", help="The port to run the server", default=8080)
     parser.add_argument(
-        "--export", help="Export all trees which are ready for exporting.", action=argparse.BooleanOptionalAction
+        "--export",
+        default=False,
+        help="Export all trees which are ready for exporting.",
+        action="store_true",
     )
     parser.add_argument(
         "--export-file",
+        type=str,
         help="Name of file to export trees to. If not provided when exporting, output will be send to STDOUT",
     )
     parser.add_argument(
         "--retry-scoring",
+        default=False,
         help="Retry scoring failed message trees",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
     )
 
     args = parser.parse_args()
 
     if args.print_openapi_schema:
         print(get_openapi_schema())
-    elif args.export:
+
+    if args.export:
         use_compression: bool = ".gz" in args.export_file
         export_ready_trees(file=args.export_file, use_compression=use_compression)
-    elif args.retry_scoring:
+
+    if args.retry_scoring:
         retry_scoring_failed_message_trees()
-    else:
+
+    if not (args.export or args.print_openapi_schema or args.retry_scoring):
         uvicorn.run(app, host=args.host, port=args.port)
 
 
