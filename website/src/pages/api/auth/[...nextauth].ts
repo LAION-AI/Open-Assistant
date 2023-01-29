@@ -150,21 +150,6 @@ const authOptions: AuthOptions = {
       }
     },
   },
-  /*
-   * We maybe need this, we maybe don't.  Checking in this uncommented until
-   * it's confirmed we can drop this.
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "none",
-        path: "/",
-        secure: true,
-      },
-    },
-  },
-  */
   session: {
     strategy: "jwt",
   },
@@ -180,7 +165,7 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
           return true;
         }
 
-        const captcha = req.body.captcha;
+        const captcha = getBody(req.body)?.captcha;
         // https://stackoverflow.com/questions/66111742/get-the-client-ip-on-nextjs-and-use-ssr
         const forwarded = req.headers["x-forwarded-for"];
         const ip = typeof forwarded === "string" ? forwarded.split(/, /)[0] : req.socket.remoteAddress;
@@ -196,3 +181,8 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getBody = (req: NextApiRequest): Record<string, any> => {
+  return req.headers["content-type"]?.includes("application/x-www-form-urlencoded") ? req.body : req.query;
+};
