@@ -42,7 +42,7 @@
     "unchanged_message": "Sie haben die Reihenfolge nicht geändert. Möchten Sie wirklich fortfahren?"
   },
   "rank_initial_prompts": {
-    "label": "Rank Initial Prompts",
+    "label": "Initiale Aufforderung einstufen",
     "desc": "Bewerten Sie die initiale Aufforderungen basierend auf ihrer Genauigkeit und Lesbarkeit.",
     "overview": "Sortieren Sie die folgenden initiale Aufforderungen von der Besten zur Schlechtesten, wobei die Beste zuerst und die Schlechteste zuletzt kommt.",
     "unchanged_title": "Reihenfolge unverändert",
