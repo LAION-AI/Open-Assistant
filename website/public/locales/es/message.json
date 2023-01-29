@@ -1,13 +1,13 @@
 {
-  "label_action": "Label",
-  "label_title": "Label",
-  "message": "Message",
-  "open_new_tab_action": "Open in new tab",
-  "parent": "Parent",
-  "reactions": "Reactions",
-  "report_action": "Report",
-  "report_placeholder": "Why should this message be reviewed?",
-  "report_title": "Report",
-  "send_report": "Send",
-  "submit_labels": "Submit"
+  "label_action": "Etiquetar",
+  "label_title": "Etiqueta",
+  "message": "Mensaje",
+  "open_new_tab_action": "Abrir en una pestaña nueva",
+  "parent": "Padre",
+  "reactions": "Reacciones",
+  "report_action": "Reportar",
+  "report_placeholder": "¿Por qué se debería revisar este mensaje?",
+  "report_title": "Informe",
+  "send_report": "Enviar",
+  "submit_labels": "Enviar"
 }

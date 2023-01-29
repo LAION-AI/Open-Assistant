@@ -1,81 +1,81 @@
 {
   "default": {
-    "unchanged_title": "No changes",
-    "unchanged_message": "Are you sure you would like to continue?"
+    "unchanged_title": "Sin cambios",
+    "unchanged_message": "¿Estás seguro de que quieres continuar?"
   },
   "random": {
-    "label": "I'm feeling lucky",
-    "desc": "Help us improve Open Assistant by starting a random task."
+    "label": "Voy a tener suerte",
+    "desc": "Ayúdanos a mejorar Open Assistant empezando con una tarea aleatoria."
   },
   "create_initial_prompt": {
-    "label": "Create Initial Prompts",
-    "desc": "Write initial prompts to help Open Assistant to try replying to diverse messages.",
-    "overview": "Create an initial message to send to the assistant",
-    "instruction": "Provide the initial prompts",
-    "response_placeholder": "Write your prompt here..."
+    "label": "Crear instrucciones iniciales",
+    "desc": "Escribe instrucciones iniciales para ayudar a que Open Assistant intente contestar a mensajes variados.",
+    "overview": "Crea un mensaje inicial para enviarlo al asistente",
+    "instruction": "Proporciona las instrucciones iniciales",
+    "response_placeholder": "Escribe tus instrucciones aquí..."
   },
   "reply_as_user": {
-    "label": "Reply as User",
-    "desc": "Chat with Open Assistant and help improve it's responses as you interact with it.",
-    "overview": "Given the following conversation, provide an adequate reply",
-    "instruction": "Provide the user's reply",
-    "response_placeholder": "Write your reply here..."
+    "label": "Contestar como usuario",
+    "desc": "Hablar con Open Assistant e intentar mejorar sus respuestas mientras interaccionas con él.",
+    "overview": "Dada la conversación siguiente, proporciona una respuesta adecuada",
+    "instruction": "Proporciona la respuesta del usuario",
+    "response_placeholder": "Escribe tu respuesta aquí..."
   },
   "reply_as_assistant": {
-    "label": "Reply as Assistant",
-    "desc": "Help Open Assistant improve its responses to conversations with other users.",
-    "overview": "Given the following conversation, provide an adequate reply",
-    "response_placeholder": "Write your reply here..."
+    "label": "Contestar como asistente",
+    "desc": "Ayuda a Open Assistant a mejorar sus respuestas a conversaciones con otros usuarios.",
+    "overview": "Dada la conversación siguiente, proporciona una respuesta adecuada",
+    "response_placeholder": "Escribe tu respuesta aquí..."
   },
   "rank_user_replies": {
-    "label": "Rank User Replies",
-    "desc": "Help Open Assistant improve its responses to conversations with other users.",
-    "overview": "Given the following User replies, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?"
+    "label": "Ordenar respuestas de usuarios",
+    "desc": "Ayuda a Open Assistant a mejorar sus respuestas a conversaciones con otros usuarios.",
+    "overview": "Dadas las siguientes respuestas de usuarios, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
+    "unchanged_title": "Orden sin cambiar",
+    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?"
   },
   "rank_assistant_replies": {
-    "label": "Rank Assistant Replies",
-    "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
-    "overview": "Given the following Assistant replies, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?"
+    "label": "Ordenar respuestas del asistente",
+    "desc": "Puntúa respuestas dadas por Open Assistant basándote en su precisión y legibilidad.",
+    "overview": "Dadas las siguientes respuestas del asistente, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
+    "unchanged_title": "Orden sin cambiar",
+    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?"
   },
   "rank_initial_prompts": {
-    "label": "Rank Initial Prompts",
-    "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
-    "overview": "Given the following initial prompts, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?"
+    "label": "Ordenar instrucciones iniciales",
+    "desc": "Puntúa instrucciones a Open Assistant basándote en su precisión y legibilidad.",
+    "overview": "Dados las siguientes instrucciones inciales, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
+    "unchanged_title": "Orden sin cambiar",
+    "unchanged_message": "No has cambiado el orden de las entradas. ¿Seguro que quieres continuar?"
   },
   "label_initial_prompt": {
-    "label": "Label Initial Prompt",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Provide labels for the following prompt"
+    "label": "Etiquetar instrucciones inciales",
+    "desc": "Proporciona etiquetas para unas instrucciones.",
+    "overview": "Proporciona etiquetas para las siguientes instrucciones"
   },
   "label_prompter_reply": {
-    "label": "Label Prompter Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Given the following discussion, provide labels for the final prompt."
+    "label": "Etiquetar respuesta del apuntador",
+    "desc": "Proporciona etiquetas para unas instrucciones.",
+    "overview": "Dada la discusión siguiente, proporciona etiquetas para la última entrada."
   },
   "label_assistant_reply": {
-    "label": "Label Assistant Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Given the following discussion, provide labels for the final prompt."
+    "label": "Etiquetar respuesta del asistente",
+    "desc": "Proporciona etiquetas para unas instrucciones.",
+    "overview": "Dada la discusión siguiente, proporciona etiquetas para la última entrada."
   },
   "classify_initial_prompt": {
-    "label": "Classify Initial Prompt",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following prompt and then answer the question about it."
+    "label": "Clasificar instrucciones iniciales",
+    "desc": "Proporciona etiquetas para unas instrucciones.",
+    "overview": "Lee la siguiente entrada y contesta a continuación la pregunta sobre ella."
   },
   "classify_prompter_reply": {
-    "label": "Classify Prompter Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
+    "label": "Clasificar la respuesta del apuntador",
+    "desc": "Proporciona etiquetas para una entrada.",
+    "overview": "Lee la siguiente conversación y contesta a continuación la pregunta sobre la última respuesta en la discusión."
   },
   "classify_assistant_reply": {
-    "label": "Classify Assistant Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
+    "label": "Clasificar respuesta del asistente",
+    "desc": "Proporciona etiquetas para una respuesta del asistente.",
+    "overview": "Lee la siguiente conversación y contesta a continuación la pregunta sobre la última respuesta en la discusión."
   }
 }
