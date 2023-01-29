@@ -39,8 +39,13 @@ jobs:
       AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
       MAX_ACTIVE_TREES: ${{ vars.MAX_ACTIVE_TREES }}
       MAX_TREE_DEPTH: ${{ vars.MAX_TREE_DEPTH }}
+      MAX_CHILDREN_COUNT: ${{ vars.MAX_CHILDREN_COUNT }}
       GOAL_TREE_SIZE: ${{ vars.GOAL_TREE_SIZE }}
       SKIP_TOXICITY_CALCULATION: ${{ vars.SKIP_TOXICITY_CALCULATION }}
+      STATS_INTERVAL_DAY: ${{ vars.STATS_INTERVAL_DAY }}
+      STATS_INTERVAL_WEEK: ${{ vars.STATS_INTERVAL_WEEK }}
+      STATS_INTERVAL_MONTH: ${{ vars.STATS_INTERVAL_MONTH }}
+      STATS_INTERVAL_TOTAL: ${{ vars.STATS_INTERVAL_TOTAL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
