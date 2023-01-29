@@ -6,7 +6,7 @@ import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
 export const useGenericTaskAPI = <TaskType extends BaseTask>(taskType: TaskTypeEnum): TaskApiHook<TaskType> => {
-  const [response, setReponse] = useState<TaskResponse<TaskType>>({ status: "AWAITING_INITIAL" });
+  const [response, setReponse] = useState<TaskResponse<TaskType>>({ taskAvailability: "AWAITING_INITIAL" });
   const [isLoading, setIsLoading] = useState(true);
 
   const { mutate: requestNewTask } = useSWRImmutable<TaskAvailableResponse<TaskType>>(
@@ -15,12 +15,12 @@ export const useGenericTaskAPI = <TaskType extends BaseTask>(taskType: TaskTypeE
     {
       onSuccess: (response) => {
         setIsLoading(false);
-        setReponse({ status: "AVAILABLE", ...response });
+        setReponse({ taskAvailability: "AVAILABLE", ...response });
       },
       onError: () => {
         // We could check for code 503 here for truely unavailable, but we need to do something with other errors anyway.
         setIsLoading(false);
-        setReponse({ status: "NONE_AVAILABLE" });
+        setReponse({ taskAvailability: "NONE_AVAILABLE" });
       },
       revalidateOnMount: true,
       dedupingInterval: 500,
@@ -35,7 +35,7 @@ export const useGenericTaskAPI = <TaskType extends BaseTask>(taskType: TaskTypeE
     onError: () => {
       // We could check for code 503 here for truely unavailable, but we need to do something with other errors anyway.
       setIsLoading(false);
-      setReponse({ status: "NONE_AVAILABLE" });
+      setReponse({ taskAvailability: "NONE_AVAILABLE" });
     },
   });
 

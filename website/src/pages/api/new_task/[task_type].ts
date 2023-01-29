@@ -26,7 +26,6 @@ const handler = withoutRole("banned", async (req, res, token) => {
   } catch (err) {
     if (err instanceof OasstError && err.errorCode === ERROR_CODES.TASK_REQUESTED_TYPE_NOT_AVAILABLE) {
       res.status(503).json({});
-      return;
     } else {
       console.error(err);
       res.status(500).json(err);

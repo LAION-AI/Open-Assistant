@@ -36,15 +36,15 @@ export interface TaskAvailableResponse<Task extends BaseTask> {
 }
 
 interface TaskAvailable<Task extends BaseTask> extends TaskAvailableResponse<Task> {
-  status: "AVAILABLE";
+  taskAvailability: "AVAILABLE";
 }
 
 interface AwaitingInitialTask {
-  status: "AWAITING_INITIAL";
+  taskAvailability: "AWAITING_INITIAL";
 }
 
 interface NoTaskAvailable {
-  status: "NONE_AVAILABLE";
+  taskAvailability: "NONE_AVAILABLE";
 }
 
 export type TaskResponse<Task extends BaseTask> = TaskAvailable<Task> | AwaitingInitialTask | NoTaskAvailable;

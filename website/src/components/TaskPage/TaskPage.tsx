@@ -19,27 +19,35 @@ export const TaskPage = ({ type }: TaskPageProps) => {
   const { response, isLoading, completeTask, skipTask } = taskApiHook(type);
   const taskInfo = TaskInfos.find((taskType) => taskType.type === type);
 
-  switch (response.status) {
+  let body;
+  switch (response.taskAvailability) {
     case "AWAITING_INITIAL":
-      return <LoadingScreen text={t("common:loading")} />;
+      body = <LoadingScreen text={t("common:loading")} />;
+      break;
     case "NONE_AVAILABLE":
-      return <TaskEmptyState />;
+      body = <TaskEmptyState />;
+      break;
     case "AVAILABLE":
-      return (
-        <>
-          <Head>
-            <title>{t(getTypeSafei18nKey(`${taskInfo.id}.label`))}</title>
-            <meta name="description" content={t(getTypeSafei18nKey(`${taskInfo.id}.desc`))} />
-          </Head>
-          <Task
-            key={response.task.id}
-            frontendId={response.id}
-            task={response.task as KnownTaskType}
-            isLoading={isLoading}
-            completeTask={completeTask}
-            skipTask={skipTask}
-          />
-        </>
+      body = (
+        <Task
+          key={response.task.id}
+          frontendId={response.id}
+          task={response.task as KnownTaskType}
+          isLoading={isLoading}
+          completeTask={completeTask}
+          skipTask={skipTask}
+        />
       );
+      break;
   }
+
+  return (
+    <>
+      <Head>
+        <title>{t(getTypeSafei18nKey(`${taskInfo.id}.label`))}</title>
+        <meta name="description" content={t(getTypeSafei18nKey(`${taskInfo.id}.desc`))} />
+      </Head>
+      {body}
+    </>
+  );
 };
