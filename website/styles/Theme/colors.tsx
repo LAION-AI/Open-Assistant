@@ -5,6 +5,7 @@ export const colors = {
     div: "white",
     text: "black",
     highlight: "blue.400",
+    active: "blue.400",
   },
   dark: {
     bg: "gray.900",
@@ -12,5 +13,6 @@ export const colors = {
     div: "gray.700",
     text: "gray.200",
     highlight: "blue.500",
+    active: "blue.500",
   },
 };

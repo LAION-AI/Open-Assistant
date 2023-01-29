@@ -191,6 +191,7 @@ if settings.DEBUG_USE_SEED_DATA:
                         review_count=5,
                         review_result=True,
                         check_tree_state=False,
+                        check_duplicate=False,
                     )
                     if message.parent_id is None:
                         tm._insert_default_state(
@@ -215,7 +216,8 @@ def ensure_tree_states():
     try:
         logger.info("Startup: TreeManager.ensure_tree_states()")
         with Session(engine) as db:
-            tm = TreeManager(db, None)
+            api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
+            tm = TreeManager(db, PromptRepository(db, api_client=api_client))
             tm.ensure_tree_states()
 
     except Exception:

@@ -1,4 +1,4 @@
-import { Box, Center, Progress, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Center, Progress, Text } from "@chakra-ui/react";
 
 export const LoadingScreen = ({ text = "Loading..." } = {}) => {
   return (

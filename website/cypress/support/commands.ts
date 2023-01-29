@@ -46,6 +46,7 @@ Cypress.Commands.add("signInUsingEmailedLink", (emailAddress) => {
     // Find and use login link
     const loginLink = emails.pop().html.match(/href="[^"]+(\/api\/auth\/callback\/[^"]+?)"/)[1];
     cy.visit(loginLink);
+    cy.url().should("include", "/dashboard");
   });
 });
 

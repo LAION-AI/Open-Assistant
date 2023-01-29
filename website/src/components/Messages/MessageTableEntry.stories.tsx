@@ -1,4 +1,5 @@
 import React from "react";
+import { Message } from "src/types/Conversation";
 
 import { MessageTableEntry } from "./MessageTableEntry";
 
@@ -8,10 +9,8 @@ export default {
   component: MessageTableEntry,
 };
 
-const Template = ({ text, is_assistant, id, frontend_message_id, enabled, highlight }) => {
-  return (
-    <MessageTableEntry item={{ text, is_assistant, id, frontend_message_id }} enabled={enabled} highlight={highlight} />
-  );
+const Template = ({ enabled, highlight, ...message }) => {
+  return <MessageTableEntry message={message as Message} enabled={enabled} highlight={highlight} />;
 };
 
 export const Default = Template.bind({});
@@ -22,6 +21,8 @@ Default.args = {
   frontend_message_id: "",
   enabled: true,
   highlight: false,
+  emojis: {},
+  user_emojis: [],
 };
 
 export const Asistant = Template.bind({});
@@ -32,6 +33,8 @@ Asistant.args = {
   frontend_message_id: "",
   enabled: true,
   highlight: false,
+  emojis: {},
+  user_emojis: [],
 };
 
 export const LongText = Template.bind({});
@@ -42,4 +45,18 @@ LongText.args = {
   frontend_message_id: "",
   enabled: true,
   highlight: false,
+  emojis: {},
+  user_emojis: [],
+};
+
+export const WithEmoji = Template.bind({});
+WithEmoji.args = {
+  text: "As you\u2019ve mentioned, Star Wars has many sequels, prequels, and crossovers.  The official list of movies in Star Wars is:",
+  is_assistant: true,
+  id: "",
+  frontend_message_id: "",
+  enabled: true,
+  highlight: false,
+  emojis: { "-1": 5, "+1": 1 },
+  user_emojis: ["-1"],
 };

@@ -11,6 +11,9 @@ export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_
 import useSWR from "swr";
 
 const Dashboard = () => {
+  // Adding a demonstrative call to the backend that includes the web's JWT.
+  useSWR(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check`, get);
+
   const {
     t,
     i18n: { language },

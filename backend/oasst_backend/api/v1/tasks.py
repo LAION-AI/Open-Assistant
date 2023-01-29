@@ -77,6 +77,7 @@ def tasks_acknowledge(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
     task_id: UUID,
     ack_request: protocol_schema.TaskAck,
 ) -> None:
@@ -87,7 +88,7 @@ def tasks_acknowledge(
     api_client = deps.api_auth(api_key, db)
 
     try:
-        pr = PromptRepository(db, api_client)
+        pr = PromptRepository(db, api_client, frontend_user=frontend_user)
 
         # here we store the message id in the database for the task
         logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
@@ -105,6 +106,7 @@ def tasks_acknowledge_failure(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
     task_id: UUID,
     nack_request: protocol_schema.TaskNAck,
 ) -> None:
@@ -115,7 +117,7 @@ def tasks_acknowledge_failure(
     try:
         logger.info(f"Frontend reports failure to implement task {task_id=}, {nack_request=}.")
         api_client = deps.api_auth(api_key, db)
-        pr = PromptRepository(db, api_client)
+        pr = PromptRepository(db, api_client, frontend_user=frontend_user)
         pr.task_repository.acknowledge_task_failure(task_id)
     except (KeyError, RuntimeError):
         logger.exception("Failed to not acknowledge task.")

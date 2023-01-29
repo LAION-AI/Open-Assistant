@@ -57,12 +57,23 @@ class Message(SQLModel, table=True):
 
     rank: Optional[int] = Field(nullable=True)
 
+    synthetic: Optional[bool] = Field(
+        sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False)
+    )
+    model_name: Optional[str] = Field(sa_column=sa.Column(sa.String(1024), nullable=True))
+
     emojis: Optional[dict[str, int]] = Field(default=None, sa_column=sa.Column(pg.JSONB), nullable=False)
     _user_emojis: Optional[list[str]] = PrivateAttr(default=None)
 
     def ensure_is_message(self) -> None:
         if not self.payload or not isinstance(self.payload.payload, MessagePayload):
             raise OasstError("Invalid message", OasstErrorCode.INVALID_MESSAGE, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    def has_emoji(self, emoji_code: str) -> bool:
+        return self.emojis and emoji_code in self.emojis and self.emojis[emoji_code] > 0
+
+    def has_user_emoji(self, emoji_code: str) -> bool:
+        return self._user_emojis and emoji_code in self._user_emojis
 
     @property
     def text(self) -> str:
