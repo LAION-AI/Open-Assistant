@@ -1410,7 +1410,7 @@ DELETE FROM user_stats WHERE user_id = :user_id;
             try:
                 if not self.check_condition_for_scoring_state(mts.message_tree_id):
                     mts.active = True
-                    self._enter_state(message_tree_state.State.RANKING)
+                    self._enter_state(mts, message_tree_state.State.RANKING)
             except Exception:
                 logger.exception(f"retry_scoring_failed_message_trees failed for ({mts.message_tree_id=})")
 
