@@ -1,6 +1,7 @@
 import random
+import re
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Optional
 from uuid import UUID, uuid4
@@ -8,6 +9,8 @@ from uuid import UUID, uuid4
 import oasst_backend.models.db_payload as db_payload
 import sqlalchemy as sa
 from loguru import logger
+from oasst_backend.api.deps import FrontendUserId
+from oasst_backend.config import settings
 from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import (
     ApiClient,
@@ -29,9 +32,10 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import SystemStats
-from oasst_shared.utils import unaware_to_utc
+from oasst_shared.utils import unaware_to_utc, utcnow
+from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
-from sqlmodel import Session, and_, func, not_, or_, text, update
+from sqlmodel import JSON, Session, and_, func, literal_column, not_, or_, text, update
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
@@ -41,14 +45,30 @@ class PromptRepository:
         db: Session,
         api_client: ApiClient,
         client_user: Optional[protocol_schema.User] = None,
+        *,
         user_repository: Optional[UserRepository] = None,
         task_repository: Optional[TaskRepository] = None,
+        user_id: Optional[UUID] = None,
+        auth_method: Optional[str] = None,
+        username: Optional[str] = None,
+        frontend_user: Optional[FrontendUserId] = None,
     ):
         self.db = db
         self.api_client = api_client
         self.user_repository = user_repository or UserRepository(db, api_client)
-        self.user = self.user_repository.lookup_client_user(client_user, create_missing=True)
-        self.user_id = self.user.id if self.user else None
+
+        if frontend_user and not auth_method and not username:
+            auth_method, username = frontend_user
+
+        if user_id:
+            self.user = self.user_repository.get_user(id=user_id)
+            self.user_id = self.user.id
+        elif auth_method and username:
+            self.user = self.user_repository.query_frontend_user(auth_method=auth_method, username=username)
+            self.user_id = self.user.id
+        else:
+            self.user = self.user_repository.lookup_client_user(client_user, create_missing=True)
+            self.user_id = self.user.id if self.user else None
         logger.debug(f"PromptRepository(api_client_id={self.api_client.id}, {self.user_id=})")
         self.task_repository = task_repository or TaskRepository(
             db, api_client, client_user, user_repository=self.user_repository
@@ -157,6 +177,7 @@ class PromptRepository:
         review_count: int = 0,
         review_result: bool = False,
         check_tree_state: bool = True,
+        check_duplicate: bool = True,
     ) -> Message:
         self.ensure_user_is_enabled()
 
@@ -169,6 +190,18 @@ class PromptRepository:
         # If there's no parent message assume user started new conversation
         role = None
         depth = 0
+
+        # reject whitespaces match with ^\s+$
+        if re.match(r"^\s+$", text):
+            raise OasstError("Message text is empty", OasstErrorCode.TASK_MESSAGE_TEXT_EMPTY)
+
+        # ensure message size is below the predefined limit
+        if len(text) > settings.MESSAGE_SIZE_LIMIT:
+            logger.error(f"Message size {len(text)=} exceeds size limit of {settings.MESSAGE_SIZE_LIMIT=}.")
+            raise OasstError("Message size too long.", OasstErrorCode.TASK_MESSAGE_TOO_LONG)
+
+        if check_duplicate and self.check_users_recent_replies_for_duplicates(text):
+            raise OasstError("User recent messages have duplicates", OasstErrorCode.TASK_MESSAGE_DUPLICATED)
 
         if task.parent_message_id:
             parent_message = self.fetch_message(task.parent_message_id)
@@ -448,16 +481,24 @@ class PromptRepository:
             task_id=task.id if task else None,
         )
 
+        message: Message = None
         if message_id:
-            message = self.fetch_message(message_id)
-            if task:
+            if not task:
+                if text_labels.is_report is True:
+                    message = self.handle_message_emoji(
+                        message_id, protocol_schema.EmojiOp.add, protocol_schema.EmojiCode.red_flag
+                    )
+
+                # update existing record for repeated updates (same user no task associated)
+                existing_text_label = self.fetch_non_task_text_labels(message_id, self.user_id)
+                if existing_text_label is not None:
+                    existing_text_label.labels = text_labels.labels
+                    model = existing_text_label
+
+            else:
+                message = self.fetch_message(message_id)
                 message.review_count += 1
                 self.db.add(message)
-            # for the same User id with no task id associated with the message, then update existing record for repeated updates
-            existing_text_label = self.fetch_non_task_text_labels(message_id, self.user_id)
-            if existing_text_label is not None:
-                existing_text_label.labels = text_labels.labels
-                model = existing_text_label
 
         self.db.add(model)
         return model, task, message
@@ -529,7 +570,31 @@ class PromptRepository:
             qry = qry.filter(Message.review_result)
         if not include_deleted:
             qry = qry.filter(not_(Message.deleted))
-        return qry.all()
+        return self._add_user_emojis_all(qry)
+
+    def check_users_recent_replies_for_duplicates(self, text: str) -> bool:
+        """
+        Checks if the user has recently replied with the same text within a given time period.
+        """
+
+        user_id = self.user_id
+        logger.debug(f"Checking for duplicate tasks for user {user_id}")
+        # messages in the past 24 hours
+        messages = (
+            self.db.query(Message)
+            .filter(Message.user_id == user_id)
+            .order_by(Message.created_date.desc())
+            .filter(
+                Message.created_date > utcnow() - timedelta(minutes=settings.DUPLICATE_MESSAGE_FILTER_WINDOW_MINUTES)
+            )
+            .all()
+        )
+        if not messages:
+            return False
+        for msg in messages:
+            if msg.text == text:
+                return True
+        return False
 
     def fetch_user_message_trees(
         self, user_id: Message.user_id, reviewed: bool = True, include_deleted: bool = False
@@ -539,7 +604,7 @@ class PromptRepository:
             qry = qry.filter(Message.review_result)
         if not include_deleted:
             qry = qry.filter(not_(Message.deleted))
-        return qry.all()
+        return self._add_user_emojis_all(qry)
 
     def fetch_message_trees_ready_for_export(self) -> list[MessageTreeState]:
         qry = self.db.query(MessageTreeState).filter(
@@ -582,6 +647,10 @@ class PromptRepository:
         return conversation, replies
 
     def fetch_message(self, message_id: UUID, fail_if_missing: bool = True) -> Optional[Message]:
+        qry = self.db.query(Message).filter(Message.id == message_id)
+        messages = self._add_user_emojis_all(qry)
+        message = messages[0] if messages else None
+
         message = self.db.query(Message).filter(Message.id == message_id).one_or_none()
         if fail_if_missing and not message:
             raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
@@ -656,8 +725,26 @@ class PromptRepository:
             qry = qry.filter(Message.review_result)
         if exclude_deleted:
             qry = qry.filter(Message.deleted == sa.false())
-        children = qry.all()
+        children = self._add_user_emojis_all(qry)
         return children
+
+    def fetch_message_siblings(
+        self, message: Message | UUID, reviewed: Optional[bool] = True, deleted: Optional[bool] = False
+    ) -> list[Message]:
+        """
+        Get siblings of a message (other messages with the same parent_id)
+        """
+        if isinstance(message, Message):
+            message = message.id
+
+        parent_qry = self.db.query(Message.parent_id).filter(Message.id == message).subquery()
+        qry = self.db.query(Message).filter(Message.parent_id == parent_qry.c.parent_id)
+        if reviewed is not None:
+            qry = qry.filter(Message.review_result == reviewed)
+        if deleted is not None:
+            qry = qry.filter(Message.deleted == deleted)
+        siblings = self._add_user_emojis_all(qry)
+        return siblings
 
     @staticmethod
     def trace_descendants(root: Message, messages: list[Message]) -> list[Message]:
@@ -687,7 +774,7 @@ class PromptRepository:
         if max_depth is not None:
             desc = desc.filter(Message.depth <= max_depth)
 
-        desc = desc.all()
+        desc = self._add_user_emojis_all(desc)
 
         return self.trace_descendants(message, desc)
 
@@ -700,6 +787,33 @@ class PromptRepository:
         tree = self.fetch_tree_from_message(message)
         max_message = max(tree, key=lambda m: m.children_count)
         return max_message, [m for m in tree if m.parent_id == max_message.id]
+
+    def _add_user_emojis_all(self, qry: Query) -> list[Message]:
+        if self.user_id is None:
+            return qry.all()
+
+        sq = qry.subquery("m")
+        qry = (
+            self.db.query(Message, func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis"))
+            .select_entity_from(sq)
+            .outerjoin(
+                MessageEmoji,
+                and_(
+                    sq.c.id == MessageEmoji.message_id,
+                    MessageEmoji.user_id == self.user_id,
+                    sq.c.emojis != JSON.NULL,
+                ),
+            )
+            .group_by(sq)
+        )
+        messages: list[Message] = []
+        for x in qry:
+            m: Message = x.Message
+            user_emojis = x["user_emojis"]
+            if user_emojis:
+                m._user_emojis = user_emojis.split(",")
+            messages.append(m)
+        return messages
 
     def query_messages_ordered_by_created_date(
         self,
@@ -783,7 +897,7 @@ class PromptRepository:
         if lang is not None:
             qry = qry.filter(Message.lang == lang)
 
-        return qry.all()
+        return self._add_user_emojis_all(qry)
 
     def update_children_counts(self, message_tree_id: UUID):
         sql_update_children_count = """
@@ -797,8 +911,7 @@ FROM (
 ) AS cc
 WHERE message.id = cc.id;
 """
-        r = self.db.execute(text(sql_update_children_count), {"message_tree_id": message_tree_id})
-        logger.debug(f"update_children_count({message_tree_id=}): {r.rowcount} rows.")
+        self.db.execute(text(sql_update_children_count), {"message_tree_id": message_tree_id})
 
     @managed_tx_method(CommitMode.COMMIT)
     def mark_messages_deleted(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):
@@ -875,6 +988,20 @@ WHERE message.id = cc.id;
                 op = protocol_schema.EmojiOp.add
 
         if op == protocol_schema.EmojiOp.add:
+            # hard coded exclusivity of thumbs_up & thumbs_down
+            if emoji == protocol_schema.EmojiCode.thumbs_up and message.has_user_emoji(
+                protocol_schema.EmojiCode.thumbs_down.value
+            ):
+                message = self.handle_message_emoji(
+                    message_id, protocol_schema.EmojiOp.remove, protocol_schema.EmojiCode.thumbs_down
+                )
+            elif emoji == protocol_schema.EmojiCode.thumbs_down and message.has_user_emoji(
+                protocol_schema.EmojiCode.thumbs_up.value
+            ):
+                message = self.handle_message_emoji(
+                    message_id, protocol_schema.EmojiOp.remove, protocol_schema.EmojiCode.thumbs_up
+                )
+
             # insert emoji record & increment count
             message_emoji = MessageEmoji(message_id=message.id, user_id=self.user_id, emoji=emoji)
             self.db.add(message_emoji)
@@ -884,9 +1011,15 @@ WHERE message.id = cc.id;
             else:
                 count = emoji_counts.get(emoji.value) or 0
                 emoji_counts[emoji.value] = count + 1
+            if message._user_emojis is None:
+                message._user_emojis = []
+            if emoji.value not in message._user_emojis:
+                message._user_emojis.append(emoji.value)
         elif op == protocol_schema.EmojiOp.remove:
             # remove emoji record and & decrement count
             message = self.fetch_message(message_id)
+            if message._user_emojis and emoji.value in message._user_emojis:
+                message._user_emojis.remove(emoji.value)
             self.db.delete(existing_emoji)
             emoji_counts = message.emojis
             count = emoji_counts.get(emoji.value)

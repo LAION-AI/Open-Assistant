@@ -4,8 +4,7 @@ import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { memo, useState } from "react";
 import { get } from "src/lib/api";
-import { FetchUsersResponse } from "src/lib/oasst_api_client";
-import type { User } from "src/types/Users";
+import type { FetchUsersResponse, User } from "src/types/Users";
 import useSWR from "swr";
 
 import { DataTable, DataTableColumnDef, FilterItem } from "./DataTable";

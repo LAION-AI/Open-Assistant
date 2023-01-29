@@ -15,7 +15,7 @@ export const EmptyState = (props: EmptyStateProps) => {
     <Box data-cy={props["data-cy"]} bg={backgroundColor} p="10" borderRadius="xl" shadow="base">
       <Box display="flex" flexDirection="column" alignItems="center" gap="8" fontSize="lg">
         <props.icon size="30" color="DarkOrange" />
-        <Text>{props.text}</Text>
+        <Text data-cy="cy-no-tasks">{props.text}</Text>
         <NextLink href="/dashboard">
           <Text color="blue.500">Go back to the dashboard</Text>
         </NextLink>

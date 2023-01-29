@@ -1,12 +1,13 @@
 from datetime import datetime
 from http import HTTPStatus
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from oasst_backend.models.db_payload import MessagePayload
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
+from pydantic import PrivateAttr
 from sqlalchemy import false
 from sqlmodel import Field, Index, SQLModel
 
@@ -16,6 +17,13 @@ from .payload_column_type import PayloadContainer, payload_column_type
 class Message(SQLModel, table=True):
     __tablename__ = "message"
     __table_args__ = (Index("ix_message_frontend_message_id", "api_client_id", "frontend_message_id", unique=True),)
+
+    def __new__(cls, *args: Any, **kwargs: Any):
+        new_object = super().__new__(cls, *args, **kwargs)
+        # temporary fix until https://github.com/tiangolo/sqlmodel/issues/149 gets merged
+        if not hasattr(new_object, "_user_emojis"):
+            new_object._init_private_attributes()
+        return new_object
 
     id: Optional[UUID] = Field(
         sa_column=sa.Column(
@@ -49,13 +57,29 @@ class Message(SQLModel, table=True):
 
     rank: Optional[int] = Field(nullable=True)
 
-    emojis: dict[str, int] = Field(default={}, sa_column=sa.Column(pg.JSONB), nullable=False)
+    synthetic: Optional[bool] = Field(
+        sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False)
+    )
+    model_name: Optional[str] = Field(sa_column=sa.Column(sa.String(1024), nullable=True))
+
+    emojis: Optional[dict[str, int]] = Field(default=None, sa_column=sa.Column(pg.JSONB), nullable=False)
+    _user_emojis: Optional[list[str]] = PrivateAttr(default=None)
 
     def ensure_is_message(self) -> None:
         if not self.payload or not isinstance(self.payload.payload, MessagePayload):
             raise OasstError("Invalid message", OasstErrorCode.INVALID_MESSAGE, HTTPStatus.INTERNAL_SERVER_ERROR)
 
+    def has_emoji(self, emoji_code: str) -> bool:
+        return self.emojis and emoji_code in self.emojis and self.emojis[emoji_code] > 0
+
+    def has_user_emoji(self, emoji_code: str) -> bool:
+        return self._user_emojis and emoji_code in self._user_emojis
+
     @property
     def text(self) -> str:
         self.ensure_is_message()
         return self.payload.payload.text
+
+    @property
+    def user_emojis(self) -> str:
+        return self._user_emojis

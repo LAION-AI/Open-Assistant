@@ -68,7 +68,7 @@ repos:
       - id: flake8
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.11.1
+    rev: 5.12.0
     hooks:
       - id: isort
 
@@ -76,8 +76,12 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        args: [--prose-wrap=always, --write]
-        exclude: website/tailwind.config.js|website/.storybook/main.js|website/.eslintrc.json
+        args:
+          [
+            --prose-wrap=always,
+            --write,
+            --ignore-path=./website/.prettierignore,
+          ]
 
   - repo: local
     hooks:

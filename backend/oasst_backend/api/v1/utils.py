@@ -14,7 +14,8 @@ def prepare_message(m: Message) -> protocol.Message:
         lang=m.lang,
         is_assistant=(m.role == "assistant"),
         created_date=m.created_date,
-        emojis=m.emojis,
+        emojis=m.emojis or {},
+        user_emojis=m.user_emojis or [],
     )
 
 
@@ -22,17 +23,20 @@ def prepare_message_list(messages: list[Message]) -> list[protocol.Message]:
     return [prepare_message(m) for m in messages]
 
 
+def prepare_conversation_message(message: Message) -> protocol.ConversationMessage:
+    return protocol.ConversationMessage(
+        id=message.id,
+        frontend_message_id=message.frontend_message_id,
+        text=message.text,
+        lang=message.lang,
+        is_assistant=(message.role == "assistant"),
+        emojis=message.emojis or {},
+        user_emojis=message.user_emojis or [],
+    )
+
+
 def prepare_conversation_message_list(messages: list[Message]) -> list[protocol.ConversationMessage]:
-    return [
-        protocol.ConversationMessage(
-            id=message.id,
-            frontend_message_id=message.frontend_message_id,
-            text=message.text,
-            lang=message.lang,
-            is_assistant=(message.role == "assistant"),
-        )
-        for message in messages
-    ]
+    return [prepare_conversation_message(message) for message in messages]
 
 
 def prepare_conversation(messages: list[Message]) -> protocol.Conversation:

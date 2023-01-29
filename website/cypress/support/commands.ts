@@ -37,20 +37,16 @@
 // }
 
 Cypress.Commands.add("signInUsingEmailedLink", (emailAddress) => {
-  const mailDevApi = `${Cypress.env("MAILDEV_PROTOCOL")}://${Cypress.env(
-    "MAILDEV_HOST"
-  )}:${Cypress.env("MAILDEV_API_PORT")}`;
-  cy.request(
-    "GET",
-    `${mailDevApi}/email?headers.to=${emailAddress.toLowerCase()}`
-  ).then((response) => {
+  const mailDevApi = `${Cypress.env("MAILDEV_PROTOCOL")}://${Cypress.env("MAILDEV_HOST")}:${Cypress.env(
+    "MAILDEV_API_PORT"
+  )}`;
+  cy.request("GET", `${mailDevApi}/email?headers.to=${emailAddress.toLowerCase()}`).then((response) => {
     const emails = response.body;
 
     // Find and use login link
-    const loginLink = emails
-      .pop()
-      .html.match(/href="[^"]+(\/api\/auth\/callback\/[^"]+?)"/)[1];
+    const loginLink = emails.pop().html.match(/href="[^"]+(\/api\/auth\/callback\/[^"]+?)"/)[1];
     cy.visit(loginLink);
+    cy.url().should("include", "/dashboard");
   });
 });
 

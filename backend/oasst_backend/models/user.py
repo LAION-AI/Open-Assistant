@@ -30,6 +30,7 @@ class User(SQLModel, table=True):
     enabled: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
     notes: str = Field(sa_column=sa.Column(AutoString(length=1024), nullable=False, server_default=""))
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
+    show_on_leaderboard: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
 
     def to_protocol_frontend_user(self):
         return protocol.FrontEndUser(
