@@ -375,7 +375,7 @@ class TreeManager:
                         ):
                             label_mode = protocol_schema.LabelTaskMode.simple
                             label_disposition = protocol_schema.LabelTaskDisposition.spam
-                            valid_labels = list(self.cfg.mandatory_labels_assistant_reply)
+                            valid_labels = self.cfg.mandatory_labels_assistant_reply.copy()
                             if protocol_schema.TextLabel.lang_mismatch not in valid_labels:
                                 valid_labels.append(protocol_schema.TextLabel.lang_mismatch)
                             if protocol_schema.TextLabel.quality not in valid_labels:
@@ -401,7 +401,7 @@ class TreeManager:
                         ):
                             label_mode = protocol_schema.LabelTaskMode.simple
                             label_disposition = protocol_schema.LabelTaskDisposition.spam
-                            valid_labels = list(self.cfg.mandatory_labels_prompter_reply)
+                            valid_labels = self.cfg.mandatory_labels_prompter_reply.copy()
                             if protocol_schema.TextLabel.lang_mismatch not in valid_labels:
                                 valid_labels.append(protocol_schema.TextLabel.lang_mismatch)
                             if protocol_schema.TextLabel.quality not in valid_labels:
@@ -484,7 +484,7 @@ class TreeManager:
                 valid_labels = self.cfg.labels_initial_prompt
 
                 if random.random() > self.cfg.p_full_labeling_review_prompt:
-                    valid_labels = self.cfg.mandatory_labels_initial_prompt
+                    valid_labels = self.cfg.mandatory_labels_initial_prompt.copy()
                     label_mode = protocol_schema.LabelTaskMode.simple
                     label_disposition = protocol_schema.LabelTaskDisposition.spam
                     if protocol_schema.TextLabel.lang_mismatch not in valid_labels:
