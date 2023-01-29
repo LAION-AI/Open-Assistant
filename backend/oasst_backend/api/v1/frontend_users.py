@@ -3,7 +3,9 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
+
 from oasst_backend.api import deps
+from oasst_backend.api.frontend_user import FrontendUserId
 from oasst_backend.api.v1 import utils
 from oasst_backend.api.v1.messages import get_messages_cursor
 from oasst_backend.models import ApiClient
@@ -104,7 +106,7 @@ def query_frontend_user_messages_cursor(
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
     lang: Optional[str] = None,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):

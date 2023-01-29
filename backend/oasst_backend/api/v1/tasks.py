@@ -1,43 +1,20 @@
-from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
+
 from oasst_backend.api import deps
+from oasst_backend.api.frontend_user import FrontendUserId
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
 from oasst_backend.tree_manager import TreeManager
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from oasst_shared.schemas.protocol import User
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
 router = APIRouter()
-
-
-@dataclass
-class TaskContext:  # todo: come up with a better name?
-    pr: PromptRepository
-    tm: TreeManager
-
-
-TaskContextFactory = Callable[[Optional[User]], PromptRepository]
-
-
-def get_task_context_factory(
-    db: Session = Depends(deps.get_db),
-    api_key: APIKey = Depends(deps.get_api_key),
-) -> TaskContextFactory:
-    api_client = deps.api_auth(api_key, db)
-
-    def factory(client_user: Optional[User]) -> TaskContext:
-        pr = PromptRepository(db, api_client, client_user)
-        tm = TreeManager(db, pr)
-        return TaskContext(pr, tm)
-
-    return factory
 
 
 @router.post(
@@ -50,17 +27,16 @@ def get_task_context_factory(
 )  # work with Union once more types are added
 def request_task(
     *,
-    task_context_factory: TaskContextFactory = Depends(get_task_context_factory),
+    tree_manager: TreeManager = Depends(deps.get_tree_manager),
     request: protocol_schema.TaskRequest,
 ) -> Any:
     """
     Create new task.
     """
     try:
-        ctx: TaskContext = task_context_factory(request.user)
-        ctx.pr.ensure_user_is_enabled()
-        task, message_tree_id, parent_message_id = ctx.tm.next_task(desired_task_type=request.type, lang=request.lang)
-        ctx.pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
+        tree_manager.pr.ensure_user_is_enabled()
+        task, message_tree_id, parent_message_id = tree_manager.next_task(desired_task_type=request.type, lang=request.lang)
+        tree_manager.pr.task_repository.store_task(task, message_tree_id, parent_message_id, request.collective)
 
     except OasstError:
         raise
@@ -97,7 +73,7 @@ def tasks_acknowledge(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     task_id: UUID,
     ack_request: protocol_schema.TaskAck,
 ) -> None:
@@ -126,7 +102,7 @@ def tasks_acknowledge_failure(
     *,
     db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     task_id: UUID,
     nack_request: protocol_schema.TaskNAck,
 ) -> None:
