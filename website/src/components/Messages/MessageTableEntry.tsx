@@ -36,7 +36,10 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
   const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
-    setEmojis({ emojis: message.emojis || {}, user_emojis: message.user_emojis || [] });
+    setEmojis({
+      emojis: message?.emojis || {},
+      user_emojis: message?.user_emojis || [],
+    });
   }, [message.emojis, message.user_emojis]);
 
   const goToMessage = useCallback(() => router.push(`/messages/${message.id}`), [router, message.id]);
@@ -158,7 +161,7 @@ const MessageActions = ({
         <MenuGroup title={t("reactions")}>
           <SimpleGrid columns={4}>
             {["+1", "-1"].map((emoji) => (
-              <EmojiMenuItem key={emoji} emoji={emoji} checked={userEmoji.includes(emoji)} react={react} />
+              <EmojiMenuItem key={emoji} emoji={emoji} checked={userEmoji?.includes(emoji)} react={react} />
             ))}
           </SimpleGrid>
         </MenuGroup>
