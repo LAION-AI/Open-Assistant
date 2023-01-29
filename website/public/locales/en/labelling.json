@@ -6,11 +6,11 @@
   "label_message_flag_instruction": "Select any that apply to the message:",
   "label_message_likert_instruction": "Rate the message:",
   "spam.question": "Is the message spam?",
-  "fails_task.question": "Does the reply fail the propmpters task?",
+  "fails_task.question": "Does the reply fail the prompter's task?",
   "not_appropriate": "Not Appropriate",
   "pii": "Contains PII",
   "hate_speech": "Hate Speech",
   "sexual_content": "Sexual Content",
   "moral_judgement": "Judges Morality",
-  "political_content": "Politcal"
+  "political_content": "Political"
 }
