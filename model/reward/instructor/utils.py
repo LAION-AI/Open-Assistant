@@ -103,6 +103,7 @@ def argument_parsing(parser):
         "gradient_accumulation_steps",
         "num_train_epochs",
         "save_steps",
+        "eval_steps",
         "per_device_train_batch_size",
         "per_device_eval_batch_size",
     ]:
@@ -142,11 +143,3 @@ def get_datasets(dataset_list: List[AnyStr], tokenizer):
             evals["anthropic_rlhf"] = eval
     train = ConcatDataset(train_datasets)
     return train, evals
-
-
-if __name__ == "__main__":
-    from transformers import AutoModelForSequenceClassification
-
-    model = AutoModelForSequenceClassification.from_pretrained("bigscience/bloomz-560m")
-    freeze_top_n_layers(model, 10)
-    print(model.state_dict().keys())
