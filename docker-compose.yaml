@@ -131,3 +131,59 @@ services:
     ports:
       - "3000:3000"
     command: bash wait-for-postgres.sh node server.js
+
+  inference-server:
+    build:
+      dockerfile: docker/inference/Dockerfile.server
+      context: .
+    image: oasst-inference-server
+    environment:
+      - "PORT=8000"
+      - "REDIS_HOST=redis"
+    volumes:
+      - "./oasst-shared:/opt/inference/lib/oasst-shared"
+      - "./inference/server:/opt/inference/server"
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    profiles: ["inference"]
+
+  inference-worker:
+    build:
+      dockerfile: docker/inference/Dockerfile.worker
+      context: .
+    image: oasst-inference-worker
+    environment:
+      - "BACKEND_URL=ws://inference-server:8000"
+      - "INFERENCE_SERVER_URL=http://inference-text-generation-server"
+    volumes:
+      - "./oasst-shared:/opt/inference/lib/oasst-shared"
+      - "./inference/worker:/opt/inference/worker"
+    depends_on:
+      - inference-server
+    deploy:
+      replicas: 1
+    profiles: ["inference"]
+
+  inference-text-client:
+    build:
+      dockerfile: docker/inference/Dockerfile.text-client
+      context: .
+    image: oasst-inference-text-client
+    environment:
+      - "BACKEND_URL=http://inference-server:8000"
+    tty: true
+    stdin_open: true
+    volumes:
+      - "./inference/worker:/opt/inference/worker"
+    restart: unless-stopped
+    depends_on:
+      - inference-server
+    profiles: ["inference"]
+
+  inference-text-generation-server:
+    image: ykilcher/text-generation-inference
+    environment:
+      - "MODEL_ID=distilgpt2"
+    profiles: ["inference"]
