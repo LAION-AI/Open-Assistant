@@ -319,7 +319,7 @@ class TreeManager:
                     ranking_parent = messages[-1]
                     assert not ranking_parent.deleted and ranking_parent.review_result
                     conversation = prepare_conversation(messages)
-                    replies = self.pr.fetch_message_children(ranking_parent_id, reviewed=True, exclude_deleted=True)
+                    replies = self.pr.fetch_message_children(ranking_parent_id, review_result=True, deleted=False)
 
                     assert len(replies) > 1
                     random.shuffle(replies)  # hand out replies in random order
@@ -756,7 +756,7 @@ class TreeManager:
                 logger.debug(f"CONSENSUS: {consensus}\n\n")
 
                 # fetch all siblings and clear ranks
-                siblings = self.pr.fetch_message_siblings(consensus[0], reviewed=None, deleted=None)
+                siblings = self.pr.fetch_message_siblings(consensus[0], review_result=None, deleted=None)
                 for m in siblings:
                     m.rank = None
                     self.db.add(m)

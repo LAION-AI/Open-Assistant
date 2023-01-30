@@ -201,7 +201,7 @@ def get_children(
     Get all messages belonging to the same message tree.
     """
     pr = PromptRepository(db, api_client, frontend_user=frontend_user)
-    messages = pr.fetch_message_children(message_id)
+    messages = pr.fetch_message_children(message_id, review_result=None)
     return utils.prepare_message_list(messages)
 
 

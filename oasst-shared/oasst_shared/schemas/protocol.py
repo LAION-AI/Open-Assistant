@@ -80,8 +80,11 @@ class Conversation(BaseModel):
 
 
 class Message(ConversationMessage):
-    parent_id: Optional[UUID] = None
-    created_date: Optional[datetime] = None
+    parent_id: Optional[UUID]
+    created_date: Optional[datetime]
+    user_id: Optional[UUID]
+    review_result: Optional[bool]
+    review_count: Optional[int]
 
 
 class MessagePage(PageResult):

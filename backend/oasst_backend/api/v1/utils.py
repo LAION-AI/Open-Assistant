@@ -10,12 +10,15 @@ def prepare_message(m: Message) -> protocol.Message:
         id=m.id,
         frontend_message_id=m.frontend_message_id,
         parent_id=m.parent_id,
+        user_id=m.user_id,
         text=m.text,
         lang=m.lang,
         is_assistant=(m.role == "assistant"),
         created_date=m.created_date,
         emojis=m.emojis or {},
         user_emojis=m.user_emojis or [],
+        review_result=m.review_result,
+        review_count=m.review_count,
     )
 
 
