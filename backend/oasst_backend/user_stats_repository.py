@@ -39,7 +39,7 @@ class UserStatsRepository:
         qry = (
             self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
             .join(UserStats, User.id == UserStats.user_id)
-            .filter(UserStats.time_frame == time_frame.value)
+            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard)
             .order_by(UserStats.rank)
             .limit(limit)
         )
@@ -205,7 +205,7 @@ class UserStatsRepository:
 
         rank_field_names = ["reply_ranked_1", "reply_ranked_2", "reply_ranked_3"]
         for i, fn in enumerate(rank_field_names):
-            qry = self.query_ranking_result_users(reference_time=base_date, rank=0)
+            qry = self.query_ranking_result_users(reference_time=base_date, rank=i)
             for r in qry:
                 uid, count = r
                 setattr(get_stats(uid), fn, count)
@@ -213,6 +213,10 @@ class UserStatsRepository:
         # delete all existing stast for time frame
         d = delete(UserStats).where(UserStats.time_frame == time_frame_key)
         self.session.execute(d)
+
+        if None in stats_by_user:
+            logger.warning("Some messages in DB have NULL values in user_id column.")
+            del stats_by_user[None]
 
         # compute magic leader score
         for v in stats_by_user.values():
@@ -250,7 +254,8 @@ FROM
             PARTITION BY time_frame
             ORDER BY leader_score DESC, user_id
         ) AS "rank", user_id, time_frame
-    FROM user_stats
+    FROM user_stats us2
+    INNER JOIN "user" u ON us2.user_id = u.id AND u.show_on_leaderboard
     WHERE (:time_frame IS NULL OR time_frame = :time_frame)) AS r
 WHERE
     us.user_id = r.user_id

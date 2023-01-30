@@ -1,0 +1,13 @@
+{
+  "label_action": "Label",
+  "label_title": "Label",
+  "message": "Nachricht",
+  "open_new_tab_action": "In neuem Tab öffnen",
+  "parent": "Vorgänger",
+  "reactions": "Reaktionen",
+  "report_action": "Melden",
+  "report_placeholder": "Warum sollte diese Nachricht überprüft werden?",
+  "report_title": "Meldung",
+  "send_report": "Senden",
+  "submit_labels": "Absenden"
+}

@@ -1,4 +1,4 @@
-export const enum TaskType {
+export enum TaskType {
   initial_prompt = "initial_prompt",
   assistant_reply = "assistant_reply",
   prompter_reply = "prompter_reply",
@@ -12,6 +12,30 @@ export const enum TaskType {
   label_assistant_reply = "label_assistant_reply",
 
   random = "random",
+}
+
+export enum TaskCategory {
+  Create = "Create",
+  Evaluate = "Evaluate",
+  Label = "Label",
+  Random = "Random",
+}
+
+export interface TaskInfo {
+  category: TaskCategory;
+  help_link: string;
+  id: string;
+  mode?: string;
+  pathname: string;
+  type: string;
+  update_type: string;
+}
+
+export enum TaskUpdateType {
+  MessageRanking = "message_ranking",
+  Random = "random",
+  TextLabels = "text_labels",
+  TextReplyToMessage = "text_reply_to_message",
 }
 
 // we need to reconsider how to handle task content types
@@ -29,10 +53,27 @@ export interface BaseTask {
   type: TaskType;
 }
 
-export interface TaskResponse<Task extends BaseTask> {
+export interface ServerTaskResponse<Task extends BaseTask> {
   id: string;
   userId: string;
   task: Task;
 }
+
+interface TaskAvailable<Task extends BaseTask> extends ServerTaskResponse<Task> {
+  taskAvailability: "AVAILABLE";
+  taskInfo: TaskInfo;
+}
+
+interface AwaitingInitialTask {
+  taskAvailability: "AWAITING_INITIAL";
+}
+
+interface NoTaskAvailable {
+  taskAvailability: "NONE_AVAILABLE";
+}
+
+export type TaskResponse<Task extends BaseTask> = TaskAvailable<Task> | AwaitingInitialTask | NoTaskAvailable;
+
+export type TaskReplyValidity = "DEFAULT" | "VALID" | "INVALID";
 
 export type AvailableTasks = { [taskType in TaskType]: number };

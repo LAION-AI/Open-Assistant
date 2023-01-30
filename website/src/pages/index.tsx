@@ -24,7 +24,7 @@ const Home = () => {
     <>
       <Head>
         <title>{t("title")}</title>
-        <meta name="description" content={t("description")} />
+        <meta name="description" content={t("index:description")} />
       </Head>
       <Box as="main" className="oa-basic-theme">
         <Hero />

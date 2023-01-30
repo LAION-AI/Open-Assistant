@@ -3,6 +3,7 @@
 """
 import random
 
+from custom_datasets.formatting import format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -54,11 +55,14 @@ def index_summary_merge(text, summary):
 
 
 class SummarizationDataset(Dataset):
-    def __init__(self, dataset, cache_dir, split):
+    def __init__(self, dataset, cache_dir, split, max_words=512):
         self.name = dataset
+        if summarization_config_mapping[dataset][0] in ["billsum", "tldr_news"] & split == "validation":
+            split = "test"
         self.dataset = load_dataset(*summarization_config_mapping[dataset], cache_dir=cache_dir, split=split)
         self.text_column, self.summary_column = summarization_name_mapping[dataset]
         self.preprocess_fn = index_summary_merge if dataset == "scitldr" else index_summary_default
+        self.max_words = max_words
 
     def __len__(self):
         return len(self.dataset)
@@ -72,4 +76,5 @@ class SummarizationDataset(Dataset):
         else:
             prompt = random.choice(SUMMARIZATION_SPECIAL_TOKENS["Summary"])
 
-        return ("".join([SUMMARIZATION_SPECIAL_TOKENS["Text"], " ".join(text.split(" ")[:256]), prompt]), summary)
+        context = "".join([SUMMARIZATION_SPECIAL_TOKENS["Text"], " ".join(text.split(" ")[: self.max_words]), prompt])
+        return format_pair((context, summary))

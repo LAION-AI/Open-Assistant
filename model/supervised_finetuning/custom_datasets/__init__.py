@@ -9,7 +9,19 @@ from custom_datasets.translation import WMT2019, DiveMT, TEDTalk
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
 
-QA_DATASETS = ["squad_v2", "adversarial_qa", "trivia_qa_context", "trivia_qa_nocontext", "gsm8k"]
+QA_DATASETS = [
+    "squad_v2",
+    "adversarial_qa",
+    "trivia_qa_context",
+    "trivia_qa_nocontext",
+    "gsm8k",
+    "wikihow",
+    "essay_instruction",
+    "math_qa",
+    "reddit_eli5",
+    "reddit_askh",
+    "reddit_asks",
+]
 SUMMARIZATION_DATASETS = [
     "xsum",
     "cnn_dailymail",
@@ -35,16 +47,16 @@ def get_one_dataset(conf, dataset_name):
 
     if dataset_name in QA_DATASETS:
         train = QADataset(dataset_name, conf.cache_dir, "train")
-        val_name = "validation" if dataset_name not in ["gsm8k"] else "test"
-        eval = QADataset(dataset_name, conf.cache_dir, val_name)
-
+        if train.no_val:
+            train, eval = train_val_dataset(train, val_split=0.2)
+        else:
+            eval = QADataset(dataset_name, conf.cache_dir, "validation")
     elif dataset_name in SUMMARIZATION_DATASETS:
         train = SummarizationDataset(dataset_name, conf.cache_dir, "train")
         if dataset_name == "debate_sum":
             train, eval = train_val_dataset(train, val_split=0.2)
         else:
-            val_name = "validation" if dataset_name not in ["billsum"] else "test"
-            eval = SummarizationDataset(dataset_name, conf.cache_dir, val_name)
+            eval = SummarizationDataset(dataset_name, conf.cache_dir, "validation")
     elif "ted_trans" in dataset_name:
         language_pair = dataset_name.split("_")[-1]
         dataset = TEDTalk(pair=language_pair, split="train")

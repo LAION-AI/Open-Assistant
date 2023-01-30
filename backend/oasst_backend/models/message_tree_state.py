@@ -43,6 +43,9 @@ class State(str, Enum):
     HALTED_BY_MODERATOR = "halted_by_moderator"
     """A moderator decided to manually halt the message tree construction process."""
 
+    BACKLOG_RANKING = "backlog_ranking"
+    """Imported tree ready to be activated and ranked by users (currently inactive)."""
+
 
 VALID_STATES = (
     State.INITIAL_PROMPT_REVIEW,
@@ -51,6 +54,7 @@ VALID_STATES = (
     State.READY_FOR_SCORING,
     State.READY_FOR_EXPORT,
     State.ABORTED_LOW_GRADE,
+    State.BACKLOG_RANKING,
 )
 
 TERMINAL_STATES = (State.READY_FOR_EXPORT, State.ABORTED_LOW_GRADE, State.SCORING_FAILED, State.HALTED_BY_MODERATOR)
@@ -67,3 +71,4 @@ class MessageTreeState(SQLModel, table=True):
     max_children_count: int = Field(nullable=False)
     state: str = Field(nullable=False, max_length=128, index=True)
     active: bool = Field(nullable=False, index=True)
+    origin: str = Field(sa_column=sa.Column(sa.String(1024), nullable=True))

@@ -1,8 +1,6 @@
 import {
   Box,
   Button,
-  Card,
-  CardBody,
   Flex,
   FormControl,
   FormLabel,
@@ -49,6 +47,7 @@ export type DataTableProps<T> = {
   onFilterChange?: (items: FilterItem[]) => void;
   disableNext?: boolean;
   disablePrevious?: boolean;
+  disablePagination?: boolean;
 };
 
 export const DataTable = <T,>({
@@ -61,6 +60,7 @@ export const DataTable = <T,>({
   onFilterChange,
   disableNext,
   disablePrevious,
+  disablePagination,
 }: DataTableProps<T>) => {
   const { getHeaderGroups, getRowModel } = useReactTable<T>({
     data,
@@ -79,8 +79,8 @@ export const DataTable = <T,>({
     onFilterChange(newValues);
   };
   return (
-    <Card>
-      <CardBody>
+    <>
+      {!disablePagination && (
         <Flex mb="2">
           <Button onClick={onPreviousClick} disabled={disablePrevious}>
             Previous
@@ -90,42 +90,42 @@ export const DataTable = <T,>({
             Next
           </Button>
         </Flex>
-        <TableContainer>
-          <Table variant="simple">
-            <TableCaption>{caption}</TableCaption>
-            <Thead>
-              {getHeaderGroups().map((headerGroup) => (
-                <Tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <Th key={header.id}>
-                      <Box display="flex" alignItems="center">
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                        {(header.column.columnDef as DataTableColumnDef<T>).filterable && (
-                          <FilterModal
-                            value={filterValues.find((value) => value.id === header.id)?.value ?? ""}
-                            onChange={(value) => handleFilterChange({ id: header.id, value })}
-                            label={flexRender(header.column.columnDef.header, header.getContext())}
-                          ></FilterModal>
-                        )}
-                      </Box>
-                    </Th>
-                  ))}
-                </Tr>
-              ))}
-            </Thead>
-            <Tbody>
-              {getRowModel().rows.map((row) => (
-                <Tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Td>
-                  ))}
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-      </CardBody>
-    </Card>
+      )}
+      <TableContainer>
+        <Table variant="simple">
+          <TableCaption>{caption}</TableCaption>
+          <Thead>
+            {getHeaderGroups().map((headerGroup) => (
+              <Tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <Th key={header.id}>
+                    <Box display="flex" alignItems="center">
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                      {(header.column.columnDef as DataTableColumnDef<T>).filterable && (
+                        <FilterModal
+                          value={filterValues.find((value) => value.id === header.id)?.value ?? ""}
+                          onChange={(value) => handleFilterChange({ id: header.id, value })}
+                          label={flexRender(header.column.columnDef.header, header.getContext())}
+                        ></FilterModal>
+                      )}
+                    </Box>
+                  </Th>
+                ))}
+              </Tr>
+            ))}
+          </Thead>
+          <Tbody>
+            {getRowModel().rows.map((row) => (
+              <Tr key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Td>
+                ))}
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
+    </>
   );
 };
 
