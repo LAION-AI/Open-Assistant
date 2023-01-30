@@ -58,7 +58,7 @@
     "npm": "^9.2.0",
     "postcss-focus-visible": "^7.1.0",
     "react": "18.2.0",
-    "react-cookies": "^0.1.1",
+    "react-cookie": "^4.1.1",
     "react-dom": "18.2.0",
     "react-feature-flags": "^1.0.0",
     "react-hook-form": "^7.42.1",
