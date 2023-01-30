@@ -29,6 +29,7 @@ def prepare_message_list(messages: list[Message]) -> list[protocol.Message]:
 def prepare_conversation_message(message: Message) -> protocol.ConversationMessage:
     return protocol.ConversationMessage(
         id=message.id,
+        user_id=message.user_id,
         frontend_message_id=message.frontend_message_id,
         text=message.text,
         lang=message.lang,
