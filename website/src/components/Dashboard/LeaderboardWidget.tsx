@@ -17,7 +17,7 @@ export function LeaderboardWidget() {
         </div>
         <Card>
           <CardBody>
-            <LeaderboardTable timeFrame={LeaderboardTimeFrame.day} limit={5} />
+            <LeaderboardTable timeFrame={LeaderboardTimeFrame.day} limit={5} rowPerPage={5} />
           </CardBody>
         </Card>
       </div>

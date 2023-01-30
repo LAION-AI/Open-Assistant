@@ -21,7 +21,7 @@ const Leaderboard = () => {
         <Card>
           <CardBody>
             <Tabs isFitted isLazy>
-              <TabList>
+              <TabList mb={4}>
                 <Tab>{t("daily")}</Tab>
                 <Tab>{t("weekly")}</Tab>
                 <Tab>{t("monthly")}</Tab>
@@ -29,16 +29,16 @@ const Leaderboard = () => {
               </TabList>
               <TabPanels>
                 <TabPanel p="0">
-                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.day} limit={20} />
+                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.day} limit={100} rowPerPage={20} />
                 </TabPanel>
                 <TabPanel p="0">
-                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.week} limit={20} />
+                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.week} limit={100} rowPerPage={20} />
                 </TabPanel>
                 <TabPanel p="0">
-                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.month} limit={20} />
+                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.month} limit={100} rowPerPage={20} />
                 </TabPanel>
                 <TabPanel p="0">
-                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.total} limit={20} />
+                  <LeaderboardTable timeFrame={LeaderboardTimeFrame.total} limit={100} rowPerPage={20} />
                 </TabPanel>
               </TabPanels>
             </Tabs>

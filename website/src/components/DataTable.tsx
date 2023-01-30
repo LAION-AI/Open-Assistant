@@ -93,7 +93,7 @@ export const DataTable = <T,>({
       )}
       <TableContainer>
         <Table variant="simple">
-          <TableCaption>{caption}</TableCaption>
+          <TableCaption pb={0}>{caption}</TableCaption>
           <Thead>
             {getHeaderGroups().map((headerGroup) => (
               <Tr key={headerGroup.id}>
