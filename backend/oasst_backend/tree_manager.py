@@ -635,8 +635,7 @@ class TreeManager:
 
         is_terminal = state in message_tree_state.TERMINAL_STATES
         was_active = mts.active
-        if is_terminal:
-            mts.active = False
+        mts.active = not is_terminal
         mts.state = state.value
         self.db.add(mts)
         self.db.flush
@@ -1423,6 +1422,22 @@ DELETE FROM user_stats WHERE user_id = :user_id;
                     self._enter_state(mts, message_tree_state.State.RANKING)
             except Exception:
                 logger.exception(f"retry_scoring_failed_message_trees failed for ({mts.message_tree_id=})")
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def halt_tree(self, message_id: UUID, halt: bool = True) -> MessageTreeState:
+        message = self.pr.fetch_message(message_id, fail_if_missing=True)
+        mts = self.pr.fetch_tree_state(message.message_tree_id)
+        tree_id = mts.message_tree_id
+
+        if halt:
+            self._enter_state(mts, message_tree_state.State.HALTED_BY_MODERATOR)
+        else:
+            self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
+            self.check_condition_for_growing_state(tree_id)
+            self.check_condition_for_ranking_state(tree_id)
+            self.check_condition_for_scoring_state(tree_id)
+
+        return mts
 
 
 if __name__ == "__main__":

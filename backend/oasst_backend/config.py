@@ -46,12 +46,11 @@ class TreeManagerConfiguration(BaseModel):
     num_required_rankings: int = 3
     """Number of rankings in which the message participated."""
 
-    p_activate_backlog_tree: float = 0.8
+    p_activate_backlog_tree: float = 0.1
     """Probability to activate a message tree in BACKLOG_RANKING state when another tree enters
-    a terminal state. Use this settting to control ratio of initial prompts and backlog tree
-    activations."""
+    a terminal state."""
 
-    min_active_rankings_per_lang: int = 2
+    min_active_rankings_per_lang: int = 0
     """When the number of active ranking tasks is below this value when a tree enters a terminal
     state an available trees in BACKLOG_RANKING will be actived (i.e. enters the RANKING state)."""
 
