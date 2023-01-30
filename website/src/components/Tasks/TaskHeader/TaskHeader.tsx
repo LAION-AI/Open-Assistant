@@ -1,8 +1,8 @@
 import { HStack, IconButton, Link, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import { HelpCircle } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import type { TaskInfo } from "src/components/Tasks/TaskTypes";
 import { getTypeSafei18nKey } from "src/lib/i18n";
+import { TaskInfo } from "src/types/Task";
 
 interface TaskHeaderProps {
   /**

@@ -14,6 +14,30 @@ export enum TaskType {
   random = "random",
 }
 
+export enum TaskCategory {
+  Create = "Create",
+  Evaluate = "Evaluate",
+  Label = "Label",
+  Random = "Random",
+}
+
+export interface TaskInfo {
+  category: TaskCategory;
+  help_link: string;
+  id: string;
+  mode?: string;
+  pathname: string;
+  type: string;
+  update_type: string;
+}
+
+export enum TaskUpdateType {
+  MessageRanking = "message_ranking",
+  Random = "random",
+  TextLabels = "text_labels",
+  TextReplyToMessage = "text_reply_to_message",
+}
+
 // we need to reconsider how to handle task content types
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 export type TaskContent = any;
@@ -29,14 +53,15 @@ export interface BaseTask {
   type: TaskType;
 }
 
-export interface TaskAvailableResponse<Task extends BaseTask> {
+export interface ServerTaskResponse<Task extends BaseTask> {
   id: string;
   userId: string;
   task: Task;
 }
 
-interface TaskAvailable<Task extends BaseTask> extends TaskAvailableResponse<Task> {
+interface TaskAvailable<Task extends BaseTask> extends ServerTaskResponse<Task> {
   taskAvailability: "AVAILABLE";
+  taskInfo: TaskInfo;
 }
 
 interface AwaitingInitialTask {

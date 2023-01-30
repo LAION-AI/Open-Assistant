@@ -15,9 +15,9 @@ import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
 import { getTypeSafei18nKey } from "src/lib/i18n";
-import { TaskType } from "src/types/Task";
+import { TaskCategory, TaskInfo, TaskType } from "src/types/Task";
 
-import { TaskCategory, TaskCategoryLabels, TaskInfo, TaskInfos } from "../Tasks/TaskTypes";
+import { TaskCategoryLabels, TaskInfos } from "../Tasks/TaskTypes";
 
 export interface TasksOptionProps {
   content: Partial<Record<TaskCategory, TaskType[]>>;
