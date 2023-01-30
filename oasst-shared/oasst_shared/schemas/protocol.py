@@ -35,6 +35,7 @@ class FrontEndUser(User):
     deleted: bool
     notes: str
     created_date: Optional[datetime] = None
+    show_on_leaderboard: bool
 
 
 class PageResult(BaseModel):

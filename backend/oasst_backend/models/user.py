@@ -42,4 +42,5 @@ class User(SQLModel, table=True):
             deleted=self.deleted,
             notes=self.notes,
             created_date=self.created_date,
+            show_on_leaderboard=self.show_on_leaderboard,
         )
