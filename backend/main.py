@@ -290,10 +290,8 @@ def update_user_streak(session: Session) -> None:
     try:
         global startup_time
         current_time = utcnow()
-        logger.debug(f"updating user streak values... f{current_time}, {startup_time}")
         timedelta = current_time - startup_time
         result = update_all_user_streak(session=session)
-        logger.debug(f"result len {len(result)}")
         if timedelta.days >= 0:
             # Update only greater than 24 hours . Do nothing
             logger.debug("Process timedelta greater than 24h")
