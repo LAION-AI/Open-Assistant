@@ -1287,6 +1287,13 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         r = self.db.execute(text(sql_purge_message_tree), {"message_tree_id": message_tree_id})
         logger.debug(f"purge_message_tree({message_tree_id=}) {r.rowcount} rows.")
 
+    def _reactivate_tree(self, mts: MessageTreeState):
+        self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
+        tree_id = mts.message_tree_id
+        if self.check_condition_for_growing_state(tree_id):
+            if self.check_condition_for_ranking_state(tree_id):
+                self.check_condition_for_scoring_state(tree_id)
+
     @managed_tx_method(CommitMode.FLUSH)
     def purge_user_messages(
         self,
@@ -1346,10 +1353,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
             logger.info(f"reactivating message tree {tree_id}")
             mts = self.pr.fetch_tree_state(tree_id)
             mts.active = True
-            self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
-            self.check_condition_for_growing_state(tree_id)
-            self.check_condition_for_ranking_state(tree_id)
-            self.check_condition_for_scoring_state(tree_id)
+            self._reactivate_tree(mts)
 
     @managed_tx_method(CommitMode.FLUSH)
     def purge_user(self, user_id: UUID, ban: bool = True) -> None:
@@ -1427,15 +1431,11 @@ DELETE FROM user_stats WHERE user_id = :user_id;
     def halt_tree(self, message_id: UUID, halt: bool = True) -> MessageTreeState:
         message = self.pr.fetch_message(message_id, fail_if_missing=True)
         mts = self.pr.fetch_tree_state(message.message_tree_id)
-        tree_id = mts.message_tree_id
 
         if halt:
             self._enter_state(mts, message_tree_state.State.HALTED_BY_MODERATOR)
         else:
-            self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
-            self.check_condition_for_growing_state(tree_id)
-            self.check_condition_for_ranking_state(tree_id)
-            self.check_condition_for_scoring_state(tree_id)
+            self._reactivate_tree(mts)
 
         return mts
 
