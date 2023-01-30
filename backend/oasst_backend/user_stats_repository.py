@@ -205,7 +205,7 @@ class UserStatsRepository:
 
         rank_field_names = ["reply_ranked_1", "reply_ranked_2", "reply_ranked_3"]
         for i, fn in enumerate(rank_field_names):
-            qry = self.query_ranking_result_users(reference_time=base_date, rank=0)
+            qry = self.query_ranking_result_users(reference_time=base_date, rank=i)
             for r in qry:
                 uid, count = r
                 setattr(get_stats(uid), fn, count)
