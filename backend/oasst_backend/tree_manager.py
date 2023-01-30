@@ -375,7 +375,9 @@ class TreeManager:
                         ):
                             label_mode = protocol_schema.LabelTaskMode.simple
                             label_disposition = protocol_schema.LabelTaskDisposition.spam
-                            valid_labels = list(self.cfg.mandatory_labels_assistant_reply)
+                            valid_labels = self.cfg.mandatory_labels_assistant_reply.copy()
+                            if protocol_schema.TextLabel.lang_mismatch not in valid_labels:
+                                valid_labels.append(protocol_schema.TextLabel.lang_mismatch)
                             if protocol_schema.TextLabel.quality not in valid_labels:
                                 valid_labels.append(protocol_schema.TextLabel.quality)
 
@@ -399,7 +401,9 @@ class TreeManager:
                         ):
                             label_mode = protocol_schema.LabelTaskMode.simple
                             label_disposition = protocol_schema.LabelTaskDisposition.spam
-                            valid_labels = list(self.cfg.mandatory_labels_prompter_reply)
+                            valid_labels = self.cfg.mandatory_labels_prompter_reply.copy()
+                            if protocol_schema.TextLabel.lang_mismatch not in valid_labels:
+                                valid_labels.append(protocol_schema.TextLabel.lang_mismatch)
                             if protocol_schema.TextLabel.quality not in valid_labels:
                                 valid_labels.append(protocol_schema.TextLabel.quality)
 
@@ -480,9 +484,11 @@ class TreeManager:
                 valid_labels = self.cfg.labels_initial_prompt
 
                 if random.random() > self.cfg.p_full_labeling_review_prompt:
-                    valid_labels = self.cfg.mandatory_labels_initial_prompt
+                    valid_labels = self.cfg.mandatory_labels_initial_prompt.copy()
                     label_mode = protocol_schema.LabelTaskMode.simple
                     label_disposition = protocol_schema.LabelTaskDisposition.spam
+                    if protocol_schema.TextLabel.lang_mismatch not in valid_labels:
+                        valid_labels.append(protocol_schema.TextLabel.lang_mismatch)
 
                 logger.info(f"Generating a LabelInitialPromptTask ({label_mode=:s}).")
                 task = protocol_schema.LabelInitialPromptTask(
@@ -803,8 +809,12 @@ class TreeManager:
                 return backlog_tree
 
     def _calculate_acceptance(self, labels: list[TextLabels]):
-        # calculate acceptance based on spam label
-        return np.mean([1 - l.labels[protocol_schema.TextLabel.spam] for l in labels])
+        # calculate acceptance based on lang_mismatch & spam label
+        lang_mismatch = np.mean([(l.labels.get(protocol_schema.TextLabel.lang_mismatch) or 0) for l in labels])
+        spam = np.mean([l.labels[protocol_schema.TextLabel.spam] for l in labels])
+        acceptance_score = 1 - (spam + lang_mismatch)
+        logger.debug(f"{acceptance_score=} ({spam=}, {lang_mismatch=})")
+        return acceptance_score
 
     def _query_need_review(
         self, state: message_tree_state.State, required_reviews: int, root: bool, lang: str
@@ -1410,7 +1420,7 @@ DELETE FROM user_stats WHERE user_id = :user_id;
             try:
                 if not self.check_condition_for_scoring_state(mts.message_tree_id):
                     mts.active = True
-                    self._enter_state(message_tree_state.State.RANKING)
+                    self._enter_state(mts, message_tree_state.State.RANKING)
             except Exception:
                 logger.exception(f"retry_scoring_failed_message_trees failed for ({mts.message_tree_id=})")
 

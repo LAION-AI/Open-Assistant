@@ -4,9 +4,8 @@ import { useTranslation } from "next-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { LeaderboardWidget, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { getDashboardLayout } from "src/components/Layout";
-import { TaskCategory } from "src/components/Tasks/TaskTypes";
 import { get } from "src/lib/api";
-import { AvailableTasks, TaskType } from "src/types/Task";
+import { AvailableTasks, TaskCategory, TaskType } from "src/types/Task";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import useSWR from "swr";
 

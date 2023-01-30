@@ -1,0 +1,13 @@
+{
+  "label_action": "Etiquetar",
+  "label_title": "Etiqueta",
+  "message": "Mensaje",
+  "open_new_tab_action": "Abrir en una pestaña nueva",
+  "parent": "Padre",
+  "reactions": "Reacciones",
+  "report_action": "Reportar",
+  "report_placeholder": "¿Por qué se debería revisar este mensaje?",
+  "report_title": "Informe",
+  "send_report": "Enviar",
+  "submit_labels": "Enviar"
+}

@@ -1,0 +1,14 @@
+{
+  "daily": "Täglich",
+  "last_updated_at": "Zuletzt aktualisiert: {{val, datetime}}",
+  "leaderboard": "Bestenliste",
+  "monthly": "Monatlich",
+  "overall": "Gesamt",
+  "rank": "Rang",
+  "score": "Punktzahl",
+  "user": "Benutzer",
+  "weekly": "Wöchentlich",
+  "prompt": "Prompts",
+  "reply": "Antworten",
+  "label": "Labels"
+}

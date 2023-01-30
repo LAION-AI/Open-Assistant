@@ -1,13 +1,14 @@
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
+import { useMemo } from "react";
 import { TaskEmptyState } from "src/components/EmptyState";
 import { LoadingScreen } from "src/components/Loading/LoadingScreen";
 import { Task } from "src/components/Tasks/Task";
 import { TaskInfos } from "src/components/Tasks/TaskTypes";
+import { TaskContext } from "src/context/TaskContext";
 import { taskApiHooks } from "src/lib/constants";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { TaskType } from "src/types/Task";
-import { KnownTaskType } from "src/types/Tasks";
 
 type TaskPageProps = {
   type: TaskType;
@@ -15,32 +16,32 @@ type TaskPageProps = {
 
 export const TaskPage = ({ type }: TaskPageProps) => {
   const { t } = useTranslation(["tasks", "common"]);
-  const taskApiHook = taskApiHooks[type];
-  const { response, isLoading, completeTask, skipTask } = taskApiHook(type);
+  const taskApiHook = useMemo(() => taskApiHooks[type], [type]);
+  const hookState = taskApiHook(type);
+
+  const body = useMemo(() => {
+    const { response } = hookState;
+    switch (response.taskAvailability) {
+      case "AWAITING_INITIAL":
+        return <LoadingScreen text={t("common:loading")} />;
+
+      case "NONE_AVAILABLE":
+        return <TaskEmptyState />;
+
+      case "AVAILABLE": {
+        const { task, taskInfo } = response;
+        const context = { ...hookState, task, taskInfo };
+        return (
+          <TaskContext.Provider value={context}>
+            <Task key={response.id} />
+          </TaskContext.Provider>
+        );
+      }
+    }
+  }, [hookState, t]);
+
+  // NOTE: this is independent of the fetched task type, it is usually identical, but not for the random task.
   const taskInfo = TaskInfos.find((taskType) => taskType.type === type);
-
-  let body;
-  switch (response.taskAvailability) {
-    case "AWAITING_INITIAL":
-      body = <LoadingScreen text={t("common:loading")} />;
-      break;
-    case "NONE_AVAILABLE":
-      body = <TaskEmptyState />;
-      break;
-    case "AVAILABLE":
-      body = (
-        <Task
-          key={response.task.id}
-          frontendId={response.id}
-          task={response.task as KnownTaskType}
-          isLoading={isLoading}
-          completeTask={completeTask}
-          skipTask={skipTask}
-        />
-      );
-      break;
-  }
-
   return (
     <>
       <Head>
