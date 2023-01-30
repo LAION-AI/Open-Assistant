@@ -12,9 +12,9 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 router = APIRouter()
 
 
-@router.get("/login/discord")
+@router.get("/discord")
 def login_discord(request: Request):
-    redirect_uri = get_discord_callback_uri(request)
+    redirect_uri = f"{get_callback_uri(request)}/discord"
     auth_url = f"https://discord.com/api/oauth2/authorize?client_id={Settings.AUTH_DISCORD_CLIENT_ID}&redirect_uri={redirect_uri}&response_type=code&scope=identify"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
@@ -25,7 +25,7 @@ def callback_discord(
     request: Request,
     db: Session = Depends(deps.get_db),
 ):
-    redirect_uri = get_discord_callback_uri(request)
+    redirect_uri = f"{get_callback_uri(request)}/discord"
 
     # Exchange the auth code for an access token
     token_response = requests.post(
@@ -49,8 +49,7 @@ def callback_discord(
     )
 
     user_response.raise_for_status()
-    discord_user = user_response.json()
-    discord_user_id = discord_user["id"]
+    discord_user_id = user_response.json()["id"]
 
     account: Account = auth.get_account_from_discord_id(db, discord_user_id)
 
@@ -64,9 +63,12 @@ def callback_discord(
     return protocol_schema.Token(access_token=access_token, token_type="bearer")
 
 
-def get_discord_callback_uri(request: Request):
+def get_callback_uri(request: Request):
+    """
+    Gets the URI for the base callback endpoint with no provider name appended.
+    """
     # This seems ugly, not sure if there is a better way
     current_url = str(request.url)
     domain = current_url.split("/api/v1/")[0]
-    redirect_uri = f"{domain}/api/v1/callback/discord"
+    redirect_uri = f"{domain}/api/v1/callback"
     return redirect_uri
