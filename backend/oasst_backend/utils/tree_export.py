@@ -53,6 +53,7 @@ def build_export_tree(message_tree_id: str, messages: list[Message]) -> ExportMe
 
     def assign_replies(node: ExportMessageNode) -> ExportMessageNode:
         node.replies = messages_by_parent[node.message_id]
+        node.replies.sort(key=lambda x: x.rank if x.rank is not None else float("inf"))
         for child in node.replies:
             assign_replies(child)
         return node
