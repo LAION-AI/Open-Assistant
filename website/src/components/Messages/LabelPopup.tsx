@@ -51,7 +51,7 @@ export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopu
       label_map: Object.fromEntries(label_map),
     });
 
-    setValues(null);
+    setValues(new Array(values.length).fill(null));
     onClose();
   };
 
