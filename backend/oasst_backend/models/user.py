@@ -32,6 +32,15 @@ class User(SQLModel, table=True):
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
     show_on_leaderboard: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.true()))
 
+    # only used for time span "total"
+    streak_last_day_date: Optional[datetime] = Field(
+        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True, server_default=sa.func.current_timestamp())
+    )
+    streak_days: Optional[int] = Field(nullable=True)
+    last_activity_date: Optional[datetime] = Field(
+        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True, server_default=sa.func.current_timestamp())
+    )
+
     def to_protocol_frontend_user(self):
         return protocol.FrontEndUser(
             user_id=self.id,

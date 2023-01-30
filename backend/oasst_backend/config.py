@@ -195,6 +195,8 @@ class Settings(BaseSettings):
             raise ValueError(v)
         return v
 
+    USER_STREAK_UPDATE_INTERVAL: int = 4  # hours
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

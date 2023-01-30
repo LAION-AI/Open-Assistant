@@ -19,15 +19,18 @@ from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
 from oasst_backend.tree_manager import TreeManager
+from oasst_backend.user_repository import User
 from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
+from oasst_shared.utils import utcnow
 from pydantic import BaseModel
-from sqlmodel import Session
+from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
 
 app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
+startup_time = None
 
 
 @app.exception_handler(OasstError)
@@ -266,6 +269,56 @@ def update_leader_board_total(session: Session) -> None:
         usr.update_stats(time_frame=UserStatsTimeFrame.total)
     except Exception:
         logger.exception("Error during user states update (total)")
+
+
+@app.on_event("startup")
+def set_startup_time() -> None:
+    global startup_time
+    startup_time = utcnow()
+
+
+def update_all_user_streak(session: Session) -> None:
+    statement = select(User)
+    result = session.exec(statement).all()
+    return result
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.USER_STREAK_UPDATE_INTERVAL, wait_first=False)
+@managed_tx_function(auto_commit=CommitMode.COMMIT)
+def update_user_streak(session: Session) -> None:
+    try:
+        global startup_time
+        current_time = utcnow()
+        logger.debug(f"updating user streak values... f{current_time}, {startup_time}")
+        timedelta = current_time - startup_time
+        result = update_all_user_streak(session=session)
+        logger.debug(f"result len {len(result)}")
+        if timedelta.days >= 0:
+            # Update only greater than 24 hours . Do nothing
+            logger.debug("Process timedelta greater than 24h")
+            if result is not None:
+                for user in result:
+                    logger.debug(f"{type(user)}... {user}")
+                    last_activity_date = user.last_activity_date
+                    streak_last_day_date = user.streak_last_day_date
+                    current_time_no_tz = current_time.replace(tzinfo=None)
+                    logger.debug(f"{current_time_no_tz}: {last_activity_date}, {streak_last_day_date}")
+                    if last_activity_date is not None:
+                        lastactitvitydelta = current_time_no_tz - last_activity_date
+                        if lastactitvitydelta.days > 1 or user.streak_days is None:
+                            user.streak_days = 0
+
+                    if streak_last_day_date is not None:
+                        streak_delta = current_time_no_tz - streak_last_day_date
+                        if streak_delta.days > 0:
+                            user.streak_days += 1
+                            user.streak_last_day_date = current_time
+                    session.add(user)
+
+    except Exception as e:
+        logger.error(str(e))
+    return
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

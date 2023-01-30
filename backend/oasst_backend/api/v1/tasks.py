@@ -7,6 +7,7 @@ from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
 from oasst_backend.tree_manager import TreeManager
+from oasst_backend.user_repository import UserRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -139,8 +140,12 @@ async def tasks_interaction(
     try:
         pr = PromptRepository(db, api_client, client_user=interaction.user)
         tm = TreeManager(db, pr)
-        return await tm.handle_interaction(interaction)
-
+        ur = UserRepository(db, api_client)
+        task =  await tm.handle_interaction(interaction)
+        match (type(task)):
+            case protocol_schema.TaskDone:
+                ur.update_user_last_activity(client_user=interaction.user)
+        return task
     except OasstError:
         raise
     except Exception:
