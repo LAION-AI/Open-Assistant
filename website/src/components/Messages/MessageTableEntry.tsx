@@ -14,8 +14,9 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import { ClipboardList, Flag, MessageSquare, MoreHorizontal } from "lucide-react";
+import { ClipboardList, Edit, Flag, MessageSquare, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
@@ -109,7 +110,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
             userEmoji={emojiState.user_emojis}
             onLabel={showLabelPopup}
             onReport={showReportPopup}
-            messageId={message.id}
+            message={message}
           />
           <LabelMessagePopup messageId={message.id} show={labelPopupOpen} onClose={closeLabelPopup} />
           <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
@@ -142,16 +143,17 @@ const MessageActions = ({
   userEmoji,
   onLabel,
   onReport,
-  messageId,
+  message,
 }: {
   react: (emoji: string, state: boolean) => void;
   userEmoji: string[];
   onLabel: () => void;
   onReport: () => void;
-  messageId: string;
+  message: Message;
 }) => {
   const { t } = useTranslation("message");
-
+  const { data } = useSession() || {};
+  const role = data?.user?.role;
   return (
     <Menu>
       <MenuButton>
@@ -173,9 +175,17 @@ const MessageActions = ({
           {t("report_action")}
         </MenuItem>
         <MenuDivider />
-        <MenuItem as="a" href={`/messages/${messageId}`} target="_blank" icon={<MessageSquare />}>
+        <MenuItem as="a" href={`/messages/${message.id}`} target="_blank" icon={<MessageSquare />}>
           {t("open_new_tab_action")}
         </MenuItem>
+        {role === "admin" && (
+          <>
+            <MenuDivider />
+            <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<Edit />}>
+              {t("view_user")}
+            </MenuItem>
+          </>
+        )}
       </MenuList>
     </Menu>
   );
