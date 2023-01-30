@@ -141,7 +141,7 @@ async def tasks_interaction(
         pr = PromptRepository(db, api_client, client_user=interaction.user)
         tm = TreeManager(db, pr)
         ur = UserRepository(db, api_client)
-        task =  await tm.handle_interaction(interaction)
+        task = await tm.handle_interaction(interaction)
         match (type(task)):
             case protocol_schema.TaskDone:
                 ur.update_user_last_activity(client_user=interaction.user)
