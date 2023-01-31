@@ -9,6 +9,33 @@ For more details and information check out
 [this SO thread](https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose)
 that explains it all in detail.
 
+### Enable Docker's BuildKit Backend
+
+[BuildKit](https://docs.docker.com/build/buildkit/) is Docker's new and improved
+builder backend. In addition to being faster and more efficient, it supports
+many new features, among which is the ability to provide a persistent cache,
+which outlives builds, to compilers and package managers. This is very useful to
+speed up consecutive builds, and is used by some container images of
+OpenAssistant's stack.
+
+The BuildKit backend is used by
+[default by Compose V2](https://www.docker.com/blog/announcing-compose-v2-general-availability/)
+(see above). <br/> But if you want to build an image with `docker build` instead
+of `docker compose build`, you might need to enable BuildKit.
+
+To do so, just add `DOCKER_BUILDKIT=1` to your environment.
+
+For instance:
+
+```shell
+export DOCKER_BUILDKIT=1
+```
+
+You could also, more conveniently,
+[enable BuildKit by default](https://docs.docker.com/build/buildkit/#:~:text=To%20enable%20docker%20BuildKit%20by%20default),
+or use
+[Docker Buildx](https://docs.docker.com/build/#:~:text=The%20new%20client%20Docker%20Buildx).
+
 ### Pre-commit
 
 We are using pre-commit to ensure the quality of the code as well as the same

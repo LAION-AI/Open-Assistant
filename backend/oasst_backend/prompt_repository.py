@@ -7,7 +7,6 @@ from typing import Optional
 from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
-import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.api.deps import FrontendUserId
 from oasst_backend.config import settings
@@ -62,13 +61,11 @@ class PromptRepository:
 
         if user_id:
             self.user = self.user_repository.get_user(id=user_id)
-            self.user_id = self.user.id
         elif auth_method and username:
             self.user = self.user_repository.query_frontend_user(auth_method=auth_method, username=username)
-            self.user_id = self.user.id
         else:
             self.user = self.user_repository.lookup_client_user(client_user, create_missing=True)
-            self.user_id = self.user.id if self.user else None
+        self.user_id = self.user.id if self.user else None
         logger.debug(f"PromptRepository(api_client_id={self.api_client.id}, {self.user_id=})")
         self.task_repository = task_repository or TaskRepository(
             db, api_client, client_user, user_repository=self.user_repository
@@ -213,6 +210,14 @@ class PromptRepository:
                     raise OasstError(
                         "Message insertion failed. Message tree is no longer in 'growing' state.",
                         OasstErrorCode.TREE_NOT_IN_GROWING_STATE,
+                    )
+
+            if check_duplicate and not settings.DEBUG_ALLOW_DUPLICATE_TASKS:
+                siblings = self.fetch_message_children(task.parent_message_id, review_result=None, deleted=False)
+                if any(m.user_id == self.user_id for m in siblings):
+                    raise OasstError(
+                        "User cannot reply twice to the same message.",
+                        OasstErrorCode.TASK_MESSAGE_DUPLICATE_REPLY,
                     )
 
             parent_message.message_tree_id
@@ -419,6 +424,7 @@ class PromptRepository:
 
     @managed_tx_method(CommitMode.FLUSH)
     def store_text_labels(self, text_labels: protocol_schema.TextLabels) -> tuple[TextLabels, Task, Message]:
+        self.ensure_user_is_enabled()
 
         valid_labels: Optional[list[str]] = None
         mandatory_labels: Optional[list[str]] = None
@@ -484,6 +490,8 @@ class PromptRepository:
         message: Message = None
         if message_id:
             if not task:
+                # free labeling case
+
                 if text_labels.is_report is True:
                     message = self.handle_message_emoji(
                         message_id, protocol_schema.EmojiOp.add, protocol_schema.EmojiCode.red_flag
@@ -496,7 +504,21 @@ class PromptRepository:
                     model = existing_text_label
 
             else:
-                message = self.fetch_message(message_id)
+                # task based labeling case
+
+                message = self.fetch_message(message_id, fail_if_missing=True)
+                if not settings.DEBUG_ALLOW_SELF_LABELING and message.user_id == self.user_id:
+                    raise OasstError(
+                        "Labeling own message is not allowed.", OasstErrorCode.TEXT_LABELS_NO_SELF_LABELING
+                    )
+
+                existing_labels = self.fetch_message_text_labels(message_id, self.user_id)
+                if not settings.DEBUG_ALLOW_DUPLICATE_TASKS and any(l.task_id for l in existing_labels):
+                    raise OasstError(
+                        "Message was already labeled by same user before.",
+                        OasstErrorCode.TEXT_LABELS_DUPLICATE_TASK_REPLY,
+                    )
+
                 message.review_count += 1
                 self.db.add(message)
 
@@ -666,6 +688,12 @@ class PromptRepository:
         text_label = query.one_or_none()
         return text_label
 
+    def fetch_message_text_labels(self, message_id: UUID, user_id: Optional[UUID] = None) -> list[TextLabels]:
+        query = self.db.query(TextLabels).filter(TextLabels.message_id == message_id)
+        if user_id is not None:
+            query = query.filter(TextLabels.user_id == user_id)
+        return query.all()
+
     @staticmethod
     def trace_conversation(messages: list[Message] | dict[UUID, Message], last_message: Message) -> list[Message]:
         """
@@ -712,7 +740,10 @@ class PromptRepository:
         return self.fetch_message_tree(message.message_tree_id)
 
     def fetch_message_children(
-        self, message: Message | UUID, reviewed: bool = True, exclude_deleted: bool = True
+        self,
+        message: Message | UUID,
+        review_result: Optional[bool] = True,
+        deleted: Optional[bool] = False,
     ) -> list[Message]:
         """
         Get all direct children of this message
@@ -721,26 +752,31 @@ class PromptRepository:
             message = message.id
 
         qry = self.db.query(Message).filter(Message.parent_id == message)
-        if reviewed:
-            qry = qry.filter(Message.review_result)
-        if exclude_deleted:
-            qry = qry.filter(Message.deleted == sa.false())
+        if review_result is not None:
+            qry = qry.filter(Message.review_result == review_result)
+        if deleted is not None:
+            qry = qry.filter(Message.deleted == deleted)
         children = self._add_user_emojis_all(qry)
         return children
 
     def fetch_message_siblings(
-        self, message: Message | UUID, reviewed: Optional[bool] = True, deleted: Optional[bool] = False
+        self,
+        message: Message | UUID,
+        review_result: Optional[bool] = True,
+        deleted: Optional[bool] = False,
     ) -> list[Message]:
         """
         Get siblings of a message (other messages with the same parent_id)
         """
+        qry = self.db.query(Message)
         if isinstance(message, Message):
-            message = message.id
+            qry = qry.filter(Message.parent_id == message.parent_id)
+        else:
+            parent_qry = self.db.query(Message.parent_id).filter(Message.id == message).subquery()
+            qry = qry.filter(Message.parent_id == parent_qry.c.parent_id)
 
-        parent_qry = self.db.query(Message.parent_id).filter(Message.id == message).subquery()
-        qry = self.db.query(Message).filter(Message.parent_id == parent_qry.c.parent_id)
-        if reviewed is not None:
-            qry = qry.filter(Message.review_result == reviewed)
+        if review_result is not None:
+            qry = qry.filter(Message.review_result == review_result)
         if deleted is not None:
             qry = qry.filter(Message.deleted == deleted)
         siblings = self._add_user_emojis_all(qry)

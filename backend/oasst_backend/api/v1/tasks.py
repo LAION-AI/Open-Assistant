@@ -5,8 +5,11 @@ from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
+from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
 from oasst_backend.tree_manager import TreeManager
+from oasst_backend.user_repository import UserRepository
+from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_function
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -19,8 +22,18 @@ router = APIRouter()
     "/",
     response_model=protocol_schema.AnyTask,
     dependencies=[
-        Depends(deps.UserRateLimiter(times=100, minutes=5)),
-        Depends(deps.APIClientRateLimiter(times=10_000, minutes=1)),
+        Depends(
+            deps.UserRateLimiter(
+                times=settings.RATE_LIMIT_TASK_USER_TIMES,
+                minutes=settings.RATE_LIMIT_TASK_USER_MINUTES,
+            )
+        ),
+        Depends(
+            deps.APIClientRateLimiter(
+                times=settings.RATE_LIMIT_TASK_API_TIMES,
+                minutes=settings.RATE_LIMIT_TASK_API_MINUTES,
+            )
+        ),
     ],
 )  # work with Union once more types are added
 def request_task(
@@ -127,20 +140,26 @@ def tasks_acknowledge_failure(
 @router.post("/interaction", response_model=protocol_schema.TaskDone)
 async def tasks_interaction(
     *,
-    db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
     interaction: protocol_schema.AnyInteraction,
 ) -> Any:
     """
     The frontend reports an interaction.
     """
-    api_client = deps.api_auth(api_key, db)
+
+    @async_managed_tx_function(CommitMode.COMMIT)
+    async def interaction_tx(session: deps.Session):
+        api_client = deps.api_auth(api_key, session)
+        pr = PromptRepository(session, api_client, client_user=interaction.user)
+        tm = TreeManager(session, pr)
+        ur = UserRepository(session, api_client)
+        task = await tm.handle_interaction(interaction)
+        if type(task) is protocol_schema.TaskDone:
+            ur.update_user_last_activity(user=pr.user)
+        return task
 
     try:
-        pr = PromptRepository(db, api_client, client_user=interaction.user)
-        tm = TreeManager(db, pr)
-        return await tm.handle_interaction(interaction)
-
+        return await interaction_tx()
     except OasstError:
         raise
     except Exception:

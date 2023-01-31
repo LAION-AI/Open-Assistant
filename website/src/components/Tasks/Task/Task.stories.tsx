@@ -19,13 +19,33 @@ const Template = ({ providerValue }) => {
 const exampleProviderValue = {
   frontendId: "1234",
   task: {
-    conversation: [],
+    conversation: {
+      messages: [
+        {
+          text: "I'm unsure how to interpret this. Is it a riddle?",
+          is_assistant: true,
+          id: "",
+          frontend_message_id: "",
+          emojis: {},
+          user_emojis: [],
+        },
+        {
+          text: "No, I just wanted to see how you reply when I type random characters. Can you tell me who invented Wikipedia?",
+          is_assistant: false,
+          id: "",
+          frontend_message_id: "",
+          emojis: { "-1": 11, red_flag: 2 },
+          user_emojis: [],
+        },
+      ],
+    },
     id: "1234-4321",
     mandatory_labels: ["spam"],
     message_id: "772f843e-f740-4aad-a44f-e3cf0260692c",
     reply: "1231231231",
     type: "label_prompter_reply",
     valid_labels: ["spam", "fails_task"],
+    labels: [],
   },
   taskInfo: TaskInfos.find((t) => t.type === "label_prompter_reply"),
   isLoading: false,

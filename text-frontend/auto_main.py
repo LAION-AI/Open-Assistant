@@ -2,6 +2,7 @@
 
 import http
 import random
+from uuid import uuid4
 
 import requests
 import typer
@@ -14,7 +15,7 @@ USER = {"id": "1234", "display_name": "John Doe", "auth_method": "local"}
 
 
 def _random_message_id():
-    return str(random.randint(1000, 9999))
+    return str(uuid4())
 
 
 def _render_message(message: dict) -> str:
@@ -88,22 +89,21 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234"):
                 _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
 
                 valid_labels = task["valid_labels"]
+                mandatory_labels = task["mandatory_labels"]
 
                 labels_dict = None
                 if task["mode"] == "simple" and len(valid_labels) == 1:
                     answer = random.choice([True, False])
                     labels_dict = {valid_labels[0]: 1 if answer else 0}
                 else:
-                    while labels_dict is None:
-                        labels = random.sample(valid_labels, random.randint(1, len(valid_labels)))
-                        if all([label in valid_labels for label in labels]):
-                            labels_dict = {
-                                label: 1 if label != "lang_mismatch" and label in labels else 0
-                                for label in valid_labels
-                            }
-                        else:
-                            invalid_labels = [label for label in labels if label not in valid_labels]
-                            typer.echo(f"Invalid labels: {', '.join(invalid_labels)}. Valid: {', '.join(valid_labels)}")
+                    labels = random.sample(valid_labels, random.randint(1, len(valid_labels)))
+                    for l in mandatory_labels:
+                        if l not in labels:
+                            labels.append(l)
+                    labels_dict = {label: random.random() for label in valid_labels}
+                if random.random() < 0.9:
+                    labels_dict["spam"] = 0
+                    labels_dict["lang_mismatch"] = 0
 
                 # send labels
                 new_task = _post(
@@ -206,22 +206,22 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234"):
                 user_message_id = _random_message_id()
                 _post(f"/api/v1/tasks/{task['id']}/ack", {"message_id": message_id})
                 valid_labels = task["valid_labels"]
+                mandatory_labels = task["mandatory_labels"]
 
                 labels_dict = None
                 if task["mode"] == "simple" and len(valid_labels) == 1:
                     answer = random.choice([True, False])
                     labels_dict = {valid_labels[0]: 1 if answer else 0}
                 else:
-                    while labels_dict is None:
-                        labels = random.sample(valid_labels, random.randint(1, len(valid_labels)))
-                        if all([label in valid_labels for label in labels]):
-                            labels_dict = {
-                                label: 1 if label != "lang_mismatch" and label in labels else 0
-                                for label in valid_labels
-                            }
-                        else:
-                            invalid_labels = [label for label in labels if label not in valid_labels]
-                            typer.echo(f"Invalid labels: {', '.join(invalid_labels)}. Valid: {', '.join(valid_labels)}")
+                    labels = random.sample(valid_labels, random.randint(1, len(valid_labels)))
+                    for l in mandatory_labels:
+                        if l not in labels:
+                            labels.append(l)
+                    labels_dict = {label: random.random() for label in valid_labels}
+                if random.random() < 0.9:
+                    labels_dict["spam"] = 0
+                    labels_dict["lang_mismatch"] = 0
+
                 # send interaction
                 new_task = _post(
                     "/api/v1/tasks/interaction",

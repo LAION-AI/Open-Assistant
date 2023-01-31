@@ -1,7 +1,7 @@
 import { CircularProgress } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { useTranslation } from "next-i18next";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { get } from "src/lib/api";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import useSWRImmutable from "swr/immutable";
@@ -13,7 +13,15 @@ const columnHelper = createColumnHelper<LeaderboardEntity>();
 /**
  * Presents a grid of leaderboard entries with more detailed information.
  */
-export const LeaderboardTable = ({ timeFrame, limit }: { timeFrame: LeaderboardTimeFrame; limit: number }) => {
+export const LeaderboardTable = ({
+  timeFrame,
+  limit: limit,
+  rowPerPage,
+}: {
+  timeFrame: LeaderboardTimeFrame;
+  limit: number;
+  rowPerPage: number;
+}) => {
   const { t } = useTranslation("leaderboard");
   const {
     data: reply,
@@ -52,6 +60,12 @@ export const LeaderboardTable = ({ timeFrame, limit }: { timeFrame: LeaderboardT
     return t("last_updated_at", { val, formatParams: { val: { dateStyle: "full", timeStyle: "short" } } });
   }, [t, reply?.last_updated]);
 
+  const [page, setPage] = useState(1);
+  const data = useMemo(() => {
+    const start = (page - 1) * rowPerPage;
+    return reply?.leaderboard.slice(start, start + rowPerPage) || [];
+  }, [rowPerPage, page, reply?.leaderboard]);
+
   if (isLoading) {
     return <CircularProgress isIndeterminate></CircularProgress>;
   }
@@ -60,5 +74,18 @@ export const LeaderboardTable = ({ timeFrame, limit }: { timeFrame: LeaderboardT
     return <span>Unable to load leaderboard</span>;
   }
 
-  return <DataTable data={reply.leaderboard} columns={columns} caption={lastUpdated} disablePagination></DataTable>;
+  const maxPage = Math.ceil(reply.leaderboard.length / rowPerPage);
+
+  return (
+    <DataTable
+      data={data}
+      columns={columns}
+      caption={lastUpdated}
+      disablePagination={limit <= rowPerPage}
+      disableNext={page === maxPage}
+      disablePrevious={page === 1}
+      onNextClick={() => setPage((p) => p + 1)}
+      onPreviousClick={() => setPage((p) => p - 1)}
+    ></DataTable>
+  );
 };

@@ -1,3 +1,4 @@
+import { SessionProvider } from "next-auth/react";
 import React from "react";
 import { Message } from "src/types/Conversation";
 
@@ -18,7 +19,11 @@ const Template = ({
   enableLink: boolean;
   highlightLastMessage: boolean;
 }) => {
-  return <MessageTable messages={messages} enableLink={enableLink} highlightLastMessage={highlightLastMessage} />;
+  return (
+    <SessionProvider>
+      <MessageTable messages={messages} enableLink={enableLink} highlightLastMessage={highlightLastMessage} />;
+    </SessionProvider>
+  );
 };
 
 export const Default = Template.bind({});

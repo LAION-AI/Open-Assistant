@@ -74,7 +74,7 @@ export const Task = () => {
     ): TaskStatus => {
       switch (event.action) {
         case "NEW_TASK":
-          return { mode: "EDIT", replyValidity: "INVALID" };
+          return status.mode !== "EDIT" ? { mode: "EDIT", replyValidity: "INVALID" } : status;
         case "UPDATE_VALIDITY":
           return status.mode === "EDIT" ? { mode: "EDIT", replyValidity: event.replyValidity } : status;
         case "ACCEPT_DEFAULT":

@@ -6,7 +6,7 @@
   "label_message_flag_instruction": "Select any that apply to the message:",
   "label_message_likert_instruction": "Rate the message:",
   "spam.question": "Is the message spam?",
-  "fails_task.question": "Does the reply fail the prompter's task?",
+  "fails_task.question": "Is it a bad reply, as an answer to the prompt task?",
   "not_appropriate": "Not Appropriate",
   "pii": "Contains PII",
   "hate_speech": "Hate Speech",

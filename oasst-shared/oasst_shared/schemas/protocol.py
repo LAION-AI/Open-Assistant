@@ -26,7 +26,7 @@ class TaskRequestType(str, enum.Enum):
 class User(BaseModel):
     id: str
     display_name: str
-    auth_method: Literal["discord", "local"]
+    auth_method: Literal["discord", "local", "system"]
 
 
 class Account(BaseModel):
@@ -46,6 +46,10 @@ class FrontEndUser(User):
     deleted: bool
     notes: str
     created_date: Optional[datetime] = None
+    show_on_leaderboard: bool
+    streak_days: Optional[int] = None
+    streak_last_day_date: Optional[datetime] = None
+    last_activity_date: Optional[datetime] = None
 
 
 class PageResult(BaseModel):
@@ -64,6 +68,7 @@ class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
     id: Optional[UUID] = None
+    user_id: Optional[UUID]
     frontend_message_id: Optional[str] = None
     text: str
     lang: Optional[str]  # BCP 47
@@ -91,8 +96,10 @@ class Conversation(BaseModel):
 
 
 class Message(ConversationMessage):
-    parent_id: Optional[UUID] = None
-    created_date: Optional[datetime] = None
+    parent_id: Optional[UUID]
+    created_date: Optional[datetime]
+    review_result: Optional[bool]
+    review_count: Optional[int]
 
 
 class MessagePage(PageResult):
@@ -256,22 +263,21 @@ class AbstractLabelTask(Task):
     mode: Optional[LabelTaskMode]
     disposition: Optional[LabelTaskDisposition]
     labels: Optional[list[LabelDescription]]
+    conversation: Conversation  # the conversation so far (labeling -> last message)
 
 
 class LabelInitialPromptTask(AbstractLabelTask):
     """A task to label an initial prompt."""
 
     type: Literal["label_initial_prompt"] = "label_initial_prompt"
-    prompt: str
+    prompt: str | None = Field(None, deprecated=True, description="deprecated, use `prompt_message`")
 
 
 class LabelConversationReplyTask(AbstractLabelTask):
     """A task to label a reply to a conversation."""
 
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
-    conversation: Conversation  # the conversation so far (new: including the reply message)
-    reply_message: Optional[ConversationMessage]
-    reply: str
+    reply: str | None = Field(None, deprecated=True, description="deprecated, use last message of `conversation`")
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):
@@ -436,6 +442,7 @@ class SystemStats(BaseModel):
 class UserScore(BaseModel):
     rank: Optional[int]
     user_id: UUID
+    highlighted: bool = False
     username: str
     auth_method: str
     display_name: str
@@ -461,9 +468,9 @@ class UserScore(BaseModel):
     reply_ranked_2: int = 0
     reply_ranked_3: int = 0
 
-    # only used for time frame "total"
     streak_last_day_date: Optional[datetime]
     streak_days: Optional[int]
+    last_activity_date: Optional[datetime]
 
 
 class LeaderboardStats(BaseModel):

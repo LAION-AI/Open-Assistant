@@ -11,11 +11,7 @@ import numpy as np
 import pydantic
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
-from oasst_backend.api.v1.utils import (
-    prepare_conversation,
-    prepare_conversation_message,
-    prepare_conversation_message_list,
-)
+from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import Message, MessageReaction, MessageTreeState, Task, TextLabels, User, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
@@ -319,7 +315,7 @@ class TreeManager:
                     ranking_parent = messages[-1]
                     assert not ranking_parent.deleted and ranking_parent.review_result
                     conversation = prepare_conversation(messages)
-                    replies = self.pr.fetch_message_children(ranking_parent_id, reviewed=True, exclude_deleted=True)
+                    replies = self.pr.fetch_message_children(ranking_parent_id, review_result=True, deleted=False)
 
                     assert len(replies) > 1
                     random.shuffle(replies)  # hand out replies in random order
@@ -386,7 +382,6 @@ class TreeManager:
                             message_id=message.id,
                             conversation=conversation,
                             reply=message.text,
-                            reply_message=prepare_conversation_message(message),
                             valid_labels=list(map(lambda x: x.value, valid_labels)),
                             mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_assistant_reply)),
                             mode=label_mode,
@@ -412,7 +407,6 @@ class TreeManager:
                             message_id=message.id,
                             conversation=conversation,
                             reply=message.text,
-                            reply_message=prepare_conversation_message(message),
                             valid_labels=list(map(lambda x: x.value, valid_labels)),
                             mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_prompter_reply)),
                             mode=label_mode,
@@ -439,12 +433,13 @@ class TreeManager:
                 if len(extendible_parents) > 0:
                     random_parent: ExtendibleParentRow = None
                     if self.cfg.p_lonely_child_extension > 0 and self.cfg.lonely_children_count > 1:
-                        # check if we have extendible parents with a small number of replies
+                        # check if we have extendible prompter parents with a small number of replies
 
                         lonely_children_parents = [
                             p
                             for p in extendible_parents
                             if 0 < p.active_children_count < self.cfg.lonely_children_count
+                            and p.parent_role == "prompter"
                             and p.parent_id not in recent_reply_task_parents
                         ]
                         if len(lonely_children_parents) > 0 and random.random() < self.cfg.p_lonely_child_extension:
@@ -478,6 +473,7 @@ class TreeManager:
             case TaskType.LABEL_PROMPT:
                 assert len(prompts_need_review) > 0
                 message = random.choice(prompts_need_review)
+                message = self.pr.fetch_message(message.id)  # re-fetch message including emojis
 
                 label_mode = protocol_schema.LabelTaskMode.full
                 label_disposition = protocol_schema.LabelTaskDisposition.quality
@@ -494,6 +490,7 @@ class TreeManager:
                 task = protocol_schema.LabelInitialPromptTask(
                     message_id=message.id,
                     prompt=message.text,
+                    conversation=prepare_conversation([message]),
                     valid_labels=list(map(lambda x: x.value, valid_labels)),
                     mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt)),
                     mode=label_mode,
@@ -522,7 +519,7 @@ class TreeManager:
 
         return task, message_tree_id, parent_message_id
 
-    @async_managed_tx_method(CommitMode.COMMIT)
+    @async_managed_tx_method(CommitMode.FLUSH)
     async def handle_interaction(self, interaction: protocol_schema.AnyInteraction) -> protocol_schema.Task:
         pr = self.pr
         pr.ensure_user_is_enabled()
@@ -635,8 +632,7 @@ class TreeManager:
 
         is_terminal = state in message_tree_state.TERMINAL_STATES
         was_active = mts.active
-        if is_terminal:
-            mts.active = False
+        mts.active = not is_terminal
         mts.state = state.value
         self.db.add(mts)
         self.db.flush
@@ -756,7 +752,7 @@ class TreeManager:
                 logger.debug(f"CONSENSUS: {consensus}\n\n")
 
                 # fetch all siblings and clear ranks
-                siblings = self.pr.fetch_message_siblings(consensus[0], reviewed=None, deleted=None)
+                siblings = self.pr.fetch_message_siblings(consensus[0], review_result=None, deleted=None)
                 for m in siblings:
                     m.rank = None
                     self.db.add(m)
@@ -934,6 +930,7 @@ WHERE mts.active                        -- only consider active trees
     AND (c.review_result OR coalesce(c.review_count, 0) < :num_reviews_reply) -- don't count children with negative review but count elements under review
 GROUP BY m.id, m.role, m.depth, m.message_tree_id, mts.max_children_count
 HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
+    AND (COUNT(c.id) < :num_prompter_replies OR m.role = 'prompter')   -- limit replies to assistant messages
     AND COUNT(c.id) FILTER (WHERE c.user_id = :user_id) = 0  -- without reply by user
 """
 
@@ -946,6 +943,7 @@ HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
             {
                 "growing_state": message_tree_state.State.GROWING,
                 "num_reviews_reply": self.cfg.num_reviews_reply,
+                "num_prompter_replies": self.cfg.num_prompter_replies,
                 "lang": lang,
                 "user_id": user_id,
             },
@@ -983,6 +981,7 @@ HAVING COUNT(m.id) < mts.goal_tree_size
             {
                 "growing_state": message_tree_state.State.GROWING,
                 "num_reviews_reply": self.cfg.num_reviews_reply,
+                "num_prompter_replies": self.cfg.num_prompter_replies,
                 "lang": lang,
                 "user_id": user_id,
             },
@@ -1288,6 +1287,13 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         r = self.db.execute(text(sql_purge_message_tree), {"message_tree_id": message_tree_id})
         logger.debug(f"purge_message_tree({message_tree_id=}) {r.rowcount} rows.")
 
+    def _reactivate_tree(self, mts: MessageTreeState):
+        self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
+        tree_id = mts.message_tree_id
+        if self.check_condition_for_growing_state(tree_id):
+            if self.check_condition_for_ranking_state(tree_id):
+                self.check_condition_for_scoring_state(tree_id)
+
     @managed_tx_method(CommitMode.FLUSH)
     def purge_user_messages(
         self,
@@ -1347,10 +1353,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
             logger.info(f"reactivating message tree {tree_id}")
             mts = self.pr.fetch_tree_state(tree_id)
             mts.active = True
-            self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
-            self.check_condition_for_growing_state(tree_id)
-            self.check_condition_for_ranking_state(tree_id)
-            self.check_condition_for_scoring_state(tree_id)
+            self._reactivate_tree(mts)
 
     @managed_tx_method(CommitMode.FLUSH)
     def purge_user(self, user_id: UUID, ban: bool = True) -> None:
@@ -1423,6 +1426,18 @@ DELETE FROM user_stats WHERE user_id = :user_id;
                     self._enter_state(mts, message_tree_state.State.RANKING)
             except Exception:
                 logger.exception(f"retry_scoring_failed_message_trees failed for ({mts.message_tree_id=})")
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def halt_tree(self, message_id: UUID, halt: bool = True) -> MessageTreeState:
+        message = self.pr.fetch_message(message_id, fail_if_missing=True)
+        mts = self.pr.fetch_tree_state(message.message_tree_id)
+
+        if halt:
+            self._enter_state(mts, message_tree_state.State.HALTED_BY_MODERATOR)
+        else:
+            self._reactivate_tree(mts)
+
+        return mts
 
 
 if __name__ == "__main__":

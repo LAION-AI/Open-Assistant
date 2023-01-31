@@ -2,13 +2,12 @@
   "label_action": "Label",
   "label_title": "Label",
   "message": "Message",
-  "open_new_tab_action": "Open in new tab",
+  "open_new_tab_action": "Mở trong trang mới",
   "parent": "Parent",
   "reactions": "Reactions",
-  "report_action": "Report",
+  "report_action": "Báo cáo",
   "report_placeholder": "Why should this message be reviewed?",
-  "report_title": "Report",
-  "send_report": "Send",
-  "submit_labels": "Submit",
-  "view_user": "View user"
+  "report_title": "Báo cáo",
+  "send_report": "Gửi",
+  "submit_labels": "Submit"
 }

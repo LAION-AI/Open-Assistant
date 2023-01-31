@@ -6,11 +6,11 @@
   "label_message_flag_instruction": "Selecciona cualquiera que sea adecuada para el mensaje:",
   "label_message_likert_instruction": "Califica el mensaje:",
   "spam.question": "¿Es el mensaje spam?",
-  "fails_task.question": "¿Fracasa la respuesta en la tarea de las instrucciones?",
+  "fails_task.question": "¿Es una mala respuesta, según la tarea pedida?",
   "not_appropriate": "No apropiada",
   "pii": "Contiene información de identificación personal (PII)",
   "hate_speech": "Incitación al odio",
   "sexual_content": "Contenido sexual",
   "moral_judgement": "Juzga moralmente",
-  "political_content": "Político"
+  "political_content": "Contenido político"
 }
