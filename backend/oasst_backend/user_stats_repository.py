@@ -17,7 +17,7 @@ from sqlalchemy.dialects import postgresql
 from sqlmodel import Session, delete, func, text
 
 
-def _create_user_score(r):
+def _create_user_score(r, current_user_id: UUID | None):
     if r["UserStats"]:
         d = r["UserStats"].dict()
     else:
@@ -32,6 +32,8 @@ def _create_user_score(r):
         "last_activity_date",
     ]:
         d[k] = r[k]
+    if current_user_id:
+        d["is_current_user"] = r["user_id"] == current_user_id
     return UserScore(**d)
 
 
@@ -39,7 +41,12 @@ class UserStatsRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_leaderboard(self, time_frame: UserStatsTimeFrame, limit: int = 100) -> LeaderboardStats:
+    def get_leaderboard(
+        self,
+        time_frame: UserStatsTimeFrame,
+        limit: int = 100,
+        current_user_id: Optional[UUID] = None,
+    ) -> LeaderboardStats:
         """
         Get leaderboard stats for the specified time frame
         """
@@ -61,7 +68,7 @@ class UserStatsRepository:
             .limit(limit)
         )
 
-        leaderboard = [_create_user_score(r) for r in self.session.exec(qry)]
+        leaderboard = [_create_user_score(r, current_user_id) for r in self.session.exec(qry)]
         if len(leaderboard) > 0:
             last_update = max(x.modified_date for x in leaderboard)
         else:
@@ -79,9 +86,9 @@ class UserStatsRepository:
         for r in self.session.exec(qry):
             us = r["UserStats"]
             if us is not None:
-                stats_by_timeframe[us.time_frame] = _create_user_score(r)
+                stats_by_timeframe[us.time_frame] = _create_user_score(r, user_id)
             else:
-                stats_by_timeframe = {tf.value: _create_user_score(r) for tf in UserStatsTimeFrame}
+                stats_by_timeframe = {tf.value: _create_user_score(r, user_id) for tf in UserStatsTimeFrame}
         return stats_by_timeframe
 
     def query_total_prompts_per_user(

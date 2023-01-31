@@ -432,6 +432,7 @@ class SystemStats(BaseModel):
 class UserScore(BaseModel):
     rank: Optional[int]
     user_id: UUID
+    is_current_user: Optional[bool] = None
     username: str
     auth_method: str
     display_name: str
