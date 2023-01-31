@@ -36,6 +36,9 @@ class FrontEndUser(User):
     notes: str
     created_date: Optional[datetime] = None
     show_on_leaderboard: bool
+    streak_days: Optional[int] = None
+    streak_last_day_date: Optional[datetime] = None
+    last_activity_date: Optional[datetime] = None
 
 
 class PageResult(BaseModel):
@@ -454,9 +457,9 @@ class UserScore(BaseModel):
     reply_ranked_2: int = 0
     reply_ranked_3: int = 0
 
-    # only used for time frame "total"
     streak_last_day_date: Optional[datetime]
     streak_days: Optional[int]
+    last_activity_date: Optional[datetime]
 
 
 class LeaderboardStats(BaseModel):

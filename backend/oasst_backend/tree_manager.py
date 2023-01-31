@@ -522,7 +522,7 @@ class TreeManager:
 
         return task, message_tree_id, parent_message_id
 
-    @async_managed_tx_method(CommitMode.COMMIT)
+    @async_managed_tx_method(CommitMode.FLUSH)
     async def handle_interaction(self, interaction: protocol_schema.AnyInteraction) -> protocol_schema.Task:
         pr = self.pr
         pr.ensure_user_is_enabled()
