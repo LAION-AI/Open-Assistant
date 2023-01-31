@@ -59,4 +59,4 @@ const filterAvailableTasks = (availableTasks: Partial<AvailableTasks>) =>
   Object.entries(availableTasks)
     .filter(([, count]) => count > 0)
     .sort((a, b) => b[1] - a[1])
-    .map(([taskType]) => taskType) as TaskType[];
+    .map(([taskType, count]) => ({ taskType, count })) as Array<{ taskType: TaskType; count: number }>;
