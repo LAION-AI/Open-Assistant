@@ -195,12 +195,14 @@ class Settings(BaseSettings):
     USER_STATS_INTERVAL_WEEK: int = 15  # minutes
     USER_STATS_INTERVAL_MONTH: int = 60  # minutes
     USER_STATS_INTERVAL_TOTAL: int = 240  # minutes
+    USER_STREAK_UPDATE_INTERVAL: int = 4  # Hours
 
     @validator(
         "USER_STATS_INTERVAL_DAY",
         "USER_STATS_INTERVAL_WEEK",
         "USER_STATS_INTERVAL_MONTH",
         "USER_STATS_INTERVAL_TOTAL",
+        "USER_STREAK_UPDATE_INTERVAL,
     )
     def validate_user_stats_intervals(cls, v: int):
         if v < 1:

@@ -18,6 +18,7 @@ export interface Message extends MessageEmojis {
   created_date: string; // iso date string
   parent_id: string;
   frontend_message_id?: string;
+  user_id: string;
 }
 
 export interface Conversation {

@@ -6,6 +6,7 @@ from oasst_backend.models import ApiClient, User
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
+from oasst_shared.utils import utcnow
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, and_, or_
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
@@ -309,3 +310,8 @@ class UserRepository:
             qry = qry.limit(limit)
 
         return qry.all()
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def update_user_last_activity(self, user: User) -> None:
+        user.last_activity_date = utcnow()
+        self.db.add(user)

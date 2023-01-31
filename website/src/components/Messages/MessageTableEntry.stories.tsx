@@ -1,3 +1,4 @@
+import { SessionProvider } from "next-auth/react";
 import React from "react";
 import { Message } from "src/types/Conversation";
 
@@ -10,7 +11,11 @@ export default {
 };
 
 const Template = ({ enabled, highlight, ...message }) => {
-  return <MessageTableEntry message={message as Message} enabled={enabled} highlight={highlight} />;
+  return (
+    <SessionProvider>
+      <MessageTableEntry message={message as Message} enabled={enabled} highlight={highlight} />;
+    </SessionProvider>
+  );
 };
 
 export const Default = Template.bind({});
