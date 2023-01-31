@@ -202,7 +202,7 @@ class Settings(BaseSettings):
         "USER_STATS_INTERVAL_WEEK",
         "USER_STATS_INTERVAL_MONTH",
         "USER_STATS_INTERVAL_TOTAL",
-        "USER_STREAK_UPDATE_INTERVAL,
+        "USER_STREAK_UPDATE_INTERVAL",
     )
     def validate_user_stats_intervals(cls, v: int):
         if v < 1:
