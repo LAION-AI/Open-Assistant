@@ -279,7 +279,6 @@ def set_startup_time() -> None:
 
 @app.on_event("startup")
 @repeat_every(seconds=60 * settings.USER_STREAK_UPDATE_INTERVAL, wait_first=False)
-@managed_tx_function(auto_commit=CommitMode.COMMIT)
 def update_user_streak(session: Session) -> None:
     try:
         global startup_time
@@ -314,6 +313,7 @@ def update_user_streak(session: Session) -> None:
                             user.streak_days += 1
                             user.streak_last_day_date = current_time
                     session.add(user)
+                    session.commit()
         else:
             logger.debug("Not yet 24hours since the process started! ...")
 
