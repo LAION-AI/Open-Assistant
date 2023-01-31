@@ -256,14 +256,14 @@ class LabelInitialPromptTask(AbstractLabelTask):
     """A task to label an initial prompt."""
 
     type: Literal["label_initial_prompt"] = "label_initial_prompt"
-    prompt: str = Field(None, deprecated=True, description="deprecated, use `prompt_message`")
+    prompt: str | None = Field(None, deprecated=True, description="deprecated, use `prompt_message`")
 
 
 class LabelConversationReplyTask(AbstractLabelTask):
     """A task to label a reply to a conversation."""
 
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
-    reply: str = Field(None, deprecated=True, description="deprecated, use last message of `conversation`")
+    reply: str | None = Field(None, deprecated=True, description="deprecated, use last message of `conversation`")
 
 
 class LabelPrompterReplyTask(LabelConversationReplyTask):
