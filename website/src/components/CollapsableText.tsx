@@ -29,6 +29,7 @@ export const CollapsableText = ({
   if (typeof text !== "string" || text.length <= maxLength) {
     return <>{text}</>;
   } else {
+    const text_with_breaks = text.split('\n').map((str, index) => <p key={index}>{str}</p>);
     return (
       <>
         <span>
@@ -51,7 +52,7 @@ export const CollapsableText = ({
             <ModalContent alignItems="center">
               <ModalHeader>Full Text</ModalHeader>
               <ModalCloseButton />
-              <ModalBody>{text}</ModalBody>
+              <ModalBody>{text_with_breaks}</ModalBody>
             </ModalContent>
           </ModalOverlay>
         </Modal>
