@@ -311,7 +311,7 @@ class UserRepository:
 
         return qry.all()
 
-    @managed_tx_method(CommitMode.COMMIT)
+    @managed_tx_method(CommitMode.FLUSH)
     def update_user_last_activity(self, client_user: protocol_schema.User) -> None:
         user = self.lookup_client_user(client_user=client_user, create_missing=False)
         if user is None:
