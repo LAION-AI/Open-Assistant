@@ -8,7 +8,7 @@ from pydantic import AnyHttpUrl, BaseModel, BaseSettings, FilePath, PostgresDsn,
 class TreeManagerConfiguration(BaseModel):
     """TreeManager configuration settings"""
 
-    max_active_trees: int = 10
+    max_active_trees: int = 5
     """Maximum number of concurrently active message trees in the database.
     No new initial prompt tasks are handed out to users if this
     number is reached."""
@@ -19,7 +19,10 @@ class TreeManagerConfiguration(BaseModel):
     max_children_count: int = 3
     """Maximum number of reply messages per tree node."""
 
-    goal_tree_size: int = 15
+    num_prompter_replies: int = 1
+    """Number of prompter replies to collect per assistant reply."""
+
+    goal_tree_size: int = 10
     """Total number of messages to gather per tree."""
 
     num_reviews_initial_prompt: int = 3
@@ -109,11 +112,11 @@ class TreeManagerConfiguration(BaseModel):
 
     rank_prompter_replies: bool = False
 
-    lonely_children_count: int = 2
+    lonely_children_count: int = 3
     """Number of children below which parents are preferred during sampling for reply tasks."""
 
     p_lonely_child_extension: float = 0.8
-    """Probability to select a parent with less than lonely_children_count children."""
+    """Probability to select a prompter message parent with less than lonely_children_count children."""
 
     recent_tasks_span_sec: int = 3 * 60  # 3 min
     """Time in seconds of recent tasks to consider for exclusion during task selection."""
@@ -203,6 +206,11 @@ class Settings(BaseSettings):
         if v < 1:
             raise ValueError(v)
         return v
+
+    RATE_LIMIT_TASK_USER_TIMES: int = 60
+    RATE_LIMIT_TASK_USER_MINUTES: int = 5
+    RATE_LIMIT_TASK_API_TIMES: int = 10_000
+    RATE_LIMIT_TASK_API_MINUTES: int = 1
 
     class Config:
         env_file = ".env"

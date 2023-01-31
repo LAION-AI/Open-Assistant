@@ -439,12 +439,13 @@ class TreeManager:
                 if len(extendible_parents) > 0:
                     random_parent: ExtendibleParentRow = None
                     if self.cfg.p_lonely_child_extension > 0 and self.cfg.lonely_children_count > 1:
-                        # check if we have extendible parents with a small number of replies
+                        # check if we have extendible prompter parents with a small number of replies
 
                         lonely_children_parents = [
                             p
                             for p in extendible_parents
                             if 0 < p.active_children_count < self.cfg.lonely_children_count
+                            and p.parent_role == "prompter"
                             and p.parent_id not in recent_reply_task_parents
                         ]
                         if len(lonely_children_parents) > 0 and random.random() < self.cfg.p_lonely_child_extension:
@@ -933,6 +934,7 @@ WHERE mts.active                        -- only consider active trees
     AND (c.review_result OR coalesce(c.review_count, 0) < :num_reviews_reply) -- don't count children with negative review but count elements under review
 GROUP BY m.id, m.role, m.depth, m.message_tree_id, mts.max_children_count
 HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
+    AND (COUNT(c.id) < :num_prompter_replies OR m.role = 'prompter')   -- limit replies to assistant messages
     AND COUNT(c.id) FILTER (WHERE c.user_id = :user_id) = 0  -- without reply by user
 """
 
@@ -945,6 +947,7 @@ HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
             {
                 "growing_state": message_tree_state.State.GROWING,
                 "num_reviews_reply": self.cfg.num_reviews_reply,
+                "num_prompter_replies": self.cfg.num_prompter_replies,
                 "lang": lang,
                 "user_id": user_id,
             },
@@ -982,6 +985,7 @@ HAVING COUNT(m.id) < mts.goal_tree_size
             {
                 "growing_state": message_tree_state.State.GROWING,
                 "num_reviews_reply": self.cfg.num_reviews_reply,
+                "num_prompter_replies": self.cfg.num_prompter_replies,
                 "lang": lang,
                 "user_id": user_id,
             },

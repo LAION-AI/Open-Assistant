@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
+from oasst_backend.config import settings
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
 from oasst_backend.tree_manager import TreeManager
 from oasst_shared.exceptions import OasstError, OasstErrorCode
@@ -19,8 +20,18 @@ router = APIRouter()
     "/",
     response_model=protocol_schema.AnyTask,
     dependencies=[
-        Depends(deps.UserRateLimiter(times=100, minutes=5)),
-        Depends(deps.APIClientRateLimiter(times=10_000, minutes=1)),
+        Depends(
+            deps.UserRateLimiter(
+                times=settings.RATE_LIMIT_TASK_USER_TIMES,
+                minutes=settings.RATE_LIMIT_TASK_USER_MINUTES,
+            )
+        ),
+        Depends(
+            deps.APIClientRateLimiter(
+                times=settings.RATE_LIMIT_TASK_API_TIMES,
+                minutes=settings.RATE_LIMIT_TASK_API_MINUTES,
+            )
+        ),
     ],
 )  # work with Union once more types are added
 def request_task(
