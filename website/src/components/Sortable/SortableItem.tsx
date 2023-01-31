@@ -1,8 +1,8 @@
 import { Box, useColorModeValue } from "@chakra-ui/react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
 import { PropsWithChildren, useState } from "react";
-import { RxDragHandleDots2 } from "react-icons/rx";
 
 export const SortableItem = ({
   children,
@@ -45,7 +45,7 @@ export const SortableItem = ({
       style={style}
       shadow="base"
     >
-      <Box pr="4">{isEditable ? <RxDragHandleDots2 size="20px" /> : `${index + 1}.`}</Box>
+      <Box pr="4">{isEditable ? <GripVertical size="20px" /> : `${index + 1}.`}</Box>
       {children}
     </Box>
   );

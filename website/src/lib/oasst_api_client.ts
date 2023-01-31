@@ -1,6 +1,7 @@
-import { JWT } from "next-auth/jwt";
 import type { Message } from "src/types/Conversation";
-import type { BackendUser } from "src/types/Users";
+import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
+import type { AvailableTasks } from "src/types/Task";
+import type { BackendUser, BackendUserCore, User } from "src/types/Users";
 
 export class OasstError {
   message: string;
@@ -14,8 +15,30 @@ export class OasstError {
   }
 }
 
+export type FetchUsersParams = {
+  limit: number;
+  cursor?: string;
+  direction: "forward" | "back";
+  searchDisplayName?: string;
+  sortKey?: "username" | "display_name";
+};
+
+export type FetchUsersResponse<T extends User | BackendUser = BackendUser> = {
+  items: T[];
+  next?: string;
+  prev?: string;
+  sort_key: "username" | "display_name";
+  order: "asc" | "desc";
+};
+
 export class OasstApiClient {
-  constructor(private readonly oasstApiUrl: string, private readonly oasstApiKey: string) {}
+  oasstApiUrl: string;
+  oasstApiKey: string;
+
+  constructor(oasstApiUrl: string, oasstApiKey: string) {
+    this.oasstApiUrl = oasstApiUrl;
+    this.oasstApiKey = oasstApiKey;
+  }
 
   private async post(path: string, body: any): Promise<any> {
     const resp = await fetch(`${this.oasstApiUrl}${path}`, {
@@ -101,14 +124,11 @@ export class OasstApiClient {
   // TODO return a strongly typed Task?
   // This method is used to store a task in RegisteredTask.task.
   // This is a raw Json type, so we can't use it to strongly type the task.
-  async fetchTask(taskType: string, userToken: JWT): Promise<any> {
+  async fetchTask(taskType: string, user: BackendUserCore, lang: string): Promise<any> {
     return this.post("/api/v1/tasks/", {
       type: taskType,
-      user: {
-        id: userToken.sub,
-        display_name: userToken.name || userToken.email,
-        auth_method: "local",
-      },
+      user,
+      lang,
     });
   }
 
@@ -133,35 +153,90 @@ export class OasstApiClient {
     messageId: string,
     userMessageId: string,
     content: object,
-    userToken: JWT
+    user: BackendUserCore,
+    lang: string
   ): Promise<any> {
     return this.post("/api/v1/tasks/interaction", {
       type: updateType,
-      user: {
-        id: userToken.sub,
-        display_name: userToken.name || userToken.email,
-        auth_method: "local",
-      },
+      user,
       task_id: taskId,
       message_id: messageId,
       user_message_id: userMessageId,
+      lang,
       ...content,
     });
+  }
+
+  /**
+   * Returns the tasks availability information for given `user`.
+   */
+  async fetch_tasks_availability(user: object): Promise<any> {
+    return this.post("/api/v1/tasks/availability", user);
+  }
+
+  /**
+   * Returns the message stats from the backend.
+   */
+  async fetch_stats(): Promise<any> {
+    return this.get("/api/v1/stats/");
+  }
+
+  /**
+   * Returns the tree manager stats from the backend.
+   */
+  async fetch_tree_manager(): Promise<any> {
+    return this.get("/api/v1/stats/tree_manager");
   }
 
   /**
    * Returns the `BackendUser` associated with `user_id`
    */
   async fetch_user(user_id: string): Promise<BackendUser> {
-    return this.get(`/api/v1/users/users/${user_id}`);
+    return this.get(`/api/v1/users/${user_id}`);
   }
 
   /**
-   * Returns the `max_count` `BackendUser`s stored by the backend.
+   * Returns the set of `BackendUser`s stored by the backend.
+   *
+   * @param {number} max_count - The maximum number of users to fetch.
+   * @param {string} cursor - The user's `display_name` to use when paginating.
+   * @param {boolean} isForward - If true and `cursor` is not empty, pages
+   *        forward.  If false and `cursor` is not empty, pages backwards.
+   * @returns {Promise<BackendUser[]>} A Promise that returns an array of `BackendUser` objects.
    */
-  async fetch_users(max_count: number): Promise<BackendUser[]> {
-    return this.get(`/api/v1/frontend_users/?max_count=${max_count}`);
+  async fetch_users({
+    direction,
+    limit,
+    cursor,
+    searchDisplayName,
+    sortKey = "display_name",
+  }: FetchUsersParams): Promise<FetchUsersResponse> {
+    const params = new URLSearchParams({
+      search_text: searchDisplayName,
+      sort_key: sortKey,
+      max_count: limit.toString(),
+    });
+
+    // The backend API uses different query parameters depending on the
+    // pagination direction but they both take the same cursor value.
+    // Depending on direction, pick the right query param.
+    if (cursor !== "") {
+      params.append(direction === "forward" ? "after" : "before", cursor);
+    }
+    const BASE_URL = `/api/v1/users/cursor`;
+    const url = `${BASE_URL}/?${params.toString()}`;
+    return this.get(url);
   }
+
+  // async fetch_user_by_display_name(name: string): Promise<BackendUser[]> {
+  //   const params = new URLSearchParams({
+  //     search_text: name,
+  //   });
+
+  //   const endpoint = `/api/v1/frontend_users/by_display_name`;
+
+  //   return this.get(`${endpoint}?${params.toString()}`);
+  // }
 
   /**
    * Returns the `Message`s associated with `user_id` in the backend.
@@ -187,8 +262,21 @@ export class OasstApiClient {
   /**
    * Returns the current leaderboard ranking.
    */
-  async fetch_leaderboard(): Promise<any> {
-    return this.get(`/api/v1/experimental/leaderboards/create/assistant`);
+  async fetch_leaderboard(
+    time_frame: LeaderboardTimeFrame,
+    { limit = 20 }: { limit?: number }
+  ): Promise<LeaderboardReply> {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+    });
+    return this.get(`/api/v1/leaderboards/${time_frame}?${params.toString()}`);
+  }
+
+  /**
+   * Returns the counts of all tasks (some might be zero)
+   */
+  async fetch_available_tasks(user: BackendUserCore, lang: string): Promise<AvailableTasks> {
+    return this.post(`/api/v1/tasks/availability?lang=${lang}`, user);
   }
 }
 

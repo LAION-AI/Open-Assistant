@@ -6,6 +6,7 @@ from loguru import logger
 from oasst_backend.models import ApiClient, Task
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.user_repository import UserRepository
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -67,17 +68,30 @@ class TaskRepository:
 
             case protocol_schema.RankPrompterRepliesTask:
                 payload = db_payload.RankPrompterRepliesPayload(
-                    type=task.type, conversation=task.conversation, reply_messages=task.reply_messages
+                    type=task.type,
+                    conversation=task.conversation,
+                    reply_messages=task.reply_messages,
+                    ranking_parent_id=task.ranking_parent_id,
+                    message_tree_id=task.message_tree_id,
                 )
 
             case protocol_schema.RankAssistantRepliesTask:
                 payload = db_payload.RankAssistantRepliesPayload(
-                    type=task.type, conversation=task.conversation, reply_messages=task.reply_messages
+                    type=task.type,
+                    conversation=task.conversation,
+                    reply_messages=task.reply_messages,
+                    ranking_parent_id=task.ranking_parent_id,
+                    message_tree_id=task.message_tree_id,
                 )
 
             case protocol_schema.LabelInitialPromptTask:
                 payload = db_payload.LabelInitialPromptPayload(
-                    type=task.type, message_id=task.message_id, prompt=task.prompt, valid_labels=task.valid_labels
+                    type=task.type,
+                    message_id=task.message_id,
+                    prompt=task.prompt,
+                    valid_labels=task.valid_labels,
+                    mandatory_labels=task.mandatory_labels,
+                    mode=task.mode,
                 )
 
             case protocol_schema.LabelPrompterReplyTask:
@@ -88,6 +102,7 @@ class TaskRepository:
                     reply=task.reply,
                     valid_labels=task.valid_labels,
                     mandatory_labels=task.mandatory_labels,
+                    mode=task.mode,
                 )
 
             case protocol_schema.LabelAssistantReplyTask:
@@ -98,6 +113,7 @@ class TaskRepository:
                     reply=task.reply,
                     valid_labels=task.valid_labels,
                     mandatory_labels=task.mandatory_labels,
+                    mode=task.mode,
                 )
 
             case _:
@@ -113,6 +129,7 @@ class TaskRepository:
         assert task_model.id == task.id
         return task_model
 
+    @managed_tx_method(CommitMode.COMMIT)
     def bind_frontend_message_id(self, task_id: UUID, frontend_message_id: str):
         validate_frontend_message_id(frontend_message_id)
 
@@ -127,10 +144,9 @@ class TaskRepository:
 
         task.frontend_message_id = frontend_message_id
         task.ack = True
-        # ToDo: check race-condition, transaction
         self.db.add(task)
-        self.db.commit()
 
+    @managed_tx_method(CommitMode.COMMIT)
     def close_task(self, frontend_message_id: str, allow_personal_tasks: bool = False):
         """
         Mark task as done. No further messages will be accepted for this task.
@@ -151,8 +167,8 @@ class TaskRepository:
 
         task.done = True
         self.db.add(task)
-        self.db.commit()
 
+    @managed_tx_method(CommitMode.COMMIT)
     def acknowledge_task_failure(self, task_id):
         # find task
         task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
@@ -166,8 +182,8 @@ class TaskRepository:
         task.ack = False
         # ToDo: check race-condition, transaction
         self.db.add(task)
-        self.db.commit()
 
+    @managed_tx_method(CommitMode.COMMIT)
     def insert_task(
         self,
         payload: db_payload.TaskPayload,
@@ -189,8 +205,6 @@ class TaskRepository:
         )
         logger.debug(f"inserting {task=}")
         self.db.add(task)
-        self.db.commit()
-        self.db.refresh(task)
         return task
 
     def fetch_task_by_frontend_message_id(self, message_id: str) -> Task:

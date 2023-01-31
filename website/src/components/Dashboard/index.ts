@@ -1,2 +1,3 @@
-export { LeaderboardTable } from "./LeaderboardTable";
+export { LeaderboardWidget } from "./LeaderboardWidget";
 export { TaskOption } from "./TaskOption";
+export { WelcomeCard } from "./WelcomeCard";

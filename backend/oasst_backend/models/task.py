@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
+from oasst_shared.utils import utcnow
 from sqlalchemy import false
 from sqlmodel import Field, SQLModel
 
@@ -19,9 +20,9 @@ class Task(SQLModel, table=True):
         ),
     )
     created_date: Optional[datetime] = Field(
-        sa_column=sa.Column(sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
+        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp()),
     )
-    expiry_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(), nullable=True))
+    expiry_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True))
     user_id: Optional[UUID] = Field(nullable=True, foreign_key="user.id", index=True)
     payload_type: str = Field(nullable=False, max_length=200)
     payload: PayloadContainer = Field(sa_column=sa.Column(payload_column_type(PayloadContainer), nullable=False))
@@ -35,4 +36,4 @@ class Task(SQLModel, table=True):
 
     @property
     def expired(self) -> bool:
-        return self.expiry_date is not None and datetime.utcnow() > self.expiry_date
+        return self.expiry_date is not None and utcnow() > self.expiry_date

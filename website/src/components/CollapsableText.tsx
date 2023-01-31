@@ -11,6 +11,8 @@ import {
 } from "@chakra-ui/react";
 import React, { ReactNode } from "react";
 
+const killEvent = (e) => e.stopPropagation();
+
 export const CollapsableText = ({
   text,
   maxLength = 220,
@@ -44,8 +46,9 @@ export const CollapsableText = ({
           </Button>
         </span>
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior={"inside"}>
-          <ModalOverlay style={{ width: "100%", height: "100%" }}>
-            <ModalContent maxH="400">
+          {/* we kill the event here to disable drag and drop, since it is in the same container */}
+          <ModalOverlay onMouseDown={killEvent}>
+            <ModalContent alignItems="center">
               <ModalHeader>Full Text</ModalHeader>
               <ModalCloseButton />
               <ModalBody>{text}</ModalBody>

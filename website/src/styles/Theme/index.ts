@@ -2,6 +2,7 @@ import { type ThemeConfig, extendTheme } from "@chakra-ui/react";
 import { Styles } from "@chakra-ui/theme-tools";
 
 import { colors } from "./colors";
+import { cardTheme } from "./components/Card";
 import { containerTheme } from "./components/Container";
 
 const config: ThemeConfig = {
@@ -12,6 +13,7 @@ const config: ThemeConfig = {
 
 const components = {
   Container: containerTheme,
+  Card: cardTheme,
 };
 
 const breakpoints = {

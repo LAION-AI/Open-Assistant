@@ -3,7 +3,8 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { getAdminLayout } from "src/components/Layout";
-import UsersCell from "src/components/UsersCell";
+import { UserTable } from "src/components/UserTable";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 /**
  * Provides the admin index page that will display a list of users and give
@@ -27,7 +28,6 @@ const AdminIndex = () => {
     }
     router.push("/");
   }, [router, session, status]);
-
   return (
     <>
       <Head>
@@ -37,7 +37,7 @@ const AdminIndex = () => {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <main className="oa-basic-theme">{status === "loading" ? "loading..." : <UsersCell />}</main>
+      <main>{status === "loading" ? "loading..." : <UserTable />}</main>
     </>
   );
 };

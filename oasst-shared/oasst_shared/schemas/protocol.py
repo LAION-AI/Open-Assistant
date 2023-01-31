@@ -37,12 +37,25 @@ class FrontEndUser(User):
     created_date: Optional[datetime] = None
 
 
+class PageResult(BaseModel):
+    prev: str | None
+    next: str | None
+    sort_key: str
+    items: list
+    order: Literal["asc", "desc"]
+
+
+class FrontEndUserPage(PageResult):
+    items: list[FrontEndUser]
+
+
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
     id: Optional[UUID] = None
     frontend_message_id: Optional[str] = None
     text: str
+    lang: Optional[str]  # BCP 47
     is_assistant: bool
 
 
@@ -51,10 +64,26 @@ class Conversation(BaseModel):
 
     messages: list[ConversationMessage] = []
 
+    def __len__(self):
+        return len(self.messages)
+
+    @property
+    def is_prompter_turn(self) -> bool:
+        if len(self) == 0:
+            return True
+        last_message = self.messages[-1]
+        if last_message.is_assistant:
+            return True
+        return False
+
 
 class Message(ConversationMessage):
     parent_id: Optional[UUID] = None
     created_date: Optional[datetime] = None
+
+
+class MessagePage(PageResult):
+    items: list[Message]
 
 
 class MessageTree(BaseModel):
@@ -72,6 +101,7 @@ class TaskRequest(BaseModel):
     # this is optional. https://github.com/pydantic/pydantic/issues/1270
     user: Optional[User] = Field(None, nullable=True)
     collective: bool = False
+    lang: Optional[str] = Field(None, nullable=True)  # BCP 47
 
 
 class TaskAck(BaseModel):
@@ -169,6 +199,8 @@ class RankConversationRepliesTask(Task):
     conversation: Conversation  # the conversation so far
     replies: list[str]  # deprecated, use reply_messages
     reply_messages: list[ConversationMessage]
+    message_tree_id: UUID
+    ranking_parent_id: UUID
 
 
 class RankPrompterRepliesTask(RankConversationRepliesTask):
@@ -264,6 +296,7 @@ class TextReplyToMessage(Interaction):
     message_id: str
     user_message_id: str
     text: constr(min_length=1, strip_whitespace=True)
+    lang: Optional[str]  # BCP 47
 
 
 class MessageRating(Interaction):
@@ -356,14 +389,41 @@ class SystemStats(BaseModel):
 
 
 class UserScore(BaseModel):
-    ranking: int
+    rank: Optional[int]
     user_id: UUID
     username: str
+    auth_method: str
     display_name: str
-    score: int
+
+    leader_score: int = 0
+
+    base_date: Optional[datetime]
+    modified_date: Optional[datetime]
+
+    prompts: int = 0
+    replies_assistant: int = 0
+    replies_prompter: int = 0
+    labels_simple: int = 0
+    labels_full: int = 0
+    rankings_total: int = 0
+    rankings_good: int = 0
+
+    accepted_prompts: int = 0
+    accepted_replies_assistant: int = 0
+    accepted_replies_prompter: int = 0
+
+    reply_ranked_1: int = 0
+    reply_ranked_2: int = 0
+    reply_ranked_3: int = 0
+
+    # only used for time frame "total"
+    streak_last_day_date: Optional[datetime]
+    streak_days: Optional[int]
 
 
 class LeaderboardStats(BaseModel):
+    time_frame: str
+    last_updated: datetime
     leaderboard: List[UserScore]
 
 

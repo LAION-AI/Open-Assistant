@@ -2,12 +2,14 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { boolean } from "boolean";
 import type { AuthOptions } from "next-auth";
 import NextAuth from "next-auth";
+import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 import prisma from "src/lib/prismadb";
+import { generateUsername } from "unique-username-generator";
 
-const providers = [];
+const providers: Provider[] = [];
 
 // Register an email magic link auth method.
 providers.push(
@@ -39,18 +41,20 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
       name: "Debug Credentials",
       credentials: {
         username: { label: "Username", type: "text" },
+        role: { label: "Role", type: "text" },
       },
       async authorize(credentials) {
         const user = {
           id: credentials.username,
           name: credentials.username,
+          role: credentials.role,
         };
         // save the user to the database
         await prisma.user.upsert({
           where: {
             id: user.id,
           },
-          update: {},
+          update: user,
           create: user,
         });
         return user;
@@ -86,6 +90,8 @@ export const authOptions: AuthOptions = {
      */
     async session({ session, token }) {
       session.user.role = token.role;
+      session.user.isNew = token.isNew;
+      session.user.name = token.name;
       return session;
     },
     /**
@@ -93,11 +99,13 @@ export const authOptions: AuthOptions = {
      * This let's use forward the role to the session object.
      */
     async jwt({ token }) {
-      const { role } = await prisma.user.findUnique({
+      const { isNew, name, role } = await prisma.user.findUnique({
         where: { id: token.sub },
-        select: { role: true },
+        select: { name: true, role: true, isNew: true },
       });
+      token.name = name;
       token.role = role;
+      token.isNew = isNew;
       return token;
     },
   },
@@ -105,7 +113,18 @@ export const authOptions: AuthOptions = {
     /**
      * Update the user's role after they have successfully signed in
      */
-    async signIn({ user, account }) {
+    async signIn({ user, account, isNewUser }) {
+      if (isNewUser && account.provider === "email") {
+        await prisma.user.update({
+          data: {
+            name: generateUsername(),
+          },
+          where: {
+            id: user.id,
+          },
+        });
+      }
+
       // Get the admin list for the user's auth type.
       const adminForAccountType = adminUserMap.get(account.provider);
 

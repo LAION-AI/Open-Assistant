@@ -1,25 +1,18 @@
 import { Box, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
-import { useState } from "react";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { getDashboardLayout } from "src/components/Layout";
 import { MessageLoading } from "src/components/Loading/MessageLoading";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { MessageWithChildren } from "src/components/Messages/MessageWithChildren";
 import { get } from "src/lib/api";
-import useSWR from "swr";
+import { Message } from "src/types/Conversation";
+import useSWRImmutable from "swr/immutable";
 
-const MessageDetail = ({ id }) => {
+const MessageDetail = ({ id }: { id: string }) => {
   const backgroundColor = useColorModeValue("white", "gray.800");
-  const [parent, setParent] = useState(null);
 
-  const { isLoading: isLoadingParent } = useSWR(id ? `/api/messages/${id}/parent` : null, get, {
-    onSuccess: (data) => {
-      setParent(data);
-    },
-    onError: () => {
-      setParent(null);
-    },
-  });
+  const { isLoading: isLoadingParent, data: parent } = useSWRImmutable<Message>(`/api/messages/${id}/parent`, get);
 
   if (isLoadingParent) {
     return <MessageLoading />;
@@ -56,10 +49,13 @@ const MessageDetail = ({ id }) => {
   );
 };
 
-MessageDetail.getInitialProps = async ({ query }) => {
-  const { id } = query;
-  return { id };
-};
-
 MessageDetail.getLayout = (page) => getDashboardLayout(page);
+
+export const getServerSideProps = async ({ locale, query }) => ({
+  props: {
+    id: query.id,
+    ...(await serverSideTranslations(locale, ["common"])),
+  },
+});
+
 export default MessageDetail;

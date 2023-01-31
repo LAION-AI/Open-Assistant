@@ -3,6 +3,7 @@ import Head from "next/head";
 import { getTransparentHeaderLayout } from "src/components/Layout";
 import { PolicyChapterCard } from "src/components/PolicyCards/PolicyChapterCard";
 import { PolicySectionCard } from "src/components/PolicyCards/PolicySectionCard";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const PrivacyPolicy = () => {
   const backgroundColor = useColorModeValue("gray.100", "gray.800");
@@ -88,7 +89,7 @@ const PrivacyPolicy = () => {
     {
       number: "4",
       title: "Inquiries",
-      desc: "When you contact us via e-mail, telephone or telefax, your inquiry, including all personal data arising thereof will be stored by us for the purpose of processing your request. We will not pass on these data without your consent. The processing of these data is based on Article 6 (1) (1) (b) GDPR, if your inquiry is related to the fulfilment of a contract concluded with us or required for the implementation of pre-contractual measures. Furthermore, the processing is based on Article 6 (1) (1) (f) GDPR, because we have a legitimate interest in the effective handling of requests sent to us. In addition, according to Article 6 (1) (1) (c) GDPR we are also entitled to the processing of the above-mentioned data, because we are legally bound to enable fast electronic contact and immediate communication. Of course, your data will only be used strictly according to purpose and only for processing and responding to your request. After final processing, your data will immediately be anonymized or deleted, unless we are bound by a legally prescribed storage period.",
+      desc: "When you contact us via e-mail, telephone or telefax, your inquiry, including all personal data arising thereof will be stored by us for the purpose of processing your request. We will not pass on these data without your consent. The processing of these data is based on Article 6 (1) (1) (b) GDPR, if your inquiry is related to the fulfillment of a contract concluded with us or required for the implementation of pre-contractual measures. Furthermore, the processing is based on Article 6 (1) (1) (f) GDPR, because we have a legitimate interest in the effective handling of requests sent to us. In addition, according to Article 6 (1) (1) (c) GDPR we are also entitled to the processing of the above-mentioned data, because we are legally bound to enable fast electronic contact and immediate communication. Of course, your data will only be used strictly according to purpose and only for processing and responding to your request. After final processing, your data will immediately be anonymized or deleted, unless we are bound by a legally prescribed storage period.",
       sections: [],
     },
     {
