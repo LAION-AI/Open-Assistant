@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=/var/cache/pip \
 
 
 
-FROM python:3.10-alpine3.17 as dev
+FROM python:3.10-alpine3.17 as base-env
 ARG APP_USER
 ARG APP_RELATIVE_PATH
 ARG MODULE
@@ -42,25 +42,44 @@ RUN adduser               \
       --no-create-home    \
       "${APP_USER}"
 
+USER ${APP_USER}
 
 WORKDIR ${APP_ROOT}
-
-
-COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared ${SHARED_LIBS_BASE}/oasst-shared
-RUN --mount=type=cache,target=/var/cache/pip,from=build \
-    pip install                  \
-      --cache-dir=/var/cache/pip \
-      -e "${SHARED_LIBS_BASE}/oasst-shared"
-
-
-USER ${APP_USER}
 
 
 COPY --chown="${APP_USER}:${APP_USER}" --from=build /build/lib                         ${APP_LIBS}
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/__main__.py .
 
 
+CMD python3 __main__.py --backend-url "${BACKEND_URL}" --inference-server-url "${INFERENCE_SERVER_URL}"
+
+
+
+FROM base-env as dev
+ARG APP_USER
+
+
+COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared ${SHARED_LIBS_BASE}/oasst-shared
+
+USER root
+RUN --mount=type=cache,target=/var/cache/pip,from=build \
+    pip install                  \
+      --cache-dir=/var/cache/pip \
+      -e "${SHARED_LIBS_BASE}/oasst-shared"
+USER ${APP_USER}
+
+
 VOLUME [ "${APP_BASE}/lib/oasst-shared" ]
 
 
-CMD python3 __main__.py --backend-url "${BACKEND_URL}" --inference-server-url "${INFERENCE_SERVER_URL}"
+
+FROM base-env as prod
+ARG APP_USER
+
+
+COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared /tmp/lib/oasst-shared
+RUN --mount=type=cache,target=/var/cache/pip,from=dev \
+    pip install                  \
+      --cache-dir=/var/cache/pip \
+      --target="${APP_LIBS}"     \
+      /tmp/lib/oasst-shared
