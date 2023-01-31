@@ -2,6 +2,7 @@
 
 import http
 import random
+from uuid import uuid4
 
 import requests
 import typer
@@ -14,7 +15,7 @@ USER = {"id": "1234", "display_name": "John Doe", "auth_method": "local"}
 
 
 def _random_message_id():
-    return str(random.randint(1000, 9999))
+    return str(uuid4())
 
 
 def _render_message(message: dict) -> str:
