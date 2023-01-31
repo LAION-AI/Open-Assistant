@@ -136,7 +136,8 @@ services:
     build:
       dockerfile: docker/inference/Dockerfile.server
       context: .
-    image: oasst-inference-server
+      target: dev
+    image: oasst-inference-server:dev
     environment:
       - "PORT=8000"
       - "REDIS_HOST=redis"
@@ -153,7 +154,8 @@ services:
     build:
       dockerfile: docker/inference/Dockerfile.worker
       context: .
-    image: oasst-inference-worker
+      target: dev
+    image: oasst-inference-worker:dev
     environment:
       - "BACKEND_URL=ws://inference-server:8000"
       - "INFERENCE_SERVER_URL=http://inference-text-generation-server"
