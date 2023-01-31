@@ -12,5 +12,6 @@
   "hate_speech": "Incitación al odio",
   "sexual_content": "Contenido sexual",
   "moral_judgement": "Juzga moralmente",
-  "political_content": "Contenido político"
+  "political_content": "Contenido político",
+  "lang_mismatch": "Idioma incorrecto"
 }
