@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from http import HTTPStatus
 from math import ceil
 from pathlib import Path
@@ -30,7 +31,7 @@ from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
 
 app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
-startup_time = None
+startup_time: datetime = None
 
 
 @app.exception_handler(OasstError)
@@ -281,10 +282,9 @@ def set_startup_time() -> None:
 @repeat_every(seconds=60 * settings.USER_STREAK_UPDATE_INTERVAL, wait_first=False)
 def update_user_streak(session: Session) -> None:
     try:
-        global startup_time
         current_time = utcnow()
         timedelta = current_time - startup_time
-        if timedelta.days >= 0:
+        if timedelta.days > 0:
             # Update only greater than 24 hours . Do nothing
             logger.debug("Process timedelta greater than 24h")
             statement = select(User)

@@ -22,7 +22,15 @@ def _create_user_score(r):
         d = r["UserStats"].dict()
     else:
         d = {"modified_date": utcnow()}
-    for k in ["user_id", "username", "auth_method", "display_name"]:
+    for k in [
+        "user_id",
+        "username",
+        "auth_method",
+        "display_name",
+        "streak_days",
+        "streak_last_day_date",
+        "last_activity_date",
+    ]:
         d[k] = r[k]
     return UserScore(**d)
 
@@ -37,7 +45,16 @@ class UserStatsRepository:
         """
 
         qry = (
-            self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
+            self.session.query(
+                User.id.label("user_id"),
+                User.username,
+                User.auth_method,
+                User.display_name,
+                User.streak_days,
+                User.streak_last_day_date,
+                User.last_activity_date,
+                UserStats,
+            )
             .join(UserStats, User.id == UserStats.user_id)
             .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard)
             .order_by(UserStats.rank)

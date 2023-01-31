@@ -457,9 +457,9 @@ class UserScore(BaseModel):
     reply_ranked_2: int = 0
     reply_ranked_3: int = 0
 
-    # only used for time frame "total"
     streak_last_day_date: Optional[datetime]
     streak_days: Optional[int]
+    last_activity_date: Optional[datetime]
 
 
 class LeaderboardStats(BaseModel):
