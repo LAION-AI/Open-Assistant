@@ -1,0 +1,13 @@
+{
+  "label_action": "Label",
+  "label_title": "Label",
+  "message": "Message",
+  "open_new_tab_action": "Mở trong trang mới",
+  "parent": "Parent",
+  "reactions": "Reactions",
+  "report_action": "Báo cáo",
+  "report_placeholder": "Why should this message be reviewed?",
+  "report_title": "Báo cáo",
+  "send_report": "Gửi",
+  "submit_labels": "Submit"
+}
