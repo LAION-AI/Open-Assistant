@@ -478,6 +478,7 @@ class TreeManager:
             case TaskType.LABEL_PROMPT:
                 assert len(prompts_need_review) > 0
                 message = random.choice(prompts_need_review)
+                message = self.pr.fetch_message(message.id)  # re-fetch message including emojis
 
                 label_mode = protocol_schema.LabelTaskMode.full
                 label_disposition = protocol_schema.LabelTaskDisposition.quality
@@ -494,6 +495,7 @@ class TreeManager:
                 task = protocol_schema.LabelInitialPromptTask(
                     message_id=message.id,
                     prompt=message.text,
+                    prompt_message=prepare_conversation_message(message),
                     valid_labels=list(map(lambda x: x.value, valid_labels)),
                     mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt)),
                     mode=label_mode,
