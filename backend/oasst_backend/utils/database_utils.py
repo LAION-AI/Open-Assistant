@@ -203,3 +203,64 @@ def managed_tx_function(
         return wrapped_f
 
     return decorator
+
+
+def async_managed_tx_function(
+    auto_commit: CommitMode = CommitMode.COMMIT,
+    num_retries=settings.DATABASE_MAX_TX_RETRY_COUNT,
+    session_factory: Callable[..., Session] = default_session_factor,
+):
+    """Passes Session object as first argument to wrapped function."""
+
+    def decorator(f):
+        @wraps(f)
+        async def wrapped_f(*args, **kwargs):
+            try:
+                result = None
+                if auto_commit == CommitMode.COMMIT:
+                    retry_exhausted = True
+                    for i in range(num_retries):
+                        with session_factory() as session:
+                            try:
+                                result = await f(session, *args, **kwargs)
+                                session.commit()
+                                if isinstance(result, SQLModel):
+                                    session.refresh(result)
+                                retry_exhausted = False
+                                break
+                            except PendingRollbackError as e:
+                                logger.info(str(e))
+                                session.rollback()
+                            except OperationalError as e:
+                                if e.orig is not None and isinstance(
+                                    e.orig,
+                                    (SerializationFailure, DeadlockDetected, UniqueViolation, ExclusionViolation),
+                                ):
+                                    logger.info(f"{type(e.orig)} Inner {e.orig.pgcode} {type(e.orig.pgcode)}")
+                                    session.rollback()
+                                else:
+                                    raise e
+                        logger.info(f"Retry {i+1}/{num_retries}")
+                    if retry_exhausted:
+                        raise OasstError(
+                            "DATABASE_MAX_RETIRES_EXHAUSTED",
+                            error_code=OasstErrorCode.DATABASE_MAX_RETRIES_EXHAUSTED,
+                            http_status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+                        )
+                else:
+                    with session_factory() as session:
+                        result = await f(session, *args, **kwargs)
+                    if auto_commit == CommitMode.FLUSH:
+                        session.flush()
+                        if isinstance(result, SQLModel):
+                            session.refresh(result)
+                    elif auto_commit == CommitMode.ROLLBACK:
+                        session.rollback()
+                return result
+            except Exception as e:
+                logger.info(str(e))
+                raise e
+
+        return wrapped_f
+
+    return decorator

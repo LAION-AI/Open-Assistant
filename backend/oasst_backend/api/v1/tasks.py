@@ -8,7 +8,7 @@ from oasst_backend.api import deps
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository
 from oasst_backend.tree_manager import TreeManager
 from oasst_backend.user_repository import UserRepository
-from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
+from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_function
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
@@ -129,7 +129,6 @@ def tasks_acknowledge_failure(
 @router.post("/interaction", response_model=protocol_schema.TaskDone)
 async def tasks_interaction(
     *,
-    db: Session = Depends(deps.get_db),
     api_key: APIKey = Depends(deps.get_api_key),
     interaction: protocol_schema.AnyInteraction,
 ) -> Any:
@@ -137,16 +136,15 @@ async def tasks_interaction(
     The frontend reports an interaction.
     """
 
-    @managed_tx_function(CommitMode.COMMIT)
+    @async_managed_tx_function(CommitMode.COMMIT)
     async def interaction_tx(session: deps.Session):
-        api_client = deps.api_auth(api_key, db)
-        pr = PromptRepository(db, api_client, client_user=interaction.user)
-        tm = TreeManager(db, pr)
-        ur = UserRepository(db, api_client)
+        api_client = deps.api_auth(api_key, session)
+        pr = PromptRepository(session, api_client, client_user=interaction.user)
+        tm = TreeManager(session, pr)
+        ur = UserRepository(session, api_client)
         task = await tm.handle_interaction(interaction)
-        match (type(task)):
-            case protocol_schema.TaskDone:
-                ur.update_user_last_activity(client_user=interaction.user)
+        if type(task) is protocol_schema.TaskDone:
+            ur.update_user_last_activity(user=pr.user)
         return task
 
     try:

@@ -312,10 +312,6 @@ class UserRepository:
         return qry.all()
 
     @managed_tx_method(CommitMode.FLUSH)
-    def update_user_last_activity(self, client_user: protocol_schema.User) -> None:
-        user = self.lookup_client_user(client_user=client_user, create_missing=False)
-        if user is None:
-            raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
-
+    def update_user_last_activity(self, user: User) -> None:
         user.last_activity_date = utcnow()
         self.db.add(user)
