@@ -31,7 +31,7 @@ from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
 
 app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
-startup_time: datetime = None
+startup_time: datetime = utcnow()
 
 
 @app.exception_handler(OasstError)
@@ -273,13 +273,7 @@ def update_leader_board_total(session: Session) -> None:
 
 
 @app.on_event("startup")
-def set_startup_time() -> None:
-    global startup_time
-    startup_time = utcnow()
-
-
-@app.on_event("startup")
-@repeat_every(seconds=60 * settings.USER_STREAK_UPDATE_INTERVAL, wait_first=False)
+@repeat_every(seconds=60 * 60 * settings.USER_STREAK_UPDATE_INTERVAL, wait_first=False)
 def update_user_streak(session: Session) -> None:
     try:
         current_time = utcnow()
