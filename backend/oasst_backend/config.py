@@ -8,7 +8,7 @@ from pydantic import AnyHttpUrl, BaseModel, BaseSettings, FilePath, PostgresDsn,
 class TreeManagerConfiguration(BaseModel):
     """TreeManager configuration settings"""
 
-    max_active_trees: int = 5
+    max_active_trees: int = 10
     """Maximum number of concurrently active message trees in the database.
     No new initial prompt tasks are handed out to users if this
     number is reached."""
@@ -22,7 +22,7 @@ class TreeManagerConfiguration(BaseModel):
     num_prompter_replies: int = 1
     """Number of prompter replies to collect per assistant reply."""
 
-    goal_tree_size: int = 10
+    goal_tree_size: int = 15
     """Total number of messages to gather per tree."""
 
     num_reviews_initial_prompt: int = 3
