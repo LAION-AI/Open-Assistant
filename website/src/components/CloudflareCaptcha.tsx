@@ -2,7 +2,7 @@ import { useColorMode } from "@chakra-ui/react";
 import { Turnstile, TurnstileInstance, TurnstileProps } from "@marsidev/react-turnstile";
 import { forwardRef } from "react";
 
-export const CloudFlareCatpcha = forwardRef<TurnstileInstance, Omit<TurnstileProps, "siteKey">>((props, ref) => {
+export const CloudFlareCaptcha = forwardRef<TurnstileInstance, Omit<TurnstileProps, "siteKey">>((props, ref) => {
   const { colorMode } = useColorMode();
   return (
     <Turnstile
@@ -17,4 +17,4 @@ export const CloudFlareCatpcha = forwardRef<TurnstileInstance, Omit<TurnstilePro
   );
 });
 
-CloudFlareCatpcha.displayName = "CloudFlareCatpcha";
+CloudFlareCaptcha.displayName = "CloudFlareCaptcha";

@@ -12,7 +12,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthLayout } from "src/components/AuthLayout";
-import { CloudFlareCatpcha } from "src/components/CloudflareCaptcha";
+import { CloudFlareCaptcha } from "src/components/CloudflareCaptcha";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
 import { Discord } from "src/components/Icons/Discord";
@@ -170,11 +170,11 @@ const EmailSignInForm = ({ providerId }: { providerId: string }) => {
           {...register("email")}
         />
         {emailSigninCaptcha && (
-          <CloudFlareCatpcha
+          <CloudFlareCaptcha
             options={{ size: "invisible" }}
             ref={captcha}
             onSuccess={() => setCaptchaSuccess(true)}
-          ></CloudFlareCatpcha>
+          ></CloudFlareCaptcha>
         )}
         <SigninButton
           data-cy="signin-email-button"
