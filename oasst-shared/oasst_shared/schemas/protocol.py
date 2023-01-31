@@ -249,6 +249,7 @@ class AbstractLabelTask(Task):
     mode: Optional[LabelTaskMode]
     disposition: Optional[LabelTaskDisposition]
     labels: Optional[list[LabelDescription]]
+    conversation: Conversation  # the conversation so far (labeling -> last message)
 
 
 class LabelInitialPromptTask(AbstractLabelTask):
@@ -256,17 +257,12 @@ class LabelInitialPromptTask(AbstractLabelTask):
 
     type: Literal["label_initial_prompt"] = "label_initial_prompt"
     prompt: str = Field(None, deprecated=True, description="deprecated, use `prompt_message`")
-    prompt_message: Optional[ConversationMessage]
 
 
 class LabelConversationReplyTask(AbstractLabelTask):
     """A task to label a reply to a conversation."""
 
     type: Literal["label_conversation_reply"] = "label_conversation_reply"
-    conversation: Conversation  # the conversation so far (new: including the reply message)
-    reply_message: Optional[ConversationMessage] = Field(
-        None, deprecated=True, description="deprecated, use last message of `conversation`"
-    )
     reply: str = Field(None, deprecated=True, description="deprecated, use last message of `conversation`")
 
 

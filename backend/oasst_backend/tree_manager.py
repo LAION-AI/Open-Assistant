@@ -11,11 +11,7 @@ import numpy as np
 import pydantic
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
-from oasst_backend.api.v1.utils import (
-    prepare_conversation,
-    prepare_conversation_message,
-    prepare_conversation_message_list,
-)
+from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import Message, MessageReaction, MessageTreeState, Task, TextLabels, User, message_tree_state
 from oasst_backend.prompt_repository import PromptRepository
@@ -386,7 +382,6 @@ class TreeManager:
                             message_id=message.id,
                             conversation=conversation,
                             reply=message.text,
-                            reply_message=prepare_conversation_message(message),
                             valid_labels=list(map(lambda x: x.value, valid_labels)),
                             mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_assistant_reply)),
                             mode=label_mode,
@@ -412,7 +407,6 @@ class TreeManager:
                             message_id=message.id,
                             conversation=conversation,
                             reply=message.text,
-                            reply_message=prepare_conversation_message(message),
                             valid_labels=list(map(lambda x: x.value, valid_labels)),
                             mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_prompter_reply)),
                             mode=label_mode,
@@ -495,7 +489,7 @@ class TreeManager:
                 task = protocol_schema.LabelInitialPromptTask(
                     message_id=message.id,
                     prompt=message.text,
-                    prompt_message=prepare_conversation_message(message),
+                    conversation=prepare_conversation([message]),
                     valid_labels=list(map(lambda x: x.value, valid_labels)),
                     mandatory_labels=list(map(lambda x: x.value, self.cfg.mandatory_labels_initial_prompt)),
                     mode=label_mode,
