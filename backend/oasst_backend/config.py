@@ -31,7 +31,7 @@ class TreeManagerConfiguration(BaseModel):
     num_reviews_reply: int = 3
     """Number of peer review checks to collect per reply (other than initial_prompt)."""
 
-    p_full_labeling_review_prompt: float = 0.1
+    p_full_labeling_review_prompt: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for initial prompts."""
 
     p_full_labeling_review_reply_assistant: float = 0.1
