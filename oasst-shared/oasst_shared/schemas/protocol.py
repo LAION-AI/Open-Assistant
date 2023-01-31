@@ -35,6 +35,9 @@ class FrontEndUser(User):
     deleted: bool
     notes: str
     created_date: Optional[datetime] = None
+    streak_days: Optional[int] = None
+    streak_last_day_date: Optional[datetime] = None
+    last_activity_date: Optional[datetime] = None
 
 
 class PageResult(BaseModel):
