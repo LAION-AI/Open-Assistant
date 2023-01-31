@@ -1,7 +1,7 @@
 """Add Account table
 
 Revision ID: 8c8241d1f973
-Revises: 49d8445b4c90
+Revises: 7b8f0011e0b0
 Create Date: 2023-01-30 15:10:58.776315
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "8c8241d1f973"
-down_revision = "49d8445b4c90"
+down_revision = "7b8f0011e0b0"
 branch_labels = None
 depends_on = None
 
