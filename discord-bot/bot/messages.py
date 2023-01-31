@@ -64,11 +64,11 @@ def _assistant(text: str | None) -> str:
 """
 
 
-def _make_ordered_list(items: list[str]) -> list[str]:
-    return [f"{num} {item}" for num, item in zip(NUMBER_EMOJIS, items)]
+def _make_ordered_list(items: list[protocol_schema.ConversationMessage]) -> list[str]:
+    return [f"{num} {item.text}" for num, item in zip(NUMBER_EMOJIS, items)]
 
 
-def _ordered_list(items: list[str]) -> str:
+def _ordered_list(items: list[protocol_schema.ConversationMessage]) -> str:
     return "\n\n".join(_make_ordered_list(items))
 
 
@@ -119,26 +119,28 @@ def rank_initial_prompts_messages(task: protocol_schema.RankInitialPromptsTask) 
 :small_blue_diamond: __**RANK INITIAL PROMPTS**__ :small_blue_diamond:
 
 
-{_ordered_list(task.prompts)}
+{_ordered_list(task.prompt_messages)}
 
 :trophy: _Reply with the numbers of best to worst prompts separated by commas (example: '4,1,3,2')_
 """
     ]
 
 
-def rank_prompter_reply_message(task: protocol_schema.RankPrompterRepliesTask) -> str:
+def rank_prompter_reply_messages(task: protocol_schema.RankPrompterRepliesTask) -> list[str]:
     """Creates the message that gets sent to users when they request a `rank_prompter_replies` task."""
-    return f"""\
+    return [
+        f"""\
 
 :small_blue_diamond: __**RANK PROMPTER REPLIES**__ :small_blue_diamond:
 
-
-{_conversation(task.conversation)}
-:person_red_hair: __User__:
-{_ordered_list(task.replies)}
+""",
+        *_conversation(task.conversation),
+        f""":person_red_hair: __User__:
+{_ordered_list(task.reply_messages)}
 
 :trophy: _Reply with the numbers of best to worst replies separated by commas (example: '4,1,3,2')_
-"""
+""",
+    ]
 
 
 def rank_assistant_reply_message(task: protocol_schema.RankAssistantRepliesTask) -> str:
@@ -150,10 +152,25 @@ def rank_assistant_reply_message(task: protocol_schema.RankAssistantRepliesTask)
 
 {_conversation(task.conversation)}
 :robot: __Assistant__:
-{_ordered_list(task.replies)}
+{_ordered_list(task.reply_messages)}
 
 :trophy: _Reply with the numbers of best to worst replies separated by commas (example: '4,1,3,2')_
 """
+
+
+def rank_conversation_reply_messages(task: protocol_schema.RankConversationRepliesTask) -> list[str]:
+    """Creates the message that gets sent to users when they request a `rank_conversation_replies` task."""
+    return [
+        f"""\
+            
+:small_blue_diamond: __**RANK CONVERSATION REPLIES**__ :small_blue_diamond:
+
+""",
+        *_conversation(task.conversation),
+        f""":person_red_hair: __User__:
+{_ordered_list(task.reply_messages)}
+""",
+    ]
 
 
 def label_initial_prompt_message(task: protocol_schema.LabelInitialPromptTask) -> str:

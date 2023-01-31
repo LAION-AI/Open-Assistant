@@ -21,8 +21,9 @@ from bot.messages import (
     plain_embed,
     prompter_reply_message,
     rank_assistant_reply_message,
+    rank_conversation_reply_messages,
     rank_initial_prompts_messages,
-    rank_prompter_reply_message,
+    rank_prompter_reply_messages,
     task_complete_embed,
 )
 from bot.settings import Settings
@@ -38,74 +39,54 @@ MAX_TASK_ACCEPT_TIME = 60 * 10  # seconds
 
 settings = Settings()
 
+_Task_contra = t.TypeVar("_Task_contra", bound=protocol_schema.Task, contravariant=True)
 
-class TaskHandler:
-    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.Task) -> None:
+
+class TaskHandler(t.Generic[_Task_contra]):
+    """Handles the user interaction for a task."""
+
+    def __init__(self, ctx: lightbulb.Context, task: _Task_contra) -> None:
+        """Create a new `TaskHandler`.
+
+        Args:
+            ctx (lightbulb.Context): The context of the command that started the task.
+            task (_Task_contra): The task to handle.
+        """
         self.ctx = ctx
         self.task = task
         self.task_messages = self.get_task_messages(task)
         self.sent_messages: list[hikari.Message] = []
 
     @staticmethod
-    def get_task_messages(task: protocol_schema.Task) -> list[str]:
+    def get_task_messages(task: _Task_contra) -> list[str]:
+        """Get the messages to send to the user for the task."""
         raise NotImplemented
 
     async def send(self) -> t.Literal["accept", "next", "cancel"] | None:
+        """Send the task and wait for the user to accept/skip/cancel it."""
+        # Send all but the last message because we need to attach buttons to the last one
         for task_msg in self.task_messages[:-1]:
+            if len(task_msg) > 2000:
+                logger.warning(f"Attempting to send a message <2000 characters in length. Task id: {self.task.id}")
+                task_msg = task_msg[:1999]
+            await self.ctx.author.send(task_msg)
             self.sent_messages.append(await self.ctx.author.send(task_msg))
+
+        # Send the last message with buttons
         task_accept_view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
         logger.debug(f"TH Message length {len(self.task_messages[-1])}")
         last_msg = await self.ctx.author.send(self.task_messages[-1][1999:], components=task_accept_view)
+
         await task_accept_view.start(last_msg)
         await task_accept_view.wait()
 
         return task_accept_view.choice
 
     async def handle(self) -> None:
-        ...
+        """Handle the user's response to the task.
 
-    async def notify(self) -> protocol_schema.Task:
-        ...
-
-    async def confirm_user_input(self, content: str) -> bool:
-        ...
-
-    async def check_user_input(self, content: str) -> bool:
-        ...
-
-
-class RankAssistantReplyHandler(TaskHandler):
-    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.RankAssistantRepliesTask) -> None:
-        super().__init__(ctx, task)
-
-    @staticmethod
-    def get_task_messages(task: protocol_schema.RankAssistantRepliesTask) -> list[str]:
-        return [rank_assistant_reply_message(task)]
-
-
-class InitialPromptHandler:
-    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.InitialPromptTask) -> None:
-        self.ctx = ctx
-        self.task = task
-        self.task_messages = self.get_task_messages(task)
-        self.sent_messages: list[hikari.Message] = []
-
-    @staticmethod
-    def get_task_messages(task: protocol_schema.InitialPromptTask) -> list[str]:
-        return [initial_prompt_message(task)]
-
-    async def send(self) -> t.Literal["accept", "next", "cancel"] | None:
-        for task_msg in self.task_messages[:-1]:
-            self.sent_messages.append(await self.ctx.author.send(task_msg))
-        task_accept_view = TaskAcceptView(timeout=MAX_TASK_ACCEPT_TIME)
-        logger.debug(f"Message length {len(self.task_messages[-1])}")
-        last_msg = await self.ctx.author.send(self.task_messages[-1][1999:], components=task_accept_view)
-        await task_accept_view.start(last_msg)
-        await task_accept_view.wait()
-
-        return task_accept_view.choice
-
-    async def handle(self):
+        This method should be called after `send` has been called."""
+        # Loop until the user's input is accepted
         while True:
             try:
                 # Wait for user to send a message
@@ -120,7 +101,7 @@ class InitialPromptHandler:
                 )
 
                 # Validate the message
-                if event.content is None or not self.check_user_input(event.message.content):
+                if event.content is None or not self.check_user_input(event.content):
                     await self.ctx.author.send("Invalid input")
                     continue
 
@@ -136,14 +117,112 @@ class InitialPromptHandler:
 
         next_task = await self.notify(event.content, event)
         if not isinstance(next_task, protocol_schema.TaskDone):
-            raise TypeError(f"Unkown task type: {next_task!r}")
+            raise TypeError(f"Unknown task type: {next_task!r}")
 
         return
+
+    async def notify(self, content: str, event: hikari.DMMessageCreateEvent) -> protocol_schema.Task:
+        """Notify the backend that the user completed the task."""
+        raise NotImplemented
+
+    async def confirm_user_input(self, content: str) -> bool:
+        """Send the user's response back to the user and ask them to confirm it. Returns True if the user confirms."""
+        raise NotImplemented
+
+    def check_user_input(self, content: str) -> bool:
+        """Check the user's response to the task. Returns True if the response is valid."""
+        raise NotImplemented
+
+
+class RankingClassHandler(
+    TaskHandler[
+        protocol_schema.RankAssistantRepliesTask
+        | protocol_schema.RankInitialPromptsTask
+        | protocol_schema.RankPrompterRepliesTask
+        | protocol_schema.RankConversationRepliesTask
+    ]
+):
+    """This should not be used directly. Use it's subclasses instead."""
+
+    def __init__(
+        self,
+        ctx: lightbulb.Context,
+        task: protocol_schema.RankAssistantRepliesTask
+        | protocol_schema.RankInitialPromptsTask
+        | protocol_schema.RankPrompterRepliesTask
+        | protocol_schema.RankConversationRepliesTask,
+    ) -> None:
+        super().__init__(ctx, task)
+
+
+class RankAssistantReplyHandler(TaskHandler[protocol_schema.RankAssistantRepliesTask]):
+    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.RankAssistantRepliesTask) -> None:
+        super().__init__(ctx, task)
+
+    @staticmethod
+    def get_task_messages(task: protocol_schema.RankAssistantRepliesTask) -> list[str]:
+        return [rank_assistant_reply_message(task)]
+
+    async def confirm_user_input(self, content: str) -> bool:
+        confirm_input_view = YesNoView()
+        msg = await self.ctx.author.send(
+            confirm_ranking_response_message(content, self.task.replies), components=confirm_input_view
+        )
+        await confirm_input_view.start(msg)
+        await confirm_input_view.wait()
+
+        return bool(confirm_input_view.choice)
+
+    def check_user_input(self, content: str) -> bool:
+        return len(content.split(",")) == len(self.task.replies) and all(
+            [r.isdigit() and int(r) in range(len(self.task.replies)) for r in content.split(".")]
+        )
+
+
+class RankInitialPromptHandler(TaskHandler[protocol_schema.RankInitialPromptsTask]):
+    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.RankInitialPromptsTask) -> None:
+        super().__init__(ctx, task)
+
+    @staticmethod
+    def get_task_messages(task: protocol_schema.RankInitialPromptsTask) -> list[str]:
+        return rank_initial_prompts_messages(task)
+
+    def check_user_input(self, content: str) -> bool:
+        return content.isdigit() and int(content) in range(len(self.task.prompts))
+
+    async def confirm_user_input(self, content: str) -> bool:
+        confirm_input_view = YesNoView()
+        msg = await self.ctx.author.send(
+            confirm_ranking_response_message(content, self.task.prompts), components=confirm_input_view
+        )
+        await confirm_input_view.start(msg)
+        await confirm_input_view.wait()
+
+        return bool(confirm_input_view.choice)
+
+
+class RankPrompterReplyHandler(TaskHandler[protocol_schema.RankPrompterRepliesTask]):
+    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.RankPrompterRepliesTask) -> None:
+        super().__init__(ctx, task)
+
+    @staticmethod
+    def get_task_messages(task: protocol_schema.RankPrompterRepliesTask) -> list[str]:
+        return rank_prompter_reply_messages(task)
+
+
+class RankConversationReplyHandler(TaskHandler[protocol_schema.RankConversationRepliesTask]):
+    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.RankConversationRepliesTask) -> None:
+        super().__init__(ctx, task)
+
+    @staticmethod
+    def get_task_messages(task: protocol_schema.RankConversationRepliesTask) -> list[str]:
+        return rank_conversation_reply_messages(task)
 
     async def notify(self, content: str, event: hikari.DMMessageCreateEvent) -> protocol_schema.Task:
         oasst_api: OasstApiClient = self.ctx.bot.d.oasst_api
         return await oasst_api.post_interaction(
             protocol_schema.TextReplyToMessage(
+                lang=None,
                 user=protocol_schema.User(
                     id=f"{self.ctx.author.id}", display_name=self.ctx.author.username, auth_method="discord"
                 ),
@@ -164,6 +243,19 @@ class InitialPromptHandler:
         return True
 
 
+
+class InitialPromptHandler(TaskHandler[protocol_schema.InitialPromptTask]):
+    def __init__(self, ctx: lightbulb.Context, task: protocol_schema.InitialPromptTask) -> None:
+        self.ctx = ctx
+        self.task = task
+        self.task_messages = self.get_task_messages(task)
+        self.sent_messages: list[hikari.Message] = []
+
+    @staticmethod
+    def get_task_messages(task: protocol_schema.InitialPromptTask) -> list[str]:
+        return initial_prompt_messages(task)
+
+
 @plugin.command
 @lightbulb.command("work2", "Complete a task.")
 @lightbulb.implements(lightbulb.SlashCommand, lightbulb.PrefixCommand)
@@ -180,12 +272,12 @@ async def work2(ctx: lightbulb.Context) -> None:
 
         if isinstance(task, protocol_schema.InitialPromptTask):
             task_handler = InitialPromptHandler(ctx, task)
-            resp = await task_handler.send()
         elif isinstance(task, protocol_schema.RankAssistantRepliesTask):
             task_handler = RankAssistantReplyHandler(ctx, task)
-            resp = await task_handler.send()
         else:
             raise ValueError(f"Unknown task type: {type(task)}")
+
+        resp = await task_handler.send()
 
         match resp:
             case "accept":
@@ -468,12 +560,12 @@ async def _send_task(
     elif task.type == TaskRequestType.rank_initial_prompts:
         assert isinstance(task, protocol_schema.RankInitialPromptsTask)
         logger.debug("sending rank initial prompt task")
-        content = rank_initial_prompts_messages(task)
+        messages = rank_initial_prompts_messages(task)
 
     elif task.type == TaskRequestType.rank_prompter_replies:
         assert isinstance(task, protocol_schema.RankPrompterRepliesTask)
         logger.debug("sending rank user reply task")
-        content = rank_prompter_reply_message(task)
+        content = rank_prompter_reply_messages(task)
 
     elif task.type == TaskRequestType.rank_assistant_replies:
         assert isinstance(task, protocol_schema.RankAssistantRepliesTask)
