@@ -44,6 +44,10 @@ describe("handles random tasks", () => {
                 break;
               }
               case "label-task": {
+                cy.get('[data-cy="label-question"]').each((label) => {
+                  // Click the no button, this generally approves the spam check
+                  cy.wrap(label).find('[data-cy="no"]').click();
+                });
                 cy.get('[data-cy="label-options"]').each((label) => {
                   // Click the 4th option
                   cy.wrap(label).find('[data-cy="radio-option"]').eq(3).click();
@@ -56,9 +60,7 @@ describe("handles random tasks", () => {
                 break;
               }
               case undefined: {
-                throw new Error(
-                  "No tasks available, but at least create initial prompt expected"
-                );
+                throw new Error("No tasks available, but at least create initial prompt expected");
               }
               default:
                 throw new Error(`Unexpected task type: ${type}`);

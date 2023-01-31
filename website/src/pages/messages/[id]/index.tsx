@@ -1,5 +1,6 @@
 import { Box, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
+import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { getDashboardLayout } from "src/components/Layout";
 import { MessageLoading } from "src/components/Loading/MessageLoading";
@@ -10,6 +11,7 @@ import { Message } from "src/types/Conversation";
 import useSWRImmutable from "swr/immutable";
 
 const MessageDetail = ({ id }: { id: string }) => {
+  const { t } = useTranslation(["message", "common"]);
   const backgroundColor = useColorModeValue("white", "gray.800");
 
   const { isLoading: isLoadingParent, data: parent } = useSWRImmutable<Message>(`/api/messages/${id}/parent`, get);
@@ -20,7 +22,7 @@ const MessageDetail = ({ id }: { id: string }) => {
   return (
     <>
       <Head>
-        <title>Open Assistant</title>
+        <title>{t("common:title")}</title>
         <meta
           name="description"
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
@@ -32,10 +34,10 @@ const MessageDetail = ({ id }: { id: string }) => {
             <>
               <Box pb="4">
                 <Text fontWeight="bold" fontSize="xl" pb="2">
-                  Parent
+                  {t("parent")}
                 </Text>
                 <Box bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base" width="fit-content">
-                  <MessageTableEntry enabled item={parent} />
+                  <MessageTableEntry enabled message={parent} />
                 </Box>
               </Box>
             </>
@@ -54,7 +56,7 @@ MessageDetail.getLayout = (page) => getDashboardLayout(page);
 export const getServerSideProps = async ({ locale, query }) => ({
   props: {
     id: query.id,
-    ...(await serverSideTranslations(locale, ["common"])),
+    ...(await serverSideTranslations(locale, ["common", "message"])),
   },
 });
 

@@ -77,7 +77,7 @@ def query_frontend_user_messages(
     """
     Query frontend user messages.
     """
-    pr = PromptRepository(db, api_client)
+    pr = PromptRepository(db, api_client, auth_method=auth_method, username=username)
     messages = pr.query_messages_ordered_by_created_date(
         auth_method=auth_method,
         username=username,
@@ -104,6 +104,7 @@ def query_frontend_user_messages_cursor(
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
     lang: Optional[str] = None,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -117,6 +118,7 @@ def query_frontend_user_messages_cursor(
         max_count=max_count,
         desc=desc,
         lang=lang,
+        frontend_user=frontend_user,
         api_client=api_client,
         db=db,
     )

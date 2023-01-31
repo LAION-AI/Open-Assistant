@@ -1,0 +1,22 @@
+{
+  "about": "Über",
+  "account_settings": "Konto",
+  "admin_dashboard": "Admin-Bereich",
+  "connect": "Kontakt aufnehmen",
+  "conversational": "Konversations-KI für alle.",
+  "dashboard": "Dashboard",
+  "discord": "Discord",
+  "docs": "Doku",
+  "github": "GitHub",
+  "legal": "Rechtliches",
+  "loading": "Wird geladen...",
+  "more_information": "Weiter Informationen",
+  "no": "Nein",
+  "privacy_policy": "Datenschutz-Bestimmungen",
+  "report_a_bug": "Einen Fehler melden",
+  "sign_in": "Anmelden",
+  "sign_out": "Abmelden",
+  "terms_of_service": "Nutzungsbedingungen",
+  "title": "Open Assistant",
+  "yes": "Ja"
+}

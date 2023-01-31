@@ -1,20 +1,60 @@
-import { useRef, useState } from "react";
+import { useTranslation } from "next-i18next";
+import { useCallback, useEffect, useReducer } from "react";
+import { useMemo, useRef } from "react";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { CreateTask } from "src/components/Tasks/CreateTask";
 import { EvaluateTask } from "src/components/Tasks/EvaluateTask";
 import { LabelTask } from "src/components/Tasks/LabelTask";
-import { TaskCategory, TaskInfo, TaskInfos } from "src/components/Tasks/TaskTypes";
 import { UnchangedWarning } from "src/components/Tasks/UnchangedWarning";
-import { post } from "src/lib/api";
-import { TaskContent, TaskReplyValidity } from "src/types/Task";
-import useSWRMutation from "swr/mutation";
+import { useTaskContext } from "src/context/TaskContext";
+import { getTypeSafei18nKey } from "src/lib/i18n";
+import { TaskCategory, TaskInfo } from "src/types/Task";
+import { BaseTask, TaskContent, TaskReplyValidity } from "src/types/Task";
+import { CreateTaskType, LabelTaskType, RankTaskType } from "src/types/Tasks";
 
-export type TaskStatus = "NOT_SUBMITTABLE" | "DEFAULT" | "VALID" | "REVIEW" | "SUBMITTED";
+interface EditMode {
+  mode: "EDIT";
+  replyValidity: TaskReplyValidity;
+}
+interface ReviewMode {
+  mode: "REVIEW";
+}
+interface DefaultWarnMode {
+  mode: "DEFAULT_WARN";
+}
+interface SubmittedMode {
+  mode: "SUBMITTED";
+}
 
-export interface TaskSurveyProps<T> {
-  // we need a task type
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  task: any;
+export type TaskStatus = EditMode | DefaultWarnMode | ReviewMode | SubmittedMode;
+
+interface NewTask {
+  action: "NEW_TASK";
+}
+
+interface Review {
+  action: "REVIEW";
+}
+
+interface SetSubmitted {
+  action: "SET_SUBMITTED";
+}
+
+interface ReturnToEdit {
+  action: "RETURN_EDIT";
+}
+
+interface AcceptDefault {
+  action: "ACCEPT_DEFAULT";
+}
+
+interface UpdateValidity {
+  action: "UPDATE_VALIDITY";
+  replyValidity: TaskReplyValidity;
+}
+
+export interface TaskSurveyProps<TaskType extends BaseTask, T> {
+  task: TaskType;
   taskType: TaskInfo;
   isEditable: boolean;
   isDisabled?: boolean;
@@ -22,153 +62,134 @@ export interface TaskSurveyProps<T> {
   onValidityChanged: (validity: TaskReplyValidity) => void;
 }
 
-export const Task = ({ frontendId, task, trigger, mutate }) => {
-  const [taskStatus, setTaskStatus] = useState<TaskStatus>("NOT_SUBMITTABLE");
-  const replyContent = useRef<TaskContent>(null);
-  const [showUnchangedWarning, setShowUnchangedWarning] = useState(false);
-
+export const Task = () => {
+  const { t } = useTranslation("tasks");
   const rootEl = useRef<HTMLDivElement>(null);
-
-  const taskType = TaskInfos.find((taskType) => taskType.type === task.type && taskType.mode === task.mode);
-
-  const { trigger: sendRejection } = useSWRMutation("/api/reject_task", post, {
-    onSuccess: async () => {
-      mutate();
-    },
-  });
-
-  const rejectTask = (reason: string) => {
-    sendRejection({
-      id: frontendId,
-      reason,
-    });
-  };
-
-  const edit_mode = taskStatus === "NOT_SUBMITTABLE" || taskStatus === "DEFAULT" || taskStatus === "VALID";
-  const submitted = taskStatus === "SUBMITTED";
-
-  const onValidityChanged = (validity: TaskReplyValidity) => {
-    if (!edit_mode) return;
-    switch (validity) {
-      case "DEFAULT":
-        if (taskStatus !== "DEFAULT") setTaskStatus("DEFAULT");
-        break;
-      case "VALID":
-        if (taskStatus !== "VALID") setTaskStatus("VALID");
-        break;
-      case "INVALID":
-        if (taskStatus !== "NOT_SUBMITTABLE") setTaskStatus("NOT_SUBMITTABLE");
-        break;
-    }
-  };
-
-  const onReplyChanged = (content: TaskContent) => {
-    replyContent.current = content;
-  };
-
-  const reviewResponse = () => {
-    switch (taskStatus) {
-      case "DEFAULT":
-        setShowUnchangedWarning(true);
-        break;
-      case "VALID":
-        setTaskStatus("REVIEW");
-        break;
-      default:
-        return;
-    }
-  };
-
-  const editResponse = () => {
-    switch (taskStatus) {
-      case "REVIEW":
-        setTaskStatus("VALID");
-        break;
-      default:
-        return;
-    }
-  };
-
-  const submitResponse = () => {
-    switch (taskStatus) {
-      case "REVIEW": {
-        trigger({
-          id: frontendId,
-          update_type: taskType.update_type,
-          content: replyContent.current,
-        });
-        setTaskStatus("SUBMITTED");
-        scrollToTop(rootEl.current);
-        break;
+  const replyContent = useRef<TaskContent>(null);
+  const { rejectTask, completeTask, isLoading, task, taskInfo } = useTaskContext();
+  const [taskStatus, taskEvent] = useReducer(
+    (
+      status: TaskStatus,
+      event: NewTask | UpdateValidity | AcceptDefault | Review | ReturnToEdit | SetSubmitted
+    ): TaskStatus => {
+      switch (event.action) {
+        case "NEW_TASK":
+          return status.mode !== "EDIT" ? { mode: "EDIT", replyValidity: "INVALID" } : status;
+        case "UPDATE_VALIDITY":
+          return status.mode === "EDIT" ? { mode: "EDIT", replyValidity: event.replyValidity } : status;
+        case "ACCEPT_DEFAULT":
+          return status.mode === "DEFAULT_WARN" ? { mode: "REVIEW" } : status;
+        case "REVIEW": {
+          if (status.mode === "EDIT") {
+            switch (status.replyValidity) {
+              case "DEFAULT":
+                return { mode: "DEFAULT_WARN" };
+              case "VALID":
+                return { mode: "REVIEW" };
+            }
+          }
+          return status;
+        }
+        case "RETURN_EDIT": {
+          switch (status.mode) {
+            case "REVIEW":
+              return { mode: "EDIT", replyValidity: "VALID" };
+            case "DEFAULT_WARN":
+              return { mode: "EDIT", replyValidity: "DEFAULT" };
+            default:
+              return status;
+          }
+        }
+        case "SET_SUBMITTED": {
+          return status.mode === "REVIEW" ? { mode: "SUBMITTED" } : status;
+        }
       }
-      default:
-        return;
-    }
-  };
+    },
+    { mode: "EDIT", replyValidity: "INVALID" }
+  );
 
-  function taskTypeComponent() {
-    switch (taskType.category) {
+  const updateValidity = useCallback(
+    (replyValidity: TaskReplyValidity) => taskEvent({ action: "UPDATE_VALIDITY", replyValidity }),
+    [taskEvent]
+  );
+
+  useEffect(() => {
+    taskEvent({ action: "NEW_TASK" });
+  }, [task.id]);
+
+  const onReplyChanged = useCallback(
+    (content: TaskContent) => {
+      replyContent.current = content;
+    },
+    [replyContent]
+  );
+
+  const submitResponse = useCallback(async () => {
+    if (taskStatus.mode === "REVIEW") {
+      taskEvent({ action: "SET_SUBMITTED" });
+      await completeTask(replyContent.current);
+      scrollToTop(rootEl.current);
+    }
+  }, [taskStatus.mode, completeTask]);
+
+  const taskTypeComponent = useMemo(() => {
+    switch (taskInfo.category) {
       case TaskCategory.Create:
         return (
           <CreateTask
-            key={task.id}
-            task={task}
-            taskType={taskType}
-            isEditable={edit_mode}
-            isDisabled={submitted}
+            task={task as CreateTaskType}
+            taskType={taskInfo}
+            isEditable={taskStatus.mode === "EDIT"}
+            isDisabled={taskStatus.mode === "SUBMITTED"}
             onReplyChanged={onReplyChanged}
-            onValidityChanged={onValidityChanged}
+            onValidityChanged={updateValidity}
           />
         );
       case TaskCategory.Evaluate:
         return (
           <EvaluateTask
-            key={task.id}
-            task={task}
-            taskType={taskType}
-            isEditable={edit_mode}
-            isDisabled={submitted}
+            task={task as RankTaskType}
+            taskType={taskInfo}
+            isEditable={taskStatus.mode === "EDIT"}
+            isDisabled={taskStatus.mode === "SUBMITTED"}
             onReplyChanged={onReplyChanged}
-            onValidityChanged={onValidityChanged}
+            onValidityChanged={updateValidity}
           />
         );
       case TaskCategory.Label:
         return (
           <LabelTask
-            key={task.id}
-            task={task}
-            taskType={taskType}
-            isEditable={edit_mode}
-            isDisabled={submitted}
+            task={task as LabelTaskType}
+            taskType={taskInfo}
+            isEditable={taskStatus.mode === "EDIT"}
+            isDisabled={taskStatus.mode === "SUBMITTED"}
             onReplyChanged={onReplyChanged}
-            onValidityChanged={onValidityChanged}
+            onValidityChanged={updateValidity}
           />
         );
     }
-  }
+  }, [taskInfo, task, taskStatus.mode, onReplyChanged, updateValidity]);
 
   return (
     <div ref={rootEl}>
-      {taskTypeComponent()}
+      {taskTypeComponent}
       <TaskControls
         task={task}
         taskStatus={taskStatus}
-        onEdit={editResponse}
-        onReview={reviewResponse}
+        isLoading={isLoading}
+        onEdit={() => taskEvent({ action: "RETURN_EDIT" })}
+        onReview={() => taskEvent({ action: "REVIEW" })}
         onSubmit={submitResponse}
         onSkip={rejectTask}
       />
       <UnchangedWarning
-        show={showUnchangedWarning}
-        title={taskType.unchanged_title || "No changes"}
-        message={taskType.unchanged_message || "Are you sure you would like to continue?"}
+        show={taskStatus.mode === "DEFAULT_WARN"}
+        title={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_title`)) || t("default.unchanged_title")}
+        message={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_message`)) || t("default.unchanged_message")}
         continueButtonText={"Continue anyway"}
-        onClose={() => setShowUnchangedWarning(false)}
+        onClose={() => taskEvent({ action: "RETURN_EDIT" })}
         onContinueAnyway={() => {
-          if (taskStatus === "DEFAULT") {
-            setTaskStatus("REVIEW");
-            setShowUnchangedWarning(false);
-          }
+          taskEvent({ action: "ACCEPT_DEFAULT" });
         }}
       />
     </div>

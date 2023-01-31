@@ -1,0 +1,14 @@
+{
+  "daily": "Diario",
+  "last_updated_at": "Última actualización: {{val, datetime}}",
+  "leaderboard": "Tabla de clasificación",
+  "monthly": "Mensual",
+  "overall": "Global",
+  "rank": "Posición",
+  "score": "Puntuación",
+  "user": "Usuario",
+  "weekly": "Semanal",
+  "prompt": "Indicaciones",
+  "reply": "Respuestas",
+  "label": "Etiquetas"
+}

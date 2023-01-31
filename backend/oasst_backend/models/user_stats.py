@@ -51,10 +51,6 @@ class UserStats(SQLModel, table=True):
     reply_ranked_2: int = 0
     reply_ranked_3: int = 0
 
-    # only used for time span "total"
-    streak_last_day_date: Optional[datetime] = Field(nullable=True)
-    streak_days: Optional[int] = Field(nullable=True)
-
     def compute_leader_score(self) -> int:
         return (
             self.prompts

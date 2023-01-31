@@ -12,48 +12,54 @@ from pydantic import BaseModel
 
 class ExportMessageNode(BaseModel):
     message_id: str
-    parent_id: Optional[str]
-    text: Optional[str]
+    parent_id: str | None
+    text: str
     role: str
-    review_count: Optional[int]
-    rank: Optional[int]
-    replies: Optional[list[ExportMessageNode]]
+    lang: str | None
+    review_count: int | None
+    rank: int | None
+    synthetic: bool | None
+    model_name: str | None
+    emojis: dict[str, int] | None
+    replies: list[ExportMessageNode] | None
 
-    @classmethod
-    def prep_message_export(cls, message: Message) -> ExportMessageNode:
-        return cls(
+    @staticmethod
+    def prep_message_export(message: Message) -> ExportMessageNode:
+        return ExportMessageNode(
             message_id=str(message.id),
             parent_id=str(message.parent_id) if message.parent_id else None,
             text=str(message.payload.payload.text),
             role=message.role,
+            lang=message.lang,
             review_count=message.review_count,
+            synthetic=message.synthetic,
+            model_name=message.model_name,
+            emojis=message.emojis,
             rank=message.rank,
         )
 
 
 class ExportMessageTree(BaseModel):
     message_tree_id: str
-    replies: Optional[ExportMessageNode]
+    prompt: Optional[ExportMessageNode]
 
 
 def build_export_tree(message_tree_id: str, messages: list[Message]) -> ExportMessageTree:
-    export_tree = ExportMessageTree(message_tree_id=str(message_tree_id))
-    export_tree_data = [ExportMessageNode.prep_message_export(m) for m in messages]
+    export_messages = [ExportMessageNode.prep_message_export(m) for m in messages]
 
-    message_parents = defaultdict(list)
-    for message in export_tree_data:
-        message_parents[message.parent_id].append(message)
+    messages_by_parent = defaultdict(list)
+    for message in export_messages:
+        messages_by_parent[message.parent_id].append(message)
 
-    def build_tree(tree: dict, parent: Optional[str], messages: list[Message]):
-        children = message_parents[parent]
-        tree.replies = children
+    def assign_replies(node: ExportMessageNode) -> ExportMessageNode:
+        node.replies = messages_by_parent[node.message_id]
+        node.replies.sort(key=lambda x: x.rank if x.rank is not None else float("inf"))
+        for child in node.replies:
+            assign_replies(child)
+        return node
 
-        for idx, child in enumerate(tree.replies):
-            build_tree(tree.replies[idx], child.message_id, messages)
-
-    build_tree(export_tree, None, export_tree_data)
-
-    return export_tree
+    prompt = assign_replies(messages_by_parent[None][0])
+    return ExportMessageTree(message_tree_id=str(message_tree_id), prompt=prompt)
 
 
 def write_trees_to_file(file, trees: list[ExportMessageTree], use_compression: bool = True) -> None:

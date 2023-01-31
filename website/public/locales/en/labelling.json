@@ -1,0 +1,17 @@
+{
+  "label_highlighted_yes_no_instruction": "Answer the following question(s) about the highlighted message:",
+  "label_highlighted_flag_instruction": "Select any that apply to the highlighted message:",
+  "label_highlighted_likert_instruction": "Rate the highlighted message:",
+  "label_message_yes_no_instruction": "Answer the following question(s) about the message:",
+  "label_message_flag_instruction": "Select any that apply to the message:",
+  "label_message_likert_instruction": "Rate the message:",
+  "spam.question": "Is the message spam?",
+  "fails_task.question": "Is it a bad reply, as an answer to the prompt task?",
+  "not_appropriate": "Not Appropriate",
+  "pii": "Contains PII",
+  "hate_speech": "Hate Speech",
+  "sexual_content": "Sexual Content",
+  "moral_judgement": "Judges Morality",
+  "political_content": "Political",
+  "lang_mismatch": "Wrong Language"
+}

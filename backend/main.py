@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from http import HTTPStatus
 from math import ceil
 from pathlib import Path
@@ -19,15 +20,18 @@ from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
 from oasst_backend.tree_manager import TreeManager
+from oasst_backend.user_repository import User
 from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
+from oasst_shared.utils import utcnow
 from pydantic import BaseModel
-from sqlmodel import Session
+from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
 
 app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
+startup_time: datetime = utcnow()
 
 
 @app.exception_handler(OasstError)
@@ -191,6 +195,7 @@ if settings.DEBUG_USE_SEED_DATA:
                         review_count=5,
                         review_result=True,
                         check_tree_state=False,
+                        check_duplicate=False,
                     )
                     if message.parent_id is None:
                         tm._insert_default_state(
@@ -215,7 +220,8 @@ def ensure_tree_states():
     try:
         logger.info("Startup: TreeManager.ensure_tree_states()")
         with Session(engine) as db:
-            tm = TreeManager(db, None)
+            api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
+            tm = TreeManager(db, PromptRepository(db, api_client=api_client))
             tm.ensure_tree_states()
 
     except Exception:
@@ -266,6 +272,51 @@ def update_leader_board_total(session: Session) -> None:
         logger.exception("Error during user states update (total)")
 
 
+@app.on_event("startup")
+@repeat_every(seconds=60 * 60 * settings.USER_STREAK_UPDATE_INTERVAL, wait_first=False)
+def update_user_streak(session: Session) -> None:
+    try:
+        current_time = utcnow()
+        timedelta = current_time - startup_time
+        if timedelta.days > 0:
+            # Update only greater than 24 hours . Do nothing
+            logger.debug("Process timedelta greater than 24h")
+            statement = select(User)
+            result = session.exec(statement).all()
+            if result is not None:
+                for user in result:
+                    last_activity_date = user.last_activity_date
+                    streak_last_day_date = user.streak_last_day_date
+                    # set NULL streak_days to 0
+                    if user.streak_days is None:
+                        user.streak_days = 0
+                    # if the user had completed a task
+                    if last_activity_date is not None:
+                        lastactitvitydelta = current_time - last_activity_date
+                        # if the user missed consecutive days of completing a task
+                        # reset the streak_days to 0 and set streak_last_day_date to the current_time
+                        if lastactitvitydelta.days > 1 or user.streak_days is None:
+                            user.streak_days = 0
+                            user.streak_last_day_date = current_time
+                    # streak_last_day_date has a current timestamp in DB. Idealy should not be NULL.
+                    if streak_last_day_date is not None:
+                        streak_delta = current_time - streak_last_day_date
+                        # if user completed tasks on consecutive days then increment the streak days
+                        # update the streak_last_day_date to current time for the next calculation
+                        if streak_delta.days > 0:
+                            user.streak_days += 1
+                            user.streak_last_day_date = current_time
+                    session.add(user)
+                    session.commit()
+
+        else:
+            logger.debug("Not yet 24hours since the process started! ...")
+
+    except Exception as e:
+        logger.error(str(e))
+    return
+
+
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
@@ -291,6 +342,20 @@ def export_ready_trees(file: Optional[str] = None, use_compression: bool = False
         logger.exception("Error exporting trees.")
 
 
+def retry_scoring_failed_message_trees():
+    try:
+        logger.info("TreeManager.retry_scoring_failed_message_trees()")
+        with Session(engine) as db:
+            api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
+
+            pr = PromptRepository(db=db, api_client=api_client)
+            tm = TreeManager(db, pr)
+            tm.retry_scoring_failed_message_trees()
+
+    except Exception:
+        logger.exception("TreeManager.retry_scoring_failed_message_trees() failed.")
+
+
 def main():
     # Importing here so we don't import packages unnecessarily if we're
     # importing main as a module.
@@ -302,27 +367,43 @@ def main():
 
     parser.add_argument(
         "--print-openapi-schema",
+        default=False,
         help="Dumps the openapi schema to stdout",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
     )
     parser.add_argument("--host", help="The host to run the server", default="0.0.0.0")
     parser.add_argument("--port", help="The port to run the server", default=8080)
     parser.add_argument(
-        "--export", help="Export all trees which are ready for exporting.", action=argparse.BooleanOptionalAction
+        "--export",
+        default=False,
+        help="Export all trees which are ready for exporting.",
+        action="store_true",
     )
     parser.add_argument(
         "--export-file",
+        type=str,
         help="Name of file to export trees to. If not provided when exporting, output will be send to STDOUT",
+    )
+    parser.add_argument(
+        "--retry-scoring",
+        default=False,
+        help="Retry scoring failed message trees",
+        action="store_true",
     )
 
     args = parser.parse_args()
 
     if args.print_openapi_schema:
         print(get_openapi_schema())
-    elif args.export:
+
+    if args.export:
         use_compression: bool = ".gz" in args.export_file
         export_ready_trees(file=args.export_file, use_compression=use_compression)
-    else:
+
+    if args.retry_scoring:
+        retry_scoring_failed_message_trees()
+
+    if not (args.export or args.print_openapi_schema or args.retry_scoring):
         uvicorn.run(app, host=args.host, port=args.port)
 
 
