@@ -29,7 +29,7 @@ export const CollapsableText = ({
   if (typeof text !== "string" || text.length <= maxLength) {
     return <>{text}</>;
   } else {
-    const text_with_breaks = text.split('\n').map((str, index) => <p key={index}>{str}</p>);
+    const text_with_breaks = text.split("\n").map((str, index) => <p key={index}>{str}</p>);
     return (
       <>
         <span>
