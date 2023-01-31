@@ -19,6 +19,9 @@ class TreeManagerConfiguration(BaseModel):
     max_children_count: int = 3
     """Maximum number of reply messages per tree node."""
 
+    num_prompter_replies: int = 1
+    """Number of prompter replies to collect per assistant reply."""
+
     goal_tree_size: int = 15
     """Total number of messages to gather per tree."""
 
@@ -109,11 +112,11 @@ class TreeManagerConfiguration(BaseModel):
 
     rank_prompter_replies: bool = False
 
-    lonely_children_count: int = 2
+    lonely_children_count: int = 3
     """Number of children below which parents are preferred during sampling for reply tasks."""
 
     p_lonely_child_extension: float = 0.8
-    """Probability to select a parent with less than lonely_children_count children."""
+    """Probability to select a prompter message parent with less than lonely_children_count children."""
 
     recent_tasks_span_sec: int = 3 * 60  # 3 min
     """Time in seconds of recent tasks to consider for exclusion during task selection."""
@@ -192,19 +195,24 @@ class Settings(BaseSettings):
     USER_STATS_INTERVAL_WEEK: int = 15  # minutes
     USER_STATS_INTERVAL_MONTH: int = 60  # minutes
     USER_STATS_INTERVAL_TOTAL: int = 240  # minutes
+    USER_STREAK_UPDATE_INTERVAL: int = 4  # Hours
 
     @validator(
         "USER_STATS_INTERVAL_DAY",
         "USER_STATS_INTERVAL_WEEK",
         "USER_STATS_INTERVAL_MONTH",
         "USER_STATS_INTERVAL_TOTAL",
+        "USER_STREAK_UPDATE_INTERVAL",
     )
     def validate_user_stats_intervals(cls, v: int):
         if v < 1:
             raise ValueError(v)
         return v
 
-    USER_STREAK_UPDATE_INTERVAL: int = 4  # Hours
+    RATE_LIMIT_TASK_USER_TIMES: int = 60
+    RATE_LIMIT_TASK_USER_MINUTES: int = 5
+    RATE_LIMIT_TASK_API_TIMES: int = 10_000
+    RATE_LIMIT_TASK_API_MINUTES: int = 1
 
     class Config:
         env_file = ".env"
