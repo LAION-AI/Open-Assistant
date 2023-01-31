@@ -1,4 +1,6 @@
 import { rest } from "msw";
+import { SessionProvider } from "next-auth/react";
+
 import { MessageWithChildren } from "./MessageWithChildren";
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -28,7 +30,11 @@ export default {
   },
 };
 
-const Template = (args) => <MessageWithChildren {...args} />;
+const Template = (args) => (
+  <SessionProvider>
+    <MessageWithChildren {...args} />;
+  </SessionProvider>
+);
 
 export const NoChildren = Template.bind({});
 NoChildren.args = {
