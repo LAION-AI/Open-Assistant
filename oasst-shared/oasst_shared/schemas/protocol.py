@@ -26,7 +26,7 @@ class TaskRequestType(str, enum.Enum):
 class User(BaseModel):
     id: str
     display_name: str
-    auth_method: Literal["discord", "local"]
+    auth_method: Literal["discord", "local", "system"]
 
 
 class FrontEndUser(User):
@@ -432,7 +432,7 @@ class SystemStats(BaseModel):
 class UserScore(BaseModel):
     rank: Optional[int]
     user_id: UUID
-    is_current_user: Optional[bool] = None
+    highlighted: bool = False
     username: str
     auth_method: str
     display_name: str

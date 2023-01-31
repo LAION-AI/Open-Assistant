@@ -17,7 +17,7 @@ from sqlalchemy.dialects import postgresql
 from sqlmodel import Session, delete, func, text
 
 
-def _create_user_score(r, current_user_id: UUID | None):
+def _create_user_score(r, highlighted_user_id: UUID | None):
     if r["UserStats"]:
         d = r["UserStats"].dict()
     else:
@@ -32,8 +32,8 @@ def _create_user_score(r, current_user_id: UUID | None):
         "last_activity_date",
     ]:
         d[k] = r[k]
-    if current_user_id:
-        d["is_current_user"] = r["user_id"] == current_user_id
+    if highlighted_user_id:
+        d["highlighted"] = r["user_id"] == highlighted_user_id
     return UserScore(**d)
 
 
@@ -45,7 +45,7 @@ class UserStatsRepository:
         self,
         time_frame: UserStatsTimeFrame,
         limit: int = 100,
-        current_user_id: Optional[UUID] = None,
+        highlighted_user_id: Optional[UUID] = None,
     ) -> LeaderboardStats:
         """
         Get leaderboard stats for the specified time frame
@@ -68,7 +68,49 @@ class UserStatsRepository:
             .limit(limit)
         )
 
-        leaderboard = [_create_user_score(r, current_user_id) for r in self.session.exec(qry)]
+        leaderboard = [_create_user_score(r, highlighted_user_id) for r in self.session.exec(qry)]
+        if len(leaderboard) > 0:
+            last_update = max(x.modified_date for x in leaderboard)
+        else:
+            last_update = utcnow()
+        return LeaderboardStats(time_frame=time_frame.value, leaderboard=leaderboard, last_updated=last_update)
+
+    def get_leaderboard_user_window(
+        self,
+        user: User,
+        time_frame: UserStatsTimeFrame,
+        window_size: int = 5,
+    ) -> LeaderboardStats | None:
+        # no window for users who don't show themselves
+        if not user.show_on_leaderboard:
+            return None
+
+        qry = self.session.query(UserStats).filter(UserStats.user_id == user.id, UserStats.time_frame == time_frame)
+        stats: UserStats = qry.one_or_none()
+        if stats is None or stats.rank is None:
+            return None
+
+        min_rank = max(0, stats.rank - window_size // 2)
+        max_rank = min_rank + window_size
+
+        qry = (
+            self.session.query(
+                User.id.label("user_id"),
+                User.username,
+                User.auth_method,
+                User.display_name,
+                User.streak_days,
+                User.streak_last_day_date,
+                User.last_activity_date,
+                UserStats,
+            )
+            .join(UserStats, User.id == UserStats.user_id)
+            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard)
+            .where(UserStats.rank >= min_rank, UserStats.rank <= max_rank)
+            .order_by(UserStats.rank)
+        )
+
+        leaderboard = [_create_user_score(r, highlighted_user_id=user.id) for r in self.session.exec(qry)]
         if len(leaderboard) > 0:
             last_update = max(x.modified_date for x in leaderboard)
         else:

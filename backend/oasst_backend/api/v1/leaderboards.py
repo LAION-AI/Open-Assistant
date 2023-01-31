@@ -27,7 +27,7 @@ def get_leaderboard(
         current_user = ur.query_frontend_user(auth_method=frontend_user.auth_method, username=frontend_user.username)
         current_user_id = current_user.id
     usr = UserStatsRepository(db)
-    return usr.get_leaderboard(time_frame, limit=max_count, current_user_id=current_user_id)
+    return usr.get_leaderboard(time_frame, limit=max_count, highlighted_user_id=current_user_id)
 
 
 @router.post("/update/{time_frame}", response_model=None, status_code=HTTP_204_NO_CONTENT)
