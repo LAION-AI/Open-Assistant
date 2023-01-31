@@ -308,3 +308,17 @@ def query_user_stats_timeframe(
 ):
     usr = UserStatsRepository(db)
     return usr.get_user_stats_all_time_frames(user_id=user_id)[time_frame.value]
+
+
+@router.get("/{user_id}/stats/{time_frame}/window", response_model=protocol.LeaderboardStats | None)
+def query_user_stats_timeframe_window(
+    user_id: UUID,
+    time_frame: UserStatsTimeFrame,
+    window_size: Optional[int] = Query(5, gt=0, le=100),
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+) -> protocol.LeaderboardStats | None:
+    ur = UserRepository(db, api_client=api_client)
+    user = ur.get_user(id=user_id)
+    usr = UserStatsRepository(db)
+    return usr.get_leaderboard_user_window(user=user, time_frame=time_frame, window_size=window_size)
