@@ -5,8 +5,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
-from oasst_backend.models import ApiClient
+from oasst_backend.models import ApiClient, MessageTreeState
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.schemas.message_tree import MessageTreeStateResponse
+from oasst_backend.tree_manager import TreeManager
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol
@@ -187,6 +189,55 @@ def get_tree(
     message = pr.fetch_message(message_id)
     tree = pr.fetch_message_tree(message.message_tree_id, reviewed=False)
     return utils.prepare_tree(tree, message.message_tree_id)
+
+
+@router.get("/{message_id}/tree/state", response_model=MessageTreeStateResponse)
+def get_message_tree_state(
+    *,
+    message_id: UUID,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+) -> MessageTreeStateResponse:
+
+    pr = PromptRepository(db, api_client, frontend_user=frontend_user)
+    message = pr.fetch_message(message_id=message_id, fail_if_missing=True)
+    mts = pr.fetch_tree_state(message.message_tree_id)
+    return MessageTreeStateResponse(
+        message_tree_id=mts.message_tree_id,
+        state=mts.state,
+        active=mts.active,
+        goal_tree_size=mts.goal_tree_size,
+        max_children_count=mts.max_children_count,
+        max_depth=mts.max_depth,
+        origin=mts.origin,
+    )
+
+
+@router.put("/{message_id}/tree/state", response_model=MessageTreeStateResponse)
+def put_message_tree_state(
+    *,
+    message_id: UUID,
+    halt: bool,
+    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+) -> MessageTreeStateResponse:
+    @managed_tx_function(CommitMode.COMMIT)
+    def halt_tree_tx(session: deps.Session) -> MessageTreeState:
+        pr = PromptRepository(session, api_client, frontend_user=frontend_user)
+        tm = TreeManager(session, pr)
+        return tm.halt_tree(message_id, halt=halt)
+
+    mts = halt_tree_tx()
+    return MessageTreeStateResponse(
+        message_tree_id=mts.message_tree_id,
+        state=mts.state,
+        active=mts.active,
+        goal_tree_size=mts.goal_tree_size,
+        max_children_count=mts.max_children_count,
+        max_depth=mts.max_depth,
+        origin=mts.origin,
+    )
 
 
 @router.get("/{message_id}/children", response_model=list[protocol.Message])
