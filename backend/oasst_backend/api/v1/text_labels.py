@@ -6,14 +6,12 @@ from fastapi.security.api_key import APIKey
 from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.config import settings
-from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.schemas.text_labels import LabelDescription, ValidLabelsResponse
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions import OasstError
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.schemas.protocol import TextLabel
-from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
 router = APIRouter()
@@ -52,12 +50,10 @@ def label_text(
 def get_valid_lables(
     *,
     message_id: Optional[UUID] = None,
-    db: Session = Depends(deps.get_db),
-    api_client: ApiClient = Depends(deps.get_api_client),
+    prompt_repository: PromptRepository = Depends(deps.get_prompt_repository),
 ) -> ValidLabelsResponse:
     if message_id:
-        pr = PromptRepository(db, api_client=api_client)
-        message = pr.fetch_message(message_id=message_id)
+        message = prompt_repository.fetch_message(message_id=message_id)
         if message.parent_id is None:
             valid_labels = settings.tree_manager.labels_initial_prompt
         elif message.role == "assistant":

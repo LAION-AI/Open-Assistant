@@ -4,6 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from oasst_backend.api import deps
+from oasst_backend.api.frontend_user import FrontendUserId
 from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient, MessageTreeState
 from oasst_backend.prompt_repository import PromptRepository
@@ -31,7 +32,7 @@ def query_messages(
     desc: Optional[bool] = True,
     allow_deleted: Optional[bool] = False,
     lang: Optional[str] = None,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -69,7 +70,7 @@ def get_messages_cursor(
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
     lang: Optional[str] = None,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -145,7 +146,7 @@ def get_messages_cursor(
 def get_message(
     *,
     message_id: UUID,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -161,7 +162,7 @@ def get_message(
 def get_conv(
     *,
     message_id: UUID,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -178,7 +179,7 @@ def get_conv(
 def get_tree(
     *,
     message_id: UUID,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -244,7 +245,7 @@ def put_message_tree_state(
 def get_children(
     *,
     message_id: UUID,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -260,7 +261,7 @@ def get_children(
 def get_descendants(
     *,
     message_id: UUID,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -277,7 +278,7 @@ def get_descendants(
 def get_longest_conv(
     *,
     message_id: UUID,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -294,7 +295,7 @@ def get_longest_conv(
 def get_max_children(
     *,
     message_id: UUID,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ):
@@ -311,7 +312,7 @@ def get_max_children(
 def mark_message_deleted(
     *,
     message_id: UUID,
-    frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
+    frontend_user: FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
     db: Session = Depends(deps.get_db),
 ):

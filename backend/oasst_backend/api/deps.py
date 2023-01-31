@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from secrets import token_hex
-from typing import Generator, NamedTuple, Optional
+from typing import Generator, Optional
 from uuid import UUID
 
 from fastapi import Depends, Request, Response, Security
@@ -8,10 +8,16 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
 from fastapi_limiter.depends import RateLimiter
 from loguru import logger
+from oasst_backend.api.frontend_user import FrontendUserId
 from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.models import ApiClient
+from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.task_repository import TaskRepository
+from oasst_backend.tree_manager import TreeManager
+from oasst_backend.user_repository import UserRepository
 from oasst_shared.exceptions import OasstError, OasstErrorCode
+from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
 
 
@@ -36,11 +42,6 @@ def get_api_key(
         return api_key_query
     else:
         return api_key_header
-
-
-class FrontendUserId(NamedTuple):
-    auth_method: str
-    username: str
 
 
 def get_frontend_user_id(
@@ -191,3 +192,43 @@ class APIClientRateLimiter(RateLimiter):
             return
 
         return await super().__call__(request, response)
+
+
+def get_user(request: protocol_schema.TaskRequest) -> Optional[protocol_schema.User]:
+    return request.user
+
+
+def get_user_repository(
+    db: Session = Depends(get_db), api_client: ApiClient = Depends(get_api_client)
+) -> UserRepository:
+    return UserRepository(db, api_client)
+
+
+def get_task_repository(
+    client_user: Optional[protocol_schema.User] = Depends(get_user),
+    user_repository: UserRepository = Depends(get_user_repository),
+) -> TaskRepository:
+    return TaskRepository(
+        db=user_repository.db,
+        api_client=user_repository.api_client,
+        client_user=client_user,
+        user_repository=user_repository,
+    )
+
+
+def get_prompt_repository(
+    client_user: Optional[protocol_schema.User] = Depends(get_user),
+    user_repository: UserRepository = Depends(get_user_repository),
+    task_repository: TaskRepository = Depends(get_task_repository),
+) -> PromptRepository:
+    return PromptRepository(
+        db=user_repository.db,
+        api_client=user_repository.api_client,
+        client_user=client_user,
+        user_repository=user_repository,
+        task_repository=task_repository,
+    )
+
+
+def get_tree_manager(prompt_repository: PromptRepository = Depends(get_prompt_repository)) -> TreeManager:
+    return TreeManager(prompt_repository.db, prompt_repository)

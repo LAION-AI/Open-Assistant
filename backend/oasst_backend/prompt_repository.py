@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
-from oasst_backend.api.deps import FrontendUserId
+from oasst_backend.api.frontend_user import FrontendUserId
 from oasst_backend.config import settings
 from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import (
