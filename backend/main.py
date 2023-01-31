@@ -277,12 +277,6 @@ def set_startup_time() -> None:
     startup_time = utcnow()
 
 
-def update_all_user_streak(session: Session) -> None:
-    statement = select(User)
-    result = session.exec(statement).all()
-    return result
-
-
 @app.on_event("startup")
 @repeat_every(seconds=60 * settings.USER_STREAK_UPDATE_INTERVAL, wait_first=False)
 @managed_tx_function(auto_commit=CommitMode.COMMIT)
@@ -291,28 +285,37 @@ def update_user_streak(session: Session) -> None:
         global startup_time
         current_time = utcnow()
         timedelta = current_time - startup_time
-        result = update_all_user_streak(session=session)
         if timedelta.days >= 0:
             # Update only greater than 24 hours . Do nothing
             logger.debug("Process timedelta greater than 24h")
+            statement = select(User)
+            result = session.exec(statement).all()
             if result is not None:
                 for user in result:
-                    logger.debug(f"{type(user)}... {user}")
                     last_activity_date = user.last_activity_date
                     streak_last_day_date = user.streak_last_day_date
-                    current_time_no_tz = current_time.replace(tzinfo=None)
-                    logger.debug(f"{current_time_no_tz}: {last_activity_date}, {streak_last_day_date}")
+                    # set NULL streak_days to 0
+                    if user.streak_days is None:
+                        user.streak_days = 0
+                    # if the user had completed a task
                     if last_activity_date is not None:
-                        lastactitvitydelta = current_time_no_tz - last_activity_date
+                        lastactitvitydelta = current_time - last_activity_date
+                        # if the user missed consecutive days of completing a task
+                        # reset the streak_days to 0 and set streak_last_day_date to the current_time
                         if lastactitvitydelta.days > 1 or user.streak_days is None:
                             user.streak_days = 0
-
+                            user.streak_last_day_date = current_time
+                    # streak_last_day_date has a current timestamp in DB. Idealy should not be NULL.
                     if streak_last_day_date is not None:
-                        streak_delta = current_time_no_tz - streak_last_day_date
+                        streak_delta = current_time - streak_last_day_date
+                        # if user completed tasks on consecutive days then increment the streak days
+                        # update the streak_last_day_date to current time for the next calculation
                         if streak_delta.days > 0:
                             user.streak_days += 1
                             user.streak_last_day_date = current_time
                     session.add(user)
+        else:
+            logger.debug("Not yet 24hours since the process started! ...")
 
     except Exception as e:
         logger.error(str(e))
