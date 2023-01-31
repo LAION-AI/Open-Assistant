@@ -119,6 +119,21 @@
           TREE_MANAGER__GOAL_TREE_SIZE:
             "{{ lookup('ansible.builtin.env', 'GOAL_TREE_SIZE') | default('15',
             true) }}"
+          TREE_MANAGER__MAX_CHILDREN_COUNT:
+            "{{ lookup('ansible.builtin.env', 'MAX_CHILDREN_COUNT') |
+            default('3', true) }}"
+          USER_STATS_INTERVAL_DAY:
+            "{{ lookup('ansible.builtin.env', 'STATS_INTERVAL_DAY') |
+            default('5', true) }}"
+          USER_STATS_INTERVAL_WEEK:
+            "{{ lookup('ansible.builtin.env', 'STATS_INTERVAL_WEEK') |
+            default('15', true) }}"
+          USER_STATS_INTERVAL_MONTH:
+            "{{ lookup('ansible.builtin.env', 'STATS_INTERVAL_MONTH') |
+            default('60', true) }}"
+          USER_STATS_INTERVAL_TOTAL:
+            "{{ lookup('ansible.builtin.env', 'STATS_INTERVAL_TOTAL') |
+            default('240', true) }}"
         ports:
           - "{{ backend_port }}:8080"
 

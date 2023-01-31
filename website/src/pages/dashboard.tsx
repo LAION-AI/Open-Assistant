@@ -4,13 +4,15 @@ import { useTranslation } from "next-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { LeaderboardWidget, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { getDashboardLayout } from "src/components/Layout";
-import { TaskCategory } from "src/components/Tasks/TaskTypes";
 import { get } from "src/lib/api";
-import { AvailableTasks, TaskType } from "src/types/Task";
+import { AvailableTasks, TaskCategory, TaskType } from "src/types/Task";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import useSWR from "swr";
 
 const Dashboard = () => {
+  // Adding a demonstrative call to the backend that includes the web's JWT.
+  useSWR(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check`, get);
+
   const {
     t,
     i18n: { language },

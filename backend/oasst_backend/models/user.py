@@ -51,7 +51,8 @@ class User(SQLModel, table=True):
             deleted=self.deleted,
             notes=self.notes,
             created_date=self.created_date,
+            show_on_leaderboard=self.show_on_leaderboard,
             streak_days=self.streak_days,
             streak_last_day_date=self.streak_last_day_date,
-            last_activity_date=self.last_activity_date,
+            last_activity_date=self.last_activity_date            
         )

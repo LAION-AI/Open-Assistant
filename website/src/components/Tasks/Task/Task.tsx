@@ -5,12 +5,12 @@ import { TaskControls } from "src/components/Survey/TaskControls";
 import { CreateTask } from "src/components/Tasks/CreateTask";
 import { EvaluateTask } from "src/components/Tasks/EvaluateTask";
 import { LabelTask } from "src/components/Tasks/LabelTask";
-import { TaskCategory, TaskInfo, TaskInfos } from "src/components/Tasks/TaskTypes";
 import { UnchangedWarning } from "src/components/Tasks/UnchangedWarning";
-import { post } from "src/lib/api";
+import { useTaskContext } from "src/context/TaskContext";
 import { getTypeSafei18nKey } from "src/lib/i18n";
+import { TaskCategory, TaskInfo } from "src/types/Task";
 import { BaseTask, TaskContent, TaskReplyValidity } from "src/types/Task";
-import useSWRMutation from "swr/mutation";
+import { CreateTaskType, LabelTaskType, RankTaskType } from "src/types/Tasks";
 
 interface EditMode {
   mode: "EDIT";
@@ -62,8 +62,11 @@ export interface TaskSurveyProps<TaskType extends BaseTask, T> {
   onValidityChanged: (validity: TaskReplyValidity) => void;
 }
 
-export const Task = ({ frontendId, task, trigger, mutate }) => {
+export const Task = () => {
   const { t } = useTranslation("tasks");
+  const rootEl = useRef<HTMLDivElement>(null);
+  const replyContent = useRef<TaskContent>(null);
+  const { rejectTask, completeTask, isLoading, task, taskInfo } = useTaskContext();
   const [taskStatus, taskEvent] = useReducer(
     (
       status: TaskStatus,
@@ -71,7 +74,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
     ): TaskStatus => {
       switch (event.action) {
         case "NEW_TASK":
-          return { mode: "EDIT", replyValidity: "INVALID" };
+          return status.mode !== "EDIT" ? { mode: "EDIT", replyValidity: "INVALID" } : status;
         case "UPDATE_VALIDITY":
           return status.mode === "EDIT" ? { mode: "EDIT", replyValidity: event.replyValidity } : status;
         case "ACCEPT_DEFAULT":
@@ -105,7 +108,6 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
     { mode: "EDIT", replyValidity: "INVALID" }
   );
 
-  const replyContent = useRef<TaskContent>(null);
   const updateValidity = useCallback(
     (replyValidity: TaskReplyValidity) => taskEvent({ action: "UPDATE_VALIDITY", replyValidity }),
     [taskEvent]
@@ -113,27 +115,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
 
   useEffect(() => {
     taskEvent({ action: "NEW_TASK" });
-  }, [task.id, updateValidity]);
-
-  const rootEl = useRef<HTMLDivElement>(null);
-
-  const taskType = useMemo(
-    () => TaskInfos.find((taskType) => taskType.type === task.type && taskType.mode === task.mode),
-    [task.type, task.mode]
-  );
-
-  const { trigger: sendRejection } = useSWRMutation("/api/reject_task", post, {
-    onSuccess: async () => {
-      mutate();
-    },
-  });
-
-  const rejectTask = (reason: string) => {
-    sendRejection({
-      id: frontendId,
-      reason,
-    });
-  };
+  }, [task.id]);
 
   const onReplyChanged = useCallback(
     (content: TaskContent) => {
@@ -142,25 +124,21 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
     [replyContent]
   );
 
-  const submitResponse = () => {
+  const submitResponse = useCallback(async () => {
     if (taskStatus.mode === "REVIEW") {
-      trigger({
-        id: frontendId,
-        update_type: taskType.update_type,
-        content: replyContent.current,
-      });
       taskEvent({ action: "SET_SUBMITTED" });
+      await completeTask(replyContent.current);
       scrollToTop(rootEl.current);
     }
-  };
+  }, [taskStatus.mode, completeTask]);
 
   const taskTypeComponent = useMemo(() => {
-    switch (taskType.category) {
+    switch (taskInfo.category) {
       case TaskCategory.Create:
         return (
           <CreateTask
-            task={task}
-            taskType={taskType}
+            task={task as CreateTaskType}
+            taskType={taskInfo}
             isEditable={taskStatus.mode === "EDIT"}
             isDisabled={taskStatus.mode === "SUBMITTED"}
             onReplyChanged={onReplyChanged}
@@ -170,8 +148,8 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       case TaskCategory.Evaluate:
         return (
           <EvaluateTask
-            task={task}
-            taskType={taskType}
+            task={task as RankTaskType}
+            taskType={taskInfo}
             isEditable={taskStatus.mode === "EDIT"}
             isDisabled={taskStatus.mode === "SUBMITTED"}
             onReplyChanged={onReplyChanged}
@@ -181,8 +159,8 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       case TaskCategory.Label:
         return (
           <LabelTask
-            task={task}
-            taskType={taskType}
+            task={task as LabelTaskType}
+            taskType={taskInfo}
             isEditable={taskStatus.mode === "EDIT"}
             isDisabled={taskStatus.mode === "SUBMITTED"}
             onReplyChanged={onReplyChanged}
@@ -190,7 +168,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
           />
         );
     }
-  }, [task, taskType, taskStatus.mode, onReplyChanged, updateValidity]);
+  }, [taskInfo, task, taskStatus.mode, onReplyChanged, updateValidity]);
 
   return (
     <div ref={rootEl}>
@@ -198,6 +176,7 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       <TaskControls
         task={task}
         taskStatus={taskStatus}
+        isLoading={isLoading}
         onEdit={() => taskEvent({ action: "RETURN_EDIT" })}
         onReview={() => taskEvent({ action: "REVIEW" })}
         onSubmit={submitResponse}
@@ -205,8 +184,8 @@ export const Task = ({ frontendId, task, trigger, mutate }) => {
       />
       <UnchangedWarning
         show={taskStatus.mode === "DEFAULT_WARN"}
-        title={t(getTypeSafei18nKey(`${taskType.id}.unchanged_title`)) || t("default.unchanged_title")}
-        message={t(getTypeSafei18nKey(`${taskType.id}.unchanged_message`)) || t("default.unchanged_message")}
+        title={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_title`)) || t("default.unchanged_title")}
+        message={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_message`)) || t("default.unchanged_message")}
         continueButtonText={"Continue anyway"}
         onClose={() => taskEvent({ action: "RETURN_EDIT" })}
         onContinueAnyway={() => {

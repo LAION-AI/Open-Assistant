@@ -35,6 +35,7 @@ class FrontEndUser(User):
     deleted: bool
     notes: str
     created_date: Optional[datetime] = None
+    show_on_leaderboard: bool
     streak_days: Optional[int] = None
     streak_last_day_date: Optional[datetime] = None
     last_activity_date: Optional[datetime] = None
@@ -56,6 +57,7 @@ class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
     id: Optional[UUID] = None
+    user_id: Optional[UUID]
     frontend_message_id: Optional[str] = None
     text: str
     lang: Optional[str]  # BCP 47
@@ -83,8 +85,10 @@ class Conversation(BaseModel):
 
 
 class Message(ConversationMessage):
-    parent_id: Optional[UUID] = None
-    created_date: Optional[datetime] = None
+    parent_id: Optional[UUID]
+    created_date: Optional[datetime]
+    review_result: Optional[bool]
+    review_count: Optional[int]
 
 
 class MessagePage(PageResult):
@@ -358,6 +362,12 @@ class TextLabel(str, enum.Enum):
     fails_task = "fails_task", LabelWidget.yes_no, "Fails to follow the correct instruction / task"
 
     # flags
+    lang_mismatch = (
+        "lang_mismatch",
+        LabelWidget.flag,
+        "Wrong Language",
+        "The message is written in a language that differs from the currently selected language.",
+    )
     pii = "pii", LabelWidget.flag, "Contains personal identifiable information (PII)"
     not_appropriate = "not_appropriate", LabelWidget.flag, "Inappropriate"
     hate_speech = (

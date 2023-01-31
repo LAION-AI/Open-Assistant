@@ -206,7 +206,7 @@ class TreeManager:
             logger.warning("Task availability request without lang tag received, assuming lang='en'.")
 
         num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
-        extendible_parents = self.query_extendible_parents(lang=lang)
+        extendible_parents, _ = self.query_extendible_parents(lang=lang)
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
         incomplete_rankings = self.query_incomplete_rankings(lang=lang)
@@ -245,13 +245,11 @@ class TreeManager:
         num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
-        extendible_parents = self.query_extendible_parents(lang=lang)
+        extendible_parents, active_tree_sizes = self.query_extendible_parents(lang=lang)
 
         incomplete_rankings = self.query_incomplete_rankings(lang=lang)
         if not self.cfg.rank_prompter_replies:
             incomplete_rankings = list(filter(lambda r: r.role == "assistant", incomplete_rankings))
-
-        active_tree_sizes = self.query_extendible_trees(lang=lang)
 
         # determine type of task to generate
         num_missing_replies = sum(x.remaining_messages for x in active_tree_sizes)
@@ -321,7 +319,7 @@ class TreeManager:
                     ranking_parent = messages[-1]
                     assert not ranking_parent.deleted and ranking_parent.review_result
                     conversation = prepare_conversation(messages)
-                    replies = self.pr.fetch_message_children(ranking_parent_id, reviewed=True, exclude_deleted=True)
+                    replies = self.pr.fetch_message_children(ranking_parent_id, review_result=True, deleted=False)
 
                     assert len(replies) > 1
                     random.shuffle(replies)  # hand out replies in random order
@@ -377,7 +375,9 @@ class TreeManager:
                         ):
                             label_mode = protocol_schema.LabelTaskMode.simple
                             label_disposition = protocol_schema.LabelTaskDisposition.spam
-                            valid_labels = list(self.cfg.mandatory_labels_assistant_reply)
+                            valid_labels = self.cfg.mandatory_labels_assistant_reply.copy()
+                            if protocol_schema.TextLabel.lang_mismatch not in valid_labels:
+                                valid_labels.append(protocol_schema.TextLabel.lang_mismatch)
                             if protocol_schema.TextLabel.quality not in valid_labels:
                                 valid_labels.append(protocol_schema.TextLabel.quality)
 
@@ -401,7 +401,9 @@ class TreeManager:
                         ):
                             label_mode = protocol_schema.LabelTaskMode.simple
                             label_disposition = protocol_schema.LabelTaskDisposition.spam
-                            valid_labels = list(self.cfg.mandatory_labels_prompter_reply)
+                            valid_labels = self.cfg.mandatory_labels_prompter_reply.copy()
+                            if protocol_schema.TextLabel.lang_mismatch not in valid_labels:
+                                valid_labels.append(protocol_schema.TextLabel.lang_mismatch)
                             if protocol_schema.TextLabel.quality not in valid_labels:
                                 valid_labels.append(protocol_schema.TextLabel.quality)
 
@@ -482,9 +484,11 @@ class TreeManager:
                 valid_labels = self.cfg.labels_initial_prompt
 
                 if random.random() > self.cfg.p_full_labeling_review_prompt:
-                    valid_labels = self.cfg.mandatory_labels_initial_prompt
+                    valid_labels = self.cfg.mandatory_labels_initial_prompt.copy()
                     label_mode = protocol_schema.LabelTaskMode.simple
                     label_disposition = protocol_schema.LabelTaskDisposition.spam
+                    if protocol_schema.TextLabel.lang_mismatch not in valid_labels:
+                        valid_labels.append(protocol_schema.TextLabel.lang_mismatch)
 
                 logger.info(f"Generating a LabelInitialPromptTask ({label_mode=:s}).")
                 task = protocol_schema.LabelInitialPromptTask(
@@ -631,8 +635,7 @@ class TreeManager:
 
         is_terminal = state in message_tree_state.TERMINAL_STATES
         was_active = mts.active
-        if is_terminal:
-            mts.active = False
+        mts.active = not is_terminal
         mts.state = state.value
         self.db.add(mts)
         self.db.flush
@@ -752,7 +755,7 @@ class TreeManager:
                 logger.debug(f"CONSENSUS: {consensus}\n\n")
 
                 # fetch all siblings and clear ranks
-                siblings = self.pr.fetch_message_siblings(consensus[0], reviewed=None, deleted=None)
+                siblings = self.pr.fetch_message_siblings(consensus[0], review_result=None, deleted=None)
                 for m in siblings:
                     m.rank = None
                     self.db.add(m)
@@ -805,8 +808,12 @@ class TreeManager:
                 return backlog_tree
 
     def _calculate_acceptance(self, labels: list[TextLabels]):
-        # calculate acceptance based on spam label
-        return np.mean([1 - l.labels[protocol_schema.TextLabel.spam] for l in labels])
+        # calculate acceptance based on lang_mismatch & spam label
+        lang_mismatch = np.mean([(l.labels.get(protocol_schema.TextLabel.lang_mismatch) or 0) for l in labels])
+        spam = np.mean([l.labels[protocol_schema.TextLabel.spam] for l in labels])
+        acceptance_score = 1 - (spam + lang_mismatch)
+        logger.debug(f"{acceptance_score=} ({spam=}, {lang_mismatch=})")
+        return acceptance_score
 
     def _query_need_review(
         self, state: message_tree_state.State, required_reviews: int, root: bool, lang: str
@@ -929,7 +936,7 @@ HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
     AND COUNT(c.id) FILTER (WHERE c.user_id = :user_id) = 0  -- without reply by user
 """
 
-    def query_extendible_parents(self, lang: str) -> list[ExtendibleParentRow]:
+    def query_extendible_parents(self, lang: str) -> tuple[list[ExtendibleParentRow], list[ActiveTreeSizeRow]]:
         """Query parent messages that have not reached the maximum number of replies."""
 
         user_id = self.pr.user_id if not settings.DEBUG_ALLOW_DUPLICATE_TASKS else None
@@ -942,7 +949,13 @@ HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
                 "user_id": user_id,
             },
         )
-        return [ExtendibleParentRow.from_orm(x) for x in r.all()]
+
+        potential_parents = [ExtendibleParentRow.from_orm(x) for x in r.all()]
+        extendible_trees = self.query_extendible_trees(lang=lang)
+        extendible_tree_ids = set(t.message_tree_id for t in extendible_trees)
+        extendible_parents = list(p for p in potential_parents if p.message_tree_id in extendible_tree_ids)
+
+        return extendible_parents, extendible_trees
 
     _sql_find_extendible_trees = f"""
 -- find extendible trees
@@ -1073,20 +1086,44 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
                 logger.info(f"Inserting missing message tree state for message: {id} ({tree_size=}, {state=:s})")
             self._insert_default_state(id, state=state)
 
-        rankings = (
+        # check tree state transitions (maybe variables haves changes): prompt review -> growing -> ranking -> scoring
+        prompt_review_trees: list[MessageTreeState] = (
+            self.db.query(MessageTreeState)
+            .filter(MessageTreeState.state == message_tree_state.State.INITIAL_PROMPT_REVIEW, MessageTreeState.active)
+            .all()
+        )
+        if len(prompt_review_trees) > 0:
+            logger.info(
+                f"Checking state of {len(prompt_review_trees)} active message trees in 'initial_prompt_review' state."
+            )
+            for t in prompt_review_trees:
+                self.check_condition_for_growing_state(t.message_tree_id)
+
+        growing_trees: list[MessageTreeState] = (
+            self.db.query(MessageTreeState)
+            .filter(MessageTreeState.state == message_tree_state.State.GROWING, MessageTreeState.active)
+            .all()
+        )
+        if len(growing_trees) > 0:
+            logger.info(f"Checking state of {len(growing_trees)} active message trees in 'growing' state.")
+            for t in growing_trees:
+                self.check_condition_for_ranking_state(t.message_tree_id)
+
+        ranking_trees: list[MessageTreeState] = (
             self.db.query(MessageTreeState)
             .filter(
                 or_(
                     MessageTreeState.state == message_tree_state.State.RANKING,
                     MessageTreeState.state == message_tree_state.State.READY_FOR_SCORING,
-                )
+                ),
+                MessageTreeState.active,
             )
             .all()
         )
-        if len(rankings) > 0:
-            logger.info(f"Checking state of {len(rankings)} message trees in ranking state.")
-            for r in rankings:
-                self.check_condition_for_scoring_state(r.message_tree_id)
+        if len(ranking_trees) > 0:
+            logger.info(f"Checking state of {len(ranking_trees)} active message trees in 'ranking' state.")
+            for t in ranking_trees:
+                self.check_condition_for_scoring_state(t.message_tree_id)
 
     def query_num_active_trees(self, lang: str, exclude_ranking: bool = True) -> int:
         """Count all active trees (optionally exclude those in ranking state)."""
@@ -1250,6 +1287,13 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         r = self.db.execute(text(sql_purge_message_tree), {"message_tree_id": message_tree_id})
         logger.debug(f"purge_message_tree({message_tree_id=}) {r.rowcount} rows.")
 
+    def _reactivate_tree(self, mts: MessageTreeState):
+        self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
+        tree_id = mts.message_tree_id
+        if self.check_condition_for_growing_state(tree_id):
+            if self.check_condition_for_ranking_state(tree_id):
+                self.check_condition_for_scoring_state(tree_id)
+
     @managed_tx_method(CommitMode.FLUSH)
     def purge_user_messages(
         self,
@@ -1309,10 +1353,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
             logger.info(f"reactivating message tree {tree_id}")
             mts = self.pr.fetch_tree_state(tree_id)
             mts.active = True
-            self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
-            self.check_condition_for_growing_state(tree_id)
-            self.check_condition_for_ranking_state(tree_id)
-            self.check_condition_for_scoring_state(tree_id)
+            self._reactivate_tree(mts)
 
     @managed_tx_method(CommitMode.FLUSH)
     def purge_user(self, user_id: UUID, ban: bool = True) -> None:
@@ -1382,9 +1423,21 @@ DELETE FROM user_stats WHERE user_id = :user_id;
             try:
                 if not self.check_condition_for_scoring_state(mts.message_tree_id):
                     mts.active = True
-                    self._enter_state(message_tree_state.State.RANKING)
+                    self._enter_state(mts, message_tree_state.State.RANKING)
             except Exception:
                 logger.exception(f"retry_scoring_failed_message_trees failed for ({mts.message_tree_id=})")
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def halt_tree(self, message_id: UUID, halt: bool = True) -> MessageTreeState:
+        message = self.pr.fetch_message(message_id, fail_if_missing=True)
+        mts = self.pr.fetch_tree_state(message.message_tree_id)
+
+        if halt:
+            self._enter_state(mts, message_tree_state.State.HALTED_BY_MODERATOR)
+        else:
+            self._reactivate_tree(mts)
+
+        return mts
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ class TreeManagerConfiguration(BaseModel):
     max_tree_depth: int = 6
     """Maximum depth of message tree."""
 
-    max_children_count: int = 5
+    max_children_count: int = 3
     """Maximum number of reply messages per tree node."""
 
     goal_tree_size: int = 15
@@ -46,19 +46,18 @@ class TreeManagerConfiguration(BaseModel):
     num_required_rankings: int = 3
     """Number of rankings in which the message participated."""
 
-    p_activate_backlog_tree: float = 0.8
+    p_activate_backlog_tree: float = 0.1
     """Probability to activate a message tree in BACKLOG_RANKING state when another tree enters
-    a terminal state. Use this settting to control ratio of initial prompts and backlog tree
-    activations."""
+    a terminal state."""
 
-    min_active_rankings_per_lang: int = 2
+    min_active_rankings_per_lang: int = 0
     """When the number of active ranking tasks is below this value when a tree enters a terminal
     state an available trees in BACKLOG_RANKING will be actived (i.e. enters the RANKING state)."""
 
     labels_initial_prompt: list[TextLabel] = [
         TextLabel.spam,
+        TextLabel.lang_mismatch,
         TextLabel.quality,
-        TextLabel.helpfulness,
         TextLabel.creativity,
         TextLabel.humor,
         TextLabel.toxicity,
@@ -71,6 +70,7 @@ class TreeManagerConfiguration(BaseModel):
 
     labels_assistant_reply: list[TextLabel] = [
         TextLabel.spam,
+        TextLabel.lang_mismatch,
         TextLabel.fails_task,
         TextLabel.quality,
         TextLabel.helpfulness,
@@ -86,8 +86,8 @@ class TreeManagerConfiguration(BaseModel):
 
     labels_prompter_reply: list[TextLabel] = [
         TextLabel.spam,
+        TextLabel.lang_mismatch,
         TextLabel.quality,
-        TextLabel.helpfulness,
         TextLabel.humor,
         TextLabel.creativity,
         TextLabel.toxicity,
@@ -109,7 +109,7 @@ class TreeManagerConfiguration(BaseModel):
 
     rank_prompter_replies: bool = False
 
-    lonely_children_count: int = 3
+    lonely_children_count: int = 2
     """Number of children below which parents are preferred during sampling for reply tasks."""
 
     p_lonely_child_extension: float = 0.8
@@ -123,6 +123,15 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"
     API_V1_STR: str = "/api/v1"
     OFFICIAL_WEB_API_KEY: str = "1234"
+
+    # Encryption fields for handling the web generated JSON Web Tokens.
+    # These fields need to be shared with the web's auth settings in order to
+    # correctly decrypt the web tokens.
+    AUTH_INFO: bytes = b"NextAuth.js Generated Encryption Key"
+    AUTH_SALT: bytes = b""
+    AUTH_LENGTH: int = 32
+    AUTH_SECRET: bytes = b"O/M2uIbGj+lDD2oyNa8ax4jEOJqCPJzO53UbWShmq98="
+    AUTH_COOKIE_NAME: str = "next-auth.session-token"
 
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5432"

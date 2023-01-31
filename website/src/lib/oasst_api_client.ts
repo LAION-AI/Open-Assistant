@@ -160,8 +160,8 @@ export class OasstApiClient {
   /**
    * Returns the valid labels for messages.
    */
-  async fetch_valid_text(): Promise<any> {
-    return this.get(`/api/v1/text_labels/valid_labels`);
+  async fetch_valid_text(messageId?: string): Promise<any> {
+    return this.get("/api/v1/text_labels/valid_labels", { message_id: messageId });
   }
 
   /**

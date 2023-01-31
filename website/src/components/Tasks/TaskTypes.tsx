@@ -1,28 +1,4 @@
-import { TaskType } from "src/types/Task";
-
-export enum TaskCategory {
-  Create = "Create",
-  Evaluate = "Evaluate",
-  Label = "Label",
-  Random = "Random",
-}
-
-export enum TaskUpdateType {
-  MessageRanking = "message_ranking",
-  Random = "random",
-  TextLabels = "text_labels",
-  TextReplyToMessage = "text_reply_to_message",
-}
-
-export interface TaskInfo {
-  category: TaskCategory;
-  help_link: string;
-  id: string;
-  mode?: string;
-  pathname: string;
-  type: string;
-  update_type: string;
-}
+import { TaskCategory, TaskInfo, TaskType, TaskUpdateType } from "src/types/Task";
 
 export const TaskCategoryLabels: { [key in TaskCategory]: string } = {
   [TaskCategory.Random]: "grab_a_task",
