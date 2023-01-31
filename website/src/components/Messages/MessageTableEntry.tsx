@@ -14,7 +14,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import { ClipboardList, Edit, Flag, MessageSquare, MoreHorizontal } from "lucide-react";
+import { ClipboardList, Flag, MessageSquare, MoreHorizontal, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
@@ -181,7 +181,7 @@ const MessageActions = ({
         {role === "admin" && (
           <>
             <MenuDivider />
-            <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<Edit />}>
+            <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
               {t("view_user")}
             </MenuItem>
           </>
