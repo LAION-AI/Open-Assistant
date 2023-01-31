@@ -158,6 +158,7 @@ class Settings(BaseSettings):
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
     DEBUG_DATABASE_ECHO: bool = False
+    DEBUG_IGNORE_TOS_ACCEPTANCE: bool = False  # ignore whether users accepted the ToS
 
     DUPLICATE_MESSAGE_FILTER_WINDOW_MINUTES: int = 120
 

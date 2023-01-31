@@ -73,6 +73,7 @@ class UserRepository:
         enabled: Optional[bool] = None,
         notes: Optional[str] = None,
         show_on_leaderboard: Optional[bool] = None,
+        tos_acceptance: Optional[bool] = None,
     ) -> None:
         """
         Update a user by global user ID to disable or set admin notes. Only trusted clients may update users.
@@ -94,6 +95,8 @@ class UserRepository:
             user.notes = notes
         if show_on_leaderboard is not None:
             user.show_on_leaderboard = show_on_leaderboard
+        if tos_acceptance:
+            user.tos_acceptance_date = utcnow()
 
         self.db.add(user)
 
@@ -143,8 +146,10 @@ class UserRepository:
                     display_name=display_name,
                     api_client_id=self.api_client.id,
                     auth_method=auth_method,
-                    show_on_leaderboard=(auth_method != "system"),  # don't show system users, e.g. import user
                 )
+                if auth_method == "system":
+                    user.show_on_leaderboard = False  # don't show system users, e.g. import user
+                    user.tos_acceptance_date = utcnow()
                 self.db.add(user)
         elif display_name and display_name != user.display_name:
             # we found the user but the display name changed

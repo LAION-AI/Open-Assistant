@@ -79,6 +79,9 @@ class PromptRepository:
         if self.user.deleted or not self.user.enabled:
             raise OasstError("User account disabled", OasstErrorCode.USER_DISABLED)
 
+        if self.user.tos_acceptance_date is None and not settings.DEBUG_IGNORE_TOS_ACCEPTANCE:
+            raise OasstError("User has not accepted terms of service.", OasstError.USER_HAS_NOT_ACCEPTED_TOS)
+
     def fetch_message_by_frontend_message_id(self, frontend_message_id: str, fail_if_missing: bool = True) -> Message:
         validate_frontend_message_id(frontend_message_id)
         message: Message = (
