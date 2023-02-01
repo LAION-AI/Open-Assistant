@@ -36,6 +36,21 @@ from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
 from sqlmodel import JSON, Session, and_, func, literal_column, not_, or_, text, update
 
+_task_type_and_reaction = (
+    (
+        (db_payload.PrompterReplyPayload, db_payload.AssistantReplyPayload),
+        protocol_schema.EmojiCode.skip_reply,
+    ),
+    (
+        (db_payload.LabelInitialPromptPayload, db_payload.LabelConversationReplyPayload),
+        protocol_schema.EmojiCode.skip_labeling,
+    ),
+    (
+        (db_payload.RankInitialPromptsPayload, db_payload.RankConversationRepliesPayload),
+        protocol_schema.EmojiCode.skip_ranking,
+    ),
+)
+
 
 class PromptRepository:
     def __init__(
@@ -1001,7 +1016,31 @@ WHERE message.id = cc.id;
             message_trees=result.get(None, 0),
         )
 
-    def handle_message_emoji(self, message_id: UUID, op: protocol_schema.EmojiOp, emoji: protocol_schema) -> Message:
+    @managed_tx_method()
+    def skip_task(self, task_id: UUID, reason: str):
+        self.ensure_user_is_enabled()
+
+        task = self.task_repository.fetch_task_by_id(task_id)
+        self._validate_task(task)
+
+        if not task.collective:
+            task.skipped = True
+            task.skip_reason = reason
+            self.db.add(task)
+
+        def handle_cancel_emoji(task_payload: db_payload.TaskPayload) -> Message | None:
+            for types, emoji in _task_type_and_reaction:
+                for t in types:
+                    if isinstance(task_payload, t):
+                        return self.handle_message_emoji(task.parent_message_id, protocol_schema.EmojiOp.add, emoji)
+            return None
+
+        task_payload: db_payload.TaskPayload = task.payload.payload
+        handle_cancel_emoji(task_payload)
+
+    def handle_message_emoji(
+        self, message_id: UUID, op: protocol_schema.EmojiOp, emoji: protocol_schema.EmojiCode
+    ) -> Message:
         self.ensure_user_is_enabled()
 
         message = self.fetch_message(message_id)
