@@ -199,7 +199,7 @@ class TreeManager:
         retry = 0
         while True:
             num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
-            num_missing_prompts = max(0, self.cfg.max_active_trees - num_active_trees)
+            num_missing_prompts = self.cfg.max_active_trees - num_active_trees
             if num_missing_prompts <= 0:
                 return 0
 
@@ -220,7 +220,7 @@ class TreeManager:
             author_ids = authors_qry.all()
             if len(author_ids) == 0:
                 logger.info(
-                    f"No more prompts for prompt lottery available ({num_missing_prompts} trees missing for lang {lang})."
+                    f"No prompts for prompt lottery available ({num_missing_prompts} trees missing for {lang=})."
                 )
                 return num_missing_prompts
 
@@ -254,7 +254,7 @@ class TreeManager:
 
             winner_prompt = random.choice(prompt_candidates)
             message: Message = winner_prompt.Message
-            logger.info(f"Selected prompt {message.id=}")
+            logger.info(f"Prompt lottery winner: {message.id=}")
 
             mts: MessageTreeState = winner_prompt.MessageTreeState
             self._enter_state(mts, message_tree_state.State.GROWING)
