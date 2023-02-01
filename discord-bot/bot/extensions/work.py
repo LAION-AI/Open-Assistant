@@ -352,10 +352,10 @@ rate_summary = "rate_summary"
 
 
 @plugin.command
-@lightbulb.command("work2", "Complete a task.")
+@lightbulb.command("work", "Complete a task.")
 @lightbulb.implements(lightbulb.SlashCommand, lightbulb.PrefixCommand)
 async def work2(ctx: lightbulb.Context) -> None:
-    """Work 2."""
+    """Complete a task."""
     oasst_api: OasstApiClient = ctx.bot.d.oasst_api
     currently_working: dict[hikari.Snowflake, UUID] = ctx.bot.d.currently_working
 
