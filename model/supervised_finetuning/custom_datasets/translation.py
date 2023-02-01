@@ -75,20 +75,34 @@ TRANSLATION_PROMPT = {
 
 
 class TranslationPair(Dataset):
-    def __init__(self) -> None:
+    def __init__(self, mix_prob=0.2) -> None:
         super().__init__()
         self.pairs = []
+        self.length = -1
+        self.mix_prob = mix_prob
 
     def __len__(self):
+        if self.length < 0:
+            self.length = len(self.pairs)
         return len(self.pairs)
 
     def __getitem__(self, index):
+        if random.random() < self.mix_prob and index > 5 and index < (self.length - 5):
+            additional = random.randint(0, 10) - 5
+            while additional == index:
+                additional = random.randint(0, 10) - 5
+
+            history_text = "".join(format_pair(self.pairs[additional + index]))
+            question, answer = self.pairs[index]
+            question = history_text + question
+            return format_pair((question, answer))
+
         return format_pair(self.pairs[index])
 
 
 class WMT2019(TranslationPair):
-    def __init__(self, pair="zh-en", split="train") -> None:
-        super().__init__()
+    def __init__(self, pair="zh-en", split="train", mix_prob=0.2) -> None:
+        super().__init__(mix_prob=mix_prob)
         dataset = load_dataset("wmt19", pair)[split]
         self.pairs = []
         src, tgt = pair.split("-")
@@ -108,8 +122,8 @@ class DiveMT(TranslationPair):
 
     REMAP = {"tur": "tr", "ita": "it", "ukr": "uk", "nld": "nl", "vie": "vi", "ara": "ar"}
 
-    def __init__(self, split="train") -> None:
-        super().__init__()
+    def __init__(self, split="train", mix_prob=0.2) -> None:
+        super().__init__(mix_prob=mix_prob)
         dataset = load_dataset("GroNLP/divemt", "main")[split]
         tgt, src = "tgt_text", "src_text"
         for row in dataset:
@@ -131,8 +145,8 @@ class DiveMT(TranslationPair):
 class TEDTalk(TranslationPair):
     # NOTE: DO NOT use chinese pair, mix with traditional and cantonese, not clean
 
-    def __init__(self, pair="de-ja", split="train", year="2016") -> None:
-        super().__init__()
+    def __init__(self, pair="de-ja", split="train", year="2016", mix_prob=0.2) -> None:
+        super().__init__(mix_prob=mix_prob)
         dataset = load_dataset("ted_talks_iwslt", language_pair=pair.split("-"), year=year)[split]
         src, tgt = pair.split("-")
         for row in dataset:
