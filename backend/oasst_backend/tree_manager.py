@@ -967,7 +967,7 @@ SELECT m.parent_id, m.role, COUNT(m.id) children_count, MIN(m.ranking_count) chi
 FROM message_tree_state mts
     INNER JOIN message m ON mts.message_tree_id = m.message_tree_id
     LEFT JOIN message_emoji me on
-        (m.id = me.message_id
+        (m.parent_id = me.message_id
         AND :skip_user_id IS NOT NULL
         AND me.user_id = :skip_user_id
         AND me.emoji = :skip_ranking)
