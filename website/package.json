@@ -32,6 +32,7 @@
     "@dnd-kit/utilities": "^3.2.1",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
+    "@marsidev/react-turnstile": "^0.0.7",
     "@next-auth/prisma-adapter": "^1.0.5",
     "@next/font": "^13.1.0",
     "@prisma/client": "^4.7.1",

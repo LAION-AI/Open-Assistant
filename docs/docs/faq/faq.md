@@ -90,3 +90,17 @@ getting permission denied (using root user), you can try the following:
     # And remove the container
     docker rm -f <container id>
 ```
+
+### Docker Port Problems
+
+Oftentimes people already have some Postgres instance running on the dev
+machine. To avoid port problems, change the ports in the `docker-compose.yml` to
+ones excluding `5433`, like:
+
+1. Change `db.ports` to `- 5431:5431`.
+2. Add `POSTGRES_PORT: 5431` to `db.environment`
+3. Change `webdb.ports` to `- 5432:5431`
+4. Add `POSTGRES_PORT: 5431` to `db.environment`
+5. Add `- POSTGRES_PORT=5432` to `backend.environment`
+6. Change `web.environment.DATABASE_URL` to
+   `postgres://postgres:postgres@webdb:5432/oasst_web`
