@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
@@ -36,6 +37,7 @@
     "@heroicons/react": "^2.0.13",
     "@marsidev/react-turnstile": "^0.0.7",
     "@next-auth/prisma-adapter": "^1.0.5",
+    "@next/bundle-analyzer": "^13.1.6",
     "@next/font": "^13.1.0",
     "@prisma/client": "^4.7.1",
     "@tailwindcss/forms": "^0.5.3",
