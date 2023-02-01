@@ -80,7 +80,9 @@ function Signin({ providers }: SigninProps) {
       <AuthLayout>
         <Stack spacing="2">
           {credentials && <DebugSigninForm providerId={credentials.id} bgColorClass={bgColorClass} />}
-          {email && <EmailSignInForm providerId={email.id}></EmailSignInForm>}
+          {email && boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN) && (
+            <EmailSignInForm providerId={email.id}></EmailSignInForm>
+          )}
           {discord && (
             <Button
               bg={buttonBgColor}
