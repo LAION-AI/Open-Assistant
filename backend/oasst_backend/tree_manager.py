@@ -153,7 +153,6 @@ class TreeManager:
 
     def _determine_task_availability_internal(
         self,
-        num_active_trees: int,
         extendible_parents: list[ExtendibleParentRow],
         prompts_need_review: list[Message],
         replies_need_review: list[Message],
@@ -161,8 +160,7 @@ class TreeManager:
     ) -> dict[protocol_schema.TaskRequestType, int]:
         task_count_by_type: dict[protocol_schema.TaskRequestType, int] = {t: 0 for t in protocol_schema.TaskRequestType}
 
-        num_missing_prompts = max(0, self.cfg.max_active_trees - num_active_trees)
-        task_count_by_type[protocol_schema.TaskRequestType.initial_prompt] = num_missing_prompts
+        task_count_by_type[protocol_schema.TaskRequestType.initial_prompt] = float("inf")
 
         task_count_by_type[protocol_schema.TaskRequestType.prompter_reply] = len(
             list(filter(lambda x: x.parent_role == "assistant", extendible_parents))
@@ -201,14 +199,13 @@ class TreeManager:
             lang = "en"
             logger.warning("Task availability request without lang tag received, assuming lang='en'.")
 
-        num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
+        # num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
         extendible_parents, _ = self.query_extendible_parents(lang=lang)
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
         incomplete_rankings = self.query_incomplete_rankings(lang=lang)
 
         return self._determine_task_availability_internal(
-            num_active_trees=num_active_trees,
             extendible_parents=extendible_parents,
             prompts_need_review=prompts_need_review,
             replies_need_review=replies_need_review,
@@ -268,7 +265,6 @@ class TreeManager:
                 )
         else:
             task_count_by_type = self._determine_task_availability_internal(
-                num_active_trees=num_active_trees,
                 extendible_parents=extendible_parents,
                 prompts_need_review=prompts_need_review,
                 replies_need_review=replies_need_review,
@@ -611,7 +607,7 @@ class TreeManager:
                                 )
                             else:
                                 self.enter_low_grade_state(msg.message_tree_id)
-                        self.check_condition_for_growing_state(msg.message_tree_id)
+                        self.check_condition_for_prompt_lottery(msg.message_tree_id)
                     elif msg.review_count >= self.cfg.num_reviews_reply:
                         if not msg.review_result and acceptance_score > self.cfg.acceptance_threshold_reply:
                             msg.review_result = True
@@ -656,8 +652,8 @@ class TreeManager:
         mts = self.pr.fetch_tree_state(message_tree_id)
         self._enter_state(mts, message_tree_state.State.ABORTED_LOW_GRADE)
 
-    def check_condition_for_growing_state(self, message_tree_id: UUID) -> bool:
-        logger.debug(f"check_condition_for_growing_state({message_tree_id=})")
+    def check_condition_for_prompt_lottery(self, message_tree_id: UUID) -> bool:
+        logger.debug(f"check_condition_for_prompt_lottery({message_tree_id=})")
 
         mts = self.pr.fetch_tree_state(message_tree_id)
         if not mts.active or mts.state != message_tree_state.State.INITIAL_PROMPT_REVIEW:
@@ -670,7 +666,7 @@ class TreeManager:
             logger.debug(f"False {initial_prompt.review_result=}")
             return False
 
-        self._enter_state(mts, message_tree_state.State.GROWING)
+        self._enter_state(mts, message_tree_state.State.PROMPT_LOTTERY_WAITING)
         return True
 
     def check_condition_for_ranking_state(self, message_tree_id: UUID) -> bool:
@@ -1097,7 +1093,7 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
                 f"Checking state of {len(prompt_review_trees)} active message trees in 'initial_prompt_review' state."
             )
             for t in prompt_review_trees:
-                self.check_condition_for_growing_state(t.message_tree_id)
+                self.check_condition_for_prompt_lottery(t.message_tree_id)
 
         growing_trees: list[MessageTreeState] = (
             self.db.query(MessageTreeState)
@@ -1288,9 +1284,13 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         logger.debug(f"purge_message_tree({message_tree_id=}) {r.rowcount} rows.")
 
     def _reactivate_tree(self, mts: MessageTreeState):
+        if mts.state == message_tree_state.State.PROMPT_LOTTERY_WAITING:
+            return
+
         self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
         tree_id = mts.message_tree_id
-        if self.check_condition_for_growing_state(tree_id):
+        if self.check_condition_for_prompt_lottery(tree_id):
+            self._enter_state(mts, message_tree_state.State.GROWING)
             if self.check_condition_for_ranking_state(tree_id):
                 self.check_condition_for_scoring_state(tree_id)
 
