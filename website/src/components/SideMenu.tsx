@@ -1,8 +1,7 @@
-import { Box, Button, Text, Tooltip, useColorMode } from "@chakra-ui/react";
+import { Button, Card, Text, Tooltip, useColorMode } from "@chakra-ui/react";
 import { LucideIcon, Sun } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { colors } from "styles/Theme/colors";
 
 export interface MenuButtonOption {
   label: string;
@@ -21,11 +20,8 @@ export function SideMenu(props: SideMenuProps) {
 
   return (
     <main className="sticky top-0 sm:h-full">
-      <Box
+      <Card
         width={["100%", "100%", "100px", "280px"]}
-        backgroundColor={colorMode === "light" ? colors.light.div : colors.dark.div}
-        boxShadow="base"
-        borderRadius="xl"
         className="grid grid-cols-4 gap-2 sm:flex sm:flex-col sm:justify-between p-4 h-full"
       >
         <nav className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
@@ -69,7 +65,7 @@ export function SideMenu(props: SideMenuProps) {
             </Button>
           </Tooltip>
         </div>
-      </Box>
+      </Card>
     </main>
   );
 }
