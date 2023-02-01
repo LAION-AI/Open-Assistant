@@ -65,18 +65,7 @@ export const TaskOption = ({ content }: TasksOptionProps) => {
                         <Text size="sm">{t(getTypeSafei18nKey(`tasks:${item.id}.desc`))}</Text>
                       </Flex>
                       <Box>
-                        <Badge
-                          colorScheme="blue"
-                          flexGrow={0}
-                          rounded="lg"
-                          px={2}
-                          py={0.5}
-                          variant="solid"
-                          textTransform="none"
-                          fontWeight="600"
-                        >
-                          {t("tasks:available_task_count", { count: item.count })}
-                        </Badge>
+                        <Badge textTransform="none">{t("tasks:available_task_count", { count: item.count })}</Badge>
                       </Box>
                     </Flex>
                     <Text
