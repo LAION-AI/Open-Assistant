@@ -500,3 +500,10 @@ class MessageEmojiRequest(BaseModel):
     user: User
     op: EmojiOp = EmojiOp.togggle
     emoji: EmojiCode
+
+
+class CreateFrontendUserRequest(User):
+    show_on_leaderboard: bool = True
+    enabled: bool = True
+    tos_acceptance: Optional[bool] = None
+    notes: Optional[str] = None

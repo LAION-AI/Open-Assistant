@@ -81,7 +81,7 @@ class PromptRepository:
         if self.user.tos_acceptance_date is None and not settings.DEBUG_IGNORE_TOS_ACCEPTANCE:
             raise OasstError(
                 "User has not accepted terms of service.",
-                OasstError.USER_HAS_NOT_ACCEPTED_TOS,
+                OasstErrorCode.USER_HAS_NOT_ACCEPTED_TOS,
                 HTTPStatus.UNAVAILABLE_FOR_LEGAL_REASONS,
             )
 
