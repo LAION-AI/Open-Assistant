@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
   Text,
 } from "@chakra-ui/react";
-import { InformationCircleIcon } from "@heroicons/react/20/solid";
+import { Info } from "lucide-react";
 
 interface ExplainProps {
   explanation: string[];
@@ -18,12 +18,7 @@ export const Explain = ({ explanation }: ExplainProps) => {
   return (
     <Popover>
       <PopoverTrigger>
-        <IconButton
-          aria-label="explanation"
-          variant="link"
-          size="xs"
-          icon={<InformationCircleIcon className="h-4 w-4" />}
-        ></IconButton>
+        <IconButton aria-label="explanation" variant="link" size="xs" icon={<Info size="16" />}></IconButton>
       </PopoverTrigger>
       <PopoverContent>
         <PopoverArrow />

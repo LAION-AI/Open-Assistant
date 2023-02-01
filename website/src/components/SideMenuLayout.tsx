@@ -1,6 +1,6 @@
 import { Box, useColorMode } from "@chakra-ui/react";
 import { MenuButtonOption, SideMenu } from "src/components/SideMenu";
-import { colors } from "styles/Theme/colors";
+import { colors } from "src/styles/Theme/colors";
 
 interface SideMenuLayoutProps {
   menuButtonOptions: MenuButtonOption[];
@@ -11,7 +11,7 @@ export const SideMenuLayout = (props: SideMenuLayoutProps) => {
   const { colorMode } = useColorMode();
 
   return (
-    <Box backgroundColor={colorMode === "light" ? colors.light.bg : colors.dark.bg} className="sm:overflow-hidden">
+    <Box backgroundColor={colorMode === "light" ? "gray.100" : colors.dark.bg} className="sm:overflow-hidden">
       <Box display="flex" flexDirection={["column", "row"]} h="full" gap={["0", "0", "0", "6"]}>
         <Box p={["3", "3", "3", "6"]} pr={["3", "3", "3", "0"]}>
           <SideMenu buttonOptions={props.menuButtonOptions} />
