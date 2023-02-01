@@ -5,8 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 import { LeaderboardWidget, TaskOption, WelcomeCard } from "src/components/Dashboard";
 import { getDashboardLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
-import { AvailableTasks, TaskCategory, TaskType } from "src/types/Task";
+import { AvailableTasks, TaskCategory } from "src/types/Task";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+import { TaskCategoryItem } from "src/components/Dashboard/TaskOption";
 import useSWR from "swr";
 
 const Dashboard = () => {
@@ -59,4 +60,4 @@ const filterAvailableTasks = (availableTasks: Partial<AvailableTasks>) =>
   Object.entries(availableTasks)
     .filter(([, count]) => count > 0)
     .sort((a, b) => b[1] - a[1])
-    .map(([taskType, count]) => ({ taskType, count })) as Array<{ taskType: TaskType; count: number }>;
+    .map(([taskType, count]) => ({ taskType, count })) as TaskCategoryItem[];

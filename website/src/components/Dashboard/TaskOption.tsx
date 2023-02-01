@@ -20,8 +20,10 @@ import { TaskCategory, TaskInfo, TaskType } from "src/types/Task";
 
 import { TaskCategoryLabels, TaskInfos } from "../Tasks/TaskTypes";
 
+export type TaskCategoryItem = { taskType: TaskType; count: number };
+
 export interface TasksOptionProps {
-  content: Partial<Record<TaskCategory, Array<{ taskType: TaskType; count: number }>>>;
+  content: Partial<Record<TaskCategory, TaskCategoryItem[]>>;
 }
 
 export const TaskOption = ({ content }: TasksOptionProps) => {
@@ -40,7 +42,7 @@ export const TaskOption = ({ content }: TasksOptionProps) => {
 
   return (
     <Box className="flex flex-col gap-14">
-      {Object.entries(content).map(([category, taskTypes]) => (
+      {Object.entries(content).map(([category, items]) => (
         <div key={category}>
           <Flex>
             <Heading size="lg" className="pb-4">
@@ -52,7 +54,7 @@ export const TaskOption = ({ content }: TasksOptionProps) => {
             </ExternalLink>
           </Flex>
           <SimpleGrid columns={[1, 1, 2, 2, 3, 4]} gap={4}>
-            {taskTypes
+            {items
               .map(({ taskType, count }) => ({ ...taskInfoMap[taskType], count }))
               .map((item) => (
                 <Link key={category + item.id} href={item.pathname}>
