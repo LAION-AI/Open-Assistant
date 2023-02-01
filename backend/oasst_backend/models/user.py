@@ -41,6 +41,9 @@ class User(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True, server_default=sa.func.current_timestamp())
     )
 
+    # terms of service acceptance date
+    tos_acceptance_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True))
+
     def to_protocol_frontend_user(self):
         return protocol.FrontEndUser(
             user_id=self.id,
@@ -55,4 +58,5 @@ class User(SQLModel, table=True):
             streak_days=self.streak_days,
             streak_last_day_date=self.streak_last_day_date,
             last_activity_date=self.last_activity_date,
+            tos_acceptance_date=self.tos_acceptance_date,
         )

@@ -35,7 +35,6 @@ from oasst_shared.utils import unaware_to_utc, utcnow
 from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
 from sqlmodel import JSON, Session, and_, func, literal_column, not_, or_, text, update
-from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
 class PromptRepository:
@@ -77,7 +76,14 @@ class PromptRepository:
             raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
 
         if self.user.deleted or not self.user.enabled:
-            raise OasstError("User account disabled", OasstErrorCode.USER_DISABLED)
+            raise OasstError("User account disabled", OasstErrorCode.USER_DISABLED, HTTPStatus.SERVICE_UNAVAILABLE)
+
+        if self.user.tos_acceptance_date is None and not settings.DEBUG_IGNORE_TOS_ACCEPTANCE:
+            raise OasstError(
+                "User has not accepted terms of service.",
+                OasstErrorCode.USER_HAS_NOT_ACCEPTED_TOS,
+                HTTPStatus.UNAVAILABLE_FOR_LEGAL_REASONS,
+            )
 
     def fetch_message_by_frontend_message_id(self, frontend_message_id: str, fail_if_missing: bool = True) -> Message:
         validate_frontend_message_id(frontend_message_id)
@@ -90,7 +96,7 @@ class PromptRepository:
             raise OasstError(
                 f"Message with frontend_message_id {frontend_message_id} not found.",
                 OasstErrorCode.MESSAGE_NOT_FOUND,
-                HTTP_404_NOT_FOUND,
+                HTTPStatus.NOT_FOUND,
             )
         return message
 
@@ -675,7 +681,7 @@ class PromptRepository:
 
         message = self.db.query(Message).filter(Message.id == message_id).one_or_none()
         if fail_if_missing and not message:
-            raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
+            raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTPStatus.NOT_FOUND)
         return message
 
     def fetch_non_task_text_labels(self, message_id: UUID, user_id: UUID) -> Optional[TextLabels]:
@@ -874,7 +880,7 @@ class PromptRepository:
 
             if api_client_id != self.api_client.id:
                 # Unprivileged api client asks for foreign messages
-                raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+                raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTPStatus.FORBIDDEN)
 
         qry = self.db.query(Message)
         if user_id:
