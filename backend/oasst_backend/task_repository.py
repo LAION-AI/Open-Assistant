@@ -167,21 +167,6 @@ class TaskRepository:
         task.done = True
         self.db.add(task)
 
-    @managed_tx_method(CommitMode.FLUSH)
-    def acknowledge_task_failure(self, task_id) -> Task:
-        # find task
-        task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
-        if task is None:
-            raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND)
-        if task.expired:
-            raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
-        if task.done or task.ack is not None:
-            raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
-
-        task.ack = False
-        self.db.add(task)
-        return task
-
     @managed_tx_method(CommitMode.COMMIT)
     def insert_task(
         self,

@@ -1010,11 +1010,17 @@ WHERE message.id = cc.id;
             message_trees=result.get(None, 0),
         )
 
-    @managed_tx_method
-    def cancel_task(self, task_id: UUID, reason: str):
+    @managed_tx_method()
+    def skip_task(self, task_id: UUID, reason: str):
         self.ensure_user_is_enabled()
 
-        task = self.task_repository.acknowledge_task_failure(task_id)
+        task = self.task_repository.fetch_task_by_id(task_id)
+        self._validate_task(task)
+
+        if not task.collective:
+            task.skipped = True
+            task.skip_reason = reason
+            self.db.add(task)
 
         def handle_cancel_emoji(task_payload: db_payload.TaskPayload) -> Message | None:
             for types, emoji in _task_type_and_reaction:
