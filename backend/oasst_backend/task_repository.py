@@ -167,8 +167,8 @@ class TaskRepository:
         task.done = True
         self.db.add(task)
 
-    @managed_tx_method(CommitMode.COMMIT)
-    def acknowledge_task_failure(self, task_id):
+    @managed_tx_method(CommitMode.FLUSH)
+    def acknowledge_task_failure(self, task_id) -> Task:
         # find task
         task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
         if task is None:
@@ -179,8 +179,8 @@ class TaskRepository:
             raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
 
         task.ack = False
-        # ToDo: check race-condition, transaction
         self.db.add(task)
+        return task
 
     @managed_tx_method(CommitMode.COMMIT)
     def insert_task(

@@ -488,6 +488,11 @@ class EmojiCode(str, enum.Enum):
     poop = "poop"  # 💩
     skull = "skull"  # 💀
 
+    # skip task system uses special emoji codes
+    skip_reply = "skip_reply"
+    skip_ranking = "skip_ranking"
+    skip_labeling = "skip_labeling"
+
 
 class EmojiOp(str, enum.Enum):
     togggle = "toggle"
