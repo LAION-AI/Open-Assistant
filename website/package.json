@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:analyze": "ANALYZE=true next build",
+    "build:analyze": "cross-env ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
@@ -92,6 +92,7 @@
     "@types/react": "18.0.26",
     "@typescript-eslint/eslint-plugin": "^5.47.1",
     "babel-loader": "^8.3.0",
+    "cross-env": "^7.0.3",
     "cypress": "^12.2.0",
     "cypress-image-diff-js": "^1.23.0",
     "eslint-plugin-storybook": "^0.6.8",
