@@ -1,32 +1,9 @@
-import Head from "next/head";
-import { TaskEmptyState } from "src/components/EmptyState";
 import { getDashboardLayout } from "src/components/Layout";
-import { LoadingScreen } from "src/components/Loading/LoadingScreen";
-import { Task } from "src/components/Tasks/Task";
-import { useRankInitialPromptsTask } from "src/hooks/tasks/useRankReplies";
+import { TaskPage } from "src/components/TaskPage/TaskPage";
+import { TaskType } from "src/types/Task";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
-const RankInitialPrompts = () => {
-  const { tasks, isLoading, reset, trigger } = useRankInitialPromptsTask();
-
-  if (isLoading) {
-    return <LoadingScreen text="Loading..." />;
-  }
-
-  if (tasks.length === 0) {
-    return <TaskEmptyState />;
-  }
-
-  return (
-    <>
-      <Head>
-        <title>Rank Initial Prompts</title>
-        <meta name="description" content="Rank initial prompts." />
-      </Head>
-      <Task key={tasks[0].task.id} frontendId={tasks[0].id} task={tasks[0].task} trigger={trigger} mutate={reset} />
-    </>
-  );
-};
+const RankInitialPrompts = () => <TaskPage type={TaskType.rank_initial_prompts} />;
 
 RankInitialPrompts.getLayout = getDashboardLayout;
 

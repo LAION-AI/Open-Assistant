@@ -1,0 +1,16 @@
+{
+  "label_highlighted_yes_no_instruction": "Contesta la(s) siguiente(s) pregunta(s) sobre el mensaje resaltado:",
+  "label_highlighted_flag_instruction": "Selecciona cualquiera que sea adecuada para el mensaje resaltado:",
+  "label_highlighted_likert_instruction": "Califica el mensaje resaltado:",
+  "label_message_yes_no_instruction": "Contesta la(s) siguiente(s) pregunta(s) sobre el mensaje:",
+  "label_message_flag_instruction": "Selecciona cualquiera que sea adecuada para el mensaje:",
+  "label_message_likert_instruction": "Califica el mensaje:",
+  "spam.question": "¿Es el mensaje spam?",
+  "fails_task.question": "¿Es una mala respuesta, según la tarea pedida?",
+  "not_appropriate": "No apropiada",
+  "pii": "Contiene información de identificación personal (PII)",
+  "hate_speech": "Incitación al odio",
+  "sexual_content": "Contenido sexual",
+  "moral_judgement": "Juzga moralmente",
+  "political_content": "Contenido político"
+}

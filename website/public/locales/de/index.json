@@ -1,0 +1,15 @@
+{
+  "blurb": "Wir glauben, dass wir etwas Revolutionäres erschaffen können.",
+  "blurb1": "Genauso wie Stable Diffusion es ermöglicht hat, Kunst und Bilder auf neue Weise zu erschaffen, wollen wir die Welt verbessern, indem wir eine erstklassige Konversations-KI bereitstellen.",
+  "description": "Konversations-KI für alle. Ein Open-Source-Projekt zur Erstellung eines Chat-fähigen GPT LLM, das von LAION und Mitwirkenden auf der ganzen Welt betrieben wird.",
+  "faq_items": {
+    "q0": "Was ist der aktuelle Stand des Projekts?",
+    "a0": "Wir befinden uns in einem frühen Stadium der Entwicklung und arbeiten ausgehend von etablierter Forschung bei der Anwendung von RLHF auf große Sprachmodelle (LLMs).",
+    "q1": "Wer organisiert die Entwicklung von Open Assistant?",
+    "a1": "Open Assistant ist ein Projekt, das von LAION und Einzelpersonen auf der ganzen Welt organisiert wird. Unser Ziel ist es das Open Assistant Sprachmodell allen Menschen frei zugänglich zu machen."
+  },
+  "faq_title": "Häufig gestellte Fragen",
+  "join_us_description": "Alle Open-Source-Projekte beginnen mit Leuten wie Dir! Die Open Source Softwareentwicklung ermöglicht es uns gemeinsam unser Wissen und unsere Technologie zum Wohle der Menschheit zur Verfügung stellen. Bist Du dabei? Du findest uns hier:",
+  "join_us_title": "Begleiten Sie uns",
+  "subtitle": "Konversations-KI für alle."
+}

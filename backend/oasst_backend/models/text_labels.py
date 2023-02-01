@@ -27,3 +27,4 @@ class TextLabels(SQLModel, table=True):
         sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("message.id"), nullable=True)
     )
     labels: dict[str, float] = Field(default={}, sa_column=sa.Column(pg.JSONB), nullable=False)
+    task_id: Optional[UUID] = Field(nullable=True, index=True)

@@ -1,0 +1,14 @@
+{
+  "daily": "Ngày",
+  "last_updated_at": "Cập nhật lúc: {{val, datetime}}",
+  "leaderboard": "Bảng xếp hạng",
+  "monthly": "Tháng",
+  "overall": "Overall",
+  "rank": "Hạng",
+  "score": "Điểm",
+  "user": "User",
+  "weekly": "Tuần",
+  "prompt": "Prompts",
+  "reply": "Replies",
+  "label": "Labels"
+}
