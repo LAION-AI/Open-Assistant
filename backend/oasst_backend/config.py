@@ -13,7 +13,7 @@ class TreeManagerConfiguration(BaseModel):
     No new initial prompt tasks are handed out to users if this
     number is reached."""
 
-    max_tree_depth: int = 6
+    max_tree_depth: int = 3
     """Maximum depth of message tree."""
 
     max_children_count: int = 3
@@ -22,7 +22,7 @@ class TreeManagerConfiguration(BaseModel):
     num_prompter_replies: int = 1
     """Number of prompter replies to collect per assistant reply."""
 
-    goal_tree_size: int = 15
+    goal_tree_size: int = 12
     """Total number of messages to gather per tree."""
 
     num_reviews_initial_prompt: int = 3

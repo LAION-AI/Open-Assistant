@@ -21,6 +21,7 @@ from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingM
 from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
+from oasst_shared.utils import utcnow
 from sqlmodel import Session, func, not_, or_, text, update
 
 
@@ -153,6 +154,7 @@ class TreeManager:
 
     def _determine_task_availability_internal(
         self,
+        num_missing_prompts: int,
         extendible_parents: list[ExtendibleParentRow],
         prompts_need_review: list[Message],
         replies_need_review: list[Message],
@@ -160,7 +162,7 @@ class TreeManager:
     ) -> dict[protocol_schema.TaskRequestType, int]:
         task_count_by_type: dict[protocol_schema.TaskRequestType, int] = {t: 0 for t in protocol_schema.TaskRequestType}
 
-        task_count_by_type[protocol_schema.TaskRequestType.initial_prompt] = float("inf")
+        task_count_by_type[protocol_schema.TaskRequestType.initial_prompt] = max(1, num_missing_prompts)
 
         task_count_by_type[protocol_schema.TaskRequestType.prompter_reply] = len(
             list(filter(lambda x: x.parent_role == "assistant", extendible_parents))
@@ -192,6 +194,72 @@ class TreeManager:
 
         return task_count_by_type
 
+    def _prompt_lottery(self, lang: str) -> int:
+        MAX_RETRIES = 5
+        retry = 0
+        while True:
+            num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
+            num_missing_prompts = max(0, self.cfg.max_active_trees - num_active_trees)
+            if num_missing_prompts <= 0:
+                return 0
+
+            # select among distinct users
+            authors_qry = (
+                self.db.query(Message.user_id)
+                .select_from(MessageTreeState)
+                .join(Message, MessageTreeState.message_tree_id == Message.id)
+                .filter(
+                    MessageTreeState.state == message_tree_state.State.PROMPT_LOTTERY_WAITING,
+                    Message.lang == lang,
+                    not_(Message.deleted),
+                    Message.review_result,
+                )
+                .distinct(Message.user_id)
+            )
+
+            author_ids = authors_qry.all()
+            if len(author_ids) == 0:
+                logger.info(
+                    f"No more prompts for prompt lottery available ({num_missing_prompts} trees missing for lang {lang})."
+                )
+                return num_missing_prompts
+
+            # first select an authour
+            prompt_author_id: UUID = random.choice(author_ids)["user_id"]
+            logger.info(f"Selected random prompt author {prompt_author_id} among {len(author_ids)} candidates.")
+
+            # select random prompt of author
+            qry = (
+                self.db.query(MessageTreeState, Message)
+                .select_from(MessageTreeState)
+                .join(Message, MessageTreeState.message_tree_id == Message.id)
+                .filter(
+                    MessageTreeState.state == message_tree_state.State.PROMPT_LOTTERY_WAITING,
+                    Message.user_id == prompt_author_id,
+                    Message.lang == lang,
+                    not_(Message.deleted),
+                    Message.review_result,
+                )
+                .limit(100)
+            )
+
+            prompt_candidates = qry.all()
+            if len(prompt_candidates) == 0:
+                retry += 1  # not sure if this can happen with repeatable read isolation level, just in case we retry
+                if retry < MAX_RETRIES:
+                    continue
+                else:
+                    logger.warning("Max retries in prompt lottery reached.")
+                    return num_missing_prompts
+
+            winner_prompt = random.choice(prompt_candidates)
+            message: Message = winner_prompt.Message
+            logger.info(f"Selected prompt {message.id=}")
+
+            mts: MessageTreeState = winner_prompt.MessageTreeState
+            self._enter_state(mts, message_tree_state.State.GROWING)
+            self.db.flush()
+
     def determine_task_availability(self, lang: str) -> dict[protocol_schema.TaskRequestType, int]:
         self.pr.ensure_user_is_enabled()
 
@@ -199,13 +267,14 @@ class TreeManager:
             lang = "en"
             logger.warning("Task availability request without lang tag received, assuming lang='en'.")
 
-        # num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
+        num_missing_prompts = self._prompt_lottery(lang=lang)
         extendible_parents, _ = self.query_extendible_parents(lang=lang)
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
         incomplete_rankings = self.query_incomplete_rankings(lang=lang)
 
         return self._determine_task_availability_internal(
+            num_missing_prompts=num_missing_prompts,
             extendible_parents=extendible_parents,
             prompts_need_review=prompts_need_review,
             replies_need_review=replies_need_review,
@@ -235,7 +304,8 @@ class TreeManager:
             lang = "en"
             logger.warning("Task request without lang tag received, assuming 'en'.")
 
-        num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
+        num_missing_prompts = self._prompt_lottery(lang=lang)
+
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
         extendible_parents, active_tree_sizes = self.query_extendible_parents(lang=lang)
@@ -253,7 +323,7 @@ class TreeManager:
                 num_ranking_tasks=len(incomplete_rankings),
                 num_replies_need_review=len(replies_need_review),
                 num_prompts_need_review=len(prompts_need_review),
-                num_missing_prompts=max(0, self.cfg.max_active_trees - num_active_trees),
+                num_missing_prompts=num_missing_prompts,
                 num_missing_replies=num_missing_replies,
             )
 
@@ -265,6 +335,7 @@ class TreeManager:
                 )
         else:
             task_count_by_type = self._determine_task_availability_internal(
+                num_missing_prompts=num_missing_prompts,
                 extendible_parents=extendible_parents,
                 prompts_need_review=prompts_need_review,
                 replies_need_review=replies_need_review,
@@ -645,6 +716,8 @@ class TreeManager:
                     if len(incomplete_rankings) < self.cfg.min_active_rankings_per_lang:
                         self.activate_backlog_tree(lang=root_msg.lang)
         else:
+            if mts.state == message_tree_state.State.GROWING and mts.won_prompt_lottery_date is None:
+                mts.won_prompt_lottery_date = utcnow()
             logger.info(f"Tree entered '{mts.state}' state ({mts.message_tree_id=})")
 
     def enter_low_grade_state(self, message_tree_id: UUID) -> None:
@@ -1287,12 +1360,14 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         if mts.state == message_tree_state.State.PROMPT_LOTTERY_WAITING:
             return
 
-        self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
         tree_id = mts.message_tree_id
-        if self.check_condition_for_prompt_lottery(tree_id):
+        if mts.won_prompt_lottery_date is not None:
             self._enter_state(mts, message_tree_state.State.GROWING)
             if self.check_condition_for_ranking_state(tree_id):
                 self.check_condition_for_scoring_state(tree_id)
+        else:
+            self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
+            self.check_condition_for_prompt_lottery(tree_id)
 
     @managed_tx_method(CommitMode.FLUSH)
     def purge_user_messages(
