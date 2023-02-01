@@ -14,11 +14,16 @@ describe("signin flow", () => {
     cy.request("GET", "/api/auth/csrf")
       .then((response) => {
         const csrfToken = response.body.csrfToken;
-        cy.request("POST", "/api/auth/signin/email", {
-          callbackUrl: "/",
-          email: emailAddress,
-          csrfToken,
-          json: "true",
+        cy.request({
+          method: "POST",
+          url: "/api/auth/signin/email",
+          body: {
+            callbackUrl: "/",
+            email: emailAddress,
+            csrfToken,
+            json: "true",
+            captcha: "XXXX.DUMMY.TOKEN.XXXX",
+          },
         });
       })
       .then((response) => {

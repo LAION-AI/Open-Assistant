@@ -23,8 +23,8 @@ import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { getEmojiIcon, MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { post } from "src/lib/api";
+import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
-import { colors } from "styles/Theme/colors";
 import useSWRMutation from "swr/mutation";
 
 interface MessageTableEntryProps {
@@ -66,7 +66,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
     ),
     [borderColor, inlineAvatar, message.is_assistant]
   );
-  const highlightColor = useColorModeValue(colors.light.highlight, colors.dark.highlight);
+  const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
 
   const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
     onSuccess: setEmojis,
