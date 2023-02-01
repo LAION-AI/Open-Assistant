@@ -154,14 +154,3 @@ class OasstApiClient:
     async def close(self):
         logger.debug("Closing OasstApiClient session")
         await self.session.close()
-
-
-async def main():
-    api = OasstApiClient("http://localhost:8080", "1234")
-    await api.fetch_random_task(protocol_schema.User(id="string", display_name="string", auth_method="discord"))
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
