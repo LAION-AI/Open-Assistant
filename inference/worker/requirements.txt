@@ -1,6 +1,6 @@
 loguru
 rel
-torch
-transformers
+requests
+sseclient-py
 typer
 websocket-client

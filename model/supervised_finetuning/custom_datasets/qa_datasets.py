@@ -7,13 +7,12 @@ import re
 from urllib.request import urlopen
 
 import numpy as np
+from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
-
-QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
 
 
 def index_squad_v2(example):
@@ -50,26 +49,92 @@ def index_gsm8k(example):
     return example["question"], example["answer"]
 
 
+def index_wikihow(example):
+    return example["title"] + ", explain step by step", example["result"]
+
+
+def index_essay_instruction(example):
+    return example["instructions"], example["titles"].strip() + "\n" + example["essays"]
+
+
+def index_math_qa(example):
+    """
+    we are not including choices, so no need to output the "answer : <a,b,c,d>" part
+    > if girls is 10 and boys is 20 , then 10 / 20 . so ratio of girls to boys is = 10 / 20 = 1 / 2 answer : a
+    """
+    return example["Problem"], example["Rationale"].split("answer : ", maxsplit=1)[0]
+
+
+def index_eli5(example):
+    return example["title"], example["answers"]["text"][0]
+
+
 class QADataset(Dataset):
+    """
+    How to define a new QA dataset:
+
+    Criteria : the qa dataset doesn't need fancy transform needed between fields rows or list
+
+    1. Write the transform function, which maps each row into a pair of (question, answer) tuple
+
+    2. Update DATASET_FORMAT_MAPPING with your dataset name and required parameter
+
+        - index_fn : your transform function
+
+        - name: the dataset name, this will be used when the name is different than huggingface load_dataset name
+
+        - params: if your dataset require a predefined name, create a dictionary with the parameter name-value dictionary
+
+    Feel free to create issues on GH for any suggestion how we can simplify this thing
+    """
+
+    DATASET_FORMAT_MAPPING = {
+        "squad_v2": {"index_fn": index_squad_v2},
+        "trivia_qa_nocontext": {
+            "index_fn": index_trivia_qa_nocontext,
+            "name": "trivia_qa",
+            "params": {"name": "rc.nocontext"},
+        },
+        "trivia_qa_context": {"index_fn": index_trivia_qa_context, "name": "trivia_qa", "params": {"name": "rc"}},
+        "adversarial_qa": {
+            "index_fn": index_adversarial_qa,
+            "params": {"name": "adversarialQA"},
+        },
+        "gsm8k": {"index_fn": index_gsm8k, "params": {"name": "main"}, "validation": "test"},
+        "wikihow": {"name": "b-mc2/wikihow_lists", "index_fn": index_wikihow, "no_val": True},
+        "essay_instruction": {
+            "name": "ChristophSchuhmann/essays-with-instructions",
+            "index_fn": index_essay_instruction,
+            "no_val": True,
+        },
+        "math_qa": {
+            "index_fn": index_math_qa,
+        },
+        "reddit_eli5": {"name": "eli5", "index_fn": index_eli5, "split_postfix": "_eli5"},
+        "reddit_askh": {"name": "eli5", "index_fn": index_eli5, "split_postfix": "_askh"},
+        "reddit_asks": {"name": "eli5", "index_fn": index_eli5, "split_postfix": "_asks"},
+    }
+
     def __init__(self, dataset, cache_dir, split):
-        if dataset == "squad_v2":
-            self.index_fn = index_squad_v2
-            self.dataset = load_dataset("squad_v2", cache_dir=cache_dir, split=split)
-        elif dataset == "trivia_qa_nocontext":
-            self.index_fn = index_trivia_qa_nocontext
-            self.dataset = load_dataset("trivia_qa", "rc.nocontext", split=split, cache_dir=cache_dir)
-        elif dataset == "trivia_qa_context":
-            self.index_fn = index_trivia_qa_context
-            self.dataset = load_dataset("trivia_qa", "rc", split=split, cache_dir=cache_dir)
-        elif dataset == "adversarial_qa":
-            self.index_fn = index_adversarial_qa
-            self.dataset = load_dataset("adversarial_qa", "adversarialQA", split=split, cache_dir=cache_dir)
-        elif dataset == "gsm8k":
-            self.index_fn = index_gsm8k
-            self.dataset = load_dataset("gsm8k", "main", split=split, cache_dir=cache_dir)
-        elif dataset == "adversarial_qa":
-            self.index_fn = index_adversarial_qa
-            self.dataset = load_dataset("adversarial_qa", "adversarialQA", split=split, cache_dir=cache_dir)
+        self.no_val = False
+        if dataset in self.DATASET_FORMAT_MAPPING:
+            context = self.DATASET_FORMAT_MAPPING[dataset]
+            if split == "validation" and "validation" in context:
+                split = context["validation"]
+            if "name" not in context:
+                context["name"] = dataset
+            if "split_postfix" in context:
+                # append a postfix to split name, used in eli5 : test_eli5, test_asks, test_askh
+                split += context["split_postfix"]
+            if "params" not in context:
+                context["params"] = {"cache_dir": cache_dir, "split": split}
+            else:
+                context["params"]["cache_dir"] = cache_dir
+                context["params"]["split"] = split
+            if "no_val" in context:
+                self.no_val = True
+            self.index_fn = context["index_fn"]
+            self.dataset = load_dataset(context["name"], **context["params"])
         else:
             raise ValueError("Unknown dataset : " + dataset)
 
@@ -78,7 +143,7 @@ class QADataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.dataset[idx]
-        return self.index_fn(data)
+        return format_pair(self.index_fn(data))
 
 
 class WebGPT(Dataset):
@@ -111,7 +176,7 @@ class WebGPT(Dataset):
     def __getitem__(self, index):
         question = self.index2question[index]
         answer = self.questions[question]
-        return [question, answer]
+        return format_pair((question, answer))
 
 
 class SODA(Dataset):
@@ -121,14 +186,14 @@ class SODA(Dataset):
     def process_soda_convo(self, data):
         pairs = []
         play_as = data["speakers"][1]
-        prefix = "{}{}. {}{}".format(
-            QA_SPECIAL_TOKENS["StartPrefix"],
-            data["narrative"],
-            "your name {}".format(play_as),
-            QA_SPECIAL_TOKENS["EndPrefix"],
-        )
         question, answer = "", ""
         prefix, postfix = "", ""
+        dialogue_bg = "{}{} {}{}".format(
+            QA_SPECIAL_TOKENS["StartPrefix"],
+            data["narrative"],
+            "your are {}".format(play_as),
+            QA_SPECIAL_TOKENS["EndPrefix"],
+        )
         previous_chat = []
 
         for idx, convo in enumerate(data["dialogue"]):
@@ -138,14 +203,20 @@ class SODA(Dataset):
             else:
                 answer = convo
                 postfix = data["speakers"][idx]
+
             if len(question) and len(answer) and prefix != postfix and postfix == play_as:
                 history = "<sep>".join(
-                    ["{}{}{}".format(p[0], QA_SPECIAL_TOKENS["Answer"], p[1]) for p in previous_chat]
+                    [
+                        "{}{}{}{}".format(QA_SPECIAL_TOKENS["Question"], p[0], QA_SPECIAL_TOKENS["Answer"], p[1])
+                        for p in previous_chat
+                    ]
                 )
                 if len(history):
                     history += "<sep>"
-                pairs.append((prefix + history + question, answer))
+                prompt = QA_SPECIAL_TOKENS["Question"] + question + QA_SPECIAL_TOKENS["Answer"]
+                pairs.append((dialogue_bg + history + prompt, answer))
                 previous_chat.append((question, answer))
+
         return pairs
 
     def __init__(self, cache_dir, max_sample_size=10000, input_max_length=1024) -> None:
@@ -166,8 +237,8 @@ class SODA(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        question, answer = self.pairs[index]
-        return question, answer
+        # special token added during preprocess
+        return self.pairs[index]
 
 
 class SODADialogue(Dataset):
@@ -218,7 +289,7 @@ class SODADialogue(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        return self.pairs[index]
+        return format_pair(self.pairs[index])
 
 
 class JokeExplaination(Dataset):
@@ -253,8 +324,4 @@ class JokeExplaination(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        question, answer = self.pairs[index]
-        return question, answer
-
-
-# https://huggingface.co/datasets/aquamuse
+        return format_pair(self.pairs[index])

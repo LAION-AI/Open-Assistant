@@ -1,13 +1,12 @@
-import re
-import time
+import json
 
 import rel
-import torch
+import requests
+import sseclient
 import typer
 import websocket
 from loguru import logger
 from oasst_shared.schemas import inference, protocol
-from transformers import pipeline
 
 app = typer.Typer()
 
@@ -16,12 +15,13 @@ app = typer.Typer()
 def main(
     backend_url: str = "ws://localhost:8000",
     model_name: str = "distilgpt2",
+    inference_server_url: str = "http://localhost:8001",
 ):
-    pipe = pipeline("text-generation", model=model_name)
-
     def on_open(ws: websocket.WebSocket):
+        logger.info("Connected to backend, sending config...")
         worker_config = inference.WorkerConfig(model_name=model_name)
         ws.send(worker_config.json())
+        logger.info("Config sent, waiting for work...")
 
     def on_message(ws: websocket.WebSocket, message: str):
         # TODO: what if this comes in, but one is already in progress?
@@ -35,25 +35,39 @@ def main(
         # construct prompt
         messages = [_prepare_message(message) for message in work_request.conversation.messages]
 
-        prompt = "\n".join(messages) + "\nAssistant:"
+        prefix = (
+            "The following is a conversation between a user and an assistant. "
+            "The assistant is helpful, creative, clever, and very friendly.\n"
+            "Assistant: Hello! How can I help you today?\n"
+        )
 
-        # TODO: replace this with incremental generation
-        torch.manual_seed(work_request.seed)
-        model_output = pipe(prompt, max_new_tokens=work_request.max_new_tokens, do_sample=True, return_full_text=False)[
-            0
-        ]["generated_text"]
-        model_output = model_output.strip()
+        prompt = prefix + "\n".join(messages) + "\nAssistant:"
 
-        # fake streaming
-        split_idcs = [m.start() for m in re.finditer(r"([\w:]+)", model_output)]
-        pieces = [model_output[a:b] for a, b in zip([0] + split_idcs, split_idcs + [None])]
-        for piece in pieces:
-            if not piece:
-                continue
-            if piece.strip() in ("User:", "Assistant:"):
+        response = requests.post(
+            f"{inference_server_url}/generate_stream",
+            json={
+                "inputs": prompt,
+                "parameters": {
+                    "max_new_tokens": work_request.max_new_tokens,
+                    "do_sample": work_request.do_sample,
+                    "top_k": work_request.top_k,
+                    "top_p": work_request.top_p,
+                    "temperature": work_request.temperature,
+                    "seed": work_request.seed,
+                },
+            },
+            stream=True,
+            headers={"Accept": "text/event-stream"},
+        )
+        response.raise_for_status()
+
+        client = sseclient.SSEClient(response)
+        for event in client.events():
+            data = json.loads(event.data)
+            if data["is_end"]:
                 break
-            ws.send(inference.WorkResponsePacket(token=piece).json())
-            time.sleep(0.1)
+            intermediate = data["event"]
+            ws.send(inference.WorkResponsePacket(token=intermediate["token"]).json())
         ws.send(inference.WorkResponsePacket(is_end=True).json())
 
     def on_error(ws: websocket.WebSocket, error: Exception):

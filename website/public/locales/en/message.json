@@ -1,0 +1,14 @@
+{
+  "label_action": "Label",
+  "label_title": "Label",
+  "message": "Message",
+  "open_new_tab_action": "Open in new tab",
+  "parent": "Parent",
+  "reactions": "Reactions",
+  "report_action": "Report",
+  "report_placeholder": "Why should this message be reviewed?",
+  "report_title": "Report",
+  "send_report": "Send",
+  "submit_labels": "Submit",
+  "view_user": "View user"
+}

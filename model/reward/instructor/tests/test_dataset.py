@@ -1,5 +1,5 @@
 from experimental_dataset import DataCollatorForSummaryScore, HFSummaryQuality
-from rank_datasets import DataCollatorForPairRank, GPTJSynthetic, HFSummary, WebGPT
+from rank_datasets import AnthropicRLHF, DataCollatorForPairRank, GPTJSynthetic, HFSummary, WebGPT
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
@@ -20,6 +20,16 @@ def test_webgpt():
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForPairRank(tokenizer, max_length=200)
     dataset = WebGPT()
+    dataloader = DataLoader(dataset, collate_fn=collate_fn, batch_size=32)
+    for batch in dataloader:
+        print(batch["input_ids"].shape)
+
+
+def test_anthropic_rlhf():
+
+    tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
+    collate_fn = DataCollatorForPairRank(tokenizer, max_length=200)
+    dataset = AnthropicRLHF("test", sep_token=tokenizer.sep_token)
     dataloader = DataLoader(dataset, collate_fn=collate_fn, batch_size=32)
     for batch in dataloader:
         print(batch["input_ids"].shape)

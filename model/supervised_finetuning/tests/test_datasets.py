@@ -7,8 +7,8 @@ from custom_datasets.dialogue_collator import DialogueDataCollator
 def test_all_datasets():
     qa_base = QA_DATASETS
     summarize_base = SUMMARIZATION_DATASETS
-    others = ["prompt_dialogue", "webgpt", "soda", "joke", "instruct_tuning"]
-    translation = ["dive_mt", "wmt2019_zh-en", "wmt2019_ru-en", "wmt2019_de-en", "ted_trans_de-ja", "ted_trans_nl-en"]
+    others = ["prompt_dialogue", "webgpt", "soda", "joke", "instruct_tuning", "explain_prosocial", "prosocial_dialogue"]
+    translation = ["dive_mt", "wmt2019_zh-en", "wmt2019_ru-en", "ted_trans_de-ja", "ted_trans_nl-en"]
 
     config = Namespace(cache_dir=".cache")
     for dataset_name in translation + others + summarize_base + qa_base:
@@ -31,7 +31,6 @@ def test_collate_fn():
     qa_base = QA_DATASETS
     summarize_base = SUMMARIZATION_DATASETS
     others = ["prompt_dialogue", "webgpt", "soda", "joke", "gsm8k"]
-
     trains, evals = [], []
     for dataset_name in others + qa_base + summarize_base:
         print(dataset_name)
@@ -41,10 +40,10 @@ def test_collate_fn():
 
     dataloader = DataLoader(ConcatDataset(trains), collate_fn=collate_fn, batch_size=128)
     for batch in dataloader:
-        # print(batch.keys())
-        # print(tokenizer.decode(batch['input_ids'][0]))
-        # print('-----')
-        # print(tokenizer.decode(batch['targets'][0][batch['label_masks'][0]]))
+        print(batch.keys())
+        print(tokenizer.decode(batch["input_ids"][0]))
+        print("-----")
+        print(tokenizer.decode(batch["targets"][0][batch["label_masks"][0]]))
         assert batch["targets"].shape[1] <= 512
     dataloader = DataLoader(ConcatDataset(evals), collate_fn=collate_fn, batch_size=128)
     for batch in dataloader:

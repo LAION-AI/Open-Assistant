@@ -1,126 +1,34 @@
-import type { Message } from "src/types/Conversation";
+import type { EmojiOp, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
-import type { BackendUser, BackendUserCore, User } from "src/types/Users";
+import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
 
 export class OasstError {
   message: string;
   errorCode: number;
   httpStatusCode: number;
 
-  constructor(message: string, errorCode: number, httpStatusCode?: number) {
+  constructor(message: string, errorCode: number, httpStatusCode: number) {
     this.message = message;
     this.errorCode = errorCode;
     this.httpStatusCode = httpStatusCode;
   }
 }
 
-export type FetchUsersParams = {
-  limit: number;
-  cursor?: string;
-  direction: "forward" | "back";
-  searchDisplayName?: string;
-  sortKey?: "username" | "display_name";
-};
-
-export type FetchUsersResponse<T extends User | BackendUser = BackendUser> = {
-  items: T[];
-  next?: string;
-  prev?: string;
-  sort_key: "username" | "display_name";
-  order: "asc" | "desc";
-};
-
 export class OasstApiClient {
   oasstApiUrl: string;
   oasstApiKey: string;
+  userHeaders: Record<string, string> = {};
 
-  constructor(oasstApiUrl: string, oasstApiKey: string) {
+  constructor(oasstApiUrl: string, oasstApiKey: string, user?: BackendUserCore) {
     this.oasstApiUrl = oasstApiUrl;
     this.oasstApiKey = oasstApiKey;
+    if (user) {
+      this.userHeaders = {
+        "X-OASST-USER": `${user.auth_method}:${user.id}`,
+      };
+    }
   }
-
-  private async post(path: string, body: any): Promise<any> {
-    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
-      method: "POST",
-      headers: {
-        "X-API-Key": this.oasstApiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (resp.status === 204) {
-      return null;
-    }
-
-    if (resp.status >= 300) {
-      const errorText = await resp.text();
-      let error: any;
-      try {
-        error = JSON.parse(errorText);
-      } catch (e) {
-        throw new OasstError(errorText, 0, resp.status);
-      }
-      throw new OasstError(error.message ?? error, error.error_code, resp.status);
-    }
-
-    return await resp.json();
-  }
-
-  private async put(path: string): Promise<any> {
-    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
-      method: "PUT",
-      headers: {
-        "X-API-Key": this.oasstApiKey,
-      },
-    });
-
-    if (resp.status === 204) {
-      return null;
-    }
-
-    if (resp.status >= 300) {
-      const errorText = await resp.text();
-      let error: any;
-      try {
-        error = JSON.parse(errorText);
-      } catch (e) {
-        throw new OasstError(errorText, 0, resp.status);
-      }
-      throw new OasstError(error.message ?? error, error.error_code, resp.status);
-    }
-
-    return await resp.json();
-  }
-
-  private async get(path: string): Promise<any> {
-    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
-      method: "GET",
-      headers: {
-        "X-API-Key": this.oasstApiKey,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (resp.status === 204) {
-      return null;
-    }
-
-    if (resp.status >= 300) {
-      const errorText = await resp.text();
-      let error: any;
-      try {
-        error = JSON.parse(errorText);
-      } catch (e) {
-        throw new OasstError(errorText, 0, resp.status);
-      }
-      throw new OasstError(error.message ?? error, error.error_code, resp.status);
-    }
-
-    return await resp.json();
-  }
-
   // TODO return a strongly typed Task?
   // This method is used to store a task in RegisteredTask.task.
   // This is a raw Json type, so we can't use it to strongly type the task.
@@ -132,13 +40,13 @@ export class OasstApiClient {
     });
   }
 
-  async ackTask(taskId: string, messageId: string): Promise<void> {
+  async ackTask(taskId: string, messageId: string): Promise<null> {
     return this.post(`/api/v1/tasks/${taskId}/ack`, {
       message_id: messageId,
     });
   }
 
-  async nackTask(taskId: string, reason: string): Promise<void> {
+  async nackTask(taskId: string, reason: string): Promise<null> {
     return this.post(`/api/v1/tasks/${taskId}/nack`, {
       reason,
     });
@@ -170,8 +78,29 @@ export class OasstApiClient {
   /**
    * Returns the tasks availability information for given `user`.
    */
-  async fetch_tasks_availability(user: object): Promise<any> {
-    return this.post("/api/v1/tasks/availability", user);
+  async fetch_tasks_availability(user: object): Promise<AvailableTasks | null> {
+    return this.post<AvailableTasks>("/api/v1/tasks/availability", user);
+  }
+
+  /**
+   * Returns the `Message`s associated with `user_id` in the backend.
+   */
+  async fetch_message(message_id: string, user: BackendUserCore): Promise<Message> {
+    return this.get<Message>(`/api/v1/messages/${message_id}?username=${user.id}&auth_method=${user.auth_method}`);
+  }
+
+  /**
+   * Send a report about a message
+   */
+  async send_report(message_id: string, user: BackendUserCore, text: string) {
+    return this.post("/api/v1/text_labels", {
+      type: "text_labels",
+      message_id,
+      labels: [], // Not yet implemented
+      text,
+      is_report: true,
+      user,
+    });
   }
 
   /**
@@ -191,18 +120,12 @@ export class OasstApiClient {
   /**
    * Returns the `BackendUser` associated with `user_id`
    */
-  async fetch_user(user_id: string): Promise<BackendUser> {
+  async fetch_user(user_id: string): Promise<BackendUser | null> {
     return this.get(`/api/v1/users/${user_id}`);
   }
 
   /**
    * Returns the set of `BackendUser`s stored by the backend.
-   *
-   * @param {number} max_count - The maximum number of users to fetch.
-   * @param {string} cursor - The user's `display_name` to use when paginating.
-   * @param {boolean} isForward - If true and `cursor` is not empty, pages
-   *        forward.  If false and `cursor` is not empty, pages backwards.
-   * @returns {Promise<BackendUser[]>} A Promise that returns an array of `BackendUser` objects.
    */
   async fetch_users({
     direction,
@@ -210,70 +133,136 @@ export class OasstApiClient {
     cursor,
     searchDisplayName,
     sortKey = "display_name",
-  }: FetchUsersParams): Promise<FetchUsersResponse> {
-    const params = new URLSearchParams({
+  }: FetchUsersParams): Promise<FetchUsersResponse | null> {
+    return this.get<FetchUsersResponse>(`/api/v1/users/cursor`, {
       search_text: searchDisplayName,
       sort_key: sortKey,
-      max_count: limit.toString(),
+      max_count: limit,
+      after: direction === "forward" ? cursor : undefined,
+      before: direction === "back" ? cursor : undefined,
     });
-
-    // The backend API uses different query parameters depending on the
-    // pagination direction but they both take the same cursor value.
-    // Depending on direction, pick the right query param.
-    if (cursor !== "") {
-      params.append(direction === "forward" ? "after" : "before", cursor);
-    }
-    const BASE_URL = `/api/v1/users/cursor`;
-    const url = `${BASE_URL}/?${params.toString()}`;
-    return this.get(url);
   }
-
-  // async fetch_user_by_display_name(name: string): Promise<BackendUser[]> {
-  //   const params = new URLSearchParams({
-  //     search_text: name,
-  //   });
-
-  //   const endpoint = `/api/v1/frontend_users/by_display_name`;
-
-  //   return this.get(`${endpoint}?${params.toString()}`);
-  // }
 
   /**
    * Returns the `Message`s associated with `user_id` in the backend.
    */
-  async fetch_user_messages(user_id: string): Promise<Message[]> {
-    return this.get(`/api/v1/users/${user_id}/messages`);
+  async fetch_user_messages(user_id: string): Promise<Message[] | null> {
+    return this.get<Message[]>(`/api/v1/users/${user_id}/messages`);
   }
 
   /**
    * Updates the backend's knowledge about the `user_id`.
    */
-  async set_user_status(user_id: string, is_enabled: boolean, notes): Promise<void> {
-    return this.put(`/api/v1/users/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
+  async set_user_status(user_id: string, is_enabled: boolean, notes: string): Promise<void> {
+    await this.put(`/api/v1/users/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
   }
 
   /**
    * Returns the valid labels for messages.
    */
-  async fetch_valid_text(): Promise<any> {
-    return this.get(`/api/v1/text_labels/valid_labels`);
+  async fetch_valid_text(messageId?: string): Promise<any> {
+    return this.get("/api/v1/text_labels/valid_labels", { message_id: messageId });
   }
 
   /**
    * Returns the current leaderboard ranking.
    */
-  async fetch_leaderboard(time_frame: LeaderboardTimeFrame): Promise<LeaderboardReply> {
-    return this.get(`/api/v1/leaderboards/${time_frame}`);
+  async fetch_leaderboard(
+    time_frame: LeaderboardTimeFrame,
+    { limit = 20 }: { limit?: number }
+  ): Promise<LeaderboardReply | null> {
+    return this.get<LeaderboardReply>(`/api/v1/leaderboards/${time_frame}`, { max_count: limit });
   }
 
   /**
    * Returns the counts of all tasks (some might be zero)
    */
-  async fetch_available_tasks(user: BackendUserCore): Promise<AvailableTasks> {
-    return this.post(`/api/v1/tasks/availability`, user);
+  async fetch_available_tasks(user: BackendUserCore, lang: string): Promise<AvailableTasks | null> {
+    return this.post<AvailableTasks>(`/api/v1/tasks/availability?lang=${lang}`, user);
+  }
+
+  /**
+   * Add/remove an emoji on a message for a user
+   */
+  async set_user_message_emoji(message_id: string, user: BackendUserCore, emoji: string, op: EmojiOp): Promise<void> {
+    await this.post(`/api/v1/messages/${message_id}/emoji`, {
+      user,
+      emoji,
+      op,
+    });
+  }
+
+  private async post<T>(path: string, body: unknown) {
+    return this.request<T>("POST", path, {
+      body: JSON.stringify(body),
+    });
+  }
+
+  private async put<T>(path: string) {
+    return this.request<T>("PUT", path);
+  }
+
+  private async get<T>(path: string, query?: Record<string, string | number | boolean | undefined>) {
+    if (!query) {
+      return this.request<T>("GET", path);
+    }
+
+    const filteredQuery = Object.fromEntries(
+      Object.entries(query).filter(([, value]) => value !== undefined)
+    ) as Record<string, string>;
+
+    const params = new URLSearchParams(filteredQuery).toString();
+
+    return this.request<T>("GET", `${path}?${params}`);
+  }
+
+  private async request<T>(method: "GET" | "POST" | "PUT", path: string, init?: RequestInit): Promise<T | null> {
+    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
+      method,
+      ...init,
+      headers: {
+        ...init?.headers,
+        ...this.userHeaders,
+        "X-API-Key": this.oasstApiKey,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (resp.status === 204) {
+      return null;
+    }
+
+    if (resp.status >= 300) {
+      const errorText = await resp.text();
+      let error;
+      try {
+        error = JSON.parse(errorText);
+      } catch (e) {
+        throw new OasstError(errorText, 0, resp.status);
+      }
+      throw new OasstError(error.message ?? error, error.error_code, resp.status);
+    }
+
+    return await resp.json();
+  }
+
+  fetch_my_messages(user: BackendUserCore) {
+    const params = new URLSearchParams({
+      username: user.id,
+      auth_method: user.auth_method,
+    });
+    return this.get<Message[]>(`/api/v1/messages?${params}`);
+  }
+
+  fetch_recent_messages() {
+    return this.get<Message[]>(`/api/v1/messages`);
+  }
+
+  fetch_message_children(messageId: string) {
+    return this.get<Message[]>(`/api/v1/messages/${messageId}/children`);
+  }
+
+  fetch_conversation(messageId: string) {
+    return this.get(`/api/v1/messages/${messageId}/conversation`);
   }
 }
-
-const oasstApiClient = new OasstApiClient(process.env.FASTAPI_URL, process.env.FASTAPI_KEY);
-
-export { oasstApiClient };

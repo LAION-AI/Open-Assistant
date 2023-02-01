@@ -1,10 +1,13 @@
 from typing import Optional
 from uuid import UUID
 
+from oasst_backend.config import settings
 from oasst_backend.models import ApiClient, User
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
+from oasst_shared.utils import utcnow
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, and_, or_
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
@@ -64,7 +67,13 @@ class UserRepository:
         return user
 
     @managed_tx_method(CommitMode.COMMIT)
-    def update_user(self, id: UUID, enabled: Optional[bool] = None, notes: Optional[str] = None) -> None:
+    def update_user(
+        self,
+        id: UUID,
+        enabled: Optional[bool] = None,
+        notes: Optional[str] = None,
+        show_on_leaderboard: Optional[bool] = None,
+    ) -> None:
         """
         Update a user by global user ID to disable or set admin notes. Only trusted clients may update users.
 
@@ -83,6 +92,8 @@ class UserRepository:
             user.enabled = enabled
         if notes is not None:
             user.notes = notes
+        if show_on_leaderboard is not None:
+            user.show_on_leaderboard = show_on_leaderboard
 
         self.db.add(user)
 
@@ -107,15 +118,20 @@ class UserRepository:
         self.db.add(user)
 
     @managed_tx_method(CommitMode.COMMIT)
-    def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> Optional[User]:
-        if not client_user:
-            return None
+    def _lookup_user_tx(
+        self,
+        *,
+        username: str,
+        auth_method: str,
+        display_name: Optional[str] = None,
+        create_missing: bool = True,
+    ) -> User | None:
         user: User = (
             self.db.query(User)
             .filter(
                 User.api_client_id == self.api_client.id,
-                User.username == client_user.id,
-                User.auth_method == client_user.auth_method,
+                User.username == username,
+                User.auth_method == auth_method,
             )
             .first()
         )
@@ -123,17 +139,45 @@ class UserRepository:
             if create_missing:
                 # user is unknown, create new record
                 user = User(
-                    username=client_user.id,
-                    display_name=client_user.display_name,
+                    username=username,
+                    display_name=display_name,
                     api_client_id=self.api_client.id,
-                    auth_method=client_user.auth_method,
+                    auth_method=auth_method,
+                    show_on_leaderboard=(auth_method != "system"),  # don't show system users, e.g. import user
                 )
                 self.db.add(user)
-        elif client_user.display_name and client_user.display_name != user.display_name:
+        elif display_name and display_name != user.display_name:
             # we found the user but the display name changed
-            user.display_name = client_user.display_name
+            user.display_name = display_name
             self.db.add(user)
+
         return user
+
+    def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> User | None:
+        if not client_user:
+            return None
+        num_retries = settings.DATABASE_MAX_TX_RETRY_COUNT
+        for i in range(num_retries):
+            try:
+                return self._lookup_user_tx(
+                    username=client_user.id,
+                    auth_method=client_user.auth_method,
+                    display_name=client_user.display_name,
+                    create_missing=create_missing,
+                )
+            except IntegrityError:
+                # catch UniqueViolation exception, for concurrent requests due to conflicts in ix_user_username
+                if i + 1 == num_retries:
+                    raise
+
+    @managed_tx_method(CommitMode.COMMIT)
+    def lookup_system_user(self, username: str, create_missing: bool = True) -> User | None:
+        return self._lookup_user_tx(
+            username=username,
+            auth_method="system",
+            display_name=f"__system__/{username}",
+            create_missing=create_missing,
+        )
 
     def query_users_ordered_by_username(
         self,
@@ -266,3 +310,8 @@ class UserRepository:
             qry = qry.limit(limit)
 
         return qry.all()
+
+    @managed_tx_method(CommitMode.FLUSH)
+    def update_user_last_activity(self, user: User) -> None:
+        user.last_activity_date = utcnow()
+        self.db.add(user)

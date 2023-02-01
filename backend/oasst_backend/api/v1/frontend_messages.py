@@ -58,7 +58,7 @@ def get_children_by_frontend_id(
     """
     pr = PromptRepository(db, api_client)
     message = pr.fetch_message_by_frontend_message_id(message_id)
-    messages = pr.fetch_message_children(message.id)
+    messages = pr.fetch_message_children(message.id, review_result=None)
     return utils.prepare_message_list(messages)
 
 

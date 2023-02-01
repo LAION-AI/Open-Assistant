@@ -17,13 +17,23 @@ from sqlalchemy.dialects import postgresql
 from sqlmodel import Session, delete, func, text
 
 
-def _create_user_score(r):
+def _create_user_score(r, highlighted_user_id: UUID | None):
     if r["UserStats"]:
         d = r["UserStats"].dict()
     else:
         d = {"modified_date": utcnow()}
-    for k in ["user_id", "username", "auth_method", "display_name"]:
+    for k in [
+        "user_id",
+        "username",
+        "auth_method",
+        "display_name",
+        "streak_days",
+        "streak_last_day_date",
+        "last_activity_date",
+    ]:
         d[k] = r[k]
+    if highlighted_user_id:
+        d["highlighted"] = r["user_id"] == highlighted_user_id
     return UserScore(**d)
 
 
@@ -31,20 +41,76 @@ class UserStatsRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_leaderboard(self, time_frame: UserStatsTimeFrame, limit: int = 100) -> LeaderboardStats:
+    def get_leaderboard(
+        self,
+        time_frame: UserStatsTimeFrame,
+        limit: int = 100,
+        highlighted_user_id: Optional[UUID] = None,
+    ) -> LeaderboardStats:
         """
         Get leaderboard stats for the specified time frame
         """
 
         qry = (
-            self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
+            self.session.query(
+                User.id.label("user_id"),
+                User.username,
+                User.auth_method,
+                User.display_name,
+                User.streak_days,
+                User.streak_last_day_date,
+                User.last_activity_date,
+                UserStats,
+            )
             .join(UserStats, User.id == UserStats.user_id)
-            .filter(UserStats.time_frame == time_frame.value)
+            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard)
             .order_by(UserStats.rank)
             .limit(limit)
         )
 
-        leaderboard = [_create_user_score(r) for r in self.session.exec(qry)]
+        leaderboard = [_create_user_score(r, highlighted_user_id) for r in self.session.exec(qry)]
+        if len(leaderboard) > 0:
+            last_update = max(x.modified_date for x in leaderboard)
+        else:
+            last_update = utcnow()
+        return LeaderboardStats(time_frame=time_frame.value, leaderboard=leaderboard, last_updated=last_update)
+
+    def get_leaderboard_user_window(
+        self,
+        user: User,
+        time_frame: UserStatsTimeFrame,
+        window_size: int = 5,
+    ) -> LeaderboardStats | None:
+        # no window for users who don't show themselves
+        if not user.show_on_leaderboard:
+            return None
+
+        qry = self.session.query(UserStats).filter(UserStats.user_id == user.id, UserStats.time_frame == time_frame)
+        stats: UserStats = qry.one_or_none()
+        if stats is None or stats.rank is None:
+            return None
+
+        min_rank = max(0, stats.rank - window_size // 2)
+        max_rank = min_rank + window_size
+
+        qry = (
+            self.session.query(
+                User.id.label("user_id"),
+                User.username,
+                User.auth_method,
+                User.display_name,
+                User.streak_days,
+                User.streak_last_day_date,
+                User.last_activity_date,
+                UserStats,
+            )
+            .join(UserStats, User.id == UserStats.user_id)
+            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard)
+            .where(UserStats.rank >= min_rank, UserStats.rank <= max_rank)
+            .order_by(UserStats.rank)
+        )
+
+        leaderboard = [_create_user_score(r, highlighted_user_id=user.id) for r in self.session.exec(qry)]
         if len(leaderboard) > 0:
             last_update = max(x.modified_date for x in leaderboard)
         else:
@@ -62,9 +128,9 @@ class UserStatsRepository:
         for r in self.session.exec(qry):
             us = r["UserStats"]
             if us is not None:
-                stats_by_timeframe[us.time_frame] = _create_user_score(r)
+                stats_by_timeframe[us.time_frame] = _create_user_score(r, user_id)
             else:
-                stats_by_timeframe = {tf.value: _create_user_score(r) for tf in UserStatsTimeFrame}
+                stats_by_timeframe = {tf.value: _create_user_score(r, user_id) for tf in UserStatsTimeFrame}
         return stats_by_timeframe
 
     def query_total_prompts_per_user(
@@ -205,7 +271,7 @@ class UserStatsRepository:
 
         rank_field_names = ["reply_ranked_1", "reply_ranked_2", "reply_ranked_3"]
         for i, fn in enumerate(rank_field_names):
-            qry = self.query_ranking_result_users(reference_time=base_date, rank=0)
+            qry = self.query_ranking_result_users(reference_time=base_date, rank=i)
             for r in qry:
                 uid, count = r
                 setattr(get_stats(uid), fn, count)
@@ -213,6 +279,10 @@ class UserStatsRepository:
         # delete all existing stast for time frame
         d = delete(UserStats).where(UserStats.time_frame == time_frame_key)
         self.session.execute(d)
+
+        if None in stats_by_user:
+            logger.warning("Some messages in DB have NULL values in user_id column.")
+            del stats_by_user[None]
 
         # compute magic leader score
         for v in stats_by_user.values():
@@ -250,7 +320,8 @@ FROM
             PARTITION BY time_frame
             ORDER BY leader_score DESC, user_id
         ) AS "rank", user_id, time_frame
-    FROM user_stats
+    FROM user_stats us2
+    INNER JOIN "user" u ON us2.user_id = u.id AND u.show_on_leaderboard
     WHERE (:time_frame IS NULL OR time_frame = :time_frame)) AS r
 WHERE
     us.user_id = r.user_id
