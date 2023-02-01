@@ -68,13 +68,24 @@ def create_frontend_user(
 ):
     ur = UserRepository(db, api_client)
     user = ur.lookup_client_user(create_user, create_missing=True)
-    user = ur.update_user(
-        user.id,
-        enabled=create_user.enabled,
-        show_on_leaderboard=create_user.show_on_leaderboard,
-        tos_acceptance=create_user.tos_acceptance,
-        notes=create_user.notes,
-    )
+
+    def changed(a, b) -> bool:
+        return a is not None and a != b
+
+    # only call update_user if something changed
+    if (
+        changed(create_user.enabled, user.enabled)
+        or changed(create_user.show_on_leaderboard, user.show_on_leaderboard)
+        or changed(create_user.notes, user.notes)
+        or (create_user.tos_acceptance and user.tos_acceptance_date is None)
+    ):
+        user = ur.update_user(
+            user.id,
+            enabled=create_user.enabled,
+            show_on_leaderboard=create_user.show_on_leaderboard,
+            tos_acceptance=create_user.tos_acceptance,
+            notes=create_user.notes,
+        )
 
     return user.to_protocol_frontend_user()
 
