@@ -38,7 +38,7 @@ settings = Settings()
 _Task_contra = t.TypeVar("_Task_contra", bound=protocol_schema.Task, contravariant=True)
 
 
-class TaskHandler(t.Generic[_Task_contra]):
+class _TaskHandler(t.Generic[_Task_contra]):
     """Handle user interaction for a task."""
 
     def __init__(self, ctx: lightbulb.Context, task: _Task_contra) -> None:
@@ -149,7 +149,7 @@ _Ranking_contra = t.TypeVar(
 )
 
 
-class RankingTaskHandler(TaskHandler[_Ranking_contra]):
+class _RankingTaskHandler(_TaskHandler[_Ranking_contra]):
     """This should not be used directly. Use its subclasses instead."""
 
     async def notify(self, content: str, event: hikari.DMMessageCreateEvent) -> protocol_schema.Task:
@@ -165,6 +165,10 @@ class RankingTaskHandler(TaskHandler[_Ranking_contra]):
             )
         )
 
+        logger.debug(f"Labels: {task.id}\nMessage id: {self.sent_messages[0].id}")
+        valid_labels = await oasst_api.get_valid_labels(f"{self.sent_messages[0].id}")
+        logger.debug(f"Valid labels: {valid_labels}")
+
         log_channel = 1058299131115872297
         log_messages: list[hikari.Message] = []
 
@@ -176,7 +180,7 @@ class RankingTaskHandler(TaskHandler[_Ranking_contra]):
         return task
 
 
-class RankAssistantRepliesHandler(RankingTaskHandler[protocol_schema.RankAssistantRepliesTask]):
+class RankAssistantRepliesHandler(_RankingTaskHandler[protocol_schema.RankAssistantRepliesTask]):
     @staticmethod
     def get_task_messages(task: protocol_schema.RankAssistantRepliesTask) -> list[str]:
         return rank_assistant_reply_message(task)
@@ -197,7 +201,7 @@ class RankAssistantRepliesHandler(RankingTaskHandler[protocol_schema.RankAssista
         return bool(confirm_input_view.choice)
 
 
-class RankInitialPromptHandler(RankingTaskHandler[protocol_schema.RankInitialPromptsTask]):
+class RankInitialPromptHandler(_RankingTaskHandler[protocol_schema.RankInitialPromptsTask]):
     def __init__(self, ctx: lightbulb.Context, task: protocol_schema.RankInitialPromptsTask) -> None:
         super().__init__(ctx, task)
 
@@ -221,7 +225,7 @@ class RankInitialPromptHandler(RankingTaskHandler[protocol_schema.RankInitialPro
         return bool(confirm_input_view.choice)
 
 
-class RankPrompterReplyHandler(RankingTaskHandler[protocol_schema.RankPrompterRepliesTask]):
+class RankPrompterReplyHandler(_RankingTaskHandler[protocol_schema.RankPrompterRepliesTask]):
     @staticmethod
     def get_task_messages(task: protocol_schema.RankPrompterRepliesTask) -> list[str]:
         return rank_prompter_reply_messages(task)
@@ -242,7 +246,7 @@ class RankPrompterReplyHandler(RankingTaskHandler[protocol_schema.RankPrompterRe
         return bool(confirm_input_view.choice)
 
 
-class RankConversationReplyHandler(RankingTaskHandler[protocol_schema.RankConversationRepliesTask]):
+class RankConversationReplyHandler(_RankingTaskHandler[protocol_schema.RankConversationRepliesTask]):
     @staticmethod
     def get_task_messages(task: protocol_schema.RankConversationRepliesTask) -> list[str]:
         return rank_conversation_reply_messages(task)
@@ -263,7 +267,7 @@ class RankConversationReplyHandler(RankingTaskHandler[protocol_schema.RankConver
         return bool(confirm_input_view.choice)
 
 
-class InitialPromptHandler(TaskHandler[protocol_schema.InitialPromptTask]):
+class InitialPromptHandler(_TaskHandler[protocol_schema.InitialPromptTask]):
     @staticmethod
     def get_task_messages(task: protocol_schema.InitialPromptTask) -> list[str]:
         return initial_prompt_messages(task)
@@ -280,7 +284,7 @@ class InitialPromptHandler(TaskHandler[protocol_schema.InitialPromptTask]):
         return bool(confirm_input_view.choice)
 
 
-class PrompterReplyHandler(TaskHandler[protocol_schema.PrompterReplyTask]):
+class PrompterReplyHandler(_TaskHandler[protocol_schema.PrompterReplyTask]):
     @staticmethod
     def get_task_messages(task: protocol_schema.PrompterReplyTask) -> list[str]:
         return prompter_reply_messages(task)
@@ -297,7 +301,7 @@ class PrompterReplyHandler(TaskHandler[protocol_schema.PrompterReplyTask]):
         return bool(confirm_input_view.choice)
 
 
-class AssistantReplyTask(TaskHandler[protocol_schema.AssistantReplyTask]):
+class AssistantReplyHandler(_TaskHandler[protocol_schema.AssistantReplyTask]):
     @staticmethod
     def get_task_messages(task: protocol_schema.AssistantReplyTask) -> list[str]:
         return assistant_reply_messages(task)
@@ -317,7 +321,7 @@ class AssistantReplyTask(TaskHandler[protocol_schema.AssistantReplyTask]):
 _Label_contra = t.TypeVar("_Label_contra", bound=protocol_schema.LabelConversationReplyTask, contravariant=True)
 
 
-class LabelConversationReplyHandler(TaskHandler[_Label_contra]):
+class _LabelConversationReplyHandler(_TaskHandler[_Label_contra]):
     def check_user_input(self, content: str) -> bool:
         user_labels = content.split(",")
         return (
@@ -335,13 +339,13 @@ class LabelConversationReplyHandler(TaskHandler[_Label_contra]):
         return bool(confirm_input_view.choice)
 
 
-class LabelAssistantReplyHandler(LabelConversationReplyHandler[protocol_schema.LabelAssistantReplyTask]):
+class LabelAssistantReplyHandler(_LabelConversationReplyHandler[protocol_schema.LabelAssistantReplyTask]):
     @staticmethod
     def get_task_messages(task: protocol_schema.LabelAssistantReplyTask) -> list[str]:
         return label_assistant_reply_messages(task)
 
 
-class LabelPrompterReplyHandler(LabelConversationReplyHandler[protocol_schema.LabelPrompterReplyTask]):
+class LabelPrompterReplyHandler(_LabelConversationReplyHandler[protocol_schema.LabelPrompterReplyTask]):
     @staticmethod
     def get_task_messages(task: protocol_schema.LabelPrompterReplyTask) -> list[str]:
         return label_prompter_reply_messages(task)
@@ -391,14 +395,30 @@ async def work2(ctx: lightbulb.Context) -> None:
                 ),
             )
 
-            if isinstance(task, protocol_schema.InitialPromptTask):
-                task_handler = InitialPromptHandler(ctx, task)
-            elif isinstance(task, protocol_schema.RankAssistantRepliesTask):
+            # Ranking tasks
+            if isinstance(task, protocol_schema.RankAssistantRepliesTask):
                 task_handler = RankAssistantRepliesHandler(ctx, task)
             elif isinstance(task, protocol_schema.RankInitialPromptsTask):
                 task_handler = RankInitialPromptHandler(ctx, task)
             elif isinstance(task, protocol_schema.RankPrompterRepliesTask):
                 task_handler = RankPrompterReplyHandler(ctx, task)
+            elif isinstance(task, protocol_schema.RankConversationRepliesTask):
+                task_handler = RankConversationReplyHandler(ctx, task)
+
+            # Text input tasks
+            elif isinstance(task, protocol_schema.InitialPromptTask):
+                task_handler = InitialPromptHandler(ctx, task)
+            elif isinstance(task, protocol_schema.PrompterReplyTask):
+                task_handler = PrompterReplyHandler(ctx, task)
+            elif isinstance(task, protocol_schema.AssistantReplyTask):
+                task_handler = AssistantReplyHandler(ctx, task)
+
+            # Label tasks
+            elif isinstance(task, protocol_schema.LabelAssistantReplyTask):
+                task_handler = LabelAssistantReplyHandler(ctx, task)
+            elif isinstance(task, protocol_schema.LabelPrompterReplyTask):
+                task_handler = LabelPrompterReplyHandler(ctx, task)
+
             else:
                 raise ValueError(f"Unknown task type: {type(task)}")
 
