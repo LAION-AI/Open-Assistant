@@ -39,6 +39,7 @@ class FrontEndUser(User):
     streak_days: Optional[int] = None
     streak_last_day_date: Optional[datetime] = None
     last_activity_date: Optional[datetime] = None
+    tos_acceptance_date: Optional[datetime] = None
 
 
 class PageResult(BaseModel):
@@ -488,6 +489,11 @@ class EmojiCode(str, enum.Enum):
     poop = "poop"  # 💩
     skull = "skull"  # 💀
 
+    # skip task system uses special emoji codes
+    skip_reply = "_skip_reply"
+    skip_ranking = "_skip_ranking"
+    skip_labeling = "_skip_labeling"
+
 
 class EmojiOp(str, enum.Enum):
     togggle = "toggle"
@@ -499,3 +505,10 @@ class MessageEmojiRequest(BaseModel):
     user: User
     op: EmojiOp = EmojiOp.togggle
     emoji: EmojiCode
+
+
+class CreateFrontendUserRequest(User):
+    show_on_leaderboard: bool = True
+    enabled: bool = True
+    tos_acceptance: Optional[bool] = None
+    notes: Optional[str] = None

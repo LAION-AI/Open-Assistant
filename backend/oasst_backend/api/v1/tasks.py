@@ -131,7 +131,7 @@ def tasks_acknowledge_failure(
         logger.info(f"Frontend reports failure to implement task {task_id=}, {nack_request=}.")
         api_client = deps.api_auth(api_key, db)
         pr = PromptRepository(db, api_client, frontend_user=frontend_user)
-        pr.task_repository.acknowledge_task_failure(task_id)
+        pr.skip_task(task_id=task_id, reason=nack_request.reason)
     except (KeyError, RuntimeError):
         logger.exception("Failed to not acknowledge task.")
         raise OasstError("Failed to not acknowledge task.", OasstErrorCode.TASK_NACK_FAILED)

@@ -147,6 +147,7 @@ if settings.DEBUG_USE_SEED_DATA:
 
             ur = UserRepository(db=session, api_client=api_client)
             tr = TaskRepository(db=session, api_client=api_client, client_user=dummy_user, user_repository=ur)
+            ur.update_user(tr.user_id, enabled=True, show_on_leaderboard=False, tos_acceptance=True)
             pr = PromptRepository(
                 db=session, api_client=api_client, client_user=dummy_user, user_repository=ur, task_repository=tr
             )
