@@ -1,3 +1,4 @@
+import Head from "next/head";
 import { AdminArea } from "src/components/AdminArea";
 import { getAdminLayout } from "src/components/Layout";
 import { UserTable } from "src/components/UserTable";
@@ -9,9 +10,14 @@ export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_
  */
 const AdminIndex = () => {
   return (
-    <AdminArea title="Open Assistant">
-      <UserTable />
-    </AdminArea>
+    <>
+      <Head>
+        <title>Open Assistant</title>
+      </Head>
+      <AdminArea>
+        <UserTable />
+      </AdminArea>
+    </>
   );
 };
 
