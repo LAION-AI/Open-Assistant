@@ -135,6 +135,11 @@ class Settings(BaseSettings):
     AUTH_LENGTH: int = 32
     AUTH_SECRET: bytes = b"O/M2uIbGj+lDD2oyNa8ax4jEOJqCPJzO53UbWShmq98="
     AUTH_COOKIE_NAME: str = "next-auth.session-token"
+    AUTH_ALGORITHM: str = "HS256"
+    AUTH_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    AUTH_DISCORD_CLIENT_ID: str = ""
+    AUTH_DISCORD_CLIENT_SECRET: str = ""
 
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5432"
