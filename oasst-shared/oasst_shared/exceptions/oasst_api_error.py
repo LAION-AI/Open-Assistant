@@ -28,6 +28,8 @@ class OasstErrorCode(IntEnum):
     SERVER_ERROR0 = 500
     SERVER_ERROR1 = 501
 
+    INVALID_AUTHENTICATION = 600
+
     # 1000-2000: tasks endpoint
     TASK_INVALID_REQUEST_TYPE = 1000
     TASK_ACK_FAILED = 1001
