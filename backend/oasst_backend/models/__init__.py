@@ -8,6 +8,7 @@ from .message_toxicity import MessageToxicity
 from .message_tree_state import MessageTreeState
 from .task import Task
 from .text_labels import TextLabels
+from .troll_stats import TrollStats
 from .user import User
 from .user_stats import UserStats, UserStatsTimeFrame
 
@@ -26,4 +27,5 @@ __all__ = [
     "Journal",
     "JournalIntegration",
     "MessageEmoji",
+    "TrollStats",
 ]

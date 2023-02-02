@@ -469,6 +469,47 @@ class LeaderboardStats(BaseModel):
     leaderboard: List[UserScore]
 
 
+class TrollScore(BaseModel):
+    rank: Optional[int]
+    user_id: UUID
+    highlighted: bool = False
+    username: str
+    auth_method: str
+    display_name: str
+    last_activity_date: Optional[datetime]
+
+    troll_score: int = 0
+
+    base_date: Optional[datetime]
+    modified_date: Optional[datetime]
+
+    red_flags: int = 0  # num reported messages of user
+    upvotes: int = 0  # num up-voted messages of user
+    downvotes: int = 0  # num down-voted messages of user
+
+    spam_prompts: int = 0
+
+    quality: Optional[float] = None
+    humor: Optional[float] = None
+    toxicity: Optional[float] = None
+    violence: Optional[float] = None
+    helpfulness: Optional[float] = None
+
+    spam: int = 0
+    lang_mismach: int = 0
+    not_appropriate: int = 0
+    pii: int = 0
+    hate_speech: int = 0
+    sexual_content: int = 0
+    political_content: int = 0
+
+
+class TrollboardStats(BaseModel):
+    time_frame: str
+    last_updated: datetime
+    trollboard: List[TrollScore]
+
+
 class OasstErrorResponse(BaseModel):
     """The format of an error response from the OASST API."""
 
