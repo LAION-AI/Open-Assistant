@@ -1,4 +1,5 @@
 {
   "python.formatting.provider": "black",
-  "python.analysis.extraPaths": ["${workspaceFolder}/oasst-shared"]
+  "python.analysis.extraPaths": ["${workspaceFolder}/oasst-shared"],
+  "prettier.singleQuote": false
 }

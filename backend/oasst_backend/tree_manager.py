@@ -13,7 +13,16 @@ from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
-from oasst_backend.models import Message, MessageReaction, MessageTreeState, Task, TextLabels, User, message_tree_state
+from oasst_backend.models import (
+    Message,
+    MessageEmoji,
+    MessageReaction,
+    MessageTreeState,
+    Task,
+    TextLabels,
+    User,
+    message_tree_state,
+)
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.utils import tree_export
 from oasst_backend.utils.database_utils import CommitMode, async_managed_tx_method, managed_tx_method
@@ -21,7 +30,8 @@ from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingM
 from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from sqlmodel import Session, func, not_, or_, text, update
+from oasst_shared.utils import utcnow
+from sqlmodel import Session, and_, func, not_, or_, text, update
 
 
 class TaskType(Enum):
@@ -153,7 +163,7 @@ class TreeManager:
 
     def _determine_task_availability_internal(
         self,
-        num_active_trees: int,
+        num_missing_prompts: int,
         extendible_parents: list[ExtendibleParentRow],
         prompts_need_review: list[Message],
         replies_need_review: list[Message],
@@ -161,8 +171,7 @@ class TreeManager:
     ) -> dict[protocol_schema.TaskRequestType, int]:
         task_count_by_type: dict[protocol_schema.TaskRequestType, int] = {t: 0 for t in protocol_schema.TaskRequestType}
 
-        num_missing_prompts = max(0, self.cfg.max_active_trees - num_active_trees)
-        task_count_by_type[protocol_schema.TaskRequestType.initial_prompt] = num_missing_prompts
+        task_count_by_type[protocol_schema.TaskRequestType.initial_prompt] = max(1, num_missing_prompts)
 
         task_count_by_type[protocol_schema.TaskRequestType.prompter_reply] = len(
             list(filter(lambda x: x.parent_role == "assistant", extendible_parents))
@@ -194,6 +203,72 @@ class TreeManager:
 
         return task_count_by_type
 
+    def _prompt_lottery(self, lang: str) -> int:
+        MAX_RETRIES = 5
+        retry = 0
+        while True:
+            num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
+            num_missing_prompts = self.cfg.max_active_trees - num_active_trees
+            if num_missing_prompts <= 0:
+                return 0
+
+            # select among distinct users
+            authors_qry = (
+                self.db.query(Message.user_id)
+                .select_from(MessageTreeState)
+                .join(Message, MessageTreeState.message_tree_id == Message.id)
+                .filter(
+                    MessageTreeState.state == message_tree_state.State.PROMPT_LOTTERY_WAITING,
+                    Message.lang == lang,
+                    not_(Message.deleted),
+                    Message.review_result,
+                )
+                .distinct(Message.user_id)
+            )
+
+            author_ids = authors_qry.all()
+            if len(author_ids) == 0:
+                logger.info(
+                    f"No prompts for prompt lottery available ({num_missing_prompts} trees missing for {lang=})."
+                )
+                return num_missing_prompts
+
+            # first select an authour
+            prompt_author_id: UUID = random.choice(author_ids)["user_id"]
+            logger.info(f"Selected random prompt author {prompt_author_id} among {len(author_ids)} candidates.")
+
+            # select random prompt of author
+            qry = (
+                self.db.query(MessageTreeState, Message)
+                .select_from(MessageTreeState)
+                .join(Message, MessageTreeState.message_tree_id == Message.id)
+                .filter(
+                    MessageTreeState.state == message_tree_state.State.PROMPT_LOTTERY_WAITING,
+                    Message.user_id == prompt_author_id,
+                    Message.lang == lang,
+                    not_(Message.deleted),
+                    Message.review_result,
+                )
+                .limit(100)
+            )
+
+            prompt_candidates = qry.all()
+            if len(prompt_candidates) == 0:
+                retry += 1  # not sure if this can happen with repeatable read isolation level, just in case we retry
+                if retry < MAX_RETRIES:
+                    continue
+                else:
+                    logger.warning("Max retries in prompt lottery reached.")
+                    return num_missing_prompts
+
+            winner_prompt = random.choice(prompt_candidates)
+            message: Message = winner_prompt.Message
+            logger.info(f"Prompt lottery winner: {message.id=}")
+
+            mts: MessageTreeState = winner_prompt.MessageTreeState
+            self._enter_state(mts, message_tree_state.State.GROWING)
+            self.db.flush()
+
     def determine_task_availability(self, lang: str) -> dict[protocol_schema.TaskRequestType, int]:
         self.pr.ensure_user_is_enabled()
 
@@ -201,14 +276,14 @@ class TreeManager:
             lang = "en"
             logger.warning("Task availability request without lang tag received, assuming lang='en'.")
 
-        num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
+        num_missing_prompts = self._prompt_lottery(lang=lang)
         extendible_parents, _ = self.query_extendible_parents(lang=lang)
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
         incomplete_rankings = self.query_incomplete_rankings(lang=lang)
 
         return self._determine_task_availability_internal(
-            num_active_trees=num_active_trees,
+            num_missing_prompts=num_missing_prompts,
             extendible_parents=extendible_parents,
             prompts_need_review=prompts_need_review,
             replies_need_review=replies_need_review,
@@ -238,7 +313,8 @@ class TreeManager:
             lang = "en"
             logger.warning("Task request without lang tag received, assuming 'en'.")
 
-        num_active_trees = self.query_num_active_trees(lang=lang, exclude_ranking=True)
+        num_missing_prompts = self._prompt_lottery(lang=lang)
+
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
         extendible_parents, active_tree_sizes = self.query_extendible_parents(lang=lang)
@@ -256,7 +332,7 @@ class TreeManager:
                 num_ranking_tasks=len(incomplete_rankings),
                 num_replies_need_review=len(replies_need_review),
                 num_prompts_need_review=len(prompts_need_review),
-                num_missing_prompts=max(0, self.cfg.max_active_trees - num_active_trees),
+                num_missing_prompts=num_missing_prompts,
                 num_missing_replies=num_missing_replies,
             )
 
@@ -268,7 +344,7 @@ class TreeManager:
                 )
         else:
             task_count_by_type = self._determine_task_availability_internal(
-                num_active_trees=num_active_trees,
+                num_missing_prompts=num_missing_prompts,
                 extendible_parents=extendible_parents,
                 prompts_need_review=prompts_need_review,
                 replies_need_review=replies_need_review,
@@ -611,7 +687,7 @@ class TreeManager:
                                 )
                             else:
                                 self.enter_low_grade_state(msg.message_tree_id)
-                        self.check_condition_for_growing_state(msg.message_tree_id)
+                        self.check_condition_for_prompt_lottery(msg.message_tree_id)
                     elif msg.review_count >= self.cfg.num_reviews_reply:
                         if not msg.review_result and acceptance_score > self.cfg.acceptance_threshold_reply:
                             msg.review_result = True
@@ -649,6 +725,8 @@ class TreeManager:
                     if len(incomplete_rankings) < self.cfg.min_active_rankings_per_lang:
                         self.activate_backlog_tree(lang=root_msg.lang)
         else:
+            if mts.state == message_tree_state.State.GROWING and mts.won_prompt_lottery_date is None:
+                mts.won_prompt_lottery_date = utcnow()
             logger.info(f"Tree entered '{mts.state}' state ({mts.message_tree_id=})")
 
     def enter_low_grade_state(self, message_tree_id: UUID) -> None:
@@ -656,8 +734,8 @@ class TreeManager:
         mts = self.pr.fetch_tree_state(message_tree_id)
         self._enter_state(mts, message_tree_state.State.ABORTED_LOW_GRADE)
 
-    def check_condition_for_growing_state(self, message_tree_id: UUID) -> bool:
-        logger.debug(f"check_condition_for_growing_state({message_tree_id=})")
+    def check_condition_for_prompt_lottery(self, message_tree_id: UUID) -> bool:
+        logger.debug(f"check_condition_for_prompt_lottery({message_tree_id=})")
 
         mts = self.pr.fetch_tree_state(message_tree_id)
         if not mts.active or mts.state != message_tree_state.State.INITIAL_PROMPT_REVIEW:
@@ -670,7 +748,7 @@ class TreeManager:
             logger.debug(f"False {initial_prompt.review_result=}")
             return False
 
-        self._enter_state(mts, message_tree_state.State.GROWING)
+        self._enter_state(mts, message_tree_state.State.PROMPT_LOTTERY_WAITING)
         return True
 
     def check_condition_for_ranking_state(self, message_tree_id: UUID) -> bool:
@@ -820,6 +898,14 @@ class TreeManager:
             self.db.query(Message)
             .select_from(MessageTreeState)
             .join(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
+            .outerjoin(
+                MessageEmoji,
+                and_(
+                    Message.id == MessageEmoji.message_id,
+                    MessageEmoji.user_id == self.pr.user_id,
+                    MessageEmoji.emoji == protocol_schema.EmojiCode.skip_labeling,
+                ),
+            )
             .filter(
                 MessageTreeState.active,
                 MessageTreeState.state == state,
@@ -827,6 +913,7 @@ class TreeManager:
                 not_(Message.deleted),
                 Message.review_count < required_reviews,
                 Message.lang == lang,
+                MessageEmoji.message_id.is_(None),
             )
         )
 
@@ -879,12 +966,18 @@ SELECT m.parent_id, m.role, COUNT(m.id) children_count, MIN(m.ranking_count) chi
     mts.message_tree_id
 FROM message_tree_state mts
     INNER JOIN message m ON mts.message_tree_id = m.message_tree_id
+    LEFT JOIN message_emoji me on
+        (m.parent_id = me.message_id
+        AND :skip_user_id IS NOT NULL
+        AND me.user_id = :skip_user_id
+        AND me.emoji = :skip_ranking)
 WHERE mts.active                        -- only consider active trees
     AND mts.state = :ranking_state      -- message tree must be in ranking state
     AND m.review_result                 -- must be reviewed
     AND m.lang = :lang                  -- matches lang
     AND NOT m.deleted                   -- not deleted
     AND m.parent_id IS NOT NULL         -- ignore initial prompts
+    AND me.message_id IS NULL           -- no skip ranking emoji for user
 GROUP BY m.parent_id, m.role, mts.message_tree_id
 HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
 """
@@ -910,6 +1003,8 @@ HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
                 "ranking_state": message_tree_state.State.RANKING,
                 "lang": lang,
                 "user_id": user_id,
+                "skip_user_id": self.pr.user_id,
+                "skip_ranking": protocol_schema.EmojiCode.skip_ranking,
             },
         )
         return [IncompleteRankingsRow.from_orm(x) for x in r.all()]
@@ -919,6 +1014,11 @@ HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
 SELECT m.id as parent_id, m.role as parent_role, m.depth, m.message_tree_id, COUNT(c.id) active_children_count
 FROM message_tree_state mts
     INNER JOIN message m ON mts.message_tree_id = m.message_tree_id	-- all elements of message tree
+    LEFT JOIN message_emoji me ON
+        (m.id = me.message_id
+        AND :skip_user_id IS NOT NULL
+        AND me.user_id = :skip_user_id
+        AND me.emoji = :skip_reply)
     LEFT JOIN message c ON m.id = c.parent_id  -- child nodes
 WHERE mts.active                        -- only consider active trees
     AND mts.state = :growing_state      -- message tree must be growing
@@ -926,6 +1026,7 @@ WHERE mts.active                        -- only consider active trees
     AND m.depth < mts.max_depth         -- ignore leaf nodes as parents
     AND m.review_result                 -- parent node must have positive review
     AND m.lang = :lang                  -- parent matches lang
+    AND me.message_id IS NULL           -- no skip reply emoji for user
     AND NOT coalesce(c.deleted, FALSE)  -- don't count deleted children
     AND (c.review_result OR coalesce(c.review_count, 0) < :num_reviews_reply) -- don't count children with negative review but count elements under review
 GROUP BY m.id, m.role, m.depth, m.message_tree_id, mts.max_children_count
@@ -946,6 +1047,8 @@ HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
                 "num_prompter_replies": self.cfg.num_prompter_replies,
                 "lang": lang,
                 "user_id": user_id,
+                "skip_user_id": self.pr.user_id,
+                "skip_reply": protocol_schema.EmojiCode.skip_reply,
             },
         )
 
@@ -984,6 +1087,8 @@ HAVING COUNT(m.id) < mts.goal_tree_size
                 "num_prompter_replies": self.cfg.num_prompter_replies,
                 "lang": lang,
                 "user_id": user_id,
+                "skip_user_id": self.pr.user_id,
+                "skip_reply": protocol_schema.EmojiCode.skip_reply,
             },
         )
         return [ActiveTreeSizeRow.from_orm(x) for x in r.all()]
@@ -1097,7 +1202,7 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
                 f"Checking state of {len(prompt_review_trees)} active message trees in 'initial_prompt_review' state."
             )
             for t in prompt_review_trees:
-                self.check_condition_for_growing_state(t.message_tree_id)
+                self.check_condition_for_prompt_lottery(t.message_tree_id)
 
         growing_trees: list[MessageTreeState] = (
             self.db.query(MessageTreeState)
@@ -1288,11 +1393,17 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         logger.debug(f"purge_message_tree({message_tree_id=}) {r.rowcount} rows.")
 
     def _reactivate_tree(self, mts: MessageTreeState):
-        self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
+        if mts.state == message_tree_state.State.PROMPT_LOTTERY_WAITING:
+            return
+
         tree_id = mts.message_tree_id
-        if self.check_condition_for_growing_state(tree_id):
+        if mts.won_prompt_lottery_date is not None:
+            self._enter_state(mts, message_tree_state.State.GROWING)
             if self.check_condition_for_ranking_state(tree_id):
                 self.check_condition_for_scoring_state(tree_id)
+        else:
+            self._enter_state(mts, message_tree_state.State.INITIAL_PROMPT_REVIEW)
+            self.check_condition_for_prompt_lottery(tree_id)
 
     @managed_tx_method(CommitMode.FLUSH)
     def purge_user_messages(
@@ -1450,7 +1561,8 @@ if __name__ == "__main__":
     with Session(engine) as db:
         api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
         # api_client = create_api_client(session=db, description="test", frontend_type="bot")
-        dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
+        # dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
+        dummy_user = protocol_schema.User(id="1234", display_name="bulb", auth_method="local")
 
         pr = PromptRepository(db=db, api_client=api_client, client_user=dummy_user)
         cfg = TreeManagerConfiguration()
@@ -1465,14 +1577,18 @@ if __name__ == "__main__":
         # print("query_incomplete_rankings", tm.query_incomplete_rankings())
         # print("query_replies_need_review", tm.query_replies_need_review())
         # print("query_incomplete_reply_reviews", tm.query_replies_need_review())
-        # print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review())
+        xs = tm.query_prompts_need_review(lang="en")
+        print("xs", len(xs))
+        for x in xs:
+            print(x.id, x.emojis)
+        # print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review(lang="en"))
         # print("query_extendible_trees", tm.query_extendible_trees())
         # print("query_extendible_parents", tm.query_extendible_parents())
 
         # print("next_task:", tm.next_task())
 
-        print(
-            ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("21f9d585-d22c-44ab-a696-baa3d83b5f1b"))
-        )
+        # print(
+        #     ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("21f9d585-d22c-44ab-a696-baa3d83b5f1b"))
+        # )
 
         # print(tm.export_trees_to_file(message_tree_ids=["7e75fb38-e664-4e2b-817c-b9a0b01b0074"], file="lol.jsonl"))

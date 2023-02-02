@@ -1,4 +1,6 @@
+from datetime import datetime
 from enum import Enum
+from typing import Optional
 from uuid import UUID
 
 import sqlalchemy as sa
@@ -46,6 +48,9 @@ class State(str, Enum):
     BACKLOG_RANKING = "backlog_ranking"
     """Imported tree ready to be activated and ranked by users (currently inactive)."""
 
+    PROMPT_LOTTERY_WAITING = "prompt_lottery_waiting"
+    """Initial prompt has passed spam check, waiting to be drawn to grow."""
+
 
 VALID_STATES = (
     State.INITIAL_PROMPT_REVIEW,
@@ -63,6 +68,7 @@ TERMINAL_STATES = (
     State.SCORING_FAILED,
     State.HALTED_BY_MODERATOR,
     State.BACKLOG_RANKING,
+    State.PROMPT_LOTTERY_WAITING,
 )
 
 
@@ -78,3 +84,4 @@ class MessageTreeState(SQLModel, table=True):
     state: str = Field(nullable=False, max_length=128, index=True)
     active: bool = Field(nullable=False, index=True)
     origin: str = Field(sa_column=sa.Column(sa.String(1024), nullable=True))
+    won_prompt_lottery_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True))

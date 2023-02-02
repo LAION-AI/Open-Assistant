@@ -1,4 +1,4 @@
-import { Box, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Card, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
@@ -36,9 +36,9 @@ const MessageDetail = ({ id }: { id: string }) => {
                 <Text fontWeight="bold" fontSize="xl" pb="2">
                   {t("parent")}
                 </Text>
-                <Box bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base" width="fit-content">
+                <Card bg={backgroundColor} padding="4" width="fit-content">
                   <MessageTableEntry enabled message={parent} />
-                </Box>
+                </Card>
               </Box>
             </>
           )}

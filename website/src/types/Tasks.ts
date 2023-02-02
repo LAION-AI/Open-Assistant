@@ -46,6 +46,7 @@ export interface Label {
 
 export interface BaseLabelTask extends BaseTask {
   message_id: string;
+  conversation: Conversation;
   labels: Label[];
   valid_labels: string[];
   disposition: "spam" | "quality";
@@ -55,14 +56,12 @@ export interface BaseLabelTask extends BaseTask {
 
 export interface LabelAssistantReplyTask extends BaseLabelTask {
   type: TaskType.label_assistant_reply;
-  conversation: Conversation;
   reply_message: Message;
   reply: string;
 }
 
 export interface LabelPrompterReplyTask extends BaseLabelTask {
   type: TaskType.label_prompter_reply;
-  conversation: Conversation;
   reply_message: Message;
   reply: string;
 }
