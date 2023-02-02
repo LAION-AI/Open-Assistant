@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:analyze": "cross-env ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
@@ -34,6 +35,7 @@
     "@emotion/styled": "^11.10.5",
     "@marsidev/react-turnstile": "^0.0.7",
     "@next-auth/prisma-adapter": "^1.0.5",
+    "@next/bundle-analyzer": "^13.1.6",
     "@next/font": "^13.1.0",
     "@prisma/client": "^4.7.1",
     "@tailwindcss/forms": "^0.5.3",
@@ -87,6 +89,7 @@
     "@types/react": "18.0.26",
     "@typescript-eslint/eslint-plugin": "^5.47.1",
     "babel-loader": "^8.3.0",
+    "cross-env": "^7.0.3",
     "cypress": "^12.2.0",
     "cypress-image-diff-js": "^1.23.0",
     "eslint-plugin-storybook": "^0.6.8",
