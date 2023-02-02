@@ -97,14 +97,16 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
           style={{ float: "right", position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
           onClick={(e) => e.stopPropagation()}
         >
-          {Object.entries(emojiState.emojis).map(([emoji, count]) => (
-            <MessageEmojiButton
-              key={emoji}
-              emoji={{ name: emoji, count }}
-              checked={emojiState.user_emojis.includes(emoji)}
-              onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-            />
-          ))}
+          {Object.entries(emojiState.emojis)
+            .filter(([k]) => !k.startsWith("_"))
+            .map(([emoji, count]) => (
+              <MessageEmojiButton
+                key={emoji}
+                emoji={{ name: emoji, count }}
+                checked={emojiState.user_emojis.includes(emoji)}
+                onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+              />
+            ))}
           <MessageActions
             react={react}
             userEmoji={emojiState.user_emojis}
