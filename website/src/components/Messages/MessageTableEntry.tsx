@@ -98,7 +98,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
           onClick={(e) => e.stopPropagation()}
         >
           {Object.entries(emojiState.emojis)
-            .filter(([k, _]) => !k.startsWith("_"))
+            .filter(([k]) => !k.startsWith("_"))
             .map(([emoji, count]) => (
               <MessageEmojiButton
                 key={emoji}
