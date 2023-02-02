@@ -7,6 +7,7 @@ import hikari
 import lightbulb
 import lightbulb.decorators
 import miru
+from aiosqlite import Connection
 from bot.messages import (
     assistant_reply_messages,
     confirm_label_response_message,
@@ -165,17 +166,19 @@ class _RankingTaskHandler(_TaskHandler[_Ranking_contra]):
             )
         )
 
-        logger.debug(f"Labels: {task.id}\nMessage id: {self.sent_messages[0].id}")
-        valid_labels = await oasst_api.get_valid_labels(f"{self.sent_messages[0].id}")
-        logger.debug(f"Valid labels: {valid_labels}")
-
-        log_channel = 1058299131115872297
+        db: Connection = self.ctx.bot.d.db
+        async with db.cursor() as cursor:
+            row = await (
+                await cursor.execute("SELECT log_channel_id FROM guilds WHERE guild_id = ?", (self.ctx.guild_id,))
+            ).fetchone()
+            log_channel = row[0] if row else None
         log_messages: list[hikari.Message] = []
 
-        for message in self.task_messages[:-1]:
-            msg = await self.ctx.bot.rest.create_message(log_channel, message)
-            log_messages.append(msg)
-        await self.ctx.bot.rest.create_message(log_channel, task_complete_embed(self.task, self.ctx.author.mention))
+        if log_channel is not None:
+            for message in self.task_messages[:-1]:
+                msg = await self.ctx.bot.rest.create_message(log_channel, message)
+                log_messages.append(msg)
+            await self.ctx.bot.rest.create_message(log_channel, task_complete_embed(self.task, self.ctx.author.mention))
 
         return task
 
@@ -387,9 +390,7 @@ async def work2(ctx: lightbulb.Context) -> None:
     # Keep sending tasks until the user doesn't want more
     try:
         while True:
-            # task = await oasst_api.fetch_random_task(
-            task = await oasst_api.fetch_task(
-                task_type=protocol_schema.TaskRequestType.rank_assistant_replies,  # TODO: switch back
+            task = await oasst_api.fetch_random_task(
                 user=protocol_schema.User(
                     id=f"{ctx.author.id}", display_name=ctx.author.username, auth_method="discord"
                 ),
