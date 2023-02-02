@@ -1,13 +1,11 @@
 import { Box, useBoolean, useColorModeValue } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
-import { MessageView } from "src/components/Messages";
 import { LabelInputGroup } from "src/components/Messages/LabelInputGroup";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
-import { TaskType } from "src/types/Task";
 import { LabelTaskType } from "src/types/Tasks";
 
 const isRequired = (labelName: string, requiredLabels?: string[]) => {
@@ -56,15 +54,9 @@ export const LabelTask = ({
       <TwoColumnsWithCards>
         <>
           <TaskHeader taskType={taskType} />
-          {task.type !== TaskType.label_initial_prompt ? (
-            <Box mt="4" p={[4, 6]} borderRadius="lg" bg={cardColor}>
-              <MessageTable messages={task.conversation.messages} highlightLastMessage />
-            </Box>
-          ) : (
-            <Box mt="4">
-              <MessageView text={task.prompt} is_assistant={false} id={task.message_id} emojis={{}} user_emojis={[]} />
-            </Box>
-          )}
+          <Box mt="4" p={[4, 6]} borderRadius="lg" bg={cardColor}>
+            <MessageTable messages={task.conversation.messages} highlightLastMessage />
+          </Box>
         </>
         <LabelInputGroup
           labels={task.labels}

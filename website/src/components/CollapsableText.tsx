@@ -51,7 +51,7 @@ export const CollapsableText = ({
             <ModalContent alignItems="center">
               <ModalHeader>Full Text</ModalHeader>
               <ModalCloseButton />
-              <ModalBody>{text}</ModalBody>
+              <ModalBody style={{ whiteSpace: "pre-line" }}>{text}</ModalBody>
             </ModalContent>
           </ModalOverlay>
         </Modal>

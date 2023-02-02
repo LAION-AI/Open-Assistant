@@ -125,6 +125,9 @@ services:
       - EMAIL_FROM=info@example.com
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
+      - NEXT_PUBLIC_CLOUDFARE_CAPTCHA_SITE_KEY=1x00000000000000000000AA
+      - CLOUDFLARE_CAPTCHA_SERCERT_KEY=1x0000000000000000000000000000000AA
+      - NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA=true
     depends_on:
       webdb:
         condition: service_healthy
