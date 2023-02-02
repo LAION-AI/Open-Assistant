@@ -21,8 +21,9 @@ export function SideMenu(props: SideMenuProps) {
   return (
     <main className="sticky top-0 sm:h-full">
       <Card
+        display={{ base: "grid", sm: "flex" }}
         width={["100%", "100%", "100px", "280px"]}
-        className="grid grid-cols-4 gap-2 sm:flex sm:flex-col sm:justify-between p-4 h-full"
+        className="grid-cols-4 gap-2 sm:flex-col sm:justify-between p-4 h-full"
       >
         <nav className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
           {props.buttonOptions.map((item, itemIndex) => (
