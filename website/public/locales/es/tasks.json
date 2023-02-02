@@ -77,5 +77,6 @@
     "label": "Clasificar respuesta del asistente",
     "desc": "Proporciona etiquetas para una respuesta del asistente.",
     "overview": "Lee la siguiente conversación y contesta a continuación la pregunta sobre la última respuesta en la discusión."
-  }
+  },
+  "available_task_count": "{{count}} tareas disponibles"
 }
