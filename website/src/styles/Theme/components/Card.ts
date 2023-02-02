@@ -17,11 +17,21 @@ export const cardTheme = defineMultiStyleConfig({
       footer: {},
     };
   }),
-  variants: {
-    elevated: definePartsStyle({
+  sizes: {
+    md: definePartsStyle({
       container: {
         borderRadius: "xl",
       },
+    }),
+  },
+  variants: {
+    json: definePartsStyle(({ colorMode }) => {
+      const isLightMode = colorMode === "light";
+      return {
+        container: {
+          backgroundColor: isLightMode ? "gray.100" : "gray.800",
+        },
+      };
     }),
   },
 });
