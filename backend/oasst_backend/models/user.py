@@ -64,10 +64,7 @@ class User(SQLModel, table=True):
 
 class Account(SQLModel, table=True):
     __tablename__ = "account"
-    __table_args__ = (
-        Index("id", unique=True),
-        Index("provider", "provider_account_id", unique=True),
-    )
+    __table_args__ = (Index("provider", "provider_account_id", unique=True),)
 
     id: Optional[UUID] = Field(
         sa_column=sa.Column(
