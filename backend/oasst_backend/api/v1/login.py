@@ -1,4 +1,4 @@
-import requests
+import aiohttp
 from fastapi import APIRouter, Depends, HTTPException, Request
 from oasst_backend import auth
 from oasst_backend.api import deps
@@ -20,38 +20,37 @@ def login_discord(request: Request):
 
 
 @router.get("/callback/discord", response_model=protocol_schema.Token)
-def callback_discord(
+async def callback_discord(
     auth_code: str,
     request: Request,
     db: Session = Depends(deps.get_db),
 ):
     redirect_uri = f"{get_callback_uri(request)}/discord"
 
-    # Exchange the auth code for an access token
-    token_response = requests.post(
-        "https://discord.com/api/oauth2/token",
-        data={
-            "client_id": Settings.AUTH_DISCORD_CLIENT_ID,
-            "client_secret": Settings.AUTH_DISCORD_CLIENT_SECRET,
-            "grant_type": "authorization_code",
-            "code": auth_code,
-            "redirect_uri": redirect_uri,
-            "scope": "identify",
-        },
-    )
+    async with aiohttp.ClientSession(raise_for_status=True) as session:
+        # Exchange the auth code for a Discord access token
+        async with session.post(
+            "https://discord.com/api/oauth2/token",
+            data={
+                "client_id": Settings.AUTH_DISCORD_CLIENT_ID,
+                "client_secret": Settings.AUTH_DISCORD_CLIENT_SECRET,
+                "grant_type": "authorization_code",
+                "code": auth_code,
+                "redirect_uri": redirect_uri,
+                "scope": "identify",
+            },
+        ) as token_response:
+            token_response_json = await token_response.json()
+            access_token = token_response_json["access_token"]
 
-    token_response.raise_for_status()
-    access_token = token_response.json()["access_token"]
+        # Retrieve user's Discord information using access token
+        async with session.get(
+            "https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"}
+        ) as user_response:
+            user_response_json = await user_response.json()
+            discord_id = user_response_json["id"]
 
-    # Retrieve user's Discord information using access token
-    user_response = requests.get(
-        "https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"}
-    )
-
-    user_response.raise_for_status()
-    discord_user_id = user_response.json()["id"]
-
-    account: Account = auth.get_account_from_discord_id(db, discord_user_id)
+    account: Account = auth.get_account_from_discord_id(db, discord_id)
 
     if not account:
         # Discord account is not linked to an OA account
