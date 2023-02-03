@@ -82,6 +82,9 @@ const authOptions: AuthOptions = {
   // Ensure we can store user data in a database.
   adapter: PrismaAdapter(prisma),
   providers,
+  session: {
+    strategy: "jwt",
+  },
   pages: {
     signIn: "/auth/signin",
     verifyRequest: "/auth/verify",
@@ -115,7 +118,20 @@ const authOptions: AuthOptions = {
         auth_method: accounts.length > 0 ? accounts[0].provider : "local",
       };
       const oasstApiClient = createApiClientFromUser(user);
-      const tosAcceptanceDate = await oasstApiClient.fetch_tos_acceptance(user);
+      let tosAcceptanceDate;
+      try {
+        /**
+         * when first creating a new user, we have a race condition here,
+         * where the python backend still does not know about the user
+         * in the frontend, when the user accepts the tos, we do a full refresh
+         * which means this function will be called again.
+         */
+        tosAcceptanceDate = await oasstApiClient.fetch_tos_acceptance(user);
+      } catch (err) {
+        if (err.httpStatusCode !== 404) {
+          throw err;
+        }
+      }
 
       token.name = name;
       token.role = role;
@@ -162,9 +178,6 @@ const authOptions: AuthOptions = {
         });
       }
     },
-  },
-  session: {
-    strategy: "jwt",
   },
 };
 
