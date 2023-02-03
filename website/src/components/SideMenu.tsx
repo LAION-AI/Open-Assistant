@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 export interface MenuButtonOption {
   label: string;
   pathname: string;
-  desc: string;
   icon: LucideIcon;
 }
 

@@ -29,6 +29,15 @@ export class OasstApiClient {
       };
     }
   }
+
+  fetch_full_settings() {
+    return this.get<Record<string, any>>("/api/v1/admin/backend_settings/full");
+  }
+
+  fetch_public_settings() {
+    return this.get<Record<string, any>>("/api/v1/admin/backend_settings/public");
+  }
+
   // TODO return a strongly typed Task?
   // This method is used to store a task in RegisteredTask.task.
   // This is a raw Json type, so we can't use it to strongly type the task.

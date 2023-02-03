@@ -41,7 +41,7 @@ const Dashboard = () => {
     <>
       <Head>
         <title>{`${t("dashboard")} - ${t("common:title")}`}</title>
-        <meta name="description" content="Chat with Open Assistant and provide feedback." />
+        <meta name="description" content="Chat with Open Assistant and provide feedback." key="description" />
       </Head>
       <Flex direction="column" gap="10">
         <WelcomeCard />
