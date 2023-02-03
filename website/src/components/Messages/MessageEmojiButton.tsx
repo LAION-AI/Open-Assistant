@@ -9,7 +9,7 @@ interface MessageEmojiButtonProps {
 }
 
 export const MessageEmojiButton = ({ emoji, checked, onClick }: MessageEmojiButtonProps) => {
-  const EmojiIcon = emojiIcons[emoji.name];
+  const EmojiIcon = emojiIcons.get(emoji.name);
   if (!EmojiIcon) return <></>;
   return (
     <Button
