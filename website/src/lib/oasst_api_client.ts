@@ -3,16 +3,10 @@ import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
 
-export class OasstError {
+export interface OasstError {
   message: string;
   errorCode: number;
   httpStatusCode: number;
-
-  constructor(message: string, errorCode: number, httpStatusCode: number) {
-    this.message = message;
-    this.errorCode = errorCode;
-    this.httpStatusCode = httpStatusCode;
-  }
 }
 
 export class OasstApiClient {
@@ -30,12 +24,66 @@ export class OasstApiClient {
     }
   }
 
-  fetch_full_settings() {
-    return this.get<Record<string, any>>("/api/v1/admin/backend_settings/full");
+  private async request<T>(
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    path: string,
+    init?: RequestInit
+  ): Promise<T | null> {
+    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
+      method,
+      ...init,
+      headers: {
+        ...init?.headers,
+        ...this.userHeaders,
+        "X-API-Key": this.oasstApiKey,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (resp.status === 204) {
+      return null;
+    }
+
+    if (resp.status >= 300) {
+      const errorText = await resp.text();
+      let error;
+      try {
+        error = JSON.parse(errorText);
+      } catch (e) {
+        throw { message: errorText, errorCode: 0, httpStatusCode: resp.status } as OasstError;
+      }
+      throw { message: error.message ?? error, errorCode: error.error_code, httpStatusCode: resp.status } as OasstError;
+    }
+
+    return resp.json();
   }
 
-  fetch_public_settings() {
-    return this.get<Record<string, any>>("/api/v1/admin/backend_settings/public");
+  private async post<T>(path: string, body: unknown) {
+    return this.request<T>("POST", path, {
+      body: JSON.stringify(body),
+    });
+  }
+
+  private async put<T>(path: string) {
+    return this.request<T>("PUT", path);
+  }
+
+  private async get<T>(path: string, query?: Record<string, string | number | boolean | undefined>) {
+    if (!query) {
+      return this.request<T>("GET", path);
+    }
+
+    const filteredQuery = Object.fromEntries(
+      Object.entries(query).filter(([, value]) => value !== undefined)
+    ) as Record<string, string>;
+
+    const params = new URLSearchParams(filteredQuery).toString();
+
+    return this.request<T>("GET", `${path}?${params}`);
+  }
+
+  private async delete<T>(path: string) {
+    return this.request<T>("DELETE", path);
   }
 
   // TODO return a strongly typed Task?
@@ -50,15 +98,11 @@ export class OasstApiClient {
   }
 
   async ackTask(taskId: string, messageId: string): Promise<null> {
-    return this.post(`/api/v1/tasks/${taskId}/ack`, {
-      message_id: messageId,
-    });
+    return this.post(`/api/v1/tasks/${taskId}/ack`, { message_id: messageId });
   }
 
   async nackTask(taskId: string, reason: string): Promise<null> {
-    return this.post(`/api/v1/tasks/${taskId}/nack`, {
-      reason,
-    });
+    return this.post(`/api/v1/tasks/${taskId}/nack`, { reason });
   }
 
   // TODO return a strongly typed Task?
@@ -82,6 +126,14 @@ export class OasstApiClient {
       lang,
       ...content,
     });
+  }
+
+  fetch_full_settings() {
+    return this.get<Record<string, any>>("/api/v1/admin/backend_settings/full");
+  }
+
+  fetch_public_settings() {
+    return this.get<Record<string, any>>("/api/v1/admin/backend_settings/public");
   }
 
   /**
@@ -208,68 +260,6 @@ export class OasstApiClient {
     });
   }
 
-  private async post<T>(path: string, body: unknown) {
-    return this.request<T>("POST", path, {
-      body: JSON.stringify(body),
-    });
-  }
-
-  private async put<T>(path: string) {
-    return this.request<T>("PUT", path);
-  }
-
-  private async delete<T>(path: string) {
-    return this.request<T>("DELETE", path);
-  }
-
-  private async get<T>(path: string, query?: Record<string, string | number | boolean | undefined>) {
-    if (!query) {
-      return this.request<T>("GET", path);
-    }
-
-    const filteredQuery = Object.fromEntries(
-      Object.entries(query).filter(([, value]) => value !== undefined)
-    ) as Record<string, string>;
-
-    const params = new URLSearchParams(filteredQuery).toString();
-
-    return this.request<T>("GET", `${path}?${params}`);
-  }
-
-  private async request<T>(
-    method: "GET" | "POST" | "PUT" | "DELETE",
-    path: string,
-    init?: RequestInit
-  ): Promise<T | null> {
-    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
-      method,
-      ...init,
-      headers: {
-        ...init?.headers,
-        ...this.userHeaders,
-        "X-API-Key": this.oasstApiKey,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (resp.status === 204) {
-      return null;
-    }
-
-    if (resp.status >= 300) {
-      const errorText = await resp.text();
-      let error;
-      try {
-        error = JSON.parse(errorText);
-      } catch (e) {
-        throw new OasstError(errorText, 0, resp.status);
-      }
-      throw new OasstError(error.message ?? error, error.error_code, resp.status);
-    }
-
-    return await resp.json();
-  }
-
   fetch_my_messages(user: BackendUserCore) {
     const params = new URLSearchParams({
       username: user.id,
@@ -288,5 +278,17 @@ export class OasstApiClient {
 
   fetch_conversation(messageId: string) {
     return this.get(`/api/v1/messages/${messageId}/conversation`);
+  }
+
+  async fetch_tos_acceptance(user: BackendUserCore): Promise<BackendUser["tos_acceptance_date"]> {
+    const backendUser = await this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
+    return backendUser.tos_acceptance_date;
+  }
+
+  async set_tos_acceptance(user: BackendUserCore) {
+    // TODO: it is wasteful having to get the backend user first and then set the tos status
+    // is there a better way of doing this?
+    const backendUser = await this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
+    await this.put<void>(`/api/v1/users/${backendUser.user_id}?tos_acceptance=true`);
   }
 }
