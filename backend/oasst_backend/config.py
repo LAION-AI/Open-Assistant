@@ -42,11 +42,11 @@ class TreeManagerConfiguration(BaseModel):
 
     auto_mod_max_skip_reply: int = 25
     """Automatically set tree state to `halted_by_moderator` when more than the specified number
-    of users skip replying to a message of the tree. (auto moderation)"""
+    of users skip replying to a message. (auto moderation)"""
 
     auto_mod_red_flags: int = 3
     """Delete messages that receive more than this number of red flags if it is a reply or
-    set the tree to `halted_by_moderator` when the prompt is flagged. (auto moderation)"""
+    set the tree to `aborted_low_grade` when a prompt is flagged. (auto moderation)"""
 
     p_full_labeling_review_prompt: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for initial prompts."""
