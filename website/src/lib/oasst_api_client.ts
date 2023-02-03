@@ -99,6 +99,13 @@ export class OasstApiClient {
   }
 
   /**
+   * Delete a message by its id
+   */
+  async delete_message(message_id: string): Promise<void> {
+    return this.delete<void>(`/api/v1/messages/${message_id}`);
+  }
+
+  /**
    * Send a report about a message
    */
   async send_report(message_id: string, user: BackendUserCore, text: string) {
@@ -211,6 +218,10 @@ export class OasstApiClient {
     return this.request<T>("PUT", path);
   }
 
+  private async delete<T>(path: string) {
+    return this.request<T>("DELETE", path);
+  }
+
   private async get<T>(path: string, query?: Record<string, string | number | boolean | undefined>) {
     if (!query) {
       return this.request<T>("GET", path);
@@ -225,7 +236,11 @@ export class OasstApiClient {
     return this.request<T>("GET", `${path}?${params}`);
   }
 
-  private async request<T>(method: "GET" | "POST" | "PUT", path: string, init?: RequestInit): Promise<T | null> {
+  private async request<T>(
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    path: string,
+    init?: RequestInit
+  ): Promise<T | null> {
     const resp = await fetch(`${this.oasstApiUrl}${path}`, {
       method,
       ...init,
