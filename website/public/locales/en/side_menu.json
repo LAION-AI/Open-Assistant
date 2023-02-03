@@ -8,7 +8,5 @@
   "users": "Users",
   "users_dashboard": "Users Dashboard",
   "status": "Status",
-  "status_dashboard": "Status Dashboard",
-  "dark_mode": "Dark Mode",
-  "ligth_mode": "Ligth Mode"
+  "status_dashboard": "Status Dashboard"
 }

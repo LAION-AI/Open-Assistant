@@ -8,7 +8,5 @@
   "users": "Usuarios",
   "users_dashboard": "Tablón de usuarios",
   "status": "Estado",
-  "status_dashboard": "Tablón de estado",
-  "dark_mode": "Modo oscuro",
-  "ligth_mode": "Modo claro"
+  "status_dashboard": "Tablón de estado"
 }

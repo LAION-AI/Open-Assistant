@@ -18,5 +18,7 @@
   "sign_out": "Cerrar sesión",
   "terms_of_service": "Términos de servicio",
   "title": "Open Assistant",
-  "yes": "Sí"
+  "yes": "Sí",
+  "dark_mode": "Modo oscuro",
+  "light_mode": "Modo claro"
 }
