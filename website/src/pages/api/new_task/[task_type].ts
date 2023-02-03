@@ -1,6 +1,5 @@
 import { withoutRole } from "src/lib/auth";
 import { ERROR_CODES } from "src/lib/constants";
-import { OasstError } from "src/lib/oasst_api_client";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { getBackendUserCore, getUserLanguage } from "src/lib/users";
@@ -24,7 +23,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   try {
     task = await oasstApiClient.fetchTask(task_type as string, user, userLanguage);
   } catch (err) {
-    if (err instanceof OasstError && err.errorCode === ERROR_CODES.TASK_REQUESTED_TYPE_NOT_AVAILABLE) {
+    if (err.errorCode === ERROR_CODES.TASK_REQUESTED_TYPE_NOT_AVAILABLE) {
       res.status(503).json({});
     } else {
       console.error(err);
