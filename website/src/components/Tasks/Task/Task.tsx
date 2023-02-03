@@ -53,12 +53,12 @@ interface UpdateValidity {
   replyValidity: TaskReplyValidity;
 }
 
-export interface TaskSurveyProps<TaskType extends BaseTask, T> {
+export interface TaskSurveyProps<TaskType extends BaseTask, ReplyContent> {
   task: TaskType;
   taskType: TaskInfo;
   isEditable: boolean;
   isDisabled?: boolean;
-  onReplyChanged: (content: T) => void;
+  onReplyChanged: (content: ReplyContent) => void;
   onValidityChanged: (validity: TaskReplyValidity) => void;
 }
 

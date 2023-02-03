@@ -6,6 +6,7 @@ import { MessageTable } from "src/components/Messages/MessageTable";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
+import { LabelTaskReply } from "src/types/TaskResponses";
 import { LabelTaskType } from "src/types/Tasks";
 
 const isRequired = (labelName: string, requiredLabels?: string[]) => {
@@ -18,7 +19,7 @@ export const LabelTask = ({
   isEditable,
   onReplyChanged,
   onValidityChanged,
-}: TaskSurveyProps<LabelTaskType, { text: string; labels: Record<string, number>; message_id: string }>) => {
+}: TaskSurveyProps<LabelTaskType, LabelTaskReply>) => {
   const { t } = useTranslation("labelling");
   const [values, setValues] = useState<number[]>(new Array(task.labels.length).fill(null));
   const [userInputMade, setUserInputMade] = useBoolean(false);
