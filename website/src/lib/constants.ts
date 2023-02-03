@@ -3,17 +3,17 @@ import {
   useCreateInitialPrompt,
   useCreatePrompterReply,
 } from "src/hooks/tasks/useCreateReply";
+import {
+  useRankAssistantRepliesTask,
+  useRankInitialPromptsTask,
+  useRankPrompterRepliesTask,
+} from "src/hooks/tasks/useEvaluateReplies";
 import { useGenericTaskAPI } from "src/hooks/tasks/useGenericTaskAPI";
 import {
   useLabelAssistantReplyTask,
   useLabelInitialPromptTask,
   useLabelPrompterReplyTask,
 } from "src/hooks/tasks/useLabelingTask";
-import {
-  useRankAssistantRepliesTask,
-  useRankInitialPromptsTask,
-  useRankPrompterRepliesTask,
-} from "src/hooks/tasks/useRankReplies";
 import { TaskApiHooks } from "src/types/Hooks";
 import { TaskType } from "src/types/Task";
 
