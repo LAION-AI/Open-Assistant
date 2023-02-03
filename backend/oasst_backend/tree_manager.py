@@ -9,6 +9,7 @@ from uuid import UUID
 
 import numpy as np
 import pydantic
+import sqlalchemy as sa
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
@@ -31,6 +32,7 @@ from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
+from sqlalchemy.sql.functions import coalesce
 from sqlmodel import Session, and_, func, not_, or_, text, update
 
 
@@ -269,6 +271,31 @@ class TreeManager:
             self._enter_state(mts, message_tree_state.State.GROWING)
             self.db.flush()
 
+    def _auto_moderation(self, lang: str) -> None:
+        if not self.cfg.auto_mod_enabled:
+            return
+
+        bad_messages = self.query_moderation_bad_messages(lang=lang)
+        for m in bad_messages:
+            num_red_flag = m.emojis.get(protocol_schema.EmojiCode.red_flag)
+
+            if num_red_flag is not None and num_red_flag >= self.cfg.auto_mod_red_flags:
+                if m.parent_id is None:
+                    logger.warning(
+                        f"[AUTO MOD] Halting tree {m.message_tree_id}, inital prompt got too many red flags ({m.emojis})."
+                    )
+                    self.enter_low_grade_state(m.message_tree_id)
+                else:
+                    logger.warning(f"[AUTO MOD] Deleting message {m.id=}, it received too many red flags ({m.emojis}).")
+                    self.pr.mark_messages_deleted(m.id, recursive=True)
+
+            num_skip_reply = m.emojis.get(protocol_schema.EmojiCode.skip_reply)
+            if num_skip_reply is not None and num_skip_reply >= self.cfg.auto_mod_max_skip_reply:
+                logger.warning(
+                    f"[AUTO MOD] Halting tree {m.message_tree_id} due to high skip-reply count of message {m.id=} ({m.emojis})."
+                )
+                self.halt_tree(m.id, halt=True)
+
     def determine_task_availability(self, lang: str) -> dict[protocol_schema.TaskRequestType, int]:
         self.pr.ensure_user_is_enabled()
 
@@ -276,6 +303,7 @@ class TreeManager:
             lang = "en"
             logger.warning("Task availability request without lang tag received, assuming lang='en'.")
 
+        self._auto_moderation(lang=lang)
         num_missing_prompts = self._prompt_lottery(lang=lang)
         extendible_parents, _ = self.query_extendible_parents(lang=lang)
         prompts_need_review = self.query_prompts_need_review(lang=lang)
@@ -313,6 +341,7 @@ class TreeManager:
             lang = "en"
             logger.warning("Task request without lang tag received, assuming 'en'.")
 
+        self._auto_moderation(lang=lang)
         num_missing_prompts = self._prompt_lottery(lang=lang)
 
         prompts_need_review = self.query_prompts_need_review(lang=lang)
@@ -1254,6 +1283,37 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
         )
         return qry.all()
 
+    def query_moderation_bad_messages(self, lang: str) -> list[Message]:
+        qry = (
+            self.db.query(Message)
+            .select_from(MessageTreeState)
+            .join(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
+            .filter(
+                MessageTreeState.active,
+                or_(
+                    MessageTreeState.state == message_tree_state.State.INITIAL_PROMPT_REVIEW,
+                    MessageTreeState.state == message_tree_state.State.GROWING,
+                ),
+                or_(
+                    Message.parent_id.is_(None),
+                    Message.review_result,
+                    and_(Message.parent_id.is_not(None), Message.review_count < self.cfg.num_reviews_reply),
+                ),
+                not_(Message.deleted),
+                or_(
+                    coalesce(Message.emojis[protocol_schema.EmojiCode.red_flag].cast(sa.Integer), 0)
+                    >= self.cfg.auto_mod_red_flags,
+                    coalesce(Message.emojis[protocol_schema.EmojiCode.skip_reply].cast(sa.Integer), 0)
+                    >= self.cfg.auto_mod_max_skip_reply,
+                ),
+            )
+        )
+
+        if lang is not None:
+            qry = qry.filter(Message.lang == lang)
+
+        return qry.all()
+
     @managed_tx_method(CommitMode.FLUSH)
     def _insert_tree_state(
         self,
@@ -1281,10 +1341,17 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
         self,
         root_message_id: UUID,
         state: message_tree_state.State = message_tree_state.State.INITIAL_PROMPT_REVIEW,
+        *,
+        goal_tree_size: int = None,
     ) -> MessageTreeState:
+        if goal_tree_size is None:
+            if self.cfg.random_goal_tree_size and self.cfg.min_goal_tree_size < self.cfg.goal_tree_size:
+                goal_tree_size = random.randint(self.cfg.min_goal_tree_size, self.cfg.goal_tree_size)
+            else:
+                goal_tree_size = self.cfg.goal_tree_size
         return self._insert_tree_state(
             root_message_id=root_message_id,
-            goal_tree_size=self.cfg.goal_tree_size,
+            goal_tree_size=goal_tree_size,
             max_depth=self.cfg.max_tree_depth,
             max_children_count=self.cfg.max_children_count,
             state=state,
@@ -1379,8 +1446,31 @@ DELETE FROM task t using message m WHERE t.id = m.task_id AND m.id = :message_id
 DELETE FROM task t WHERE t.parent_message_id = :message_id;
 DELETE FROM message WHERE id = :message_id;
 """
+        parent_id = self.pr.fetch_message(message_id=message_id).parent_id
         r = self.db.execute(text(sql_purge_message), {"message_id": message_id})
         logger.debug(f"purge_message({message_id=}): {r.rowcount} rows.")
+
+        sql_update_ranking_counts = """
+WITH r AS (
+    -- find ranking results and count per child
+    SELECT c.id,
+        count(*) FILTER (
+            WHERE mr.payload#>'{payload, ranked_message_ids}' ? CAST(c.id AS varchar)
+        ) AS ranking_count
+    FROM message c
+    LEFT JOIN message_reaction mr ON mr.payload_type = 'RankingReactionPayload'
+        AND mr.message_id = c.parent_id
+    WHERE c.parent_id = :parent_id
+    GROUP BY c.id
+)
+UPDATE message m SET ranking_count = r.ranking_count
+FROM r WHERE m.id = r.id AND m.ranking_count != r.ranking_count;
+"""
+
+        if parent_id is not None:
+            # update ranking counts of remaining children
+            r = self.db.execute(text(sql_update_ranking_counts), {"parent_id": parent_id})
+            logger.debug(f"ranking_count updated for {r.rowcount} rows.")
 
     def purge_message_tree(self, message_tree_id: UUID) -> None:
         sql_purge_message_tree = """

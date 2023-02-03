@@ -1,16 +1,18 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
+from oasst_backend.config import settings
 from oasst_backend.models import ApiClient, Task
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.user_repository import UserRepository
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from sqlmodel import Session, func, or_
+from oasst_shared.utils import utcnow
+from sqlmodel import Session, delete, func, or_
 from starlette.status import HTTP_404_NOT_FOUND
 
 
@@ -22,6 +24,13 @@ def validate_frontend_message_id(message_id: str) -> None:
         )
     if not message_id:
         raise OasstError("message_id must not be empty", OasstErrorCode.INVALID_FRONTEND_MESSAGE_ID)
+
+
+def delete_expired_tasks(session: Session) -> int:
+    stm = delete(Task).where(Task.expiry_date < utcnow())
+    result = session.exec(stm)
+    logger.info(f"Deleted {result.rowcount} expired tasks.")
+    return result.rowcount
 
 
 class TaskRepository:
@@ -118,12 +127,18 @@ class TaskRepository:
             case _:
                 raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
 
+        if not collective and settings.TASK_VALIDITY_MINUTES > 0:
+            expiry_date = utcnow() + timedelta(minutes=settings.TASK_VALIDITY_MINUTES)
+        else:
+            expiry_date = None
+
         task_model = self.insert_task(
             payload=payload,
             id=task.id,
             message_tree_id=message_tree_id,
             parent_message_id=parent_message_id,
             collective=collective,
+            expiry_date=expiry_date,
         )
         assert task_model.id == task.id
         return task_model
@@ -175,6 +190,7 @@ class TaskRepository:
         message_tree_id: UUID = None,
         parent_message_id: UUID = None,
         collective: bool = False,
+        expiry_date: datetime = None,
     ) -> Task:
         c = PayloadContainer(payload=payload)
         task = Task(
@@ -186,6 +202,7 @@ class TaskRepository:
             message_tree_id=message_tree_id,
             parent_message_id=parent_message_id,
             collective=collective,
+            expiry_date=expiry_date,
         )
         logger.debug(f"inserting {task=}")
         self.db.add(task)
@@ -218,3 +235,6 @@ class TaskRepository:
         if limit:
             qry = qry.limit(limit)
         return qry.all()
+
+    def delete_expired_tasks(self) -> int:
+        return delete_expired_tasks(self.db)

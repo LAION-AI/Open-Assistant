@@ -18,7 +18,8 @@ from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
-from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
+from oasst_backend.prompt_repository import PromptRepository, UserRepository
+from oasst_backend.task_repository import TaskRepository, delete_expired_tasks
 from oasst_backend.tree_manager import TreeManager
 from oasst_backend.user_repository import User
 from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
@@ -316,6 +317,13 @@ def update_user_streak(session: Session) -> None:
     except Exception as e:
         logger.error(str(e))
     return
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * 60)  # 1 hour
+@managed_tx_function(auto_commit=CommitMode.COMMIT)
+def cronjob_delete_expired_tasks(session: Session) -> None:
+    delete_expired_tasks(session)
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
