@@ -34,10 +34,10 @@ class TreeManagerConfiguration(BaseModel):
     p_full_labeling_review_prompt: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for initial prompts."""
 
-    p_full_labeling_review_reply_assistant: float = 0.1
+    p_full_labeling_review_reply_assistant: float = 0.5
     """Probability of full text-labeling (instead of mandatory only) for assistant replies."""
 
-    p_full_labeling_review_reply_prompter: float = 0.1
+    p_full_labeling_review_reply_prompter: float = 0.25
     """Probability of full text-labeling (instead of mandatory only) for prompter replies."""
 
     acceptance_threshold_initial_prompt: float = 0.6
@@ -112,7 +112,7 @@ class TreeManagerConfiguration(BaseModel):
 
     rank_prompter_replies: bool = False
 
-    lonely_children_count: int = 3
+    lonely_children_count: int = 2
     """Number of children below which parents are preferred during sampling for reply tasks."""
 
     p_lonely_child_extension: float = 0.8
