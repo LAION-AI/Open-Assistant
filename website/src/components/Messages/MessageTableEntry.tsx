@@ -20,11 +20,12 @@ import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
-import { getEmojiIcon, MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
+import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { del, post } from "src/lib/api";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
+import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
 import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 
@@ -99,7 +100,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
           onClick={(e) => e.stopPropagation()}
         >
           {Object.entries(emojiState.emojis)
-            .filter(([k]) => !k.startsWith("_"))
+            .filter(([emoji]) => isKnownEmoji(emoji))
             .map(([emoji, count]) => (
               <MessageEmojiButton
                 key={emoji}
@@ -133,10 +134,10 @@ const EmojiMenuItem = ({
   react: (emoji: string, state: boolean) => void;
 }) => {
   const activeColor = useColorModeValue(colors.light.active, colors.dark.active);
-
+  const EmojiIcon = emojiIcons[emoji];
   return (
     <MenuItem onClick={() => react(emoji, !checked)} justifyContent="center" color={checked ? activeColor : undefined}>
-      {getEmojiIcon(emoji, "NORMAL")}
+      <EmojiIcon />
     </MenuItem>
   );
 };
