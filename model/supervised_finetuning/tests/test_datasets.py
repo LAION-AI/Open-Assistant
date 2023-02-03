@@ -27,7 +27,7 @@ def test_collate_fn():
 
     config = Namespace(cache_dir=".cache", model_name="Salesforce/codegen-2B-multi")
     tokenizer = get_tokenizer(config)
-    collate_fn = DialogueDataCollator(tokenizer, max_length=512)
+    collate_fn = DialogueDataCollator(tokenizer, max_length=620)
     qa_base = QA_DATASETS
     summarize_base = SUMMARIZATION_DATASETS
     others = ["prompt_dialogue", "webgpt", "soda", "joke", "gsm8k"]
@@ -40,11 +40,14 @@ def test_collate_fn():
 
     dataloader = DataLoader(ConcatDataset(trains), collate_fn=collate_fn, batch_size=128)
     for batch in dataloader:
-        print(batch.keys())
+        print(batch["targets"].shape[0])
         print(tokenizer.decode(batch["input_ids"][0]))
         print("-----")
         print(tokenizer.decode(batch["targets"][0][batch["label_masks"][0]]))
-        assert batch["targets"].shape[1] <= 512
+        assert batch["targets"].shape[1] <= 620
     dataloader = DataLoader(ConcatDataset(evals), collate_fn=collate_fn, batch_size=128)
     for batch in dataloader:
-        assert batch["targets"].shape[1] <= 512
+        assert batch["targets"].shape[1] <= 620
+
+
+test_collate_fn()
