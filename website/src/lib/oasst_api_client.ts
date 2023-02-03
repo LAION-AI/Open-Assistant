@@ -168,6 +168,13 @@ export class OasstApiClient {
   }
 
   /**
+   * Stop message tree
+   */
+  async stop_tree(message_id: string): Promise<void> {
+    return this.put<void>(`/api/v1/messages/${message_id}/tree/state?halt=true`);
+  }
+
+  /**
    * Send a report about a message
    */
   async send_report(message_id: string, user: BackendUserCore, text: string) {
