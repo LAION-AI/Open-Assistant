@@ -18,8 +18,9 @@ const acceptToS = async () => {
 
 export const ToSWrapper = ({ children }: { children?: ReactNode | undefined }) => {
   const { t } = useTranslation("tos");
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const hasAcceptedTos = Boolean(session?.user.tosAcceptanceDate);
+  const isLoading = status === "loading";
 
   const contents = useMemo(
     () => (
@@ -42,7 +43,7 @@ export const ToSWrapper = ({ children }: { children?: ReactNode | undefined }) =
     [t]
   );
 
-  if (hasAcceptedTos) {
+  if (isLoading || hasAcceptedTos) {
     return <>{children}</>;
   }
   return contents;
