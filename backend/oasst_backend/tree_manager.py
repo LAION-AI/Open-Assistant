@@ -1379,8 +1379,31 @@ DELETE FROM task t using message m WHERE t.id = m.task_id AND m.id = :message_id
 DELETE FROM task t WHERE t.parent_message_id = :message_id;
 DELETE FROM message WHERE id = :message_id;
 """
+        parent_id = self.pr.fetch_message(message_id=message_id).parent_id
         r = self.db.execute(text(sql_purge_message), {"message_id": message_id})
         logger.debug(f"purge_message({message_id=}): {r.rowcount} rows.")
+
+        sql_update_ranking_counts = """
+WITH r AS (
+    -- find ranking results and count per child
+    SELECT c.id,
+        count(*) FILTER (
+            WHERE mr.payload#>'{payload, ranked_message_ids}' ? CAST(c.id AS varchar)
+        ) AS ranking_count
+    FROM message c
+    LEFT JOIN message_reaction mr ON mr.payload_type = 'RankingReactionPayload'
+        AND mr.message_id = c.parent_id
+    WHERE c.parent_id = :parent_id
+    GROUP BY c.id
+)
+UPDATE message m SET ranking_count = r.ranking_count
+FROM r WHERE m.id = r.id AND m.ranking_count != r.ranking_count;
+"""
+
+        if parent_id is not None:
+            # update ranking counts of remaining children
+            r = self.db.execute(text(sql_update_ranking_counts), {"parent_id": parent_id})
+            logger.debug(f"ranking_count updated for {r.rowcount} rows.")
 
     def purge_message_tree(self, message_tree_id: UUID) -> None:
         sql_purge_message_tree = """
