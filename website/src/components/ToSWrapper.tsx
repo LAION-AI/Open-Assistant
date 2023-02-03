@@ -1,9 +1,9 @@
 import { Flex, Text } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useContext, useMemo } from "react";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
-import { useToSAcceptance } from "src/hooks/useToSAcceptance";
+import { TosContext } from "src/hooks/useToSAcceptance";
 import { TermsOfService } from "src/pages/terms-of-service";
 
 const navigateAway = () => {
@@ -11,7 +11,7 @@ const navigateAway = () => {
 };
 
 export const ToSWrapper = ({ children }: { children?: ReactNode | undefined }) => {
-  const { hasAcceptedTos, acceptToS } = useToSAcceptance();
+  const { hasAcceptedTos, acceptToS } = useContext(TosContext);
   const { t } = useTranslation("tos");
 
   const contents = useMemo(
@@ -36,7 +36,7 @@ export const ToSWrapper = ({ children }: { children?: ReactNode | undefined }) =
   );
 
   if (hasAcceptedTos) {
-    return children;
+    return <>{children}</>;
   }
   return contents;
 };
