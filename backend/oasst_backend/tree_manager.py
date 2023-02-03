@@ -275,7 +275,7 @@ class TreeManager:
         if not self.cfg.auto_mod_enabled:
             return
 
-        bad_messages = self.query_moderation_emoji_messages(lang=lang)
+        bad_messages = self.query_moderation_bad_messages(lang=lang)
         for m in bad_messages:
             num_red_flag = m.emojis.get(protocol_schema.EmojiCode.red_flag)
 
@@ -1283,7 +1283,7 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
         )
         return qry.all()
 
-    def query_moderation_emoji_messages(self, lang: str) -> list[Message]:
+    def query_moderation_bad_messages(self, lang: str) -> list[Message]:
         qry = (
             self.db.query(Message)
             .select_from(MessageTreeState)
@@ -1292,8 +1292,12 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
                 MessageTreeState.active,
                 or_(
                     MessageTreeState.state == message_tree_state.State.INITIAL_PROMPT_REVIEW,
+                    MessageTreeState.state == message_tree_state.State.GROWING,
+                ),
+                or_(
+                    Message.parent_id.is_(None),
                     Message.review_result,
-                    Message.review_count < self.cfg.num_reviews_reply,
+                    and_(Message.parent_id.is_not(None), Message.review_count < self.cfg.num_reviews_reply),
                 ),
                 not_(Message.deleted),
                 or_(
