@@ -165,6 +165,10 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
           return true;
         }
 
+        if (account.provider === "email" && !boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN)) {
+          return false;
+        }
+
         const captcha = req.body.captcha;
 
         const res = await checkCaptcha(captcha, getIp(req));
