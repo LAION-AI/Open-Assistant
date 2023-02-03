@@ -5,6 +5,7 @@
   "connect": "Connect",
   "conversational": "Conversational AI for everyone.",
   "dashboard": "Dashboard",
+  "delete": "Delete",
   "discord": "Discord",
   "docs": "Docs",
   "github": "GitHub",
@@ -19,5 +20,6 @@
   "terms_of_service": "Terms of Service",
   "title": "Open Assistant",
   "yes": "Yes",
-  "delete": "Delete"
+  "dark_mode": "Dark Mode",
+  "light_mode": "Light Mode"
 }
