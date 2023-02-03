@@ -134,7 +134,7 @@ const EmojiMenuItem = ({
   react: (emoji: string, state: boolean) => void;
 }) => {
   const activeColor = useColorModeValue(colors.light.active, colors.dark.active);
-  const EmojiIcon = emojiIcons[emoji];
+  const EmojiIcon = emojiIcons.get(emoji);
   return (
     <MenuItem onClick={() => react(emoji, !checked)} justifyContent="center" color={checked ? activeColor : undefined}>
       <EmojiIcon />
