@@ -1,13 +1,17 @@
 import argparse
 from distutils.util import strtobool
 from functools import partial
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import bitsandbytes
+import datasets
 import torch
 from torch import nn
+from torch.utils.data import DataLoader
 from transformers import PreTrainedModel, Trainer, TrainingArguments
+from transformers.trainer_pt_utils import IterableDatasetShard, seed_worker
 from transformers.training_args import OptimizerNames
+from transformers.utils import is_datasets_available
 from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
 
 
@@ -30,12 +34,13 @@ class SFTTrainer(Trainer):
         self,
         model: Union[PreTrainedModel, nn.Module] = None,
         args: TrainingArguments = None,
+        train_collate_fn: Callable = None,
         loss_function: str = "CrossEntropyLoss",
         poly_eps: float = 1.0,
         **kwargs,
     ):
         super().__init__(model, args, **kwargs)
-
+        self.train_collate_fn = train_collate_fn
         # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
         self.loss_fct = get_loss(loss_function, poly_eps)
 
@@ -87,6 +92,54 @@ class SFTTrainer(Trainer):
             return (loss, None, None)
 
         return (loss, logits, labels)
+
+    def get_train_dataloader(self) -> DataLoader:
+        """
+        Returns the training [`~torch.utils.data.DataLoader`].
+        Will use no sampler if `train_dataset` does not implement `__len__`, a random sampler (adapted to distributed
+        training if necessary) otherwise.
+        Subclass and override this method if you want to inject some custom behavior.
+        """
+        if self.train_dataset is None:
+            raise ValueError("Trainer: training requires a train_dataset.")
+
+        train_dataset = self.train_dataset
+        data_collator = self.train_collate_fn
+        if is_datasets_available() and isinstance(train_dataset, datasets.Dataset):
+            train_dataset = self._remove_unused_columns(train_dataset, description="training")
+        else:
+            data_collator = self._get_collator_with_removed_columns(data_collator, description="training")
+
+        if isinstance(train_dataset, torch.utils.data.IterableDataset):
+            if self.args.world_size > 1:
+                train_dataset = IterableDatasetShard(
+                    train_dataset,
+                    batch_size=self._train_batch_size,
+                    drop_last=self.args.dataloader_drop_last,
+                    num_processes=self.args.world_size,
+                    process_index=self.args.process_index,
+                )
+
+            return DataLoader(
+                train_dataset,
+                batch_size=self.args.per_device_train_batch_size,
+                collate_fn=data_collator,
+                num_workers=self.args.dataloader_num_workers,
+                pin_memory=self.args.dataloader_pin_memory,
+            )
+
+        train_sampler = self._get_train_sampler()
+
+        return DataLoader(
+            train_dataset,
+            batch_size=self._train_batch_size,
+            sampler=train_sampler,
+            collate_fn=data_collator,
+            drop_last=self.args.dataloader_drop_last,
+            num_workers=self.args.dataloader_num_workers,
+            pin_memory=self.args.dataloader_pin_memory,
+            worker_init_fn=seed_worker,
+        )
 
 
 def _strtobool(x):
@@ -140,7 +193,7 @@ if __name__ == "__main__":
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
 
-    train, evals, collate_fn = get_dataset(training_conf, tokenizer)
+    train, evals, collate_fn, train_collate_fn = get_dataset(training_conf, tokenizer)
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
 
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
@@ -190,6 +243,7 @@ if __name__ == "__main__":
     trainer = SFTTrainer(
         model,
         args,
+        train_collate_fn=train_collate_fn,
         loss_function=training_conf.loss_fn,
         poly_eps=training_conf.poly_eps,
         train_dataset=train,
