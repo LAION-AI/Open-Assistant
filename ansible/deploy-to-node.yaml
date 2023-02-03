@@ -125,6 +125,9 @@
           TREE_MANAGER__LONELY_CHILDREN_COUNT:
             "{{ lookup('ansible.builtin.env', 'LONELY_CHILDREN_COUNT') |
             default('2', true) }}"
+          TREE_MANAGER__P_LONELY_CHILD_EXTENSION:
+            "{{ lookup('ansible.builtin.env', 'P_LONELY_CHILD_EXTENSION') |
+            default('0.75', true) }}"
           TREE_MANAGER__P_ACTIVATE_BACKLOG_TREE:
             "{{ lookup('ansible.builtin.env', 'P_ACTIVATE_BACKLOG_TREE') |
             default('0.1', true) }}"

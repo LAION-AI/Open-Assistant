@@ -115,7 +115,7 @@ class TreeManagerConfiguration(BaseModel):
     lonely_children_count: int = 2
     """Number of children below which parents are preferred during sampling for reply tasks."""
 
-    p_lonely_child_extension: float = 0.8
+    p_lonely_child_extension: float = 0.75
     """Probability to select a prompter message parent with less than lonely_children_count children."""
 
     recent_tasks_span_sec: int = 3 * 60  # 3 min
