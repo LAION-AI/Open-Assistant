@@ -290,7 +290,7 @@ class TreeManager:
                     self.pr.mark_messages_deleted(m.id, recursive=True)
 
             num_skip_reply = m.emojis.get(protocol_schema.EmojiCode.skip_reply)
-            if num_skip_reply is not None and num_skip_reply > self.cfg.auto_mod_max_skip_reply:
+            if num_skip_reply is not None and num_skip_reply >= self.cfg.auto_mod_max_skip_reply:
                 logger.warning(
                     f"[AUTO MOD] Halting tree {m.message_tree_id} due to high skip-reply count of message {m.id=} ({m.emojis})."
                 )
