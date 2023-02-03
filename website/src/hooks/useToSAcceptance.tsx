@@ -11,15 +11,10 @@ interface ToSContextType {
 
 export const TosContext = createContext<ToSContextType>(null);
 
-const useToSAcceptance = (): ToSContextType => {
+const useToSAcceptance = (enabled: boolean): ToSContextType => {
   const [hasAcceptedTos, setHasAccepted] = useState(false);
-
-  const { data: session } = useSession();
-  const isLoggedIn = Boolean(session);
-  const shouldFetchToS = isLoggedIn && !hasAcceptedTos;
-
   const { data: acceptanceDate, mutate: refreshToSStatus } = useSWR<string | null>(
-    shouldFetchToS ? "/api/tos" : null,
+    enabled && !hasAcceptedTos ? "/api/tos" : null,
     get
   );
 
@@ -30,16 +25,17 @@ const useToSAcceptance = (): ToSContextType => {
   }, [acceptanceDate]);
 
   const acceptToS = useCallback(async () => {
-    if (!hasAcceptedTos) {
-      await post("/api/tos", { arg: {} });
-      await refreshToSStatus();
-    }
-  }, [hasAcceptedTos, refreshToSStatus]);
+    await post("/api/tos", { arg: {} });
+    await refreshToSStatus();
+  }, [refreshToSStatus]);
 
   return { hasAcceptedTos, acceptanceDate, acceptToS };
 };
 
 export const ToSProvider = ({ children }) => {
-  const tosAcceptance = useToSAcceptance();
+  const { data: session } = useSession();
+  const isLoggedIn = Boolean(session);
+  const tosAcceptance = useToSAcceptance(isLoggedIn);
+
   return <TosContext.Provider value={tosAcceptance}>{children}</TosContext.Provider>;
 };
