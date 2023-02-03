@@ -322,7 +322,7 @@ def update_user_streak(session: Session) -> None:
 @app.on_event("startup")
 @repeat_every(seconds=60 * 60)  # 1 hour
 @managed_tx_function(auto_commit=CommitMode.COMMIT)
-def remove_expired_tasks(session: Session) -> None:
+def cronjob_delete_expired_tasks(session: Session) -> None:
     delete_expired_tasks(session)
 
 

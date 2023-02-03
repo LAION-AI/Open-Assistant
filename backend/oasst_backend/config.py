@@ -25,11 +25,28 @@ class TreeManagerConfiguration(BaseModel):
     goal_tree_size: int = 12
     """Total number of messages to gather per tree."""
 
+    random_goal_tree_size: bool = False
+    """If set to true goal tree sizes will be generated randomly within range [min_goal_tree_size, goal_tree_size]."""
+
+    min_goal_tree_size: int = 5
+    """Minimum tree size for random goal sizes."""
+
     num_reviews_initial_prompt: int = 3
     """Number of peer review checks to collect in INITIAL_PROMPT_REVIEW state."""
 
     num_reviews_reply: int = 3
     """Number of peer review checks to collect per reply (other than initial_prompt)."""
+
+    auto_mod_enabled: bool = True
+    """Flag to enable/disable auto moderation."""
+
+    auto_mod_max_skip_reply: int = 25
+    """Automatically set tree state to `halted_by_moderator` when more than the specified number
+    of users skip replying to a message of the tree. (auto moderation)"""
+
+    auto_mod_red_flags: int = 3
+    """Delete messages that receive more than this number of red flags if it is a reply or
+    set the tree to `halted_by_moderator` when the prompt is flagged. (auto moderation)"""
 
     p_full_labeling_review_prompt: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for initial prompts."""

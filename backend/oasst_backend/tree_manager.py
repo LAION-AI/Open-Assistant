@@ -9,6 +9,7 @@ from uuid import UUID
 
 import numpy as np
 import pydantic
+import sqlalchemy as sa
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
@@ -31,6 +32,7 @@ from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
+from sqlalchemy.sql.functions import coalesce
 from sqlmodel import Session, and_, func, not_, or_, text, update
 
 
@@ -269,6 +271,31 @@ class TreeManager:
             self._enter_state(mts, message_tree_state.State.GROWING)
             self.db.flush()
 
+    def _auto_moderation(self, lang: str) -> None:
+        if not self.cfg.auto_mod_enabled:
+            return
+
+        bad_messages = self.query_moderation_emoji_messages(lang=lang)
+        for m in bad_messages:
+            num_red_flag = m.emojis.get(protocol_schema.EmojiCode.red_flag)
+
+            if num_red_flag is not None and num_red_flag >= self.cfg.auto_mod_red_flags:
+                if m.parent_id is None:
+                    logger.warning(
+                        f"[AUTO MOD] Halting tree {m.message_tree_id}, inital prompt got too many red flags ({m.emojis})."
+                    )
+                    self.enter_low_grade_state(m.message_tree_id)
+                else:
+                    logger.warning(f"[AUTO MOD] Deleting message {m.id=}, it received too many red flags ({m.emojis}).")
+                    self.pr.mark_messages_deleted(m.id, recursive=True)
+
+            num_skip_reply = m.emojis.get(protocol_schema.EmojiCode.skip_reply)
+            if num_skip_reply is not None and num_skip_reply > self.cfg.auto_mod_max_skip_reply:
+                logger.warning(
+                    f"[AUTO MOD] Halting tree {m.message_tree_id} due to high skip-reply count of message {m.id=} ({m.emojis})."
+                )
+                self.halt_tree(m.id, halt=True)
+
     def determine_task_availability(self, lang: str) -> dict[protocol_schema.TaskRequestType, int]:
         self.pr.ensure_user_is_enabled()
 
@@ -276,6 +303,7 @@ class TreeManager:
             lang = "en"
             logger.warning("Task availability request without lang tag received, assuming lang='en'.")
 
+        self._auto_moderation(lang=lang)
         num_missing_prompts = self._prompt_lottery(lang=lang)
         extendible_parents, _ = self.query_extendible_parents(lang=lang)
         prompts_need_review = self.query_prompts_need_review(lang=lang)
@@ -313,6 +341,7 @@ class TreeManager:
             lang = "en"
             logger.warning("Task request without lang tag received, assuming 'en'.")
 
+        self._auto_moderation(lang=lang)
         num_missing_prompts = self._prompt_lottery(lang=lang)
 
         prompts_need_review = self.query_prompts_need_review(lang=lang)
@@ -1254,6 +1283,33 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
         )
         return qry.all()
 
+    def query_moderation_emoji_messages(self, lang: str) -> list[Message]:
+        qry = (
+            self.db.query(Message)
+            .select_from(MessageTreeState)
+            .join(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
+            .filter(
+                MessageTreeState.active,
+                or_(
+                    MessageTreeState.state == message_tree_state.State.INITIAL_PROMPT_REVIEW,
+                    Message.review_result,
+                    Message.review_count < self.cfg.num_reviews_reply,
+                ),
+                not_(Message.deleted),
+                or_(
+                    coalesce(Message.emojis[protocol_schema.EmojiCode.red_flag].cast(sa.Integer), 0)
+                    >= self.cfg.auto_mod_red_flags,
+                    coalesce(Message.emojis[protocol_schema.EmojiCode.skip_reply].cast(sa.Integer), 0)
+                    >= self.cfg.auto_mod_max_skip_reply,
+                ),
+            )
+        )
+
+        if lang is not None:
+            qry = qry.filter(Message.lang == lang)
+
+        return qry.all()
+
     @managed_tx_method(CommitMode.FLUSH)
     def _insert_tree_state(
         self,
@@ -1281,10 +1337,17 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
         self,
         root_message_id: UUID,
         state: message_tree_state.State = message_tree_state.State.INITIAL_PROMPT_REVIEW,
+        *,
+        goal_tree_size: int = None,
     ) -> MessageTreeState:
+        if goal_tree_size is None:
+            if self.cfg.random_goal_tree_size and self.cfg.min_goal_tree_size < self.cfg.goal_tree_size:
+                goal_tree_size = random.randint(self.cfg.min_goal_tree_size, self.cfg.goal_tree_size)
+            else:
+                goal_tree_size = self.cfg.goal_tree_size
         return self._insert_tree_state(
             root_message_id=root_message_id,
-            goal_tree_size=self.cfg.goal_tree_size,
+            goal_tree_size=goal_tree_size,
             max_depth=self.cfg.max_tree_depth,
             max_children_count=self.cfg.max_children_count,
             state=state,
