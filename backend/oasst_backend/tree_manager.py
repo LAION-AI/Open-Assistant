@@ -496,7 +496,7 @@ class TreeManager:
             case TaskType.REPLY:
 
                 recent_reply_tasks = self.pr.task_repository.fetch_recent_reply_tasks(
-                    max_age=timedelta(seconds=self.cfg.recent_tasks_span_sec), done=False
+                    max_age=timedelta(seconds=self.cfg.recent_tasks_span_sec), done=False, skipped=False, limit=500
                 )
                 recent_reply_task_parents = {t.parent_message_id for t in recent_reply_tasks}
 

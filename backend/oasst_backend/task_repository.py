@@ -205,7 +205,7 @@ class TaskRepository:
         return task
 
     def fetch_recent_reply_tasks(
-        self, max_age: timedelta = timedelta(minutes=5), done: bool = False, limit: int = 100
+        self, max_age: timedelta = timedelta(minutes=5), done: bool = False, skipped: bool = False, limit: int = 100
     ) -> list[Task]:
         qry = self.db.query(Task).filter(
             func.age(Task.created_date) < max_age,
@@ -213,6 +213,8 @@ class TaskRepository:
         )
         if done is not None:
             qry = qry.filter(Task.done == done)
+        if skipped is not None:
+            qry = qry.filter(Task.skipped == skipped)
         if limit:
             qry = qry.limit(limit)
         return qry.all()
