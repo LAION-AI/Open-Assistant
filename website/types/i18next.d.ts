@@ -5,6 +5,7 @@ import type leaderboard from "public/locales/en/leaderboard.json";
 import type message from "public/locales/en/message.json";
 import type labelling from "public/locales/en/labelling.json";
 import type tasks from "public/locales/en/tasks.json";
+import type side_menu from "public/locales/en/side_menu.json";
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -16,6 +17,7 @@ declare module "i18next" {
       tasks: typeof tasks;
       message: typeof message;
       labelling: typeof labelling;
+      side_menu: typeof side_menu;
     };
   }
 }

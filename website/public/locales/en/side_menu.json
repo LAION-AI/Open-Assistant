@@ -1,0 +1,14 @@
+{
+  "dashboard": "Dashboard",
+  "dashboard_home": "Dashboard Home",
+  "messages": "Messages",
+  "messages_dashboard": "Messages Dashboard",
+  "leaderboard": "Leaderboard",
+  "user_leaderboard": "User Leaderboard",
+  "users": "Users",
+  "users_dashboard": "Users Dashboard",
+  "status": "Status",
+  "status_dashboard": "Status Dashboard",
+  "dark_mode": "Dark Mode",
+  "ligth_mode": "Ligth Mode"
+}
