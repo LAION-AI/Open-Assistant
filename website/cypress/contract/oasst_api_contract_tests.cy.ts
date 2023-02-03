@@ -1,4 +1,4 @@
-import { OasstApiClient } from "src/lib/oasst_api_client";
+import { OasstApiClient, OasstError } from "src/lib/oasst_api_client";
 import type { BackendUserCore } from "src/types/Users";
 
 describe("Contract test for Oasst API", function () {
@@ -44,7 +44,7 @@ describe("Contract test for Oasst API", function () {
     mockFetch.restore();
   });
 
-  it("should throw an error data from the response for a non-2XX response with a valid error response", async () => {
+  it("should throw an OasstError with data from the response for a non-2XX response with a valid OasstError response", async () => {
     const mockFetch = cy.stub(global, "fetch").resolves({
       status: 400,
       text: () =>
@@ -64,15 +64,18 @@ describe("Contract test for Oasst API", function () {
       await callApiMethod();
       assert.fail();
     } catch (error) {
-      assert.equal(error.errorCode, 1000);
-      assert.equal(error.message, "error message");
-      assert.equal(error.httpStatusCode, 400);
+      assert.instanceOf(error, OasstError);
+      if (error instanceof OasstError) {
+        assert.equal(error.errorCode, 1000);
+        assert.equal(error.message, "error message");
+        assert.equal(error.httpStatusCode, 400);
+      }
     }
 
     mockFetch.restore();
   });
 
-  it("should throw an error with the text from the response for a non-2XX response with an unknown format", async () => {
+  it("should throw a generic OasstError with the text from the response for a non-2XX response with an unknown format", async () => {
     const mockFetch = cy.stub(global, "fetch").resolves({
       status: 400,
       text: () => Promise.resolve("error message"),
@@ -82,6 +85,7 @@ describe("Contract test for Oasst API", function () {
       await callApiMethod();
       assert.fail();
     } catch (error) {
+      assert.instanceOf(error, OasstError);
       assert.equal(error.message, "error message");
     }
 

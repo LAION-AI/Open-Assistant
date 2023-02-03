@@ -8,7 +8,6 @@ import { appWithTranslation, useTranslation } from "next-i18next";
 import { FlagsProvider } from "react-feature-flags";
 import { getDefaultLayout, NextPageWithLayout } from "src/components/Layout";
 import flags from "src/flags";
-import { ToSProvider } from "src/hooks/useToSAcceptance";
 import { SWRConfig, SWRConfiguration } from "swr";
 
 import nextI18NextConfig from "../../next-i18next.config.js";
@@ -36,9 +35,7 @@ function MyApp({ Component, pageProps: { session, cookies, ...pageProps } }: App
       <FlagsProvider value={flags}>
         <Chakra cookies={cookies}>
           <SWRConfig value={swrConfig}>
-            <SessionProvider session={session}>
-              <ToSProvider>{page}</ToSProvider>
-            </SessionProvider>
+            <SessionProvider session={session}>{page}</SessionProvider>
           </SWRConfig>
         </Chakra>
       </FlagsProvider>

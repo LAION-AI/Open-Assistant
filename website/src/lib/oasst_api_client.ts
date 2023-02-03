@@ -3,10 +3,20 @@ import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
 
-export interface OasstError {
+export class OasstError {
   message: string;
   errorCode: number;
   httpStatusCode: number;
+
+  constructor(message: string, errorCode: number, httpStatusCode: number) {
+    this.message = message;
+    this.errorCode = errorCode;
+    this.httpStatusCode = httpStatusCode;
+  }
+
+  toString() {
+    return JSON.stringify(this);
+  }
 }
 
 export class OasstApiClient {
@@ -50,9 +60,9 @@ export class OasstApiClient {
       try {
         error = JSON.parse(errorText);
       } catch (e) {
-        throw { message: errorText, errorCode: 0, httpStatusCode: resp.status } as OasstError;
+        throw new OasstError(errorText, 0, resp.status);
       }
-      throw { message: error.message ?? error, errorCode: error.error_code, httpStatusCode: resp.status } as OasstError;
+      throw new OasstError(error.message ?? error, error.error_code, resp.status);
     }
 
     return resp.json();

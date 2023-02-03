@@ -1,18 +1,25 @@
 import { Flex, Text } from "@chakra-ui/react";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import { ReactNode, useContext, useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
-import { TosContext } from "src/hooks/useToSAcceptance";
+import { post } from "src/lib/api";
 import { TermsOfService } from "src/pages/terms-of-service";
 
 const navigateAway = () => {
   location.href = "https://laion.ai/";
 };
 
+const acceptToS = async () => {
+  await post("/api/tos", { arg: {} });
+  location.reload();
+};
+
 export const ToSWrapper = ({ children }: { children?: ReactNode | undefined }) => {
-  const { hasAcceptedTos, acceptToS } = useContext(TosContext);
   const { t } = useTranslation("tos");
+  const { data: session } = useSession();
+  const hasAcceptedTos = Boolean(session?.user.tosAcceptanceDate);
 
   const contents = useMemo(
     () => (
@@ -32,7 +39,7 @@ export const ToSWrapper = ({ children }: { children?: ReactNode | undefined }) =
         </Flex>
       </SurveyCard>
     ),
-    [acceptToS, t]
+    [t]
   );
 
   if (hasAcceptedTos) {

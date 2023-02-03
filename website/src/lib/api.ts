@@ -23,12 +23,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const err = error?.response?.data;
-    const errObj: OasstError = {
-      message: err?.message ?? error,
-      errorCode: err?.errorCode,
-      httpStatusCode: error?.response?.httpStatusCode ?? -1,
-    };
-    throw errObj;
+    throw new OasstError(err?.message ?? error, err?.errorCode, error?.response?.httpStatusCode || -1);
   }
 );
 

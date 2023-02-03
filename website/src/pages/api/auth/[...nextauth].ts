@@ -8,7 +8,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 import { checkCaptcha } from "src/lib/captcha";
+import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
+import { BackendUserCore } from "src/types/Users";
 import { generateUsername } from "unique-username-generator";
 
 const providers: Provider[] = [];
@@ -94,6 +96,7 @@ const authOptions: AuthOptions = {
       session.user.role = token.role;
       session.user.isNew = token.isNew;
       session.user.name = token.name;
+      session.user.tosAcceptanceDate = token.tosAcceptanceDate;
       return session;
     },
     /**
@@ -101,13 +104,23 @@ const authOptions: AuthOptions = {
      * This let's use forward the role to the session object.
      */
     async jwt({ token }) {
-      const { isNew, name, role } = await prisma.user.findUnique({
+      const { isNew, name, role, accounts, id } = await prisma.user.findUnique({
         where: { id: token.sub },
-        select: { name: true, role: true, isNew: true },
+        select: { name: true, role: true, isNew: true, accounts: true, id: true },
       });
+
+      const user: BackendUserCore = {
+        id,
+        display_name: name,
+        auth_method: accounts.length > 0 ? accounts[0].provider : "local",
+      };
+      const oasstApiClient = createApiClientFromUser(user);
+      const tosAcceptanceDate = await oasstApiClient.fetch_tos_acceptance(user);
+
       token.name = name;
       token.role = role;
       token.isNew = isNew;
+      token.tosAcceptanceDate = tosAcceptanceDate;
       return token;
     },
   },
