@@ -118,11 +118,13 @@ const authOptions: AuthOptions = {
         auth_method: accounts.length > 0 ? accounts[0].provider : "local",
       };
       const oasstApiClient = createApiClientFromUser(user);
-      let tosAcceptanceDate;
+
+      let tosAcceptanceDate = null;
       try {
         /**
-         * when first creating a new user, we have a race condition here,
-         * where the python backend still does not know about the user
+         * when first creating a new user, the python backend is not informed about it
+         * so this call will return a 404
+         *
          * in the frontend, when the user accepts the tos, we do a full refresh
          * which means this function will be called again.
          */
