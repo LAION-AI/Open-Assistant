@@ -23,8 +23,8 @@ import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { getEmojiIcon, MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { post } from "src/lib/api";
+import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
-import { colors } from "styles/Theme/colors";
 import useSWRMutation from "swr/mutation";
 
 interface MessageTableEntryProps {
@@ -66,7 +66,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
     ),
     [borderColor, inlineAvatar, message.is_assistant]
   );
-  const highlightColor = useColorModeValue(colors.light.highlight, colors.dark.highlight);
+  const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
 
   const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
     onSuccess: setEmojis,
@@ -97,14 +97,16 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
           style={{ float: "right", position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
           onClick={(e) => e.stopPropagation()}
         >
-          {Object.entries(emojiState.emojis).map(([emoji, count]) => (
-            <MessageEmojiButton
-              key={emoji}
-              emoji={{ name: emoji, count }}
-              checked={emojiState.user_emojis.includes(emoji)}
-              onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-            />
-          ))}
+          {Object.entries(emojiState.emojis)
+            .filter(([k]) => !k.startsWith("_"))
+            .map(([emoji, count]) => (
+              <MessageEmojiButton
+                key={emoji}
+                emoji={{ name: emoji, count }}
+                checked={emojiState.user_emojis.includes(emoji)}
+                onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+              />
+            ))}
           <MessageActions
             react={react}
             userEmoji={emojiState.user_emojis}

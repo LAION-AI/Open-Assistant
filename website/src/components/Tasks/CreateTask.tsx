@@ -49,9 +49,9 @@ export const CreateTask = ({
         </>
         <>
           <Stack spacing="4">
-            {!!i18n.exists(`task.${taskType.id}.instruction`) && (
+            {!!i18n.exists(`tasks:${taskType.id}.instruction`) && (
               <Text fontSize="xl" fontWeight="bold" color={titleColor}>
-                {t(getTypeSafei18nKey(`${taskType.id}.instruction`))}
+                {t(getTypeSafei18nKey(`tasks:${taskType.id}.instruction`))}
               </Text>
             )}
             <TrackedTextarea

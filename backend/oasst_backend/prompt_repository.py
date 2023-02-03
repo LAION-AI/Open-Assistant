@@ -35,7 +35,21 @@ from oasst_shared.utils import unaware_to_utc, utcnow
 from sqlalchemy.orm import Query
 from sqlalchemy.orm.attributes import flag_modified
 from sqlmodel import JSON, Session, and_, func, literal_column, not_, or_, text, update
-from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
+
+_task_type_and_reaction = (
+    (
+        (db_payload.PrompterReplyPayload, db_payload.AssistantReplyPayload),
+        protocol_schema.EmojiCode.skip_reply,
+    ),
+    (
+        (db_payload.LabelInitialPromptPayload, db_payload.LabelConversationReplyPayload),
+        protocol_schema.EmojiCode.skip_labeling,
+    ),
+    (
+        (db_payload.RankInitialPromptsPayload, db_payload.RankConversationRepliesPayload),
+        protocol_schema.EmojiCode.skip_ranking,
+    ),
+)
 
 
 class PromptRepository:
@@ -77,7 +91,14 @@ class PromptRepository:
             raise OasstError("User required", OasstErrorCode.USER_NOT_SPECIFIED)
 
         if self.user.deleted or not self.user.enabled:
-            raise OasstError("User account disabled", OasstErrorCode.USER_DISABLED)
+            raise OasstError("User account disabled", OasstErrorCode.USER_DISABLED, HTTPStatus.SERVICE_UNAVAILABLE)
+
+        if self.user.tos_acceptance_date is None and not settings.DEBUG_IGNORE_TOS_ACCEPTANCE:
+            raise OasstError(
+                "User has not accepted terms of service.",
+                OasstErrorCode.USER_HAS_NOT_ACCEPTED_TOS,
+                HTTPStatus.UNAVAILABLE_FOR_LEGAL_REASONS,
+            )
 
     def fetch_message_by_frontend_message_id(self, frontend_message_id: str, fail_if_missing: bool = True) -> Message:
         validate_frontend_message_id(frontend_message_id)
@@ -90,7 +111,7 @@ class PromptRepository:
             raise OasstError(
                 f"Message with frontend_message_id {frontend_message_id} not found.",
                 OasstErrorCode.MESSAGE_NOT_FOUND,
-                HTTP_404_NOT_FOUND,
+                HTTPStatus.NOT_FOUND,
             )
         return message
 
@@ -139,7 +160,12 @@ class PromptRepository:
         return message
 
     def _validate_task(
-        self, task: Task, *, task_id: Optional[UUID] = None, frontend_message_id: Optional[str] = None
+        self,
+        task: Task,
+        *,
+        task_id: Optional[UUID] = None,
+        frontend_message_id: Optional[str] = None,
+        check_ack: bool = True,
     ) -> Task:
         if task is None:
             if task_id:
@@ -150,7 +176,7 @@ class PromptRepository:
 
         if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
-        if not task.ack:
+        if check_ack and not task.ack:
             raise OasstError("Task is not acknowledged.", OasstErrorCode.TASK_NOT_ACK)
         if task.done:
             raise OasstError("Task already done.", OasstErrorCode.TASK_ALREADY_DONE)
@@ -675,7 +701,7 @@ class PromptRepository:
 
         message = self.db.query(Message).filter(Message.id == message_id).one_or_none()
         if fail_if_missing and not message:
-            raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTP_404_NOT_FOUND)
+            raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTPStatus.NOT_FOUND)
         return message
 
     def fetch_non_task_text_labels(self, message_id: UUID, user_id: UUID) -> Optional[TextLabels]:
@@ -874,7 +900,7 @@ class PromptRepository:
 
             if api_client_id != self.api_client.id:
                 # Unprivileged api client asks for foreign messages
-                raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
+                raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTPStatus.FORBIDDEN)
 
         qry = self.db.query(Message)
         if user_id:
@@ -995,7 +1021,31 @@ WHERE message.id = cc.id;
             message_trees=result.get(None, 0),
         )
 
-    def handle_message_emoji(self, message_id: UUID, op: protocol_schema.EmojiOp, emoji: protocol_schema) -> Message:
+    @managed_tx_method()
+    def skip_task(self, task_id: UUID, reason: str):
+        self.ensure_user_is_enabled()
+
+        task = self.task_repository.fetch_task_by_id(task_id)
+        self._validate_task(task, check_ack=False)
+
+        if not task.collective:
+            task.skipped = True
+            task.skip_reason = reason
+            self.db.add(task)
+
+        def handle_cancel_emoji(task_payload: db_payload.TaskPayload) -> Message | None:
+            for types, emoji in _task_type_and_reaction:
+                for t in types:
+                    if isinstance(task_payload, t):
+                        return self.handle_message_emoji(task.parent_message_id, protocol_schema.EmojiOp.add, emoji)
+            return None
+
+        task_payload: db_payload.TaskPayload = task.payload.payload
+        handle_cancel_emoji(task_payload)
+
+    def handle_message_emoji(
+        self, message_id: UUID, op: protocol_schema.EmojiOp, emoji: protocol_schema.EmojiCode
+    ) -> Message:
         self.ensure_user_is_enabled()
 
         message = self.fetch_message(message_id)

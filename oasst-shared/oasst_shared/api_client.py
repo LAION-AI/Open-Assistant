@@ -68,12 +68,15 @@ class OasstApiClient:
     async def post(self, path: str, data: dict[str, t.Any]) -> Optional[dict[str, t.Any]]:
         """Make a POST request to the backend."""
         logger.debug(f"POST {self.backend_url}{path} DATA: {data}")
-        response = await self.session.post(f"{self.backend_url}{path}", json=data, headers={"X-API-Key": self.api_key})
+        response = await self.session.post(f"{self.backend_url}{path}", json=data, headers={"x-api-key": self.api_key})
+        logger.debug(f"response: {response}")
 
         # If the response is not a 2XX, check to see
         # if the json has the fields to create an
         # OasstError.
         if response.status >= 300:
+            text = await response.text()
+            logger.debug(f"resp text: {text}")
             data = await response.json()
             try:
                 oasst_error = protocol_schema.OasstErrorResponse(**(data or {}))
@@ -114,20 +117,21 @@ class OasstApiClient:
         task_type: protocol_schema.TaskRequestType,
         user: Optional[protocol_schema.User] = None,
         collective: bool = False,
+        lang: Optional[str] = None,
     ) -> protocol_schema.Task:
         """Fetch a task from the backend."""
         logger.debug(f"Fetching task {task_type} for user {user}")
-        req = protocol_schema.TaskRequest(type=task_type.value, user=user, collective=collective)
+        req = protocol_schema.TaskRequest(type=task_type.value, user=user, collective=collective, lang=lang)
         resp = await self.post("/api/v1/tasks/", data=req.dict())
         logger.debug(f"RESP {resp}")
         return self._parse_task(resp)
 
     async def fetch_random_task(
-        self, user: Optional[protocol_schema.User] = None, collective: bool = False
+        self, user: Optional[protocol_schema.User] = None, collective: bool = False, lang: Optional[str] = None
     ) -> protocol_schema.Task:
         """Fetch a random task from the backend."""
         logger.debug(f"Fetching random for user {user}")
-        return await self.fetch_task(protocol_schema.TaskRequestType.random, user, collective)
+        return await self.fetch_task(protocol_schema.TaskRequestType.random, user, collective, lang)
 
     async def ack_task(self, task_id: str | UUID, message_id: str) -> None:
         """Send an ACK for a task to the backend."""

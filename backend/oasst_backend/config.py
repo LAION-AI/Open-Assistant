@@ -13,7 +13,7 @@ class TreeManagerConfiguration(BaseModel):
     No new initial prompt tasks are handed out to users if this
     number is reached."""
 
-    max_tree_depth: int = 6
+    max_tree_depth: int = 3
     """Maximum depth of message tree."""
 
     max_children_count: int = 3
@@ -22,7 +22,7 @@ class TreeManagerConfiguration(BaseModel):
     num_prompter_replies: int = 1
     """Number of prompter replies to collect per assistant reply."""
 
-    goal_tree_size: int = 15
+    goal_tree_size: int = 12
     """Total number of messages to gather per tree."""
 
     num_reviews_initial_prompt: int = 3
@@ -135,6 +135,11 @@ class Settings(BaseSettings):
     AUTH_LENGTH: int = 32
     AUTH_SECRET: bytes = b"O/M2uIbGj+lDD2oyNa8ax4jEOJqCPJzO53UbWShmq98="
     AUTH_COOKIE_NAME: str = "next-auth.session-token"
+    AUTH_ALGORITHM: str = "HS256"
+    AUTH_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    AUTH_DISCORD_CLIENT_ID: str = ""
+    AUTH_DISCORD_CLIENT_SECRET: str = ""
 
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5432"
@@ -158,6 +163,9 @@ class Settings(BaseSettings):
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
     DEBUG_DATABASE_ECHO: bool = False
+    DEBUG_IGNORE_TOS_ACCEPTANCE: bool = (  # ignore whether users accepted the ToS
+        True  # TODO: set False after ToS acceptance UI was added to web-frontend
+    )
 
     DUPLICATE_MESSAGE_FILTER_WINDOW_MINUTES: int = 120
 

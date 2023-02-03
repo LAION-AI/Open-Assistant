@@ -1,6 +1,6 @@
-/** @type {import('next').NextConfig} */
 const { i18n } = require("./next-i18next.config");
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
@@ -19,6 +19,14 @@ const nextConfig = {
     // scrollRestoration: true,
   },
   i18n,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
-module.exports = nextConfig;
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+  openAnalyzer: true,
+});
+
+module.exports = withBundleAnalyzer(nextConfig);

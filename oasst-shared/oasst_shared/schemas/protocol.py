@@ -29,6 +29,17 @@ class User(BaseModel):
     auth_method: Literal["discord", "local", "system"]
 
 
+class Account(BaseModel):
+    id: UUID
+    provider: str
+    provider_account_id: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
 class FrontEndUser(User):
     user_id: UUID
     enabled: bool
@@ -39,6 +50,7 @@ class FrontEndUser(User):
     streak_days: Optional[int] = None
     streak_last_day_date: Optional[datetime] = None
     last_activity_date: Optional[datetime] = None
+    tos_acceptance_date: Optional[datetime] = None
 
 
 class PageResult(BaseModel):
@@ -468,6 +480,47 @@ class LeaderboardStats(BaseModel):
     leaderboard: List[UserScore]
 
 
+class TrollScore(BaseModel):
+    rank: Optional[int]
+    user_id: UUID
+    highlighted: bool = False
+    username: str
+    auth_method: str
+    display_name: str
+    last_activity_date: Optional[datetime]
+
+    troll_score: int = 0
+
+    base_date: Optional[datetime]
+    modified_date: Optional[datetime]
+
+    red_flags: int = 0  # num reported messages of user
+    upvotes: int = 0  # num up-voted messages of user
+    downvotes: int = 0  # num down-voted messages of user
+
+    spam_prompts: int = 0
+
+    quality: Optional[float] = None
+    humor: Optional[float] = None
+    toxicity: Optional[float] = None
+    violence: Optional[float] = None
+    helpfulness: Optional[float] = None
+
+    spam: int = 0
+    lang_mismach: int = 0
+    not_appropriate: int = 0
+    pii: int = 0
+    hate_speech: int = 0
+    sexual_content: int = 0
+    political_content: int = 0
+
+
+class TrollboardStats(BaseModel):
+    time_frame: str
+    last_updated: datetime
+    trollboard: List[TrollScore]
+
+
 class OasstErrorResponse(BaseModel):
     """The format of an error response from the OASST API."""
 
@@ -488,6 +541,11 @@ class EmojiCode(str, enum.Enum):
     poop = "poop"  # 💩
     skull = "skull"  # 💀
 
+    # skip task system uses special emoji codes
+    skip_reply = "_skip_reply"
+    skip_ranking = "_skip_ranking"
+    skip_labeling = "_skip_labeling"
+
 
 class EmojiOp(str, enum.Enum):
     togggle = "toggle"
@@ -499,3 +557,10 @@ class MessageEmojiRequest(BaseModel):
     user: User
     op: EmojiOp = EmojiOp.togggle
     emoji: EmojiCode
+
+
+class CreateFrontendUserRequest(User):
+    show_on_leaderboard: bool = True
+    enabled: bool = True
+    tos_acceptance: Optional[bool] = None
+    notes: Optional[str] = None

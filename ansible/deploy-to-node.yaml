@@ -122,6 +122,9 @@
           TREE_MANAGER__MAX_CHILDREN_COUNT:
             "{{ lookup('ansible.builtin.env', 'MAX_CHILDREN_COUNT') |
             default('3', true) }}"
+          MESSAGE_SIZE_LIMIT:
+            "{{ lookup('ansible.builtin.env', 'MESSAGE_SIZE_LIMIT') |
+            default('2000', true) }}"
           USER_STATS_INTERVAL_DAY:
             "{{ lookup('ansible.builtin.env', 'STATS_INTERVAL_DAY') |
             default('5', true) }}"
@@ -175,9 +178,9 @@
           NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY:
             "{{ lookup('ansible.builtin.env',
             'WEB_NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY') }}"
-          CLOUDFLARE_CAPTCHA_SERCERT_KEY:
+          CLOUDFLARE_CAPTCHA_SECRET_KEY:
             "{{ lookup('ansible.builtin.env',
-            'WEB_CLOUDFLARE_CAPTCHA_SERCERT_KEY') }}"
+            'WEB_CLOUDFLARE_CAPTCHA_SECRET_KEY') }}"
           NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA:
             "{{ lookup('ansible.builtin.env',
             'WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA') }}"

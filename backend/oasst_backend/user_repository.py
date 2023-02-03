@@ -73,7 +73,8 @@ class UserRepository:
         enabled: Optional[bool] = None,
         notes: Optional[str] = None,
         show_on_leaderboard: Optional[bool] = None,
-    ) -> None:
+        tos_acceptance: Optional[bool] = None,
+    ) -> User:
         """
         Update a user by global user ID to disable or set admin notes. Only trusted clients may update users.
 
@@ -94,8 +95,11 @@ class UserRepository:
             user.notes = notes
         if show_on_leaderboard is not None:
             user.show_on_leaderboard = show_on_leaderboard
+        if tos_acceptance:
+            user.tos_acceptance_date = utcnow()
 
         self.db.add(user)
+        return user
 
     @managed_tx_method(CommitMode.COMMIT)
     def mark_user_deleted(self, id: UUID) -> None:
@@ -143,8 +147,10 @@ class UserRepository:
                     display_name=display_name,
                     api_client_id=self.api_client.id,
                     auth_method=auth_method,
-                    show_on_leaderboard=(auth_method != "system"),  # don't show system users, e.g. import user
                 )
+                if auth_method == "system":
+                    user.show_on_leaderboard = False  # don't show system users, e.g. import user
+                    user.tos_acceptance_date = utcnow()
                 self.db.add(user)
         elif display_name and display_name != user.display_name:
             # we found the user but the display name changed
@@ -156,6 +162,10 @@ class UserRepository:
     def lookup_client_user(self, client_user: protocol_schema.User, create_missing: bool = True) -> User | None:
         if not client_user:
             return None
+
+        if not (client_user.auth_method and client_user.id):
+            raise OasstError("Auth method or username missing.", OasstErrorCode.AUTH_AND_USERNAME_REQUIRED)
+
         num_retries = settings.DATABASE_MAX_TX_RETRY_COUNT
         for i in range(num_retries):
             try:
