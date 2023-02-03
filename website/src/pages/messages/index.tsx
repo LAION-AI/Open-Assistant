@@ -1,5 +1,6 @@
 import { Box, CircularProgress, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
+import { useTranslation } from "next-i18next";
 import { getDashboardLayout } from "src/components/Layout";
 import { MessageTable } from "src/components/Messages/MessageTable";
 import { get } from "src/lib/api";
@@ -7,6 +8,7 @@ import useSWRImmutable from "swr/immutable";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const MessagesDashboard = () => {
+  const { t } = useTranslation(["message"]);
   const boxBgColor = useColorModeValue("white", "gray.800");
   const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
@@ -22,7 +24,7 @@ const MessagesDashboard = () => {
       <SimpleGrid columns={[1, 1, 1, 1, 1, 2]} gap={4}>
         <Box>
           <Text className="text-2xl font-bold" pb="4">
-            Recent Messages
+            {t("recent_messages")}
           </Text>
           <Box
             backgroundColor={boxBgColor}
@@ -36,7 +38,7 @@ const MessagesDashboard = () => {
         </Box>
         <Box>
           <Text className="text-2xl font-bold" pb="4">
-            Your Recent Messages
+            {t("your_recent_messages")}
           </Text>
           <Box
             backgroundColor={boxBgColor}

@@ -10,5 +10,7 @@
   "report_title": "Report",
   "send_report": "Send",
   "submit_labels": "Submit",
-  "view_user": "View user"
+  "view_user": "View user",
+  "recent_messages": "Recent Messages",
+  "your_recent_messages": "Your Recent Messages"
 }

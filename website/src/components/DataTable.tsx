@@ -22,6 +22,7 @@ import {
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Filter } from "lucide-react";
 import { ChangeEvent, ReactNode } from "react";
@@ -62,6 +63,7 @@ export const DataTable = <T,>({
   disablePrevious,
   disablePagination,
 }: DataTableProps<T>) => {
+  const { t } = useTranslation("leaderboard");
   const { getHeaderGroups, getRowModel } = useReactTable<T>({
     data,
     columns,
@@ -83,11 +85,11 @@ export const DataTable = <T,>({
       {!disablePagination && (
         <Flex mb="2">
           <Button onClick={onPreviousClick} disabled={disablePrevious}>
-            Previous
+            {t("previous")}
           </Button>
           <Spacer />
           <Button onClick={onNextClick} disabled={disableNext}>
-            Next
+            {t("next")}
           </Button>
         </Flex>
       )}
