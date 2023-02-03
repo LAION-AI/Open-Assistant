@@ -969,6 +969,7 @@ SELECT m.parent_id, m.role, COUNT(m.id) children_count, MIN(m.ranking_count) chi
     mts.message_tree_id
 FROM message_tree_state mts
     INNER JOIN message m ON mts.message_tree_id = m.message_tree_id
+    INNER JOIN message p ON m.parent_id = p.id
     LEFT JOIN message_emoji me on
         (m.parent_id = me.message_id
         AND :skip_user_id IS NOT NULL
@@ -977,7 +978,7 @@ FROM message_tree_state mts
 WHERE mts.active                        -- only consider active trees
     AND mts.state = :ranking_state      -- message tree must be in ranking state
     AND m.review_result                 -- must be reviewed
-    AND m.lang = :lang                  -- matches lang
+    AND p.lang = :lang                  -- parent lang matches
     AND NOT m.deleted                   -- not deleted
     AND m.parent_id IS NOT NULL         -- ignore initial prompts
     AND me.message_id IS NULL           -- no skip ranking emoji for user
