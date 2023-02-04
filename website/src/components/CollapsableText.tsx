@@ -1,5 +1,6 @@
 import {
   Button,
+  Tooltip,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -23,6 +24,7 @@ export const CollapsableText = ({
   isDisabled?: boolean;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const finalRef = React.useRef(null);
 
   const moreButtonColor = useColorModeValue("gray.600", "gray.400");
 
@@ -31,24 +33,33 @@ export const CollapsableText = ({
   } else {
     return (
       <>
-        <span>
+        <span ref={finalRef}>
           {text.substring(0, maxLength - 3)}&nbsp;
-          <Button
-            style={{ display: "inline" }}
-            size={"xs"}
-            variant={"solid"}
-            bg={moreButtonColor}
-            color={"white"}
-            isDisabled={isDisabled}
-            onClick={onOpen}
-          >
-            ...
-          </Button>
+          <Tooltip label={text} size="lg">
+            <Button
+              style={{ display: "inline" }}
+              size={"xs"}
+              variant={"solid"}
+              bg={moreButtonColor}
+              color={"white"}
+              isDisabled={isDisabled}
+              onClick={onOpen}
+            >
+              ...
+            </Button>
+          </Tooltip>
         </span>
-        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior={"inside"}>
+        <Modal
+          finalFocusRef={finalRef}
+          isOpen={isOpen}
+          onClose={onClose}
+          size="xl"
+          scrollBehavior={"inside"}
+          isCentered
+        >
           {/* we kill the event here to disable drag and drop, since it is in the same container */}
           <ModalOverlay onMouseDown={killEvent}>
-            <ModalContent alignItems="center">
+            <ModalContent pb={5} alignItems="center">
               <ModalHeader>Full Text</ModalHeader>
               <ModalCloseButton />
               <ModalBody style={{ whiteSpace: "pre-line" }}>{text}</ModalBody>
