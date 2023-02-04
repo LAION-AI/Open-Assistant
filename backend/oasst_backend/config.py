@@ -13,6 +13,9 @@ class TreeManagerConfiguration(BaseModel):
     No new initial prompt tasks are handed out to users if this
     number is reached."""
 
+    max_initial_prompt_review: int = 100
+    """Maximum number of initial prompts under review before no more inital prompt tasks will be handed out."""
+
     max_tree_depth: int = 3
     """Maximum depth of message tree."""
 
