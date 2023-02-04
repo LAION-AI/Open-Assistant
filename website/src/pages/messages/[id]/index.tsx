@@ -14,7 +14,9 @@ const MessageDetail = ({ id }: { id: string }) => {
   const { t } = useTranslation(["message", "common"]);
   const backgroundColor = useColorModeValue("white", "gray.800");
 
-  const { isLoading: isLoadingParent, data: parent } = useSWRImmutable<Message>(`/api/messages/${id}/parent`, get);
+  const { isLoading: isLoadingParent, data: parent } = useSWRImmutable<Message>(`/api/messages/${id}/parent`, get, {
+    refreshInterval: 30 * 1000, // 30 seconds
+  });
 
   if (isLoadingParent) {
     return <MessageLoading />;
@@ -29,20 +31,16 @@ const MessageDetail = ({ id }: { id: string }) => {
         />
       </Head>
       <Box width="full">
-        <Box>
-          {parent && (
-            <>
-              <Box pb="4">
-                <Text fontWeight="bold" fontSize="xl" pb="2">
-                  {t("parent")}
-                </Text>
-                <Card bg={backgroundColor} padding="4" width="fit-content">
-                  <MessageTableEntry enabled message={parent} />
-                </Card>
-              </Box>
-            </>
-          )}
-        </Box>
+        {parent && (
+          <Box pb="4">
+            <Text fontWeight="bold" fontSize="xl" pb="2">
+              {t("parent")}
+            </Text>
+            <Card bg={backgroundColor} padding="4" width="fit-content">
+              <MessageTableEntry enabled message={parent} />
+            </Card>
+          </Box>
+        )}
         <Box pb="4">
           <MessageWithChildren id={id} maxDepth={2} />
         </Box>
@@ -56,7 +54,7 @@ MessageDetail.getLayout = (page) => getDashboardLayout(page);
 export const getServerSideProps = async ({ locale, query }) => ({
   props: {
     id: query.id,
-    ...(await serverSideTranslations(locale, ["common", "message"])),
+    ...(await serverSideTranslations(locale, ["common", "message", "labelling"])),
   },
 });
 
