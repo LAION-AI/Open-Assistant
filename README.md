@@ -69,7 +69,7 @@ interact with the website.
 
 ## The Plan
 
-##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the InstructGPT paper.
+##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the [InstructGPT paper](https://arxiv.org/abs/2203.02155).
 
 1. Collect high-quality human generated Instruction-Fulfillment samples
    (prompt + response), goal >50k. We design a crowdsourced process to collect
