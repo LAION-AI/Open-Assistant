@@ -35,23 +35,18 @@ const killEvent = (e) => e.stopPropagation();
 export const TrackedTextarea = (props: TrackedTextboxProps) => {
   const [wordLimitForLangDetection, setWordLimitForLangDetection] = React.useState(10);
   const backgroundColor = useColorModeValue("gray.100", "gray.900");
-  const [cookies, setCookie] = useCookies(["NEXT_LOCALE", "IGNORE_LANGUAGE_DETECTION"]);
+  const [cookies] = useCookies(["NEXT_LOCALE"]);
   const wordCount = (props.text.match(/\w+/g) || []).length;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const currentLanguage = cookies["NEXT_LOCALE"];
-  const ignoreLanguageDetection = cookies["IGNORE_LANGUAGE_DETECTION"] === "true";
-
-  const setIgnoreLanguageDetection = () => {
-    setCookie("IGNORE_LANGUAGE_DETECTION", "true", { path: "/" });
-  };
-
+  
   const closeTemporaryIgnoreLanguageDetection = () => {
     setWordLimitForLangDetection(2 * wordCount);
     onClose();
   };
 
   console.log("", wordCount, wordLimitForLangDetection);
-  if (wordCount > wordLimitForLangDetection && !ignoreLanguageDetection) {
+  if (wordCount > wordLimitForLangDetection) {
     let mostProbableLanguage;
     try {
       mostProbableLanguage = LanguageAbbreviations[lande(props.text)[0][0]];
@@ -77,7 +72,6 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
                   Do you want to switch language? The detected language is <b>{mostProbableLanguage}</b>, whereas your
                   chosen language is <b>{currentLanguage}</b>. The language can be changed on the top right.
                 </ModalBody>
-                <Button onClick={setIgnoreLanguageDetection}>Always Ignore Language Detection.</Button>
               </ModalContent>
             </ModalOverlay>
           </Modal>
