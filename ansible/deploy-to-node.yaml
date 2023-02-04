@@ -149,6 +149,9 @@
           USER_STATS_INTERVAL_TOTAL:
             "{{ lookup('ansible.builtin.env', 'STATS_INTERVAL_TOTAL') |
             default('240', true) }}"
+          LOGURU_LEVEL:
+            "{{ lookup('ansible.builtin.env', 'LOGURU_LEVEL') | default('INFO',
+            true) }}"
         ports:
           - "{{ backend_port }}:8080"
 
