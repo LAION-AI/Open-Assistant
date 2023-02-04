@@ -38,6 +38,8 @@ improving language itself.
 
 ## Do you want to try it out?
 
+You can try Open Assistant and help contribute/evaluate prompts at https://open-assistant.io.
+
 If you are interested in taking a look at the current state of the project, you
 can set up an entire stack needed to run **Open-Assistant**, including the
 website, backend, and associated dependent services.
