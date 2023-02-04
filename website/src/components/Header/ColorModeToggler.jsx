@@ -5,8 +5,8 @@ const ColorModeToggler = () => {
   const { colorMode, toggleColorMode } = useColorMode();
 
   return (
-    <Button size="md" width="70px" justifyContent="center" onClick={toggleColorMode} gap="4" variant="ghost">
-      <Sun size={"2em"} />
+    <Button size="md" p="0px" justifyContent="center" onClick={toggleColorMode} gap="4" variant="ghost">
+      <Sun size={"1.5em"} />
     </Button>
   );
 };
