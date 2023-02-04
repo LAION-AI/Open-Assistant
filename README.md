@@ -38,6 +38,15 @@ improving language itself.
 
 ## Do you want to try it out?
 
+### Contributing to Data Collection
+
+The data collection frontend is now live [here](https://open-assistant.io/).
+Log in and start taking on tasks! We want to collect a high volume of quality
+data. By submitting, ranking, and labelling model prompts and responses you
+will be directly helping to improve the capabilities of Open Assistant.
+
+### Running Locally
+
 If you are interested in taking a look at the current state of the project, you
 can set up an entire stack needed to run **Open-Assistant**, including the
 website, backend, and associated dependent services.
