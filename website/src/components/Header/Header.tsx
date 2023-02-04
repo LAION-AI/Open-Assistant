@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { Flags } from "react-feature-flags";
 import { LanguageSelector } from "src/components/LanguageSelector";
-
+import { ColorModeToggler } from "./ColorModeToggler";
 import { UserMenu } from "./UserMenu";
 
 function AccountButton() {
@@ -49,6 +49,7 @@ export function Header() {
           <LanguageSelector />
           <AccountButton />
           <UserMenu />
+          <ColorModeToggler />
         </Flex>
       </Box>
     </nav>
