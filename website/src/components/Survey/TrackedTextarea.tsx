@@ -39,7 +39,7 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
   const wordCount = (props.text.match(/\w+/g) || []).length;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const currentLanguage = cookies["NEXT_LOCALE"];
-  
+
   const closeTemporaryIgnoreLanguageDetection = () => {
     setWordLimitForLangDetection(2 * wordCount);
     onClose();
