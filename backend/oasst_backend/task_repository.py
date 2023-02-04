@@ -12,7 +12,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
-from sqlmodel import Session, delete, func, or_
+from sqlmodel import Session, delete, false, func, or_
 from starlette.status import HTTP_404_NOT_FOUND
 
 
@@ -27,7 +27,7 @@ def validate_frontend_message_id(message_id: str) -> None:
 
 
 def delete_expired_tasks(session: Session) -> int:
-    stm = delete(Task).where(Task.expiry_date < utcnow())
+    stm = delete(Task).where(Task.expiry_date < utcnow(), Task.done == false())
     result = session.exec(stm)
     logger.info(f"Deleted {result.rowcount} expired tasks.")
     return result.rowcount
@@ -236,5 +236,5 @@ class TaskRepository:
             qry = qry.limit(limit)
         return qry.all()
 
-    def delete_expired_tasks(self) -> int:
+    def delete_expired(self) -> int:
         return delete_expired_tasks(self.db)
