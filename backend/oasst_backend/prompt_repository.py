@@ -1012,7 +1012,9 @@ WHERE message.id = cc.id;
         number of deleted and active messages and number of message trees.
         """
         # With columns: lang, deleted, count
-        group_count_query = self.db.query(Message.lang, Message.deleted, func.count()).group_by(Message.lang, Message.deleted)
+        group_count_query = self.db.query(Message.lang, Message.deleted, func.count()).group_by(
+            Message.lang, Message.deleted
+        )
         # With columns: None, None, count
         msg_tree_query = self.db.query(None, None, func.count(Message.id)).filter(Message.parent_id.is_(None))
         # Union both queries, so that we can fetch the counts in one database query
@@ -1022,9 +1024,9 @@ WHERE message.id = cc.id;
         ndeleted = 0
         nactives_by_lang = {}
         nthreads = 0
-        
+
         for lang, deleted, count in query.all():
-            if lang is None: # corresponds to msg_tree_query
+            if lang is None:  # corresponds to msg_tree_query
                 nthreads = count
                 continue
             if deleted is False:  # corresponds to group_count_query (lang, deleted=False)
@@ -1032,7 +1034,7 @@ WHERE message.id = cc.id;
                 nactives += count
             else:  # corresponds to group_count_query (lang, deleted=True)
                 ndeleted += count
-                
+
         return SystemStats(
             all=nactives + ndeleted,
             active=nactives,
