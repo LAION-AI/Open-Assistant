@@ -40,10 +40,10 @@ improving language itself.
 
 ### Contributing to Data Collection
 
-The data collection frontend is now live [here](https://open-assistant.io/).
-Log in and start taking on tasks! We want to collect a high volume of quality
-data. By submitting, ranking, and labelling model prompts and responses you
-will be directly helping to improve the capabilities of Open Assistant.
+The data collection frontend is now live [here](https://open-assistant.io/). Log
+in and start taking on tasks! We want to collect a high volume of quality data.
+By submitting, ranking, and labelling model prompts and responses you will be
+directly helping to improve the capabilities of Open Assistant.
 
 ### Running Locally
 
