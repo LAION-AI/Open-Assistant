@@ -14,6 +14,10 @@
 
 </div>
 
+# Here is our website to collect data:
+
+[open-assistant.io](https://open-assistant.io)
+
 # Table of Contents
 
 - [What is Open Assistant?](#what-is-open-assistant)
