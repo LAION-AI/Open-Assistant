@@ -112,8 +112,9 @@ const authOptions: AuthOptions = {
         select: { name: true, role: true, isNew: true, accounts: true, id: true },
       });
 
+      // Note: This could be cleaner and merged with src/lib/users.ts
       const user: BackendUserCore = {
-        id,
+        id: accounts.length > 0 ? accounts[0].providerAccountId : id,
         display_name: name,
         auth_method: accounts.length > 0 ? accounts[0].provider : "local",
       };
