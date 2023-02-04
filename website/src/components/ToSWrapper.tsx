@@ -21,6 +21,7 @@ export const ToSWrapper = ({ children }: { children?: ReactNode | undefined }) =
   const { data: session, status } = useSession();
   const hasAcceptedTos = Boolean(session?.user.tosAcceptanceDate);
   const isLoading = status === "loading";
+  const notLoggedIn = status === "unauthenticated";
 
   const contents = useMemo(
     () => (
@@ -35,7 +36,7 @@ export const ToSWrapper = ({ children }: { children?: ReactNode | undefined }) =
             <SubmitButton onClick={navigateAway} colorScheme="red">
               {t("decline")}
             </SubmitButton>
-            <SubmitButton onClick={acceptToS} colorScheme="blue">
+            <SubmitButton onClick={acceptToS} colorScheme="blue" data-cy="accept-tos">
               {t("accept")}
             </SubmitButton>
           </Flex>
@@ -45,7 +46,7 @@ export const ToSWrapper = ({ children }: { children?: ReactNode | undefined }) =
     [t]
   );
 
-  if (isLoading || hasAcceptedTos) {
+  if (notLoggedIn || isLoading || hasAcceptedTos) {
     return <>{children}</>;
   }
   return contents;
