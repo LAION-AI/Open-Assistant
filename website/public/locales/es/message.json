@@ -9,5 +9,8 @@
   "report_placeholder": "¿Por qué se debería revisar este mensaje?",
   "report_title": "Informe",
   "send_report": "Enviar",
-  "submit_labels": "Enviar"
+  "submit_labels": "Enviar",
+  "view_user": "Ver usuario",
+  "recent_messages": "Mensajes recientes",
+  "your_recent_messages": "Tus mensajes recientes"
 }

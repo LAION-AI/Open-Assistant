@@ -8,9 +8,17 @@
   "spam.question": "¿Es el mensaje spam?",
   "fails_task.question": "¿Es una mala respuesta, según la tarea pedida?",
   "not_appropriate": "No apropiada",
+  "not_appropriate.explanation": "No apropiada para un asistente de cliente.",
   "pii": "Contiene información de identificación personal (PII)",
+  "pii.explanation": "Contiene información personal como detalles de contacto personal, números de identificación o detalles bancarios",
   "hate_speech": "Incitación al odio",
+  "hate_speech.explanation": "El contenido es ofensivo o amenazante y expresa un prejuicio contra una característica protegida. El prejuicio se refiere a las opiniones preconcebidas que no se basan en la razón. Las características protegidas incluyen género, etnia, religión, orientación sexual y características similares.",
   "sexual_content": "Contenido sexual",
-  "moral_judgement": "Juzga moralmente",
-  "political_content": "Contenido político"
+  "sexual_content.explanation": "Contiene contenido sexual.",
+  "moral_judgement": "Juicio moral",
+  "moral_judgement.explanation": "Expresa un juicio moral.",
+  "political_content": "Contenido político",
+  "political_content.explanation": "Expresa una opinión política.",
+  "lang_mismatch": "Idioma incorrecto",
+  "lang_mismatch.explanation": "No está escrito en el idioma seleccionado actualmente."
 }

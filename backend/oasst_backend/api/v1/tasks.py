@@ -104,7 +104,8 @@ def tasks_acknowledge(
         pr = PromptRepository(db, api_client, frontend_user=frontend_user)
 
         # here we store the message id in the database for the task
-        logger.info(f"Frontend acknowledges task {task_id=}, {ack_request=}.")
+        logger.info(f"Frontend ACK task_id={task_id}")
+        logger.debug(f"{ack_request=}.")
         pr.task_repository.bind_frontend_message_id(task_id=task_id, frontend_message_id=ack_request.message_id)
 
     except OasstError:

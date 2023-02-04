@@ -155,8 +155,6 @@ class PromptRepository:
             review_result=review_result,
         )
         self.db.add(message)
-
-        # self.db.refresh(message)
         return message
 
     def _validate_task(
@@ -288,6 +286,10 @@ class PromptRepository:
             task.done = True
             self.db.add(task)
         self.journal.log_text_reply(task=task, message_id=new_message_id, role=role, length=len(text))
+        logger.debug(
+            f"Inserted message id={user_message.id}, tree={user_message.message_tree_id}, user_id={user_message.user_id}, "
+            f"text[:100]='{user_message.text[:100]}', role='{user_message.role}', lang='{user_message.lang}'"
+        )
         return user_message
 
     @managed_tx_method(CommitMode.FLUSH)

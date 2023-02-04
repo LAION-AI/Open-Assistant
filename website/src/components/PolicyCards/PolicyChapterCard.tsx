@@ -19,10 +19,10 @@ export const PolicyChapterCard = ({ chapter, children }: ChapterProps) => {
       <Stack spacing="4">
         <Stack>
           <Flex alignItems="end" gap="2">
-            <Text as="b" fontSize="xl" color="blue.500">
+            <Text as="b" fontSize="md" color="blue.500">
               {chapter.number}
             </Text>
-            <Heading as="h3" size="lg">
+            <Heading as="h3" size="md">
               {chapter.title}
             </Heading>
           </Flex>

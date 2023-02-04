@@ -1,28 +1,6 @@
 import { Button } from "@chakra-ui/react";
-import { BoxSelect, Flag, LucideProps, ThumbsDown, ThumbsUp } from "lucide-react";
-import { ReactElement } from "react";
 import { MessageEmoji } from "src/types/Conversation";
-
-type EmojiIconPurpose = "MINI_BUTTON" | "NORMAL";
-
-const defaultIconProps: (purpose: EmojiIconPurpose) => LucideProps = (purpose: EmojiIconPurpose) => {
-  if (purpose === "MINI_BUTTON") return { height: "1em" };
-  return {};
-};
-
-export const getEmojiIcon = (name: string, purpose: EmojiIconPurpose): ReactElement => {
-  switch (name) {
-    case "+1":
-      return <ThumbsUp {...defaultIconProps(purpose)} />;
-    case "-1":
-      return <ThumbsDown {...defaultIconProps(purpose)} />;
-    case "flag":
-    case "red_flag":
-      return <Flag {...defaultIconProps(purpose)} />;
-    default:
-      return <BoxSelect {...defaultIconProps(purpose)} />;
-  }
-};
+import { emojiIcons } from "src/types/Emoji";
 
 interface MessageEmojiButtonProps {
   emoji: MessageEmoji;
@@ -31,6 +9,8 @@ interface MessageEmojiButtonProps {
 }
 
 export const MessageEmojiButton = ({ emoji, checked, onClick }: MessageEmojiButtonProps) => {
+  const EmojiIcon = emojiIcons.get(emoji.name);
+  if (!EmojiIcon) return <></>;
   return (
     <Button
       onClick={onClick}
@@ -41,7 +21,7 @@ export const MessageEmojiButton = ({ emoji, checked, onClick }: MessageEmojiButt
       minWidth={0}
       padding="0"
     >
-      {getEmojiIcon(emoji.name, "MINI_BUTTON")}
+      <EmojiIcon style={{ height: "1em" }} />
       <span style={{ marginInlineEnd: "0.25em" }}>{emoji.count}</span>
     </Button>
   );

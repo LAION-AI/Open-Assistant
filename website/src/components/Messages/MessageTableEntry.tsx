@@ -14,17 +14,19 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import { ClipboardList, Flag, MessageSquare, MoreHorizontal, User } from "lucide-react";
+import { ClipboardList, Flag, MessageSquare, MoreHorizontal, Trash, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
-import { getEmojiIcon, MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
+import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
-import { post } from "src/lib/api";
+import { del, post } from "src/lib/api";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
+import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
+import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 
 interface MessageTableEntryProps {
@@ -98,7 +100,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
           onClick={(e) => e.stopPropagation()}
         >
           {Object.entries(emojiState.emojis)
-            .filter(([k]) => !k.startsWith("_"))
+            .filter(([emoji]) => isKnownEmoji(emoji))
             .map(([emoji, count]) => (
               <MessageEmojiButton
                 key={emoji}
@@ -132,10 +134,10 @@ const EmojiMenuItem = ({
   react: (emoji: string, state: boolean) => void;
 }) => {
   const activeColor = useColorModeValue(colors.light.active, colors.dark.active);
-
+  const EmojiIcon = emojiIcons.get(emoji);
   return (
     <MenuItem onClick={() => react(emoji, !checked)} justifyContent="center" color={checked ? activeColor : undefined}>
-      {getEmojiIcon(emoji, "NORMAL")}
+      <EmojiIcon />
     </MenuItem>
   );
 };
@@ -153,9 +155,16 @@ const MessageActions = ({
   onReport: () => void;
   message: Message;
 }) => {
-  const { t } = useTranslation("message");
+  const { t } = useTranslation(["message", "common"]);
+  const { trigger } = useSWRMutation(`/api/admin/delete_message/${message.id}`, del);
   const { data } = useSession() || {};
   const role = data?.user?.role;
+
+  const handleDelete = async () => {
+    await trigger();
+    mutate((key) => typeof key === "string" && key.startsWith("/api/messages"), undefined, { revalidate: true });
+  };
+
   return (
     <Menu>
       <MenuButton>
@@ -185,6 +194,9 @@ const MessageActions = ({
             <MenuDivider />
             <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
               {t("view_user")}
+            </MenuItem>
+            <MenuItem onClick={handleDelete} icon={<Trash />}>
+              {t("common:delete")}
             </MenuItem>
           </>
         )}

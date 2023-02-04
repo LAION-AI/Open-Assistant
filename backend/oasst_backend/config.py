@@ -13,6 +13,9 @@ class TreeManagerConfiguration(BaseModel):
     No new initial prompt tasks are handed out to users if this
     number is reached."""
 
+    max_initial_prompt_review: int = 100
+    """Maximum number of initial prompts under review before no more inital prompt tasks will be handed out."""
+
     max_tree_depth: int = 3
     """Maximum depth of message tree."""
 
@@ -25,19 +28,36 @@ class TreeManagerConfiguration(BaseModel):
     goal_tree_size: int = 12
     """Total number of messages to gather per tree."""
 
+    random_goal_tree_size: bool = False
+    """If set to true goal tree sizes will be generated randomly within range [min_goal_tree_size, goal_tree_size]."""
+
+    min_goal_tree_size: int = 5
+    """Minimum tree size for random goal sizes."""
+
     num_reviews_initial_prompt: int = 3
     """Number of peer review checks to collect in INITIAL_PROMPT_REVIEW state."""
 
     num_reviews_reply: int = 3
     """Number of peer review checks to collect per reply (other than initial_prompt)."""
 
+    auto_mod_enabled: bool = True
+    """Flag to enable/disable auto moderation."""
+
+    auto_mod_max_skip_reply: int = 25
+    """Automatically set tree state to `halted_by_moderator` when more than the specified number
+    of users skip replying to a message. (auto moderation)"""
+
+    auto_mod_red_flags: int = 3
+    """Delete messages that receive more than this number of red flags if it is a reply or
+    set the tree to `aborted_low_grade` when a prompt is flagged. (auto moderation)"""
+
     p_full_labeling_review_prompt: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for initial prompts."""
 
-    p_full_labeling_review_reply_assistant: float = 0.1
+    p_full_labeling_review_reply_assistant: float = 0.5
     """Probability of full text-labeling (instead of mandatory only) for assistant replies."""
 
-    p_full_labeling_review_reply_prompter: float = 0.1
+    p_full_labeling_review_reply_prompter: float = 0.25
     """Probability of full text-labeling (instead of mandatory only) for prompter replies."""
 
     acceptance_threshold_initial_prompt: float = 0.6
@@ -112,10 +132,10 @@ class TreeManagerConfiguration(BaseModel):
 
     rank_prompter_replies: bool = False
 
-    lonely_children_count: int = 3
+    lonely_children_count: int = 2
     """Number of children below which parents are preferred during sampling for reply tasks."""
 
-    p_lonely_child_extension: float = 0.8
+    p_lonely_child_extension: float = 0.75
     """Probability to select a prompter message parent with less than lonely_children_count children."""
 
     recent_tasks_span_sec: int = 3 * 60  # 3 min
@@ -148,6 +168,9 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "postgres"
     DATABASE_URI: Optional[PostgresDsn] = None
     DATABASE_MAX_TX_RETRY_COUNT: int = 3
+
+    DATABASE_POOL_SIZE = 75
+    DATABASE_MAX_OVERFLOW = 20
 
     RATE_LIMIT: bool = True
     MESSAGE_SIZE_LIMIT: int = 2000
@@ -221,6 +244,8 @@ class Settings(BaseSettings):
     RATE_LIMIT_TASK_USER_MINUTES: int = 5
     RATE_LIMIT_TASK_API_TIMES: int = 10_000
     RATE_LIMIT_TASK_API_MINUTES: int = 1
+
+    TASK_VALIDITY_MINUTES: int = 60 * 24 * 2  # tasks expire after 2 days
 
     class Config:
         env_file = ".env"
