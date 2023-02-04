@@ -17,14 +17,14 @@
   "reply_as_user": {
     "label": "Válaszolj a Felhasználó Helyett",
     "desc": "Csinálj úgy, mintha chatelnél az Asszisztenssel, hogy fejlődhessen.",
-    "overview": "Írj egy ideillő választ az eddigi beszélgetésre",
+    "overview": "Írj egy ideillő üzenetet az eddigi beszélgetésre, mint Felhasználó",
     "instruction": "Találj ki Felhasználói Válaszokat",
     "response_placeholder": "Ide írd a választ..."
   },
   "reply_as_assistant": {
     "label": "Válaszolj az Asszisztens Helyett",
     "desc": "Mjutasd meg az Asszisztensnek, hogy milyen válaszokat küldjön a felhasználói kérdésekre.",
-    "overview": "Írj egy ideillő választ az eddigi beszélgetésre",
+    "overview": "Írj egy ideillő választ az eddigi beszélgetésre, mintha te lennél az Asszisztens",
     "response_placeholder": "Ide írd a választ..."
   },
   "rank_user_replies": {

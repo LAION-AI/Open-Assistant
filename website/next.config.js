@@ -22,6 +22,33 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async redirects() {
+    if (process.env.MAINTENANCE_MODE !== "true") {
+      return [];
+    }
+    return [
+      {
+        source: "/",
+        destination: "/brb",
+        permanent: false,
+      },
+      {
+        source: "/dashboard",
+        destination: "/brb",
+        permanent: false,
+      },
+      {
+        source: `/tasks/:task`,
+        destination: "/brb",
+        permanent: false,
+      },
+      {
+        source: "/leaderboard",
+        destination: "/brb",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 const withBundleAnalyzer = require("@next/bundle-analyzer")({

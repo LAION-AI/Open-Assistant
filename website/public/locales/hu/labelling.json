@@ -6,7 +6,7 @@
   "label_message_flag_instruction": "Jelöld be, melyek vonatkoznak erre az üzenetre:",
   "label_message_likert_instruction": "Értékeld ezt az üzenetet:",
   "spam.question": "Ez az üzenet SPAM?",
-  "fails_task.question": "Ez a válasz nem a feladatnak megfelelő?",
+  "fails_task.question": "Baj van ezzel az üzenettel, amiért nem a kérdésre válaszol?",
   "not_appropriate": "Nem Helyénvaló",
   "not_appropriate.explanation": "Nem ügyfél-asszisztenshez méltó válasz.",
   "pii": "Személyes Adat",

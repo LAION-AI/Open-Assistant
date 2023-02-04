@@ -13,6 +13,9 @@ class TreeManagerConfiguration(BaseModel):
     No new initial prompt tasks are handed out to users if this
     number is reached."""
 
+    max_initial_prompt_review: int = 100
+    """Maximum number of initial prompts under review before no more inital prompt tasks will be handed out."""
+
     max_tree_depth: int = 3
     """Maximum depth of message tree."""
 
@@ -165,6 +168,9 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "postgres"
     DATABASE_URI: Optional[PostgresDsn] = None
     DATABASE_MAX_TX_RETRY_COUNT: int = 3
+
+    DATABASE_POOL_SIZE = 75
+    DATABASE_MAX_OVERFLOW = 20
 
     RATE_LIMIT: bool = True
     MESSAGE_SIZE_LIMIT: int = 2000

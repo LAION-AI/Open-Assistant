@@ -1,0 +1,16 @@
+name: Deploy to prod2
+
+on:
+  push:
+    branches:
+      - production2
+
+jobs:
+  deploy-to-prod:
+    uses: ./.github/workflows/deploy-to-node.yaml
+    secrets: inherit
+    with:
+      stack-name: production2
+      image-tag: ${{ vars.PROD_IMAGE_TAG }}
+      backend-port: 8280
+      website-port: 3200
