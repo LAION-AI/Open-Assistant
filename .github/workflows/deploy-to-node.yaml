@@ -59,6 +59,7 @@ jobs:
         ${{ vars.WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA }}
       WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN:
         ${{ vars.WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN }}
+      LOGURU_LEVEL: ${{ vars.LOGURU_LEVEL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2

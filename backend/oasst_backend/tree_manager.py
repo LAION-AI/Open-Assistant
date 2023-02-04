@@ -623,7 +623,8 @@ class TreeManager:
                 HTTPStatus.SERVICE_UNAVAILABLE,
             )
 
-        logger.info(f"Generated {task=}.")
+        logger.info(f"Generated task (type={task.type}, id={task.id})")
+        logger.debug(f"Generated {task=}.")
 
         return task, message_tree_id, parent_message_id
 
@@ -634,8 +635,9 @@ class TreeManager:
         match type(interaction):
             case protocol_schema.TextReplyToMessage:
                 logger.info(
-                    f"Frontend reports text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
+                    f"Frontend reports text reply to message_id={interaction.message_id} by user={interaction.user}."
                 )
+                logger.debug(f"with {interaction.text=}")
                 # here we store the text reply in the database
                 message = pr.store_text_reply(
                     text=interaction.text,
@@ -682,23 +684,26 @@ class TreeManager:
 
             case protocol_schema.MessageRating:
                 logger.info(
-                    f"Frontend reports rating of {interaction.message_id=} with {interaction.rating=} by {interaction.user=}."
+                    f"Frontend reports rating of message_id={interaction.message_id} by user={interaction.user}."
                 )
+                logger.debug(f"with {interaction.rating=}")
 
                 pr.store_rating(interaction)
 
             case protocol_schema.MessageRanking:
                 logger.info(
-                    f"Frontend reports ranking of {interaction.message_id=} with {interaction.ranking=} by {interaction.user=}."
+                    f"Frontend reports ranking of message_id={interaction.message_id} by user={interaction.user}."
                 )
+                logger.debug(f"with {interaction.ranking=}")
 
                 _, task = pr.store_ranking(interaction)
                 self.check_condition_for_scoring_state(task.message_tree_id)
 
             case protocol_schema.TextLabels:
                 logger.info(
-                    f"Frontend reports labels of {interaction.message_id=} with {interaction.labels=} by {interaction.user=}."
+                    f"Frontend reports labels of message_id={interaction.message_id} by user={interaction.user}."
                 )
+                logger.debug(f"with {interaction.labels=}")
 
                 _, task, msg = pr.store_text_labels(interaction)
 
