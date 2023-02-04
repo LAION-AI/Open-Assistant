@@ -220,7 +220,17 @@ class TreeManager:
 
     def _prompt_lottery(self, lang: str) -> int:
         MAX_RETRIES = 5
+
+        # Under high load the DB runs into deadlocks when many trees are released
+        # simultaneously (happens whens the max_active_trees setting is increased).
+        # To reduce the chance of write conflicts during updates of rows in the
+        # message_tree_state table we limit the number of trees that are activated
+        # per _prompt_lottery() call to MAX_ACTIVATE.
+        MAX_ACTIVATE = 2
+
         retry = 0
+        activated = 0
+
         while True:
 
             stats = self.tree_counts_by_state_stats(lang=lang, only_active=True)
@@ -229,8 +239,8 @@ class TreeManager:
             num_missing_growing = max(0, self.cfg.max_active_trees - stats.growing)
             logger.debug(f"_prompt_lottery {remaining_prompt_review=}, {num_missing_growing=}")
 
-            if num_missing_growing == 0:
-                return remaining_prompt_review
+            if num_missing_growing == 0 or activated >= MAX_ACTIVATE:
+                return num_missing_growing + remaining_prompt_review
 
             # select among distinct users
             authors_qry = (
@@ -288,6 +298,7 @@ class TreeManager:
             mts: MessageTreeState = winner_prompt.MessageTreeState
             self._enter_state(mts, message_tree_state.State.GROWING)
             self.db.flush()
+            activated += 1
 
     def _auto_moderation(self, lang: str) -> None:
         if not self.cfg.auto_mod_enabled:
