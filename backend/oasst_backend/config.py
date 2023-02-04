@@ -166,6 +166,9 @@ class Settings(BaseSettings):
     DATABASE_URI: Optional[PostgresDsn] = None
     DATABASE_MAX_TX_RETRY_COUNT: int = 3
 
+    DATABASE_POOL_SIZE = 128
+    DATABASE_MAX_OVERFLOW = 128
+
     RATE_LIMIT: bool = True
     MESSAGE_SIZE_LIMIT: int = 2000
     REDIS_HOST: str = "localhost"
