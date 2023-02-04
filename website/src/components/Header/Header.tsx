@@ -42,7 +42,7 @@ export function Header() {
           </Flex>
         </Link>
 
-        <Flex alignItems="center" gap="4">
+        <Flex alignItems="center" gap={["2", "4"]}>
           <Flags authorizedFlags={["flagTest"]}>
             <Text>FlagTest</Text>
           </Flags>
