@@ -1,16 +1,20 @@
 {
+  "copy_message_id": "Copiar ID del mensaje",
   "label_action": "Etiquetar",
   "label_title": "Etiqueta",
+  "message_deleted": "Mensaje borrado",
   "message": "Mensaje",
   "open_new_tab_action": "Abrir en una pestaña nueva",
   "parent": "Padre",
   "reactions": "Reacciones",
+  "recent_messages": "Mensajes recientes",
   "report_action": "Reportar",
   "report_placeholder": "¿Por qué se debería revisar este mensaje?",
   "report_title": "Informe",
   "send_report": "Enviar",
+  "stop_tree": "Parar árbol",
   "submit_labels": "Enviar",
+  "tree_stopped": "Árbol parado {{id}}",
   "view_user": "Ver usuario",
-  "recent_messages": "Mensajes recientes",
   "your_recent_messages": "Tus mensajes recientes"
 }
