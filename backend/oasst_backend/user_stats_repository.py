@@ -158,7 +158,16 @@ class UserStatsRepository:
 
     def get_user_stats_all_time_frames(self, user_id: UUID) -> dict[str, UserScore | None]:
         qry = (
-            self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
+            self.session.query(
+                User.id.label("user_id"),
+                User.username,
+                User.auth_method,
+                User.display_name,
+                User.streak_days,
+                User.streak_last_day_date,
+                User.last_activity_date,
+                UserStats,
+            )
             .outerjoin(UserStats, User.id == UserStats.user_id)
             .filter(User.id == user_id)
         )
