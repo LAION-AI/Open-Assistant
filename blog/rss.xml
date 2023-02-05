@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title>OpenAssistant Blog</title>
+        <link>https://LAION-AI.github.io/Open-Assistant/blog</link>
+        <description>Home of the OpenAssistant blog.</description>
+        <lastBuildDate>Sun, 05 Feb 2023 00:00:00 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <language>en</language>
+        <copyright>Copyright © 2023 OpenAssistant.</copyright>
+        <item>
+            <title><![CDATA[We Need Your Help!]]></title>
+            <link>https://LAION-AI.github.io/Open-Assistant/blog/we-need-your-help</link>
+            <guid>we-need-your-help</guid>
+            <pubDate>Sun, 05 Feb 2023 00:00:00 GMT</pubDate>
+            <description><![CDATA[We Need Your Help!]]></description>
+            <content:encoded><![CDATA[<p>We Need Your Help!</p><p>Help us collect data for OpenAssistant, the largest and most open alternative to
+ChatGPT.</p><p><a href="https://open-assistant.io" target="_blank" rel="noopener noreferrer">https://open-assistant.io</a></p><div style="width:100%;height:360px"></div>]]></content:encoded>
+            <category>open-assistant</category>
+        </item>
+    </channel>
+</rss>

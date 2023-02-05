@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkopen_assistant=self.webpackChunkopen_assistant||[]).push([[2535],{45641:e=>{e.exports=JSON.parse('{"title":"Blog Posts","items":[{"title":"We Need Your Help!","permalink":"/Open-Assistant/blog/we-need-your-help"}]}')}}]);

@@ -1,0 +1,23 @@
+{
+    "version": "https://jsonfeed.org/version/1",
+    "title": "OpenAssistant Blog",
+    "home_page_url": "https://LAION-AI.github.io/Open-Assistant/blog",
+    "description": "Home of the OpenAssistant blog.",
+    "items": [
+        {
+            "id": "we-need-your-help",
+            "content_html": "<p>We Need Your Help!</p><p>Help us collect data for OpenAssistant, the largest and most open alternative to\nChatGPT.</p><p><a href=\"https://open-assistant.io\" target=\"_blank\" rel=\"noopener noreferrer\">https://open-assistant.io</a></p><div style=\"width:100%;height:360px\"></div>",
+            "url": "https://LAION-AI.github.io/Open-Assistant/blog/we-need-your-help",
+            "title": "We Need Your Help!",
+            "summary": "We Need Your Help!",
+            "date_modified": "2023-02-05T00:00:00.000Z",
+            "author": {
+                "name": "Yannic Kilcher",
+                "url": "https://www.ykilcher.com/"
+            },
+            "tags": [
+                "open-assistant"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://LAION-AI.github.io/Open-Assistant/blog</id>
+    <title>OpenAssistant Blog</title>
+    <updated>2023-02-05T00:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://LAION-AI.github.io/Open-Assistant/blog"/>
+    <subtitle>Home of the OpenAssistant blog.</subtitle>
+    <icon>https://LAION-AI.github.io/Open-Assistant/img/logo.svg</icon>
+    <rights>Copyright © 2023 OpenAssistant.</rights>
+    <entry>
+        <title type="html"><![CDATA[We Need Your Help!]]></title>
+        <id>we-need-your-help</id>
+        <link href="https://LAION-AI.github.io/Open-Assistant/blog/we-need-your-help"/>
+        <updated>2023-02-05T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[We Need Your Help!]]></summary>
+        <content type="html"><![CDATA[<p>We Need Your Help!</p><p>Help us collect data for OpenAssistant, the largest and most open alternative to
+ChatGPT.</p><p><a href="https://open-assistant.io" target="_blank" rel="noopener noreferrer">https://open-assistant.io</a></p><div style="width:100%;height:360px"></div>]]></content>
+        <author>
+            <name>Yannic Kilcher</name>
+            <uri>https://www.ykilcher.com/</uri>
+        </author>
+        <category label="open-assistant" term="open-assistant"/>
+    </entry>
+</feed>
