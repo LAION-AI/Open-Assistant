@@ -7,11 +7,12 @@ export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_
 import { Pencil } from "lucide-react";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { get } from "src/lib/api";
+import { LeaderboardEntity, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import uswSWRImmutable from "swr/immutable";
 
 export default function Account() {
   const { data: session } = useSession();
-  const { data } = uswSWRImmutable("/api/user_stats", get);
+  const { data } = uswSWRImmutable<{ [time in LeaderboardTimeFrame]: LeaderboardEntity }>("/api/user_stats", get);
   if (!session) {
     return;
   }
@@ -50,4 +51,11 @@ export default function Account() {
       </main>
     </>
   );
+}
+
+
+const Stats = () => {
+  return <SurveyCard>
+    
+  </SurveyCard>
 }
