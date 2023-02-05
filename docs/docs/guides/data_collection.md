@@ -47,8 +47,8 @@ should be reported in moderation and rated low quality.
 ## Ranking and Classifying Prompts
 
 Largely the criteria for "quality" can be derived by how well the prompt
-follows the guidance [above]
-(https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/guides#writing-prompts-initial-prompts-or-prompter-replies).
+follows the guidance
+[above](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/guides#writing-prompts-initial-prompts-or-prompter-replies).
 
 The other labels are largely self-explanatory. Spam should be reserved for
 intentionally low effort or low quality prompts.
@@ -56,8 +56,8 @@ intentionally low effort or low quality prompts.
 ## Ranking and Classifying Answers
 
 Largely the criteria for "quality" can be derived by how well the answer
-follows the guidance [above]
-(https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/guides#writing-answers-assistant-replies).
+follows the guidance
+[above](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/guides#writing-answers-assistant-replies).
 
 The other labels are largely self-explanatory. Spam should be reserved for
 intentionally low effort or low quality answers. The bad answer label should be
