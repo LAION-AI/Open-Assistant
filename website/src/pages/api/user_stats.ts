@@ -3,7 +3,6 @@ import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import { getBackendUserCore } from "src/lib/users";
 
 const handler = withoutRole("banned", async (req, res, token) => {
-  console.log("here");
   const user = await getBackendUserCore(token.sub);
   const oasstApiClient = createApiClientFromUser(user);
   const stats = await oasstApiClient.fetch_user_stats(user);
