@@ -47,7 +47,7 @@ class TreeManagerConfiguration(BaseModel):
     """Automatically set tree state to `halted_by_moderator` when more than the specified number
     of users skip replying to a message. (auto moderation)"""
 
-    auto_mod_red_flags: int = 3
+    auto_mod_red_flags: int = 4
     """Delete messages that receive more than this number of red flags if it is a reply or
     set the tree to `aborted_low_grade` when a prompt is flagged. (auto moderation)"""
 
