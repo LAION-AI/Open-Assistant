@@ -1,13 +1,20 @@
 {
+  "copy_message_id": "Nachrichten-ID kopieren",
   "label_action": "Label",
   "label_title": "Label",
+  "message_deleted": "Nachricht gelöscht",
   "message": "Nachricht",
   "open_new_tab_action": "In neuem Tab öffnen",
   "parent": "Vorgänger",
   "reactions": "Reaktionen",
+  "recent_messages": "letzte Nachrichten",
   "report_action": "Melden",
   "report_placeholder": "Warum sollte diese Nachricht überprüft werden?",
   "report_title": "Meldung",
   "send_report": "Senden",
-  "submit_labels": "Absenden"
+  "stop_tree": "Baum stoppen",
+  "submit_labels": "Absenden",
+  "tree_stopped": "Baum gestoppt {{id}}",
+  "view_user": "Benutzer anzeigen",
+  "your_recent_messages": "Deine letzten Nachrichten"
 }

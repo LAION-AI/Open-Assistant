@@ -8,10 +8,17 @@
   "spam.question": "Ist die Nachricht Spam?",
   "fails_task.question": "Ist es eine schlechte Antwort, wenn man die Aufgabe sieht?",
   "not_appropriate": "Nicht angemessen",
-  "pii": "Personenbezogene Daten",
+  "not_appropriate.explanation": "Unangemessen für einen Kundenberater.",
+  "pii": "Enthält personenbezogene Daten",
+  "pii.explanation": "Enthält personenbezogene Daten. Beispiele sind persönliche Kontaktdaten, Führerschein- und andere Identitätsnummern sowie Bankdaten.",
   "hate_speech": "Hassrede",
+  "hate_speech.explanation": "Der Inhalt ist beleidigend oder bedrohlich und drückt Vorurteile gegenüber einem geschützten Merkmal aus. Vorurteile beziehen sich auf vorgefasste Meinungen, die nicht auf Vernunft beruhen. Zu den geschützten Merkmalen gehören Geschlecht, ethnische Zugehörigkeit, Religion, sexuelle Orientierung und ähnliche Merkmale.",
   "sexual_content": "Sexueller Inhalt",
+  "sexual_content.explanation": "Enthält sexuellen Inhalt.",
   "moral_judgement": "Moralisches Urteil",
+  "moral_judgement.explanation": "Drückt moralisches Urteilsvermögen aus.",
   "political_content": "Politisch",
-  "lang_mismatch": "Sprachkonflikt"
+  "political_content.explanation": "Drückt politische Ansichten aus.",
+  "lang_mismatch": "Sprachkonflikt",
+  "lang_mismatch.explanation": "Nicht in der aktuell ausgewählten Sprache geschrieben."
 }

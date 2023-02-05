@@ -56,12 +56,12 @@
   "label_prompter_reply": {
     "label": "Prompter-Antwort labeln",
     "desc": "Labeln Sie die Antwort.",
-    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht."
+    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachricht."
   },
   "label_assistant_reply": {
     "label": "Antwort des Assistenten labeln",
     "desc": "Labeln Sie die Antwort.",
-    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht."
+    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachricht."
   },
   "classify_initial_prompt": {
     "label": "Initialen Prompt klassifizieren",
@@ -77,5 +77,6 @@
     "label": "Antwort des Assistenten klassifizieren",
     "desc": "Labeln Sie die Antwort.",
     "overview": "Lesen Sie das folgende Gespräch und beantworten Sie die Frage zur letzten Antwort in der Diskussion."
-  }
+  },
+  "available_task_count": "{{count}} Aufgaben verfügbar"
 }
