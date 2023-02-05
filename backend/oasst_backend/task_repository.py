@@ -225,7 +225,7 @@ class TaskRepository:
         self, max_age: timedelta = timedelta(minutes=5), done: bool = False, skipped: bool = False, limit: int = 100
     ) -> list[Task]:
         qry = self.db.query(Task).filter(
-            func.age(Task.created_date) < max_age,
+            func.age(func.current_timestamp(), Task.created_date) < max_age,
             or_(Task.payload_type == "AssistantReplyPayload", Task.payload_type == "PrompterReplyPayload"),
         )
         if done is not None:

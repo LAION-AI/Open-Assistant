@@ -138,7 +138,7 @@ class TreeManagerConfiguration(BaseModel):
     p_lonely_child_extension: float = 0.75
     """Probability to select a prompter message parent with less than lonely_children_count children."""
 
-    recent_tasks_span_sec: int = 3 * 60  # 3 min
+    recent_tasks_span_sec: int = 5 * 60  # 5 min
     """Time in seconds of recent tasks to consider for exclusion during task selection."""
 
 
