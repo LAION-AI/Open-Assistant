@@ -4,8 +4,8 @@
     "unchanged_message": "Are you sure you would like to continue?"
   },
   "random": {
-    "label": "I'm feeling lucky",
-    "desc": "Help us improve Open Assistant by starting a random task."
+    "label": "Em sento aortunat",
+    "desc": "Ajuda'ns a millorar Open Assistant començant una tasca aleatòria."
   },
   "create_initial_prompt": {
     "label": "Create Initial Prompts",
