@@ -55,6 +55,7 @@
     "next": "13.0.6",
     "next-auth": "^4.18.6",
     "next-i18next": "^13.0.3",
+    "next-use-posthog": "^1.16.4",
     "nodemailer": "^6.8.0",
     "npm": "^9.2.0",
     "postcss-focus-visible": "^7.1.0",

@@ -12,6 +12,7 @@ import { SWRConfig, SWRConfiguration } from "swr";
 
 import nextI18NextConfig from "../../next-i18next.config.js";
 import { Chakra, getServerSideProps } from "../styles/Chakra";
+import { usePostHog } from 'next-use-posthog'
 
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
@@ -26,6 +27,8 @@ function MyApp({ Component, pageProps: { session, cookies, ...pageProps } }: App
   const getLayout = Component.getLayout ?? getDefaultLayout;
   const page = getLayout(<Component {...pageProps} />);
   const { t } = useTranslation();
+
+  usePostHog('phc_wc7zBlfP0U9E4WiSDgSpiyOYd6Wel8rG8qQkzGTVhGe', { api_host: 'https://app.posthog.com' })
 
   return (
     <>
