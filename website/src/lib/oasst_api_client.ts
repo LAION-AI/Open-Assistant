@@ -303,9 +303,8 @@ export class OasstApiClient {
   }
 
   async set_tos_acceptance(user: BackendUserCore) {
-    // TODO: it is wasteful having to get the backend user first and then set the tos status
-    // is there a better way of doing this?
-    const backendUser = await this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
+    // NOTE: we do a post here to force create the user if it does not exist
+    const backendUser = await this.post<BackendUser>(`/api/v1/frontend_users/`, user);
     await this.put<void>(`/api/v1/users/${backendUser.user_id}?tos_acceptance=true`);
   }
 }
