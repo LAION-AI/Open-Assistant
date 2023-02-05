@@ -1,0 +1,69 @@
+2023-02-05 04:19:03,468 INFO    StreamThr :60074 [internal.py:wandb_internal():87] W&B internal server running at pid: 60074, started at: 2023-02-05 04:19:03.466830
+2023-02-05 04:19:03,469 DEBUG   HandlerThread:60074 [handler.py:handle_request():139] handle_request: status
+2023-02-05 04:19:03,471 DEBUG   SenderThread:60074 [sender.py:send_request():317] send_request: status
+2023-02-05 04:19:03,472 DEBUG   SenderThread:60074 [sender.py:send():303] send: header
+2023-02-05 04:19:03,472 INFO    WriterThread:60074 [datastore.py:open_for_write():75] open: /Users/anthonychiu/workspace/Open-Assistant/model/reward/instructor/wandb/run-20230205_041903-b18xr1oe/run-b18xr1oe.wandb
+2023-02-05 04:19:03,500 DEBUG   SenderThread:60074 [sender.py:send():303] send: run
+2023-02-05 04:19:03,963 ERROR   SenderThread:60074 [internal_api.py:execute():212] 404 response executing GraphQL.
+2023-02-05 04:19:03,963 ERROR   SenderThread:60074 [internal_api.py:execute():213] {"errors":[{"message":"project not found","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2023-02-05 04:19:04,501 INFO    HandlerThread:60074 [handler.py:finish():814] shutting down handler
+2023-02-05 04:19:04,502 INFO    WriterThread:60074 [datastore.py:close():279] close: /Users/anthonychiu/workspace/Open-Assistant/model/reward/instructor/wandb/run-20230205_041903-b18xr1oe/run-b18xr1oe.wandb
+2023-02-05 04:19:04,503 ERROR   StreamThr :60074 [internal.py:wandb_internal():162] Thread SenderThread:
+Traceback (most recent call last):
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/lib/retry.py", line 113, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/internal/internal_api.py", line 209, in execute
+    return self.client.execute(*args, **kwargs)  # type: ignore
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/transport/requests.py", line 39, in execute
+    request.raise_for_status()
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://api.wandb.ai/graphql
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/apis/normalize.py", line 26, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/internal/internal_api.py", line 1515, in upsert_run
+    response = self.gql(
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/lib/retry.py", line 129, in __call__
+    retry_timedelta_triggered = check_retry_fn(e)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/util.py", line 1044, in check_retry_fn
+    return fallback_retry_fn(e)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/util.py", line 991, in no_retry_auth
+    raise CommError("Permission denied, ask the project owner to grant you access")
+wandb.errors.CommError: Permission denied, ask the project owner to grant you access
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/internal/internal_util.py", line 49, in run
+    self._run()
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/internal/internal_util.py", line 100, in _run
+    self._process(record)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/internal/internal.py", line 309, in _process
+    self._sm.send(record)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/internal/sender.py", line 305, in send
+    send_handler(record)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/internal/sender.py", line 797, in send_run
+    self._init_run(run, config_value_dict)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/internal/sender.py", line 823, in _init_run
+    server_run, inserted, server_messages = self._api.upsert_run(
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/apis/normalize.py", line 62, in wrapper
+    raise CommError(message, err).with_traceback(sys.exc_info()[2])
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/apis/normalize.py", line 26, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/internal/internal_api.py", line 1515, in upsert_run
+    response = self.gql(
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/lib/retry.py", line 129, in __call__
+    retry_timedelta_triggered = check_retry_fn(e)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/util.py", line 1044, in check_retry_fn
+    return fallback_retry_fn(e)
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/util.py", line 991, in no_retry_auth
+    raise CommError("Permission denied, ask the project owner to grant you access")
+wandb.errors.CommError: Permission denied, ask the project owner to grant you access

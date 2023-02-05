@@ -1,0 +1,27 @@
+2023-02-05 04:19:03,447 INFO    MainThread:47112 [wandb_setup.py:_flush():68] Configure stats pid to 47112
+2023-02-05 04:19:03,447 INFO    MainThread:47112 [wandb_setup.py:_flush():68] Loading settings from /Users/anthonychiu/.config/wandb/settings
+2023-02-05 04:19:03,447 INFO    MainThread:47112 [wandb_setup.py:_flush():68] Loading settings from /Users/anthonychiu/workspace/Open-Assistant/model/reward/instructor/wandb/settings
+2023-02-05 04:19:03,447 INFO    MainThread:47112 [wandb_setup.py:_flush():68] Loading settings from environment variables: {'project': 'reward-model', '_require_service': 'True'}
+2023-02-05 04:19:03,447 INFO    MainThread:47112 [wandb_setup.py:_flush():68] Inferring run settings from compute environment: {'program_relpath': 'model/reward/instructor/trainer.py', 'program': '/Users/anthonychiu/workspace/Open-Assistant/model/reward/instructor/trainer.py'}
+2023-02-05 04:19:03,447 INFO    MainThread:47112 [wandb_setup.py:_flush():68] Applying login settings: {'api_key': '***REDACTED***'}
+2023-02-05 04:19:03,447 INFO    MainThread:47112 [wandb_init.py:_log_setup():476] Logging user logs to /Users/anthonychiu/workspace/Open-Assistant/model/reward/instructor/wandb/run-20230205_041903-b18xr1oe/logs/debug.log
+2023-02-05 04:19:03,447 INFO    MainThread:47112 [wandb_init.py:_log_setup():477] Logging internal logs to /Users/anthonychiu/workspace/Open-Assistant/model/reward/instructor/wandb/run-20230205_041903-b18xr1oe/logs/debug-internal.log
+2023-02-05 04:19:03,448 INFO    MainThread:47112 [wandb_init.py:init():516] calling init triggers
+2023-02-05 04:19:03,448 INFO    MainThread:47112 [wandb_init.py:init():519] wandb.init called with sweep_config: {}
+config: {}
+2023-02-05 04:19:03,448 INFO    MainThread:47112 [wandb_init.py:init():569] starting backend
+2023-02-05 04:19:03,448 INFO    MainThread:47112 [wandb_init.py:init():573] setting up manager
+2023-02-05 04:19:03,453 INFO    MainThread:47112 [backend.py:_multiprocessing_setup():102] multiprocessing start_methods=spawn,fork,forkserver, using: spawn
+2023-02-05 04:19:03,459 INFO    MainThread:47112 [wandb_init.py:init():580] backend started and connected
+2023-02-05 04:19:03,465 INFO    MainThread:47112 [wandb_init.py:init():658] updated telemetry
+2023-02-05 04:19:03,498 INFO    MainThread:47112 [wandb_init.py:init():693] communicating run to backend with 60 second timeout
+2023-02-05 04:19:06,538 WARNING MsgRouterThr:47112 [router.py:message_loop():77] message_loop has been closed
+2023-02-05 04:19:13,560 ERROR   MainThread:47112 [wandb_init.py:init():1105] error
+Traceback (most recent call last):
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/wandb_init.py", line 1078, in init
+    run = wi.init()
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/wandb_init.py", line 697, in init
+    result = handle.wait(
+  File "/Users/anthonychiu/Library/Caches/pypoetry/virtualenvs/lms-backend-cze3jV2E-py3.10/lib/python3.10/site-packages/wandb/sdk/lib/mailbox.py", line 259, in wait
+    raise MailboxError("transport failed")
+wandb.errors.MailboxError: transport failed

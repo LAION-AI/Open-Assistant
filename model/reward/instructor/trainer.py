@@ -137,7 +137,7 @@ if __name__ == "__main__":
         num_train_epochs=training_conf["num_train_epochs"],
         warmup_steps=training_conf["warmup_steps"],
         optim=optimizer,
-        lr_scheduler_type=training_conf["scheduler"],
+        lr_scheduler_type=training_conf.get("scheduler", "linear"),
         learning_rate=training_conf["learning_rate"],
         # half_precision_backend="apex",
         deepspeed="configs/zero_config.json" if training_conf["deepspeed"] else None,
