@@ -12,7 +12,6 @@ const handler = withoutRole("banned", async (req, res, token) => {
     await oasstApiClient.set_tos_acceptance(user);
     return res.status(200).end();
   }
-
   res.status(400).end();
 });
 
