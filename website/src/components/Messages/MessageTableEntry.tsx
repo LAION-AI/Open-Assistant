@@ -111,7 +111,6 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
             .filter(([emoji]) => isKnownEmoji(emoji))
             .sort(([emoji]) => -emoji)
             .map(([emoji, count]) => {
-              console.log(emoji);
               return (
                 <MessageEmojiButton
                   key={emoji}
