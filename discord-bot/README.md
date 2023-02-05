@@ -62,19 +62,34 @@ cd oasst-shared
 pip install -e .
 ```
 
+In the `backend/` folder located in the root, follow the setup instructions.
+
+From the root folder:
+
 ```bash
+cd discord-bot
 cp .env.example .env
 
 # edit .env and add your bot token and other values
 # BOT_TOKEN is given by the discord developer portal when you create a bot
-# DECLARE_GLOBAL_COMMANDS is the id of the server where you added the bot (right click on the server icon and copy id)
+# DECLARE_GLOBAL_COMMANDS is the id of the server where you added the bot (right click on the server icon and copy id. Developer mode must be enabled.)
 # OWNER_ID can be leave as an empty list
 
 python -V  # 3.10
 
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# (Windows)
+env\Scripts\activate
+# OR (Linux/macOS)
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 
-# in the discord-bot folder
+# Run the bot
 python -m bot
 ```
 
