@@ -76,7 +76,7 @@ export const LeaderboardTable = ({
             sx: {
               // https://stackoverflow.com/questions/37963524/how-to-apply-border-radius-to-tr-in-bootstrap
               position: "relative",
-              "td:first-child:before": {
+              "td:first-of-type:before": {
                 borderLeft: `6px solid ${borderColor}`,
                 content: `""`,
                 display: "block",
