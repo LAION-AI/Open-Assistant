@@ -320,7 +320,7 @@ class TreeManager:
             if num_red_flag is not None and num_red_flag >= self.cfg.auto_mod_red_flags:
                 if m.parent_id is None:
                     logger.warning(
-                        f"[AUTO MOD] Halting tree {m.message_tree_id}, inital prompt got too many red flags ({m.emojis})."
+                        f"[AUTO MOD] Halting tree {m.message_tree_id}, initial prompt got too many red flags ({m.emojis})."
                     )
                     self.enter_low_grade_state(m.message_tree_id)
                 else:
@@ -562,14 +562,6 @@ class TreeManager:
 
             case TaskType.REPLY:
 
-                recent_reply_tasks = self.pr.task_repository.fetch_recent_reply_tasks(
-                    max_age=timedelta(seconds=self.cfg.recent_tasks_span_sec),
-                    done=False,
-                    skipped=False,
-                    limit=500,
-                )
-                recent_reply_task_parents = {t.parent_message_id for t in recent_reply_tasks}
-
                 if task_role == TaskRole.PROMPTER:
                     extendible_parents = list(filter(lambda x: x.parent_role == "assistant", extendible_parents))
                 elif task_role == TaskRole.ASSISTANT:
@@ -580,24 +572,17 @@ class TreeManager:
                     random_parent: ExtendibleParentRow = None
                     if self.cfg.p_lonely_child_extension > 0 and self.cfg.lonely_children_count > 1:
                         # check if we have extendible prompter parents with a small number of replies
-
                         lonely_children_parents = [
                             p
                             for p in extendible_parents
                             if 0 < p.active_children_count < self.cfg.lonely_children_count
                             and p.parent_role == "prompter"
-                            and p.parent_id not in recent_reply_task_parents
                         ]
                         if len(lonely_children_parents) > 0 and random.random() < self.cfg.p_lonely_child_extension:
                             random_parent = random.choice(lonely_children_parents)
 
                     if random_parent is None:
-                        # try to exclude parents for which tasks were recently handed out
-                        fresh_parents = [p for p in extendible_parents if p.parent_id not in recent_reply_task_parents]
-                        if len(fresh_parents) > 0:
-                            random_parent = random.choice(fresh_parents)
-                        else:
-                            random_parent = random.choice(extendible_parents)
+                        random_parent = random.choice(extendible_parents)
 
                     # fetch random conversation to extend
                     logger.debug(f"selected {random_parent=}")
@@ -895,7 +880,7 @@ class TreeManager:
                     logger.warning("The intersection of ranking results ID sets has less than two elements. Skipping.")
                     continue
 
-                # keep only elements in commond set
+                # keep only elements in common set
                 ordered_ids_list = [list(filter(lambda x: x in common_set, ids)) for ids in ordered_ids_list]
                 assert all(len(x) == len(common_set) for x in ordered_ids_list)
 
@@ -1069,7 +1054,7 @@ HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
 """
 
     def query_incomplete_rankings(self, lang: str) -> list[IncompleteRankingsRow]:
-        """Query parents which have childern that need further rankings"""
+        """Query parents which have children that need further rankings"""
 
         user_id = self.pr.user_id if not settings.DEBUG_ALLOW_DUPLICATE_TASKS else None
         r = self.db.execute(
@@ -1087,14 +1072,23 @@ HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
 
     _sql_find_extendible_parents = """
 -- find all extendible parent nodes
+WITH recent_reply_tasks (parent_message_id) AS (
+    -- recent incomplete tasks to exclude
+    SELECT parent_message_id FROM task
+    WHERE not done
+        AND not skipped
+        AND created_date > (CURRENT_TIMESTAMP - :recent_tasks_interval)
+        AND (payload_type = 'AssistantReplyPayload' OR payload_type = 'PrompterReplyPayload')
+)
 SELECT m.id as parent_id, m.role as parent_role, m.depth, m.message_tree_id, COUNT(c.id) active_children_count
 FROM message_tree_state mts
-    INNER JOIN message m ON mts.message_tree_id = m.message_tree_id	-- all elements of message tree
+    INNER JOIN message m ON mts.message_tree_id = m.message_tree_id     -- all elements of message tree
     LEFT JOIN message_emoji me ON
         (m.id = me.message_id
         AND :skip_user_id IS NOT NULL
         AND me.user_id = :skip_user_id
         AND me.emoji = :skip_reply)
+    LEFT JOIN recent_reply_tasks rrt ON m.id = rrt.parent_message_id    -- recent tasks
     LEFT JOIN message c ON m.id = c.parent_id  -- child nodes
 WHERE mts.active                        -- only consider active trees
     AND mts.state = :growing_state      -- message tree must be growing
@@ -1103,6 +1097,7 @@ WHERE mts.active                        -- only consider active trees
     AND m.review_result                 -- parent node must have positive review
     AND m.lang = :lang                  -- parent matches lang
     AND me.message_id IS NULL           -- no skip reply emoji for user
+    AND rrt.parent_message_id IS NULL   -- no recent reply task found
     AND NOT coalesce(c.deleted, FALSE)  -- don't count deleted children
     AND (c.review_result OR coalesce(c.review_count, 0) < :num_reviews_reply) -- don't count children with negative review but count elements under review
 GROUP BY m.id, m.role, m.depth, m.message_tree_id, mts.max_children_count
@@ -1125,6 +1120,7 @@ HAVING COUNT(c.id) < mts.max_children_count -- below maximum number of children
                 "user_id": user_id,
                 "skip_user_id": self.pr.user_id,
                 "skip_reply": protocol_schema.EmojiCode.skip_reply,
+                "recent_tasks_interval": timedelta(seconds=self.cfg.recent_tasks_span_sec),
             },
         )
 
@@ -1165,6 +1161,7 @@ HAVING COUNT(m.id) < mts.goal_tree_size
                 "user_id": user_id,
                 "skip_user_id": self.pr.user_id,
                 "skip_reply": protocol_schema.EmojiCode.skip_reply,
+                "recent_tasks_interval": timedelta(seconds=self.cfg.recent_tasks_span_sec),
             },
         )
         return [ActiveTreeSizeRow.from_orm(x) for x in r.all()]
@@ -1256,7 +1253,7 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
 
     @managed_tx_method(CommitMode.COMMIT)
     def ensure_tree_states(self) -> None:
-        """Add message tree state rows for all root nodes (inital prompt messages)."""
+        """Add message tree state rows for all root nodes (initial prompt messages)."""
 
         missing_tree_ids = self.query_misssing_tree_states()
         for id in missing_tree_ids:
@@ -1598,7 +1595,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         total_messages = sum(len(x) for x in replies_by_tree.values())
         logger.debug(f"found: {len(replies_by_tree)} trees; {len(prompts)} prompts; {total_messages} messages;")
 
-        # remove all trees based on inital prompts of the user
+        # remove all trees based on initial prompts of the user
         if purge_initial_prompts:
             for p in prompts:
                 self.purge_message_tree(p.message_tree_id)
@@ -1636,7 +1633,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
                     logger.debug(f"purging message: {m.id}")
                     self._purge_message_internal(m.id)
 
-            # update childern counts
+            # update children counts
             self.pr.update_children_counts(m.message_tree_id)
 
             # reactivate tree
