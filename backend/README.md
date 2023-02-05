@@ -3,21 +3,25 @@
 ## Backend Development Setup
 
 ### Local Database
+
 In root directory, run
 `docker compose up backend-dev --build --attach-dependencies` to start a
-database in a docker container. The default settings are already configured to connect to the database
-at `localhost:5432`.
+database in a docker container. The default settings are already configured to
+connect to the database at `localhost:5432`.
 
 ### Python
+
 Python 3.10 is required. It is recommended to use `pyenv` which will recognise
 the `.python-version` in the project root directory.
 
 ### Python Packages
+
 Next, to install all requirements, You can run
+
 1. `pip install -r requirements.txt` inside the `backend` folder; and
-2. `pip install -e .` inside the `oasst-shared` folder. 
-3. `./scripts/backend-development/run-local.sh` to run the backend. This will start the
-backend server at `http://localhost:8080`.
+2. `pip install -e .` inside the `oasst-shared` folder.
+3. `./scripts/backend-development/run-local.sh` to run the backend. This will
+   start the backend server at `http://localhost:8080`.
 
 ## REST Server Configuration
 

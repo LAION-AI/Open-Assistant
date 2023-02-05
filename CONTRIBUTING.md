@@ -105,8 +105,7 @@ you want to work on it and what you plan to do.
 
 - To get started with development, if you want to work on the backend, have a
   look at `backend/README.md`.
-- If you want to work on any frontend, have a look at
-  `website/README.md`.
+- If you want to work on any frontend, have a look at `website/README.md`.
 
 There is also a minimal implementation of a frontend in the `text-frontend`
 folder.
