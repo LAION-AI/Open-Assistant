@@ -42,7 +42,8 @@ relevant and from reputable websites. However, this is not required.
 
 Do not copy answers from ChatGPT or other OpenAI services. This is prohibited
 according to the OpenAI Terms of Service. Obviously ChatGPT-generated answers
-should be reported in moderation and rated low quality.
+should be reported in moderation and rated low quality. Other AI systems may
+allow such usage but answers should not be copied and pasted.
 
 ## Ranking and Classifying Prompts
 
@@ -50,8 +51,12 @@ Largely the criteria for "quality" can be derived by how well the prompt
 follows the guidance
 [above](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/guides#writing-prompts-initial-prompts-or-prompter-replies).
 
-The other labels are largely self-explanatory. Spam should be reserved for
-intentionally low effort or low quality prompts.
+The other labels are largely self-explanatory.
+
+Spam should be reserved for intentionally low effort or low quality prompts.
+
+It is usually fine to go closer to "Ordinary" than "Creative" unless there is
+obvious creativity shown. The same goes for "Serious" compared to "Humorous".
 
 ## Ranking and Classifying Answers
 
@@ -59,6 +64,12 @@ Largely the criteria for "quality" can be derived by how well the answer
 follows the guidance
 [above](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/guides#writing-answers-assistant-replies).
 
-The other labels are largely self-explanatory. Spam should be reserved for
-intentionally low effort or low quality answers. The bad answer label should be
-given when the answer does not respond to the prompt at all or is irrelevant.
+The other labels are largely self-explanatory.
+
+Spam should be reserved for intentionally low effort or low quality answers.
+
+The bad answer label should be given when the answer does not respond to the
+prompt at all or is irrelevant.
+
+It is usually fine to go closer to "Ordinary" than "Creative" unless there is
+obvious creativity shown. The same goes for "Serious" compared to "Humorous".
