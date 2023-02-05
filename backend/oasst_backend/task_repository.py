@@ -177,7 +177,7 @@ class TaskRepository:
         if not allow_personal_tasks and not task.collective:
             raise OasstError("This is not a collective task", OasstErrorCode.TASK_NOT_COLLECTIVE)
         if task.done:
-            raise OasstError("Allready closed", OasstErrorCode.TASK_ALREADY_DONE)
+            raise OasstError("Already closed", OasstErrorCode.TASK_ALREADY_DONE)
 
         task.done = True
         self.db.add(task)

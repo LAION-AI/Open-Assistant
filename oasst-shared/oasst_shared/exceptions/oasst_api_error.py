@@ -95,7 +95,7 @@ class OasstError(Exception):
     http_status_code: HTTPStatus
 
     def __init__(self, message: str, error_code: OasstErrorCode, http_status_code: HTTPStatus = HTTPStatus.BAD_REQUEST):
-        super().__init__(message, error_code, http_status_code)  # make excetpion picklable (fill args member)
+        super().__init__(message, error_code, http_status_code)  # make exception picklable (fill args member)
         self.message = message
         self.error_code = error_code
         self.http_status_code = http_status_code

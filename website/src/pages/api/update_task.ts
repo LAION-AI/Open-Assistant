@@ -7,7 +7,7 @@ import { getBackendUserCore, getUserLanguage } from "src/lib/users";
 /**
  * Stores the task interaction with the Task Backend and then returns the next task generated.
  *
- * This implicity does a few things:
+ * This implicitly does a few things:
  * 1) Records the users answer in our local database.
  * 2) Accepts the task.
  * 3) Sends the users answer to the Task Backend.

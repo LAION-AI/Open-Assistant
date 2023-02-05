@@ -66,7 +66,7 @@ def get_winner(pairs):
 
 def get_ranking(pairs):
     """
-    Abuses concordance property to get a (not necessarily unqiue) ranking.
+    Abuses concordance property to get a (not necessarily unique) ranking.
     The lack of uniqueness is due to the potential existence of multiple
     equally ranked winners. We have to pick one, which is where
     the non-uniqueness comes from

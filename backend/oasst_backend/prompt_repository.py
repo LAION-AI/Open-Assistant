@@ -484,7 +484,7 @@ class PromptRepository:
                     OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
                 )
 
-            logger.debug(f"text_labels relpy: {valid_labels=}, {mandatory_labels=}")
+            logger.debug(f"text_labels reply: {valid_labels=}, {mandatory_labels=}")
 
             if valid_labels:
                 if not all([label in valid_labels for label in text_labels.labels.keys()]):

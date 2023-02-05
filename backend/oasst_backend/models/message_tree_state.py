@@ -12,7 +12,7 @@ class State(str, Enum):
     """States of the Open-Assistant message tree state machine."""
 
     INITIAL_PROMPT_REVIEW = "initial_prompt_review"
-    """In this state the message tree consists only of a single inital prompt root node.
+    """In this state the message tree consists only of a single initial prompt root node.
     Initial prompt labeling tasks will determine if the tree goes into `growing` or
     `aborted_low_grade` state."""
 
@@ -33,11 +33,11 @@ class State(str, Enum):
     compute the aggergated ranking scores that will appear in the dataset."""
 
     READY_FOR_EXPORT = "ready_for_export"
-    """The Scoring algorithm computed rankings scores for all childern. The message tree can be
+    """The Scoring algorithm computed rankings scores for all children. The message tree can be
     exported as part of an Open-Assistant message tree dataset."""
 
     SCORING_FAILED = "scoring_failed"
-    """An exception occured in the scoring algorithm."""
+    """An exception occurred in the scoring algorithm."""
 
     ABORTED_LOW_GRADE = "aborted_low_grade"
     """The system received too many bad reviews and stopped handing out tasks for this message tree."""
