@@ -1,0 +1,82 @@
+{
+  "default": {
+    "unchanged_title": "Ez dago aldaketarik",
+    "unchanged_message": "Ziur al zaude jarraitu nahi duzula?"
+  },
+  "random": {
+    "label": "Zorionekoa sentitzen naiz",
+    "desc": "Lagun iezaguzu Open Assistant hobetzen ausazko zeregin bat hasiz."
+  },
+  "create_initial_prompt": {
+    "label": "Sortu hasierako instrukzioak",
+    "desc": "Idatzi hasierako instrukzioak Open Assistant-i era askotako mezuak erantzuten saia dadin. (sartu loterian)",
+    "overview": "Sortu hasierako mezu bat asistenteari bidaltzeko",
+    "instruction": "Eman hasierako instrukzioak",
+    "response_placeholder": "Idatzi zure instrukzioak hemen..."
+  },
+  "reply_as_user": {
+    "label": "Erantzun erabiltzaile gisa",
+    "desc": "Txateatu Open Assistant-ekin eta lagundu bere erantzunak hobetzen harekin elkarreraginean.",
+    "overview": "Ondoko elkarrizketa ikusita, eman erantzun egokia",
+    "instruction": "Eman erabiltzailearen erantzuna",
+    "response_placeholder": "Idatzi zure erantzuna hemen..."
+  },
+  "reply_as_assistant": {
+    "label": "Erantzun asistente gisa",
+    "desc": "Lagundu Open Assistant-ek beste erabiltzaile batzuekin dituen elkarrizketetako erantzunak hobetzen.",
+    "overview": "Ondoko elkarrizketa ikusita, eman erantzun egokia",
+    "response_placeholder": "Idatzi zure erantzuna hemen..."
+  },
+  "rank_user_replies": {
+    "label": "Erabiltzaileen erantzunak sailkatu",
+    "desc": "Lagundu Open Assistant-ek beste erabiltzaile batzuekin dituen elkarrizketetako erantzunak hobetzen.",
+    "overview": "Ondoko erabiltzaileen erantzunak ikusita, ordenatu itzazu onenetik txarrenera, onena lehena izanik, txarrena azkena izatea.",
+    "unchanged_title": "Ordena aldatu gabe",
+    "unchanged_message": "Ez duzu galderen ordena aldatu. Ziur al zaude jarraitu nahi duzula?"
+  },
+  "rank_assistant_replies": {
+    "label": "Asistentearen erantzunak sailkatu",
+    "desc": "Open Assistant-ek emandako erantzunak sailkatu zehaztasun eta irakurgarritasunaren arabera.",
+    "overview": "Ondoko asistentearen erantzunak ikusita, ordenatu itzazu onenetik txarrenera, onena lehena izanik, txarrena azkena.",
+    "unchanged_title": "Ordena aldatu gabe",
+    "unchanged_message": "Ez duzu galderen ordena aldatu. Ziur al zaude jarraitu nahi duzula?"
+  },
+  "rank_initial_prompts": {
+    "label": "Hasierako instrukzioak sailkatu",
+    "desc": "Open Assistant-ek emandako erantzunak sailkatu zehaztasun eta irakurgarritasunaren arabera.",
+    "overview": "Hasierako eskaera hauek ikusita, ordenatu itzazu onenetik txarrenera, onena lehena izanik, txarrena azkena izanik.",
+    "unchanged_title": "Ordena aldatu gabe",
+    "unchanged_message": "Ez duzu galderen ordena aldatu. Ziur al zaude jarraitu nahi duzula?"
+  },
+  "label_initial_prompt": {
+    "label": "Etiketatu hasierako instrukzioak",
+    "desc": "Jarri etiketak instrukzio bati.",
+    "overview": "Jarri etiketak hurrengo instrukzioari"
+  },
+  "label_prompter_reply": {
+    "label": "Etiketatu galdetzailearen erantzuna",
+    "desc": "Jarri etiketak instrukzio bati.",
+    "overview": "Ondoko elkarrizketa ikusita, eman etiketak hurrengo instrukzioari."
+  },
+  "label_assistant_reply": {
+    "label": "Etiketatu asistentearen erantzuna",
+    "desc": "Jarri etiketak instrukzio bati.",
+    "overview": "Ondoko elkarrizketa ikusita, eman etiketak hurrengo instrukzioari."
+  },
+  "classify_initial_prompt": {
+    "label": "Salifikatu hasierako instrukzioa",
+    "desc": "Jarri etiketak instrukzio bati.",
+    "overview": "Irakurri hurrengo instrukzioa eta erantzun horri buruzko galdera."
+  },
+  "classify_prompter_reply": {
+    "label": "Sailifikatu galdetzailearen erantzuna",
+    "desc": "Jarri etiketak instrukzio bati.",
+    "overview": "Irakurri hurrengo elkarrizketa eta erantzun elkarrizketako azken erantzunari buruzko galdera."
+  },
+  "classify_assistant_reply": {
+    "label": "Sailifikatu Laguntzailea eginbidearen erantzuna",
+    "desc": "Jarri etiketak instrukzio bati.",
+    "overview": "Irakurri hurrengo elkarrizketa eta erantzun elkarrizketako azken erantzunari buruzko galdera."
+  },
+  "available_task_count": "{{count}} zeregin eskuragarri"
+}

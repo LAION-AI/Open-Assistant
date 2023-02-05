@@ -1,0 +1,15 @@
+{
+  "blurb": "Uste dugu iraultza bat sortu dezakegula.",
+  "blurb1": "Stable Diffusion-ek munduari artea eta irudiak modu berrietan egiten lagundu zion modu berean, mundua hobetu nahi dugu elkarrizketarako AA harrigarria eskainiz.",
+  "description": "Elkarrizketarako AA guztientzat. Iturburu irekiko proiektua GPT LLM txat bat sortzeko, LAIONek eta mundu osoko laguntzaileek zuzendua",
+  "faq_items": {
+    "q0": "Noraino doa proiektu hau?",
+    "a0": "Garapenaren hasierako faseetan gaude, RLHF hizkuntza-eredu handiei aplikatzeko ezarritako ikerketatik lanean.",
+    "q1": "Nor dago Open Assistant-en atzean?",
+    "a1": "Open Assistant LAIONek eta mundu osoko teknologia hori guztiongana heltzeko interesa duten pertsonek antolatutako proiektua da."
+  },
+  "faq_title": "Ohiko galderak",
+  "join_us_description": "Kode irekiko proiektu guztiak zu bezalako jendearekin hasten dira. Kode irekia elkarlanean aritzen bagara elkarrekin gure ezagutzak eta teknologiak gizateriaren mesederako munduari opari ditzakegula ustea da. Barruan al zaude? Aurki gaitzazu hemen:" ,
+  "join_us_title": "Bat egin gurekin",
+  "subtitle": "Elkarrizketarako AA guztientzat."
+}
