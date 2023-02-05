@@ -113,6 +113,9 @@
           TREE_MANAGER__MAX_ACTIVE_TREES:
             "{{ lookup('ansible.builtin.env', 'MAX_ACTIVE_TREES') |
             default('10', true) }}"
+          TREE_MANAGER__MAX_INITIAL_PROMPT_REVIEW:
+            "{{ lookup('ansible.builtin.env', 'MAX_INITIAL_PROMPT_REVIEW') |
+            default('100', true) }}"
           TREE_MANAGER__MAX_TREE_DEPTH:
             "{{ lookup('ansible.builtin.env', 'MAX_TREE_DEPTH') | default('5',
             true) }}"
@@ -183,7 +186,7 @@
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_PORT') }}"
           EMAIL_SERVER_USER:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
-          FASTAPI_URL: "http://oasst-{{ stack_name }}-backend:8080"
+          FASTAPI_URL: "{{ lookup('ansible.builtin.env', 'BACKEND_URL') }}"
           FASTAPI_KEY: "{{ web_api_key }}"
           NEXTAUTH_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
@@ -202,6 +205,8 @@
           NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN:
             "{{ lookup('ansible.builtin.env',
             'WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN') }}"
+          MAINTENANCE_MODE:
+            "{{ lookup('ansible.builtin.env', 'MAINTENANCE_MODE') }}"
         ports:
           - "{{ website_port }}:3000"
         command: bash wait-for-postgres.sh node server.js

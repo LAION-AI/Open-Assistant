@@ -38,6 +38,7 @@ jobs:
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
       MAX_ACTIVE_TREES: ${{ vars.MAX_ACTIVE_TREES }}
+      MAX_INITIAL_PROMPT_REVIEW: ${{ vars.MAX_INITIAL_PROMPT_REVIEW }}
       MAX_TREE_DEPTH: ${{ vars.MAX_TREE_DEPTH }}
       MAX_CHILDREN_COUNT: ${{ vars.MAX_CHILDREN_COUNT }}
       LONELY_CHILDREN_COUNT: ${{ vars.LONELY_CHILDREN_COUNT }}
@@ -60,6 +61,8 @@ jobs:
       WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN:
         ${{ vars.WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN }}
       LOGURU_LEVEL: ${{ vars.LOGURU_LEVEL }}
+      MAINTENANCE_MODE: ${{ vars.MAINTENANCE_MODE }}
+      BACKEND_URL: ${{ vars.BACKEND_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2

@@ -1,0 +1,15 @@
+{
+  "blurb": "Nous croyons que nous pouvons créer une révolution.",
+  "blurb1": "De la même manière que Stable Diffusion a aidé le monde à faire de l'art et des images de nouvelles manières, nous voulons améliorer le monde en fournissant une incroyable IA conversationnelle.",
+  "description": "IA conversationnelle pour tout le monde. Un projet open source pour créer un GPT LLM activé par chat dirigé par LAION et des contributeurs du monde entier.",
+  "faq_items": {
+    "q0": "À quel stade est ce projet?",
+    "a0": "Nous sommes aux premiers stades du développement, travaillant à partir de recherches établies dans l'application de RLHF à de grands modèles linguistiques.",
+    "q1": "Qui se trouve derrière Open Assistant?",
+    "a1": "Open Assistant est un projet organisé par LAION et des individus du monde entier intéressés à apporter cette technologie à tout le monde."
+  },
+  "faq_title": "Questions fréquentes",
+  "join_us_description": "Tous les projets open source commencent avec des personnes comme vous. L'open source est la croyance que si nous collaborons, nous pouvons ensemble offrir notre connaissance et notre technologie au monde pour le bénéfice de l'humanité. Êtes-vous dedans? Trouvez-nous ici :",
+  "join_us_title": "Rejoignez-nous",
+  "subtitle": "IA conversationnelle pour tout le monde."
+}
