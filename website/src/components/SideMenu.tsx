@@ -24,7 +24,7 @@ export function SideMenu(props: SideMenuProps) {
       <Card
         display={{ base: "grid", sm: "flex" }}
         width={["100%", "100%", "100px", "280px"]}
-        className="grid-cols-4 gap-2 sm:flex-col sm:justify-between p-4 h-full"
+        className="grid-cols-3 gap-2 sm:flex-col sm:justify-between p-4 h-full"
       >
         <nav className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
           {props.buttonOptions.map((item, itemIndex) => (
@@ -57,16 +57,6 @@ export function SideMenu(props: SideMenuProps) {
             </Tooltip>
           ))}
         </nav>
-        <div>
-          <Tooltip fontFamily="inter" label="Toggle Dark Mode" placement="right" className="hidden lg:hidden sm:block">
-            <Button size="lg" width="full" justifyContent="center" onClick={toggleColorMode} gap="2">
-              <Sun size={"1em"} />
-              <Text fontWeight="normal" className="hidden lg:block">
-                {colorMode === "light" ? t("common:dark_mode") : t("common:light_mode")}
-              </Text>
-            </Button>
-          </Tooltip>
-        </div>
       </Card>
     </main>
   );
