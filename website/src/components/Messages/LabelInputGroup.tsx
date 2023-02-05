@@ -1,9 +1,9 @@
-import { Text, VStack } from "@chakra-ui/react";
+import { Box, Text, VStack } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { Explain } from "src/components/Explain";
 import { LabelFlagGroup } from "src/components/Messages/LabelFlagGroup";
-import { LabelLikertGroup } from "src/components/Survey/LabelLikertGroup";
 import { LabelYesNoGroup } from "src/components/Messages/LabelYesNoGroup";
+import { LabelLikertGroup } from "src/components/Survey/LabelLikertGroup";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { Label } from "src/types/Tasks";
 
@@ -55,8 +55,10 @@ export const LabelInputGroup = ({
       )}
       {flagIndexes.length > 0 && (
         <VStack alignItems="stretch" spacing={2}>
-          <Text>
-            {instructions.flagInstruction}
+          <Box>
+            <Text display="inline-block" paddingEnd={1}>
+              {instructions.flagInstruction}
+            </Text>
             <Explain
               explanation={flagIndexes.map(
                 (idx) =>
@@ -64,8 +66,8 @@ export const LabelInputGroup = ({
                     getTypeSafei18nKey(`${labels[idx].name}.explanation`)
                   )}`
               )}
-            />{" "}
-          </Text>
+            />
+          </Box>
           <LabelFlagGroup
             values={flagIndexes.map((idx) => values[idx])}
             labelNames={flagIndexes.map((idx) => labels[idx].name)}
