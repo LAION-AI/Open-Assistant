@@ -84,7 +84,7 @@ python -m venv venv
 # (Windows)
 env\Scripts\activate
 # OR (Linux/macOS)
-source venv/bin/activate
+source env/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
