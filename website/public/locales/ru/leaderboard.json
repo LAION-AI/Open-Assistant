@@ -1,0 +1,18 @@
+{
+  "daily": "За день",
+  "last_updated_at": "Последний раз обновлено: {{val, datetime}}",
+  "leaderboard": "Таблица лидеров",
+  "monthly": "За месяц",
+  "overall": "Всего",
+  "rank": "Позиция",
+  "score": "Счет",
+  "user": "Пользователь",
+  "weekly": "За неделю",
+  "prompt": "Prompts",
+  "reply": "Replies",
+  "label": "Labels",
+  "view_all": "Посмотреть все",
+  "top_5_contributors_today": "Топ 5 Пользователей за Сегодня",
+  "previous": "Назад",
+  "next": "Вперед"
+}

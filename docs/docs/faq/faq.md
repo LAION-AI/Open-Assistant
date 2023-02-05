@@ -104,3 +104,50 @@ ones excluding `5433`, like:
 5. Add `- POSTGRES_PORT=5432` to `backend.environment`
 6. Change `web.environment.DATABASE_URL` to
    `postgres://postgres:postgres@webdb:5432/oasst_web`
+
+### Can I use ChatGPT to help in training Open Assistant, for instance, by generating answers?
+
+No, it is against their terms of service to use it to help train other models.
+See
+[this issue](https://github.com/LAION-AI/Open-Assistant/issues/471#issuecomment-1374392299).
+
+### How can I see my score?
+
+If you are not in the top 100 positions and cannot find yourself in the
+leaderboard, it's not possible at the moment.
+
+### Can we see how many data points have been collected?
+
+Not right now.
+
+### Can I install Open Assistant locally and chat with it?
+
+The project is not at that stage yet.
+
+### Is the model open?
+
+The model is not ready yet, but there are some demo models. You can follow the
+discussion in the Discord channel
+[#ml-models-demo](https://discord.com/channels/1055935572465700980/1067096888530178048).
+
+### Which base model will be used?
+
+It's still being discussed. You can follow the discussion in the Discord channel
+[#data-discussion](https://discord.com/channels/1055935572465700980/1058348535612985394).
+
+### What should I do if I don't know how to complete the task as an assistant?
+
+Skip it.
+
+### Should I fact check the answers by the assistant?
+
+Yes, you should try. If you are not sure, skip the task.
+
+### How can I contribute?
+
+If you want to help in the data collection, go to the website
+[https://open-assistant.io/](https://open-assistant.io/). If you want to
+contribute code, take a look at the
+[issues in GitHub](https://github.com/LAION-AI/Open-Assistant/issues) and grab
+one. Take a look at this
+[contributing guide](https://github.com/GuilleHoardings/Open-Assistant/blob/main/CONTRIBUTING.md).

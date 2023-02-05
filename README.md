@@ -14,6 +14,10 @@
 
 </div>
 
+# Here is our website to collect data:
+
+[open-assistant.io](https://open-assistant.io)
+
 # Table of Contents
 
 - [What is Open Assistant?](#what-is-open-assistant)
@@ -37,6 +41,15 @@ images in new ways we hope Open Assistant can help improve the world by
 improving language itself.
 
 ## Do you want to try it out?
+
+### Contributing to Data Collection
+
+The data collection frontend is now live [here](https://open-assistant.io/). Log
+in and start taking on tasks! We want to collect a high volume of quality data.
+By submitting, ranking, and labelling model prompts and responses you will be
+directly helping to improve the capabilities of Open Assistant.
+
+### Running Locally
 
 If you are interested in taking a look at the current state of the project, you
 can set up an entire stack needed to run **Open-Assistant**, including the
@@ -69,7 +82,7 @@ interact with the website.
 
 ## The Plan
 
-##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the InstructGPT paper.
+##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the [InstructGPT paper](https://arxiv.org/abs/2203.02155).
 
 1. Collect high-quality human generated Instruction-Fulfillment samples
    (prompt + response), goal >50k. We design a crowdsourced process to collect

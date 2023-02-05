@@ -14,7 +14,7 @@
     [] support additional negative samples generated from other models.
 
         For example we can use galactica-125m to generate a TLDR and assume it was
-        inferior than the human perference one
+        inferior than the human preference one
 
 
 """

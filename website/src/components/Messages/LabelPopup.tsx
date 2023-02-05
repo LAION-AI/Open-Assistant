@@ -9,7 +9,7 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelInputGroup } from "src/components/Messages/LabelInputGroup";
 import { get, post } from "src/lib/api";
 import { Label } from "src/types/Tasks";
@@ -29,7 +29,7 @@ interface ValidLabelsResponse {
 export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopupProps) => {
   const { t } = useTranslation();
   const { data: response } = useSWRImmutable<ValidLabelsResponse>(`/api/valid_labels?message_id=${messageId}`, get);
-  const valid_labels = response?.valid_labels ?? [];
+  const valid_labels = useMemo(() => response?.valid_labels ?? [], [response]);
   const [values, setValues] = useState<number[]>(new Array(valid_labels.length).fill(null));
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopu
 
   const { trigger: setLabels } = useSWRMutation("/api/set_label", post);
 
-  const submit = () => {
+  const submit = useCallback(() => {
     const label_map: Map<string, number> = new Map();
     console.assert(valid_labels.length === values.length);
     values.forEach((value, idx) => {
@@ -53,7 +53,7 @@ export const LabelMessagePopup = ({ messageId, show, onClose }: LabelMessagePopu
 
     setValues(new Array(values.length).fill(null));
     onClose();
-  };
+  }, [messageId, onClose, setLabels, valid_labels, values]);
 
   return (
     <Modal isOpen={show} onClose={onClose}>

@@ -59,6 +59,37 @@ def query_frontend_user(
     return user.to_protocol_frontend_user()
 
 
+@router.post("/", response_model=protocol.FrontEndUser)
+def create_frontend_user(
+    *,
+    create_user: protocol.CreateFrontendUserRequest,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
+):
+    ur = UserRepository(db, api_client)
+    user = ur.lookup_client_user(create_user, create_missing=True)
+
+    def changed(a, b) -> bool:
+        return a is not None and a != b
+
+    # only call update_user if something changed
+    if (
+        changed(create_user.enabled, user.enabled)
+        or changed(create_user.show_on_leaderboard, user.show_on_leaderboard)
+        or changed(create_user.notes, user.notes)
+        or (create_user.tos_acceptance and user.tos_acceptance_date is None)
+    ):
+        user = ur.update_user(
+            user.id,
+            enabled=create_user.enabled,
+            show_on_leaderboard=create_user.show_on_leaderboard,
+            tos_acceptance=create_user.tos_acceptance,
+            notes=create_user.notes,
+        )
+
+    return user.to_protocol_frontend_user()
+
+
 @router.get("/{auth_method}/{username}/messages", response_model=list[protocol.Message])
 def query_frontend_user_messages(
     auth_method: str,

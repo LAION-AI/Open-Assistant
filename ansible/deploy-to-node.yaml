@@ -113,6 +113,9 @@
           TREE_MANAGER__MAX_ACTIVE_TREES:
             "{{ lookup('ansible.builtin.env', 'MAX_ACTIVE_TREES') |
             default('10', true) }}"
+          TREE_MANAGER__MAX_INITIAL_PROMPT_REVIEW:
+            "{{ lookup('ansible.builtin.env', 'MAX_INITIAL_PROMPT_REVIEW') |
+            default('100', true) }}"
           TREE_MANAGER__MAX_TREE_DEPTH:
             "{{ lookup('ansible.builtin.env', 'MAX_TREE_DEPTH') | default('5',
             true) }}"
@@ -122,6 +125,21 @@
           TREE_MANAGER__MAX_CHILDREN_COUNT:
             "{{ lookup('ansible.builtin.env', 'MAX_CHILDREN_COUNT') |
             default('3', true) }}"
+          TREE_MANAGER__LONELY_CHILDREN_COUNT:
+            "{{ lookup('ansible.builtin.env', 'LONELY_CHILDREN_COUNT') |
+            default('2', true) }}"
+          TREE_MANAGER__P_LONELY_CHILD_EXTENSION:
+            "{{ lookup('ansible.builtin.env', 'P_LONELY_CHILD_EXTENSION') |
+            default('0.75', true) }}"
+          TREE_MANAGER__P_ACTIVATE_BACKLOG_TREE:
+            "{{ lookup('ansible.builtin.env', 'P_ACTIVATE_BACKLOG_TREE') |
+            default('0.1', true) }}"
+          TREE_MANAGER__MIN_ACTIVE_RANKINGS_PER_LANG:
+            "{{ lookup('ansible.builtin.env', 'MIN_ACTIVE_RANKINGS_PER_LANG') |
+            default('0', true) }}"
+          MESSAGE_SIZE_LIMIT:
+            "{{ lookup('ansible.builtin.env', 'MESSAGE_SIZE_LIMIT') |
+            default('2000', true) }}"
           USER_STATS_INTERVAL_DAY:
             "{{ lookup('ansible.builtin.env', 'STATS_INTERVAL_DAY') |
             default('5', true) }}"
@@ -134,6 +152,9 @@
           USER_STATS_INTERVAL_TOTAL:
             "{{ lookup('ansible.builtin.env', 'STATS_INTERVAL_TOTAL') |
             default('240', true) }}"
+          LOGURU_LEVEL:
+            "{{ lookup('ansible.builtin.env', 'LOGURU_LEVEL') | default('INFO',
+            true) }}"
         ports:
           - "{{ backend_port }}:8080"
 
@@ -165,13 +186,27 @@
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_PORT') }}"
           EMAIL_SERVER_USER:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
-          FASTAPI_URL: "http://oasst-{{ stack_name }}-backend:8080"
+          FASTAPI_URL: "{{ lookup('ansible.builtin.env', 'BACKEND_URL') }}"
           FASTAPI_KEY: "{{ web_api_key }}"
           NEXTAUTH_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
           NEXTAUTH_URL:
             "{{ 'https://open-assistant.io/' if stack_name == 'production' else
             ('https://web.' + stack_name + '.open-assistant.io/') }}"
+          NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY:
+            "{{ lookup('ansible.builtin.env',
+            'WEB_NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY') }}"
+          CLOUDFLARE_CAPTCHA_SECRET_KEY:
+            "{{ lookup('ansible.builtin.env',
+            'WEB_CLOUDFLARE_CAPTCHA_SECRET_KEY') }}"
+          NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA:
+            "{{ lookup('ansible.builtin.env',
+            'WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA') }}"
+          NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN:
+            "{{ lookup('ansible.builtin.env',
+            'WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN') }}"
+          MAINTENANCE_MODE:
+            "{{ lookup('ansible.builtin.env', 'MAINTENANCE_MODE') }}"
         ports:
           - "{{ website_port }}:3000"
         command: bash wait-for-postgres.sh node server.js

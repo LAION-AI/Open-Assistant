@@ -1,0 +1,82 @@
+{
+  "default": {
+    "unchanged_title": "Nem történt változtatás",
+    "unchanged_message": "Biztosan tovább szeretnél lépni?"
+  },
+  "random": {
+    "label": "Jó napom van",
+    "desc": "Segítsd az Open Assistant fejlesztését egy véletlenül kiválaszott feladattal."
+  },
+  "create_initial_prompt": {
+    "label": "Hozz Létre Kezdeti Promptokat",
+    "desc": "Írj egy nyitó üzenetet, hogy az Asszisztens minél több fajta kérdésből tanulhasson.",
+    "overview": "Kezdj el egy beszélgetést az Asszisztenssel.",
+    "instruction": "Találj ki Kezdeti Promptokat",
+    "response_placeholder": "Ide írd a promptot..."
+  },
+  "reply_as_user": {
+    "label": "Válaszolj a Felhasználó Helyett",
+    "desc": "Csinálj úgy, mintha chatelnél az Asszisztenssel, hogy fejlődhessen.",
+    "overview": "Írj egy ideillő üzenetet az eddigi beszélgetésre, mint Felhasználó",
+    "instruction": "Találj ki Felhasználói Válaszokat",
+    "response_placeholder": "Ide írd a választ..."
+  },
+  "reply_as_assistant": {
+    "label": "Válaszolj az Asszisztens Helyett",
+    "desc": "Mjutasd meg az Asszisztensnek, hogy milyen válaszokat küldjön a felhasználói kérdésekre.",
+    "overview": "Írj egy ideillő választ az eddigi beszélgetésre, mintha te lennél az Asszisztens",
+    "response_placeholder": "Ide írd a választ..."
+  },
+  "rank_user_replies": {
+    "label": "Rangsorold a Felhasználó Válaszait",
+    "desc": "Értékeld a Felhasználói Válaszok minőségét.",
+    "overview": "Rangsorold az alábbi Felhasználói Válaszokat: a legjobbat tedd legfelülre, a legrosszabbat legalulra.",
+    "unchanged_title": "Sorrend nem változott",
+    "unchanged_message": "Nem változtattál a promptok sorrendjén. Így is tovább akarsz lépni?"
+  },
+  "rank_assistant_replies": {
+    "label": "Rangsorold az Asszisztens Válaszait",
+    "desc": "Értékeld az Asszisztens Válaszait pontosságuk és megfogalmazásuk alapján.",
+    "overview": "Rangsorold az alábbi Asszisztens Válaszokat: a legjobbat tedd legfelülre, a legrosszabbat legalulra.",
+    "unchanged_title": "Sorrend nem változott",
+    "unchanged_message": "Nem változtattál a promptok sorrendjén. Így is tovább akarsz lépni?"
+  },
+  "rank_initial_prompts": {
+    "label": "Rangsorold a Kezdeti Promptokat",
+    "desc": "Értékeld a Kezdeti Promptokat válaszait pontosságuk és megfogalmazásuk alapján.",
+    "overview": "Rangsorold az alábbi Kezdeti Promptokat: a legjobbat tedd legfelülre, a legrosszabbat legalulra.",
+    "unchanged_title": "Sorrend nem változott",
+    "unchanged_message": "Nem változtattál a promptok sorrendjén. Így is tovább akarsz lépni?"
+  },
+  "label_initial_prompt": {
+    "label": "Címkézd fel a Kezdeti Promptokat",
+    "desc": "Találj ki címkéket a megadott Promptra.",
+    "overview": "Találj ki Címkéket az alábbi Prompthoz."
+  },
+  "label_prompter_reply": {
+    "label": "Címkézd fel a Promptokra adott Válaszokat",
+    "desc": "Találj ki címkéket a megadott Promptra.",
+    "overview": "Az alábbi beszélgetés alapján találj ki Címkéket a záró Promptra."
+  },
+  "label_assistant_reply": {
+    "label": "Címkézd fel az Asszisztens Válaszait",
+    "desc": "Találj ki címkéket a megadott Promptra.",
+    "overview": "Az alábbi beszélgetés alapján találj ki Címkéket a záró Promptra."
+  },
+  "classify_initial_prompt": {
+    "label": "Osztályozd a Kezdeti Promptokat",
+    "desc": "Találj ki címkéket a megadott Promptra.",
+    "overview": "Olvasd el a Promptot és válaszold meg a vele kapcsolatos kérdést."
+  },
+  "classify_prompter_reply": {
+    "label": "Osztályozd a Promptra adott Válaszokat",
+    "desc": "Találj ki címkéket a megadott Promptra.",
+    "overview": "Olvasd végig a beszélgetést és válaszolj a legutolsó üzenetre vonatkozó kérdésre."
+  },
+  "classify_assistant_reply": {
+    "label": "Osztályozd az Asszisztens Válaszait",
+    "desc": "Találj ki címkéket a megadott Promptra.",
+    "overview": "Olvasd végig a beszélgetést és válaszolj a legutolsó üzenetre vonatkozó kérdésre."
+  },
+  "available_task_count": "{{count}} feladat érhető el"
+}

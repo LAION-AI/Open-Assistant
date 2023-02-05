@@ -8,10 +8,17 @@
   "spam.question": "Is the message spam?",
   "fails_task.question": "Is it a bad reply, as an answer to the prompt task?",
   "not_appropriate": "Not Appropriate",
+  "not_appropriate.explanation": "Inappropriate for a customer assistant.",
   "pii": "Contains PII",
+  "pii.explanation": "Contains personally identifying information. Examples include personal contact details, license and other identity numbers and banking details.",
   "hate_speech": "Hate Speech",
+  "hate_speech.explanation": "Content is abusive or threatening and expresses prejudice against a protected characteristic. Prejudice refers to preconceived views not based on reason. Protected characteristics include gender, ethnicity, religion, sexual orientation, and similar characteristics.",
   "sexual_content": "Sexual Content",
+  "sexual_content.explanation": "Contains sexual content.",
   "moral_judgement": "Judges Morality",
+  "moral_judgement.explanation": "Expresses moral judgement.",
   "political_content": "Political",
-  "lang_mismatch": "Wrong Language"
+  "political_content.explanation": "Expresses political views.",
+  "lang_mismatch": "Wrong Language",
+  "lang_mismatch.explanation": "Not written in the currently selected language."
 }

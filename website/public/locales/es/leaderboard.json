@@ -10,5 +10,9 @@
   "weekly": "Semanal",
   "prompt": "Indicaciones",
   "reply": "Respuestas",
-  "label": "Etiquetas"
+  "label": "Etiquetas",
+  "view_all": "Ver todos",
+  "top_5_contributors_today": "5 mayores contribuidores hoy",
+  "previous": "Anterior",
+  "next": "Siguiente"
 }

@@ -1,0 +1,14 @@
+{
+  "daily": "Napi",
+  "last_updated_at": "Frissítve: {{val, datetime}}",
+  "leaderboard": "Ranglétra",
+  "monthly": "Havi",
+  "overall": "Összesített",
+  "rank": "Helyezés",
+  "score": "Pont",
+  "user": "Felhasználó",
+  "weekly": "Heti",
+  "prompt": "Promptok",
+  "reply": "Válaszok",
+  "label": "Címkék"
+}

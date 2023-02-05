@@ -1,12 +1,13 @@
-import { CircularProgress } from "@chakra-ui/react";
+import { CircularProgress, useColorModeValue, useToken } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { useTranslation } from "next-i18next";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { get } from "src/lib/api";
+import { colors } from "src/styles/Theme/colors";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import useSWRImmutable from "swr/immutable";
 
-import { DataTable } from "../DataTable";
+import { DataTable, DataTableRowPropsCallback } from "../DataTable";
 
 const columnHelper = createColumnHelper<LeaderboardEntity>();
 
@@ -23,6 +24,7 @@ export const LeaderboardTable = ({
   rowPerPage: number;
 }) => {
   const { t } = useTranslation("leaderboard");
+
   const {
     data: reply,
     isLoading,
@@ -66,6 +68,32 @@ export const LeaderboardTable = ({
     return reply?.leaderboard.slice(start, start + rowPerPage) || [];
   }, [rowPerPage, page, reply?.leaderboard]);
 
+  const borderColor = useToken("colors", useColorModeValue(colors.light.active, colors.dark.active));
+  const rowProps = useCallback<DataTableRowPropsCallback<LeaderboardEntity>>(
+    (row) => {
+      return row.original.highlighted
+        ? {
+            sx: {
+              // https://stackoverflow.com/questions/37963524/how-to-apply-border-radius-to-tr-in-bootstrap
+              position: "relative",
+              "td:first-of-type:before": {
+                borderLeft: `6px solid ${borderColor}`,
+                content: `""`,
+                display: "block",
+                width: "10px",
+                height: "100%",
+                left: 0,
+                top: 0,
+                borderRadius: "6px 0 0 6px",
+                position: "absolute",
+              },
+            },
+          }
+        : {};
+    },
+    [borderColor]
+  );
+
   if (isLoading) {
     return <CircularProgress isIndeterminate></CircularProgress>;
   }
@@ -86,6 +114,7 @@ export const LeaderboardTable = ({
       disablePrevious={page === 1}
       onNextClick={() => setPage((p) => p + 1)}
       onPreviousClick={() => setPage((p) => p - 1)}
+      rowProps={rowProps}
     ></DataTable>
   );
 };

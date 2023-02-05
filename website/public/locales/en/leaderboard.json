@@ -10,5 +10,9 @@
   "weekly": "Weekly",
   "prompt": "Prompts",
   "reply": "Replies",
-  "label": "Labels"
+  "label": "Labels",
+  "view_all": "View all",
+  "top_5_contributors_today": "Top 5 Contributors Today",
+  "previous": "Previous",
+  "next": "Next"
 }

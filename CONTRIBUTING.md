@@ -140,4 +140,4 @@ automatically deploy the built release to the dev machine.
 ### Contribute a Dataset
 
 See
-[here](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/data/datasets.md)
+[here](https://github.com/LAION-AI/Open-Assistant/blob/main/openassistant/datasets/README.md)

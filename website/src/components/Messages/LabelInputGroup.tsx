@@ -1,9 +1,11 @@
-import { Text, VStack } from "@chakra-ui/react";
+import { Box, Text, VStack } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
+import { Explain } from "src/components/Explain";
+import { LabelFlagGroup } from "src/components/Messages/LabelFlagGroup";
+import { LabelYesNoGroup } from "src/components/Messages/LabelYesNoGroup";
+import { LabelLikertGroup } from "src/components/Survey/LabelLikertGroup";
+import { getTypeSafei18nKey } from "src/lib/i18n";
 import { Label } from "src/types/Tasks";
-
-import { LabelLikertGroup } from "../Survey/LabelLikertGroup";
-import { LabelFlagGroup } from "./LabelFlagGroup";
-import { LabelYesNoGroup } from "./LabelYesNoGroup";
 
 export interface LabelInputInstructions {
   yesNoInstruction: string;
@@ -28,6 +30,7 @@ export const LabelInputGroup = ({
   instructions,
   onChange,
 }: LabelInputGroupProps) => {
+  const { t } = useTranslation("labelling");
   const yesNoIndexes = labels.map((label, idx) => (label.widget === "yes_no" ? idx : null)).filter((v) => v !== null);
   const flagIndexes = labels.map((label, idx) => (label.widget === "flag" ? idx : null)).filter((v) => v !== null);
   const likertIndexes = labels.map((label, idx) => (label.widget === "likert" ? idx : null)).filter((v) => v !== null);
@@ -52,7 +55,19 @@ export const LabelInputGroup = ({
       )}
       {flagIndexes.length > 0 && (
         <VStack alignItems="stretch" spacing={2}>
-          <Text>{instructions.flagInstruction}</Text>
+          <Box>
+            <Text display="inline-block" paddingEnd={1}>
+              {instructions.flagInstruction}
+            </Text>
+            <Explain
+              explanation={flagIndexes.map(
+                (idx) =>
+                  `${t(getTypeSafei18nKey(labels[idx].name))}: ${t(
+                    getTypeSafei18nKey(`${labels[idx].name}.explanation`)
+                  )}`
+              )}
+            />
+          </Box>
           <LabelFlagGroup
             values={flagIndexes.map((idx) => values[idx])}
             labelNames={flagIndexes.map((idx) => labels[idx].name)}
