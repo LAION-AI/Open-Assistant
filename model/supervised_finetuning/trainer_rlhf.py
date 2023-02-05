@@ -1,10 +1,11 @@
-import os
-import torch
-import trlx
-import transformers
 import argparse
-from utils import read_yamls, _strtobool
+import os
+
+import torch
+import transformers
+import trlx
 from trlx.data.configs import TRLConfig
+from utils import _strtobool, read_yamls
 
 
 def argument_parsing(notebook=False, notebook_args=None):
@@ -93,7 +94,7 @@ if __name__ == "__main__":
             inputs = tokenizer(questions, answers, return_tensors="pt")
             return rank_model(**inputs).logits[:, 0].detach().cpu()
 
-        reward_fn = lambda questions, answers, **kwargs: rank_model_fn(questions, answers, **kwargs)
+        reward_fn = rank_model_fn
         trlx_config = TRLConfig.load_yaml("configs/ppo_config.yml")
     else:
         reward_fn = None

@@ -1,5 +1,4 @@
 import argparse
-from distutils.util import strtobool
 from functools import partial
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -8,7 +7,7 @@ import torch
 from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.training_args import OptimizerNames
-from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls, _strtobool
+from utils import _strtobool, get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):

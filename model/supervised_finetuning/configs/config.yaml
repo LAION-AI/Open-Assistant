@@ -16,32 +16,32 @@ defaults:
   eval_accumulation_steps:
   freeze_layer:
   datasets:
-    - webgpt
-    - prompt_dialogue
-    - squad_v2
-    - adversarial_qa
-    - trivia_qa_nocontext
-    - xsum
-    - cnn_dailymail
-    - prompt_dialogue
-    - multi_news
-    - scitldr
-    - soda
-    - joke
-    - gsm8k
-    - dive_mt
-    - wmt2019_zh-en
-    - wmt2019_ru-en
-    - wmt2019_de-en
-    - ted_trans_nl-en
-    - ted_trans_de-ja
-    - instruct_tuning
-    - wmt2019_de-en
-    - samsum
-    - soda_dialogue
+    - webgpt: 1
+    - prompt_dialogue: 1
+    - squad_v2: 1
+    - adversarial_qa: 1
+    - trivia_qa_nocontext: 1
+    - xsum: 1
+    - cnn_dailymail: 1
+    - prompt_dialogue: 1
+    - multi_news: 1
+    - scitldr: 1
+    - soda: 1
+    - joke: 1
+    - gsm8k: 1
+    - dive_mt: 1
+    - wmt2019_zh-en: 1
+    - wmt2019_ru-en: 1
+    - wmt2019_de-en: 1
+    - ted_trans_nl-en: 1
+    - ted_trans_de-ja: 1
+    - instruct_tuning: 1
+    - wmt2019_de-en: 1
+    - samsum: 1
+    - soda_dialogue: 1
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
-  eval_size:
+  eval_size: 25
   log_dir: "base"
   quantization: false
   seq2seqmodel: false
