@@ -62,6 +62,7 @@ jobs:
         ${{ vars.WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN }}
       LOGURU_LEVEL: ${{ vars.LOGURU_LEVEL }}
       MAINTENANCE_MODE: ${{ vars.MAINTENANCE_MODE }}
+      BACKEND_URL: ${{ vars.BACKEND_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2

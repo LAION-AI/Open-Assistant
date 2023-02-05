@@ -186,7 +186,7 @@
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_PORT') }}"
           EMAIL_SERVER_USER:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
-          FASTAPI_URL: "http://oasst-{{ stack_name }}-backend:8080"
+          FASTAPI_URL: "{{ lookup('ansible.builtin.env', 'BACKEND_URL') }}"
           FASTAPI_KEY: "{{ web_api_key }}"
           NEXTAUTH_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
