@@ -12,7 +12,7 @@ export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = A
 ): TaskApiHook<TaskType, ResponseContent> => {
   const [response, setResponse] = useState<TaskResponse<TaskType>>({ taskAvailability: "AWAITING_INITIAL" });
 
-  // Note: We use isValidating to indiate we are loading beause it signals eash load, not just the first one.
+  // Note: We use isValidating to indicate we are loading because it signals eash load, not just the first one.
   const { isValidating: isLoading, mutate: requestNewTask } = useSWRImmutable<ServerTaskResponse<TaskType>>(
     "/api/new_task/" + taskType,
     get,

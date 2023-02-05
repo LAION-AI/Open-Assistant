@@ -314,7 +314,7 @@ class JokeExplaination(Dataset):
             for line in f:
                 data = json.loads(line)
                 joke = data["joke"]
-                explanation = data["explaination"]
+                explanation = data["explanation"]
                 self.pairs.append((joke, explanation))
 
         if len(question) > 0 and len(answer) > 0:

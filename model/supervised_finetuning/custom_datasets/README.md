@@ -23,5 +23,5 @@ Issues and TODO:
 - ideally we can update the config yaml and new dataset will be download from
   hub
 
-  - one possible idea is we upload the trasform format of these dataset to the
+  - one possible idea is we upload the transform format of these dataset to the
     OA hub

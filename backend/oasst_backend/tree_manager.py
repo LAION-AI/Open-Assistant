@@ -320,7 +320,7 @@ class TreeManager:
             if num_red_flag is not None and num_red_flag >= self.cfg.auto_mod_red_flags:
                 if m.parent_id is None:
                     logger.warning(
-                        f"[AUTO MOD] Halting tree {m.message_tree_id}, inital prompt got too many red flags ({m.emojis})."
+                        f"[AUTO MOD] Halting tree {m.message_tree_id}, initial prompt got too many red flags ({m.emojis})."
                     )
                     self.enter_low_grade_state(m.message_tree_id)
                 else:
@@ -895,7 +895,7 @@ class TreeManager:
                     logger.warning("The intersection of ranking results ID sets has less than two elements. Skipping.")
                     continue
 
-                # keep only elements in commond set
+                # keep only elements in command set
                 ordered_ids_list = [list(filter(lambda x: x in common_set, ids)) for ids in ordered_ids_list]
                 assert all(len(x) == len(common_set) for x in ordered_ids_list)
 
@@ -1069,7 +1069,7 @@ HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
 """
 
     def query_incomplete_rankings(self, lang: str) -> list[IncompleteRankingsRow]:
-        """Query parents which have childern that need further rankings"""
+        """Query parents which have children that need further rankings"""
 
         user_id = self.pr.user_id if not settings.DEBUG_ALLOW_DUPLICATE_TASKS else None
         r = self.db.execute(
@@ -1256,7 +1256,7 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
 
     @managed_tx_method(CommitMode.COMMIT)
     def ensure_tree_states(self) -> None:
-        """Add message tree state rows for all root nodes (inital prompt messages)."""
+        """Add message tree state rows for all root nodes (initial prompt messages)."""
 
         missing_tree_ids = self.query_misssing_tree_states()
         for id in missing_tree_ids:
@@ -1598,7 +1598,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         total_messages = sum(len(x) for x in replies_by_tree.values())
         logger.debug(f"found: {len(replies_by_tree)} trees; {len(prompts)} prompts; {total_messages} messages;")
 
-        # remove all trees based on inital prompts of the user
+        # remove all trees based on initial prompts of the user
         if purge_initial_prompts:
             for p in prompts:
                 self.purge_message_tree(p.message_tree_id)
@@ -1636,7 +1636,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
                     logger.debug(f"purging message: {m.id}")
                     self._purge_message_internal(m.id)
 
-            # update childern counts
+            # update children counts
             self.pr.update_children_counts(m.message_tree_id)
 
             # reactivate tree
