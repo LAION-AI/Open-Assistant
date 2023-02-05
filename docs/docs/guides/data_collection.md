@@ -60,6 +60,10 @@ obvious creativity shown. The same goes for "Serious" compared to "Humorous".
 
 ## Ranking and Classifying Answers
 
+Your rankings and classification will help decide which answers are the best
+and therefore which ones are prioritised in the final dataset. That means the
+answer classification is a crucial task, serving as community moderation.
+
 Largely the criteria for "quality" can be derived by how well the answer
 follows the guidance
 [above](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/guides#writing-answers-assistant-replies).
