@@ -12,9 +12,10 @@ import {
   useBreakpointValue,
   useColorModeValue,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import { ClipboardList, Flag, MessageSquare, MoreHorizontal, Trash, User } from "lucide-react";
+import { ClipboardList, Copy, Flag, MessageSquare, MoreHorizontal, Slash, Trash, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
@@ -22,7 +23,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
-import { del, post } from "src/lib/api";
+import { del, post, put } from "src/lib/api";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
@@ -142,6 +143,8 @@ const EmojiMenuItem = ({
   );
 };
 
+const CHAR_COUNT = 10;
+
 const MessageActions = ({
   react,
   userEmoji,
@@ -155,14 +158,45 @@ const MessageActions = ({
   onReport: () => void;
   message: Message;
 }) => {
+  const toast = useToast();
   const { t } = useTranslation(["message", "common"]);
-  const { trigger } = useSWRMutation(`/api/admin/delete_message/${message.id}`, del);
-  const { data } = useSession() || {};
-  const role = data?.user?.role;
+  const id = message.id;
+  const displayId = id.slice(0, CHAR_COUNT) + "..." + id.slice(-CHAR_COUNT);
+  const { trigger: deleteMessage } = useSWRMutation(`/api/admin/delete_message/${message.id}`, del);
+
+  const { trigger: stopTree } = useSWRMutation(`/api/admin/stop_tree/${message.id}`, put, {
+    onSuccess: () => {
+      toast({
+        title: t("common:success"),
+        description: t("tree_stopped", { id: displayId }),
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    },
+  });
+
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
 
   const handleDelete = async () => {
-    await trigger();
+    await deleteMessage();
     mutate((key) => typeof key === "string" && key.startsWith("/api/messages"), undefined, { revalidate: true });
+  };
+
+  const handleStop = () => {
+    stopTree();
+  };
+
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(message.id);
+    toast({
+      title: t("common:copied"),
+      description: displayId,
+      status: "info",
+      duration: 5000,
+      isClosable: true,
+    });
   };
 
   return (
@@ -189,14 +223,20 @@ const MessageActions = ({
         <MenuItem as="a" href={`/messages/${message.id}`} target="_blank" icon={<MessageSquare />}>
           {t("open_new_tab_action")}
         </MenuItem>
-        {role === "admin" && (
+        {!!isAdmin && (
           <>
             <MenuDivider />
+            <MenuItem onClick={handleCopyId} icon={<Copy />}>
+              {t("copy_message_id")}
+            </MenuItem>
             <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
               {t("view_user")}
             </MenuItem>
             <MenuItem onClick={handleDelete} icon={<Trash />}>
               {t("common:delete")}
+            </MenuItem>
+            <MenuItem onClick={handleStop} icon={<Slash />}>
+              {t("stop_tree")}
             </MenuItem>
           </>
         )}

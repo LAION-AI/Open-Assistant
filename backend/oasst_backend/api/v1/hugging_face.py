@@ -18,7 +18,7 @@ async def get_text_toxicity(
 
     Args:
         msg (str): the message that we want to analyze.
-        api_client (ApiClient, optional): authentification of the user of the request.
+        api_client (ApiClient, optional): authentication of the user of the request.
             Defaults to Depends(deps.get_trusted_api_client).
 
     Returns:

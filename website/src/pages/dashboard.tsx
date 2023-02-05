@@ -46,11 +46,9 @@ const Dashboard = () => {
         <meta name="description" content="Chat with Open Assistant and provide feedback." key="description" />
       </Head>
       <Flex direction="column" gap="10">
-        <ToSWrapper>
-          <WelcomeCard />
-          <TaskOption content={availableTaskTypes} />
-          <LeaderboardWidget />
-        </ToSWrapper>
+        <WelcomeCard />
+        <TaskOption content={availableTaskTypes} />
+        <LeaderboardWidget />
       </Flex>
     </>
   );

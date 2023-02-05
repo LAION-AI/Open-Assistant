@@ -247,7 +247,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234"):
                 tasks.append(new_task)
             case "task_done":
                 typer.echo("Task done!")
-                # rerun with new task slected from above cases
+                # rerun with new task selected from above cases
                 # add a new task
                 q += 1
                 if q == 10:
@@ -257,7 +257,7 @@ def main(backend_url: str = "http://127.0.0.1:8080", api_key: str = "1234"):
                 #
             case _:
                 typer.echo(f"Unknown task type {task['type']}")
-                # rerun with new task slected from above cases
+                # rerun with new task selected from above cases
 
 
 if __name__ == "__main__":

@@ -50,6 +50,7 @@
     "eslint-plugin-simple-import-sort": "^8.0.0",
     "focus-visible": "^5.2.0",
     "framer-motion": "^6.5.1",
+    "lande": "^1.0.10",
     "lucide-react": "^0.105.0",
     "next": "13.0.6",
     "next-auth": "^4.18.6",

@@ -8,6 +8,7 @@ import { Header } from "src/components/Header";
 import { SlimFooter } from "./Dashboard/SlimFooter";
 import { Footer } from "./Footer";
 import { SideMenuLayout } from "./SideMenuLayout";
+import { ToSWrapper } from "./ToSWrapper";
 
 export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: React.ReactElement) => React.ReactNode;
@@ -32,32 +33,34 @@ export const getTransparentHeaderLayout = (page: React.ReactElement) => (
 export const getDashboardLayout = (page: React.ReactElement) => (
   <Grid templateRows="min-content 1fr" h="full">
     <Header />
-    <SideMenuLayout
-      menuButtonOptions={[
-        {
-          label: "Dashboard",
-          pathname: "/dashboard",
-          icon: Layout,
-        },
-        {
-          label: "Messages",
-          pathname: "/messages",
-          icon: MessageSquare,
-        },
-        {
-          label: "Leaderboard",
-          pathname: "/leaderboard",
-          icon: BarChart2,
-        },
-      ]}
-    >
-      <Grid templateRows="1fr min-content" h="full">
-        <Box>{page}</Box>
-        <Box mt="10">
-          <SlimFooter />
-        </Box>
-      </Grid>
-    </SideMenuLayout>
+    <ToSWrapper>
+      <SideMenuLayout
+        menuButtonOptions={[
+          {
+            label: "Dashboard",
+            pathname: "/dashboard",
+            icon: Layout,
+          },
+          {
+            label: "Messages",
+            pathname: "/messages",
+            icon: MessageSquare,
+          },
+          {
+            label: "Leaderboard",
+            pathname: "/leaderboard",
+            icon: BarChart2,
+          },
+        ]}
+      >
+        <Grid templateRows="1fr min-content" h="full">
+          <Box>{page}</Box>
+          <Box mt="10">
+            <SlimFooter />
+          </Box>
+        </Grid>
+      </SideMenuLayout>
+    </ToSWrapper>
   </Grid>
 );
 

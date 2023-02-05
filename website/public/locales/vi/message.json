@@ -1,13 +1,16 @@
 {
-  "label_action": "Label",
-  "label_title": "Label",
-  "message": "Message",
-  "open_new_tab_action": "Mở trong trang mới",
-  "parent": "Parent",
-  "reactions": "Reactions",
+  "label_action": "Nhãn",
+  "label_title": "Nhãn",
+  "message": "Tin nhắn",
+  "open_new_tab_action": "Mở ở trang mới",
+  "parent": "Tin nhắn gốc",
+  "reactions": "Bình luận",
   "report_action": "Báo cáo",
-  "report_placeholder": "Why should this message be reviewed?",
+  "report_placeholder": "Tại sao tin nhắn này cần được báo cáo?",
   "report_title": "Báo cáo",
   "send_report": "Gửi",
-  "submit_labels": "Submit"
+  "submit_labels": "Gửi",
+  "view_user": "Xem người dùng",
+  "recent_messages": "Tin nhắn gần đây",
+  "your_recent_messages": "Tin nhắn gần đây của bạn"
 }

@@ -14,7 +14,7 @@ class TreeManagerConfiguration(BaseModel):
     number is reached."""
 
     max_initial_prompt_review: int = 100
-    """Maximum number of initial prompts under review before no more inital prompt tasks will be handed out."""
+    """Maximum number of initial prompts under review before no more initial prompt tasks will be handed out."""
 
     max_tree_depth: int = 3
     """Maximum depth of message tree."""
@@ -47,7 +47,7 @@ class TreeManagerConfiguration(BaseModel):
     """Automatically set tree state to `halted_by_moderator` when more than the specified number
     of users skip replying to a message. (auto moderation)"""
 
-    auto_mod_red_flags: int = 3
+    auto_mod_red_flags: int = 4
     """Delete messages that receive more than this number of red flags if it is a reply or
     set the tree to `aborted_low_grade` when a prompt is flagged. (auto moderation)"""
 
@@ -75,7 +75,7 @@ class TreeManagerConfiguration(BaseModel):
 
     min_active_rankings_per_lang: int = 0
     """When the number of active ranking tasks is below this value when a tree enters a terminal
-    state an available trees in BACKLOG_RANKING will be actived (i.e. enters the RANKING state)."""
+    state an available trees in BACKLOG_RANKING will be activated (i.e. enters the RANKING state)."""
 
     labels_initial_prompt: list[TextLabel] = [
         TextLabel.spam,
@@ -138,7 +138,7 @@ class TreeManagerConfiguration(BaseModel):
     p_lonely_child_extension: float = 0.75
     """Probability to select a prompter message parent with less than lonely_children_count children."""
 
-    recent_tasks_span_sec: int = 3 * 60  # 3 min
+    recent_tasks_span_sec: int = 5 * 60  # 5 min
     """Time in seconds of recent tasks to consider for exclusion during task selection."""
 
 
