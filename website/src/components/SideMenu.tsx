@@ -1,5 +1,4 @@
 import { Button, Card, Text, Tooltip, useColorMode } from "@chakra-ui/react";
-import { useTranslation } from "next-i18next";
 import { LucideIcon, Sun } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -16,8 +15,6 @@ export interface SideMenuProps {
 
 export function SideMenu(props: SideMenuProps) {
   const router = useRouter();
-  const { colorMode, toggleColorMode } = useColorMode();
-  const { t } = useTranslation(["side_menu", "common"]);
 
   return (
     <main className="sticky top-0 sm:h-full">
@@ -57,16 +54,6 @@ export function SideMenu(props: SideMenuProps) {
             </Tooltip>
           ))}
         </nav>
-        <div>
-          <Tooltip fontFamily="inter" label="Toggle Dark Mode" placement="right" className="hidden lg:hidden sm:block">
-            <Button size="lg" width="full" justifyContent="center" onClick={toggleColorMode} gap="2">
-              <Sun size={"1em"} />
-              <Text fontWeight="normal" className="hidden lg:block">
-                {colorMode === "light" ? t("common:dark_mode") : t("common:light_mode")}
-              </Text>
-            </Button>
-          </Tooltip>
-        </div>
       </Card>
     </main>
   );

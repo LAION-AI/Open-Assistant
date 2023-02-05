@@ -8,6 +8,7 @@ import { Flags } from "react-feature-flags";
 import { LanguageSelector } from "src/components/LanguageSelector";
 
 import { UserMenu } from "./UserMenu";
+import { ThemeButton } from "./ThemeButton";
 
 function AccountButton() {
   const { data: session } = useSession();
@@ -46,6 +47,7 @@ export function Header() {
           <Flags authorizedFlags={["flagTest"]}>
             <Text>FlagTest</Text>
           </Flags>
+          <ThemeButton />
           <LanguageSelector />
           <AccountButton />
           <UserMenu />
