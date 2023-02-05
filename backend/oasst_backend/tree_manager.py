@@ -880,7 +880,7 @@ class TreeManager:
                     logger.warning("The intersection of ranking results ID sets has less than two elements. Skipping.")
                     continue
 
-                # keep only elements in commond set
+                # keep only elements in common set
                 ordered_ids_list = [list(filter(lambda x: x in common_set, ids)) for ids in ordered_ids_list]
                 assert all(len(x) == len(common_set) for x in ordered_ids_list)
 
@@ -1054,7 +1054,7 @@ HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
 """
 
     def query_incomplete_rankings(self, lang: str) -> list[IncompleteRankingsRow]:
-        """Query parents which have childern that need further rankings"""
+        """Query parents which have children that need further rankings"""
 
         user_id = self.pr.user_id if not settings.DEBUG_ALLOW_DUPLICATE_TASKS else None
         r = self.db.execute(
@@ -1082,13 +1082,13 @@ WITH recent_reply_tasks (parent_message_id) AS (
 )
 SELECT m.id as parent_id, m.role as parent_role, m.depth, m.message_tree_id, COUNT(c.id) active_children_count
 FROM message_tree_state mts
-    INNER JOIN message m ON mts.message_tree_id = m.message_tree_id	-- all elements of message tree
+    INNER JOIN message m ON mts.message_tree_id = m.message_tree_id     -- all elements of message tree
     LEFT JOIN message_emoji me ON
         (m.id = me.message_id
         AND :skip_user_id IS NOT NULL
         AND me.user_id = :skip_user_id
         AND me.emoji = :skip_reply)
-    LEFT JOIN recent_reply_tasks rrt ON m.id = rrt.parent_message_id    -- recent task
+    LEFT JOIN recent_reply_tasks rrt ON m.id = rrt.parent_message_id    -- recent tasks
     LEFT JOIN message c ON m.id = c.parent_id  -- child nodes
 WHERE mts.active                        -- only consider active trees
     AND mts.state = :growing_state      -- message tree must be growing
@@ -1253,7 +1253,7 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
 
     @managed_tx_method(CommitMode.COMMIT)
     def ensure_tree_states(self) -> None:
-        """Add message tree state rows for all root nodes (inital prompt messages)."""
+        """Add message tree state rows for all root nodes (initial prompt messages)."""
 
         missing_tree_ids = self.query_misssing_tree_states()
         for id in missing_tree_ids:
@@ -1595,7 +1595,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         total_messages = sum(len(x) for x in replies_by_tree.values())
         logger.debug(f"found: {len(replies_by_tree)} trees; {len(prompts)} prompts; {total_messages} messages;")
 
-        # remove all trees based on inital prompts of the user
+        # remove all trees based on initial prompts of the user
         if purge_initial_prompts:
             for p in prompts:
                 self.purge_message_tree(p.message_tree_id)
@@ -1633,7 +1633,7 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
                     logger.debug(f"purging message: {m.id}")
                     self._purge_message_internal(m.id)
 
-            # update childern counts
+            # update children counts
             self.pr.update_children_counts(m.message_tree_id)
 
             # reactivate tree
