@@ -53,8 +53,8 @@ relevant and from reputable websites. However, this is **not** required.
 
 ## Ranking and Classifying Prompts
 
-Largely the criteria for "quality" can be derived by how well the prompt
-follows the guidance
+Largely the criteria for "quality" can be derived by how well the prompt follows
+the guidance
 [above](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/guides#writing-prompts-initial-prompts-or-prompter-replies).
 The other labels are largely self-explanatory.
 
