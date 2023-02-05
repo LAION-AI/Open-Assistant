@@ -7,7 +7,7 @@
   "label_message_likert_instruction": "Rate the message:",
   "spam.question": "Is the message spam?",
   "fails_task.question": "Is it a bad reply, as an answer to the prompt task?",
-  "not_appropriate": "Not Appropriate",
+  "not_appropriate": "No apropiat",
   "not_appropriate.explanation": "Inappropriate for a customer assistant.",
   "pii": "Contains PII",
   "pii.explanation": "Contains personally identifying information. Examples include personal contact details, license and other identity numbers and banking details.",
@@ -17,8 +17,8 @@
   "sexual_content.explanation": "Contains sexual content.",
   "moral_judgement": "Judges Morality",
   "moral_judgement.explanation": "Expresses moral judgement.",
-  "political_content": "Political",
+  "political_content": "Polític",
   "political_content.explanation": "Expresses political views.",
-  "lang_mismatch": "Wrong Language",
+  "lang_mismatch": "Idioma equivocat",
   "lang_mismatch.explanation": "Not written in the currently selected language."
 }
