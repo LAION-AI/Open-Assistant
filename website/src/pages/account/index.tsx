@@ -6,13 +6,17 @@ import React from "react";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import { Pencil } from "lucide-react";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
+import { get } from "src/lib/api";
+import uswSWRImmutable from "swr/immutable";
 
 export default function Account() {
   const { data: session } = useSession();
-
+  const { data } = uswSWRImmutable("/api/user_stats", get);
   if (!session) {
     return;
   }
+
+  console.log(data);
   return (
     <>
       <Head>
