@@ -75,6 +75,11 @@ const config = {
         },
         items: [
           {
+            href: "https://open-assistant.io/",
+            label: "App",
+            position: "left",
+          },
+          {
             type: "doc",
             docId: "intro",
             position: "left",
