@@ -177,7 +177,7 @@
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_ID') }}"
           DISCORD_CLIENT_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_SECRET') }}"
-          EMAIL_FROM: open-assistent@laion.ai
+          EMAIL_FROM: open-assistant@laion.ai
           EMAIL_SERVER_HOST:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_HOST') }}"
           EMAIL_SERVER_PASSWORD:
