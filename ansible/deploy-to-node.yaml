@@ -205,6 +205,8 @@
           NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN:
             "{{ lookup('ansible.builtin.env',
             'WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN') }}"
+          MAINTENANCE_MODE:
+            "{{ lookup('ansible.builtin.env', 'MAINTENANCE_MODE') }}"
         ports:
           - "{{ website_port }}:3000"
         command: bash wait-for-postgres.sh node server.js
