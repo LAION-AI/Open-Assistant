@@ -1,0 +1,11 @@
+defaults_rlhf:
+  dataset:
+  rank_model:
+  eval_prompts: 
+  batch_size: 64
+
+debug_rlhf:
+  model_name: gpt2
+  dataset: test_dataset
+  eval_prompts: test_promps
+  batch_size: 2

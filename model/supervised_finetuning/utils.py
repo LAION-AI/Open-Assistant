@@ -118,7 +118,8 @@ def get_model(conf, tokenizer):
 def get_dataset(conf, tokenizer):
     train_datasets, evals = [], {}
 
-    for dataset_name in conf.datasets:
+    for dataset in conf.datasets:
+        dataset_name = next(iter(dataset))
         train, val = get_one_dataset(conf, dataset_name)
         train_datasets.append(train)
         evals[dataset_name] = Subset(val, list(range(min(len(val), conf.eval_size)))) if conf.eval_size else val
@@ -152,6 +153,10 @@ def read_yamls(dir):
         print(f"WARNING: No yaml files found in {dir}")
 
     return conf
+
+
+def _strtobool(x):
+    return bool(strtobool(x))
 
 
 def train_val_dataset(dataset, val_split=0.2):
