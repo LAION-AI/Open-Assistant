@@ -13,13 +13,15 @@ prompts will be removed.
 Do __not__ include personally identifiable information (PII) in prompts. This
 will be moderated out.
 
+Prompts should not include links which the assistant must open to effectively
+answer the prompt.
+
+### Prompts: Spelling and Grammar
+
 For prompts, grammar and spelling is significantly less important than answers.
 If the grammar of a prompt makes it __ambiguous or unreadable__ it should be
 considered low quality, but if it simply contains common typos this is not a
 problem.
-
-Prompts should not include links which the assistant must open to effectively
-answer the prompt.
 
 ## Writing Answers (Assistant Replies)
 
@@ -36,21 +38,24 @@ Where possible, __avoid bias__ or expressing subjective preferences in answers.
 Do __not__ write answers which encourage illegal activities or activities likely
 to be harmful to the user or others around them.
 
-Answers should be held to a high standard of grammar and spelling. It is
-permissible for answers to contain sources or references provided they are
-relevant and from reputable websites. However, this is __not__ required.
+### Answers: ChatGPT
 
 __Do not copy answers from ChatGPT__ or other OpenAI services. It is prohibited
 according to the OpenAI Terms of Service. Obvious ChatGPT-generated answers
 should be reported in moderation and rated low quality. Other AI systems may
 allow such usage, but answers should still __not__ be copied and pasted.
 
+### Answers: Spelling and Grammar
+
+Answers should be held to a high standard of grammar and spelling. It __is__
+permissible for answers to contain sources or references provided they are
+relevant and from reputable websites. However, this is __not__ required.
+
 ## Ranking and Classifying Prompts
 
 Largely the criteria for "quality" can be derived by how well the prompt
 follows the guidance
 [above](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/guides#writing-prompts-initial-prompts-or-prompter-replies).
-
 The other labels are largely self-explanatory.
 
 Spam should be reserved for intentionally low effort or low quality prompts.
@@ -67,7 +72,6 @@ answer classification is a crucial task, serving as community moderation.
 Largely the criteria for "quality" can be derived by how well the answer
 follows the guidance
 [above](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/guides#writing-answers-assistant-replies).
-
 The other labels are largely self-explanatory.
 
 Spam should be reserved for intentionally low effort or low quality answers.
