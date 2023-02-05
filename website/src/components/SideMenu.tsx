@@ -57,16 +57,6 @@ export function SideMenu(props: SideMenuProps) {
             </Tooltip>
           ))}
         </nav>
-        <div>
-          <Tooltip fontFamily="inter" label="Toggle Dark Mode" placement="right" className="hidden lg:hidden sm:block">
-            <Button size="lg" width="full" justifyContent="center" onClick={toggleColorMode} gap="2">
-              <Sun size={"1em"} />
-              <Text fontWeight="normal" className="hidden lg:block">
-                {colorMode === "light" ? t("common:dark_mode") : t("common:light_mode")}
-              </Text>
-            </Button>
-          </Tooltip>
-        </div>
       </Card>
     </main>
   );
