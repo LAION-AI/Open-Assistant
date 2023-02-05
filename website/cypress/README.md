@@ -4,7 +4,7 @@
 the context of this site. To learn more, the
 [Cypress documentation](https://docs.cypress.io/guides/getting-started/opening-the-app) has it all.
 
-Don't get scared by the commercial offerings they offer. Their core is open source, the cloud offering is not necesarry
+Don't get scared by the commercial offerings they offer. Their core is open source, the cloud offering is not necessary
 at all and can be replaced by CI tooling and [community efforts](https://sorry-cypress.dev/).
 
 # Component testing

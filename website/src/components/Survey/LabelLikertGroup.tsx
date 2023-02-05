@@ -156,7 +156,7 @@ const getLabelInfo = (label: string): LabelInfo => {
         zeroText: "Clean",
         zeroDescription: [],
         oneText: "Contains PII",
-        oneDescription: ["Contains personally identifing information"],
+        oneDescription: ["Contains personally identifying information"],
         inverted: false,
       };
     case "quality":

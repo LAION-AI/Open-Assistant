@@ -1,0 +1,15 @@
+{
+  "blurb": "Bir devrim yaratabileceğimize inanıyoruz.",
+  "blurb1": "Stable Diffusion Dünyaya sanat ve görsel oluşturmak için nasıl yardımcı olduysa, biz de Dünyayı inanılmaz etkileşimli AI sunarak ileri götürmeyi istiyoruz.",
+  "description": "Herkes için etkileşimli AI. LAION ve dünyanın her yerinden insanlar tarafından geliştirilen, sohbete olanak sağlanayan GPT LLM oluşturmak için başlanmış açık kaynak bir proje.",
+  "faq_items": {
+    "q0": "Proje ne kadar ilerledi?",
+    "a0": "Geliştirmenin erken aşamalarındayız, RLHF tekniklerini büyük dil modellerine uygulama konusunda yer edinmiş araştırmaları temel alıyoruz.",
+    "q1": "Open Assistant'ın arkasında kim var?",
+    "a1": "Open Assistant LAION ve dünyanın her yerinden bu teknolojiyi herkese ulaştırmakla ilgilenen bireyler tarafından organize edilmiş bir proje"
+  },
+  "faq_title": "Sıkça Sorulan Sorular",
+  "join_us_description": "Bütün açık kaynak projeler senin gibi insanlarla başlar. Açık kaynak, eğer iş birliğinde bulunursak birlikte insanlığın iyiliği için Dünyaya bilgi ve teknoloji hediye edebileceğimize dair inançtır. Bizimle misin? Buradan iletişime geç:",
+  "join_us_title": "Bize katıl",
+  "subtitle": "Herkes için etkileşimli AI."
+}

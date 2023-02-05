@@ -320,7 +320,7 @@ class TreeManager:
             if num_red_flag is not None and num_red_flag >= self.cfg.auto_mod_red_flags:
                 if m.parent_id is None:
                     logger.warning(
-                        f"[AUTO MOD] Halting tree {m.message_tree_id}, inital prompt got too many red flags ({m.emojis})."
+                        f"[AUTO MOD] Halting tree {m.message_tree_id}, initial prompt got too many red flags ({m.emojis})."
                     )
                     self.enter_low_grade_state(m.message_tree_id)
                 else:
