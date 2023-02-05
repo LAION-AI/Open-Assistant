@@ -42,7 +42,7 @@ const config = {
           path: "docs/api/openapi.json",
         },
         blog: {
-            routeBasePath: '/blog', 
+            routeBasePath: '/blog',
             showReadingTime: true,
             blogTitle: 'OpenAssistant Blog',
             blogDescription: 'Home of the OpenAssistant blog.',
