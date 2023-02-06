@@ -41,7 +41,7 @@ export const LeaderboardTable = ({
       {
         ...columnHelper.accessor("rank", {
           header: t("rank"),
-          cell: ({ row, getValue }) => (row.original.isSpaceRow ? getValue() : <SpaceRow></SpaceRow>),
+          cell: ({ row, getValue }) => (row.original.isSpaceRow ? <SpaceRow></SpaceRow> : getValue()),
         }),
         span: (cell) => (cell.row.original.isSpaceRow ? 6 : undefined),
       },
