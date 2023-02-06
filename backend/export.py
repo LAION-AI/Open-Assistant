@@ -30,7 +30,7 @@ def fetch_message_ids(
     message_tree_id: Optional[UUID] = None,
     user_id: Optional[UUID] = None,
     include_deleted: bool = False,
-    only_deleted: bool = False,
+    deleted_only: bool = False,
 ) -> List[Message]:
     qry = db.query(Message)
 
@@ -40,7 +40,7 @@ def fetch_message_ids(
         qry = qry.filter(Message.user_id == user_id)
     if not include_deleted:
         qry = qry.filter(not_(Message.deleted))
-    if only_deleted:
+    if deleted_only:
         qry = qry.filter(Message.deleted)
 
     return qry.all()
@@ -97,7 +97,7 @@ def validate_args(args):
     if args.deleted_only:
         args.include_deleted = True
 
-    args.use_compression = ".gz" in args.export_file
+    args.use_compression = args.export_file is not None and ".gz" in args.export_file
 
     if args.ready_only and args.user_id is not None:
         raise ValueError("Cannot use --ready-only when specifying a user ID")
