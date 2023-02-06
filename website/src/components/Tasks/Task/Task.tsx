@@ -1,7 +1,6 @@
 import { useToast } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { useCallback, useEffect, useReducer } from "react";
-import { useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { TaskControls } from "src/components/Survey/TaskControls";
 import { CreateTask } from "src/components/Tasks/CreateTask";
 import { EvaluateTask } from "src/components/Tasks/EvaluateTask";
@@ -11,8 +10,7 @@ import { useTaskContext } from "src/context/TaskContext";
 import { ERROR_CODES } from "src/lib/errors";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { OasstError } from "src/lib/oasst_api_client";
-import { TaskCategory, TaskInfo } from "src/types/Task";
-import { BaseTask, TaskContent, TaskReplyValidity } from "src/types/Task";
+import { BaseTask, TaskCategory, TaskContent, TaskInfo, TaskReplyValidity } from "src/types/Task";
 import { CreateTaskType, LabelTaskType, RankTaskType } from "src/types/Tasks";
 
 interface EditMode {
@@ -63,6 +61,7 @@ export interface TaskSurveyProps<TaskType extends BaseTask, ReplyContent> {
   isDisabled?: boolean;
   onReplyChanged: (content: ReplyContent) => void;
   onValidityChanged: (validity: TaskReplyValidity) => void;
+  onSubmit?: () => void;
 }
 
 export const Task = () => {
@@ -160,18 +159,29 @@ export const Task = () => {
     }
   }, [taskStatus.mode, completeTask, toast, t, taskInfo.type]);
 
+  const handleKeyboardSubmit = useCallback(async () => {
+    if (taskStatus.mode === "REVIEW") {
+      await submitResponse();
+    } else {
+      taskEvent({ action: "REVIEW" });
+    }
+  }, [taskStatus.mode, submitResponse]);
+
   const taskTypeComponent = useMemo(() => {
     switch (taskInfo.category) {
       case TaskCategory.Create:
         return (
-          <CreateTask
-            task={task as CreateTaskType}
-            taskType={taskInfo}
-            isEditable={taskStatus.mode === "EDIT"}
-            isDisabled={taskStatus.mode === "SUBMITTED"}
-            onReplyChanged={onReplyChanged}
-            onValidityChanged={updateValidity}
-          />
+          <>
+            <CreateTask
+              task={task as CreateTaskType}
+              taskType={taskInfo}
+              isEditable={taskStatus.mode === "EDIT"}
+              isDisabled={taskStatus.mode === "SUBMITTED"}
+              onReplyChanged={onReplyChanged}
+              onValidityChanged={updateValidity}
+              onSubmit={handleKeyboardSubmit}
+            />
+          </>
         );
       case TaskCategory.Evaluate:
         return (

@@ -18,6 +18,7 @@ interface TrackedTextboxProps {
   };
   textareaProps?: TextareaProps & TextareaAutosizeProps;
   onTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onSubmit?: () => void;
 }
 
 export const TrackedTextarea = (props: TrackedTextboxProps) => {
@@ -49,6 +50,12 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
       progressColor = "green";
   }
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      props.onSubmit?.();
+    }
+  };
+
   const problemColor = useColorModeValue(colors.light.problem, colors.dark.problem);
 
   return (
@@ -61,6 +68,8 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
           p="4"
           value={props.text}
           onChange={props.onTextChange}
+          onKeyDown={onKeyDown}
+          autoFocus
           {...props.textareaProps}
           as={TextareaAutosize}
         />
