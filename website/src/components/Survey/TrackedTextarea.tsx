@@ -1,3 +1,17 @@
+import {
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  Progress,
+  Stack,
+  Textarea,
+  TextareaProps,
+  useColorModeValue,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { Tooltip } from "@chakra-ui/react";
 import { Progress, Stack, Textarea, TextareaProps, useColorModeValue } from "@chakra-ui/react";
 import lande from "lande";
