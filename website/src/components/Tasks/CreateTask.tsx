@@ -57,7 +57,9 @@ export const CreateTask = ({
                 {t(getTypeSafei18nKey(`tasks:${taskType.id}.instruction`))}
               </Text>
             )}
-            <Text color={tipColor}>Tip: Use <Kbd>ctrl</Kbd>+<Kbd>Enter</Kbd> to Review and Submit</Text>
+            <Text color={tipColor}>
+              Tip: Use <Kbd>ctrl</Kbd>+<Kbd>Enter</Kbd> to Review and Submit
+            </Text>
             <TrackedTextarea
               text={inputText}
               onTextChange={textChangeHandler}

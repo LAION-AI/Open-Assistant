@@ -4,11 +4,13 @@ import {
   ModalCloseButton,
   ModalContent,
   ModalHeader,
-  ModalOverlay, Progress,
+  ModalOverlay,
+  Progress,
   Stack,
   Textarea,
   TextareaProps,
-  useColorModeValue, useDisclosure
+  useColorModeValue,
+  useDisclosure,
 } from "@chakra-ui/react";
 import lande from "lande";
 import React from "react";
@@ -93,7 +95,7 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       props.onSubmit?.();
     }
-  }
+  };
 
   return (
     <Stack direction={"column"}>

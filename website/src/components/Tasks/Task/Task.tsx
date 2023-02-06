@@ -58,7 +58,7 @@ export interface TaskSurveyProps<TaskType extends BaseTask, ReplyContent> {
   isDisabled?: boolean;
   onReplyChanged: (content: ReplyContent) => void;
   onValidityChanged: (validity: TaskReplyValidity) => void;
-  onSubmit?: () => void
+  onSubmit?: () => void;
 }
 
 export const Task = () => {
