@@ -43,7 +43,7 @@ export const LeaderboardTable = ({
           header: t("rank"),
           cell: ({ row, getValue }) => (row.original.type !== "space_row" ? getValue() : <SpaceRow></SpaceRow>),
         }),
-        span: (cell) => (cell.row.original.type === "space_row" ? 6 : 1),
+        span: (cell) => (cell.row.original.type === "space_row" ? 6 : undefined),
       },
       columnHelper.accessor("display_name", {
         header: t("user"),
