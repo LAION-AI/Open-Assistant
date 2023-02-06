@@ -40,8 +40,11 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
   const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
+    const emojis = { ...message.emojis };
+    emojis["+1"] = emojis["+1"] || 0;
+    emojis["-1"] = emojis["-1"] || 0;
     setEmojis({
-      emojis: message?.emojis || {},
+      emojis: emojis,
       user_emojis: message?.user_emojis || [],
     });
   }, [message.emojis, message.user_emojis]);
@@ -72,7 +75,11 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
   const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
 
   const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
-    onSuccess: setEmojis,
+    onSuccess: (data) => {
+      data.emojis["+1"] = data.emojis["+1"] || 0;
+      data.emojis["-1"] = data.emojis["-1"] || 0;
+      setEmojis(data);
+    },
   });
   const react = (emoji: string, state: boolean) => {
     sendEmojiChange({ op: state ? "add" : "remove", emoji });
@@ -102,14 +109,17 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
         >
           {Object.entries(emojiState.emojis)
             .filter(([emoji]) => isKnownEmoji(emoji))
-            .map(([emoji, count]) => (
-              <MessageEmojiButton
-                key={emoji}
-                emoji={{ name: emoji, count }}
-                checked={emojiState.user_emojis.includes(emoji)}
-                onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-              />
-            ))}
+            .sort(([emoji]) => -emoji)
+            .map(([emoji, count]) => {
+              return (
+                <MessageEmojiButton
+                  key={emoji}
+                  emoji={{ name: emoji, count }}
+                  checked={emojiState.user_emojis.includes(emoji)}
+                  onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+                />
+              );
+            })}
           <MessageActions
             react={react}
             userEmoji={emojiState.user_emojis}

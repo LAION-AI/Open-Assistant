@@ -22,7 +22,7 @@ export const MessageEmojiButton = ({ emoji, checked, onClick }: MessageEmojiButt
       padding="0"
     >
       <EmojiIcon style={{ height: "1em" }} />
-      <span style={{ marginInlineEnd: "0.25em" }}>{emoji.count}</span>
+      {emoji.count > 0 && <span style={{ marginInlineEnd: "0.25em" }}>{emoji.count}</span>}
     </Button>
   );
 };
