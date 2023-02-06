@@ -13,8 +13,8 @@ dedicated, but not as active, channel.
 
 ### Taking on Tasks
 
-We have a growing task list
-[of issues](https://github.com/LAION-AI/Open-Assistant/issues). Find an issue
+We have a growing task list of
+[issues](https://github.com/LAION-AI/Open-Assistant/issues). Find an issue
 that appeals to you and make a comment that you'd like to work on it. Include in
 your comment a brief description of how you'll solve the problem and if there
 are any open questions you want to discuss. Once a project coordinator has
