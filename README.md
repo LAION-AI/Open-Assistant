@@ -18,6 +18,8 @@
 
 [open-assistant.io](https://open-assistant.io)
 
+(project documentation lives [here](https://laion-ai.github.io/Open-Assistant/))
+
 # Table of Contents
 
 - [What is Open Assistant?](#what-is-open-assistant)
