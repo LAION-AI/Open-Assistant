@@ -21,10 +21,12 @@ export const LeaderboardTable = ({
   timeFrame,
   limit: limit,
   rowPerPage,
+  hideCurrentUserRanking,
 }: {
   timeFrame: LeaderboardTimeFrame;
   limit: number;
   rowPerPage: number;
+  hideCurrentUserRanking?: boolean;
 }) => {
   const { t } = useTranslation("leaderboard");
 
@@ -33,7 +35,7 @@ export const LeaderboardTable = ({
     isLoading,
     error,
   } = useSWRImmutable<LeaderboardReply & { user_stats_window: LeaderboardReply["leaderboard"] }>(
-    `/api/leaderboard?time_frame=${timeFrame}&limit=${limit}`,
+    `/api/leaderboard?time_frame=${timeFrame}&limit=${limit}&includeUserStats=${!hideCurrentUserRanking}`,
     get
   );
   const columns: DataTableColumnDef<WindowLeaderboardEntity>[] = useMemo(
@@ -77,6 +79,9 @@ export const LeaderboardTable = ({
     const start = (page - 1) * rowPerPage;
     const end = start + rowPerPage;
     const leaderBoardEntities = reply.leaderboard.slice(start, end);
+    if (hideCurrentUserRanking) {
+      return leaderBoardEntities;
+    }
     const userStatsWindow: WindowLeaderboardEntity[] = reply.user_stats_window;
     const userStats = userStatsWindow.find((stats) => stats.highlighted);
     if (userStats.rank > end) {
@@ -89,7 +94,7 @@ export const LeaderboardTable = ({
       );
     }
     return leaderBoardEntities;
-  }, [page, rowPerPage, reply]);
+  }, [page, rowPerPage, reply, hideCurrentUserRanking]);
 
   const rowProps = useLeaderboardRowProps();
 
