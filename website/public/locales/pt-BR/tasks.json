@@ -74,7 +74,7 @@
     "overview": "Leia a conversa a seguir e depois responda à pergunta sobre a última resposta na discussão."
   },
   "classify_assistant_reply": {
-    "label": "Classificar respuesta del asistente",
+    "label": "Classificar a resposta do assistente",
     "desc": "Forneça etiquetas para o prompt inicial.",
     "overview": "Leia a conversa a seguir e depois responda à pergunta sobre a última resposta na discussão."
   },
