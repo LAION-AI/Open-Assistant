@@ -1,12 +1,12 @@
 import {
   Button,
-  Tooltip,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Tooltip,
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -35,7 +35,7 @@ export const CollapsableText = ({
       <>
         <span ref={finalRef}>
           {text.substring(0, maxLength - 3)}&nbsp;
-          <Tooltip label={text} size="lg">
+          <Tooltip label={text} maxW="70vw">
             <Button
               style={{ display: "inline" }}
               size={"xs"}
@@ -62,7 +62,7 @@ export const CollapsableText = ({
             <ModalContent pb={5} alignItems="center">
               <ModalHeader>Full Text</ModalHeader>
               <ModalCloseButton />
-              <ModalBody style={{ whiteSpace: "pre-line" }}>{text}</ModalBody>
+              <ModalBody whiteSpace="pre-line">{text}</ModalBody>
             </ModalContent>
           </ModalOverlay>
         </Modal>
