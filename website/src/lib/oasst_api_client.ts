@@ -325,8 +325,8 @@ export class OasstApiClient {
     return this.get(`/api/v1/messages/${messageId}/conversation`);
   }
 
-  async fetch_tos_acceptance(backendUserCoore: BackendUserCore): Promise<BackendUser["tos_acceptance_date"]> {
-    const user = await this.fetch_frontend_user(backendUserCoore);
+  async fetch_tos_acceptance(backendUserCore: BackendUserCore): Promise<BackendUser["tos_acceptance_date"]> {
+    const user = await this.fetch_frontend_user(backendUserCore);
     return user.tos_acceptance_date;
   }
 

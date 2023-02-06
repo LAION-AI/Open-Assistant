@@ -11,7 +11,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   const backendUser = await getBackendUserCore(token.sub);
   const time_frame = (req.query.time_frame as LeaderboardTimeFrame) ?? LeaderboardTimeFrame.day;
   const includeUserStats = req.query.includeUserStats;
-  console.log(includeUserStats);
+
   if (includeUserStats !== "true") {
     const leaderboard = await oasstApiClient.fetch_leaderboard(time_frame, {
       limit: req.query.limit as unknown as number,
