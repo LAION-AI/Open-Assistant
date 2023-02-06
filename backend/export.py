@@ -77,22 +77,6 @@ def export_trees(
         sys.stdout.write(json.dumps(jsonable_encoder(trees_to_export), indent=2))
 
 
-def main():
-    args = parse_args()
-    validate_args(args)
-
-    with Session(engine) as db:
-        export_trees(
-            db,
-            Path(args.export_file) if args.export_file is not None else None,
-            args.use_compression,
-            args.ready_only,
-            args.include_deleted,
-            args.deleted_only,
-            UUID(args.user) if args.user is not None else None,
-        )
-
-
 def validate_args(args):
     if args.deleted_only:
         args.include_deleted = True
@@ -137,6 +121,22 @@ def parse_args():
 
     args = parser.parse_args()
     return args
+
+
+def main():
+    args = parse_args()
+    validate_args(args)
+
+    with Session(engine) as db:
+        export_trees(
+            db,
+            Path(args.export_file) if args.export_file is not None else None,
+            args.use_compression,
+            args.ready_only,
+            args.include_deleted,
+            args.deleted_only,
+            UUID(args.user) if args.user is not None else None,
+        )
 
 
 if __name__ == "__main__":
