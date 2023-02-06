@@ -1090,6 +1090,13 @@ WHERE message.id = cc.id;
                     message_id, protocol_schema.EmojiOp.remove, protocol_schema.EmojiCode.thumbs_up
                 )
 
+            if message.user_id == self.user_id and emoji in (
+                protocol_schema.EmojiCode.thumbs_up,
+                protocol_schema.EmojiCode.thumbs_down,
+            ):
+                logger.debug(f"Ignoring add emoji op for user's own message ({emoji=})")
+                return message
+
             # insert emoji record & increment count
             message_emoji = MessageEmoji(message_id=message.id, user_id=self.user_id, emoji=emoji)
             self.db.add(message_emoji)
