@@ -10,7 +10,7 @@ import useSWRImmutable from "swr/immutable";
 
 import { DataTable, DataTableColumnDef, DataTableRowPropsCallback } from "../DataTable";
 
-type WindowLeaderboardEntity = LeaderboardEntity & { type?: "space_row" };
+type WindowLeaderboardEntity = LeaderboardEntity & { isSpaceRow?: boolean };
 
 const columnHelper = createColumnHelper<WindowLeaderboardEntity>();
 
@@ -41,9 +41,9 @@ export const LeaderboardTable = ({
       {
         ...columnHelper.accessor("rank", {
           header: t("rank"),
-          cell: ({ row, getValue }) => (row.original.type !== "space_row" ? getValue() : <SpaceRow></SpaceRow>),
+          cell: ({ row, getValue }) => (row.original.isSpaceRow ? getValue() : <SpaceRow></SpaceRow>),
         }),
-        span: (cell) => (cell.row.original.type === "space_row" ? 6 : undefined),
+        span: (cell) => (cell.row.original.isSpaceRow ? 6 : undefined),
       },
       columnHelper.accessor("display_name", {
         header: t("user"),
@@ -81,8 +81,7 @@ export const LeaderboardTable = ({
     const userStats = userStatsWindow.find((stats) => stats.highlighted);
     if (userStats.rank > end) {
       leaderBoardEntities.push(
-        // @ts-expect-error TS complain because we only provide the type.
-        { type: "space_row" },
+        { isSpaceRow: true } as WindowLeaderboardEntity,
         ...reply.user_stats_window.filter(
           (stats) =>
             leaderBoardEntities.findIndex((leaderBoardEntity) => leaderBoardEntity.user_id === stats.user_id) === -1
