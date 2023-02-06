@@ -1,0 +1,21 @@
+{
+  "copy_message_id": "Copia messaggio ID",
+  "label_action": "Etichetta azione",
+  "label_title": "Titolo dell'etichetta",
+  "message_deleted": "Messaggio cancellato",
+  "message": "Messaggio",
+  "open_new_tab_action": "Azione apri nuova scheda",
+  "parent": "Genitore",
+  "reactions": "Reazioni",
+  "recent_messages": "Messaggi recenti",
+  "report_action": "Segnala azione",
+  "report_placeholder": "Segnala segnaposto",
+  "report_title": "Segnala titolo",
+  "send_report": "Spedisci il rapporto",
+  "stop_tree": "Ferma albero",
+  "submit_labels": "Invia etichette",
+  "tree_stopped": "Albero fermato {{id}}",
+  "view_user": "Visualizza utente",
+  "recent_messages": "Messaggi recenti",
+  "your_recent_messages": "I tuoi messaggi recenti"
+}
