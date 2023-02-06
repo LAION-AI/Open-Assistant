@@ -1,0 +1,16 @@
+{
+  "label_action": "تصنيف",
+  "label_title": "تصنيف",
+  "message": "رسالة",
+  "open_new_tab_action": "فتح في علامة تبويب جديدة",
+  "parent": "الأصل",
+  "reactions": "الردود",
+  "report_action": "تبليغ",
+  "report_placeholder": "لماذا يجب استعراض هذه الرسالة؟",
+  "report_title": "تبليغ",
+  "send_report": "إرسال",
+  "submit_labels": "إرسال",
+  "view_user": "عرض المستخدم",
+  "recent_messages": "أحدث الرسائل",
+  "your_recent_messages": "أحدث رسائلك"
+}

@@ -13,6 +13,8 @@ import { SWRConfig, SWRConfiguration } from "swr";
 import nextI18NextConfig from "../../next-i18next.config.js";
 import { Chakra, getServerSideProps } from "../styles/Chakra";
 
+import React, { useEffect } from "react";
+
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
@@ -25,8 +27,11 @@ const swrConfig: SWRConfiguration = {
 function MyApp({ Component, pageProps: { session, cookies, ...pageProps } }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? getDefaultLayout;
   const page = getLayout(<Component {...pageProps} />);
-  const { t } = useTranslation();
-
+  const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
+  useEffect(() => {
+    document.body.dir = direction;
+  }, [direction]);
   return (
     <>
       <Head>
