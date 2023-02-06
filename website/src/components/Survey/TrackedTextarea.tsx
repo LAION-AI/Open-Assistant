@@ -1,23 +1,19 @@
-import {} from "@chakra-ui/react";
-import lande from "lande";
-import { LanguageAbbreviations } from "src/lib/iso6393";
-import { useCookies } from "react-cookie";
-import React from "react";
 import {
-  Progress,
-  Stack,
-  Textarea,
-  TextareaProps,
-  useColorModeValue,
-  Button,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
-  ModalOverlay,
-  useDisclosure,
+  ModalOverlay, Progress,
+  Stack,
+  Textarea,
+  TextareaProps,
+  useColorModeValue, useDisclosure
 } from "@chakra-ui/react";
+import lande from "lande";
+import React from "react";
+import { useCookies } from "react-cookie";
+import { LanguageAbbreviations } from "src/lib/iso6393";
 
 interface TrackedTextboxProps {
   text: string;
@@ -28,6 +24,7 @@ interface TrackedTextboxProps {
   };
   textareaProps?: TextareaProps;
   onTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onSubmit?: () => void;
 }
 
 const killEvent = (e) => e.stopPropagation();
@@ -92,6 +89,12 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
       progressColor = "green";
   }
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      props.onSubmit?.();
+    }
+  }
+
   return (
     <Stack direction={"column"}>
       <Textarea
@@ -101,6 +104,8 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
         p="4"
         value={props.text}
         onChange={props.onTextChange}
+        onKeyDown={onKeyDown}
+        autoFocus
         {...props.textareaProps}
       />
       <Progress

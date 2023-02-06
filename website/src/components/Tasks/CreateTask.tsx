@@ -1,4 +1,4 @@
-import { Box, Stack, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Kbd, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { useState } from "react";
 import { MessageTable } from "src/components/Messages/MessageTable";
@@ -18,10 +18,12 @@ export const CreateTask = ({
   isDisabled,
   onReplyChanged,
   onValidityChanged,
+  onSubmit,
 }: TaskSurveyProps<CreateTaskType, CreateTaskReply>) => {
   const { t, i18n } = useTranslation(["tasks", "common"]);
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const titleColor = useColorModeValue("gray.800", "gray.300");
+  const tipColor = useColorModeValue("gray.600", "gray.400");
   const [inputText, setInputText] = useState("");
 
   const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -55,6 +57,7 @@ export const CreateTask = ({
                 {t(getTypeSafei18nKey(`tasks:${taskType.id}.instruction`))}
               </Text>
             )}
+            <Text color={tipColor}>Tip: Use <Kbd>ctrl</Kbd>+<Kbd>Enter</Kbd> to Review and Submit</Text>
             <TrackedTextarea
               text={inputText}
               onTextChange={textChangeHandler}
@@ -64,6 +67,7 @@ export const CreateTask = ({
                 isDisabled,
                 isReadOnly: !isEditable,
               }}
+              onSubmit={onSubmit}
             />
           </Stack>
         </>
