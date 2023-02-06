@@ -1,8 +1,8 @@
 {
-  "grab_a_task": "Escolha uma tarefa!",
   "create": "Criar",
-  "evaluate": "Avaliar",
-  "label": "Classificar",
   "dashboard": "Painel",
-  "go": "Iniciar"
+  "evaluate": "Avaliar",
+  "go": "Iniciar",
+  "grab_a_task": "Escolha uma tarefa!",
+  "label": "Classificar"
 }

@@ -1,0 +1,23 @@
+{
+  "blurb": "We believe we can create a revolution.",
+  "blurb1": "In the same way that Stable Diffusion helped the world make art and images in new ways, we want to improve the world by providing amazing conversational AI.",
+  "description": "Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world.",
+  "faq_items": {
+    "q0": "How far along is this project?",
+    "a0": "We are in the early stages of development, working from established research in applying RLHF to large language models.",
+    "q1": "Who is behind Open Assistant?",
+    "a1": "Open Assistant is a project organized by LAION and individuals around the world interested in bringing this technology to everyone.",
+    "q2": "What license does Open Assistant use?",
+    "a2": "The code and models are licensed under the Apache 2.0 license.",
+    "q3": "Will the training data also be released?",
+    "a3": "Yes, under CC BY 4.0.",
+    "q4": "Will Open Assistant be free?",
+    "a4": "Yes, Open Assistant will be free to use and modify.",
+    "q5": "What hardware will be required to run the models?",
+    "a5": "There will be versions which will be runnable on consumer hardware."
+  },
+  "faq_title": "Frequently Asked Questions",
+  "join_us_description": "All open source projects begin with people like you. Open source is the belief that if we collaborate we can together gift our knowledge and technology to the world for the benefit of humanity. Are you in? Find us here:",
+  "join_us_title": "Join us",
+  "subtitle": "Conversational AI for everyone."
+}

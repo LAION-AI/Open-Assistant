@@ -1,11 +1,19 @@
 {
-  "default": {
-    "unchanged_title": "Değişiklik yok",
-    "unchanged_message": "Devam etmek istediğinizden emin misiniz?"
+  "available_task_count": "{{count}} görev mevcut",
+  "classify_assistant_reply": {
+    "label": "Asistan Yanıtını Sınıflandır",
+    "desc": "Prompt için etiketler sağlayın",
+    "overview": "Aşağıdaki konuşmayı oku ve tartışma kısmındaki son soruya cevap ver."
   },
-  "random": {
-    "label": "Şanslı hissediyorum",
-    "desc": "Open Assistant'ı geliştirmemize yardımcı olmak için rastgele bir göreve başlayın."
+  "classify_initial_prompt": {
+    "label": "Başlangıç Promptlarını Sınıflandır",
+    "desc": "Prompt için etiketler sağlayın",
+    "overview": "Aşağıdaki promptu oku ve sonraki soruya cevap ver."
+  },
+  "classify_prompter_reply": {
+    "label": "Promptçu Yanıtını Sınıflandır",
+    "desc": "Prompt için etiketler sağlayın",
+    "overview": "Aşağıdaki konuşmayı oku ve tartışma kısmındaki son soruya cevap ver."
   },
   "create_initial_prompt": {
     "label": "Başlangıc Promptlarını Oluştur",
@@ -14,25 +22,28 @@
     "instruction": "Başlangıç ​​promptlarını sağlayın",
     "response_placeholder": "Promptunuzu buraya yazın..."
   },
-  "reply_as_user": {
-    "label": "Kullanıcı Olarak Yanıtla",
-    "desc": "Open Assistant ile sohbet edin ve onunla etkileşimde bulunurken yanıtlarını geliştirmeye yardımcı olun.",
-    "overview": "Aşağıdaki konuşmaya göre uygun bir yanıt verin",
-    "instruction": "Kullanıcının yanıtını paylaşın",
-    "response_placeholder": "Yanıtınızı buraya yazın..."
+  "default": {
+    "unchanged_title": "Değişiklik yok",
+    "unchanged_message": "Devam etmek istediğinizden emin misiniz?"
   },
-  "reply_as_assistant": {
-    "label": "Asistan Olarak Yanıtla",
-    "desc": "Open Asistant'a kullanıcılar ile iletişim kurmasını geliştirmesinde yardımcı olun.",
-    "overview": "Aşağıdaki konuşmaya göre uygun bir yanıt verin",
-    "response_placeholder": "Yanıtınızı buraya yazın..."
+  "label_assistant_reply": {
+    "label": "Asistan Yanıtını Etiketle",
+    "desc": "Prompt için etiketler sağlayın.",
+    "overview": "Takip eden konuşmalar göz önünde bulundurularak son prompt için etiket sağlayın."
   },
-  "rank_user_replies": {
-    "label": "Kullanıcı Yanıtlarını Değerlendir",
-    "desc": "Open Asistant'a kullanıcılar ile iletişim kurmasını geliştirmesinde yardımcı olun..",
-    "overview": "Aşağıdaki kullanıcı yanıtlarını en iyiden en kötüye doğru sıralayın, en iyi ilk, en kötü son.",
-    "unchanged_title": "Sıralama Değişmedi",
-    "unchanged_message": "Yanıtların sırasını değiştirmediniz. Devam etmek istediğinizden emin misiniz?"
+  "label_initial_prompt": {
+    "label": "Başlangıç Promptlarını Etiketle",
+    "desc": "Prompt için etiketler sağlayın",
+    "overview": "Aşağıdaki prompt için etiketler sağlayın"
+  },
+  "label_prompter_reply": {
+    "label": "Promptçu Yanıtını Etiketle",
+    "desc": "Prompt için etiketler sağlayın",
+    "overview": "Takip eden konuşmalar göz önünde bulundurularak son prompt için etiket sağlayın."
+  },
+  "random": {
+    "label": "Şanslı hissediyorum",
+    "desc": "Open Assistant'ı geliştirmemize yardımcı olmak için rastgele bir göreve başlayın."
   },
   "rank_assistant_replies": {
     "label": "Asistant Yanıtlarını Değerlendir",
@@ -48,35 +59,24 @@
     "unchanged_title": "Sıralama Değişmedi",
     "unchanged_message": "Yanıtların sırasını değiştirmediniz. Devam etmek istediğinizden emin misiniz?"
   },
-  "label_initial_prompt": {
-    "label": "Başlangıç Promptlarını Etiketle",
-    "desc": "Prompt için etiketler sağlayın",
-    "overview": "Aşağıdaki prompt için etiketler sağlayın"
+  "rank_user_replies": {
+    "label": "Kullanıcı Yanıtlarını Değerlendir",
+    "desc": "Open Asistant'a kullanıcılar ile iletişim kurmasını geliştirmesinde yardımcı olun..",
+    "overview": "Aşağıdaki kullanıcı yanıtlarını en iyiden en kötüye doğru sıralayın, en iyi ilk, en kötü son.",
+    "unchanged_title": "Sıralama Değişmedi",
+    "unchanged_message": "Yanıtların sırasını değiştirmediniz. Devam etmek istediğinizden emin misiniz?"
   },
-  "label_prompter_reply": {
-    "label": "Promptçu Yanıtını Etiketle",
-    "desc": "Prompt için etiketler sağlayın",
-    "overview": "Takip eden konuşmalar göz önünde bulundurularak son prompt için etiket sağlayın."
+  "reply_as_assistant": {
+    "label": "Asistan Olarak Yanıtla",
+    "desc": "Open Asistant'a kullanıcılar ile iletişim kurmasını geliştirmesinde yardımcı olun.",
+    "overview": "Aşağıdaki konuşmaya göre uygun bir yanıt verin",
+    "response_placeholder": "Yanıtınızı buraya yazın..."
   },
-  "label_assistant_reply": {
-    "label": "Asistan Yanıtını Etiketle",
-    "desc": "Prompt için etiketler sağlayın.",
-    "overview": "Takip eden konuşmalar göz önünde bulundurularak son prompt için etiket sağlayın."
-  },
-  "classify_initial_prompt": {
-    "label": "Başlangıç Promptlarını Sınıflandır",
-    "desc": "Prompt için etiketler sağlayın",
-    "overview": "Aşağıdaki promptu oku ve sonraki soruya cevap ver."
-  },
-  "classify_prompter_reply": {
-    "label": "Promptçu Yanıtını Sınıflandır",
-    "desc": "Prompt için etiketler sağlayın",
-    "overview": "Aşağıdaki konuşmayı oku ve tartışma kısmındaki son soruya cevap ver."
-  },
-  "classify_assistant_reply": {
-    "label": "Asistan Yanıtını Sınıflandır",
-    "desc": "Prompt için etiketler sağlayın",
-    "overview": "Aşağıdaki konuşmayı oku ve tartışma kısmındaki son soruya cevap ver."
-  },
-  "available_task_count": "{{count}} görev mevcut"
+  "reply_as_user": {
+    "label": "Kullanıcı Olarak Yanıtla",
+    "desc": "Open Assistant ile sohbet edin ve onunla etkileşimde bulunurken yanıtlarını geliştirmeye yardımcı olun.",
+    "overview": "Aşağıdaki konuşmaya göre uygun bir yanıt verin",
+    "instruction": "Kullanıcının yanıtını paylaşın",
+    "response_placeholder": "Yanıtınızı buraya yazın..."
+  }
 }

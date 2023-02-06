@@ -1,16 +1,20 @@
 {
+  "copy_message_id": "Copy message ID",
   "label_action": "Étiqueter",
   "label_title": "Étiquette",
   "message": "Message",
+  "message_deleted": "Message deleted",
   "open_new_tab_action": "Ouvrir dans un nouvel onglet",
   "parent": "Parent",
   "reactions": "Réactions",
+  "recent_messages": "Messages récents",
   "report_action": "Signaler",
   "report_placeholder": "Pourquoi ce message devrait-il être examiné?",
   "report_title": "Signaler",
   "send_report": "Envoyer",
+  "stop_tree": "Stop tree",
   "submit_labels": "Soumettre",
+  "tree_stopped": "Tree stopped {{id}}",
   "view_user": "Voir l'utilisateur",
-  "recent_messages": "Messages récents",
   "your_recent_messages": "Vos messages récents"
 }

@@ -4,12 +4,15 @@
   "admin_dashboard": "لوحة التحكم الإدارية",
   "connect": "الاتصال",
   "conversational": "ذكاء تحدثي للجميع.",
+  "copied": "Copied",
+  "dark_mode": "الوضع الداكن",
   "dashboard": "لوحة التحكم",
   "delete": "حذف",
   "discord": "ديسكورد",
   "docs": "وثائق",
   "github": "جيت هوب (github)",
   "legal": "قانوني",
+  "light_mode": "الوضع المضيء",
   "loading": "جار التحميل...",
   "more_information": "مزيد من المعلومات",
   "no": "لا",
@@ -17,9 +20,8 @@
   "report_a_bug": "إبلاغ عن خطأ",
   "sign_in": "تسجيل الدخول",
   "sign_out": "تسجيل الخروج",
+  "success": "Success",
   "terms_of_service": "شروط الخدمة",
   "title": "Open Assistant (المساعد المفتوح)",
-  "yes": "نعم",
-  "dark_mode": "الوضع الداكن",
-  "light_mode": "الوضع المضيء"
+  "yes": "نعم"
 }
