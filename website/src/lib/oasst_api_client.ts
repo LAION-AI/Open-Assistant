@@ -7,11 +7,27 @@ export class OasstError {
   message: string;
   errorCode: number;
   httpStatusCode: number;
+  path: string;
+  method: string;
 
-  constructor(message: string, errorCode: number, httpStatusCode: number) {
+  constructor({
+    errorCode,
+    httpStatusCode,
+    message,
+    path,
+    method,
+  }: {
+    message: string;
+    errorCode: number;
+    httpStatusCode: number;
+    path: string;
+    method: string;
+  }) {
     this.message = message;
     this.errorCode = errorCode;
     this.httpStatusCode = httpStatusCode;
+    this.path = path;
+    this.method = method;
   }
 
   toString() {
@@ -60,9 +76,21 @@ export class OasstApiClient {
       try {
         error = JSON.parse(errorText);
       } catch (e) {
-        throw new OasstError(errorText, 0, resp.status);
+        throw new OasstError({
+          message: errorText,
+          errorCode: 0,
+          httpStatusCode: resp.status,
+          path,
+          method,
+        });
       }
-      throw new OasstError(error.message ?? error, error.error_code, resp.status);
+      throw new OasstError({
+        message: error.message ?? error,
+        errorCode: error.error_code,
+        httpStatusCode: resp.status,
+        path,
+        method,
+      });
     }
 
     return resp.json();
@@ -297,14 +325,24 @@ export class OasstApiClient {
     return this.get(`/api/v1/messages/${messageId}/conversation`);
   }
 
-  async fetch_tos_acceptance(user: BackendUserCore): Promise<BackendUser["tos_acceptance_date"]> {
-    const backendUser = await this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
-    return backendUser.tos_acceptance_date;
+  async fetch_tos_acceptance(backendUserCoore: BackendUserCore): Promise<BackendUser["tos_acceptance_date"]> {
+    const user = await this.fetch_frontend_user(backendUserCoore);
+    return user.tos_acceptance_date;
   }
 
   async set_tos_acceptance(user: BackendUserCore) {
     // NOTE: we do a post here to force create the user if it does not exist
     const backendUser = await this.post<BackendUser>(`/api/v1/frontend_users/`, user);
     await this.put<void>(`/api/v1/users/${backendUser.user_id}?tos_acceptance=true`);
+  }
+
+  fetch_user_stats_window(user_id: string, time_frame: LeaderboardTimeFrame, window_size?: number) {
+    return this.get<LeaderboardReply>(`/api/v1/users/${user_id}/stats/${time_frame}/window`, {
+      window_size,
+    });
+  }
+
+  fetch_frontend_user(user: BackendUserCore) {
+    return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
   }
 }
