@@ -307,4 +307,9 @@ export class OasstApiClient {
     const backendUser = await this.post<BackendUser>(`/api/v1/frontend_users/`, user);
     await this.put<void>(`/api/v1/users/${backendUser.user_id}?tos_acceptance=true`);
   }
+
+  async fetch_user_stats(user: BackendUserCore) {
+    const backendUser = await this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
+    return this.get(`/api/v1/users/${backendUser.user_id}/stats`);
+  }
 }
