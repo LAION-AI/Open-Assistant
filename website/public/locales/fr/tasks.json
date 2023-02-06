@@ -8,11 +8,11 @@
     "desc": "Aidez-nous à améliorer Open Assistant en démarrant une tâche aléatoire."
   },
   "create_initial_prompt": {
-    "label": "Créer des prompts initiaux",
-    "desc": "Écrivez des prompts initiaux pour aider Open Assistant à essayer de répondre à des messages divers.",
+    "label": "Créer des invites initiaux",
+    "desc": "Écrivez des invites initiaux pour aider Open Assistant à essayer de répondre à des messages divers.",
     "overview": "Créez un message initial à envoyer à l'assistant",
-    "instruction": "Fournir les prompts initiaux",
-    "response_placeholder": "Écrivez votre prompt ici..."
+    "instruction": "Fournir les invites initiaux",
+    "response_placeholder": "Écrivez votre invite ici..."
   },
   "reply_as_user": {
     "label": "Répondre en tant qu'utilisateur",
@@ -32,14 +32,14 @@
     "desc": "Aidez Open Assistant à améliorer ses réponses aux conversations avec d'autres utilisateurs.",
     "overview": "Compte tenu des réponses d'utilisateur suivantes, classez-les du meilleur au pire, le meilleur étant en premier, le pire en dernier.",
     "unchanged_title": "Ordre inchangé",
-    "unchanged_message": "Vous n'avez pas modifié l'ordre des prompts. Etes-vous sûr de vouloir continuer?"
+    "unchanged_message": "Vous n'avez pas modifié l'ordre des invites. Etes-vous sûr de vouloir continuer?"
   },
   "rank_assistant_replies": {
     "label": "Classer les réponses de l'assistant",
-    "desc": "Scorez les prompts fournis par Open Assistant en fonction de leur exactitude et lisibilité.",
+    "desc": "Scorez les invites fournis par Open Assistant en fonction de leur exactitude et lisibilité.",
     "overview": "Compte tenu des réponses d'assistant suivantes, classez-les du meilleur au pire, le meilleur étant en premier, le pire en dernier.",
     "unchanged_title": "Ordre inchangé",
-    "unchanged_message": "Vous n'avez pas modifié l'ordre des prompts. Etes-vous sûr de vouloir continuer?"
+    "unchanged_message": "Vous n'avez pas modifié l'ordre des invites. Etes-vous sûr de vouloir continuer?"
   },
   "rank_initial_prompts": {
     "label": "Classer les invitations initiales",
