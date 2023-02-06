@@ -46,7 +46,7 @@
     "desc": "Оцініть тексти, надані Open Assistant, на основі їх точності та читабельності.",
     "overview": "Отримавши наступні початкові тексти, відсортуйте їх від найкращого до найгіршого, де найкращий - на першому місці, найгірший - на останньому.",
     "unchanged_title": "Порядок не змінено",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?"
+    "unchanged_message": "Ви не змінили порядок текстів. Ви впевнені, що хочете продовжити?"
   },
   "label_initial_prompt": {
     "label": "Промаркуйте початковий текст",
