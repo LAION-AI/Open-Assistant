@@ -7,6 +7,7 @@ from typing import Optional
 from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
+import sqlalchemy.dialects.postgresql as pg
 from loguru import logger
 from oasst_backend.api.deps import FrontendUserId
 from oasst_backend.config import settings
@@ -23,6 +24,7 @@ from oasst_backend.models import (
     TextLabels,
     User,
     message_tree_state,
+    FlaggedMessage,
 )
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
@@ -1098,6 +1100,15 @@ WHERE message.id = cc.id;
                 logger.debug(f"Ignoring add emoji op for user's own message ({emoji=})")
                 return message
 
+            # Add to flagged_message table if the red flag emoji is applied
+            if emoji == protocol_schema.EmojiCode.red_flag:
+                flagged_message = FlaggedMessage(
+                    message_id=message_id, processed=False, created_date=datetime.now().astimezone()
+                )
+                insert_stmt = pg.insert(FlaggedMessage).values(**flagged_message.__dict__)
+                upsert_stmt = insert_stmt.on_conflict_do_update(constraint="message_id", set_=flagged_message.__dict__)
+                self.db.execute(upsert_stmt)
+
             # insert emoji record & increment count
             message_emoji = MessageEmoji(message_id=message.id, user_id=self.user_id, emoji=emoji)
             self.db.add(message_emoji)
@@ -1133,3 +1144,10 @@ WHERE message.id = cc.id;
         self.db.add(message)
         self.db.flush()
         return message
+
+    def fetch_flagged_messages(self, max_count: Optional[int]) -> list[FlaggedMessage]:
+        qry = self.db.query(FlaggedMessage)
+        if max_count:
+            qry.limit(max_count)
+
+        return qry.all()

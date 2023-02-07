@@ -1,9 +1,11 @@
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 import pydantic
 from fastapi import APIRouter, Depends
 from loguru import logger
+from backend.oasst_backend.models import FlaggedMessage
 from oasst_backend.api import deps
 from oasst_backend.config import Settings, settings
 from oasst_backend.models import ApiClient, User
@@ -162,3 +164,14 @@ async def purge_user_messages(
 
     logger.info(f"{before=}; {after=}")
     return PurgeResultModel(before=before, after=after, preview=preview, duration=timer.elapsed)
+
+
+@router.get("/flagged_messages", response_model=list[FlaggedMessage])
+async def get_flagged_messages(
+    max_count: Optional[int],
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+) -> str:
+    assert api_client.trusted
+
+    pr = PromptRepository(deps.Session, api_client)
+    return pr.fetch_flagged_messages(max_count=max_count)
