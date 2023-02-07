@@ -13,8 +13,7 @@ from oasst_backend.tree_manager import TreeManager
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.schemas.protocol import SystemStats
 from oasst_shared.utils import ScopeTimer, unaware_to_utc
-
-from backend.oasst_backend.models import FlaggedMessage
+from oasst_backend.models import FlaggedMessage
 
 router = APIRouter()
 
@@ -167,18 +166,27 @@ async def purge_user_messages(
     return PurgeResultModel(before=before, after=after, preview=preview, duration=timer.elapsed)
 
 
-@router.get("/flagged_messages", response_model=list[FlaggedMessage])
+class FlaggedMessageResponse(pydantic.BaseModel):
+    message_id: UUID
+    processed: bool
+    created_date: Optional[datetime]
+
+
+@router.get("/flagged_messages", response_model=list[FlaggedMessageResponse])
 async def get_flagged_messages(
     max_count: Optional[int],
+    session: deps.Session = Depends(deps.get_db),
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
 ) -> str:
     assert api_client.trusted
 
-    pr = PromptRepository(deps.Session, api_client)
-    return pr.fetch_flagged_messages(max_count=max_count)
+    pr = PromptRepository(session, api_client)
+    flagged_messages = pr.fetch_flagged_messages(max_count=max_count)
+    resp = [FlaggedMessageResponse(**msg.__dict__) for msg in flagged_messages]
+    return resp
 
 
-@router.post("/admin/flagged_messages/{message_id}/processed", response_model=FlaggedMessage)
+@router.post("/admin/flagged_messages/{message_id}/processed", response_model=FlaggedMessageResponse)
 async def process_flagged_messages(
     message_id: UUID,
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
@@ -186,4 +194,4 @@ async def process_flagged_messages(
     assert api_client.trusted
 
     pr = PromptRepository(deps.Session, api_client)
-    return pr.process_flagged_message(message_id=message_id)
+    return FlaggedMessageResponse(pr.process_flagged_message(message_id=message_id))

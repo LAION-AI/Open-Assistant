@@ -1147,14 +1147,14 @@ WHERE message.id = cc.id;
 
     def fetch_flagged_messages(self, max_count: Optional[int]) -> list[FlaggedMessage]:
         qry = self.db.query(FlaggedMessage)
-        if max_count:
-            qry.limit(max_count)
+        if max_count is not None:
+            qry = qry.limit(max_count)
 
         return qry.all()
 
     def process_flagged_message(self, message_id: UUID) -> FlaggedMessage:
 
-        message = self.db.query(FlaggedMessage).get(message_id)
+        message = FlaggedMessage.query().get(message_id)
 
         if not message:
             raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTPStatus.NOT_FOUND)
