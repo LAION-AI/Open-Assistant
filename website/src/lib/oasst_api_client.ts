@@ -336,6 +336,11 @@ export class OasstApiClient {
     await this.put<void>(`/api/v1/users/${backendUser.user_id}?tos_acceptance=true`);
   }
 
+  async fetch_user_stats(user: BackendUserCore) {
+    const backendUser = await this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
+    return this.get(`/api/v1/users/${backendUser.user_id}/stats`);
+  }
+
   fetch_user_stats_window(user_id: string, time_frame: LeaderboardTimeFrame, window_size?: number) {
     return this.get<LeaderboardReply>(`/api/v1/users/${user_id}/stats/${time_frame}/window`, {
       window_size,

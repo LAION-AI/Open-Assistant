@@ -1,0 +1,18 @@
+{
+  "daily": "每日",
+  "label": "标注数",
+  "last_updated_at": "最后更新于：{{val, datetime}}",
+  "leaderboard": "排行榜",
+  "monthly": "每月",
+  "next": "下一页",
+  "overall": "总体",
+  "previous": "上一页",
+  "prompt": "提示数",
+  "rank": "排名",
+  "reply": "回复数",
+  "score": "积分",
+  "top_5_contributors_today": "本日五大贡献者",
+  "user": "用户",
+  "view_all": "查看全部",
+  "weekly": "每周"
+}
