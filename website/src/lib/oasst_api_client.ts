@@ -267,7 +267,7 @@ export class OasstApiClient {
    * Updates the backend's knowledge about the `user_id`.
    */
   async set_user_status(user_id: string, is_enabled: boolean, notes: string): Promise<void> {
-    await this.put(`/api/v1/users/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
+    await this.put(`/api/v1/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
   }
 
   /**
