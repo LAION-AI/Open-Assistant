@@ -876,6 +876,7 @@ class PromptRepository:
             user_emojis = x["user_emojis"]
             if user_emojis:
                 m._user_emojis = user_emojis.split(",")
+            m._user_is_author = self.user_id and self.user_id == m.user_id
             messages.append(m)
         return messages
 
@@ -1089,6 +1090,13 @@ WHERE message.id = cc.id;
                 message = self.handle_message_emoji(
                     message_id, protocol_schema.EmojiOp.remove, protocol_schema.EmojiCode.thumbs_up
                 )
+
+            if message.user_id == self.user_id and emoji in (
+                protocol_schema.EmojiCode.thumbs_up,
+                protocol_schema.EmojiCode.thumbs_down,
+            ):
+                logger.debug(f"Ignoring add emoji op for user's own message ({emoji=})")
+                return message
 
             # insert emoji record & increment count
             message_emoji = MessageEmoji(message_id=message.id, user_id=self.user_id, emoji=emoji)
