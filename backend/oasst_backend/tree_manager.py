@@ -781,7 +781,7 @@ class TreeManager:
                     self.activate_backlog_tree(lang=root_msg.lang)
 
                 if self.cfg.min_active_rankings_per_lang > 0:
-                    incomplete_rankings = self.query_incomplete_rankings(lang=root_msg.lang)
+                    incomplete_rankings = self.query_incomplete_rankings(lang=root_msg.lang, user_filter=False)
                     if len(incomplete_rankings) < self.cfg.min_active_rankings_per_lang:
                         self.activate_backlog_tree(lang=root_msg.lang)
         else:
@@ -1040,7 +1040,9 @@ WHERE mts.active                        -- only consider active trees
     AND m.parent_id IS NOT NULL         -- ignore initial prompts
     AND me.message_id IS NULL           -- no skip ranking emoji for user
 GROUP BY m.parent_id, m.role, mts.message_tree_id
-HAVING COUNT(m.id) > 1 and MIN(m.ranking_count) < :num_required_rankings
+HAVING COUNT(m.id) > 1                                      -- more than one child
+    AND MIN(m.ranking_count) < :num_required_rankings       -- not complete
+    AND COUNT(m.id) FILTER (WHERE m.user_id = :rank_user_id) = 0 -- no self-ranking
 """
 
     _sql_find_incomplete_rankings_ex = f"""
@@ -1050,21 +1052,30 @@ SELECT ir.* FROM incomplete_rankings ir
     LEFT JOIN message_reaction mr ON ir.parent_id = mr.message_id AND mr.payload_type = 'RankingReactionPayload'
 GROUP BY ir.parent_id, ir.role, ir.children_count, ir.child_min_ranking_count, ir.completed_rankings,
     ir.message_tree_id
-HAVING(COUNT(mr.message_id) FILTER (WHERE mr.user_id = :user_id) = 0)
+HAVING COUNT(mr.message_id) FILTER (WHERE mr.user_id = :dupe_user_id) = 0
 """
 
-    def query_incomplete_rankings(self, lang: str) -> list[IncompleteRankingsRow]:
+    def query_incomplete_rankings(self, lang: str, user_filter: bool = True) -> list[IncompleteRankingsRow]:
         """Query parents which have children that need further rankings"""
 
-        user_id = self.pr.user_id if not settings.DEBUG_ALLOW_DUPLICATE_TASKS else None
+        dupe_user_id = None
+        skip_user_id = None
+        rank_user_id = None
+        if user_filter:
+            if not settings.DEBUG_ALLOW_DUPLICATE_TASKS:
+                dupe_user_id = self.pr.user_id
+            if not settings.DEBUG_ALLOW_SELF_RANKING:
+                rank_user_id = self.pr.user_id
+            skip_user_id = self.pr.user_id
         r = self.db.execute(
             text(self._sql_find_incomplete_rankings_ex),
             {
                 "num_required_rankings": self.cfg.num_required_rankings,
-                "ranking_state": message_tree_state.State.RANKING,
                 "lang": lang,
-                "user_id": user_id,
-                "skip_user_id": self.pr.user_id,
+                "dupe_user_id": dupe_user_id,
+                "skip_user_id": skip_user_id,
+                "rank_user_id": rank_user_id,
+                "ranking_state": message_tree_state.State.RANKING,
                 "skip_ranking": protocol_schema.EmojiCode.skip_ranking,
             },
         )
