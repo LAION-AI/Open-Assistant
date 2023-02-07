@@ -1,12 +1,12 @@
 {
   "dashboard": "لوحة التحكم",
   "dashboard_home": "الصفحة الرئيسية للإحصائيات",
+  "leaderboard": "جدول الأوائل",
   "messages": "رسائل",
   "messages_dashboard": "لوحة تحكم الرسائل",
-  "leaderboard": "جدول الأوائل",
+  "status": "الحالة",
+  "status_dashboard": "لوحة تحكم الحالة",
   "user_leaderboard": "جدول الأوائل للمستخدمين",
   "users": "المستخدمون",
-  "users_dashboard": "لوحة تحكم المستخدمين",
-  "status": "الحالة",
-  "status_dashboard": "لوحة تحكم الحالة"
+  "users_dashboard": "لوحة تحكم المستخدمين"
 }

@@ -1,8 +1,8 @@
 {
-  "grab_a_task": "Válassz egy feladatot!",
   "create": "Létrehozás",
-  "evaluate": "Értékelés",
-  "label": "Címkézés",
   "dashboard": "Irányítópult",
-  "go": "Indítás"
+  "evaluate": "Értékelés",
+  "go": "Indítás",
+  "grab_a_task": "Válassz egy feladatot!",
+  "label": "Címkézés"
 }

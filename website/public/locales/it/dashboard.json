@@ -1,8 +1,8 @@
 {
-  "grab_a_task": "Scegli un compito!",
   "create": "Crea",
-  "evaluate": "Valuta",
-  "label": "Etichetta",
   "dashboard": "Pannello di controllo",
-  "go": "Vai"
+  "evaluate": "Valuta",
+  "go": "Vai",
+  "grab_a_task": "Scegli un compito!",
+  "label": "Etichetta"
 }

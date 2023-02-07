@@ -1,6 +1,6 @@
 {
-  "title": "Termos de Serviço para o Open Assistant",
-  "content": "Para continuar usando o Open Assistant, você precisa aceitar os nossos Termos de Serviço primeiro.",
   "accept": "Aceitar",
-  "decline": "Recusar"
+  "content": "Para continuar usando o Open Assistant, você precisa aceitar os nossos Termos de Serviço primeiro.",
+  "decline": "Recusar",
+  "title": "Termos de Serviço para o Open Assistant"
 }

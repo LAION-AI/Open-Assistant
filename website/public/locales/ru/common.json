@@ -4,12 +4,15 @@
   "admin_dashboard": "Панель администратора",
   "connect": "Connect",
   "conversational": "Conversational AI for everyone.",
+  "copied": "Copied",
+  "dark_mode": "Темная тема",
   "dashboard": "Главная",
   "delete": "Удалить",
   "discord": "Discord",
   "docs": "Документация",
   "github": "GitHub",
   "legal": "Legal",
+  "light_mode": "Светлая тема",
   "loading": "Загрузка...",
   "more_information": "Больше...",
   "no": "Нет",
@@ -17,9 +20,8 @@
   "report_a_bug": "Сообщить об ошибке",
   "sign_in": "Вход",
   "sign_out": "Выйти из аккаунта",
+  "success": "Success",
   "terms_of_service": "Пользовательское Соглашение",
   "title": "Open Assistant",
-  "yes": "Да",
-  "dark_mode": "Темная тема",
-  "light_mode": "Светлая тема"
+  "yes": "Да"
 }
