@@ -7,12 +7,14 @@ from typing import Optional
 from uuid import UUID, uuid4
 
 import oasst_backend.models.db_payload as db_payload
+import sqlalchemy.dialects.postgresql as pg
 from loguru import logger
 from oasst_backend.api.deps import FrontendUserId
 from oasst_backend.config import settings
 from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import (
     ApiClient,
+    FlaggedMessage,
     Message,
     MessageEmbedding,
     MessageEmoji,
@@ -1092,6 +1094,15 @@ WHERE message.id = cc.id;
                 logger.debug(f"Ignoring add emoji op for user's own message ({emoji=})")
                 return message
 
+            # Add to flagged_message table if the red flag emoji is applied
+            if emoji == protocol_schema.EmojiCode.red_flag:
+                flagged_message = FlaggedMessage(
+                    message_id=message_id, processed=False, created_date=datetime.now().astimezone()
+                )
+                insert_stmt = pg.insert(FlaggedMessage).values(**flagged_message.__dict__)
+                upsert_stmt = insert_stmt.on_conflict_do_update(constraint="message_id", set_=flagged_message.__dict__)
+                self.db.execute(upsert_stmt)
+
             # insert emoji record & increment count
             message_emoji = MessageEmoji(message_id=message.id, user_id=self.user_id, emoji=emoji)
             self.db.add(message_emoji)
@@ -1126,4 +1137,24 @@ WHERE message.id = cc.id;
         flag_modified(message, "emojis")
         self.db.add(message)
         self.db.flush()
+        return message
+
+    def fetch_flagged_messages(self, max_count: Optional[int]) -> list[FlaggedMessage]:
+        qry = self.db.query(FlaggedMessage)
+        if max_count is not None:
+            qry = qry.limit(max_count)
+
+        return qry.all()
+
+    def process_flagged_message(self, message_id: UUID) -> FlaggedMessage:
+
+        message = self.db.query(FlaggedMessage).get(message_id)
+
+        if not message:
+            raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTPStatus.NOT_FOUND)
+
+        message.processed = True
+        self.db.commit()
+        self.db.refresh(message)
+
         return message
