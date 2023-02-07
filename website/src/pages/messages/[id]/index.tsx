@@ -54,7 +54,7 @@ MessageDetail.getLayout = (page) => getDashboardLayout(page);
 export const getServerSideProps = async ({ locale, query }) => ({
   props: {
     id: query.id,
-    ...(await serverSideTranslations(locale, ["common", "message", "labelling"])),
+    ...(await serverSideTranslations(locale, ["common", "message", "labelling", "side_menu"])),
   },
 });
 

@@ -15,14 +15,14 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import { ClipboardList, Copy, Flag, MessageSquare, MoreHorizontal, Slash, Trash, User } from "lucide-react";
+import { ClipboardList, Copy, Flag, Link, MessageSquare, MoreHorizontal, Slash, Trash, User } from "lucide-react";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
+import { useHasRole } from "src/hooks/auth/useHasRole";
 import { del, post, put } from "src/lib/api";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
@@ -89,6 +89,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
     <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
       {!inlineAvatar && avatar}
       <Box
+        as={enabled ? "a" : "div"}
         width={["full", "full", "full", "fit-content"]}
         maxWidth={["full", "full", "full", "2xl"]}
         p="4"
@@ -170,12 +171,12 @@ const MessageActions = ({
 }) => {
   const toast = useToast();
   const { t } = useTranslation(["message", "common"]);
-  const id = message.id;
-  const displayId = id.slice(0, CHAR_COUNT) + "..." + id.slice(-CHAR_COUNT);
-  const { trigger: deleteMessage } = useSWRMutation(`/api/admin/delete_message/${message.id}`, del);
+  const { id } = message;
+  const { trigger: deleteMessage } = useSWRMutation(`/api/admin/delete_message/${id}`, del);
 
-  const { trigger: stopTree } = useSWRMutation(`/api/admin/stop_tree/${message.id}`, put, {
+  const { trigger: stopTree } = useSWRMutation(`/api/admin/stop_tree/${id}`, put, {
     onSuccess: () => {
+      const displayId = id.slice(0, CHAR_COUNT) + "..." + id.slice(-CHAR_COUNT);
       toast({
         title: t("common:success"),
         description: t("tree_stopped", { id: displayId }),
@@ -186,9 +187,6 @@ const MessageActions = ({
     },
   });
 
-  const { data: session } = useSession();
-  const isAdmin = session?.user?.role === "admin";
-
   const handleDelete = async () => {
     await deleteMessage();
     mutate((key) => typeof key === "string" && key.startsWith("/api/messages"), undefined, { revalidate: true });
@@ -198,8 +196,10 @@ const MessageActions = ({
     stopTree();
   };
 
-  const handleCopyId = () => {
-    navigator.clipboard.writeText(message.id);
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    const displayId = text.slice(0, CHAR_COUNT) + "..." + text.slice(-CHAR_COUNT);
+
     toast({
       title: t("common:copied"),
       description: displayId,
@@ -208,6 +208,8 @@ const MessageActions = ({
       isClosable: true,
     });
   };
+
+  const isAdmin = useHasRole("admin");
 
   return (
     <Menu>
@@ -230,13 +232,20 @@ const MessageActions = ({
           {t("report_action")}
         </MenuItem>
         <MenuDivider />
-        <MenuItem as="a" href={`/messages/${message.id}`} target="_blank" icon={<MessageSquare />}>
+        <MenuItem as="a" href={`/messages/${id}`} target="_blank" icon={<MessageSquare />}>
           {t("open_new_tab_action")}
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => handleCopy(`${window.location.protocol}://${window.location.host}/messages/${id}`)}
+          icon={<Link />}
+        >
+          {t("copy_message_link")}
         </MenuItem>
         {!!isAdmin && (
           <>
             <MenuDivider />
-            <MenuItem onClick={handleCopyId} icon={<Copy />}>
+            <MenuItem onClick={() => handleCopy(id)} icon={<Copy />}>
               {t("copy_message_id")}
             </MenuItem>
             <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
