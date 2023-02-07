@@ -13,7 +13,6 @@ from oasst_backend.tree_manager import TreeManager
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.schemas.protocol import SystemStats
 from oasst_shared.utils import ScopeTimer, unaware_to_utc
-from oasst_backend.models import FlaggedMessage
 
 router = APIRouter()
 
