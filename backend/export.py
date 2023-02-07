@@ -90,13 +90,18 @@ def export_trees(
             for (tree_id, _) in message_tree_ids
         ]
 
-        for (message_tree_id, message_tree_state), message_tree in zip(message_tree_ids, message_trees):
-            t = tree_export.build_export_tree(message_tree_id, message_tree_state, message_tree)
-            if prompts_only:
-                t.prompt.replies = None
-            trees_to_export.append(t)
+        # when exporting only-deleted we don't have a porper tree structure, export as list
+        if deleted is True:
+            messages = [m for t in message_trees for m in t]
+            tree_export.write_messages_to_file(export_file, messages, use_compression)
+        else:
+            for (message_tree_id, message_tree_state), message_tree in zip(message_tree_ids, message_trees):
+                t = tree_export.build_export_tree(message_tree_id, message_tree_state, message_tree)
+                if prompts_only:
+                    t.prompt.replies = None
+                trees_to_export.append(t)
 
-        tree_export.write_trees_to_file(export_file, trees_to_export, use_compression)
+            tree_export.write_trees_to_file(export_file, trees_to_export, use_compression)
 
 
 def validate_args(args):
