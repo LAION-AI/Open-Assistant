@@ -117,6 +117,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
                   key={emoji}
                   emoji={{ name: emoji, count }}
                   checked={emojiState.user_emojis.includes(emoji)}
+                  showCount={emojiState.user_emojis.filter((emoji) => emoji === "+1" || emoji === "-1").length > 0}
                   onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
                 />
               );
