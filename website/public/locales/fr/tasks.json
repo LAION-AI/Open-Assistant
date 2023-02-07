@@ -65,6 +65,7 @@
     "overview": "Compte tenu des réponses d'utilisateur suivantes, classez-les du meilleur au pire, le meilleur étant en premier, le pire en dernier.",
     "unchanged_title": "Ordre inchangé",
     "unchanged_message": "Vous n'avez pas modifié l'ordre des invites. Etes-vous sûr de vouloir continuer?"
+  },
   "reply_as_assistant": {
     "label": "Répondre en tant qu'assistant",
     "desc": "Aidez Open Assistant à améliorer ses réponses aux conversations avec d'autres utilisateurs.",
