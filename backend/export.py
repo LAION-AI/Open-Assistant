@@ -118,7 +118,11 @@ def parse_args():
         type=str,
         help="all|prompt_lottery_waiting|growing|ready_for_export|aborted_low_grade|halted_by_moderator|backlog_ranking",
     )
-    parser.add_argument("--prompts-only", action="store_true", help="Export a list of initial prompt messages")
+    parser.add_argument(
+        "--prompts-only",
+        action="store_true",
+        help="Export a list of initial prompt messages",
+    )
 
     args = parser.parse_args()
     return args
