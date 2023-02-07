@@ -4,12 +4,15 @@
   "admin_dashboard": "관리자 대시보드",
   "connect": "연결",
   "conversational": "모두를 위한 대화형 AI.",
+  "copied": "Copied",
+  "dark_mode": "다크 모드",
   "dashboard": "대시보드",
   "delete": "삭제",
   "discord": "Discord",
   "docs": "문서",
   "github": "GitHub",
   "legal": "Legal",
+  "light_mode": "라이트 모드",
   "loading": "로딩중...",
   "more_information": "추가 정보",
   "no": "아니오",
@@ -17,9 +20,8 @@
   "report_a_bug": "버그신고",
   "sign_in": "Sign In",
   "sign_out": "Sign Out",
+  "success": "Success",
   "terms_of_service": "서비스 약관",
   "title": "오픈 어시스턴트",
-  "yes": "예",
-  "dark_mode": "다크 모드",
-  "light_mode": "라이트 모드"
+  "yes": "예"
 }

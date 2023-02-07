@@ -1,12 +1,12 @@
 {
   "dashboard": "Главная",
   "dashboard_home": "Главная страница",
+  "leaderboard": "Рейтинг",
   "messages": "Сообщения",
   "messages_dashboard": "Панель просмотра сообщений",
-  "leaderboard": "Рейтинг",
+  "status": "Статус",
+  "status_dashboard": "Панель состояния системы",
   "user_leaderboard": "Таблица лидеров",
   "users": "Пользователи",
-  "users_dashboard": "Панель управления пользователями",
-  "status": "Статус",
-  "status_dashboard": "Панель состояния системы"
+  "users_dashboard": "Панель управления пользователями"
 }

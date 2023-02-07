@@ -23,7 +23,7 @@ import {
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
-import { ColumnDef, flexRender, getCoreRowModel, Row, useReactTable } from "@tanstack/react-table";
+import { Cell, ColumnDef, flexRender, getCoreRowModel, Row, useReactTable } from "@tanstack/react-table";
 import { Filter } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { ChangeEvent, ReactNode } from "react";
@@ -31,6 +31,7 @@ import { useDebouncedCallback } from "use-debounce";
 
 export type DataTableColumnDef<T> = ColumnDef<T> & {
   filterable?: boolean;
+  span?: number | ((cell: Cell<T, unknown>) => number | undefined);
 };
 
 // TODO: stricter type
@@ -126,15 +127,43 @@ export const DataTable = <T,>({
               const props = typeof rowProps === "function" ? rowProps(row) : rowProps;
               return (
                 <Tr key={row.id} {...props}>
-                  {row.getVisibleCells().map((cell) => (
-                    <Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Td>
-                  ))}
+                  <DataTableRow row={row}></DataTableRow>
                 </Tr>
               );
             })}
           </Tbody>
         </Table>
       </TableContainer>
+    </>
+  );
+};
+
+type WithSpanCell<T> = Cell<T, unknown> & { span?: number };
+
+const DataTableRow = <T,>({ row }: { row: Row<T> }) => {
+  const cells: WithSpanCell<T>[] = row.getVisibleCells();
+  const renderCells: WithSpanCell<T>[] = [];
+
+  for (let i = 0; i < cells.length; i++) {
+    const cell = cells[i];
+    const span = (cell.column.columnDef as DataTableColumnDef<T>).span;
+    const spanValue = typeof span === "function" ? span(cell) : span;
+    if (spanValue && spanValue > 1) {
+      i += spanValue - 1; // skip next `spanValue - 1` cell
+    }
+    cell.span = spanValue;
+    renderCells.push(cell);
+  }
+
+  return (
+    <>
+      {renderCells.map((cell) => {
+        return (
+          <Td key={cell.id} colSpan={cell.span}>
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </Td>
+        );
+      })}
     </>
   );
 };

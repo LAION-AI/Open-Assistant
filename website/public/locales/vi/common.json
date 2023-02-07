@@ -4,12 +4,15 @@
   "admin_dashboard": "Trang cho admin",
   "connect": "Liên hệ",
   "conversational": "Chatbot AI cho tất cả mọi người",
+  "copied": "Copied",
+  "dark_mode": "Giao diện tối",
   "dashboard": "Trang chính",
   "delete": "Xoá",
   "discord": "Discord",
   "docs": "Hướng dẫn",
   "github": "GitHub",
   "legal": "Luật lệ",
+  "light_mode": "Giao diện sáng",
   "loading": "Đang tải...",
   "more_information": "Xem thêm",
   "no": "Không",
@@ -17,9 +20,8 @@
   "report_a_bug": "Báo lỗi",
   "sign_in": "Đăng nhập",
   "sign_out": "Đăng xuất",
+  "success": "Success",
   "terms_of_service": "Điều khoản sử dụng",
   "title": "Open Assistant",
-  "yes": "Có",
-  "dark_mode": "Giao diện tối",
-  "light_mode": "Giao diện sáng"
+  "yes": "Có"
 }
