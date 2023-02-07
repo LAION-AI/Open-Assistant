@@ -876,6 +876,7 @@ class PromptRepository:
             user_emojis = x["user_emojis"]
             if user_emojis:
                 m._user_emojis = user_emojis.split(",")
+            m._user_is_author = self.user_id and self.user_id == m.user_id
             messages.append(m)
         return messages
 
