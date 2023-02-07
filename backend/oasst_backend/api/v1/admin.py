@@ -189,9 +189,12 @@ async def get_flagged_messages(
 @router.post("/admin/flagged_messages/{message_id}/processed", response_model=FlaggedMessageResponse)
 async def process_flagged_messages(
     message_id: UUID,
+    session: deps.Session = Depends(deps.get_db),
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
 ) -> str:
     assert api_client.trusted
 
-    pr = PromptRepository(deps.Session, api_client)
-    return FlaggedMessageResponse(pr.process_flagged_message(message_id=message_id))
+    pr = PromptRepository(session, api_client)
+    flagged_msg = pr.process_flagged_message(message_id=message_id)
+    resp = FlaggedMessageResponse(**flagged_msg.__dict__)
+    return resp

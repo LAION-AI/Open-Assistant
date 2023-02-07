@@ -1154,12 +1154,13 @@ WHERE message.id = cc.id;
 
     def process_flagged_message(self, message_id: UUID) -> FlaggedMessage:
 
-        message = FlaggedMessage.query().get(message_id)
+        message = self.db.query(FlaggedMessage).get(message_id)
 
         if not message:
             raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTPStatus.NOT_FOUND)
 
         message.processed = True
         self.db.commit()
+        self.db.refresh(message)
 
         return message
