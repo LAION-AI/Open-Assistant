@@ -62,7 +62,8 @@ TRANSLATION_PROMPT = {
         "{} how do we write in Malay",
         "{} give me the malay translation",
         "{} , berikan saya terjemahan dalam bahasa melayu",
-        "{}, Jemahan di bahasa melayu" "{}, jemahkan ayat ini kepada bahasa melayu",
+        "{}, Jemahan di bahasa melayu",
+        "{}, jemahkan ayat ini kepada bahasa melayu",
     ],
     "en": ["{}. translate to english", "{} write in english", "english translation: '{}'"],
     "ru": ["помогите мне перевести это на русский : {}", "{} перевести на русский язык", "russian translation: '{}'"],
@@ -71,6 +72,8 @@ TRANSLATION_PROMPT = {
     "nl": ["{}. translate to dutch", "{} write in dutch", "dutch translation: '{}'"],
     "vi": ["{}. Dịch sang tiếng việt nam", "{} write in vietnamese", "vietnamese translation: '{}'"],
     "ar": ["{}. translate to arabic", "{} write in arabic", "arabic translation: '{}'"],
+    "es": ["{}. translate to spanish", "{} write in spanish", "spanish translation: '{}'"],
+    "hi": ["{}. translate to hindi", "{}. translate to bengali", "{} write in hindi", "bengali translation: '{}'"],
 }
 
 
@@ -114,8 +117,6 @@ class WMT2019(TranslationPair):
             else:  # translating in reverse direction
                 source = random.choice(TRANSLATION_PROMPT[src]).format(row[tgt])
                 self.pairs.append((source, row[src]))
-            if len(self.pairs) > 100000:
-                break
 
 
 class DiveMT(TranslationPair):
