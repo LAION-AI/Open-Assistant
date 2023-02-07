@@ -9,7 +9,6 @@ from sqlmodel import Field, Index, SQLModel
 
 class FlaggedMessage(SQLModel, table=True):
     __tablename__ = "flagged_message"
-    __table_args__ = (Index("ix_message_emoji__user_id__message_id", "user_id", "message_id", unique=False),)
 
     message_id: Optional[UUID] = Field(
         sa_column=sa.Column(

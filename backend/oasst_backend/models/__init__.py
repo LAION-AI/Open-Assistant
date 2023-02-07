@@ -11,6 +11,7 @@ from .text_labels import TextLabels
 from .troll_stats import TrollStats
 from .user import User
 from .user_stats import UserStats, UserStatsTimeFrame
+from .flagged_message import FlaggedMessage
 
 __all__ = [
     "ApiClient",
@@ -28,4 +29,5 @@ __all__ = [
     "JournalIntegration",
     "MessageEmoji",
     "TrollStats",
+    "FlaggedMessage",
 ]
