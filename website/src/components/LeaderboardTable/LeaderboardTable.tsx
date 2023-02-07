@@ -34,7 +34,7 @@ export const LeaderboardTable = ({
     data: reply,
     isLoading,
     error,
-  } = useSWRImmutable<LeaderboardReply & { user_stats_window: LeaderboardReply["leaderboard"] }>(
+  } = useSWRImmutable<LeaderboardReply & { user_stats_window?: LeaderboardReply["leaderboard"] }>(
     `/api/leaderboard?time_frame=${timeFrame}&limit=${limit}&includeUserStats=${!hideCurrentUserRanking}`,
     get
   );
@@ -79,7 +79,7 @@ export const LeaderboardTable = ({
     const start = (page - 1) * rowPerPage;
     const end = start + rowPerPage;
     const leaderBoardEntities = reply.leaderboard.slice(start, end);
-    if (hideCurrentUserRanking) {
+    if (hideCurrentUserRanking || !reply.user_stats_window) {
       return leaderBoardEntities;
     }
     const userStatsWindow: WindowLeaderboardEntity[] = reply.user_stats_window;
