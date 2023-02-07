@@ -1,0 +1,20 @@
+{
+  "copy_message_id": "Skopiuj ID wiadomości",
+  "label_action": "Sklasyfikuj",
+  "label_title": "Sklasyfikuj",
+  "message_deleted": "Wiadomość usunięta",
+  "message": "Wiadomość",
+  "open_new_tab_action": "Otwórz w nowej karcie",
+  "parent": "Rodzic",
+  "reactions": "Reakcje",
+  "recent_messages": "Ostatnie Wiadomości",
+  "report_action": "Zgłoś",
+  "report_placeholder": "Dlaczego ta wiadomość powinna zostać przejrzana?",
+  "report_title": "Zgłoś",
+  "send_report": "Wyślij",
+  "stop_tree": "Zatrzymaj drzewo",
+  "submit_labels": "Wyślij",
+  "tree_stopped": "Drzewo zatrzymane {{id}}",
+  "view_user": "Wyświetl użytkownika",
+  "your_recent_messages": "Twoje ostatnie wiadomości"
+}
