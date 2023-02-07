@@ -1,12 +1,12 @@
 {
   "dashboard": "Kontrol Paneli",
   "dashboard_home": "Kontrol Paneli Ana Sayfa",
+  "leaderboard": "Lider Tablosu",
   "messages": "Mesajlar",
   "messages_dashboard": "Mesaj Kontrol Paneli",
-  "leaderboard": "Lider Tablosu",
+  "status": "Durum",
+  "status_dashboard": "Durum Kontrol Paneli",
   "user_leaderboard": "Kullanıcı Lider Tablosu",
   "users": "Kullanıcılar",
-  "users_dashboard": "Kullanıcı Kontrol Paneli",
-  "status": "Durum",
-  "status_dashboard": "Durum Kontrol Paneli"
+  "users_dashboard": "Kullanıcı Kontrol Paneli"
 }

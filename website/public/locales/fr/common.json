@@ -4,12 +4,15 @@
   "admin_dashboard": "Tableau de bord d'administration",
   "connect": "Se connecter",
   "conversational": "IA conversationnelle pour tout le monde.",
+  "copied": "Copied",
+  "dark_mode": "Mode sombre",
   "dashboard": "Tableau de bord",
   "delete": "Supprimer",
   "discord": "Discord",
   "docs": "Docs",
   "github": "GitHub",
   "legal": "Légal",
+  "light_mode": "Mode clair",
   "loading": "Chargement en cours...",
   "more_information": "Plus d'informations",
   "no": "Non",
@@ -17,9 +20,8 @@
   "report_a_bug": "Signaler un bug",
   "sign_in": "Se connecter",
   "sign_out": "Se déconnecter",
+  "success": "Success",
   "terms_of_service": "Conditions d'utilisation",
   "title": "Open Assistant",
-  "yes": "Oui",
-  "dark_mode": "Mode sombre",
-  "light_mode": "Mode clair"
+  "yes": "Oui"
 }

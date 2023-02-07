@@ -1,0 +1,23 @@
+{
+  "blurb": "Wierzymy, że możemy stworzyć rewolucję.",
+  "blurb1": "Tak jak Stable Diffusion pomaga światu tworzyć sztukę i obrazy na inne sposoby, chcemy wzbogacić świat poprzez dostarczenie niesamowitej konwersacyjnej SI.",
+  "description": "Konwersacyjna SI dla każdego. Projekt w formie otwartego oprogramowania mający na celu utworzenie czatu wspomaganego przez GPT LLM kierowany przez LAION i uczestników z całego świata.",
+  "faq_items": {
+    "q0": "W jakim stopniu zaawansowania jest projekt?",
+    "a0": "Jesteśmy w początkowych fazach rozwoju, pracujemy na bazie potwierdzonych badań w aplikowaniu RLHF (uczenie ze wzmocnieniem na podstawie ludzkiej informacji zwrotnej) do wielkich modeli językowych.",
+    "q1": "Kto stoi za Open Assistant?",
+    "a1": "Open Assistant to projekt zorganizowany przez LAION i osoby z całego świata chętne dostarczenia tej technologii dla każdego.",
+    "q2": "Jakiej licencji używa Open Assistant?",
+    "a2": "Kod i modele podlegają pod licencję Apache 2.0",
+    "q3": "Czy dane treningowe zostaną opublikowane?",
+    "a3": "Tak, na bazie CC BY 4.0 (uznanie autorstwa).",
+    "q4": "Czy Open Assistant będzie darmowy?",
+    "a4": "Tak, Open Assistant będzie darmowy w obsłudze i modyfikacji.",
+    "q5": "Jaki sprzęt będzie wymagany do uruchomienia modeli?",
+    "a5": "Będą dostępne wersje przygotowane do uruchomienia na sprzęcie konsumenckim."
+  },
+  "faq_title": "Najczęściej Zadawane Pytania",
+  "join_us_description": "Wszystkie projekty wolnego oprogramowania zaczynają się od ludzi takich jak ty. Otwarte oprogramowanie to przekonanie, że współpracując możemy podarować naszą wiedzę i technologię światu dla dobra ludzkości. Wchodzisz w to? Znajdź nas tutaj:",
+  "join_us_title": "Dołącz do nas",
+  "subtitle": "Konwersacyjna SI dla każdego."
+}
