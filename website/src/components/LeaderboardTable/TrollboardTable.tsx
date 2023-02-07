@@ -1,21 +1,29 @@
-import { Box, CircularProgress, Flex } from "@chakra-ui/react";
+import { Box, CircularProgress, Flex, Link } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
+import NextLink from "next/link";
 import { FetchTrollBoardResponse, TrollboardEntity, TrollboardTimeFrame } from "src/types/Trollboard";
 
 import { DataTable } from "../DataTable";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
-
 const columnHelper = createColumnHelper<TrollboardEntity>();
 
 const toPercentage = (num: number) => `${Math.round(num * 100)}%`;
 
 const columns = [
   columnHelper.accessor("rank", {}),
-  columnHelper.accessor("display_name", {
+  columnHelper.accessor((row) => [row.display_name, row.user_id] as const, {
     header: "Display name",
+    cell: ({ getValue }) => {
+      const [name, id] = getValue();
+      return (
+        <Link as={NextLink} href={`/admin/manage_user/${id}`}>
+          {name}
+        </Link>
+      );
+    },
   }),
   columnHelper.accessor("troll_score", {
     header: "Troll score",
