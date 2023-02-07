@@ -8,6 +8,7 @@ import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { TaskType } from "src/types/Task";
+import { CreateTaskReply } from "src/types/TaskResponses";
 import { CreateTaskType } from "src/types/Tasks";
 
 export const CreateTask = ({
@@ -17,7 +18,7 @@ export const CreateTask = ({
   isDisabled,
   onReplyChanged,
   onValidityChanged,
-}: TaskSurveyProps<CreateTaskType, { text: string }>) => {
+}: TaskSurveyProps<CreateTaskType, CreateTaskReply>) => {
   const { t, i18n } = useTranslation(["tasks", "common"]);
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const titleColor = useColorModeValue("gray.800", "gray.300");
@@ -49,9 +50,9 @@ export const CreateTask = ({
         </>
         <>
           <Stack spacing="4">
-            {!!i18n.exists(`task.${taskType.id}.instruction`) && (
+            {!!i18n.exists(`tasks:${taskType.id}.instruction`) && (
               <Text fontSize="xl" fontWeight="bold" color={titleColor}>
-                {t(getTypeSafei18nKey(`${taskType.id}.instruction`))}
+                {t(getTypeSafei18nKey(`tasks:${taskType.id}.instruction`))}
               </Text>
             )}
             <TrackedTextarea

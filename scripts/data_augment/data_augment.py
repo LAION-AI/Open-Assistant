@@ -94,7 +94,7 @@ class EssayReviser(DataAugmenter):
     def parse_single(self, essay):
         instructions = []
 
-        # Make stucture error (shuffle one paragraph with another)
+        # Make structure error (shuffle one paragraph with another)
         essay_paragraphs = essay.split("\n\n")  # Splitting a String by newline character (\n)
 
         rand1 = random.randint(0, len(essay_paragraphs) - 1)
@@ -424,7 +424,7 @@ class CodeInstructor(DataAugmenter):
 
 
 def recognize_entities(text, model, n=4, person="ignore"):
-    """Given a text and a model for entity recognition, return the most occuring entites in the text as a string"""
+    """Given a text and a model for entity recognition, return the most occurring entities in the text as a string"""
     doc = model(text)
     if person == "ignore":
         ents = Counter([ent.text.strip() for ent in list(doc.ents) if len(ent.text.strip()) >= 5])

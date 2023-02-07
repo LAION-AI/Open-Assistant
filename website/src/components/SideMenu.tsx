@@ -1,13 +1,12 @@
-import { Box, Button, Text, Tooltip, useColorMode } from "@chakra-ui/react";
+import { Button, Card, Text, Tooltip, useColorMode } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 import { LucideIcon, Sun } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { colors } from "styles/Theme/colors";
 
 export interface MenuButtonOption {
   label: string;
   pathname: string;
-  desc: string;
   icon: LucideIcon;
 }
 
@@ -18,15 +17,14 @@ export interface SideMenuProps {
 export function SideMenu(props: SideMenuProps) {
   const router = useRouter();
   const { colorMode, toggleColorMode } = useColorMode();
+  const { t } = useTranslation(["side_menu", "common"]);
 
   return (
     <main className="sticky top-0 sm:h-full">
-      <Box
+      <Card
+        display={{ base: "grid", sm: "flex" }}
         width={["100%", "100%", "100px", "280px"]}
-        backgroundColor={colorMode === "light" ? colors.light.div : colors.dark.div}
-        boxShadow="base"
-        borderRadius="xl"
-        className="grid grid-cols-4 gap-2 sm:flex sm:flex-col sm:justify-between p-4 h-full"
+        className="grid-cols-3 gap-2 sm:flex-col sm:justify-between p-4 h-full"
       >
         <nav className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
           {props.buttonOptions.map((item, itemIndex) => (
@@ -59,17 +57,7 @@ export function SideMenu(props: SideMenuProps) {
             </Tooltip>
           ))}
         </nav>
-        <div>
-          <Tooltip fontFamily="inter" label="Toggle Dark Mode" placement="right" className="hidden lg:hidden sm:block">
-            <Button size="lg" width="full" justifyContent="center" onClick={toggleColorMode} gap="2">
-              <Sun size={"1em"} />
-              <Text fontWeight="normal" className="hidden lg:block">
-                {colorMode === "light" ? "Dark Mode" : "Light Mode"}
-              </Text>
-            </Button>
-          </Tooltip>
-        </div>
-      </Box>
+      </Card>
     </main>
   );
 }

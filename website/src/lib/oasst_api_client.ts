@@ -13,6 +13,10 @@ export class OasstError {
     this.errorCode = errorCode;
     this.httpStatusCode = httpStatusCode;
   }
+
+  toString() {
+    return JSON.stringify(this);
+  }
 }
 
 export class OasstApiClient {
@@ -29,6 +33,69 @@ export class OasstApiClient {
       };
     }
   }
+
+  private async request<T>(
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    path: string,
+    init?: RequestInit
+  ): Promise<T | null> {
+    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
+      method,
+      ...init,
+      headers: {
+        ...init?.headers,
+        ...this.userHeaders,
+        "X-API-Key": this.oasstApiKey,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (resp.status === 204) {
+      return null;
+    }
+
+    if (resp.status >= 300) {
+      const errorText = await resp.text();
+      let error;
+      try {
+        error = JSON.parse(errorText);
+      } catch (e) {
+        throw new OasstError(errorText, 0, resp.status);
+      }
+      throw new OasstError(error.message ?? error, error.error_code, resp.status);
+    }
+
+    return resp.json();
+  }
+
+  private async post<T>(path: string, body: unknown) {
+    return this.request<T>("POST", path, {
+      body: JSON.stringify(body),
+    });
+  }
+
+  private async put<T>(path: string) {
+    return this.request<T>("PUT", path);
+  }
+
+  private async get<T>(path: string, query?: Record<string, string | number | boolean | undefined>) {
+    if (!query) {
+      return this.request<T>("GET", path);
+    }
+
+    const filteredQuery = Object.fromEntries(
+      Object.entries(query).filter(([, value]) => value !== undefined)
+    ) as Record<string, string>;
+
+    const params = new URLSearchParams(filteredQuery).toString();
+
+    return this.request<T>("GET", `${path}?${params}`);
+  }
+
+  private async delete<T>(path: string) {
+    return this.request<T>("DELETE", path);
+  }
+
   // TODO return a strongly typed Task?
   // This method is used to store a task in RegisteredTask.task.
   // This is a raw Json type, so we can't use it to strongly type the task.
@@ -41,15 +108,11 @@ export class OasstApiClient {
   }
 
   async ackTask(taskId: string, messageId: string): Promise<null> {
-    return this.post(`/api/v1/tasks/${taskId}/ack`, {
-      message_id: messageId,
-    });
+    return this.post(`/api/v1/tasks/${taskId}/ack`, { message_id: messageId });
   }
 
   async nackTask(taskId: string, reason: string): Promise<null> {
-    return this.post(`/api/v1/tasks/${taskId}/nack`, {
-      reason,
-    });
+    return this.post(`/api/v1/tasks/${taskId}/nack`, { reason });
   }
 
   // TODO return a strongly typed Task?
@@ -75,6 +138,14 @@ export class OasstApiClient {
     });
   }
 
+  fetch_full_settings() {
+    return this.get<Record<string, any>>("/api/v1/admin/backend_settings/full");
+  }
+
+  fetch_public_settings() {
+    return this.get<Record<string, any>>("/api/v1/admin/backend_settings/public");
+  }
+
   /**
    * Returns the tasks availability information for given `user`.
    */
@@ -87,6 +158,20 @@ export class OasstApiClient {
    */
   async fetch_message(message_id: string, user: BackendUserCore): Promise<Message> {
     return this.get<Message>(`/api/v1/messages/${message_id}?username=${user.id}&auth_method=${user.auth_method}`);
+  }
+
+  /**
+   * Delete a message by its id
+   */
+  async delete_message(message_id: string): Promise<void> {
+    return this.delete<void>(`/api/v1/messages/${message_id}`);
+  }
+
+  /**
+   * Stop message tree
+   */
+  async stop_tree(message_id: string): Promise<void> {
+    return this.put<void>(`/api/v1/messages/${message_id}/tree/state?halt=true`);
   }
 
   /**
@@ -192,60 +277,6 @@ export class OasstApiClient {
     });
   }
 
-  private async post<T>(path: string, body: unknown) {
-    return this.request<T>("POST", path, {
-      body: JSON.stringify(body),
-    });
-  }
-
-  private async put<T>(path: string) {
-    return this.request<T>("PUT", path);
-  }
-
-  private async get<T>(path: string, query?: Record<string, string | number | boolean | undefined>) {
-    if (!query) {
-      return this.request<T>("GET", path);
-    }
-
-    const filteredQuery = Object.fromEntries(
-      Object.entries(query).filter(([, value]) => value !== undefined)
-    ) as Record<string, string>;
-
-    const params = new URLSearchParams(filteredQuery).toString();
-
-    return this.request<T>("GET", `${path}?${params}`);
-  }
-
-  private async request<T>(method: "GET" | "POST" | "PUT", path: string, init?: RequestInit): Promise<T | null> {
-    const resp = await fetch(`${this.oasstApiUrl}${path}`, {
-      method,
-      ...init,
-      headers: {
-        ...init?.headers,
-        ...this.userHeaders,
-        "X-API-Key": this.oasstApiKey,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (resp.status === 204) {
-      return null;
-    }
-
-    if (resp.status >= 300) {
-      const errorText = await resp.text();
-      let error;
-      try {
-        error = JSON.parse(errorText);
-      } catch (e) {
-        throw new OasstError(errorText, 0, resp.status);
-      }
-      throw new OasstError(error.message ?? error, error.error_code, resp.status);
-    }
-
-    return await resp.json();
-  }
-
   fetch_my_messages(user: BackendUserCore) {
     const params = new URLSearchParams({
       username: user.id,
@@ -264,5 +295,21 @@ export class OasstApiClient {
 
   fetch_conversation(messageId: string) {
     return this.get(`/api/v1/messages/${messageId}/conversation`);
+  }
+
+  async fetch_tos_acceptance(user: BackendUserCore): Promise<BackendUser["tos_acceptance_date"]> {
+    const backendUser = await this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
+    return backendUser.tos_acceptance_date;
+  }
+
+  async set_tos_acceptance(user: BackendUserCore) {
+    // NOTE: we do a post here to force create the user if it does not exist
+    const backendUser = await this.post<BackendUser>(`/api/v1/frontend_users/`, user);
+    await this.put<void>(`/api/v1/users/${backendUser.user_id}?tos_acceptance=true`);
+  }
+
+  async fetch_user_stats(user: BackendUserCore) {
+    const backendUser = await this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
+    return this.get(`/api/v1/users/${backendUser.user_id}/stats`);
   }
 }

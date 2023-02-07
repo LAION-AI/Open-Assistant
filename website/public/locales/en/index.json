@@ -6,7 +6,15 @@
     "q0": "How far along is this project?",
     "a0": "We are in the early stages of development, working from established research in applying RLHF to large language models.",
     "q1": "Who is behind Open Assistant?",
-    "a1": "Open Assistant is a project organized by LAION and individuals around the world interested in bringing this technology to everyone."
+    "a1": "Open Assistant is a project organized by LAION and individuals around the world interested in bringing this technology to everyone.",
+    "q2": "What license does Open Assistant use?",
+    "a2": "The code and models are licensed under the Apache 2.0 license.",
+    "q3": "Will the training data also be released?",
+    "a3": "Yes, under CC BY 4.0.",
+    "q4": "Will Open Assistant be free?",
+    "a4": "Yes, Open Assistant will be free to use and modify.",
+    "q5": "What hardware will be required to run the models?",
+    "a5": "There will be versions which will be runnable on consumer hardware."
   },
   "faq_title": "Frequently Asked Questions",
   "join_us_description": "All open source projects begin with people like you. Open source is the belief that if we collaborate we can together gift our knowledge and technology to the world for the benefit of humanity. Are you in? Find us here:",

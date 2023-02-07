@@ -1,15 +1,18 @@
 import { Button, ButtonProps, Input, Stack, useColorModeValue } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
+import { TurnstileInstance } from "@marsidev/react-turnstile";
+import { boolean } from "boolean";
 import { Bug, Github, Mail } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { ClientSafeProvider, getProviders, signIn } from "next-auth/react";
+import { getProviders, signIn } from "next-auth/react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthLayout } from "src/components/AuthLayout";
+import { CloudFlareCaptcha } from "src/components/CloudflareCaptcha";
 import { Footer } from "src/components/Footer";
 import { Header } from "src/components/Header";
 import { Discord } from "src/components/Icons/Discord";
@@ -26,6 +29,7 @@ export type SignInErrorTypes =
   | "EmailSignin"
   | "CredentialsSignin"
   | "SessionRequired"
+  | "InvalidCaptcha"
   | "default";
 
 const errorMessages: Record<SignInErrorTypes, string> = {
@@ -39,6 +43,7 @@ const errorMessages: Record<SignInErrorTypes, string> = {
   EmailSignin: "The e-mail could not be sent.",
   CredentialsSignin: "Sign in failed. Check the details you provided are correct.",
   SessionRequired: "Please sign in to access this page.",
+  InvalidCaptcha: "Invalid captcha",
   default: "Unable to sign in.",
 };
 
@@ -62,14 +67,10 @@ function Signin({ providers }: SigninProps) {
     }
   }, [router]);
 
-  const signinWithEmail = (data: { email: string }) => {
-    signIn(email.id, { callbackUrl: "/dashboard", email: data.email });
-  };
-
   const { colorMode } = useColorMode();
   const bgColorClass = colorMode === "light" ? "bg-gray-50" : "bg-chakra-gray-900";
   const buttonBgColor = colorMode === "light" ? "#2563eb" : "#2563eb";
-  const { register, handleSubmit } = useForm<{ email: string }>();
+
   return (
     <div className={bgColorClass}>
       <Head>
@@ -78,23 +79,9 @@ function Signin({ providers }: SigninProps) {
       </Head>
       <AuthLayout>
         <Stack spacing="2">
-          {credentials && <DebugSigninForm credentials={credentials} bgColorClass={bgColorClass} />}
-          {email && (
-            <form onSubmit={handleSubmit(signinWithEmail)}>
-              <Stack>
-                <Input
-                  type="email"
-                  data-cy="email-address"
-                  variant="outline"
-                  size="lg"
-                  placeholder="Email Address"
-                  {...register("email")}
-                />
-                <SigninButton data-cy="signin-email-button" leftIcon={<Mail />}>
-                  Continue with Email
-                </SigninButton>
-              </Stack>
-            </form>
+          {credentials && <DebugSigninForm providerId={credentials.id} bgColorClass={bgColorClass} />}
+          {email && boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN) && (
+            <EmailSignInForm providerId={email.id}></EmailSignInForm>
           )}
           {discord && (
             <Button
@@ -160,6 +147,50 @@ Signin.getLayout = (page) => (
 
 export default Signin;
 
+const emailSigninCaptcha = boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA);
+
+const EmailSignInForm = ({ providerId }: { providerId: string }) => {
+  const { register, handleSubmit } = useForm<{ email: string }>();
+  const captcha = useRef<TurnstileInstance>();
+  const [captchaSuccess, setCaptchaSuccess] = useState(false);
+  const signinWithEmail = (data: { email: string }) => {
+    signIn(providerId, {
+      callbackUrl: "/dashboard",
+      email: data.email,
+      captcha: captcha.current?.getResponse(),
+    });
+  };
+  return (
+    <form onSubmit={handleSubmit(signinWithEmail)}>
+      <Stack>
+        <Input
+          type="email"
+          data-cy="email-address"
+          variant="outline"
+          size="lg"
+          placeholder="Email Address"
+          {...register("email")}
+        />
+        {emailSigninCaptcha && (
+          <CloudFlareCaptcha
+            options={{ size: "invisible" }}
+            ref={captcha}
+            onSuccess={() => setCaptchaSuccess(true)}
+          ></CloudFlareCaptcha>
+        )}
+        <SigninButton
+          data-cy="signin-email-button"
+          leftIcon={<Mail />}
+          mt="4"
+          disabled={!captchaSuccess && emailSigninCaptcha}
+        >
+          Continue with Email
+        </SigninButton>
+      </Stack>
+    </form>
+  );
+};
+
 const SigninButton = (props: ButtonProps) => {
   const buttonColorScheme = useColorModeValue("blue", "dark-blue-btn");
 
@@ -180,7 +211,7 @@ interface DebugSigninFormData {
   role: Role;
 }
 
-const DebugSigninForm = ({ credentials, bgColorClass }: { credentials: ClientSafeProvider; bgColorClass: string }) => {
+const DebugSigninForm = ({ providerId, bgColorClass }: { providerId: string; bgColorClass: string }) => {
   const { register, handleSubmit } = useForm<DebugSigninFormData>({
     defaultValues: {
       role: "general",
@@ -189,7 +220,7 @@ const DebugSigninForm = ({ credentials, bgColorClass }: { credentials: ClientSaf
   });
 
   function signinWithDebugCredentials(data: DebugSigninFormData) {
-    signIn(credentials.id, {
+    signIn(providerId, {
       callbackUrl: "/dashboard",
       ...data,
     });

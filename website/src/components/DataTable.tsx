@@ -15,6 +15,7 @@ import {
   Table,
   TableCaption,
   TableContainer,
+  TableRowProps,
   Tbody,
   Td,
   Th,
@@ -22,8 +23,9 @@ import {
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { ColumnDef, flexRender, getCoreRowModel, Row, useReactTable } from "@tanstack/react-table";
 import { Filter } from "lucide-react";
+import { useTranslation } from "next-i18next";
 import { ChangeEvent, ReactNode } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -37,6 +39,8 @@ export type FilterItem = {
   value: string;
 };
 
+export type DataTableRowPropsCallback<T> = (row: Row<T>) => TableRowProps;
+
 export type DataTableProps<T> = {
   data: T[];
   columns: DataTableColumnDef<T>[];
@@ -48,6 +52,7 @@ export type DataTableProps<T> = {
   disableNext?: boolean;
   disablePrevious?: boolean;
   disablePagination?: boolean;
+  rowProps?: TableRowProps | DataTableRowPropsCallback<T>;
 };
 
 export const DataTable = <T,>({
@@ -61,7 +66,9 @@ export const DataTable = <T,>({
   disableNext,
   disablePrevious,
   disablePagination,
+  rowProps,
 }: DataTableProps<T>) => {
+  const { t } = useTranslation("leaderboard");
   const { getHeaderGroups, getRowModel } = useReactTable<T>({
     data,
     columns,
@@ -83,11 +90,11 @@ export const DataTable = <T,>({
       {!disablePagination && (
         <Flex mb="2">
           <Button onClick={onPreviousClick} disabled={disablePrevious}>
-            Previous
+            {t("previous")}
           </Button>
           <Spacer />
           <Button onClick={onNextClick} disabled={disableNext}>
-            Next
+            {t("next")}
           </Button>
         </Flex>
       )}
@@ -115,13 +122,16 @@ export const DataTable = <T,>({
             ))}
           </Thead>
           <Tbody>
-            {getRowModel().rows.map((row) => (
-              <Tr key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Td>
-                ))}
-              </Tr>
-            ))}
+            {getRowModel().rows.map((row) => {
+              const props = typeof rowProps === "function" ? rowProps(row) : rowProps;
+              return (
+                <Tr key={row.id} {...props}>
+                  {row.getVisibleCells().map((cell) => (
+                    <Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Td>
+                  ))}
+                </Tr>
+              );
+            })}
           </Tbody>
         </Table>
       </TableContainer>

@@ -1,4 +1,4 @@
-import { Box, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Card, Text, useColorModeValue } from "@chakra-ui/react";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
@@ -15,7 +15,9 @@ const MessageDetail = ({ id }: InferGetServerSidePropsType<typeof getServerSideP
   const { t } = useTranslation(["message", "common"]);
   const backgroundColor = useColorModeValue("white", "gray.800");
 
-  const { isLoading: isLoadingParent, data: parent } = useSWRImmutable<Message>(`/api/messages/${id}/parent`, get);
+  const { isLoading: isLoadingParent, data: parent } = useSWRImmutable<Message>(`/api/messages/${id}/parent`, get, {
+    refreshInterval: 30 * 1000, // 30 seconds
+  });
 
   if (isLoadingParent) {
     return <MessageLoading />;
@@ -30,20 +32,16 @@ const MessageDetail = ({ id }: InferGetServerSidePropsType<typeof getServerSideP
         />
       </Head>
       <Box width="full">
-        <Box>
-          {parent && (
-            <>
-              <Box pb="4">
-                <Text fontWeight="bold" fontSize="xl" pb="2">
-                  {t("parent")}
-                </Text>
-                <Box bg={backgroundColor} padding="4" borderRadius="xl" boxShadow="base" width="fit-content">
-                  <MessageTableEntry enabled message={parent} />
-                </Box>
-              </Box>
-            </>
-          )}
-        </Box>
+        {parent && (
+          <Box pb="4">
+            <Text fontWeight="bold" fontSize="xl" pb="2">
+              {t("parent")}
+            </Text>
+            <Card bg={backgroundColor} padding="4" width="fit-content">
+              <MessageTableEntry enabled message={parent} />
+            </Card>
+          </Box>
+        )}
         <Box pb="4">
           <MessageWithChildren id={id} maxDepth={2} />
         </Box>
@@ -61,7 +59,7 @@ export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string
   props: {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: params!.id,
-    ...(await serverSideTranslations(locale, ["common", "message"])),
+    ...(await serverSideTranslations(locale, ["common", "message", "labelling"])),
   },
 });
 

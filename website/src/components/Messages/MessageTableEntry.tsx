@@ -12,19 +12,22 @@ import {
   useBreakpointValue,
   useColorModeValue,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import { ClipboardList, Flag, MessageSquare, MoreHorizontal, User } from "lucide-react";
+import { ClipboardList, Copy, Flag, MessageSquare, MoreHorizontal, Slash, Trash, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
-import { getEmojiIcon, MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
+import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
-import { post } from "src/lib/api";
+import { del, post, put } from "src/lib/api";
+import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
-import { colors } from "styles/Theme/colors";
+import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
+import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 
 interface MessageTableEntryProps {
@@ -37,8 +40,11 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
   const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
+    const emojis = { ...message.emojis };
+    emojis["+1"] = emojis["+1"] || 0;
+    emojis["-1"] = emojis["-1"] || 0;
     setEmojis({
-      emojis: message?.emojis || {},
+      emojis: emojis,
       user_emojis: message?.user_emojis || [],
     });
   }, [message.emojis, message.user_emojis]);
@@ -66,10 +72,14 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
     ),
     [borderColor, inlineAvatar, message.is_assistant]
   );
-  const highlightColor = useColorModeValue(colors.light.highlight, colors.dark.highlight);
+  const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
 
   const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
-    onSuccess: setEmojis,
+    onSuccess: (data) => {
+      data.emojis["+1"] = data.emojis["+1"] || 0;
+      data.emojis["-1"] = data.emojis["-1"] || 0;
+      setEmojis(data);
+    },
   });
   const react = (emoji: string, state: boolean) => {
     sendEmojiChange({ op: state ? "add" : "remove", emoji });
@@ -97,14 +107,19 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
           style={{ float: "right", position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
           onClick={(e) => e.stopPropagation()}
         >
-          {Object.entries(emojiState.emojis).map(([emoji, count]) => (
-            <MessageEmojiButton
-              key={emoji}
-              emoji={{ name: emoji, count }}
-              checked={emojiState.user_emojis.includes(emoji)}
-              onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-            />
-          ))}
+          {Object.entries(emojiState.emojis)
+            .filter(([emoji]) => isKnownEmoji(emoji))
+            .sort(([emoji]) => -emoji)
+            .map(([emoji, count]) => {
+              return (
+                <MessageEmojiButton
+                  key={emoji}
+                  emoji={{ name: emoji, count }}
+                  checked={emojiState.user_emojis.includes(emoji)}
+                  onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+                />
+              );
+            })}
           <MessageActions
             react={react}
             userEmoji={emojiState.user_emojis}
@@ -130,13 +145,15 @@ const EmojiMenuItem = ({
   react: (emoji: string, state: boolean) => void;
 }) => {
   const activeColor = useColorModeValue(colors.light.active, colors.dark.active);
-
+  const EmojiIcon = emojiIcons.get(emoji);
   return (
     <MenuItem onClick={() => react(emoji, !checked)} justifyContent="center" color={checked ? activeColor : undefined}>
-      {getEmojiIcon(emoji, "NORMAL")}
+      <EmojiIcon />
     </MenuItem>
   );
 };
+
+const CHAR_COUNT = 10;
 
 const MessageActions = ({
   react,
@@ -151,9 +168,47 @@ const MessageActions = ({
   onReport: () => void;
   message: Message;
 }) => {
-  const { t } = useTranslation("message");
-  const { data } = useSession() || {};
-  const role = data?.user?.role;
+  const toast = useToast();
+  const { t } = useTranslation(["message", "common"]);
+  const id = message.id;
+  const displayId = id.slice(0, CHAR_COUNT) + "..." + id.slice(-CHAR_COUNT);
+  const { trigger: deleteMessage } = useSWRMutation(`/api/admin/delete_message/${message.id}`, del);
+
+  const { trigger: stopTree } = useSWRMutation(`/api/admin/stop_tree/${message.id}`, put, {
+    onSuccess: () => {
+      toast({
+        title: t("common:success"),
+        description: t("tree_stopped", { id: displayId }),
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    },
+  });
+
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
+
+  const handleDelete = async () => {
+    await deleteMessage();
+    mutate((key) => typeof key === "string" && key.startsWith("/api/messages"), undefined, { revalidate: true });
+  };
+
+  const handleStop = () => {
+    stopTree();
+  };
+
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(message.id);
+    toast({
+      title: t("common:copied"),
+      description: displayId,
+      status: "info",
+      duration: 5000,
+      isClosable: true,
+    });
+  };
+
   return (
     <Menu>
       <MenuButton>
@@ -178,11 +233,20 @@ const MessageActions = ({
         <MenuItem as="a" href={`/messages/${message.id}`} target="_blank" icon={<MessageSquare />}>
           {t("open_new_tab_action")}
         </MenuItem>
-        {role === "admin" && (
+        {!!isAdmin && (
           <>
             <MenuDivider />
+            <MenuItem onClick={handleCopyId} icon={<Copy />}>
+              {t("copy_message_id")}
+            </MenuItem>
             <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
               {t("view_user")}
+            </MenuItem>
+            <MenuItem onClick={handleDelete} icon={<Trash />}>
+              {t("common:delete")}
+            </MenuItem>
+            <MenuItem onClick={handleStop} icon={<Slash />}>
+              {t("stop_tree")}
             </MenuItem>
           </>
         )}
