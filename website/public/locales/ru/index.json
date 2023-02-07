@@ -1,23 +1,23 @@
 {
-  "blurb": "We believe we can create a revolution.",
-  "blurb1": "In the same way that Stable Diffusion helped the world make art and images in new ways, we want to improve the world by providing amazing conversational AI.",
-  "description": "Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world.",
+  "blurb": "Мы верим, что можем начать революцию.",
+  "blurb1": "Stable Diffusion дал миру новые возможность создавать невероятные картины и фотографии, мы хотим дать миру возможность общаться с ИИ.",
+  "description": "Коммуникабельный ИИ для каждого. Проект с открытым исходным кодом ставит целью создание Большой Языковой Модели GPT, основанной LAION и поддерживаемой всем миром.",
   "faq_items": {
-    "q0": "How far along is this project?",
-    "a0": "We are in the early stages of development, working from established research in applying RLHF to large language models.",
-    "q1": "Who is behind Open Assistant?",
-    "a1": "Open Assistant is a project organized by LAION and individuals around the world interested in bringing this technology to everyone.",
-    "q2": "What license does Open Assistant use?",
-    "a2": "The code and models are licensed under the Apache 2.0 license.",
-    "q3": "Will the training data also be released?",
-    "a3": "Yes, under CC BY 4.0.",
-    "q4": "Will Open Assistant be free?",
-    "a4": "Yes, Open Assistant will be free to use and modify.",
-    "q5": "What hardware will be required to run the models?",
-    "a5": "There will be versions which will be runnable on consumer hardware."
+    "q0": "На какой стадии развития этот проект?",
+    "a0": "Мы находимся на ранней стадии разработки, отталкиваясь от уже проведенных исследований по применению RLHF к большим языковым моделям.",
+    "q1": "Кто основал Open Assistant?",
+    "a1": "Open Assistant — это проект, основанный LAION и людьми по всему миру, заинтересованными в том, чтобы технологии были доступны каждому.",
+    "q2": "Какая лицензия у Open Assistant?",
+    "a2": "Код и модели имеют лицензию Apache 2.0.",
+    "q3": "Будут ли выпущены данные, используемые для тренировки модели?",
+    "a3": "Да, под лицензией CC BY 4.0.",
+    "q4": "Open Assistant будет бесплатным?",
+    "a4": "Да, Open Assistant будет бесплатным к пользованию, а также вы сможете свободно его изучать и изменять.",
+    "q5": "Какие у этой модели будут требования к оборудованию?",
+    "a5": "Будут выпущены версии, запуск которых будет возможен на потребительском оборудовании."
   },
-  "faq_title": "Frequently Asked Questions",
-  "join_us_description": "All open source projects begin with people like you. Open source is the belief that if we collaborate we can together gift our knowledge and technology to the world for the benefit of humanity. Are you in? Find us here:",
-  "join_us_title": "Join us",
-  "subtitle": "Conversational AI for everyone."
+  "faq_title": "Часто Задаваемые Вопросы",
+  "join_us_description": "Все проекты с открытым исходным кодом начинаются с таких людей, как вы. Открытый исходный код — это вера в то, что если мы будем сотрудничать, то сможем вместе подарить наши знания и технологии всему миру, на благо человечества. Вы с нами? Найдите нас здесь:",
+  "join_us_title": "Присоединитесь к нам",
+  "subtitle": "Коммуникабельный ИИ для каждого."
 }
