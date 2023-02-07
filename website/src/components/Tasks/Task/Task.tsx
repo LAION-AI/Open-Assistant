@@ -1,7 +1,9 @@
 import { useTranslation } from "next-i18next";
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { useMemo, useRef } from "react";
+import { useCookies } from "react-cookie";
 import { TaskControls } from "src/components/Survey/TaskControls";
+import { DifferentLanguageModal, getMostProbableLanguage } from "src/components/Survey/TrackedTextarea";
 import { CreateTask } from "src/components/Tasks/CreateTask";
 import { EvaluateTask } from "src/components/Tasks/EvaluateTask";
 import { LabelTask } from "src/components/Tasks/LabelTask";
@@ -66,6 +68,9 @@ export const Task = () => {
   const { t } = useTranslation("tasks");
   const rootEl = useRef<HTMLDivElement>(null);
   const replyContent = useRef<TaskContent>(null);
+  const [cookies] = useCookies(["NEXT_LOCALE"]);
+  const currentLanguage = cookies["NEXT_LOCALE"];
+  const [mostProbableLanguage, setMostProbableLanguage] = useState("");
   const { rejectTask, completeTask, isLoading, task, taskInfo } = useTaskContext();
   const [taskStatus, taskEvent] = useReducer(
     (
@@ -81,6 +86,7 @@ export const Task = () => {
           return status.mode === "DEFAULT_WARN" ? { mode: "REVIEW" } : status;
         case "REVIEW": {
           if (status.mode === "EDIT") {
+            setMostProbableLanguage(getMostProbableLanguage(replyContent.current.text));
             switch (status.replyValidity) {
               case "DEFAULT":
                 return { mode: "DEFAULT_WARN" };
@@ -136,25 +142,29 @@ export const Task = () => {
     switch (taskInfo.category) {
       case TaskCategory.Create:
         return (
-          <CreateTask
-            task={task as CreateTaskType}
-            taskType={taskInfo}
-            isEditable={taskStatus.mode === "EDIT"}
-            isDisabled={taskStatus.mode === "SUBMITTED"}
-            onReplyChanged={onReplyChanged}
-            onValidityChanged={updateValidity}
-          />
+          <>
+            <CreateTask
+              task={task as CreateTaskType}
+              taskType={taskInfo}
+              isEditable={taskStatus.mode === "EDIT"}
+              isDisabled={taskStatus.mode === "SUBMITTED"}
+              onReplyChanged={onReplyChanged}
+              onValidityChanged={updateValidity}
+            />
+          </>
         );
       case TaskCategory.Evaluate:
         return (
-          <EvaluateTask
-            task={task as RankTaskType}
-            taskType={taskInfo}
-            isEditable={taskStatus.mode === "EDIT"}
-            isDisabled={taskStatus.mode === "SUBMITTED"}
-            onReplyChanged={onReplyChanged}
-            onValidityChanged={updateValidity}
-          />
+          <>
+            <EvaluateTask
+              task={task as RankTaskType}
+              taskType={taskInfo}
+              isEditable={taskStatus.mode === "EDIT"}
+              isDisabled={taskStatus.mode === "SUBMITTED"}
+              onReplyChanged={onReplyChanged}
+              onValidityChanged={updateValidity}
+            />
+          </>
         );
       case TaskCategory.Label:
         return (
@@ -169,9 +179,15 @@ export const Task = () => {
         );
     }
   }, [taskInfo, task, taskStatus.mode, onReplyChanged, updateValidity]);
-
   return (
     <div ref={rootEl}>
+      {mostProbableLanguage && (
+        <DifferentLanguageModal
+          mostProbableLanguage={mostProbableLanguage}
+          currentLanguage={currentLanguage}
+          setMostProbableLanguage={setMostProbableLanguage}
+        />
+      )}
       {taskTypeComponent}
       <TaskControls
         task={task}
