@@ -11,8 +11,19 @@ from oasst_backend.utils import tree_export
 from sqlmodel import Session
 
 
-def fetch_tree_ids(db: Session, state_filter: Optional[TreeState] = None) -> list[tuple[UUID, TreeState]]:
-    tree_qry = db.query(MessageTreeState)
+def fetch_tree_ids(
+    db: Session,
+    state_filter: Optional[TreeState] = None,
+    lang: Optional[str] = None,
+) -> list[tuple[UUID, TreeState]]:
+    tree_qry = (
+        db.query(MessageTreeState)
+        .select_from(MessageTreeState)
+        .join(Message, MessageTreeState.message_tree_id == Message.id)
+    )
+
+    if lang is not None:
+        tree_qry = tree_qry.filter(Message.lang == lang)
 
     if state_filter:
         tree_qry = tree_qry.filter(MessageTreeState.state == state_filter)
@@ -26,6 +37,7 @@ def fetch_tree_messages(
     user_id: Optional[UUID] = None,
     deleted: bool = None,
     prompts_only: bool = False,
+    lang: Optional[str] = None,
 ) -> List[Message]:
     qry = db.query(Message)
 
@@ -37,6 +49,8 @@ def fetch_tree_messages(
         qry = qry.filter(Message.deleted == deleted)
     if prompts_only:
         qry = qry.filter(Message.parent_id.is_(None))
+    if lang:
+        qry = qry.filter(Message.lang == lang)
 
     return qry.all()
 
@@ -49,14 +63,21 @@ def export_trees(
     user_id: Optional[UUID] = None,
     prompts_only: bool = False,
     state_filter: Optional[TreeState] = None,
+    lang: Optional[str] = None,
 ) -> None:
     trees_to_export: List[tree_export.ExportMessageTree] = []
 
     if user_id:
-        messages = fetch_tree_messages(db, user_id=user_id, deleted=deleted, prompts_only=prompts_only)
+        messages = fetch_tree_messages(
+            db,
+            user_id=user_id,
+            deleted=deleted,
+            prompts_only=prompts_only,
+            lang=lang,
+        )
         tree_export.write_messages_to_file(export_file, messages, use_compression)
     else:
-        message_tree_ids = fetch_tree_ids(db, state_filter)
+        message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang)
 
         message_trees = [
             fetch_tree_messages(
@@ -64,6 +85,7 @@ def export_trees(
                 message_tree_id=tree_id,
                 deleted=deleted,
                 prompts_only=prompts_only,
+                lang=None,
             )
             for (tree_id, _) in message_tree_ids
         ]
@@ -119,6 +141,11 @@ def parse_args():
         help="all|prompt_lottery_waiting|growing|ready_for_export|aborted_low_grade|halted_by_moderator|backlog_ranking",
     )
     parser.add_argument(
+        "--lang",
+        type=str,
+        help="Filter message trees by language code (BCP 47)",
+    )
+    parser.add_argument(
         "--prompts-only",
         action="store_true",
         help="Export a list of initial prompt messages",
@@ -153,6 +180,7 @@ def main():
             user_id=UUID(args.user) if args.user is not None else None,
             prompts_only=args.prompts_only,
             state_filter=state_filter,
+            lang=args.lang,
         )
 
 
