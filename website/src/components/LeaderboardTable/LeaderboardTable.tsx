@@ -1,6 +1,8 @@
-import { Box, CircularProgress, Flex, useColorModeValue } from "@chakra-ui/react";
+import { Box, CircularProgress, Flex, Link, useColorModeValue } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
+import NextLink from "next/link";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import React, { useMemo } from "react";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
@@ -9,7 +11,6 @@ import { DataTable, DataTableColumnDef } from "../DataTable";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
-
 type WindowLeaderboardEntity = LeaderboardEntity & { isSpaceRow?: boolean };
 
 const columnHelper = createColumnHelper<WindowLeaderboardEntity>();
@@ -38,6 +39,9 @@ export const LeaderboardTable = ({
   } = useFetchBoard<LeaderboardReply & { user_stats_window?: LeaderboardReply["leaderboard"] }>(
     `/api/leaderboard?time_frame=${timeFrame}&limit=${limit}&includeUserStats=${!hideCurrentUserRanking}`
   );
+  const { data: session } = useSession();
+
+  const isAdmin = session?.user?.role === "admin";
   const columns: DataTableColumnDef<WindowLeaderboardEntity>[] = useMemo(
     () => [
       {
@@ -49,6 +53,14 @@ export const LeaderboardTable = ({
       },
       columnHelper.accessor("display_name", {
         header: t("user"),
+        cell: ({ getValue, row }) =>
+          isAdmin ? (
+            <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
+              {getValue()}
+            </Link>
+          ) : (
+            getValue()
+          ),
       }),
       columnHelper.accessor("leader_score", {
         header: t("score"),
@@ -63,7 +75,7 @@ export const LeaderboardTable = ({
         header: t("label"),
       }),
     ],
-    [t]
+    [isAdmin, t]
   );
 
   const {

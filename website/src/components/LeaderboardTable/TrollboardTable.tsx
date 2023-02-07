@@ -14,16 +14,13 @@ const toPercentage = (num: number) => `${Math.round(num * 100)}%`;
 
 const columns = [
   columnHelper.accessor("rank", {}),
-  columnHelper.accessor((row) => [row.display_name, row.user_id] as const, {
+  columnHelper.accessor("display_name", {
     header: "Display name",
-    cell: ({ getValue }) => {
-      const [name, id] = getValue();
-      return (
-        <Link as={NextLink} href={`/admin/manage_user/${id}`}>
-          {name}
-        </Link>
-      );
-    },
+    cell: ({ getValue, row }) => (
+      <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
+        {getValue()}
+      </Link>
+    ),
   }),
   columnHelper.accessor("troll_score", {
     header: "Troll score",
