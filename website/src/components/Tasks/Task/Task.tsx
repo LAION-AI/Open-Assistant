@@ -142,29 +142,25 @@ export const Task = () => {
     switch (taskInfo.category) {
       case TaskCategory.Create:
         return (
-          <>
-            <CreateTask
-              task={task as CreateTaskType}
-              taskType={taskInfo}
-              isEditable={taskStatus.mode === "EDIT"}
-              isDisabled={taskStatus.mode === "SUBMITTED"}
-              onReplyChanged={onReplyChanged}
-              onValidityChanged={updateValidity}
-            />
-          </>
+          <CreateTask
+            task={task as CreateTaskType}
+            taskType={taskInfo}
+            isEditable={taskStatus.mode === "EDIT"}
+            isDisabled={taskStatus.mode === "SUBMITTED"}
+            onReplyChanged={onReplyChanged}
+            onValidityChanged={updateValidity}
+          />
         );
       case TaskCategory.Evaluate:
         return (
-          <>
-            <EvaluateTask
-              task={task as RankTaskType}
-              taskType={taskInfo}
-              isEditable={taskStatus.mode === "EDIT"}
-              isDisabled={taskStatus.mode === "SUBMITTED"}
-              onReplyChanged={onReplyChanged}
-              onValidityChanged={updateValidity}
-            />
-          </>
+          <EvaluateTask
+            task={task as RankTaskType}
+            taskType={taskInfo}
+            isEditable={taskStatus.mode === "EDIT"}
+            isDisabled={taskStatus.mode === "SUBMITTED"}
+            onReplyChanged={onReplyChanged}
+            onValidityChanged={updateValidity}
+          />
         );
       case TaskCategory.Label:
         return (
