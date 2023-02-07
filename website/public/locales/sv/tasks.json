@@ -43,7 +43,7 @@
   },
   "rank_initial_prompts": {
     "label": "Rangordna inledande frågor",
-    "desc": ""Betygsätt frågor till Open Assistant baserat på deras noggrannhet och läsbarhet.",
+    "desc": "Betygsätt frågor till Open Assistant baserat på deras noggrannhet och läsbarhet.",
     "overview": "Sortera följande inledande frågor från bäst till sämst, med bäst först och sämst sist.",
     "unchanged_title": "Ordning oförändrad",
     "unchanged_message": "Du har inte ändrat ordningen på svaren. Är du säker på att du vill fortsätta?"
