@@ -29,7 +29,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
 
   res.status(200).json({
     ...leaderboard,
-    user_stats_window: user_stats.leaderboard.map((stats) => ({ ...stats, is_window: true })),
+    user_stats_window: user_stats?.leaderboard.map((stats) => ({ ...stats, is_window: true })),
   });
 });
 
