@@ -37,7 +37,8 @@ const LanguageSelector = () => {
       const locale = option.target.value;
       setCookie("NEXT_LOCALE", locale, { path: "/" });
       const path = router.asPath;
-      return router.push(path, path, { locale });
+      await router.push(path, path, { locale });
+      router.reload();
     },
     [router]
   );
