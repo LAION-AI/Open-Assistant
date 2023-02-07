@@ -35,13 +35,13 @@ TOKENIZER_CONFIGS = {
 }
 
 
-def match_tokenizer_name(name: str) -> TokenizerConfig:
+def match_tokenizer_name(model_name: str) -> TokenizerConfig:
     """Match a partial model name to a tokenizer configuration"""
-    tokenizer_config_matches = [config for name, config in TOKENIZER_CONFIGS.items() if name in name]
+    tokenizer_config_matches = [config for name, config in TOKENIZER_CONFIGS.items() if name in model_name]
     if not tokenizer_config_matches:
-        raise ValueError(f"Cannot find any tokeniser configuration to match {name=}")
+        raise ValueError(f"Cannot find any tokeniser configuration to match {model_name=}")
     elif 1 < len(tokenizer_config_matches):
-        raise ValueError(f"Found multiple tokeniser configuration matches for {name=}")
+        raise ValueError(f"Found multiple tokeniser configuration matches for {model_name=}")
     else:
         return tokenizer_config_matches[0]
 
