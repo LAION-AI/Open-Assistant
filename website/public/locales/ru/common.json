@@ -1,10 +1,10 @@
 {
-  "about": "About",
+  "about": "О нас",
   "account_settings": "Аккаунт",
   "admin_dashboard": "Панель администратора",
-  "connect": "Connect",
-  "conversational": "Conversational AI for everyone.",
-  "copied": "Copied",
+  "connect": "Подключиться",
+  "conversational": "Коммуникабельный ИИ для каждого.",
+  "copied": "Скопировано",
   "dark_mode": "Темная тема",
   "dashboard": "Главная",
   "delete": "Удалить",
@@ -20,7 +20,7 @@
   "report_a_bug": "Сообщить об ошибке",
   "sign_in": "Вход",
   "sign_out": "Выйти из аккаунта",
-  "success": "Success",
+  "success": "Удачно",
   "terms_of_service": "Пользовательское Соглашение",
   "title": "Open Assistant",
   "yes": "Да"
