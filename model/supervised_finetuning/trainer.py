@@ -9,6 +9,7 @@ from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.training_args import OptimizerNames
 from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
+from efficiency_utils import fuse_gelu
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
@@ -151,6 +152,9 @@ if __name__ == "__main__":
                 bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
                     module, "weight", {"optim_bits": 32}
                 )
+
+    if training_conf.fuse_gelu:
+        model = fuse_gelu(model)
 
     args = TrainingArguments(
         output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
