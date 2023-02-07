@@ -1,0 +1,117 @@
+import argparse
+from distutils.util import strtobool
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import torch
+from torch import nn
+from torch.nn import functional as F
+from transformers import PreTrainedModel, Trainer, TrainingArguments
+from transformers.training_args import OptimizerNames
+from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
+
+
+def compute_metrics(eval_pred, preprocess_fns, metrics):
+    out = {}
+    for metric, preprocess_fn in zip(metrics, preprocess_fns):
+        preds, labels = preprocess_fn(eval_pred)
+        out = dict(**out, **metric.compute(predictions=preds, references=labels))
+
+    return out
+
+
+class SFTTrainer(Trainer):
+    def __init__(
+        self,
+        model: Union[PreTrainedModel, nn.Module] = None,
+        args: TrainingArguments = None,
+        poly_eps: float = 1.0,
+        **kwargs,
+    ):
+        super().__init__(model, args, **kwargs)
+
+    def compute_loss(self, model, inputs, return_outputs=False):
+        labels_mask = inputs.pop("label_masks")
+        targets = inputs.pop("targets")
+
+        if "attention_mask" in inputs:
+            outputs = model(
+                input_ids=inputs["input_ids"],
+                attention_mask=inputs["attention_mask"],
+            )
+        else:
+            outputs = model(input_ids=inputs["input_ids"])
+
+        logits = outputs.get("logits")
+
+        loss = F.cross_entropy(logits, targets, reduction="none")
+        loss = (loss * labels_mask.float()).mean()
+
+        return (loss, outputs) if return_outputs else loss
+
+    def _compute_loss(self, model, inputs):
+        inputs = self._prepare_inputs(inputs)
+
+        labels_mask = inputs.pop("label_masks")
+        targets = inputs.pop("targets")
+
+        if "attention_mask" in inputs:
+            outputs = model(
+                input_ids=inputs["input_ids"],
+                attention_mask=inputs["attention_mask"],
+            )
+        else:
+def _compute_loss(self, model, inputs):
+loss, outputs = self.compute_loss(model, inputs, return_outputs=True)
+eval_pred = {"logits": outputs["logits"], "labels": targets, "label_masks": labels_mask}
+    self.predictions.append(eval_pred)
+
+    return loss
+def train_loop(model, data_loader, optimizer, device, trainer: SFTTrainer):
+model.train()
+for inputs in data_loader:
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+    loss = trainer._training_step(model, inputs)
+    trainer.state.add_step()
+    loss = loss.mean().item()
+    trainer._write_logs(loss, "train_loss")
+    optimizer.step()
+    optimizer.zero_grad()
+    trainer.state.update_optimizer()
+def eval_loop(model, data_loader, device, trainer: SFTTrainer, preprocess_fns, metrics):
+model.eval()
+with torch.no_grad():
+    for inputs in data_loader:
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+        trainer._compute_loss(model, inputs)
+metrics = compute_metrics(trainer.predictions, preprocess_fns, metrics)
+for metric_name, metric_value in metrics.items():
+    trainer._write_logs(metric_value, metric_name)
+trainer.predictions.clear()
+def main(args):
+config = read_yamls(args.config)
+model = get_model(config["model"])
+tokenizer = get_tokenizer(config["tokenizer"])
+loss = get_loss(config["loss"])
+metrics = get_metrics(config["metrics"])
+preprocess_fns = [m.preprocess for m in metrics]
+
+train_dataset = get_dataset(tokenizer, config["train_dataset"], args.max_len, args.local_rank)
+eval_dataset = get_dataset(tokenizer, config["eval_dataset"], args.max_len, args.local_rank)
+
+trainer = SFTTrainer(
+    model=model,
+    args=TrainingArguments(
+        output_dir=args.output_dir,
+        per_device_train_batch_size=args.batch_size,
+        per_device_eval_batch_size=args.batch_size,
+        weight_decay=config["optimizer"]["weight_decay"],
+        num_train_epochs=args.num_train_epochs,
+        learning_rate=config["optimizer"]["learning_rate"],
+        logging_dir=args.logging_dir,
+        logging_steps=args.logging_steps,
+        save_steps=args.save_steps,
+        evaluate_during_training=True,
+        overwrite_output_dir=True,
+        fp16=config["fp16"],
+        fp16_opt_level=config["fp16_opt_level"],
+   
