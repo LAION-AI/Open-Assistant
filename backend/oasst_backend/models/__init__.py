@@ -1,4 +1,5 @@
 from .api_client import ApiClient
+from .flagged_message import FlaggedMessage
 from .journal import Journal, JournalIntegration
 from .message import Message
 from .message_embedding import MessageEmbedding
@@ -11,7 +12,6 @@ from .text_labels import TextLabels
 from .troll_stats import TrollStats
 from .user import User
 from .user_stats import UserStats, UserStatsTimeFrame
-from .flagged_message import FlaggedMessage
 
 __all__ = [
     "ApiClient",

@@ -14,6 +14,7 @@ from oasst_backend.config import settings
 from oasst_backend.journal_writer import JournalWriter
 from oasst_backend.models import (
     ApiClient,
+    FlaggedMessage,
     Message,
     MessageEmbedding,
     MessageEmoji,
@@ -24,7 +25,6 @@ from oasst_backend.models import (
     TextLabels,
     User,
     message_tree_state,
-    FlaggedMessage,
 )
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.task_repository import TaskRepository, validate_frontend_message_id
@@ -1151,3 +1151,15 @@ WHERE message.id = cc.id;
             qry.limit(max_count)
 
         return qry.all()
+
+    def process_flagged_message(self, message_id: UUID) -> FlaggedMessage:
+
+        message = self.db.query(FlaggedMessage).get(message_id)
+
+        if not message:
+            raise OasstError("Message not found", OasstErrorCode.MESSAGE_NOT_FOUND, HTTPStatus.NOT_FOUND)
+
+        message.processed = True
+        self.db.commit()
+
+        return message

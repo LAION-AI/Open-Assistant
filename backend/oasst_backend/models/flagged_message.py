@@ -1,10 +1,10 @@
 from datetime import datetime
-from uuid import UUID
 from typing import Optional
+from uuid import UUID
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from sqlmodel import Field, Index, SQLModel
+from sqlmodel import Field, SQLModel
 
 
 class FlaggedMessage(SQLModel, table=True):
