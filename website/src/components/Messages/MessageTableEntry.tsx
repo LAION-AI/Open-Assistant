@@ -89,7 +89,6 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
     <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
       {!inlineAvatar && avatar}
       <Box
-        as={enabled ? "a" : "div"}
         width={["full", "full", "full", "fit-content"]}
         maxWidth={["full", "full", "full", "2xl"]}
         p="4"
