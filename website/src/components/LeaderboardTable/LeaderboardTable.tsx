@@ -1,14 +1,14 @@
-import { Box, CircularProgress, Flex, useColorModeValue, useToken } from "@chakra-ui/react";
+import { Box, CircularProgress, Flex, useColorModeValue } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import React, { useCallback, useMemo, useState } from "react";
-import { get } from "src/lib/api";
-import { colors } from "src/styles/Theme/colors";
+import React, { useMemo } from "react";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
-import useSWRImmutable from "swr/immutable";
 
-import { DataTable, DataTableColumnDef, DataTableRowPropsCallback } from "../DataTable";
+import { DataTable, DataTableColumnDef } from "../DataTable";
+import { useBoardPagination } from "./useBoardPagination";
+import { useBoardRowProps } from "./useBoardRowProps";
+import { useFetchBoard } from "./useFetchBoard";
 
 type WindowLeaderboardEntity = LeaderboardEntity & { isSpaceRow?: boolean };
 
@@ -34,9 +34,9 @@ export const LeaderboardTable = ({
     data: reply,
     isLoading,
     error,
-  } = useSWRImmutable<LeaderboardReply & { user_stats_window?: LeaderboardReply["leaderboard"] }>(
-    `/api/leaderboard?time_frame=${timeFrame}&limit=${limit}&includeUserStats=${!hideCurrentUserRanking}`,
-    get
+    lastUpdated,
+  } = useFetchBoard<LeaderboardReply & { user_stats_window?: LeaderboardReply["leaderboard"] }>(
+    `/api/leaderboard?time_frame=${timeFrame}&limit=${limit}&includeUserStats=${!hideCurrentUserRanking}`
   );
   const columns: DataTableColumnDef<WindowLeaderboardEntity>[] = useMemo(
     () => [
@@ -66,37 +66,29 @@ export const LeaderboardTable = ({
     [t]
   );
 
-  const lastUpdated = useMemo(() => {
-    const val = new Date(reply?.last_updated);
-    return t("last_updated_at", { val, formatParams: { val: { dateStyle: "full", timeStyle: "short" } } });
-  }, [t, reply?.last_updated]);
-
-  const [page, setPage] = useState(1);
+  const {
+    data: paginatedData,
+    end,
+    ...pagnationProps
+  } = useBoardPagination({ rowPerPage, data: reply?.leaderboard, limit });
   const data: WindowLeaderboardEntity[] = useMemo(() => {
-    if (!reply) {
-      return [];
-    }
-    const start = (page - 1) * rowPerPage;
-    const end = start + rowPerPage;
-    const leaderBoardEntities = reply.leaderboard.slice(start, end);
-    if (hideCurrentUserRanking || !reply.user_stats_window) {
-      return leaderBoardEntities;
+    if (hideCurrentUserRanking || !reply?.user_stats_window) {
+      return paginatedData;
     }
     const userStatsWindow: WindowLeaderboardEntity[] = reply.user_stats_window;
     const userStats = userStatsWindow.find((stats) => stats.highlighted);
-    if (userStats.rank > end) {
-      leaderBoardEntities.push(
+    if (userStats && userStats.rank > end) {
+      paginatedData.push(
         { isSpaceRow: true } as WindowLeaderboardEntity,
         ...reply.user_stats_window.filter(
-          (stats) =>
-            leaderBoardEntities.findIndex((leaderBoardEntity) => leaderBoardEntity.user_id === stats.user_id) === -1
+          (stats) => paginatedData.findIndex((leaderBoardEntity) => leaderBoardEntity.user_id === stats.user_id) === -1
         ) // filter to avoid duplicated row
       );
     }
-    return leaderBoardEntities;
-  }, [page, rowPerPage, reply, hideCurrentUserRanking]);
+    return paginatedData;
+  }, [hideCurrentUserRanking, reply?.user_stats_window, end, paginatedData]);
 
-  const rowProps = useLeaderboardRowProps();
+  const rowProps = useBoardRowProps<WindowLeaderboardEntity>();
 
   if (isLoading) {
     return <CircularProgress isIndeterminate></CircularProgress>;
@@ -106,19 +98,13 @@ export const LeaderboardTable = ({
     return <span>Unable to load leaderboard</span>;
   }
 
-  const maxPage = Math.ceil(reply.leaderboard.length / rowPerPage);
-
   return (
-    <DataTable
+    <DataTable<WindowLeaderboardEntity>
       data={data}
       columns={columns}
       caption={lastUpdated}
-      disablePagination={limit <= rowPerPage}
-      disableNext={page >= maxPage}
-      disablePrevious={page === 1}
-      onNextClick={() => setPage((p) => p + 1)}
-      onPreviousClick={() => setPage((p) => p - 1)}
       rowProps={rowProps}
+      {...pagnationProps}
     ></DataTable>
   );
 };
@@ -129,34 +115,5 @@ const SpaceRow = () => {
     <Flex justify="center">
       <Box as={MoreHorizontal} color={color}></Box>
     </Flex>
-  );
-};
-
-const useLeaderboardRowProps = () => {
-  const borderColor = useToken("colors", useColorModeValue(colors.light.active, colors.dark.active));
-  return useCallback<DataTableRowPropsCallback<WindowLeaderboardEntity>>(
-    (row) => {
-      const rowData = row.original;
-      return rowData.highlighted
-        ? {
-            sx: {
-              // https://stackoverflow.com/questions/37963524/how-to-apply-border-radius-to-tr-in-bootstrap
-              position: "relative",
-              "td:first-of-type:before": {
-                borderLeft: `6px solid ${borderColor}`,
-                content: `""`,
-                display: "block",
-                width: "10px",
-                height: "100%",
-                left: 0,
-                top: 0,
-                borderRadius: "6px 0 0 6px",
-                position: "absolute",
-              },
-            },
-          }
-        : {};
-    },
-    [borderColor]
   );
 };
