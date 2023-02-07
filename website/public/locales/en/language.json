@@ -1,0 +1,22 @@
+{
+  "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}.",
+  "submitted_as": "This will be submitted as {{submit_lang}}",
+  "lang_ar": "Arabic",
+  "lang_bn": "Bengali",
+  "lang_ca": "Catalan",
+  "lang_de": "German",
+  "lang_en": "English",
+  "lang_es": "Spanish",
+  "lang_fr": "French",
+  "lang_hu": "Hungarian",
+  "lang_it": "Italian",
+  "lang_ja": "Japanese",
+  "lang_ko": "Korean",
+  "lang_pl": "Polish",
+  "lang_pt-BR": "Brazilian Portugese",
+  "lang_ru": "Russian",
+  "lang_tr": "Turkish",
+  "lang_uk-UA": "Ukrainian",
+  "lang_vi": "Vietnamese",
+  "lang_zh": "Chinese"
+}
