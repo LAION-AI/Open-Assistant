@@ -1,5 +1,4 @@
-import NextAuth, { DefaultSession } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
   interface Session {
@@ -17,9 +16,11 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     /** The user's role. */
-    role?: string;
+    role: string;
     /** True when the user is new. */
     isNew?: boolean;
+
+    sub: string;
     /** Iso timestamp of the user's acceptance of the terms of service */
     tosAcceptanceDate?: string;
   }
