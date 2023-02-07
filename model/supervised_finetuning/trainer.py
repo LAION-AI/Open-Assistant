@@ -5,11 +5,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import bitsandbytes
 import torch
+from efficiency_utils import fuse_gelu
 from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.training_args import OptimizerNames
 from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
-from efficiency_utils import fuse_gelu
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
