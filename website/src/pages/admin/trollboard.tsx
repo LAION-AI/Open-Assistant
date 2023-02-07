@@ -54,12 +54,4 @@ const Leaderboard = () => {
 
 Leaderboard.getLayout = getAdminLayout;
 
-// export const getStaticProps: GetStaticProps = async ({ locale }) => {
-//   return {
-//     props: {
-//       ...(await serverSideTranslations(locale)),
-//     },
-//   };
-// };
-
 export default Leaderboard;
