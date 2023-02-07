@@ -1,5 +1,5 @@
 {
-  "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}. Language can be switched at the top of the page.",
+  "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}.",
   "submitted_as": "This will be submitted as {{submit_lang}}",
   "lang_ar": "Arabic",
   "lang_bn": "Bengali",
