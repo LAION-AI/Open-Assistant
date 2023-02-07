@@ -86,6 +86,7 @@
     "@storybook/testing-library": "^0.0.13",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
+    "@types/accept-language-parser": "^1.5.3",
     "@types/node": "^18.11.17",
     "@types/react": "18.0.26",
     "@typescript-eslint/eslint-plugin": "^5.47.1",

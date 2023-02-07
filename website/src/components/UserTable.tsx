@@ -22,7 +22,7 @@ interface Pagination {
 }
 
 const columnHelper = createColumnHelper<User>();
-
+// columnHelper.accessor("user_id", {}).;
 const columns: DataTableColumnDef<User>[] = [
   columnHelper.accessor("user_id", {
     header: "ID",
@@ -76,14 +76,14 @@ export const UserTable = memo(function UserTable() {
 
   const toPreviousPage = () => {
     setPagination({
-      cursor: data.prev,
+      cursor: data?.prev || "",
       direction: "back",
     });
   };
 
   const toNextPage = () => {
     setPagination({
-      cursor: data.next,
+      cursor: data?.next || "",
       direction: "forward",
     });
   };
