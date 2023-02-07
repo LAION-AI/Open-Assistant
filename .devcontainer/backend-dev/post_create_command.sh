@@ -15,7 +15,7 @@ pip install -e .
 cd ..
 
 # docker compose up for backend-dev
-docker compose up backend-dev --build --attach-dependencies -d
+docker compose up backend-dev --build --attach-dependencies
 
 # note: commented out for now, you probably want to manually run this part once in the devcontainer
 # run run-local.sh script

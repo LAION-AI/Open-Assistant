@@ -206,7 +206,7 @@ services:
     security_opt:
       - apparmor:unconfined
     volumes:
-      - ./netdataconfig/netdata:/etc/netdata:ro
+      - netdataconfig:/etc/netdata
       - netdatalib:/var/lib/netdata
       - netdatacache:/var/cache/netdata
       - /etc/passwd:/host/etc/passwd:ro
@@ -214,3 +214,12 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /etc/os-release:/host/etc/os-release:ro
+    environment:
+      - NETDATA_CLAIM_TOKEN=WyM97y-0Rc96S-l-Eq1g7rlV1AmFEfZtUEo3nqtycOcTn9xOGr8HslGptTLSOAURv_r3oahE8z-pQy4dxs7oha1hWzqAjMKHEpZi8-H4DeF99l8XNXVT7rZm05YGvV-W03Z34ds
+      - NETDATA_CLAIM_URL=https://app.netdata.cloud
+      - NETDATA_CLAIM_ROOMS=
+
+volumes:
+  netdataconfig:
+  netdatalib:
+  netdatacache:
