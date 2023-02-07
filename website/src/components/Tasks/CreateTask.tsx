@@ -1,4 +1,16 @@
-import { Box, Kbd, Stack, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useColorModeValue } from "@chakra-ui/react";
+import {
+  Box,
+  Kbd,
+  Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+  useColorModeValue,
+  useMediaQuery,
+} from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { lazy, Suspense, useMemo, useState } from "react";
 import { MessageConversation } from "src/components/Messages/MessageConversation";
@@ -27,6 +39,7 @@ export const CreateTask = ({
   const titleColor = useColorModeValue("gray.800", "gray.300");
   const tipColor = useColorModeValue("gray.600", "gray.400");
   const [inputText, setInputText] = useState("");
+  const [isDesktop] = useMediaQuery("(min-width: 800px)");
 
   const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
@@ -68,9 +81,20 @@ export const CreateTask = ({
                 {t(getTypeSafei18nKey(`tasks:${taskType.id}.instruction`))}
               </Text>
             )}
-            <Text color={tipColor}>
-              Tip: Use <Kbd>ctrl</Kbd>+<Kbd>Enter</Kbd> to Review and Submit
-            </Text>
+            {isDesktop && (
+              <Text color={tipColor}>
+                {t(getTypeSafei18nKey(`tasks:${taskType.id}.shotcut_tip`)) + " "}
+                {window.navigator.userAgent.indexOf("Mac") !== -1 ? (
+                  <>
+                    <Kbd>cmd</Kbd>+<Kbd>Enter</Kbd>
+                  </>
+                ) : (
+                  <>
+                    <Kbd>ctrl</Kbd> + <Kbd>Enter</Kbd>
+                  </>
+                )}
+              </Text>
+            )}
             {!isEditable ? (
               previewContent
             ) : (
