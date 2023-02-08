@@ -196,9 +196,6 @@ services:
 
   netdata:
     image: netdata/netdata
-    #build:
-    #  dockerfile: docker/netdata/Dockerfile.netdata
-    #  context: .
     container_name: netdata
     pid: host
     hostname: netdata-openassistant
