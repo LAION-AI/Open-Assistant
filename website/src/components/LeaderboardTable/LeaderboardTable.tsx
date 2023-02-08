@@ -43,7 +43,6 @@ export const LeaderboardTable = ({
 
   const isAdmin = useHasRole("admin");
 
-  console.log(isAdmin);
   const columns: DataTableColumnDef<WindowLeaderboardEntity>[] = useMemo(
     () => [
       {

@@ -23,7 +23,7 @@ export const createJsonExpandRowModel = <
         </Card>
       );
     }
-    console.log(row.getCanExpand());
+
     return (
       <Flex alignItems="center">
         {row.getCanExpand() ? (
