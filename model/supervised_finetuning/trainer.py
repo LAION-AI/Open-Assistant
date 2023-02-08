@@ -8,8 +8,7 @@ import torch
 from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.training_args import OptimizerNames
-from utils import (build_train_sampler, get_dataset, get_loss, get_metrics,
-                   get_model, get_tokenizer, read_yamls)
+from utils import PerDatasetSampler, get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
@@ -92,20 +91,30 @@ class SFTTrainer(Trainer):
         return (loss, logits, labels)
 
     def get_train_dataloader(self):
+        """Inject custom data sampling behaviour into training loop"""
         if self.sampler is None:
             torch.utils.data.DataLoader(
                 self.train_dataset,
                 batch_size=self.args.per_device_train_batch_size,
                 shuffle=True,
-                collate_fn=self.data_collator
+                collate_fn=self.data_collator,
             )
         else:
-            return torch.utils.data.DataLoader(
+            dataloader = torch.utils.data.DataLoader(
                 self.train_dataset,
                 batch_size=self.args.per_device_train_batch_size,
                 sampler=self.sampler,
-                collate_fn=self.data_collator
+                collate_fn=self.data_collator,
             )
+            if torch.cuda.device_count() <= 1:
+                return dataloader
+            else:
+                # Not strictly necessary to use accelerate, currently just
+                # ensures batches are padded to be divisible by # devices
+                from accelerate import Accelerator
+
+                accelerator = Accelerator()
+                return accelerator.prepare(dataloader)
 
 
 def _strtobool(x):
@@ -160,7 +169,7 @@ if __name__ == "__main__":
     model = get_model(training_conf, tokenizer)
 
     train, evals, collate_fn = get_dataset(training_conf, tokenizer)
-    sampler = build_train_sampler(training_conf, train.datasets)
+    sampler = PerDatasetSampler.build_sampler_from_config(training_conf, train.datasets)
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
 
@@ -178,7 +187,7 @@ if __name__ == "__main__":
         learning_rate=float(training_conf.learning_rate),
         deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
         optim=optimizer,
-        # fp16=True,
+        fp16=True,
         local_rank=training_conf.local_rank,
         gradient_checkpointing=training_conf.gradient_checkpointing,
         gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
@@ -205,7 +214,7 @@ if __name__ == "__main__":
             entity="maw501",
             name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
         )
-    
+
     trainer = SFTTrainer(
         model=model,
         args=args,

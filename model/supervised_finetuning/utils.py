@@ -1,11 +1,8 @@
-# from functools import partial
+import random
 from pathlib import Path
+from typing import List
 
 import evaluate
-import random
-
-# import nltk
-import numpy as np
 import transformers
 import yaml
 from custom_datasets import get_one_dataset
@@ -18,32 +15,55 @@ from torch.utils.data import ConcatDataset, Subset
 from torch.utils.data.sampler import Sampler
 
 
-class ClassSampler(Sampler):
-    """Sampler which returns a fixed number of samples per class, per epoch"""
-    def __init__(self, class_labels, class_sizes):
-        self.class_labels = class_labels
-        self.class_sizes = class_sizes
+class PerDatasetSampler(Sampler):
+    """Sampler which returns a fixed number of samples per dataset, per epoch.
+
+    Example:
+
+    Dataset 1 has 10,000 examples and we want 200 per epoch
+    Dataset 2 has 500 examples and we want all 500 per epoch
+
+    Epoch size will be 700 and every epoch we'll sample a different
+    200 from dataset 1.
+
+    Parameters
+    ----------
+    dataset_sizes : List[int]
+        A list with the size of each dataset.
+    dataset_size_per_epoch : List[int]
+        How many examples to get from each dataset per epoch.
+
+    Note: dataset_sizes & dataset_size_per_epoch must be in the same order.
+    Further the examples in the underlying torch.utils.data.Dataset
+    must per ordered as dataset_1, dataset_2, ..., dataset_n. This is fine
+    if we concatenate a bunch of datasets together
+    e.g. using torch.utils.data.ConcatDataset which is current behaviour.
+    """
+
+    def __init__(self, dataset_sizes: List[int], dataset_size_per_epoch: List[int]):
+        self.dataset_sizes = dataset_sizes
+        self.dataset_size_per_epoch = dataset_size_per_epoch
+        self.num_datasets = len(dataset_sizes)
 
     def __iter__(self):
-        out = []
-        for i, _class in enumerate(np.unique(self.class_labels)):
-            class_idx = np.argwhere(self.class_labels == _class).flatten()
-            sampled_idx = random.sample(list(class_idx), int(self.class_sizes[i]))
-            out.extend(sampled_idx)
-        random.shuffle(out)
-        return iter(out)
+        epoch_idx = []
+        n = 0
+        for i in range(self.num_datasets):
+            sampled_idx = random.sample(range(n, self.dataset_sizes[i] + n), self.dataset_size_per_epoch[i])
+            n += self.dataset_sizes[i]
+            epoch_idx.extend(sampled_idx)
+        random.shuffle(epoch_idx)
+        return iter(epoch_idx)
 
     def __len__(self):
-        return int(sum(self.class_sizes))
+        return int(sum(self.dataset_size_per_epoch))
 
-
-def build_train_sampler(training_conf, datasets):
-    train_sizes = [len(x) for x in datasets]
-    fractions = get_dataset_fractions(training_conf.datasets, train_sizes)
-    dataset_size_per_epoch = [int(size * frac) for size, frac in zip(train_sizes, fractions)]
-    dataset_labels = [[i] * d for i, d in zip(range(len(dataset_size_per_epoch)), dataset_size_per_epoch)]
-    dataset_labels = [i for s in dataset_labels for i in s]
-    return ClassSampler(dataset_labels, dataset_size_per_epoch)
+    @classmethod
+    def build_sampler_from_config(cls, training_conf, datasets):
+        dataset_sizes = [len(x) for x in datasets]
+        fractions = get_dataset_fractions(training_conf.datasets, dataset_sizes)
+        dataset_size_per_epoch = [int(size * frac) for size, frac in zip(dataset_sizes, fractions)]
+        return cls(dataset_sizes, dataset_size_per_epoch)
 
 
 def get_tokenizer(conf):
@@ -157,13 +177,15 @@ def get_dataset_fractions(conf, dataset_sizes):
         dataset_name = get_dataset_name_from_data_config(data_config)
         if isinstance(data_config, dict):
             if "fraction" in data_config[dataset_name]:
+                if data_config[dataset_name]["fraction"] <= 0:
+                    raise ValueError("Please specify fraction as a value between 0 < fraction <= 1")
                 fractions.append(min(1, data_config[dataset_name]["fraction"]))
             elif "size" in data_config[dataset_name]:
                 if data_config[dataset_name]["size"] > dataset_sizes[i]:
-                    raise ValueError(f"Please specify a size smaller than number of examples ({dataset_sizes[i]})")
+                    raise ValueError(f"Please specify a size smaller than number of examples: {dataset_sizes[i]:,.0f}")
                 fractions.append(data_config[dataset_name]["size"] / dataset_sizes[i])
             else:
-                raise ValueError("Please specify either fraction or size in config.yaml")
+                raise ValueError("Please specify either fraction or size in config.yaml. See README for instructions.")
         else:
             fractions.append(1)
     return fractions
