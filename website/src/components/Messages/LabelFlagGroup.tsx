@@ -1,5 +1,6 @@
 import { Button, Flex, Tooltip } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
+import { useCookies } from "react-cookie";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 
 interface LabelFlagGroupProps {
@@ -17,14 +18,16 @@ export const LabelFlagGroup = ({
   isEditable = true,
   onChange,
 }: LabelFlagGroupProps) => {
-  const { t } = useTranslation(["labelling", "language"]);
-  const expectedLanguageName = t(getTypeSafei18nKey(`language:lang_${expectedLanguage}`));
+  const { t } = useTranslation("labelling");
+  const [cookies] = useCookies(["NEXT_LOCALE"]);
+  const currentLanguage = cookies["NEXT_LOCALE"];
+  const expectedLanguageName = new Intl.DisplayNames(currentLanguage, { type: "language" }).of(expectedLanguage);
   return (
     <Flex wrap="wrap" gap="4">
       {labelNames.map((name, idx) => (
         <Tooltip
           key={name}
-          label={`${t(getTypeSafei18nKey(`${name}_lang.explanation`), t(getTypeSafei18nKey(`${name}.explanation`)), {
+          label={`${t(getTypeSafei18nKey(`${name}.explanation`), `${name}.explanation`, {
             language: expectedLanguageName,
           })}`}
         >
@@ -37,7 +40,7 @@ export const LabelFlagGroup = ({
             isDisabled={!isEditable}
             colorScheme={values[idx] === 1 ? "blue" : undefined}
           >
-            {t(getTypeSafei18nKey(`${name}_lang`), t(getTypeSafei18nKey(name)), { language: expectedLanguageName })}
+            {t(getTypeSafei18nKey(`${name}`), name, { language: expectedLanguageName })}
           </Button>
         </Tooltip>
       ))}
