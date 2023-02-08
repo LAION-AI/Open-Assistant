@@ -54,7 +54,7 @@ def main(
                     "top_p": work_request.top_p,
                     "temperature": work_request.temperature,
                     "seed": work_request.seed,
-                    # "stop": ["User:", "Assistant:"], # TODO: this doesn't work... why?
+                    # "stop": ["\nUser:", "\nAssistant:"], # TODO: make this a bit more workable because it's mutliple tokens
                 },
             },
             stream=True,
@@ -64,6 +64,7 @@ def main(
             response.raise_for_status()
         except requests.HTTPError:
             logger.exception("Failed to get response from inference server")
+            logger.error(f"Response: {response.text}")
             return
 
         client = sseclient.SSEClient(response)
