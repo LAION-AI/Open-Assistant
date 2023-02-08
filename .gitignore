@@ -9,3 +9,6 @@ __pycache__
 
 # Generated files
 backend/oasst-openapi.json
+
+# ignore jupyter notebook checkpoints
+.ipynb_checkpoints
