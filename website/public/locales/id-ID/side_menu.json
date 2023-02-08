@@ -1,0 +1,12 @@
+{
+  "dashboard": "Dasbor",
+  "dashboard_home": "Dasbor Awal",
+  "messages": "Pesan",
+  "messages_dashboard": "Dasbor Pesan",
+  "leaderboard": "Papan Peringkat",
+  "user_leaderboard": "Papan Peringkat Pengguna",
+  "users": "Pengguna",
+  "users_dashboard": "Dasbor Pengguna",
+  "status": "Status",
+  "status_dashboard": "Dasbor Status"
+}
