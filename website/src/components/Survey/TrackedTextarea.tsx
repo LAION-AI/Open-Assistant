@@ -29,7 +29,7 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
 
   const detectLang = (text: string) => {
     try {
-      return LanguageAbbreviations[lande(text)[0][0]];
+      return LanguageAbbreviations[lande(text)[0][0]] || currentLanguage;
     } catch (error) {
       return currentLanguage;
     }
