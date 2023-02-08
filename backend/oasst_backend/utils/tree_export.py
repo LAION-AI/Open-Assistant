@@ -21,6 +21,7 @@ class ExportMessageNode(BaseModel):
     role: str
     lang: str | None
     review_count: int | None
+    review_result: bool | None
     rank: int | None
     synthetic: bool | None
     model_name: str | None
@@ -36,6 +37,7 @@ class ExportMessageNode(BaseModel):
             role=message.role,
             lang=message.lang,
             review_count=message.review_count,
+            review_result=message.review_result if message.review_result or message.review_count > 2 else None,
             synthetic=message.synthetic,
             model_name=message.model_name,
             emojis=message.emojis,
