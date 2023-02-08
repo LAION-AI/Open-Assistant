@@ -1,0 +1,3 @@
+FROM netdata/netdata:latest
+
+COPY docker/netdata/go.d/ /etc/netdata/go.d/
