@@ -80,9 +80,8 @@
     "classify_assistant_reply": {
       "label": "Klasifikasi Balasan Asisten",
       "desc": "Berikan label untuk pernyataan.",
-        "overview": "Baca percakapan berikut dan kemudian jawab pertanyaan tentang balasan terakhir dalam diskusi."
+      "overview": "Baca percakapan berikut dan kemudian jawab pertanyaan tentang balasan terakhir dalam diskusi."
     },
     "available_task_count": "{{count}} tugas tersedia"
-
   }
 }
