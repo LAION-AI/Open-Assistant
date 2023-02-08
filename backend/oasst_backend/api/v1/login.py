@@ -68,6 +68,6 @@ def get_callback_uri(request: Request):
     """
     # This seems ugly, not sure if there is a better way
     current_url = str(request.url)
-    domain = current_url.split("/api/v1/")[0]
+    domain = current_url.split("/api/v1/", maxsplit=1)[0]
     redirect_uri = f"{domain}/api/v1/callback"
     return redirect_uri

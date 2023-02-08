@@ -1,15 +1,15 @@
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
-import oasst_backend.models.db_payload as db_payload
 import oasst_backend.utils.database_utils as db_utils
 import pydantic
 from loguru import logger
 from oasst_backend.api.deps import create_api_client
-from oasst_backend.models import ApiClient, Message
+from oasst_backend.models import ApiClient, Message, db_payload
 from oasst_backend.models.message_tree_state import MessageTreeState
 from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_backend.models.payload_column_type import PayloadContainer
@@ -168,7 +168,7 @@ def main():
     input_file_path = Path(args.input_file_path)
     if not input_file_path.exists() or not input_file_path.is_file():
         print("Invalid input file:", args.input_file_path)
-        exit(1)
+        sys.exit(1)
 
     dry_run = args.dry_run
     num_imported = import_file(

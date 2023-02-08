@@ -155,7 +155,7 @@ async def tasks_interaction(
         tm = TreeManager(session, pr)
         ur = UserRepository(session, api_client)
         task = await tm.handle_interaction(interaction)
-        if type(task) is protocol_schema.TaskDone:
+        if isinstance(task, protocol_schema.TaskDone):
             ur.update_user_last_activity(user=pr.user)
         return task
 

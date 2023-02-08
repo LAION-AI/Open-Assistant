@@ -129,7 +129,7 @@ if __name__ == "__main__":
         model = freeze_top_n_layers(model, num_layer)
         model_parameters = filter(lambda p: p.requires_grad, model.parameters())
         params = sum([np.prod(p.size()) for p in model_parameters])
-        print("Number of trainable : {}M".format(int(params / 1e6)))
+        print(f"Number of trainable : {int(params / 1000000.0)}M")
 
     optimizer = OptimizerNames.ADAMW_HF
     args = TrainingArguments(

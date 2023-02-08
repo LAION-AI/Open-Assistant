@@ -48,7 +48,7 @@ def get_frontend_user_id(
     user_header: str = Security(oasst_user_header),
 ) -> FrontendUserId:
     def split_user(v: str) -> tuple[str, str]:
-        if type(v) is str:
+        if isinstance(v, str):
             v = v.split(":", maxsplit=1)
             if len(v) == 2:
                 return FrontendUserId(auth_method=v[0], username=v[1])

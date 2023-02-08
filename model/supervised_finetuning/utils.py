@@ -110,7 +110,7 @@ def get_model(conf, tokenizer):
 
     model_parameters = filter(lambda p: p.requires_grad, model.parameters())
     params = sum([p.numel() for p in model_parameters])
-    print("Number of trainable parameters: {}M".format(int(params / 1e6)))
+    print(f"Number of trainable parameters: {int(params / 1000000.0)}M")
 
     return model
 

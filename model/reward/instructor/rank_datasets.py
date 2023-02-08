@@ -156,7 +156,7 @@ class HFSummary(Dataset):
                 and data["extra"]["confidence"] is not None
                 and conf_threshold > data["extra"]["confidence"]
             ):
-                print("skipping {}".format(data["info"]["id"]))
+                print(f"skipping {data['info']['id']}")
                 continue
 
             if split != "train" and split != data["split"]:

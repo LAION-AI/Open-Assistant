@@ -107,7 +107,7 @@ class _TaskHandler(t.Generic[_Task_contra]):
                     continue
 
                 # Confirm user input
-                if not (await self.confirm_user_input(event.content)):
+                if not await self.confirm_user_input(event.content):
                     continue
 
                 # Message is valid and confirmed by user

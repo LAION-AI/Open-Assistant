@@ -206,10 +206,7 @@ class SODA(Dataset):
 
             if len(question) and len(answer) and prefix != postfix and postfix == play_as:
                 history = "<sep>".join(
-                    [
-                        "{}{}{}{}".format(QA_SPECIAL_TOKENS["Question"], p[0], QA_SPECIAL_TOKENS["Answer"], p[1])
-                        for p in previous_chat
-                    ]
+                    [f"{QA_SPECIAL_TOKENS['Question']}{p[0]}{QA_SPECIAL_TOKENS['Answer']}{p[1]}" for p in previous_chat]
                 )
                 if len(history):
                     history += "<sep>"
@@ -283,7 +280,7 @@ class SODADialogue(Dataset):
                 self.pairs.append(question_answer_pairs)
 
         if verbose:
-            print("For SODA dialogue dataset found {} faults within the total {} dialogs".format(faulty, len(self)))
+            print(f"For SODA dialogue dataset found {faulty} faults within the total {len(self)} dialogs")
 
     def __len__(self):
         return len(self.pairs)

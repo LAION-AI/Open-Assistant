@@ -2,10 +2,9 @@ from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
-import oasst_backend.models.db_payload as db_payload
 from loguru import logger
 from oasst_backend.config import settings
-from oasst_backend.models import ApiClient, Task
+from oasst_backend.models import ApiClient, Task, db_payload
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.user_repository import UserRepository
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method

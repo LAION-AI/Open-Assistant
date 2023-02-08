@@ -81,7 +81,7 @@ class InstructionTuning(Dataset):
 
         self.pairs = []
         for file_link in [self.url_part_1, self.url_part_2]:
-            basename = file_link.split("/")[-1]
+            basename = file_link.split("/", maxsplit=1)[-1]
             instruction_tune_file = os.path.join(cache_dir, basename)
             if not os.path.exists(instruction_tune_file):
                 with urlopen(file_link) as file:

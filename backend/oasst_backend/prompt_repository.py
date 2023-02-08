@@ -6,7 +6,6 @@ from http import HTTPStatus
 from typing import Optional
 from uuid import UUID, uuid4
 
-import oasst_backend.models.db_payload as db_payload
 import sqlalchemy.dialects.postgresql as pg
 from loguru import logger
 from oasst_backend.api.deps import FrontendUserId
@@ -24,6 +23,7 @@ from oasst_backend.models import (
     Task,
     TextLabels,
     User,
+    db_payload,
     message_tree_state,
 )
 from oasst_backend.models.payload_column_type import PayloadContainer
@@ -301,7 +301,7 @@ class PromptRepository:
         task = self.task_repository.fetch_task_by_frontend_message_id(rating.message_id)
         self._validate_task(task)
         task_payload: db_payload.RateSummaryPayload = task.payload.payload
-        if type(task_payload) != db_payload.RateSummaryPayload:
+        if not isinstance(task_payload, db_payload.RateSumamryPayload):
             raise OasstError(
                 f"Task payload type mismatch: {type(task_payload)=} != {db_payload.RateSummaryPayload}",
                 OasstErrorCode.TASK_PAYLOAD_TYPE_MISMATCH,
