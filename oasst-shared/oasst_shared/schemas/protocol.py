@@ -76,6 +76,7 @@ class ConversationMessage(BaseModel):
     is_assistant: bool
     emojis: Optional[dict[str, int]] = None
     user_emojis: Optional[list[str]] = None
+    user_is_author: Optional[bool] = None
 
 
 class Conversation(BaseModel):
