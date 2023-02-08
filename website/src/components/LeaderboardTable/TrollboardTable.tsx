@@ -1,17 +1,18 @@
-import { Box, CircularProgress, Flex, Link } from "@chakra-ui/react";
+import { Box, CircularProgress, Flex, IconButton, Link, Tooltip } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { Mail, ThumbsDown, ThumbsUp, User } from "lucide-react";
 import NextLink from "next/link";
 import { FetchTrollBoardResponse, TrollboardEntity, TrollboardTimeFrame } from "src/types/Trollboard";
 import { ElementOf } from "src/types/utils";
 
 import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
 import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
+import { Discord } from "../Icons/Discord";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
 
-type ExpandableTrollboardEntity = TrollboardEntity & { shouldExpand: boolean };
+type ExpandableTrollboardEntity = TrollboardEntity;
 
 const columnHelper = createColumnHelper<ExpandableTrollboardEntity>();
 const toPercentage = (num: number) => `${Math.round(num * 100)}%`;
@@ -26,11 +27,19 @@ const columns: DataTableColumnDef<ExpandableTrollboardEntity>[] = [
   },
   columnHelper.accessor("display_name", {
     header: "Display name",
-    cell: ({ getValue, row }) => (
-      <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
-        {getValue()}
-      </Link>
-    ),
+    cell: ({ getValue, row }) => {
+      const isEmail = row.original.auth_method === "local";
+      return (
+        <Flex gap="2" alignItems="center">
+          <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
+            {getValue()}
+          </Link>
+          <Tooltip label={`This user signin with ${isEmail ? "email" : "discord"}`}>
+            {isEmail ? <Mail size="20"></Mail> : <Discord size="20"></Discord>}
+          </Tooltip>
+        </Flex>
+      );
+    },
   }),
   columnHelper.accessor("troll_score", {
     header: "Troll score",
@@ -55,36 +64,47 @@ const columns: DataTableColumnDef<ExpandableTrollboardEntity>[] = [
   columnHelper.accessor((row) => row.spam + row.spam_prompts, {
     header: "Spam",
   }),
-  columnHelper.accessor("lang_mismach", {
-    header: "Lang mismach",
-  }),
-  columnHelper.accessor("not_appropriate", {
-    header: "Not appropriate",
-  }),
-  columnHelper.accessor("pii", {}),
-  columnHelper.accessor("hate_speech", {
-    header: "Hate speech",
-  }),
-  columnHelper.accessor("sexual_content", {
-    header: "Sexual",
-  }),
-  columnHelper.accessor("political_content", {
-    header: "Political",
-  }),
-  columnHelper.accessor("quality", {
-    cell: ({ getValue }) => toPercentage(getValue() || 0),
-  }),
-  columnHelper.accessor("helpfulness", {
-    cell: ({ getValue }) => toPercentage(getValue() || 0),
-  }),
-  columnHelper.accessor("humor", {
-    cell: ({ getValue }) => toPercentage(getValue() || 0),
-  }),
-  columnHelper.accessor("violence", {
-    cell: ({ getValue }) => toPercentage(getValue() || 0),
-  }),
+  // columnHelper.accessor("lang_mismach", {
+  //   header: "Lang mismach",
+  // }),
+  // columnHelper.accessor("not_appropriate", {
+  //   header: "Not appropriate",
+  // }),
+  // columnHelper.accessor("pii", {}),
+  // columnHelper.accessor("hate_speech", {
+  //   header: "Hate speech",
+  // }),
+  // columnHelper.accessor("sexual_content", {
+  //   header: "Sexual",
+  // }),
+  // columnHelper.accessor("political_content", {
+  //   header: "Political",
+  // }),
   columnHelper.accessor("toxicity", {
     cell: ({ getValue }) => toPercentage(getValue() || 0),
+  }),
+  // columnHelper.accessor("quality", {
+  //   cell: ({ getValue }) => toPercentage(getValue() || 0),
+  // }),
+  // columnHelper.accessor("helpfulness", {
+  //   cell: ({ getValue }) => toPercentage(getValue() || 0),
+  // }),
+  // columnHelper.accessor("humor", {
+  //   cell: ({ getValue }) => toPercentage(getValue() || 0),
+  // }),
+  // columnHelper.accessor("violence", {
+  //   cell: ({ getValue }) => toPercentage(getValue() || 0),
+  // }),
+  columnHelper.accessor((row) => row.user_id, {
+    header: "Actions",
+    cell: ({ row }) => (
+      <IconButton
+        as={NextLink}
+        href={`/admin/manage_user/${row.original.user_id}`}
+        aria-label={"View user"}
+        icon={<User></User>}
+      ></IconButton>
+    ),
   }),
 ];
 
@@ -106,7 +126,7 @@ export const TrollboardTable = ({
 
   const { data, ...paginationProps } = useBoardPagination<ExpandableTrollboardEntity>({
     rowPerPage,
-    data: trollboardRes?.trollboard.map((e) => ({ ...e, shouldExpand: true })),
+    data: jsonExpandRowModel.toExpandable(trollboardRes?.trollboard),
     limit,
   });
   const rowProps = useBoardRowProps<ExpandableTrollboardEntity>();

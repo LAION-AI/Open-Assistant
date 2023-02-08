@@ -2,13 +2,16 @@ import { Card, CardBody, Flex } from "@chakra-ui/react";
 import { Cell, CellContext } from "@tanstack/react-table";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-type ExpandableRow = {
-  shouldExpand: boolean;
-};
+interface ExpandableRow {
+  shouldExpand?: boolean;
+}
 
-export const createJsonExpandRowModel = <T extends ExpandableRow>() => {
+export const createJsonExpandRowModel = <
+  T,
+  U extends Omit<T, "shouldExpand"> & ExpandableRow = Omit<T, "shouldExpand"> & ExpandableRow
+>() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderCell = ({ row, getValue }: CellContext<T, any>) => {
+  const renderCell = ({ row, getValue }: CellContext<U, any>) => {
     if (!row.original.shouldExpand) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { shouldExpand, ...res } = row.original;
@@ -20,6 +23,7 @@ export const createJsonExpandRowModel = <T extends ExpandableRow>() => {
         </Card>
       );
     }
+    console.log(row.getCanExpand());
     return (
       <Flex alignItems="center">
         {row.getCanExpand() ? (
@@ -38,9 +42,9 @@ export const createJsonExpandRowModel = <T extends ExpandableRow>() => {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const span = (cell: Cell<T, any>) => (cell.row.original.shouldExpand ? undefined : cell.row.getVisibleCells().length);
+  const span = (cell: Cell<U, any>) => (cell.row.original.shouldExpand ? undefined : cell.row.getVisibleCells().length);
 
-  const getSubRows = (row: T) =>
+  const getSubRows = (row: U) =>
     row.shouldExpand
       ? [
           {
@@ -50,5 +54,11 @@ export const createJsonExpandRowModel = <T extends ExpandableRow>() => {
         ]
       : undefined;
 
-  return { renderCell, span, getSubRows };
+  const toExpandable = function (arr: T[] | undefined, val = true): U[] {
+    // TODO remove `any` workaround
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !arr ? [] : (arr.map((element) => ({ ...element, shouldExpand: val })) as any);
+  };
+
+  return { renderCell, span, getSubRows, toExpandable };
 };

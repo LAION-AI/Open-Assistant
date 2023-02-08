@@ -2,19 +2,20 @@ import { Box, CircularProgress, Flex, Link, useColorModeValue } from "@chakra-ui
 import { createColumnHelper } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import NextLink from "next/link";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import React, { useMemo } from "react";
+import { useHasRole } from "src/hooks/auth/useHasRole";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 
 import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
+import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
 type WindowLeaderboardEntity = LeaderboardEntity & { isSpaceRow?: boolean };
 
 const columnHelper = createColumnHelper<WindowLeaderboardEntity>();
-
+const jsonExpandRowModel = createJsonExpandRowModel<WindowLeaderboardEntity>();
 /**
  * Presents a grid of leaderboard entries with more detailed information.
  */
@@ -39,17 +40,25 @@ export const LeaderboardTable = ({
   } = useFetchBoard<LeaderboardReply & { user_stats_window?: LeaderboardReply["leaderboard"] }>(
     `/api/leaderboard?time_frame=${timeFrame}&limit=${limit}&includeUserStats=${!hideCurrentUserRanking}`
   );
-  const { data: session } = useSession();
 
-  const isAdmin = usehasro;
+  const isAdmin = useHasRole("admin");
+
+  console.log(isAdmin);
   const columns: DataTableColumnDef<WindowLeaderboardEntity>[] = useMemo(
     () => [
       {
         ...columnHelper.accessor("rank", {
           header: t("rank"),
-          cell: ({ row, getValue }) => (row.original.isSpaceRow ? <SpaceRow></SpaceRow> : getValue()),
+          cell: (ctx) =>
+            ctx.row.original.isSpaceRow ? (
+              <SpaceRow></SpaceRow>
+            ) : isAdmin ? (
+              jsonExpandRowModel.renderCell(ctx)
+            ) : (
+              ctx.getValue()
+            ),
         }),
-        span: (cell) => (cell.row.original.isSpaceRow ? 6 : undefined),
+        span: (cell) => (cell.row.original.isSpaceRow ? 6 : jsonExpandRowModel.span(cell)),
       },
       columnHelper.accessor("display_name", {
         header: t("user"),
@@ -82,17 +91,17 @@ export const LeaderboardTable = ({
     data: paginatedData,
     end,
     ...pagnationProps
-  } = useBoardPagination({ rowPerPage, data: reply?.leaderboard, limit });
-  const data: WindowLeaderboardEntity[] = useMemo(() => {
-    if (hideCurrentUserRanking || !reply?.user_stats_window) {
+  } = useBoardPagination({ rowPerPage, data: jsonExpandRowModel.toExpandable(reply?.leaderboard || []), limit });
+  const data = useMemo(() => {
+    if (hideCurrentUserRanking || !reply?.user_stats_window || reply.user_stats_window.length === 0) {
       return paginatedData;
     }
-    const userStatsWindow: WindowLeaderboardEntity[] = reply.user_stats_window;
+    const userStatsWindow: WindowLeaderboardEntity[] = jsonExpandRowModel.toExpandable(reply.user_stats_window);
     const userStats = userStatsWindow.find((stats) => stats.highlighted);
     if (userStats && userStats.rank > end) {
       paginatedData.push(
         { isSpaceRow: true } as WindowLeaderboardEntity,
-        ...reply.user_stats_window.filter(
+        ...userStatsWindow.filter(
           (stats) => paginatedData.findIndex((leaderBoardEntity) => leaderBoardEntity.user_id === stats.user_id) === -1
         ) // filter to avoid duplicated row
       );
@@ -116,6 +125,7 @@ export const LeaderboardTable = ({
       columns={columns}
       caption={lastUpdated}
       rowProps={rowProps}
+      getSubRows={jsonExpandRowModel.getSubRows}
       {...pagnationProps}
     ></DataTable>
   );
