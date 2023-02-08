@@ -20,6 +20,7 @@ module.exports = {
       "vi",
       "zh",
       "tr",
+      "fa",
     ],
   },
 };

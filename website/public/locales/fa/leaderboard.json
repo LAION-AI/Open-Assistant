@@ -1,0 +1,18 @@
+{
+  "daily": "روزانه",
+  "label": "برچسب ها",
+  "last_updated_at": "آخرین به روز رسانی در: {{val, datetime}}",
+  "leaderboard": "رده بندی",
+  "monthly": "ماهانه",
+  "next": "بعدی",
+  "overall": "کلی",
+  "previous": "قبلی",
+  "prompt": "درخواست",
+  "rank": "رتبه",
+  "reply": "پاسخ",
+  "score": "امتیاز",
+  "top_5_contributors_today": "5 مشارکت کننده برتر امروز",
+  "user": "کاربر",
+  "view_all": "نمایش همه",
+  "weekly": "هفتگی"
+}
