@@ -54,24 +54,48 @@ def main(
                     "top_p": work_request.top_p,
                     "temperature": work_request.temperature,
                     "seed": work_request.seed,
+                    # "stop": ["User:", "Assistant:"], # TODO: this doesn't work... why?
                 },
             },
             stream=True,
             headers={"Accept": "text/event-stream"},
         )
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.HTTPError:
+            logger.exception("Failed to get response from inference server")
+            return
 
         client = sseclient.SSEClient(response)
         for event in client.events():
+            logger.debug(f"Received event: {event}")
             data = json.loads(event.data)
-            if data["is_end"]:
+            if data["generated_text"]:
                 break
-            intermediate = data["event"]
-            ws.send(inference.WorkResponsePacket(token=intermediate["token"]).json())
-        ws.send(inference.WorkResponsePacket(is_end=True).json())
+            token = data["token"]
+            ws.send(
+                inference.WorkResponsePacket(
+                    token=inference.TokenResponse(
+                        text=token["text"],
+                        log_prob=token["logprob"],
+                        token_id=token["id"],
+                    )
+                ).json()
+            )
+        ws.send(
+            inference.WorkResponsePacket(
+                is_end=True,
+                generated_text=inference.GeneratedTextResponse(
+                    text=data["generated_text"],
+                ),
+            ).json()
+        )
 
     def on_error(ws: websocket.WebSocket, error: Exception):
-        logger.error(f"Connection error: {error}")
+        try:
+            raise error
+        except Exception:
+            logger.exception("Error in websocket")
 
     def on_close(ws: websocket.WebSocket, close_status_code: int, close_msg: str):
         logger.warning(f"Connection closed: {close_status_code=} {close_msg=}")

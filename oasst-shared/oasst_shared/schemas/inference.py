@@ -20,6 +20,17 @@ class WorkRequest(pydantic.BaseModel):
     temperature: float = 1.0
 
 
+class TokenResponse(pydantic.BaseModel):
+    text: str
+    log_prob: float
+    token_id: int
+
+
+class GeneratedTextResponse(pydantic.BaseModel):
+    text: str
+
+
 class WorkResponsePacket(pydantic.BaseModel):
-    token: str | None = None
+    token: TokenResponse | None = None
+    generated_text: GeneratedTextResponse | None = None
     is_end: bool = False

@@ -57,7 +57,7 @@ class MessageRequest(pydantic.BaseModel):
 
 
 class TokenResponseEvent(pydantic.BaseModel):
-    token: str
+    token: inference.TokenResponse
 
 
 class MessageRequestState(str, enum.Enum):
@@ -143,7 +143,7 @@ async def create_message(id: str, message_request: MessageRequest, fastapi_reque
 
         chat.conversation.messages.append(
             protocol.ConversationMessage(
-                text="".join([d.token for d in result_data[:-1]]),
+                text=response_packet.generated_text.text,
                 is_assistant=True,
             )
         )
