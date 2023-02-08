@@ -4,7 +4,7 @@ datasets==2.8.0
 deepspeed==0.7.7
 evaluate==0.4.0
 gdown
-mpi4py==3.1.4
+# mpi4py==3.1.4
 nltk==3.8.1
 numpy>=1.22.4
 py7zr

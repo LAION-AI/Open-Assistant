@@ -2,9 +2,10 @@
 from pathlib import Path
 
 import evaluate
+import random
 
 # import nltk
-# import numpy as np
+import numpy as np
 import transformers
 import yaml
 from custom_datasets import get_one_dataset
@@ -14,6 +15,35 @@ from losses import CrossEntropyLoss, PolyLoss
 from models import freeze_top_n_layers, get_specific_model
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
+from torch.utils.data.sampler import Sampler
+
+
+class ClassSampler(Sampler):
+    """Sampler which returns a fixed number of samples per class, per epoch"""
+    def __init__(self, class_labels, class_sizes):
+        self.class_labels = class_labels
+        self.class_sizes = class_sizes
+
+    def __iter__(self):
+        out = []
+        for i, _class in enumerate(np.unique(self.class_labels)):
+            class_idx = np.argwhere(self.class_labels == _class).flatten()
+            sampled_idx = random.sample(list(class_idx), int(self.class_sizes[i]))
+            out.extend(sampled_idx)
+        random.shuffle(out)
+        return iter(out)
+
+    def __len__(self):
+        return int(sum(self.class_sizes))
+
+
+def build_train_sampler(training_conf, datasets):
+    train_sizes = [len(x) for x in datasets]
+    fractions = get_dataset_fractions(training_conf.datasets, train_sizes)
+    dataset_size_per_epoch = [int(size * frac) for size, frac in zip(train_sizes, fractions)]
+    dataset_labels = [[i] * d for i, d in zip(range(len(dataset_size_per_epoch)), dataset_size_per_epoch)]
+    dataset_labels = [i for s in dataset_labels for i in s]
+    return ClassSampler(dataset_labels, dataset_size_per_epoch)
 
 
 def get_tokenizer(conf):
@@ -115,10 +145,35 @@ def get_model(conf, tokenizer):
     return model
 
 
+def get_dataset_name_from_data_config(data_config):
+    if isinstance(data_config, dict):
+        return list(data_config.keys())[0]
+    return data_config
+
+
+def get_dataset_fractions(conf, dataset_sizes):
+    fractions = []
+    for i, data_config in enumerate(conf):
+        dataset_name = get_dataset_name_from_data_config(data_config)
+        if isinstance(data_config, dict):
+            if "fraction" in data_config[dataset_name]:
+                fractions.append(min(1, data_config[dataset_name]["fraction"]))
+            elif "size" in data_config[dataset_name]:
+                if data_config[dataset_name]["size"] > dataset_sizes[i]:
+                    raise ValueError(f"Please specify a size smaller than number of examples ({dataset_sizes[i]})")
+                fractions.append(data_config[dataset_name]["size"] / dataset_sizes[i])
+            else:
+                raise ValueError("Please specify either fraction or size in config.yaml")
+        else:
+            fractions.append(1)
+    return fractions
+
+
 def get_dataset(conf, tokenizer):
     train_datasets, evals = [], {}
 
-    for dataset_name in conf.datasets:
+    for data_config in conf.datasets:
+        dataset_name = get_dataset_name_from_data_config(data_config)
         train, val = get_one_dataset(conf, dataset_name)
         train_datasets.append(train)
         evals[dataset_name] = Subset(val, list(range(min(len(val), conf.eval_size)))) if conf.eval_size else val

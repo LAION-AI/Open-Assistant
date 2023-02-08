@@ -8,7 +8,8 @@ import torch
 from torch import nn
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.training_args import OptimizerNames
-from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
+from utils import (build_train_sampler, get_dataset, get_loss, get_metrics,
+                   get_model, get_tokenizer, read_yamls)
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
@@ -30,6 +31,7 @@ class SFTTrainer(Trainer):
         self,
         model: Union[PreTrainedModel, nn.Module] = None,
         args: TrainingArguments = None,
+        sampler: torch.utils.data.sampler.Sampler = None,
         loss_function: str = "CrossEntropyLoss",
         poly_eps: float = 1.0,
         **kwargs,
@@ -38,6 +40,7 @@ class SFTTrainer(Trainer):
 
         # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
         self.loss_fct = get_loss(loss_function, poly_eps)
+        self.sampler = sampler
 
     def compute_loss(self, model, inputs, return_outputs=False):
         labels_mask = inputs.pop("label_masks")
@@ -87,6 +90,22 @@ class SFTTrainer(Trainer):
             return (loss, None, None)
 
         return (loss, logits, labels)
+
+    def get_train_dataloader(self):
+        if self.sampler is None:
+            torch.utils.data.DataLoader(
+                self.train_dataset,
+                batch_size=self.args.per_device_train_batch_size,
+                shuffle=True,
+                collate_fn=self.data_collator
+            )
+        else:
+            return torch.utils.data.DataLoader(
+                self.train_dataset,
+                batch_size=self.args.per_device_train_batch_size,
+                sampler=self.sampler,
+                collate_fn=self.data_collator
+            )
 
 
 def _strtobool(x):
@@ -141,8 +160,8 @@ if __name__ == "__main__":
     model = get_model(training_conf, tokenizer)
 
     train, evals, collate_fn = get_dataset(training_conf, tokenizer)
+    sampler = build_train_sampler(training_conf, train.datasets)
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
-
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
 
     if training_conf.quantization:
@@ -159,7 +178,7 @@ if __name__ == "__main__":
         learning_rate=float(training_conf.learning_rate),
         deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
         optim=optimizer,
-        fp16=True,
+        # fp16=True,
         local_rank=training_conf.local_rank,
         gradient_checkpointing=training_conf.gradient_checkpointing,
         gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
@@ -177,19 +196,20 @@ if __name__ == "__main__":
     )
 
     assert len(evals) > 0
-
     if not training_conf.deepspeed or training_conf.local_rank == 0:
         import wandb
 
         wandb.init(
             project="supervised-finetuning",
-            entity=training_conf.wandb_entity,
+            # entity=training_conf.wandb_entity,
+            entity="maw501",
             name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
         )
-
+    
     trainer = SFTTrainer(
-        model,
-        args,
+        model=model,
+        args=args,
+        sampler=sampler,
         loss_function=training_conf.loss_fn,
         poly_eps=training_conf.poly_eps,
         train_dataset=train,
