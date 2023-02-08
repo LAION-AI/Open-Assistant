@@ -7,7 +7,7 @@ import { useTranslation } from "next-i18next";
 import React, { useMemo } from "react";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 
-import { DataTable, DataTableColumnDef } from "../DataTable";
+import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
@@ -41,7 +41,7 @@ export const LeaderboardTable = ({
   );
   const { data: session } = useSession();
 
-  const isAdmin = session?.user?.role === "admin";
+  const isAdmin = usehasro;
   const columns: DataTableColumnDef<WindowLeaderboardEntity>[] = useMemo(
     () => [
       {

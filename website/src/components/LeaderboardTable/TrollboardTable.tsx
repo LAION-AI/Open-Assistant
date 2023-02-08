@@ -3,17 +3,27 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import NextLink from "next/link";
 import { FetchTrollBoardResponse, TrollboardEntity, TrollboardTimeFrame } from "src/types/Trollboard";
+import { ElementOf } from "src/types/utils";
 
-import { DataTable } from "../DataTable";
+import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
+import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
-const columnHelper = createColumnHelper<TrollboardEntity>();
 
+type ExpandableTrollboardEntity = TrollboardEntity & { shouldExpand: boolean };
+
+const columnHelper = createColumnHelper<ExpandableTrollboardEntity>();
 const toPercentage = (num: number) => `${Math.round(num * 100)}%`;
+const jsonExpandRowModel = createJsonExpandRowModel<ExpandableTrollboardEntity>();
 
-const columns = [
-  columnHelper.accessor("rank", {}),
+const columns: DataTableColumnDef<ExpandableTrollboardEntity>[] = [
+  {
+    ...columnHelper.accessor("rank", {
+      cell: jsonExpandRowModel.renderCell,
+    }),
+    span: jsonExpandRowModel.span,
+  },
   columnHelper.accessor("display_name", {
     header: "Display name",
     cell: ({ getValue, row }) => (
@@ -56,25 +66,25 @@ const columns = [
     header: "Hate speech",
   }),
   columnHelper.accessor("sexual_content", {
-    header: "Sexual Content",
+    header: "Sexual",
   }),
   columnHelper.accessor("political_content", {
-    header: "Political Content",
+    header: "Political",
   }),
   columnHelper.accessor("quality", {
-    cell: ({ getValue }) => toPercentage(getValue()),
+    cell: ({ getValue }) => toPercentage(getValue() || 0),
   }),
   columnHelper.accessor("helpfulness", {
-    cell: ({ getValue }) => toPercentage(getValue()),
+    cell: ({ getValue }) => toPercentage(getValue() || 0),
   }),
   columnHelper.accessor("humor", {
-    cell: ({ getValue }) => toPercentage(getValue()),
+    cell: ({ getValue }) => toPercentage(getValue() || 0),
   }),
   columnHelper.accessor("violence", {
-    cell: ({ getValue }) => toPercentage(getValue()),
+    cell: ({ getValue }) => toPercentage(getValue() || 0),
   }),
   columnHelper.accessor("toxicity", {
-    cell: ({ getValue }) => toPercentage(getValue()),
+    cell: ({ getValue }) => toPercentage(getValue() || 0),
   }),
 ];
 
@@ -94,8 +104,12 @@ export const TrollboardTable = ({
     lastUpdated,
   } = useFetchBoard<FetchTrollBoardResponse>(`/api/admin/trollboard?time_frame=${timeFrame}&limit=${limit}`);
 
-  const { data, ...paginationProps } = useBoardPagination({ rowPerPage, data: trollboardRes?.trollboard, limit });
-  const rowProps = useBoardRowProps<TrollboardEntity>();
+  const { data, ...paginationProps } = useBoardPagination<ExpandableTrollboardEntity>({
+    rowPerPage,
+    data: trollboardRes?.trollboard.map((e) => ({ ...e, shouldExpand: true })),
+    limit,
+  });
+  const rowProps = useBoardRowProps<ExpandableTrollboardEntity>();
   if (isLoading) {
     return <CircularProgress isIndeterminate></CircularProgress>;
   }
@@ -112,11 +126,12 @@ export const TrollboardTable = ({
         },
       }}
     >
-      <DataTable<TrollboardEntity>
+      <DataTable<ElementOf<typeof data>>
         data={data}
         columns={columns}
         caption={lastUpdated}
         rowProps={rowProps}
+        getSubRows={jsonExpandRowModel.getSubRows}
         {...paginationProps}
       ></DataTable>
     </Box>
