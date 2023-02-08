@@ -76,14 +76,14 @@ export const UserTable = memo(function UserTable() {
 
   const toPreviousPage = () => {
     setPagination({
-      cursor: data.prev,
+      cursor: data?.prev || "",
       direction: "back",
     });
   };
 
   const toNextPage = () => {
     setPagination({
-      cursor: data.next,
+      cursor: data?.next || "",
       direction: "forward",
     });
   };

@@ -1,12 +1,12 @@
 {
   "dashboard": "Panel principal",
   "dashboard_home": "Panel principal",
+  "leaderboard": "Clasificaciones",
   "messages": "Mensajes",
   "messages_dashboard": "Tablón de mensajes",
-  "leaderboard": "Clasificaciones",
+  "status": "Estado",
+  "status_dashboard": "Tablón de estado",
   "user_leaderboard": "Clasificación de usuarios",
   "users": "Usuarios",
-  "users_dashboard": "Tablón de usuarios",
-  "status": "Estado",
-  "status_dashboard": "Tablón de estado"
+  "users_dashboard": "Tablón de usuarios"
 }

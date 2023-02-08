@@ -1,12 +1,12 @@
 {
   "dashboard": "Painel",
   "dashboard_home": "Página principal",
+  "leaderboard": "Leaderboard",
   "messages": "Mensagens",
   "messages_dashboard": "Painel de mensagens",
-  "leaderboard": "Leaderboard",
+  "status": "Status",
+  "status_dashboard": "Painel de status",
   "user_leaderboard": "Leaderboard dos usuários",
   "users": "Usuários",
-  "users_dashboard": "Painel de controle de usuários",
-  "status": "Status",
-  "status_dashboard": "Painel de status"
+  "users_dashboard": "Painel de controle de usuários"
 }

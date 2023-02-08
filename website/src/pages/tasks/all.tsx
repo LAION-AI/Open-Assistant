@@ -16,6 +16,6 @@ const AllTasks = () => {
   );
 };
 
-AllTasks.getLayout = (page) => getDashboardLayout(page);
+AllTasks.getLayout = getDashboardLayout;
 
 export default AllTasks;
