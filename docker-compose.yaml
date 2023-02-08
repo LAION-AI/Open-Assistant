@@ -197,12 +197,14 @@ services:
   netdata:
     image: netdata/netdata
     container_name: netdata
+    pid: host
     hostname: netdata-openassistant
     ports:
       - 19999:19999
     restart: unless-stopped
     cap_add:
       - SYS_PTRACE
+      - SYS_ADMIN
     security_opt:
       - apparmor:unconfined
     volumes:
