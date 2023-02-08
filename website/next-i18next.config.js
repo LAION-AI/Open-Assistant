@@ -20,7 +20,7 @@ module.exports = {
       "vi",
       "zh",
       "tr",
-      "id-ID",
+      "id",
     ],
   },
 };
