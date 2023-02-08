@@ -1,9 +1,11 @@
-
-
 ## Dataset Summary
 
-The dataset was created using [Cornell Movies Dialog Corpus](https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html) which contains a large metadata-rich collection of fictional conversations extracted from raw movie scripts.
-Dialogs and meta-data from the underlying Corpus were used to design a dataset that can be used to InstructGPT based models to learn movie scripts.
+The dataset was created using
+[Cornell Movies Dialog Corpus](https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html)
+which contains a large metadata-rich collection of fictional conversations
+extracted from raw movie scripts. Dialogs and meta-data from the underlying
+Corpus were used to design a dataset that can be used to InstructGPT based
+models to learn movie scripts.
 
 Example :
 
@@ -28,6 +30,7 @@ dataset = load_dataset("shahules786/OA-cornell-movies-dialog")
 ```
 
 ## Citations
+
 ```
 @InProceedings{Danescu-Niculescu-Mizil+Lee:11a,
   author={Cristian Danescu-Niculescu-Mizil and Lillian Lee},
@@ -37,4 +40,3 @@ dataset = load_dataset("shahules786/OA-cornell-movies-dialog")
   year={2011}
 }
 ```
-
