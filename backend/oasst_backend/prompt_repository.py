@@ -1096,11 +1096,11 @@ WHERE message.id = cc.id;
 
             # Add to flagged_message table if the red flag emoji is applied
             if emoji == protocol_schema.EmojiCode.red_flag:
-                flagged_message = FlaggedMessage(
-                    message_id=message_id, processed=False, created_date=datetime.now().astimezone()
+                flagged_message = FlaggedMessage(message_id=message_id, processed=False, created_date=utcnow())
+                insert_stmt = pg.insert(FlaggedMessage).values(**flagged_message.dict())
+                upsert_stmt = insert_stmt.on_conflict_do_update(
+                    constraint="flagged_message_pkey", set_=flagged_message.dict()
                 )
-                insert_stmt = pg.insert(FlaggedMessage).values(**flagged_message.__dict__)
-                upsert_stmt = insert_stmt.on_conflict_do_update(constraint="message_id", set_=flagged_message.__dict__)
                 self.db.execute(upsert_stmt)
 
             # insert emoji record & increment count
