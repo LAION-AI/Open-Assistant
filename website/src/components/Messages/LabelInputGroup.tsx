@@ -19,6 +19,7 @@ interface LabelInputGroupProps {
   requiredLabels?: string[];
   isEditable?: boolean;
   instructions: LabelInputInstructions;
+  expectedLanguage: string;
   onChange: (values: number[]) => void;
 }
 
@@ -28,6 +29,7 @@ export const LabelInputGroup = ({
   requiredLabels,
   isEditable,
   instructions,
+  expectedLanguage,
   onChange,
 }: LabelInputGroupProps) => {
   const { t } = useTranslation("labelling");
@@ -71,6 +73,7 @@ export const LabelInputGroup = ({
           <LabelFlagGroup
             values={flagIndexes.map((idx) => values[idx])}
             labelNames={flagIndexes.map((idx) => labels[idx].name)}
+            expectedLanguage={expectedLanguage}
             isEditable={isEditable}
             onChange={(flagValues) => {
               const newValues = values.slice();

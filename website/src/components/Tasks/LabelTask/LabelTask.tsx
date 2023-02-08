@@ -50,6 +50,7 @@ export const LabelTask = ({
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const isSpamTask = task.mode === "simple" && task.valid_labels.length === 1 && task.valid_labels[0] === "spam";
 
+  const lastMessage = task.conversation.messages[task.conversation.messages.length - 1];
   return (
     <div data-cy="task" data-task-type={isSpamTask ? "spam-task" : "label-task"}>
       <TwoColumnsWithCards>
@@ -69,6 +70,7 @@ export const LabelTask = ({
             flagInstruction: t("label_highlighted_flag_instruction"),
             likertInstruction: t("label_highlighted_likert_instruction"),
           }}
+          expectedLanguage={lastMessage.lang}
           onChange={(values) => {
             setValues(values);
             setUserInputMade.on();

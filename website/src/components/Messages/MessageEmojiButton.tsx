@@ -6,9 +6,10 @@ interface MessageEmojiButtonProps {
   emoji: MessageEmoji;
   checked?: boolean;
   onClick: () => void;
+  showCount: boolean;
 }
 
-export const MessageEmojiButton = ({ emoji, checked, onClick }: MessageEmojiButtonProps) => {
+export const MessageEmojiButton = ({ emoji, checked, onClick, showCount }: MessageEmojiButtonProps) => {
   const EmojiIcon = emojiIcons.get(emoji.name);
   if (!EmojiIcon) return <></>;
   return (
@@ -22,7 +23,7 @@ export const MessageEmojiButton = ({ emoji, checked, onClick }: MessageEmojiButt
       padding="0"
     >
       <EmojiIcon style={{ height: "1em" }} />
-      <span style={{ marginInlineEnd: "0.25em" }}>{emoji.count}</span>
+      {emoji.count > 0 && showCount && <span style={{ marginInlineEnd: "0.25em" }}>{emoji.count}</span>}
     </Button>
   );
 };

@@ -19,5 +19,6 @@
   "political_content": "Politisch",
   "political_content.explanation": "Enthält politische Meinungen.",
   "sexual_content": "Sexueller Inhalt",
+  "sexual_content.explanation": "Contains sexual content.",
   "spam.question": "Ist die Nachricht Spam?"
 }

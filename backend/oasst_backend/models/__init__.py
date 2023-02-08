@@ -1,4 +1,5 @@
 from .api_client import ApiClient
+from .flagged_message import FlaggedMessage
 from .journal import Journal, JournalIntegration
 from .message import Message
 from .message_embedding import MessageEmbedding
@@ -28,4 +29,5 @@ __all__ = [
     "JournalIntegration",
     "MessageEmoji",
     "TrollStats",
+    "FlaggedMessage",
 ]

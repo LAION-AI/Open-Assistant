@@ -115,6 +115,7 @@ export const Task = () => {
 
   useEffect(() => {
     taskEvent({ action: "NEW_TASK" });
+    scrollToTop(rootEl.current);
   }, [task.id]);
 
   const onReplyChanged = useCallback(
@@ -128,7 +129,6 @@ export const Task = () => {
     if (taskStatus.mode === "REVIEW") {
       taskEvent({ action: "SET_SUBMITTED" });
       await completeTask(replyContent.current);
-      scrollToTop(rootEl.current);
     }
   }, [taskStatus.mode, completeTask]);
 
