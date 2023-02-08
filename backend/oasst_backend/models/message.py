@@ -64,6 +64,7 @@ class Message(SQLModel, table=True):
 
     emojis: Optional[dict[str, int]] = Field(default=None, sa_column=sa.Column(pg.JSONB), nullable=False)
     _user_emojis: Optional[list[str]] = PrivateAttr(default=None)
+    _user_is_author: Optional[bool] = PrivateAttr(default=None)
 
     def ensure_is_message(self) -> None:
         if not self.payload or not isinstance(self.payload.payload, MessagePayload):
@@ -83,3 +84,7 @@ class Message(SQLModel, table=True):
     @property
     def user_emojis(self) -> str:
         return self._user_emojis
+
+    @property
+    def user_is_author(self) -> str:
+        return self._user_is_author
