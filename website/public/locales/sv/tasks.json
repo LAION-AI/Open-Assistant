@@ -27,7 +27,7 @@
     "overview": "Med tanke på följande konversation, ge ett lämpligt svar.",
     "response_placeholder": "Skriv ditt svar här..."
   },
- "rank_user_replies": {
+  "rank_user_replies": {
     "label": "Sortera användarsvar",
     "desc": "Hjälp Open Assistant att förbättra sina svar i konversationer med andra användare.",
     "overview": "Sortera följande användarsvar från bäst till sämst, med bäst först och sämst sist.",
@@ -77,6 +77,6 @@
     "label": "Klassificera assistentens svar",
     "desc": "Tilldela etiketter till en prompt.",
     "overview": "Läs följande konversation och besvara sedan det sista svaret i diskussionen."
-},
+  },
   "available_task_count": "{{count}} uppgifter tillgängliga"
 }
