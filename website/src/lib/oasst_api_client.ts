@@ -1,6 +1,7 @@
 import type { EmojiOp, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
+import { FetchTrollBoardResponse, TrollboardTimeFrame } from "src/types/Trollboard";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
 
 export class OasstError {
@@ -349,5 +350,11 @@ export class OasstApiClient {
 
   fetch_frontend_user(user: BackendUserCore) {
     return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
+  }
+
+  fetch_trollboard(time_frame: TrollboardTimeFrame, { limit }: { limit?: number }) {
+    return this.get<FetchTrollBoardResponse>(`/api/v1/trollboards/${time_frame}`, {
+      max_count: limit,
+    });
   }
 }

@@ -1,15 +1,23 @@
 {
   "blurb": "Nous croyons que nous pouvons créer une révolution.",
-  "blurb1": "De la même manière que Stable Diffusion a aidé le monde à faire de l'art et des images de nouvelles manières, nous voulons améliorer le monde en fournissant une incroyable IA conversationnelle.",
-  "description": "IA conversationnelle pour tout le monde. Un projet open source pour créer un GPT LLM activé par chat dirigé par LAION et des contributeurs du monde entier.",
+  "blurb1": "Stable Diffusion a révolutionné la création artistique et visuelle en offrant de nouvelles approches. De la même manière, nous aspirons à transformer le monde en proposant une IA conversationnelle d'une qualité exceptionnelle.",
+  "description": "Notre objectif est de rendre l'IA conversationnelle accessible à tous. Pour atteindre cet objectif, nous lançons un projet open-source pour développer un large modèle de langage LLM pour le chat, dirigé par LAION et soutenu par des contributeurs du monde entier.",
   "faq_items": {
     "q0": "À quel stade est ce projet?",
-    "a0": "Nous sommes aux premiers stades du développement, travaillant à partir de recherches établies dans l'application de RLHF à de grands modèles linguistiques.",
+    "a0": "Nous sommes aux premiers stades du développement, travaillant à partir de recherches établies dans l'application de RLHF aux modèles de language large (LLM).",
     "q1": "Qui se trouve derrière Open Assistant?",
-    "a1": "Open Assistant est un projet organisé par LAION et des individus du monde entier intéressés à apporter cette technologie à tout le monde."
+    "a1": "Open Assistant est un projet organisé par LAION et des individus du monde entier intéressés à apporter cette technologie à tout le monde.",
+    "q2": "Quel est le type de licence utilisé par Open Assistant ?",
+    "a2": "Le code et les modèles sont sous licence Apache 2.0.",
+    "q3": "Les données d'entraînement seront-elles également publiées ?",
+    "a3": "Oui, sous CC BY 4.0.",
+    "q4": "Open Assistant sera-t-il gratuit ?",
+    "a4": "Oui, Open Assistant sera gratuit pour l'utiliser et le modifier.",
+    "q5": "Quel matériel sera nécessaire pour faire tourner les modèles ?",
+    "a5": "Il y aura des versions qui pourront être exécutées sur du matériel grand public."
   },
   "faq_title": "Questions fréquentes",
-  "join_us_description": "Tous les projets open source commencent avec des personnes comme vous. L'open source est la croyance que si nous collaborons, nous pouvons ensemble offrir notre connaissance et notre technologie au monde pour le bénéfice de l'humanité. Êtes-vous dedans? Trouvez-nous ici :",
+  "join_us_description": "Tous les projets open source commencent avec des personnes comme vous. L'open source est la croyance que si nous collaborons, nous pouvons ensemble offrir notre connaissance et notre technologie au monde pour le bénéfice de l'humanité. Êtes-vous pret à nous rejoindre? Trouvez-nous ici :",
   "join_us_title": "Rejoignez-nous",
   "subtitle": "IA conversationnelle pour tout le monde."
 }

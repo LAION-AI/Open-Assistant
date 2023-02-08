@@ -182,6 +182,7 @@ class Settings(BaseSettings):
         Path(__file__).parent.parent / "test_data/realistic/realistic_seed_data.json"
     )
     DEBUG_ALLOW_SELF_LABELING: bool = False  # allow users to label their own messages
+    DEBUG_ALLOW_SELF_RANKING: bool = False  # allow users to rank their own messages
     DEBUG_ALLOW_DUPLICATE_TASKS: bool = False  # offer users tasks to which they already responded
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
