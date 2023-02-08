@@ -217,6 +217,7 @@ services:
       - /sys:/host/sys:ro
       - /etc/os-release:/host/etc/os-release:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /netdata/go.d:/etc/netdata/go.d:ro
     environment:
       - NETDATA_CLAIM_TOKEN=WyM97y-0Rc96S-l-Eq1g7rlV1AmFEfZtUEo3nqtycOcTn9xOGr8HslGptTLSOAURv_r3oahE8z-pQy4dxs7oha1hWzqAjMKHEpZi8-H4DeF99l8XNXVT7rZm05YGvV-W03Z34ds
       - NETDATA_CLAIM_URL=https://app.netdata.cloud
