@@ -32,7 +32,7 @@ SUMMARIZATION_DATASETS = [
     "debate_sum",
     "tldr_news",
 ]
-OTHER = ["prosocial_dialogue", "explain_prosocial", "instruct_tuning", "private_tuning"]
+OTHER = ["prosocial_dialogue", "explain_prosocial", "instruct_tuning", "private_tuning", "oa_translated"]
 
 
 def train_val_dataset(dataset, val_split=0.2):
@@ -95,7 +95,7 @@ def get_one_dataset(conf, dataset_name):
     elif dataset_name == "private_tuning":
         dataset = PrivateInstructionTuning(conf.cache_dir)
         train, eval = train_val_dataset(dataset, val_split=0.2)
-    elif dataset_name == "translate_qa":
+    elif dataset_name == "oa_translated":
         dataset = TranslatedQA(conf.cache_dir)
         train, eval = train_val_dataset(dataset, val_split=0.01)
     else:

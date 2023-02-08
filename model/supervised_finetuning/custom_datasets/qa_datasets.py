@@ -349,8 +349,21 @@ class TranslatedQA(Dataset):
                     if "Python " in data["text"]:
                         continue
                     # incorrect, TODO: fix later
+                    prefix = ""
                     for convo_round in data["translate"]:
-                        self.pairs.append((convo_round["human"], convo_round["answer"]))
+                        human, answer = format_pair((convo_round["human"], convo_round["answer"]))
+                        if convo_round["round"] > 2:
+                            # TODO: remove this later
+                            self.pairs.append(("{}{}{}".format(prefix, "<sep>", human), answer))
+                        else:
+                            self.pairs.append((human, answer))
+
+                        prefix += "{}{}{}{}".format(
+                            QA_SPECIAL_TOKENS["Question"],
+                            convo_round["human"],
+                            QA_SPECIAL_TOKENS["Answer"],
+                            convo_round["answer"],
+                        )
 
         self.length = len(self.pairs)
 
@@ -358,4 +371,4 @@ class TranslatedQA(Dataset):
         return self.length
 
     def __getitem__(self, index):
-        return format_pair(self.pairs[index])
+        return self.pairs[index]
