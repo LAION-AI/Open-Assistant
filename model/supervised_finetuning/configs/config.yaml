@@ -46,6 +46,7 @@ defaults:
   quantization: false
   seq2seqmodel: false
   poly_eps: 1.0
+  fuse_gelu: true
 
 galactica-125m:
   learning_rate: 5e-5

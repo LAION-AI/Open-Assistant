@@ -1,6 +1,4 @@
-import json
 import random
-import sys
 from datetime import datetime, timedelta
 from enum import Enum
 from http import HTTPStatus
@@ -10,7 +8,6 @@ from uuid import UUID
 import numpy as np
 import pydantic
 import sqlalchemy as sa
-from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
 from oasst_backend.config import TreeManagerConfiguration, settings
@@ -25,7 +22,6 @@ from oasst_backend.models import (
     message_tree_state,
 )
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.utils import tree_export
 from oasst_backend.utils.database_utils import (
     CommitMode,
     async_managed_tx_method,
@@ -1673,44 +1669,6 @@ DELETE FROM user_stats WHERE user_id = :user_id;
         if ban:
             self.db.execute(update(User).filter(User.id == user_id).values(deleted=True, enabled=False))
 
-    def export_trees_to_file(
-        self,
-        message_tree_ids: list[str],
-        file=None,
-        reviewed: bool = True,
-        include_deleted: bool = False,
-        use_compression: bool = False,
-    ) -> None:
-        trees_to_export: List[tree_export.ExportMessageTree] = []
-
-        for message_tree_id in message_tree_ids:
-            messages: List[Message] = self.pr.fetch_message_tree(message_tree_id, reviewed, include_deleted)
-            trees_to_export.append(tree_export.build_export_tree(message_tree_id, messages))
-
-        if file:
-            tree_export.write_trees_to_file(file, trees_to_export, use_compression)
-        else:
-            sys.stdout.write(json.dumps(jsonable_encoder(trees_to_export), indent=2))
-
-    def export_all_ready_trees(
-        self, file: str, reviewed: bool = True, include_deleted: bool = False, use_compression: bool = False
-    ) -> None:
-        message_tree_states: MessageTreeState = self.pr.fetch_message_trees_ready_for_export()
-        message_tree_ids = [ms.message_tree_id for ms in message_tree_states]
-        self.export_trees_to_file(message_tree_ids, file, reviewed, include_deleted, use_compression)
-
-    def export_all_user_trees(
-        self,
-        user_id: str,
-        file: str,
-        reviewed: bool = True,
-        include_deleted: bool = False,
-        use_compression: bool = False,
-    ) -> None:
-        messages = self.pr.fetch_user_message_trees(UUID(user_id))
-        message_tree_ids = [ms.message_tree_id for ms in messages]
-        self.export_trees_to_file(message_tree_ids, file, reviewed, include_deleted, use_compression)
-
     @managed_tx_method(CommitMode.COMMIT)
     def retry_scoring_failed_message_trees(self):
         query = self.db.query(MessageTreeState).filter(
@@ -1777,5 +1735,3 @@ if __name__ == "__main__":
         # print(
         #     ".query_tree_ranking_results", tm.query_tree_ranking_results(UUID("21f9d585-d22c-44ab-a696-baa3d83b5f1b"))
         # )
-
-        # print(tm.export_trees_to_file(message_tree_ids=["7e75fb38-e664-4e2b-817c-b9a0b01b0074"], file="lol.jsonl"))
