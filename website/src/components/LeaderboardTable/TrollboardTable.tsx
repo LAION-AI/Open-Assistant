@@ -3,7 +3,6 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Mail, ThumbsDown, ThumbsUp, User } from "lucide-react";
 import NextLink from "next/link";
 import { FetchTrollBoardResponse, TrollboardEntity, TrollboardTimeFrame } from "src/types/Trollboard";
-import { ElementOf } from "src/types/utils";
 
 import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
 import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
@@ -12,13 +11,11 @@ import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
 
-type ExpandableTrollboardEntity = TrollboardEntity;
-
-const columnHelper = createColumnHelper<ExpandableTrollboardEntity>();
+const columnHelper = createColumnHelper<TrollboardEntity>();
 const toPercentage = (num: number) => `${Math.round(num * 100)}%`;
-const jsonExpandRowModel = createJsonExpandRowModel<ExpandableTrollboardEntity>();
+const jsonExpandRowModel = createJsonExpandRowModel<TrollboardEntity>();
 
-const columns: DataTableColumnDef<ExpandableTrollboardEntity>[] = [
+const columns: DataTableColumnDef<TrollboardEntity>[] = [
   {
     ...columnHelper.accessor("rank", {
       cell: jsonExpandRowModel.renderCell,
@@ -124,12 +121,12 @@ export const TrollboardTable = ({
     lastUpdated,
   } = useFetchBoard<FetchTrollBoardResponse>(`/api/admin/trollboard?time_frame=${timeFrame}&limit=${limit}`);
 
-  const { data, ...paginationProps } = useBoardPagination<ExpandableTrollboardEntity>({
+  const { data, ...paginationProps } = useBoardPagination<TrollboardEntity>({
     rowPerPage,
     data: jsonExpandRowModel.toExpandable(trollboardRes?.trollboard),
     limit,
   });
-  const rowProps = useBoardRowProps<ExpandableTrollboardEntity>();
+  const rowProps = useBoardRowProps<TrollboardEntity>();
   if (isLoading) {
     return <CircularProgress isIndeterminate></CircularProgress>;
   }
@@ -146,7 +143,7 @@ export const TrollboardTable = ({
         },
       }}
     >
-      <DataTable<ElementOf<typeof data>>
+      <DataTable
         data={data}
         columns={columns}
         caption={lastUpdated}

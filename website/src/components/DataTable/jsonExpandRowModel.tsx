@@ -2,16 +2,13 @@ import { Card, CardBody, Flex } from "@chakra-ui/react";
 import { Cell, CellContext } from "@tanstack/react-table";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-interface ExpandableRow {
+type ExpandableRow<T> = Omit<T, "shouldExpand"> & {
   shouldExpand?: boolean;
-}
+};
 
-export const createJsonExpandRowModel = <
-  T,
-  U extends Omit<T, "shouldExpand"> & ExpandableRow = Omit<T, "shouldExpand"> & ExpandableRow
->() => {
+export const createJsonExpandRowModel = <T,>() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderCell = ({ row, getValue }: CellContext<U, any>) => {
+  const renderCell = ({ row, getValue }: CellContext<ExpandableRow<T>, any>) => {
     if (!row.original.shouldExpand) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { shouldExpand, ...res } = row.original;
@@ -42,9 +39,10 @@ export const createJsonExpandRowModel = <
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const span = (cell: Cell<U, any>) => (cell.row.original.shouldExpand ? undefined : cell.row.getVisibleCells().length);
+  const span = (cell: Cell<ExpandableRow<T>, any>) =>
+    cell.row.original.shouldExpand ? undefined : cell.row.getVisibleCells().length;
 
-  const getSubRows = (row: U) =>
+  const getSubRows = (row: ExpandableRow<T>) =>
     row.shouldExpand
       ? [
           {
@@ -54,10 +52,8 @@ export const createJsonExpandRowModel = <
         ]
       : undefined;
 
-  const toExpandable = function (arr: T[] | undefined, val = true): U[] {
-    // TODO remove `any` workaround
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return !arr ? [] : (arr.map((element) => ({ ...element, shouldExpand: val })) as any);
+  const toExpandable = function (arr: T[] | undefined, val = true): ExpandableRow<T>[] {
+    return !arr ? [] : arr.map((element) => ({ ...element, shouldExpand: val }));
   };
 
   return { renderCell, span, getSubRows, toExpandable };
