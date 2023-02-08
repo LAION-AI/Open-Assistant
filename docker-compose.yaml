@@ -198,7 +198,7 @@ services:
     image: netdata/netdata
     container_name: netdata
     pid: host
-    hostname: netdata-openassistant
+    hostname: oasst-netdata
     ports:
       - 19999:19999
     restart: unless-stopped
@@ -220,9 +220,8 @@ services:
       - ${PWD}/docker/netdata/go.d/redis.conf:/etc/netdata/go.d/redis.conf
       - ${PWD}/docker/netdata/go.d/postgres.conf:/etc/netdata/go.d/postgres.conf
     environment:
-      - NETDATA_CLAIM_TOKEN=WyM97y-0Rc96S-l-Eq1g7rlV1AmFEfZtUEo3nqtycOcTn9xOGr8HslGptTLSOAURv_r3oahE8z-pQy4dxs7oha1hWzqAjMKHEpZi8-H4DeF99l8XNXVT7rZm05YGvV-W03Z34ds
+      - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN:-}
       - NETDATA_CLAIM_URL=https://app.netdata.cloud
-      - NETDATA_CLAIM_ROOMS=
 
 volumes:
   netdataconfig:
