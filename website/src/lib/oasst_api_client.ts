@@ -207,7 +207,7 @@ export class OasstApiClient {
    * Send a report about a message
    */
   async send_report(message_id: string, user: BackendUserCore, text: string) {
-    return this.post("/api/v1/text_labels", {
+    return this.post("/api/v1/text_labels/", {
       type: "text_labels",
       message_id,
       labels: [], // Not yet implemented
