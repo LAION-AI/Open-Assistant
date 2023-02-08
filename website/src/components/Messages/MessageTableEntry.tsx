@@ -128,7 +128,7 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
             onReport={showReportPopup}
             message={message}
           />
-          <LabelMessagePopup messageId={message.id} show={labelPopupOpen} onClose={closeLabelPopup} />
+          <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
           <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
         </HStack>
       </Box>
