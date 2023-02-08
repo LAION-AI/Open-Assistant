@@ -172,6 +172,7 @@ def get_dataset_name_from_data_config(data_config):
 
 
 def get_dataset_fractions(conf, dataset_sizes):
+    """Calculate fraction of each dataset to use per epoch when subsampling"""
     fractions = []
     for i, data_config in enumerate(conf):
         dataset_name = get_dataset_name_from_data_config(data_config)

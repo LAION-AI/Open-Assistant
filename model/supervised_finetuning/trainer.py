@@ -210,8 +210,7 @@ if __name__ == "__main__":
 
         wandb.init(
             project="supervised-finetuning",
-            # entity=training_conf.wandb_entity,
-            entity="maw501",
+            entity=training_conf.wandb_entity,
             name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
         )
 
