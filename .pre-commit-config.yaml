@@ -28,6 +28,15 @@
 
 exclude: build|stubs|^bot/templates/$|openassistant/templates|docs/docs/api/openapi.json
 
+default_language_version:
+  python: python3
+
+ci:
+  autofix_prs: true
+  autoupdate_commit_msg: "[pre-commit.ci] pre-commit suggestions"
+  autoupdate_schedule: quarterly
+  skip: ["next-lint-website"] # list of hook ids to skip only in pre-commit.ci
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
