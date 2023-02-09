@@ -11,7 +11,6 @@ import {
   CardHeader,
   Checkbox,
   CircularProgress,
-  Container,
   FormControl,
   FormLabel,
   Input,
@@ -23,6 +22,7 @@ import Head from "next/head";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useForm } from "react-hook-form";
 import { AdminArea } from "src/components/AdminArea";
+import { useCursorPagination } from "src/components/DataTable/useCursorPagination";
 import { JsonCard } from "src/components/JsonCard";
 import { getAdminLayout } from "src/components/Layout";
 import { AdminMessageTable } from "src/components/Messages/AdminMessageTable";
@@ -30,7 +30,7 @@ import { Role, RoleSelect } from "src/components/RoleSelect";
 import { get, post } from "src/lib/api";
 import { userlessApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
-import { Message } from "src/types/Conversation";
+import { FetchUserMessagesCursorResponse } from "src/types/Conversation";
 import { User } from "src/types/Users";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
@@ -81,49 +81,47 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
       </Head>
       <AdminArea>
         <Stack gap="4">
-          <Container>
-            <Card>
-              <CardBody>
-                <form onSubmit={handleSubmit((data) => trigger(data))}>
-                  <input type="hidden" {...register("user_id")}></input>
-                  <input type="hidden" {...register("id")}></input>
-                  <input type="hidden" {...register("auth_method")}></input>
-                  <FormControl>
-                    <FormLabel>Display Name</FormLabel>
-                    <Input {...register("display_name")} isDisabled />
-                  </FormControl>
-                  <FormControl mt="2">
-                    <FormLabel>Role</FormLabel>
-                    <RoleSelect {...register("role")}></RoleSelect>
-                  </FormControl>
-                  <FormControl mt="2">
-                    <FormLabel>Notes</FormLabel>
-                    <Input {...register("notes")} />
-                  </FormControl>
-                  <FormControl mt="2">
-                    <FormLabel>Show on leaderboard</FormLabel>
-                    <Checkbox></Checkbox>
-                  </FormControl>
-                  <Button mt={4} type="submit">
-                    Update
-                  </Button>
-                </form>
-                <Accordion allowToggle mt="4">
-                  <AccordionItem>
-                    <AccordionButton>
-                      <Box as="span" flex="1" textAlign="left">
-                        Raw JSON
-                      </Box>
-                      <AccordionIcon />
-                    </AccordionButton>
-                    <AccordionPanel pb={4}>
-                      <JsonCard>{user}</JsonCard>
-                    </AccordionPanel>
-                  </AccordionItem>
-                </Accordion>
-              </CardBody>
-            </Card>
-          </Container>
+          <Card>
+            <CardBody>
+              <form onSubmit={handleSubmit((data) => trigger(data))}>
+                <input type="hidden" {...register("user_id")}></input>
+                <input type="hidden" {...register("id")}></input>
+                <input type="hidden" {...register("auth_method")}></input>
+                <FormControl>
+                  <FormLabel>Display Name</FormLabel>
+                  <Input {...register("display_name")} isDisabled />
+                </FormControl>
+                <FormControl mt="2">
+                  <FormLabel>Role</FormLabel>
+                  <RoleSelect {...register("role")}></RoleSelect>
+                </FormControl>
+                <FormControl mt="2">
+                  <FormLabel>Notes</FormLabel>
+                  <Input {...register("notes")} />
+                </FormControl>
+                <FormControl mt="2">
+                  <FormLabel>Show on leaderboard</FormLabel>
+                  <Checkbox></Checkbox>
+                </FormControl>
+                <Button mt={4} type="submit">
+                  Update
+                </Button>
+              </form>
+              <Accordion allowToggle mt="4">
+                <AccordionItem>
+                  <AccordionButton>
+                    <Box as="span" flex="1" textAlign="left">
+                      Raw JSON
+                    </Box>
+                    <AccordionIcon />
+                  </AccordionButton>
+                  <AccordionPanel pb={4}>
+                    <JsonCard>{user}</JsonCard>
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
+            </CardBody>
+          </Card>
           <Card>
             <CardHeader pb="0" fontWeight="medium" fontSize="xl">
               {`User's messages`}
@@ -139,9 +137,18 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
 };
 
 const UserMessageTable = ({ id }: { id: User["id"] }) => {
-  const { data, error, isLoading } = useSWRImmutable<Message[] | null>(`/api/admin/user_messages?user=${id}`, get);
+  const { pagination, toNextPage, toPreviousPage } = useCursorPagination();
+  const { data, error, isLoading } = useSWRImmutable<FetchUserMessagesCursorResponse>(
+    `/api/admin/user_messages?user=${id}&cursor=${encodeURIComponent(pagination.cursor)}&direction=${
+      pagination.direction
+    }`,
+    get,
+    {
+      keepPreviousData: true,
+    }
+  );
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return <CircularProgress isIndeterminate />;
   }
 
@@ -149,7 +156,15 @@ const UserMessageTable = ({ id }: { id: User["id"] }) => {
     return <>Unable to load messages.</>;
   }
 
-  return <AdminMessageTable messages={data || []}></AdminMessageTable>;
+  return (
+    <AdminMessageTable
+      data={data?.items || []}
+      disableNext={!data?.next}
+      disablePrevious={!data?.prev}
+      onNextClick={() => toNextPage(data)}
+      onPreviousClick={() => toPreviousPage(data)}
+    ></AdminMessageTable>
+  );
 };
 
 /**

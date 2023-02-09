@@ -1,5 +1,5 @@
 import { Avatar } from "@chakra-ui/avatar";
-import { Flex } from "@chakra-ui/layout";
+import { Badge, Flex } from "@chakra-ui/layout";
 import { Tooltip } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/table-core";
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
@@ -8,8 +8,9 @@ import NextLink from "next/link";
 import { ROUTES } from "src/lib/routes";
 import { Message } from "src/types/Conversation";
 import { isKnownEmoji } from "src/types/Emoji";
+import { StrictOmit } from "src/types/utils";
 
-import { DataTable } from "../DataTable/DataTable";
+import { DataTable, DataTableProps } from "../DataTable/DataTable";
 import { DataTableAction } from "../DataTable/DataTableAction";
 import { MessageEmojiButton } from "./MessageEmojiButton";
 
@@ -29,9 +30,18 @@ const columns = [
             src={`${row.original.is_assistant ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
           ></Avatar>
           {renderText}
+          {row.original.deleted && (
+            <Badge colorScheme="red" ml="1">
+              Deleted
+            </Badge>
+          )}
         </Flex>
       );
     },
+  }),
+  columnHelper.accessor("lang", {
+    header: "Language",
+    cell: ({ getValue }) => <Badge>{getValue()}</Badge>,
   }),
   columnHelper.accessor("emojis", {
     header: "Reactions",
@@ -88,9 +98,13 @@ const columns = [
 const DateDiff = ({ children }: { children: string | Date | number }) => {
   const date = new Date(children);
   const diff = formatDistanceToNow(date, { addSuffix: true });
-  return <Tooltip label={formatISO9075(date)}>{diff}</Tooltip>;
+  return (
+    <Tooltip label={formatISO9075(date)} placement="top">
+      {diff}
+    </Tooltip>
+  );
 };
 
-export const AdminMessageTable = ({ messages }: { messages: Message[] }) => {
-  return <DataTable columns={columns} data={messages}></DataTable>;
+export const AdminMessageTable = (props: StrictOmit<DataTableProps<Message>, "columns">) => {
+  return <DataTable columns={columns} {...props}></DataTable>;
 };

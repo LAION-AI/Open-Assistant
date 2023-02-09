@@ -1,4 +1,4 @@
-import type { EmojiOp, Message } from "src/types/Conversation";
+import type { EmojiOp, FetchUserMessagesCursorResponse, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
 import { FetchTrollBoardResponse, TrollboardTimeFrame } from "src/types/Trollboard";
@@ -262,6 +262,23 @@ export class OasstApiClient {
    */
   async fetch_user_messages(user_id: string): Promise<Message[] | null> {
     return this.get<Message[]>(`/api/v1/users/${user_id}/messages`);
+  }
+
+  async fetch_user_messages_cursor(
+    user_id: string,
+    {
+      direction,
+      cursor,
+      include_deleted,
+      max_count,
+    }: { include_deleted?: boolean; max_count?: number; cursor?: string; direction: "forward" | "back" }
+  ) {
+    return this.get<FetchUserMessagesCursorResponse>(`/api/v1/users/${user_id}/messages/cursor`, {
+      include_deleted,
+      max_count,
+      after: direction === "forward" ? cursor : undefined,
+      before: direction === "back" ? cursor : undefined,
+    });
   }
 
   /**
