@@ -10,6 +10,7 @@ interface RenderedMarkdownProps {
 const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
   return (
     <ReactMarkdown
+      className="prose"
       remarkPlugins={[remarkGfm]}
       components={{
         code({ node, inline, className, children, style, ...props }) {
