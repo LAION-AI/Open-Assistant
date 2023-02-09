@@ -5,6 +5,7 @@ module.exports = {
       "ar",
       "bn",
       "ca",
+      "da",
       "de",
       "en",
       "es",
