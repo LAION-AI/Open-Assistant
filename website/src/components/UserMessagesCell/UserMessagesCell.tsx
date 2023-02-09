@@ -1,5 +1,5 @@
 import { Box, CircularProgress, useColorModeValue } from "@chakra-ui/react";
-import { MessageTable } from "src/components/Messages/MessageTable";
+import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { get } from "src/lib/api";
 import useSWR from "swr";
 
@@ -32,7 +32,7 @@ const UserMessagesCell = ({ path }: UserMessagesCellProps) => {
       borderRadius="xl"
       className="p-6 shadow-sm"
     >
-      {isLoading ? <CircularProgress isIndeterminate /> : <MessageTable messages={messages} />}
+      {isLoading ? <CircularProgress isIndeterminate /> : <MessageConversation messages={messages} />}
     </Box>
   );
 };
