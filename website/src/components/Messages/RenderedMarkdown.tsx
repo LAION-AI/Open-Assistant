@@ -15,8 +15,9 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
       components={{
         code({ node, inline, className, children, style, ...props }) {
           const match = /language-(\w+)/.exec(className || "");
-          return !inline && match ? (
-            <SyntaxHighlighter style={dark} language={match[1]} PreTag="div" {...props}>
+          const lang = match ? match[1] : "";
+          return !inline ? (
+            <SyntaxHighlighter style={dark} language={lang} PreTag="div" {...props}>
               {String(children).replace(/\n$/, "")}
             </SyntaxHighlighter>
           ) : (
