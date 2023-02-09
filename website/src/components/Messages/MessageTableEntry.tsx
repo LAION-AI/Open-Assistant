@@ -116,7 +116,8 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
                   key={emoji}
                   emoji={{ name: emoji, count }}
                   checked={emojiState.user_emojis.includes(emoji)}
-                  showCount={emojiState.user_emojis.filter((emoji) => emoji === "+1" || emoji === "-1").length > 0}
+                  userReacted={emojiState.user_emojis.length > 0}
+                  userIsAuthor={message.user_is_author}
                   onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
                 />
               );
@@ -237,7 +238,7 @@ const MessageActions = ({
         </MenuItem>
 
         <MenuItem
-          onClick={() => handleCopy(`${window.location.protocol}://${window.location.host}/messages/${id}`)}
+          onClick={() => handleCopy(`${window.location.protocol}//${window.location.host}/messages/${id}`)}
           icon={<Link />}
         >
           {t("copy_message_link")}
