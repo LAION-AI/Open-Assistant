@@ -61,37 +61,9 @@ const columns: DataTableColumnDef<TrollboardEntity>[] = [
   columnHelper.accessor((row) => row.spam + row.spam_prompts, {
     header: "Spam",
   }),
-  // columnHelper.accessor("lang_mismach", {
-  //   header: "Lang mismach",
-  // }),
-  // columnHelper.accessor("not_appropriate", {
-  //   header: "Not appropriate",
-  // }),
-  // columnHelper.accessor("pii", {}),
-  // columnHelper.accessor("hate_speech", {
-  //   header: "Hate speech",
-  // }),
-  // columnHelper.accessor("sexual_content", {
-  //   header: "Sexual",
-  // }),
-  // columnHelper.accessor("political_content", {
-  //   header: "Political",
-  // }),
   columnHelper.accessor("toxicity", {
     cell: ({ getValue }) => toPercentage(getValue() || 0),
   }),
-  // columnHelper.accessor("quality", {
-  //   cell: ({ getValue }) => toPercentage(getValue() || 0),
-  // }),
-  // columnHelper.accessor("helpfulness", {
-  //   cell: ({ getValue }) => toPercentage(getValue() || 0),
-  // }),
-  // columnHelper.accessor("humor", {
-  //   cell: ({ getValue }) => toPercentage(getValue() || 0),
-  // }),
-  // columnHelper.accessor("violence", {
-  //   cell: ({ getValue }) => toPercentage(getValue() || 0),
-  // }),
   columnHelper.accessor((row) => row.user_id, {
     header: "Actions",
     cell: ({ row }) => (
