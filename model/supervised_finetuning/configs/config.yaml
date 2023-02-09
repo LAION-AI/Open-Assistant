@@ -17,7 +17,7 @@ defaults:
   freeze_layer:
   datasets:
     - webgpt
-    - prompt_dialogue
+    # - prompt_dialogue
     - squad_v2
     - adversarial_qa
     - trivia_qa_nocontext
@@ -46,6 +46,7 @@ defaults:
   quantization: false
   seq2seqmodel: false
   poly_eps: 1.0
+  fuse_gelu: true
 
 galactica-125m:
   learning_rate: 5e-5

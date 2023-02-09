@@ -32,7 +32,7 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
         print("Assistant: ", end="", flush=True)
         for event in client.events():
             data = json.loads(event.data)
-            print(data["token"], end="", flush=True)
+            print(data["token"]["text"], end="", flush=True)
         print()
 
 

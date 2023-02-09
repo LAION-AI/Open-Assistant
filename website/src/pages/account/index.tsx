@@ -15,12 +15,16 @@ import uswSWRImmutable from "swr/immutable";
 export default function Account() {
   const { t } = useTranslation("leaderboard");
   const { data: session } = useSession();
-  const { data } = uswSWRImmutable<{ [time in LeaderboardTimeFrame]: LeaderboardEntity }>("/api/user_stats", get);
+  const { data: entries } = uswSWRImmutable<Partial<{ [time in LeaderboardTimeFrame]: LeaderboardEntity }>>(
+    "/api/user_stats",
+    get,
+    {
+      fallbackData: {},
+    }
+  );
   if (!session) {
     return;
   }
-
-  console.log(data);
 
   return (
     <>
@@ -55,12 +59,10 @@ export default function Account() {
               LeaderboardTimeFrame.day,
               LeaderboardTimeFrame.week,
               LeaderboardTimeFrame.month,
-            ].map((key) => {
-              const values = data[key];
-              if (!values) {
-                return null;
-              }
-              return (
+            ]
+              .map((key) => ({ key, values: entries[key] }))
+              .filter(({ values }) => values)
+              .map(({ key, values }) => (
                 <Box key={key} py={4}>
                   <Title>{t(getTypeSafei18nKey(key))}</Title>
                   <Flex w="full" wrap="wrap" alignItems="flex-start" gap={4}>
@@ -84,8 +86,7 @@ export default function Account() {
                     </TableColumn>
                   </Flex>
                 </Box>
-              );
-            })}
+              ))}
           </SurveyCard>
         </Flex>
       </main>

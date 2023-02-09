@@ -7,9 +7,10 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { getProviders, signIn } from "next-auth/react";
+import { BuiltInProviderType } from "next-auth/providers";
+import { ClientSafeProvider, getProviders, signIn } from "next-auth/react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import React, { useEffect, useRef, useState } from "react";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthLayout } from "src/components/AuthLayout";
 import { CloudFlareCaptcha } from "src/components/CloudflareCaptcha";
@@ -48,7 +49,7 @@ const errorMessages: Record<SignInErrorTypes, string> = {
 };
 
 interface SigninProps {
-  providers: Awaited<ReturnType<typeof getProviders>>;
+  providers: Record<BuiltInProviderType, ClientSafeProvider>;
 }
 
 function Signin({ providers }: SigninProps) {
@@ -137,7 +138,7 @@ function Signin({ providers }: SigninProps) {
   );
 }
 
-Signin.getLayout = (page) => (
+Signin.getLayout = (page: ReactNode) => (
   <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
     <Header />
     {page}
@@ -151,7 +152,7 @@ const emailSigninCaptcha = boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_C
 
 const EmailSignInForm = ({ providerId }: { providerId: string }) => {
   const { register, handleSubmit } = useForm<{ email: string }>();
-  const captcha = useRef<TurnstileInstance>();
+  const captcha = useRef<TurnstileInstance>(null);
   const [captchaSuccess, setCaptchaSuccess] = useState(false);
   const signinWithEmail = (data: { email: string }) => {
     signIn(providerId, {

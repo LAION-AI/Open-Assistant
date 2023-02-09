@@ -11,7 +11,7 @@ import { checkCaptcha } from "src/lib/captcha";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { BackendUserCore } from "src/types/Users";
-import { generateUsername } from "unique-username-generator";
+import { generateUsername } from "friendly-username-generator";
 
 const providers: Provider[] = [];
 

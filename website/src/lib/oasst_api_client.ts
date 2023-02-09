@@ -1,6 +1,7 @@
 import type { EmojiOp, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
+import { FetchTrollBoardResponse, TrollboardTimeFrame } from "src/types/Trollboard";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
 
 export class OasstError {
@@ -206,7 +207,7 @@ export class OasstApiClient {
    * Send a report about a message
    */
   async send_report(message_id: string, user: BackendUserCore, text: string) {
-    return this.post("/api/v1/text_labels", {
+    return this.post("/api/v1/text_labels/", {
       type: "text_labels",
       message_id,
       labels: [], // Not yet implemented
@@ -267,7 +268,7 @@ export class OasstApiClient {
    * Updates the backend's knowledge about the `user_id`.
    */
   async set_user_status(user_id: string, is_enabled: boolean, notes: string): Promise<void> {
-    await this.put(`/api/v1/users/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
+    await this.put(`/api/v1/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
   }
 
   /**
@@ -313,8 +314,8 @@ export class OasstApiClient {
     return this.get<Message[]>(`/api/v1/messages?${params}`);
   }
 
-  fetch_recent_messages() {
-    return this.get<Message[]>(`/api/v1/messages`);
+  fetch_recent_messages(lang: string) {
+    return this.get<Message[]>(`/api/v1/messages`, { lang });
   }
 
   fetch_message_children(messageId: string) {
@@ -349,5 +350,11 @@ export class OasstApiClient {
 
   fetch_frontend_user(user: BackendUserCore) {
     return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
+  }
+
+  fetch_trollboard(time_frame: TrollboardTimeFrame, { limit }: { limit?: number }) {
+    return this.get<FetchTrollBoardResponse>(`/api/v1/trollboards/${time_frame}`, {
+      max_count: limit,
+    });
   }
 }
