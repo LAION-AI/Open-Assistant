@@ -78,5 +78,7 @@
     "desc": "برچسب هایی را برای یک درخواست ارائه دهید.",
     "overview": "گفتگوی زیر را بخوانید و سپس به سوال در مورد آخرین پاسخ در بحث پاسخ دهید."
   },
-  "available_task_count": "{{count}} وظیفه موجود است"
+  "available_task_count": "{{count}} وظیفه موجود است",
+  "writing_wrong_langauge_a_b": "بنظر میرسد شما با زبان {{detected_lang}} کار می کنید ولی با زبان {{submit_lang}} ارسال میشود.",
+  "submitted_as": "با زبان {{submit_lang}} ارسال شد."
 }

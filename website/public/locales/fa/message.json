@@ -1,5 +1,6 @@
 {
-  "copy_message_id": "شناسه پیام را کپی کنید",
+  "copy_message_id": "کپی کردن شناسه پیام",
+  "copy_message_link": "کپی کردن لینک پیام",
   "label_action": "برچسب",
   "label_title": "برچسب",
   "message_deleted": "پیام پاک شد",
