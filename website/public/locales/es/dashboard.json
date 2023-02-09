@@ -1,8 +1,8 @@
 {
-  "grab_a_task": "¡Toma una tarea!",
   "create": "Crear",
-  "evaluate": "Evaluar",
-  "label": "Etiquetar",
   "dashboard": "Panel principal",
-  "go": "Ir"
+  "evaluate": "Evaluar",
+  "go": "Ir",
+  "grab_a_task": "¡Toma una tarea!",
+  "label": "Etiquetar"
 }

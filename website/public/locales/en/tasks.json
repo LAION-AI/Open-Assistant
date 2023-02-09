@@ -78,5 +78,7 @@
     "desc": "Provide labels for a prompt.",
     "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
   },
-  "available_task_count": "{{count}} tasks available"
+  "available_task_count": "{{count}} tasks available",
+  "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}.",
+  "submitted_as": "This will be submitted as {{submit_lang}}"
 }

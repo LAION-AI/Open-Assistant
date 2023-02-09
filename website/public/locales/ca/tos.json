@@ -1,6 +1,6 @@
 {
-  "title": "Condicions del servei d'Open Assistant",
-  "content": "Per continuar utilitzant Open Assistant, primer has d'acceptar les nostres Condicions del servei.",
   "accept": "Acceptar",
-  "decline": "Rebutjar"
+  "content": "Per continuar utilitzant Open Assistant, primer has d'acceptar les nostres Condicions del servei.",
+  "decline": "Rebutjar",
+  "title": "Condicions del servei d'Open Assistant"
 }

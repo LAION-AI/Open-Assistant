@@ -5,7 +5,7 @@
 tmux new-session -d -s "inference-dev-setup"
 tmux send-keys "docker run --rm -it -p 6379:6379 redis" C-m
 tmux split-window -h
-tmux send-keys "docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 ykilcher/text-generation-inference" C-m
+tmux send-keys "docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 ghcr.io/huggingface/text-generation-inference" C-m
 tmux split-window -h
 tmux send-keys "cd server" C-m
 tmux send-keys "uvicorn main:app --reload" C-m

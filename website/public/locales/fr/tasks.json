@@ -1,67 +1,9 @@
 {
-  "default": {
-    "unchanged_title": "Aucun changement",
-    "unchanged_message": "Êtes-vous sûr de vouloir continuer?"
-  },
-  "random": {
-    "label": "Je me sens chanceux",
-    "desc": "Aidez-nous à améliorer Open Assistant en démarrant une tâche aléatoire."
-  },
-  "create_initial_prompt": {
-    "label": "Créer des prompts initiaux",
-    "desc": "Écrivez des prompts initiaux pour aider Open Assistant à essayer de répondre à des messages divers.",
-    "overview": "Créez un message initial à envoyer à l'assistant",
-    "instruction": "Fournir les prompts initiaux",
-    "response_placeholder": "Écrivez votre prompt ici..."
-  },
-  "reply_as_user": {
-    "label": "Répondre en tant qu'utilisateur",
-    "desc": "Discutez avec Open Assistant et aidez-le à améliorer ses réponses en interagissant avec lui.",
-    "overview": "Compte tenu de la conversation suivante, fournir une réponse adéquate",
-    "instruction": "Fournir la réponse de l'utilisateur",
-    "response_placeholder": "Ecrivez votre réponse ici..."
-  },
-  "reply_as_assistant": {
-    "label": "Répondre en tant qu'assistant",
-    "desc": "Aidez Open Assistant à améliorer ses réponses aux conversations avec d'autres utilisateurs.",
-    "overview": "Compte tenu de la conversation suivante, fournir une réponse adéquate",
-    "response_placeholder": "Ecrivez votre réponse ici..."
-  },
-  "rank_user_replies": {
-    "label": "Classer les réponses d'utilisateur",
-    "desc": "Aidez Open Assistant à améliorer ses réponses aux conversations avec d'autres utilisateurs.",
-    "overview": "Compte tenu des réponses d'utilisateur suivantes, classez-les du meilleur au pire, le meilleur étant en premier, le pire en dernier.",
-    "unchanged_title": "Ordre inchangé",
-    "unchanged_message": "Vous n'avez pas modifié l'ordre des prompts. Etes-vous sûr de vouloir continuer?"
-  },
-  "rank_assistant_replies": {
-    "label": "Classer les réponses de l'assistant",
-    "desc": "Scorez les prompts fournis par Open Assistant en fonction de leur exactitude et lisibilité.",
-    "overview": "Compte tenu des réponses d'assistant suivantes, classez-les du meilleur au pire, le meilleur étant en premier, le pire en dernier.",
-    "unchanged_title": "Ordre inchangé",
-    "unchanged_message": "Vous n'avez pas modifié l'ordre des prompts. Etes-vous sûr de vouloir continuer?"
-  },
-  "rank_initial_prompts": {
-    "label": "Classer les invitations initiales",
-    "desc": "Classez les invitations données par Open Assistant en fonction de leur précision et lisibilité.",
-    "overview": "En fonction des invitations initiales suivantes, classez-les du meilleur au pire, le meilleur en premier et le pire en dernier.",
-    "unchanged_title": "Ordre inchangé",
-    "unchanged_message": "Vous n'avez pas modifié l'ordre des invitations. Êtes-vous sûr de vouloir continuer?"
-  },
-  "label_initial_prompt": {
-    "label": "Etiqueter l'invitation initiale",
+  "available_task_count": "Il y a {{count}} tâches disponibles",
+  "classify_assistant_reply": {
+    "label": "Classer la réponse de l'assistant",
     "desc": "Fournir des étiquettes pour une invitation.",
-    "overview": "Fournir des étiquettes pour l'invitation suivante"
-  },
-  "label_prompter_reply": {
-    "label": "Etiqueter la réponse du demandeur",
-    "desc": "Fournir des étiquettes pour une invitation.",
-    "overview": "En fonction de la discussion suivante, fournir des étiquettes pour la dernière invitation."
-  },
-  "label_assistant_reply": {
-    "label": "Etiqueter la réponse de l'assistant",
-    "desc": "Fournir des étiquettes pour une invitation.",
-    "overview": "En fonction de la discussion suivante, fournir des étiquettes pour la dernière invitation."
+    "overview": "Lisez la conversation suivante et répondez à la question sur la dernière réponse de la discussion."
   },
   "classify_initial_prompt": {
     "label": "Classer l'invitation initiale",
@@ -73,10 +15,68 @@
     "desc": "Fournir des étiquettes pour une invitation.",
     "overview": "Lisez la conversation suivante et répondez à la question sur la dernière réponse de la discussion."
   },
-  "classify_assistant_reply": {
-    "label": "Classer la réponse de l'assistant",
-    "desc": "Fournir des étiquettes pour une invitation.",
-    "overview": "Lisez la conversation suivante et répondez à la question sur la dernière réponse de la discussion."
+  "create_initial_prompt": {
+    "label": "Créer des invites initiaux",
+    "desc": "Écrivez des invites initiaux pour aider Open Assistant à essayer de répondre à des messages divers.",
+    "overview": "Créez un message initial à envoyer à l'assistant",
+    "instruction": "Fournir les invites initiaux",
+    "response_placeholder": "Écrivez votre invite ici..."
   },
-  "available_task_count": "{{count}} tâches disponibles"
+  "default": {
+    "unchanged_title": "Aucun changement",
+    "unchanged_message": "Êtes-vous sûr de vouloir continuer?"
+  },
+  "label_assistant_reply": {
+    "label": "Etiqueter la réponse de l'assistant",
+    "desc": "Fournir des étiquettes pour une invitation.",
+    "overview": "En fonction de la discussion suivante, fournir des étiquettes pour la dernière invitation."
+  },
+  "label_initial_prompt": {
+    "label": "Etiqueter l'invitation initiale",
+    "desc": "Fournir des étiquettes pour une invitation.",
+    "overview": "Fournir des étiquettes pour l'invitation suivante"
+  },
+  "label_prompter_reply": {
+    "label": "Etiqueter la réponse du demandeur",
+    "desc": "Fournir des étiquettes pour une invitation.",
+    "overview": "En fonction de la discussion suivante, fournir des étiquettes pour la dernière invitation."
+  },
+  "random": {
+    "label": "Je me sens chanceux",
+    "desc": "Aidez-nous à améliorer Open Assistant en démarrant une tâche aléatoire."
+  },
+  "rank_assistant_replies": {
+    "label": "Classer les réponses de l'assistant",
+    "desc": "Scorez les invites fournis par Open Assistant en fonction de leur exactitude et lisibilité.",
+    "overview": "Compte tenu des réponses d'assistant suivantes, classez-les du meilleur au pire, le meilleur étant en premier, le pire en dernier.",
+    "unchanged_title": "Ordre inchangé",
+    "unchanged_message": "Vous n'avez pas modifié l'ordre des invites. Etes-vous sûr de vouloir continuer?"
+  },
+  "rank_initial_prompts": {
+    "label": "Classer les invitations initiales",
+    "desc": "Classez les invitations données par Open Assistant en fonction de leur précision et lisibilité.",
+    "overview": "En fonction des invitations initiales suivantes, classez-les du meilleur au pire, le meilleur en premier et le pire en dernier.",
+    "unchanged_title": "Ordre inchangé",
+    "unchanged_message": "Vous n'avez pas modifié l'ordre des invitations. Êtes-vous sûr de vouloir continuer?"
+  },
+  "rank_user_replies": {
+    "label": "Classer les réponses d'utilisateur",
+    "desc": "Aidez Open Assistant à améliorer ses réponses aux conversations avec d'autres utilisateurs.",
+    "overview": "Compte tenu des réponses d'utilisateur suivantes, classez-les du meilleur au pire, le meilleur étant en premier, le pire en dernier.",
+    "unchanged_title": "Ordre inchangé",
+    "unchanged_message": "Vous n'avez pas modifié l'ordre des invites. Etes-vous sûr de vouloir continuer?"
+  },
+  "reply_as_assistant": {
+    "label": "Répondre en tant qu'assistant",
+    "desc": "Aidez Open Assistant à améliorer ses réponses aux conversations avec d'autres utilisateurs.",
+    "overview": "Compte tenu de la conversation suivante, fournir une réponse adéquate",
+    "response_placeholder": "Ecrivez votre réponse ici..."
+  },
+  "reply_as_user": {
+    "label": "Répondre en tant qu'utilisateur",
+    "desc": "Discutez avec Open Assistant et aidez-le à améliorer ses réponses en interagissant avec lui.",
+    "overview": "Compte tenu de la conversation suivante, fournir une réponse adéquate",
+    "instruction": "Fournir la réponse de l'utilisateur",
+    "response_placeholder": "Ecrivez votre réponse ici..."
+  }
 }
