@@ -8,7 +8,7 @@
   "open_new_tab_action": "Open in new tab",
   "parent": "Parent",
   "reactions": "Reactions",
-  "recent_messages": "Recent Messages",
+  "recent_messages": "Recent Messages in {{language}}",
   "report_action": "Report",
   "report_placeholder": "Why should this message be reviewed?",
   "report_title": "Report",
