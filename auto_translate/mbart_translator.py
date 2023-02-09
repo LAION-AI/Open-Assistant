@@ -86,7 +86,7 @@ class MBartTranslator:
             "war_PH",
             "yue_XX",
             "zh_CN",
-            "zh_TW"
+            "zh_TW",
         ]
 
 

@@ -40,7 +40,7 @@ Now, the interesting part is what comes next.I am not yet familiar with the
 database structure, so I am asking if someone can do this in my place:
 
 We create a special user called translator. This user is used when creating new
-prompts or answers using translation, it should be excluded from the 
+prompts or answers using translation, it should be excluded from the
 leaderboard.
 
 The idea is that before translating a text, the translator user verifies that

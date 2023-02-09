@@ -15,14 +15,14 @@ texts_to_translate = [
 ]
 
 conversion_languages = [
-    {"name" : "English", "value" : "en_XX"},
-    {"name" : "Français", "value" : "fr_XX"},
-    {"name" : "Deutsch", "value" : "de_DE"},
-    {"name" : "Italiano", "value" : "it_IT"},
-    {"name" : "Español", "value" : "es_XX"},
-    {"name" : "українська", "value" : "uk_UA"},
-    {"name" : "Русский", "value" : "ro_RO"},
-    {"name" : "हिंदी", "value" : "hi_IN"},
+    {"name": "English", "value": "en_XX"},
+    {"name": "Français", "value": "fr_XX"},
+    {"name": "Deutsch", "value": "de_DE"},
+    {"name": "Italiano", "value": "it_IT"},
+    {"name": "Español", "value": "es_XX"},
+    {"name": "українська", "value": "uk_UA"},
+    {"name": "Русский", "value": "ro_RO"},
+    {"name": "हिंदी", "value": "hi_IN"},
 ]
 
 for text_to_translate in texts_to_translate:
