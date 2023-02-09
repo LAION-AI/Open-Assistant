@@ -37,6 +37,9 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
                     data = json.loads(event.data)
                     print(data["token"]["text"], end="", flush=True)
                 print()
+        except typer.Abort:
+            typer.echo("Exiting...")
+            break
         except Exception:
             typer.echo("Error, restarting chat...")
 
