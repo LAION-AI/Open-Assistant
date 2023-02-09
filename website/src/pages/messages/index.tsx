@@ -1,6 +1,7 @@
 import { Box, CircularProgress, SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
+import { useCookies } from "react-cookie";
 import { getDashboardLayout } from "src/components/Layout";
 import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { get } from "src/lib/api";
@@ -15,6 +16,8 @@ const MessagesDashboard = () => {
   const { data: messages } = useSWRImmutable("/api/messages", get, { revalidateOnMount: true });
   const { data: userMessages } = useSWRImmutable(`/api/messages/user`, get, { revalidateOnMount: true });
 
+  const [cookies] = useCookies(["NEXT_LOCALE"]);
+  const currentLanguage = cookies["NEXT_LOCALE"] || "en";
   return (
     <>
       <Head>
@@ -24,7 +27,9 @@ const MessagesDashboard = () => {
       <SimpleGrid columns={[1, 1, 1, 1, 1, 2]} gap={4}>
         <Box>
           <Text className="text-2xl font-bold" pb="4">
-            {t("recent_messages")}
+            {t("recent_messages", {
+              language: new Intl.DisplayNames([currentLanguage], { type: "language" }).of(currentLanguage),
+            })}
           </Text>
           <Box
             backgroundColor={boxBgColor}
