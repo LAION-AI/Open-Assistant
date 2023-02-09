@@ -7,7 +7,7 @@ import { get } from "src/lib/api";
 import type { FetchUsersResponse, User } from "src/types/Users";
 import useSWR from "swr";
 
-import { DataTable, DataTableColumnDef, FilterItem } from "./DataTable";
+import { DataTable, DataTableColumnDef, FilterItem } from "./DataTable/DataTable";
 
 interface Pagination {
   /**
@@ -76,14 +76,14 @@ export const UserTable = memo(function UserTable() {
 
   const toPreviousPage = () => {
     setPagination({
-      cursor: data.prev,
+      cursor: data?.prev || "",
       direction: "back",
     });
   };
 
   const toNextPage = () => {
     setPagination({
-      cursor: data.next,
+      cursor: data?.next || "",
       direction: "forward",
     });
   };
