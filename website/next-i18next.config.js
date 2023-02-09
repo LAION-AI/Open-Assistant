@@ -8,6 +8,7 @@ module.exports = {
       "de",
       "en",
       "es",
+      "fa",
       "fr",
       "hu",
       "it",
@@ -20,7 +21,6 @@ module.exports = {
       "vi",
       "zh",
       "tr",
-      "fa",
     ],
   },
 };
