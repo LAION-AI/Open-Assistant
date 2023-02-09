@@ -75,6 +75,21 @@ module.exports = {
       colors: {
         "chakra-gray-900": "#171923",
       },
+
+      typography: {
+        DEFAULT: {
+          css: {
+            pre: false,
+            'pre code': false,
+            'code::before': {
+              content: '""'
+            },
+            'code::after': {
+              content: '""'
+            },
+          }
+        }
+      },
     },
   },
   plugins: [
