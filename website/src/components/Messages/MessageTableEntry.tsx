@@ -18,7 +18,7 @@ import { boolean } from "boolean";
 import { ClipboardList, Copy, Flag, Link, MessageSquare, MoreHorizontal, Slash, Trash, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
@@ -29,10 +29,6 @@ import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
 import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
-import { ReactMarkdown } from "react-markdown/lib/react-markdown";
-import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { dark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
 interface MessageTableEntryProps {
   message: Message;
@@ -89,6 +85,8 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
     sendEmojiChange({ op: state ? "add" : "remove", emoji });
   };
 
+  const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
+
   return (
     <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
       {!inlineAvatar && avatar}
@@ -106,25 +104,9 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
         style={{ position: "relative" }}
       >
         {inlineAvatar && avatar}
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            code({ node, inline, className, children, style, ...props }) {
-              const match = /language-(\w+)/.exec(className || "");
-              return !inline && match ? (
-                <SyntaxHighlighter style={dark} language={match[1]} PreTag="div" {...props}>
-                  {String(children).replace(/\n$/, "")}
-                </SyntaxHighlighter>
-              ) : (
-                <code className={className} {...props}>
-                  {children}
-                </code>
-              );
-            },
-          }}
-        >
-          {message.text}
-        </ReactMarkdown>
+        <Suspense fallback={message.text}>
+          <RenderedMarkdown markdown={message.text}></RenderedMarkdown>
+        </Suspense>
         <HStack
           style={{ float: "right", position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
           onClick={(e) => e.stopPropagation()}
