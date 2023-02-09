@@ -1,4 +1,4 @@
-import { Box, CircularProgress, useColorModeValue } from "@chakra-ui/react";
+import { Card, CircularProgress } from "@chakra-ui/react";
 import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { get } from "src/lib/api";
 import useSWR from "swr";
@@ -18,22 +18,13 @@ const UserMessagesCell = ({ path }: UserMessagesCellProps) => {
   const url = path || "/api/messages/user";
   const { data: messages, isLoading } = useSWR(url, get, {
     refreshInterval: 2000,
+    keepPreviousData: true,
   });
-  // TODO(#651): This box coloring and styling is used in multiple places.  We
-  // should factor it into a common ui component.
-  const boxBgColor = useColorModeValue("white", "gray.700");
-  const boxAccentColor = useColorModeValue("gray.200", "gray.900");
 
   return (
-    <Box
-      backgroundColor={boxBgColor}
-      boxShadow="base"
-      dropShadow={boxAccentColor}
-      borderRadius="xl"
-      className="p-6 shadow-sm"
-    >
+    <Card boxShadow="base" borderRadius="xl" className="p-6 shadow-sm">
       {isLoading ? <CircularProgress isIndeterminate /> : <MessageConversation messages={messages} />}
-    </Box>
+    </Card>
   );
 };
 
