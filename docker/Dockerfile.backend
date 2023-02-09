@@ -14,5 +14,6 @@ COPY ./backend/alembic /app/alembic
 COPY ./backend/alembic.ini /app/alembic.ini
 COPY ./backend/main.py /app/main.py
 COPY ./backend/import.py /app/import.py
+COPY ./backend/export.py /app/export.py
 COPY ./backend/oasst_backend /app/oasst_backend
 COPY ./backend/test_data /app/test_data
