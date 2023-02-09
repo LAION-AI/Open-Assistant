@@ -8,7 +8,7 @@
   "open_new_tab_action": "Открыть в новой вкладке",
   "parent": "Родитель",
   "reactions": "Реакции",
-  "recent_messages": "Последние Сообщения",
+  "recent_messages": "Последние Сообщения ({{language}})",
   "report_action": "Пожаловаться",
   "report_placeholder": "Почему это сообщение должно быть рассмотрено?",
   "report_title": "Пожаловаться",
