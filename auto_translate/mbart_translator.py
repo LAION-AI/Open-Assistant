@@ -7,6 +7,7 @@
 
 from transformers import MBart50TokenizerFast, MBartForConditionalGeneration
 
+
 class MBartTranslator:
     """MBartTranslator class provides a simple interface for translating text using the MBart language model.
 
@@ -17,6 +18,7 @@ class MBartTranslator:
         model (MBartForConditionalGeneration): The MBart language model.
         tokenizer (MBart50TokenizerFast): The MBart tokenizer.
     """
+    
     def __init__(self, model_name="facebook/mbart-large-50-many-to-many-mmt", src_lang=None, tgt_lang=None):
 
         self.supported_languages = [
@@ -89,10 +91,8 @@ class MBartTranslator:
             "zh_TW",
         ]
 
-
         self.model = MBartForConditionalGeneration.from_pretrained(model_name)
         self.tokenizer = MBart50TokenizerFast.from_pretrained(model_name, src_lang=src_lang, tgt_lang=tgt_lang)
-
 
     def translate(self, text: str, input_language: str, output_language: str) -> str:
         """Translate the given text from the input language to the output language.
