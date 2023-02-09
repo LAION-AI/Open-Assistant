@@ -5,7 +5,7 @@
   "label_message_yes_no_instruction": "أجب على السؤال (الأسئلة) التالي عن الخطاب:",
   "label_message_flag_instruction": "حدد أي خيار ينطبق على الخطاب:",
   "label_message_likert_instruction": "تقييم الخطاب:",
-  "spam.question": "هل الخطاب هو رسالة غير مرغوب فيها(SPAM)؟",
+  "spam.question": "هل الخطاب هو نص غير مرغوب فيه (SPAM)؟",
   "fails_task.question": "هل هو رد سيئ، كجواب على النداء؟",
   "not_appropriate": "غير مناسب",
   "not_appropriate.explanation": "غير مناسب لمساعد الحريف.",
