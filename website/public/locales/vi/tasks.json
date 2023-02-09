@@ -1,5 +1,4 @@
 {
-  "available_task_count": "{{count}} việc",
   "classify_assistant_reply": {
     "label": "Phân loại các tin nhắn của Open Assistant",
     "desc": "Tạo nhãn dữ liệu để đánh giá tin nhắn.",
@@ -78,5 +77,8 @@
     "overview": "Tạo câu trả lời phù hợp cho cuộc trò truyện dưới đây",
     "instruction": "Viết tin nhắn trả lời",
     "response_placeholder": "Viết vào đây..."
-  }
+  },
+  "available_task_count": "{{count}} việc",
+  "writing_wrong_langauge_a_b": "Tin nhắn có vẻ được viết trong ngôn ngữ {{detected_lang}} nhưng sẽ được gửi đi là ngôn ngữ {{submit_lang}}.",
+  "submitted_as": "Câu trả lời sẽ được gửi đi là ngôn ngữ {{submit_lang}}"
 }
