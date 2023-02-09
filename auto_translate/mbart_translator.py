@@ -18,7 +18,7 @@ class MBartTranslator:
         model (MBartForConditionalGeneration): The MBart language model.
         tokenizer (MBart50TokenizerFast): The MBart tokenizer.
     """
-    
+
     def __init__(self, model_name="facebook/mbart-large-50-many-to-many-mmt", src_lang=None, tgt_lang=None):
 
         self.supported_languages = [

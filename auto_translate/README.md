@@ -1,7 +1,7 @@
 # Context
+
 The objective of auto_translate module is enhancing the amount of data by
 enriching each language with translations from data written in other languages.
-
 
 # MBART translator
 
@@ -34,6 +34,7 @@ We can also use other models available on Hugging face by just constructing
 MBartTranslator with the model path (it will be automatically downloaded)
 
 # TODO
+
 There are still steps to do to make this module work
 
 Now, the interesting part is what comes next.I am not yet familiar with the
