@@ -1,0 +1,20 @@
+{
+  "copy_message_id": "Mesaj ID'sini kopyala",
+  "label_action": "Etiket",
+  "label_title": "Etiket",
+  "message": "Mesaj",
+  "message_deleted": "Mesaj silindi",
+  "open_new_tab_action": "Yeni sekmede aç",
+  "parent": "Üst",
+  "reactions": "Reaksiyonlar",
+  "recent_messages": "Son Mesajlar",
+  "report_action": "Raporla",
+  "report_placeholder": "Bu mesaj neden incelenmeli?",
+  "report_title": "Mesajı raporla",
+  "send_report": "Gönder",
+  "stop_tree": "Ağacı durdur",
+  "submit_labels": "Gönder",
+  "tree_stopped": "Ağaç durduruldu {{id}}",
+  "view_user": "Kullanıcıyı görüntüle",
+  "your_recent_messages": "Son mesajlarınız"
+}

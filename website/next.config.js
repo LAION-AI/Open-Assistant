@@ -1,6 +1,6 @@
-/** @type {import('next').NextConfig} */
 const { i18n } = require("./next-i18next.config");
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
@@ -19,6 +19,41 @@ const nextConfig = {
     // scrollRestoration: true,
   },
   i18n,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  async redirects() {
+    if (process.env.MAINTENANCE_MODE !== "true") {
+      return [];
+    }
+    return [
+      {
+        source: "/",
+        destination: "/brb",
+        permanent: false,
+      },
+      {
+        source: "/dashboard",
+        destination: "/brb",
+        permanent: false,
+      },
+      {
+        source: `/tasks/:task`,
+        destination: "/brb",
+        permanent: false,
+      },
+      {
+        source: "/leaderboard",
+        destination: "/brb",
+        permanent: false,
+      },
+    ];
+  },
 };
 
-module.exports = nextConfig;
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+  openAnalyzer: true,
+});
+
+module.exports = withBundleAnalyzer(nextConfig);

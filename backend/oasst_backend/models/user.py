@@ -41,6 +41,9 @@ class User(SQLModel, table=True):
         sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True, server_default=sa.func.current_timestamp())
     )
 
+    # terms of service acceptance date
+    tos_acceptance_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True))
+
     def to_protocol_frontend_user(self):
         return protocol.FrontEndUser(
             user_id=self.id,
@@ -55,4 +58,19 @@ class User(SQLModel, table=True):
             streak_days=self.streak_days,
             streak_last_day_date=self.streak_last_day_date,
             last_activity_date=self.last_activity_date,
+            tos_acceptance_date=self.tos_acceptance_date,
         )
+
+
+class Account(SQLModel, table=True):
+    __tablename__ = "account"
+    __table_args__ = (Index("provider", "provider_account_id", unique=True),)
+
+    id: Optional[UUID] = Field(
+        sa_column=sa.Column(
+            pg.UUID(as_uuid=True), primary_key=True, default=uuid4, server_default=sa.text("gen_random_uuid()")
+        ),
+    )
+    user_id: UUID = Field(foreign_key="user.id")
+    provider: str = Field(nullable=False, max_length=128, default="email")  # discord or email
+    provider_account_id: str = Field(nullable=False, max_length=128)

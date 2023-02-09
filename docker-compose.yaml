@@ -125,9 +125,71 @@ services:
       - EMAIL_FROM=info@example.com
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
+      - NEXT_PUBLIC_CLOUDFARE_CAPTCHA_SITE_KEY=1x00000000000000000000AA
+      - CLOUDFLARE_CAPTCHA_SECRET_KEY=1x0000000000000000000000000000000AA
+      - NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA=true
+      - NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN=true
     depends_on:
       webdb:
         condition: service_healthy
     ports:
       - "3000:3000"
     command: bash wait-for-postgres.sh node server.js
+
+  inference-server:
+    build:
+      dockerfile: docker/inference/Dockerfile.server
+      context: .
+      target: dev
+    image: oasst-inference-server:dev
+    environment:
+      - "PORT=8000"
+      - "REDIS_HOST=redis"
+    volumes:
+      - "./oasst-shared:/opt/inference/lib/oasst-shared"
+      - "./inference/server:/opt/inference/server"
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    profiles: ["inference"]
+
+  inference-worker:
+    build:
+      dockerfile: docker/inference/Dockerfile.worker
+      context: .
+      target: dev
+    image: oasst-inference-worker:dev
+    environment:
+      - "BACKEND_URL=ws://inference-server:8000"
+      - "INFERENCE_SERVER_URL=http://inference-text-generation-server"
+    volumes:
+      - "./oasst-shared:/opt/inference/lib/oasst-shared"
+      - "./inference/worker:/opt/inference/worker"
+    depends_on:
+      - inference-server
+    deploy:
+      replicas: 1
+    profiles: ["inference"]
+
+  inference-text-client:
+    build:
+      dockerfile: docker/inference/Dockerfile.text-client
+      context: .
+    image: oasst-inference-text-client
+    environment:
+      - "BACKEND_URL=http://inference-server:8000"
+    tty: true
+    stdin_open: true
+    volumes:
+      - "./inference/worker:/opt/inference/worker"
+    restart: unless-stopped
+    depends_on:
+      - inference-server
+    profiles: ["inference"]
+
+  inference-text-generation-server:
+    image: ghcr.io/huggingface/text-generation-inference
+    environment:
+      - "MODEL_ID=distilgpt2"
+    profiles: ["inference"]

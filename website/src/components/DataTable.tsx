@@ -15,6 +15,7 @@ import {
   Table,
   TableCaption,
   TableContainer,
+  TableRowProps,
   Tbody,
   Td,
   Th,
@@ -22,13 +23,15 @@ import {
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { Cell, ColumnDef, flexRender, getCoreRowModel, Row, useReactTable } from "@tanstack/react-table";
 import { Filter } from "lucide-react";
+import { useTranslation } from "next-i18next";
 import { ChangeEvent, ReactNode } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export type DataTableColumnDef<T> = ColumnDef<T> & {
   filterable?: boolean;
+  span?: number | ((cell: Cell<T, unknown>) => number | undefined);
 };
 
 // TODO: stricter type
@@ -36,6 +39,8 @@ export type FilterItem = {
   id: string;
   value: string;
 };
+
+export type DataTableRowPropsCallback<T> = (row: Row<T>) => TableRowProps;
 
 export type DataTableProps<T> = {
   data: T[];
@@ -48,6 +53,7 @@ export type DataTableProps<T> = {
   disableNext?: boolean;
   disablePrevious?: boolean;
   disablePagination?: boolean;
+  rowProps?: TableRowProps | DataTableRowPropsCallback<T>;
 };
 
 export const DataTable = <T,>({
@@ -61,7 +67,9 @@ export const DataTable = <T,>({
   disableNext,
   disablePrevious,
   disablePagination,
+  rowProps,
 }: DataTableProps<T>) => {
+  const { t } = useTranslation("leaderboard");
   const { getHeaderGroups, getRowModel } = useReactTable<T>({
     data,
     columns,
@@ -76,18 +84,18 @@ export const DataTable = <T,>({
     } else {
       newValues = filterValues.map((oldValue) => (oldValue.id === value.id ? value : oldValue));
     }
-    onFilterChange(newValues);
+    onFilterChange && onFilterChange(newValues);
   };
   return (
     <>
       {!disablePagination && (
         <Flex mb="2">
           <Button onClick={onPreviousClick} disabled={disablePrevious}>
-            Previous
+            {t("previous")}
           </Button>
           <Spacer />
           <Button onClick={onNextClick} disabled={disableNext}>
-            Next
+            {t("next")}
           </Button>
         </Flex>
       )}
@@ -115,16 +123,47 @@ export const DataTable = <T,>({
             ))}
           </Thead>
           <Tbody>
-            {getRowModel().rows.map((row) => (
-              <Tr key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Td>
-                ))}
-              </Tr>
-            ))}
+            {getRowModel().rows.map((row) => {
+              const props = typeof rowProps === "function" ? rowProps(row) : rowProps;
+              return (
+                <Tr key={row.id} {...props}>
+                  <DataTableRow row={row}></DataTableRow>
+                </Tr>
+              );
+            })}
           </Tbody>
         </Table>
       </TableContainer>
+    </>
+  );
+};
+
+type WithSpanCell<T> = Cell<T, unknown> & { span?: number };
+
+const DataTableRow = <T,>({ row }: { row: Row<T> }) => {
+  const cells: WithSpanCell<T>[] = row.getVisibleCells();
+  const renderCells: WithSpanCell<T>[] = [];
+
+  for (let i = 0; i < cells.length; i++) {
+    const cell = cells[i];
+    const span = (cell.column.columnDef as DataTableColumnDef<T>).span;
+    const spanValue = typeof span === "function" ? span(cell) : span;
+    if (spanValue && spanValue > 1) {
+      i += spanValue - 1; // skip next `spanValue - 1` cell
+    }
+    cell.span = spanValue;
+    renderCells.push(cell);
+  }
+
+  return (
+    <>
+      {renderCells.map((cell) => {
+        return (
+          <Td key={cell.id} colSpan={cell.span}>
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </Td>
+        );
+      })}
     </>
   );
 };

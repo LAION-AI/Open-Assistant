@@ -1,0 +1,18 @@
+{
+  "daily": "Günlük",
+  "label": "Etiketler",
+  "last_updated_at": "Son güncelleme: {{val, datetime}}",
+  "leaderboard": "Skor Tablosu",
+  "monthly": "Aylık",
+  "next": "Geri",
+  "overall": "Genel",
+  "previous": "İleri",
+  "prompt": "Promptlar",
+  "rank": "Sıralama",
+  "reply": "Cevaplar",
+  "score": "Skor",
+  "top_5_contributors_today": "Bugünün En İyi 5 Katkıda Bulunanı",
+  "user": "Kullanıcı",
+  "view_all": "Tümünü Gör",
+  "weekly": "Haftalık"
+}

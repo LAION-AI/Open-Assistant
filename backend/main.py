@@ -18,7 +18,8 @@ from oasst_backend.api.v1.utils import prepare_conversation
 from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
-from oasst_backend.prompt_repository import PromptRepository, TaskRepository, UserRepository
+from oasst_backend.prompt_repository import PromptRepository, UserRepository
+from oasst_backend.task_repository import TaskRepository, delete_expired_tasks
 from oasst_backend.tree_manager import TreeManager
 from oasst_backend.user_repository import User
 from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
@@ -147,6 +148,7 @@ if settings.DEBUG_USE_SEED_DATA:
 
             ur = UserRepository(db=session, api_client=api_client)
             tr = TaskRepository(db=session, api_client=api_client, client_user=dummy_user, user_repository=ur)
+            ur.update_user(tr.user_id, enabled=True, show_on_leaderboard=False, tos_acceptance=True)
             pr = PromptRepository(
                 db=session, api_client=api_client, client_user=dummy_user, user_repository=ur, task_repository=tr
             )
@@ -317,29 +319,18 @@ def update_user_streak(session: Session) -> None:
     return
 
 
+@app.on_event("startup")
+@repeat_every(seconds=60 * 60)  # 1 hour
+@managed_tx_function(auto_commit=CommitMode.COMMIT)
+def cronjob_delete_expired_tasks(session: Session) -> None:
+    delete_expired_tasks(session)
+
+
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 def get_openapi_schema():
     return json.dumps(app.openapi())
-
-
-def export_ready_trees(file: Optional[str] = None, use_compression: bool = False):
-    try:
-        with Session(engine) as db:
-            api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
-            dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
-
-            ur = UserRepository(db=db, api_client=api_client)
-            tr = TaskRepository(db=db, api_client=api_client, client_user=dummy_user, user_repository=ur)
-            pr = PromptRepository(
-                db=db, api_client=api_client, client_user=dummy_user, user_repository=ur, task_repository=tr
-            )
-            tm = TreeManager(db, pr)
-
-            tm.export_all_ready_trees(file, use_compression=use_compression)
-    except Exception:
-        logger.exception("Error exporting trees.")
 
 
 def retry_scoring_failed_message_trees():
@@ -374,17 +365,6 @@ def main():
     parser.add_argument("--host", help="The host to run the server", default="0.0.0.0")
     parser.add_argument("--port", help="The port to run the server", default=8080)
     parser.add_argument(
-        "--export",
-        default=False,
-        help="Export all trees which are ready for exporting.",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--export-file",
-        type=str,
-        help="Name of file to export trees to. If not provided when exporting, output will be send to STDOUT",
-    )
-    parser.add_argument(
         "--retry-scoring",
         default=False,
         help="Retry scoring failed message trees",
@@ -396,14 +376,10 @@ def main():
     if args.print_openapi_schema:
         print(get_openapi_schema())
 
-    if args.export:
-        use_compression: bool = ".gz" in args.export_file
-        export_ready_trees(file=args.export_file, use_compression=use_compression)
-
     if args.retry_scoring:
         retry_scoring_failed_message_trees()
 
-    if not (args.export or args.print_openapi_schema or args.retry_scoring):
+    if not (args.print_openapi_schema or args.retry_scoring):
         uvicorn.run(app, host=args.host, port=args.port)
 
 

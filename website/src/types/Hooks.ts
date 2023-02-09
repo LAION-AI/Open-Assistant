@@ -4,7 +4,6 @@ export type TaskApiHook<Task extends BaseTask, ResponseContent> = {
   response: TaskResponse<Task>;
   isLoading: boolean;
   completeTask: (interaction: ResponseContent) => Promise<void>;
-  skipTask: () => Promise<void>;
   rejectTask: (reason: string) => Promise<void>;
 };
 

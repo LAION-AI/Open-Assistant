@@ -91,7 +91,7 @@ following query:
 **Agent**: "I apologize, I'm not sure what you're trying to say. Could you
 please rephrase it for me?"
 
-**User**: "You dumb motherf\*&ker AI sh\*t?!"
+**User**: "You dumb motherf\*&ker AI sh\*t!"
 
 **Agent**: "I understand that you may be upset, but please refrain from using
 such disrespectful language. I'm here to help you. Is there something specific

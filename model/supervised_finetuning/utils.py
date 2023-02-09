@@ -1,6 +1,6 @@
 import random
 from pathlib import Path
-from typing import List
+from typing import List, NamedTuple
 
 import evaluate
 import transformers
@@ -66,19 +66,64 @@ class PerDatasetSampler(Sampler):
         return cls(dataset_sizes, dataset_size_per_epoch)
 
 
-def get_tokenizer(conf):
-    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+def get_dataset_fractions(conf, dataset_sizes):
+    """Calculate fraction of each dataset to use per epoch when subsampling"""
+    fractions = []
+    for i, data_config in enumerate(conf):
+        dataset_name = get_dataset_name_from_data_config(data_config)
+        if isinstance(data_config, dict):
+            if "fraction" in data_config[dataset_name]:
+                if data_config[dataset_name]["fraction"] <= 0:
+                    raise ValueError("Please specify fraction as a value between 0 < fraction <= 1")
+                fractions.append(min(1, data_config[dataset_name]["fraction"]))
+            elif "size" in data_config[dataset_name]:
+                if data_config[dataset_name]["size"] > dataset_sizes[i]:
+                    raise ValueError(f"Please specify a size smaller than number of examples: {dataset_sizes[i]:,.0f}")
+                fractions.append(data_config[dataset_name]["size"] / dataset_sizes[i])
+            else:
+                raise ValueError("Please specify either fraction or size in config.yaml. See README for instructions.")
+        else:
+            fractions.append(1)
+    return fractions
 
-    if "galactica" in conf.model_name:
-        tokenizer.add_special_tokens({"pad_token": "<pad>", "eos_token": "</s>"})
-    elif "GPT-JT" in conf.model_name:
-        tokenizer.add_special_tokens({"pad_token": tokenizer.eos_token, "sep_token": "<|extratoken_100|>"})
-    elif "codegen" in conf.model_name:
-        tokenizer.add_special_tokens({"pad_token": "<|endoftext|>", "sep_token": "<|endoftext|>"})
-    elif "pythia" in conf.model_name:
-        tokenizer.add_special_tokens(
-            {"pad_token": "<|padding|>", "sep_token": "<|endoftext|>", "eos_token": "<|endoftext|>"}
-        )
+
+class SpecialTokens(NamedTuple):
+    pad_token: str = ""
+    eos_token: str = ""
+    sep_token: str = ""
+
+
+class TokenizerConfig(NamedTuple):
+    special_tokens: SpecialTokens = {}
+
+
+TOKENIZER_CONFIGS = {
+    "galactica": TokenizerConfig(special_tokens=SpecialTokens("<pad>", "</s>")),
+    "GPT-JT": TokenizerConfig(special_tokens=SpecialTokens(sep_token="<|extratoken_100|>")),
+    "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
+    "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
+}
+
+
+def match_tokenizer_name(model_name: str) -> TokenizerConfig:
+    """Match a partial model name to a tokenizer configuration"""
+    tokenizer_config_matches = [config for name, config in TOKENIZER_CONFIGS.items() if name in model_name]
+    if not tokenizer_config_matches:
+        raise ValueError(f"Cannot find any tokeniser configuration to match {model_name=}")
+    elif 1 < len(tokenizer_config_matches):
+        raise ValueError(f"Found multiple tokeniser configuration matches for {model_name=}")
+    else:
+        return tokenizer_config_matches[0]
+
+
+def get_tokenizer(conf) -> transformers.AutoTokenizer:
+    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    tokenizer_config = match_tokenizer_name(conf.model_name)
+
+    if tokenizer_config.special_tokens:
+        if "GPT-JT" in conf.model_name:
+            tokenizer_config.special_tokens.pad_token = tokenizer.eos_token
+        tokenizer.add_special_tokens(tokenizer_config.special_tokens)
 
     additional_special_tokens = (
         []
@@ -169,27 +214,6 @@ def get_dataset_name_from_data_config(data_config):
     if isinstance(data_config, dict):
         return list(data_config.keys())[0]
     return data_config
-
-
-def get_dataset_fractions(conf, dataset_sizes):
-    """Calculate fraction of each dataset to use per epoch when subsampling"""
-    fractions = []
-    for i, data_config in enumerate(conf):
-        dataset_name = get_dataset_name_from_data_config(data_config)
-        if isinstance(data_config, dict):
-            if "fraction" in data_config[dataset_name]:
-                if data_config[dataset_name]["fraction"] <= 0:
-                    raise ValueError("Please specify fraction as a value between 0 < fraction <= 1")
-                fractions.append(min(1, data_config[dataset_name]["fraction"]))
-            elif "size" in data_config[dataset_name]:
-                if data_config[dataset_name]["size"] > dataset_sizes[i]:
-                    raise ValueError(f"Please specify a size smaller than number of examples: {dataset_sizes[i]:,.0f}")
-                fractions.append(data_config[dataset_name]["size"] / dataset_sizes[i])
-            else:
-                raise ValueError("Please specify either fraction or size in config.yaml. See README for instructions.")
-        else:
-            fractions.append(1)
-    return fractions
 
 
 def get_dataset(conf, tokenizer):

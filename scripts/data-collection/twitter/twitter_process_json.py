@@ -9,7 +9,7 @@
 
 # This assumes data downloaded from https://archive.org/details/twitterstream
 # and that the internal .tar files are extracted locally.
-# They are large files so using something like 7Zip or WinRar migth be easier
+# They are large files so using something like 7Zip or WinRar might be easier
 # than putting all of it in scripts, but it is a possibility.
 
 # I often work in notebooks. If you encounter any issue, please reach out to let me know.

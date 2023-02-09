@@ -156,7 +156,7 @@ const getLabelInfo = (label: string): LabelInfo => {
         zeroText: "Clean",
         zeroDescription: [],
         oneText: "Contains PII",
-        oneDescription: ["Contains personally identifing information"],
+        oneDescription: ["Contains personally identifying information"],
         inverted: false,
       };
     case "quality":
@@ -211,7 +211,7 @@ export const LabelLikertGroup = ({ labelIDs, onChange, isEditable = true }: Labe
               }}
               alignItems="center"
             >
-              <Text as="div">
+              <Text as="div" display="flex" alignItems="center">
                 {textA}
                 {descriptionA.length > 0 ? <Explain explanation={descriptionA} /> : null}
               </Text>
@@ -229,7 +229,7 @@ export const LabelLikertGroup = ({ labelIDs, onChange, isEditable = true }: Labe
                 />
               </GridItem>
               <GridItem>
-                <Text textAlign="right" as="div">
+                <Text as="div" display="flex" alignItems="center" justifyContent="end">
                   {textB}
                   {descriptionB.length > 0 ? <Explain explanation={descriptionB} /> : null}
                 </Text>

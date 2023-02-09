@@ -47,6 +47,11 @@ Cypress.Commands.add("signInUsingEmailedLink", (emailAddress) => {
     const loginLink = emails.pop().html.match(/href="[^"]+(\/api\/auth\/callback\/[^"]+?)"/)[1];
     cy.visit(loginLink);
     cy.url().should("include", "/dashboard");
+
+    // we do a GET to this url to force the python backend to add an entry for our user
+    // in the database, otherwise the tos acceptance will error with 404 user not found
+    // then we accept the tos
+    cy.request("GET", "/api/available_tasks").then(() => cy.request("POST", "/api/tos", {}));
   });
 });
 
@@ -54,11 +59,16 @@ Cypress.Commands.add("signInWithEmail", (emailAddress) => {
   cy.request("GET", "/api/auth/csrf")
     .then((response) => {
       const csrfToken = response.body.csrfToken;
-      cy.request("POST", "/api/auth/signin/email", {
-        callbackUrl: "/",
-        email: emailAddress,
-        csrfToken,
-        json: "true",
+      cy.request({
+        method: "POST",
+        url: "/api/auth/signin/email",
+        body: {
+          callbackUrl: "/",
+          email: emailAddress,
+          csrfToken,
+          json: "true",
+          captcha: "XXXX.DUMMY.TOKEN.XXXX",
+        },
       });
     })
     .then(() => {

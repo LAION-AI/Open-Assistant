@@ -3,16 +3,16 @@ import { TaskInfos } from "src/components/Tasks/TaskTypes";
 import { get, post } from "src/lib/api";
 import { TaskApiHook } from "src/types/Hooks";
 import { BaseTask, ServerTaskResponse, TaskResponse, TaskType as TaskTypeEnum } from "src/types/Task";
+import { AllTaskReplies } from "src/types/TaskResponses";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
-// TODO: provide type for the content reply, this will be much harder since the replies vary vastly
-export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = any>(
+export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = AllTaskReplies>(
   taskType: TaskTypeEnum
 ): TaskApiHook<TaskType, ResponseContent> => {
   const [response, setResponse] = useState<TaskResponse<TaskType>>({ taskAvailability: "AWAITING_INITIAL" });
 
-  // Note: We use isValidating to indiate we are loading beause it signals eash load, not just the first one.
+  // Note: We use isValidating to indicate we are loading because it signals eash load, not just the first one.
   const { isValidating: isLoading, mutate: requestNewTask } = useSWRImmutable<ServerTaskResponse<TaskType>>(
     "/api/new_task/" + taskType,
     get,
@@ -71,5 +71,5 @@ export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = a
     [response, sendTaskContent]
   );
 
-  return { response, isLoading, rejectTask, completeTask, skipTask };
+  return { response, isLoading, rejectTask, completeTask };
 };

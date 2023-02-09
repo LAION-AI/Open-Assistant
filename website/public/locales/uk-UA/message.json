@@ -1,0 +1,20 @@
+{
+  "copy_message_id": "Скопіювати ID повідомлення",
+  "label_action": "Маркувати",
+  "label_title": "Маркування",
+  "message": "Повідомлення",
+  "message_deleted": "Повідомлення видалено",
+  "open_new_tab_action": "Відкрити в новій вкладці",
+  "parent": "Parent",
+  "reactions": "Реакції",
+  "recent_messages": "Останні повідомлення",
+  "report_action": "Report",
+  "report_placeholder": "Чому це повідомлення слід переглянути?",
+  "report_title": "Report",
+  "send_report": "Відправити",
+  "stop_tree": "Зупинити дерево",
+  "submit_labels": "Надіслати",
+  "tree_stopped": "Дерево зупинено {{id}}",
+  "view_user": "Профіль користувача",
+  "your_recent_messages": "Ваші останні повідомлення"
+}
