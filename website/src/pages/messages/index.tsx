@@ -17,7 +17,7 @@ const MessagesDashboard = () => {
   const { data: userMessages } = useSWRImmutable(`/api/messages/user`, get, { revalidateOnMount: true });
 
   const [cookies] = useCookies(["NEXT_LOCALE"]);
-  const currentLanguage = cookies["NEXT_LOCALE"];
+  const currentLanguage = cookies["NEXT_LOCALE"] || "en";
   return (
     <>
       <Head>
