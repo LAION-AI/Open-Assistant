@@ -1,26 +1,42 @@
-import { Box, CircularProgress, Flex, Link } from "@chakra-ui/react";
+import { Box, CircularProgress, Flex, IconButton, Link, Tooltip } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { Mail, ThumbsDown, ThumbsUp, User } from "lucide-react";
 import NextLink from "next/link";
 import { FetchTrollBoardResponse, TrollboardEntity, TrollboardTimeFrame } from "src/types/Trollboard";
 
-import { DataTable } from "../DataTable";
+import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
+import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
+import { Discord } from "../Icons/Discord";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
+
 const columnHelper = createColumnHelper<TrollboardEntity>();
-
 const toPercentage = (num: number) => `${Math.round(num * 100)}%`;
+const jsonExpandRowModel = createJsonExpandRowModel<TrollboardEntity>();
 
-const columns = [
-  columnHelper.accessor("rank", {}),
+const columns: DataTableColumnDef<TrollboardEntity>[] = [
+  {
+    ...columnHelper.accessor("rank", {
+      cell: jsonExpandRowModel.renderCell,
+    }),
+    span: jsonExpandRowModel.span,
+  },
   columnHelper.accessor("display_name", {
     header: "Display name",
-    cell: ({ getValue, row }) => (
-      <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
-        {getValue()}
-      </Link>
-    ),
+    cell: ({ getValue, row }) => {
+      const isEmail = row.original.auth_method === "local";
+      return (
+        <Flex gap="2" alignItems="center">
+          <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
+            {getValue()}
+          </Link>
+          <Tooltip label={`This user signin with ${isEmail ? "email" : "discord"}`}>
+            {isEmail ? <Mail size="20"></Mail> : <Discord size="20"></Discord>}
+          </Tooltip>
+        </Flex>
+      );
+    },
   }),
   columnHelper.accessor("troll_score", {
     header: "Troll score",
@@ -45,36 +61,19 @@ const columns = [
   columnHelper.accessor((row) => row.spam + row.spam_prompts, {
     header: "Spam",
   }),
-  columnHelper.accessor("lang_mismach", {
-    header: "Lang mismach",
-  }),
-  columnHelper.accessor("not_appropriate", {
-    header: "Not appropriate",
-  }),
-  columnHelper.accessor("pii", {}),
-  columnHelper.accessor("hate_speech", {
-    header: "Hate speech",
-  }),
-  columnHelper.accessor("sexual_content", {
-    header: "Sexual Content",
-  }),
-  columnHelper.accessor("political_content", {
-    header: "Political Content",
-  }),
-  columnHelper.accessor("quality", {
-    cell: ({ getValue }) => toPercentage(getValue()),
-  }),
-  columnHelper.accessor("helpfulness", {
-    cell: ({ getValue }) => toPercentage(getValue()),
-  }),
-  columnHelper.accessor("humor", {
-    cell: ({ getValue }) => toPercentage(getValue()),
-  }),
-  columnHelper.accessor("violence", {
-    cell: ({ getValue }) => toPercentage(getValue()),
-  }),
   columnHelper.accessor("toxicity", {
-    cell: ({ getValue }) => toPercentage(getValue()),
+    cell: ({ getValue }) => toPercentage(getValue() || 0),
+  }),
+  columnHelper.accessor((row) => row.user_id, {
+    header: "Actions",
+    cell: ({ row }) => (
+      <IconButton
+        as={NextLink}
+        href={`/admin/manage_user/${row.original.user_id}`}
+        aria-label={"View user"}
+        icon={<User></User>}
+      ></IconButton>
+    ),
   }),
 ];
 
@@ -94,7 +93,11 @@ export const TrollboardTable = ({
     lastUpdated,
   } = useFetchBoard<FetchTrollBoardResponse>(`/api/admin/trollboard?time_frame=${timeFrame}&limit=${limit}`);
 
-  const { data, ...paginationProps } = useBoardPagination({ rowPerPage, data: trollboardRes?.trollboard, limit });
+  const { data, ...paginationProps } = useBoardPagination<TrollboardEntity>({
+    rowPerPage,
+    data: jsonExpandRowModel.toExpandable(trollboardRes?.trollboard),
+    limit,
+  });
   const rowProps = useBoardRowProps<TrollboardEntity>();
   if (isLoading) {
     return <CircularProgress isIndeterminate></CircularProgress>;
@@ -112,11 +115,12 @@ export const TrollboardTable = ({
         },
       }}
     >
-      <DataTable<TrollboardEntity>
+      <DataTable
         data={data}
         columns={columns}
         caption={lastUpdated}
         rowProps={rowProps}
+        getSubRows={jsonExpandRowModel.getSubRows}
         {...paginationProps}
       ></DataTable>
     </Box>

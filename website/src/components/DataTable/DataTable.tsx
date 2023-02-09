@@ -23,13 +23,23 @@ import {
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
-import { Cell, ColumnDef, flexRender, getCoreRowModel, Row, useReactTable } from "@tanstack/react-table";
+import {
+  Cell,
+  ColumnDef,
+  ExpandedState,
+  flexRender,
+  getCoreRowModel,
+  getExpandedRowModel,
+  Row,
+  useReactTable,
+} from "@tanstack/react-table";
 import { Filter } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, ReactNode } from "react";
+import { ChangeEvent, ReactNode, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-export type DataTableColumnDef<T> = ColumnDef<T> & {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DataTableColumnDef<T> = ColumnDef<T, any> & {
   filterable?: boolean;
   span?: number | ((cell: Cell<T, unknown>) => number | undefined);
 };
@@ -54,6 +64,7 @@ export type DataTableProps<T> = {
   disablePrevious?: boolean;
   disablePagination?: boolean;
   rowProps?: TableRowProps | DataTableRowPropsCallback<T>;
+  getSubRows?: (row: T) => T[] | undefined;
 };
 
 export const DataTable = <T,>({
@@ -68,12 +79,21 @@ export const DataTable = <T,>({
   disablePrevious,
   disablePagination,
   rowProps,
+  getSubRows,
 }: DataTableProps<T>) => {
   const { t } = useTranslation("leaderboard");
+  const [expanded, setExpanded] = useState<ExpandedState>({});
+
   const { getHeaderGroups, getRowModel } = useReactTable<T>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    state: {
+      expanded,
+    },
+    getSubRows,
+    onExpandedChange: setExpanded,
   });
 
   const handleFilterChange = (value: FilterItem) => {
