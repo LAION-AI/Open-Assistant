@@ -31,7 +31,7 @@ export const getTransparentHeaderLayout = (page: React.ReactElement) => (
 );
 
 export const getDashboardLayout = (page: React.ReactElement) => (
-  <Grid templateRows="min-content 1fr" h="full">
+  <Grid templateRows="min-content 1fr" h="full" gridTemplateColumns="minmax(0, 1fr)">
     <Header />
     <ToSWrapper>
       <SideMenuLayout
@@ -53,19 +53,17 @@ export const getDashboardLayout = (page: React.ReactElement) => (
           },
         ]}
       >
-        <Grid templateRows="1fr min-content" h="full">
-          <Box>{page}</Box>
-          <Box mt="10">
-            <SlimFooter />
-          </Box>
-        </Grid>
+        <Box>{page}</Box>
+        <Box mt="10">
+          <SlimFooter />
+        </Box>
       </SideMenuLayout>
     </ToSWrapper>
   </Grid>
 );
 
 export const getAdminLayout = (page: React.ReactElement) => (
-  <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
+  <Grid templateRows="min-content 1fr" h="full" gridTemplateColumns="minmax(0, 1fr)">
     <Header />
     <SideMenuLayout
       menuButtonOptions={[
@@ -73,6 +71,11 @@ export const getAdminLayout = (page: React.ReactElement) => (
           labelID: "users",
           pathname: "/admin",
           icon: Users,
+        },
+        {
+          labelID: "trollboard",
+          pathname: "/admin/trollboard",
+          icon: BarChart2,
         },
         {
           labelID: "status",
@@ -88,7 +91,7 @@ export const getAdminLayout = (page: React.ReactElement) => (
     >
       {page}
     </SideMenuLayout>
-  </div>
+  </Grid>
 );
 
 export const noLayout = (page: React.ReactElement) => page;

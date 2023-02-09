@@ -1,5 +1,5 @@
 {
-  "available_task_count": "{{count}} tasks available",
+  "available_task_count": "{{count}} Aufgaben verfügbar",
   "classify_assistant_reply": {
     "label": "Antwort des Assistenten klassifizieren",
     "desc": "Labeln Sie die Antwort.",
@@ -29,7 +29,7 @@
   "label_assistant_reply": {
     "label": "Antwort des Assistenten labeln",
     "desc": "Labeln Sie die Antwort.",
-    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht."
+    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachricht."
   },
   "label_initial_prompt": {
     "label": "Initiale Prompts labeln",
@@ -39,7 +39,7 @@
   "label_prompter_reply": {
     "label": "Prompter-Antwort labeln",
     "desc": "Labeln Sie die Antwort.",
-    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht."
+    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachricht."
   },
   "random": {
     "label": "Auf gut Glück",

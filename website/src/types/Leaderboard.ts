@@ -4,7 +4,7 @@ export interface LeaderboardEntry {
   score: number;
 }
 
-export const enum LeaderboardTimeFrame {
+export enum LeaderboardTimeFrame {
   day = "day",
   week = "week",
   month = "month",

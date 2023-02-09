@@ -1,5 +1,6 @@
 {
   "copy_message_id": "Copy message ID",
+  "copy_message_link": "Copy message link",
   "label_action": "Label",
   "label_title": "Label",
   "message_deleted": "Message deleted",
@@ -7,7 +8,7 @@
   "open_new_tab_action": "Open in new tab",
   "parent": "Parent",
   "reactions": "Reactions",
-  "recent_messages": "Recent Messages",
+  "recent_messages": "Recent Messages in {{language}}",
   "report_action": "Report",
   "report_placeholder": "Why should this message be reviewed?",
   "report_title": "Report",

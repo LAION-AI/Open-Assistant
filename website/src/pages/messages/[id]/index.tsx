@@ -15,9 +15,7 @@ const MessageDetail = ({ id }: InferGetServerSidePropsType<typeof getServerSideP
   const { t } = useTranslation(["message", "common"]);
   const backgroundColor = useColorModeValue("white", "gray.800");
 
-  const { isLoading: isLoadingParent, data: parent } = useSWRImmutable<Message>(`/api/messages/${id}/parent`, get, {
-    refreshInterval: 30 * 1000, // 30 seconds
-  });
+  const { isLoading: isLoadingParent, data: parent } = useSWRImmutable<Message>(`/api/messages/${id}/parent`, get);
 
   if (isLoadingParent) {
     return <MessageLoading />;
@@ -59,7 +57,7 @@ export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string
   props: {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: params!.id,
-    ...(await serverSideTranslations(locale, ["common", "message", "labelling"])),
+    ...(await serverSideTranslations(locale, ["common", "message", "labelling", "side_menu"])),
   },
 });
 
