@@ -1,9 +1,10 @@
 {
   "copy_message_id": "Kopiatu mezuaren IDa",
+  "copy_message_link": "Kopiatu mezuaren esteka",
   "label_action": "Etiketatu",
   "label_title": "Etiketa",
-  "message_deleted": "Mezua ezabatu da",
   "message": "Mezua",
+  "message_deleted": "Mezua ezabatu da",
   "open_new_tab_action": "Ireki orri berri batean",
   "parent": "Guraso",
   "reactions": "Erreakzioak",

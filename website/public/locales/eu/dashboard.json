@@ -1,8 +1,8 @@
 {
-  "grab_a_task": "Hartu zeregin bat!",
   "create": "Sortu",
-  "evaluate": "Ebaluatu",
-  "label": "Etiketa",
   "dashboard": "Aginte-panela",
-  "go": "Joan"
+  "evaluate": "Ebaluatu",
+  "go": "Joan",
+  "grab_a_task": "Hartu zeregin bat!",
+  "label": "Etiketa"
 }
