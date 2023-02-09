@@ -125,8 +125,8 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
             </Card>
           </Container>
           <Card>
-            <CardHeader fontWeight="medium" fontSize="xl">
-              Messages
+            <CardHeader pb="0" fontWeight="medium" fontSize="xl">
+              {`User's messages`}
             </CardHeader>
             <CardBody>
               <UserMessageTable id={user.user_id}></UserMessageTable>
@@ -148,8 +148,6 @@ const UserMessageTable = ({ id }: { id: User["id"] }) => {
   if (error) {
     return <>Unable to load messages.</>;
   }
-
-  console.log(data);
 
   return <AdminMessageTable messages={data || []}></AdminMessageTable>;
 };
