@@ -22,20 +22,20 @@
     "response_placeholder": "Skriv dit svar her..."
   },
   "reply_as_assistant": {
-    "label": "Svar som Assistant",
-    "desc": "Hjælp Open Assistant forbedre dets svar til samtaler med andre.",
+    "label": "Svar som assistent",
+    "desc": "Hjælp Open assistent forbedre dets svar til samtaler med andre.",
     "overview": "Givet følgende samtale, angiv et passende svar",
     "response_placeholder": "Skriv dit svar her..."
   },
   "rank_user_replies": {
     "label": "Ranger bruger svar",
-    "desc": "Hjælp Open Assistant forbedre dets svar til samtaler med andre.",
+    "desc": "Hjælp Open assistent forbedre dets svar til samtaler med andre.",
     "overview": "Givet følgende samtale, sorter fra bedst til ringest, med bedst i toppen.",
     "unchanged_title": "Rækkefølge uændret",
     "unchanged_message": "Du har ikke ændret på prompternes rækkefølge. Er du sikker på at du vil fortsætte?"
   },
   "rank_assistant_replies": {
-    "label": "Ranger Assistant svar",
+    "label": "Ranger assistent svar",
     "desc": "Giv point til svar givet af Open Assistant baseret på deres præcision og læsbarhed.",
     "overview": "Givet følgende svar, sorter fra bedst til ringest, med bedst i toppen.",
     "unchanged_title": "Rækkefølge uændret",
@@ -44,7 +44,7 @@
   "rank_initial_prompts": {
     "label": "Ranger første prompter",
     "desc": "Giv point til prompter givet af Open Assistant baseret på deres præcision og læsbarhed.",
-    "overview": "Givet følgende første prompter, sorter fra bedst til ringest, med bedst i toppen.",    
+    "overview": "Givet følgende første prompter, sorter fra bedst til ringest, med bedst i toppen.",
     "unchanged_title": "Rækkefølge uændret",
     "unchanged_message": "Du har ikke ændret på prompternes rækkefølge. Er du sikker på at du vil fortsætte?"
   },
@@ -59,7 +59,7 @@
     "overview": "Givet følgende diskussion, angiv labels for den endelige prompt."
   },
   "label_assistant_reply": {
-    "label": "Label Assistant svar",
+    "label": "Label assistent svar",
     "desc": "Angiv labels for et svar.",
     "overview": "Givet følgende diskussion, angiv labels for den endelige prompt."
   },
