@@ -269,13 +269,11 @@ export class OasstApiClient {
     {
       direction,
       cursor,
-      include_deleted,
-      max_count,
-    }: { include_deleted?: boolean; max_count?: number; cursor?: string; direction: "forward" | "back" }
+      ...rest
+    }: { include_deleted?: boolean; max_count?: number; cursor?: string; direction: "forward" | "back"; desc?: boolean }
   ) {
     return this.get<FetchUserMessagesCursorResponse>(`/api/v1/users/${user_id}/messages/cursor`, {
-      include_deleted,
-      max_count,
+      ...rest,
       after: direction === "forward" ? cursor : undefined,
       before: direction === "back" ? cursor : undefined,
     });

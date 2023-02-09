@@ -16,6 +16,7 @@ const handler = withRole("admin", async (req, res, token) => {
     direction: direction as "back",
     cursor: cursor as string,
     max_count: LIMIT,
+    desc: true,
   });
 
   res.status(200).json(response);
