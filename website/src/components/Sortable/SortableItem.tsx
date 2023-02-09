@@ -11,7 +11,7 @@ export const SortableItem = ({
   isEditable,
   isDisabled,
 }: PropsWithChildren<{ id: number; index: number; isEditable: boolean; isDisabled: boolean }>) => {
-  const backgroundColor = useColorModeValue("gray.700", "gray.500");
+  const backgroundColor = useColorModeValue("gray.700", "gray.800");
   const disabledBackgroundColor = useColorModeValue("gray.400", "gray.700");
   const textColor = useColorModeValue("white", "white");
 
@@ -27,13 +27,14 @@ export const SortableItem = ({
 
   return (
     <Box
+      className="hover:bg-[var(--chakra-colors-gray-600)]"
       display="flex"
       alignItems="center"
       bg={isDisabled ? disabledBackgroundColor : backgroundColor}
       borderRadius="lg"
       p="4"
       color={textColor}
-      cursor={isEditable ? (grabbing ? "grabbing" : "grab") : "auto"}
+      cursor={isEditable ? (grabbing ? "grabbing" : "pointer") : "auto"}
       aria-roledescription="sortable"
       onMouseDown={() => {
         setGrabbing(true);
