@@ -1,8 +1,8 @@
 {
-  "create": "خلق",
-  "dashboard": "لوحة التحكم",
-  "evaluate": "تقييم",
-  "go": "ذهاب",
-  "grab_a_task": "التقاط مهمة!",
-  "label": "تصنيف"
+    "create": "انشاء",
+    "dashboard": "لوحة المعلومات",
+    "evaluate": "تقييم",
+    "go": "ذهاب الى",
+    "grab_a_task": "ابدأ مهمة!",
+    "label": "وسم"
 }
