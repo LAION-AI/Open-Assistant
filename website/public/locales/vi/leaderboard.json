@@ -1,14 +1,18 @@
 {
   "daily": "Ngày",
-  "last_updated_at": "Cập nhật lúc: {{val, datetime}}",
+  "label": "Nhãn",
+  "last_updated_at": "Cập nhật lần cuối: {{val, datetime}}",
   "leaderboard": "Bảng xếp hạng",
   "monthly": "Tháng",
-  "overall": "Overall",
-  "rank": "Hạng",
+  "next": "Tiếp",
+  "overall": "Tổng quan",
+  "previous": "Trước",
+  "prompt": "Câu đầu tiên",
+  "rank": "Xếp hạng",
+  "reply": "Câu trả lời",
   "score": "Điểm",
-  "user": "User",
-  "weekly": "Tuần",
-  "prompt": "Prompts",
-  "reply": "Replies",
-  "label": "Labels"
+  "top_5_contributors_today": "Top 5 người đóng góp",
+  "user": "Tên người dùng",
+  "view_all": "Nhìn tất cả",
+  "weekly": "Tuần"
 }

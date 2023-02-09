@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import bitsandbytes
 import datasets
 import torch
+from efficiency_utils import fuse_gelu
 from torch import nn
 from torch.utils.data import DataLoader
 from transformers import PreTrainedModel, Trainer, TrainingArguments
@@ -205,6 +206,9 @@ if __name__ == "__main__":
                 bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
                     module, "weight", {"optim_bits": 32}
                 )
+
+    if training_conf.fuse_gelu:
+        model = fuse_gelu(model)
 
     args = TrainingArguments(
         output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",

@@ -1,0 +1,20 @@
+{
+  "copy_message_id": "复制信息 ID",
+  "label_action": "标注",
+  "label_title": "标注",
+  "message_deleted": "信息已删除",
+  "message": "信息",
+  "open_new_tab_action": "在新标签页中打开",
+  "parent": "上级",
+  "reactions": "反馈",
+  "recent_messages": "最新信息",
+  "report_action": "报告",
+  "report_placeholder": "为什么该信息需要被检查？",
+  "report_title": "报告",
+  "send_report": "发送",
+  "stop_tree": "终止树",
+  "submit_labels": "提交",
+  "tree_stopped": "树终止于 {{id}}",
+  "view_user": "查看用户",
+  "your_recent_messages": "你的最新信息"
+}

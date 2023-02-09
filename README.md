@@ -14,6 +14,12 @@
 
 </div>
 
+# Here is our website to collect data:
+
+[open-assistant.io](https://open-assistant.io)
+
+(project documentation lives [here](https://laion-ai.github.io/Open-Assistant/))
+
 # Table of Contents
 
 - [What is Open Assistant?](#what-is-open-assistant)
@@ -38,9 +44,22 @@ improving language itself.
 
 ## Do you want to try it out?
 
-If you are interested in taking a look at the current state of the project, you
+### Contributing to Data Collection
+
+The data collection frontend is now live [here](https://open-assistant.io/). Log
+in and start taking on tasks! We want to collect a high volume of quality data.
+By submitting, ranking, and labelling model prompts and responses you will be
+directly helping to improve the capabilities of Open Assistant.
+
+### Running Locally
+
+**You do not need to run the project locally unless you are contributing to the
+development process. The website link above will take you to the public website
+where you can use the data collection app.**
+
+If you would like to run the data collection app locally for development, you
 can set up an entire stack needed to run **Open-Assistant**, including the
-website, backend, and associated dependent services.
+website, backend, and associated dependent services, with Docker.
 
 ##### To start the demo, run this in the root directory of the repository:
 
@@ -69,7 +88,7 @@ interact with the website.
 
 ## The Plan
 
-##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the InstructGPT paper.
+##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the [InstructGPT paper](https://arxiv.org/abs/2203.02155).
 
 1. Collect high-quality human generated Instruction-Fulfillment samples
    (prompt + response), goal >50k. We design a crowdsourced process to collect

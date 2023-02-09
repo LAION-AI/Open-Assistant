@@ -28,6 +28,8 @@ class OasstErrorCode(IntEnum):
     SERVER_ERROR0 = 500
     SERVER_ERROR1 = 501
 
+    INVALID_AUTHENTICATION = 600
+
     # 1000-2000: tasks endpoint
     TASK_INVALID_REQUEST_TYPE = 1000
     TASK_ACK_FAILED = 1001
@@ -80,6 +82,7 @@ class OasstErrorCode(IntEnum):
     USER_NOT_SPECIFIED = 4000
     USER_DISABLED = 4001
     USER_NOT_FOUND = 4002
+    USER_HAS_NOT_ACCEPTED_TOS = 4003
 
     EMOJI_OP_UNSUPPORTED = 5000
 
@@ -92,7 +95,7 @@ class OasstError(Exception):
     http_status_code: HTTPStatus
 
     def __init__(self, message: str, error_code: OasstErrorCode, http_status_code: HTTPStatus = HTTPStatus.BAD_REQUEST):
-        super().__init__(message, error_code, http_status_code)  # make excetpion picklable (fill args member)
+        super().__init__(message, error_code, http_status_code)  # make exception picklable (fill args member)
         self.message = message
         self.error_code = error_code
         self.http_status_code = http_status_code

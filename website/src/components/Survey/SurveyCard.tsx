@@ -1,19 +1,23 @@
 import { Box, BoxProps, useColorModeValue } from "@chakra-ui/react";
 import clsx from "clsx";
-import { PropsWithChildren } from "react";
+import { useMemo } from "react";
 
-export const SurveyCard = (props: PropsWithChildren<{ className?: string }>) => {
+export const SurveyCard = (props: BoxProps) => {
   const backgroundColor = useColorModeValue("white", "gray.700");
 
-  const BoxClasses: BoxProps = {
-    gap: "2",
-    borderRadius: "xl",
-    shadow: "base",
-    className: clsx("p-4 sm:p-6", props.className),
-  };
+  const boxProps: BoxProps = useMemo(
+    () => ({
+      gap: "2",
+      borderRadius: "xl",
+      shadow: "base",
+      ...props,
+      className: clsx("p-4 sm:p-6", props.className),
+    }),
+    [props]
+  );
 
   return (
-    <Box as="section" bg={backgroundColor} {...BoxClasses}>
+    <Box as="section" bg={backgroundColor} {...boxProps}>
       {props.children}
     </Box>
   );
