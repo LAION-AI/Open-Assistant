@@ -314,7 +314,7 @@ export class OasstApiClient {
   }
 
   fetch_recent_messages(lang: string) {
-    return this.get<Message[]>(`/api/v1/messages?lang=${lang}`);
+    return this.get<Message[]>(`/api/v1/messages`, { lang });
   }
 
   fetch_message_children(messageId: string) {
