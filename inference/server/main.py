@@ -67,6 +67,11 @@ class ChatListEntry(pydantic.BaseModel):
     id: str
 
 
+class ChatEntry(pydantic.BaseModel):
+    id: str
+    conversation: protocol.Conversation
+
+
 class ListChatsResponse(pydantic.BaseModel):
     chats: list[ChatListEntry]
 
@@ -79,6 +84,9 @@ class DbChatEntry(pydantic.BaseModel):
 
     def to_list_entry(self) -> ChatListEntry:
         return ChatListEntry(id=self.id)
+
+    def to_entry(self) -> ChatEntry:
+        return ChatEntry(id=self.id, conversation=self.conversation)
 
 
 # TODO: make real database
@@ -103,9 +111,9 @@ async def create_chat(request: CreateChatRequest) -> ChatListEntry:
 
 
 @app.get("/chat/{id}")
-async def get_chat(id: str) -> protocol.Conversation:
+async def get_chat(id: str) -> ChatEntry:
     """Allows a client to get the current state of a chat."""
-    return CHATS[id].conversation
+    return CHATS[id].to_entry()
 
 
 @app.post("/chat/{id}/message")
