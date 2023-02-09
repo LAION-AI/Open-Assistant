@@ -1,8 +1,8 @@
 {
-  "grab_a_task": "Bir görev al!",
   "create": "Oluştur",
-  "evaluate": "Değerlendir",
-  "label": "Etiketle",
   "dashboard": "Kontrol Paneli",
-  "go": "Başlat"
+  "evaluate": "Değerlendir",
+  "go": "Başlat",
+  "grab_a_task": "Bir görev al!",
+  "label": "Etiketle"
 }

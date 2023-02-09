@@ -1,8 +1,8 @@
 {
-  "grab_a_task": "Danh sách việc",
   "create": "Tạo",
-  "evaluate": "Kiểm tra",
-  "label": "Nhãn",
   "dashboard": "Trang chính",
-  "go": "Xem"
+  "evaluate": "Kiểm tra",
+  "go": "Xem",
+  "grab_a_task": "Danh sách việc",
+  "label": "Nhãn"
 }

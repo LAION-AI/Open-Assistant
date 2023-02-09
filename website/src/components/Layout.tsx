@@ -37,17 +37,17 @@ export const getDashboardLayout = (page: React.ReactElement) => (
       <SideMenuLayout
         menuButtonOptions={[
           {
-            label: "Dashboard",
+            labelID: "dashboard",
             pathname: "/dashboard",
             icon: Layout,
           },
           {
-            label: "Messages",
+            labelID: "messages",
             pathname: "/messages",
             icon: MessageSquare,
           },
           {
-            label: "Leaderboard",
+            labelID: "leaderboard",
             pathname: "/leaderboard",
             icon: BarChart2,
           },
@@ -70,17 +70,17 @@ export const getAdminLayout = (page: React.ReactElement) => (
     <SideMenuLayout
       menuButtonOptions={[
         {
-          label: "Users",
+          labelID: "users",
           pathname: "/admin",
           icon: Users,
         },
         {
-          label: "Status",
+          labelID: "status",
           pathname: "/admin/status",
           icon: Activity,
         },
         {
-          label: "Parameters",
+          labelID: "parameters",
           pathname: "/admin/parameters",
           icon: Settings,
         },

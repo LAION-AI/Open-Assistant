@@ -1,12 +1,12 @@
 {
   "dashboard": "Tableau de bord",
   "dashboard_home": "Accueil du tableau de bord",
+  "leaderboard": "Classement",
   "messages": "Messages",
   "messages_dashboard": "Tableau de bord des messages",
-  "leaderboard": "Classement",
+  "status": "Statut",
+  "status_dashboard": "Tableau de bord de statut",
   "user_leaderboard": "Classement des utilisateurs",
   "users": "Utilisateurs",
-  "users_dashboard": "Tableau de bord des utilisateurs",
-  "status": "Statut",
-  "status_dashboard": "Tableau de bord de statut"
+  "users_dashboard": "Tableau de bord des utilisateurs"
 }

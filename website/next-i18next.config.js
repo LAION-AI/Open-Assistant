@@ -13,6 +13,7 @@ module.exports = {
       "it",
       "ja",
       "ko",
+      "pl",
       "pt-BR",
       "ru",
       "uk-UA",

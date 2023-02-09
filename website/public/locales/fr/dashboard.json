@@ -1,8 +1,8 @@
 {
-  "grab_a_task": "Attrape une tâche!",
   "create": "Créer",
-  "evaluate": "Évaluer",
-  "label": "Étiquette",
   "dashboard": "Tableau de bord",
-  "go": "Aller"
+  "evaluate": "Évaluer",
+  "go": "Aller",
+  "grab_a_task": "Attrape une tâche!",
+  "label": "Étiquette"
 }

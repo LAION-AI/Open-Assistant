@@ -1,16 +1,20 @@
 {
+  "copy_message_id": "Copy message ID",
   "label_action": "Nhãn",
   "label_title": "Nhãn",
   "message": "Tin nhắn",
+  "message_deleted": "Message deleted",
   "open_new_tab_action": "Mở ở trang mới",
   "parent": "Tin nhắn gốc",
   "reactions": "Bình luận",
+  "recent_messages": "Tin nhắn gần đây",
   "report_action": "Báo cáo",
   "report_placeholder": "Tại sao tin nhắn này cần được báo cáo?",
   "report_title": "Báo cáo",
   "send_report": "Gửi",
+  "stop_tree": "Stop tree",
   "submit_labels": "Gửi",
+  "tree_stopped": "Tree stopped {{id}}",
   "view_user": "Xem người dùng",
-  "recent_messages": "Tin nhắn gần đây",
   "your_recent_messages": "Tin nhắn gần đây của bạn"
 }

@@ -1,12 +1,12 @@
 {
   "dashboard": "Pannello di controllo",
   "dashboard_home": "Schermata iniziale",
+  "leaderboard": "Classifica",
   "messages": "Messaggi",
   "messages_dashboard": "Pannello di controllo dei messaggi",
-  "leaderboard": "Classifica",
+  "status": "Stato",
+  "status_dashboard": "Pannello di controllo dello stato",
   "user_leaderboard": "Classifica dell'utente",
   "users": "Utenti",
-  "users_dashboard": "Pannello di controllo degli utenti",
-  "status": "Stato",
-  "status_dashboard": "Pannello di controllo dello stato"
+  "users_dashboard": "Pannello di controllo degli utenti"
 }

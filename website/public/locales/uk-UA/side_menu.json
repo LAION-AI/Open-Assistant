@@ -1,12 +1,12 @@
 {
   "dashboard": "Головна",
   "dashboard_home": "Головна панель",
+  "leaderboard": "Рейтинг лідерів",
   "messages": "Повідомлення",
   "messages_dashboard": "Панель повідомлень",
-  "leaderboard": "Рейтинг лідерів",
+  "status": "Статус",
+  "status_dashboard": "Панель статусів",
   "user_leaderboard": "User Leaderboard",
   "users": "Користувачі",
-  "users_dashboard": "Панель користувачів",
-  "status": "Статус",
-  "status_dashboard": "Панель статусів"
+  "users_dashboard": "Панель користувачів"
 }
