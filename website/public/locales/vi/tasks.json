@@ -1,22 +1,22 @@
 {
   "available_task_count": "{{count}} việc",
   "classify_assistant_reply": {
-    "label": "Phân loại tin nhắn của Open Assistant",
-    "desc": "Tạo nhãn dữ liệu đánh giá tin nhắn.",
+    "label": "Phân loại các tin nhắn của Open Assistant",
+    "desc": "Tạo nhãn dữ liệu để đánh giá tin nhắn.",
     "overview": "Từ cuộc trò truyện ở dưới, trả lời các câu hỏi về câu trả lời cuối trong cuộc trò truyện."
   },
   "classify_initial_prompt": {
-    "label": "Phân loại tin nhắn đầu",
-    "desc": "Tạo nhãn dữ liệu đánh giá tin nhắn.",
+    "label": "Phân loại các tin nhắn đầu tiên",
+    "desc": "Tạo nhãn dữ liệu để đánh giá tin nhắn.",
     "overview": "Đọc tin nhắn đầu và trả lời các câu hỏi."
   },
   "classify_prompter_reply": {
     "label": "Phân loại tin nhắn người dùng",
-    "desc": "Tạo nhãn dữ liệu đánh giá tin nhắn.",
+    "desc": "Tạo nhãn dữ liệu để đánh giá tin nhắn.",
     "overview": "Từ cuộc trò truyện ở dưới, trả lời các câu hỏi về câu trả lời cuối trong cuộc trò truyện."
   },
   "create_initial_prompt": {
-    "label": "Tạo tin nhắn đầu",
+    "label": "Tạo tin nhắn đầu tiên",
     "desc": "Viết tin nhắn đầu tiên để làm bộ dữ liệu cho Open Assistant.",
     "overview": "Viết tin nhắn đầu tiên để Open Assistant trả lời",
     "instruction": "Viết tin nhắn đầu",
@@ -27,17 +27,17 @@
     "unchanged_message": "Are you sure you would like to continue?"
   },
   "label_assistant_reply": {
-    "label": "Tạo nhãn cho tin nhắn của Open Assistant",
+    "label": "Đánh giá các tin nhắn của Open Assistant",
     "desc": "Tạo nhãn dữ liệu đánh giá tin nhắn của Open Assistant.",
     "overview": "Từ cuộc trò truyện ở dưới, tạo nhãn dữ liệu cho tin nhắn sau."
   },
   "label_initial_prompt": {
-    "label": "Tạo nhãn cho tin nhắn đầu",
+    "label": "Đánh giá các tin nhắn đầu tiên",
     "desc": "Tạo nhãn dữ liệu đánh giá tin nhắn đầu.",
     "overview": "Tạo nhãn dữ liệu cho tin nhắn sau."
   },
   "label_prompter_reply": {
-    "label": "Tạo nhãn cho tin nhắn người dùng",
+    "label": "Đánh giá các tin nhắn người dùng",
     "desc": "Tạo nhãn dữ liệu đánh giá tin nhắn của người dùng.",
     "overview": "Từ cuộc trò truyện ở dưới, tạo nhãn dữ liệu cho tin nhắn sau."
   },
@@ -46,28 +46,28 @@
     "desc": "Giúp cải thiện Open Assistant bằng cách làm một việc ngẫu nhiên."
   },
   "rank_assistant_replies": {
-    "label": "Xếp hạng câu trả lời của Open Assistant",
+    "label": "Xếp hạng các câu trả lời của Open Assistant",
     "desc": "Đánh giá độ chính xác và dễ đọc của các câu trả lời mà Open Assistant đưa ra.",
     "overview": "Từ những câu trả lời của Open Assistant, xếp hạng chúng theo chất lượng, tốt nhât ở trên, tệ nhất ở dưới.",
     "unchanged_title": "Chưa thay đổi thứ tự",
     "unchanged_message": "Bạn chưa thay đổi thứ tự tin nhắn. Bạn có chắc muốn lưu không?"
   },
   "rank_initial_prompts": {
-    "label": "Xếp hạng tin nhắn đầu tiên",
+    "label": "Xếp hạng các tin nhắn đầu tiên",
     "desc": "Đánh giá độ chính xác và dễ đọc của các câu trả lời của tin nhắn đầu tiên.",
     "overview": "Từ những tin nhắn đầu sau, xếp hạng chúng theo chất lượng, tốt nhât ở trên, tệ nhất ở dưới.",
     "unchanged_title": "Chưa thay đổi thứ tự",
     "unchanged_message": "Bạn chưa thay đổi thứ tự tin nhắn. Bạn có chắc muốn lưu không?"
   },
   "rank_user_replies": {
-    "label": "Xếp hạng câu trả lời của người dùng",
+    "label": "Xếp hạng các câu trả lời của người dùng",
     "desc": "Giúp cải thiện câu trả lời của Open Assistant.",
     "overview": "Từ những câu trả lời của người dùng, xếp hạng chúng theo chất lượng, tốt nhât ở trên, tệ nhất ở dưới.",
     "unchanged_title": "Chưa thay đổi thứ tự",
     "unchanged_message": "Bạn chưa thay đổi thứ tự tin nhắn. Bạn có chắc muốn lưu không?"
   },
   "reply_as_assistant": {
-    "label": "Đóng vai Open Assistant",
+    "label": "Đóng vai trợ lý",
     "desc": "Giúp cải thiện câu trả lời của Open Assistant.",
     "overview": "Tạo câu trả lời phù hợp cho cuộc trò truyện dưới đây",
     "response_placeholder": "Viết vào đây..."
