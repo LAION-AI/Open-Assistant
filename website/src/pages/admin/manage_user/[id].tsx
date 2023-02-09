@@ -41,6 +41,7 @@ interface UserForm {
   display_name: string;
   role: Role;
   notes: string;
+  show_on_leaderboard: boolean;
 }
 
 const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
@@ -50,7 +51,7 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
   const { trigger } = useSWRMutation("/api/admin/update_user", post, {
     onSuccess: () => {
       toast({
-        title: "User Role Updated",
+        title: "Updated user",
         status: "success",
         duration: 1000,
         isClosable: true,
@@ -101,7 +102,7 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
                 </FormControl>
                 <FormControl mt="2">
                   <FormLabel>Show on leaderboard</FormLabel>
-                  <Checkbox></Checkbox>
+                  <Checkbox {...register("show_on_leaderboard")}></Checkbox>
                 </FormControl>
                 <Button mt={4} type="submit">
                   Update
