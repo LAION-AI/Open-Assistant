@@ -100,8 +100,6 @@ class WMT2019(TranslationPair):
             else:  # translating in reverse direction
                 source = random.choice(TRANSLATION_PROMPT[src]).format(row[tgt])
                 self.pairs.append((source, row[src]))
-            if len(self.pairs) > 100000:
-                break
 
 
 class DiveMT(TranslationPair):

@@ -189,7 +189,7 @@ services:
     profiles: ["inference"]
 
   inference-text-generation-server:
-    image: ykilcher/text-generation-inference
+    image: ghcr.io/huggingface/text-generation-inference
     environment:
       - "MODEL_ID=distilgpt2"
     profiles: ["inference"]

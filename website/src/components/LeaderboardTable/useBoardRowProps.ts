@@ -2,7 +2,7 @@ import { useColorModeValue, useToken } from "@chakra-ui/react";
 import { useCallback } from "react";
 import { colors } from "src/styles/Theme/colors";
 
-import { DataTableRowPropsCallback } from "../DataTable";
+import { DataTableRowPropsCallback } from "../DataTable/DataTable";
 
 export const useBoardRowProps = <T extends { highlighted: boolean }>() => {
   const borderColor = useToken("colors", useColorModeValue(colors.light.active, colors.dark.active));

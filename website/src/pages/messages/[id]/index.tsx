@@ -15,9 +15,7 @@ const MessageDetail = ({ id }: InferGetServerSidePropsType<typeof getServerSideP
   const { t } = useTranslation(["message", "common"]);
   const backgroundColor = useColorModeValue("white", "gray.800");
 
-  const { isLoading: isLoadingParent, data: parent } = useSWRImmutable<Message>(`/api/messages/${id}/parent`, get, {
-    refreshInterval: 30 * 1000, // 30 seconds
-  });
+  const { isLoading: isLoadingParent, data: parent } = useSWRImmutable<Message>(`/api/messages/${id}/parent`, get);
 
   if (isLoadingParent) {
     return <MessageLoading />;

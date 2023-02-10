@@ -9,9 +9,17 @@ import websockets.exceptions
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_shared.schemas import inference, protocol
+from prometheus_fastapi_instrumentator import Instrumentator
 from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
+
+
+# add prometheus metrics at /metrics
+@app.on_event("startup")
+async def enable_prom_metrics():
+    Instrumentator().instrument(app).expose(app)
+
 
 # Allow CORS
 app.add_middleware(
@@ -39,14 +47,6 @@ redisClient = redis.Redis(
 )
 
 
-class CreateChatRequest(pydantic.BaseModel):
-    pass
-
-
-class CreateChatResponse(pydantic.BaseModel):
-    id: str
-
-
 class MessageRequest(pydantic.BaseModel):
     message: str = pydantic.Field(..., repr=False)
     model_name: str = "distilgpt2"
@@ -57,7 +57,7 @@ class MessageRequest(pydantic.BaseModel):
 
 
 class TokenResponseEvent(pydantic.BaseModel):
-    token: str
+    token: inference.TokenResponse
 
 
 class MessageRequestState(str, enum.Enum):
@@ -67,30 +67,61 @@ class MessageRequestState(str, enum.Enum):
     aborted_by_worker = "aborted_by_worker"
 
 
+class CreateChatRequest(pydantic.BaseModel):
+    pass
+
+
+class ChatListEntry(pydantic.BaseModel):
+    id: str
+
+
+class ChatEntry(pydantic.BaseModel):
+    id: str
+    conversation: protocol.Conversation
+
+
+class ListChatsResponse(pydantic.BaseModel):
+    chats: list[ChatListEntry]
+
+
 class DbChatEntry(pydantic.BaseModel):
     id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
     conversation: protocol.Conversation = pydantic.Field(default_factory=protocol.Conversation)
     pending_message_request: MessageRequest | None = None
     message_request_state: MessageRequestState | None = None
 
+    def to_list_entry(self) -> ChatListEntry:
+        return ChatListEntry(id=self.id)
+
+    def to_entry(self) -> ChatEntry:
+        return ChatEntry(id=self.id, conversation=self.conversation)
+
 
 # TODO: make real database
 CHATS: dict[str, DbChatEntry] = {}
 
 
+@app.get("/chat")
+async def list_chats() -> ListChatsResponse:
+    """Lists all chats."""
+    logger.info("Listing all chats.")
+    chats = [chat.to_list_entry() for chat in CHATS.values()]
+    return ListChatsResponse(chats=chats)
+
+
 @app.post("/chat")
-async def create_chat(request: CreateChatRequest) -> CreateChatResponse:
+async def create_chat(request: CreateChatRequest) -> ChatListEntry:
     """Allows a client to create a new chat."""
     logger.info(f"Received {request}")
     chat = DbChatEntry()
     CHATS[chat.id] = chat
-    return CreateChatResponse(id=chat.id)
+    return ChatListEntry(id=chat.id)
 
 
 @app.get("/chat/{id}")
-async def get_chat(id: str) -> protocol.Conversation:
+async def get_chat(id: str) -> ChatEntry:
     """Allows a client to get the current state of a chat."""
-    return CHATS[id].conversation
+    return CHATS[id].to_entry()
 
 
 @app.post("/chat/{id}/message")
@@ -143,7 +174,7 @@ async def create_message(id: str, message_request: MessageRequest, fastapi_reque
 
         chat.conversation.messages.append(
             protocol.ConversationMessage(
-                text="".join([d.token for d in result_data[:-1]]),
+                text=response_packet.generated_text.text,
                 is_assistant=True,
             )
         )
@@ -193,17 +224,24 @@ async def work(websocket: fastapi.WebSocket):
                 break
 
             try:
+                in_progress = False
                 while True:
                     # maybe unnecessary to parse and re-serialize
                     # could just pass the raw string and mark end via empty string
                     response_packet = inference.WorkResponsePacket.parse_raw(await websocket.receive_text())
+                    in_progress = True
                     await redisClient.rpush(chat.id, response_packet.json())
                     if response_packet.is_end:
                         break
             except fastapi.WebSocketException:
                 # TODO: handle this better
                 logger.exception(f"Websocket closed during handling of {chat.id}")
-                chat.message_request_state = MessageRequestState.aborted_by_worker
+                if in_progress:
+                    logger.warning(f"Aborting {chat.id=}")
+                    chat.message_request_state = MessageRequestState.aborted_by_worker
+                else:
+                    logger.warning(f"Marking {chat.id=} as pending since no work was done.")
+                    chat.message_request_state = MessageRequestState.pending
                 raise
 
             chat.message_request_state = MessageRequestState.complete
