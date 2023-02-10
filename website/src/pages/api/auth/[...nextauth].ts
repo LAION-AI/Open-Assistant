@@ -1,5 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { boolean } from "boolean";
+import { generateUsername } from "friendly-username-generator";
 import { NextApiRequest, NextApiResponse } from "next";
 import type { AuthOptions } from "next-auth";
 import NextAuth from "next-auth";
@@ -11,7 +12,6 @@ import { checkCaptcha } from "src/lib/captcha";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { BackendUserCore } from "src/types/Users";
-import { generateUsername } from "unique-username-generator";
 
 const providers: Provider[] = [];
 
@@ -71,6 +71,14 @@ if (boolean(process.env.DEBUG_LOGIN) || process.env.NODE_ENV === "development") 
 // the environment variables.  We assume the list is separated by ',' and each
 // entry is separated by ':'.
 const adminUserMap = process.env.ADMIN_USERS.split(",").reduce((result, entry) => {
+  const [authType, id] = entry.split(":");
+  const s = result.get(authType) || new Set();
+  s.add(id);
+  result.set(authType, s);
+  return result;
+}, new Map());
+
+const moderatorUserMap = process.env.MODERATOR_USERS.split(",").reduce((result, entry) => {
   const [authType, id] = entry.split(":");
   const s = result.get(authType) || new Set();
   s.add(id);
@@ -161,9 +169,10 @@ const authOptions: AuthOptions = {
 
       // Get the admin list for the user's auth type.
       const adminForAccountType = adminUserMap.get(account.provider);
+      const moderatorForAccountType = moderatorUserMap.get(account.provider);
 
       // Return early if there's no admin list.
-      if (!adminForAccountType) {
+      if (!adminForAccountType && !moderatorForAccountType) {
         return;
       }
 
@@ -174,6 +183,17 @@ const authOptions: AuthOptions = {
         await prisma.user.update({
           data: {
             role: "admin",
+          },
+          where: {
+            id: user.id,
+          },
+        });
+      }
+
+      if (moderatorForAccountType.has(account.providerAccountId)) {
+        await prisma.user.update({
+          data: {
+            role: "moderator",
           },
           where: {
             id: user.id,

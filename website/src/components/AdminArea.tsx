@@ -10,9 +10,12 @@ export const AdminArea = ({ children }: { children: ReactNode }) => {
     if (status === "loading") {
       return;
     }
-    if (session?.user.role === "admin") {
+    const role = session?.user.role;
+
+    if (role === "admin" || role === "moderator") {
       return;
     }
+
     router.push("/");
   }, [router, session, status]);
   return <main>{status === "loading" ? "loading..." : children}</main>;

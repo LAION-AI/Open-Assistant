@@ -20,6 +20,12 @@ def prepare_message(m: Message) -> protocol.Message:
         user_is_author=m.user_is_author,
         review_result=m.review_result,
         review_count=m.review_count,
+        ranking_count=m.ranking_count,
+        deleted=m.deleted,
+        synthetic=m.synthetic,
+        model_name=m.model_name,
+        message_tree_id=m.message_tree_id,
+        rank=m.rank,
     )
 
 

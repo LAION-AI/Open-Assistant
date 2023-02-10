@@ -1,0 +1,21 @@
+{
+  "copy_message_id": "Kopier besked ID",
+  "copy_message_link": "Kopier besked link",
+  "label_action": "Label",
+  "label_title": "Label",
+  "message_deleted": "Besked slettet",
+  "message": "Besked",
+  "open_new_tab_action": "Åben i en ny tab",
+  "parent": "Forælder",
+  "reactions": "Reaktion",
+  "recent_messages": "Nylige beskeder",
+  "report_action": "Anmeld",
+  "report_placeholder": "Hvorfor skal denne besked vurderes?",
+  "report_title": "Anmeld",
+  "send_report": "Indsend",
+  "stop_tree": "Stop tree",
+  "submit_labels": "Indsend",
+  "tree_stopped": "Tree stopped {{id}}",
+  "view_user": "Se bruger",
+  "your_recent_messages": "Dine nye beskeder"
+}
