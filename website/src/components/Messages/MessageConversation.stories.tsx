@@ -2,12 +2,12 @@ import { SessionProvider } from "next-auth/react";
 import React from "react";
 import { Message } from "src/types/Conversation";
 
-import { MessageTable } from "./MessageTable";
+import { MessageConversation } from "./MessageConversation";
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
   title: "Messages/MessageTable",
-  component: MessageTable,
+  component: MessageConversation,
 };
 
 const Template = ({
@@ -21,7 +21,7 @@ const Template = ({
 }) => {
   return (
     <SessionProvider>
-      <MessageTable messages={messages} enableLink={enableLink} highlightLastMessage={highlightLastMessage} />;
+      <MessageConversation messages={messages} enableLink={enableLink} highlightLastMessage={highlightLastMessage} />;
     </SessionProvider>
   );
 };

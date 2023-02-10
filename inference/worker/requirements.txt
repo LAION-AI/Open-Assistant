@@ -1,4 +1,5 @@
 loguru
+pydantic
 rel
 requests
 sseclient-py
