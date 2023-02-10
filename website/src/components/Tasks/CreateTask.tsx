@@ -1,7 +1,7 @@
 import { Box, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { useState } from "react";
-import { MessageTable } from "src/components/Messages/MessageTable";
+import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
@@ -44,7 +44,7 @@ export const CreateTask = ({
           <TaskHeader taskType={taskType} />
           {task.type !== TaskType.initial_prompt && (
             <Box mt="4" borderRadius="lg" bg={cardColor} className="p-3 sm:p-6">
-              <MessageTable messages={task.conversation.messages} highlightLastMessage />
+              <MessageConversation messages={task.conversation.messages} highlightLastMessage />
             </Box>
           )}
         </>

@@ -17,9 +17,17 @@ from oasst_inference_server.chat_repository import ChatRepository
 from oasst_inference_server.database import db_engine
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
+from prometheus_fastapi_instrumentator import Instrumentator
 from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
+
+
+# add prometheus metrics at /metrics
+@app.on_event("startup")
+async def enable_prom_metrics():
+    Instrumentator().instrument(app).expose(app)
+
 
 # Allow CORS
 app.add_middleware(
