@@ -4,3 +4,4 @@ pydantic
 redis
 sse-starlette
 websockets
+prometheus-fastapi-instrumentator==5.9.1
