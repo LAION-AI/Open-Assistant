@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo } from "react";
 import { useCookies } from "react-cookie";
+import { getLocaleDisplayName } from "./localeDisplayName";
 
 const LanguageSelector = () => {
   const router = useRouter();
@@ -28,7 +29,7 @@ const LanguageSelector = () => {
   const localesAndNames = useMemo(() => {
     return router.locales.map((locale) => ({
       locale,
-      name: firstLetterUppercase(new Intl.DisplayNames([locale], { type: "language" }).of(locale)),
+      name: getLocaleDisplayName(locale),
     }));
   }, [router.locales]);
 
