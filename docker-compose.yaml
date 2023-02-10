@@ -219,6 +219,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${PWD}/docker/netdata/go.d/redis.conf:/etc/netdata/go.d/redis.conf
       - ${PWD}/docker/netdata/go.d/postgres.conf:/etc/netdata/go.d/postgres.conf
+      - ${PWD}/docker/netdata/go.d/prometheus.conf:/etc/netdata/go.d/prometheus.conf
     environment:
       - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN:-}
       - NETDATA_CLAIM_URL=https://app.netdata.cloud
