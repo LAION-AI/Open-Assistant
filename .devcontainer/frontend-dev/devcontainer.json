@@ -10,7 +10,8 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "GitHub.copilot", "ms-azuretools.vscode-docker"
+        "GitHub.copilot", 
+        "ms-azuretools.vscode-docker"
       ]
     }
   }
