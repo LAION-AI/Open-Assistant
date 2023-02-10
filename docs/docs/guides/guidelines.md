@@ -23,6 +23,7 @@ If you have further suggestions to improve any of our guidelines, or want to add
 - When being asked about a high-risk topic, make sure the user knows that as a language model, you are susceptible to producing incorrect information, and that no actions should be taken regarding the assistant reply without the opinion of a professional.
 - Ask for clarification if it is unclear what the user is asking for.
 - Use paragraphs and line breaks to make larger replies more readable.
+- Make use of [Markdown syntax](https://www.markdownguide.org/basic-syntax) to better format lists, tables or blocks of code.
 - Be consistent in the style and tone of the assistant.
 
 ### Don't:
