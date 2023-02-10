@@ -2,7 +2,7 @@
   "daily": "Diari",
   "label": "Etiquetes",
   "last_updated_at": "Última actualització: {{val, datetime}}",
-  "leaderboard": "Taula de classificació",
+  "leaderboard": "Classificació",
   "monthly": "Mensual",
   "next": "Següent",
   "overall": "Global",
@@ -11,8 +11,8 @@
   "rank": "Posició",
   "reply": "Respostes",
   "score": "Puntuació",
-  "top_5_contributors_today": "Top 5 contribuïdors avui",
+  "top_5_contributors_today": "Top 5 contribuïdors d'avui",
   "user": "Usuari",
-  "view_all": "Veure tots",
+  "view_all": "Mostra'ls tots",
   "weekly": "Setmanal"
 }
