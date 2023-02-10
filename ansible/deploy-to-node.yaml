@@ -82,6 +82,7 @@
           interval: 2s
           timeout: 2s
           retries: 10
+        shm_size: 1G
       loop:
         - name: backend
         - name: web

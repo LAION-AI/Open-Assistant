@@ -21,7 +21,6 @@ services:
     image: ghcr.io/laion-ai/open-assistant/oasst-postgres
     pull_policy: always
     restart: always
-    shm_size: 512mb
     ports:
       - 5432:5432
     environment:
