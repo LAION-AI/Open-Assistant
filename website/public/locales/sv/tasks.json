@@ -78,5 +78,7 @@
     "desc": "Tilldela etiketter till en prompt.",
     "overview": "Läs följande konversation och besvara sedan det sista svaret i diskussionen."
   },
-  "available_task_count": "{{count}} uppgifter tillgängliga"
+  "available_task_count": "{{count}} uppgifter tillgängliga",
+  "writing_wrong_langauge_a_b": "Du verkar skriva på {{detected_lang}} men detta kommer att skickas in som {{submit_lang}}.",
+  "submitted_as": "Detta kommer att skickas som {{submit_lang}}"
 }

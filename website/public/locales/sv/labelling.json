@@ -9,7 +9,7 @@
   "label_message_likert_instruction": "Betygsätt meddelandet:",
   "label_message_yes_no_instruction": "Svara på följande fråga/frågor om meddelandet:",
   "lang_mismatch": "Fel språk",
-  "lang_mismatch.explanation": "Inte skrivet på det för närvarande valda språket.",
+  "lang_mismatch.explanation": "Inte skrivet på {{language}}.",
   "moral_judgement": "Moraliserande",
   "moral_judgment.explanation": "Uttrycker en moralisk värdering.",
   "not_appropriate": "Inte lämpligt",
