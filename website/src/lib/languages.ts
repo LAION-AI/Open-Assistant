@@ -5,7 +5,7 @@ export const getLocaleDisplayName = (locale, displayLocale = undefined) => {
   // Different browsers seem to handle "eu" differently from the Node server.
   // Special case this to avoid a hydration failure.
   if (locale === "eu") {
-    return "Eurakasa";
+    return "Euskara";
   }
   const displayName = new Intl.DisplayNames([displayLocale || locale], { type: "language" }).of(locale);
   // Return the Titlecased version of the language name.
