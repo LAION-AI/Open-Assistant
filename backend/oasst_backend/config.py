@@ -196,6 +196,8 @@ class Settings(BaseSettings):
     HUGGING_FACE_API_KEY: str = ""
 
     ROOT_TOKENS: List[str] = ["1234"]  # supply a string that can be parsed to a json list
+    
+    ENABLE_PROM_METRICS: bool = True  # enable prometheus metrics at /metrics
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:

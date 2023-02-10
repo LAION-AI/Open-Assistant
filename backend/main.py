@@ -30,6 +30,7 @@ from oasst_shared.utils import utcnow
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = fastapi.FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
 startup_time: datetime = utcnow()
@@ -98,6 +99,12 @@ if settings.OFFICIAL_WEB_API_KEY:
                     frontend_type="web",
                     trusted=True,
                 )
+
+
+if settings.ENABLE_PROM_METRICS:
+    @app.on_event("startup")
+    async def enable_prom_metrics():
+        Instrumentator().instrument(app).expose(app)
 
 
 if settings.RATE_LIMIT:
