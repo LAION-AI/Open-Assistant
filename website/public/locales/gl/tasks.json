@@ -1,0 +1,84 @@
+{
+  "available_task_count": "{{count}} tarefas dispoñibles",
+  "classify_assistant_reply": {
+    "label": "Clasificar resposta do asistente",
+    "desc": "Proporciona etiquetas para unha resposta do asistente.",
+    "overview": "Le a seguinte conversación e contesta a continuación a pregunta sobre a última resposta na discusión."
+  },
+  "classify_initial_prompt": {
+    "label": "Clasificar instrucións iniciais",
+    "desc": "Proporciona etiquetas para unhas instrucións.",
+    "overview": "Le a seguinte entrada e contesta a continuación a pregunta sobre ela."
+  },
+  "classify_prompter_reply": {
+    "label": "Clasificar a resposta do apuntador",
+    "desc": "Proporciona etiquetas para unha entrada.",
+    "overview": "Le a seguinte conversación e contesta a continuación a pregunta sobre a última resposta na discusión."
+  },
+  "create_initial_prompt": {
+    "label": "Crear instrucións iniciais",
+    "desc": "Escribe instrucións iniciais para axudar a que Open Assistant tente contestar a mensaxes variadas.",
+    "overview": "Crea unha mensaxe inicial para envialo ao asistente",
+    "instruction": "Proporciona as instrucións iniciais",
+    "response_placeholder": "Escribe as túas instrucións aquí..."
+  },
+  "default": {
+    "unchanged_title": "Sen cambios",
+    "unchanged_message": "Estás seguro de que queres continuar?"
+  },
+  "label_assistant_reply": {
+    "label": "Etiquetar resposta do asistente",
+    "desc": "Proporciona etiquetas para unhas instrucións.",
+    "overview": "Dada a discusión seguinte, proporciona etiquetas para a última entrada."
+  },
+  "label_initial_prompt": {
+    "label": "Etiquetar instrucións inciales",
+    "desc": "Proporciona etiquetas para unhas instrucións.",
+    "overview": "Proporciona etiquetas para as seguintes instrucións"
+  },
+  "label_prompter_reply": {
+    "label": "Etiquetar resposta do apuntador",
+    "desc": "Proporciona etiquetas para unhas instrucións.",
+    "overview": "Dada a discusión seguinte, proporciona etiquetas para a última entrada."
+  },
+  "random": {
+    "label": "Vou ter sorte",
+    "desc": "Axúdanos a mellorar Open Assistant empezando cunha tarefa aleatoria."
+  },
+  "rank_assistant_replies": {
+    "label": "Ordenar respostas do asistente",
+    "desc": "Puntúa respostas dadas por Open Assistant baseándoche na súa precisión e lexibilidade.",
+    "overview": "Dadas as seguintes respostas do asistente, ordénaas de mellor a peor, coa primeira sendo a mellor e a última, a peor.",
+    "unchanged_title": "Orde sen cambiar",
+    "unchanged_message": "Non cambiaches a orde das respostas. Seguro que queres continuar?"
+  },
+  "rank_initial_prompts": {
+    "label": "Ordenar instrucións iniciais",
+    "desc": "Puntúa instrucións a Open Assistant baseándoche na súa precisión e lexibilidade.",
+    "overview": "Dados as seguintes instrucións inciales, ordénaas de mellor a peor, coa primeira sendo a mellor e a última, a peor.",
+    "unchanged_title": "Orde sen cambiar",
+    "unchanged_message": "Non cambiaches a orde das entradas. Seguro que queres continuar?"
+  },
+  "rank_user_replies": {
+    "label": "Ordenar respostas de usuarios",
+    "desc": "Axuda a Open Assistant a mellorar as súas respostas a conversacións con outros usuarios.",
+    "overview": "Dadas as seguintes respostas de usuarios, ordénaas de mellor a peor, coa primeira sendo a mellor e a última, a peor.",
+    "unchanged_title": "Orde sen cambiar",
+    "unchanged_message": "Non cambiaches a orde das respostas. Seguro que queres continuar?"
+  },
+  "reply_as_assistant": {
+    "label": "Contestar como asistente",
+    "desc": "Axuda a Open Assistant a mellorar as súas respostas a conversacións con outros usuarios.",
+    "overview": "Dada a conversación seguinte, proporciona unha resposta adecuada",
+    "response_placeholder": "Escribe a túa resposta aquí..."
+  },
+  "reply_as_user": {
+    "label": "Contestar como usuario",
+    "desc": "Falar con Open Assistant e tentar mellorar as súas respostas mentres interaccionas con el.",
+    "overview": "Dada a conversación seguinte, proporciona unha resposta adecuada",
+    "instruction": "Proporciona a resposta do usuario",
+    "response_placeholder": "Escribe a túa resposta aquí..."
+  },
+  "writing_wrong_langauge_a_b": "Parece que estás a escribir en {{detected_lang}} pero isto enviarase como {{submit_lang}}.",
+  "submitted_as": "Isto será enviado como {{submit_lang}}"
+}
