@@ -19,7 +19,7 @@ interface LabelInfo {
   inverted: boolean;
 }
 
-const getLabelInfo = (label: string, t: ReturnType<typeof useTranslation>["t"]): LabelInfo => {
+const getLabelInfo = (label: string, t: (key: string) => string): LabelInfo => {
   switch (label) {
     case "spam":
       return {
