@@ -1,4 +1,5 @@
 import collections
+import random
 import time
 from typing import Literal
 
@@ -53,8 +54,9 @@ def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
         except (requests.HTTPError, requests.ConnectionError):
             if time.time() > time_limit:
                 raise
-            logger.warning("Inference server not ready. Retrying...")
-            time.sleep(5)
+            sleep_duration = random.uniform(0, 10)
+            logger.warning(f"Inference server not ready. Retrying in {sleep_duration} seconds")
+            time.sleep(sleep_duration)
         else:
             logger.info("Inference server is ready")
             break
