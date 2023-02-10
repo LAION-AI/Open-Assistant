@@ -5,11 +5,11 @@ import gzip
 import json
 import sys
 from collections import defaultdict
-from typing import Iterable, Optional, TextIO
+from typing import Dict, Iterable, List, Optional, TextIO
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from oasst_backend.models import Message
+from oasst_backend.models import Message, TextLabels
 from oasst_backend.models.message_tree_state import State as TreeState
 from pydantic import BaseModel
 
@@ -117,5 +117,25 @@ def write_messages_to_file(filename: str | None, messages: Iterable[Message], us
         for m in messages:
             export_message = ExportMessageNode.prep_message_export(m)
             file_data = jsonable_encoder(export_message, exclude_none=True)
+            json.dump(file_data, f)
+            f.write("\n")
+
+
+def write_labels_to_file(
+    filename: str | None, labels: Dict[UUID, List[TextLabels]], use_compression: bool = True
+) -> None:
+    out_buff: TextIO
+
+    if use_compression:
+        if not filename:
+            raise RuntimeError("File name must be specified when using compression.")
+        out_buff = gzip.open(filename, "wt", encoding="UTF-8")
+    else:
+        out_buff = smart_open(filename)
+
+    with out_buff as f:
+        for message_id, message_labels in labels.items():
+            export_labels = {str(message_id): [lbls.labels for lbls in message_labels]}
+            file_data = jsonable_encoder(export_labels, exclude_none=True)
             json.dump(file_data, f)
             f.write("\n")
