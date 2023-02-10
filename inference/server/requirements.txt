@@ -1,5 +1,6 @@
 fastapi[all]
 loguru
+prometheus-fastapi-instrumentator==5.9.1
 pydantic
 redis
 sse-starlette
