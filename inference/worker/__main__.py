@@ -16,7 +16,7 @@ def main():
 
     def on_open(ws: websocket.WebSocket):
         logger.info("Connected to backend, sending config...")
-        worker_config = inference.WorkerConfig(model_name=settings.model_name)
+        worker_config = inference.WorkerConfig(model_name=settings.model_id)
         ws.send(worker_config.json())
         logger.info("Config sent, waiting for work...")
 
