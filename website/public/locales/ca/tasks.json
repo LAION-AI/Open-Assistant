@@ -78,5 +78,7 @@
     "overview": "Donada la conversa següent, proporciona una resposta adequada",
     "instruction": "Proporciona la resposta de l'usuari",
     "response_placeholder": "Escriu la teva resposta aquí..."
-  }
+  },
+  "writing_wrong_langauge_a_b": "Sembla que estàs escrivint a {{detected_lang}} però això s'enviarà com a {{submit_lang}}.",
+  "submitted_as": "Això serà enviat com {{submit_lang}}"
 }
