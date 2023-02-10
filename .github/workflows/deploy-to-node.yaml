@@ -26,6 +26,7 @@ jobs:
     environment: ${{ inputs.stack-name }}
     env:
       WEB_ADMIN_USERS: ${{ secrets.DEV_WEB_ADMIN_USERS }}
+      WEB_MODERATOR_USERS: ${{ secrets.DEV_WEB_MODERATOR_USERS }}
       WEB_DISCORD_CLIENT_ID: ${{ secrets.DEV_WEB_DISCORD_CLIENT_ID }}
       WEB_DISCORD_CLIENT_SECRET: ${{ secrets.DEV_WEB_DISCORD_CLIENT_SECRET }}
       WEB_EMAIL_SERVER_HOST: ${{ secrets.DEV_WEB_EMAIL_SERVER_HOST }}
