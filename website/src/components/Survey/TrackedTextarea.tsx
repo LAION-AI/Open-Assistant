@@ -5,6 +5,7 @@ import { useTranslation } from "next-i18next";
 import React from "react";
 import { useCookies } from "react-cookie";
 import { LanguageAbbreviations } from "src/lib/iso6393";
+import { getLocaleDisplayName } from "src/lib/languages";
 import { colors } from "src/styles/Theme/colors";
 
 interface TrackedTextboxProps {
@@ -80,8 +81,8 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
         >
           <Tooltip
             label={t(wrongLanguage ? "writing_wrong_langauge_a_b" : "submitted_as", {
-              submit_lang: new Intl.DisplayNames(currentLanguage, { type: "language" }).of(currentLanguage),
-              detected_lang: new Intl.DisplayNames(currentLanguage, { type: "language" }).of(detectedLang),
+              submit_lang: getLocaleDisplayName(currentLanguage),
+              detected_lang: getLocaleDisplayName(detectedLang, currentLanguage),
             })}
           >
             {detectedLang}

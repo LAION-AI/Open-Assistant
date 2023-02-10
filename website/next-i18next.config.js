@@ -9,6 +9,7 @@ module.exports = {
       "de",
       "en",
       "es",
+      "eu",
       "fa",
       "fr",
       "gl",
@@ -23,6 +24,7 @@ module.exports = {
       "vi",
       "zh",
       "tr",
+      "id",
     ],
   },
 };

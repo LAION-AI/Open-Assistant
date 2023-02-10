@@ -22,7 +22,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
-import { useHasRole } from "src/hooks/auth/useHasRole";
+import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { del, post, put } from "src/lib/api";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
@@ -210,7 +210,7 @@ const MessageActions = ({
     });
   };
 
-  const isAdmin = useHasRole("admin");
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
 
   return (
     <Menu>
@@ -243,7 +243,7 @@ const MessageActions = ({
         >
           {t("copy_message_link")}
         </MenuItem>
-        {!!isAdmin && (
+        {!!isAdminOrMod && (
           <>
             <MenuDivider />
             <MenuItem onClick={() => handleCopy(id)} icon={<Copy />}>

@@ -2,13 +2,13 @@ import { Stack } from "@chakra-ui/react";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { Message } from "src/types/Conversation";
 
-interface MessageTableProps {
+interface MessageConversationProps {
   messages: Message[];
   enableLink?: boolean;
   highlightLastMessage?: boolean;
 }
 
-export function MessageTable({ messages, enableLink, highlightLastMessage }: MessageTableProps) {
+export function MessageConversation({ messages, enableLink, highlightLastMessage }: MessageConversationProps) {
   return (
     <Stack spacing="4">
       {messages.map((message, idx) => (

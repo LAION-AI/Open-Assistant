@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo } from "react";
 import { useCookies } from "react-cookie";
-import { getLocaleDisplayName } from "./localeDisplayName";
+import { getLocaleDisplayName } from "src/lib/languages";
 
 const LanguageSelector = () => {
   const router = useRouter();
@@ -20,10 +20,6 @@ const LanguageSelector = () => {
       setCookie("NEXT_LOCALE", localeRouter, { path: "/" });
     }
   }, [cookies, setCookie, router]);
-
-  const firstLetterUppercase = (str) => {
-    return str.charAt(0).toLocaleUpperCase() + str.slice(1);
-  };
 
   // Memo the set of locales and their display names.
   const localesAndNames = useMemo(() => {
