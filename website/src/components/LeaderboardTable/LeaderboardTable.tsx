@@ -4,7 +4,7 @@ import { MoreHorizontal } from "lucide-react";
 import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
 import React, { useMemo } from "react";
-import { useHasRole } from "src/hooks/auth/useHasRole";
+import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 
 import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
@@ -41,7 +41,7 @@ export const LeaderboardTable = ({
     `/api/leaderboard?time_frame=${timeFrame}&limit=${limit}&includeUserStats=${!hideCurrentUserRanking}`
   );
 
-  const isAdmin = useHasRole("admin");
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
 
   const columns: DataTableColumnDef<WindowLeaderboardEntity>[] = useMemo(
     () => [
@@ -51,7 +51,7 @@ export const LeaderboardTable = ({
           cell: (ctx) =>
             ctx.row.original.isSpaceRow ? (
               <SpaceRow></SpaceRow>
-            ) : isAdmin ? (
+            ) : isAdminOrMod ? (
               jsonExpandRowModel.renderCell(ctx)
             ) : (
               ctx.getValue()
@@ -62,7 +62,7 @@ export const LeaderboardTable = ({
       columnHelper.accessor("display_name", {
         header: t("user"),
         cell: ({ getValue, row }) =>
-          isAdmin ? (
+          isAdminOrMod ? (
             <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
               {getValue()}
             </Link>
@@ -83,7 +83,7 @@ export const LeaderboardTable = ({
         header: t("label"),
       }),
     ],
-    [isAdmin, t]
+    [isAdminOrMod, t]
   );
 
   const {

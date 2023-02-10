@@ -6,6 +6,8 @@ declare global {
       CLOUDFLARE_CAPTCHA_SECRET_KEY: string;
       NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean;
       NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN: boolean;
+      ADMIN_USERS: string;
+      MODERATOR_USERS: string;
     }
   }
 }

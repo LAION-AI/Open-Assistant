@@ -1,0 +1,21 @@
+model_name: X
+tokenizer_name: X
+max_length: X
+num_train_epochs: X
+warmup_steps: X
+scheduler: X
+learning_rate: X
+deepspeed: X
+fp16: X
+local_rank: X
+gradient_checkpointing: X
+gradient_accumulation_steps: X
+per_device_train_batch_size: X
+per_device_eval_batch_size: X
+weight_decay: X
+max_grad_norm: X
+eval_steps: X
+save_steps: X
+wandb_entity: X
+datasets:
+  - X

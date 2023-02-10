@@ -9,9 +9,17 @@ import websockets.exceptions
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_shared.schemas import inference, protocol
+from prometheus_fastapi_instrumentator import Instrumentator
 from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
+
+
+# add prometheus metrics at /metrics
+@app.on_event("startup")
+async def enable_prom_metrics():
+    Instrumentator().instrument(app).expose(app)
+
 
 # Allow CORS
 app.add_middleware(
