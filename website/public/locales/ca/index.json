@@ -5,7 +5,7 @@
   "faq_items": {
     "q0": "Com està avançat el projecte?",
     "a0": "Estem en les primeres etapes de desenvolupament, treballant a partir de la investigació establerta per aplicar RLHF (aprenentatge per reforç amb realimentació humana) a models de llenguatge de grans dimensions.",
-    "q1": "Qui és darrere d'Open Assistant?",
+    "q1": "Qui hi ha al darrere d'Open Assistant?",
     "a1": "Open Assistant és un projecte organitzat per LAION i persones de tot el planeta interessades a apropar aquesta tecnologia a tothom."
   },
   "faq_title": "Preguntes freqüents",

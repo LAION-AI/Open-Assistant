@@ -53,7 +53,21 @@ select state, count(*) from message_tree_state group by state;
 
 ```sql
 -- count of waiting initial prompts by language
-select m.lang, count(*) from message_tree_state mts join message m on mts.message_tree_id = m.id where mts.state = 'prompt_lottery_waiting' group by m.lang;
+select m.lang, count(*)
+from message_tree_state mts
+  join message m on mts.message_tree_id = m.id
+where mts.state = 'prompt_lottery_waiting'
+group by m.lang;
+```
+
+```sql
+-- message trees by lang in ready_for_export or growing state
+select m.lang, mts.state, count(*)
+from message_tree_state mts
+  join message m on mts.message_tree_id = m.id
+where mts.state in ('ready_for_export', 'growing')
+group by mts.state, m.lang
+order by lang, state;
 ```
 
 ```sql

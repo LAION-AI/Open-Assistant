@@ -32,9 +32,8 @@ const getUserLanguage = (req: NextApiRequest): string => {
  *
  * @param {string} id The user's web auth id.
  *
- * @return {BackendUserCore} The most specific auth type and id for the user.
  */
-const getBackendUserCore = async (id: string) => {
+const getBackendUserCore = async (id: string): Promise<BackendUserCore | null> => {
   const user = await prisma.user.findUnique({
     where: { id },
     select: {
@@ -44,21 +43,27 @@ const getBackendUserCore = async (id: string) => {
     },
   });
 
+  if (!user) {
+    return null;
+  }
+
   // If there are no linked accounts, just use what we have locally.
   if (user.accounts.length === 0) {
     return {
       id: user.id,
-      display_name: user.name,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      display_name: user.name!,
       auth_method: "local",
-    } as BackendUserCore;
+    };
   }
 
   // Otherwise, use the first linked account that the user created.
   return {
     id: user.accounts[0].providerAccountId,
-    display_name: user.name,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    display_name: user.name!,
     auth_method: user.accounts[0].provider,
-  } as BackendUserCore;
+  };
 };
 
 export { getBackendUserCore, getUserLanguage };

@@ -17,8 +17,15 @@ def prepare_message(m: Message) -> protocol.Message:
         created_date=m.created_date,
         emojis=m.emojis or {},
         user_emojis=m.user_emojis or [],
+        user_is_author=m.user_is_author,
         review_result=m.review_result,
         review_count=m.review_count,
+        ranking_count=m.ranking_count,
+        deleted=m.deleted,
+        synthetic=m.synthetic,
+        model_name=m.model_name,
+        message_tree_id=m.message_tree_id,
+        rank=m.rank,
     )
 
 
@@ -36,6 +43,7 @@ def prepare_conversation_message(message: Message) -> protocol.ConversationMessa
         is_assistant=(message.role == "assistant"),
         emojis=message.emojis or {},
         user_emojis=message.user_emojis or [],
+        user_is_author=message.user_is_author,
     )
 
 

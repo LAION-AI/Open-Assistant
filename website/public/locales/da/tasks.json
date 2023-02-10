@@ -1,0 +1,84 @@
+{
+  "default": {
+    "unchanged_title": "Ingen ændringer",
+    "unchanged_message": "Er du sikker på at du vil fortsætte?"
+  },
+  "random": {
+    "label": "Jeg føler mig heldig",
+    "desc": "Hjælp os med at forbedre Open Assistant ved at starte en tilfældig opgave."
+  },
+  "create_initial_prompt": {
+    "label": "Lav første prompter",
+    "desc": "Skriv første prompter for at hjælpe Open Assistant med at forsøge at svare på diverse beskeder (Læg i lotteriet)",
+    "overview": "Skab en første besked til Open Assistant",
+    "instruction": "Giv den første prompt",
+    "response_placeholder": "Skriv din prompt here..."
+  },
+  "reply_as_user": {
+    "label": "Svar som bruger",
+    "desc": "Chat med Open Assistant og hjælp med at forbedre dens respons når du interagere med den.",
+    "overview": "Givet følgende samtale, angiv et passende svar",
+    "instruction": "Angiv brugerens svar",
+    "response_placeholder": "Skriv dit svar her..."
+  },
+  "reply_as_assistant": {
+    "label": "Svar som assistent",
+    "desc": "Hjælp Open assistent forbedre dets svar til samtaler med andre.",
+    "overview": "Givet følgende samtale, angiv et passende svar",
+    "response_placeholder": "Skriv dit svar her..."
+  },
+  "rank_user_replies": {
+    "label": "Ranger bruger svar",
+    "desc": "Hjælp Open assistent forbedre dets svar til samtaler med andre.",
+    "overview": "Givet følgende samtale, sorter fra bedst til ringest, med bedst i toppen.",
+    "unchanged_title": "Rækkefølge uændret",
+    "unchanged_message": "Du har ikke ændret på prompternes rækkefølge. Er du sikker på at du vil fortsætte?"
+  },
+  "rank_assistant_replies": {
+    "label": "Ranger assistent svar",
+    "desc": "Giv point til svar givet af Open Assistant baseret på deres præcision og læsbarhed.",
+    "overview": "Givet følgende svar, sorter fra bedst til ringest, med bedst i toppen.",
+    "unchanged_title": "Rækkefølge uændret",
+    "unchanged_message": "Du har ikke ændret på svarenes rækkefølge. Er du sikker på at du vil fortsætte?"
+  },
+  "rank_initial_prompts": {
+    "label": "Ranger første prompter",
+    "desc": "Giv point til prompter givet af Open Assistant baseret på deres præcision og læsbarhed.",
+    "overview": "Givet følgende første prompter, sorter fra bedst til ringest, med bedst i toppen.",
+    "unchanged_title": "Rækkefølge uændret",
+    "unchanged_message": "Du har ikke ændret på prompternes rækkefølge. Er du sikker på at du vil fortsætte?"
+  },
+  "label_initial_prompt": {
+    "label": "Label første prompt",
+    "desc": "Angiv labels for en prompt.",
+    "overview": "Angiv labels for den følgende prompt"
+  },
+  "label_prompter_reply": {
+    "label": "Label prompter svar",
+    "desc": "Angiv labels for en prompt.",
+    "overview": "Givet følgende diskussion, angiv labels for den endelige prompt."
+  },
+  "label_assistant_reply": {
+    "label": "Label assistent svar",
+    "desc": "Angiv labels for et svar.",
+    "overview": "Givet følgende diskussion, angiv labels for den endelige prompt."
+  },
+  "classify_initial_prompt": {
+    "label": "Klasificer første prompt",
+    "desc": "Provide labels for en prompt.",
+    "overview": "Givet følgende prompt svar da på spørgsmål omkring denne."
+  },
+  "classify_prompter_reply": {
+    "label": "Klassificer promptsvar",
+    "desc": "Provide labels for a prompt.",
+    "overview": "Læs den følgende samtale og svar på spørgsmålet omrking det sidste svar i diskussionen."
+  },
+  "classify_assistant_reply": {
+    "label": "Klassificer assistentens svar",
+    "desc": "Angiv labels for en prompt.",
+    "overview": "Læs følgende samtale og svar så på spørgsmål omkring det sidste svar i diskussionen."
+  },
+  "available_task_count": "{{count}} tilgængelige opgaver",
+  "writing_wrong_langauge_a_b": "Det ser ud til at du skriver på {{detected_lang}} men det bliver lagt ind i {{submit_lang}}.",
+  "submitted_as": "Dette vil blive lagt ind i {{submit_lang}}"
+}

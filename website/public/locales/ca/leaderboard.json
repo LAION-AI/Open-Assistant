@@ -1,18 +1,18 @@
 {
   "daily": "Diari",
+  "label": "Etiquetes",
   "last_updated_at": "Última actualització: {{val, datetime}}",
   "leaderboard": "Taula de classificació",
   "monthly": "Mensual",
+  "next": "Següent",
   "overall": "Global",
-  "rank": "Posició",
-  "score": "Puntuació",
-  "user": "Usuari",
-  "weekly": "Setmanal",
-  "prompt": "Indicacions",
-  "reply": "Respostes",
-  "label": "Etiquetes",
-  "view_all": "Veure tots",
-  "top_5_contributors_today": "Top 5 contribuïdors avui",
   "previous": "Anterior",
-  "next": "Següent"
+  "prompt": "Indicacions",
+  "rank": "Posició",
+  "reply": "Respostes",
+  "score": "Puntuació",
+  "top_5_contributors_today": "Top 5 contribuïdors avui",
+  "user": "Usuari",
+  "view_all": "Veure tots",
+  "weekly": "Setmanal"
 }

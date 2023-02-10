@@ -1,16 +1,20 @@
 {
+  "copy_message_id": "Copy message ID",
   "label_action": "레이블",
   "label_title": "레이블",
   "message": "메세지",
+  "message_deleted": "Message deleted",
   "open_new_tab_action": "새 탭에서 열기",
   "parent": "상위",
   "reactions": "반응",
+  "recent_messages": "최근 메세지",
   "report_action": "리포트",
   "report_placeholder": "이 메시지를 검토해야 하는 이유는 무엇입니까?",
   "report_title": "리포트",
   "send_report": "보내기",
+  "stop_tree": "Stop tree",
   "submit_labels": "등록",
+  "tree_stopped": "Tree stopped {{id}}",
   "view_user": "사용자 보기",
-  "recent_messages": "최근 메세지",
   "your_recent_messages": "최근 메세지들"
 }

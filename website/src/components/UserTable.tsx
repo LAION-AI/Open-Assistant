@@ -7,19 +7,8 @@ import { get } from "src/lib/api";
 import type { FetchUsersResponse, User } from "src/types/Users";
 import useSWR from "swr";
 
-import { DataTable, DataTableColumnDef, FilterItem } from "./DataTable";
-
-interface Pagination {
-  /**
-   * The user's `display_name` used for pagination.
-   */
-  cursor: string;
-
-  /**
-   * The pagination direction.
-   */
-  direction: "forward" | "back";
-}
+import { DataTable, DataTableColumnDef, FilterItem } from "./DataTable/DataTable";
+import { useCursorPagination } from "./DataTable/useCursorPagination";
 
 const columnHelper = createColumnHelper<User>();
 
@@ -56,12 +45,13 @@ const columns: DataTableColumnDef<User>[] = [
 ];
 
 export const UserTable = memo(function UserTable() {
-  const [pagination, setPagination] = useState<Pagination>({ cursor: "", direction: "forward" });
+  const { pagination, resetCursor, toNextPage, toPreviousPage } = useCursorPagination();
   const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
   const handleFilterValuesChange = (values: FilterItem[]) => {
     setFilterValues(values);
-    setPagination((old) => ({ ...old, cursor: "" }));
+    resetCursor();
   };
+
   // Fetch and save the users.
   // This follows useSWR's recommendation for simple pagination:
   //   https://swr.vercel.app/docs/pagination#when-to-use-useswr
@@ -74,20 +64,6 @@ export const UserTable = memo(function UserTable() {
     }
   );
 
-  const toPreviousPage = () => {
-    setPagination({
-      cursor: data.prev,
-      direction: "back",
-    });
-  };
-
-  const toNextPage = () => {
-    setPagination({
-      cursor: data.next,
-      direction: "forward",
-    });
-  };
-
   return (
     <Card>
       <CardBody>
@@ -95,8 +71,8 @@ export const UserTable = memo(function UserTable() {
           data={data?.items || []}
           columns={columns}
           caption="Users"
-          onNextClick={toNextPage}
-          onPreviousClick={toPreviousPage}
+          onNextClick={() => toNextPage(data)}
+          onPreviousClick={() => toPreviousPage(data)}
           disableNext={!data?.next}
           disablePrevious={!data?.prev}
           filterValues={filterValues}
