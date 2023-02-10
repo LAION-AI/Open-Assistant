@@ -14,6 +14,7 @@ from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
 
+
 # add prometheus metrics at /metrics
 @app.on_event("startup")
 async def enable_prom_metrics():
