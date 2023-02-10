@@ -238,7 +238,7 @@ const MessageActions = ({
         </MenuItem>
 
         <MenuItem
-          onClick={() => handleCopy(`${window.location.protocol}://${window.location.host}/messages/${id}`)}
+          onClick={() => handleCopy(`${window.location.protocol}//${window.location.host}/messages/${id}`)}
           icon={<Link />}
         >
           {t("copy_message_link")}

@@ -947,6 +947,9 @@ class PromptRepository:
         if deleted is not None:
             qry = qry.filter(Message.deleted == deleted)
 
+        if lang is not None:
+            qry = qry.filter(Message.lang == lang)
+
         if desc:
             qry = qry.order_by(Message.created_date.desc(), Message.id.desc())
         else:
@@ -954,9 +957,6 @@ class PromptRepository:
 
         if limit is not None:
             qry = qry.limit(limit)
-
-        if lang is not None:
-            qry = qry.filter(Message.lang == lang)
 
         return self._add_user_emojis_all(qry)
 

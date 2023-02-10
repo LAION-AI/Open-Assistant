@@ -216,17 +216,24 @@ async def work(websocket: fastapi.WebSocket):
                 break
 
             try:
+                in_progress = False
                 while True:
                     # maybe unnecessary to parse and re-serialize
                     # could just pass the raw string and mark end via empty string
                     response_packet = inference.WorkResponsePacket.parse_raw(await websocket.receive_text())
+                    in_progress = True
                     await redisClient.rpush(chat.id, response_packet.json())
                     if response_packet.is_end:
                         break
             except fastapi.WebSocketException:
                 # TODO: handle this better
                 logger.exception(f"Websocket closed during handling of {chat.id}")
-                chat.message_request_state = MessageRequestState.aborted_by_worker
+                if in_progress:
+                    logger.warning(f"Aborting {chat.id=}")
+                    chat.message_request_state = MessageRequestState.aborted_by_worker
+                else:
+                    logger.warning(f"Marking {chat.id=} as pending since no work was done.")
+                    chat.message_request_state = MessageRequestState.pending
                 raise
 
             chat.message_request_state = MessageRequestState.complete
