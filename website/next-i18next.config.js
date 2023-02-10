@@ -11,6 +11,7 @@ module.exports = {
       "es",
       "fa",
       "fr",
+      "gl",
       "hu",
       "it",
       "ja",
