@@ -9,10 +9,7 @@
   "postCreateCommand": "bash .devcontainer/frontend-dev/post_create_command.sh",
   "customizations": {
     "vscode": {
-      "extensions": [
-        "GitHub.copilot", 
-        "ms-azuretools.vscode-docker"
-      ]
+      "extensions": ["GitHub.copilot", "ms-azuretools.vscode-docker"]
     }
   }
 }
