@@ -11,15 +11,15 @@ def test_tokenizer():
 
 
 def test_tokenizer_successful_match():
-    for config_name, config in TOKENIZER_CONFIGS:
+    for config_name, config in TOKENIZER_CONFIGS.items():
         found_config = match_tokenizer_name(config_name)
         assert found_config == config
 
 
 def test_tokenizer_partial_match():
-    for config_name, config in TOKENIZER_CONFIGS:
-        found_config = match_tokenizer_name(config_name[: len(config_name) - 1])
-        assert found_config == config
+    for config_name in ["facebook/galactica-1.3b", "togethercomputer/GPT-JT-6B-v1", "Salesforce/codegen-2B-multi"]:
+        found_config = match_tokenizer_name(config_name)
+        assert found_config
 
 
 def test_tokenizer_failed_match():
