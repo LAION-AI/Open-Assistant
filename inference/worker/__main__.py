@@ -8,6 +8,8 @@ from loguru import logger
 from oasst_shared.schemas import inference, protocol
 from settings import settings
 
+# touch
+
 
 def main():
     utils.wait_for_inference_server(settings.inference_server_url)
