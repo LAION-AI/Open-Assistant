@@ -17,6 +17,8 @@ def main(
     model_name: str = "distilgpt2",
     inference_server_url: str = "http://localhost:8001",
 ):
+    utils.wait_for_inference_server(inference_server_url)
+
     def on_open(ws: websocket.WebSocket):
         logger.info("Connected to backend, sending config...")
         worker_config = inference.WorkerConfig(model_name=model_name)

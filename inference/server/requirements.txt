@@ -1,5 +1,7 @@
+alembic
 fastapi[all]
 loguru
+psycopg2-binary
 pydantic
 redis
 sqlmodel

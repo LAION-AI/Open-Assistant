@@ -1,7 +1,10 @@
 import collections
+import time
 from typing import Literal
 
 import interface
+import requests
+from loguru import logger
 
 
 class TokenBuffer:
@@ -38,3 +41,20 @@ class TokenBuffer:
             yield from self.tokens
         else:
             yield from self.tokens
+
+
+def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
+    health_url = f"{inference_server_url}/health"
+    time_limit = time.time() + timeout
+    while True:
+        try:
+            response = requests.get(health_url)
+            response.raise_for_status()
+        except (requests.HTTPError, requests.ConnectionError):
+            if time.time() > time_limit:
+                raise
+            logger.warning("Inference server not ready. Retrying...")
+            time.sleep(5)
+        else:
+            logger.info("Inference server is ready")
+            break
