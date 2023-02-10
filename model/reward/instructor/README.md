@@ -11,7 +11,8 @@ pip install -r requirements.txt
 Write or inherit a `configs/<config-name>.yml` file to store training
 configuration details.
 
-> The configuration file must have _at least_ all the keys present in dummy.yml
+> The configuration file must have _at least_ all the keys present in
+> [`configs/dummy.yml`](model/reward/instructor/configs/dummy.yml)
 
 Run training procedure
 
