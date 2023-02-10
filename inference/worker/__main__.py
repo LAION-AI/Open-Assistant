@@ -93,6 +93,7 @@ def main(
                 ),
             ).json()
         )
+        logger.info("Work complete. Waiting for more work...")
 
     def on_error(ws: websocket.WebSocket, error: Exception):
         try:

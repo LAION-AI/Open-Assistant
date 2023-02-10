@@ -1,14 +1,22 @@
 import asyncio
-import enum
-import uuid
+import contextlib
+import time
+from pathlib import Path
 
+import alembic.command
+import alembic.config
 import fastapi
-import pydantic
 import redis.asyncio as redis
+import sqlmodel
 import websockets.exceptions
+from fastapi import Depends
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from oasst_shared.schemas import inference, protocol
+from oasst_inference_server import interface
+from oasst_inference_server.chat_repository import ChatRepository
+from oasst_inference_server.database import db_engine
+from oasst_inference_server.settings import settings
+from oasst_shared.schemas import inference
 from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
@@ -23,129 +31,97 @@ app.add_middleware(
 )
 
 
-class Settings(pydantic.BaseSettings):
-    redis_host: str = "localhost"
-    redis_port: int = 6379
-    redis_db: int = 0
-
-    sse_retry_timeout: int = 15000
-
-
-settings = Settings()
-
 # create async redis client
 redisClient = redis.Redis(
     host=settings.redis_host, port=settings.redis_port, db=settings.redis_db, decode_responses=True
 )
 
 
-class MessageRequest(pydantic.BaseModel):
-    message: str = pydantic.Field(..., repr=False)
-    model_name: str = "distilgpt2"
-    max_new_tokens: int = 100
-
-    def compatible_with(self, worker_config: inference.WorkerConfig) -> bool:
-        return self.model_name == worker_config.model_name
+def create_session():
+    with sqlmodel.Session(db_engine) as session:
+        yield session
 
 
-class TokenResponseEvent(pydantic.BaseModel):
-    token: inference.TokenResponse
+def create_chat_repository(session: sqlmodel.Session = Depends(create_session)):
+    repository = ChatRepository(session)
+    return repository
 
 
-class MessageRequestState(str, enum.Enum):
-    pending = "pending"
-    in_progress = "in_progress"
-    complete = "complete"
-    aborted_by_worker = "aborted_by_worker"
+if settings.update_alembic:
 
+    @app.on_event("startup")
+    def alembic_upgrade():
+        logger.info("Attempting to upgrade alembic on startup")
+        retry = 0
+        while True:
+            try:
+                alembic_ini_path = Path(__file__).parent / "alembic.ini"
+                alembic_cfg = alembic.config.Config(str(alembic_ini_path))
+                alembic_cfg.set_main_option("sqlalchemy.url", settings.database_uri)
+                alembic.command.upgrade(alembic_cfg, "head")
+                logger.info("Successfully upgraded alembic on startup")
+                break
+            except Exception:
+                logger.exception("Alembic upgrade failed on startup")
+                retry += 1
+                if retry >= settings.alembic_retries:
+                    raise
 
-class CreateChatRequest(pydantic.BaseModel):
-    pass
-
-
-class ChatListEntry(pydantic.BaseModel):
-    id: str
-
-
-class ChatEntry(pydantic.BaseModel):
-    id: str
-    conversation: protocol.Conversation
-
-
-class ListChatsResponse(pydantic.BaseModel):
-    chats: list[ChatListEntry]
-
-
-class DbChatEntry(pydantic.BaseModel):
-    id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
-    conversation: protocol.Conversation = pydantic.Field(default_factory=protocol.Conversation)
-    pending_message_request: MessageRequest | None = None
-    message_request_state: MessageRequestState | None = None
-
-    def to_list_entry(self) -> ChatListEntry:
-        return ChatListEntry(id=self.id)
-
-    def to_entry(self) -> ChatEntry:
-        return ChatEntry(id=self.id, conversation=self.conversation)
-
-
-# TODO: make real database
-CHATS: dict[str, DbChatEntry] = {}
+                timeout = settings.alembic_retry_timeout * 2**retry
+                logger.warning(f"Retrying alembic upgrade in {timeout} seconds")
+                time.sleep(timeout)
 
 
 @app.get("/chat")
-async def list_chats() -> ListChatsResponse:
+async def list_chats(chat_repository: ChatRepository = Depends(create_chat_repository)) -> interface.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
-    chats = [chat.to_list_entry() for chat in CHATS.values()]
-    return ListChatsResponse(chats=chats)
+    chats = chat_repository.get_chat_list()
+    return interface.ListChatsResponse(chats=chats)
 
 
 @app.post("/chat")
-async def create_chat(request: CreateChatRequest) -> ChatListEntry:
+async def create_chat(
+    request: interface.CreateChatRequest, chat_repository: ChatRepository = Depends(create_chat_repository)
+) -> interface.ChatListEntry:
     """Allows a client to create a new chat."""
     logger.info(f"Received {request}")
-    chat = DbChatEntry()
-    CHATS[chat.id] = chat
-    return ChatListEntry(id=chat.id)
+    chat = chat_repository.create_chat()
+    return chat.to_list_entry()
 
 
 @app.get("/chat/{id}")
-async def get_chat(id: str) -> ChatEntry:
+async def get_chat(id: str, chat_repository: ChatRepository = Depends(create_chat_repository)) -> interface.ChatEntry:
     """Allows a client to get the current state of a chat."""
-    return CHATS[id].to_entry()
+    chat = chat_repository.get_chat_entry_by_id(id)
+    return chat
 
 
 @app.post("/chat/{id}/message")
-async def create_message(id: str, message_request: MessageRequest, fastapi_request: fastapi.Request):
+async def create_message(
+    id: str,
+    message_request: interface.MessageRequest,
+    fastapi_request: fastapi.Request,
+    chat_repository: ChatRepository = Depends(create_chat_repository),
+) -> EventSourceResponse:
     """Allows the client to stream the results of a request."""
 
-    chat = CHATS[id]
-    if not chat.conversation.is_prompter_turn:
-        raise fastapi.HTTPException(status_code=400, detail="Not your turn")
-    if chat.pending_message_request is not None:
-        raise fastapi.HTTPException(status_code=400, detail="Already pending")
+    try:
+        chat_repository.add_prompter_message(id=id, message_request=message_request)
+    except Exception:
+        logger.exception("Error adding prompter message")
+        return fastapi.Response(status_code=500)
 
-    chat.conversation.messages.append(
-        protocol.ConversationMessage(
-            text=message_request.message,
-            is_assistant=False,
-        )
-    )
-
-    chat.pending_message_request = message_request
-    chat.message_request_state = MessageRequestState.pending
-
-    async def event_generator():
+    async def event_generator(id):
         result_data = []
 
         try:
             while True:
                 if await fastapi_request.is_disconnected():
                     logger.warning("Client disconnected")
-                    break
+                    return
 
-                item = await redisClient.blpop(chat.id, 1)
+                item = await redisClient.blpop(id, 1)
                 if item is None:
                     continue
 
@@ -158,47 +134,44 @@ async def create_message(id: str, message_request: MessageRequest, fastapi_reque
 
                 yield {
                     "retry": settings.sse_retry_timeout,
-                    "data": TokenResponseEvent(token=response_packet.token).json(),
+                    "data": interface.TokenResponseEvent(token=response_packet.token).json(),
                 }
-            logger.info(f"Finished streaming {chat.id} {len(result_data)=}")
+            logger.info(f"Finished streaming {id} {len(result_data)=}")
         except Exception:
-            logger.exception(f"Error streaming {chat.id}")
+            logger.exception(f"Error streaming {id}")
+            raise
 
-        chat.conversation.messages.append(
-            protocol.ConversationMessage(
-                text=response_packet.generated_text.text,
-                is_assistant=True,
-            )
-        )
-        chat.pending_message_request = None
+        try:
+            with contextlib.contextmanager(create_session)() as session:
+                chat_repository = create_chat_repository(session)
+                chat_repository.add_assistant_message(id=id, text=response_packet.generated_text.text)
+        except Exception:
+            logger.exception("Error adding assistant message")
 
-    return EventSourceResponse(event_generator())
+    return EventSourceResponse(event_generator(id))
 
 
 @app.websocket("/work")
-async def work(websocket: fastapi.WebSocket):
+async def work(websocket: fastapi.WebSocket, chat_repository: ChatRepository = Depends(create_chat_repository)):
     await websocket.accept()
     worker_config = inference.WorkerConfig.parse_raw(await websocket.receive_text())
     try:
         while True:
-            print(websocket.client_state)
             if websocket.client_state == fastapi.websockets.WebSocketState.DISCONNECTED:
                 logger.warning("Worker disconnected")
                 break
             # find a pending task that matches the worker's config
             # could also be implemented using task queues
             # but general compatibility matching is tricky
-            for chat in CHATS.values():
-                if (request := chat.pending_message_request) is not None:
-                    if chat.message_request_state == MessageRequestState.pending:
-                        if request.compatible_with(worker_config):
-                            break
+            for chat in chat_repository.get_pending_chats():
+                request = chat.pending_message_request
+                if request.compatible_with(worker_config):
+                    break
             else:
-                logger.debug("No pending tasks")
                 await asyncio.sleep(1)
                 continue
 
-            chat.message_request_state = MessageRequestState.in_progress
+            chat_repository.set_chat_state(chat.id, interface.MessageRequestState.in_progress)
 
             work_request = inference.WorkRequest(
                 conversation=chat.conversation,
@@ -206,14 +179,16 @@ async def work(websocket: fastapi.WebSocket):
                 max_new_tokens=request.max_new_tokens,
             )
 
-            logger.info(f"Created {work_request}")
+            logger.info(f"Created {work_request=}")
             try:
                 await websocket.send_text(work_request.json())
             except websockets.exceptions.ConnectionClosedError:
                 logger.warning("Worker disconnected")
                 websocket.close()
-                chat.message_request_state = MessageRequestState.pending
+                chat_repository.set_chat_state(chat.id, interface.MessageRequestState.pending)
                 break
+
+            logger.debug(f"Sent {work_request=} to worker.")
 
             try:
                 in_progress = False
@@ -224,18 +199,19 @@ async def work(websocket: fastapi.WebSocket):
                     in_progress = True
                     await redisClient.rpush(chat.id, response_packet.json())
                     if response_packet.is_end:
+                        logger.debug(f"Received {response_packet=} from worker. Ending.")
                         break
             except fastapi.WebSocketException:
                 # TODO: handle this better
                 logger.exception(f"Websocket closed during handling of {chat.id}")
                 if in_progress:
                     logger.warning(f"Aborting {chat.id=}")
-                    chat.message_request_state = MessageRequestState.aborted_by_worker
+                    chat_repository.set_chat_state(chat.id, interface.MessageRequestState.aborted_by_worker)
                 else:
                     logger.warning(f"Marking {chat.id=} as pending since no work was done.")
-                    chat.message_request_state = MessageRequestState.pending
+                    chat_repository.set_chat_state(chat.id, interface.MessageRequestState.pending)
                 raise
 
-            chat.message_request_state = MessageRequestState.complete
+            chat_repository.set_chat_state(chat.id, interface.MessageRequestState.complete)
     except fastapi.WebSocketException:
         logger.exception("Websocket closed")
