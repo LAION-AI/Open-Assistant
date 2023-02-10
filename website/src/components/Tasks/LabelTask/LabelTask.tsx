@@ -2,7 +2,7 @@ import { Box, useBoolean, useColorModeValue } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
 import { LabelInputGroup } from "src/components/Messages/LabelInputGroup";
-import { MessageTable } from "src/components/Messages/MessageTable";
+import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
@@ -57,7 +57,7 @@ export const LabelTask = ({
         <>
           <TaskHeader taskType={taskType} />
           <Box mt="4" p={[4, 6]} borderRadius="lg" bg={cardColor}>
-            <MessageTable messages={task.conversation.messages} highlightLastMessage />
+            <MessageConversation messages={task.conversation.messages} highlightLastMessage />
           </Box>
         </>
         <LabelInputGroup

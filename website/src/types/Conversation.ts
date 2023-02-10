@@ -32,3 +32,11 @@ export interface Message extends MessageEmojis {
 export interface Conversation {
   messages: Message[];
 }
+
+export type FetchUserMessagesCursorResponse = {
+  next?: string;
+  prev?: string;
+  sort_key: string;
+  items: Message[];
+  order: "asc" | "desc";
+};
