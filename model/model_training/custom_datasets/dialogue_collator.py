@@ -67,6 +67,7 @@ class DialogueDataCollator:
             if len(flatten_message["input_ids"]) < self.mix_length_threshold and self.samples_mixing:
                 total_short_context += len(flatten_message["input_ids"])
             flatten_messages.append({k: v for k, v in flatten_message.items() if k != "offset_mapping"})
+
         # packing
         if total_short_context > 2 and self.samples_mixing:
             _flatten_messages, _label_masks = [], []
