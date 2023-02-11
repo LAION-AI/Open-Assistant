@@ -238,7 +238,11 @@ def get_dataset(conf, tokenizer):
     train = ConcatDataset(train_datasets)
 
     collate_fn = DialogueDataCollator(tokenizer, max_length=conf.max_length)
-    train_collate_fn = TrainDialogueDataCollator(tokenizer, max_length=conf.max_length)
+
+    train_collate_fn = (
+        TrainDialogueDataCollator(tokenizer, max_length=conf.max_length) if conf.samples_mixing else collate_fn
+    )
+
     return train, evals, collate_fn, train_collate_fn
 
 

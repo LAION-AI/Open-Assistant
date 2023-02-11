@@ -48,6 +48,7 @@ defaults:
   poly_eps: 1.0
   fuse_gelu: true
   log_wandb: true
+  samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
 
 galactica-125m:
   learning_rate: 5e-5
