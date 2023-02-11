@@ -62,19 +62,19 @@
   "rank_user_replies": {
     "label": "Ordena respostes d'usuaris",
     "desc": "Ajuda Open Assistant a millorar les seves respostes a converses amb altres usuaris.",
-    "overview": "Donades les respostes d'usuaris següents, ordena-les de millor a pitjor, amb la primera sent la millor i l'última, la pitjor.",
+    "overview": "Donades les respostes d'usuaris següents, ordena-les de millor a pitjor, amb la primera sent la millor i l'última, la pitjor."
   },
     "unchanged_title": "Ordre sense canviar",
     "unchanged_message": "No has canviat l'ordre de les respostes. Segur que vols continuar?"
   },
   "reply_as_assistant": {
-    "label": "Contesta com a assistent",
+    "label": "Contestar com a assistent",
     "desc": "Ajuda Open Assistant a millorar les seves respostes en converses amb altres usuaris.",
     "overview": "Donada la conversa següent, proporciona una resposta adequada",
     "response_placeholder": "Escriu la resposta aquí..."
   },
   "reply_as_user": {
-    "label": "Contesta com a usuari",
+    "label": "Contestar com a usuari",
     "desc": "Parla amb Open Assistant i intenta millorar les respostes mentre interacciones amb ell.",
     "overview": "Donada la conversa següent, proporciona una resposta adequada",
     "instruction": "Proporciona la resposta de l'usuari",
