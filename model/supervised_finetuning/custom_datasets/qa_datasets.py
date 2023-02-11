@@ -1,6 +1,7 @@
 """
     Open / close book QA datasets
 """
+import glob
 import json
 import os
 import re
@@ -331,29 +332,43 @@ class JokeExplaination(Dataset):
 
 
 class TranslatedQA(Dataset):
+    """
+    Translation OA v3 results
+    a list of non english translation of OA v3 instruction generated text in jsonl
+    format for each line:
+    {
+        "text": "User: ... Assistant: ....",
+        "meta": {"source": ... },
+        "translate": [
+            { "round": 1, "human":"...", "answer": "..."},
+            ...
+            { "round": K, "human":"...", "answer": "..."},
+        ]
+    }
+    Since OA contain some code we needed to reference the original text to skip these
+    """
 
     name = "oa_translated"
 
     def __init__(self, cache_dir) -> None:
         super().__init__()
         os.makedirs(cache_dir, exist_ok=True)
-        path = os.path.join(cache_dir, "oa_translated")
+        path = os.path.join(cache_dir, self.name)
         os.makedirs(path, exist_ok=True)
-        import glob
-
         self.pairs = []
         for translated_jsonl in glob.glob(os.path.join(path, "*.jsonl")):
-            with open(translated_jsonl, "r") as f:
-                for line in f:
+            with open(translated_jsonl, "r") as fin:
+                for line in fin:
                     data = json.loads(line)
                     if "Python " in data["text"]:
+                        # translation currently doesn't ignore code
+                        # so we will have to reference original text
+                        # for ignoring the translation
                         continue
-                    # incorrect, TODO: fix later
                     prefix = ""
                     for convo_round in data["translate"]:
                         human, answer = format_pair((convo_round["human"], convo_round["answer"]))
                         if convo_round["round"] > 2:
-                            # TODO: remove this later
                             self.pairs.append(("{}{}{}".format(prefix, "<sep>", human), answer))
                         else:
                             self.pairs.append((human, answer))
