@@ -37,17 +37,16 @@ for stability**.
 
 ### 1. **Fork the OpenAssistant repository**
 
-Fork the
-`OpenAssistant`[repository](https://github.com/LAION-AI/Open-Assistant). To do
-this, click the link to the repository and click "Fork" in the upper-right
+Fork the [OpenAssistant repository](https://github.com/LAION-AI/Open-Assistant).
+To do this, click the link to the repository and click "Fork" in the upper-right
 corner. You should get an option to fork to your account, provided you are
 signed into Github.
 
 After you fork, clone the repository locally. You can do so as follows:
 
 ```bash
-git clone git@github.com:<your_github_username>/OpenAssistant.git
-cd OpenAssistant  # enter the directory
+git clone git@github.com:<your_github_username>/Open-Assistant.git
+cd Open-Assistant  # enter the directory
 ```
 
 Next, you want to set your `upstream` location to enable you to push/pull (add
@@ -76,7 +75,7 @@ upstream        git@github.com:LAION-AI/Open-Assistant.git (push)
 If you do NOT have an `origin` for whatever reason, then run:
 
 ```bash
-git remote add origin git@github.com:<your_github_username>/OpenAssistant.git
+git remote add origin git@github.com:<your_github_username>/Open-Assistant.git
 ```
 
 The goal of `upstream` is to keep your repository up-to-date to any changes that
@@ -100,7 +99,7 @@ git checkout -b <dataset_name>
 
 :::caution
 
-Please do not make changes on the master branch!
+Please do not make changes on the main branch!
 
 :::
 
@@ -114,7 +113,7 @@ The correct branch will have a asterisk \* in front of it.
 
 ### 2. **Create a development environment**
 
-You can make an environment in any way you choose to. We highlight two possible
+You can make an environment in any way you choose. We highlight two possible
 options:
 
 #### 2a) Create a conda environment

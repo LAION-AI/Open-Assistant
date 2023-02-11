@@ -1,5 +1,5 @@
 {
-  "copy_message_id": "Copia la ID del missatge",
+  "copy_message_id": "Copia l'ID del missatge",
   "label_action": "Etiqueta",
   "label_title": "Etiqueta",
   "message": "Missatge",
@@ -8,7 +8,7 @@
   "parent": "Pare",
   "reactions": "Reaccions",
   "recent_messages": "Missatges recents",
-  "report_action": "Reporta",
+  "report_action": "Informa",
   "report_placeholder": "Per què cal revisar aquest missatge?",
   "report_title": "Informe",
   "send_report": "Envia",

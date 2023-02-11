@@ -6,7 +6,7 @@ import evaluate
 import transformers
 import yaml
 from custom_datasets import get_one_dataset
-from custom_datasets.dialogue_collator import DialogueDataCollator
+from custom_datasets.dialogue_collator import DialogueDataCollator, TrainDialogueDataCollator
 from custom_datasets.qa_datasets import QA_SPECIAL_TOKENS
 from losses import CrossEntropyLoss, PolyLoss
 from models import freeze_top_n_layers, get_specific_model
@@ -126,7 +126,14 @@ def get_tokenizer(conf) -> transformers.AutoTokenizer:
     if tokenizer_config.special_tokens:
         if "GPT-JT" in conf.model_name:
             tokenizer_config.special_tokens.pad_token = tokenizer.eos_token
-        tokenizer.add_special_tokens(tokenizer_config.special_tokens)
+        # SpecialTokens : latest in 4.25, 4.26
+        tokenizer.add_special_tokens(
+            {
+                "pad_token": tokenizer_config.special_tokens.pad_token,
+                "eos_token": tokenizer_config.special_tokens.eos_token,
+                "sep_token": tokenizer_config.special_tokens.sep_token,
+            }
+        )
 
     additional_special_tokens = (
         []
@@ -231,8 +238,8 @@ def get_dataset(conf, tokenizer):
     train = ConcatDataset(train_datasets)
 
     collate_fn = DialogueDataCollator(tokenizer, max_length=conf.max_length)
-
-    return train, evals, collate_fn
+    train_collate_fn = TrainDialogueDataCollator(tokenizer, max_length=conf.max_length)
+    return train, evals, collate_fn, train_collate_fn
 
 
 def get_loss(loss, poly_eps):

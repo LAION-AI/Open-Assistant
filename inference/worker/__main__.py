@@ -16,7 +16,7 @@ def main():
 
     def on_open(ws: websocket.WebSocket):
         logger.info("Connected to backend, sending config...")
-        worker_config = inference.WorkerConfig(model_name=settings.model_name)
+        worker_config = inference.WorkerConfig(model_name=settings.model_id)
         ws.send(worker_config.json())
         logger.info("Config sent, waiting for work...")
 
@@ -107,6 +107,7 @@ def main():
         on_error=on_error,
         on_close=on_close,
         on_open=on_open,
+        header={"X-API-Key": settings.api_key},
     )
 
     ws.run_forever(dispatcher=rel, reconnect=5)

@@ -12,6 +12,7 @@ module.exports = {
       "eu",
       "fa",
       "fr",
+      "gl",
       "hu",
       "it",
       "ja",
