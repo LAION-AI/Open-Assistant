@@ -1,8 +1,8 @@
-import { withAnyRole } from "src/lib/auth";
+import { withoutRole } from "src/lib/auth";
 import { createApiClient } from "src/lib/oasst_client_factory";
 import { Message, MessageWithChildren } from "src/types/Conversation";
 
-export default withAnyRole(["admin", "moderator"], async (req, res, token) => {
+export default withoutRole("banned", async (req, res, token) => {
   const client = await createApiClient(token);
   const messageId = req.query.id as string;
   const response = await client.fetch_message_tree(messageId);
@@ -17,7 +17,7 @@ export default withAnyRole(["admin", "moderator"], async (req, res, token) => {
 });
 
 // https://medium.com/@lizhuohang.selina/building-a-hierarchical-tree-from-a-flat-list-an-easy-to-understand-solution-visualisation-19cb24bdfa33
-export const buildTree = (messages: Message[]): MessageWithChildren | null => {
+const buildTree = (messages: Message[]): MessageWithChildren | null => {
   const map: Record<string, MessageWithChildren> = {};
   const tree = [];
 

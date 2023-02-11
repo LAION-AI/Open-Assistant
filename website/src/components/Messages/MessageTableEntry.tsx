@@ -70,16 +70,18 @@ export function MessageTableEntry({
     });
   }, [message.emojis, message.user_emojis]);
 
-  const goToMessage = useCallback(() => router.push(`/messages/${message.id}`), [router, message.id]);
+  const goToMessage = useCallback(
+    () => enabled && router.push(`/messages/${message.id}`),
+    [enabled, router, message.id]
+  );
   const { isOpen: reportPopupOpen, onOpen: showReportPopup, onClose: closeReportPopup } = useDisclosure();
   const { isOpen: labelPopupOpen, onOpen: showLabelPopup, onClose: closeLabelPopup } = useDisclosure();
 
-  const backgroundColor = useColorModeValue("gray.100", "gray.700");
-  const backgroundColor2 = useColorModeValue("#DFE8F1", "#42536B");
+  const bg = useColorModeValue("gray.100", "#42536B");
 
   const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
 
-  const inlineAvatar = useBreakpointValue({ base: true, sm: false });
+  const inlineAvatar = useBreakpointValue({ base: true, md: false });
 
   const avatar = useMemo(
     () => (
@@ -117,14 +119,14 @@ export function MessageTableEntry({
       <Box
         width={["full", "full", "full", "fit-content"]}
         maxWidth={["full", "full", "full", "2xl"]}
-        p="4"
+        p={[3, 4]}
         borderRadius="18px"
-        bg={message.is_assistant ? backgroundColor : backgroundColor2}
-        outline={highlight && "2px solid black"}
+        bg={bg}
+        outline={highlight ? "2px solid black" : undefined}
         outlineColor={highlightColor}
-        onClick={enabled && goToMessage}
+        onClick={goToMessage}
         whiteSpace="pre-wrap"
-        cursor={enabled && "pointer"}
+        cursor={enabled ? "pointer" : undefined}
         style={{ position: "relative" }}
       >
         {inlineAvatar && avatar}
@@ -143,7 +145,7 @@ export function MessageTableEntry({
                   emoji={{ name: emoji, count }}
                   checked={emojiState.user_emojis.includes(emoji)}
                   userReacted={emojiState.user_emojis.length > 0}
-                  userIsAuthor={message.user_is_author}
+                  userIsAuthor={!!message.user_is_author}
                   onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
                 />
               );
@@ -173,7 +175,8 @@ const EmojiMenuItem = ({
   react: (emoji: string, state: boolean) => void;
 }) => {
   const activeColor = useColorModeValue(colors.light.active, colors.dark.active);
-  const EmojiIcon = emojiIcons.get(emoji);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const EmojiIcon = emojiIcons.get(emoji)!;
   return (
     <MenuItem onClick={() => react(emoji, !checked)} justifyContent="center" color={checked ? activeColor : undefined}>
       <EmojiIcon />
