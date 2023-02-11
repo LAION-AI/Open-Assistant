@@ -10,9 +10,9 @@
     "simple-import-sort/imports": "warn",
     "simple-import-sort/exports": "warn",
     "eqeqeq": "warn",
-    "no-unused-vars": "off", // Use typescript version below
+    "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": [
-      "warn", // warn, but not if the variable starts with _.  e.g   [_, foo] = bar()
+      "warn",
       {
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_",
