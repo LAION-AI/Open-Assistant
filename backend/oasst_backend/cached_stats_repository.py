@@ -37,14 +37,13 @@ class CachedStatsRepository:
         ).group_by(MessageTreeState.state)
         return {r["state"]: r["count"] for r in qry}
 
-    def qry_message_trees_by_lang_read_or_growing(self) -> list:
+    def qry_message_trees_states_by_lang(self) -> list:
         qry = (
             self.db.query(
                 Message.lang, MessageTreeState.state, func.count(MessageTreeState.message_tree_id).label("count")
             )
             .select_from(MessageTreeState)
             .join(Message, MessageTreeState.message_tree_id == Message.id)
-            .filter(MessageTreeState.state.in_((TreeState.READY_FOR_EXPORT, TreeState.GROWING)))
             .group_by(MessageTreeState.state, Message.lang)
             .order_by(Message.lang, MessageTreeState.state)
         )
@@ -75,8 +74,8 @@ class CachedStatsRepository:
         v = self.qry_message_trees_by_state()
         self._insert_cached_stats(CachedStatsName.message_trees_by_state, v)
 
-        v = self.qry_message_trees_by_lang_read_or_growing()
-        self._insert_cached_stats(CachedStatsName.message_trees_by_lang_ready_or_growing, v)
+        v = self.qry_message_trees_states_by_lang()
+        self._insert_cached_stats(CachedStatsName.message_trees_states_by_lang, v)
 
         v = self.qry_prompt_lottery_waiting_by_lang()
         self._insert_cached_stats(CachedStatsName.prompt_lottery_waiting_by_lang, v)
