@@ -1,17 +1,16 @@
 import { ROLES } from "src/components/RoleSelect";
-import { withRole } from "src/lib/auth";
+import { withAnyRole } from "src/lib/auth";
 import { createApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 
 /**
  * Update's the user's data in the database.  Accessible only to admins.
  */
-const handler = withRole("admin", async (req, res, token) => {
+const handler = withAnyRole(["admin", "moderator"], async (req, res, token) => {
   const { id, user_id, notes, role, show_on_leaderboard } = req.body;
-
   // mod can't update user role to mod or admin
   if (token.role === ROLES.MODERATOR && (role === ROLES.MODERATOR || role === ROLES.ADMIN)) {
-    return res.status(403);
+    return res.status(403).json({});
   }
   const oasstApiClient = await createApiClient(token);
   await prisma.user.update({
