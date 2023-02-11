@@ -40,3 +40,7 @@ class ChatEntry(pydantic.BaseModel):
 
 class ListChatsResponse(pydantic.BaseModel):
     chats: list[ChatListEntry]
+
+
+class CreateWorkerRequest(pydantic.BaseModel):
+    name: str

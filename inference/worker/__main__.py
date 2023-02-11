@@ -107,6 +107,7 @@ def main():
         on_error=on_error,
         on_close=on_close,
         on_open=on_open,
+        header={"X-API-Key": settings.api_key},
     )
 
     ws.run_forever(dispatcher=rel, reconnect=5)
