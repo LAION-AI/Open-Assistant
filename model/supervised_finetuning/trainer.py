@@ -231,11 +231,10 @@ if __name__ == "__main__":
         eval_steps=training_conf.eval_steps,
         save_steps=training_conf.save_steps,
         eval_accumulation_steps=training_conf.eval_accumulation_steps,
-        report_to="wandb",
+        report_to="wandb" if training_conf.log_wandb else None,
     )
 
-    assert len(evals) > 0
-    if not training_conf.deepspeed or training_conf.local_rank == 0:
+    if training_conf.log_wandb and not training_conf.deepspeed or training_conf.local_rank == 0:
         import wandb
 
         wandb.init(
