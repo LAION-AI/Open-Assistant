@@ -23,6 +23,7 @@ module.exports = {
       "uk-UA",
       "vi",
       "zh",
+      "th",
       "tr",
       "id",
     ],
