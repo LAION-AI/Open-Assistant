@@ -1,4 +1,5 @@
 {
+  "any_feedback_on_this_task": "Tens algun comentari sobre aquesta tasca?",
   "available_task_count": "{{count}} tasques disponibles",
   "classify_assistant_reply": {
     "label": "Classificar respostes de l'assistent",
@@ -63,7 +64,6 @@
     "label": "Ordena respostes d'usuaris",
     "desc": "Ajuda Open Assistant a millorar les seves respostes a converses amb altres usuaris.",
     "overview": "Donades les respostes d'usuaris següents, ordena-les de millor a pitjor, amb la primera sent la millor i l'última, la pitjor."
-  },
     "unchanged_title": "Ordre sense canviar",
     "unchanged_message": "No has canviat l'ordre de les respostes. Segur que vols continuar?"
   },
