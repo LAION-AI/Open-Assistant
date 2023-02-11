@@ -217,7 +217,7 @@ if __name__ == "__main__":
         learning_rate=float(training_conf.learning_rate),
         deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
         optim=optimizer,
-        fp16=True,
+        fp16=training_conf.fp16,
         local_rank=training_conf.local_rank,
         gradient_checkpointing=training_conf.gradient_checkpointing,
         gradient_accumulation_steps=training_conf.gradient_accumulation_steps,

@@ -55,10 +55,10 @@ export default function Account() {
           <SurveyCard>
             <Title>{t("your_stats")}</Title>
             {[
-              LeaderboardTimeFrame.total,
               LeaderboardTimeFrame.day,
               LeaderboardTimeFrame.week,
               LeaderboardTimeFrame.month,
+              LeaderboardTimeFrame.total,
             ]
               .map((key) => ({ key, values: entries[key] }))
               .filter(({ values }) => values)
