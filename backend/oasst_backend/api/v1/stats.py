@@ -4,6 +4,7 @@ from oasst_backend.cached_stats_repository import CachedStatsRepository
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.tree_manager import TreeManager, TreeManagerStats, TreeMessageCountStats
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
 from starlette.status import HTTP_204_NO_CONTENT
@@ -78,5 +79,9 @@ def update_cached_stats(
     db: Session = Depends(deps.get_db),
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
 ):
-    csr = CachedStatsRepository(db)
-    csr.update_all_cached_stats()
+    @managed_tx_function(CommitMode.COMMIT)
+    def update_tx(db: deps.Session) -> None:
+        csr = CachedStatsRepository(db)
+        csr.update_all_cached_stats()
+
+    update_tx()
