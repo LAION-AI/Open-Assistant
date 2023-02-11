@@ -89,7 +89,7 @@ export const Sortable = (props: SortableProps) => {
                     onOpen();
                   }}
                 >
-                  <CollapsableText text={item} isDisabled={props.isDisabled} />
+                  <CollapsableText text={item} />
                 </button>
               </SortableItem>
             ))}
