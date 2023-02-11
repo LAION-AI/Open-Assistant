@@ -47,10 +47,6 @@ size_categories:
 - **Repository:**
   [Code](https://github.com/LAION-AI/Open-Assistant/openassistant/datasets/gutenberg/)
 
-## Usage
-
-TODO
-
 ## Source data
 
 Please **READ** the site's TOS before running the crawler Notebook and follow
