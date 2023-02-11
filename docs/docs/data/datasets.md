@@ -45,7 +45,7 @@ signed into Github.
 After you fork, clone the repository locally. You can do so as follows:
 
 ```bash
-git clone git@github.com:<your_github_username>/OpenAssistant.git
+git clone git@github.com:<your_github_username>/Open-Assistant.git
 cd Open-Assistant  # enter the directory
 ```
 
