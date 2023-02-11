@@ -1,7 +1,9 @@
 import {
   Avatar,
   AvatarProps,
+  Badge,
   Box,
+  Flex,
   HStack,
   Menu,
   MenuButton,
@@ -10,6 +12,7 @@ import {
   MenuItem,
   MenuList,
   SimpleGrid,
+  Tooltip,
   useBreakpointValue,
   useColorModeValue,
   useDisclosure,
@@ -49,6 +52,7 @@ interface MessageTableEntryProps {
   highlight?: boolean;
   avartarPosition?: "middle" | "top";
   avartarProps?: AvatarProps;
+  hightlightColor?: [string, string];
 }
 
 export function MessageTableEntry({
@@ -57,6 +61,7 @@ export function MessageTableEntry({
   highlight,
   avartarPosition = "middle",
   avartarProps,
+  hightlightColor,
 }: MessageTableEntryProps) {
   const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
@@ -77,7 +82,7 @@ export function MessageTableEntry({
   const { isOpen: reportPopupOpen, onOpen: showReportPopup, onClose: closeReportPopup } = useDisclosure();
   const { isOpen: labelPopupOpen, onOpen: showLabelPopup, onClose: closeLabelPopup } = useDisclosure();
 
-  const bg = useColorModeValue("gray.100", "#42536B");
+  const bg = useColorModeValue("#DFE8F1", "#42536B");
 
   const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
 
@@ -96,7 +101,7 @@ export function MessageTableEntry({
     ),
     [avartarProps, borderColor, inlineAvatar, message.is_assistant]
   );
-  const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
+  const internalHighlightColor = useColorModeValue(...(hightlightColor || [colors.light.active, colors.dark.active]));
 
   const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
     onSuccess: (data) => {
@@ -108,6 +113,9 @@ export function MessageTableEntry({
   const react = (emoji: string, state: boolean) => {
     sendEmojiChange({ op: state ? "add" : "remove", emoji });
   };
+
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
+  const { t } = useTranslation(["message"]);
 
   return (
     <HStack
@@ -123,7 +131,7 @@ export function MessageTableEntry({
         borderRadius="18px"
         bg={bg}
         outline={highlight ? "2px solid black" : undefined}
-        outlineColor={highlightColor}
+        outlineColor={internalHighlightColor}
         onClick={goToMessage}
         whiteSpace="pre-wrap"
         cursor={enabled ? "pointer" : undefined}
@@ -160,6 +168,20 @@ export function MessageTableEntry({
           <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
           <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
         </HStack>
+        <Flex position="absolute" gap="2" top="-2.5" right="5">
+          {message.user_is_author && (
+            <Tooltip label={t("message_author_explain")} placement="top">
+              <Badge size="sm" colorScheme="green" textTransform="capitalize">
+                {t("message_author")}
+              </Badge>
+            </Tooltip>
+          )}
+          {message.deleted && isAdminOrMod && (
+            <Badge colorScheme="red" textTransform="capitalize">
+              Deleted
+            </Badge>
+          )}
+        </Flex>
       </Box>
     </HStack>
   );
