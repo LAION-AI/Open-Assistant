@@ -8,6 +8,8 @@ class Settings(pydantic.BaseSettings):
     redis_port: int = 6379
     redis_db: int = 0
 
+    allowed_worker_compat_hashes: list[str] = ["distilgpt2"]
+
     sse_retry_timeout: int = 15000
     update_alembic: bool = True
     alembic_retries: int = 5

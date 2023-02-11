@@ -55,7 +55,7 @@ def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
             if time.time() > time_limit:
                 raise
             sleep_duration = random.uniform(0, 10)
-            logger.warning(f"Inference server not ready. Retrying in {sleep_duration} seconds")
+            logger.warning(f"Inference server not ready. Retrying in {sleep_duration:.2f} seconds")
             time.sleep(sleep_duration)
         else:
             logger.info("Inference server is ready")

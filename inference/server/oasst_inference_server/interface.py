@@ -9,8 +9,9 @@ class MessageRequest(pydantic.BaseModel):
     model_name: str = "distilgpt2"
     max_new_tokens: int = 100
 
-    def compatible_with(self, worker_config: inference.WorkerConfig) -> bool:
-        return self.model_name == worker_config.model_name
+    @property
+    def worker_compat_hash(self) -> str:
+        return f"{self.model_name}"
 
 
 class TokenResponseEvent(pydantic.BaseModel):

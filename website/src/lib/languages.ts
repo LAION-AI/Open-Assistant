@@ -1,11 +1,15 @@
+const missingDisplayNamesForLocales = {
+  eu: "Euskara",
+  gl: "Galego",
+};
+
 /**
  * Returns the locale's name.
  */
-export const getLocaleDisplayName = (locale, displayLocale = undefined) => {
-  // Different browsers seem to handle "eu" differently from the Node server.
-  // Special case this to avoid a hydration failure.
-  if (locale === "eu") {
-    return "Euskara";
+export const getLocaleDisplayName = (locale: string, displayLocale = undefined) => {
+  // Intl defaults to English for locales that are not oficially translated
+  if (missingDisplayNamesForLocales[locale]) {
+    return missingDisplayNamesForLocales[locale];
   }
   const displayName = new Intl.DisplayNames([displayLocale || locale], { type: "language" }).of(locale);
   // Return the Titlecased version of the language name.

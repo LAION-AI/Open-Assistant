@@ -11,6 +11,7 @@ import {
   Textarea,
   useDisclosure,
 } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 import { useState } from "react";
 
 interface SkipButtonProps extends ButtonProps {
@@ -18,6 +19,7 @@ interface SkipButtonProps extends ButtonProps {
 }
 
 export const SkipButton = ({ onSkip, ...props }: SkipButtonProps) => {
+  const { t } = useTranslation(["common", "tasks"]);
   const { isOpen, onOpen: showModal, onClose: closeModal } = useDisclosure();
   const [value, setValue] = useState("");
 
@@ -30,25 +32,25 @@ export const SkipButton = ({ onSkip, ...props }: SkipButtonProps) => {
   return (
     <>
       <Button size="lg" variant="outline" onClick={showModal} {...props}>
-        Skip
+        {t("skip")}
       </Button>
       <Modal isOpen={isOpen} onClose={closeModal}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Skip</ModalHeader>
+          <ModalHeader>{t("skip")}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Textarea
               value={value}
               onChange={(e) => setValue(e.target.value)}
               resize="none"
-              placeholder="Any feedback on this task?"
+              placeholder={t("tasks:any_feedback_on_this_task")}
             />
           </ModalBody>
 
           <ModalFooter>
             <Button colorScheme="blue" mr={3} onClick={onSubmit}>
-              Send
+              {t("send")}
             </Button>
           </ModalFooter>
         </ModalContent>

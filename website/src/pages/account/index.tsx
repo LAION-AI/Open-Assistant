@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import React from "react";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import { Pencil } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { get } from "src/lib/api";
 import { getTypeSafei18nKey } from "src/lib/i18n";
@@ -41,15 +41,15 @@ export default function Account() {
             <Title>{t("your_account")}</Title>
             <Divider />
             <Grid gridTemplateColumns="repeat(2, max-content)" alignItems="center" gap={6} py={4}>
-              <Text as="b">Username</Text>
+              <Text as="b">{t("username")}</Text>
               <Flex gap={2}>
-                {session.user.name ?? "(No username)"}
+                {session.user.name ?? t("no_username")}
                 <Link href="/account/edit">
                   <Icon boxSize={5} as={Pencil} size="1em" />
                 </Link>
               </Flex>
               <Text as="b">Email</Text>
-              <Text>{session.user.email ?? "(No Email)"}</Text>
+              <Text>{session.user.email ?? t("no_email")}</Text>
             </Grid>
           </SurveyCard>
           <SurveyCard>
