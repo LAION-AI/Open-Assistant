@@ -13,6 +13,7 @@ defaults:
   logging_steps: 10
   max_grad_norm: 2.0
   save_total_limit: 4
+  fp16: false
   eval_accumulation_steps:
   freeze_layer:
   datasets:

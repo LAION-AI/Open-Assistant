@@ -20,7 +20,7 @@ class OAPrivate(Dataset):
         total_prob = reduce(lambda prev, split: prev + split[1], self.splits.items(), 0)
         assert math.isclose(total_prob, 1), "Make sure OAPrivate split ratios add to 1"
 
-        jsonl_file = os.path.join(data_path, self.file)
+        jsonl_file = os.path.join(data_path, file)
 
         with open(jsonl_file, "r", encoding="utf-8") as f:
             lines = f.readlines()
