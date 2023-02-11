@@ -10,7 +10,7 @@
     "desc": "ช่วยพวกเราปรับปรุง Open Assistant จากการเริ่มต้นงานแบบสุ่ม"
   },
   "create_initial_prompt": {
-    "label": "สร้าง Prompts เริ่มต้น",
+    "label": "สร้างข้อความ Prompts เริ่มต้น",
     "desc": "สร้าง Prompts เริ่มต้น เพื่อสร้าง Open Assistant ให้ลองตอบกลับข้อความที่หลากหลาย (เข้าลอตเตอรี่)",
     "overview": "สร้าง Prompts เริ่มต้น เพื่อส่งให้ผู้ช่วย",
     "instruction": "ผลิต Prompts เริ่มต้น",
@@ -18,10 +18,10 @@
   },
   "reply_as_user": {
     "label": "ตอบกลับเป็นผู้ใช้งาน",
-    "desc": "Chat with Open Assistant and help improve it's responses as you interact with it.",
-    "overview": "Given the following conversation, provide an adequate reply",
-    "instruction": "Provide the user's reply",
-    "response_placeholder": "Write your reply here..."
+    "desc": "แชทกับ Open Assistant และช่วยปรับปรุงการตอบสนองเมื่อคุณโต้ตอบกับมัน",
+    "overview": "จากการสนทนาต่อไปนี้ ให้ตอบกลับอย่างเหมาะสม",
+    "instruction": "ให้คำตอบของผู้ใช้งาน",
+    "response_placeholder": "เขียนการตอบกลับของคุณที่นี่..."
   },
   "reply_as_assistant": {
     "label": "ตอบกลับเป็นผู้ช่วย",
@@ -30,56 +30,56 @@
     "response_placeholder": "เขียนการตอบกลับของคุณที่นี่..."
   },
   "rank_user_replies": {
-    "label": "Rank User Replies",
-    "desc": "Help Open Assistant improve its responses to conversations with other users.",
-    "overview": "Given the following User replies, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?"
+    "label": "จัดอันดับการตอบกลับของผู้ใช้งาน",
+    "desc": "ช่วย Open Assistant ปรับปรุงการตอบสนองต่อการสนทนากับผู้ใช้งานรายอื่น",
+    "overview": "จากการตอบกลับของผู้ใช้ต่อไปนี้ ให้เรียงอันดับจากดีที่สุดไปหาแย่ที่สุด ดีที่สุดเป็นอันดับแรก แย่ที่สุดเป็นอันดับสุดท้าย",
+    "unchanged_title": "อันดับไม่เปลี่ยนแปลง",
+    "unchanged_message": "คุณไม่ได้เปลี่ยนอันดับของข้อความ prompts คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ?"
   },
   "rank_assistant_replies": {
-    "label": "Rank Assistant Replies",
-    "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
-    "overview": "Given the following Assistant replies, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?"
+    "label": "จัดอันดับการตอบกลับของผู้ช่วย",
+    "desc": "ให้คะแนนข้อความ prompts ที่ได้รับจาก Open Assistant ตามความถูกต้องและความสามารถในการอ่าน",
+    "overview": "จากคำตอบของ Assistant ต่อไปนี้ ให้เรียงอันดับจากดีที่สุดไปหาแย่ที่สุด ดีที่สุดเป็นอันดับแรก แย่ที่สุดเป็นอันดับสุดท้าย",
+    "unchanged_title": "อันดับไม่เปลี่ยนแปลง",
+    "unchanged_message": "คุณไม่ได้เปลี่ยนอันดับของข้อความ prompts คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ?"
   },
   "rank_initial_prompts": {
-    "label": "Rank Initial Prompts",
-    "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
-    "overview": "Given the following initial prompts, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?"
+    "label": "จัดอันดับข้อความ Prompts เริ่มต้น",
+    "desc": "ให้คะแนนข้อความ prompt ที่ได้รับจาก Open Assistant ตามความถูกต้องและความสามารถในการอ่าน",
+    "overview": "ให้เรียงอันดับจากดีที่สุดไปหาแย่ที่สุด ดีที่สุดเป็นอันดับแรก แย่ที่สุดอยู่อันดับสุดท้าย",
+    "unchanged_title": "อันดับไม่เปลี่ยนแปลง",
+    "unchanged_message": "คุณไม่ได้เปลี่ยนอันดับของข้อความ prompts คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ?"
   },
   "label_initial_prompt": {
-    "label": "Label Initial Prompt",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Provide labels for the following prompt"
+    "label": "ป้ายกำกับ Prompt เริ่มต้น",
+    "desc": "สร้างป้ายกำกับสำหรับ prompt",
+    "overview": "ผลิตป้ายกำกับ เพื่อติดตาม prompt"
   },
   "label_prompter_reply": {
-    "label": "Label Prompter Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Given the following discussion, provide labels for the final prompt."
+    "label": "กำกับการตอบกลับของ Prompter",
+    "desc": "ผลิตป้ายกำกับสำหรับข้อความ prompt",
+    "overview": "จากการสนทนาต่อไปนี้ ให้ระบุป้ายกำกับสำหรับข้อความ prompt สุดท้าย"
   },
   "label_assistant_reply": {
-    "label": "Label Assistant Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Given the following discussion, provide labels for the final prompt."
+    "label": "กำกับการตอบกลับผู้ช่วย",
+    "desc": "ผลิตป้ายกำกับสำหรับข้อความ prompt",
+    "overview": "จากการสนทนาต่อไปนี้ ให้ระบุป้ายกำกับสำหรับข้อความ prompt สุดท้าย"
   },
   "classify_initial_prompt": {
-    "label": "Classify Initial Prompt",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following prompt and then answer the question about it."
+    "label": "จัดประเภทข้อความ Prompt เริ่มต้น",
+    "desc": "ผลิตป้ายกำกับสำหรับข้อความ prompt",
+    "overview": "อ่านข้อความ prompt ต่อไปนี้แล้วตอบคำถามเกี่ยวกับเรื่องนี้"
   },
   "classify_prompter_reply": {
-    "label": "Classify Prompter Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
+    "label": "จัดประเภทการตอบกลับของ Prompter",
+    "desc": "ผลิตป้ายกำกับสำหรับข้อความ prompt",
+    "overview": "อ่านบทสนทนาต่อไปนี้ แล้วตอบคำถามเกี่ยวกับการตอบกลับครั้งล่าสุดในการสนทนา"
   },
   "classify_assistant_reply": {
-    "label": "Classify Assistant Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
+    "label": "จัดประเภทการตอบกลับของผู้ช่วย",
+    "desc": "ผลิตป้ายกำกับสำหรับข้อความ prompt",
+    "overview": "อ่านบทสนทนาต่อไปนี้ แล้วตอบคำถามเกี่ยวกับการตอบกลับครั้งล่าสุดในการสนทนา"
   },
-  "submitted_as": "This will be submitted as {{submit_lang}}",
-  "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}."
+  "submitted_as": "จะถูกส่งเป็น {{submit_lang}}",
+  "writing_wrong_langauge_a_b": "ดูเหมือนว่าคุณกำลังเขียนใน {{detected_lang}} แต่สิ่งนี้จะถูกส่งเป็น {{submit_lang}}"
 }
