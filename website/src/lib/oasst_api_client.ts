@@ -189,6 +189,13 @@ export class OasstApiClient {
     return this.get<Message>(`/api/v1/messages/${message_id}?username=${user.id}&auth_method=${user.auth_method}`);
   }
 
+  async fetch_message_tree(message_id: string) {
+    return this.get<{
+      id: string;
+      messages: Message[];
+    }>(`/api/v1/messages/${message_id}/tree`);
+  }
+
   /**
    * Delete a message by its id
    */

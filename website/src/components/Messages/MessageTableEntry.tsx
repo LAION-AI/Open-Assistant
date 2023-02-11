@@ -1,5 +1,6 @@
 import {
   Avatar,
+  AvatarProps,
   Box,
   HStack,
   Menu,
@@ -15,7 +16,18 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import { ClipboardList, Copy, Flag, Link, MessageSquare, MoreHorizontal, Slash, Trash, User } from "lucide-react";
+import {
+  ClipboardList,
+  Copy,
+  Flag,
+  Link,
+  MessageSquare,
+  MoreHorizontal,
+  Shield,
+  Slash,
+  Trash,
+  User,
+} from "lucide-react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -24,6 +36,7 @@ import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { del, post, put } from "src/lib/api";
+import { ROUTES } from "src/lib/routes";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
@@ -34,9 +47,17 @@ interface MessageTableEntryProps {
   message: Message;
   enabled?: boolean;
   highlight?: boolean;
+  avartarPosition?: "middle" | "top";
+  avartarProps?: AvatarProps;
 }
 
-export function MessageTableEntry({ message, enabled, highlight }: MessageTableEntryProps) {
+export function MessageTableEntry({
+  message,
+  enabled,
+  highlight,
+  avartarPosition = "middle",
+  avartarProps,
+}: MessageTableEntryProps) {
   const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
@@ -68,9 +89,10 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
         mr={inlineAvatar ? 2 : 0}
         name={`${boolean(message.is_assistant) ? "Assistant" : "User"}`}
         src={`${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
+        {...avartarProps}
       />
     ),
-    [borderColor, inlineAvatar, message.is_assistant]
+    [avartarProps, borderColor, inlineAvatar, message.is_assistant]
   );
   const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
 
@@ -86,13 +108,17 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
   };
 
   return (
-    <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
+    <HStack
+      w={["full", "full", "full", "fit-content"]}
+      gap={0.5}
+      alignItems={avartarPosition === "top" ? "start" : "center"}
+    >
       {!inlineAvatar && avatar}
       <Box
         width={["full", "full", "full", "fit-content"]}
         maxWidth={["full", "full", "full", "2xl"]}
         p="4"
-        borderRadius="md"
+        borderRadius="18px"
         bg={message.is_assistant ? backgroundColor : backgroundColor2}
         outline={highlight && "2px solid black"}
         outlineColor={highlightColor}
@@ -248,6 +274,9 @@ const MessageActions = ({
             <MenuDivider />
             <MenuItem onClick={() => handleCopy(id)} icon={<Copy />}>
               {t("copy_message_id")}
+            </MenuItem>
+            <MenuItem as="a" href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
+              View in admin area
             </MenuItem>
             <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
               {t("view_user")}

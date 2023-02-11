@@ -1,8 +1,8 @@
 """
     High level functions for model training
 """
-from custom_datasets.prompt_dialogue import InstructionTuning, PromptGeneratedDataset
-from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, WebGPT
+from custom_datasets.prompt_dialogue import InstructionTuning, PrivateInstructionTuning, PromptGeneratedDataset
+from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, TranslatedQA, WebGPT
 from custom_datasets.summarization import SummarizationDataset
 from custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
 from custom_datasets.translation import WMT2019, DiveMT, TEDTalk
@@ -32,7 +32,7 @@ SUMMARIZATION_DATASETS = [
     "debate_sum",
     "tldr_news",
 ]
-OTHER = ["prosocial_dialogue", "explain_prosocial", "instruct_tuning"]
+OTHER = ["prosocial_dialogue", "explain_prosocial", "instruct_tuning", "private_tuning", "oa_translated"]
 
 
 def train_val_dataset(dataset, val_split=0.2):
@@ -92,6 +92,12 @@ def get_one_dataset(conf, dataset_name):
     elif dataset_name == "instruct_tuning":
         dataset = InstructionTuning(conf.cache_dir)
         train, eval = train_val_dataset(dataset, val_split=0.2)
+    elif dataset_name == "private_tuning":
+        dataset = PrivateInstructionTuning(conf.cache_dir)
+        train, eval = train_val_dataset(dataset, val_split=0.2)
+    elif dataset_name == "oa_translated":
+        dataset = TranslatedQA(conf.cache_dir)
+        train, eval = train_val_dataset(dataset, val_split=0.01)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 

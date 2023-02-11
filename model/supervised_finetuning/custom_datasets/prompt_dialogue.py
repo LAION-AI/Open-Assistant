@@ -2,7 +2,7 @@ import json
 import os
 from urllib.request import urlopen
 
-from custom_datasets.formatting import format_pair
+from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
 from torch.utils.data import Dataset
 
 
@@ -102,3 +102,45 @@ class InstructionTuning(Dataset):
 
     def __getitem__(self, index):
         return format_pair(self.pairs[index])
+
+
+class PrivateInstructionTuning(Dataset):
+    """
+    We have seen some promising capabilities from instruction tuning
+    with the following mix of datasets that are derived from datasets
+    available online.
+    The files for this data are in json format as a list of tuples
+    where each tuple is (source,instruction_response_pair)
+
+    Not to be confused with unatural instruction
+    """
+
+    name = "private_tuning"
+    filename = "oa_v3_fixed_plus_safety.jsonl"
+
+    def __init__(self, cache_dir) -> None:
+        super().__init__()
+        os.makedirs(cache_dir, exist_ok=True)
+
+        self.pairs = []
+        for file_link in [self.filename]:
+            basename = file_link.split("/")[-1]
+            instruction_tune_file = os.path.join(cache_dir, basename)
+
+            with open(instruction_tune_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    row = json.loads(line)
+                    prefix = ""
+                    for _, convo in enumerate(row["text"].split("User:")):
+                        if "Assistant" in convo:
+                            prompt, answer = convo.split("Assistant:", maxsplit=1)
+                            answer = answer.replace("<|endoftext|>", "").strip()
+                            self.pairs.append((prefix + QA_SPECIAL_TOKENS["Question"] + prompt, answer))
+                            prefix += "".join(format_pair((prompt, answer)))
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, index):
+        prompt, answer = self.pairs[index]
+        return "{}{}".format(prompt, QA_SPECIAL_TOKENS["Answer"]), answer

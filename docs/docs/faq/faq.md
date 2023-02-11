@@ -61,7 +61,7 @@ website [https://open-assistant.io/](https://open-assistant.io/). If you want to
 contribute code, take a look at the
 [tasks in GitHub](https://github.com/orgs/LAION-AI/projects/3) and grab one.
 Take a look at this
-[contributing guide](https://github.com/GuilleHoardings/Open-Assistant/blob/main/CONTRIBUTING.md).
+[contributing guide](https://github.com/LAION-AI/Open-Assistant/blob/main/CONTRIBUTING.md).
 
 ## Questions about the model training website
 
