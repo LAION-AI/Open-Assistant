@@ -37,9 +37,8 @@ for stability**.
 
 ### 1. **Fork the OpenAssistant repository**
 
-Fork the
-[OpenAssistant repository](https://github.com/LAION-AI/Open-Assistant). To do
-this, click the link to the repository and click "Fork" in the upper-right
+Fork the [OpenAssistant repository](https://github.com/LAION-AI/Open-Assistant).
+To do this, click the link to the repository and click "Fork" in the upper-right
 corner. You should get an option to fork to your account, provided you are
 signed into Github.
 
