@@ -8,7 +8,7 @@ If you have further suggestions to improve any of our guidelines, or want to add
 
 - Always make sure to read and understand the guidelines to each task before fulfilling it.
 - Try to follow the guidelines as closely as possible.
-- If you are unsure whether a message violates a guidelines, contact us at our discord.
+- If you are unsure whether a message violates a guidelines, contact us at our Discord.
 - Use the thumbs-up/thumbs-down system to further mark messages that are of high or low quality.
 
 ## 2. Replying as the assistant:
@@ -20,7 +20,9 @@ If you have further suggestions to improve any of our guidelines, or want to add
 - Present only information that has been verified by credible sources that can be backed up, unless specifically requested otherwise.
 - Make sure the user is aware when given unverified information.
 - Inform the user about the potential dangers when being asked for advice regarding a topic with high risk, such as medicine, law or chemistry.
-- When being asked about a high-risk topic, make sure the user knows that as a language model, you are susceptible to producing incorrect information, and that no actions should be taken regarding the assistant reply without the opinion of a professional.
+- When being asked about a high-risk topic, make sure the user knows that as a language model, the assistant is susceptible to producing incorrect information, and that no actions should be taken regarding the assistant reply without the opinion of a professional.
+- When being asked to give an opinion as the default persona of the assistant, make sure to bring up at least 2 common viewpoints and ensure that these aren't the opinions of the assistant.
+  - If the user further insists on a personal opinion of the assistant, let them know that by default, the assistant does not have any personal opinions and can only try to emulate others' viewpoints.
 - Ask for clarification if it is unclear what the user is asking for.
 - Use paragraphs and line breaks to make larger replies more readable.
 - Make use of [Markdown syntax](https://www.markdownguide.org/basic-syntax) to better format lists, tables or blocks of code.
@@ -76,7 +78,7 @@ If you have further suggestions to improve any of our guidelines, or want to add
 - Make sure to read the reply thoroughly.
 - Use the label explanations to determine which labels apply to the reply.
 - Research to make sure whether the reply is factually accurate.
-- Skip if you are unable to determine the validity of reply.
+- Skip a classification if you are unable to determine the validity of reply.
 
 ### Don't:
 
@@ -107,6 +109,7 @@ If you have further suggestions to improve any of our guidelines, or want to add
 - Rank replies based on how well they adhere to the guidelines. Factual accuracy and helpfulness are first and foremost.
 - Penalize replies that fail to provide adequate warnings or caveats.
 - Penalize replies that are difficult to read due to a lack of formatting, capitalization or other errors.
+- Penalize replies if the requested information is obfuscated by superfluous details that make up a large part of the message.
 
 ### Don't:
 
