@@ -23,5 +23,14 @@
   "success": "Succes",
   "terms_of_service": "Conditii de utilizare",
   "title": "Open Assistant",
-  "yes": "Da"
+  "yes": "Da",
+  "dashboard_home": "Panou de control Home",
+  "messages": "Mesaje",
+  "messages_dashboard": "Panou de control pentru mesaje",
+  "leaderboard": "Clasament",
+  "user_leaderboard": "Clasamentul utilizatorilor",
+  "users": "Utilizatori",
+  "users_dashboard": "Panoul de control al utilizatorului",
+  "status": "Stare",
+  "status_dashboard": "Tabloul de bord de stare"
 }
