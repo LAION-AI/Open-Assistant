@@ -86,6 +86,8 @@ class OasstErrorCode(IntEnum):
 
     EMOJI_OP_UNSUPPORTED = 5000
 
+    CACHED_STATS_NOT_AVAILABLE = 6000
+
 
 class OasstError(Exception):
     """Base class for Open-Assistant exceptions."""
