@@ -82,6 +82,7 @@ export const Sortable = (props: SortableProps) => {
             {itemsWithIds.map(({ id, item }, index) => (
               <SortableItem key={id} id={id} index={index} isEditable={props.isEditable} isDisabled={props.isDisabled}>
                 <button
+                  className="w-full text-left"
                   aria-label="show full text"
                   onClick={() => {
                     setModalText(item);
