@@ -222,7 +222,7 @@ class SODA(Dataset):
 
         return pairs
 
-    def __init__(self, cache_dir, max_sample_size=10000, input_max_length=1024) -> None:
+    def __init__(self, cache_dir, input_max_length=1024) -> None:
         super().__init__()
 
         self.pairs = []
@@ -232,9 +232,6 @@ class SODA(Dataset):
             for (prompt, answer) in data_pair:
                 if len(prompt) < input_max_length:
                     self.pairs.append((prompt, answer))
-
-            if len(self.pairs) > max_sample_size:
-                break
 
     def __len__(self):
         return len(self.pairs)

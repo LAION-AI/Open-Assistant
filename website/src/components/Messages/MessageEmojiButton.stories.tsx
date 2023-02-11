@@ -11,17 +11,16 @@ export default {
 const Template = ({
   emoji,
   count,
-  checked,
-  showCount,
+  ...rest
 }: {
   emoji: string;
   count: number;
   checked?: boolean;
-  showCount: boolean;
+  userIsAuthor: boolean;
+  disabled?: boolean;
+  userReacted: boolean;
 }) => {
-  return (
-    <MessageEmojiButton emoji={{ name: emoji, count }} checked={checked} onClick={undefined} showCount={showCount} />
-  );
+  return <MessageEmojiButton emoji={{ name: emoji, count }} onClick={undefined} {...rest} />;
 };
 
 export const Default = Template.bind({});
@@ -29,7 +28,9 @@ Default.args = {
   emoji: "+1",
   count: 7,
   checked: false,
-  showCount: true,
+  userIsAuthor: false,
+  disabled: false,
+  userReacted: true,
 };
 
 export const BigNumber = Template.bind({});

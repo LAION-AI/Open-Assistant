@@ -27,6 +27,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
@@ -98,6 +99,13 @@ if settings.OFFICIAL_WEB_API_KEY:
                     frontend_type="web",
                     trusted=True,
                 )
+
+
+if settings.ENABLE_PROM_METRICS:
+
+    @app.on_event("startup")
+    async def enable_prom_metrics():
+        Instrumentator().instrument(app).expose(app)
 
 
 if settings.RATE_LIMIT:

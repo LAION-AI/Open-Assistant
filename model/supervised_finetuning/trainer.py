@@ -1,7 +1,7 @@
 import argparse
 from distutils.util import strtobool
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import bitsandbytes
 import datasets
@@ -14,7 +14,7 @@ from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
-from utils import get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
+from utils import PerDatasetSampler, get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
@@ -36,7 +36,7 @@ class SFTTrainer(Trainer):
         self,
         model: Union[PreTrainedModel, nn.Module] = None,
         args: TrainingArguments = None,
-        train_collate_fn: Callable = None,
+        sampler: torch.utils.data.sampler.Sampler = None,
         loss_function: str = "CrossEntropyLoss",
         poly_eps: float = 1.0,
         **kwargs,
@@ -45,6 +45,7 @@ class SFTTrainer(Trainer):
         self.train_collate_fn = train_collate_fn
         # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
         self.loss_fct = get_loss(loss_function, poly_eps)
+        self.sampler = sampler
 
     def compute_loss(self, model, inputs, return_outputs=False):
         labels_mask = inputs.pop("label_masks")
@@ -95,24 +96,22 @@ class SFTTrainer(Trainer):
 
         return (loss, logits, labels)
 
-    def get_train_dataloader(self) -> DataLoader:
+    def get_train_dataloader(self):
         """
-        Returns the training [`~torch.utils.data.DataLoader`].
-        Will use no sampler if `train_dataset` does not implement `__len__`, a random sampler (adapted to distributed
-        training if necessary) otherwise.
-        Subclass and override this method if you want to inject some custom behavior.
-        """
-        if self.train_dataset is None:
-            raise ValueError("Trainer: training requires a train_dataset.")
+        Inject custom data sampling behaviour into training loop
+        and use custom task mixing collate function : train_collate_fn
 
-        train_dataset = self.train_dataset
+        rewrite from:
+        https://github.com/huggingface/transformers/blob/67d074874d285e616393c65a0e670088e1b6b74a/src/transformers/trainer.py#L846
+        """
         data_collator = self.train_collate_fn
+        train_dataset = self.train_dataset
         if is_datasets_available() and isinstance(train_dataset, datasets.Dataset):
             train_dataset = self._remove_unused_columns(train_dataset, description="training")
-        else:
-            data_collator = self._get_collator_with_removed_columns(data_collator, description="training")
 
         if isinstance(train_dataset, torch.utils.data.IterableDataset):
+            # if we are using iterable dataset it means no weight sampling
+            # added for backward compat
             if self.args.world_size > 1:
                 train_dataset = IterableDatasetShard(
                     train_dataset,
@@ -121,7 +120,6 @@ class SFTTrainer(Trainer):
                     num_processes=self.args.world_size,
                     process_index=self.args.process_index,
                 )
-
             return DataLoader(
                 train_dataset,
                 batch_size=self.args.per_device_train_batch_size,
@@ -129,8 +127,10 @@ class SFTTrainer(Trainer):
                 num_workers=self.args.dataloader_num_workers,
                 pin_memory=self.args.dataloader_pin_memory,
             )
-
-        train_sampler = self._get_train_sampler()
+        if self.sampler is None:
+            train_sampler = self._get_train_sampler()
+        else:
+            train_sampler = self.sampler
 
         return DataLoader(
             train_dataset,
@@ -194,10 +194,9 @@ if __name__ == "__main__":
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
-
     train, evals, collate_fn, train_collate_fn = get_dataset(training_conf, tokenizer)
+    sampler = PerDatasetSampler.build_sampler_from_config(training_conf, train.datasets)
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
-
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
 
     if training_conf.quantization:
@@ -235,7 +234,6 @@ if __name__ == "__main__":
     )
 
     assert len(evals) > 0
-
     if not training_conf.deepspeed or training_conf.local_rank == 0:
         import wandb
 
@@ -246,8 +244,9 @@ if __name__ == "__main__":
         )
 
     trainer = SFTTrainer(
-        model,
-        args,
+        model=model,
+        args=args,
+        sampler=sampler,
         train_collate_fn=train_collate_fn,
         loss_function=training_conf.loss_fn,
         poly_eps=training_conf.poly_eps,

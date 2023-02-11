@@ -22,7 +22,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
-import { useHasRole } from "src/hooks/auth/useHasRole";
+import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { del, post, put } from "src/lib/api";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
@@ -116,7 +116,8 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
                   key={emoji}
                   emoji={{ name: emoji, count }}
                   checked={emojiState.user_emojis.includes(emoji)}
-                  showCount={emojiState.user_emojis.filter((emoji) => emoji === "+1" || emoji === "-1").length > 0}
+                  userReacted={emojiState.user_emojis.length > 0}
+                  userIsAuthor={message.user_is_author}
                   onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
                 />
               );
@@ -209,7 +210,7 @@ const MessageActions = ({
     });
   };
 
-  const isAdmin = useHasRole("admin");
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
 
   return (
     <Menu>
@@ -237,12 +238,12 @@ const MessageActions = ({
         </MenuItem>
 
         <MenuItem
-          onClick={() => handleCopy(`${window.location.protocol}://${window.location.host}/messages/${id}`)}
+          onClick={() => handleCopy(`${window.location.protocol}//${window.location.host}/messages/${id}`)}
           icon={<Link />}
         >
           {t("copy_message_link")}
         </MenuItem>
-        {!!isAdmin && (
+        {!!isAdminOrMod && (
           <>
             <MenuDivider />
             <MenuItem onClick={() => handleCopy(id)} icon={<Copy />}>

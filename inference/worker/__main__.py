@@ -1,25 +1,22 @@
-import json
-
+import interface
 import rel
 import requests
 import sseclient
-import typer
+import utils
 import websocket
 from loguru import logger
 from oasst_shared.schemas import inference, protocol
+from settings import settings
 
-app = typer.Typer()
+# touch
 
 
-@app.command()
-def main(
-    backend_url: str = "ws://localhost:8000",
-    model_name: str = "distilgpt2",
-    inference_server_url: str = "http://localhost:8001",
-):
+def main():
+    utils.wait_for_inference_server(settings.inference_server_url)
+
     def on_open(ws: websocket.WebSocket):
         logger.info("Connected to backend, sending config...")
-        worker_config = inference.WorkerConfig(model_name=model_name)
+        worker_config = inference.WorkerConfig(model_name=settings.model_id)
         ws.send(worker_config.json())
         logger.info("Config sent, waiting for work...")
 
@@ -43,19 +40,12 @@ def main(
 
         prompt = prefix + "\n".join(messages) + "\nAssistant:"
 
+        parameters = interface.GenerateStreamParameters.from_work_request(work_request)
         response = requests.post(
-            f"{inference_server_url}/generate_stream",
+            f"{settings.inference_server_url}/generate_stream",
             json={
                 "inputs": prompt,
-                "parameters": {
-                    "max_new_tokens": work_request.max_new_tokens,
-                    "do_sample": work_request.do_sample,
-                    "top_k": work_request.top_k,
-                    "top_p": work_request.top_p,
-                    "temperature": work_request.temperature,
-                    "seed": work_request.seed,
-                    # "stop": ["\nUser:", "\nAssistant:"], # TODO: make this a bit more workable because it's mutliple tokens
-                },
+                "parameters": parameters.dict(),
             },
             stream=True,
             headers={"Accept": "text/event-stream"},
@@ -68,29 +58,39 @@ def main(
             return
 
         client = sseclient.SSEClient(response)
+        stream_response = None
+        token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)
         for event in client.events():
             logger.debug(f"Received event: {event}")
-            data = json.loads(event.data)
-            if data["generated_text"]:
-                break
-            token = data["token"]
+            stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
+            token = stream_response.token
+            for send_token in token_buffer.add(token):
+                ws.send(
+                    inference.WorkResponsePacket(
+                        token=send_token.to_token_response(),
+                    ).json()
+                )
+        if stream_response is None:
+            logger.error("No stream response received")
+            return
+
+        for send_token in token_buffer.finish(reason=stream_response.details.finish_reason):
             ws.send(
                 inference.WorkResponsePacket(
-                    token=inference.TokenResponse(
-                        text=token["text"],
-                        log_prob=token["logprob"],
-                        token_id=token["id"],
-                    )
+                    token=send_token.to_token_response(),
                 ).json()
             )
+
         ws.send(
             inference.WorkResponsePacket(
                 is_end=True,
                 generated_text=inference.GeneratedTextResponse(
-                    text=data["generated_text"],
+                    text=stream_response.generated_text,
+                    finish_reason=stream_response.details.finish_reason,
                 ),
             ).json()
         )
+        logger.info("Work complete. Waiting for more work...")
 
     def on_error(ws: websocket.WebSocket, error: Exception):
         try:
@@ -102,7 +102,7 @@ def main(
         logger.warning(f"Connection closed: {close_status_code=} {close_msg=}")
 
     ws = websocket.WebSocketApp(
-        f"{backend_url}/work",
+        f"{settings.backend_url}/work",
         on_message=on_message,
         on_error=on_error,
         on_close=on_close,
@@ -115,4 +115,4 @@ def main(
 
 
 if __name__ == "__main__":
-    app()
+    main()
