@@ -33,7 +33,7 @@
     "overview": "Dada la discusión siguiente, proporciona etiquetas para la última entrada."
   },
   "label_initial_prompt": {
-    "label": "Etiquetar instrucciones inciales",
+    "label": "Etiquetar instrucciones iniciales",
     "desc": "Proporciona etiquetas para unas instrucciones.",
     "overview": "Proporciona etiquetas para las siguientes instrucciones"
   },
