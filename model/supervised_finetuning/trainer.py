@@ -234,7 +234,6 @@ if __name__ == "__main__":
         report_to="wandb" if training_conf.log_wandb else None,
     )
 
-    assert len(evals) > 0
     if training_conf.log_wandb and not training_conf.deepspeed or training_conf.local_rank == 0:
         import wandb
 
