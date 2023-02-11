@@ -80,4 +80,6 @@
     "instruction": "Proporciona la resposta de l'usuari",
     "response_placeholder": "Escriu la resposta aquí..."
   },
+  "submitted_as": "S'enviarà en {{submit_lang}}",
+  "writing_wrong_langauge_a_b": "Sembla que estàs escrivint en {{detected_lang}}, però s'enviarà com a {{submit_lang}}."
 }
