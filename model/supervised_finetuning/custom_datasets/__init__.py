@@ -1,7 +1,12 @@
 """
     High level functions for model training
 """
-from custom_datasets.prompt_dialogue import InstructionTuning, PrivateInstructionTuning, PromptGeneratedDataset
+from custom_datasets.prompt_dialogue import (
+    InstructionTuning,
+    OAPrivate,
+    PrivateInstructionTuning,
+    PromptGeneratedDataset,
+)
 from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, TranslatedQA, WebGPT
 from custom_datasets.summarization import SummarizationDataset
 from custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
@@ -36,6 +41,9 @@ OTHER = ["prosocial_dialogue", "explain_prosocial", "instruct_tuning", "private_
 
 
 def train_val_dataset(dataset, val_split=0.2):
+    if val_split == 0:
+        return dataset, None
+
     train_idx, val_idx = train_test_split(
         list(range(len(dataset))), test_size=val_split, random_state=666, shuffle=True
     )
@@ -85,11 +93,13 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, **kwargs)
         dataset = PrivateInstructionTuning(data_path)
     elif dataset_name == "oa_translated":
         dataset = TranslatedQA(data_path)  # TODO make val_split lower..?
+    elif dataset_name == "oa_private":
+        dataset = OAPrivate(data_path, **kwargs)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
     # if eval not already defined
     if "dataset" in locals():
-        train, eval = train_val_dataset(dataset, val_split=val_split, **kwargs)
+        train, eval = train_val_dataset(dataset, val_split=val_split)
 
     return train, eval

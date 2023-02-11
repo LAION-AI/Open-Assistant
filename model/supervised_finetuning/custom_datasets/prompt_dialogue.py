@@ -12,10 +12,9 @@ from torch.utils.data import Dataset
 
 
 class OAPrivate(Dataset):
-    file = "2023-02-10_oasst_prod.jsonl"
     splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
 
-    def __init__(self, split="sft", data_path=".cache") -> None:
+    def __init__(self, data_path, split="sft", file="2023-02-10_oasst_prod.jsonl") -> None:
         super().__init__()
 
         total_prob = reduce(lambda prev, split: prev + split[1], self.splits.items(), 0)
@@ -56,14 +55,17 @@ class OAPrivate(Dataset):
 
             reply = random.choice(prompt["replies"])
             reply_text = reply["text"]
-            pairs.append([prompter_text, reply_text])
+
+            # only add if the reply exists
+            pairs.append(prompter_text)
+            pairs.append(reply_text)
 
             if len(reply["replies"]) == 0:
                 break
 
             prompt = random.choice(reply["replies"])
 
-        return pairs
+        return format_pair(pairs)
 
 
 class PromptGeneratedDataset(Dataset):
