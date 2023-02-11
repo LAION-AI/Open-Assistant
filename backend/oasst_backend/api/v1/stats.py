@@ -79,4 +79,4 @@ def update_cached_stats(
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
 ):
     csr = CachedStatsRepository(db)
-    return csr.update_all_cached_stats()()
+    csr.update_all_cached_stats()
