@@ -1,4 +1,5 @@
-from datasets import load_dataset, concatenate_datasets
+from datasets import concatenate_datasets, load_dataset
+
 
 def load(languages: list = ["en", "de", "fr", "es", "it", "pt", "nl", "hu"]):
     ds = None
@@ -8,6 +9,7 @@ def load(languages: list = ["en", "de", "fr", "es", "it", "pt", "nl", "hu"]):
         else:
             ds = concatenate_datasets([ds, f"sedthh/gutenberg_{lang}"])
     return ds
+
 
 if __name__ == "__main__":
     ds = load()
