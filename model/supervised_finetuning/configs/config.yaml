@@ -47,6 +47,7 @@ defaults:
   seq2seqmodel: false
   poly_eps: 1.0
   fuse_gelu: true
+  log_wandb: true
 
 galactica-125m:
   learning_rate: 5e-5
@@ -87,3 +88,4 @@ debug:
   per_device_train_batch_size: 1
   per_device_eval_batch_size: 1
   quantization: false
+  log_wandb: false
