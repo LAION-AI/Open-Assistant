@@ -17,13 +17,12 @@ defaults:
   freeze_layer:
   datasets:
     - webgpt
-    # - prompt_dialogue
     - squad_v2
     - adversarial_qa
     - trivia_qa_nocontext
     - xsum
     - cnn_dailymail
-    - prompt_dialogue
+    - prompt_dialogue # TODO: need to fix the url
     - multi_news
     - scitldr
     - soda
@@ -49,12 +48,16 @@ defaults:
   fuse_gelu: true
   log_wandb: true
   samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
+  verbose: false
 
 oa_dataset_only:
   datasets:
-    - oa_pricate:
-      data_path: .cache
-      val_split: 0.0
+    - oa_private:
+        data_path: .cache
+        split: sft
+        val_split: 0.0
+        fraction: 1
+        file: 2023-02-10_oasst_prod.jsonl
 
 galactica-125m:
   learning_rate: 5e-5
@@ -89,6 +92,7 @@ codegen:
   per_device_eval_batch_size: 4
 
 debug:
+  model_name: EleutherAI/pythia-70m-deduped
   eval_steps: 20
   eval_size: 20
   gradient_accumulation_steps: 1
@@ -96,3 +100,4 @@ debug:
   per_device_eval_batch_size: 1
   quantization: false
   log_wandb: false
+  verbose: true
