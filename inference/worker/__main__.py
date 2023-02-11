@@ -2,24 +2,21 @@ import interface
 import rel
 import requests
 import sseclient
-import typer
 import utils
 import websocket
 from loguru import logger
 from oasst_shared.schemas import inference, protocol
+from settings import settings
 
-app = typer.Typer()
+# touch
 
 
-@app.command()
-def main(
-    backend_url: str = "ws://localhost:8000",
-    model_name: str = "distilgpt2",
-    inference_server_url: str = "http://localhost:8001",
-):
+def main():
+    utils.wait_for_inference_server(settings.inference_server_url)
+
     def on_open(ws: websocket.WebSocket):
         logger.info("Connected to backend, sending config...")
-        worker_config = inference.WorkerConfig(model_name=model_name)
+        worker_config = inference.WorkerConfig(model_name=settings.model_id)
         ws.send(worker_config.json())
         logger.info("Config sent, waiting for work...")
 
@@ -45,7 +42,7 @@ def main(
 
         parameters = interface.GenerateStreamParameters.from_work_request(work_request)
         response = requests.post(
-            f"{inference_server_url}/generate_stream",
+            f"{settings.inference_server_url}/generate_stream",
             json={
                 "inputs": prompt,
                 "parameters": parameters.dict(),
@@ -93,6 +90,7 @@ def main(
                 ),
             ).json()
         )
+        logger.info("Work complete. Waiting for more work...")
 
     def on_error(ws: websocket.WebSocket, error: Exception):
         try:
@@ -104,11 +102,12 @@ def main(
         logger.warning(f"Connection closed: {close_status_code=} {close_msg=}")
 
     ws = websocket.WebSocketApp(
-        f"{backend_url}/work",
+        f"{settings.backend_url}/work",
         on_message=on_message,
         on_error=on_error,
         on_close=on_close,
         on_open=on_open,
+        header={"X-API-Key": settings.api_key},
     )
 
     ws.run_forever(dispatcher=rel, reconnect=5)
@@ -117,4 +116,4 @@ def main(
 
 
 if __name__ == "__main__":
-    app()
+    main()

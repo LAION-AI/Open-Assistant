@@ -1,0 +1,21 @@
+{
+  "copy_message_id": "Copiar ID da mensaxe",
+  "copy_message_link": "Copiar ligazón da mensaxe",
+  "label_action": "Etiquetar",
+  "label_title": "Etiqueta",
+  "message_deleted": "Mensaxe eliminada",
+  "message": "Mensaxe",
+  "open_new_tab_action": "Abrir nunha nova lapela",
+  "parent": "Pai",
+  "reactions": "Reaccións",
+  "recent_messages": "Mensaxes recentes en {{language}}",
+  "report_action": "Informar",
+  "report_placeholder": "Porque se debería informar desta mensaxe?",
+  "report_title": "Informe",
+  "send_report": "Enviar informe",
+  "stop_tree": "Parar árbore",
+  "submit_labels": "Enviar",
+  "tree_stopped": "Árbore parado {{id}}",
+  "view_user": "Ver usuario",
+  "your_recent_messages": "As túas mensaxes recentes"
+}

@@ -1,6 +1,7 @@
 """Simple REPL frontend."""
 
 import json
+import time
 
 import requests
 import sseclient
@@ -42,6 +43,7 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
             break
         except Exception:
             typer.echo("Error, restarting chat...")
+            time.sleep(1)
 
 
 if __name__ == "__main__":
