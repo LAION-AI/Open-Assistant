@@ -1,19 +1,39 @@
-import { Button, Card, CardBody, Container, FormControl, FormLabel, Input, Stack, useToast } from "@chakra-ui/react";
-import { InferGetServerSidePropsType } from "next";
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Box,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Checkbox,
+  CircularProgress,
+  FormControl,
+  FormLabel,
+  Input,
+  Stack,
+  useToast,
+} from "@chakra-ui/react";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
-import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { AdminArea } from "src/components/AdminArea";
+import { useCursorPagination } from "src/components/DataTable/useCursorPagination";
+import { JsonCard } from "src/components/JsonCard";
 import { getAdminLayout } from "src/components/Layout";
+import { AdminMessageTable } from "src/components/Messages/AdminMessageTable";
 import { Role, RoleSelect } from "src/components/RoleSelect";
-import { UserMessagesCell } from "src/components/UserMessagesCell";
-import { post } from "src/lib/api";
+import { get, post } from "src/lib/api";
 import { userlessApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
+import { FetchUserMessagesCursorResponse } from "src/types/Conversation";
+import { User } from "src/types/Users";
+import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
-
 interface UserForm {
   user_id: string;
   id: string;
@@ -21,33 +41,17 @@ interface UserForm {
   display_name: string;
   role: Role;
   notes: string;
+  show_on_leaderboard: boolean;
 }
 
 const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const toast = useToast();
-  const router = useRouter();
-  const { data: session, status } = useSession();
-
-  // Check when the user session is loaded and re-route if the user is not an
-  // admin.  This follows the suggestion by NextJS for handling private pages:
-  //   https://nextjs.org/docs/api-reference/next/router#usage
-  //
-  // All admin pages should use the same check and routing steps.
-  useEffect(() => {
-    if (status === "loading") {
-      return;
-    }
-    if (session?.user?.role === "admin") {
-      return;
-    }
-    router.push("/");
-  }, [router, session, status]);
 
   // Trigger to let us update the user's role.  Triggers a toast when complete.
   const { trigger } = useSWRMutation("/api/admin/update_user", post, {
     onSuccess: () => {
       toast({
-        title: "User Role Updated",
+        title: "Updated user",
         status: "success",
         duration: 1000,
         isClosable: true,
@@ -76,8 +80,8 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <Stack gap="4">
-        <Container>
+      <AdminArea>
+        <Stack gap="4">
           <Card>
             <CardBody>
               <form onSubmit={handleSubmit((data) => trigger(data))}>
@@ -88,32 +92,97 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
                   <FormLabel>Display Name</FormLabel>
                   <Input {...register("display_name")} isDisabled />
                 </FormControl>
-                <FormControl>
+                <FormControl mt="2">
                   <FormLabel>Role</FormLabel>
                   <RoleSelect {...register("role")}></RoleSelect>
                 </FormControl>
-                <FormControl>
+                <FormControl mt="2">
                   <FormLabel>Notes</FormLabel>
                   <Input {...register("notes")} />
+                </FormControl>
+                <FormControl mt="2">
+                  <FormLabel>Show on leaderboard</FormLabel>
+                  <Checkbox {...register("show_on_leaderboard")}></Checkbox>
                 </FormControl>
                 <Button mt={4} type="submit">
                   Update
                 </Button>
               </form>
+              <Accordion allowToggle mt="4">
+                <AccordionItem>
+                  <AccordionButton>
+                    <Box as="span" flex="1" textAlign="left">
+                      Raw JSON
+                    </Box>
+                    <AccordionIcon />
+                  </AccordionButton>
+                  <AccordionPanel pb={4}>
+                    <JsonCard>{user}</JsonCard>
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
             </CardBody>
           </Card>
-        </Container>
-        <UserMessagesCell path={`/api/admin/user_messages?user=${user.user_id}`} />
-      </Stack>
+          <Card>
+            <CardHeader pb="0" fontWeight="medium" fontSize="xl">
+              {`User's messages`}
+            </CardHeader>
+            <CardBody>
+              <UserMessageTable id={user.user_id}></UserMessageTable>
+            </CardBody>
+          </Card>
+        </Stack>
+      </AdminArea>
     </>
+  );
+};
+
+const UserMessageTable = ({ id }: { id: User["id"] }) => {
+  const { pagination, toNextPage, toPreviousPage } = useCursorPagination();
+  const { data, error, isLoading } = useSWRImmutable<FetchUserMessagesCursorResponse>(
+    `/api/admin/user_messages?user=${id}&cursor=${encodeURIComponent(pagination.cursor)}&direction=${
+      pagination.direction
+    }`,
+    get,
+    {
+      keepPreviousData: true,
+    }
+  );
+
+  if (isLoading && !data) {
+    return <CircularProgress isIndeterminate />;
+  }
+
+  if (error) {
+    return <>Unable to load messages.</>;
+  }
+
+  return (
+    <AdminMessageTable
+      data={data?.items || []}
+      disableNext={!data?.next}
+      disablePrevious={!data?.prev}
+      onNextClick={() => toNextPage(data)}
+      onPreviousClick={() => toPreviousPage(data)}
+    ></AdminMessageTable>
   );
 };
 
 /**
  * Fetch the user's data on the server side when rendering.
  */
-export async function getServerSideProps({ query, locale }) {
-  const backend_user = await userlessApiClient.fetch_user(query.id);
+export const getServerSideProps: GetServerSideProps<{ user: User<Role> }, { id: string }> = async ({
+  params,
+  locale = "en",
+}) => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const backend_user = await userlessApiClient.fetch_user(params!.id as string);
+
+  if (!backend_user) {
+    return {
+      notFound: true,
+    };
+  }
   const local_user = await prisma.user.findUnique({
     where: { id: backend_user.id },
     select: {
@@ -130,7 +199,7 @@ export async function getServerSideProps({ query, locale }) {
       ...(await serverSideTranslations(locale, ["common"])),
     },
   };
-}
+};
 
 ManageUser.getLayout = getAdminLayout;
 

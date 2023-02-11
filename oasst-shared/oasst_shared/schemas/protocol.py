@@ -102,6 +102,12 @@ class Message(ConversationMessage):
     created_date: Optional[datetime]
     review_result: Optional[bool]
     review_count: Optional[int]
+    deleted: Optional[bool]
+    synthetic: Optional[bool]
+    model_name: Optional[str]
+    message_tree_id: Optional[UUID]
+    ranking_count: Optional[int]
+    rank: Optional[int]
 
 
 class MessagePage(PageResult):

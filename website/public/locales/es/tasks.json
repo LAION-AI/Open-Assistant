@@ -1,4 +1,5 @@
 {
+  "any_feedback_on_this_task": "¿Alguna realimentación sobre esta tarea?",
   "available_task_count": "{{count}} tareas disponibles",
   "classify_assistant_reply": {
     "label": "Clasificar respuesta del asistente",
@@ -78,5 +79,7 @@
     "overview": "Dada la conversación siguiente, proporciona una respuesta adecuada",
     "instruction": "Proporciona la respuesta del usuario",
     "response_placeholder": "Escribe tu respuesta aquí..."
-  }
+  },
+  "submitted_as": "Esto será enviado como {{submit_lang}}",
+  "writing_wrong_langauge_a_b": "Parece que estás escribiendo en {{detected_lang}} pero esto se enviará como {{submit_lang}}."
 }

@@ -1,6 +1,7 @@
 """
     Open / close book QA datasets
 """
+import glob
 import json
 import os
 import re
@@ -137,11 +138,13 @@ class QADataset(Dataset):
             self.dataset = load_dataset(context["name"], **context["params"])
         else:
             raise ValueError("Unknown dataset : " + dataset)
+        self.length = len(self.dataset)
 
     def __len__(self):
-        return len(self.dataset)
+        return self.length
 
     def __getitem__(self, idx):
+
         data = self.dataset[idx]
         return format_pair(self.index_fn(data))
 
@@ -219,7 +222,7 @@ class SODA(Dataset):
 
         return pairs
 
-    def __init__(self, cache_dir, max_sample_size=10000, input_max_length=1024) -> None:
+    def __init__(self, cache_dir, input_max_length=1024) -> None:
         super().__init__()
 
         self.pairs = []
@@ -229,9 +232,6 @@ class SODA(Dataset):
             for (prompt, answer) in data_pair:
                 if len(prompt) < input_max_length:
                     self.pairs.append((prompt, answer))
-
-            if len(self.pairs) > max_sample_size:
-                break
 
     def __len__(self):
         return len(self.pairs)
@@ -314,14 +314,75 @@ class JokeExplaination(Dataset):
             for line in f:
                 data = json.loads(line)
                 joke = data["joke"]
-                explanation = data["explanation"]
+                # DO NOT change this
+                # its the data that had syntax error
+                explanation = data["explaination"]
                 self.pairs.append((joke, explanation))
 
         if len(question) > 0 and len(answer) > 0:
             self.pairs.append((question, answer))
+        self.length = len(self.pairs)
 
     def __len__(self):
-        return len(self.pairs)
+        return self.length
 
     def __getitem__(self, index):
         return format_pair(self.pairs[index])
+
+
+class TranslatedQA(Dataset):
+    """
+    Translation OA v3 results
+    a list of non english translation of OA v3 instruction generated text in jsonl
+    format for each line:
+    {
+        "text": "User: ... Assistant: ....",
+        "meta": {"source": ... },
+        "translate": [
+            { "round": 1, "human":"...", "answer": "..."},
+            ...
+            { "round": K, "human":"...", "answer": "..."},
+        ]
+    }
+    Since OA contain some code we needed to reference the original text to skip these
+    """
+
+    name = "oa_translated"
+
+    def __init__(self, cache_dir) -> None:
+        super().__init__()
+        os.makedirs(cache_dir, exist_ok=True)
+        path = os.path.join(cache_dir, self.name)
+        os.makedirs(path, exist_ok=True)
+        self.pairs = []
+        for translated_jsonl in glob.glob(os.path.join(path, "*.jsonl")):
+            with open(translated_jsonl, "r") as fin:
+                for line in fin:
+                    data = json.loads(line)
+                    if "Python " in data["text"]:
+                        # translation currently doesn't ignore code
+                        # so we will have to reference original text
+                        # for ignoring the translation
+                        continue
+                    prefix = ""
+                    for convo_round in data["translate"]:
+                        human, answer = format_pair((convo_round["human"], convo_round["answer"]))
+                        if convo_round["round"] > 2:
+                            self.pairs.append(("{}{}{}".format(prefix, "<sep>", human), answer))
+                        else:
+                            self.pairs.append((human, answer))
+
+                        prefix += "{}{}{}{}".format(
+                            QA_SPECIAL_TOKENS["Question"],
+                            convo_round["human"],
+                            QA_SPECIAL_TOKENS["Answer"],
+                            convo_round["answer"],
+                        )
+
+        self.length = len(self.pairs)
+
+    def __len__(self):
+        return self.length
+
+    def __getitem__(self, index):
+        return self.pairs[index]

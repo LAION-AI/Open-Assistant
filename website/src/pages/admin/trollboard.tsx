@@ -18,7 +18,7 @@ const Leaderboard = () => {
       <AdminArea>
         <Box display="flex" flexDirection="column">
           <Heading fontSize="2xl" fontWeight="bold" pb="4">
-            {t("leaderboard")}
+            Trollboard
           </Heading>
           <Card>
             <CardBody>

@@ -1,3 +1,107 @@
+## Questions about the project
+
+### How far along is this project?
+
+We are in the early stages of development, working from established research in
+applying RLHF to large language models.
+
+### Can I install Open Assistant locally and chat with it?
+
+The project is not at that stage yet. See
+[the plan](https://github.com/LAION-AI/Open-Assistant#the-plan).
+
+### What is the Docker command for?
+
+Only for local development. It does not launch an AI model.
+
+### Is an AI model ready to test yet?
+
+Not yet. The data you help us collect now through
+[https://open-assistant.io/](https://open-assistant.io/) will be used to improve
+it.
+
+### What license does Open Assistant use?
+
+The code and models are licensed under the Apache 2.0 license.
+
+### Is the model open?
+
+The model will be open. Some very early prototype models are published on
+HuggingFace. Follow the discussion in the Discord channel
+[#ml-models-demo](https://discord.com/channels/1055935572465700980/1067096888530178048).
+
+### Which base model will be used?
+
+It's still being discussed. Options include Pythia, GPT-J, and a bunch more..
+You can follow the discussion in the Discord channel
+[#data-discussion](https://discord.com/channels/1055935572465700980/1058348535612985394).
+
+### Can I download the data?
+
+You will be able to, under CC BY 4.0, but it's not released yet. We want to
+remove spam and PII before releasing it.
+
+### Who is behind Open Assistant?
+
+Open Assistant is a project organized by [LAION](https://laion.ai/) and
+individuals around the world interested in bringing this technology to everyone.
+
+### Will Open Assistant be free?
+
+Yes, Open Assistant will be free to use and modify.
+
+### What hardware will be required to run the models?
+
+There will be versions which will be runnable on consumer hardware.
+
+### How can I contribute?
+
+If you want to help in the data collection for training the model, go to the
+website [https://open-assistant.io/](https://open-assistant.io/). If you want to
+contribute code, take a look at the
+[tasks in GitHub](https://github.com/orgs/LAION-AI/projects/3) and grab one.
+Take a look at this
+[contributing guide](https://github.com/LAION-AI/Open-Assistant/blob/main/CONTRIBUTING.md).
+
+## Questions about the model training website
+
+### Can I use ChatGPT to help in training Open Assistant, for instance, by generating answers?
+
+No, it is against their terms of service to use it to help train other models.
+See
+[this issue](https://github.com/LAION-AI/Open-Assistant/issues/471#issuecomment-1374392299).
+ChatGPT-like answers will be removed.
+
+### What should I do if I don't know how to complete the task as an assistant?
+
+Skip it.
+
+### Should I fact check the answers by the assistant?
+
+Yes, you should try. If you are not sure, skip the task.
+
+### How can I see my score?
+
+In your [account settings](https://open-assistant.io/account).
+
+### Can we see how many data points have been collected?
+
+There's no public interface for that yet. However, some updates are posted
+periodically in
+[the #general-discussion Discord channel](https://discord.com/channels/1055935572465700980/1055935573371658252).
+Search for `count`.
+
+### How do I write and label prompts?
+
+Check the
+[prompting guide](https://projects.laion.ai/Open-Assistant/docs/guides/prompting).
+
+### Where can I report a bug or create a new feature request?
+
+In the [GitHub issues](https://github.com/LAION-AI/Open-Assistant/issues).
+
+## Questions about developing
+
 ### Docker-Compose instead of Docker Compose
 
 If you are using `docker-compose` instead of `docker compose` (note the " "
@@ -55,7 +159,7 @@ So from now on, in your next commits it will run the `pre-commit` on the files
 that have been staged. If there has been any error, you will need to solve that,
 and then stage+commit again the changes.
 
-## Docker Cannot Start Container: Permission Denied
+### Docker Cannot Start Container: Permission Denied
 
 Instead of running docker with the root command always, you could create a
 `docker` group with granted permissions (root):
@@ -104,50 +208,3 @@ ones excluding `5433`, like:
 5. Add `- POSTGRES_PORT=5432` to `backend.environment`
 6. Change `web.environment.DATABASE_URL` to
    `postgres://postgres:postgres@webdb:5432/oasst_web`
-
-### Can I use ChatGPT to help in training Open Assistant, for instance, by generating answers?
-
-No, it is against their terms of service to use it to help train other models.
-See
-[this issue](https://github.com/LAION-AI/Open-Assistant/issues/471#issuecomment-1374392299).
-
-### How can I see my score?
-
-If you are not in the top 100 positions and cannot find yourself in the
-leaderboard, it's not possible at the moment.
-
-### Can we see how many data points have been collected?
-
-Not right now.
-
-### Can I install Open Assistant locally and chat with it?
-
-The project is not at that stage yet.
-
-### Is the model open?
-
-The model is not ready yet, but there are some demo models. You can follow the
-discussion in the Discord channel
-[#ml-models-demo](https://discord.com/channels/1055935572465700980/1067096888530178048).
-
-### Which base model will be used?
-
-It's still being discussed. You can follow the discussion in the Discord channel
-[#data-discussion](https://discord.com/channels/1055935572465700980/1058348535612985394).
-
-### What should I do if I don't know how to complete the task as an assistant?
-
-Skip it.
-
-### Should I fact check the answers by the assistant?
-
-Yes, you should try. If you are not sure, skip the task.
-
-### How can I contribute?
-
-If you want to help in the data collection, go to the website
-[https://open-assistant.io/](https://open-assistant.io/). If you want to
-contribute code, take a look at the
-[issues in GitHub](https://github.com/LAION-AI/Open-Assistant/issues) and grab
-one. Take a look at this
-[contributing guide](https://github.com/GuilleHoardings/Open-Assistant/blob/main/CONTRIBUTING.md).

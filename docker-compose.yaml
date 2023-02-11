@@ -136,6 +136,23 @@ services:
       - "3000:3000"
     command: bash wait-for-postgres.sh node server.js
 
+  # This DB is for Inference
+  inference-db:
+    image: postgres
+    restart: always
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: oasst_inference
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    profiles: ["inference"]
+
   inference-server:
     build:
       dockerfile: docker/inference/Dockerfile.server
@@ -145,13 +162,25 @@ services:
     environment:
       - "PORT=8000"
       - "REDIS_HOST=redis"
+      - POSTGRES_HOST=inference-db
+      - POSTGRES_DB=oasst_inference
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/server:/opt/inference/server"
     restart: unless-stopped
+    ports:
+      - "8000:8000"
     depends_on:
       redis:
         condition: service_healthy
+      inference-db:
+        condition: service_healthy
+    profiles: ["inference"]
+
+  inference-text-generation-server:
+    image: ghcr.io/huggingface/text-generation-inference
+    environment:
+      - "MODEL_ID=distilgpt2"
     profiles: ["inference"]
 
   inference-worker:
@@ -167,29 +196,7 @@ services:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/worker:/opt/inference/worker"
     depends_on:
-      - inference-server
+      - inference-text-generation-server
     deploy:
       replicas: 1
-    profiles: ["inference"]
-
-  inference-text-client:
-    build:
-      dockerfile: docker/inference/Dockerfile.text-client
-      context: .
-    image: oasst-inference-text-client
-    environment:
-      - "BACKEND_URL=http://inference-server:8000"
-    tty: true
-    stdin_open: true
-    volumes:
-      - "./inference/worker:/opt/inference/worker"
-    restart: unless-stopped
-    depends_on:
-      - inference-server
-    profiles: ["inference"]
-
-  inference-text-generation-server:
-    image: ykilcher/text-generation-inference
-    environment:
-      - "MODEL_ID=distilgpt2"
     profiles: ["inference"]
