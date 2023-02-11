@@ -126,7 +126,14 @@ def get_tokenizer(conf) -> transformers.AutoTokenizer:
     if tokenizer_config.special_tokens:
         if "GPT-JT" in conf.model_name:
             tokenizer_config.special_tokens.pad_token = tokenizer.eos_token
-        tokenizer.add_special_tokens(tokenizer_config.special_tokens)
+        # SpecialTokens : latest in 4.25, 4.26
+        tokenizer.add_special_tokens(
+            {
+                "pad_token": tokenizer_config.special_tokens.pad_token,
+                "eos_token": tokenizer_config.special_tokens.eos_token,
+                "sep_token": tokenizer_config.special_tokens.sep_token,
+            }
+        )
 
     additional_special_tokens = (
         []

@@ -1,7 +1,7 @@
 import argparse
 from distutils.util import strtobool
 from functools import partial
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import bitsandbytes
 import datasets
@@ -39,6 +39,7 @@ class SFTTrainer(Trainer):
         sampler: torch.utils.data.sampler.Sampler = None,
         loss_function: str = "CrossEntropyLoss",
         poly_eps: float = 1.0,
+        train_collate_fn: Callable = None,
         **kwargs,
     ):
         super().__init__(model, args, **kwargs)

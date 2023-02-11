@@ -314,7 +314,9 @@ class JokeExplaination(Dataset):
             for line in f:
                 data = json.loads(line)
                 joke = data["joke"]
-                explanation = data["explanation"]
+                # DO NOT change this
+                # its the data that had syntax error
+                explanation = data["explaination"]
                 self.pairs.append((joke, explanation))
 
         if len(question) > 0 and len(answer) > 0:
