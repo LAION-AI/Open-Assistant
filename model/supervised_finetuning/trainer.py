@@ -195,7 +195,7 @@ if __name__ == "__main__":
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
-    train, evals, collate_fn, train_collate_fn = get_dataset(training_conf, tokenizer)
+    train, evals, train_collate_fn, eval_collate_fn = get_dataset(training_conf, tokenizer)
     sampler = PerDatasetSampler.build_sampler_from_config(training_conf, train.datasets)
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
@@ -252,7 +252,7 @@ if __name__ == "__main__":
         poly_eps=training_conf.poly_eps,
         train_dataset=train,
         eval_dataset=evals,
-        data_collator=collate_fn,
+        data_collator=eval_collate_fn,
         tokenizer=tokenizer,
         compute_metrics=partial(compute_metrics, metrics=metrics, preprocess_fns=preprocess_fns),
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
