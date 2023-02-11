@@ -52,7 +52,7 @@ def get_tree_manager__stats(
     return tm.stats()
 
 
-@router.get("/cached_stats/{name}", response_model=protocol.CachedStatsResponse)
+@router.get("/cached/{name}", response_model=protocol.CachedStatsResponse)
 def get_cached_stats(
     *,
     name: protocol.CachedStatsName,
@@ -63,7 +63,7 @@ def get_cached_stats(
     return csr.get_stats(name)
 
 
-@router.get("/cached_stats", response_model=protocol.AllCachedStatsResponse)
+@router.get("/cached", response_model=protocol.AllCachedStatsResponse)
 def get_cached_stats_all(
     *,
     db: Session = Depends(deps.get_db),
@@ -73,7 +73,7 @@ def get_cached_stats_all(
     return csr.get_stats_all()
 
 
-@router.post("/cached_stats/update", response_model=None, status_code=HTTP_204_NO_CONTENT)
+@router.post("/cached/update", response_model=None, status_code=HTTP_204_NO_CONTENT)
 def update_cached_stats(
     *,
     db: Session = Depends(deps.get_db),
