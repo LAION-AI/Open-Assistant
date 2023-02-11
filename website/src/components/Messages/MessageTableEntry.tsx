@@ -52,7 +52,7 @@ interface MessageTableEntryProps {
   highlight?: boolean;
   avartarPosition?: "middle" | "top";
   avartarProps?: AvatarProps;
-  hightlightColor?: [string, string];
+  showAuthorBadge?: boolean;
 }
 
 export function MessageTableEntry({
@@ -61,7 +61,7 @@ export function MessageTableEntry({
   highlight,
   avartarPosition = "middle",
   avartarProps,
-  hightlightColor,
+  showAuthorBadge,
 }: MessageTableEntryProps) {
   const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
@@ -101,7 +101,7 @@ export function MessageTableEntry({
     ),
     [avartarProps, borderColor, inlineAvatar, message.is_assistant]
   );
-  const internalHighlightColor = useColorModeValue(...(hightlightColor || [colors.light.active, colors.dark.active]));
+  const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
 
   const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
     onSuccess: (data) => {
@@ -131,7 +131,7 @@ export function MessageTableEntry({
         borderRadius="18px"
         bg={bg}
         outline={highlight ? "2px solid black" : undefined}
-        outlineColor={internalHighlightColor}
+        outlineColor={highlightColor}
         onClick={goToMessage}
         whiteSpace="pre-wrap"
         cursor={enabled ? "pointer" : undefined}
@@ -169,7 +169,7 @@ export function MessageTableEntry({
           <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
         </HStack>
         <Flex position="absolute" gap="2" top="-2.5" right="5">
-          {message.user_is_author && (
+          {showAuthorBadge && message.user_is_author && (
             <Tooltip label={t("message_author_explain")} placement="top">
               <Badge size="sm" colorScheme="green" textTransform="capitalize">
                 {t("message_author")}

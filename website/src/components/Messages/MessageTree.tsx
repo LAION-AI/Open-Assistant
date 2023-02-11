@@ -10,7 +10,6 @@ const avatarSize = 32;
 const avartarMarginTop = 6;
 const maxDepth = 100; // this only used for debug UI in mobile
 const toPx = (val: number) => `${val}px`;
-const userIsAuthorHighLightColor = ["green.400", "green.500"] as [string, string];
 
 // eslint-disable-next-line react/display-name
 export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildren; messageId?: string }) => {
@@ -28,14 +27,12 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
               <Box pt={`${messagePaddingTop}px`} position="relative" className="box4">
                 {hasChildren && depth < maxDepth && <Connection className="connection1"></Connection>}
                 <MessageTableEntry
+                  showAuthorBadge
                   avartarProps={{
                     mt: `${avartarMarginTop}px`,
                   }}
                   avartarPosition="top"
                   highlight={child.id === messageId || !!child.user_is_author}
-                  hightlightColor={
-                    child.id === messageId ? undefined : child.user_is_author ? userIsAuthorHighLightColor : undefined
-                  }
                   message={child}
                 ></MessageTableEntry>
               </Box>
@@ -74,12 +71,10 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
           className="root-curve"
         ></Box>
         <MessageTableEntry
+          showAuthorBadge
           message={tree}
           avartarPosition="top"
           highlight={tree.id === messageId || !!tree.user_is_author}
-          hightlightColor={
-            tree.id === messageId ? undefined : tree.user_is_author ? userIsAuthorHighLightColor : undefined
-          }
         ></MessageTableEntry>
       </Box>
       {renderChildren(tree.children)}
