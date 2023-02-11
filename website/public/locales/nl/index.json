@@ -1,0 +1,23 @@
+{
+  "blurb": "Wij geloven dat we een revolutie kunnen creëren.",
+  "blurb1": "Op dezelfde manier waarop Stable Diffusion de wereld heeft geholpen om op nieuwe manieren kunst en afbeeldingen te maken, willen wij de wereld verbeteren door verbazingwekkende conversatie-AI te bieden.",
+  "description": "Conversatie-AI voor iedereen. Een open source-project om een chat-enabled GPT LLM te creëren, mogelijk gemaakt door LAION en bijdragers over de hele wereld.",
+  "faq_items": {
+    "q0": "Hoe ver is dit project?",
+    "a0": "We bevinden ons in de vroege stadia van ontwikkeling en werken vanuit gevestigd onderzoek in het toepassen van RLHF op grote taalmodellen. RLHF houdt in dat ons algoritme leert op basis van interactie met gebruikers.",
+    "q1": "Wie zit er achter Open Assistant?",
+    "a1": "Open Assistant is een project georganiseerd door LAION en individuen over de hele wereld die geïnteresseerd zijn om deze technologie voor iedereen beschikbaar te maken.",
+    "q2": "Welke licentie gebruikt Open Assistant?",
+    "a2": "De code en modellen zijn gelicentieerd onder de Apache 2.0-licentie.",
+    "q3": "Zullen de trainingsgegevens ook worden vrijgegeven?",
+    "a3": "Ja, onder CC BY 4.0.",
+    "q4": "Blijft Open Assistant gratis?",
+    "a4": "Ja, Open Assistant is gratis te gebruiken en veranderen.",
+    "q5": "Welke hardware is nodig om de modellen uit te voeren?",
+    "a5": "Er zullen versies zijn die kunnen worden uitgevoerd op consumentenhardware."
+  },
+  "faq_title": "Vaak Gestelde Vragen",
+  "join_us_description": "Alle open source-projecten beginnen met mensen zoals jij. Open source is de overtuiging dat als we samenwerken, we samen onze kennis en technologie aan de wereld kunnen schenken ten behoeve van de mensheid. Doe je mee? Vind ons hier:",
+  "join_us_title": "Doe mee",
+  "subtitle": "Conversatie-AI voor iedereen."
+}

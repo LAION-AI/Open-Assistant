@@ -1,0 +1,18 @@
+{
+  "daily": "Dagelijks",
+  "label": "Labels",
+  "last_updated_at": "Laatst geupdate op: {{val, datetime}}",
+  "leaderboard": "Leaderboard",
+  "monthly": "Maandelijks",
+  "next": "Volgende",
+  "overall": "Algemeen",
+  "previous": "Vorige",
+  "prompt": "Prompten",
+  "rank": "Rank",
+  "reply": "Antwoorden",
+  "score": "Score",
+  "top_5_contributors_today": "Top 5 Bijdragers Today",
+  "user": "Gebruiker",
+  "view_all": "Toon alle",
+  "weekly": "Wekelijks"
+}

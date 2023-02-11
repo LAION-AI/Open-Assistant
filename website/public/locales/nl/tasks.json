@@ -1,0 +1,82 @@
+{
+  "default": {
+    "unchanged_title": "Geen veranderingen",
+    "unchanged_message": "Weet je zeker dat je door wilt gaan?"
+  },
+  "random": {
+    "label": "Ik doe een gok",
+    "desc": "Help ons om Open Assistant te verbeteren door een willekeurige taak te starten."
+  },
+  "create_initial_prompt": {
+    "label": "Start initiele Prompt",
+    "desc": "Schrijf een initiele prompt om Open Assistant te helpen proberen om te antwoorden op verschillende berichten. (loterij)",
+    "overview": "Schrijf een initieel bericht om naar de assistant te sturen",
+    "instruction": "Geef de initiele prompt in",
+    "response_placeholder": "Typ je prompt hier..."
+  },
+  "reply_as_user": {
+    "label": "Antwoordt in plaats van de gebruiker",
+    "desc": "Chat met Open Assistant en help antwoorden verbeteren terwijl je er gebruik van maakt.",
+    "overview": "Gegeven de volgende conversatie, geef een adequate reactie",
+    "instruction": "Geef de gebruiker's reactie",
+    "response_placeholder": "Typ je reactie hier..."
+  },
+  "reply_as_assistant": {
+    "label": "Antwoordt in plaats van Open Assistant",
+    "desc": "Help Open Assistant zijn antwoorden verbeteren door gesprekken te hebben met verschillende gebruikers.",
+    "overview": "Gegeven de volgende conversatie, geef een adequaat antwoord",
+    "response_placeholder": "Typ je antwoord hier..."
+  },
+  "rank_user_replies": {
+    "label": "Rangschik de gebruiker's antwoorden",
+    "desc": "Help Open Assistant zijn antwoorden te verbeteren door gesprekken te hebben met verschillende gebruikers.",
+    "overview": "Sorteer de volgende gebruikers antwoorden van het beste naar de minst goede.",
+    "unchanged_title": "Volgorde is onveranderd",
+    "unchanged_message": "Je hebt de volgorde van de prompts niet veranderd. Weet je zeker dat je door wilt gaan?"
+  },
+  "rank_assistant_replies": {
+    "label": "Rangschik Open Assistant's antwoorden",
+    "desc": "Rangschik prompts gegeven door Open Assistant op basis van correctheid en leesbaarheid",
+    "overview": "Sorteer de volgende antwoorden (gegeven door Open Assistant) van het beste naar de minst goede.",
+    "unchanged_title": "Volgorde is onveranderd",
+    "unchanged_message": "Je hebt de volgorde van de prompts niet veranderd. Weet je zeker dat je door wilt gaan?"
+  },
+  "rank_initial_prompts": {
+    "label": "Rangschik Initiële Prompts",
+    "desc": "Rangschik prompts gegeven door Open Assistant op basis van correctheid en leesbaarheid.",
+    "overview": "Gegeven zijn de volgende initiële prompts, sorteer ze van het beste naar de minst goede.",
+    "unchanged_title": "Volgorde is onveranderd",
+    "unchanged_message": "Je hebt de volgorde van de prompts niet veranderd. Weet je zeker dat je door wilt gaan?"
+  },
+  "label_initial_prompt": {
+    "label": "Label de initiële prompt",
+    "desc": "Voeg label(s) toe aan de prompt.",
+    "overview": "Voeg label(s) toe voor de volgende prompt"
+  },
+  "label_prompter_reply": {
+    "label": "Label de Prompter's Antwoord",
+    "desc": "Voeg label(s) toe aan de prompt.",
+    "overview": "Gegeven de volgende discussie, voeg labels toe aan de laatste prompt."
+  },
+  "label_assistant_reply": {
+    "label": "Label de Assistant's antwoord",
+    "desc": "Voeg label(s) toe aan de prompt.",
+    "overview": "Gegeven de volgende discussie, voeg labels toe aan de laatste prompt."
+  },
+  "classify_initial_prompt": {
+    "label": "Beoordeel de initiële Prompt",
+    "desc": "Voeg label(s) toe aan de prompt.",
+    "overview": "Lees de volgende prompt en beantwoordt een vraag daarover."
+  },
+  "classify_prompter_reply": {
+    "label": "Beoordeel de Prompter's antwoord",
+    "desc": "Voeg label(s) toe aan de prompt.",
+    "overview": "Lees de volgende prompt en beantwoordt de vraag over het laatste antwoord in de discussie."
+  },
+  "classify_assistant_reply": {
+    "label": "Boordeel Open Assistant's antwoord",
+    "desc": "Voeg label(s) toe aan de prompt.",
+    "overview": "Lees de volgende conversatie en beantwoordt de vraag over het laatste antwoord in de discussie."
+  },
+  "available_task_count": "{{count}} taak(en) beschikbaar"
+}

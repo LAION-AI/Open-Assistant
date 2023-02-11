@@ -1,0 +1,20 @@
+{
+  "copy_message_id": "Bericht-ID kopiëren",
+  "label_action": "Labelen",
+  "label_title": "Labelen",
+  "message_deleted": "Bericht verwijderd",
+  "message": "Message",
+  "open_new_tab_action": "Openen in nieuw tabblad",
+  "parent": "Eerder bericht",
+  "reactions": "Reacties",
+  "recent_messages": "Recente Berichten",
+  "report_action": "Rapporteren",
+  "report_placeholder": "Waarom moet dit bericht worden beoordeeld?",
+  "report_title": "Rapporteren",
+  "send_report": "Verzenden",
+  "stop_tree": "Conversatie beëindigen",
+  "submit_labels": "Versturen",
+  "tree_stopped": "Conversatie beëindigt {{id}}",
+  "view_user": "Toon gebruiker",
+  "your_recent_messages": "Mijn Recente Berichten"
+}
