@@ -50,6 +50,12 @@ defaults:
   log_wandb: true
   samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
 
+oa_dataset_only:
+  datasets:
+    - oa_pricate:
+      data_path: .cache
+      val_split: 0.0
+
 galactica-125m:
   learning_rate: 5e-5
   model_name: facebook/galactica-125m
