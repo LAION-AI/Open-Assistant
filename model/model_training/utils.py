@@ -1,4 +1,5 @@
 import random
+from distutils.util import strtobool
 from pathlib import Path
 from typing import List, NamedTuple
 
@@ -6,13 +7,16 @@ import evaluate
 import transformers
 import yaml
 from custom_datasets import get_one_dataset
-from custom_datasets.dialogue_collator import DialogueDataCollator
 from custom_datasets.qa_datasets import QA_SPECIAL_TOKENS
 from losses import CrossEntropyLoss, PolyLoss
 from models import freeze_top_n_layers, get_specific_model
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
 from torch.utils.data.sampler import Sampler
+
+
+def _strtobool(x):
+    return bool(strtobool(x))
 
 
 class PerDatasetSampler(Sampler):
@@ -239,12 +243,12 @@ def get_dataset_name_and_kwargs_from_data_config(data_config):
         return data_config, {}
 
 
-def get_dataset(conf, tokenizer):
+def get_dataset(conf, mode="sft"):
     train_datasets, evals = [], {}
 
     for data_config in conf.datasets:
         dataset_name, kwargs = get_dataset_name_and_kwargs_from_data_config(data_config)
-        train, val = get_one_dataset(conf, dataset_name, **kwargs)
+        train, val = get_one_dataset(conf, dataset_name, mode=mode, **kwargs)
         train_datasets.append(train)
 
         if val is not None:
@@ -252,10 +256,7 @@ def get_dataset(conf, tokenizer):
 
     train = ConcatDataset(train_datasets)
 
-    train_collate_fn = DialogueDataCollator(tokenizer, max_length=conf.max_length, samples_mixing=conf.samples_mixing)
-    eval_collate_fn = DialogueDataCollator(tokenizer, max_length=conf.max_length, samples_mixing=False)
-
-    return train, evals, train_collate_fn, eval_collate_fn
+    return train, evals
 
 
 def get_loss(loss, poly_eps):

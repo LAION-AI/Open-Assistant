@@ -1,11 +1,11 @@
 import argparse
-from distutils.util import strtobool
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import bitsandbytes
 import datasets
 import torch
+from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
 from torch import nn
 from torch.utils.data import DataLoader
@@ -14,7 +14,16 @@ from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
-from utils import PerDatasetSampler, get_dataset, get_loss, get_metrics, get_model, get_tokenizer, read_yamls
+from utils import (
+    PerDatasetSampler,
+    _strtobool,
+    get_dataset,
+    get_loss,
+    get_metrics,
+    get_model,
+    get_tokenizer,
+    read_yamls,
+)
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
@@ -145,10 +154,6 @@ class SFTTrainer(Trainer):
         )
 
 
-def _strtobool(x):
-    return bool(strtobool(x))
-
-
 def argument_parsing(notebook=False, notebook_args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--configs", nargs="+", required=True)
@@ -195,7 +200,13 @@ if __name__ == "__main__":
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
-    train, evals, train_collate_fn, eval_collate_fn = get_dataset(training_conf, tokenizer)
+
+    train, evals = get_dataset(training_conf)
+    train_collate_fn = DialogueDataCollator(
+        tokenizer, max_length=training_conf.max_length, samples_mixing=training_conf.samples_mixing
+    )
+    eval_collate_fn = DialogueDataCollator(tokenizer, max_length=training_conf.max_length, samples_mixing=False)
+
     sampler = PerDatasetSampler.build_sampler_from_config(training_conf, train.datasets)
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
