@@ -1,0 +1,84 @@
+{
+  "default": {
+    "unchanged_title": "Sen cambios",
+    "unchanged_message": "Estás seguro de que desexas continuar?"
+  },
+  "random": {
+    "label": "Vou ter sorte",
+    "desc": "Axúdanos a mellorar Open Assistant comezando unha tarefa aleatoria."
+  },
+  "create_initial_prompt": {
+    "label": "Crea Indicacións Iniciais",
+    "desc": "Escribe as indicacións iniciais para axudar a Open Assistant a responder a diversas mensaxes.",
+    "overview": "Crea unha mensaxe inicial para enviar ao asistente",
+    "instruction": "Proporciona as indicacións iniciais",
+    "response_placeholder": "Escribe a túa indicación aquí..."
+  },
+  "reply_as_user": {
+    "label": "Responder como usuario",
+    "desc": "Fala con Open Assistant e axuda a mellorar as súas respostas mentres interactúas con él.",
+    "overview": "Dada a seguinte conversa, proporciona unha resposta axeitada",
+    "instruction": "Proporciona a resposta de usuario",
+    "response_placeholder": "Escribe a túa resposta aquí..."
+  },
+  "reply_as_assistant": {
+    "label": "Responder como asistente",
+    "desc": "Axuda a Open Assistant a mellorar as súas respostas a conversas con outros usuarios.",
+    "overview": "Dada a seguinte conversa, proporciona unha resposta axeitada",
+    "response_placeholder": "Escribe a túa resposta aquí..."
+  },
+  "rank_user_replies": {
+    "label": "Califica as respostas dos usuarios",
+    "desc": "Axuda a Open Assistant a mellorar as súas respostas a conversas con outros usuarios.",
+    "overview": "Dadas as seguintes respostas de usuarios, ordéaas da mellor á peor, sendo a mellor a primeira e a peor a última.",
+    "unchanged_title": "Orde sen cambios",
+    "unchanged_message": "Non cambiaches a orde das respostas. Estás seguro de que desexas continuar?"
+  },
+  "rank_assistant_replies": {
+    "label": "Califica as respostas do asistente",
+    "desc": "Califica indicacións dadas por Open Assistant en función da súa precisión e lexibilidade.",
+    "overview": "Dadas as seguintes respostas do asistente, ordéaas da mellor á peor, sendo a mellor a primeira e a peor a última.",
+    "unchanged_title": "Orde sen cambios",
+    "unchanged_message": "Non cambiaches a orde das respostas. Estás seguro de que desexas continuar?"
+  },
+  "rank_initial_prompts": {
+    "label": "Califica as indicacións iniciais",
+    "desc": "Califica indicacións dadas por Open Assistant en función da súa precisión e lexibilidade.",
+    "overview": "Dadas as seguintes indicacións iniciais, ordéaas da mellor á peor, sendo a mellor a primeira e a peor a última.",
+    "unchanged_title": "Orde sen cambios",
+    "unchanged_message": "Non cambiaches a orde das respostas. Estás seguro de que desexas continuar?"
+  },
+  "label_initial_prompt": {
+    "label": "Etiqueta de Indicacións Iniciais",
+    "desc": "Proporciona etiquetas para unha indicación.",
+    "overview": "Proporciona etiquetas para a seguinte indicación"
+  },
+  "label_prompter_reply": {
+    "label": "Etiqueta de Resposta do Apuntador",
+    "desc": "Proporciona etiquetas para unha indicación.",
+    "overview": "Dada a seguinte conversa, proporciona etiquetas para a indicación final."
+  },
+  "label_assistant_reply": {
+    "label": "Etiqueta de Resposta do Asistente",
+    "desc": "Proporciona etiquetas para unha indicación.",
+    "overview": "Dada a seguinte conversa, proporciona etiquetas para a indicación final."
+  },
+  "classify_initial_prompt": {
+    "label": "Clasifica as Indicación Inicial",
+    "desc": "Proporciona etiquetas para unha indicación.",
+    "overview": "Le a seguinte indicación e responde á pregunta acerca dela."
+  },
+  "classify_prompter_reply": {
+    "label": "Clasifica as Repostas do Apuntador",
+    "desc": "Proporciona etiquetas para unha indicación.",
+    "overview": "Le a seguinte conversa e responde á pregunta do final."
+  },
+  "classify_assistant_reply": {
+    "label": "Clasifica as Repostas do Asistente",
+    "desc": "Proporciona etiquetas para unha indicación.",
+    "overview": "Le a seguinte conversa e responde á pregunta do final."
+  },
+  "available_task_count": "{{count}} tarefas dispoñibles",
+  "writing_wrong_langauge_a_b": "Parece que estás a escribir en {{detected_lang}} pero esto vai ser enviado en como {{submit_lang}}.",
+  "submitted_as": "Esto vai ser enviado como {{submit_lang}}"
+}

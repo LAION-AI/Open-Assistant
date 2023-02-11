@@ -1,8 +1,8 @@
-import { withRole } from "src/lib/auth";
+import { withAnyRole } from "src/lib/auth";
 import { createApiClient } from "src/lib/oasst_client_factory";
 import { TrollboardTimeFrame } from "src/types/Trollboard";
 
-export default withRole("admin", async (req, res, token) => {
+export default withAnyRole(["admin", "moderator"], async (req, res, token) => {
   const client = await createApiClient(token);
 
   const trollboard = await client.fetch_trollboard(req.query.time_frame as TrollboardTimeFrame, {

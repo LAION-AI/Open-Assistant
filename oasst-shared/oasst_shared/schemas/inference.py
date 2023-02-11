@@ -9,6 +9,10 @@ from . import protocol
 class WorkerConfig(pydantic.BaseModel):
     model_name: str = "distilgpt2"
 
+    @property
+    def compat_hash(self) -> str:
+        return f"{self.model_name}"
+
 
 class WorkRequest(pydantic.BaseModel):
     conversation: protocol.Conversation = pydantic.Field(..., repr=False)

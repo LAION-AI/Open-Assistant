@@ -1,6 +1,10 @@
+alembic
 fastapi[all]
 loguru
+prometheus-fastapi-instrumentator
+psycopg2-binary
 pydantic
 redis
+sqlmodel
 sse-starlette
 websockets

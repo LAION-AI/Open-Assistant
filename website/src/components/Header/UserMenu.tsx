@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Badge,
   Box,
   Link,
   Menu,
@@ -16,6 +17,7 @@ import NextLink from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import React, { ElementType, useCallback } from "react";
+import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 
 interface MenuOption {
   name: string;
@@ -31,7 +33,7 @@ export function UserMenu() {
     signOut({ callbackUrl: "/" });
   }, []);
   const { data: session, status } = useSession();
-
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
   if (!session || status !== "authenticated") {
     return null;
   }
@@ -56,7 +58,7 @@ export function UserMenu() {
     },
   ];
 
-  if (session.user.role === "admin") {
+  if (isAdminOrMod) {
     options.unshift({
       name: t("admin_dashboard"),
       href: "/admin",
@@ -77,7 +79,14 @@ export function UserMenu() {
       </MenuButton>
       <MenuList p="2" borderRadius="xl" shadow="none">
         <Box display="flex" flexDirection="column" alignItems="center" borderRadius="md" p="4">
-          <Text>{session.user.name}</Text>
+          <Text>
+            {session.user.name}
+            {isAdminOrMod ? (
+              <Badge size="xs" ml="2" fontSize="xs" textTransform="capitalize">
+                {session.user.role}
+              </Badge>
+            ) : null}
+          </Text>
           {/* <Text color="blue.500" fontWeight="bold" fontSize="xl">
             3,200
           </Text> */}

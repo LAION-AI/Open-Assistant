@@ -1,5 +1,5 @@
 import { Button, ButtonProps } from "@chakra-ui/react";
-import { useHasRole } from "src/hooks/auth/useHasRole";
+import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { MessageEmoji } from "src/types/Conversation";
 import { emojiIcons } from "src/types/Emoji";
 
@@ -23,12 +23,12 @@ export const MessageEmojiButton = ({
   sx,
 }: MessageEmojiButtonProps) => {
   const EmojiIcon = emojiIcons.get(emoji.name);
-  const isAdmin = useHasRole("admin");
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
 
   if (!EmojiIcon) return null;
 
   const isDisabled = !!(userIsAuthor ? true : disabled);
-  const showCount = (emoji.count > 0 && userReacted) || userIsAuthor || isAdmin;
+  const showCount = (emoji.count > 0 && userReacted) || userIsAuthor || isAdminOrMod;
 
   return (
     <Button
