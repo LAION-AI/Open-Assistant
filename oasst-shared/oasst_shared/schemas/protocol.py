@@ -578,15 +578,14 @@ class CachedStatsName(str, enum.Enum):
     human_messages_by_role = "human_messages_by_role"
     message_trees_by_state = "message_trees_by_state"
     message_trees_states_by_lang = "message_trees_states_by_lang"
-    prompt_lottery_waiting_by_lang = "prompt_lottery_waiting_by_lang"
     users_accepted_tos = "users_accepted_tos"
 
 
 class CachedStatsResponse(BaseModel):
-    name: CachedStatsName
+    name: CachedStatsName | str
     last_updated: datetime
     stats: dict | list
 
 
 class AllCachedStatsResponse(BaseModel):
-    stats_by_name: dict[CachedStatsName, CachedStatsResponse]
+    stats_by_name: dict[CachedStatsName | str, CachedStatsResponse]

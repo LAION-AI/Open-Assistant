@@ -1,5 +1,4 @@
 from oasst_backend.models import CachedStats, Message, MessageTreeState, User
-from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas.protocol import AllCachedStatsResponse, CachedStatsName, CachedStatsResponse
 from oasst_shared.utils import log_timing, utcnow
@@ -49,16 +48,6 @@ class CachedStatsRepository:
         )
         return [row_to_dict(r) for r in qry]
 
-    def qry_prompt_lottery_waiting_by_lang(self) -> dict[str, int]:
-        qry = (
-            self.db.query(Message.lang, func.count(MessageTreeState.message_tree_id).label("count"))
-            .select_from(MessageTreeState)
-            .join(Message, MessageTreeState.message_tree_id == Message.id)
-            .filter(MessageTreeState.state == TreeState.PROMPT_LOTTERY_WAITING)
-            .group_by(Message.lang)
-        )
-        return {r["lang"]: r["count"] for r in qry}
-
     def qry_users_accepted_tos(self) -> dict[str, int]:
         qry = self.db.query(func.count(User.id)).filter(User.enabled, User.tos_acceptance_date.is_not(None))
         return {"count": qry.scalar()}
@@ -76,9 +65,6 @@ class CachedStatsRepository:
 
         v = self.qry_message_trees_states_by_lang()
         self._insert_cached_stats(CachedStatsName.message_trees_states_by_lang, v)
-
-        v = self.qry_prompt_lottery_waiting_by_lang()
-        self._insert_cached_stats(CachedStatsName.prompt_lottery_waiting_by_lang, v)
 
         v = self.qry_users_accepted_tos()
         self._insert_cached_stats(CachedStatsName.users_accepted_tos, v)
