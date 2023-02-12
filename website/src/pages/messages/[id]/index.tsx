@@ -14,7 +14,10 @@ const MessageDetail = ({ id }: InferGetServerSidePropsType<typeof getServerSideP
   const { t } = useTranslation(["message", "common"]);
   const { data, isLoading, error } = useSWRImmutable<{ tree: MessageWithChildren | null; message?: Message }>(
     `/api/messages/${id}/tree`,
-    get
+    get,
+    {
+      keepPreviousData: true,
+    }
   );
 
   return (

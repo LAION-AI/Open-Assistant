@@ -1,3 +1,4 @@
+import { ROLES } from "src/components/RoleSelect";
 import { withoutRole } from "src/lib/auth";
 import { createApiClient } from "src/lib/oasst_client_factory";
 import { Message, MessageWithChildren } from "src/types/Conversation";
@@ -5,7 +6,11 @@ import { Message, MessageWithChildren } from "src/types/Conversation";
 export default withoutRole("banned", async (req, res, token) => {
   const client = await createApiClient(token);
   const messageId = req.query.id as string;
-  const response = await client.fetch_message_tree(messageId);
+  const isModOrAdmin = token.role === ROLES.ADMIN || token.role === ROLES.MODERATOR;
+  const response = await client.fetch_message_tree(messageId, {
+    include_deleted: isModOrAdmin,
+    include_spam: isModOrAdmin,
+  });
 
   if (!response) {
     return res.json({ tree: null });

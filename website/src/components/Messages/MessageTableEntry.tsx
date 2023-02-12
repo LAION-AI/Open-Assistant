@@ -181,6 +181,11 @@ export function MessageTableEntry({
               Deleted
             </Badge>
           )}
+          {message.review_result === false && isAdminOrMod && (
+            <Badge colorScheme="yellow" textTransform="capitalize">
+              Spam
+            </Badge>
+          )}
         </Flex>
       </Box>
     </HStack>
@@ -306,9 +311,11 @@ const MessageActions = ({
             <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
               {t("view_user")}
             </MenuItem>
-            <MenuItem onClick={handleDelete} icon={<Trash />}>
-              {t("common:delete")}
-            </MenuItem>
+            {!message.deleted && (
+              <MenuItem onClick={handleDelete} icon={<Trash />}>
+                {t("common:delete")}
+              </MenuItem>
+            )}
             <MenuItem onClick={handleStop} icon={<Slash />}>
               {t("stop_tree")}
             </MenuItem>

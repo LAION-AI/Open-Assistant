@@ -22,14 +22,14 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
         <Fragment key={child.id}>
           <Box position="relative" className="box2">
             <ConnectionCurveBottom left={{ base: toPx(-8), md: toPx(avatarSize / 2 - 1) }}></ConnectionCurveBottom>
-            <Box paddingLeft={{ md: "32px", base: "14px" }} position="relative" className="box3">
+            <Box paddingLeft={{ md: "32px", base: "16px" }} position="relative" className="box3">
               {hasSibling && !isLastChild && <Connection isSibling></Connection>}
               <Box pt={`${messagePaddingTop}px`} position="relative" className="box4">
                 {hasChildren && depth < maxDepth && <Connection className="connection1"></Connection>}
                 <MessageTableEntry
                   showAuthorBadge
                   avartarProps={{
-                    mt: `${avartarMarginTop}px`,
+                    mt: { base: 0, md: `${avartarMarginTop}px` },
                   }}
                   avartarPosition="top"
                   highlight={child.id === messageId}
