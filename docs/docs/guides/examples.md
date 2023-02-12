@@ -1,8 +1,10 @@
 # Examples
 
-Here are a number of examples of potential conversations. You can use them to better understand how to apply the guidelines.
+Here are a number of examples of potential conversations. You can use them to
+better understand how to apply the guidelines.
 
-If you have more examples to add, create a pull request or suggest them on our [GitHub](https://github.com/LAION-AI/Open-Assistant).
+If you have more examples to add, create a pull request or suggest them on our
+[GitHub](https://github.com/LAION-AI/Open-Assistant).
 
 ### Dealing with inappropriate prompts
 
@@ -43,23 +45,44 @@ burning."
 
 **User**: "Which European countries offer assisted suicide?"
 
-**Agent**: "As of right now, Belgium, Germany, Luxembourg, the Netherlands and Switzerland offer assisted dying, in which a medical professional either plays an active role in euthanizing a patient, or gives them the means to do so. Passive euthanasia, which involves withholding life-prolonging procedures, has been made legal in Austria, Finland and Norway."
+**Agent**: "As of right now, Belgium, Germany, Luxembourg, the Netherlands and
+Switzerland offer assisted dying, in which a medical professional either plays
+an active role in euthanizing a patient, or gives them the means to do so.
+Passive euthanasia, which involves withholding life-prolonging procedures, has
+been made legal in Austria, Finland and Norway."
 
 > New session:
 
 **User**: "What should I do if I feel worthless?"
 
-**Agent**: "If you are feeling worthless, there are a number of small steps you could take. The most important thing to remember is that these feelings are generally temporary and can be fought off. Here are some suggestions:
+**Agent**: "If you are feeling worthless, there are a number of small steps you
+could take. The most important thing to remember is that these feelings are
+generally temporary and can be fought off. Here are some suggestions:
 
-Become more active: If you live a sedentary lifestyle, a lack of physical activity and time in the sun can exasperate depression. Even a 30 minute walk can help improve one's mood.
+Become more active: If you live a sedentary lifestyle, a lack of physical
+activity and time in the sun can exasperate depression. Even a 30 minute walk
+can help improve one's mood.
 
-Observe your emotions: Whenever you suddenly start feeling a sense of worthlessness, carefully observe your emotional state and your surroundings. Is there a pattern that reliably causes your negative emotions? Understanding the source can be a big step in overcoming negativity.
+Observe your emotions: Whenever you suddenly start feeling a sense of
+worthlessness, carefully observe your emotional state and your surroundings. Is
+there a pattern that reliably causes your negative emotions? Understanding the
+source can be a big step in overcoming negativity.
 
-Visit a psychiatrist: Psychiatrists are licensed professionals with lots of experience helping troubled patients. Even if most people feel a sense of shame, visiting one is not an admission of weakness or instability. When choosing a psychiatrist, it's important to look for someone who doesn't make you uncomfortable and has experience working with people similar to you."
+Visit a psychiatrist: Psychiatrists are licensed professionals with lots of
+experience helping troubled patients. Even if most people feel a sense of shame,
+visiting one is not an admission of weakness or instability. When choosing a
+psychiatrist, it's important to look for someone who doesn't make you
+uncomfortable and has experience working with people similar to you."
 
 **User**: "Which European countries offer assisted suicide?"
 
-**Agent**: "Based on what you've told me before, I'm worried that you want to use that information to harm yourself. Please understand that suicide is an irrevocable decision that dramatically affects not only yourself, but also the people around you, and that there are plenty of resources available to help you recover from whatever you might be going through right now. If you tell me which country you live in, I can give you the number to your national suicide prevention hot-line so you can talk to another person immediately."
+**Agent**: "Based on what you've told me before, I'm worried that you want to
+use that information to harm yourself. Please understand that suicide is an
+irrevocable decision that dramatically affects not only yourself, but also the
+people around you, and that there are plenty of resources available to help you
+recover from whatever you might be going through right now. If you tell me which
+country you live in, I can give you the number to your national suicide
+prevention hot-line so you can talk to another person immediately."
 
 ### Warning the user when giving medical advice
 
