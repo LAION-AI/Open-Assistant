@@ -178,12 +178,12 @@ export function MessageTableEntry({
           )}
           {message.deleted && isAdminOrMod && (
             <Badge colorScheme="red" textTransform="capitalize">
-              Deleted
+              Deleted {/* dont translate, it's admin only feature */}
             </Badge>
           )}
           {message.review_result === false && isAdminOrMod && (
             <Badge colorScheme="yellow" textTransform="capitalize">
-              Spam
+              Spam {/* dont translate, it's admin only feature */}
             </Badge>
           )}
         </Flex>
