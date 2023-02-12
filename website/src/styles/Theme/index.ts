@@ -44,6 +44,9 @@ const styles: Styles = {
       bg: props.colorMode === "light" ? colors.light.bg : colors.dark.bg,
       color: props.colorMode === "light" ? colors.light.text : colors.dark.text,
     },
+    body: {
+      position: "relative",
+    },
   }),
 };
 
