@@ -1,0 +1,84 @@
+{
+  "available_task_count": "{{count}} dostupných úloh",
+  "default": {
+    "unchanged_title": "Žádné změny",
+    "unchanged_message": "Víte jistě, že chcete pokračovat?"
+  },
+  "random": {
+    "label": "Zkusím štěstí",
+    "desc": "Pomozte nám vylepšit Open Assistant splněním náhodné úlohy."
+  },
+  "create_initial_prompt": {
+    "label": "Vytvořit úvodní dotaz",
+    "desc": "Vytvářejte nové dotazy a umožněte Asistentovi vyzkoušet si odpovídat na různorodé zprávy.",
+    "overview": "Vytvořte úvodní dotaz pro Asistenta.",
+    "instruction": "Napište úvodní dotaz",
+    "response_placeholder": "Váš dotaz..."
+  },
+  "reply_as_user": {
+    "label": "Odpovědět jako uživatel",
+    "desc": "Chatujte s Open Assistant a pomozte vylepšit jeho odpovědi.",
+    "overview": "Navrhněte vhodnou odpověď na tuto konverzaci",
+    "instruction": "Napište odpověď uživatele",
+    "response_placeholder": "Vaše odpověď..."
+  },
+  "reply_as_assistant": {
+    "label": "Odpovědět jako Asistent",
+    "desc": "Pomozte Open Assistant vylepšit jeho odpovědi v konverzacích ostatních uživatelů.",
+    "overview": "Navrhněte vhodnou odpověď na tuto konverzaci",
+    "response_placeholder": "Odpověď Asistenta..."
+  },
+  "rank_user_replies": {
+    "label": "Seřadit odpovědi uživatelů",
+    "desc": "Pomozte Open Assistant vylepšit jeho odpovědi v konverzacích ostatních uživatelů.",
+    "overview": "Seřaďte navržené odpovědi uživatelů od nejlepší po nejhoší. Nejlepší odpověď bude první, nejhorší poslední.",
+    "unchanged_title": "Původní pořadí",
+    "unchanged_message": "Pořadí zpráv nebylo změněno. Jste si jistí, že chcete pokračovat?"
+  },
+  "rank_assistant_replies": {
+    "label": "Seřadit odpovědi Asistenta",
+    "desc": "Ohodnoťte odpovědi Asistenta podle jejich správnosti a čitelnosti.",
+    "overview": "Seřaďte možné odpovědi Asistenta od nejlepší po nejhoší. Nejlepší odpověď bude první, nejhorší poslední.",
+    "unchanged_title": "Původní pořadí",
+    "unchanged_message": "Pořadí zpráv nebylo změněno. Jste si jistí, že chcete pokračovat?"
+  },
+  "rank_initial_prompts": {
+    "label": "Seřaďte úvodní dotazy",
+    "desc": "Seřaďte dotazy uživatelů podle kvality.",
+    "overview": "Seřaďte dotazy uživatelů od nejlepšího po nejhoší. Nejlepší odpověď bude první, nejhorší poslední.",
+    "unchanged_title": "Původní pořadí",
+    "unchanged_message": "Pořadí zpráv nebylo změněno. Jste si jistí, že chcete pokračovat?"
+  },
+  "label_initial_prompt": {
+    "label": "Označkovat úvodní dotaz",
+    "desc": "Označkujte úvodní dotaz.",
+    "overview": "Označkujte následující dotaz."
+  },
+  "label_prompter_reply": {
+    "label": "Označkovat odpověď uživatele",
+    "desc": "Označkujte zprávu od uživatele.",
+    "overview": "Označkujte poslední zprávu v následující diskuzi."
+  },
+  "label_assistant_reply": {
+    "label": "Označkovat odpověď Asistenta",
+    "desc": "Označkujte zprávu od Asistenta.",
+    "overview": "Označkujte poslední zprávu v následující diskuzi."
+  },
+  "classify_initial_prompt": {
+    "label": "Ohodnotit úvodní dotaz",
+    "desc": "Odpovězte na otázky o úvodním dotazu.",
+    "overview": "Přečtěte si následující dotaz a odpovězte na otázky."
+  },
+  "classify_prompter_reply": {
+    "label": "Ohodnotit odpověď uživatele",
+    "desc": "Odpovězte na otázky o zadané zprávě.",
+    "overview": "Přečtěte si následující konverzaci a odpovězte na otázky o poslední zprávě."
+  },
+  "classify_assistant_reply": {
+    "label": "Ohodnotit odpověď Asistenta",
+    "desc": "Odpovězte na otázky o zadané zprávě.",
+    "overview": "Přečtěte si následující konverzaci a odpovězte na otázky o poslední zprávě."
+  },
+  "submitted_as": "Zpráva bude nahrána jako zpráva v jazyce {{submit_lang}}.",
+  "writing_wrong_langauge_a_b": "Vypadá to, že píšete v jazyce {{detected_lang}}, ale zpráva bude nahrána jako zpráva v jazyce {{submit_lang}}."
+}
