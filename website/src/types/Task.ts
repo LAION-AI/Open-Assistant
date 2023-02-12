@@ -27,7 +27,7 @@ export interface TaskInfo {
   id: string;
   mode?: string;
   pathname: string;
-  type: string;
+  type: TaskType;
   update_type: TaskUpdateType;
 }
 
