@@ -22,7 +22,7 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
         <Fragment key={child.id}>
           <Box position="relative" className="box2">
             <ConnectionCurveBottom left={{ base: toPx(-8), md: toPx(avatarSize / 2 - 1) }}></ConnectionCurveBottom>
-            <Box paddingLeft={{ md: "32px", base: "15px" }} position="relative" className="box3">
+            <Box paddingLeft={{ md: "32px", base: "14px" }} position="relative" className="box3">
               {hasSibling && !isLastChild && <Connection isSibling></Connection>}
               <Box pt={`${messagePaddingTop}px`} position="relative" className="box4">
                 {hasChildren && depth < maxDepth && <Connection className="connection1"></Connection>}
@@ -32,7 +32,7 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
                     mt: `${avartarMarginTop}px`,
                   }}
                   avartarPosition="top"
-                  highlight={child.id === messageId || !!child.user_is_author}
+                  highlight={child.id === messageId}
                   message={child}
                 ></MessageTableEntry>
               </Box>
@@ -74,7 +74,7 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
           showAuthorBadge
           message={tree}
           avartarPosition="top"
-          highlight={tree.id === messageId || !!tree.user_is_author}
+          highlight={tree.id === messageId}
         ></MessageTableEntry>
       </Box>
       {renderChildren(tree.children)}
