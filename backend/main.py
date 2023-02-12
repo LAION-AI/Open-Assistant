@@ -15,6 +15,7 @@ from loguru import logger
 from oasst_backend.api.deps import api_auth, create_api_client
 from oasst_backend.api.v1.api import api_router
 from oasst_backend.api.v1.utils import prepare_conversation
+from oasst_backend.cached_stats_repository import CachedStatsRepository
 from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
@@ -332,6 +333,17 @@ def update_user_streak(session: Session) -> None:
 @managed_tx_function(auto_commit=CommitMode.COMMIT)
 def cronjob_delete_expired_tasks(session: Session) -> None:
     delete_expired_tasks(session)
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60 * settings.CACHED_STATS_UPDATE_INTERVAL, wait_first=True)
+@managed_tx_function(auto_commit=CommitMode.COMMIT)
+def update_cached_stats(session: Session) -> None:
+    try:
+        csr = CachedStatsRepository(session)
+        csr.update_all_cached_stats()
+    except Exception:
+        logger.exception("Error during cached stats update")
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

@@ -66,6 +66,17 @@ different 500 examples from `prompt_dialogue`.
 
 This works with `torch.distributed`.
 
+## Training only on OA internal data:
+
+To experiment with the Open Assistant data simply run:
+
+```bash
+python trainer.py --configs defaults oa_dataset_only galactica-125m
+```
+
+Change the `data_path` in the `oa_dataset_only` from the `configs/config.yaml`
+file to the correct path.
+
 ## Model
 
 Normally you should be able to add new models in `configs/config.yml`

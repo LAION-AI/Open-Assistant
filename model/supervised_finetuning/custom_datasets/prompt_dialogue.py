@@ -1,9 +1,71 @@
 import json
+import math
 import os
+import random
+from collections import OrderedDict
+from functools import reduce
 from urllib.request import urlopen
 
+import numpy as np
 from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
 from torch.utils.data import Dataset
+
+
+class OAPrivate(Dataset):
+    splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
+
+    def __init__(self, data_path, split="sft", file="2023-02-10_oasst_prod.jsonl") -> None:
+        super().__init__()
+
+        total_prob = reduce(lambda prev, split: prev + split[1], self.splits.items(), 0)
+        assert math.isclose(total_prob, 1), "Make sure OAPrivate split ratios add to 1"
+
+        jsonl_file = os.path.join(data_path, file)
+
+        with open(jsonl_file, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+        # take a subset of the dataset based on the split
+        rng = np.random.default_rng(seed=0)
+        indices = np.arange(len(lines)).astype(int)
+        rng.shuffle(indices)
+
+        cumsums = np.cumsum([[0] + list(self.splits.values())])
+        split_index = list(self.splits.keys()).index(split)
+
+        start_index, end_index = int(cumsums[split_index] * len(lines)), int(cumsums[split_index + 1] * len(lines))
+
+        self.data = [json.loads(lines[index].strip()) for index in indices[start_index:end_index]]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        # Sample randomly from replies
+        prompt = self.data[index]["prompt"]
+
+        pairs = []
+
+        while True:
+            assert prompt["role"] == "prompter"
+            prompter_text = prompt["text"]
+
+            if len(prompt["replies"]) == 0:
+                break
+
+            reply = random.choice(prompt["replies"])
+            reply_text = reply["text"]
+
+            # only add if the reply exists
+            pairs.append(prompter_text)
+            pairs.append(reply_text)
+
+            if len(reply["replies"]) == 0:
+                break
+
+            prompt = random.choice(reply["replies"])
+
+        return format_pair(pairs)
 
 
 class PromptGeneratedDataset(Dataset):
