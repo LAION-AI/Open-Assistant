@@ -1,4 +1,5 @@
 import { Box, Flex, Text, TextProps, useColorModeValue } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 
 const TitleClasses: TextProps = {
   fontWeight: "semibold",
@@ -13,6 +14,7 @@ const LabelClasses: TextProps = {
 };
 
 export const TaskInfo = ({ id, output }: { id: string; output: string }) => {
+  const { t } = useTranslation();
   const titleColor = useColorModeValue("gray.700", "gray.400");
 
   return (
@@ -20,7 +22,7 @@ export const TaskInfo = ({ id, output }: { id: string; output: string }) => {
       <Flex direction="column">
         <Flex alignItems="center" gap="2">
           <Text {...TitleClasses} color={titleColor}>
-            Prompt
+            {t("prompt")}
           </Text>
           <Text {...LabelClasses} data-cy="task-id">
             {id}
@@ -28,7 +30,7 @@ export const TaskInfo = ({ id, output }: { id: string; output: string }) => {
         </Flex>
         <Flex alignItems="center" gap="2">
           <Text {...TitleClasses} color={titleColor}>
-            Output
+            {t("output")}
           </Text>
           <Text {...LabelClasses}>{output}</Text>
         </Flex>

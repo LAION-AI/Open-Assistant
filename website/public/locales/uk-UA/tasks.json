@@ -1,5 +1,5 @@
 {
-  "available_task_count": "{{count}} задач доступно",
+  "available_task_count": "{{count}} завдань доступно",
   "classify_assistant_reply": {
     "label": "Класифікувати відповідь асистента",
     "desc": "Надайте мітки для тексту.",

@@ -48,7 +48,7 @@ WORKDIR ${APP_ROOT}
 
 
 COPY --chown="${APP_USER}:${APP_USER}" --from=build /build/lib                         ${APP_LIBS}
-COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/__main__.py .
+COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/*.py .
 
 
 CMD python3 __main__.py --backend-url "${BACKEND_URL}" --inference-server-url "${INFERENCE_SERVER_URL}"

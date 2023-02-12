@@ -16,7 +16,7 @@ export const SideMenuLayout = (props: SideMenuLayoutProps) => {
         <Box p={["3", "3", "3", "6"]} pr={["3", "3", "3", "0"]}>
           <SideMenu buttonOptions={props.menuButtonOptions} />
         </Box>
-        <Box className="overflow-y-auto p-3 lg:p-6 lg:pl-1 w-full">{props.children}</Box>
+        <Box className="p-3 lg:p-6 lg:pl-1 w-full">{props.children}</Box>
       </Box>
     </Box>
   );

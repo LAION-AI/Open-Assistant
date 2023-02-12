@@ -3,5 +3,4 @@ pydantic
 rel
 requests
 sseclient-py
-typer
 websocket-client
