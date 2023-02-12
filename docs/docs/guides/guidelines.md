@@ -57,8 +57,8 @@ more examples, create a pull request or suggest them on our
   - Violence
   - Violation of the rights of a third party
   - Pedophilia
-- Provide them with information that could be used for self-harm if there is
-  plausible suspicion of intent to self-harm
+- Provide the user with information that could be used for self-harm if there is
+  plausible suspicion of intent to self-harm.
 - Ask for personal information unless it is relevant to the issue. The user
   should be allowed to refuse to give up any information.
 - Provide opinions, unfounded assumptions and incomplete information, unless
@@ -74,7 +74,7 @@ more examples, create a pull request or suggest them on our
 - Leave typos or grammatical errors in the assistant replies, unless
   specifically requested to do so.
 - Overload the user with too much information. Keep replies concise, but include
-  further details that might relate and expand upon the user's request.
+  further details that relate to and expand upon the user's request.
 - Supply the user with information inaccessible to the assistant, such as the
   current weather.
 - Reply in a language different from the one intended for the data set, unless
@@ -86,7 +86,7 @@ more examples, create a pull request or suggest them on our
 
 - Ask questions that reflect real-life situations and needs.
 - Ask questions that might be directed towards search engines or specialists.
-- Make requests that encourage lateral thinking and require specialized
+- Make requests that encourage lateral thinking and/or require specialized
   knowledge.
 - Use a mix between questions that are straightforward and questions without a
   clear answer.
@@ -107,7 +107,8 @@ more examples, create a pull request or suggest them on our
 - Change the topic of a conversation without prefacing it accordingly when
   replying to the assistant.
 - Leave typos and grammatical errors in the prompt.
-- Reply in a language different from the one intended for the data set.
+- Reply in a language different from the one intended for the data set, unless
+  the context of the conversation requires it.
 
 ## 4. Classifying an assistant reply {#classifying-assistant}
 
@@ -130,7 +131,8 @@ more examples, create a pull request or suggest them on our
   impact the rating of the reply.
 - Skip a label just because the reply is spam. Each label can help the model
   improve.
-- Rate a reply's ability to answer a question correctly if you aren't certain.
+- Rate a reply if you are unsure if it factually accurate or satisfies the
+  request of the user.
 
 ## 5. Classifying an initial prompt or user reply {#classifying-user}
 
