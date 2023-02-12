@@ -1,4 +1,5 @@
 import { useColorMode } from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { getCsrfToken, getProviders } from "next-auth/react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
@@ -22,7 +23,7 @@ export default function Verify() {
   );
 }
 
-export async function getServerSideProps({ locale }) {
+export const getServerSideProps: GetServerSideProps = async ({ locale = "en" }) => {
   const csrfToken = await getCsrfToken();
   const providers = await getProviders();
   return {
@@ -32,4 +33,4 @@ export async function getServerSideProps({ locale }) {
       ...(await serverSideTranslations(locale, ["common"])),
     },
   };
-}
+};

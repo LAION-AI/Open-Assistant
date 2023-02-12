@@ -1,11 +1,20 @@
 {
-  "default": {
-    "unchanged_title": "Sin cambios",
-    "unchanged_message": "¿Estás seguro de que quieres continuar?"
+  "any_feedback_on_this_task": "¿Alguna realimentación sobre esta tarea?",
+  "available_task_count": "{{count}} tareas disponibles",
+  "classify_assistant_reply": {
+    "label": "Clasificar respuesta del asistente",
+    "desc": "Proporciona etiquetas para una respuesta del asistente.",
+    "overview": "Lee la siguiente conversación y contesta a continuación la pregunta sobre la última respuesta en la discusión."
   },
-  "random": {
-    "label": "Voy a tener suerte",
-    "desc": "Ayúdanos a mejorar Open Assistant empezando con una tarea aleatoria."
+  "classify_initial_prompt": {
+    "label": "Clasificar instrucciones iniciales",
+    "desc": "Proporciona etiquetas para unas instrucciones.",
+    "overview": "Lee la siguiente entrada y contesta a continuación la pregunta sobre ella."
+  },
+  "classify_prompter_reply": {
+    "label": "Clasificar la respuesta del apuntador",
+    "desc": "Proporciona etiquetas para una entrada.",
+    "overview": "Lee la siguiente conversación y contesta a continuación la pregunta sobre la última respuesta en la discusión."
   },
   "create_initial_prompt": {
     "label": "Crear instrucciones iniciales",
@@ -14,25 +23,28 @@
     "instruction": "Proporciona las instrucciones iniciales",
     "response_placeholder": "Escribe tus instrucciones aquí..."
   },
-  "reply_as_user": {
-    "label": "Contestar como usuario",
-    "desc": "Hablar con Open Assistant e intentar mejorar sus respuestas mientras interaccionas con él.",
-    "overview": "Dada la conversación siguiente, proporciona una respuesta adecuada",
-    "instruction": "Proporciona la respuesta del usuario",
-    "response_placeholder": "Escribe tu respuesta aquí..."
+  "default": {
+    "unchanged_title": "Sin cambios",
+    "unchanged_message": "¿Estás seguro de que quieres continuar?"
   },
-  "reply_as_assistant": {
-    "label": "Contestar como asistente",
-    "desc": "Ayuda a Open Assistant a mejorar sus respuestas a conversaciones con otros usuarios.",
-    "overview": "Dada la conversación siguiente, proporciona una respuesta adecuada",
-    "response_placeholder": "Escribe tu respuesta aquí..."
+  "label_assistant_reply": {
+    "label": "Etiquetar respuesta del asistente",
+    "desc": "Proporciona etiquetas para unas instrucciones.",
+    "overview": "Dada la discusión siguiente, proporciona etiquetas para la última entrada."
   },
-  "rank_user_replies": {
-    "label": "Ordenar respuestas de usuarios",
-    "desc": "Ayuda a Open Assistant a mejorar sus respuestas a conversaciones con otros usuarios.",
-    "overview": "Dadas las siguientes respuestas de usuarios, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
-    "unchanged_title": "Orden sin cambiar",
-    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?"
+  "label_initial_prompt": {
+    "label": "Etiquetar instrucciones iniciales",
+    "desc": "Proporciona etiquetas para unas instrucciones.",
+    "overview": "Proporciona etiquetas para las siguientes instrucciones"
+  },
+  "label_prompter_reply": {
+    "label": "Etiquetar respuesta del apuntador",
+    "desc": "Proporciona etiquetas para unas instrucciones.",
+    "overview": "Dada la discusión siguiente, proporciona etiquetas para la última entrada."
+  },
+  "random": {
+    "label": "Voy a tener suerte",
+    "desc": "Ayúdanos a mejorar Open Assistant empezando con una tarea aleatoria."
   },
   "rank_assistant_replies": {
     "label": "Ordenar respuestas del asistente",
@@ -48,35 +60,26 @@
     "unchanged_title": "Orden sin cambiar",
     "unchanged_message": "No has cambiado el orden de las entradas. ¿Seguro que quieres continuar?"
   },
-  "label_initial_prompt": {
-    "label": "Etiquetar instrucciones inciales",
-    "desc": "Proporciona etiquetas para unas instrucciones.",
-    "overview": "Proporciona etiquetas para las siguientes instrucciones"
+  "rank_user_replies": {
+    "label": "Ordenar respuestas de usuarios",
+    "desc": "Ayuda a Open Assistant a mejorar sus respuestas a conversaciones con otros usuarios.",
+    "overview": "Dadas las siguientes respuestas de usuarios, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
+    "unchanged_title": "Orden sin cambiar",
+    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?"
   },
-  "label_prompter_reply": {
-    "label": "Etiquetar respuesta del apuntador",
-    "desc": "Proporciona etiquetas para unas instrucciones.",
-    "overview": "Dada la discusión siguiente, proporciona etiquetas para la última entrada."
+  "reply_as_assistant": {
+    "label": "Contestar como asistente",
+    "desc": "Ayuda a Open Assistant a mejorar sus respuestas a conversaciones con otros usuarios.",
+    "overview": "Dada la conversación siguiente, proporciona una respuesta adecuada",
+    "response_placeholder": "Escribe tu respuesta aquí..."
   },
-  "label_assistant_reply": {
-    "label": "Etiquetar respuesta del asistente",
-    "desc": "Proporciona etiquetas para unas instrucciones.",
-    "overview": "Dada la discusión siguiente, proporciona etiquetas para la última entrada."
+  "reply_as_user": {
+    "label": "Contestar como usuario",
+    "desc": "Hablar con Open Assistant e intentar mejorar sus respuestas mientras interaccionas con él.",
+    "overview": "Dada la conversación siguiente, proporciona una respuesta adecuada",
+    "instruction": "Proporciona la respuesta del usuario",
+    "response_placeholder": "Escribe tu respuesta aquí..."
   },
-  "classify_initial_prompt": {
-    "label": "Clasificar instrucciones iniciales",
-    "desc": "Proporciona etiquetas para unas instrucciones.",
-    "overview": "Lee la siguiente entrada y contesta a continuación la pregunta sobre ella."
-  },
-  "classify_prompter_reply": {
-    "label": "Clasificar la respuesta del apuntador",
-    "desc": "Proporciona etiquetas para una entrada.",
-    "overview": "Lee la siguiente conversación y contesta a continuación la pregunta sobre la última respuesta en la discusión."
-  },
-  "classify_assistant_reply": {
-    "label": "Clasificar respuesta del asistente",
-    "desc": "Proporciona etiquetas para una respuesta del asistente.",
-    "overview": "Lee la siguiente conversación y contesta a continuación la pregunta sobre la última respuesta en la discusión."
-  },
-  "available_task_count": "{{count}} tareas disponibles"
+  "submitted_as": "Esto será enviado como {{submit_lang}}",
+  "writing_wrong_langauge_a_b": "Parece que estás escribiendo en {{detected_lang}} pero esto se enviará como {{submit_lang}}."
 }

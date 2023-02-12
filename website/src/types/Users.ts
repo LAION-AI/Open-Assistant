@@ -75,11 +75,11 @@ export interface BackendUser extends BackendUserCore {
 /**
  * An expanded User for the web.
  */
-export interface User extends BackendUser {
+export interface User<TRole extends string = string> extends BackendUser {
   /**
    * The user's roles within the webapp.
    */
-  role: string;
+  role: TRole;
 }
 
 export type FetchUsersParams = {

@@ -1,0 +1,84 @@
+{
+  "available_task_count": "{{count}} zeregin eskuragarri",
+  "classify_assistant_reply": {
+    "desc": "Jarri etiketak instrukzio bati.",
+    "label": "Sailkatu asistentearen erantzuna",
+    "overview": "Irakurri hurrengo elkarrizketa eta erantzun elkarrizketako azken erantzunari buruzko galdera."
+  },
+  "classify_initial_prompt": {
+    "desc": "Jarri etiketak instrukzio bati.",
+    "label": "Sailkatu hasierako instrukzioa",
+    "overview": "Irakurri hurrengo instrukzioa eta erantzun horri buruzko galdera."
+  },
+  "classify_prompter_reply": {
+    "desc": "Jarri etiketak instrukzio bati.",
+    "label": "Sailkatu erabiltzailearen erantzuna",
+    "overview": "Irakurri hurrengo elkarrizketa eta erantzun elkarrizketako azken erantzunari buruzko galdera."
+  },
+  "create_initial_prompt": {
+    "desc": "Idatzi hasierako instrukzioak Open Assistant era askotako mezuak erantzuten saia dadin.",
+    "instruction": "Eman hasierako instrukzioak",
+    "label": "Sortu hasierako instrukzioak",
+    "overview": "Sortu hasierako mezu bat asistenteari bidaltzeko",
+    "response_placeholder": "Idatzi zure instrukzioak hemen..."
+  },
+  "default": {
+    "unchanged_message": "Ziur al zaude jarraitu nahi duzula?",
+    "unchanged_title": "Ez dago aldaketarik"
+  },
+  "label_assistant_reply": {
+    "desc": "Jarri etiketak instrukzio bati.",
+    "label": "Etiketatu asistentearen erantzuna",
+    "overview": "Ondoko elkarrizketa ikusita, eman etiketak hurrengo instrukzioari."
+  },
+  "label_initial_prompt": {
+    "desc": "Jarri etiketak instrukzio bati.",
+    "label": "Etiketatu hasierako instrukzioak",
+    "overview": "Jarri etiketak hurrengo instrukzioari"
+  },
+  "label_prompter_reply": {
+    "desc": "Jarri etiketak instrukzio bati.",
+    "label": "Etiketatu galdetzailearen erantzuna",
+    "overview": "Ondoko elkarrizketa ikusita, eman etiketak hurrengo instrukzioari."
+  },
+  "random": {
+    "desc": "Lagun iezaguzu Open Assistant hobetzen ausazko zeregin bat hasiz.",
+    "label": "Zorionekoa sentitzen naiz"
+  },
+  "rank_assistant_replies": {
+    "desc": "Open Assistant-ek emandako erantzunak sailkatu zehaztasun eta irakurgarritasunaren arabera.",
+    "label": "Asistentearen erantzunak sailkatu",
+    "overview": "Ondoko asistentearen erantzunak ikusita, ordenatu itzazu onenetik txarrenera, onena lehena izanik, txarrena azkena.",
+    "unchanged_message": "Ez duzu galderen ordena aldatu. Ziur al zaude jarraitu nahi duzula?",
+    "unchanged_title": "Ordena aldatu gabe"
+  },
+  "rank_initial_prompts": {
+    "desc": "Open Assistant-ek emandako erantzunak sailkatu zehaztasun eta irakurgarritasunaren arabera.",
+    "label": "Hasierako instrukzioak sailkatu",
+    "overview": "Hasierako eskaera hauek ikusita, ordenatu itzazu onenetik txarrenera, onena lehena izanik, txarrena azkena izanik.",
+    "unchanged_message": "Ez duzu galderen ordena aldatu. Ziur al zaude jarraitu nahi duzula?",
+    "unchanged_title": "Ordena aldatu gabe"
+  },
+  "rank_user_replies": {
+    "desc": "Lagundu Open Assistant-ek beste erabiltzaile batzuekin dituen elkarrizketetako erantzunak hobetzen.",
+    "label": "Erabiltzaileen erantzunak sailkatu",
+    "overview": "Ondoko erabiltzaileen erantzunak ikusita, ordenatu itzazu onenetik txarrenera, onena lehena izanik, txarrena azkena izatea.",
+    "unchanged_message": "Ez duzu galderen ordena aldatu. Ziur al zaude jarraitu nahi duzula?",
+    "unchanged_title": "Ordena aldatu gabe"
+  },
+  "reply_as_assistant": {
+    "desc": "Lagundu Open Assistant-ek beste erabiltzaile batzuekin dituen elkarrizketetako erantzunak hobetzen.",
+    "label": "Erantzun asistente gisa",
+    "overview": "Ondoko elkarrizketa ikusita, eman erantzun egokia",
+    "response_placeholder": "Idatzi zure erantzuna hemen..."
+  },
+  "reply_as_user": {
+    "desc": "Txateatu Open Assistant-ekin eta lagundu bere erantzunak hobetzen harekin elkarreraginean.",
+    "instruction": "Eman erabiltzailearen erantzuna",
+    "label": "Erantzun erabiltzaile gisa",
+    "overview": "Ondoko elkarrizketa ikusita, eman erantzun egokia",
+    "response_placeholder": "Idatzi zure erantzuna hemen..."
+  },
+  "submitted_as": "Hau {{submit_lang}} hizkuntzan bidaliko da",
+  "writing_wrong_langauge_a_b": "Ematen du {{detected_lang}} hizkuntzan baina hau {{submit_lang}} hizkuntzan bidaliko da."
+}

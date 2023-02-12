@@ -27,6 +27,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from starlette.middleware.cors import CORSMiddleware
@@ -98,6 +99,13 @@ if settings.OFFICIAL_WEB_API_KEY:
                     frontend_type="web",
                     trusted=True,
                 )
+
+
+if settings.ENABLE_PROM_METRICS:
+
+    @app.on_event("startup")
+    async def enable_prom_metrics():
+        Instrumentator().instrument(app).expose(app)
 
 
 if settings.RATE_LIMIT:
@@ -333,24 +341,6 @@ def get_openapi_schema():
     return json.dumps(app.openapi())
 
 
-def export_ready_trees(file: Optional[str] = None, use_compression: bool = False):
-    try:
-        with Session(engine) as db:
-            api_client = api_auth(settings.OFFICIAL_WEB_API_KEY, db=db)
-            dummy_user = protocol_schema.User(id="__dummy_user__", display_name="Dummy User", auth_method="local")
-
-            ur = UserRepository(db=db, api_client=api_client)
-            tr = TaskRepository(db=db, api_client=api_client, client_user=dummy_user, user_repository=ur)
-            pr = PromptRepository(
-                db=db, api_client=api_client, client_user=dummy_user, user_repository=ur, task_repository=tr
-            )
-            tm = TreeManager(db, pr)
-
-            tm.export_all_ready_trees(file, use_compression=use_compression)
-    except Exception:
-        logger.exception("Error exporting trees.")
-
-
 def retry_scoring_failed_message_trees():
     try:
         logger.info("TreeManager.retry_scoring_failed_message_trees()")
@@ -383,17 +373,6 @@ def main():
     parser.add_argument("--host", help="The host to run the server", default="0.0.0.0")
     parser.add_argument("--port", help="The port to run the server", default=8080)
     parser.add_argument(
-        "--export",
-        default=False,
-        help="Export all trees which are ready for exporting.",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--export-file",
-        type=str,
-        help="Name of file to export trees to. If not provided when exporting, output will be send to STDOUT",
-    )
-    parser.add_argument(
         "--retry-scoring",
         default=False,
         help="Retry scoring failed message trees",
@@ -405,14 +384,10 @@ def main():
     if args.print_openapi_schema:
         print(get_openapi_schema())
 
-    if args.export:
-        use_compression: bool = ".gz" in args.export_file
-        export_ready_trees(file=args.export_file, use_compression=use_compression)
-
     if args.retry_scoring:
         retry_scoring_failed_message_trees()
 
-    if not (args.export or args.print_openapi_schema or args.retry_scoring):
+    if not (args.print_openapi_schema or args.retry_scoring):
         uvicorn.run(app, host=args.host, port=args.port)
 
 

@@ -1,4 +1,6 @@
 {
+  "any_feedback_on_this_task": "Any feedback on this task?",
+  "available_task_count": "{{count}} tasks available",
   "default": {
     "unchanged_title": "No changes",
     "unchanged_message": "Are you sure you would like to continue?"
@@ -81,5 +83,6 @@
     "desc": "Provide labels for a prompt.",
     "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
   },
-  "available_task_count": "{{count}} tasks available"
+  "submitted_as": "This will be submitted as {{submit_lang}}",
+  "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}."
 }

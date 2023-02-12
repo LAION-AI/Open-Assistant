@@ -1,14 +1,18 @@
 {
   "daily": "Napi",
+  "label": "Címkék",
   "last_updated_at": "Frissítve: {{val, datetime}}",
   "leaderboard": "Ranglétra",
   "monthly": "Havi",
+  "next": "Next",
   "overall": "Összesített",
-  "rank": "Helyezés",
-  "score": "Pont",
-  "user": "Felhasználó",
-  "weekly": "Heti",
+  "previous": "Previous",
   "prompt": "Promptok",
+  "rank": "Helyezés",
   "reply": "Válaszok",
-  "label": "Címkék"
+  "score": "Pont",
+  "top_5_contributors_today": "Top 5 Contributors Today",
+  "user": "Felhasználó",
+  "view_all": "View all",
+  "weekly": "Heti"
 }

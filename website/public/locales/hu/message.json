@@ -1,14 +1,20 @@
 {
+  "copy_message_id": "Copy message ID",
   "label_action": "Címkézés",
   "label_title": "Címke",
   "message": "Üzenet",
+  "message_deleted": "Message deleted",
   "open_new_tab_action": "Megnyitás új lapon",
   "parent": "Szülő",
   "reactions": "Reakciók",
+  "recent_messages": "Recent Messages",
   "report_action": "Jelentés",
   "report_placeholder": "Mi a probléma ezzel az üzenettel?",
   "report_title": "Bejelentés",
   "send_report": "Beküldés",
+  "stop_tree": "Stop tree",
   "submit_labels": "Küldés",
-  "view_user": "Felhasználó megtekintése"
+  "tree_stopped": "Tree stopped {{id}}",
+  "view_user": "Felhasználó megtekintése",
+  "your_recent_messages": "Your Recent Messages"
 }

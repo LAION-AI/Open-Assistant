@@ -1,4 +1,4 @@
-import { withRole } from "src/lib/auth";
+import { withAnyRole } from "src/lib/auth";
 import { createApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { FetchUsersParams } from "src/types/Users";
@@ -17,7 +17,7 @@ const PAGE_SIZE = 20;
  * - `direction`: Either "forward" or "backward" representing the pagination
  *   direction.
  */
-const handler = withRole("admin", async (req, res, token) => {
+const handler = withAnyRole(["admin", "moderator"], async (req, res, token) => {
   const { cursor, direction, searchDisplayName = "", sortKey = "username" } = req.query;
 
   const oasstApiClient = await createApiClient(token);

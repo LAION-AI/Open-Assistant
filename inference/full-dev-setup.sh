@@ -3,12 +3,14 @@
 # Creates a tmux window with splits for the individual services
 
 tmux new-session -d -s "inference-dev-setup"
-tmux send-keys "docker run --rm -it -p 6379:6379 redis" C-m
+tmux send-keys "docker run --rm -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres --name postgres postgres" C-m
 tmux split-window -h
-tmux send-keys "docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 ykilcher/text-generation-inference" C-m
+tmux send-keys "docker run --rm -it -p 6379:6379 --name redis redis" C-m
+tmux split-window -h
+tmux send-keys "docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 -v $HOME/.cache/huggingface:/root/.cache/huggingface --name text-generation-inference ghcr.io/huggingface/text-generation-inference" C-m
 tmux split-window -h
 tmux send-keys "cd server" C-m
-tmux send-keys "uvicorn main:app --reload" C-m
+tmux send-keys "DEBUG_API_KEYS='[\"0000\"]' uvicorn main:app --reload" C-m
 tmux split-window -h
 tmux send-keys "cd worker" C-m
 tmux send-keys "python __main__.py" C-m
