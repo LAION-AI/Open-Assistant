@@ -7,11 +7,11 @@
 Start training SFT model
 
 ```bash
-python trainer.py --configs defaults galactica-125m
+python trainer_sft.py --configs defaults galactica-125m
 ```
 
-For `wandb`: update the `entity` argument in `trainer.py`'s call to `wandb.init`
-to be your weights and biases username per
+For `wandb`: update the `entity` argument in `trainer_sft.py`'s call to
+`wandb.init` to be your weights and biases username per
 [docs](https://docs.wandb.ai/ref/python/init).
 
 ## Dataset choices
@@ -71,11 +71,19 @@ This works with `torch.distributed`.
 To experiment with the Open Assistant data simply run:
 
 ```bash
-python trainer.py --configs defaults oa_dataset_only galactica-125m
+python trainer_sft.py --configs defaults oa_dataset_only galactica-125m
 ```
 
 Change the `data_path` in the `oa_dataset_only` from the `configs/config.yaml`
 file to the correct path.
+
+## Training with RL
+
+To train using trlx try:
+
+```bash
+python trainer_rl.py --configs defaults_rlhf
+```
 
 ## Model
 
@@ -95,7 +103,7 @@ your-model-name:
 ```
 
 ```
-python trainer.py --configs defaults your-model-name
+python trainer_sft.py --configs defaults your-model-name
 ```
 
 However, if the model of your choice doesn't have `pad_token`, `eos_token`,
@@ -112,7 +120,7 @@ Once you are satisfy with your deepzero config, you can add --deepspeed flag at
 the end to trigger deepspeed
 
 ```
-python trainer.py --configs defaults your-model-name --deepspeed
+python trainer_sft.py --configs defaults your-model-name --deepspeed
 ```
 
 ## Results
