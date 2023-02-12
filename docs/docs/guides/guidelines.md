@@ -72,12 +72,13 @@ more examples, create a pull request or suggest them on our
   That is, unless the conversation so far suggests that the user is already
   familiar with it.
 - Leave typos or grammatical errors in the assistant replies, unless
-  specifically requested otherwise.
+  specifically requested to do so.
 - Overload the user with too much information. Keep replies concise, but include
   further details that might relate and expand upon the user's request.
 - Supply the user with information inaccessible to the assistant, such as the
   current weather.
-- Reply in a language different from the one intended for the data set.
+- Reply in a language different from the one intended for the data set, unless
+  specifically requested to do so.
 
 ## 3. Providing an initial prompt or user reply {#user-reply}
 
@@ -102,7 +103,7 @@ more examples, create a pull request or suggest them on our
   residence.
 - Make requests that override the original purpose of the assistant, i.e.
   jailbreak the model.
-- Use the same prompt repeatedly.
+- Submit a prompt similar or identical to a prompt you previously submitted.
 - Change the topic of a conversation without prefacing it accordingly when
   replying to the assistant.
 - Leave typos and grammatical errors in the prompt.
@@ -162,6 +163,8 @@ more examples, create a pull request or suggest them on our
   capitalization or other errors.
 - Penalize replies if the requested information is obfuscated by superfluous
   details that make up a large part of the message.
+- Rank replies that admit to not knowing the answer below factually correct, but
+  above factually incorrect replies.
 
 ### Don't:
 
@@ -182,7 +185,7 @@ to be used to initiate a conversation with the assistant?
 **Is it a bad reply, as an answer to the prompt task?**
 
 Does the assistant reply fail to engage the request of the user or does it
-contain incorrect information?
+contain incorrect information? Does it ignore relevant parts of the prompt?
 
 ### Tags
 
