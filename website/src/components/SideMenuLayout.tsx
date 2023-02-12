@@ -11,12 +11,12 @@ export const SideMenuLayout = (props: SideMenuLayoutProps) => {
   const { colorMode } = useColorMode();
 
   return (
-    <Box backgroundColor={colorMode === "light" ? "gray.100" : colors.dark.bg} className="sm:overflow-hidden">
+    <Box backgroundColor={colorMode === "light" ? "gray.100" : colors.dark.bg}>
       <Box display="flex" flexDirection={["column", "row"]} h="full" gap={["0", "0", "0", "6"]}>
-        <Box p={["3", "3", "3", "6"]} pr={["3", "3", "3", "0"]}>
+        <Box p={["3", "3", "3", "6"]} pe={["3", "3", "3", "0"]}>
           <SideMenu buttonOptions={props.menuButtonOptions} />
         </Box>
-        <Box className="p-3 lg:p-6 lg:pl-1 w-full">{props.children}</Box>
+        <Box className="p-3 lg:p-6 ltr:lg:pl-1 rtl:lg:pr-1 w-full">{props.children}</Box>
       </Box>
     </Box>
   );
