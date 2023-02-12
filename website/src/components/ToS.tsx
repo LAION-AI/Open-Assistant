@@ -72,6 +72,11 @@ const TermsData = [
         title: "",
         desc: "The use, distribution, storage, forwarding, editing and/or other use of images that violate these terms of use is prohibited.",
       },
+      {
+        number: "3.5",
+        title: "",
+        desc: "When you submit or modify text to which you hold the copyright, you agree to license it under: Creative Commons Attribution-ShareAlike 4.0 (“CC BY-SA 4.0”)"
+      }
     ],
   },
   {
