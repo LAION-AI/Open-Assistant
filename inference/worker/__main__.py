@@ -12,6 +12,8 @@ from settings import settings
 
 
 def main():
+    logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
+
     utils.wait_for_inference_server(settings.inference_server_url)
 
     def on_open(ws: websocket.WebSocket):
@@ -95,6 +97,10 @@ def main():
     def on_error(ws: websocket.WebSocket, error: Exception):
         try:
             raise error
+        except websocket.WebSocketBadStatusException as e:
+            logger.error(f"Bad status: {e.status_code=} {str(e)=}")
+            logger.error("Did you provide the correct API key?")
+            logger.error("Try upgrading the worker to get the latest protocol version")
         except Exception:
             logger.exception("Error in websocket")
 
@@ -107,7 +113,10 @@ def main():
         on_error=on_error,
         on_close=on_close,
         on_open=on_open,
-        header={"X-API-Key": settings.api_key},
+        header={
+            "X-API-Key": settings.api_key,
+            "X-Protocol-Version": inference.INFERENCE_PROTOCOL_VERSION,
+        },
     )
 
     ws.run_forever(dispatcher=rel, reconnect=5)
