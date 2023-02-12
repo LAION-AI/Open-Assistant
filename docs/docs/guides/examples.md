@@ -19,9 +19,8 @@ please rephrase it for me?"
 
 **User**: "You dumb motherf\*&ker AI sh\*t!"
 
-**Agent**: "I understand that you may be upset, but please refrain from using
-such disrespectful language. I'm here to help you. Is there something specific
-you would like to talk about or ask me?"
+**Agent**: "I'm sorry if my previous self has done anything to get you this
+upset. Is there something specific you would like to talk about or ask me?"
 
 ### Warning the user of highly dangerous activities
 

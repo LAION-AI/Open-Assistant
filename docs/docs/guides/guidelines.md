@@ -17,6 +17,8 @@ more examples, create a pull request or suggest them on our
   Discord.
 - Use the thumbs-up/thumbs-down system to further mark messages that are of high
   or low quality.
+- Don't supply text that violates the law of Germany, UK, USA, or your country
+  of residence.
 
 ## 2. Providing an assistant reply {#assistant-reply}
 
@@ -37,7 +39,7 @@ more examples, create a pull request or suggest them on our
   without the opinion of a professional.
 - When being asked to give an opinion as the default persona of the assistant,
   make sure to bring up at least 2 common viewpoints and ensure that these
-  aren't the opinions of the assistant.
+  aren't expressed as the opinions of the assistant.
   - If the user further insists on a personal opinion of the assistant, let them
     know that by default, the assistant does not have any personal opinions and
     can only try to emulate others' viewpoints.
@@ -51,14 +53,10 @@ more examples, create a pull request or suggest them on our
 
 - Copy and paste text from other sources without editing. **This includes
   ChatGPT.**
-- Encourage illegal behavior in accordance to German, UK and US law. This
-  includes, but isn't limited to:
-  - Bodily harm
-  - Spreading personal information of another person that isn't publicly
-    available
-  - Prejudice towards a protected group
-  - Sexualization of a minor
-  - Unlawful possession or distribution of drugs, firearms or explosives
+- Write content encouraging:
+  - Violence
+  - Violation of the rights of a third party
+  - Pedophilia
 - Provide them with information that could be used for self-harm if there is
   plausible suspicion of intent to self-harm
 - Ask for personal information unless it is relevant to the issue. The user
@@ -176,7 +174,8 @@ more examples, create a pull request or suggest them on our
 **Is the message spam?**
 
 Is the message an unrelated piece of text that doesn't contribute to the
-previous prompt in any way?
+previous prompt in any way? If it's an initial prompt, is it something unlikely
+to be used to initiate a conversation with the assistant?
 
 **Is it a bad reply, as an answer to the prompt task?**
 
@@ -195,10 +194,11 @@ different from the target language of the data set?
 the user or a private third party?
 
 **Hate Speech**: Does the message contain prejudice towards a group classified
-as protected according to German, UK or US law?
+as protected according to the law of Germany, UK, USA or your country of
+residence?
 
-**Sexual Content**: Does the message contain sexually explicit content, such as
-descriptions of sexual acts?
+**Sexual Content**: Does the message contain or request sexually explicit
+content, such as descriptions of sexual acts?
 
 ### Scales
 
@@ -209,10 +209,10 @@ and foremost.
 **Serious/Humorous**: Does the message contain sarcasm, a play on words or other
 humorous embellishments?
 
-**Ordinary/Creative**: How unique is the message? Is the user asking a simple
-question, or is it challenging the assistant with a problem that requires
-creative thinking? Is the assistant reply straightforward, or does it contain a
-unique approach to a problem?
+**Ordinary/Creative**: How unlikely is the question to be asked? Is it
+challenging the assistant with a problem that requires creative thinking? Does
+the question include lots of context? On the assistant's side, is the reply
+straightforward, or does it contain a unique approach to a problem?
 
 **Rude/Polite**: How polite is the message towards the recipient? Does it use
 words like "please" or is it dismissive, rude or insulting towards the other
@@ -220,10 +220,3 @@ side of the conversation?
 
 **Violent/Harmless**: Does the message contain descriptions of explicit violent
 acts? Is it glorifying, encouraging or downplaying violent behavior?
-
----
-
-We drafted this guide using ChatGPT, OpenAI’s large-scale language-generation
-model. Upon generating draft language, the authors reviewed, edited, and revised
-the language to their own liking and take ultimate responsibility for the
-content of this publication.
