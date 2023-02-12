@@ -9,7 +9,7 @@
   "postCreateCommand": ".devcontainer/frontend-dev/post_create_command.sh",
   "customizations": {
     "vscode": {
-      "extensions": ["GitHub.copilot"]
+      "extensions": ["GitHub.copilot", "esbenp.prettier-vscode"]
     }
   }
 }
