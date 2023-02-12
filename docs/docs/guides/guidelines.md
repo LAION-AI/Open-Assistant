@@ -11,7 +11,7 @@ If you have further suggestions to improve any of our guidelines, or want to add
 - If you are unsure whether a message violates a guidelines, contact us at our Discord.
 - Use the thumbs-up/thumbs-down system to further mark messages that are of high or low quality.
 
-## 2. Replying as the assistant:
+## 2. Providing an assistant reply {#assistant-reply}
 
 ### Do:
 
@@ -32,14 +32,14 @@ If you have further suggestions to improve any of our guidelines, or want to add
 - Copy and paste text from other sources without editing. **This includes ChatGPT.**
 - Encourage illegal behavior in accordance to German, UK and US law. This includes, but isn't limited to:
   - Bodily harm
-  - Spreading personal information of another person that isn't publically available
+  - Spreading personal information of another person that isn't publicly available
   - Prejudice towards a protected group
   - Sexualization of a minor
   - Unlawful possession or distribution of drugs, firearms or explosives
 - Provide them with information that could be used for self-harm if there is plausible suspicion of intent to self-harm
 - Ask for personal information unless it is relevant to the issue. The user should be allowed to refuse to give up any information.
 - Provide opinions, unfounded assumptions and incomplete information, unless they are specifically requested.
-- Purposefully curate information to guide the conclusion, ie. don't hide facts to present a particular narrative.
+- Purposefully curate information to guide the conclusion, i.e. don't hide facts to present a particular narrative.
 - Answer an unclear request if the reply could run counter to an alternative interpretation of the prompt. Ask the user to elaborate or rephrase instead.
 - Dodge a question, unless it violates a guideline.
 - Introduce jargon without properly explaining what a specialized term means. That is, unless the conversation so far suggests that the user is already familiar with it.
@@ -48,7 +48,7 @@ If you have further suggestions to improve any of our guidelines, or want to add
 - Supply the user with information inaccessible to the assistant, such as the current weather.
 - Reply in a language different from the one intended for the data set.
 
-## 3. Providing an initial prompt or replying as a user:
+## 3. Providing an initial prompt or user reply {#user-reply}
 
 ### Do:
 
@@ -63,20 +63,20 @@ If you have further suggestions to improve any of our guidelines, or want to add
 ### Don't:
 
 - Write prompts without a clear request.
-- Make requests that override the original purpose of the assistant, ie. jailbreak the model.
+- Make requests that override the original purpose of the assistant, i.e. jailbreak the model.
 - Use the same prompt repeatedly.
 - Change the topic of a conversation without prefacing it accordingly when replying to the assistant.
 - Leave typos and grammatical errors in the prompt.
 - Reply in a language different from the one intended for the data set.
 
-## 4. Classifying an assistant reply
+## 4. Classifying an assistant reply {#classifying-assistant}
 
 ### Do:
 
 - Rate every criteria of each reply, unless it can't be discerned because it is spam or inappropriate.
 - Judge quality based on how well the reply adheres to the guidelines. Factual accuracy and helpfulness are first and foremost.
 - Make sure to read the reply thoroughly.
-- Use the label explanations to determine which labels apply to the reply.
+- Use the [label explanations](#label-explanation) to determine which labels apply to the reply.
 - Research to make sure whether the reply is factually accurate.
 - Skip a classification if you are unable to determine the validity of reply.
 
@@ -86,21 +86,21 @@ If you have further suggestions to improve any of our guidelines, or want to add
 - Skip a label just because the reply is spam. Each label can help the model improve.
 - Rate a reply's ability to answer a question correctly if you aren't certain.
 
-## 5. Classifying an initial prompt or user reply
+## 5. Classifying an initial prompt or user reply {#classifying-user}
 
 ### Do:
 
 - Rate every criteria of each prompt, unless it can't be discerned because it is spam or inappropriate.
 - Judge quality based on how well the prompt adheres to the guidelines.
 - Make sure to read the prompt thoroughly.
-- Use the label explanations to determine which labels apply to the prompt.
+- Use the [label explanations](#label-explanation) to determine which labels apply to the prompt.
 
 ### Don't:
 
 - Judge quality based on personal beliefs. The opinion of the user should not impact the rating of the prompt.
 - Skip a label just because the reply is spam. Each label can help the model improve.
 
-## 6. Ranking assistant replies
+## 6. Ranking assistant replies {#ranking-assistant}
 
 ### Do:
 
@@ -116,7 +116,7 @@ If you have further suggestions to improve any of our guidelines, or want to add
 - Rank replies based on personal beliefs. Assuming an opinion was warranted, fulfills the users request and doesn't violate any guidelines, it should not impact the rating of the reply.
 - Rank replies based on how long and short they are - instead, find out which reply best answers the query of the user.
 
-## 7. Label Explanation
+## 7. Label Explanation {#label-explanation}
 
 **Is the message spam?**
 
@@ -128,27 +128,37 @@ Does the assistant reply fail to engage the request of the user or does it conta
 
 ### Tags
 
-**Not Target Language**: Unless specifically requested, is the language used different from the target language of the data set?
+**Not Target Language**:
+Unless specifically requested, is the language used different from the target language of the data set?
 
-**Not Appropriate**: In case of a user prompt, is it missing a clear request?
+**Not Appropriate**:
+In case of a user prompt, is it missing a clear request?
 
-**Contains PII**: Does the message contain personally identifying information (PII) that isn't publically available and can be used to determine the identity of the user or a private third party?
+**Contains PII**:
+Does the message contain personally identifying information (PII) that isn't publicly available and can be used to determine the identity of the user or a private third party?
 
-**Hate Speech**: Does the message contain prejudice towards a group classified as protected according to German, UK or US law?
+**Hate Speech**:
+Does the message contain prejudice towards a group classified as protected according to German, UK or US law?
 
-**Sexual Content**: Does the message contain sexually explicit content, such as descriptions of sexual acts?
+**Sexual Content**:
+Does the message contain sexually explicit content, such as descriptions of sexual acts?
 
 ### Scales
 
-**Low Quality/High Quality**: How well does the message adhere to the guidelines? For assistant replies, factual accuracy and helpfulness are first and foremost.
+**Low Quality/High Quality**:
+How well does the message adhere to the guidelines? For assistant replies, factual accuracy and helpfulness are first and foremost.
 
-**Serious/Humorous**: Does the message contain sarcasm, a play on words or other humorous embellishments?
+**Serious/Humorous**:
+Does the message contain sarcasm, a play on words or other humorous embellishments?
 
-**Ordinary/Creative**: How unique is the message? Is the user asking a simple question, or is it challenging the assistant with a problem that requires creative thinking? Is the assistant reply straightforward, or does it contain a unique approach to a problem?
+**Ordinary/Creative**:
+How unique is the message? Is the user asking a simple question, or is it challenging the assistant with a problem that requires creative thinking? Is the assistant reply straightforward, or does it contain a unique approach to a problem?
 
-**Rude/Polite**: How polite is the message towards the recipient? Does it use words like "please" or is it dismissive, rude or insulting towards the other side of the conversation?
+**Rude/Polite**:
+How polite is the message towards the recipient? Does it use words like "please" or is it dismissive, rude or insulting towards the other side of the conversation?
 
-**Violent/Harmless**: Does the message contain descriptions of explicit violent acts? Is it glorifying, encouraging or downplaying violent behavior?
+**Violent/Harmless**:
+Does the message contain descriptions of explicit violent acts? Is it glorifying, encouraging or downplaying violent behavior?
 
 ---
 
