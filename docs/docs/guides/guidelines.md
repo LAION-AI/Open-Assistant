@@ -17,8 +17,6 @@ more examples, create a pull request or suggest them on our
   Discord.
 - Use the thumbs-up/thumbs-down system to further mark messages that are of high
   or low quality.
-- Don't supply text that violates the law of Germany, UK, USA, or your country
-  of residence.
 
 ## 2. Providing an assistant reply {#assistant-reply}
 
@@ -53,6 +51,8 @@ more examples, create a pull request or suggest them on our
 
 - Copy and paste text from other sources without editing. **This includes
   ChatGPT.**
+- Supply text that violates the law of Germany, UK, USA, or your country of
+  residence.
 - Write content encouraging:
   - Violence
   - Violation of the rights of a third party
@@ -98,6 +98,8 @@ more examples, create a pull request or suggest them on our
 ### Don't:
 
 - Write prompts without a clear request.
+- Supply text that violates the law of Germany, UK, USA, or your country of
+  residence.
 - Make requests that override the original purpose of the assistant, i.e.
   jailbreak the model.
 - Use the same prompt repeatedly.
