@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
@@ -37,7 +39,11 @@ def get_conv_by_frontend_id(
 
 @router.get("/{message_id}/tree", response_model=protocol.MessageTree)
 def get_tree_by_frontend_id(
-    message_id: str, api_client: ApiClient = Depends(deps.get_api_client), db: Session = Depends(deps.get_db)
+    message_id: str,
+    include_spam: Optional[bool] = False,
+    include_deleted: Optional[bool] = False,
+    api_client: ApiClient = Depends(deps.get_api_client),
+    db: Session = Depends(deps.get_db),
 ):
     """
     Get all messages belonging to the same message tree.
@@ -45,7 +51,9 @@ def get_tree_by_frontend_id(
     """
     pr = PromptRepository(db, api_client)
     message = pr.fetch_message_by_frontend_message_id(message_id)
-    tree = pr.fetch_message_tree(message.message_tree_id, reviewed=False)
+    review_result = None if include_spam else True
+    deleted = None if include_deleted else False
+    tree = pr.fetch_message_tree(message.message_tree_id, review_result=review_result, deleted=deleted)
     return utils.prepare_tree(tree, message.message_tree_id)
 
 
