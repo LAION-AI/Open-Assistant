@@ -1,5 +1,6 @@
 {
   "python.formatting.provider": "black",
   "python.analysis.extraPaths": ["${workspaceFolder}/oasst-shared"],
-  "prettier.singleQuote": false
+  "prettier.singleQuote": false,
+  "eslint.workingDirectories": ["./website", "./docs"]
 }
