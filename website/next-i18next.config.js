@@ -13,7 +13,9 @@ module.exports = {
       "fa",
       "fr",
       "gl",
+      "he",
       "hu",
+      "id",
       "it",
       "ja",
       "ko",
@@ -25,7 +27,6 @@ module.exports = {
       "zh",
       "th",
       "tr",
-      "id",
     ],
   },
 };
