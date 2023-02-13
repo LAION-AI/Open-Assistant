@@ -101,8 +101,12 @@ In the [GitHub issues](https://github.com/LAION-AI/Open-Assistant/issues).
 
 ### Why am I not allowed to write about this topic, even though it isn't illegal?
 
-We want to ensure that the Open Assistant data set is as accessible as possible. As such, it's necessary to avoid any harmful or offensive content that could be grounds for removal on sites such as Hugging Face.
-Likewise, we want the model to be trained to reject as few questions as possible, so it's important to not include prompts that require the assistant to either refuse to answer, or generate harmful content.
+We want to ensure that the Open Assistant data set is as accessible as possible.
+As such, it's necessary to avoid any harmful or offensive content that could be
+grounds for removal on sites such as Hugging Face. Likewise, we want the model
+to be trained to reject as few questions as possible, so it's important to not
+include prompts that require the assistant to either refuse to answer, or
+generate harmful content.
 
 ## Questions about developing
 
