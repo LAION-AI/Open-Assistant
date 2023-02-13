@@ -12,7 +12,7 @@ import websockets.exceptions
 from fastapi import Depends
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from oasst_inference_server import interface, queueing
+from oasst_inference_server import interface, models, queueing
 from oasst_inference_server.chat_repository import ChatRepository
 from oasst_inference_server.database import db_engine
 from oasst_inference_server.settings import settings
@@ -27,6 +27,11 @@ app = fastapi.FastAPI()
 @app.on_event("startup")
 async def enable_prom_metrics():
     Instrumentator().instrument(app).expose(app)
+
+
+@app.on_event("startup")
+async def log_inference_protocol_version():
+    logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
 
 
 # Allow CORS
@@ -50,6 +55,12 @@ def create_session():
         yield session
 
 
+@contextlib.contextmanager
+def manual_create_session():
+    with contextlib.contextmanager(create_session)() as session:
+        yield session
+
+
 def create_chat_repository(session: sqlmodel.Session = Depends(create_session)):
     repository = ChatRepository(session)
     return repository
@@ -57,33 +68,114 @@ def create_chat_repository(session: sqlmodel.Session = Depends(create_session)):
 
 @contextlib.contextmanager
 def manual_chat_repository():
-    with contextlib.contextmanager(create_session)() as session:
+    with manual_create_session() as session:
         yield create_chat_repository(session)
 
 
-if settings.update_alembic:
+api_key_header = fastapi.Header(None, alias="X-API-Key")
 
-    @app.on_event("startup")
-    def alembic_upgrade():
-        logger.info("Attempting to upgrade alembic on startup")
-        retry = 0
-        while True:
-            try:
-                alembic_ini_path = Path(__file__).parent / "alembic.ini"
-                alembic_cfg = alembic.config.Config(str(alembic_ini_path))
-                alembic_cfg.set_main_option("sqlalchemy.url", settings.database_uri)
-                alembic.command.upgrade(alembic_cfg, "head")
-                logger.info("Successfully upgraded alembic on startup")
-                break
-            except Exception:
-                logger.exception("Alembic upgrade failed on startup")
-                retry += 1
-                if retry >= settings.alembic_retries:
-                    raise
 
-                timeout = settings.alembic_retry_timeout * 2**retry
-                logger.warning(f"Retrying alembic upgrade in {timeout} seconds")
-                time.sleep(timeout)
+def get_api_key(api_key: str = api_key_header) -> str:
+    if api_key is None:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
+            detail="Missing API key",
+        )
+    return api_key
+
+
+protocol_version_header = fastapi.Header(None, alias="X-Protocol-Version")
+
+
+def get_protocol_version(protocol_version: str = protocol_version_header) -> str:
+    if protocol_version != inference.INFERENCE_PROTOCOL_VERSION:
+        logger.warning(f"Got worker with incompatible protocol version: {protocol_version}")
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_426_UPGRADE_REQUIRED,
+            detail=f"Incompatible protocol version: {protocol_version}. Expected: {inference.INFERENCE_PROTOCOL_VERSION}.",
+        )
+    return protocol_version
+
+
+def get_worker(
+    api_key: str = Depends(get_api_key),
+    protocol_version: str = Depends(get_protocol_version),
+    session: sqlmodel.Session = Depends(create_session),
+) -> models.DbWorkerEntry:
+    logger.info(f"get_worker: {api_key=}, {protocol_version=}")
+    worker = session.exec(
+        sqlmodel.select(models.DbWorkerEntry).where(models.DbWorkerEntry.api_key == api_key)
+    ).one_or_none()
+    if worker is None:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API key",
+        )
+    return worker
+
+
+def get_bearer_token(authorization_header: str) -> str:
+    if not authorization_header.startswith("Bearer "):
+        raise ValueError("Authorization header must start with 'Bearer '")
+    return authorization_header[len("Bearer ") :]
+
+
+def get_root_token(token: str = Depends(get_bearer_token)) -> str:
+    root_token = settings.root_token
+    if token == root_token:
+        return token
+    raise fastapi.HTTPException(
+        status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token",
+    )
+
+
+@app.on_event("startup")
+def alembic_upgrade():
+    if not settings.update_alembic:
+        logger.info("Skipping alembic upgrade on startup (update_alembic is False)")
+        return
+    logger.info("Attempting to upgrade alembic on startup")
+    retry = 0
+    while True:
+        try:
+            alembic_ini_path = Path(__file__).parent / "alembic.ini"
+            alembic_cfg = alembic.config.Config(str(alembic_ini_path))
+            alembic_cfg.set_main_option("sqlalchemy.url", settings.database_uri)
+            alembic.command.upgrade(alembic_cfg, "head")
+            logger.info("Successfully upgraded alembic on startup")
+            break
+        except Exception:
+            logger.exception("Alembic upgrade failed on startup")
+            retry += 1
+            if retry >= settings.alembic_retries:
+                raise
+
+            timeout = settings.alembic_retry_timeout * 2**retry
+            logger.warning(f"Retrying alembic upgrade in {timeout} seconds")
+            time.sleep(timeout)
+
+
+@app.on_event("startup")
+def maybe_add_debug_api_keys():
+    if not settings.debug_api_keys:
+        logger.info("No debug API keys configured, skipping")
+        return
+    logger.info("Adding debug API keys")
+    with manual_create_session() as session:
+        for api_key in settings.debug_api_keys:
+            logger.info(f"Checking if debug API key {api_key} exists")
+            if (
+                session.exec(
+                    sqlmodel.select(models.DbWorkerEntry).where(models.DbWorkerEntry.api_key == api_key)
+                ).one_or_none()
+                is None
+            ):
+                logger.info(f"Adding debug API key {api_key}")
+                session.add(models.DbWorkerEntry(api_key=api_key, name="Debug API Key"))
+                session.commit()
+            else:
+                logger.info(f"Debug API key {api_key} already exists")
 
 
 @app.get("/chat")
@@ -99,7 +191,7 @@ async def create_chat(
     request: interface.CreateChatRequest, chat_repository: ChatRepository = Depends(create_chat_repository)
 ) -> interface.ChatListEntry:
     """Allows a client to create a new chat."""
-    logger.info(f"Received {request}")
+    logger.info(f"Received {request=}")
     chat = chat_repository.create_chat()
     return chat.to_list_entry()
 
@@ -168,11 +260,10 @@ async def create_message(
 
 
 @app.websocket("/work")
-async def work(websocket: fastapi.WebSocket):
+async def work(websocket: fastapi.WebSocket, worker: models.DbWorkerEntry = Depends(get_worker)):
     await websocket.accept()
     worker_config = inference.WorkerConfig.parse_raw(await websocket.receive_text())
-    queue_id = f"work:{worker_config.compat_hash}"
-    work_queue = queueing.RedisQueue(redis_client, queue_id)
+    work_queue = queueing.work_queue(redis_client, worker_config.compat_hash)
     try:
         while True:
             if websocket.client_state == fastapi.websockets.WebSocketState.DISCONNECTED:
@@ -240,3 +331,42 @@ async def work(websocket: fastapi.WebSocket):
                 chat_repository.set_chat_state(chat.id, interface.MessageRequestState.complete)
     except fastapi.WebSocketException:
         logger.exception("Websocket closed")
+
+
+@app.put("/worker")
+def create_worker(
+    request: interface.CreateWorkerRequest,
+    root_token: str = fastapi.Depends(get_root_token),
+    session: sqlmodel.Session = fastapi.Depends(create_session),
+):
+    """Allows a client to register a worker."""
+    worker = models.DbWorkerEntry(
+        name=request.name,
+    )
+    session.add(worker)
+    session.commit()
+    session.refresh(worker)
+    return worker
+
+
+@app.get("/worker")
+def list_workers(
+    root_token: str = fastapi.Depends(get_root_token),
+    session: sqlmodel.Session = fastapi.Depends(create_session),
+):
+    """Lists all workers."""
+    workers = session.exec(sqlmodel.select(models.DbWorkerEntry)).all()
+    return list(workers)
+
+
+@app.delete("/worker/{worker_id}")
+def delete_worker(
+    worker_id: str,
+    root_token: str = fastapi.Depends(get_root_token),
+    session: sqlmodel.Session = fastapi.Depends(create_session),
+):
+    """Deletes a worker."""
+    worker = session.get(models.DbWorkerEntry, worker_id)
+    session.delete(worker)
+    session.commit()
+    return fastapi.Response(status_code=200)

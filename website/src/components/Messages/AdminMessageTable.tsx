@@ -8,7 +8,7 @@ import NextLink from "next/link";
 import { ROUTES } from "src/lib/routes";
 import { Message } from "src/types/Conversation";
 import { isKnownEmoji } from "src/types/Emoji";
-import { StrictOmit } from "src/types/utils";
+import { StrictOmit } from "ts-essentials";
 
 import { DataTable, DataTableProps } from "../DataTable/DataTable";
 import { DataTableAction } from "../DataTable/DataTableAction";

@@ -21,3 +21,11 @@ class DbChatEntry(SQLModel, table=True):
 
     def to_entry(self) -> interface.ChatEntry:
         return interface.ChatEntry(id=self.id, conversation=self.conversation)
+
+
+class DbWorkerEntry(SQLModel, table=True):
+    __tablename__ = "worker"
+
+    id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
+    api_key: str = Field(default_factory=lambda: str(uuid4()), index=True)
+    name: str

@@ -1,6 +1,6 @@
 import { Box, Flex, IconButton, Progress, Tooltip, useColorModeValue } from "@chakra-ui/react";
-import { useTranslation } from "next-i18next";
 import { Edit2 } from "lucide-react";
+import { useTranslation } from "next-i18next";
 import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
