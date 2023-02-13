@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "OpenAssistant",
+  "version": "0.0.1",
+  "permissions": ["contextMenus","storage","notifications"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "icons": {
+    "16": "logo_crop.png",
+    "48": "logo_crop.png",
+    "128": "logo_crop.png"
+  }
+}
