@@ -30,6 +30,8 @@ import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
 import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 
+const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
+
 interface MessageTableEntryProps {
   message: Message;
   enabled?: boolean;
@@ -84,8 +86,6 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
   const react = (emoji: string, state: boolean) => {
     sendEmojiChange({ op: state ? "add" : "remove", emoji });
   };
-
-  const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
 
   return (
     <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
