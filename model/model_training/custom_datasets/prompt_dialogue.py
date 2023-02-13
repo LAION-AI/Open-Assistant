@@ -20,6 +20,8 @@ class OAPrivate(Dataset):
         total_prob = reduce(lambda prev, split: prev + split[1], self.splits.items(), 0)
         assert math.isclose(total_prob, 1), "Make sure OAPrivate split ratios add to 1"
 
+        self.mode = split
+
         jsonl_file = os.path.join(data_path, file)
 
         with open(jsonl_file, "r", encoding="utf-8") as f:
@@ -65,7 +67,13 @@ class OAPrivate(Dataset):
 
             prompt = random.choice(reply["replies"])
 
-        return format_pair(pairs)
+        if self.mode == "sft":
+            # return all dialogue history
+            return format_pair(pairs)
+        elif self.mode == "rl":
+            # random stop at the end of a new prompt
+            pairs = format_pair(pairs[: random.choice([i for i in range(len(pairs)) if i % 2 == 1])])
+            return "".join(pairs)
 
 
 class PromptGeneratedDataset(Dataset):

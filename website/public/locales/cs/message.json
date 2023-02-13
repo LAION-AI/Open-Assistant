@@ -1,0 +1,19 @@
+{
+  "copy_message_id": "Zkopírovat ID zprávy",
+  "copy_message_link": "Zkopírovat odkaz na zprávu",
+  "label_action": "Označkovat",
+  "label_title": "Označkovat",
+  "message_deleted": "Zpráva byla odstraněna",
+  "message": "Zpráva",
+  "open_new_tab_action": "Otevřít v novém panelu",
+  "parent": "Rodič",
+  "reactions": "Reakce",
+  "recent_messages": "Nejnovější zprávy v jazyce {{language}}",
+  "report_action": "Nahlásit",
+  "report_placeholder": "Proč by tato zpráva měla být zkontrolována?",
+  "report_title": "Nahlásit",
+  "send_report": "Odeslat",
+  "submit_labels": "Odeslat",
+  "view_user": "Zobrazit uživatele",
+  "your_recent_messages": "Vaše poslední zprávy"
+}

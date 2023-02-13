@@ -13,9 +13,9 @@
   "report_placeholder": "Почему это сообщение должно быть рассмотрено?",
   "report_title": "Пожаловаться",
   "send_report": "Отправить",
-  "stop_tree": "Завершить граф",
+  "stop_tree": "Завершить ветку диалога",
   "submit_labels": "Отправить",
-  "tree_stopped": "Граф завершён {{id}}",
+  "tree_stopped": "Ветка завершена — {{id}}",
   "view_user": "О пользователе",
   "your_recent_messages": "Ваши Последние сообщения"
 }

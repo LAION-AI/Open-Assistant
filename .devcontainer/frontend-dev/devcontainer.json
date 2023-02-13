@@ -1,15 +1,15 @@
 {
-  "name": "Open-Assistant",
+  "name": "Front-end Development",
   "image": "mcr.microsoft.com/vscode/devcontainers/universal",
   "features": {
     "ghcr.io/devcontainers-contrib/features/pre-commit:2": {
       "version": "latest"
     }
   },
-  "postCreateCommand": "bash .devcontainer/frontend-dev/post_create_command.sh",
+  "postCreateCommand": ".devcontainer/frontend-dev/post_create_command.sh",
   "customizations": {
     "vscode": {
-      "extensions": ["GitHub.copilot"]
+      "extensions": ["GitHub.copilot", "esbenp.prettier-vscode"]
     }
   }
 }

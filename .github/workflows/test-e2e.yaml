@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Start website, backend, etc
-        run: docker compose up ci --build -d
+        run: docker compose --profile ci up --build -d
       - name: Run Cypress tests
         uses: cypress-io/github-action@v5.0.2
         with:

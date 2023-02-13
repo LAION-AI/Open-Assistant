@@ -29,6 +29,11 @@ async def enable_prom_metrics():
     Instrumentator().instrument(app).expose(app)
 
 
+@app.on_event("startup")
+async def log_inference_protocol_version():
+    logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
+
+
 # Allow CORS
 app.add_middleware(
     CORSMiddleware,
@@ -70,19 +75,34 @@ def manual_chat_repository():
 api_key_header = fastapi.Header(None, alias="X-API-Key")
 
 
-def get_api_key(api_key_header: str = api_key_header) -> str:
-    if api_key_header is None:
+def get_api_key(api_key: str = api_key_header) -> str:
+    if api_key is None:
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
             detail="Missing API key",
         )
-    return api_key_header
+    return api_key
+
+
+protocol_version_header = fastapi.Header(None, alias="X-Protocol-Version")
+
+
+def get_protocol_version(protocol_version: str = protocol_version_header) -> str:
+    if protocol_version != inference.INFERENCE_PROTOCOL_VERSION:
+        logger.warning(f"Got worker with incompatible protocol version: {protocol_version}")
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_426_UPGRADE_REQUIRED,
+            detail=f"Incompatible protocol version: {protocol_version}. Expected: {inference.INFERENCE_PROTOCOL_VERSION}.",
+        )
+    return protocol_version
 
 
 def get_worker(
     api_key: str = Depends(get_api_key),
+    protocol_version: str = Depends(get_protocol_version),
     session: sqlmodel.Session = Depends(create_session),
 ) -> models.DbWorkerEntry:
+    logger.info(f"get_worker: {api_key=}, {protocol_version=}")
     worker = session.exec(
         sqlmodel.select(models.DbWorkerEntry).where(models.DbWorkerEntry.api_key == api_key)
     ).one_or_none()
@@ -171,7 +191,7 @@ async def create_chat(
     request: interface.CreateChatRequest, chat_repository: ChatRepository = Depends(create_chat_repository)
 ) -> interface.ChatListEntry:
     """Allows a client to create a new chat."""
-    logger.info(f"Received {request}")
+    logger.info(f"Received {request=}")
     chat = chat_repository.create_chat()
     return chat.to_list_entry()
 
@@ -243,8 +263,7 @@ async def create_message(
 async def work(websocket: fastapi.WebSocket, worker: models.DbWorkerEntry = Depends(get_worker)):
     await websocket.accept()
     worker_config = inference.WorkerConfig.parse_raw(await websocket.receive_text())
-    queue_id = f"work:{worker_config.compat_hash}"
-    work_queue = queueing.RedisQueue(redis_client, queue_id)
+    work_queue = queueing.work_queue(redis_client, worker_config.compat_hash)
     try:
         while True:
             if websocket.client_state == fastapi.websockets.WebSocketState.DISCONNECTED:
