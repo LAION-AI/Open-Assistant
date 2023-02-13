@@ -1,10 +1,11 @@
 import { Box, Button, Flex, Textarea, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { getDashboardLayout } from "src/components/Layout";
-import { get, post } from "src/lib/api";
+import { post } from "src/lib/api";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+import { Flags } from "react-feature-flags";
 import useSWRMutation from "swr/mutation";
 
 const Chat = () => {
@@ -51,27 +52,30 @@ const Chat = () => {
       <Head>
         <meta name="description" content="Chat with Open Assistant and provide feedback." key="description" />
       </Head>
-      <Flex flexDir="column" gap={4} overflowY="auto">
-        {!chatID && <Button onClick={() => createChat()}>Create Chat</Button>}
-        {chatID && (
-          <>
-            chat id: {chatID}
-            {messages.map((message, idx) => (
-              <Entry key={idx} isAssistant={idx % 2 === 1}>
-                {message}
-              </Entry>
-            ))}
-            {activeMessage ? (
-              <Entry isAssistant>{activeMessage}</Entry>
-            ) : (
-              <>
-                <Textarea ref={inputRef} />
-                <Button onClick={send}>Send</Button>
-              </>
-            )}
-          </>
-        )}
-      </Flex>
+
+      <Flags authorizedFlags={["chatEnabled"]}>
+        <Flex flexDir="column" gap={4} overflowY="auto">
+          {!chatID && <Button onClick={() => createChat()}>Create Chat</Button>}
+          {chatID && (
+            <>
+              chat id: {chatID}
+              {messages.map((message, idx) => (
+                <Entry key={idx} isAssistant={idx % 2 === 1}>
+                  {message}
+                </Entry>
+              ))}
+              {activeMessage ? (
+                <Entry isAssistant>{activeMessage}</Entry>
+              ) : (
+                <>
+                  <Textarea ref={inputRef} />
+                  <Button onClick={send}>Send</Button>
+                </>
+              )}
+            </>
+          )}
+        </Flex>
+      </Flags>
     </>
   );
 };
