@@ -39,6 +39,8 @@ SUMMARIZATION_DATASETS = [
 ]
 OTHER = ["prosocial_dialogue", "explain_prosocial", "instruct_tuning", "private_tuning", "oa_translated", "oa_private"]
 
+RL_DATASETS = ["oa_private"]
+
 
 def train_val_dataset(dataset, val_split=0.2):
     if val_split == 0:
@@ -50,7 +52,10 @@ def train_val_dataset(dataset, val_split=0.2):
     return Subset(dataset, train_idx), Subset(dataset, val_idx)
 
 
-def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, **kwargs):
+def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft", **kwargs):
+    if mode == "rl":
+        assert dataset_name in RL_DATASETS, f"Dataset {dataset_name} not supported for RL"
+
     data_path = data_path or conf.cache_dir
     dataset_name = dataset_name.lower()
 

@@ -56,7 +56,7 @@
   "rank_initial_prompts": {
     "label": "Ordenar instrucciones iniciales",
     "desc": "Puntúa instrucciones a Open Assistant basándote en su precisión y legibilidad.",
-    "overview": "Dados las siguientes instrucciones inciales, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
+    "overview": "Dadas las siguientes instrucciones iniciales, ordénalas de mejor a peor, siendo la primera la mejor y la última la peor.",
     "unchanged_title": "Orden sin cambiar",
     "unchanged_message": "No has cambiado el orden de las entradas. ¿Seguro que quieres continuar?"
   },
