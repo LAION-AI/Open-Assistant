@@ -1,6 +1,7 @@
 {
-  "copy_message_id": "Copia l'ID del missatge",
-  "label_action": "Etiqueta",
+  "copy_message_id": "Copiar ID del missatge",
+  "copy_message_link": "Copiar enllaç al missatge",
+  "label_action": "Etiquetar",
   "label_title": "Etiqueta",
   "message": "Missatge",
   "message_deleted": "S'ha eliminat el missatge",

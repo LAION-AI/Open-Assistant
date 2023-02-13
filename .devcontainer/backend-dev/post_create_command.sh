@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # ensure pre-commit is installed
 pre-commit install
 
@@ -10,9 +12,7 @@ pip install -r requirements.txt
 cd ..
 
 # install code in editable mode in /oasst-shared
-cd oasst-shared
-pip install -e .
-cd ..
+pip install -e ./oasst-shared[dev]
 
 # docker compose up for backend-dev
 docker compose up backend-dev --build --attach-dependencies -d

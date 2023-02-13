@@ -11,7 +11,7 @@ class MessageRequest(pydantic.BaseModel):
 
     @property
     def worker_compat_hash(self) -> str:
-        return f"{self.model_name}"
+        return inference.compat_hash(model_name=self.model_name)
 
 
 class TokenResponseEvent(pydantic.BaseModel):

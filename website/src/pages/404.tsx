@@ -1,4 +1,4 @@
-import { Box, Button, Center, Link, Text, useColorMode } from "@chakra-ui/react";
+import { Box, Button, Center, Link, Text, theme, useColorModeValue } from "@chakra-ui/react";
 import { AlertTriangle } from "lucide-react";
 import Head from "next/head";
 import { EmptyState } from "src/components/EmptyState";
@@ -6,8 +6,7 @@ import { getTransparentHeaderLayout } from "src/components/Layout";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 function Error() {
-  const { colorMode } = useColorMode();
-  const titleColor = colorMode === "light" ? "blue.500" : "blue.300";
+  const iconColor = useColorModeValue(theme.colors.blue[500], theme.colors.blue[300]);
   return (
     <>
       <Head>
@@ -20,7 +19,7 @@ function Error() {
           <Text fontSize="sm">If you were trying to contribute data but ended up here, please file a bug.</Text>
           <Button
             width="fit-content"
-            leftIcon={<AlertTriangle size={"1em"} color={titleColor} aria-hidden="true" />}
+            leftIcon={<AlertTriangle size={"1em"} color={iconColor} aria-hidden="false" />}
             variant="solid"
             size="xs"
           >

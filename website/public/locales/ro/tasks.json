@@ -1,0 +1,82 @@
+{
+  "default": {
+    "unchanged_title": "Nici o schimbare",
+    "unchanged_message": "Sunteți sigur că doriți să continuați?"
+  },
+  "random": {
+    "label": "Mă simt norocos",
+    "desc": "Ajutați-ne să îmbunătățim Open Assistant, pornind o sarcină aleatorie."
+  },
+  "create_initial_prompt": {
+    "label": "Creați solicitări inițiale",
+    "desc": "Scrieți solicitări inițiale pentru a ajuta Open Assistant să încerce să răspundă la diverse mesaje. (intra la loterie)",
+    "overview": "Creați un mesaj inițial pentru a trimite asistentului",
+    "instruction": "Furnizați prompturile inițiale",
+    "response_placeholder": "Scrieți -vă promptul aici ..."
+  },
+  "reply_as_user": {
+    "label": "Răspunde ca utilizator",
+    "desc": "Discutați cu asistent deschis și ajutați la îmbunătățirea răspunsurilor sale pe măsură ce interacționați cu acesta.",
+    "overview": "Având în vedere următoarea conversație, oferiți un răspuns adecvat",
+    "instruction": "Furnizați răspunsul utilizatorului",
+    "response_placeholder": "Scrieți -vă răspunsul aici..."
+  },
+  "reply_as_assistant": {
+    "label": "Răspunde ca asistentt",
+    "desc": "Ajută la deschiderea Asistentului să -și îmbunătățească răspunsurile la conversații cu alți utilizatori.",
+    "overview": "Având în vedere următoarea conversație, oferiți un răspuns adecvat",
+    "response_placeholder": "Scrieți -vă răspunsul aici..."
+  },
+  "rank_user_replies": {
+    "label": "Rang răspunsurile utilizatorului",
+    "desc": "Ajută la deschiderea Asistentului să -și îmbunătățească răspunsurile la conversații cu alți utilizatori.",
+    "overview": "Având în vedere următoarele răspunsuri ale utilizatorului, sortează -le de la cel mai bun la cel mai rău, cel mai bine fiind primul, cel mai rău fiind ultimul.",
+    "unchanged_title": "Comanda neschimbată",
+    "unchanged_message": "Nu ați schimbat ordinea prompturilor.Ești sigur că ai vrea să continui?"
+  },
+  "rank_assistant_replies": {
+    "label": "Răspunsuri de rang asistent",
+    "desc": "Prompturi de scor date de Open Assistant pe baza exactității și lizibilitatelor lor.",
+    "overview": "Având în vedere următoarele răspunsuri de asistent, sortați -le de la cel mai bun la cel mai rău, cel mai bine fiind primul, cel mai rău fiind ultimul.",
+    "unchanged_title": "Comanda neschimbată",
+    "unchanged_message": "Nu ați schimbat ordinea prompturilor.Ești sigur că ai vrea să continui?"
+  },
+  "rank_initial_prompts": {
+    "label": "Clasați prompturile inițiale",
+    "desc": "Prompturi de scor date de Open Assistant pe baza exactității și lizibilitatelor lor.",
+    "overview": "Având în vedere următoarele prompturi inițiale, sortați -le de la cel mai bun la cel mai rău, cel mai bine fiind primul, cel mai rău fiind ultimul.",
+    "unchanged_title": "Comanda neschimbată",
+    "unchanged_message": "Nu ați schimbat ordinea prompturilor.Ești sigur că ai vrea să continui?"
+  },
+  "label_initial_prompt": {
+    "label": "Etichetă promptul inițial",
+    "desc": "Furnizați etichete pentru un prompt.",
+    "overview": "Furnizați etichete pentru următorul prompt"
+  },
+  "label_prompter_reply": {
+    "label": "Etichetă Răspuns Prompter",
+    "desc": "Furnizați etichete pentru un prompt.",
+    "overview": "Având în vedere următoarea discuție, furnizați etichete pentru promptul final."
+  },
+  "label_assistant_reply": {
+    "label": "Etichetă Răspuns asistent",
+    "desc": "Furnizați etichete pentru un prompt.",
+    "overview": "Având în vedere următoarea discuție, furnizați etichete pentru promptul final."
+  },
+  "classify_initial_prompt": {
+    "label": "Clasificați promptul inițial",
+    "desc": "Furnizați etichete pentru un prompt.",
+    "overview": "Citiți următorul prompt și apoi răspundeți la întrebarea despre It."
+  },
+  "classify_prompter_reply": {
+    "label": "Clasificați răspunsul prompter",
+    "desc": "Furnizați etichete pentru un prompt.",
+    "overview": "Citiți următoarea conversație și apoi răspundeți la întrebarea despre ultimul răspuns din discuțiion."
+  },
+  "classify_assistant_reply": {
+    "label": "Clasificați răspunsul asistent",
+    "desc": "Furnizați etichete pentru un prompt.",
+    "overview": "Citiți următoarea conversație și apoi răspundeți la întrebarea despre ultimul răspuns din discuțien."
+  },
+  "available_task_count": "{{count}} sarcini disponibile"
+}

@@ -20,6 +20,7 @@
   "messages": "Missatges",
   "more_information": "Més informació",
   "no": "No",
+  "parameters": "Paràmetres",
   "privacy_policy": "Política de privadesa",
   "report_a_bug": "Informa d'un error",
   "sign_in": "Inicia la sessió",
@@ -30,6 +31,7 @@
   "terms_of_service": "Condicions del servei",
   "title": "Open Assistant",
   "user_leaderboard": "Classificació d'usuaris",
+  "trollboard": "Tauló de trolls",
   "users_dashboard": "Panell d'usuaris",
   "users": "Usuaris",
   "yes": "Sí"
