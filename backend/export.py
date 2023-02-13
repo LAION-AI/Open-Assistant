@@ -73,17 +73,9 @@ def fetch_message_labels(db: Session, messages: List[Message]) -> Dict[UUID, Lis
     }
 
 
-def export_message_labels(
-    db: Session, labels_file: Path, messages: List[Message], use_compression: bool = False
-) -> None:
-    labels: Dict[UUID, List[TextLabels]] = fetch_message_labels(db, messages)
-    tree_export.write_labels_to_file(labels_file, labels, use_compression)
-
-
 def export_trees(
     db: Session,
     export_file: Optional[Path] = None,
-    labels_file: Optional[Path] = None,
     use_compression: bool = False,
     deleted: bool = False,
     user_id: Optional[UUID] = None,
@@ -104,10 +96,10 @@ def export_trees(
             lang=lang,
             review_result=review_result,
         )
-        tree_export.write_messages_to_file(export_file, messages, use_compression)
 
-        if export_labels:
-            export_message_labels(db, labels_file, messages, use_compression)
+        labels = fetch_message_labels(db, messages) if export_labels else None
+
+        tree_export.write_messages_to_file(export_file, messages, use_compression, labels=labels)
     else:
         message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang)
 
@@ -126,22 +118,24 @@ def export_trees(
         # when exporting only deleted we don't have a proper tree structure, export as list
         if deleted is True:
             messages = [m for t in message_trees for m in t]
-            tree_export.write_messages_to_file(export_file, messages, use_compression)
 
-            if export_labels:
-                export_message_labels(db, labels_file, messages, use_compression)
+            labels = fetch_message_labels(db, messages) if export_labels else None
+
+            tree_export.write_messages_to_file(export_file, messages, use_compression, labels=labels)
         else:
+            if export_labels:
+                all_messages = [m for t in message_trees for m in t]
+                labels = fetch_message_labels(db, all_messages)
+            else:
+                labels = None
+
             for (message_tree_id, message_tree_state), message_tree in zip(message_tree_ids, message_trees):
-                t = tree_export.build_export_tree(message_tree_id, message_tree_state, message_tree)
+                t = tree_export.build_export_tree(message_tree_id, message_tree_state, message_tree, labels=labels)
                 if prompts_only:
                     t.prompt.replies = None
                 trees_to_export.append(t)
 
             tree_export.write_trees_to_file(export_file, trees_to_export, use_compression)
-
-            if export_labels:
-                all_messages = [m for t in message_trees for m in t]
-                export_message_labels(db, labels_file, all_messages, use_compression)
 
 
 def validate_args(args):
@@ -164,11 +158,6 @@ def parse_args():
         "--export-file",
         type=str,
         help="Name of file to export trees to. If not provided, output will be sent to STDOUT",
-    )
-    parser.add_argument(
-        "--labels-file",
-        type=str,
-        help="Name of file to export labels to",
     )
     parser.add_argument(
         "--include-deleted",
@@ -246,7 +235,6 @@ def main():
         export_trees(
             db,
             Path(args.export_file) if args.export_file is not None else None,
-            Path(args.labels_file) if args.labels_file is not None else None,
             use_compression=args.use_compression,
             deleted=deleted,
             user_id=UUID(args.user) if args.user is not None else None,
