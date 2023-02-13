@@ -52,7 +52,7 @@ docker attach open-assistant-inference-text-client-1
 > **Note:** Please wait for the `inference-text-generation-server` service to
 > output `{"message":"Connected"}` before starting to chat.
 
-## Development Variant 2 (you'll need tmux)
+## Development Variant 2 (tmux terminal multiplexing)
 
 Ensure you have `tmux` installed on you machine and the following packages
 installed into the Python environment;
