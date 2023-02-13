@@ -75,6 +75,12 @@ cd inference
 
 ## Development Variant 3 (you'll need multiple terminals)
 
+Run a postgres container:
+
+```bash
+docker run --rm -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres --name postgres postgres
+```
+
 Run a redis container (or use the one of the general docker compose file):
 
 ```bash
