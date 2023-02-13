@@ -37,17 +37,14 @@ const sx = {
 };
 
 // eslint-disable-next-line react/display-name
-const RenderedMarkdown = memo(
-  ({ markdown }: RenderedMarkdownProps) => {
-    return (
-      <Prose sx={sx}>
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-          {markdown}
-        </ReactMarkdown>
-      </Prose>
-    );
-  },
-  (prevProps, nextProps) => prevProps.markdown === nextProps.markdown
-);
+const RenderedMarkdown = memo(({ markdown }: RenderedMarkdownProps) => {
+  return (
+    <Prose sx={sx}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+        {markdown}
+      </ReactMarkdown>
+    </Prose>
+  );
+});
 
 export default RenderedMarkdown;
