@@ -54,9 +54,24 @@ docker attach open-assistant-inference-text-client-1
 
 ## Development Variant 2 (you'll need tmux)
 
-Run `./full-dev-setup.sh` to start the full development setup. Make sure to wait
-until the 2nd terminal is ready and says `{"message":"Connected"}` before
-entering input into the last terminal.
+Ensure you have `tmux` installed on you machine and the following packages
+installed into the Python environment;
+
+- `uvicorn`
+- `worker/requirements.txt`
+- `server/requirements.txt`
+- `text-client/requirements.txt`
+- `oasst_shared`
+
+You can run development setup to start the full development setup.
+
+```bash
+cd inference
+./full-dev-setup.sh
+```
+
+> Make sure to wait until the 2nd terminal is ready and says
+> `{"message":"Connected"}` before entering input into the last terminal.
 
 ## Development Variant 3 (you'll need multiple terminals)
 
