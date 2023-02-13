@@ -1,5 +1,6 @@
 import { type ThemeConfig, extendTheme } from "@chakra-ui/react";
 import { Styles } from "@chakra-ui/theme-tools";
+import { withProse } from "@nikolovlazar/chakra-ui-prose";
 
 import { colors } from "./colors";
 import { badgeTheme } from "./components/Badge";
@@ -45,4 +46,4 @@ const styles: Styles = {
   }),
 };
 
-export const theme = extendTheme({ colors, config, fonts, styles, components, breakpoints });
+export const theme = extendTheme({ colors, config, fonts, styles, components, breakpoints }, withProse());
