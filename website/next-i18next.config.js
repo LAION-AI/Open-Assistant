@@ -29,6 +29,7 @@ module.exports = {
       "th",
       "tr",
       "id",
+      "ro",
     ],
   },
 };
