@@ -1,2 +1,1 @@
-console.log('popup initializing...');
-
+console.log("popup initializing...");

@@ -2,13 +2,13 @@
   "manifest_version": 3,
   "name": "OpenAssistant",
   "version": "0.0.1",
-  "permissions": ["contextMenus","storage","notifications"],
+  "permissions": ["contextMenus", "storage", "notifications"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_popup": "popup.html"
-  },  
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
