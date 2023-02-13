@@ -9,7 +9,7 @@ from sqlmodel import Field, SQLModel
 from .payload_column_type import PayloadContainer, payload_column_type
 
 
-def generate_time_uuid(node=None, clock_seq=None):
+def generate_time_uuid(node: Optional[int] = None, clock_seq: Optional[int] = None) -> UUID:
     """Create a lexicographically sortable time ordered custom (non-standard) UUID by reordering the timestamp fields of a version 1 UUID."""
     (time_low, time_mid, time_hi_version, clock_seq_hi_variant, clock_seq_low, node) = uuid1(node, clock_seq).fields
     # reconstruct 60 bit timestamp, see version 1 uuid: https://www.rfc-editor.org/rfc/rfc4122
