@@ -4,5 +4,11 @@
   "evaluate": "Ebaluatu",
   "go": "Joan",
   "grab_a_task": "Hartu zeregin bat!",
-  "label": "Etiketa"
+  "label": "Etiketatu",
+  "welcome_message": {
+    "label": "Ongi etorri, {{erabiltzaile izena}}!",
+    "contributor": "Kolaboratzailea",
+    "description": "Open Assistant kode irekiko Adimen Artifizialdun laguntzailea da, hizkuntza-eredu aurreratuak erabiltzen eta entrenatzen dituena gizakiak ulertzeko eta haiei erantzuteko.",
+    "instruction": "Zereginak bete eredua entrenatzen laguntzeko eta puntuak irabazteko."
+  }
 }
