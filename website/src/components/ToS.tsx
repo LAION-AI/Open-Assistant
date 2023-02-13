@@ -11,7 +11,7 @@ const TermsData = [
       {
         number: "1.1",
         title: "",
-        desc: `LAION e.V., Herman-Lange-Weg 26, 21035 Hamburg, Germany (hereinafter referred to as: "LAION") operates an online portal for the producing a machine learning model called Open Assistant using crowd-sourced data.`,
+        desc: `LAION e.V., Herman-Lange-Weg 26, 21035 Hamburg, Germany (hereinafter referred to as: "LAION") operates an online portal for the production of a machine learning model called Open Assistant using crowd-sourced data.`,
       },
       {
         number: "1.2",
