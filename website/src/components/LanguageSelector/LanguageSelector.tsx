@@ -53,3 +53,4 @@ const LanguageSelector = () => {
 };
 
 export { LanguageSelector };
+export const locale = useRouter(); 

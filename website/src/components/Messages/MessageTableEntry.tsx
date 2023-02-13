@@ -42,6 +42,7 @@ import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
 import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
+import { locale } from "../LanguageSelector"
 
 interface MessageTableEntryProps {
   message: Message;
@@ -259,7 +260,7 @@ const MessageActions = ({
           {t("report_action")}
         </MenuItem>
         <MenuDivider />
-        <MenuItem as="a" href={`/messages/${id}`} target="_blank" icon={<MessageSquare />}>
+        <MenuItem as="a" href={`${locale}/messages/${id}`} target="_blank" icon={<MessageSquare />}>
           {t("open_new_tab_action")}
         </MenuItem>
 
