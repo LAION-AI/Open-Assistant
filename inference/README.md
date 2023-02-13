@@ -92,7 +92,7 @@ Run the inference server:
 ```bash
 cd server
 pip install -r requirements.txt
-uvicorn main:app --reload
+DEBUG_API_KEYS='["0000"]' uvicorn main:app --reload
 ```
 
 Run one (or more) workers:
@@ -110,7 +110,7 @@ running:
 docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 ghcr.io/huggingface/text-generation-inference
 ```
 
-Run the client:
+Run the text client:
 
 ```bash
 cd text-client
