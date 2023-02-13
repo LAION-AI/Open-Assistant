@@ -13,7 +13,6 @@ const components = {
   code({ node, inline, className, children, style, ...props }) {
     const match = /language-(\w+)/.exec(className || "");
     const lang = match ? match[1] : "";
-    console.log(lang, children);
     return !inline ? (
       <SyntaxHighlighter style={oneDark} language={lang} {...props}>
         {String(children).replace(/\n$/, "")}
@@ -40,7 +39,6 @@ const sx = {
 // eslint-disable-next-line react/display-name
 const RenderedMarkdown = memo(
   ({ markdown }: RenderedMarkdownProps) => {
-    console.log("rerender");
     return (
       <Prose sx={sx}>
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
