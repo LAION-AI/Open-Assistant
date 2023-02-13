@@ -105,8 +105,8 @@ We want to ensure that the Open Assistant data set is as accessible as possible.
 As such, it's necessary to avoid any harmful or offensive content that could be
 grounds for removal on sites such as Hugging Face. Likewise, we want the model
 to be trained to reject as few questions as possible, so it's important to not
-include prompts that require the assistant to either refuse to answer, or
-generate harmful content.
+include prompts that leave the assistant with no other choice but to refuse in
+order to avoid the generation of harmful content.
 
 ## Questions about developing
 
