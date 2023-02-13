@@ -9,6 +9,7 @@ import { Flags } from "react-feature-flags";
 import useSWRMutation from "swr/mutation";
 
 const Chat = () => {
+  const { t } = useTranslation("common");
   const inputRef = useRef<HTMLTextAreaElement>();
   const [messages, setMessages] = useState<string[]>([]);
   const [activeMessage, setActiveMessage] = useState("");
@@ -55,10 +56,9 @@ const Chat = () => {
 
       <Flags authorizedFlags={["chatEnabled"]}>
         <Flex flexDir="column" gap={4} overflowY="auto">
-          {!chatID && <Button onClick={() => createChat()}>Create Chat</Button>}
+          {!chatID && <Button onClick={() => createChat()}>{t("create_chat")}</Button>}
           {chatID && (
             <>
-              chat id: {chatID}
               {messages.map((message, idx) => (
                 <Entry key={idx} isAssistant={idx % 2 === 1}>
                   {message}
@@ -69,7 +69,7 @@ const Chat = () => {
               ) : (
                 <>
                   <Textarea ref={inputRef} />
-                  <Button onClick={send}>Send</Button>
+                  <Button onClick={send}>{t("submit")}</Button>
                 </>
               )}
             </>
