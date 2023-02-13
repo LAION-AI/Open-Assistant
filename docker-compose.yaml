@@ -1,26 +1,18 @@
-version: "3.7"
+version: "3.8"
 
 services:
-  # Use `docker compose up backend-dev --build --attach-dependencies` to start a database and work and the backend.
-  backend-dev:
-    image: sverrirab/sleep
-    depends_on: [db, adminer, redis, redis-insights]
+  # Use `docker compose --profile backend-dev up --build --attach-dependencies` to start a database and work and the backend.
 
-  # Use `docker compose up frontend-dev --build --attach-dependencies` to start all services needed to work on the frontend.
-  frontend-dev:
-    image: sverrirab/sleep
-    depends_on: [db, webdb, adminer, maildev, backend, redis]
+  # Use `docker compose --profile frontend-dev up --build --attach-dependencies` to start the services needed to work on the frontend. If you want to also run the inference, add a second `--profile inference` argument.
 
-  # Used by CI automations.
-  ci:
-    image: sverrirab/sleep
-    depends_on: [db, webdb, maildev, backend, redis, web]
+  # The profile ci is used by CI automations. (i.e E2E testing)
 
   # This DB is for the FastAPI Backend.
   db:
     image: ghcr.io/laion-ai/open-assistant/oasst-postgres
     pull_policy: always
     restart: always
+    profiles: ["frontend-dev", "backend-dev", "ci"]
     ports:
       - 5432:5432
     environment:
@@ -37,6 +29,7 @@ services:
   redis:
     image: redis
     restart: always
+    profiles: ["frontend-dev", "backend-dev", "ci"]
     ports:
       - 6379:6379
     healthcheck:
@@ -50,6 +43,7 @@ services:
   # insights host - redis:6379
   redis-insights:
     image: redislabs/redisinsight:latest
+    profiles: ["backend-dev"]
     ports:
       - 8001:8001
 
@@ -57,6 +51,7 @@ services:
   webdb:
     image: postgres
     restart: always
+    profiles: ["frontend-dev", "ci"]
     ports:
       - 5433:5432
     environment:
@@ -73,6 +68,7 @@ services:
   adminer:
     image: adminer
     restart: always
+    profiles: ["frontend-dev", "backend-dev"]
     ports:
       - 8089:8080
 
@@ -82,6 +78,7 @@ services:
   maildev:
     image: maildev/maildev
     restart: always
+    profiles: ["frontend-dev", "ci"]
     environment:
       - MAILDEV_WEB_PORT=1080
       - MAILDEV_SMTP_PORT=1025
@@ -106,6 +103,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    profiles: ["frontend-dev", "ci"]
     ports:
       - "8080:8080"
 
@@ -135,6 +133,7 @@ services:
     ports:
       - "3000:3000"
     command: bash wait-for-postgres.sh node server.js
+    profiles: ["ci"]
 
   # This DB is for Inference
   inference-db:

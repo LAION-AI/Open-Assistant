@@ -1,10 +1,19 @@
-import { Flex } from "@chakra-ui/react";
+import {
+  Flex,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  useDisclosure,
+} from "@chakra-ui/react";
 import {
   closestCenter,
   DndContext,
   KeyboardSensor,
   MouseSensor,
-  TouchSensor,
+  PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -37,7 +46,7 @@ interface SortableItems {
 
 export const Sortable = (props: SortableProps) => {
   const [itemsWithIds, setItemsWithIds] = useState<SortableItems[]>([]);
-
+  const [modalText, setModalText] = useState(null);
   useEffect(() => {
     setItemsWithIds(
       props.items.map((item, idx) => ({
@@ -49,30 +58,63 @@ export const Sortable = (props: SortableProps) => {
   }, [props.items]);
 
   const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(TouchSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8, tolerance: 100 },
+    }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 10 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   );
-
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const extraClasses = props.className || "";
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-      modifiers={[restrictToParentElement, restrictToVerticalAxis]}
-    >
-      <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
-        <Flex direction="column" gap={2} className={extraClasses}>
-          {itemsWithIds.map(({ id, item }, index) => (
-            <SortableItem key={id} id={id} index={index} isEditable={props.isEditable} isDisabled={props.isDisabled}>
-              <CollapsableText text={item} isDisabled={props.isDisabled} />
-            </SortableItem>
-          ))}
-        </Flex>
-      </SortableContext>
-    </DndContext>
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        modifiers={[restrictToParentElement, restrictToVerticalAxis]}
+      >
+        <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
+          <Flex direction="column" gap={2} className={extraClasses}>
+            {itemsWithIds.map(({ id, item }, index) => (
+              <SortableItem key={id} id={id} index={index} isEditable={props.isEditable} isDisabled={props.isDisabled}>
+                <button
+                  className="w-full text-left"
+                  aria-label="show full text"
+                  onClick={() => {
+                    setModalText(item);
+                    onOpen();
+                  }}
+                >
+                  <CollapsableText text={item} />
+                </button>
+              </SortableItem>
+            ))}
+          </Flex>
+        </SortableContext>
+      </DndContext>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => {
+          setModalText(null);
+          onClose();
+        }}
+        size="xl"
+        scrollBehavior={"inside"}
+        isCentered
+      >
+        <ModalOverlay>
+          <ModalContent pb={5} alignItems="center">
+            <ModalHeader>Full Text</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody whiteSpace="pre-line">{modalText}</ModalBody>
+          </ModalContent>
+        </ModalOverlay>
+      </Modal>
+    </>
   );
 
   function handleDragEnd(event: DragEndEvent) {

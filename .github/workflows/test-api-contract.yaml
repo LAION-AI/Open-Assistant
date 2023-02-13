@@ -29,9 +29,7 @@ jobs:
         with:
           node-version: 16
 
-      - run: cd oasst-shared && pip install -e .
-
-      - run: cd oasst-shared && pip install -r requirements.dev.txt
+      - run: pip install ./oasst-shared[dev]
 
       - run: cd backend && pip install -r requirements.txt
 

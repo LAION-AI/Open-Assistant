@@ -125,7 +125,7 @@ export function MessageTableEntry({
         onClick={enabled && goToMessage}
         whiteSpace="pre-wrap"
         cursor={enabled && "pointer"}
-        style={{ position: "relative" }}
+        style={{ position: "relative", wordBreak: "break-word" }}
       >
         {inlineAvatar && avatar}
         {message.text}
