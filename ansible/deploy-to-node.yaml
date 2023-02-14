@@ -157,6 +157,8 @@
           LOGURU_LEVEL:
             "{{ lookup('ansible.builtin.env', 'LOGURU_LEVEL') | default('INFO',
             true) }}"
+          BACKEND_CORS_ORIGINS:
+            "{{ lookup('ansible.builtin.env', 'BACKEND_CORS_ORIGINS') }}"
         ports:
           - "{{ backend_port }}:8080"
 
@@ -192,6 +194,8 @@
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
           FASTAPI_URL: "{{ lookup('ansible.builtin.env', 'BACKEND_URL') }}"
           FASTAPI_KEY: "{{ web_api_key }}"
+          NEXT_PUBLIC_BACKEND_URL:
+            "{{ lookup('ansible.builtin.env', 'PUBLIC_BACKEND_URL') }}"
           NEXTAUTH_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
           NEXTAUTH_URL:
