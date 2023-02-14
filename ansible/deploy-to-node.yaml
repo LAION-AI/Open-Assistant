@@ -157,7 +157,7 @@
           LOGURU_LEVEL:
             "{{ lookup('ansible.builtin.env', 'LOGURU_LEVEL') | default('INFO',
             true) }}"
-          BACKEND_CORS_ORIGINS:
+          BACKEND_CORS_ORIGINS_CSV:
             "{{ lookup('ansible.builtin.env', 'BACKEND_CORS_ORIGINS') }}"
         ports:
           - "{{ backend_port }}:8080"

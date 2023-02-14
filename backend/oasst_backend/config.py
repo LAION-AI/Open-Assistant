@@ -212,7 +212,17 @@ class Settings(BaseSettings):
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 
+    BACKEND_CORS_ORIGINS_CSV: Optional[str]  # allow setting CORS origins as comma separated values
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+
+    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    def assemble_cors_origins(cls, v: Optional[List[str]], values: Dict[str, Any]) -> List[str]:
+        s = values.get("BACKEND_CORS_ORIGINS_CSV")
+        if isinstance(s, str):
+            v = [i.strip() for i in s.split(",")]
+            return v
+        return v
+
     UPDATE_ALEMBIC: bool = True
 
     tree_manager: Optional[TreeManagerConfiguration] = TreeManagerConfiguration()
