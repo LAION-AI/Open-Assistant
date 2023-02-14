@@ -5,6 +5,7 @@ import { colors } from "./colors";
 import { badgeTheme } from "./components/Badge";
 import { cardTheme } from "./components/Card";
 import { containerTheme } from "./components/Container";
+import { tableTheme } from "./components/Table";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
@@ -16,6 +17,7 @@ const components = {
   Badge: badgeTheme,
   Container: containerTheme,
   Card: cardTheme,
+  Table: tableTheme,
 };
 
 const breakpoints = {
@@ -41,6 +43,9 @@ const styles: Styles = {
     ".oa-basic-theme": {
       bg: props.colorMode === "light" ? colors.light.bg : colors.dark.bg,
       color: props.colorMode === "light" ? colors.light.text : colors.dark.text,
+    },
+    body: {
+      position: "relative",
     },
   }),
 };

@@ -82,6 +82,7 @@
           interval: 2s
           timeout: 2s
           retries: 10
+        shm_size: 1G
       loop:
         - name: backend
         - name: web
@@ -169,6 +170,8 @@
         network_mode: "oasst-{{ stack_name }}"
         env:
           ADMIN_USERS: "{{ lookup('ansible.builtin.env', 'WEB_ADMIN_USERS') }}"
+          MODERATOR_USERS:
+            "{{ lookup('ansible.builtin.env', 'WEB_MODERATOR_USERS') }}"
           DATABASE_URL:
             "postgres://postgres:{{ postgres_password }}@oasst-{{ stack_name
             }}-postgres-web/postgres"

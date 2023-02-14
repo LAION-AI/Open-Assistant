@@ -8,7 +8,6 @@ import { get } from "src/lib/api";
 import { AvailableTasks, TaskCategory } from "src/types/Task";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import { TaskCategoryItem } from "src/components/Dashboard/TaskOption";
-import { ToSWrapper } from "src/components/ToSWrapper";
 import useSWR from "swr";
 
 const Dashboard = () => {

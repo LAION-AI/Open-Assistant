@@ -1,15 +1,16 @@
-import { Button } from "@chakra-ui/react";
-import { useHasRole } from "src/hooks/auth/useHasRole";
+import { Button, ButtonProps } from "@chakra-ui/react";
+import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { MessageEmoji } from "src/types/Conversation";
 import { emojiIcons } from "src/types/Emoji";
 
 interface MessageEmojiButtonProps {
   emoji: MessageEmoji;
   checked?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
   userIsAuthor: boolean;
   disabled?: boolean;
   userReacted: boolean;
+  sx?: ButtonProps["sx"];
 }
 
 export const MessageEmojiButton = ({
@@ -19,14 +20,15 @@ export const MessageEmojiButton = ({
   userIsAuthor,
   disabled,
   userReacted,
+  sx,
 }: MessageEmojiButtonProps) => {
   const EmojiIcon = emojiIcons.get(emoji.name);
-  const isAdmin = useHasRole("admin");
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
 
   if (!EmojiIcon) return null;
 
   const isDisabled = !!(userIsAuthor ? true : disabled);
-  const showCount = (emoji.count > 0 && userReacted) || userIsAuthor || isAdmin;
+  const showCount = (emoji.count > 0 && userReacted) || userIsAuthor || isAdminOrMod;
 
   return (
     <Button
@@ -42,8 +44,9 @@ export const MessageEmojiButton = ({
         ":hover": {
           backgroundColor: isDisabled ? "transparent" : undefined,
         },
+        ...sx,
       }}
-      color={isDisabled ? "gray.500" : undefined}
+      color={isDisabled ? (checked ? "gray.700" : "gray.500") : undefined}
     >
       <EmojiIcon style={{ height: "1em" }} />
       {showCount && <span style={{ marginInlineEnd: "0.25em" }}>{emoji.count}</span>}

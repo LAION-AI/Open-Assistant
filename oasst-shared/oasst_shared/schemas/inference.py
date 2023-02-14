@@ -1,12 +1,23 @@
 import random
+from typing import Literal
 
 import pydantic
 
 from . import protocol
 
+INFERENCE_PROTOCOL_VERSION = "1"
+
+
+def compat_hash(*, model_name: str) -> str:
+    return f"{model_name}"
+
 
 class WorkerConfig(pydantic.BaseModel):
     model_name: str = "distilgpt2"
+
+    @property
+    def compat_hash(self) -> str:
+        return compat_hash(model_name=self.model_name)
 
 
 class WorkRequest(pydantic.BaseModel):
@@ -18,6 +29,7 @@ class WorkRequest(pydantic.BaseModel):
     top_k: int = 50
     top_p: float = 0.9
     temperature: float = 1.0
+    repetition_penalty: float | None = None
 
 
 class TokenResponse(pydantic.BaseModel):
@@ -28,6 +40,7 @@ class TokenResponse(pydantic.BaseModel):
 
 class GeneratedTextResponse(pydantic.BaseModel):
     text: str
+    finish_reason: Literal["length", "eos_token", "stop_sequence"]
 
 
 class WorkResponsePacket(pydantic.BaseModel):

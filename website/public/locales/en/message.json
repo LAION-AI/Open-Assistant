@@ -3,6 +3,8 @@
   "copy_message_link": "Copy message link",
   "label_action": "Label",
   "label_title": "Label",
+  "message_author": "Author",
+  "message_author_explain": "You are the author of this message",
   "message_deleted": "Message deleted",
   "message": "Message",
   "open_new_tab_action": "Open in new tab",
