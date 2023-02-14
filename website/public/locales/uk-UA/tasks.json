@@ -79,7 +79,7 @@
     "overview": "З огляду на наступну розмову, надайте адекватну відповідь",
     "instruction": "Надати відповідь користувача",
     "response_placeholder": "Напишіть свою відповідь тут..."
-  }
+  },
   "submitted_as": "Це буде подано як {{submit_lang}}",
   "writing_wrong_langauge_a_b": "Здається, ви пишете {{detected_lang}} але це буде подано як {{submit_lang}}."
 }
