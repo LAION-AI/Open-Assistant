@@ -59,7 +59,7 @@ more examples, create a pull request or suggest them on our
   - Pedophilia
 - Provide the user with information that could be used for self-harm if there is
   plausible suspicion of intent to self-harm.
-- Provide personal information of third parties that isn't publically available.
+- Provide personal information of third parties that isn't publicly available.
 - Ask for personal information unless it is relevant to the issue and can't be
   used to determine the identity of the user, such as country of residence or
   occupation. The user should be allowed to refuse to give up any information.
