@@ -5,7 +5,21 @@
     "description": "Home of the OpenAssistant blog.",
     "items": [
         {
-            "id": "we-need-your-help",
+            "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023-02-11-architecture",
+            "content_html": "<p>I thought it would make sense to document our architecture as a blog post, since\nit would be easily visible for everyone, and it would also be nice to look back\na couple months from now and see how stuff has changed :)</p><p>A lot of work was done in the past couple of week to establish the needed\ninfrastructure both for data collection and inference purposes. Thanks to\neveryone, and especially community members who supported us so far!</p><p>Our current plan for the architecture of the Open Assistant is as follows:</p><p>We are working on setting up the inference as shown above, and considering our\noptions for hosting, also, we want to move our authentication from the website\nto the python backend.</p><p>Of course, this is by no means final, and lot of questions are still open, and\nthat is the fun of it! If you want to join us on our journey, just give our\n<a href=\"https://github.com/LAION-AI/Open-Assistant\" target=\"_blank\" rel=\"noopener noreferrer\">github</a> a look!</p>",
+            "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023-02-11-architecture",
+            "title": "The Architecture so Far!",
+            "summary": "This is the architecture of our app so far.",
+            "date_modified": "2023-02-11T00:00:00.000Z",
+            "author": {
+                "name": "Abdullah Barhoum"
+            },
+            "tags": [
+                "open-assistant"
+            ]
+        },
+        {
+            "id": "https://LAION-AI.github.io/Open-Assistant/blog/we-need-your-help",
             "content_html": "<p>We Need Your Help!</p><p>Help us collect data for OpenAssistant, the largest and most open alternative to\nChatGPT.</p><p><a href=\"https://open-assistant.io\" target=\"_blank\" rel=\"noopener noreferrer\">https://open-assistant.io</a></p><div style=\"width:100%;height:360px\"></div>",
             "url": "https://LAION-AI.github.io/Open-Assistant/blog/we-need-your-help",
             "title": "We Need Your Help!",

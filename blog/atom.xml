@@ -2,15 +2,35 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://LAION-AI.github.io/Open-Assistant/blog</id>
     <title>OpenAssistant Blog</title>
-    <updated>2023-02-05T00:00:00.000Z</updated>
+    <updated>2023-02-11T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://LAION-AI.github.io/Open-Assistant/blog"/>
     <subtitle>Home of the OpenAssistant blog.</subtitle>
     <icon>https://LAION-AI.github.io/Open-Assistant/img/logo.svg</icon>
     <rights>Copyright © 2023 OpenAssistant.</rights>
     <entry>
+        <title type="html"><![CDATA[The Architecture so Far!]]></title>
+        <id>https://LAION-AI.github.io/Open-Assistant/blog/2023-02-11-architecture</id>
+        <link href="https://LAION-AI.github.io/Open-Assistant/blog/2023-02-11-architecture"/>
+        <updated>2023-02-11T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[This is the architecture of our app so far.]]></summary>
+        <content type="html"><![CDATA[<p>I thought it would make sense to document our architecture as a blog post, since
+it would be easily visible for everyone, and it would also be nice to look back
+a couple months from now and see how stuff has changed :)</p><p>A lot of work was done in the past couple of week to establish the needed
+infrastructure both for data collection and inference purposes. Thanks to
+everyone, and especially community members who supported us so far!</p><p>Our current plan for the architecture of the Open Assistant is as follows:</p><p>We are working on setting up the inference as shown above, and considering our
+options for hosting, also, we want to move our authentication from the website
+to the python backend.</p><p>Of course, this is by no means final, and lot of questions are still open, and
+that is the fun of it! If you want to join us on our journey, just give our
+<a href="https://github.com/LAION-AI/Open-Assistant" target="_blank" rel="noopener noreferrer">github</a> a look!</p>]]></content>
+        <author>
+            <name>Abdullah Barhoum</name>
+        </author>
+        <category label="open-assistant" term="open-assistant"/>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[We Need Your Help!]]></title>
-        <id>we-need-your-help</id>
+        <id>https://LAION-AI.github.io/Open-Assistant/blog/we-need-your-help</id>
         <link href="https://LAION-AI.github.io/Open-Assistant/blog/we-need-your-help"/>
         <updated>2023-02-05T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[We Need Your Help!]]></summary>

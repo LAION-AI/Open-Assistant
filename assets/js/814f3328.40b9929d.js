@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkopen_assistant=self.webpackChunkopen_assistant||[]).push([[2535],{45641:e=>{e.exports=JSON.parse('{"title":"Blog Posts","items":[{"title":"The Architecture so Far!","permalink":"/Open-Assistant/blog/2023-02-11-architecture"},{"title":"We Need Your Help!","permalink":"/Open-Assistant/blog/we-need-your-help"}]}')}}]);
