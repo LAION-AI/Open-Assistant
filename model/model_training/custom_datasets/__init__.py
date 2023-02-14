@@ -16,6 +16,7 @@ from torch.utils.data import Subset
 
 QA_DATASETS = [
     "squad_v2",
+    "ua_squad",
     "adversarial_qa",
     "trivia_qa_context",
     "trivia_qa_nocontext",

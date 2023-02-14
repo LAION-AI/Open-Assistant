@@ -24,6 +24,14 @@ def index_squad_v2(example):
     return example["context"] + " " + example["question"], answer
 
 
+def index_uasquad(example):
+    if len(example["Answer"]):
+        answer = example["Answer"]
+    else:
+        answer = "Я не маю на це відповіді"
+    return example["Context"] + " " + example["Question"], answer
+
+
 def index_trivia_qa_nocontext(example):
     # dummy return one randomly
     return example["question"], example["answer"]["aliases"][np.random.randint(len(example["answer"]["aliases"]))]
@@ -91,6 +99,12 @@ class QADataset(Dataset):
 
     DATASET_FORMAT_MAPPING = {
         "squad_v2": {"index_fn": index_squad_v2},
+        "ua_squad": {
+            "index_fn": index_uasquad,
+            "name": "FIdo-AI/ua-squad",
+            "params": {"field": "data"},
+            "no_val": True,
+        },
         "trivia_qa_nocontext": {
             "index_fn": index_trivia_qa_nocontext,
             "name": "trivia_qa",
