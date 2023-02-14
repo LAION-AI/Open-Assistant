@@ -104,7 +104,7 @@ class TranslationPair(Dataset):
 
 
 class WMT2019(TranslationPair):
-    def __init__(self, pair="zh-en", split="train", mix_prob=0.2) -> None:
+    def __init__(self, pair="zh-en", split="train", mix_prob=0.2, maximum_size=100000) -> None:
         super().__init__(mix_prob=mix_prob)
         dataset = load_dataset("wmt19", pair)[split]
         self.pairs = []
@@ -117,6 +117,9 @@ class WMT2019(TranslationPair):
             else:  # translating in reverse direction
                 source = random.choice(TRANSLATION_PROMPT[src]).format(row[tgt])
                 self.pairs.append((source, row[src]))
+            # WMT is very large, reduce preprocessing time
+            if len(self.pairs) > maximum_size:
+                break
 
 
 class DiveMT(TranslationPair):
@@ -146,7 +149,7 @@ class DiveMT(TranslationPair):
 class TEDTalk(TranslationPair):
     # NOTE: DO NOT use chinese pair, mix with traditional and cantonese, not clean
 
-    def __init__(self, pair="de-ja", split="train", year="2016", mix_prob=0.2) -> None:
+    def __init__(self, pair="de-ja", split="train", year="2016", mix_prob=0.2, maximum_size=100000) -> None:
         super().__init__(mix_prob=mix_prob)
         dataset = load_dataset("ted_talks_iwslt", language_pair=pair.split("-"), year=year)[split]
         src, tgt = pair.split("-")
@@ -158,3 +161,6 @@ class TEDTalk(TranslationPair):
             else:  # translating in reverse direction
                 source = random.choice(TRANSLATION_PROMPT[src]).format(row[tgt])
                 self.pairs.append((source, row[src]))
+            # WMT is very large
+            if len(self.pairs) > maximum_size:
+                break

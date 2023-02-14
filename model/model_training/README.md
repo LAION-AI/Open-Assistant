@@ -93,6 +93,13 @@ You can itneractively test your model like this:
 python tools/model_cli.py --model_path <saved_path/huggingface>
 ```
 
+Or start a conversation with your bot interactively, mainly for testing context
+switch ability
+
+```bash
+python -m tools.model_chat --model_path <saved_path/huggingface>
+```
+
 ## Model
 
 Normally you should be able to add new models in `configs/config.yml`
