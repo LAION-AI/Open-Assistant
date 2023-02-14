@@ -211,6 +211,7 @@ services:
     volumes:
       - ${PWD}/docker/prometheus:/etc/prometheus
       - prom_data:/prometheus
+    profiles: ["observability"]
 
   grafana:
     image: grafana/grafana
@@ -224,6 +225,7 @@ services:
       - GF_SERVER_HTTP_PORT=2000
     volumes:
       - ${PWD}/docker/grafana:/etc/grafana/provisioning/datasources
+    profiles: ["observability"]
 
   netdata:
     image: netdata/netdata
@@ -254,6 +256,7 @@ services:
     environment:
       - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN:-}
       - NETDATA_CLAIM_URL=https://app.netdata.cloud
+    profiles: ["observability"]
 
 volumes:
   prom_data:
