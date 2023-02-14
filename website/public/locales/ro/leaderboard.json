@@ -1,0 +1,18 @@
+{
+  "daily": "Zilnic",
+  "label": "Etichete",
+  "last_updated_at": "Ultima actualizare la: {{val, datetime}}",
+  "leaderboard": "Clasament",
+  "monthly": "Lunar",
+  "next": "Următorul",
+  "overall": "Per total",
+  "previous": "Anterior",
+  "prompt": "Prompts",
+  "rank": "Rang",
+  "reply": "Răspunsuri",
+  "score": "Scor",
+  "top_5_contributors_today": "Top 5 colaboratori astăzi",
+  "user": "User",
+  "view_all": "A vedea tot",
+  "weekly": "Săptămânal"
+}

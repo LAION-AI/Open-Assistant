@@ -111,8 +111,8 @@ class TreeManagerConfiguration(BaseModel):
         TextLabel.spam,
         TextLabel.lang_mismatch,
         TextLabel.quality,
-        TextLabel.humor,
         TextLabel.creativity,
+        TextLabel.humor,
         TextLabel.toxicity,
         TextLabel.violence,
         TextLabel.not_appropriate,
@@ -197,6 +197,8 @@ class Settings(BaseSettings):
 
     ROOT_TOKENS: List[str] = ["1234"]  # supply a string that can be parsed to a json list
 
+    ENABLE_PROM_METRICS: bool = True  # enable prometheus metrics at /metrics
+
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
@@ -240,6 +242,8 @@ class Settings(BaseSettings):
         if v < 1:
             raise ValueError(v)
         return v
+
+    CACHED_STATS_UPDATE_INTERVAL: int = 60  # minutes
 
     RATE_LIMIT_TASK_USER_TIMES: int = 60
     RATE_LIMIT_TASK_USER_MINUTES: int = 5

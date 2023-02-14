@@ -1,5 +1,6 @@
 import { Box, Divider, Text, useColorMode } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "next-i18next";
 
 export function WelcomeCard() {
   const { colorMode } = useColorMode();
@@ -7,6 +8,7 @@ export function WelcomeCard() {
   const titleColor = colorMode === "light" ? "blue.500" : "blue.300";
 
   const { data: session } = useSession();
+  const { t } = useTranslation("dashboard");
 
   if (!session) {
     return <></>;
@@ -24,17 +26,13 @@ export function WelcomeCard() {
           <Box bg={backgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
             <Box pb="2">
               <Text as="h1" fontWeight="extrabold" fontSize="3xl" color={titleColor}>
-                Welcome, {session.user.name || "Contributor"}!
+                {t("welcome_message.label", { username: session.user.name || t("welcome_message.contributor") })}
               </Text>
             </Box>
-
             <Box>
-              <Text>
-                Open Assistant is an open-source AI assistant that uses and trains advanced language models to
-                understand and respond to humans.
-              </Text>
+              <Text>{t("welcome_message.description")}</Text>
               <Divider my="4" />
-              <Text>Complete tasks to help train the model and earn points.</Text>
+              <Text>{t("welcome_message.instruction")}</Text>
             </Box>
           </Box>
         </Box>

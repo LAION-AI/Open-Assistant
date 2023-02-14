@@ -69,6 +69,7 @@
           POSTGRES_DB: postgres
           S3_BUCKET_NAME:
             "{{ lookup('ansible.builtin.env', 'S3_BUCKET_NAME') }}"
+          S3_PREFIX: "{{ item.name }}"
           AWS_ACCESS_KEY_ID:
             "{{ lookup('ansible.builtin.env', 'AWS_ACCESS_KEY') }}"
           AWS_SECRET_ACCESS_KEY:

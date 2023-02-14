@@ -5,9 +5,19 @@ import pydantic
 
 from . import protocol
 
+INFERENCE_PROTOCOL_VERSION = "1"
+
+
+def compat_hash(*, model_name: str) -> str:
+    return f"{model_name}"
+
 
 class WorkerConfig(pydantic.BaseModel):
     model_name: str = "distilgpt2"
+
+    @property
+    def compat_hash(self) -> str:
+        return compat_hash(model_name=self.model_name)
 
 
 class WorkRequest(pydantic.BaseModel):
