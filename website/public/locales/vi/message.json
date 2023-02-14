@@ -1,8 +1,11 @@
 {
   "copy_message_id": "Sao chép ID",
+  "copy_message_link": "Sao chép URL",
   "label_action": "Nhãn",
   "label_title": "Nhãn",
   "message": "Tin nhắn",
+  "message_author": "Viết bởi bạn",
+  "message_author_explain": "Bạn là tác giả của tin nhắn này",
   "message_deleted": "Tin nhắn đã xoá",
   "open_new_tab_action": "Mở ở trang mới",
   "parent": "Tin nhắn gốc",
