@@ -1,9 +1,9 @@
 {
   "blurb": "Creiem que podem crear una revolució.",
-  "blurb1": "De la mateixa manera que Stable Diffusion va ajudar el món a crear art i imatges de noves maneres, volem millorar el món proporcionant una IA conversacional sorprenent",
+  "blurb1": "De la mateixa manera que Stable Diffusion va ajudar el món a crear art i imatges de noves maneres, volem millorar el món proporcionant una IA conversacional sorprenent.",
   "description": "IA conversacional per a tothom. Un projecte de codi obert per a crear un GPT LLM preparat per a xatejar, administrat per LAION i col·laboradors de tot el món.",
   "faq_items": {
-    "q0": "Com està avançat el projecte?",
+    "q0": "Com d'avançat està el projecte?",
     "a0": "Estem en les primeres etapes de desenvolupament, treballant a partir de la investigació establerta per a aplicar RLHF (aprenentatge per reforç amb realimentació humana) a models de llenguatge de grans dimensions.",
     "q1": "Qui hi ha al darrere d'Open Assistant?",
     "a1": "Open Assistant és un projecte organitzat per LAION i persones de tot el planeta interessades a apropar aquesta tecnologia a tothom.",
