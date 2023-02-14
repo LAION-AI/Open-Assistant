@@ -224,7 +224,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=grafana
       - GF_SERVER_HTTP_PORT=2000
     volumes:
-      - ${PWD}/docker/grafana:/etc/grafana/provisioning/datasources
+      - ${PWD}/docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ${PWD}/docker/grafana/dashboards:/var/lib/grafana/dashboards
     profiles: ["observability"]
 
   netdata:
