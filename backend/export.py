@@ -3,12 +3,14 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from uuid import UUID
 
+import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.database import engine
 from oasst_backend.models import Message, MessageTreeState, TextLabels
 from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_backend.utils import tree_export
-from sqlmodel import Session, not_
+from oasst_shared.schemas.protocol import TextLabel
+from sqlmodel import Session, func, not_
 
 
 def fetch_tree_ids(
@@ -63,14 +65,50 @@ def fetch_tree_messages(
 def fetch_message_labels(db: Session, messages: List[Message]) -> Dict[UUID, List[TextLabels]]:
     message_ids = [message.id for message in messages]
 
-    qry = db.query(TextLabels).filter(TextLabels.message_id.in_(message_ids))
+    labels_by_id: Dict[UUID, List[TextLabels]] = {}
+    for id in message_ids:
 
-    all_labels: List[TextLabels] = qry.all()
+        qry = db.query(TextLabels).filter(TextLabels.message_id == id)
+        labels_by_id[id] = qry.all()
 
-    return {
-        message.id: [message_labels for message_labels in all_labels if message_labels.message_id == message.id]
-        for message in messages
-    }
+    return labels_by_id
+
+
+def fetch_tree_messages_and_avg_labels(
+    db: Session,
+    message_tree_id: Optional[UUID] = None,
+    user_id: Optional[UUID] = None,
+    deleted: bool = None,
+    prompts_only: bool = False,
+    lang: Optional[str] = None,
+    review_result: Optional[bool] = None,
+) -> List[Message]:
+
+    args = [Message]
+
+    for l in TextLabel:
+        args.append(func.avg(TextLabels.labels[l].cast(sa.Float)).label(l.value))
+        args.append(func.count(TextLabels.labels[l]).label(l.value + "_count"))
+
+    qry = db.query(*args).select_from(Message).join(TextLabels, Message.id == TextLabels.message_id)
+    if message_tree_id:
+        qry = qry.filter(Message.message_tree_id == message_tree_id)
+    if user_id:
+        qry = qry.filter(Message.user_id == user_id)
+    if deleted is not None:
+        qry = qry.filter(Message.deleted == deleted)
+    if prompts_only:
+        qry = qry.filter(Message.parent_id.is_(None))
+    if lang:
+        qry = qry.filter(Message.lang == lang)
+    if review_result is False:
+        qry = qry.filter(not_(Message.review_result), Message.review_count > 2)
+    elif review_result is True:
+        qry = qry.filter(Message.review_result)
+
+    qry = qry.group_by(Message.id)
+
+    return qry.all()
 
 
 def export_trees(
@@ -85,10 +123,10 @@ def export_trees(
     review_result: Optional[bool] = None,
     export_labels: bool = False,
 ) -> None:
-    trees_to_export: List[tree_export.ExportMessageTree] = []
-
-    if user_id or review_result is False:
-        messages = fetch_tree_messages(
+    message_labels: dict[UUID, List[tree_export.LabelAggregate]] = {}
+    if user_id:
+        # when exporting filtered by user we don't have a complete message trees, export as list
+        result = fetch_tree_messages_and_avg_labels(
             db,
             user_id=user_id,
             deleted=deleted,
@@ -97,43 +135,77 @@ def export_trees(
             review_result=review_result,
         )
 
-        labels = fetch_message_labels(db, messages) if export_labels else None
+        messages: list[Message] = []
+        for r in result:
+            msg = r["Message"]
+            messages.append(msg)
+            if export_labels:
+                labels: list(tree_export.LabelAggregate) = [
+                    tree_export.LabelAggregate(name=l.value, value=r[l.value], count=r[l.value + "_count"])
+                    for l in TextLabel
+                ]
+                message_labels[msg.id] = labels
 
-        tree_export.write_messages_to_file(export_file, messages, use_compression, labels=labels)
+        tree_export.write_messages_to_file(export_file, messages, use_compression, labels=message_labels)
     else:
         message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang)
 
-        message_trees = [
-            fetch_tree_messages(
-                db,
-                message_tree_id=tree_id,
-                deleted=deleted,
-                prompts_only=prompts_only,
-                lang=None,
-                review_result=review_result,
-            )
-            for (tree_id, _) in message_tree_ids
-        ]
+        message_trees: list[list[Message]] = []
 
-        # when exporting only deleted we don't have a proper tree structure, export as list
-        if deleted is True:
-            messages = [m for t in message_trees for m in t]
-
-            labels = fetch_message_labels(db, messages) if export_labels else None
-
-            tree_export.write_messages_to_file(export_file, messages, use_compression, labels=labels)
-        else:
+        for tree_id, _ in message_tree_ids:
             if export_labels:
-                all_messages = [m for t in message_trees for m in t]
-                labels = fetch_message_labels(db, all_messages)
+                result = fetch_tree_messages_and_avg_labels(
+                    db,
+                    message_tree_id=tree_id,
+                    deleted=deleted,
+                    prompts_only=prompts_only,
+                    lang=None,  # pass None here, trees were selected based on lang of prompt
+                    review_result=review_result,
+                )
+
+                messages: list[Message] = []
+                for r in result:
+                    msg = r["Message"]
+                    messages.append(msg)
+                    labels: list(tree_export.LabelAggregate) = [
+                        tree_export.LabelAggregate(name=l.value, value=r[l.value], count=r[l.value + "_count"])
+                        for l in TextLabel
+                    ]
+                    message_labels[msg.id] = labels
+
+                message_trees.append(messages)
             else:
-                labels = None
+                messages = fetch_tree_messages(
+                    db,
+                    message_tree_id=tree_id,
+                    deleted=deleted,
+                    prompts_only=prompts_only,
+                    lang=None,  # pass None here, trees were selected based on lang of prompt
+                    review_result=review_result,
+                )
+                message_trees.append(messages)
+
+        if review_result is False or deleted is True:
+            # when exporting filtered we don't have a complete message trees, export as list
+            messages = [m for t in message_trees for m in t]  # flatten message list
+            tree_export.write_messages_to_file(export_file, messages, use_compression, labels=message_labels)
+        else:
+            trees_to_export: List[tree_export.ExportMessageTree] = []
 
             for (message_tree_id, message_tree_state), message_tree in zip(message_tree_ids, message_trees):
-                t = tree_export.build_export_tree(message_tree_id, message_tree_state, message_tree, labels=labels)
-                if prompts_only:
-                    t.prompt.replies = None
-                trees_to_export.append(t)
+                if len(message_tree) > 0:
+                    try:
+                        t = tree_export.build_export_tree(
+                            message_tree_id=message_tree_id,
+                            message_tree_state=message_tree_state,
+                            messages=message_tree,
+                            labels=message_labels,
+                        )
+                        if prompts_only:
+                            t.prompt.replies = None
+                        trees_to_export.append(t)
+                    except Exception as ex:
+                        logger.warning(f"Corrupted tree: {message_tree_id} ({ex})")
 
             tree_export.write_trees_to_file(export_file, trees_to_export, use_compression)
 
@@ -202,7 +274,7 @@ def parse_args():
     parser.add_argument(
         "--export-labels",
         action="store_true",
-        help="Export labels for messages to a separate file",
+        help="Include average label values for messages",
     )
 
     args = parser.parse_args()
