@@ -209,20 +209,21 @@ services:
       - 9090:9090
     restart: unless-stopped
     volumes:
-      - ./prometheus:/etc/prometheus
+      - ${PWD}/docker/prometheus:/etc/prometheus
       - prom_data:/prometheus
 
   grafana:
     image: grafana/grafana
     container_name: grafana
     ports:
-      - 3000:3000
+      - 2000:2000
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=grafana
+      - GF_SERVER_HTTP_PORT=2000
     volumes:
-      - ./grafana:/etc/grafana/provisioning/datasources
+      - ${PWD}/docker/grafana:/etc/grafana/provisioning/datasources
 
   netdata:
     image: netdata/netdata

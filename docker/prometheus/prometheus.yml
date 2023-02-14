@@ -19,3 +19,12 @@ scrape_configs:
   static_configs:
   - targets:
     - localhost:9090
+- job_name: backend
+  honor_timestamps: true
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  static_configs:
+  - targets:
+    - backend:8080
