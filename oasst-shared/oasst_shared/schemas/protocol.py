@@ -571,3 +571,21 @@ class CreateFrontendUserRequest(User):
     enabled: bool = True
     tos_acceptance: Optional[bool] = None
     notes: Optional[str] = None
+
+
+class CachedStatsName(str, enum.Enum):
+    human_messages_by_lang = "human_messages_by_lang"
+    human_messages_by_role = "human_messages_by_role"
+    message_trees_by_state = "message_trees_by_state"
+    message_trees_states_by_lang = "message_trees_states_by_lang"
+    users_accepted_tos = "users_accepted_tos"
+
+
+class CachedStatsResponse(BaseModel):
+    name: CachedStatsName | str
+    last_updated: datetime
+    stats: dict | list
+
+
+class AllCachedStatsResponse(BaseModel):
+    stats_by_name: dict[CachedStatsName | str, CachedStatsResponse]

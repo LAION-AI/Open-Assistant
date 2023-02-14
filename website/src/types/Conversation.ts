@@ -27,6 +27,7 @@ export interface Message extends MessageEmojis {
   rank: number | null;
   model_name: string | null;
   review_count: number | null;
+  review_result: boolean; // false is spam
 }
 
 export interface Conversation {

@@ -3,6 +3,8 @@
   "copy_message_link": "Copiar enlace al mensaje",
   "label_action": "Etiquetar",
   "label_title": "Etiqueta",
+  "message_author": "Autor",
+  "message_author_explain": "Eres el autor de este mensaje",
   "message": "Mensaje",
   "message_deleted": "Mensaje borrado",
   "open_new_tab_action": "Abrir en una pestaña nueva",
