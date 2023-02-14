@@ -204,7 +204,7 @@ services:
     image: prom/prometheus
     container_name: prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      - "--config.file=/etc/prometheus/prometheus.yml"
     ports:
       - 9090:9090
     restart: unless-stopped
@@ -225,6 +225,7 @@ services:
       - GF_SERVER_HTTP_PORT=2000
     volumes:
       - ${PWD}/docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ${PWD}/docker/grafana/dashboards/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
       - ${PWD}/docker/grafana/dashboards:/var/lib/grafana/dashboards
     profiles: ["observability"]
 
