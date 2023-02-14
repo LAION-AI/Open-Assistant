@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 from uuid import UUID
 
 import sqlalchemy as sa
@@ -60,18 +60,6 @@ def fetch_tree_messages(
         qry = qry.filter(Message.review_result)
 
     return qry.all()
-
-
-def fetch_message_labels(db: Session, messages: List[Message]) -> Dict[UUID, List[TextLabels]]:
-    message_ids = [message.id for message in messages]
-
-    labels_by_id: Dict[UUID, List[TextLabels]] = {}
-    for id in message_ids:
-
-        qry = db.query(TextLabels).filter(TextLabels.message_id == id)
-        labels_by_id[id] = qry.all()
-
-    return labels_by_id
 
 
 def fetch_tree_messages_and_avg_labels(
