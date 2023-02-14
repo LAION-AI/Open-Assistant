@@ -111,7 +111,7 @@ def export_trees(
     review_result: Optional[bool] = None,
     export_labels: bool = False,
 ) -> None:
-    message_labels: dict[UUID, List[tree_export.LabelAggregate]] = {}
+    message_labels: dict[UUID, tree_export.LabelValues] = {}
     if user_id:
         # when filtering by user we don't have complete message trees, export as list
         result = fetch_tree_messages_and_avg_labels(
@@ -128,11 +128,11 @@ def export_trees(
             msg = r["Message"]
             messages.append(msg)
             if export_labels:
-                labels: list(tree_export.LabelAggregate) = [
-                    tree_export.LabelAggregate(name=l.value, value=r[l.value], count=r[l.value + "_count"])
+                labels: tree_export.LabelValues = {
+                    l.value: tree_export.LabelAvgValue(value=r[l.value], count=r[l.value + "_count"])
                     for l in TextLabel
                     if r[l.value] is not None
-                ]
+                }
                 message_labels[msg.id] = labels
 
         tree_export.write_messages_to_file(export_file, messages, use_compression, labels=message_labels)
@@ -156,11 +156,11 @@ def export_trees(
                 for r in result:
                     msg = r["Message"]
                     messages.append(msg)
-                    labels: list(tree_export.LabelAggregate) = [
-                        tree_export.LabelAggregate(name=l.value, value=r[l.value], count=r[l.value + "_count"])
+                    labels: tree_export.LabelValues = {
+                        l.value: tree_export.LabelAvgValue(value=r[l.value], count=r[l.value + "_count"])
                         for l in TextLabel
                         if r[l.value] is not None
-                    ]
+                    }
                     message_labels[msg.id] = labels
 
                 message_trees.append(messages)

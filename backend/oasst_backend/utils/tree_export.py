@@ -14,10 +14,12 @@ from oasst_backend.models.message_tree_state import State as TreeState
 from pydantic import BaseModel
 
 
-class LabelAggregate(BaseModel):
-    name: str
+class LabelAvgValue(BaseModel):
     value: float | None
     count: int
+
+
+LabelValues = dict[str, LabelAvgValue]
 
 
 class ExportMessageNode(BaseModel):
@@ -33,10 +35,10 @@ class ExportMessageNode(BaseModel):
     model_name: str | None
     emojis: dict[str, int] | None
     replies: list[ExportMessageNode] | None
-    labels: list[LabelAggregate] | None
+    labels: LabelValues | None
 
     @staticmethod
-    def prep_message_export(message: Message, labels: Optional[list[LabelAggregate]] = None) -> ExportMessageNode:
+    def prep_message_export(message: Message, labels: Optional[LabelValues] = None) -> ExportMessageNode:
         return ExportMessageNode(
             message_id=str(message.id),
             parent_id=str(message.parent_id) if message.parent_id else None,
@@ -63,7 +65,7 @@ def build_export_tree(
     message_tree_id: UUID,
     message_tree_state: TreeState,
     messages: list[Message],
-    labels: Optional[dict[UUID, list[LabelAggregate]]] = None,
+    labels: Optional[dict[UUID, LabelValues]] = None,
 ) -> ExportMessageTree:
     export_messages = [ExportMessageNode.prep_message_export(m, labels.get(m.id) if labels else None) for m in messages]
 
@@ -118,7 +120,7 @@ def write_messages_to_file(
     filename: str | None,
     messages: Iterable[Message],
     use_compression: bool = True,
-    labels: Optional[dict[UUID, list[LabelAggregate]]] = None,
+    labels: Optional[dict[UUID, LabelValues]] = None,
 ) -> None:
     out_buff: TextIO
 
