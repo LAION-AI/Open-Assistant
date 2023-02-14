@@ -113,7 +113,7 @@ def export_trees(
 ) -> None:
     message_labels: dict[UUID, List[tree_export.LabelAggregate]] = {}
     if user_id:
-        # when exporting filtered by user we don't have a complete message trees, export as list
+        # when filtering by user we don't have complete message trees, export as list
         result = fetch_tree_messages_and_avg_labels(
             db,
             user_id=user_id,
@@ -174,7 +174,7 @@ def export_trees(
                 message_trees.append(messages)
 
         if review_result is False or deleted is True:
-            # when exporting filtered we don't have a complete message trees, export as list
+            # when exporting filtered we don't have complete message trees, export as list
             messages = [m for t in message_trees for m in t]  # flatten message list
             tree_export.write_messages_to_file(export_file, messages, use_compression, labels=message_labels)
         else:
