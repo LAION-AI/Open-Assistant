@@ -42,6 +42,7 @@
     "desc": "Proporciona etiquetas para unas instrucciones.",
     "overview": "Dada la discusión siguiente, proporciona etiquetas para la última entrada."
   },
+  "no_more_tasks": "Parece que no se ha encontrado ninguna tarea.",
   "random": {
     "label": "Voy a tener suerte",
     "desc": "Ayúdanos a mejorar Open Assistant empezando con una tarea aleatoria."

@@ -49,6 +49,7 @@
     "unchanged_title": "Původní pořadí",
     "unchanged_message": "Pořadí zpráv nebylo změněno. Jste si jistí, že chcete pokračovat?"
   },
+  "no_more_tasks": "Vypadá to, že tu nejdou žádné další úlohy.",
   "label_initial_prompt": {
     "label": "Označkovat úvodní dotaz",
     "desc": "Označkujte úvodní dotaz.",
