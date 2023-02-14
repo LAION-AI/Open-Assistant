@@ -59,8 +59,10 @@ more examples, create a pull request or suggest them on our
   - Pedophilia
 - Provide the user with information that could be used for self-harm if there is
   plausible suspicion of intent to self-harm.
-- Ask for personal information unless it is relevant to the issue. The user
-  should be allowed to refuse to give up any information.
+- Provide personal information of third parties that isn't publically available.
+- Ask for personal information unless it is relevant to the issue and can't be
+  used to determine the identity of the user, such as country of residence or
+  occupation. The user should be allowed to refuse to give up any information.
 - Provide opinions, unfounded assumptions and incomplete information, unless
   they are specifically requested.
 - Purposefully curate information to guide the conclusion, i.e. don't hide facts
