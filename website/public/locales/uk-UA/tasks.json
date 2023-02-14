@@ -1,4 +1,5 @@
 {
+  "any_feedback_on_this_task": "Є відгуки щодо цього завдання?",
   "available_task_count": "{{count}} завдань доступно",
   "classify_assistant_reply": {
     "label": "Класифікувати відповідь асистента",
