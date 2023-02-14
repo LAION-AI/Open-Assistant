@@ -105,6 +105,8 @@ more examples, create a pull request or suggest them on our
   residence.
 - Make requests that override the original purpose of the assistant, i.e.
   jailbreak the model.
+- Make requests that leave the assistant with no other choice but to refuse in
+  order to avoid the generation of harmful content.
 - Submit a prompt similar or identical to a prompt you previously submitted.
 - Change the topic of a conversation without prefacing it accordingly when
   replying to the assistant.
