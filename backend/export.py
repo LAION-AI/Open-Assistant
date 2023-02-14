@@ -131,6 +131,7 @@ def export_trees(
                 labels: list(tree_export.LabelAggregate) = [
                     tree_export.LabelAggregate(name=l.value, value=r[l.value], count=r[l.value + "_count"])
                     for l in TextLabel
+                    if r[l.value] is not None
                 ]
                 message_labels[msg.id] = labels
 
@@ -158,6 +159,7 @@ def export_trees(
                     labels: list(tree_export.LabelAggregate) = [
                         tree_export.LabelAggregate(name=l.value, value=r[l.value], count=r[l.value + "_count"])
                         for l in TextLabel
+                        if r[l.value] is not None
                     ]
                     message_labels[msg.id] = labels
 
