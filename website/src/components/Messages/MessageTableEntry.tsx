@@ -1,6 +1,5 @@
 import {
   Avatar,
-  AvatarProps,
   Badge,
   Box,
   Flex,
@@ -34,7 +33,7 @@ import {
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
@@ -46,23 +45,17 @@ import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
 import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
+
+const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
+
 interface MessageTableEntryProps {
   message: Message;
   enabled?: boolean;
   highlight?: boolean;
-  avartarPosition?: "middle" | "top";
-  avartarProps?: AvatarProps;
   showAuthorBadge?: boolean;
 }
 
-export function MessageTableEntry({
-  message,
-  enabled,
-  highlight,
-  avartarPosition = "middle",
-  avartarProps,
-  showAuthorBadge,
-}: MessageTableEntryProps) {
+export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge }: MessageTableEntryProps) {
   const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
@@ -94,12 +87,12 @@ export function MessageTableEntry({
         borderColor={borderColor}
         size={inlineAvatar ? "xs" : "sm"}
         mr={inlineAvatar ? 2 : 0}
+        mt={inlineAvatar ? 0 : `6px`}
         name={`${boolean(message.is_assistant) ? "Assistant" : "User"}`}
         src={`${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
-        {...avartarProps}
       />
     ),
-    [avartarProps, borderColor, inlineAvatar, message.is_assistant]
+    [borderColor, inlineAvatar, message.is_assistant]
   );
   const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
 
@@ -118,11 +111,7 @@ export function MessageTableEntry({
   const { t } = useTranslation(["message"]);
 
   return (
-    <HStack
-      w={["full", "full", "full", "fit-content"]}
-      gap={0.5}
-      alignItems={avartarPosition === "top" ? "start" : "center"}
-    >
+    <HStack w={["full", "full", "full", "fit-content"]} gap={0.5} alignItems="start">
       {!inlineAvatar && avatar}
       <Box
         width={["full", "full", "full", "fit-content"]}
@@ -133,12 +122,13 @@ export function MessageTableEntry({
         outline={highlight ? "2px solid black" : undefined}
         outlineColor={highlightColor}
         onClick={goToMessage}
-        whiteSpace="pre-wrap"
         cursor={enabled ? "pointer" : undefined}
-        style={{ position: "relative", wordBreak: "break-word" }}
+        style={{ position: "relative" }}
       >
         {inlineAvatar && avatar}
-        {message.text}
+        <Suspense fallback={message.text}>
+          <RenderedMarkdown markdown={message.text}></RenderedMarkdown>
+        </Suspense>
         <HStack
           style={{ float: "right", position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
           onClick={(e) => e.stopPropagation()}
