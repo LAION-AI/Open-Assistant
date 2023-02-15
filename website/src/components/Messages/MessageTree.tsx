@@ -28,10 +28,6 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
                 {hasChildren && depth < maxDepth && <Connection className="connection1"></Connection>}
                 <MessageTableEntry
                   showAuthorBadge
-                  avartarProps={{
-                    mt: { base: 0, md: `${avartarMarginTop}px` },
-                  }}
-                  avartarPosition="top"
                   highlight={child.id === messageId}
                   message={child}
                 ></MessageTableEntry>
@@ -47,35 +43,34 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
   return (
     <>
       <Box position="relative" className="root">
-        <Box
-          className="root-connection"
-          top={{ base: toPx(0), md: 0 }}
-          height={{ base: `calc(100% - ${toPx(8 + avatarSize / 2)})`, md: `100%` }}
-          position="absolute"
-          width="2px"
-          bg={connectionColor}
-          left={toPx(avatarSize / 2 - 1)}
-        ></Box>
-        <Box
-          display={{ base: "block", md: "none" }}
-          position="absolute"
-          height={`calc(100% - ${toPx(6 + avatarSize / 2)})`}
-          width={`10px`}
-          top={toPx(6 + avatarSize / 2)}
-          borderTopWidth="2px"
-          borderTopLeftRadius="10px"
-          left="-8px"
-          borderTopStyle="solid"
-          borderLeftWidth="2px"
-          borderColor={connectionColor}
-          className="root-curve"
-        ></Box>
-        <MessageTableEntry
-          showAuthorBadge
-          message={tree}
-          avartarPosition="top"
-          highlight={tree.id === messageId}
-        ></MessageTableEntry>
+        {tree.children.length > 0 && (
+          <>
+            <Box
+              className="root-connection"
+              top={{ base: toPx(0), md: toPx(8) }}
+              height={{ base: `calc(100% - ${toPx(8 + avatarSize / 2)})`, md: `calc(100% - 8px)` }}
+              position="absolute"
+              width="2px"
+              bg={connectionColor}
+              left={toPx(avatarSize / 2 - 1)}
+            ></Box>
+            <Box
+              display={{ base: "block", md: "none" }}
+              position="absolute"
+              height={`calc(100% - ${toPx(6 + avatarSize / 2)})`}
+              width={`10px`}
+              top={toPx(6 + avatarSize / 2)}
+              borderTopWidth="2px"
+              borderTopLeftRadius="10px"
+              left="-8px"
+              borderTopStyle="solid"
+              borderLeftWidth="2px"
+              borderColor={connectionColor}
+              className="root-curve"
+            ></Box>
+          </>
+        )}
+        <MessageTableEntry showAuthorBadge message={tree} highlight={tree.id === messageId}></MessageTableEntry>
       </Box>
       {renderChildren(tree.children)}
     </>

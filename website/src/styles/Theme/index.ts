@@ -51,4 +51,39 @@ const styles: Styles = {
   }),
 };
 
-export const theme = extendTheme({ colors, config, fonts, styles, components, breakpoints }, withProse());
+export const theme = extendTheme(
+  { colors, config, fonts, styles, components, breakpoints },
+  withProse({
+    baseStyle: {
+      "h1, h2, h3, h4, h5, h6": {
+        fontWeight: "500",
+        lineHeight: 1.2,
+      },
+      "h1, h2, h3": {
+        mt: 5,
+        mb: 2.5,
+      },
+      "h4, h5, h6": {
+        my: 2.5,
+      },
+      h1: {
+        fontSize: "2.5rem",
+      },
+      h2: {
+        fontSize: "2rem",
+      },
+      h3: {
+        fontSize: "1.75rem",
+      },
+      h4: {
+        fontSize: "1.5rem",
+      },
+      h5: {
+        fontSize: "1.25rem",
+      },
+      h6: {
+        fontSize: "1rem",
+      },
+    },
+  })
+);

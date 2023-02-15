@@ -1,3 +1,4 @@
+import { SystemStyleObject } from "@chakra-ui/react";
 import { Prose } from "@nikolovlazar/chakra-ui-prose";
 import { memo } from "react";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
@@ -25,13 +26,47 @@ const components = {
   },
 };
 
-const sx = {
+const sx: SystemStyleObject = {
   pre: {
     bg: "transparent",
   },
   code: {
     before: {
       content: `""`, // charka prose come with "`" by default
+    },
+    bg: "gray.300",
+    p: 0.5,
+    borderRadius: "2px",
+    _dark: {
+      bg: "gray.700",
+    },
+  },
+  "p:only-child": {
+    my: 0, // ovoid margin when markdown only render 1 p tag
+  },
+  p: {
+    whiteSpace: "pre-wrap",
+    display: "inline-block",
+  },
+  display: "inline-block",
+  wordBreak: "break-word",
+  "> blockquote": {
+    borderInlineStartColor: "gray.300",
+    _dark: {
+      borderInlineStartColor: "gray.500",
+    },
+  },
+  "table tbody tr": {
+    borderBottomColor: "gray.400",
+    _dark: {
+      borderBottomColor: "gray.700",
+    },
+  },
+  "table thead tr": {
+    borderBottomColor: "gray.400",
+    borderBottomWidth: "1px",
+    _dark: {
+      borderBottomColor: "gray.700",
     },
   },
 };
@@ -41,7 +76,7 @@ const plugins = [remarkGfm];
 // eslint-disable-next-line react/display-name
 const RenderedMarkdown = memo(({ markdown }: RenderedMarkdownProps) => {
   return (
-    <Prose sx={sx}>
+    <Prose as="div" sx={sx}>
       <ReactMarkdown remarkPlugins={plugins} components={components}>
         {markdown}
       </ReactMarkdown>
