@@ -1,6 +1,9 @@
 import {
   Avatar,
+  AvatarProps,
+  Badge,
   Box,
+  Flex,
   HStack,
   Menu,
   MenuButton,
@@ -9,21 +12,34 @@ import {
   MenuItem,
   MenuList,
   SimpleGrid,
+  Tooltip,
   useBreakpointValue,
   useColorModeValue,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import { ClipboardList, Copy, Flag, Link, MessageSquare, MoreHorizontal, Slash, Trash, User } from "lucide-react";
+import {
+  ClipboardList,
+  Copy,
+  Flag,
+  Link,
+  MessageSquare,
+  MoreHorizontal,
+  Shield,
+  Slash,
+  Trash,
+  User,
+} from "lucide-react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
-import { useHasRole } from "src/hooks/auth/useHasRole";
+import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { del, post, put } from "src/lib/api";
+import { ROUTES } from "src/lib/routes";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
@@ -36,9 +52,19 @@ interface MessageTableEntryProps {
   message: Message;
   enabled?: boolean;
   highlight?: boolean;
+  avartarPosition?: "middle" | "top";
+  avartarProps?: AvatarProps;
+  showAuthorBadge?: boolean;
 }
 
-export function MessageTableEntry({ message, enabled, highlight }: MessageTableEntryProps) {
+export function MessageTableEntry({
+  message,
+  enabled,
+  highlight,
+  avartarPosition = "middle",
+  avartarProps,
+  showAuthorBadge,
+}: MessageTableEntryProps) {
   const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
@@ -51,16 +77,18 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
     });
   }, [message.emojis, message.user_emojis]);
 
-  const goToMessage = useCallback(() => router.push(`/messages/${message.id}`), [router, message.id]);
+  const goToMessage = useCallback(
+    () => enabled && router.push(`/messages/${message.id}`),
+    [enabled, router, message.id]
+  );
   const { isOpen: reportPopupOpen, onOpen: showReportPopup, onClose: closeReportPopup } = useDisclosure();
   const { isOpen: labelPopupOpen, onOpen: showLabelPopup, onClose: closeLabelPopup } = useDisclosure();
 
-  const backgroundColor = useColorModeValue("gray.100", "gray.700");
-  const backgroundColor2 = useColorModeValue("#DFE8F1", "#42536B");
+  const bg = useColorModeValue("#DFE8F1", "#42536B");
 
   const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
 
-  const inlineAvatar = useBreakpointValue({ base: true, sm: false });
+  const inlineAvatar = useBreakpointValue({ base: true, md: false });
 
   const avatar = useMemo(
     () => (
@@ -70,9 +98,10 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
         mr={inlineAvatar ? 2 : 0}
         name={`${boolean(message.is_assistant) ? "Assistant" : "User"}`}
         src={`${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
+        {...avartarProps}
       />
     ),
-    [borderColor, inlineAvatar, message.is_assistant]
+    [avartarProps, borderColor, inlineAvatar, message.is_assistant]
   );
   const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
 
@@ -87,21 +116,28 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
     sendEmojiChange({ op: state ? "add" : "remove", emoji });
   };
 
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
+  const { t } = useTranslation(["message"]);
+
   return (
-    <HStack w={["full", "full", "full", "fit-content"]} gap={2}>
+    <HStack
+      w={["full", "full", "full", "fit-content"]}
+      gap={0.5}
+      alignItems={avartarPosition === "top" ? "start" : "center"}
+    >
       {!inlineAvatar && avatar}
       <Box
         width={["full", "full", "full", "fit-content"]}
         maxWidth={["full", "full", "full", "2xl"]}
-        p="4"
-        borderRadius="md"
-        bg={message.is_assistant ? backgroundColor : backgroundColor2}
-        outline={highlight && "2px solid black"}
+        p={[3, 4]}
+        borderRadius="18px"
+        bg={bg}
+        outline={highlight ? "2px solid black" : undefined}
         outlineColor={highlightColor}
-        onClick={enabled && goToMessage}
+        onClick={goToMessage}
         whiteSpace="pre-wrap"
-        cursor={enabled && "pointer"}
-        style={{ position: "relative" }}
+        cursor={enabled ? "pointer" : undefined}
+        style={{ position: "relative", wordBreak: "break-word" }}
       >
         {inlineAvatar && avatar}
         <Suspense fallback={message.text}>
@@ -120,7 +156,8 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
                   key={emoji}
                   emoji={{ name: emoji, count }}
                   checked={emojiState.user_emojis.includes(emoji)}
-                  showCount={emojiState.user_emojis.filter((emoji) => emoji === "+1" || emoji === "-1").length > 0}
+                  userReacted={emojiState.user_emojis.length > 0}
+                  userIsAuthor={!!message.user_is_author}
                   onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
                 />
               );
@@ -135,6 +172,25 @@ export function MessageTableEntry({ message, enabled, highlight }: MessageTableE
           <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
           <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
         </HStack>
+        <Flex position="absolute" gap="2" top="-2.5" right="5">
+          {showAuthorBadge && message.user_is_author && (
+            <Tooltip label={t("message_author_explain")} placement="top">
+              <Badge size="sm" colorScheme="green" textTransform="capitalize">
+                {t("message_author")}
+              </Badge>
+            </Tooltip>
+          )}
+          {message.deleted && isAdminOrMod && (
+            <Badge colorScheme="red" textTransform="capitalize">
+              Deleted {/* dont translate, it's admin only feature */}
+            </Badge>
+          )}
+          {message.review_result === false && isAdminOrMod && (
+            <Badge colorScheme="yellow" textTransform="capitalize">
+              Spam {/* dont translate, it's admin only feature */}
+            </Badge>
+          )}
+        </Flex>
       </Box>
     </HStack>
   );
@@ -150,7 +206,8 @@ const EmojiMenuItem = ({
   react: (emoji: string, state: boolean) => void;
 }) => {
   const activeColor = useColorModeValue(colors.light.active, colors.dark.active);
-  const EmojiIcon = emojiIcons.get(emoji);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const EmojiIcon = emojiIcons.get(emoji)!;
   return (
     <MenuItem onClick={() => react(emoji, !checked)} justifyContent="center" color={checked ? activeColor : undefined}>
       <EmojiIcon />
@@ -213,7 +270,7 @@ const MessageActions = ({
     });
   };
 
-  const isAdmin = useHasRole("admin");
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
 
   return (
     <Menu>
@@ -241,23 +298,28 @@ const MessageActions = ({
         </MenuItem>
 
         <MenuItem
-          onClick={() => handleCopy(`${window.location.protocol}://${window.location.host}/messages/${id}`)}
+          onClick={() => handleCopy(`${window.location.protocol}//${window.location.host}/messages/${id}`)}
           icon={<Link />}
         >
           {t("copy_message_link")}
         </MenuItem>
-        {!!isAdmin && (
+        {!!isAdminOrMod && (
           <>
             <MenuDivider />
             <MenuItem onClick={() => handleCopy(id)} icon={<Copy />}>
               {t("copy_message_id")}
             </MenuItem>
+            <MenuItem as="a" href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
+              View in admin area
+            </MenuItem>
             <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
               {t("view_user")}
             </MenuItem>
-            <MenuItem onClick={handleDelete} icon={<Trash />}>
-              {t("common:delete")}
-            </MenuItem>
+            {!message.deleted && (
+              <MenuItem onClick={handleDelete} icon={<Trash />}>
+                {t("common:delete")}
+              </MenuItem>
+            )}
             <MenuItem onClick={handleStop} icon={<Slash />}>
               {t("stop_tree")}
             </MenuItem>

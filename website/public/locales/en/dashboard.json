@@ -4,5 +4,11 @@
   "evaluate": "Evaluate",
   "label": "Label",
   "dashboard": "Dashboard",
-  "go": "Go"
+  "go": "Go",
+  "welcome_message": {
+    "label": "Welcome, {{username}}!",
+    "contributor": "Contributor",
+    "description": "Open Assistant is an open-source AI assistant that uses and trains advanced language models to understand and respond to humans.",
+    "instruction": "Complete tasks to help train the model and earn points."
+  }
 }

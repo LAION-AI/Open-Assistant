@@ -1,7 +1,7 @@
 import { Box, Divider } from "@chakra-ui/react";
-import { useTranslation } from "next-i18next";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
 
 export function SlimFooter() {

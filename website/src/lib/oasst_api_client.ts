@@ -1,4 +1,4 @@
-import type { EmojiOp, Message } from "src/types/Conversation";
+import type { EmojiOp, FetchUserMessagesCursorResponse, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import type { AvailableTasks } from "src/types/Task";
 import { FetchTrollBoardResponse, TrollboardTimeFrame } from "src/types/Trollboard";
@@ -189,6 +189,13 @@ export class OasstApiClient {
     return this.get<Message>(`/api/v1/messages/${message_id}?username=${user.id}&auth_method=${user.auth_method}`);
   }
 
+  async fetch_message_tree(message_id: string, options?: { include_spam?: boolean; include_deleted?: boolean }) {
+    return this.get<{
+      id: string;
+      messages: Message[];
+    }>(`/api/v1/messages/${message_id}/tree`, options);
+  }
+
   /**
    * Delete a message by its id
    */
@@ -264,11 +271,33 @@ export class OasstApiClient {
     return this.get<Message[]>(`/api/v1/users/${user_id}/messages`);
   }
 
+  async fetch_user_messages_cursor(
+    user_id: string,
+    {
+      direction,
+      cursor,
+      ...rest
+    }: { include_deleted?: boolean; max_count?: number; cursor?: string; direction: "forward" | "back"; desc?: boolean }
+  ) {
+    return this.get<FetchUserMessagesCursorResponse>(`/api/v1/users/${user_id}/messages/cursor`, {
+      ...rest,
+      after: direction === "forward" ? cursor : undefined,
+      before: direction === "back" ? cursor : undefined,
+    });
+  }
+
   /**
    * Updates the backend's knowledge about the `user_id`.
    */
-  async set_user_status(user_id: string, is_enabled: boolean, notes: string): Promise<void> {
-    await this.put(`/api/v1/users/users/${user_id}?enabled=${is_enabled}&notes=${notes}`);
+  async set_user_status(
+    user_id: string,
+    is_enabled: boolean,
+    notes: string,
+    show_on_leaderboard: boolean
+  ): Promise<void> {
+    await this.put(
+      `/api/v1/users/${user_id}?enabled=${is_enabled}&notes=${notes}&show_on_leaderboard=${show_on_leaderboard}`
+    );
   }
 
   /**
@@ -314,8 +343,8 @@ export class OasstApiClient {
     return this.get<Message[]>(`/api/v1/messages?${params}`);
   }
 
-  fetch_recent_messages() {
-    return this.get<Message[]>(`/api/v1/messages`);
+  fetch_recent_messages(lang: string) {
+    return this.get<Message[]>(`/api/v1/messages`, { lang });
   }
 
   fetch_message_children(messageId: string) {

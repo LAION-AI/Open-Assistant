@@ -4,8 +4,8 @@ import lande from "lande";
 import { useTranslation } from "next-i18next";
 import React from "react";
 import { useCookies } from "react-cookie";
-import { getTypeSafei18nKey } from "src/lib/i18n";
 import { LanguageAbbreviations } from "src/lib/iso6393";
+import { getLocaleDisplayName } from "src/lib/languages";
 import { colors } from "src/styles/Theme/colors";
 
 interface TrackedTextboxProps {
@@ -20,16 +20,16 @@ interface TrackedTextboxProps {
 }
 
 export const TrackedTextarea = (props: TrackedTextboxProps) => {
-  const { t } = useTranslation("language");
+  const { t } = useTranslation("tasks");
   const wordLimitForLangDetection = 4;
   const backgroundColor = useColorModeValue("gray.100", "gray.900");
   const [cookies] = useCookies(["NEXT_LOCALE"]);
-  const wordCount = (props.text.match(/\w+/g) || []).length;
   const currentLanguage = cookies["NEXT_LOCALE"];
+  const wordCount = (props.text.match(/\w+/g) || []).length;
 
   const detectLang = (text: string) => {
     try {
-      return LanguageAbbreviations[lande(text)[0][0]];
+      return LanguageAbbreviations[lande(text)[0][0]] || currentLanguage;
     } catch (error) {
       return currentLanguage;
     }
@@ -81,8 +81,8 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
         >
           <Tooltip
             label={t(wrongLanguage ? "writing_wrong_langauge_a_b" : "submitted_as", {
-              submit_lang: t(getTypeSafei18nKey(`lang_${currentLanguage}`), currentLanguage),
-              detected_lang: t(getTypeSafei18nKey(`lang_${detectedLang}`), detectedLang),
+              submit_lang: getLocaleDisplayName(currentLanguage),
+              detected_lang: getLocaleDisplayName(detectedLang, currentLanguage),
             })}
           >
             {detectedLang}

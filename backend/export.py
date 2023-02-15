@@ -1,14 +1,14 @@
 import argparse
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 from uuid import UUID
 
 from loguru import logger
 from oasst_backend.database import engine
-from oasst_backend.models import Message, MessageTreeState
+from oasst_backend.models import Message, MessageTreeState, TextLabels
 from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_backend.utils import tree_export
-from sqlmodel import Session
+from sqlmodel import Session, not_
 
 
 def fetch_tree_ids(
@@ -38,6 +38,7 @@ def fetch_tree_messages(
     deleted: bool = None,
     prompts_only: bool = False,
     lang: Optional[str] = None,
+    review_result: Optional[bool] = None,
 ) -> List[Message]:
     qry = db.query(Message)
 
@@ -51,8 +52,25 @@ def fetch_tree_messages(
         qry = qry.filter(Message.parent_id.is_(None))
     if lang:
         qry = qry.filter(Message.lang == lang)
+    if review_result is False:
+        qry = qry.filter(not_(Message.review_result), Message.review_count > 2)
+    elif review_result is True:
+        qry = qry.filter(Message.review_result)
 
     return qry.all()
+
+
+def fetch_message_labels(db: Session, messages: List[Message]) -> Dict[UUID, List[TextLabels]]:
+    message_ids = [message.id for message in messages]
+
+    qry = db.query(TextLabels).filter(TextLabels.message_id.in_(message_ids))
+
+    all_labels: List[TextLabels] = qry.all()
+
+    return {
+        message.id: [message_labels for message_labels in all_labels if message_labels.message_id == message.id]
+        for message in messages
+    }
 
 
 def export_trees(
@@ -64,18 +82,24 @@ def export_trees(
     prompts_only: bool = False,
     state_filter: Optional[TreeState] = None,
     lang: Optional[str] = None,
+    review_result: Optional[bool] = None,
+    export_labels: bool = False,
 ) -> None:
     trees_to_export: List[tree_export.ExportMessageTree] = []
 
-    if user_id:
+    if user_id or review_result is False:
         messages = fetch_tree_messages(
             db,
             user_id=user_id,
             deleted=deleted,
             prompts_only=prompts_only,
             lang=lang,
+            review_result=review_result,
         )
-        tree_export.write_messages_to_file(export_file, messages, use_compression)
+
+        labels = fetch_message_labels(db, messages) if export_labels else None
+
+        tree_export.write_messages_to_file(export_file, messages, use_compression, labels=labels)
     else:
         message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang)
 
@@ -86,17 +110,27 @@ def export_trees(
                 deleted=deleted,
                 prompts_only=prompts_only,
                 lang=None,
+                review_result=review_result,
             )
             for (tree_id, _) in message_tree_ids
         ]
 
-        # when exporting only-deleted we don't have a porper tree structure, export as list
+        # when exporting only deleted we don't have a proper tree structure, export as list
         if deleted is True:
             messages = [m for t in message_trees for m in t]
-            tree_export.write_messages_to_file(export_file, messages, use_compression)
+
+            labels = fetch_message_labels(db, messages) if export_labels else None
+
+            tree_export.write_messages_to_file(export_file, messages, use_compression, labels=labels)
         else:
+            if export_labels:
+                all_messages = [m for t in message_trees for m in t]
+                labels = fetch_message_labels(db, all_messages)
+            else:
+                labels = None
+
             for (message_tree_id, message_tree_state), message_tree in zip(message_tree_ids, message_trees):
-                t = tree_export.build_export_tree(message_tree_id, message_tree_state, message_tree)
+                t = tree_export.build_export_tree(message_tree_id, message_tree_state, message_tree, labels=labels)
                 if prompts_only:
                     t.prompt.replies = None
                 trees_to_export.append(t)
@@ -136,6 +170,16 @@ def parse_args():
         help="Export only deleted messages (implies --include-deleted)",
     )
     parser.add_argument(
+        "--include-spam",
+        action="store_true",
+        help="Export including messages with negative review result.",
+    )
+    parser.add_argument(
+        "--spam-only",
+        action="store_true",
+        help="Export only messages with negative review result (implies --include-spam).",
+    )
+    parser.add_argument(
         "--user",
         type=str,
         help="Only export trees involving the user with the specified ID. Incompatible with --state.",
@@ -154,6 +198,11 @@ def parse_args():
         "--prompts-only",
         action="store_true",
         help="Export a list of initial prompt messages",
+    )
+    parser.add_argument(
+        "--export-labels",
+        action="store_true",
+        help="Export labels for messages to a separate file",
     )
 
     args = parser.parse_args()
@@ -176,16 +225,24 @@ def main():
     if args.deleted_only:
         deleted = True
 
+    review_result: Optional[bool] = True
+    if args.include_spam:
+        review_result = None
+    if args.spam_only:
+        review_result = False
+
     with Session(engine) as db:
         export_trees(
             db,
             Path(args.export_file) if args.export_file is not None else None,
-            args.use_compression,
+            use_compression=args.use_compression,
             deleted=deleted,
             user_id=UUID(args.user) if args.user is not None else None,
             prompts_only=args.prompts_only,
             state_filter=state_filter,
             lang=args.lang,
+            review_result=review_result,
+            export_labels=args.export_labels,
         )
 
 

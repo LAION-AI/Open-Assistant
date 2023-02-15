@@ -17,7 +17,7 @@ export interface SideMenuProps {
 
 export function SideMenu(props: SideMenuProps) {
   const router = useRouter();
-  const { t } = useTranslation(["side_menu", "common"]);
+  const { t } = useTranslation();
 
   return (
     <main className="sticky top-0 sm:h-full">

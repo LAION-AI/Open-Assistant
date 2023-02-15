@@ -9,7 +9,7 @@ from typing import Iterable, Optional, TextIO
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from oasst_backend.models import Message
+from oasst_backend.models import Message, TextLabels
 from oasst_backend.models.message_tree_state import State as TreeState
 from pydantic import BaseModel
 
@@ -21,11 +21,13 @@ class ExportMessageNode(BaseModel):
     role: str
     lang: str | None
     review_count: int | None
+    review_result: bool | None
     rank: int | None
     synthetic: bool | None
     model_name: str | None
     emojis: dict[str, int] | None
     replies: list[ExportMessageNode] | None
+    labels: list[dict[str, float]] | None
 
     @staticmethod
     def prep_message_export(message: Message) -> ExportMessageNode:
@@ -36,11 +38,18 @@ class ExportMessageNode(BaseModel):
             role=message.role,
             lang=message.lang,
             review_count=message.review_count,
+            review_result=message.review_result if message.review_result or message.review_count > 2 else None,
             synthetic=message.synthetic,
             model_name=message.model_name,
             emojis=message.emojis,
             rank=message.rank,
         )
+
+    @staticmethod
+    def prep_labelled_message_export(message: Message, labels: list[TextLabels]) -> ExportMessageNode:
+        node = ExportMessageNode.prep_message_export(message)
+        node.labels = [label.labels for label in labels]
+        return node
 
 
 class ExportMessageTree(BaseModel):
@@ -50,9 +59,20 @@ class ExportMessageTree(BaseModel):
 
 
 def build_export_tree(
-    message_tree_id: UUID, message_tree_state: TreeState, messages: list[Message]
+    message_tree_id: UUID,
+    message_tree_state: TreeState,
+    messages: list[Message],
+    labels: Optional[dict[UUID, list[TextLabels]]] = None,
 ) -> ExportMessageTree:
-    export_messages = [ExportMessageNode.prep_message_export(m) for m in messages]
+    if labels:
+        export_messages = [
+            ExportMessageNode.prep_labelled_message_export(m, labels[m.id])
+            if m.id in labels
+            else ExportMessageNode.prep_message_export(m)
+            for m in messages
+        ]
+    else:
+        export_messages = [ExportMessageNode.prep_message_export(m) for m in messages]
 
     messages_by_parent = defaultdict(list)
     for message in export_messages:
@@ -101,7 +121,12 @@ def write_trees_to_file(filename: str | None, trees: list[ExportMessageTree], us
             f.write("\n")
 
 
-def write_messages_to_file(filename: str | None, messages: Iterable[Message], use_compression: bool = True) -> None:
+def write_messages_to_file(
+    filename: str | None,
+    messages: Iterable[Message],
+    use_compression: bool = True,
+    labels: Optional[dict[UUID, list[TextLabels]]] = None,
+) -> None:
     out_buff: TextIO
 
     if use_compression:
@@ -113,7 +138,10 @@ def write_messages_to_file(filename: str | None, messages: Iterable[Message], us
 
     with out_buff as f:
         for m in messages:
-            export_message = ExportMessageNode.prep_message_export(m)
+            if labels and m.id in labels:
+                export_message = ExportMessageNode.prep_labelled_message_export(m, labels[m.id])
+            else:
+                export_message = ExportMessageNode.prep_message_export(m)
             file_data = jsonable_encoder(export_message, exclude_none=True)
             json.dump(file_data, f)
             f.write("\n")

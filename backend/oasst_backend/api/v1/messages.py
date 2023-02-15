@@ -178,6 +178,8 @@ def get_conv(
 def get_tree(
     *,
     message_id: UUID,
+    include_spam: Optional[bool] = False,
+    include_deleted: Optional[bool] = False,
     frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
@@ -187,7 +189,9 @@ def get_tree(
     """
     pr = PromptRepository(db, api_client, frontend_user=frontend_user)
     message = pr.fetch_message(message_id)
-    tree = pr.fetch_message_tree(message.message_tree_id, reviewed=False)
+    review_result = None if include_spam else True
+    deleted = None if include_deleted else False
+    tree = pr.fetch_message_tree(message.message_tree_id, review_result=review_result, deleted=deleted)
     return utils.prepare_tree(tree, message.message_tree_id)
 
 

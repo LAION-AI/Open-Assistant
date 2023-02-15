@@ -1,5 +1,5 @@
 {
-  "available_task_count": "{{count}} tasks available",
+  "available_task_count": "{{count}} Aufgaben verfügbar",
   "classify_assistant_reply": {
     "label": "Antwort des Assistenten klassifizieren",
     "desc": "Labeln Sie die Antwort.",
