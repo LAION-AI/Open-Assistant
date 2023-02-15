@@ -74,6 +74,14 @@ TRANSLATION_PROMPT = {
     "ar": ["{}. translate to arabic", "{} write in arabic", "arabic translation: '{}'"],
     "es": ["{}. translate to spanish", "{} write in spanish", "spanish translation: '{}'"],
     "hi": ["{}. translate to hindi", "{}. translate to bengali", "{} write in hindi", "bengali translation: '{}'"],
+    "uk": [
+        "{}. translate to ukrainian",
+        "{} write in ukrainian",
+        "ukrainian translation: '{}'",
+        "переклади українською мовою: {}",
+        "переклади на українську мову: {}",
+        "{} переклади українською",
+    ],
 }
 
 

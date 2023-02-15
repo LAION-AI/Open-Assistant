@@ -1,5 +1,6 @@
 import type { EmojiOp, FetchUserMessagesCursorResponse, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
+import { Stats } from "src/types/Stat";
 import type { AvailableTasks } from "src/types/Task";
 import { FetchTrollBoardResponse, TrollboardTimeFrame } from "src/types/Trollboard";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
@@ -222,6 +223,13 @@ export class OasstApiClient {
       is_report: true,
       user,
     });
+  }
+
+  /**
+   * Returns cached dataset stats from the backend.
+   */
+  async fetch_cached_stats(): Promise<Stats> {
+    return this.get("/api/v1/stats/cached");
   }
 
   /**

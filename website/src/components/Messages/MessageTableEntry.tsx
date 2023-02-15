@@ -30,6 +30,7 @@ import {
   Trash,
   User,
 } from "lucide-react";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
@@ -256,7 +257,7 @@ const MessageActions = ({
   };
 
   const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
-
+  const { locale } = useRouter();
   return (
     <Menu>
       <MenuButton>
@@ -278,12 +279,18 @@ const MessageActions = ({
           {t("report_action")}
         </MenuItem>
         <MenuDivider />
-        <MenuItem as="a" href={`/messages/${id}`} target="_blank" icon={<MessageSquare />}>
+        <MenuItem as={NextLink} href={`/messages/${id}`} target="_blank" icon={<MessageSquare />}>
           {t("open_new_tab_action")}
         </MenuItem>
 
         <MenuItem
-          onClick={() => handleCopy(`${window.location.protocol}//${window.location.host}/messages/${id}`)}
+          onClick={() =>
+            handleCopy(
+              `${window.location.protocol}//${window.location.host}${
+                locale === "en" ? "" : `/${locale}`
+              }/messages/${id}`
+            )
+          }
           icon={<Link />}
         >
           {t("copy_message_link")}
@@ -294,10 +301,10 @@ const MessageActions = ({
             <MenuItem onClick={() => handleCopy(id)} icon={<Copy />}>
               {t("copy_message_id")}
             </MenuItem>
-            <MenuItem as="a" href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
+            <MenuItem as={NextLink} href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
               View in admin area
             </MenuItem>
-            <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
+            <MenuItem as={NextLink} href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
               {t("view_user")}
             </MenuItem>
             {!message.deleted && (
