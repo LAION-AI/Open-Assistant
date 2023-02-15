@@ -14,6 +14,14 @@ on:
 jobs:
   build-frontend:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_BACKEND_URL: ${{ vars.WEB_NEXT_PUBLIC_BACKEND_URL }}
+      NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY:
+        ${{ secrets.WEB_NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY }}
+      NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN:
+        ${{ vars.WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN }}
+      NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA:
+        ${{ vars.WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA }}
     defaults:
       run:
         working-directory: ./website
