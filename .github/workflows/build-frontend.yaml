@@ -32,6 +32,8 @@ jobs:
           node-version: 16.x
           cache: "npm"
           cache-dependency-path: website/package-lock.json
+      - name: Show environment variables
+        run: echo "NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL, NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN=$NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN, NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA=$NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA"
       - run: npm ci
       - run: npx prisma generate
       - run: npm run build
