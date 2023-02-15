@@ -25,14 +25,21 @@ export const Explain = ({ explanation }: ExplainProps) => {
         <PopoverCloseButton />
         <PopoverBody>
           {explanation.map((paragraph, idx) => (
-            < Text key={idx} >
+            <Text key={idx}>
               {paragraph}
 
-              {explanation.length > 1 ? <><br /><br /></> : null /* Add line breaks between multiple paragraphs */}
+              {
+                explanation.length > 1 ? (
+                  <>
+                    <br />
+                    <br />
+                  </>
+                ) : null /* Add line breaks between multiple paragraphs */
+              }
             </Text>
           ))}
         </PopoverBody>
       </PopoverContent>
-    </Popover >
+    </Popover>
   );
 };

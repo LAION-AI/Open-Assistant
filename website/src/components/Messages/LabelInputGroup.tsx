@@ -1,10 +1,12 @@
 import { Box, Text, VStack } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
+import { useCookies } from "react-cookie";
 import { Explain } from "src/components/Explain";
 import { LabelFlagGroup } from "src/components/Messages/LabelFlagGroup";
 import { LabelYesNoGroup } from "src/components/Messages/LabelYesNoGroup";
 import { LabelLikertGroup } from "src/components/Survey/LabelLikertGroup";
 import { getTypeSafei18nKey } from "src/lib/i18n";
+import { getLocaleDisplayName } from "src/lib/languages";
 import { Label } from "src/types/Tasks";
 
 export interface LabelInputInstructions {
@@ -33,6 +35,9 @@ export const LabelInputGroup = ({
   onChange,
 }: LabelInputGroupProps) => {
   const { t } = useTranslation("labelling");
+  const [cookies] = useCookies(["NEXT_LOCALE"]);
+  const currentLanguage = cookies["NEXT_LOCALE"];
+  const expectedLanguageName = getLocaleDisplayName(expectedLanguage, currentLanguage);
   const yesNoIndexes = labels.map((label, idx) => (label.widget === "yes_no" ? idx : null)).filter((v) => v !== null);
   const flagIndexes = labels.map((label, idx) => (label.widget === "flag" ? idx : null)).filter((v) => v !== null);
   const likertIndexes = labels.map((label, idx) => (label.widget === "likert" ? idx : null)).filter((v) => v !== null);
@@ -64,8 +69,10 @@ export const LabelInputGroup = ({
             <Explain
               explanation={flagIndexes.map(
                 (idx) =>
-                  `${t(getTypeSafei18nKey(labels[idx].name))}: ${t(
-                    getTypeSafei18nKey(`${labels[idx].name}.explanation`)
+                  `${t(getTypeSafei18nKey(labels[idx].name), "English", { language: expectedLanguageName })}: ${t(
+                    getTypeSafei18nKey(`${labels[idx].name}.explanation`),
+                    "English",
+                    { language: expectedLanguageName }
                   )}`
               )}
             />
