@@ -31,6 +31,7 @@ import {
   Trash,
   User,
 } from "lucide-react";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -45,7 +46,6 @@ import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
 import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
-
 interface MessageTableEntryProps {
   message: Message;
   enabled?: boolean;
@@ -289,7 +289,7 @@ const MessageActions = ({
           {t("report_action")}
         </MenuItem>
         <MenuDivider />
-        <MenuItem as="a" href={`/messages/${id}`} target="_blank" icon={<MessageSquare />}>
+        <MenuItem as={NextLink} href={`/messages/${id}`} target="_blank" icon={<MessageSquare />}>
           {t("open_new_tab_action")}
         </MenuItem>
 
@@ -305,10 +305,10 @@ const MessageActions = ({
             <MenuItem onClick={() => handleCopy(id)} icon={<Copy />}>
               {t("copy_message_id")}
             </MenuItem>
-            <MenuItem as="a" href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
+            <MenuItem as={NextLink} href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
               View in admin area
             </MenuItem>
-            <MenuItem as="a" href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
+            <MenuItem as={NextLink} href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
               {t("view_user")}
             </MenuItem>
             {!message.deleted && (
