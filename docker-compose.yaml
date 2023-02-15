@@ -199,3 +199,71 @@ services:
     deploy:
       replicas: 1
     profiles: ["inference"]
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/docker/prometheus:/etc/prometheus
+      - prom_data:/prometheus
+    profiles: ["observability"]
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 2000:2000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+      - GF_SERVER_HTTP_PORT=2000
+    volumes:
+      - ${PWD}/docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ${PWD}/docker/grafana/dashboards/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ${PWD}/docker/grafana/dashboards:/var/lib/grafana/dashboards
+    profiles: ["observability"]
+
+  netdata:
+    image: netdata/netdata
+    container_name: netdata
+    pid: host
+    hostname: oasst-netdata
+    ports:
+      - 19999:19999
+    restart: unless-stopped
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${PWD}/docker/netdata/go.d/redis.conf:/etc/netdata/go.d/redis.conf
+      - ${PWD}/docker/netdata/go.d/postgres.conf:/etc/netdata/go.d/postgres.conf
+      - ${PWD}/docker/netdata/go.d/prometheus.conf:/etc/netdata/go.d/prometheus.conf
+    environment:
+      # useful if want to claim monitoring agents into https://www.netdata.cloud/
+      # else ignore or leave blank to just use local netdata dashboards as localhost:19999
+      - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN:-}
+      - NETDATA_CLAIM_URL=https://app.netdata.cloud
+    profiles: ["observability"]
+
+volumes:
+  prom_data:
+  netdataconfig:
+  netdatalib:
+  netdatacache:
