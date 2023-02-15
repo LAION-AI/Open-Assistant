@@ -8,7 +8,7 @@ import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
-import { checkCaptcha } from "src/lib/captcha";
+import { checkCaptcha, MissingCaptchaSecrect } from "src/lib/captcha";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { BackendUserCore } from "src/types/Users";
@@ -220,13 +220,21 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
 
         const captcha = req.body.captcha;
 
-        const res = await checkCaptcha(captcha, getIp(req));
+        try {
+          const res = await checkCaptcha(captcha, getIp(req));
 
-        if (res.success) {
-          return true;
+          if (res.success) {
+            return true;
+          }
+
+          return "/auth/signin?error=InvalidCaptcha";
+        } catch (e) {
+          if (e instanceof MissingCaptchaSecrect) {
+            return "/auth/signin?error=MissingCaptchaSecrect";
+          }
+
+          return "/auth/signin?error=ErrorWhenCheckingCaptcha";
         }
-
-        return "/auth/signin?error=InvalidCaptcha";
       },
     },
   });
