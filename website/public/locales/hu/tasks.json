@@ -68,7 +68,7 @@
   "classify_initial_prompt": {
     "label": "Nyitóüzenet osztályozása",
     "desc": "Adj meg címkéket egy nyitóüzenethez.",
-    "overview": "Olvasd el a következő nyitóüzenetet, és válaszold meg a rá vonatkozó kérdést.",
+    "overview": "Olvasd el a következő nyitóüzenetet, és válaszold meg a rá vonatkozó kérdést."
   },
   "classify_prompter_reply": {
     "label": "Válaszüzenet osztályozása",
