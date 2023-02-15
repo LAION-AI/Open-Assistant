@@ -7,8 +7,6 @@ import torch
 from torch.nn import functional as F
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
 
-from .formatting import QA_SPECIAL_TOKENS
-
 
 @dataclass
 class DialogueDataCollator:
