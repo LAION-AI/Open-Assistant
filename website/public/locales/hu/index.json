@@ -4,7 +4,7 @@
   "description": "Társalgási MI mindenkinek. Egy nyílt forráskódú projekt, melynek célja egy csevegésre alkalmas GPT nyelvi modell létrehozása, melyet a LAION és a világszintű közreműködői közösség üzemeltet.",
   "faq_items": {
     "q0": "Hol tart a projekt?",
-    "a0": "A fejlesztés korai fázisában vagyunk, már létező kutatásokból kiindulva azon dolgozunk, hogy nagy nyelvi modelleket alkalmazzuk az RLHF módszert.",
+    "a0": "A fejlesztés korai fázisában vagyunk, már létező kutatásokból kiindulva azon dolgozunk, hogy nagy nyelvi modellekre alkalmazzuk az RLHF módszert.",
     "q1": "Kik állnak az Open Assistant mögött?",
     "a1": "Az Open Assistant projekt szervezője a LAION, és azok az emberek, akik szeretnék elérhetővé tenni ezt a technológiát mindenki számára.",
     "q2": "Milyen licencet használt az Open Assistant?",
