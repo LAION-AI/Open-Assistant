@@ -40,6 +40,15 @@ ChatGPT.</p><p><a href="https://open-assistant.io" target="_blank" rel="noopener
             <name>Yannic Kilcher</name>
             <uri>https://www.ykilcher.com/</uri>
         </author>
+        <author>
+            <name>Andreas Köpf</name>
+        </author>
+        <author>
+            <name>Huu Nguyen (ontocord)</name>
+        </author>
+        <author>
+            <name>Christoph Schuhmann</name>
+        </author>
         <category label="open-assistant" term="open-assistant"/>
     </entry>
 </feed>
