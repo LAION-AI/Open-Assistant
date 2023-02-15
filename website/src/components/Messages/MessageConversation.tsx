@@ -13,7 +13,7 @@ export function MessageConversation({ messages, enableLink, highlightLastMessage
   const { t } = useTranslation("message");
   return (
     <Stack spacing="4">
-      {!messages || messages.length === 0 ? (
+      {messages.length === 0 ? (
         <Text>{t("no_messages")}</Text>
       ) : (
         messages.map((message, idx) => (
