@@ -4,7 +4,7 @@ import { forwardRef } from "react";
 
 export const CloudFlareCaptcha = forwardRef<TurnstileInstance, Omit<TurnstileProps, "siteKey">>((props, ref) => {
   const { colorMode } = useColorMode();
-  const siteKey = process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA;
+  const siteKey = process.env.NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY;
 
   if (!siteKey) {
     return <Alert>Captcha site key is missisng</Alert>;
