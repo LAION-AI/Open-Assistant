@@ -150,8 +150,8 @@ export default Signin;
 
 const emailSigninCaptcha = boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA);
 
-if (typeof window !== "undefined" || process.env.NODE_ENV === "development") {
-  // only run in browser or dev mode
+if (typeof window !== "undefined") {
+  // only run in browser
   console.info(`Email captcha signin is ${emailSigninCaptcha ? "enabled" : "disabled"}`);
 }
 
