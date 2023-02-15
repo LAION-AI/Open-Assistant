@@ -16,6 +16,7 @@ const Chat = () => {
   const { trigger: createChat, data: createChatResponse } = useSWRMutation<{ id: string }>("/api/chat", post);
 
   const chatID = createChatResponse?.id;
+  const isLoading = Boolean(activeMessage);
 
   const send = useCallback(async () => {
     const message = inputRef.current.value.trim();
@@ -64,14 +65,10 @@ const Chat = () => {
                   {message}
                 </Entry>
               ))}
-              {activeMessage ? (
-                <Entry isAssistant>{activeMessage}</Entry>
-              ) : (
-                <>
-                  <Textarea ref={inputRef} />
-                  <Button onClick={send}>{t("submit")}</Button>
-                </>
-              )}
+              {activeMessage ? <Entry isAssistant>{activeMessage}</Entry> : <Textarea ref={inputRef} autoFocus />}
+              <Button onClick={send} disabled={isLoading}>
+                {t("submit")}
+              </Button>
             </>
           )}
         </Flex>
