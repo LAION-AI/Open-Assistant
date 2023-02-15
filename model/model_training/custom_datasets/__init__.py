@@ -14,19 +14,7 @@ from custom_datasets.translation import WMT2019, DiveMT, TEDTalk
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
 
-QA_DATASETS = [
-    "squad_v2",
-    "adversarial_qa",
-    "trivia_qa_context",
-    "trivia_qa_nocontext",
-    "gsm8k",
-    "wikihow",
-    "essay_instruction",
-    "math_qa",
-    "reddit_eli5",
-    "reddit_askh",
-    "reddit_asks",
-]
+QA_DATASETS = list(QADataset.DATASET_FORMAT_MAPPING.keys())
 SUMMARIZATION_DATASETS = [
     "xsum",
     "cnn_dailymail",
@@ -80,8 +68,6 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         dataset = DiveMT()
     elif dataset_name == "webgpt":
         dataset = WebGPT()
-    elif dataset_name == "prompt_dialogue":
-        dataset = PromptGeneratedDataset(data_path)
     elif dataset_name == "prosocial_dialogue":
         train = ProsocialDialogue(cache_dir=data_path, split="train")
         eval = ProsocialDialogue(cache_dir=data_path, split="validation")
