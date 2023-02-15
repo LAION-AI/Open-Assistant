@@ -70,7 +70,7 @@ if __name__ == "__main__":
     while True:
         print(">", end=" ")
         prompt = input()
-        if prompt == '!reset':
+        if prompt == "!reset":
             histories = []
         else:
             input_text = talk(prompt, histories, prefix)

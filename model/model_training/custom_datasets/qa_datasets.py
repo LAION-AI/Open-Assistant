@@ -71,7 +71,12 @@ def index_eli5(example):
 
 
 def index_gsm_hard(example):
-    return example['input']+'\nWrite a small snippet of python code to answer this', "Here's the code solution to the question\n```python\n{}\n```\n The answer should be {}".format(example['code'].strip(), example['target'])
+    return example[
+        "input"
+    ] + "\nWrite a small snippet of python code to answer this", "Here's the code solution to the question\n```python\n{}\n```\n The answer should be {}".format(
+        example["code"].strip(), example["target"]
+    )
+
 
 class QADataset(Dataset):
     """
