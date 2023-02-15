@@ -25,10 +25,12 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { ReactNode, useEffect, useState } from "react";
+import { lazy, ReactNode, Suspense, useEffect, useState } from "react";
 
 import { CollapsableText } from "../CollapsableText";
 import { SortableItem } from "./SortableItem";
+
+const RenderedMarkdown = lazy(() => import("../Messages/RenderedMarkdown"));
 
 export interface SortableProps {
   items: ReactNode[];
@@ -110,7 +112,11 @@ export const Sortable = (props: SortableProps) => {
           <ModalContent pb={5} alignItems="center">
             <ModalHeader>Full Text</ModalHeader>
             <ModalCloseButton />
-            <ModalBody whiteSpace="pre-line">{modalText}</ModalBody>
+            <ModalBody>
+              <Suspense fallback={modalText}>
+                <RenderedMarkdown markdown={modalText}></RenderedMarkdown>
+              </Suspense>
+            </ModalBody>
           </ModalContent>
         </ModalOverlay>
       </Modal>
