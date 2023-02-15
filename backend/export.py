@@ -1,11 +1,11 @@
 import argparse
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 from uuid import UUID
 
 from loguru import logger
 from oasst_backend.database import engine
-from oasst_backend.models import Message, MessageTreeState
+from oasst_backend.models import Message, MessageTreeState, TextLabels
 from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_backend.utils import tree_export
 from sqlmodel import Session, not_
@@ -60,6 +60,19 @@ def fetch_tree_messages(
     return qry.all()
 
 
+def fetch_message_labels(db: Session, messages: List[Message]) -> Dict[UUID, List[TextLabels]]:
+    message_ids = [message.id for message in messages]
+
+    qry = db.query(TextLabels).filter(TextLabels.message_id.in_(message_ids))
+
+    all_labels: List[TextLabels] = qry.all()
+
+    return {
+        message.id: [message_labels for message_labels in all_labels if message_labels.message_id == message.id]
+        for message in messages
+    }
+
+
 def export_trees(
     db: Session,
     export_file: Optional[Path] = None,
@@ -70,6 +83,7 @@ def export_trees(
     state_filter: Optional[TreeState] = None,
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
+    export_labels: bool = False,
 ) -> None:
     trees_to_export: List[tree_export.ExportMessageTree] = []
 
@@ -82,7 +96,10 @@ def export_trees(
             lang=lang,
             review_result=review_result,
         )
-        tree_export.write_messages_to_file(export_file, messages, use_compression)
+
+        labels = fetch_message_labels(db, messages) if export_labels else None
+
+        tree_export.write_messages_to_file(export_file, messages, use_compression, labels=labels)
     else:
         message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang)
 
@@ -98,13 +115,22 @@ def export_trees(
             for (tree_id, _) in message_tree_ids
         ]
 
-        # when exporting only-deleted we don't have a porper tree structure, export as list
+        # when exporting only deleted we don't have a proper tree structure, export as list
         if deleted is True:
             messages = [m for t in message_trees for m in t]
-            tree_export.write_messages_to_file(export_file, messages, use_compression)
+
+            labels = fetch_message_labels(db, messages) if export_labels else None
+
+            tree_export.write_messages_to_file(export_file, messages, use_compression, labels=labels)
         else:
+            if export_labels:
+                all_messages = [m for t in message_trees for m in t]
+                labels = fetch_message_labels(db, all_messages)
+            else:
+                labels = None
+
             for (message_tree_id, message_tree_state), message_tree in zip(message_tree_ids, message_trees):
-                t = tree_export.build_export_tree(message_tree_id, message_tree_state, message_tree)
+                t = tree_export.build_export_tree(message_tree_id, message_tree_state, message_tree, labels=labels)
                 if prompts_only:
                     t.prompt.replies = None
                 trees_to_export.append(t)
@@ -146,7 +172,7 @@ def parse_args():
     parser.add_argument(
         "--include-spam",
         action="store_true",
-        help="Export only messages with negative review result.",
+        help="Export including messages with negative review result.",
     )
     parser.add_argument(
         "--spam-only",
@@ -172,6 +198,11 @@ def parse_args():
         "--prompts-only",
         action="store_true",
         help="Export a list of initial prompt messages",
+    )
+    parser.add_argument(
+        "--export-labels",
+        action="store_true",
+        help="Export labels for messages to a separate file",
     )
 
     args = parser.parse_args()
@@ -204,13 +235,14 @@ def main():
         export_trees(
             db,
             Path(args.export_file) if args.export_file is not None else None,
-            args.use_compression,
+            use_compression=args.use_compression,
             deleted=deleted,
             user_id=UUID(args.user) if args.user is not None else None,
             prompts_only=args.prompts_only,
             state_filter=state_filter,
             lang=args.lang,
             review_result=review_result,
+            export_labels=args.export_labels,
         )
 
 

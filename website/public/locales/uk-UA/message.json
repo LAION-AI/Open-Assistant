@@ -1,7 +1,10 @@
 {
   "copy_message_id": "Скопіювати ID повідомлення",
   "label_action": "Маркувати",
+  "copy_message_link": "Скопіювати посилання на повідомлення",
   "label_title": "Маркування",
+  "message_author": "Автор",
+  "message_author_explain": "Ви є автором цього повідомлення",
   "message": "Повідомлення",
   "message_deleted": "Повідомлення видалено",
   "open_new_tab_action": "Відкрити в новій вкладці",

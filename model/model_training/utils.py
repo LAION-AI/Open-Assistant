@@ -214,7 +214,7 @@ def get_metrics(conf, tokenizer):
 
 
 def get_model(conf, tokenizer):
-    model = get_specific_model(conf.model_name, conf.cache_dir, conf.quantization, conf.seq2seqmodel)
+    model = get_specific_model(conf.model_name, cache_dir=conf.cache_dir, seq2seqmodel=conf.seq2seqmodel)
 
     if len(tokenizer) != model.get_input_embeddings().num_embeddings:
         assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
