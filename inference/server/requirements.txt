@@ -1,5 +1,5 @@
 alembic
-fastapi[all]
+fastapi[all]==0.88.0
 loguru
 prometheus-fastapi-instrumentator
 psycopg2-binary

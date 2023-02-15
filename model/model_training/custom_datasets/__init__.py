@@ -60,13 +60,15 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
     dataset_name = dataset_name.lower()
 
     if dataset_name in QA_DATASETS:
-        train = QADataset(dataset_name, data_path, "train")
-        if not train.no_val:
+        dataset = QADataset(dataset_name, data_path, "train")
+        if not dataset.no_val:
             eval = QADataset(dataset_name, data_path, "validation")
+            train = dataset
     elif dataset_name in SUMMARIZATION_DATASETS:
-        train = SummarizationDataset(dataset_name, data_path, "train")
+        dataset = SummarizationDataset(dataset_name, data_path, "train")
         if dataset_name != "debate_sum":
             eval = SummarizationDataset(dataset_name, data_path, "validation")
+            train = dataset
     elif "ted_trans" in dataset_name:
         language_pair = dataset_name.split("_")[-1]
         dataset = TEDTalk(pair=language_pair, split="train")

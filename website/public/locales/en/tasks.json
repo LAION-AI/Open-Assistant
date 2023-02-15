@@ -5,6 +5,7 @@
     "unchanged_title": "No changes",
     "unchanged_message": "Are you sure you would like to continue?"
   },
+  "no_more_tasks": "Looks like no tasks were found.",
   "random": {
     "label": "I'm feeling lucky",
     "desc": "Help us improve Open Assistant by starting a random task."

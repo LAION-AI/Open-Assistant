@@ -1,5 +1,5 @@
-import { Box } from "@chakra-ui/react";
-import { Fragment } from "react";
+import { Box, BoxProps } from "@chakra-ui/react";
+import { Fragment, memo } from "react";
 import { MessageWithChildren } from "src/types/Conversation";
 
 import { MessageTableEntry } from "./MessageTableEntry";
@@ -9,9 +9,10 @@ const messagePaddingTop = 16;
 const avatarSize = 32;
 const avartarMarginTop = 6;
 const maxDepth = 100; // this only used for debug UI in mobile
-const left = avatarSize / 2 - 1;
+const toPx = (val: number) => `${val}px`;
 
-export const MessageTree = ({ tree, messageId }: { tree: MessageWithChildren; messageId?: string }) => {
+// eslint-disable-next-line react/display-name
+export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildren; messageId?: string }) => {
   const renderChildren = (children: MessageWithChildren[], depth = 1) => {
     const hasSibling = children.length > 1;
     return children.map((child, idx) => {
@@ -20,23 +21,15 @@ export const MessageTree = ({ tree, messageId }: { tree: MessageWithChildren; me
       return (
         <Fragment key={child.id}>
           <Box position="relative" className="box2">
-            <ConnectionCurve></ConnectionCurve>
-            <Box paddingLeft={`32px`} position="relative" className="box3">
-              {hasSibling && !isLastChild && (
-                <Box
-                  height={`calc(100% - 26px)`}
-                  position="absolute"
-                  width="2px"
-                  bg="gray.300"
-                  left={`${left}px`}
-                  top="26px"
-                ></Box>
-              )}
+            <ConnectionCurveBottom left={{ base: toPx(-8), md: toPx(avatarSize / 2 - 1) }}></ConnectionCurveBottom>
+            <Box paddingLeft={{ md: "32px", base: "16px" }} position="relative" className="box3">
+              {hasSibling && !isLastChild && <Connection isSibling></Connection>}
               <Box pt={`${messagePaddingTop}px`} position="relative" className="box4">
                 {hasChildren && depth < maxDepth && <Connection className="connection1"></Connection>}
                 <MessageTableEntry
+                  showAuthorBadge
                   avartarProps={{
-                    mt: `${avartarMarginTop}px`,
+                    mt: { base: 0, md: `${avartarMarginTop}px` },
                   }}
                   avartarPosition="top"
                   highlight={child.id === messageId}
@@ -53,46 +46,73 @@ export const MessageTree = ({ tree, messageId }: { tree: MessageWithChildren; me
 
   return (
     <>
-      <Box position="relative">
-        <Box height="full" position="absolute" width="2px" bg={connectionColor} left={`${left}px`}></Box>
+      <Box position="relative" className="root">
+        <Box
+          className="root-connection"
+          top={{ base: toPx(0), md: 0 }}
+          height={{ base: `calc(100% - ${toPx(8 + avatarSize / 2)})`, md: `100%` }}
+          position="absolute"
+          width="2px"
+          bg={connectionColor}
+          left={toPx(avatarSize / 2 - 1)}
+        ></Box>
+        <Box
+          display={{ base: "block", md: "none" }}
+          position="absolute"
+          height={`calc(100% - ${toPx(6 + avatarSize / 2)})`}
+          width={`10px`}
+          top={toPx(6 + avatarSize / 2)}
+          borderTopWidth="2px"
+          borderTopLeftRadius="10px"
+          left="-8px"
+          borderTopStyle="solid"
+          borderLeftWidth="2px"
+          borderColor={connectionColor}
+          className="root-curve"
+        ></Box>
         <MessageTableEntry
+          showAuthorBadge
           message={tree}
           avartarPosition="top"
           highlight={tree.id === messageId}
-          avartarProps={{
-            size: "sm",
-          }}
         ></MessageTableEntry>
       </Box>
       {renderChildren(tree.children)}
     </>
   );
-};
+});
 
 const Connection = ({ className, isSibling = false }: { isSibling?: boolean; className?: string }) => {
-  const top = isSibling ? `26px` : `32px`;
+  const baseTop = toPx(messagePaddingTop + avatarSize / 2 + 6 - (isSibling ? 10 : 0));
+  const mdTop = toPx(messagePaddingTop + avatarSize / 2 - (isSibling ? 6 : 0));
   return (
     <Box
-      height={`calc(100% - ${top})`}
+      height={{
+        base: `calc(100% - ${baseTop})`,
+        md: `calc(100% - ${mdTop})`,
+      }}
       position="absolute"
       width="2px"
-      bg="gray.300"
-      left={`${left}px`}
-      top={top}
-      className={className}
+      bg={connectionColor}
+      left={{ base: toPx(-8), md: toPx(avatarSize / 2 - 1) }}
+      top={{
+        base: baseTop,
+        md: mdTop,
+      }}
+      className={`${className}-${isSibling ? "sibling" : ""}`}
     ></Box>
   );
 };
 
 const height = avatarSize / 2 + avartarMarginTop + messagePaddingTop;
 const width = avatarSize / 2 + 10;
-const ConnectionCurve = () => {
+const ConnectionCurveBottom = ({ left }: { left?: BoxProps["left"] }) => {
   return (
     <Box
       position="absolute"
-      height={`${height}px`}
+      height={`calc(${toPx(height)})`}
       width={`${width}px`}
-      left={`${left}px `}
+      left={left}
       borderBottomWidth="2px"
       borderBottomLeftRadius="10px"
       borderLeftStyle="solid"
