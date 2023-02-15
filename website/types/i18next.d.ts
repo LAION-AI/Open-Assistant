@@ -4,6 +4,7 @@ import type index from "public/locales/en/index.json";
 import type labelling from "public/locales/en/labelling.json";
 import type leaderboard from "public/locales/en/leaderboard.json";
 import type message from "public/locales/en/message.json";
+import type stats from "public/locales/en/stats.json";
 import type tasks from "public/locales/en/tasks.json";
 import type tos from "public/locales/en/tos.json";
 
@@ -13,10 +14,11 @@ declare module "i18next" {
       common: typeof common;
       dashboard: typeof dashboard;
       index: typeof index;
-      leaderboard: typeof leaderboard;
-      tasks: typeof tasks;
-      message: typeof message;
       labelling: typeof labelling;
+      leaderboard: typeof leaderboard;
+      message: typeof message;
+      stats: typeof stats;
+      tasks: typeof tasks;
       tos: typeof tos;
     };
   }
