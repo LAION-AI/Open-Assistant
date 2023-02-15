@@ -1,12 +1,7 @@
 """
     High level functions for model training
 """
-from custom_datasets.prompt_dialogue import (
-    InstructionTuning,
-    OAPrivate,
-    PrivateInstructionTuning,
-    PromptGeneratedDataset,
-)
+from custom_datasets.prompt_dialogue import InstructionTuning, OAPrivate, PrivateInstructionTuning
 from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, TranslatedQA, WebGPT
 from custom_datasets.summarization import SummarizationDataset
 from custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
