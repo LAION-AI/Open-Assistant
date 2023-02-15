@@ -150,6 +150,11 @@ export default Signin;
 
 const emailSigninCaptcha = boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA);
 
+if (typeof window !== "undefined") {
+  // only run in browser
+  console.info(`Email captcha signin is ${emailSigninCaptcha ? "enabled" : "disabled"}`);
+}
+
 const EmailSignInForm = ({ providerId }: { providerId: string }) => {
   const { register, handleSubmit } = useForm<{ email: string }>();
   const captcha = useRef<TurnstileInstance>(null);

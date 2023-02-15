@@ -16,12 +16,19 @@ type CheckCaptchaResponse = {
   cdata?: string;
 };
 
+export class MissingCaptchaSecrect extends Error {}
+
 // https://developers.cloudflare.com/turnstile/get-started/server-side-validation/
 export const checkCaptcha = async (
   token: string,
   ipAdress: string,
   options?: { cdata?: string; action?: string }
 ): Promise<CheckCaptchaResponse> => {
+  const secret = process.env.CLOUDFLARE_CAPTCHA_SECRET_KEY;
+
+  if (!secret) {
+    throw new MissingCaptchaSecrect();
+  }
   const data = new FormData();
 
   data.append("secret", process.env.CLOUDFLARE_CAPTCHA_SECRET_KEY);
