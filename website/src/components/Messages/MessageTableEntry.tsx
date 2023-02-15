@@ -267,7 +267,7 @@ const MessageActions = ({
   };
 
   const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
-
+  const { locale } = useRouter();
   return (
     <Menu>
       <MenuButton>
@@ -294,7 +294,13 @@ const MessageActions = ({
         </MenuItem>
 
         <MenuItem
-          onClick={() => handleCopy(`${window.location.protocol}//${window.location.host}/messages/${id}`)}
+          onClick={() =>
+            handleCopy(
+              `${window.location.protocol}//${window.location.host}${
+                locale === "en" ? "" : `/${locale}`
+              }/messages/${id}`
+            )
+          }
           icon={<Link />}
         >
           {t("copy_message_link")}
