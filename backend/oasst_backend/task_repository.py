@@ -243,7 +243,7 @@ class TaskRepository:
     def delete_expired(self) -> int:
         return delete_expired_tasks(self.db)
 
-    def fetch_pending_tasks_by_user(
+    def fetch_pending_tasks_of_user(
         self,
         user_id: UUID,
         max_age: timedelta = timedelta(minutes=5),

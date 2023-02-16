@@ -380,7 +380,7 @@ class TreeManager:
 
         # check user's pending tasks
         recent_tasks_span = timedelta(seconds=self.cfg.recent_tasks_span_sec)
-        users_pending_tasks = self.pr.task_repository.fetch_pending_tasks_by_user(
+        users_pending_tasks = self.pr.task_repository.fetch_pending_tasks_of_user(
             self.pr.user_id,
             max_age=recent_tasks_span,
             limit=self.cfg.max_pending_tasks_per_user + 1,
