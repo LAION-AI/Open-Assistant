@@ -378,6 +378,28 @@ class TreeManager:
         self._auto_moderation(lang=lang)
         num_missing_prompts = self._prompt_lottery(lang=lang, max_activate=2)
 
+        # check user's pending tasks
+        recent_tasks_span = timedelta(seconds=self.cfg.recent_tasks_span_sec)
+        users_pending_tasks = self.pr.task_repository.fetch_pending_tasks_of_user(
+            self.pr.user_id,
+            max_age=recent_tasks_span,
+            limit=self.cfg.max_pending_tasks_per_user + 1,
+        )
+        num_pending_tasks = len(users_pending_tasks)
+        if num_pending_tasks >= self.cfg.max_pending_tasks_per_user:
+            logger.warning(
+                f"Rejecting task request. User {self.pr.user_id} has {num_pending_tasks} pending tasks. "
+                f"Oldest age: {utcnow()-users_pending_tasks[0].created_date}."
+            )
+            raise OasstError(
+                "User has too many pending tasks.",
+                OasstErrorCode.TASK_TOO_MANY_PENDING,
+            )
+        elif num_pending_tasks > 0:
+            logger.debug(
+                f"User {self.pr.user_id} has {num_pending_tasks} pending tasks. Oldest age: {utcnow()-users_pending_tasks[0].created_date}"
+            )
+
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
         extendible_parents, active_tree_sizes = self.query_extendible_parents(lang=lang)
