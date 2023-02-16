@@ -1,82 +1,85 @@
 {
+  "any_feedback_on_this_task": "Van bármi visszajelzésed erről a feladatról?",
   "available_task_count": "{{count}} feladat érhető el",
-  "classify_assistant_reply": {
-    "label": "Osztályozd az Asszisztens Válaszait",
-    "desc": "Találj ki címkéket a megadott Promptra.",
-    "overview": "Olvasd végig a beszélgetést és válaszolj a legutolsó üzenetre vonatkozó kérdésre."
-  },
-  "classify_initial_prompt": {
-    "label": "Osztályozd a Kezdeti Promptokat",
-    "desc": "Találj ki címkéket a megadott Promptra.",
-    "overview": "Olvasd el a Promptot és válaszold meg a vele kapcsolatos kérdést."
-  },
-  "classify_prompter_reply": {
-    "label": "Osztályozd a Promptra adott Válaszokat",
-    "desc": "Találj ki címkéket a megadott Promptra.",
-    "overview": "Olvasd végig a beszélgetést és válaszolj a legutolsó üzenetre vonatkozó kérdésre."
-  },
-  "create_initial_prompt": {
-    "label": "Hozz Létre Kezdeti Promptokat",
-    "desc": "Írj egy nyitó üzenetet, hogy az Asszisztens minél több fajta kérdésből tanulhasson.",
-    "overview": "Kezdj el egy beszélgetést az Asszisztenssel.",
-    "instruction": "Találj ki Kezdeti Promptokat",
-    "response_placeholder": "Ide írd a promptot..."
-  },
   "default": {
-    "unchanged_title": "Nem történt változtatás",
-    "unchanged_message": "Biztosan tovább szeretnél lépni?"
-  },
-  "label_assistant_reply": {
-    "label": "Címkézd fel az Asszisztens Válaszait",
-    "desc": "Találj ki címkéket a megadott Promptra.",
-    "overview": "Az alábbi beszélgetés alapján találj ki Címkéket a záró Promptra."
-  },
-  "label_initial_prompt": {
-    "label": "Címkézd fel a Kezdeti Promptokat",
-    "desc": "Találj ki címkéket a megadott Promptra.",
-    "overview": "Találj ki Címkéket az alábbi Prompthoz."
-  },
-  "label_prompter_reply": {
-    "label": "Címkézd fel a Promptokra adott Válaszokat",
-    "desc": "Találj ki címkéket a megadott Promptra.",
-    "overview": "Az alábbi beszélgetés alapján találj ki Címkéket a záró Promptra."
+    "unchanged_title": "Nincs változás",
+    "unchanged_message": "Biztos, hogy folytatod?"
   },
   "random": {
     "label": "Jó napom van",
-    "desc": "Segítsd az Open Assistant fejlesztését egy véletlenül kiválaszott feladattal."
+    "desc": "Segíts az Open Assistant fejlesztésében egy véletlenszerű feladattal."
   },
-  "rank_assistant_replies": {
-    "label": "Rangsorold az Asszisztens Válaszait",
-    "desc": "Értékeld az Asszisztens Válaszait pontosságuk és megfogalmazásuk alapján.",
-    "overview": "Rangsorold az alábbi Asszisztens Válaszokat: a legjobbat tedd legfelülre, a legrosszabbat legalulra.",
-    "unchanged_title": "Sorrend nem változott",
-    "unchanged_message": "Nem változtattál a promptok sorrendjén. Így is tovább akarsz lépni?"
-  },
-  "rank_initial_prompts": {
-    "label": "Rangsorold a Kezdeti Promptokat",
-    "desc": "Értékeld a Kezdeti Promptokat válaszait pontosságuk és megfogalmazásuk alapján.",
-    "overview": "Rangsorold az alábbi Kezdeti Promptokat: a legjobbat tedd legfelülre, a legrosszabbat legalulra.",
-    "unchanged_title": "Sorrend nem változott",
-    "unchanged_message": "Nem változtattál a promptok sorrendjén. Így is tovább akarsz lépni?"
-  },
-  "rank_user_replies": {
-    "label": "Rangsorold a Felhasználó Válaszait",
-    "desc": "Értékeld a Felhasználói Válaszok minőségét.",
-    "overview": "Rangsorold az alábbi Felhasználói Válaszokat: a legjobbat tedd legfelülre, a legrosszabbat legalulra.",
-    "unchanged_title": "Sorrend nem változott",
-    "unchanged_message": "Nem változtattál a promptok sorrendjén. Így is tovább akarsz lépni?"
-  },
-  "reply_as_assistant": {
-    "label": "Válaszolj az Asszisztens Helyett",
-    "desc": "Mjutasd meg az Asszisztensnek, hogy milyen válaszokat küldjön a felhasználói kérdésekre.",
-    "overview": "Írj egy ideillő választ az eddigi beszélgetésre, mintha te lennél az Asszisztens",
-    "response_placeholder": "Ide írd a választ..."
+  "create_initial_prompt": {
+    "label": "Nyitóüzenetek létrehozása",
+    "desc": "Írj nyitóüzenetet, hogy segítsd az Open Assistantot abban, hogy az változatos üzenetekre válaszoljon.",
+    "overview": "Az assisztensnek küldött nyitóüzenet létrehozása",
+    "instruction": "Add meg a nyitóüzeneteket",
+    "response_placeholder": "Ide írd az üzenetedet..."
   },
   "reply_as_user": {
-    "label": "Válaszolj a Felhasználó Helyett",
-    "desc": "Csinálj úgy, mintha chatelnél az Asszisztenssel, hogy fejlődhessen.",
-    "overview": "Írj egy ideillő üzenetet az eddigi beszélgetésre, mint Felhasználó",
-    "instruction": "Találj ki Felhasználói Válaszokat",
-    "response_placeholder": "Ide írd a választ..."
-  }
+    "label": "Válasz felhasználóként",
+    "desc": "Csevegj az Open Assistanttal, hogy segítsd a válaszai fejlesztésében.",
+    "overview": "Adj megfelelő választ a következő beszélgetésben",
+    "instruction": "Add meg a felhasználó válaszát",
+    "response_placeholder": "Ide írd a válaszodat..."
+  },
+  "reply_as_assistant": {
+    "label": "Válasz asszistensként",
+    "desc": "Segíts az Open Assistantnak a más felhasználóknak küldött válaszainak fejlesztésében.",
+    "overview": "Adj megfelelő választ a következő beszélgetésben",
+    "response_placeholder": "Ide írd a válaszodat..."
+  },
+  "rank_user_replies": {
+    "label": "Felhasználói válaszok rangsorolása",
+    "desc": "Segíts az Open Assistantnak a más felhasználóknak küldött válaszainak fejlesztésében.",
+    "overview": "Rendezd a következő felhasználói válaszokat a legjobbtól a legrosszabbig úgy, hogy az első a legjobb, az utolsó pedig a legrosszabb.",
+    "unchanged_title": "Változatlan sorrend",
+    "unchanged_message": "Nem módosítottad a válaszok sorrendjét. Biztos, hogy folytatod?"
+  },
+  "rank_assistant_replies": {
+    "label": "Asszistensi válaszok rangsorolása",
+    "desc": "Osztályozd az Open Assistant áltad adott válaszokat a pontosságuk és olvashatóságuk alapján.",
+    "overview": "Rendezd a következő asszisztensi válaszokat a legjobbtól a legrosszabbig úgy, hogy az első a legjobb, az utolsó pedig a legrosszabb.",
+    "unchanged_title": "Változatlan sorrend",
+    "unchanged_message": "Nem módosítottad a válaszok sorrendjét. Biztos, hogy folytatod?"
+  },
+  "rank_initial_prompts": {
+    "label": "Nyitóüzenetek rangsorolása",
+    "desc": "Osztályozd az Open Assistant áltad adott üzeneteket a pontosságuk és olvashatóságuk alapján.",
+    "overview": "Rendezd a következő nyitóüzeneteket a legjobbtól a legrosszabbig úgy, hogy az első a legjobb, az utolsó pedig a legrosszabb.",
+    "unchanged_title": "Változatlan sorrend",
+    "unchanged_message": "Nem módosítottad az üzenet sorrendjét. Biztos, hogy folytatod?"
+  },
+  "label_initial_prompt": {
+    "label": "Nyitóüzenet címkézése",
+    "desc": "Adj meg címkéket egy üzenethez.",
+    "overview": "Adj meg címkéket a következő üzenethez"
+  },
+  "label_prompter_reply": {
+    "label": "Kérdezői válasz címkézése",
+    "desc": "Adj meg címkéket egy üzenethez.",
+    "overview": "Adj meg címkéket a következő beszélgetés utolsó üzenetéhez."
+  },
+  "label_assistant_reply": {
+    "label": "Asszistensi válasz címkézése",
+    "desc": "Adj meg címkéket egy üzenethez.",
+    "overview": "Adj meg címkéket a következő beszélgetés utolsó üzenetéhez."
+  },
+  "classify_initial_prompt": {
+    "label": "Nyitóüzenet osztályozása",
+    "desc": "Adj meg címkéket egy nyitóüzenethez.",
+    "overview": "Olvasd el a következő nyitóüzenetet, és válaszold meg a rá vonatkozó kérdést."
+  },
+  "classify_prompter_reply": {
+    "label": "Válaszüzenet osztályozása",
+    "desc": "Adj meg címkéket egy üzenethez.",
+    "overview": "Olvasd el a következő beszélgetést, és válaszold meg az utolsó válaszra vonatkozó kérdést."
+  },
+  "classify_assistant_reply": {
+    "label": "Asszistensi válasz osztályozása.",
+    "desc": "Adj meg címkéket egy üzenethez.",
+    "overview": "Olvasd el a következő beszélgetést, és válaszold meg az utolsó válaszra vonatkozó kérdést."
+  },
+  "submitted_as": "Ez a következőként lesz beküldve: {{submit_lang}}",
+  "writing_wrong_langauge_a_b": "Úgy néz ki, hogy {{detected_lang}} nyelven írsz, de a következőként lesz beküldve: {{submit_lang}}."
 }

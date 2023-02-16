@@ -64,7 +64,7 @@ jobs:
       LOGURU_LEVEL: ${{ vars.LOGURU_LEVEL }}
       MAINTENANCE_MODE: ${{ vars.MAINTENANCE_MODE }}
       BACKEND_URL: ${{ vars.BACKEND_URL }}
-      PUBLIC_BACKEND_URL: ${{ vars.PUBLIC_BACKEND_URL }}
+      WEB_NEXT_PUBLIC_BACKEND_URL: ${{ vars.WEB_NEXT_PUBLIC_BACKEND_URL }}
       BACKEND_CORS_ORIGINS: ${{ vars.BACKEND_CORS_ORIGINS }}
     steps:
       - name: Checkout

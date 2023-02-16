@@ -3,7 +3,8 @@
   "available_task_count": "{{count}} tasks available",
   "default": {
     "unchanged_title": "No changes",
-    "unchanged_message": "Are you sure you would like to continue?"
+    "unchanged_message": "Are you sure you would like to continue?",
+    "continue_anyway": "Continue anyway"
   },
   "no_more_tasks": "Looks like no tasks were found.",
   "random": {
@@ -35,21 +36,24 @@
     "desc": "Help Open Assistant improve its responses to conversations with other users.",
     "overview": "Given the following User replies, sort them from best to worst, best being first, worst being last.",
     "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?"
+    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?",
+    "continue_anyway": "Continue anyway"
   },
   "rank_assistant_replies": {
     "label": "Rank Assistant Replies",
     "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
     "overview": "Given the following Assistant replies, sort them from best to worst, best being first, worst being last.",
     "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?"
+    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?",
+    "continue_anyway": "Continue anyway"
   },
   "rank_initial_prompts": {
     "label": "Rank Initial Prompts",
     "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
     "overview": "Given the following initial prompts, sort them from best to worst, best being first, worst being last.",
     "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?"
+    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?",
+    "continue_anyway": "Continue anyway"
   },
   "label_initial_prompt": {
     "label": "Label Initial Prompt",

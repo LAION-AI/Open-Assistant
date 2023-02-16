@@ -1,9 +1,21 @@
 yk:
   name: Yannic Kilcher
-  title: Project Lead
+  title: Project co-founder
   url: https://www.ykilcher.com/
   image_url: https://www.ykilcher.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fheadshot.ff3a7ee3.webp&w=3840&q=75
 AbdBarho:
   name: Abdullah Barhoum
   title: Semi-professional Döner Enjoyer
   image_url: https://avatars.githubusercontent.com/u/24505302?v=4
+andreaskoepf:
+  name: Andreas Köpf
+  title: Project co-founder & Team Lead
+  image_url: https://avatars.githubusercontent.com/u/9976399?v=4
+ontocord:
+  name: Huu Nguyen (ontocord)
+  title: Project co-founder
+  image_url: https://avatars.githubusercontent.com/u/8900094?v=4
+christophschuhmann:
+  name: Christoph Schuhmann
+  title: Project co-founder
+  image_url: https://avatars.githubusercontent.com/u/22318853?v=4

@@ -114,6 +114,8 @@ services:
       context: .
     image: oasst-web
     environment:
+      - CLOUDFLARE_CAPTCHA_SECRET_KEY=1x0000000000000000000000000000000AA
+      - CLOUDFARE_CAPTCHA_SITE_KEY=1x00000000000000000000AA
       - DATABASE_URL=postgres://postgres:postgres@webdb/oasst_web
       - FASTAPI_URL=http://backend:8080
       - FASTAPI_KEY=1234
@@ -121,12 +123,10 @@ services:
       - EMAIL_SERVER_HOST=maildev
       - EMAIL_SERVER_PORT=1025
       - EMAIL_FROM=info@example.com
+      - ENABLE_EMAIL_SIGNIN=true
+      - ENABLE_EMAIL_SIGNIN_CAPTCHA=false
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
-      - NEXT_PUBLIC_CLOUDFARE_CAPTCHA_SITE_KEY=1x00000000000000000000AA
-      - CLOUDFLARE_CAPTCHA_SECRET_KEY=1x0000000000000000000000000000000AA
-      - NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA=true
-      - NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN=true
     depends_on:
       webdb:
         condition: service_healthy
@@ -199,3 +199,71 @@ services:
     deploy:
       replicas: 1
     profiles: ["inference"]
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/docker/prometheus:/etc/prometheus
+      - prom_data:/prometheus
+    profiles: ["observability"]
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 2000:2000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+      - GF_SERVER_HTTP_PORT=2000
+    volumes:
+      - ${PWD}/docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ${PWD}/docker/grafana/dashboards/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ${PWD}/docker/grafana/dashboards:/var/lib/grafana/dashboards
+    profiles: ["observability"]
+
+  netdata:
+    image: netdata/netdata
+    container_name: netdata
+    pid: host
+    hostname: oasst-netdata
+    ports:
+      - 19999:19999
+    restart: unless-stopped
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${PWD}/docker/netdata/go.d/redis.conf:/etc/netdata/go.d/redis.conf
+      - ${PWD}/docker/netdata/go.d/postgres.conf:/etc/netdata/go.d/postgres.conf
+      - ${PWD}/docker/netdata/go.d/prometheus.conf:/etc/netdata/go.d/prometheus.conf
+    environment:
+      # useful if want to claim monitoring agents into https://www.netdata.cloud/
+      # else ignore or leave blank to just use local netdata dashboards as localhost:19999
+      - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN:-}
+      - NETDATA_CLAIM_URL=https://app.netdata.cloud
+    profiles: ["observability"]
+
+volumes:
+  prom_data:
+  netdataconfig:
+  netdatalib:
+  netdatacache:
