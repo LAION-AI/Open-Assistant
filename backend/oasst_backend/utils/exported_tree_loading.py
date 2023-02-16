@@ -73,6 +73,6 @@ def load_data(filepaths: List[str]):
         data, message_list = store_qa_data_seperate(trees, data)
         sents = data["user_messages"] + data["assistant_messages"]
 
-    data = [(i, sent) for i, sent in enumerate(sents[:100])]
+    data = [(i, sent) for i, sent in enumerate(sents)]
     data = pd.DataFrame(data, columns=["id", "query"])
     return data, message_list
