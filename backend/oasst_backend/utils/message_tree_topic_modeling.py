@@ -55,7 +55,7 @@ def reduce_outliers(topic_model, data, topics, probs, key="query", strategy="c-t
     return new_topics
 
 
-def compute_heirarchical_topic_tree(topic_model, data, key="query"):
+def compute_hierarchical_topic_tree(topic_model, data, key="query"):
     hierarchical_topics = topic_model.hierarchical_topics(data[key].to_list())
     tree = topic_model.get_topic_tree(hierarchical_topics)
     return hierarchical_topics, tree
