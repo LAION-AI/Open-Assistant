@@ -9,6 +9,7 @@
   "initial_prompt_review": "Revisión de instrucciones iniciales",
   "message_trees_by_state": "Árboles de mensaje por estado",
   "message_trees_states_by_lang": "Árboles de mensaje por idioma",
+  "prompt_lottery_waiting": "Esperando a la lotería de instrucciones",
   "ranking": "Ordenando",
   "ready_for_export": "Preparado para ser exportado",
   "stats": "Estadísticas",
