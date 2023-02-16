@@ -51,7 +51,7 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
   }
 
   const problemColor = useColorModeValue(colors.light.problem, colors.dark.problem);
-  console.log("rendered");
+
   return (
     <Stack direction={"column"}>
       <div style={{ position: "relative" }}>
