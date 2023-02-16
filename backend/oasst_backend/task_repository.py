@@ -12,7 +12,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
-from sqlmodel import Session, delete, false, func, or_
+from sqlmodel import Session, delete, false, func, not_, or_
 from starlette.status import HTTP_404_NOT_FOUND
 
 
@@ -222,10 +222,14 @@ class TaskRepository:
         return task
 
     def fetch_recent_reply_tasks(
-        self, max_age: timedelta = timedelta(minutes=5), done: bool = False, skipped: bool = False, limit: int = 100
+        self,
+        max_age: timedelta = timedelta(minutes=5),
+        done: bool = False,
+        skipped: bool = False,
+        limit: int = 100,
     ) -> list[Task]:
         qry = self.db.query(Task).filter(
-            func.age(func.current_timestamp(), Task.created_date) < max_age,
+            Task.created_date > func.current_timestamp() - max_age,
             or_(Task.payload_type == "AssistantReplyPayload", Task.payload_type == "PrompterReplyPayload"),
         )
         if done is not None:
@@ -238,3 +242,23 @@ class TaskRepository:
 
     def delete_expired(self) -> int:
         return delete_expired_tasks(self.db)
+
+    def fetch_pending_tasks_of_user(
+        self,
+        user_id: UUID,
+        max_age: timedelta = timedelta(minutes=5),
+        limit: int = 100,
+    ) -> list[Task]:
+        qry = (
+            self.db.query(Task)
+            .filter(
+                Task.user_id == user_id,
+                Task.created_date > func.current_timestamp() - max_age,
+                not_(Task.done),
+                not_(Task.skipped),
+            )
+            .order_by(Task.created_date)
+        )
+        if limit:
+            qry = qry.limit(limit)
+        return qry.all()

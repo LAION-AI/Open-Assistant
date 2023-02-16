@@ -22,7 +22,6 @@ export const checkCaptcha = async (
   ipAdress: string,
   options?: { cdata?: string; action?: string }
 ): Promise<CheckCaptchaResponse> => {
-  console.log("validation captcha");
   if (!token) {
     return {
       success: false,
