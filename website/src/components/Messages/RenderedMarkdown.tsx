@@ -41,7 +41,6 @@ const sx: SystemStyleObject = {
     _dark: {
       bg: "gray.700",
     },
-    overflowX: "auto",
   },
   "p:only-child": {
     my: 0, // ovoid margin when markdown only render 1 p tag
