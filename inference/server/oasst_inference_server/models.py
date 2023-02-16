@@ -31,6 +31,9 @@ class DbVoteEntry(SQLModel, table=True):
     message_id: str = Field(index=True)
     vote: int = Field(sa_column=sa.Column(sa.Integer, nullable=False))
 
+    def to_entry(self) -> interface.VoteEntry:
+        return interface.VoteEntry(chat_id=self.chat_id, message_id=self.message_id, vote=self.vote
+
 
 class DbReportEntry(SQLModel, table=True):
     __tablename__ = "report"
@@ -39,6 +42,9 @@ class DbReportEntry(SQLModel, table=True):
     chat_id: str = Field(index=True)
     message_id: str = Field(index=True)
     reason: str = Field(sa_column=sa.Column(sa.Text, nullable=False))
+
+    def to_entry(self) -> interface.ReportEntry:
+        return interface.ReportEntry(chat_id=self.chat_id, message_id=self.message_id, reason=self.reason)
 
 
 class DbWorkerEntry(SQLModel, table=True):

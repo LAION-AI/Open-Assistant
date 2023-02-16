@@ -91,6 +91,10 @@ class ChatRepository:
     
     def vote(self, conversation_id: str, message_id: str, vote: interface.VoteRequest) -> None:
         logger.info(f"Voting {vote} for message {conversation_id}/{message_id}")
+        chat = self.get_chat_by_id(conversation_id)
+        message_ids = [message.id for message in chat.conversation.messages]
+        if message_id not in message_ids:
+            raise fastapi.HTTPException(status_code=400, detail="Message not found")
         vote = models.DbVoteEntry(conversation_id=conversation_id, message_id=message_id, vote=vote.vote)
         self.session.add(vote)
         self.maybe_commit()
@@ -98,7 +102,19 @@ class ChatRepository:
     
     def report(self, conversation_id: str, message_id: str, report: interface.ReportRequest) -> None:
         logger.info(f"Reporting {report} for message {conversation_id}/{message_id}")
+        chat = self.get_chat_by_id(conversation_id)
+        message_ids = [message.id for message in chat.conversation.messages]
+        if message_id not in message_ids:
+            raise fastapi.HTTPException(status_code=400, detail="Message not found")
         report = models.DbReportEntry(conversation_id=conversation_id, message_id=message_id, reason=report.reason)
         self.session.add(report)
         self.maybe_commit()
         logger.debug(f"Reported {report} for chat {conversation_id}/{message_id}")
+    
+    def get_votes(self, conversation_id: str) -> list[interface.VoteEntry]:
+        votes = self.session.exec(sqlmodel.select(models.DbVoteEntry).where(models.DbVoteEntry.conversation_id == conversation_id)).all()
+        return [vote.to_entry() for vote in votes]
+    
+    def get_reports(self, conversation_id: str) -> list[interface.ReportEntry]:
+        reports = self.session.exec(sqlmodel.select(models.DbReportEntry).where(models.DbReportEntry.conversation_id == conversation_id)).all()
+        return [report.to_entry() for report in reports]
