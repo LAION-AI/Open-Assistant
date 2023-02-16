@@ -1,0 +1,16 @@
+{
+  "aborted_low_grade": "Aborted low grade",
+  "backlog_ranking": "Backlog ranking",
+  "count": "Count",
+  "growing": "Growing",
+  "halted_by_moderator": "Halted by moderator",
+  "human_messages_by_lang": "Human messages by language",
+  "human_messages_by_role": "Human messages by role",
+  "initial_prompt_review": "Initial prompt review",
+  "message_trees_by_state": "Message trees by state",
+  "message_trees_states_by_lang": "Message trees states by language",
+  "ranking": "Ranking",
+  "ready_for_export": "Ready for export",
+  "stats": "Stats",
+  "users_accepted_tos": "Users accepted terms"
+}
