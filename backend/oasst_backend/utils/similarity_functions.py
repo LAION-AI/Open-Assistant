@@ -1,15 +1,12 @@
 import math
-from typing import List
-
 import numpy as np
 import scipy.sparse as sp
 import torch
-from scipy.sparse import csr_matrix
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
 from tqdm import tqdm
 
-THRESHOLD = 0.65
+ADJACENCY_THRESHOLD = 0.65
 
 
 def embed_data(data, key="query", model_name="all-MiniLM-L6-v2", cores=1, gpu=False, batch_size=128):
@@ -75,8 +72,8 @@ def cos_sim(a: Tensor, b: Tensor):
 def compute_cos_sim_kernel(embs):
     A = cos_sim(embs, embs)
     adj_matrix = torch.zeros_like(A)
-    adj_matrix[A > THRESHOLD] = 1
-    adj_matrix[A <= THRESHOLD] = 0
+    adj_matrix[A > ADJACENCY_THRESHOLD] = 1
+    adj_matrix[A <= ADJACENCY_THRESHOLD] = 0
     adj_matrix = adj_matrix.numpy().astype(np.float32)
     return adj_matrix
 
