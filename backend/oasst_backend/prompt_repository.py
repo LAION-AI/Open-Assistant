@@ -132,7 +132,7 @@ class PromptRepository:
         payload_type: str = None,
         depth: int = 0,
         review_count: int = 0,
-        review_result: bool = False,
+        review_result: bool = None,
     ) -> Message:
         if payload_type is None:
             if payload is None:
@@ -198,7 +198,7 @@ class PromptRepository:
         frontend_message_id: str,
         user_frontend_message_id: str,
         review_count: int = 0,
-        review_result: bool = False,
+        review_result: bool = None,
         check_tree_state: bool = True,
         check_duplicate: bool = True,
     ) -> Message:

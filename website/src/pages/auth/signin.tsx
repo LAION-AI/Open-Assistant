@@ -50,9 +50,12 @@ const errorMessages: Record<SignInErrorTypes, string> = {
 
 interface SigninProps {
   providers: Record<BuiltInProviderType, ClientSafeProvider>;
+  enableEmailSignin: boolean;
+  enableEmailSigninCaptcha: boolean;
+  cloudflareCaptchaSiteKey: string;
 }
 
-function Signin({ providers }: SigninProps) {
+function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudflareCaptchaSiteKey }: SigninProps) {
   const router = useRouter();
   const { discord, email, github, credentials } = providers;
   const [error, setError] = useState("");
@@ -80,9 +83,14 @@ function Signin({ providers }: SigninProps) {
       </Head>
       <AuthLayout>
         <Stack spacing="2">
-          {credentials && <DebugSigninForm providerId={credentials.id} bgColorClass={bgColorClass} throwError={setError} />}
-          {email && boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN) && (
-            <EmailSignInForm providerId={email.id} throwError={setError}></EmailSignInForm>
+          {credentials && <DebugSigninForm providerId={credentials.id} bgColorClass={bgColorClass} throwError={setError}/>}
+          {email && enableEmailSignin && (
+            <EmailSignInForm
+              providerId={email.id}
+              enableEmailSigninCaptcha={enableEmailSigninCaptcha}
+              cloudflareCaptchaSiteKey={cloudflareCaptchaSiteKey}
+              throwError={setError}
+            />
           )}
           {discord && (
             <Button
@@ -148,9 +156,17 @@ Signin.getLayout = (page: ReactNode) => (
 
 export default Signin;
 
-const emailSigninCaptcha = boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA);
-
-const EmailSignInForm = ({ providerId, throwError }: { providerId: string, throwError: Function }) => {
+const EmailSignInForm = ({
+  providerId,
+  enableEmailSigninCaptcha,
+  cloudflareCaptchaSiteKey,
+  throwError
+}: {
+  providerId: string;
+  enableEmailSigninCaptcha: boolean;
+  cloudflareCaptchaSiteKey: string;
+  throwError: Function;
+}) => {
   const { register, formState: {errors}, handleSubmit } = useForm<{ email: string }>();
   const captcha = useRef<TurnstileInstance>(null);
   const [captchaSuccess, setCaptchaSuccess] = useState(false);
@@ -175,8 +191,9 @@ const EmailSignInForm = ({ providerId, throwError }: { providerId: string, throw
           errorBorderColor='orange.600'
         />
         {errors.email && throwError('Please enter a valid email') }
-        {emailSigninCaptcha && (
+        {enableEmailSigninCaptcha && (
           <CloudFlareCaptcha
+            siteKey={cloudflareCaptchaSiteKey}
             options={{ size: "invisible" }}
             ref={captcha}
             onSuccess={() => setCaptchaSuccess(true)}
@@ -186,7 +203,7 @@ const EmailSignInForm = ({ providerId, throwError }: { providerId: string, throw
           data-cy="signin-email-button"
           leftIcon={<Mail />}
           mt="4"
-          disabled={!captchaSuccess && emailSigninCaptcha}
+          disabled={!captchaSuccess && enableEmailSigninCaptcha}
         >
           Continue with Email
         </SigninButton>
@@ -255,9 +272,15 @@ const DebugSigninForm = ({ providerId, bgColorClass, throwError }: { providerId:
 
 export const getServerSideProps: GetServerSideProps<SigninProps> = async ({ locale }) => {
   const providers = await getProviders();
+  const enableEmailSignin = boolean(process.env.ENABLE_EMAIL_SIGNIN);
+  const enableEmailSigninCaptcha = boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA);
+  const cloudflareCaptchaSiteKey = process.env.CLOUDFLARE_CAPTCHA_SITE_KEY;
   return {
     props: {
       providers,
+      enableEmailSignin,
+      enableEmailSigninCaptcha,
+      cloudflareCaptchaSiteKey,
       ...(await serverSideTranslations(locale, ["common"])),
     },
   };

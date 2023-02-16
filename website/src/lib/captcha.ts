@@ -22,7 +22,7 @@ export const checkCaptcha = async (
   ipAdress: string,
   options?: { cdata?: string; action?: string }
 ): Promise<CheckCaptchaResponse> => {
-  const data = new FormData();
+  const data = new URLSearchParams();
 
   data.append("secret", process.env.CLOUDFLARE_CAPTCHA_SECRET_KEY);
   data.append("response", token);

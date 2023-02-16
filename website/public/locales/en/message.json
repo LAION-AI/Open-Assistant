@@ -6,6 +6,7 @@
   "message_author": "Author",
   "message_author_explain": "You are the author of this message",
   "message_deleted": "Message deleted",
+  "no_messages": "No messages",
   "message": "Message",
   "open_new_tab_action": "Open in new tab",
   "parent": "Parent",

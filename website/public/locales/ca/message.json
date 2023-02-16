@@ -5,6 +5,7 @@
   "label_title": "Etiqueta",
   "message": "Missatge",
   "message_deleted": "S'ha eliminat el missatge",
+  "no_messages": "No hi ha missatges",
   "open_new_tab_action": "Obre en una pestanya nova",
   "parent": "Pare",
   "reactions": "Reaccions",

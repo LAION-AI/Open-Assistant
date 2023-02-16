@@ -194,23 +194,21 @@
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_USER') }}"
           FASTAPI_URL: "{{ lookup('ansible.builtin.env', 'BACKEND_URL') }}"
           FASTAPI_KEY: "{{ web_api_key }}"
-          NEXT_PUBLIC_BACKEND_URL:
-            "{{ lookup('ansible.builtin.env', 'PUBLIC_BACKEND_URL') }}"
           NEXTAUTH_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_NEXTAUTH_SECRET') }}"
           NEXTAUTH_URL:
             "{{ 'https://open-assistant.io/' if stack_name == 'production' else
             ('https://web.' + stack_name + '.open-assistant.io/') }}"
-          NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY:
+          CLOUDFLARE_CAPTCHA_SITE_KEY:
             "{{ lookup('ansible.builtin.env',
             'WEB_NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY') }}"
           CLOUDFLARE_CAPTCHA_SECRET_KEY:
             "{{ lookup('ansible.builtin.env',
             'WEB_CLOUDFLARE_CAPTCHA_SECRET_KEY') }}"
-          NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA:
+          ENABLE_EMAIL_SIGNIN_CAPTCHA:
             "{{ lookup('ansible.builtin.env',
             'WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA') }}"
-          NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN:
+          ENABLE_EMAIL_SIGNIN:
             "{{ lookup('ansible.builtin.env',
             'WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN') }}"
           MAINTENANCE_MODE:
