@@ -40,7 +40,7 @@ def get_conv_by_frontend_id(
 @router.get("/{message_id}/tree", response_model=protocol.MessageTree)
 def get_tree_by_frontend_id(
     message_id: str,
-    include_spam: Optional[bool] = False,
+    include_spam: Optional[bool] = True,
     include_deleted: Optional[bool] = False,
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
