@@ -259,20 +259,34 @@ async def create_message(
     return EventSourceResponse(event_generator(chat_id))
 
 
-@app.post("/vote/{conversation_id}/messages/{message_id}")
-async def vote(conversation_id: str, message_id: str, vote_request: interface.VoteRequest, chat_repository: ChatRepository = Depends(create_chat_repository)):
+@app.post("/chat/{chat_id}/messages/{message_id}/vote")
+async def vote(chat_id: str, message_id: str, vote_request: interface.VoteRequest, chat_repository: ChatRepository = Depends(create_chat_repository)):
     """Allows the client to vote on a message)."""
-    logger.info(f"Received vote for {conversation_id}/{message_id} {vote_request=}")
-    chat_repository.add_vote(conversation_id, message_id, vote_request)
+    logger.info(f"Received vote for {chat_id}/{message_id} {vote_request=}")
+    chat_repository.add_vote(chat_id, message_id, vote_request)
     return fastapi.Response(status_code=200)
 
 
-@app.post("/report/{conversation_id}/messages/{message_id}")
-async def report(conversation_id: str, message_id: str, report_request: interface.ReportRequest, chat_repository: ChatRepository = Depends(create_chat_repository)):
+@app.get("/chat/{chat_id}/votes")
+async def vote(chat_id: str, chat_repository: ChatRepository = Depends(create_chat_repository)):
+    """Allows the client to views votes on a chat."""
+    votes = chat_repository.get_votes(chat_id)
+    return votes
+
+
+@app.post("/chat/{chat_id}/messages/{message_id}/report")
+async def report(chat_id: str, message_id: str, report_request: interface.ReportRequest, chat_repository: ChatRepository = Depends(create_chat_repository)):
     """Allows the client to report a message."""
-    logger.info(f"Received report for {conversation_id}/{message_id} {report_request=}")
-    chat_repository.add_report(conversation_id, message_id, report_request)
+    logger.info(f"Received report for {chat_id}/{message_id} {report_request=}")
+    chat_repository.add_report(chat_id, message_id, report_request)
     return fastapi.Response(status_code=200)
+
+
+@app.get("/chat/{chat_id}/reports")
+async def report(chat_id: str, chat_repository: ChatRepository = Depends(create_chat_repository)):
+    """Allows the client to view reports for a chat."""
+    reports = chat_repository.get_reports(chat_id)
+    return reports
 
 
 @app.websocket("/work")
