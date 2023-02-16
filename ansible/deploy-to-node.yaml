@@ -69,6 +69,7 @@
           POSTGRES_DB: postgres
           S3_BUCKET_NAME:
             "{{ lookup('ansible.builtin.env', 'S3_BUCKET_NAME') }}"
+          S3_PREFIX: "{{ item.name }}"
           AWS_ACCESS_KEY_ID:
             "{{ lookup('ansible.builtin.env', 'AWS_ACCESS_KEY') }}"
           AWS_SECRET_ACCESS_KEY:
@@ -82,6 +83,7 @@
           interval: 2s
           timeout: 2s
           retries: 10
+        shm_size: 1G
       loop:
         - name: backend
         - name: web
@@ -155,6 +157,8 @@
           LOGURU_LEVEL:
             "{{ lookup('ansible.builtin.env', 'LOGURU_LEVEL') | default('INFO',
             true) }}"
+          BACKEND_CORS_ORIGINS_CSV:
+            "{{ lookup('ansible.builtin.env', 'BACKEND_CORS_ORIGINS') }}"
         ports:
           - "{{ backend_port }}:8080"
 
@@ -169,6 +173,8 @@
         network_mode: "oasst-{{ stack_name }}"
         env:
           ADMIN_USERS: "{{ lookup('ansible.builtin.env', 'WEB_ADMIN_USERS') }}"
+          MODERATOR_USERS:
+            "{{ lookup('ansible.builtin.env', 'WEB_MODERATOR_USERS') }}"
           DATABASE_URL:
             "postgres://postgres:{{ postgres_password }}@oasst-{{ stack_name
             }}-postgres-web/postgres"
@@ -193,16 +199,16 @@
           NEXTAUTH_URL:
             "{{ 'https://open-assistant.io/' if stack_name == 'production' else
             ('https://web.' + stack_name + '.open-assistant.io/') }}"
-          NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY:
+          CLOUDFLARE_CAPTCHA_SITE_KEY:
             "{{ lookup('ansible.builtin.env',
             'WEB_NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY') }}"
           CLOUDFLARE_CAPTCHA_SECRET_KEY:
             "{{ lookup('ansible.builtin.env',
             'WEB_CLOUDFLARE_CAPTCHA_SECRET_KEY') }}"
-          NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA:
+          ENABLE_EMAIL_SIGNIN_CAPTCHA:
             "{{ lookup('ansible.builtin.env',
             'WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA') }}"
-          NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN:
+          ENABLE_EMAIL_SIGNIN:
             "{{ lookup('ansible.builtin.env',
             'WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN') }}"
           MAINTENANCE_MODE:

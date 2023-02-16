@@ -1,5 +1,8 @@
 {
-  "python.formatting.provider": "black",
   "python.analysis.extraPaths": ["${workspaceFolder}/oasst-shared"],
-  "prettier.singleQuote": false
+  "prettier.singleQuote": false,
+  "eslint.workingDirectories": ["./website", "./docs"],
+  "python.testing.pytestArgs": ["backend/tests", "oasst-shared/tests"],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }

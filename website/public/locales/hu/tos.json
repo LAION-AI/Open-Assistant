@@ -1,6 +1,6 @@
 {
-  "accept": "Accept",
-  "content": "To continue using Open Assistant, you have to accept our Terms of Service first.",
-  "decline": "Decline",
-  "title": "Terms of Service for Open Assistant"
+  "title": "Az Open Assistant szolgáltatási feltételei",
+  "content": "Az Open Assistant használatának folytatásához előbb el kell fogadnod a szolgáltatási feltételeinket.",
+  "accept": "Elfogadás",
+  "decline": "Elutasítás"
 }

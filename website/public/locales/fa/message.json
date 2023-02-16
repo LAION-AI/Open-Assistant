@@ -1,0 +1,21 @@
+{
+  "copy_message_id": "کپی کردن شناسه پیام",
+  "copy_message_link": "کپی کردن لینک پیام",
+  "label_action": "برچسب",
+  "label_title": "برچسب",
+  "message_deleted": "پیام پاک شد",
+  "message": "پیام",
+  "open_new_tab_action": "بازکردن در صفحه جدید",
+  "parent": "منبع",
+  "reactions": "واکنش ها",
+  "recent_messages": "پیام های اخیر",
+  "report_action": "گزارش",
+  "report_placeholder": "چرا باید این پیام بررسی شود?",
+  "report_title": "گزارش",
+  "send_report": "ارسال",
+  "stop_tree": "درخت توقف",
+  "submit_labels": "ارسال",
+  "tree_stopped": "درخت متوقف شده در {{id}}",
+  "view_user": "مشاهده کاربر",
+  "your_recent_messages": "پیام های اخیر شما"
+}
