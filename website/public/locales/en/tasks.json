@@ -86,5 +86,7 @@
     "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
   },
   "submitted_as": "This will be submitted as {{submit_lang}}",
+  "tab_write": "Write",
+  "tab_preview": "Preview",
   "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}."
 }
