@@ -7,8 +7,6 @@ import torch
 from torch.nn import functional as F
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
 
-from .formatting import QA_SPECIAL_TOKENS
-
 
 @dataclass
 class DialogueDataCollator:
@@ -33,7 +31,7 @@ class DialogueDataCollator:
 
             # Add a way for the model to terminate generation
             # When we predict the start of a new expected question, we want to be able to stop generation
-            messages.append(QA_SPECIAL_TOKENS["Question"])
+            messages.append(self.tokenizer.eos_token)
 
             flatten_message = self.tokenizer(
                 "".join(messages),
