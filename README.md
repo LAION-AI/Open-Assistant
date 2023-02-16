@@ -61,7 +61,9 @@ If you would like to run the data collection app locally for development, you
 can set up an entire stack needed to run **Open-Assistant**, including the
 website, backend, and associated dependent services, with Docker.
 
-##### To start the demo, run this in the root directory of the repository:
+To start the demo, run this in the root directory of the repository (check
+[this FAQ](https://projects.laion.ai/Open-Assistant/docs/faq#docker-compose-instead-of-docker-compose)
+if you have problems):
 
 ```sh
 docker compose up --build
