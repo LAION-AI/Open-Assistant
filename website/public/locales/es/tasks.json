@@ -25,7 +25,8 @@
   },
   "default": {
     "unchanged_title": "Sin cambios",
-    "unchanged_message": "¿Estás seguro de que quieres continuar?"
+    "unchanged_message": "¿Estás seguro de que quieres continuar?",
+    "continue_anyway": "Continuar de todas formas"
   },
   "label_assistant_reply": {
     "label": "Etiquetar respuesta del asistente",
@@ -52,21 +53,24 @@
     "desc": "Puntúa respuestas dadas por Open Assistant basándote en su precisión y legibilidad.",
     "overview": "Dadas las siguientes respuestas del asistente, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
     "unchanged_title": "Orden sin cambiar",
-    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?"
+    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?",
+    "continue_anyway": "Continuar de todas formas"
   },
   "rank_initial_prompts": {
     "label": "Ordenar instrucciones iniciales",
     "desc": "Puntúa instrucciones a Open Assistant basándote en su precisión y legibilidad.",
     "overview": "Dadas las siguientes instrucciones iniciales, ordénalas de mejor a peor, siendo la primera la mejor y la última la peor.",
     "unchanged_title": "Orden sin cambiar",
-    "unchanged_message": "No has cambiado el orden de las entradas. ¿Seguro que quieres continuar?"
+    "unchanged_message": "No has cambiado el orden de las entradas. ¿Seguro que quieres continuar?",
+    "continue_anyway": "Continuar de todas formas"
   },
   "rank_user_replies": {
     "label": "Ordenar respuestas de usuarios",
     "desc": "Ayuda a Open Assistant a mejorar sus respuestas a conversaciones con otros usuarios.",
     "overview": "Dadas las siguientes respuestas de usuarios, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
     "unchanged_title": "Orden sin cambiar",
-    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?"
+    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?",
+    "continue_anyway": "Continuar de todas formas"
   },
   "reply_as_assistant": {
     "label": "Contestar como asistente",
