@@ -27,6 +27,7 @@ const components = {
 };
 
 const sx: SystemStyleObject = {
+  overflowX: "auto",
   pre: {
     bg: "transparent",
   },
@@ -40,15 +41,16 @@ const sx: SystemStyleObject = {
     _dark: {
       bg: "gray.700",
     },
+    overflowX: "auto",
   },
   "p:only-child": {
     my: 0, // ovoid margin when markdown only render 1 p tag
+    mt: { base: 1.5, md: 0 },
   },
   p: {
     whiteSpace: "pre-wrap",
     display: "inline-block",
   },
-  display: "inline-block",
   wordBreak: "break-word",
   "> blockquote": {
     borderInlineStartColor: "gray.300",
