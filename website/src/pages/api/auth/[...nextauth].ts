@@ -210,7 +210,9 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
     callbacks: {
       ...authOptions.callbacks,
       async signIn({ account }) {
-        if (account.provider !== "email" || !boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA)) {
+        const isVerifyEmail = req.url ? req.url.includes("/api/auth/signin/email") : false;
+
+        if (account.provider !== "email" || !boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA) || !isVerifyEmail) {
           return true;
         }
 
