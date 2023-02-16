@@ -183,6 +183,9 @@ const EmailSignInForm = ({
       captcha: captcha.current?.getResponse(),
     });
   };
+  useEffect(() => {
+    if (errors.email) throwError("Please enter a valid email");
+  }, [errors.email]);
   return (
     <form onSubmit={handleSubmit(signinWithEmail)}>
       <Stack>
@@ -196,7 +199,6 @@ const EmailSignInForm = ({
           isInvalid={errors.email ? true : false}
           errorBorderColor="orange.600"
         />
-        {errors.email && throwError("Please enter a valid email")}
         {enableEmailSigninCaptcha && (
           <CloudFlareCaptcha
             siteKey={cloudflareCaptchaSiteKey}
@@ -257,6 +259,9 @@ const DebugSigninForm = ({
       username: "dev",
     },
   });
+  useEffect(() => {
+    if (errors.username) throwError("Please enter a valid username");
+  }, [errors.username]);
 
   function signinWithDebugCredentials(data: DebugSigninFormData) {
     signIn(providerId, {
@@ -280,7 +285,6 @@ const DebugSigninForm = ({
           isInvalid={errors.username ? true : false}
           errorBorderColor="orange.600"
         />
-        {errors.username && throwError("Please enter a valid username")}
         <RoleSelect {...register("role")}></RoleSelect>
         <SigninButton leftIcon={<Bug />}>Continue with Debug User</SigninButton>
       </Stack>
