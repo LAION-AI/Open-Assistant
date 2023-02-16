@@ -32,6 +32,7 @@ import { userlessApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { FetchUserMessagesCursorResponse } from "src/types/Conversation";
 import { User } from "src/types/Users";
+import { getValidDisplayName } from "src/lib/display_name_validation";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 interface UserForm {
@@ -193,6 +194,7 @@ export const getServerSideProps: GetServerSideProps<{ user: User<Role> }, { id: 
     ...backend_user,
     role: (local_user?.role || "general") as Role,
   };
+  user.display_name = getValidDisplayName(user.display_name, user.id);
   return {
     props: {
       user,
