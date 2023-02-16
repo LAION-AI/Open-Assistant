@@ -210,11 +210,11 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
     callbacks: {
       ...authOptions.callbacks,
       async signIn({ account }) {
-        if (account.provider !== "email" || !boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA)) {
+        if (account.provider !== "email" || !boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA)) {
           return true;
         }
 
-        if (account.provider === "email" && !boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN)) {
+        if (account.provider === "email" && !boolean(process.env.ENABLE_EMAIL_SIGNIN)) {
           return false;
         }
 
