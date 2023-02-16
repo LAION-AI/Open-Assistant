@@ -52,7 +52,7 @@ class Message(SQLModel, table=True):
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
 
     review_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
-    review_result: bool = Field(sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False))
+    review_result: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=True))
     ranking_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
 
     rank: Optional[int] = Field(nullable=True)

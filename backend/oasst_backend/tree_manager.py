@@ -742,6 +742,8 @@ class TreeManager:
                                     f"Initial prompt message was accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
                                 )
                             else:
+                                msg.review_result = False
+                                self.db.add(msg)
                                 self.enter_low_grade_state(msg.message_tree_id)
                         self.check_condition_for_prompt_lottery(msg.message_tree_id)
                     elif msg.review_count >= self.cfg.num_reviews_reply:
@@ -751,6 +753,9 @@ class TreeManager:
                             logger.info(
                                 f"Reply message message accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
                             )
+                        else:
+                            msg.review_result = False
+                            self.db.add(msg)
 
                     self.check_condition_for_ranking_state(msg.message_tree_id)
 
@@ -965,7 +970,7 @@ class TreeManager:
             .filter(
                 MessageTreeState.active,
                 MessageTreeState.state == state,
-                not_(Message.review_result),
+                or_(Message.review_result.is_(None), not_(Message.review_result)),
                 not_(Message.deleted),
                 Message.review_count < required_reviews,
                 Message.lang == lang,
@@ -1183,7 +1188,10 @@ HAVING COUNT(m.id) < mts.goal_tree_size
                 MessageTreeState.goal_tree_size.label("goal_tree_size"),
                 func.count(Message.id).filter(Message.review_result).label("tree_size"),
                 func.count(Message.id)
-                .filter(not_(Message.review_result), Message.review_count < required_reviews)
+                .filter(
+                    or_(Message.review_result.is_(None), not_(Message.review_result)),
+                    Message.review_count < required_reviews,
+                )
                 .label("awaiting_review"),
             )
             .select_from(MessageTreeState)
