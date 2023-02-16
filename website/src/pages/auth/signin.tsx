@@ -258,9 +258,9 @@ const DebugSigninForm = ({ providerId, bgColorClass }: { providerId: string; bgC
 
 export const getServerSideProps: GetServerSideProps<SigninProps> = async ({ locale }) => {
   const providers = await getProviders();
-  const enableEmailSignin = boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN);
-  const enableEmailSigninCaptcha = boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA);
-  const cloudflareCaptchaSiteKey = process.env.NEXT_PUBLIC_CLOUDFLARE_CAPTCHA_SITE_KEY;
+  const enableEmailSignin = boolean(process.env.ENABLE_EMAIL_SIGNIN);
+  const enableEmailSigninCaptcha = boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA);
+  const cloudflareCaptchaSiteKey = process.env.CLOUDFLARE_CAPTCHA_SITE_KEY;
   return {
     props: {
       providers,
