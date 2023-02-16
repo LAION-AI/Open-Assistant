@@ -10,8 +10,8 @@ type CaptchaErrorCode =
 type CheckCaptchaResponse = {
   success: boolean;
   challenge_ts?: string;
-  hostname: string;
-  "error-codes": CaptchaErrorCode[];
+  hostname?: string;
+  "error-codes"?: CaptchaErrorCode[];
   action?: string;
   cdata?: string;
 };
@@ -22,6 +22,12 @@ export const checkCaptcha = async (
   ipAdress: string,
   options?: { cdata?: string; action?: string }
 ): Promise<CheckCaptchaResponse> => {
+  if (!token) {
+    return {
+      success: false,
+    };
+  }
+
   const data = new URLSearchParams();
 
   data.append("secret", process.env.CLOUDFLARE_CAPTCHA_SECRET_KEY);
