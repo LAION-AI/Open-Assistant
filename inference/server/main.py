@@ -259,6 +259,22 @@ async def create_message(
     return EventSourceResponse(event_generator(chat_id))
 
 
+@app.post("/vote/{conversation_id}/messages/{message_id}")
+async def vote(conversation_id: str, message_id: str, vote_request: interface.VoteRequest, chat_repository: ChatRepository = Depends(create_chat_repository)):
+    """Allows the client to vote on a message)."""
+    logger.info(f"Received vote for {conversation_id}/{message_id} {vote_request=}")
+    chat_repository.add_vote(conversation_id, message_id, vote_request)
+    return fastapi.Response(status_code=200)
+
+
+@app.post("/report/{conversation_id}/messages/{message_id}")
+async def report(conversation_id: str, message_id: str, report_request: interface.ReportRequest, chat_repository: ChatRepository = Depends(create_chat_repository)):
+    """Allows the client to report a message."""
+    logger.info(f"Received report for {conversation_id}/{message_id} {report_request=}")
+    chat_repository.add_report(conversation_id, message_id, report_request)
+    return fastapi.Response(status_code=200)
+
+
 @app.websocket("/work")
 async def work(websocket: fastapi.WebSocket, worker: models.DbWorkerEntry = Depends(get_worker)):
     await websocket.accept()

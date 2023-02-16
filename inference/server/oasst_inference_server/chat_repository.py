@@ -88,3 +88,17 @@ class ChatRepository:
         chat.message_request_state = state
         self.maybe_commit()
         logger.debug(f"Set chat {chat_id} state to {state}")
+    
+    def vote(self, conversation_id: str, message_id: str, vote: interface.VoteRequest) -> None:
+        logger.info(f"Voting {vote} for message {conversation_id}/{message_id}")
+        vote = models.DbVoteEntry(conversation_id=conversation_id, message_id=message_id, vote=vote.vote)
+        self.session.add(vote)
+        self.maybe_commit()
+        logger.debug(f"Voted {vote} for chat {conversation_id}/{message_id}")
+    
+    def report(self, conversation_id: str, message_id: str, report: interface.ReportRequest) -> None:
+        logger.info(f"Reporting {report} for message {conversation_id}/{message_id}")
+        report = models.DbReportEntry(conversation_id=conversation_id, message_id=message_id, reason=report.reason)
+        self.session.add(report)
+        self.maybe_commit()
+        logger.debug(f"Reported {report} for chat {conversation_id}/{message_id}")

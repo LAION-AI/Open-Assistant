@@ -23,6 +23,24 @@ class DbChatEntry(SQLModel, table=True):
         return interface.ChatEntry(id=self.id, conversation=self.conversation)
 
 
+class DbVoteEntry(SQLModel, table=True):
+    __tablename__ = "vote"
+
+    id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
+    chat_id: str = Field(index=True)
+    message_id: str = Field(index=True)
+    vote: int = Field(sa_column=sa.Column(sa.Integer, nullable=False))
+
+
+class DbReportEntry(SQLModel, table=True):
+    __tablename__ = "report"
+
+    id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
+    chat_id: str = Field(index=True)
+    message_id: str = Field(index=True)
+    reason: str = Field(sa_column=sa.Column(sa.Text, nullable=False))
+
+
 class DbWorkerEntry(SQLModel, table=True):
     __tablename__ = "worker"
 

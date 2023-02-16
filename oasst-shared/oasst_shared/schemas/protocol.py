@@ -110,6 +110,24 @@ class Message(ConversationMessage):
     rank: Optional[int]
 
 
+class Vote(BaseModel):
+    user_id: UUID
+    message_id: UUID
+    vote: int
+
+
+class ReportType(str, enum.Enum):
+    spam: "spam"
+    offensive: "offensive"
+
+
+class Report(BaseModel):
+    user_id: UUID
+    message_id: UUID
+    type: ReportType
+    reason: str
+
+
 class MessagePage(PageResult):
     items: list[Message]
 
