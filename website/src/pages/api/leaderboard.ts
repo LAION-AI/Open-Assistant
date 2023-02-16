@@ -22,26 +22,26 @@ const handler = withoutRole("banned", async (req, res, token) => {
   }
   const user = await oasstApiClient.fetch_frontend_user(backendUser);
 
-  let [leaderboard, user_stats] = await Promise.all([
+  const [leaderboard, user_stats] = await Promise.all([
     oasstApiClient.fetch_leaderboard(time_frame, {
       limit: req.query.limit as unknown as number,
     }),
     oasstApiClient.fetch_user_stats_window(user.user_id, time_frame, 3),
   ]);
 
-  leaderboard = getValidLeaderboard(leaderboard);
-  
+  const validLeaderboard = getValidLeaderboard(leaderboard);
+
   res.status(200).json({
-    ...leaderboard,
+    ...validLeaderboard,
     user_stats_window: user_stats?.leaderboard.map((stats) => ({ ...stats, is_window: true })),
   });
 });
 
 const getValidLeaderboard = (leaderboard) => {
-  leaderboard.leaderboard.forEach((user => {
+  leaderboard.leaderboard.forEach((user) => {
     user.display_name = getValidDisplayName(user.display_name, user.username);
-  }));
+  });
   return leaderboard;
-}
+};
 
 export default handler;

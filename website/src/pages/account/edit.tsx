@@ -58,7 +58,11 @@ const EditForm = () => {
   return (
     <form onSubmit={handleSubmit(updateUser)}>
       <InputGroup>
-        <Input placeholder="Edit Username" type="text" {...register("username", { required: true, pattern: /^\S+/g})}></Input>
+        <Input
+          placeholder="Edit Username"
+          type="text"
+          {...register("username", { required: true, pattern: /^\S+/g })}
+        ></Input>
         <SubmitButton control={control}></SubmitButton>
       </InputGroup>
     </form>

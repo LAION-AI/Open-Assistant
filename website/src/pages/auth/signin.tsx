@@ -83,7 +83,9 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
       </Head>
       <AuthLayout>
         <Stack spacing="2">
-          {credentials && <DebugSigninForm providerId={credentials.id} bgColorClass={bgColorClass} throwError={setError}/>}
+          {credentials && (
+            <DebugSigninForm providerId={credentials.id} bgColorClass={bgColorClass} throwError={setError} />
+          )}
           {email && enableEmailSignin && (
             <EmailSignInForm
               providerId={email.id}
@@ -160,14 +162,18 @@ const EmailSignInForm = ({
   providerId,
   enableEmailSigninCaptcha,
   cloudflareCaptchaSiteKey,
-  throwError
+  throwError,
 }: {
   providerId: string;
   enableEmailSigninCaptcha: boolean;
   cloudflareCaptchaSiteKey: string;
-  throwError: Function;
+  throwError: (error: string) => void;
 }) => {
-  const { register, formState: {errors}, handleSubmit } = useForm<{ email: string }>();
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm<{ email: string }>();
   const captcha = useRef<TurnstileInstance>(null);
   const [captchaSuccess, setCaptchaSuccess] = useState(false);
   const signinWithEmail = (data: { email: string }) => {
@@ -186,11 +192,11 @@ const EmailSignInForm = ({
           variant="outline"
           size="lg"
           placeholder="Email Address"
-          {...register("email", {required: true, pattern: /[^\s@]+@[^\s@]+\.[^\s@]+/g})}
+          {...register("email", { required: true, pattern: /[^\s@]+@[^\s@]+\.[^\s@]+/g })}
           isInvalid={errors.email ? true : false}
-          errorBorderColor='orange.600'
+          errorBorderColor="orange.600"
         />
-        {errors.email && throwError('Please enter a valid email') }
+        {errors.email && throwError("Please enter a valid email")}
         {enableEmailSigninCaptcha && (
           <CloudFlareCaptcha
             siteKey={cloudflareCaptchaSiteKey}
@@ -232,8 +238,20 @@ interface DebugSigninFormData {
   role: Role;
 }
 
-const DebugSigninForm = ({ providerId, bgColorClass, throwError }: { providerId: string; bgColorClass: string, throwError: Function }) => {
-  const { register, formState: {errors}, handleSubmit } = useForm<DebugSigninFormData>({
+const DebugSigninForm = ({
+  providerId,
+  bgColorClass,
+  throwError,
+}: {
+  providerId: string;
+  bgColorClass: string;
+  throwError: (error: string) => void;
+}) => {
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm<DebugSigninFormData>({
     defaultValues: {
       role: "general",
       username: "dev",
@@ -254,15 +272,15 @@ const DebugSigninForm = ({ providerId, bgColorClass, throwError }: { providerId:
     >
       <span className={`text-orange-600 absolute -top-3 left-5 ${bgColorClass} px-1`}>For Debugging Only</span>
       <Stack>
-        <Input 
-          variant="outline" 
-          size="lg" 
-          placeholder="Username" 
-          {...register("username", { required: true, pattern: /^\S+/g})}
+        <Input
+          variant="outline"
+          size="lg"
+          placeholder="Username"
+          {...register("username", { required: true, pattern: /^\S+/g })}
           isInvalid={errors.username ? true : false}
-          errorBorderColor='orange.600'
+          errorBorderColor="orange.600"
         />
-        {errors.username && throwError('Please enter a valid username') }
+        {errors.username && throwError("Please enter a valid username")}
         <RoleSelect {...register("role")}></RoleSelect>
         <SigninButton leftIcon={<Bug />}>Continue with Debug User</SigninButton>
       </Stack>
