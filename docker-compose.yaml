@@ -124,7 +124,7 @@ services:
       - EMAIL_SERVER_PORT=1025
       - EMAIL_FROM=info@example.com
       - ENABLE_EMAIL_SIGNIN=true
-      - ENABLE_EMAIL_SIGNIN_CAPTCHA=true
+      - ENABLE_EMAIL_SIGNIN_CAPTCHA=false
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
     depends_on:
