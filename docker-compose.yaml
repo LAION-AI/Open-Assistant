@@ -114,6 +114,8 @@ services:
       context: .
     image: oasst-web
     environment:
+      - CLOUDFLARE_CAPTCHA_SECRET_KEY=1x0000000000000000000000000000000AA
+      - CLOUDFARE_CAPTCHA_SITE_KEY=1x00000000000000000000AA
       - DATABASE_URL=postgres://postgres:postgres@webdb/oasst_web
       - FASTAPI_URL=http://backend:8080
       - FASTAPI_KEY=1234
@@ -121,12 +123,10 @@ services:
       - EMAIL_SERVER_HOST=maildev
       - EMAIL_SERVER_PORT=1025
       - EMAIL_FROM=info@example.com
+      - ENABLE_EMAIL_SIGNIN=true
+      - ENABLE_EMAIL_SIGNIN_CAPTCHA=true
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
-      - NEXT_PUBLIC_CLOUDFARE_CAPTCHA_SITE_KEY=1x00000000000000000000AA
-      - CLOUDFLARE_CAPTCHA_SECRET_KEY=1x0000000000000000000000000000000AA
-      - NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA=true
-      - NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN=true
     depends_on:
       webdb:
         condition: service_healthy
