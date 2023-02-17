@@ -65,7 +65,6 @@ export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsPr
       </Select>
       <Box minH={330}>
         <Doughnut
-          plugins={[]}
           width={100}
           height={50}
           options={getDefaultChartOptions(color)}
