@@ -17,7 +17,7 @@ parser.add_argument("--batch_size", type=int, default=128)
 parser.add_argument("--k", type=int, default=2)
 parser.add_argument("--threshold", type=float, default=0.65)
 parser.add_argument("--exported_tree_path", nargs="+", help="<Required> Set flag", required=True)
-# Use like python message_tree_topic_modeling.py -exported_tree_path 2023-02-06_oasst_prod.jsonl 2023-02-07_oasst_prod.jsonl
+# Use like python message_tree_topic_modeling.py --exported_tree_path 2023-02-06_oasst_prod.jsonl 2023-02-07_oasst_prod.jsonl
 parser.add_argument("--min_topic_size", type=int, default=10)
 parser.add_argument("--diversity", type=float, default=0.2)
 parser.add_argument("--reduce_frequent_words", type=bool, default=False)
