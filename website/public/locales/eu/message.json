@@ -3,6 +3,8 @@
   "copy_message_link": "Kopiatu mezuaren esteka",
   "label_action": "Etiketatu",
   "label_title": "Etiketa",
+  "message_author": "Egilea",
+  "message_author_explain": "Zu zara mezuaren egilea",
   "message": "Mezua",
   "message_deleted": "Mezua ezabatu da",
   "no_messages": "Mezurik ez",

@@ -1,0 +1,17 @@
+{
+  "aborted_low_grade": "Kalifikazio baxuagatik bertan behera utzi da",
+  "backlog_ranking": "Atzerako sailkapena",
+  "count": "Kopurua",
+  "growing": "Hazten",
+  "halted_by_moderator": "Moderatzaileak gelditu du",
+  "human_messages_by_lang": "Giza mezuak hizkuntzaren arabera",
+  "human_messages_by_role": "Giza mezuak rolaren arabera",
+  "initial_prompt_review": "Hasierako eskaeren berrikuspena",
+  "message_trees_by_state": "Mezuen zuhaitzak egoeraren arabera",
+  "message_trees_states_by_lang": "Mezuen zuhaitzen egoerak hizkuntzaren arabera",
+  "prompt_lottery_waiting": "Eskaeren loterian zain",
+  "ranking": "Sailkapena",
+  "ready_for_export": "Esportatzeko prest",
+  "stats": "Estatistikak",
+  "users_accepted_tos": "Baldintzak onartu dituzten erabiltzaileak"
+}
