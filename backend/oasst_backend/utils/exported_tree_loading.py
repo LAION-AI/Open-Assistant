@@ -59,7 +59,7 @@ def store_qa_data_paired(trees, data: List):
     return data, message_list
 
 
-def load_data(filepaths: List[str], paired = False):
+def load_data(filepaths: List[str], paired=False):
     trees = load_jsonl(filepaths)
     if paired:
         data = []

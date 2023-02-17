@@ -70,11 +70,11 @@ def cos_sim(a: Tensor, b: Tensor):
     return torch.mm(a_norm, b_norm.transpose(0, 1))
 
 
-def compute_cos_sim_kernel(embs):
+def compute_cos_sim_kernel(embs, threshold=0.65):
     A = cos_sim(embs, embs)
     adj_matrix = torch.zeros_like(A)
-    adj_matrix[A > ADJACENCY_THRESHOLD] = 1
-    adj_matrix[A <= ADJACENCY_THRESHOLD] = 0
+    adj_matrix[A > threshold] = 1
+    adj_matrix[A <= threshold] = 0
     adj_matrix = adj_matrix.numpy().astype(np.float32)
     return adj_matrix
 
