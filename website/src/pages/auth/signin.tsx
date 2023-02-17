@@ -1,4 +1,13 @@
-import { Button, ButtonProps, Input, Stack, useColorModeValue } from "@chakra-ui/react";
+import {
+  Button,
+  ButtonProps,
+  FormControl,
+  FormErrorMessage,
+  FormHelperText,
+  Input,
+  Stack,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
 import { TurnstileInstance } from "@marsidev/react-turnstile";
 import { boolean } from "boolean";
@@ -83,15 +92,12 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
       </Head>
       <AuthLayout>
         <Stack spacing="2">
-          {credentials && (
-            <DebugSigninForm providerId={credentials.id} bgColorClass={bgColorClass} throwError={setError} />
-          )}
+          {credentials && <DebugSigninForm providerId={credentials.id} bgColorClass={bgColorClass} />}
           {email && enableEmailSignin && (
             <EmailSignInForm
               providerId={email.id}
               enableEmailSigninCaptcha={enableEmailSigninCaptcha}
               cloudflareCaptchaSiteKey={cloudflareCaptchaSiteKey}
-              throwError={setError}
             />
           )}
           {discord && (
@@ -162,12 +168,10 @@ const EmailSignInForm = ({
   providerId,
   enableEmailSigninCaptcha,
   cloudflareCaptchaSiteKey,
-  throwError,
 }: {
   providerId: string;
   enableEmailSigninCaptcha: boolean;
   cloudflareCaptchaSiteKey: string;
-  throwError: (error: string) => void;
 }) => {
   const {
     register,
@@ -183,39 +187,42 @@ const EmailSignInForm = ({
       captcha: captcha.current?.getResponse(),
     });
   };
-  useEffect(() => {
-    if (errors.email) throwError("Please enter a valid email");
-  }, [errors.email]);
   return (
     <form onSubmit={handleSubmit(signinWithEmail)}>
-      <Stack>
-        <Input
-          type="email"
-          data-cy="email-address"
-          variant="outline"
-          size="lg"
-          placeholder="Email Address"
-          {...register("email", { required: true, pattern: /[^\s@]+@[^\s@]+\.[^\s@]+/g })}
-          isInvalid={errors.email ? true : false}
-          errorBorderColor="orange.600"
-        />
-        {enableEmailSigninCaptcha && (
-          <CloudFlareCaptcha
-            siteKey={cloudflareCaptchaSiteKey}
-            options={{ size: "invisible" }}
-            ref={captcha}
-            onSuccess={() => setCaptchaSuccess(true)}
-          ></CloudFlareCaptcha>
-        )}
-        <SigninButton
-          data-cy="signin-email-button"
-          leftIcon={<Mail />}
-          mt="4"
-          disabled={!captchaSuccess && enableEmailSigninCaptcha}
-        >
-          Continue with Email
-        </SigninButton>
-      </Stack>
+      <FormControl isInvalid={errors.email ? true : false}>
+        <Stack>
+          <Input
+            type="email"
+            data-cy="email-address"
+            variant="outline"
+            size="lg"
+            placeholder="Email Address"
+            {...register("email", { required: true, pattern: /[^\s@]+@[^\s@]+\.[^\s@]+/g })}
+            isInvalid={errors.email ? true : false}
+            errorBorderColor="orange.600"
+          />
+          <FormErrorMessage>
+            {errors.email?.type === "required" && "Email is required"}
+            {errors.email?.type === "pattern" && "Email is invalid"}
+          </FormErrorMessage>
+          {enableEmailSigninCaptcha && (
+            <CloudFlareCaptcha
+              siteKey={cloudflareCaptchaSiteKey}
+              options={{ size: "invisible" }}
+              ref={captcha}
+              onSuccess={() => setCaptchaSuccess(true)}
+            ></CloudFlareCaptcha>
+          )}
+          <SigninButton
+            data-cy="signin-email-button"
+            leftIcon={<Mail />}
+            mt="4"
+            disabled={!captchaSuccess && enableEmailSigninCaptcha}
+          >
+            Continue with Email
+          </SigninButton>
+        </Stack>
+      </FormControl>
     </form>
   );
 };
@@ -240,28 +247,13 @@ interface DebugSigninFormData {
   role: Role;
 }
 
-const DebugSigninForm = ({
-  providerId,
-  bgColorClass,
-  throwError,
-}: {
-  providerId: string;
-  bgColorClass: string;
-  throwError: (error: string) => void;
-}) => {
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-  } = useForm<DebugSigninFormData>({
+const DebugSigninForm = ({ providerId, bgColorClass }: { providerId: string; bgColorClass: string }) => {
+  const { register, handleSubmit } = useForm<DebugSigninFormData>({
     defaultValues: {
       role: "general",
       username: "dev",
     },
   });
-  useEffect(() => {
-    if (errors.username) throwError("Please enter a valid username");
-  }, [errors.username]);
 
   function signinWithDebugCredentials(data: DebugSigninFormData) {
     signIn(providerId, {
@@ -281,8 +273,7 @@ const DebugSigninForm = ({
           variant="outline"
           size="lg"
           placeholder="Username"
-          {...register("username", { required: true, pattern: /^\S+/g })}
-          isInvalid={errors.username ? true : false}
+          {...register("username")}
           errorBorderColor="orange.600"
         />
         <RoleSelect {...register("role")}></RoleSelect>
