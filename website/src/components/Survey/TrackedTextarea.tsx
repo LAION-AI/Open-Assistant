@@ -1,9 +1,9 @@
 import { Tooltip } from "@chakra-ui/react";
 import { Progress, Stack, Textarea, TextareaProps, useColorModeValue } from "@chakra-ui/react";
 import lande from "lande";
+import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import React from "react";
-import { useCookies } from "react-cookie";
 import TextareaAutosize, { TextareaAutosizeProps } from "react-textarea-autosize";
 import { LanguageAbbreviations } from "src/lib/iso6393";
 import { getLocaleDisplayName } from "src/lib/languages";
@@ -24,18 +24,12 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
   const { t } = useTranslation("tasks");
   const wordLimitForLangDetection = 4;
   const backgroundColor = useColorModeValue("gray.100", "gray.900");
-  const [cookies] = useCookies(["NEXT_LOCALE"]);
-  const currentLanguage = cookies["NEXT_LOCALE"];
+  const router = useRouter();
+  const currentLanguage = router.locale;
   const wordCount = (props.text.match(/\w+/g) || []).length;
 
-  const detectLang = (text: string) => {
-    try {
-      return LanguageAbbreviations[lande(text)[0][0]] || currentLanguage;
-    } catch (error) {
-      return currentLanguage;
-    }
-  };
-  const detectedLang = wordCount > wordLimitForLangDetection ? detectLang(props.text) : currentLanguage;
+  const detectedLang =
+    wordCount > wordLimitForLangDetection ? detectLang(props.text, currentLanguage) : currentLanguage;
   const wrongLanguage = detectedLang !== currentLanguage;
 
   let progressColor: string;
@@ -101,4 +95,12 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
       />
     </Stack>
   );
+};
+
+const detectLang = (text: string, currentLanguage: string) => {
+  try {
+    return LanguageAbbreviations[lande(text)[0][0]] || currentLanguage;
+  } catch (error) {
+    return currentLanguage;
+  }
 };

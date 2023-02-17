@@ -1,48 +1,55 @@
 import { Select } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo } from "react";
-import { useCookies } from "react-cookie";
+import { Cookies } from "react-cookie";
 import { getLocaleDisplayName } from "src/lib/languages";
+
+const localeBroadcast = new BroadcastChannel("locale");
 
 const LanguageSelector = () => {
   const router = useRouter();
-  const [cookies, setCookie] = useCookies(["NEXT_LOCALE"]);
-  const { i18n } = useTranslation();
 
-  // Inspect the cookie based locale and the router based locale.  If the user
-  // has manually set the locale via URL, they will differ.  In that condition,
-  // update the cookie.
-  useEffect(() => {
-    const localeCookie = cookies["NEXT_LOCALE"];
-    const localeRouter = router.locale;
-    if (localeRouter !== localeCookie) {
-      setCookie("NEXT_LOCALE", localeRouter, { path: "/" });
-    }
-  }, [cookies, setCookie, router]);
+  // the cookie is the source of truth for the locale, and it always overrides the locale of the router
+  // however, if you want to render stuff dynamically you can use `router.locale` (which is not possible
+  // with the cookie)
 
-  // Memo the set of locales and their display names.
-  const localesAndNames = useMemo(() => {
-    return router.locales.map((locale) => ({
-      locale,
-      name: getLocaleDisplayName(locale),
-    }));
-  }, [router.locales]);
-
-  const languageChanged = useCallback(
-    async (option) => {
-      const locale = option.target.value;
-      setCookie("NEXT_LOCALE", locale, { path: "/" });
+  const setLocale = useCallback(
+    async (locale: string) => {
+      // always update the router / paths
+      // especially relevant when the event comes from another tab
       const path = router.asPath;
       await router.push(path, path, { locale });
-      router.reload();
+
+      // we don't use cookie hooks because they don't sync in realtime when events come from other tabs
+      const cookies = new Cookies();
+      const currentLocale = cookies.get("NEXT_LOCALE");
+      if (locale !== currentLocale) {
+        // update the cookie
+        cookies.set("NEXT_LOCALE", locale, { path: "/" });
+        // broadcast to other tabs
+        localeBroadcast.postMessage(locale);
+      }
     },
-    [router, setCookie]
+    [router]
   );
 
-  const { language: currentLanguage } = i18n;
+  // listen for locale messages between browser tabs
+  useEffect(() => {
+    const languageChangeHandler = (event: MessageEvent) => setLocale(event.data);
+    localeBroadcast.addEventListener("message", languageChangeHandler);
+    return () => localeBroadcast.removeEventListener("message", languageChangeHandler);
+  }, [router, setLocale]);
+
+  const languageChanged = useCallback((option) => setLocale(option.target.value), [setLocale]);
+
+  // Memo the set of locales and their display names.
+  const localesAndNames = useMemo(
+    () => router.locales.map((locale) => ({ locale, name: getLocaleDisplayName(locale) })),
+    [router.locales]
+  );
+
   return (
-    <Select onChange={languageChanged} defaultValue={currentLanguage}>
+    <Select onChange={languageChanged} value={router.locale}>
       {localesAndNames.map(({ locale, name }) => (
         <option key={locale} value={locale}>
           {name}
