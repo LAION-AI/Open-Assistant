@@ -1,6 +1,6 @@
 import { Box, Stack, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useColorModeValue } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
@@ -39,6 +39,15 @@ export const CreateTask = ({
     }
   };
 
+  const previewContent = useMemo(
+    () => (
+      <Suspense fallback={inputText}>
+        <RenderedMarkdown markdown={inputText}></RenderedMarkdown>
+      </Suspense>
+    ),
+    [inputText]
+  );
+
   return (
     <div data-cy="task" data-task-type="create-task">
       <TwoColumnsWithCards>
@@ -58,9 +67,7 @@ export const CreateTask = ({
               </Text>
             )}
             {!isEditable ? (
-              <Suspense fallback={inputText}>
-                <RenderedMarkdown markdown={inputText}></RenderedMarkdown>
-              </Suspense>
+              { previewContent }
             ) : (
               <Tabs isLazy>
                 <TabList>
@@ -81,9 +88,7 @@ export const CreateTask = ({
                     />
                   </TabPanel>
                   <TabPanel p="0" pt="4">
-                    <Suspense fallback={inputText}>
-                      <RenderedMarkdown markdown={inputText}></RenderedMarkdown>
-                    </Suspense>
+                    {previewContent}
                   </TabPanel>
                 </TabPanels>
               </Tabs>
