@@ -19,10 +19,17 @@ export const Stats = ({ data }: StatsProps) => {
 
   const keys = Object.keys(data.stats_by_name).filter((key) => key !== "users_accepted_tos");
 
-  // Add a second copy of the message_trees_states_by_lang
-  // for creating the table in addition to the chart
-  keys.push("message_trees_states_by_lang_table");
-  data.stats_by_name["message_trees_states_by_lang_table"] = data.stats_by_name["message_trees_states_by_lang"];
+  // Add two copies of the message_trees_states_by_lang for creating the
+  // stacked bar and the table in addition to the donough chart
+  if (keys.indexOf("message_trees_states_by_lang_table") == -1) {
+    keys.push("message_trees_states_by_lang_table");
+    data.stats_by_name["message_trees_states_by_lang_table"] = data.stats_by_name["message_trees_states_by_lang"];
+  }
+
+  if (keys.indexOf("message_trees_states_by_lang_stacked") == -1) {
+    keys.push("message_trees_states_by_lang_stacked");
+    data.stats_by_name["message_trees_states_by_lang_stacked"] = data.stats_by_name["message_trees_states_by_lang"];
+  }
 
   const getStatByName = (name: string): Stat => {
     return data.stats_by_name[name];
@@ -37,7 +44,8 @@ export const Stats = ({ data }: StatsProps) => {
         {keys.map((key) => {
           const stat = getStatByName(key);
           const component = statComponents[key];
-          const colSpan = key === "message_trees_states_by_lang_table" ? 2 : 1;
+          const colSpan =
+            key === "message_trees_states_by_lang_table" || key === "message_trees_states_by_lang_stacked" ? 2 : 1;
           return (
             <GridItem key={key} colSpan={colSpan}>
               <Card minH={500}>

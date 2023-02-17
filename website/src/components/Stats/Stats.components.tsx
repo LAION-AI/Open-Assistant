@@ -1,15 +1,16 @@
-import { Text, Box, Select, useColorModeValue } from "@chakra-ui/react";
-import { ArcElement, Chart as ChartJS, Colors, Tooltip } from "chart.js";
-import { TFunction, useTranslation } from "next-i18next";
-import { useState } from "react";
-import { Doughnut, Pie } from "react-chartjs-2";
+import { Box, Select, useColorModeValue } from "@chakra-ui/react";
+import { ArcElement, BarElement, CategoryScale, Chart as ChartJS, Colors, LinearScale, Tooltip } from "chart.js";
+import { createColumnHelper } from "@tanstack/react-table";
+import { useTranslation } from "next-i18next";
+import { useState, useMemo } from "react";
+import { Doughnut, Pie, Bar } from "react-chartjs-2";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { getLocaleDisplayName } from "src/lib/languages";
 import { colors } from "src/styles/Theme/colors";
-import { SimpleTable } from "../SimpleTable/SimpleTable";
+import { DataTable } from "../DataTable/DataTable";
 import { Stat as StatType } from "src/types/Stat";
 
-ChartJS.register(ArcElement, Tooltip, Colors);
+ChartJS.register(ArcElement, Tooltip, Colors, CategoryScale, BarElement, LinearScale);
 
 const getDefaultChartOptions = (color: string) => ({
   maintainAspectRatio: false,
@@ -28,11 +29,6 @@ type ChartProps = {
   type?: typeof Pie | typeof Doughnut;
 };
 
-type KeyPairStatProps = {
-  stat: StatType;
-  titleFn?: (name: string) => string;
-};
-
 type MessageTreeStateStatsProps = {
   titleFn: (name: string) => string;
   stat: StatType & {
@@ -44,13 +40,32 @@ type MessageTreeStateStatsProps = {
   };
 };
 
-const findLangRow = (rows: any, lang: string) => {
-  for (let i = 0; i < rows.length; i++) {
-    const row_lang = rows[i][0];
-    if (row_lang === lang) return i;
-  }
+// The headers come from the message tree State. These two states are not
+// considered because they make the table too wide and they are not so
+// interesting:
+// - "ready_for_scoring",
+// - "scoring_failed"
+const interestingStates = [
+  "prompt_lottery_waiting",
+  "initial_prompt_review",
+  "growing",
+  "backlog_ranking",
+  "ranking",
+  "ready_for_export",
+  "aborted_low_grade",
+  "halted_by_moderator",
+];
 
-  return -1;
+type LangRow = {
+  language: string;
+  initial_prompt_review: number;
+  prompt_lottery_waiting: number;
+  growing: number;
+  backlog_ranking: number;
+  ranking: number;
+  ready_for_export: number;
+  aborted_low_grade: number;
+  halted_by_moderator: number;
 };
 
 function getTableData(
@@ -61,70 +76,108 @@ function getTableData(
       count: number;
     }[];
   },
-  t: TFunction<"stats", undefined, "stats">
+  t
 ) {
-  // The headers come from the message tree State.
-  // These two states are not considered because they make
-  // the table too wide and they are not so interesting:
-  // - "ready_for_scoring",
-  // - "scoring_failed"
-  let headers = [
-    "language", // This one doesn't come from the message tree state
-    "prompt_lottery_waiting",
-    "initial_prompt_review",
-    "growing",
-    "backlog_ranking",
-    "ranking",
-    "ready_for_export",
-    "aborted_low_grade",
-    "halted_by_moderator",
+  // Group the stats in a dictionary where the key is the language
+  const dataPerLang = {};
+  stat.stats.forEach((item) => {
+    const { lang, state, count } = item;
+    const langWithCode = `${getLocaleDisplayName(lang)} [${lang}]`;
+    if (!dataPerLang[langWithCode]) {
+      dataPerLang[langWithCode] = {};
+    }
+
+    dataPerLang[langWithCode][state] = count;
+  });
+
+  // If some state was not found for a language, set the count to 0
+  Object.keys(dataPerLang).forEach((lang) => {
+    interestingStates.forEach((state) => {
+      if (!dataPerLang[lang][state]) {
+        dataPerLang[lang][state] = 0;
+      }
+    });
+  });
+
+  // Put the data in the format required by DataTable
+  const data: LangRow[] = [];
+  for (const lang in dataPerLang) {
+    const row = { language: lang, ...dataPerLang[lang] };
+    data.push(row);
+  }
+
+  const columnHelper = createColumnHelper<LangRow>();
+
+  const columns = [
+    columnHelper.accessor("language", {
+      cell: (info) => info.getValue(),
+      header: "Language",
+    }),
+    columnHelper.accessor("initial_prompt_review", {
+      cell: (info) => info.getValue(),
+      header: t("initial_prompt_review"),
+      meta: {
+        isNumeric: true,
+      },
+    }),
+    columnHelper.accessor("prompt_lottery_waiting", {
+      cell: (info) => info.getValue(),
+      header: t("prompt_lottery_waiting"),
+      meta: {
+        isNumeric: true,
+      },
+    }),
+    columnHelper.accessor("growing", {
+      cell: (info) => info.getValue(),
+      header: t("growing"),
+      meta: {
+        isNumeric: true,
+      },
+    }),
+    columnHelper.accessor("backlog_ranking", {
+      cell: (info) => info.getValue(),
+      header: t("backlog_ranking"),
+      meta: {
+        isNumeric: true,
+      },
+    }),
+    columnHelper.accessor("ranking", {
+      cell: (info) => info.getValue(),
+      header: t("ranking"),
+      meta: {
+        isNumeric: true,
+      },
+    }),
+    columnHelper.accessor("ready_for_export", {
+      cell: (info) => info.getValue(),
+      header: t("ready_for_export"),
+      meta: {
+        isNumeric: true,
+      },
+    }),
+    columnHelper.accessor("aborted_low_grade", {
+      cell: (info) => info.getValue(),
+      header: t("aborted_low_grade"),
+      meta: {
+        isNumeric: true,
+      },
+    }),
+    columnHelper.accessor("halted_by_moderator", {
+      cell: (info) => info.getValue(),
+      header: t("halted_by_moderator"),
+      meta: {
+        isNumeric: true,
+      },
+    }),
   ];
 
-  const languages = [];
-  for (let i = 0; i < stat.stats.length; i++) {
-    if (!languages.includes(stat.stats[i].lang)) {
-      languages.push(stat.stats[i].lang);
-    }
-  }
-
-  const rows = [];
-
-  for (let i = 0; i < stat.stats.length; i++) {
-    const lang = stat.stats[i].lang;
-
-    let langRow = findLangRow(rows, lang);
-
-    if (langRow == -1) {
-      // The language is not yet in the data. Add it
-      rows.push(Array(headers.length).fill(0));
-      langRow = rows.length - 1;
-      rows[langRow][0] = lang;
-    }
-
-    const state = stat.stats[i].state;
-    const stateCol = headers.indexOf(state);
-    if (stateCol === -1) {
-      continue;
-    }
-
-    const threadCount = stat.stats[i].count;
-    rows[langRow][stateCol] = threadCount;
-  }
-
-  headers = headers.map((item) => t(getTypeSafei18nKey(item)));
-
-  for (let i = 0; i < rows.length; i++) {
-    const langCode = rows[i][0];
-    rows[i][0] = getLocaleDisplayName(langCode) + " [" + langCode + "]";
-  }
-  return { headers, rows };
+  return { data, columns };
 }
 
 export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsProps) => {
   const { t } = useTranslation("stats");
   const color = useColorModeValue(colors.light.text, colors.dark.text);
-  const langs = stat.stats.map((item) => item.lang);
-  const uniqueLangs = langs.filter((item, index) => langs.indexOf(item) === index);
+  const uniqueLangs = Array.from(new Set(stat.stats.map((s) => s.lang)));
   const [selectedLang, setSelectedLang] = useState("en");
   const stats = stat.stats.filter((item) => item.lang === selectedLang);
 
@@ -156,6 +209,52 @@ export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsPr
   );
 };
 
+const barOptions = {
+  responsive: true,
+  scales: {
+    x: {
+      stacked: true,
+    },
+    y: {
+      stacked: true,
+    },
+  },
+};
+
+export const MessageTreeStateStatsStacked = ({ stat, titleFn }: MessageTreeStateStatsProps) => {
+  const { t } = useTranslation("stats");
+  const uniqueLangs = useMemo(() => Array.from(new Set(stat.stats.map((s) => s.lang))), stat.stats);
+  const uniqueStates = useMemo(() => Array.from(new Set(stat.stats.map((s) => s.state))), stat.stats);
+
+  const barDatasets = [];
+  uniqueStates.forEach((state) => {
+    const dataState = stat.stats.filter((item) => item.state === state);
+
+    const langCount = {};
+    dataState.forEach((item) => {
+      langCount[item.lang] = item.count;
+    });
+
+    barDatasets.push({
+      label: t(getTypeSafei18nKey(state)),
+      data: uniqueLangs.map((item) => langCount[item]),
+    });
+  });
+
+  const barData = {
+    labels: uniqueLangs,
+    datasets: barDatasets,
+  };
+
+  return (
+    <>
+      <Box minH={330}>
+        <Bar options={barOptions} data={barData} />
+      </Box>
+    </>
+  );
+};
+
 export const Chart = ({ stat, titleFn, type: Component }: ChartProps) => {
   const data = Object.keys(stat.stats);
   const { t } = useTranslation("stats");
@@ -177,29 +276,11 @@ export const Chart = ({ stat, titleFn, type: Component }: ChartProps) => {
   );
 };
 
-export const KeyPairStat = ({ stat, titleFn }: KeyPairStatProps) => {
+export const MessageTreeStateStatsTable = ({ stat, titleFn }: MessageTreeStateStatsProps) => {
   const { t } = useTranslation("stats");
-  return (
-    <>
-      {Object.keys(stat.stats).map((item) => {
-        return (
-          <Text key={item}>
-            <Text className="capitalize" as="span" fontWeight="semibold">
-              {titleFn ? titleFn(item) : t(getTypeSafei18nKey(item))}
-            </Text>
-            : {t(getTypeSafei18nKey(stat.stats[item]))}
-          </Text>
-        );
-      })}
-    </>
-  );
-};
+  const { data, columns } = getTableData(stat, t);
 
-export const MessageTreeStateStatsTable = ({ stat }: MessageTreeStateStatsProps) => {
-  const { t } = useTranslation("stats");
-  const { headers, rows } = getTableData(stat, t);
-
-  return <SimpleTable headers={headers} rows={rows}></SimpleTable>;
+  return <DataTable data={data} columns={columns} disablePagination={true}></DataTable>;
 };
 
 export const statComponents: Record<string, React.FC<{ stat: StatType }>> = {
@@ -210,7 +291,10 @@ export const statComponents: Record<string, React.FC<{ stat: StatType }>> = {
     <MessageTreeStateStats stat={stat} titleFn={getLocaleDisplayName} />
   ),
   message_trees_states_by_lang_table: ({ stat }: MessageTreeStateStatsProps) => (
-    <MessageTreeStateStatsTable stat={stat} />
+    <MessageTreeStateStatsTable stat={stat} titleFn={getLocaleDisplayName} />
+  ),
+  message_trees_states_by_lang_stacked: ({ stat }: MessageTreeStateStatsProps) => (
+    <MessageTreeStateStatsStacked stat={stat} titleFn={getLocaleDisplayName} />
   ),
   human_messages_by_lang: ({ stat }: ChartProps) => (
     <Chart stat={stat} titleFn={getLocaleDisplayName} type={Doughnut} />
