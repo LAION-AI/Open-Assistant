@@ -25,7 +25,8 @@ export const SortableItem = ({
   const textColor = useColorModeValue("white", "white");
 
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id, disabled: !isEditable });
-  const pcListeners = { onKeyDown: listeners.onKeyDown, onMouseDown: listeners.onMouseDown } as SyntheticListenerMap;
+  console.log(listeners);
+  const pcListeners = { onKeyDown: listeners?.onKeyDown, onMouseDown: listeners?.onMouseDown } as SyntheticListenerMap;
   const sx = useMemo(
     () => ({
       "&:active": {
@@ -59,7 +60,7 @@ export const SortableItem = ({
       {children}
       <div
         onClick={OpenModal}
-        onPointerDown={listeners.onPointerDown as PointerEventHandler<HTMLDivElement>}
+        onPointerDown={listeners?.onPointerDown as PointerEventHandler<HTMLDivElement>}
         className="w-[67%] lg:w-[80%]  h-full  absolute left-0 top-0 touch-none"
       ></div>
     </Box>
