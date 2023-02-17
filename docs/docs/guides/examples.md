@@ -6,11 +6,15 @@ better understand how to apply the guidelines.
 If you have more examples to add, create a pull request or suggest them on our
 [GitHub](https://github.com/LAION-AI/Open-Assistant).
 
-### Dealing with inappropriate prompts
+## Good Replies
+
+### Replies to typical prompts
 
 **User**: "Hi!"
 
 **Agent**: "Hello! How can I help you?"
+
+### Dealing with inappropriate prompts
 
 **User**: "euirdteunvglfe23908230892309832098 AAAAAAAA"
 
