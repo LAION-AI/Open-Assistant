@@ -17,7 +17,7 @@ export const Stats = ({ data }: StatsProps) => {
     return null;
   }
 
-  const keys = Object.keys(data.stats_by_name);
+  const keys = Object.keys(data.stats_by_name).filter((key) => key !== "users_accepted_tos");
 
   const getStatByName = (name: string): Stat => {
     return data.stats_by_name[name];
@@ -28,13 +28,13 @@ export const Stats = ({ data }: StatsProps) => {
       <Heading size="lg" className="pb-4">
         {t("stats")}
       </Heading>
-      <SimpleGrid spacing={2} columns={{ base: 1, md: 2, lg: 3 }}>
+      <SimpleGrid spacing={2} columns={{ base: 1, md: 2, lg: 2 }}>
         {keys.map((key) => {
           const stat = getStatByName(key);
           const component = statComponents[key];
           return (
             <GridItem key={key}>
-              <Card minH={230}>
+              <Card minH={500}>
                 <CardHeader>
                   <Heading size="md">{t(getTypeSafei18nKey(stat.name))}</Heading>
                 </CardHeader>
