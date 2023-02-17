@@ -112,7 +112,7 @@ export const Sortable = (props: SortableProps) => {
           <ModalContent pb={5} alignItems="center">
             <ModalHeader>Full Text</ModalHeader>
             <ModalCloseButton />
-            <ModalBody>
+            <ModalBody maxW="full">
               <Suspense fallback={modalText}>
                 <RenderedMarkdown markdown={modalText}></RenderedMarkdown>
               </Suspense>
