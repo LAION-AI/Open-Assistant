@@ -104,7 +104,7 @@ export const Sortable = (props: SortableProps) => {
           setModalText(null);
           onClose();
         }}
-        size="xl"
+        size="6xl"
         scrollBehavior={"inside"}
         isCentered
       >
