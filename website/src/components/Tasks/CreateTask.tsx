@@ -67,7 +67,7 @@ export const CreateTask = ({
               </Text>
             )}
             {!isEditable ? (
-              { previewContent }
+              previewContent
             ) : (
               <Tabs isLazy>
                 <TabList>
