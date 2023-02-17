@@ -182,7 +182,7 @@ const PrivacyPolicy = () => {
                   Overview
                 </Heading>
                 <Text>
-                  We are pleased that you are interested in our work and welcome you to our website open-assistant.ai.
+                  We are pleased that you are interested in our work and welcome you to our website open-assistant.io.
                   In this Privacy Policy you will learn which personal data we process when you visit our website and to
                   what kind of purpose, and also what rights you have regarding these data. Categorically, we only store
                   data as long as we need them. There is no legal obligation to provide us with personal data. Automated
