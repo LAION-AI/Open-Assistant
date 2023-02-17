@@ -48,7 +48,6 @@ const sx: SystemStyleObject = {
   },
   p: {
     whiteSpace: "pre-wrap",
-    display: "inline-block",
   },
   wordBreak: "break-word",
   "> blockquote": {
