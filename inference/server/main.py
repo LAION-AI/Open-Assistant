@@ -22,6 +22,8 @@ from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
 
+STREAM_DELAY = 1
+
 
 # add prometheus metrics at /metrics
 @app.on_event("startup")
@@ -236,7 +238,7 @@ async def create_message(
 
                 _, response_packet_str = item
                 response_packet = inference.WorkResponsePacket.parse_raw(response_packet_str)
-                logger.info(f"Received response packet for {chat_id} of {response_packet}")
+                logger.info(f"Received response packet for {chat_id} of {response_packet} to /chat")
                 result_data.append(response_packet)
 
                 if response_packet.is_end:
@@ -276,15 +278,16 @@ async def work(websocket: fastapi.WebSocket, worker: models.DbWorkerEntry = Depe
             # but general compatibility matching is tricky
             item = await work_queue.dequeue()
             if item is None:
-                await asyncio.sleep(1)
+                logger.info(f"/work endpoint sleeping for {STREAM_DELAY}")
+                await asyncio.sleep(STREAM_DELAY)
                 continue
             else:
                 _, chat_id = item
+                logger.info(f"Found pending task in {worker_config.compat_hash=} queue for {chat_id=}")
 
             with manual_chat_repository() as chat_repository:
                 chat = chat_repository.get_chat_by_id(chat_id)
                 request = chat.pending_message_request
-
                 chat_repository.set_chat_state(chat.id, interface.MessageRequestState.in_progress)
 
                 work_request = inference.WorkRequest(
@@ -316,7 +319,7 @@ async def work(websocket: fastapi.WebSocket, worker: models.DbWorkerEntry = Depe
                         in_progress = True
                         await chat_queue.enqueue(response_packet.json())
                         if response_packet.is_end:
-                            logger.debug(f"Received {response_packet=} from worker. Ending.")
+                            logger.debug(f"Received end of {response_packet=} from worker to /work. Ending.")
                             break
                 except fastapi.WebSocketException:
                     # TODO: handle this better
