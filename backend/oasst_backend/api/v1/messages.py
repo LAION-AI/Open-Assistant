@@ -178,7 +178,7 @@ def get_conv(
 def get_tree(
     *,
     message_id: UUID,
-    include_spam: Optional[bool] = False,
+    include_spam: Optional[bool] = True,
     include_deleted: Optional[bool] = False,
     frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),

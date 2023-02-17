@@ -2,6 +2,8 @@
   "about": "Про проєкт",
   "account_settings": "Аккаунт",
   "admin_dashboard": "Панель адміністратора",
+  "back_to_dashboard": "Повернутися до панелі",
+  "cancel": "Скасувати",
   "connect": "Приєднати",
   "conversational": "Розмовний ШІ для кожного.",
   "copied": "Скопійовано",
@@ -22,7 +24,7 @@
   "more_information": "Більше інформації",
   "no": "Ні",
   "send": "Надіслати",
-  "submit": "Представити",
+  "submit": "Надіслати",
   "output": "Висновок",
   "parameters": "Параметр",
   "skip": "Пропустити",
@@ -34,11 +36,13 @@
   "sign_out": "Вийти",
   "status_dashboard": "Панель статусів",
   "status": "Статус",
+  "stats": "Статистика",
   "success": "Успіх",
   "terms_of_service": "Умови використання",
   "title": "Open Assistant",
   "user_leaderboard": "таблиця лідерів користувачів",
   "users_dashboard": "Панель користувачів",
   "users": "Користувачі",
-  "yes": "Так"
+  "yes": "Так",
+  "trollboard": "Trollboard"
 }

@@ -28,7 +28,7 @@ method = args.format
 def talk(human_input, history, sep_token, prefix=""):
     histories = []
     if method == "v2":
-        prefix = "<prefix>You are a helpful assistant called Joi, you will now help user to answer the question as concise as possible</prefix>"
+        prefix = "<prefix>You are a helpful assistant called Joi trained by OpenAssistant on large corpus of data, you will now help user to answer the question as concise as possible</prefix>"
         for (question, answer) in history:
             histories.append(
                 "{}{}{}{}".format(QA_SPECIAL_TOKENS["Question"], question, QA_SPECIAL_TOKENS["Answer"], answer)
@@ -70,22 +70,26 @@ if __name__ == "__main__":
     while True:
         print(">", end=" ")
         prompt = input()
-        input_text = talk(prompt, histories, prefix)
-        inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(0)
-        outputs = model.generate(
-            **inputs,
-            early_stopping=True,
-            max_new_tokens=args.max_new_tokens,
-            do_sample=True,
-            top_k=args.top_k,
-            temperature=args.temperature,
-            pad_token_id=tokenizer.eos_token_id,
-        )
-        output = tokenizer.decode(outputs[0], truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"])
-        reply = process_output(output)
-
-        if len(reply) != 0:
-            print(reply)
-            histories.append((prompt, reply))
+        if prompt == "!reset":
+            histories = []
         else:
-            print("emtpy token")
+            input_text = talk(prompt, histories, prefix)
+            inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(0)
+            outputs = model.generate(
+                **inputs,
+                early_stopping=True,
+                max_new_tokens=args.max_new_tokens,
+                do_sample=True,
+                top_k=args.top_k,
+                temperature=args.temperature,
+                pad_token_id=tokenizer.eos_token_id,
+                # dialogue_collator.py line 36
+            )
+            output = tokenizer.decode(outputs[0], truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"])
+            reply = process_output(output)
+
+            if len(reply) != 0:
+                print(reply)
+                histories.append((prompt, reply))
+            else:
+                print("emtpy token")

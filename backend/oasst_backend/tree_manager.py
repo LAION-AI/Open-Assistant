@@ -378,6 +378,28 @@ class TreeManager:
         self._auto_moderation(lang=lang)
         num_missing_prompts = self._prompt_lottery(lang=lang, max_activate=2)
 
+        # check user's pending tasks
+        recent_tasks_span = timedelta(seconds=self.cfg.recent_tasks_span_sec)
+        users_pending_tasks = self.pr.task_repository.fetch_pending_tasks_of_user(
+            self.pr.user_id,
+            max_age=recent_tasks_span,
+            limit=self.cfg.max_pending_tasks_per_user + 1,
+        )
+        num_pending_tasks = len(users_pending_tasks)
+        if num_pending_tasks >= self.cfg.max_pending_tasks_per_user:
+            logger.warning(
+                f"Rejecting task request. User {self.pr.user_id} has {num_pending_tasks} pending tasks. "
+                f"Oldest age: {utcnow()-users_pending_tasks[0].created_date}."
+            )
+            raise OasstError(
+                "User has too many pending tasks.",
+                OasstErrorCode.TASK_TOO_MANY_PENDING,
+            )
+        elif num_pending_tasks > 0:
+            logger.debug(
+                f"User {self.pr.user_id} has {num_pending_tasks} pending tasks. Oldest age: {utcnow()-users_pending_tasks[0].created_date}"
+            )
+
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)
         extendible_parents, active_tree_sizes = self.query_extendible_parents(lang=lang)
@@ -742,6 +764,8 @@ class TreeManager:
                                     f"Initial prompt message was accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
                                 )
                             else:
+                                msg.review_result = False
+                                self.db.add(msg)
                                 self.enter_low_grade_state(msg.message_tree_id)
                         self.check_condition_for_prompt_lottery(msg.message_tree_id)
                     elif msg.review_count >= self.cfg.num_reviews_reply:
@@ -751,6 +775,9 @@ class TreeManager:
                             logger.info(
                                 f"Reply message message accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
                             )
+                        else:
+                            msg.review_result = False
+                            self.db.add(msg)
 
                     self.check_condition_for_ranking_state(msg.message_tree_id)
 
@@ -965,7 +992,7 @@ class TreeManager:
             .filter(
                 MessageTreeState.active,
                 MessageTreeState.state == state,
-                not_(Message.review_result),
+                or_(Message.review_result.is_(None), not_(Message.review_result)),
                 not_(Message.deleted),
                 Message.review_count < required_reviews,
                 Message.lang == lang,
@@ -1183,7 +1210,10 @@ HAVING COUNT(m.id) < mts.goal_tree_size
                 MessageTreeState.goal_tree_size.label("goal_tree_size"),
                 func.count(Message.id).filter(Message.review_result).label("tree_size"),
                 func.count(Message.id)
-                .filter(not_(Message.review_result), Message.review_count < required_reviews)
+                .filter(
+                    or_(Message.review_result.is_(None), not_(Message.review_result)),
+                    Message.review_count < required_reviews,
+                )
                 .label("awaiting_review"),
             )
             .select_from(MessageTreeState)

@@ -78,6 +78,14 @@ def index_eli5(example):
     return example["title"], example["answers"]["text"][0]
 
 
+def index_gsm_hard(example):
+    return example[
+        "input"
+    ] + "\nWrite a small snippet of python code to answer this", "Here's the code solution to the question\n```python\n{}\n```\n The answer should be {}".format(
+        example["code"].strip(), example["target"]
+    )
+
+
 class QADataset(Dataset):
     """
     How to define a new QA dataset:
@@ -115,6 +123,7 @@ class QADataset(Dataset):
             "index_fn": index_adversarial_qa,
             "params": {"name": "adversarialQA"},
         },
+        "gsm8k_hard": {"index_fn": index_gsm_hard, "name": "reasoning-machines/gsm-hard", "no_val": True},
         "gsm8k": {"index_fn": index_gsm8k, "params": {"name": "main"}, "validation": "test"},
         "wikihow": {"name": "b-mc2/wikihow_lists", "index_fn": index_wikihow, "no_val": True},
         "essay_instruction": {
