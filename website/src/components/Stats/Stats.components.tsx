@@ -1,12 +1,8 @@
 import { Box, Select, useColorModeValue } from "@chakra-ui/react";
 import {
   ArcElement,
-  BarElement,
-  CategoryScale,
   Chart as ChartJS,
   Colors,
-  Legend,
-  LinearScale,
   Tooltip,
 } from "chart.js";
 import { useTranslation } from "next-i18next";
@@ -17,9 +13,9 @@ import { getLocaleDisplayName } from "src/lib/languages";
 import { colors } from "src/styles/Theme/colors";
 import { Stat as StatType } from "src/types/Stat";
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Colors);
+ChartJS.register(ArcElement, Tooltip, Colors);
 
-const getDefaultChartOptions = (color) => ({
+const getDefaultChartOptions = (color: string) => ({
   maintainAspectRatio: false,
   plugins: {
     legend: {
