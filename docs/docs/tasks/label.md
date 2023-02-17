@@ -2,7 +2,7 @@
 
 ## Label Initial Prompt
 
-Provide labels for the following prompt
+Provide labels for the following prompt.
 
 ## Label Prompter Reply
 
