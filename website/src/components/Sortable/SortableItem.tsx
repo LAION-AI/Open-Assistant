@@ -25,7 +25,6 @@ export const SortableItem = ({
   const textColor = useColorModeValue("white", "white");
 
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id, disabled: !isEditable });
-  console.log(listeners);
   const pcListeners = { onKeyDown: listeners?.onKeyDown, onMouseDown: listeners?.onMouseDown } as SyntheticListenerMap;
   const sx = useMemo(
     () => ({
