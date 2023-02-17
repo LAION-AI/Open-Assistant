@@ -1,12 +1,12 @@
 import { Select } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Cookies } from "react-cookie";
 import { getLocaleDisplayName } from "src/lib/languages";
 
-const localeBroadcast = new BroadcastChannel("locale");
-
 const LanguageSelector = () => {
+  const localeBroadcastRef = useRef(new BroadcastChannel("locale"));
+  const localeBroadcast = localeBroadcastRef.current;
   const router = useRouter();
 
   // the cookie is the source of truth for the locale, and it always overrides the locale of the router
@@ -30,7 +30,7 @@ const LanguageSelector = () => {
         localeBroadcast.postMessage(locale);
       }
     },
-    [router]
+    [localeBroadcast, router]
   );
 
   // listen for locale messages between browser tabs
@@ -38,7 +38,7 @@ const LanguageSelector = () => {
     const languageChangeHandler = (event: MessageEvent) => setLocale(event.data);
     localeBroadcast.addEventListener("message", languageChangeHandler);
     return () => localeBroadcast.removeEventListener("message", languageChangeHandler);
-  }, [router, setLocale]);
+  }, [localeBroadcast, router, setLocale]);
 
   const languageChanged = useCallback((option) => setLocale(option.target.value), [setLocale]);
 
