@@ -104,7 +104,7 @@ export const Sortable = (props: SortableProps) => {
           setModalText(null);
           onClose();
         }}
-        size="xl"
+        size="6xl"
         scrollBehavior={"inside"}
         isCentered
       >
@@ -112,7 +112,7 @@ export const Sortable = (props: SortableProps) => {
           <ModalContent pb={5} alignItems="center">
             <ModalHeader>Full Text</ModalHeader>
             <ModalCloseButton />
-            <ModalBody>
+            <ModalBody maxW="full">
               <Suspense fallback={modalText}>
                 <RenderedMarkdown markdown={modalText}></RenderedMarkdown>
               </Suspense>
