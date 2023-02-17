@@ -4,6 +4,10 @@ Below is a list of guidelines that should be adhered to for each possible task
 available when building the data set. To see some examples of how the guidelines
 can be applied, visit the examples document.
 
+Please consider checking out our survey
+[here](https://forms.gle/vBW7b2kMzjCoehkH9). You can use it to rate each
+guideline and leave feedback for each task.
+
 If you have further suggestions to improve any of our guidelines, or want to add
 more examples, create a pull request or suggest them on our
 [GitHub](https://github.com/LAION-AI/Open-Assistant).
