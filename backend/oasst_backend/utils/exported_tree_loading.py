@@ -67,11 +67,11 @@ def load_data(filepaths: List[str], paired=False):
         sents = [f"{qa['instruct']} {qa['answer']}" for qa in data]
     elif not paired:
         data = defaultdict(list)
-        data["user_messages"] = []
-        data["assistant_messages"] = []
+        # data["user_messages"] = []
+        # data["assistant_messages"] = []
         data, message_list = store_qa_data_separate(trees, data)
         sents = data["user_messages"] + data["assistant_messages"]
 
-    data = [(i, sent) for i, sent in enumerate(sents)]
+    data = [(i, sent) for i, sent in enumerate(sents[:100])]
     data = pd.DataFrame(data, columns=["id", "query"])
     return data, message_list
