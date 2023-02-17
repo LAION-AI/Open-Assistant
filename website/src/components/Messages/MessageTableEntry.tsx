@@ -133,6 +133,9 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
           style={{ float: "right", position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
           onClick={(e) => e.stopPropagation()}
         >
+          <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
+            {message.lang}
+          </Badge>
           {Object.entries(emojiState.emojis)
             .filter(([emoji]) => isKnownEmoji(emoji))
             .sort(([emoji]) => -emoji)
