@@ -100,7 +100,7 @@ https://huggingface.co/datasets/your_huggingface_name/dataset_name/edit/main/REA
 #### 4. Stage your changes and run the pre-commit hook
 
 ```bash
-pre-commit run --all-files
+pre-commit run
 ```
 
 #### 5. Submit a pull request
