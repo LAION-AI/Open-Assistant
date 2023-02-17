@@ -67,8 +67,6 @@ def load_data(filepaths: List[str], paired=False):
         sents = [f"{qa['instruct']} {qa['answer']}" for qa in data]
     elif not paired:
         data = defaultdict(list)
-        # data["user_messages"] = []
-        # data["assistant_messages"] = []
         data, message_list = store_qa_data_separate(trees, data)
         sents = data["user_messages"] + data["assistant_messages"]
 
