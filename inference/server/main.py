@@ -236,9 +236,11 @@ async def create_message(
 
                 _, response_packet_str = item
                 response_packet = inference.WorkResponsePacket.parse_raw(response_packet_str)
+                logger.info(f"Received response packet for {chat_id} of {response_packet}")
                 result_data.append(response_packet)
 
                 if response_packet.is_end:
+                    logger.info(f"Reached end of response packet for {chat_id}")
                     break
 
                 yield {
