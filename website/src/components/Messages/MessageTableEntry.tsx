@@ -57,7 +57,6 @@ interface MessageTableEntryProps {
 }
 
 export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge }: MessageTableEntryProps) {
-  const router = useRouter();
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
     const emojis = { ...message.emojis };
