@@ -129,9 +129,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
 
   return (
     <>
-      <MemorizedMarkdown components={components} disallowedElements={disallowedElements}>
-        {markdown}
-      </MemorizedMarkdown>
+      <MemorizedMarkdown components={components}>{markdown}</MemorizedMarkdown>
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
         <ModalContent>
@@ -161,7 +159,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
 const MemorizedMarkdown = memo((props: ReactMarkdownOptions) => {
   return (
     <Prose as="div" sx={sx}>
-      <ReactMarkdown remarkPlugins={plugins} {...props}></ReactMarkdown>
+      <ReactMarkdown {...props} disallowedElements={disallowedElements} remarkPlugins={plugins}></ReactMarkdown>
     </Prose>
   );
 });
