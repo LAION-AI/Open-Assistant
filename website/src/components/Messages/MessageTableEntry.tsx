@@ -10,6 +10,7 @@ import {
   MenuGroup,
   MenuItem,
   MenuList,
+  Portal,
   SimpleGrid,
   Tooltip,
   useBreakpointValue,
@@ -33,7 +34,7 @@ import {
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
@@ -68,10 +69,6 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
     });
   }, [message.emojis, message.user_emojis]);
 
-  const goToMessage = useCallback(
-    () => enabled && router.push(`/messages/${message.id}`),
-    [enabled, router, message.id]
-  );
   const { isOpen: reportPopupOpen, onOpen: showReportPopup, onClose: closeReportPopup } = useDisclosure();
   const { isOpen: labelPopupOpen, onOpen: showLabelPopup, onClose: closeLabelPopup } = useDisclosure();
 
@@ -111,9 +108,11 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
   const { t } = useTranslation(["message"]);
 
   return (
-    <HStack w={["full", "full", "full", "fit-content"]} gap={0.5} alignItems="start">
+    <HStack w={["full", "full", "full", "fit-content"]} gap={0.5} alignItems="start" maxW="full" position="relative">
       {!inlineAvatar && avatar}
       <Box
+        as={enabled ? NextLink : undefined}
+        href={enabled ? ROUTES.MESSAGE_DETAIL(message.id) : undefined}
         width={["full", "full", "full", "fit-content"]}
         maxWidth={["full", "full", "full", "2xl"]}
         p={[3, 4]}
@@ -121,17 +120,16 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
         bg={bg}
         outline={highlight ? "2px solid black" : undefined}
         outlineColor={highlightColor}
-        onClick={goToMessage}
         cursor={enabled ? "pointer" : undefined}
-        style={{ position: "relative" }}
-        overflow="hidden"
+        overflowX="auto"
       >
         {inlineAvatar && avatar}
         <Suspense fallback={message.text}>
           <RenderedMarkdown markdown={message.text}></RenderedMarkdown>
         </Suspense>
         <HStack
-          style={{ float: "right", position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
+          justifyContent="end"
+          style={{ position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
           onClick={(e) => e.stopPropagation()}
         >
           <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
@@ -162,7 +160,14 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
           <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
           <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
         </HStack>
-        <Flex position="absolute" gap="2" top="-2.5" right="5">
+        <Flex
+          position="absolute"
+          gap="2"
+          top="-2.5"
+          style={{
+            insetInlineEnd: "1.25rem",
+          }}
+        >
           {showAuthorBadge && message.user_is_author && (
             <Tooltip label={t("message_author_explain")} placement="top">
               <Badge size="sm" colorScheme="green" textTransform="capitalize">
@@ -267,61 +272,63 @@ const MessageActions = ({
       <MenuButton>
         <MoreHorizontal />
       </MenuButton>
-      <MenuList>
-        <MenuGroup title={t("reactions")}>
-          <SimpleGrid columns={4}>
-            {["+1", "-1"].map((emoji) => (
-              <EmojiMenuItem key={emoji} emoji={emoji} checked={userEmoji?.includes(emoji)} react={react} />
-            ))}
-          </SimpleGrid>
-        </MenuGroup>
-        <MenuDivider />
-        <MenuItem onClick={onLabel} icon={<ClipboardList />}>
-          {t("label_action")}
-        </MenuItem>
-        <MenuItem onClick={onReport} icon={<Flag />}>
-          {t("report_action")}
-        </MenuItem>
-        <MenuDivider />
-        <MenuItem as={NextLink} href={`/messages/${id}`} target="_blank" icon={<MessageSquare />}>
-          {t("open_new_tab_action")}
-        </MenuItem>
+      <Portal>
+        <MenuList>
+          <MenuGroup title={t("reactions")}>
+            <SimpleGrid columns={4}>
+              {["+1", "-1"].map((emoji) => (
+                <EmojiMenuItem key={emoji} emoji={emoji} checked={userEmoji?.includes(emoji)} react={react} />
+              ))}
+            </SimpleGrid>
+          </MenuGroup>
+          <MenuDivider />
+          <MenuItem onClick={onLabel} icon={<ClipboardList />}>
+            {t("label_action")}
+          </MenuItem>
+          <MenuItem onClick={onReport} icon={<Flag />}>
+            {t("report_action")}
+          </MenuItem>
+          <MenuDivider />
+          <MenuItem as={NextLink} href={`/messages/${id}`} target="_blank" icon={<MessageSquare />}>
+            {t("open_new_tab_action")}
+          </MenuItem>
 
-        <MenuItem
-          onClick={() =>
-            handleCopy(
-              `${window.location.protocol}//${window.location.host}${
-                locale === "en" ? "" : `/${locale}`
-              }/messages/${id}`
-            )
-          }
-          icon={<Link />}
-        >
-          {t("copy_message_link")}
-        </MenuItem>
-        {!!isAdminOrMod && (
-          <>
-            <MenuDivider />
-            <MenuItem onClick={() => handleCopy(id)} icon={<Copy />}>
-              {t("copy_message_id")}
-            </MenuItem>
-            <MenuItem as={NextLink} href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
-              View in admin area
-            </MenuItem>
-            <MenuItem as={NextLink} href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
-              {t("view_user")}
-            </MenuItem>
-            {!message.deleted && (
-              <MenuItem onClick={handleDelete} icon={<Trash />}>
-                {t("common:delete")}
+          <MenuItem
+            onClick={() =>
+              handleCopy(
+                `${window.location.protocol}//${window.location.host}${
+                  locale === "en" ? "" : `/${locale}`
+                }/messages/${id}`
+              )
+            }
+            icon={<Link />}
+          >
+            {t("copy_message_link")}
+          </MenuItem>
+          {!!isAdminOrMod && (
+            <>
+              <MenuDivider />
+              <MenuItem onClick={() => handleCopy(id)} icon={<Copy />}>
+                {t("copy_message_id")}
               </MenuItem>
-            )}
-            <MenuItem onClick={handleStop} icon={<Slash />}>
-              {t("stop_tree")}
-            </MenuItem>
-          </>
-        )}
-      </MenuList>
+              <MenuItem as={NextLink} href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
+                View in admin area
+              </MenuItem>
+              <MenuItem as={NextLink} href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
+                {t("view_user")}
+              </MenuItem>
+              {!message.deleted && (
+                <MenuItem onClick={handleDelete} icon={<Trash />}>
+                  {t("common:delete")}
+                </MenuItem>
+              )}
+              <MenuItem onClick={handleStop} icon={<Slash />}>
+                {t("stop_tree")}
+              </MenuItem>
+            </>
+          )}
+        </MenuList>
+      </Portal>
     </Menu>
   );
 };
