@@ -85,6 +85,21 @@ To train using trlx try:
 python trainer_rl.py --configs defaults_rlhf
 ```
 
+## Test your model
+
+You can itneractively test your model like this:
+
+```bash
+python tools/model_cli.py --model_path <saved_path/huggingface>
+```
+
+Or start a conversation with your bot interactively, mainly for testing context
+switch ability
+
+```bash
+python -m tools.model_chat --model_path <saved_path/huggingface>
+```
+
 ## Model
 
 Normally you should be able to add new models in `configs/config.yml`

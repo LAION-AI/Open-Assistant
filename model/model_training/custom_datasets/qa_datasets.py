@@ -24,6 +24,14 @@ def index_squad_v2(example):
     return example["context"] + " " + example["question"], answer
 
 
+def index_uasquad(example):
+    if len(example["Answer"]):
+        answer = example["Answer"]
+    else:
+        answer = "Я не маю на це відповіді"
+    return example["Context"] + " " + example["Question"], answer
+
+
 def index_trivia_qa_nocontext(example):
     # dummy return one randomly
     return example["question"], example["answer"]["aliases"][np.random.randint(len(example["answer"]["aliases"]))]
@@ -70,6 +78,14 @@ def index_eli5(example):
     return example["title"], example["answers"]["text"][0]
 
 
+def index_gsm_hard(example):
+    return example[
+        "input"
+    ] + "\nWrite a small snippet of python code to answer this", "Here's the code solution to the question\n```python\n{}\n```\n The answer should be {}".format(
+        example["code"].strip(), example["target"]
+    )
+
+
 class QADataset(Dataset):
     """
     How to define a new QA dataset:
@@ -91,6 +107,12 @@ class QADataset(Dataset):
 
     DATASET_FORMAT_MAPPING = {
         "squad_v2": {"index_fn": index_squad_v2},
+        "ua_squad": {
+            "index_fn": index_uasquad,
+            "name": "FIdo-AI/ua-squad",
+            "params": {"field": "data"},
+            "no_val": True,
+        },
         "trivia_qa_nocontext": {
             "index_fn": index_trivia_qa_nocontext,
             "name": "trivia_qa",
@@ -101,6 +123,7 @@ class QADataset(Dataset):
             "index_fn": index_adversarial_qa,
             "params": {"name": "adversarialQA"},
         },
+        "gsm8k_hard": {"index_fn": index_gsm_hard, "name": "reasoning-machines/gsm-hard", "no_val": True},
         "gsm8k": {"index_fn": index_gsm8k, "params": {"name": "main"}, "validation": "test"},
         "wikihow": {"name": "b-mc2/wikihow_lists", "index_fn": index_wikihow, "no_val": True},
         "essay_instruction": {
