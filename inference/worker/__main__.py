@@ -50,11 +50,11 @@ def main():
         ids = encoding.ids
         if len(ids) > settings.max_input_length:
             logger.warning(f"Prompt too long, left-truncating to {settings.max_input_length} tokens")
-            ids = ids[-settings.max_input_length :]
+            ids = ids[-(settings.max_input_length - 1) :]
             prompt = tokenizer.decode(ids)
 
         input_length = len(ids)
-        spare = settings.max_total_tokens - input_length
+        spare = settings.max_total_tokens - input_length - 1
         if parameters.max_new_tokens > spare:
             logger.warning(f"Max new tokens too high, reducing to {spare}")
             parameters.max_new_tokens = spare
