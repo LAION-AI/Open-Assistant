@@ -129,7 +129,11 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
           setLoadedImages((old) => [...old, src]);
         };
 
-        return <Button onClick={handleOnClick}>{t("message:show_image")}</Button>;
+        return (
+          <Button onClick={handleOnClick} mb="4">
+            {t("message:show_image")}
+          </Button>
+        );
       },
     } as ReactMarkdownOptions["components"];
   }, [loadedImages, onOpen, t]);
