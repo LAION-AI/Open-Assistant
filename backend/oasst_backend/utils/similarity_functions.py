@@ -5,6 +5,7 @@ import scipy.sparse as sp
 import torch
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
+import torch.nn.functional as F
 from tqdm import tqdm
 
 ADJACENCY_THRESHOLD = 0.65
@@ -69,9 +70,55 @@ def cos_sim(a: Tensor, b: Tensor):
     b_norm = torch.nn.functional.normalize(b, p=2, dim=1)
     return torch.mm(a_norm, b_norm.transpose(0, 1))
 
+def cos_sim_torch(embs_a: Tensor, embs_b: Tensor) -> Tensor:
+    """
+    Computes the cosine similarity cos_sim(a[i], b[j]) for all i and j.
+    Using torch.nn.functional.cosine_similarity
+    :return: Matrix with res[i][j]  = cos_sim(a[i], b[j])
+    """
+    if not isinstance(embs_a, torch.Tensor):
+        embs_a = torch.tensor(np.array(embs_a))
 
-def compute_cos_sim_kernel(embs, threshold=0.65):
-    A = cos_sim(embs, embs)
+    if not isinstance(embs_b, torch.Tensor):
+        embs_b = torch.tensor(np.array(embs_b))
+
+    if len(embs_a.shape) == 1:
+        embs_a = embs_a.unsqueeze(0)
+
+    if len(embs_b.shape) == 1:
+        embs_b = embs_b.unsqueeze(0)
+    A = F.cosine_similarity(embs_a.unsqueeze(1), embs_b.unsqueeze(0), dim=2)
+    return A
+
+def gaussian_kernel_torch(embs_a, embs_b, sigma=1.0):
+    """
+    Computes the Gaussian kernel matrix between two sets of embeddings using PyTorch.
+    :param embs_a: Tensor of shape (batch_size_a, embedding_dim) containing the first set of embeddings.
+    :param embs_b: Tensor of shape (batch_size_b, embedding_dim) containing the second set of embeddings.
+    :param sigma: Width of the Gaussian kernel.
+    :return: Tensor of shape (batch_size_a, batch_size_b) containing the Gaussian kernel matrix.
+    """
+    if not isinstance(embs_a, torch.Tensor):
+        embs_a = torch.tensor(embs_a)
+
+    if not isinstance(embs_b, torch.Tensor):
+        embs_b = torch.tensor(embs_b)
+
+    # Compute the pairwise distances between the embeddings
+    dist_matrix = torch.cdist(embs_a, embs_b)
+
+    # Compute the Gaussian kernel matrix
+    kernel_matrix = torch.exp(-dist_matrix ** 2 / (2 * sigma ** 2))
+
+    return kernel_matrix
+
+
+def compute_cos_sim_kernel(embs, threshold=0.65, kernel_type="cosine"):
+    ##match case to kernel type
+    if kernel_type == "gaussian":
+        A = gaussian_kernel_torch(embs, embs)
+    if kernel_type == "cosine":
+        A = cos_sim_torch(embs, embs)
     adj_matrix = torch.zeros_like(A)
     adj_matrix[A > threshold] = 1
     adj_matrix[A <= threshold] = 0
