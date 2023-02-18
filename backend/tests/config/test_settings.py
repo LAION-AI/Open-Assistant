@@ -48,7 +48,7 @@ def test_assemble_cors_origins_from_string():
     """
     Assemble a cors origins list from a string
     """
-    settings = Settings(BACKEND_CORS_ORIGINS="http://localhost, http://localhost:8080")
+    settings = Settings(BACKEND_CORS_ORIGINS_CSV="http://localhost, http://localhost:8080")
 
     assert len(settings.BACKEND_CORS_ORIGINS) == 2
     assert "http://localhost" in settings.BACKEND_CORS_ORIGINS
