@@ -180,7 +180,6 @@ services:
     build:
       dockerfile: docker/inference/Dockerfile.worker-full
       context: .
-      target: dev
     image: oasst-inference-worker:dev
     environment:
       - "MODEL_ID=distilgpt2"
