@@ -3,16 +3,23 @@ import math
 import numpy as np
 import scipy.sparse as sp
 import torch
+import torch.nn.functional as F
+from pandas import DataFrame
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
-import torch.nn.functional as F
 from tqdm import tqdm
-from pandas import DataFrame
 
 ADJACENCY_THRESHOLD = 0.65
 
 
-def embed_data(data: DataFrame, key:str="query", model_name:str="all-MiniLM-L6-v2", cores:int=1, gpu:bool=False, batch_size:int=128):
+def embed_data(
+    data: DataFrame,
+    key: str = "query",
+    model_name: str = "all-MiniLM-L6-v2",
+    cores: int = 1,
+    gpu: bool = False,
+    batch_size: int = 128,
+):
     """
     Embed the sentences/text using the MiniLM language model (which uses mean pooling)
     """
@@ -71,6 +78,7 @@ def cos_sim(a: Tensor, b: Tensor):
     b_norm = torch.nn.functional.normalize(b, p=2, dim=1)
     return torch.mm(a_norm, b_norm.transpose(0, 1))
 
+
 def cos_sim_torch(embs_a: Tensor, embs_b: Tensor) -> Tensor:
     """
     Computes the cosine similarity cos_sim(a[i], b[j]) for all i and j.
@@ -91,6 +99,7 @@ def cos_sim_torch(embs_a: Tensor, embs_b: Tensor) -> Tensor:
     A = F.cosine_similarity(embs_a.unsqueeze(1), embs_b.unsqueeze(0), dim=2)
     return A
 
+
 def gaussian_kernel_torch(embs_a, embs_b, sigma=1.0):
     """
     Computes the Gaussian kernel matrix between two sets of embeddings using PyTorch.
@@ -109,7 +118,7 @@ def gaussian_kernel_torch(embs_a, embs_b, sigma=1.0):
     dist_matrix = torch.cdist(embs_a, embs_b)
 
     # Compute the Gaussian kernel matrix
-    kernel_matrix = torch.exp(-dist_matrix ** 2 / (2 * sigma ** 2))
+    kernel_matrix = torch.exp(-(dist_matrix**2) / (2 * sigma**2))
 
     return kernel_matrix
 

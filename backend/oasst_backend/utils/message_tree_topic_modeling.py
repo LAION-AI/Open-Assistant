@@ -80,11 +80,11 @@ def compute_hierarchical_topic_tree(topic_model, data, key="query"):
 
 
 if __name__ == "__main__":
-    '''
+    """
     Main function to run topic modeling on a list of exported message trees.
     Example usage:
     python message_tree_topic_modeling.py --exported_tree_path 2023-02-06_oasst_prod.jsonl 2023-02-07_oasst_prod.jsonl
-    '''
+    """
     data, message_list = load_data(args.exported_tree_path, args.pair_qa)
     embs = embed_data(data, model_name=MODEL_NAME, cores=args.cores, gpu=args.use_gpu)
     adj_matrix = compute_cos_sim_kernel(embs, args.threshold)
@@ -100,4 +100,4 @@ if __name__ == "__main__":
     for k, v in rep_docs.items():
         print(k)
         print(v)
-        print('\n\n\n')
+        print("\n\n\n")
