@@ -20,6 +20,8 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
             parent_id = None
             while True:
                 message = typer.prompt("User").strip()
+                if not message:
+                    continue
 
                 # wait for stream to be ready
                 # could implement a queue position indicator
@@ -41,7 +43,13 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
                 events = iter(client.events())
                 message_id = json.loads(next(events).data)["id"]
                 for event in events:
-                    data = json.loads(event.data)
+                    try:
+                        data = json.loads(event.data)
+                    except json.JSONDecodeError:
+                        typer.echo(f"Failed to decode event data: {event.data}")
+                        raise
+                    if error := data.get("error"):
+                        raise Exception(error)
                     print(data["token"]["text"], end="", flush=True)
                 print()
                 parent_id = message_id
