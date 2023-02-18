@@ -130,7 +130,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
         };
 
         return (
-          <Button onClick={handleOnClick} mb="4">
+          <Button onClick={handleOnClick} mb="4" _hover={{ bg: "gray.300", _dark: { bg: "whiteAlpha.300" } }}>
             {t("message:show_image")}
           </Button>
         );
