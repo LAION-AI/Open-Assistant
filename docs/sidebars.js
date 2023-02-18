@@ -36,6 +36,7 @@ const sidebars = {
         "tasks/label_prompter_reply",
         "tasks/reply_as_assistant",
         "tasks/reply_as_user",
+        "tasks/rank_assistant_replies",
       ],
     },
     {
