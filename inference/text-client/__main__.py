@@ -17,6 +17,7 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
         try:
             chat_id = requests.post(f"{backend_url}/chat", json={}).json()["id"]
             typer.echo(f"Chat ID: {chat_id}")
+            parent_id = None
             while True:
                 message = typer.prompt("User").strip()
 
@@ -26,7 +27,10 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
                 # but server load needs to be considered
                 response = requests.post(
                     f"{backend_url}/chat/{chat_id}/message",
-                    json={"message": message},
+                    json={
+                        "parent_id": parent_id,
+                        "content": message,
+                    },
                     stream=True,
                     headers={"Accept": "text/event-stream"},
                 )
@@ -34,14 +38,18 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
 
                 client = sseclient.SSEClient(response)
                 print("Assistant: ", end="", flush=True)
-                for event in client.events():
+                events = iter(client.events())
+                message_id = json.loads(next(events).data)["id"]
+                for event in events:
                     data = json.loads(event.data)
                     print(data["token"]["text"], end="", flush=True)
                 print()
+                parent_id = message_id
         except typer.Abort:
             typer.echo("Exiting...")
             break
-        except Exception:
+        except Exception as e:
+            typer.echo(f"Error: {e}")
             typer.echo("Error, restarting chat...")
             time.sleep(1)
 

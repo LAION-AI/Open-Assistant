@@ -7,5 +7,8 @@ class Settings(pydantic.BaseSettings):
     inference_server_url: str = "http://localhost:8001"
     api_key: str = "0000"
 
+    max_input_length: int = 1000
+    max_total_tokens: int = 1512
+
 
 settings = Settings()
