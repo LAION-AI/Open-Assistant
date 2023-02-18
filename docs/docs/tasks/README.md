@@ -1,6 +1,7 @@
 # Tasks
 
-Understand a bit more about each type of task required to build the Open Assistant dataset.
+Understand a bit more about each type of task required to build the Open
+Assistant dataset.
 
 - [Classifying an assistant reply](label_assistant_reply.md)
 - [Classifying an initial prompt of user reply](label_prompter_reply.md)
