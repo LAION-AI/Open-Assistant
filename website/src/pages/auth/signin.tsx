@@ -1,13 +1,4 @@
-import {
-  Button,
-  ButtonProps,
-  FormControl,
-  FormErrorMessage,
-  FormHelperText,
-  Input,
-  Stack,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Button, ButtonProps, FormControl, FormErrorMessage, Input, Stack, useColorModeValue } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
 import { TurnstileInstance } from "@marsidev/react-turnstile";
 import { boolean } from "boolean";
@@ -189,8 +180,8 @@ const EmailSignInForm = ({
   };
   return (
     <form onSubmit={handleSubmit(signinWithEmail)}>
-      <FormControl isInvalid={errors.email ? true : false}>
-        <Stack>
+      <Stack>
+        <FormControl isInvalid={errors.email ? true : false}>
           <Input
             type="email"
             data-cy="email-address"
@@ -198,31 +189,30 @@ const EmailSignInForm = ({
             size="lg"
             placeholder="Email Address"
             {...register("email", { required: true, pattern: /[^\s@]+@[^\s@]+\.[^\s@]+/g })}
-            isInvalid={errors.email ? true : false}
             errorBorderColor="orange.600"
           />
           <FormErrorMessage>
             {errors.email?.type === "required" && "Email is required"}
             {errors.email?.type === "pattern" && "Email is invalid"}
           </FormErrorMessage>
-          {enableEmailSigninCaptcha && (
-            <CloudFlareCaptcha
-              siteKey={cloudflareCaptchaSiteKey}
-              options={{ size: "invisible" }}
-              ref={captcha}
-              onSuccess={() => setCaptchaSuccess(true)}
-            ></CloudFlareCaptcha>
-          )}
-          <SigninButton
-            data-cy="signin-email-button"
-            leftIcon={<Mail />}
-            mt="4"
-            disabled={!captchaSuccess && enableEmailSigninCaptcha}
-          >
-            Continue with Email
-          </SigninButton>
-        </Stack>
-      </FormControl>
+        </FormControl>
+        {enableEmailSigninCaptcha && (
+          <CloudFlareCaptcha
+            siteKey={cloudflareCaptchaSiteKey}
+            options={{ size: "invisible" }}
+            ref={captcha}
+            onSuccess={() => setCaptchaSuccess(true)}
+          ></CloudFlareCaptcha>
+        )}
+        <SigninButton
+          data-cy="signin-email-button"
+          leftIcon={<Mail />}
+          mt="4"
+          disabled={!captchaSuccess && enableEmailSigninCaptcha}
+        >
+          Continue with Email
+        </SigninButton>
+      </Stack>
     </form>
   );
 };

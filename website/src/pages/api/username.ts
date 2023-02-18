@@ -6,8 +6,9 @@ import { getValidDisplayName } from "src/lib/display_name_validation";
  * Updates the user's `name` field in the `User` table.
  */
 const handler = withoutRole("banned", async (req, res, token) => {
-  const { username } = req.body;
-  let { name } = await prisma.user.update({
+  let { username } = req.body;
+  username = getValidDisplayName(username, token.sub);
+  const { name } = await prisma.user.update({
     where: {
       id: token.sub,
     },
@@ -15,7 +16,6 @@ const handler = withoutRole("banned", async (req, res, token) => {
       name: username,
     },
   });
-  name = getValidDisplayName(name, token.sub);
   res.json({ name });
 });
 
