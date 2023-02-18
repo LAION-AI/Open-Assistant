@@ -40,5 +40,8 @@ class Settings(pydantic.BaseSettings):
 
     debug_api_keys: list[str] = []
 
+    do_compliance_checks: bool = True
+    compliance_check_interval: int = 60
+
 
 settings = Settings()
