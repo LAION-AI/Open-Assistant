@@ -64,6 +64,7 @@ export function Footer() {
                   {t("about")}
                 </Text>
                 <FooterLink href="https://projects.laion.ai/Open-Assistant" label={t("docs")} />
+                <FooterLink href="https://projects.laion.ai/Open-Assistant/docs/faq" label={t("faq")} />
               </Flex>
             </Box>
           </nav>
