@@ -61,7 +61,7 @@
     "overview": "Välj etiketter för följande prompt."
   },
   "label_prompter_reply": {
-    "label": "Svar på prompten",
+    "label": "Svar på etiketten",
     "desc": "Märk svaret.",
     "overview": "Välj etiketter för det senaste meddelandet med tanke på följande diskussion."
   },
