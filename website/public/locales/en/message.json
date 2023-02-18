@@ -18,6 +18,7 @@
   "report_placeholder": "Why should this message be reviewed?",
   "report_title": "Report",
   "send_report": "Send",
+  "show_image": "Click to show the image",
   "stop_tree": "Stop tree",
   "submit_labels": "Submit",
   "tree_stopped": "Tree stopped {{id}}",

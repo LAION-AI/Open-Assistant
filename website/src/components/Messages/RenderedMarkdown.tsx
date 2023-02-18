@@ -74,7 +74,9 @@ const plugins = [remarkGfm];
 // eslint-disable-next-line react/display-name
 const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [link, setLink] = useState<string | undefined>();
+  const [link, setLink] = useState<string>("");
+  const [loadedImages, setLoadedImages] = useState<string[]>([]);
+  const { t } = useTranslation(["common", "message"]);
 
   const components: ReactMarkdownOptions["components"] = useMemo(() => {
     return {
@@ -105,14 +107,32 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
             rel="noopener noreferrer"
             onClick={(e: MouseEvent) => {
               e.preventDefault();
+              e.stopPropagation();
               setLink(href);
               onOpen();
             }}
           ></NextLink>
         );
       },
+      img({ src, ...props }) {
+        if (!src) {
+          return null;
+        }
+
+        if (loadedImages.includes(src)) {
+          // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+          return <img src={src} {...props} loading="lazy"></img>;
+        }
+
+        const handleOnClick = (e: MouseEvent) => {
+          e.stopPropagation(); // stop propagation to avoid clicking link when rendered in side a tag
+          setLoadedImages((old) => [...old, src]);
+        };
+
+        return <Button onClick={handleOnClick}>{t("message:show_image")}</Button>;
+      },
     } as ReactMarkdownOptions["components"];
-  }, [onOpen]);
+  }, [loadedImages, onOpen, t]);
 
   const linkProps = useMemo(() => {
     return {
@@ -122,8 +142,6 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
       rel: "noopener noreferrer",
     };
   }, [link]);
-
-  const { t } = useTranslation(["common", "message"]);
 
   return (
     <>
@@ -143,7 +161,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
             <Button variant="ghost" mr={3} onClick={onClose}>
               {t("cancel")}
             </Button>
-            <Button colorScheme="blue" as={NextLink} {...linkProps} onClick={onClose}>
+            <Button colorScheme="blue" {...linkProps} onClick={onClose}>
               {t("confirm")}
             </Button>
           </ModalFooter>
