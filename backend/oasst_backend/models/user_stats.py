@@ -53,14 +53,14 @@ class UserStats(SQLModel, table=True):
 
     def compute_leader_score(self) -> int:
         return (
-            self.prompts
+            int(self.prompts * 0.1)
             + self.replies_assistant * 4
             + self.replies_prompter
             + self.labels_simple
             + self.labels_full * 2
             + self.rankings_total
             + self.rankings_good
-            + self.accepted_prompts
+            + int(self.accepted_prompts * 0.1)
             + self.accepted_replies_assistant * 4
             + self.accepted_replies_prompter
             + self.reply_ranked_1 * 9
