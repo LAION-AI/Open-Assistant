@@ -8,23 +8,24 @@ from sentence_transformers import SentenceTransformer
 from similarity_functions import compute_cos_sim_kernel, embed_data, k_hop_message_passing_sparse
 from sklearn.feature_extraction.text import CountVectorizer
 
-parser = argparse.ArgumentParser(description="Process some arguments.")
-parser.add_argument("--model_name", type=str, default="all-MiniLM-L6-v2")
-parser.add_argument("--cores", type=int, default=1)
-parser.add_argument("--pair_qa", type=bool, default=True)
-parser.add_argument("--use_gpu", type=bool, default=False)
-parser.add_argument("--batch_size", type=int, default=128)
-parser.add_argument("--k", type=int, default=2)
-parser.add_argument("--threshold", type=float, default=0.65)
-parser.add_argument("--exported_tree_path", nargs="+", help="<Required> Set flag", required=True)
-parser.add_argument("--min_topic_size", type=int, default=10)
-parser.add_argument("--diversity", type=float, default=0.2)
-parser.add_argument("--reduce_frequent_words", type=bool, default=False)
-parser.add_argument("--reduce_outliers_strategy", type=str, default="c-tf-idf")
 
-args = parser.parse_args()
+def argument_parsing():
+    parser = argparse.ArgumentParser(description="Process some arguments.")
+    parser.add_argument("--model_name", type=str, default="all-MiniLM-L6-v2")
+    parser.add_argument("--cores", type=int, default=1)
+    parser.add_argument("--pair_qa", type=bool, default=True)
+    parser.add_argument("--use_gpu", type=bool, default=False)
+    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--k", type=int, default=2)
+    parser.add_argument("--threshold", type=float, default=0.65)
+    parser.add_argument("--exported_tree_path", nargs="+", help="<Required> Set flag", required=True)
+    parser.add_argument("--min_topic_size", type=int, default=10)
+    parser.add_argument("--diversity", type=float, default=0.2)
+    parser.add_argument("--reduce_frequent_words", type=bool, default=False)
+    parser.add_argument("--reduce_outliers_strategy", type=str, default="c-tf-idf")
 
-MODEL_NAME = args.model_name
+    args = parser.parse_args()
+    return args
 
 
 def load_topic_model(args):
@@ -85,6 +86,8 @@ if __name__ == "__main__":
     Example usage:
     python message_tree_topic_modeling.py --exported_tree_path 2023-02-06_oasst_prod.jsonl 2023-02-07_oasst_prod.jsonl
     """
+    args = argument_parsing()
+    MODEL_NAME = args.model_name
     data, message_list = load_data(args.exported_tree_path, args.pair_qa)
     embs = embed_data(data, model_name=MODEL_NAME, cores=args.cores, gpu=args.use_gpu)
     adj_matrix = compute_cos_sim_kernel(embs, args.threshold)
