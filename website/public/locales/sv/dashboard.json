@@ -6,9 +6,9 @@
   "dashboard": "Instrumentpanel",
   "go": "Kör",
   "welcome_message": {
-    "label": "Välkommen, {{användarnamn}}!",
+    "label": "Välkommen, {{username}}!",
     "contributor": "Bidragsgivare",
     "description": "Open Assistant är en AI-assistent med öppen källkod som använder och tränar avancerade språkmodeller för att förstå och besvara människor.",
-    "instruction": "Slutför uppgifter för att hjälpa till att träna modellen och tjäna poäng."
+    "instruction": "Slutför uppgifter för att hjälpa till att träna modellen och för att erhålla poäng."
   }
 }
