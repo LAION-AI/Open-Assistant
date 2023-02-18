@@ -1,6 +1,7 @@
 {
   "any_feedback_on_this_task": "Zeregin honi buruzko feedbackik?",
   "available_task_count": "{{count}} zeregin eskuragarri",
+  "no_more_tasks": "Ez dira ataza gehiago aurkitu.",
   "classify_assistant_reply": {
     "desc": "Jarri etiketak instrukzio bati.",
     "label": "Sailkatu asistentearen erantzuna",

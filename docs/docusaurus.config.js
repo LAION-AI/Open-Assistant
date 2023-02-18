@@ -125,6 +125,10 @@ const config = {
                 label: "GitHub",
                 href: "https://github.com/LAION-AI/Open-Assistant",
               },
+              {
+                label: "FAQ",
+                href: "https://projects.laion.ai/Open-Assistant/docs/faq",
+              },
             ],
           },
         ],

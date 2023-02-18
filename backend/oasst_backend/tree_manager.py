@@ -844,6 +844,13 @@ class TreeManager:
 
         # check if desired tree size has been reached and all nodes have been reviewed
         tree_size = self.query_tree_size(message_tree_id)
+        if tree_size.tree_size == 0:
+            logger.warning(
+                f"All messages of message tree {message_tree_id} were deleted (tree_size == 0), halting tree."
+            )
+            self._enter_state(mts, message_tree_state.State.HALTED_BY_MODERATOR)
+            return False
+
         if tree_size.remaining_messages > 0 or tree_size.awaiting_review > 0:
             logger.debug(f"False {tree_size.remaining_messages=}, {tree_size.awaiting_review=}")
             return False
@@ -1217,10 +1224,11 @@ HAVING COUNT(m.id) < mts.goal_tree_size
                 .label("awaiting_review"),
             )
             .select_from(MessageTreeState)
-            .outerjoin(Message, MessageTreeState.message_tree_id == Message.message_tree_id)
+            .outerjoin(
+                Message, and_(MessageTreeState.message_tree_id == Message.message_tree_id, not_(Message.deleted))
+            )
             .filter(
                 MessageTreeState.active,
-                not_(Message.deleted),
                 MessageTreeState.message_tree_id == message_tree_id,
             )
             .group_by(MessageTreeState.message_tree_id, MessageTreeState.goal_tree_size)
@@ -1752,10 +1760,10 @@ if __name__ == "__main__":
         # print("query_incomplete_rankings", tm.query_incomplete_rankings())
         # print("query_replies_need_review", tm.query_replies_need_review())
         # print("query_incomplete_reply_reviews", tm.query_replies_need_review())
-        xs = tm.query_prompts_need_review(lang="en")
-        print("xs", len(xs))
-        for x in xs:
-            print(x.id, x.emojis)
+        # xs = tm.query_prompts_need_review(lang="en")
+        # print("xs", len(xs))
+        # for x in xs:
+        #    print(x.id, x.emojis)
         # print("query_incomplete_initial_prompt_reviews", tm.query_prompts_need_review(lang="en"))
         # print("query_extendible_trees", tm.query_extendible_trees())
         # print("query_extendible_parents", tm.query_extendible_parents())
