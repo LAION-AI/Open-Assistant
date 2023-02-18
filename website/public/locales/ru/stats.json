@@ -9,6 +9,7 @@
   "initial_prompt_review": "Оценено изначальных запросов",
   "message_trees_by_state": "Состояние ветвей сообщений",
   "message_trees_states_by_lang": "Состояние ветвей сообщений по языковому признаку",
+  "prompt_lottery_waiting": "Запросов участвуют в голосовании",
   "ranking": "Оцениваются",
   "ready_for_export": "Готовы для экспорта",
   "stats": "Статистика",
