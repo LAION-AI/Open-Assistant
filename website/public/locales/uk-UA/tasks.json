@@ -86,5 +86,7 @@
     "response_placeholder": "Напишіть свою відповідь тут..."
   },
   "submitted_as": "Це буде подано як {{submit_lang}}",
+  "tab_write": "Писати",
+  "tab_preview": "Перегляд",
   "writing_wrong_langauge_a_b": "Здається, ви пишете {{detected_lang}} але це буде подано як {{submit_lang}}."
 }

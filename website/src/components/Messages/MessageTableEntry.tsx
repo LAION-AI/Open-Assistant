@@ -124,6 +124,7 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
         onClick={goToMessage}
         cursor={enabled ? "pointer" : undefined}
         style={{ position: "relative" }}
+        overflow="hidden"
       >
         {inlineAvatar && avatar}
         <Suspense fallback={message.text}>

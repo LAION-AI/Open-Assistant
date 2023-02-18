@@ -66,7 +66,7 @@ To start the demo, run this in the root directory of the repository (check
 if you have problems):
 
 ```sh
-docker compose up --build
+docker compose --profile ci up --build --attach-dependencies
 ```
 
 Then, navigate to `http://localhost:3000` (It may take some time to boot up) and
