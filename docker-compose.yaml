@@ -188,8 +188,6 @@ services:
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/worker:/opt/inference/worker"
-    depends_on:
-      - inference-text-generation-server
     deploy:
       replicas: 1
     profiles: ["inference"]
