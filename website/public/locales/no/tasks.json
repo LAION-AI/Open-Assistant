@@ -1,8 +1,12 @@
 {
+  "any_feedback_on_this_task": "Noen tilbakemelding på denne oppgaven?",
+  "available_task_count": "{{count}} oppgaver tilgjengelig",
   "default": {
     "unchanged_title": "Ingen endringer",
     "unchanged_message": "Er du sikker på at du vil fortsette?"
+    "continue_anyway": "Fortsett likevel"
   },
+  "no_more_tasks": "Det ser ut til at ingen oppgaver ble funnet.",
   "random": {
     "label": "Jeg har flaks",
     "desc": "Hjelp oss å forbedre Open Assistant ved å starte en tilfeldig oppgave."
@@ -33,6 +37,7 @@
     "overview": "Sorter følgende brukersvar fra best til dårligst, med best først og dårligst sist.",
     "unchanged_title": "Rekkefølge uendret",
     "unchanged_message": "Du har ikke endret rekkefølgen på svarene. Er du sikker på at du vil fortsette?"
+    "continue_anyway": "Fortsett likevel"
   },
   "rank_assistant_replies": {
     "label": "Sorter assistentsvar",
@@ -40,6 +45,7 @@
     "overview": "Sorter følgende assistentsvar fra best til dårligst, med best først og dårligst sist.",
     "unchanged_title": "Rekkefølge uendret",
     "unchanged_message": "Du har ikke endret rekkefølgen på spørsmålene. Er du sikker på at du vil fortsette?"
+    "continue_anyway": "Fortsett likevel"
   },
   "rank_initial_prompts": {
     "label": "Ranger innledende spørsmål",
@@ -47,6 +53,7 @@
     "overview": "Sorter følgende innledende spørsmål fra best til dårligst, med best først og dårligst sist.",
     "unchanged_title": "Rekkefølge uendret",
     "unchanged_message": "Du har ikke endret rekkefølgen på svarene. Er du sikker på at du vil fortsette?"
+    "continue_anyway": "Fortsett likevel"
   },
   "label_initial_prompt": {
     "label": "Innledende etiketter",
@@ -69,7 +76,7 @@
     "overview": "Les følgende ledetekst og svar deretter på spørsmålet."
   },
   "classify_prompter_reply": {
-    "label": "Klassifiser spørresvar",
+    "label": "Klassifiser promptersvar",
     "desc": "Tilordne etiketter til en ledetekst.",
     "overview": "Les følgende samtale, og svar deretter på det siste svaret i diskusjonen."
   },
@@ -78,7 +85,8 @@
     "desc": "Tilordne etiketter til en ledetekst.",
     "overview": "Les følgende samtale, og svar deretter på det siste svaret i diskusjonen."
   },
-  "available_task_count": "{{count}} oppgaver tilgjengelig",
+   "submitted_as": "Dette vil bli sendt inn som {{submit_lang}}",
+  "tab_write": "Skriv",
+  "tab_preview": "Forhåndsvisning",
   "writing_wrong_langauge_a_b": "Du ser ut til å skrive på {{detected_lang}}, men dette vil bli sendt inn som {{submit_lang}}.",
-  "submitted_as": "Dette vil bli sendt inn som {{submit_lang}}"
-}
+ }
