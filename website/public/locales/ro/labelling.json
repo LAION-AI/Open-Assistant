@@ -16,6 +16,8 @@
   "not_appropriate.explanation": "Nepotrivit pentru un asistent pentru clienți.",
   "pii": "Conține PII(informații de identificare personală)",
   "pii.explanation": "Conține informații de identificare personală. Exemplele includ detalii personale de contact, numere de licență și alte numere de identitate și detalii bancare.",
+  "controversial": "Controversat",
+  "controversial.explanation": "Oamenii din diferite grupuri au opinii diferite, adesea contrare, asupra acestui subiect. Acest lucru poate duce la părtinire. Poate provoca supărare sau furie atunci când se discută cu o persoană din grupul opus.",
   "political_content": "Politic",
   "political_content.explanation": "Exprimă opinii politice.",
   "sexual_content": "Conținut sexual",

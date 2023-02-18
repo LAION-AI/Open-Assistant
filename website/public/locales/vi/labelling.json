@@ -8,6 +8,8 @@
   "contains_pii.one_desc": "Chứa thông tin cá nhân",
   "creative": "Sáng tạo",
   "creative.one_desc": "Thể hiện sự sáng tạo khi trả lời tin nhắn",
+  "controversial": "Gây tranh cãi",
+  "controversial.explanation": "Những người thuộc các nhóm khác nhau có quan điểm khác nhau, thường trái ngược nhau về chủ đề này. Điều này có thể dẫn đến sự thiên vị. Nó có thể gây khó chịu hoặc tức giận khi thảo luận với một người trong nhóm đối diện.",
   "fails_task": "Tin nhắn lạc đề",
   "fails_task.one_desc": "Tin nhắn lạc đề",
   "fails_task.question": "Tin nhắn có lạc đề và không trả lời câu hỏi ở trên không?",

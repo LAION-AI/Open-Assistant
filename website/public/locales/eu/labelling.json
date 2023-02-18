@@ -8,6 +8,8 @@
   "contains_pii.one_desc": "Pertsonalki identifikatzeko informazioa (PII) dauka",
   "creative": "Sormenezkoa",
   "creative.one_desc": "Sormena erabili da zereginari erantzuteko",
+  "controversial": "Polemikazkoa",
+  "controversial.explanation": "Talde ezberdinetako pertsonek gai honi buruzko iritzi desberdinak dituzte, askotan kontrakoak. Horrek alborapena ekar dezake. Atsekabea edo haserrea sor dezake kontrako taldeko pertsona batekin eztabaidatzen denean.",
   "fails_task": "Zereginean huts egin du",
   "fails_task.one_desc": "Huts egin du du jarraibide/zeregin zuzenak jarraitzen",
   "fails_task.question": "Erantzun txarra al da, sarrerako zereginaren erantzun gisa?",

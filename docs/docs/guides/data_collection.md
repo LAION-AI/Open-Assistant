@@ -63,6 +63,10 @@ Spam should be reserved for intentionally low effort or low quality prompts.
 It is usually fine to go closer to "Ordinary" than "Creative" unless there is
 obvious creativity shown. The same goes for "Serious" compared to "Humorous".
 
+The topic is considered controversial when it is known that there are groups 
+of people with strong opposing views on the topic. For example, politics, religion, 
+and abortion are all controversial topics. These should be labelled between "Settled" and "Debated".
+
 ## Ranking and Classifying Answers
 
 Your rankings and classification will help decide which answers are the best and

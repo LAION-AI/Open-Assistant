@@ -6,6 +6,8 @@
   "clean": "Proper",
   "contains_pii": "Bevat PII",
   "contains_pii.one_desc": "Bevat persoonlijk identificeerbare informatie",
+  "controversial": "Controverseel",
+  "controversial.explanation": "Mensen uit verschillende groepen hebben verschillende, vaak tegengestelde opvattingen over dit onderwerp. Dit kan leiden tot vooringenomenheid. Het kan overstuur of woede veroorzaken wanneer het wordt besproken met een persoon uit de andere groep.",
   "creative": "Creatief",
   "creative.one_desc": "Drukt creativiteit uit in het reageren op de taak",
   "fails_task": "Het faalt de taak",

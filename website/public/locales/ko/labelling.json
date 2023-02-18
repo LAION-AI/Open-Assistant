@@ -16,6 +16,8 @@
   "not_appropriate.explanation": "고객 지원에 부적합.",
   "pii": "개인식별정보를 포함.",
   "pii.explanation": "개인 식별 정보가 포함되어 있습니다. 예를 들면 개인 연락처 세부 정보, 면허증 및 기타 식별 번호, 은행 세부 정보가 포함됩니다.",
+  "controversial": "논란이 많은",
+  "controversial.explanation": "다른 그룹의 사람들은 이 주제에 대해 서로 다른, 종종 반대되는 견해를 가지고 있습니다. 이것은 편견으로 이어질 수 있습니다. 반대 그룹의 사람과 논의할 때 속상하거나 화를 낼 수 있습니다.",
   "political_content": "정치적인",
   "political_content.explanation": "정치적 견해를 표현합니다.",
   "sexual_content": "성적인 내용",

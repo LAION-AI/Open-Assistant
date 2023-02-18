@@ -8,6 +8,8 @@
   "contains_pii.one_desc": "Személyazonosításra alkalmas információt tartalmaz",
   "creative": "Kreatív",
   "creative.one_desc": "Kreativitást fejez ki a feladatra válaszolva",
+  "controversial": "Vitatott",
+  "controversial.explanation": "A különböző csoportokhoz tartozó emberek eltérő, gyakran ellentétes nézeteket vallanak ebben a témában. Ez elfogultsághoz vezethet. Felháborodást vagy dühöt okozhat, ha egy másik csoporthoz tartozó személlyel beszélik meg.",
   "fails_task": "Nem végzi el a feladatot",
   "fails_task.one_desc": "Nem követi az utasítást vagy feladatot",
   "fails_task.question": "Ez hibás válasz a kért feladathoz?",

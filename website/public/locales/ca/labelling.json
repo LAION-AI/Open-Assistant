@@ -16,6 +16,8 @@
   "not_appropriate.explanation": "No és apropiada per a un assistent de client.",
   "pii": "Conté informació d'identificació personal",
   "pii.explanation": "Conté informació personal com dades de contacte personals, números d'identificació o dades bancàries.",
+  "controversial": "Polèmic",
+  "controversial.explanation": "Els diferents grups de persones tenen opinions diferents, sovint oposades, sobre aquest tema. Això pot conduir a un biaix. Pot causar malestar o ràbia quan es parla amb una persona del grup contrari.",
   "political_content": "Contingut polític",
   "political_content.explanation": "Expressa una opinió política.",
   "sexual_content": "Contingut sexual",

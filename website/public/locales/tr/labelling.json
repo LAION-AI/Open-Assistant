@@ -16,6 +16,8 @@
   "not_appropriate.explanation": "Bir tüketici asistanı için uygunsuz",
   "pii": "PII İçeriyor",
   "pii.explanation": "Kişilik özelliklerini ortaya çıkaran bilgi (PII) içeriyor. Kişisel iletişim bilgileri, kimlik bilgileri ve diğer kişisel bilgiler ve bancakılık bilgileri buna örnek olabilir.",
+  "controversial": "Tartışmalı",
+  "controversial.explanation": "Farklı gruplardan insanlar bu konuda farklı, genellikle zıt görüşlere sahiptir. Bu önyargıya yol açabilir. Karşı gruptan biriyle konuşulduğu zaman üzülme ya da öfkeye neden olabilir.",
   "political_content": "Politik İçerik",
   "political_content.explanation": "Politik görüş içeriyor.",
   "sexual_content": "Cinsel İçerik",

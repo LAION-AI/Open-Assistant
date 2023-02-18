@@ -405,6 +405,7 @@ class TextLabel(str, enum.Enum):
     humor = "humor", LabelWidget.likert, "Humorous content including sarcasm"
     helpfulness = "helpfulness", LabelWidget.likert, "Helpfulness of the message"
     creativity = "creativity", LabelWidget.likert, "Creativity"
+    controversial = "controversial", LabelWidget.likert, "Controversial"
     violence = "violence", LabelWidget.likert, "Violence/abuse/terrorism/self-harm"
 
 

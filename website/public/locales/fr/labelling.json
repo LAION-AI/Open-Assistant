@@ -16,6 +16,8 @@
   "not_appropriate.explanation": "Inapproprié pour un assistant client.",
   "pii": "Contient des RII",
   "pii.explanation": "Contient des informations personnellement identifiables. Exemples : coordonnées personnelles, numéros de permis de conduire et d'identité et coordonnées bancaires.",
+  "controversial": "controversée",
+  "controversial.explanation": "Différents groupes de personnes ont des points de vue différents, souvent contraires, sur ce sujet. Peut conduire à des biais. Peut causer de la colère ou de la colère en cas de discussion avec la personne du groupe opposé.",
   "political_content": "Politique",
   "political_content.explanation": "Exprime des opinions politiques.",
   "sexual_content": "Contenu sexuel",

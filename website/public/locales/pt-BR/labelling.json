@@ -16,6 +16,8 @@
   "not_appropriate.explanation": "Não apropriada para um assistente.",
   "pii": "Contém informações que permitem identificação pessoal (PII)",
   "pii.explanation": "Contém informações que permitem identificação pessoal tais como informações de contato, números de identificação ou dados bancários",
+  "controversial": "Controverso",
+  "controversial.explanation": "Pessoas de diferentes grupos têm opiniões diferentes, muitas vezes contrárias, sobre esse assunto. Isso pode levar ao viés. Pode causar aborrecimento ou raiva quando discutido com uma pessoa do grupo oposto.",
   "political_content": "Conteúdo político",
   "political_content.explanation": "Expressa uma opinião política.",
   "sexual_content": "Conteúdo sexual",

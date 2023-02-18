@@ -8,6 +8,8 @@
   "contains_pii.one_desc": "Obsahuje osobní informace.",
   "creative": "Kreativní",
   "creative.one_desc": "Kreativně odpovídá zadaný dotaz",
+  "controversial": "Kontroversiel",
+  "controversial.explanation": "Forskellige grupper af mennesker har forskellige, ofte modsatte holdninger til dette emne. Dette kan føre til bias. Det kan forårsage uro eller vrede, når det diskuteres med en person fra den modsatte gruppe.",
   "fails_task": "Nesplňuje zadání",
   "fails_task.one_desc": "Nesplňuje správně zadání",
   "fails_task.question": "Je to špatná odpověď na uživatelův dotaz?",

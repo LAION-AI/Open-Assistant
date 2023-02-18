@@ -20,5 +20,7 @@
   "political_content": "محتوى سياسي",
   "political_content.explanation": "يعبر عن الآراء السياسية.",
   "sexual_content": "محتوى جنسي",
-  "sexual_content.explanation": "يحتوي على محتوى جنسي."
+  "sexual_content.explanation": "يحتوي على محتوى جنسي.",
+  "controversial": "جدلي",
+  "controversial.explanation": "مجموعات مختلفة من الناس لها آراء مختلفة ، وغالبًا ما تكون متناقضة حول هذا الموضوع. يمكن أن يؤدي إلى التحيز. يمكن أن يسبب الانزعاج أو الغضب عند مناقشته مع شخص من المجموعة المقابلة."
 }

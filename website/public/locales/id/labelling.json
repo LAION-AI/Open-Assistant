@@ -16,6 +16,8 @@
   "not_appropriate.explanation": "Tidak layak untuk asisten percakapan.",
   "pii": "Berisi Data Pribadi",
   "pii.explanation": "Berisi informasi yang mungkin bisa digunakan untuk mengidentifikasi seseorang. Seperti, nomor telepon, alamat, nomor induk, dan informasi perbankan.",
+  "controversial": "Kontroversial",
+  "controversial.explanation": "Orang-orang dari kelompok yang berbeda memiliki pandangan yang berbeda, seringkali bertentangan, tentang topik ini. Hal ini dapat menyebabkan bias. Itu dapat menyebabkan kesal atau marah ketika didiskusikan dengan seseorang dari kelompok lawan.",
   "political_content": "Politik",
   "political_content.explanation": "Berisi konten politik.",
   "sexual_content": "Konten Seksual",

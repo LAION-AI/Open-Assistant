@@ -8,6 +8,8 @@
   "contains_pii.one_desc": "Contiene información de identificación personal (PII)",
   "creative": "Creativo",
   "creative.one_desc": "Expresa creatividad en la respuesta a la tarea",
+  "controversial": "Controversial",
+  "controversial.explanation": "Diferentes grupos de personas tienen opiniones diferentes, a menudo contrarias, sobre este tema. Esto puede llevar a un sesgo. Puede causar malestar o enojo cuando se discute con una persona del grupo opuesto.",
   "fails_task": "Falla en la tarea",
   "fails_task.one_desc": "Falla en seguir las instrucciones/tareas correctas",
   "fails_task.question": "¿Es una mala respuesta, según la tarea pedida?",

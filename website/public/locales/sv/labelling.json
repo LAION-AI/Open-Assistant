@@ -16,6 +16,8 @@
   "not_appropriate.explanation": "Olämpligt för en AI-assistent.",
   "pii": "Personlig information",
   "pii.explanation": "Innehåller personligt identifierbar information. Exempel är personlig kontaktinformation, personnummer och kontoinformation.",
+  "controversial": "Kontroversiell",
+  "controversial.explanation": "Människor från olika grupper har olika, ofta motsatta, åsikter om detta ämne. Detta kan leda till partiskhet. Det kan orsaka upprördhet eller ilska när det diskuteras med en person från den motsatta gruppen.",
   "political_content": "Politiskt innehåll",
   "political_content.explanation": "Innehåller politiska åsikter.",
   "sexual_content": "Sexuellt innehåll",

@@ -18,6 +18,8 @@
   "pii.explanation": "Enthält personenbezogene Daten. Beispiele hierfür sind persönliche Kontaktdaten, Lizenz- und andere Identitätsnummern, sowie Bankdaten.",
   "political_content": "Politisch",
   "political_content.explanation": "Enthält politische Meinungen.",
+  "controversial": "Umstritten",
+  "controversial.explanation": "Unterschiedliche Personengruppen haben unterschiedliche, oft gegensätzliche Ansichten zu diesem Thema. Kann zu Vorurteilen führen. Kann Aufregung oder Wut hervorrufen, wenn mit der Person aus der gegenüberliegenden Gruppe diskutiert wird.",
   "sexual_content": "Sexueller Inhalt",
   "sexual_content.explanation": "Enthält sexuelle Inhalte.",
   "spam.question": "Ist die Nachricht Spam?"

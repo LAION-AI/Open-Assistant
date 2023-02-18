@@ -146,6 +146,14 @@ const getLabelInfo = (label: string, t: (key: string) => string): LabelInfo => {
         oneDescription: [t("creative.one_desc")],
         inverted: false,
       };
+    case "controversial":
+      return {
+        zeroText: t("settled"),
+        zeroDescription: [],
+        oneText: t("debated"),
+        oneDescription: [t("controversial.explanation")],
+        inverted: false,
+      };
     case "pii":
       return {
         zeroText: t("clean"),
