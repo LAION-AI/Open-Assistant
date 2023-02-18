@@ -7,11 +7,12 @@ from sentence_transformers import SentenceTransformer
 from torch import Tensor
 import torch.nn.functional as F
 from tqdm import tqdm
+from pandas import DataFrame
 
 ADJACENCY_THRESHOLD = 0.65
 
 
-def embed_data(data, key="query", model_name="all-MiniLM-L6-v2", cores=1, gpu=False, batch_size=128):
+def embed_data(data: DataFrame, key:str="query", model_name:str="all-MiniLM-L6-v2", cores:int=1, gpu:bool=False, batch_size:int=128):
     """
     Embed the sentences/text using the MiniLM language model (which uses mean pooling)
     """
