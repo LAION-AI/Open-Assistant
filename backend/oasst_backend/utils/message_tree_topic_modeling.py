@@ -17,7 +17,6 @@ parser.add_argument("--batch_size", type=int, default=128)
 parser.add_argument("--k", type=int, default=2)
 parser.add_argument("--threshold", type=float, default=0.65)
 parser.add_argument("--exported_tree_path", nargs="+", help="<Required> Set flag", required=True)
-# Use like python message_tree_topic_modeling.py --exported_tree_path 2023-02-06_oasst_prod.jsonl 2023-02-07_oasst_prod.jsonl
 parser.add_argument("--min_topic_size", type=int, default=10)
 parser.add_argument("--diversity", type=float, default=0.2)
 parser.add_argument("--reduce_frequent_words", type=bool, default=False)
@@ -81,6 +80,11 @@ def compute_hierarchical_topic_tree(topic_model, data, key="query"):
 
 
 if __name__ == "__main__":
+    '''
+    Main function to run topic modeling on a list of exported message trees.
+    Example usage:
+    python message_tree_topic_modeling.py --exported_tree_path 2023-02-06_oasst_prod.jsonl 2023-02-07_oasst_prod.jsonl
+    '''
     data, message_list = load_data(args.exported_tree_path, args.pair_qa)
     embs = embed_data(data, model_name=MODEL_NAME, cores=args.cores, gpu=args.use_gpu)
     adj_matrix = compute_cos_sim_kernel(embs, args.threshold)
@@ -93,4 +97,7 @@ if __name__ == "__main__":
     freq = get_topic_info(topic_model)
     rep_docs = get_representative_docs(topic_model)
     print(freq)
-    print(rep_docs)
+    for k, v in rep_docs.items():
+        print(k)
+        print(v)
+        print('\n\n\n')
