@@ -1,0 +1,21 @@
+{
+  "copy_message_id": "Копиране на идентификационен номер на съобщението",
+  "label_action": "Етикет",
+  "label_title": "Етикет",
+  "message": "Съобщение",
+  "message_deleted": "Съобщението е изтрито",
+  "open_new_tab_action": "Отваряне в нов прозорец",
+  "parent": "Предшественик",
+  "reactions": "Реакции",
+  "recent_messages": "Скорошни съобщения",
+  "report_action": "Докладване",
+  "report_placeholder": "Защо това съобщение трябва да бъде проверено?",
+  "report_title": "Доклад",
+  "send_report": "Изпрати",
+  "stop_tree": "Спиране на дървото",
+  "submit_labels": "Изпращане",
+  "tree_stopped": "Дървото е спряно {{id}}",
+  "view_user": "Преглед на потребителя",
+  "your_recent_messages": "Вашите скорошни съобщения"
+}
+  
