@@ -124,7 +124,7 @@ def gaussian_kernel_torch(embs_a, embs_b, sigma=1.0):
 
 
 def compute_cos_sim_kernel(embs, threshold=0.65, kernel_type="cosine"):
-    ##match case to kernel type
+    # match case to kernel type
     if kernel_type == "gaussian":
         A = gaussian_kernel_torch(embs, embs)
     if kernel_type == "cosine":
