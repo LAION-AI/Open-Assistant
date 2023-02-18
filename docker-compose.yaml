@@ -176,21 +176,15 @@ services:
         condition: service_healthy
     profiles: ["inference"]
 
-  inference-text-generation-server:
-    image: ghcr.io/huggingface/text-generation-inference
-    environment:
-      - "MODEL_ID=distilgpt2"
-    profiles: ["inference"]
-
   inference-worker:
     build:
-      dockerfile: docker/inference/Dockerfile.worker
+      dockerfile: docker/inference/Dockerfile.worker-full
       context: .
       target: dev
     image: oasst-inference-worker:dev
     environment:
+      - "MODEL_ID=distilgpt2"
       - "BACKEND_URL=ws://inference-server:8000"
-      - "INFERENCE_SERVER_URL=http://inference-text-generation-server"
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/worker:/opt/inference/worker"
