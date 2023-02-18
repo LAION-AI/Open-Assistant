@@ -1,4 +1,6 @@
 {
+  "confirm_open_link_body": "Ви хочете відкрити це посилання?",
+  "confirm_open_link_header": "Підтвердити відкриття посилання",
   "copy_message_id": "Скопіювати ID повідомлення",
   "label_action": "Маркувати",
   "copy_message_link": "Скопіювати посилання на повідомлення",
