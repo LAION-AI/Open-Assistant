@@ -38,13 +38,7 @@ def main():
         # construct prompt
         messages = [_prepare_message(message) for message in work_request.thread.messages]
 
-        prefix = (
-            "The following is a conversation between a user and an assistant. "
-            "The assistant is helpful, creative, clever, and very friendly.\n"
-            "Assistant: Hello! How can I help you today?\n"
-        )
-
-        prompt = prefix + "\n".join(messages) + "\nAssistant:"
+        prompt = settings.prefix + "\n".join(messages) + "\nAssistant:"
 
         encoding = tokenizer.encode(prompt)
         ids = encoding.ids
