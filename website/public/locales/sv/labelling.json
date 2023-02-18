@@ -1,4 +1,4 @@
-{ 
+{
   "accurate": "Precis",
   "apolitical": "Opolitisk",
   "appropriate": "Lämplig",
@@ -30,7 +30,7 @@
   "inappropriate.one_desc": "Olämpligt för kundassistent",
   "judgemental": "Dömmande",
   "judgemental.one_desc": "Uttrycker moraliskt omdöme",
- "label_highlighted_flag_instruction": "Välj vad som gäller för det flaggade meddelandet:",
+  "label_highlighted_flag_instruction": "Välj vad som gäller för det flaggade meddelandet:",
   "label_highlighted_likert_instruction": "Betygsätt det markerade meddelandet:",
   "label_highlighted_yes_no_instruction": "Svara på följande fråga/frågor om det markerade meddelandet:",
   "label_message_flag_instruction": "Välj vilka alternativ som gäller för det markerade meddelandet:",
@@ -48,7 +48,7 @@
   "not_spam": "Inte skräppost",
   "not_spam.explanation": "Lämplig för träning av Open Assistant.",
   "not_appropriate": "Inte lämpligt",
-  "not_appropriate.explanation": "Olämpligt för en AI-assistent.",  
+  "not_appropriate.explanation": "Olämpligt för en AI-assistent.",
   "ordinary": "Vanligt",
   "pii": "Inehåller personlig information",
   "pii.explanation": "Innehåller personligt identifierbar information. Exempel är personlig kontaktinformation, personnummer och kontoinformation.",

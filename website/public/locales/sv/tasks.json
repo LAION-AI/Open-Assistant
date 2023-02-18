@@ -85,8 +85,8 @@
     "desc": "Tilldela etiketter till en prompt.",
     "overview": "Läs följande konversation och besvara sedan det sista svaret i diskussionen."
   },
-  "submitted_as": "Detta kommer att skickas som {{submit_lang}}"
+  "submitted_as": "Detta kommer att skickas som {{submit_lang}}",
   "tab_write": "Skriv",
   "tab_preview": "Förhandsgranska",
-  "writing_wrong_langauge_a_b": "Du verkar skriva på {{detected_lang}} men detta kommer att skickas in som {{submit_lang}}." 
+  "writing_wrong_langauge_a_b": "Du verkar skriva på {{detected_lang}} men detta kommer att skickas in som {{submit_lang}}."
 }
