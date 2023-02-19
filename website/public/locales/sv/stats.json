@@ -1,0 +1,17 @@
+{
+  "aborted_low_grade": "Avbrutet oga lågt betyg",
+  "backlog_ranking": "Backlogranking",
+  "count": "Räkna",
+  "growing": "Växer",
+  "halted_by_moderator": "Stoppad av moderator",
+  "human_messages_by_lang": "Mänskliga meddelanden efter språk",
+  "human_messages_by_role": "Mänskliga meddelanden efter roll",
+  "initial_prompt_review": "Initial granskning",
+  "message_trees_by_state": "Meddela träd efter tillstånd",
+  "message_trees_states_by_lang": "Meddelandeträdens tillstånd efter språk",
+  "prompt_lottery_waiting": "Promptlotteri väntar",
+  "ranking": "Ranking",
+  "ready_for_export": "Redo för export",
+  "stats": "Statistik",
+  "users_accepted_tos": "Användaraccepterade villkor"
+}

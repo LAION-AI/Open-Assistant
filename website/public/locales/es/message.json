@@ -1,4 +1,6 @@
 {
+  "confirm_open_link_body": "¿Desea abrir este enlace?",
+  "confirm_open_link_header": "Confirme la apertura del enlace",
   "copy_message_id": "Copiar ID del mensaje",
   "copy_message_link": "Copiar enlace al mensaje",
   "label_action": "Etiquetar",
@@ -11,7 +13,7 @@
   "open_new_tab_action": "Abrir en una pestaña nueva",
   "parent": "Padre",
   "reactions": "Reacciones",
-  "recent_messages": "Mensajes recientes",
+  "recent_messages": "Mensajes recientes en {{language}}",
   "report_action": "Reportar",
   "report_placeholder": "¿Por qué se debería revisar este mensaje?",
   "report_title": "Informe",
