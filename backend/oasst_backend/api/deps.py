@@ -189,7 +189,8 @@ class UserMessageRateLimiter(RateLimiter):
             return
 
         # Attempt to retrieve api_key and user information
-        user = (await request.json()).get("user")
+        json = await request.json()
+        user = json.get("user")
 
         # Skip when api_key and user information are not available
         # (such that it will be handled by `APIClientRateLimiter`)
@@ -197,7 +198,7 @@ class UserMessageRateLimiter(RateLimiter):
             return
 
         # Skip when the request is not a message
-        if not isinstance(request, protocol_schema.TaskRequest) or request.type not in (
+        if not json.get("type") or json.get("type") not in (
             protocol_schema.TaskRequestType.initial_prompt,
             protocol_schema.TaskRequestType.assistant_reply,
             protocol_schema.TaskRequestType.prompter_reply,
