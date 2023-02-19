@@ -183,9 +183,10 @@ services:
       context: .
     image: oasst-inference-worker:dev
     environment:
-      - API_KEY=0000
-      - "MODEL_ID=distilgpt2"
-      - "BACKEND_URL=ws://inference-server:8000"
+      API_KEY: "0000"
+      MODEL_ID: distilgpt2
+      BACKEND_URL: "ws://inference-server:8000"
+      PARALLELISM: 2
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/worker:/opt/inference/worker"
