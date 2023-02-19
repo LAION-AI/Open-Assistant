@@ -41,7 +41,7 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
                 client = sseclient.SSEClient(response)
                 print("Assistant: ", end="", flush=True)
                 events = iter(client.events())
-                message_id = json.loads(next(events).data)["assistant_message_id"]
+                message_id = json.loads(next(events).data)["assistant_message"]["id"]
                 for event in events:
                     try:
                         data = json.loads(event.data)
