@@ -5,11 +5,11 @@ import { withoutRole } from "src/lib/auth";
 import { INFERENCE_HOST } from ".";
 
 const handler = withoutRole("banned", async (req, res, token) => {
-  const { id, message } = req.body;
+  const { chat_id, parent_id, content } = req.body;
 
   const { data } = await axios.post<IncomingMessage>(
-    INFERENCE_HOST + `/chat/${id}/message`,
-    { message },
+    INFERENCE_HOST + `/chat/${chat_id}/message`,
+    { parent_id, content },
     { responseType: "stream" }
   );
   res.status(200);

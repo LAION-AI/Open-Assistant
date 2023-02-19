@@ -13,31 +13,39 @@ const Chat = () => {
   const inputRef = useRef<HTMLTextAreaElement>();
   const [messages, setMessages] = useState<string[]>([]);
   const [activeMessage, setActiveMessage] = useState("");
+  const [lastMessageId, setLastMessageId] = useState(null);
   const { trigger: createChat, data: createChatResponse } = useSWRMutation<{ id: string }>("/api/chat", post);
 
   const chatID = createChatResponse?.id;
   const isLoading = Boolean(activeMessage);
 
   const send = useCallback(async () => {
-    const message = inputRef.current.value.trim();
+    const content = inputRef.current.value.trim();
 
-    if (!message || !chatID) {
+    if (!content || !chatID) {
       return;
     }
 
     setActiveMessage("...");
-    setMessages((old) => [...old, message]);
+    setMessages((old) => [...old, content]);
 
     // we have to do this manually since we want to stream the chunks
     // there is also EventSource, but it only works with get requests.
     const { body } = await fetch("/api/chat/message", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ id: chatID, message }),
+      body: JSON.stringify({ chat_id: chatID, content, parent_id: lastMessageId }),
     });
 
+    // first chunk is message id
+    const stream = iterator(body);
+    const { value: response } = await stream.next();
+    const messageInfo = JSON.parse(response.data);
+    setLastMessageId(messageInfo.id);
+
+    // remaining messages are the tokens
     let responseMessage = "";
-    for await (const { data } of iterator(body)) {
+    for await (const { data } of stream) {
       const text = JSON.parse(data).token.text;
       responseMessage += text;
       setActiveMessage(responseMessage);
@@ -47,7 +55,7 @@ const Chat = () => {
 
     setMessages((old) => [...old, responseMessage]);
     setActiveMessage(null);
-  }, [chatID]);
+  }, [chatID, lastMessageId]);
 
   return (
     <>
@@ -99,7 +107,7 @@ async function* iterator(stream: ReadableStream<Uint8Array>) {
     }
 
     const fields = value
-      .split("\n")
+      .split(/\r?\n/)
       .filter(Boolean)
       .map((line) => {
         const colonIdx = line.indexOf(":");
