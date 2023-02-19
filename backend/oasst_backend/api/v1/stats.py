@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Depends
 from oasst_backend.api import deps
+from oasst_backend.cached_stats_repository import CachedStatsRepository
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.tree_manager import TreeManager, TreeManagerStats, TreeMessageCountStats
+from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
+from starlette.status import HTTP_204_NO_CONTENT
 
 router = APIRouter()
 
@@ -47,3 +50,38 @@ def get_tree_manager__stats(
     pr = PromptRepository(db, api_client)
     tm = TreeManager(db, pr)
     return tm.stats()
+
+
+@router.get("/cached/{name}", response_model=protocol.CachedStatsResponse)
+def get_cached_stats(
+    *,
+    name: protocol.CachedStatsName,
+    db: Session = Depends(deps.get_db),
+    api_client: ApiClient = Depends(deps.get_api_client),
+):
+    csr = CachedStatsRepository(db)
+    return csr.get_stats(name)
+
+
+@router.get("/cached", response_model=protocol.AllCachedStatsResponse)
+def get_cached_stats_all(
+    *,
+    db: Session = Depends(deps.get_db),
+    api_client: ApiClient = Depends(deps.get_api_client),
+):
+    csr = CachedStatsRepository(db)
+    return csr.get_stats_all()
+
+
+@router.post("/cached/update", response_model=None, status_code=HTTP_204_NO_CONTENT)
+def update_cached_stats(
+    *,
+    db: Session = Depends(deps.get_db),
+    api_client: ApiClient = Depends(deps.get_trusted_api_client),
+):
+    @managed_tx_function(CommitMode.COMMIT)
+    def update_tx(db: deps.Session) -> None:
+        csr = CachedStatsRepository(db)
+        csr.update_all_cached_stats()
+
+    update_tx()

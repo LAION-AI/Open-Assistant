@@ -12,7 +12,7 @@ To add a new dataset to OpenAssistant, follow these steps:
    [issue](https://github.com/LAION-AI/Open-Assistant/issues/new) and describe
    your proposal for the new dataset.
 
-2. **Create a dataset on HuggingFace**: Create a dataset on
+2. **Create a dataset on Hugging Face**: Create a dataset on
    [HuggingFace](https://huggingface.co). See
    [below](#creating-a-dataset-on-huggingface) for more details.
 
@@ -20,9 +20,9 @@ To add a new dataset to OpenAssistant, follow these steps:
    link the issue in the pull request description. For more information, see
    [below](#making-a-pull-request).
 
-## **Creating a Dataset on HuggingFace**
+## **Creating a Dataset on Hugging Face**
 
-To create a new dataset on HuggingFace, follow these steps:
+To create a new dataset on Hugging Face, follow these steps:
 
 #### 1. Convert your dataset file(s) to the Parquet format using the [pandas](https://pandas.pydata.org/) library:
 
@@ -36,13 +36,13 @@ df = pd.read_json(...) # or any other way
 df.to_parquet("dataset.parquet", row_group_size=100, engine="pyarrow")
 ```
 
-#### 2. Install HuggingFace CLI
+#### 2. Install Hugging Face Hub
 
 ```bash
-pip install huggingface-cli
+pip install huggingface_hub
 ```
 
-#### 3. Log in to HuggingFace
+#### 3. Log in to Hugging Face
 
 Use your [access token](https://huggingface.co/docs/hub/security-tokens) to
 login:
@@ -53,14 +53,15 @@ login:
 huggingface-cli login
 ```
 
-- in Jupyter notebook
+- in Jupyter notebook (cuurently does not work in
+  [Visual Studio Code](https://github.com/huggingface/huggingface_hub/issues/752))
 
 ```python
 from huggingface_hub import notebook_login
 notebook_login()
 ```
 
-#### 4. Push the Parquet file to HuggingFace using the following code:
+#### 4. Push the Parquet file to Hugging Face using the following code:
 
 ```python
 from datasets import Dataset

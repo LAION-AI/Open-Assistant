@@ -7,7 +7,7 @@ ARG APP_USER="${MODULE}-${SERVICE}"
 ARG APP_RELATIVE_PATH="${MODULE}/${SERVICE}"
 
 
-FROM python:3-slim as build
+FROM python:3.10-slim as build
 ARG APP_RELATIVE_PATH
 
 WORKDIR /build
@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=/var/cache/pip \
 
 
 
-FROM python:3.10-alpine3.17 as base-env
+FROM python:3.10-slim as base-env
 ARG APP_USER
 ARG APP_RELATIVE_PATH
 ARG MODULE
@@ -50,6 +50,9 @@ WORKDIR ${APP_ROOT}
 
 
 COPY --chown="${APP_USER}:${APP_USER}" --from=build /build/lib                     ${APP_LIBS}
+COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/alembic alembic
+COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/alembic.ini .
+COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/oasst_inference_server oasst_inference_server
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/main.py .
 
 

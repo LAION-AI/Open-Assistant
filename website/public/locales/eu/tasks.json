@@ -1,22 +1,24 @@
 {
+  "any_feedback_on_this_task": "Zeregin honi buruzko feedbackik?",
   "available_task_count": "{{count}} zeregin eskuragarri",
+  "no_more_tasks": "Ez dira ataza gehiago aurkitu.",
   "classify_assistant_reply": {
     "desc": "Jarri etiketak instrukzio bati.",
-    "label": "Sailifikatu Laguntzailea eginbidearen erantzuna",
+    "label": "Sailkatu asistentearen erantzuna",
     "overview": "Irakurri hurrengo elkarrizketa eta erantzun elkarrizketako azken erantzunari buruzko galdera."
   },
   "classify_initial_prompt": {
     "desc": "Jarri etiketak instrukzio bati.",
-    "label": "Salifikatu hasierako instrukzioa",
+    "label": "Sailkatu hasierako instrukzioa",
     "overview": "Irakurri hurrengo instrukzioa eta erantzun horri buruzko galdera."
   },
   "classify_prompter_reply": {
     "desc": "Jarri etiketak instrukzio bati.",
-    "label": "Sailifikatu galdetzailearen erantzuna",
+    "label": "Sailkatu erabiltzailearen erantzuna",
     "overview": "Irakurri hurrengo elkarrizketa eta erantzun elkarrizketako azken erantzunari buruzko galdera."
   },
   "create_initial_prompt": {
-    "desc": "Idatzi hasierako instrukzioak Open Assistant-i era askotako mezuak erantzuten saia dadin. (sartu loterian)",
+    "desc": "Idatzi hasierako instrukzioak Open Assistant era askotako mezuak erantzuten saia dadin.",
     "instruction": "Eman hasierako instrukzioak",
     "label": "Sortu hasierako instrukzioak",
     "overview": "Sortu hasierako mezu bat asistenteari bidaltzeko",
@@ -79,6 +81,6 @@
     "overview": "Ondoko elkarrizketa ikusita, eman erantzun egokia",
     "response_placeholder": "Idatzi zure erantzuna hemen..."
   },
-  "submitted_as": "Hau {{submit_lang}} hizkuntzan bidaliko da ",
-  "writing_wrong_langauge_a_b": "Ematen du {{detected_lang}} hizkuntzan baina hau {{submit_lang}} hizkuntzan bidaliko da."
+  "submitted_as": "Hau {{submit_lang}} hizkuntzan bidaliko da",
+  "writing_wrong_langauge_a_b": "Ematen du {{detected_lang}} hizkuntzan idazten ari zarela baina hau {{submit_lang}} hizkuntzan bidaliko da."
 }

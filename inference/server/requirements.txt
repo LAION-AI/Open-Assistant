@@ -1,7 +1,10 @@
-fastapi[all]
+alembic
+fastapi[all]==0.88.0
 loguru
-prometheus-fastapi-instrumentator==5.9.1
+prometheus-fastapi-instrumentator
+psycopg2-binary
 pydantic
 redis
+sqlmodel
 sse-starlette
 websockets

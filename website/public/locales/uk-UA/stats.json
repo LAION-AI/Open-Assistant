@@ -1,0 +1,17 @@
+{
+  "aborted_low_grade": "Перервано через низьку оцінку",
+  "backlog_ranking": "Очікує на ранжування",
+  "count": "Кількість",
+  "growing": "Ростуть",
+  "halted_by_moderator": "Зупинено модератором",
+  "human_messages_by_lang": "Людські повідомлення за мовою",
+  "human_messages_by_role": "Людські повідомлення за роллю",
+  "initial_prompt_review": "Перевірка початкового тексту",
+  "message_trees_by_state": "Дерева повідомлень за станом",
+  "message_trees_states_by_lang": "Дерева повідомлень за мовою",
+  "prompt_lottery_waiting": "Очікують на лотерею запитів",
+  "ranking": "Ранжуються",
+  "ready_for_export": "Готово до експорту",
+  "stats": "Статистика",
+  "users_accepted_tos": "Користувачі, які прийняли умови"
+}

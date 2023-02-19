@@ -1,7 +1,7 @@
 // https://nextjs.org/docs/basic-features/layouts
 
 import { Box, Grid } from "@chakra-ui/react";
-import { Activity, BarChart2, Layout, MessageSquare, Settings, Users } from "lucide-react";
+import { Activity, BarChart2, Layout, MessageSquare, Settings, Users, TrendingUp } from "lucide-react";
 import type { NextPage } from "next";
 import { Header } from "src/components/Header";
 
@@ -50,6 +50,11 @@ export const getDashboardLayout = (page: React.ReactElement) => (
             labelID: "leaderboard",
             pathname: "/leaderboard",
             icon: BarChart2,
+          },
+          {
+            labelID: "stats",
+            pathname: "/stats",
+            icon: TrendingUp,
           },
         ]}
       >

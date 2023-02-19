@@ -37,7 +37,7 @@ const LanguageSelector = () => {
       await router.push(path, path, { locale });
       router.reload();
     },
-    [router]
+    [router, setCookie]
   );
 
   const { language: currentLanguage } = i18n;

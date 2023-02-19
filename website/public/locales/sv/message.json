@@ -1,0 +1,21 @@
+{
+  "copy_message_id": "Kopiera meddelande-ID",
+  "copy_message_link": "Kopiera meddelandelänk",
+  "label_action": "Beteckning",
+  "label_title": "Beteckning",
+  "message_deleted": "Meddelandet raderat",
+  "message": "Meddelande",
+  "open_new_tab_action": "Öppna i en ny flik",
+  "parent": "Förälder",
+  "reactions": "Reaktioner",
+  "recent_messages": "Senaste meddelanden",
+  "report_action": "Rapportera",
+  "report_placeholder": "Varför ska detta meddelande granskas?",
+  "report_title": "Rapportera",
+  "send_report": "Skicka",
+  "stop_tree": "Stoppa beslutsträd",
+  "submit_labels": "Skicka",
+  "tree_stopped": "Beslutsträdet stoppat {{id}}",
+  "view_user": "Visa användare",
+  "your_recent_messages": "Dina senaste meddelanden"
+}
