@@ -60,7 +60,7 @@ export const SortableItem = ({
       <div
         onClick={OpenModal}
         onPointerDown={listeners?.onPointerDown as PointerEventHandler<HTMLDivElement>}
-        className="w-[67%] lg:w-[80%]  h-full  absolute left-0 top-0 touch-none"
+        className="w-[67%] lg:w-[80%]  h-full  absolute ltr:left-0 rtl:right-0 top-0 touch-none"
       ></div>
     </Box>
   );
