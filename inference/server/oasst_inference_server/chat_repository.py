@@ -1,5 +1,6 @@
 import datetime
 
+import fastapi
 import sqlmodel
 from loguru import logger
 from oasst_inference_server import interface, models
@@ -68,10 +69,15 @@ class ChatRepository:
     def add_prompter_message(self, chat_id: str, parent_id: str | None, content: str) -> models.DbMessage:
         logger.info(f"Adding prompter message {len(content)=} to chat {chat_id}")
         chat = self.get_chat_by_id(chat_id)
-        # if not chat.conversation.is_prompter_turn:
-        #     raise fastapi.HTTPException(status_code=400, detail="Not your turn")
-        # if chat.message_request_state is not None and chat.message_request_state != interface.MessageRequestState.pending:
-        #     raise fastapi.HTTPException(status_code=400, detail="Already pending")
+        if parent_id is None:
+            if len(chat.messages) > 0:
+                raise fastapi.HTTPException(status_code=400, detail="Trying to add first message to non-empty chat")
+        else:
+            msg_dict = chat.get_msg_dict()
+            if parent_id not in msg_dict:
+                raise fastapi.HTTPException(status_code=400, detail="Parent message not found")
+            if msg_dict[parent_id].role != "assistant":
+                raise fastapi.HTTPException(status_code=400, detail="Parent message is not an assistant message")
 
         message = models.DbMessage(
             role="prompter",
@@ -88,7 +94,7 @@ class ChatRepository:
         return message
 
     def initiate_assistant_message(self, parent_id: str, work_parameters: inference.WorkParameters) -> models.DbMessage:
-        logger.info(f"Adding initiating assistant message to {parent_id=}")
+        logger.info(f"Adding stub assistant message to {parent_id=}")
         parent = self.get_prompter_message_by_id(parent_id)
         message = models.DbMessage(
             role="assistant",
@@ -107,6 +113,10 @@ class ChatRepository:
     def start_work(self, *, message_id: str, worker_id: str, worker_config: inference.WorkerConfig) -> models.DbMessage:
         logger.info(f"Starting work on message {message_id}")
         message = self.get_assistant_message_by_id(message_id, for_update=True)
+
+        if message.state != inference.MessageState.pending:
+            raise fastapi.HTTPException(status_code=400, detail="Message is not pending")
+
         message.state = inference.MessageState.in_progress
         message.work_begin_at = datetime.datetime.utcnow()
         message.worker_id = worker_id

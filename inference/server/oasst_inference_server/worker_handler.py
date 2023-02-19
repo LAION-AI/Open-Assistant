@@ -223,7 +223,7 @@ def build_work_request(
     message: models.DbMessage,
 ) -> inference.WorkRequest:
     chat = message.chat
-    msg_dict = {m.id: m for m in chat.messages}
+    msg_dict = chat.get_msg_dict()
     thread_msgs = [msg_dict[message.parent_id]]
     while thread_msgs[-1].parent_id is not None:
         thread_msgs.append(msg_dict[thread_msgs[-1].parent_id])

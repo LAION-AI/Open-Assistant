@@ -140,17 +140,9 @@ def main():
         },
     )
 
-    while True:
-        try:
-            ws.run_forever(dispatcher=rel, reconnect=5)
-            rel.signal(2, rel.abort)
-            rel.dispatch()
-        except KeyboardInterrupt:
-            logger.info("Keyboard interrupt, exiting")
-            break
-        except Exception:
-            logger.exception("Error in main loop. Restarting...")
-            continue
+    ws.run_forever(dispatcher=rel, reconnect=5)
+    rel.signal(2, rel.abort)
+    rel.dispatch()
 
 
 if __name__ == "__main__":

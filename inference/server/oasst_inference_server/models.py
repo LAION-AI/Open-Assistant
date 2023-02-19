@@ -52,6 +52,9 @@ class DbChat(SQLModel, table=True):
     def to_read(self) -> interface.ChatRead:
         return interface.ChatRead(id=self.id, messages=[m.to_read() for m in self.messages])
 
+    def get_msg_dict(self) -> dict[str, DbMessage]:
+        return {m.id: m for m in self.messages}
+
 
 class DbWorker(SQLModel, table=True):
     __tablename__ = "worker"
