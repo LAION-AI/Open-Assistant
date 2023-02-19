@@ -11,9 +11,6 @@ import { TaskCategoryItem } from "src/components/Dashboard/TaskOption";
 import useSWR from "swr";
 
 const Dashboard = () => {
-  // Adding a demonstrative call to the backend that includes the web's JWT.
-  useSWR(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check`, get);
-
   const {
     t,
     i18n: { language },
@@ -41,7 +38,7 @@ const Dashboard = () => {
     <>
       <Head>
         <title>{`${t("dashboard")} - ${t("common:title")}`}</title>
-        <meta name="description" content="Chat with Open Assistant and provide feedback." />
+        <meta name="description" content="Chat with Open Assistant and provide feedback." key="description" />
       </Head>
       <Flex direction="column" gap="10">
         <WelcomeCard />

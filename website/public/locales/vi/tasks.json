@@ -1,0 +1,85 @@
+{
+  "classify_assistant_reply": {
+    "label": "Phân loại các tin nhắn của Open Assistant",
+    "desc": "Tạo nhãn dữ liệu để đánh giá tin nhắn.",
+    "overview": "Từ cuộc trò truyện ở dưới, trả lời các câu hỏi về câu trả lời cuối trong cuộc trò truyện."
+  },
+  "classify_initial_prompt": {
+    "label": "Phân loại các tin nhắn đầu tiên",
+    "desc": "Tạo nhãn dữ liệu để đánh giá tin nhắn.",
+    "overview": "Đọc tin nhắn đầu và trả lời các câu hỏi."
+  },
+  "classify_prompter_reply": {
+    "label": "Phân loại tin nhắn người dùng",
+    "desc": "Tạo nhãn dữ liệu để đánh giá tin nhắn.",
+    "overview": "Từ cuộc trò truyện ở dưới, trả lời các câu hỏi về câu trả lời cuối trong cuộc trò truyện."
+  },
+  "create_initial_prompt": {
+    "label": "Tạo tin nhắn đầu tiên",
+    "desc": "Viết tin nhắn đầu tiên để làm bộ dữ liệu cho Open Assistant.",
+    "overview": "Viết tin nhắn đầu tiên để Open Assistant trả lời",
+    "instruction": "Viết tin nhắn đầu",
+    "response_placeholder": "Viết vào đây..."
+  },
+  "default": {
+    "unchanged_title": "Chưa thay đổi",
+    "unchanged_message": "Are you sure you would like to continue?"
+  },
+  "label_assistant_reply": {
+    "label": "Đánh giá các tin nhắn của Open Assistant",
+    "desc": "Tạo nhãn dữ liệu đánh giá tin nhắn của Open Assistant.",
+    "overview": "Từ cuộc trò truyện ở dưới, tạo nhãn dữ liệu cho tin nhắn sau."
+  },
+  "label_initial_prompt": {
+    "label": "Đánh giá các tin nhắn đầu tiên",
+    "desc": "Tạo nhãn dữ liệu đánh giá tin nhắn đầu.",
+    "overview": "Tạo nhãn dữ liệu cho tin nhắn sau."
+  },
+  "label_prompter_reply": {
+    "label": "Đánh giá các tin nhắn người dùng",
+    "desc": "Tạo nhãn dữ liệu đánh giá tin nhắn của người dùng.",
+    "overview": "Từ cuộc trò truyện ở dưới, tạo nhãn dữ liệu cho tin nhắn sau."
+  },
+  "random": {
+    "label": "Chọn ngẫu nhiên",
+    "desc": "Giúp cải thiện Open Assistant bằng cách làm một việc ngẫu nhiên."
+  },
+  "rank_assistant_replies": {
+    "label": "Xếp hạng các câu trả lời của Open Assistant",
+    "desc": "Đánh giá độ chính xác và dễ đọc của các câu trả lời mà Open Assistant đưa ra.",
+    "overview": "Từ những câu trả lời của Open Assistant, xếp hạng chúng theo chất lượng, tốt nhât ở trên, tệ nhất ở dưới.",
+    "unchanged_title": "Chưa thay đổi thứ tự",
+    "unchanged_message": "Bạn chưa thay đổi thứ tự tin nhắn. Bạn có chắc muốn lưu không?"
+  },
+  "rank_initial_prompts": {
+    "label": "Xếp hạng các tin nhắn đầu tiên",
+    "desc": "Đánh giá độ chính xác và dễ đọc của các câu trả lời của tin nhắn đầu tiên.",
+    "overview": "Từ những tin nhắn đầu sau, xếp hạng chúng theo chất lượng, tốt nhât ở trên, tệ nhất ở dưới.",
+    "unchanged_title": "Chưa thay đổi thứ tự",
+    "unchanged_message": "Bạn chưa thay đổi thứ tự tin nhắn. Bạn có chắc muốn lưu không?"
+  },
+  "rank_user_replies": {
+    "label": "Xếp hạng các câu trả lời của người dùng",
+    "desc": "Giúp cải thiện câu trả lời của Open Assistant.",
+    "overview": "Từ những câu trả lời của người dùng, xếp hạng chúng theo chất lượng, tốt nhât ở trên, tệ nhất ở dưới.",
+    "unchanged_title": "Chưa thay đổi thứ tự",
+    "unchanged_message": "Bạn chưa thay đổi thứ tự tin nhắn. Bạn có chắc muốn lưu không?"
+  },
+  "reply_as_assistant": {
+    "label": "Đóng vai trợ lý",
+    "desc": "Giúp cải thiện câu trả lời của Open Assistant.",
+    "overview": "Tạo câu trả lời phù hợp cho cuộc trò truyện dưới đây",
+    "response_placeholder": "Viết vào đây..."
+  },
+  "reply_as_user": {
+    "label": "Đóng vai người dùng",
+    "desc": "Trò chuyện với Open Assistant và cải thiện con bot.",
+    "overview": "Tạo câu trả lời phù hợp cho cuộc trò truyện dưới đây",
+    "instruction": "Viết tin nhắn trả lời",
+    "response_placeholder": "Viết vào đây..."
+  },
+  "available_task_count": "{{count}} việc",
+  "any_feedback_on_this_task": "Bạn có phản hồi gì về nhiệm vụ này?",
+  "writing_wrong_langauge_a_b": "Tin nhắn có vẻ được viết trong ngôn ngữ {{detected_lang}} nhưng sẽ được gửi đi là ngôn ngữ {{submit_lang}}.",
+  "submitted_as": "Câu trả lời sẽ được gửi đi là ngôn ngữ {{submit_lang}}"
+}

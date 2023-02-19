@@ -1,0 +1,20 @@
+{
+  "copy_message_id": "Copia l'ID del messaggio",
+  "label_action": "Etichetta",
+  "label_title": "Etichetta",
+  "message": "Messaggio",
+  "message_deleted": "Messaggio eliminato",
+  "open_new_tab_action": "Apri in una nuova finestra",
+  "parent": "Genitore",
+  "reactions": "Reazioni",
+  "recent_messages": "Messaggi recenti",
+  "report_action": "Resoconto",
+  "report_placeholder": "Perché questo messaggio dovrebbe venire rivisto?",
+  "report_title": "Resoconto",
+  "send_report": "Invia",
+  "stop_tree": "Ferma albero",
+  "submit_labels": "Invia",
+  "tree_stopped": "Albero fermato {{id}}",
+  "view_user": "Visualizza utente",
+  "your_recent_messages": "I tuoi messaggi recenti"
+}

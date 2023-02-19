@@ -1,0 +1,22 @@
+{
+  "copy_message_id": "Copiar ID del missatge",
+  "copy_message_link": "Copiar enllaç al missatge",
+  "label_action": "Etiquetar",
+  "label_title": "Etiqueta",
+  "message": "Missatge",
+  "message_deleted": "S'ha eliminat el missatge",
+  "no_messages": "No hi ha missatges",
+  "open_new_tab_action": "Obre en una pestanya nova",
+  "parent": "Pare",
+  "reactions": "Reaccions",
+  "recent_messages": "Missatges recents",
+  "report_action": "Informa",
+  "report_placeholder": "Per què cal revisar aquest missatge?",
+  "report_title": "Informe",
+  "send_report": "Envia",
+  "stop_tree": "Atura l'arbre",
+  "submit_labels": "Envia",
+  "tree_stopped": "S'ha aturat l'arbre {{id}}",
+  "view_user": "Mostra l'usuari",
+  "your_recent_messages": "Els teus missatges recents"
+}

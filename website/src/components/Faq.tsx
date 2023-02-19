@@ -3,7 +3,7 @@ import { useTranslation } from "next-i18next";
 
 import { Container } from "./Container";
 
-const FAQS = Array.from({ length: 2 });
+const FAQS = Array.from({ length: 6 });
 
 export function Faq() {
   const { colorMode } = useColorMode();
@@ -21,7 +21,7 @@ export function Faq() {
         </Box>
         <List
           role="list"
-          className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 sm:mt-20 lg:max-w-none lg:grid-cols-3"
+          className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-16 sm:mt-20 lg:max-w-none lg:grid-cols-3"
         >
           {FAQS.map((_, index) => {
             return (

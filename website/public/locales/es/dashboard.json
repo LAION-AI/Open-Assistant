@@ -1,8 +1,14 @@
 {
-  "grab_a_task": "¡Toma una tarea!",
   "create": "Crear",
+  "dashboard": "Panel principal",
   "evaluate": "Evaluar",
+  "go": "Ir",
+  "grab_a_task": "¡Toma una tarea!",
   "label": "Etiquetar",
-  "dashboard": "Panel de administración",
-  "go": "Ir"
+  "welcome_message": {
+    "label": "Bienvenido, {{username}}!",
+    "contributor": "Colaborador",
+    "description": "Open Assistant es un asistente de Inteligencia Artificial de código abierto que utiliza y entrena modelos de lenguaje avanzados para entender y responder a los humanos.",
+    "instruction": "Completa tareas para ayudar a entrenar el modelo y ganar puntos."
+  }
 }

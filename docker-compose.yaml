@@ -1,26 +1,18 @@
-version: "3.7"
+version: "3.8"
 
 services:
-  # Use `docker compose up backend-dev --build --attach-dependencies` to start a database and work and the backend.
-  backend-dev:
-    image: sverrirab/sleep
-    depends_on: [db, adminer, redis, redis-insights]
+  # Use `docker compose --profile backend-dev up --build --attach-dependencies` to start a database and work and the backend.
 
-  # Use `docker compose up frontend-dev --build --attach-dependencies` to start all services needed to work on the frontend.
-  frontend-dev:
-    image: sverrirab/sleep
-    depends_on: [db, webdb, adminer, maildev, backend, redis]
+  # Use `docker compose --profile frontend-dev up --build --attach-dependencies` to start the services needed to work on the frontend. If you want to also run the inference, add a second `--profile inference` argument.
 
-  # Used by CI automations.
-  ci:
-    image: sverrirab/sleep
-    depends_on: [db, webdb, maildev, backend, redis, web]
+  # The profile ci is used by CI automations. (i.e E2E testing)
 
   # This DB is for the FastAPI Backend.
   db:
     image: ghcr.io/laion-ai/open-assistant/oasst-postgres
     pull_policy: always
     restart: always
+    profiles: ["frontend-dev", "backend-dev", "ci"]
     ports:
       - 5432:5432
     environment:
@@ -37,6 +29,7 @@ services:
   redis:
     image: redis
     restart: always
+    profiles: ["frontend-dev", "backend-dev", "ci"]
     ports:
       - 6379:6379
     healthcheck:
@@ -50,6 +43,7 @@ services:
   # insights host - redis:6379
   redis-insights:
     image: redislabs/redisinsight:latest
+    profiles: ["backend-dev"]
     ports:
       - 8001:8001
 
@@ -57,6 +51,7 @@ services:
   webdb:
     image: postgres
     restart: always
+    profiles: ["frontend-dev", "ci"]
     ports:
       - 5433:5432
     environment:
@@ -73,6 +68,7 @@ services:
   adminer:
     image: adminer
     restart: always
+    profiles: ["frontend-dev", "backend-dev"]
     ports:
       - 8089:8080
 
@@ -82,6 +78,7 @@ services:
   maildev:
     image: maildev/maildev
     restart: always
+    profiles: ["frontend-dev", "ci"]
     environment:
       - MAILDEV_WEB_PORT=1080
       - MAILDEV_SMTP_PORT=1025
@@ -106,6 +103,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    profiles: ["frontend-dev", "ci"]
     ports:
       - "8080:8080"
 
@@ -116,6 +114,8 @@ services:
       context: .
     image: oasst-web
     environment:
+      - CLOUDFLARE_CAPTCHA_SECRET_KEY=1x0000000000000000000000000000000AA
+      - CLOUDFARE_CAPTCHA_SITE_KEY=1x00000000000000000000AA
       - DATABASE_URL=postgres://postgres:postgres@webdb/oasst_web
       - FASTAPI_URL=http://backend:8080
       - FASTAPI_KEY=1234
@@ -123,17 +123,34 @@ services:
       - EMAIL_SERVER_HOST=maildev
       - EMAIL_SERVER_PORT=1025
       - EMAIL_FROM=info@example.com
+      - ENABLE_EMAIL_SIGNIN=true
+      - ENABLE_EMAIL_SIGNIN_CAPTCHA=false
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
-      - NEXT_PUBLIC_CLOUDFARE_CAPTCHA_SITE_KEY=1x00000000000000000000AA
-      - CLOUDFLARE_CAPTCHA_SERCERT_KEY=1x0000000000000000000000000000000AA
-      - NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA=true
     depends_on:
       webdb:
         condition: service_healthy
     ports:
       - "3000:3000"
     command: bash wait-for-postgres.sh node server.js
+    profiles: ["ci"]
+
+  # This DB is for Inference
+  inference-db:
+    image: postgres
+    restart: always
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: oasst_inference
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    profiles: ["inference"]
 
   inference-server:
     build:
@@ -142,53 +159,104 @@ services:
       target: dev
     image: oasst-inference-server:dev
     environment:
-      - "PORT=8000"
-      - "REDIS_HOST=redis"
+      PORT: 8000
+      REDIS_HOST: redis
+      POSTGRES_HOST: inference-db
+      POSTGRES_DB: oasst_inference
+      DEBUG_API_KEYS: '["0000"]'
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/server:/opt/inference/server"
     restart: unless-stopped
+    ports:
+      - "8000:8000"
     depends_on:
       redis:
+        condition: service_healthy
+      inference-db:
         condition: service_healthy
     profiles: ["inference"]
 
   inference-worker:
     build:
-      dockerfile: docker/inference/Dockerfile.worker
+      dockerfile: docker/inference/Dockerfile.worker-full
       context: .
-      target: dev
     image: oasst-inference-worker:dev
     environment:
+      - API_KEY=0000
+      - "MODEL_ID=distilgpt2"
       - "BACKEND_URL=ws://inference-server:8000"
-      - "INFERENCE_SERVER_URL=http://inference-text-generation-server"
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/worker:/opt/inference/worker"
-    depends_on:
-      - inference-server
     deploy:
       replicas: 1
     profiles: ["inference"]
 
-  inference-text-client:
-    build:
-      dockerfile: docker/inference/Dockerfile.text-client
-      context: .
-    image: oasst-inference-text-client
-    environment:
-      - "BACKEND_URL=http://inference-server:8000"
-    tty: true
-    stdin_open: true
-    volumes:
-      - "./inference/worker:/opt/inference/worker"
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
     restart: unless-stopped
-    depends_on:
-      - inference-server
-    profiles: ["inference"]
+    volumes:
+      - ${PWD}/docker/prometheus:/etc/prometheus
+      - prom_data:/prometheus
+    profiles: ["observability"]
 
-  inference-text-generation-server:
-    image: ykilcher/text-generation-inference
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 2000:2000
+    restart: unless-stopped
     environment:
-      - "MODEL_ID=distilgpt2"
-    profiles: ["inference"]
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+      - GF_SERVER_HTTP_PORT=2000
+    volumes:
+      - ${PWD}/docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ${PWD}/docker/grafana/dashboards/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ${PWD}/docker/grafana/dashboards:/var/lib/grafana/dashboards
+    profiles: ["observability"]
+
+  netdata:
+    image: netdata/netdata
+    container_name: netdata
+    pid: host
+    hostname: oasst-netdata
+    ports:
+      - 19999:19999
+    restart: unless-stopped
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${PWD}/docker/netdata/go.d/redis.conf:/etc/netdata/go.d/redis.conf
+      - ${PWD}/docker/netdata/go.d/postgres.conf:/etc/netdata/go.d/postgres.conf
+      - ${PWD}/docker/netdata/go.d/prometheus.conf:/etc/netdata/go.d/prometheus.conf
+    environment:
+      # useful if want to claim monitoring agents into https://www.netdata.cloud/
+      # else ignore or leave blank to just use local netdata dashboards as localhost:19999
+      - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN:-}
+      - NETDATA_CLAIM_URL=https://app.netdata.cloud
+    profiles: ["observability"]
+
+volumes:
+  prom_data:
+  netdataconfig:
+  netdatalib:
+  netdatacache:

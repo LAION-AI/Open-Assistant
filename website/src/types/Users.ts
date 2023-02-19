@@ -40,16 +40,46 @@ export interface BackendUser extends BackendUserCore {
    * True when the user is marked for deletion.  False otherwise.
    */
   deleted: boolean;
+
+  /**
+   * time the user was created
+   */
+  created_date: string; // iso date string
+
+  /**
+   * if the user is shown on leaderboards
+   */
+  show_on_leaderboard: boolean;
+
+  /**
+   * streak
+   */
+  streak_days: unknown;
+
+  /**
+   * last day of latest streak
+   */
+  streak_last_day_date: string | null; // iso date string
+
+  /**
+   * last time this use made an interaction with the backend
+   */
+  last_activity_date: string | null; // iso date string
+
+  /**
+   * the date when the user accepted terms of the service
+   */
+  tos_acceptance_date: string | null; // iso date string
 }
 
 /**
  * An expanded User for the web.
  */
-export interface User extends BackendUser {
+export interface User<TRole extends string = string> extends BackendUser {
   /**
    * The user's roles within the webapp.
    */
-  role: string;
+  role: TRole;
 }
 
 export type FetchUsersParams = {

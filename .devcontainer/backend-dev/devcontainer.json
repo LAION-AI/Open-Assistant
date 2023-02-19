@@ -1,5 +1,5 @@
 {
-  "name": "Open-Assistant Backend Dev",
+  "name": "Backend Development",
   "image": "mcr.microsoft.com/vscode/devcontainers/universal",
   "features": {
     "ghcr.io/devcontainers-contrib/features/pre-commit:2": {
@@ -10,7 +10,11 @@
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
   "customizations": {
     "vscode": {
-      "extensions": ["GitHub.copilot"]
+      "extensions": [
+        "GitHub.copilot",
+        "ms-python.python",
+        "esbenp.prettier-vscode"
+      ]
     }
   }
 }

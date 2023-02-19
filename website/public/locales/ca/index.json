@@ -1,0 +1,23 @@
+{
+  "blurb": "Creiem que podem crear una revolució.",
+  "blurb1": "De la mateixa manera que Stable Diffusion va ajudar el món a crear art i imatges de noves maneres, volem millorar el món proporcionant una IA conversacional sorprenent.",
+  "description": "IA conversacional per a tothom. Un projecte de codi obert per a crear un GPT LLM preparat per a xatejar, administrat per LAION i col·laboradors de tot el món.",
+  "faq_items": {
+    "q0": "Com d'avançat està el projecte?",
+    "a0": "Estem en les primeres etapes de desenvolupament, treballant a partir de la investigació establerta per a aplicar RLHF (aprenentatge per reforç amb realimentació humana) a models de llenguatge de grans dimensions.",
+    "q1": "Qui hi ha al darrere d'Open Assistant?",
+    "a1": "Open Assistant és un projecte organitzat per LAION i persones de tot el planeta interessades a apropar aquesta tecnologia a tothom.",
+    "q2": "Quina llicència utilitza Open Assistant?",
+    "a2": "El codi i els models estan llicenciats sota la llicència Apache 2.0.",
+    "q3": "Les dades d'entrenament també seran lliures?",
+    "a3": "Sí, sota la llicència CC BY 4.0.",
+    "q4": "Serà gratuït Open Assistant?",
+    "a4": "Sí, Open Assistant serà gratuït per a utilitzar i modificar.",
+    "q5": "Quin maquinari serà necessari per executar els models?",
+    "a5": "Hi haurà versions que es podran executar en maquinari per a consumidors."
+  },
+  "faq_title": "Preguntes freqüents",
+  "join_us_description": "Tots els projectes de codi obert comencen amb persones com tu. El codi obert és la creença que si col·laborem plegats, podem regalar el nostre coneixement i tecnologia al món en benefici de la humanitat. T'hi apuntes? Troba'ns aquí:",
+  "join_us_title": "Uneix-te a nosaltres",
+  "subtitle": "IA conversacional per a tothom."
+}

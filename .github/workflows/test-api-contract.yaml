@@ -23,13 +23,13 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+          cache: "pip"
+          cache-dependency-path: "**/requirements*.txt"
       - uses: actions/setup-node@v3
         with:
           node-version: 16
 
-      - run: cd oasst-shared && pip install -e .
-
-      - run: cd oasst-shared && pip install -r requirements.dev.txt
+      - run: pip install ./oasst-shared[dev]
 
       - run: cd backend && pip install -r requirements.txt
 

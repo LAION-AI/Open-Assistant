@@ -1,11 +1,12 @@
 import { Box, useColorModeValue } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { MessageTable } from "src/components/Messages/MessageTable";
+import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { Sortable } from "src/components/Sortable/Sortable";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { TaskSurveyProps } from "src/components/Tasks/Task";
 import { TaskHeader } from "src/components/Tasks/TaskHeader";
 import { TaskType } from "src/types/Task";
+import { EvaluateTaskReply } from "src/types/TaskResponses";
 import { RankTaskType } from "src/types/Tasks";
 
 export const EvaluateTask = ({
@@ -15,7 +16,7 @@ export const EvaluateTask = ({
   isDisabled,
   onReplyChanged,
   onValidityChanged,
-}: TaskSurveyProps<RankTaskType, { ranking: number[] }>) => {
+}: TaskSurveyProps<RankTaskType, EvaluateTaskReply>) => {
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const [ranking, setRanking] = useState<number[]>(null);
 
@@ -46,7 +47,7 @@ export const EvaluateTask = ({
         <SurveyCard>
           <TaskHeader taskType={taskType} />
           <Box mt="4" p="6" borderRadius="lg" bg={cardColor}>
-            <MessageTable messages={messages} highlightLastMessage />
+            <MessageConversation messages={messages} highlightLastMessage />
           </Box>
           <Sortable
             items={task[sortables]}

@@ -1,0 +1,18 @@
+{
+  "daily": "يومياً",
+  "label": "التوسيمات",
+  "last_updated_at": "آخر تحديث في: {{val, datetime}}",
+  "leaderboard": "جدول المتصدرين",
+  "monthly": "شهرياً",
+  "next": "التالي",
+  "overall": "إجمالياً",
+  "previous": "السابق",
+  "prompt": "التساؤل",
+  "rank": "الترتيب",
+  "reply": "الردود",
+  "score": "النقاط",
+  "top_5_contributors_today": "أعلى 5 مساهمين اليوم",
+  "user": "المستخدم",
+  "view_all": "عرض الكل",
+  "weekly": "أسبوعياً"
+}

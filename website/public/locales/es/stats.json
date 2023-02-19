@@ -1,0 +1,17 @@
+{
+  "aborted_low_grade": "Abortado por baja puntuación",
+  "backlog_ranking": "Pendiente de ordenación",
+  "count": "Cuenta",
+  "growing": "Creciendo",
+  "halted_by_moderator": "Parado por un moderador",
+  "human_messages_by_lang": "Mensajes de humanos por idioma",
+  "human_messages_by_role": "Mensajes de humanos por rol",
+  "initial_prompt_review": "Revisión de instrucciones iniciales",
+  "message_trees_by_state": "Árboles de mensaje por estado",
+  "message_trees_states_by_lang": "Árboles de mensaje por idioma",
+  "prompt_lottery_waiting": "Esperando a la lotería de instrucciones",
+  "ranking": "Ordenando",
+  "ready_for_export": "Preparado para ser exportado",
+  "stats": "Estadísticas",
+  "users_accepted_tos": "Usuarios que han aceptado los términos de servicio"
+}

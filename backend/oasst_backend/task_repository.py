@@ -1,16 +1,18 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
 import oasst_backend.models.db_payload as db_payload
 from loguru import logger
+from oasst_backend.config import settings
 from oasst_backend.models import ApiClient, Task
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.user_repository import UserRepository
 from oasst_backend.utils.database_utils import CommitMode, managed_tx_method
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
-from sqlmodel import Session, func, or_
+from oasst_shared.utils import utcnow
+from sqlmodel import Session, delete, false, func, not_, or_
 from starlette.status import HTTP_404_NOT_FOUND
 
 
@@ -22,6 +24,13 @@ def validate_frontend_message_id(message_id: str) -> None:
         )
     if not message_id:
         raise OasstError("message_id must not be empty", OasstErrorCode.INVALID_FRONTEND_MESSAGE_ID)
+
+
+def delete_expired_tasks(session: Session) -> int:
+    stm = delete(Task).where(Task.expiry_date < utcnow(), Task.done == false())
+    result = session.exec(stm)
+    logger.info(f"Deleted {result.rowcount} expired tasks.")
+    return result.rowcount
 
 
 class TaskRepository:
@@ -118,12 +127,18 @@ class TaskRepository:
             case _:
                 raise OasstError(f"Invalid task type: {type(task)=}", OasstErrorCode.INVALID_TASK_TYPE)
 
+        if not collective and settings.TASK_VALIDITY_MINUTES > 0:
+            expiry_date = utcnow() + timedelta(minutes=settings.TASK_VALIDITY_MINUTES)
+        else:
+            expiry_date = None
+
         task_model = self.insert_task(
             payload=payload,
             id=task.id,
             message_tree_id=message_tree_id,
             parent_message_id=parent_message_id,
             collective=collective,
+            expiry_date=expiry_date,
         )
         assert task_model.id == task.id
         return task_model
@@ -162,24 +177,9 @@ class TaskRepository:
         if not allow_personal_tasks and not task.collective:
             raise OasstError("This is not a collective task", OasstErrorCode.TASK_NOT_COLLECTIVE)
         if task.done:
-            raise OasstError("Allready closed", OasstErrorCode.TASK_ALREADY_DONE)
+            raise OasstError("Already closed", OasstErrorCode.TASK_ALREADY_DONE)
 
         task.done = True
-        self.db.add(task)
-
-    @managed_tx_method(CommitMode.COMMIT)
-    def acknowledge_task_failure(self, task_id):
-        # find task
-        task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
-        if task is None:
-            raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND)
-        if task.expired:
-            raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
-        if task.done or task.ack is not None:
-            raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
-
-        task.ack = False
-        # ToDo: check race-condition, transaction
         self.db.add(task)
 
     @managed_tx_method(CommitMode.COMMIT)
@@ -190,6 +190,7 @@ class TaskRepository:
         message_tree_id: UUID = None,
         parent_message_id: UUID = None,
         collective: bool = False,
+        expiry_date: datetime = None,
     ) -> Task:
         c = PayloadContainer(payload=payload)
         task = Task(
@@ -201,6 +202,7 @@ class TaskRepository:
             message_tree_id=message_tree_id,
             parent_message_id=parent_message_id,
             collective=collective,
+            expiry_date=expiry_date,
         )
         logger.debug(f"inserting {task=}")
         self.db.add(task)
@@ -220,14 +222,43 @@ class TaskRepository:
         return task
 
     def fetch_recent_reply_tasks(
-        self, max_age: timedelta = timedelta(minutes=5), done: bool = False, limit: int = 100
+        self,
+        max_age: timedelta = timedelta(minutes=5),
+        done: bool = False,
+        skipped: bool = False,
+        limit: int = 100,
     ) -> list[Task]:
         qry = self.db.query(Task).filter(
-            func.age(Task.created_date) < max_age,
+            Task.created_date > func.current_timestamp() - max_age,
             or_(Task.payload_type == "AssistantReplyPayload", Task.payload_type == "PrompterReplyPayload"),
         )
         if done is not None:
             qry = qry.filter(Task.done == done)
+        if skipped is not None:
+            qry = qry.filter(Task.skipped == skipped)
+        if limit:
+            qry = qry.limit(limit)
+        return qry.all()
+
+    def delete_expired(self) -> int:
+        return delete_expired_tasks(self.db)
+
+    def fetch_pending_tasks_of_user(
+        self,
+        user_id: UUID,
+        max_age: timedelta = timedelta(minutes=5),
+        limit: int = 100,
+    ) -> list[Task]:
+        qry = (
+            self.db.query(Task)
+            .filter(
+                Task.user_id == user_id,
+                Task.created_date > func.current_timestamp() - max_age,
+                not_(Task.done),
+                not_(Task.skipped),
+            )
+            .order_by(Task.created_date)
+        )
         if limit:
             qry = qry.limit(limit)
         return qry.all()

@@ -1,0 +1,56 @@
+train:
+  seq_length: 1024
+  epochs: 100
+  total_steps: 10000
+  batch_size: 128
+
+  checkpoint_interval: 10000
+  eval_interval: 100
+
+  pipeline: "PromptPipeline"
+  trainer: "AcceleratePPOTrainer"
+
+model:
+  model_path: "lvwerra/gpt2-imdb"
+  num_layers_unfrozen: 2
+
+tokenizer:
+  tokenizer_path: "gpt2"
+  truncation_side: "right"
+
+optimizer:
+  name: "adamw"
+  kwargs:
+    lr: 1.0e-4
+    betas: [0.9, 0.95]
+    eps: 1.0e-8
+    weight_decay: 1.0e-6
+
+scheduler:
+  name: "cosine_annealing"
+  kwargs:
+    T_max: 10000 # train.total_steps
+    eta_min: 1.0e-4
+
+method:
+  name: "ppoconfig"
+  num_rollouts: 128
+  chunk_size: 128
+  ppo_epochs: 4
+  init_kl_coef: 0.05
+  target: 6
+  horizon: 10000
+  gamma: 1
+  lam: 0.95
+  cliprange: 0.2
+  cliprange_value: 0.2
+  vf_coef: 1
+  scale_reward: False
+  ref_mean: null
+  ref_std: null
+  cliprange_reward: 10
+  gen_kwargs:
+    max_new_tokens: 40
+    top_k: 0
+    top_p: 1.0
+    do_sample: True

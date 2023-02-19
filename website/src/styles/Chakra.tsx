@@ -6,7 +6,7 @@ export function Chakra({ cookies, children }) {
   const colorModeManager = typeof cookies === "string" ? cookieStorageManagerSSR(cookies) : localStorageManager;
 
   return (
-    <ChakraProvider theme={theme} colorModeManager={colorModeManager}>
+    <ChakraProvider theme={theme} colorModeManager={colorModeManager} resetCSS>
       {children}
     </ChakraProvider>
   );

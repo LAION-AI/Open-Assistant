@@ -1,0 +1,20 @@
+{
+  "copy_message_id": "نسخ معرف الرسالة",
+  "label_action": "توسيم",
+  "label_title": "الوسم",
+  "message": "رسالة",
+  "message_deleted": "تم حذف الرسالة",
+  "open_new_tab_action": "فتح في علامة تبويب جديدة",
+  "parent": "الاب",
+  "reactions": "الردود",
+  "recent_messages": "أحدث الرسائل",
+  "report_action": "تبليغ",
+  "report_placeholder": "لماذا يجب مراجعة هذه الرسالة؟",
+  "report_title": "تبليغ",
+  "send_report": "إرسال",
+  "stop_tree": "اوقف الشجرة",
+  "submit_labels": "إرسال",
+  "tree_stopped": "تم ايقاف الشجرة {{id}}",
+  "view_user": "عرض المستخدم",
+  "your_recent_messages": "رسائلك الاخيرة"
+}

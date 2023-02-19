@@ -1,0 +1,23 @@
+{
+  "copy_message_id": "Üzenetazonosító másolása",
+  "copy_message_link": "Üzenethivatkozás másolása",
+  "label_action": "Címke",
+  "label_title": "Címke",
+  "message_author": "Szerző",
+  "message_author_explain": "Te vagy az üzenet szerzője",
+  "message_deleted": "Üzenet törölve",
+  "message": "Üzenet",
+  "open_new_tab_action": "Megnyitás új lapon",
+  "parent": "Szülő",
+  "reactions": "Reakciók",
+  "recent_messages": "Friss üzenetek itt: {{language}}",
+  "report_action": "Jelentés",
+  "report_placeholder": "Miért kell ezt az üzenetet átnézni?",
+  "report_title": "Jelentés",
+  "send_report": "Elkülés",
+  "stop_tree": "Fa leállítása",
+  "submit_labels": "Beküldés",
+  "tree_stopped": "A fa leállt: {{id}}",
+  "view_user": "Felhasználó megtekintése",
+  "your_recent_messages": "Legutóbbi saját üzenetek"
+}

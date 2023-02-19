@@ -1,4 +1,5 @@
 import { Box, Grid, GridItem, Text, useColorModeValue } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 import React from "react";
 import { useState } from "react";
 import { LikertButtons } from "src/components/Buttons/LikertButtons";
@@ -18,160 +19,154 @@ interface LabelInfo {
   inverted: boolean;
 }
 
-const getLabelInfo = (label: string): LabelInfo => {
+const getLabelInfo = (label: string, t: (key: string) => string): LabelInfo => {
   switch (label) {
     case "spam":
       return {
-        zeroText: "Not Spam",
-        zeroDescription: ["Suitable for training Open Assistant."],
-        oneText: "Spam",
+        zeroText: t("not_spam"),
+        zeroDescription: [t("not_spam.explanation")],
+        oneText: t("spam"),
         oneDescription: [
-          "Seems to be intentionally low-quality or irrelevant",
-          'We consider the following unwanted content as spam: trolling, intentional undermining of our purpose, illegal material, material that violates our code of conduct, and other things that are inappropriate for our dataset. We collect these under the common heading of "spam".',
-          "This is not an assessment of whether this message is the best possible answer. Especially for prompts or user-replies, we very much want to retain all kinds of responses in the dataset, so that the assistant can learn to reply appropriately.",
-          "Please mark this text as spam only if it is clearly unsuited to be part of our dataset, as outlined above, and try not to make any subjective value-judgments beyond that.",
+          t("spam.one_desc.line_1"),
+          t("spam.one_desc.line_2"),
+          t("spam.one_desc.line_3"),
+          t("spam.one_desc.line_4"),
         ],
         inverted: true,
       };
     case "fails_task":
       return {
-        zeroText: "Follows Instructions",
+        zeroText: t("follows_instructions"),
         zeroDescription: [],
-        oneText: "Fails Task",
-        oneDescription: ["Fails to follow the correct instruction / task"],
+        oneText: t("fails_task"),
+        oneDescription: [t("fails_task.one_desc")],
         inverted: true,
       };
     case "not_appropriate":
       return {
-        zeroText: "Appropriate",
+        zeroText: t("appropriate"),
         zeroDescription: [],
-        oneText: "Inappropriate",
-        oneDescription: ["Inappropriate for customer assistant"],
+        oneText: t("inappropriate"),
+        oneDescription: [t("inappropriate.one_desc")],
         inverted: true,
       };
     case "violence":
       return {
-        zeroText: "Harmless",
+        zeroText: t("harmless"),
         zeroDescription: [],
-        oneText: "Violent",
-        oneDescription: ["Encourages or fails to discourage violence/abuse/terrorism/self-harm"],
+        oneText: t("violent"),
+        oneDescription: [t("violent.one_desc")],
         inverted: true,
       };
     case "excessive_harm":
       return {
-        zeroText: "Safe",
+        zeroText: t("safe"),
         zeroDescription: [],
-        oneText: "Harmful",
-        oneDescription: [
-          "Content likely to cause excessive harm not justifiable in the context",
-          "Harm refers to physical or mental damage or injury to someone or something. Excessive refers to a reasonable threshold of harm in the context, for instance damaging skin is not excessive in the context of surgery.",
-        ],
+        oneText: t("harmful"),
+        oneDescription: [t("harmful.one_desc.line_1"), t("harmful.one_desc.line_2")],
         inverted: true,
       };
     case "sexual_content":
       return {
-        zeroText: "Non Sexual",
+        zeroText: t("non_sexual"),
         zeroDescription: [],
-        oneText: "Sexual",
-        oneDescription: ["Contains sexual content"],
+        oneText: t("sexual"),
+        oneDescription: [t("sexual.one_desc")],
         inverted: true,
       };
     case "toxicity":
       return {
-        zeroText: "Polite",
+        zeroText: t("polite"),
         zeroDescription: [],
-        oneText: "Rude",
-        oneDescription: ["Contains rude, abusive, profane or insulting content"],
+        oneText: t("rude"),
+        oneDescription: [t("rude.one_desc")],
         inverted: true,
       };
     case "moral_judgement":
       return {
-        zeroText: "Non-Judgemental",
+        zeroText: t("non_judgemental"),
         zeroDescription: [],
-        oneText: "Judgemental",
-        oneDescription: ["Expresses moral judgement"],
+        oneText: t("judgemental"),
+        oneDescription: [t("judgemental.one_desc")],
         inverted: true,
       };
     case "political_content":
       return {
-        zeroText: "Apolitical",
+        zeroText: t("apolitical"),
         zeroDescription: [],
-        oneText: "Political",
-        oneDescription: ["Expresses political views"],
+        oneText: t("political"),
+        oneDescription: [t("political.one_desc")],
         inverted: true,
       };
     case "humor":
       return {
-        zeroText: "Serious",
+        zeroText: t("serious"),
         zeroDescription: [],
-        oneText: "Humorous",
-        oneDescription: ["Contains humorous content including sarcasm"],
+        oneText: t("humorous"),
+        oneDescription: [t("humorous.one_desc")],
         inverted: false,
       };
     case "hate_speech":
       return {
-        zeroText: "Safe",
+        zeroText: t("safe"),
         zeroDescription: [],
-        oneText: "Hateful",
-        oneDescription: [
-          "Content is abusive or threatening and expresses prejudice against a protected characteristic",
-          "Prejudice refers to preconceived views not based on reason. Protected characteristics include gender, ethnicity, religion, sexual orientation, and similar characteristics.",
-        ],
+        oneText: t("hateful"),
+        oneDescription: [t("hateful.one_desc.line_1"), t("hateful.one_desc.line_2")],
         inverted: true,
       };
     case "threat":
       return {
-        zeroText: "Safe",
+        zeroText: t("safe"),
         zeroDescription: [],
-        oneText: "Threatening",
-        oneDescription: ["Contains a threat against a person or persons"],
+        oneText: t("threatening"),
+        oneDescription: [t("threatening.one_desc")],
         inverted: true,
       };
     case "misleading":
       return {
-        zeroText: "Accurate",
+        zeroText: t("accurate"),
         zeroDescription: [],
-        oneText: "Misleading",
-        oneDescription: ["Contains text which is incorrect or misleading"],
+        oneText: t("misleading"),
+        oneDescription: [t("misleading.one_desc")],
         inverted: true,
       };
     case "helpfulness":
       return {
-        zeroText: "Unhelpful",
+        zeroText: t("unhelpful"),
         zeroDescription: [],
-        oneText: "Helpful",
-        oneDescription: ["Completes the task to a high standard"],
+        oneText: t("helpful"),
+        oneDescription: [t("helpful.one_desc")],
         inverted: false,
       };
     case "creative":
       return {
-        zeroText: "Boring",
+        zeroText: t("boring"),
         zeroDescription: [],
-        oneText: "Creative",
-        oneDescription: ["Expresses creativity in responding to the task"],
+        oneText: t("creative"),
+        oneDescription: [t("creative.one_desc")],
         inverted: false,
       };
     case "pii":
       return {
-        zeroText: "Clean",
+        zeroText: t("clean"),
         zeroDescription: [],
-        oneText: "Contains PII",
-        oneDescription: ["Contains personally identifing information"],
+        oneText: t("contains_pii"),
+        oneDescription: [t("contains_pii.one_desc")],
         inverted: false,
       };
     case "quality":
       return {
-        zeroText: "Low Quality",
+        zeroText: t("low_quality"),
         zeroDescription: [],
-        oneText: "High Quality",
+        oneText: t("high_quality"),
         oneDescription: [],
         inverted: false,
       };
     case "creativity":
       return {
-        zeroText: "Ordinary",
+        zeroText: t("ordinary"),
         zeroDescription: [],
-        oneText: "Creative",
+        oneText: t("creative"),
         oneDescription: [],
         inverted: false,
       };
@@ -187,6 +182,7 @@ const getLabelInfo = (label: string): LabelInfo => {
 };
 
 export const LabelLikertGroup = ({ labelIDs, onChange, isEditable = true }: LabelInputGroupProps) => {
+  const { t } = useTranslation("labelling");
   const [labelValues, setLabelValues] = useState<number[]>(Array.from({ length: labelIDs.length }).map(() => null));
 
   const cardColor = useColorModeValue("gray.50", "gray.800");
@@ -194,7 +190,7 @@ export const LabelLikertGroup = ({ labelIDs, onChange, isEditable = true }: Labe
   return (
     <Grid templateColumns={"minmax(min-content, 30em)"} rowGap={2}>
       {labelIDs.map((labelId, idx) => {
-        const { zeroText, oneText, zeroDescription, oneDescription, inverted } = getLabelInfo(labelId);
+        const { zeroText, oneText, zeroDescription, oneDescription, inverted } = getLabelInfo(labelId, t);
 
         let textA = zeroText;
         let textB = oneText;

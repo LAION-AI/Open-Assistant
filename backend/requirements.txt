@@ -1,3 +1,4 @@
+aiohttp==3.8.3
 alembic==1.8.1
 cryptography==39.0.0
 fastapi==0.88.0
@@ -5,14 +6,14 @@ fastapi-limiter==0.1.5
 fastapi-utils==0.2.1
 loguru==0.6.0
 numpy==1.22.4
+prometheus-fastapi-instrumentator==5.9.1
 psycopg2-binary==2.9.5
-pydantic==1.9.1
-pydantic[email]==1.9.1
+pydantic==1.10.4
+pydantic[email]==1.10.4
 python-dotenv==0.21.0
 python-jose[cryptography]==3.3.0
 redis
 scipy==1.8.1
 SQLAlchemy==1.4.41
 sqlmodel==0.0.8
-starlette==0.22.0
 uvicorn==0.20.0
