@@ -29,11 +29,13 @@ async def handle_create_message(
             logger.exception("Error adding prompter message")
             return fastapi.Response(status_code=500)
 
-    async def event_generator(message_id):
-        queue = queueing.message_queue(deps.redis_client, message_id)
+    async def event_generator(prompter_message_id: str, assistant_message_id: str):
+        queue = queueing.message_queue(deps.redis_client, assistant_message_id)
         try:
             yield {
-                "data": interface.MessageResponseEvent(id=message_id).json(),
+                "data": interface.MessageResponseEvent(
+                    prompter_message_id=prompter_message_id, assistant_message_id=assistant_message_id
+                ).json(),
             }
             while True:
                 item = await queue.dequeue()
@@ -66,4 +68,4 @@ async def handle_create_message(
             logger.exception(f"Error streaming {chat_id}")
             raise
 
-    return EventSourceResponse(event_generator(assistant_message.id))
+    return EventSourceResponse(event_generator(prompter_message.id, assistant_message.id))
