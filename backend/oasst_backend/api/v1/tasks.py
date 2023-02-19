@@ -35,7 +35,7 @@ router = APIRouter()
             )
         ),
         Depends(
-            deps.UserMessageRateLimiter(
+            deps.UserReplyRateLimiter(
                 times=settings.RATE_LIMIT_MESSAGE_USER_TIMES,
                 minutes=settings.RATE_LIMIT_MESSAGE_USER_MINUTES,
             )

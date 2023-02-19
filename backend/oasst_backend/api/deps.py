@@ -167,7 +167,7 @@ class UserRateLimiter(RateLimiter):
         return await super().__call__(request, response)
 
 
-class UserMessageRateLimiter(RateLimiter):
+class UserReplyRateLimiter(RateLimiter):
     """
     User-level rate limiter which only kicks in for messages.
     """
@@ -199,7 +199,6 @@ class UserMessageRateLimiter(RateLimiter):
 
         # Skip when the request is not a message
         if not json.get("type") or json.get("type") not in (
-            protocol_schema.TaskRequestType.initial_prompt,
             protocol_schema.TaskRequestType.assistant_reply,
             protocol_schema.TaskRequestType.prompter_reply,
         ):
