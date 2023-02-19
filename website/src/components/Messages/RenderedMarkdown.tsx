@@ -46,7 +46,7 @@ const sx: SystemStyleObject = {
   },
   p: {
     whiteSpace: "pre-wrap",
-    my: 6,
+    mb: 4,
     fontSize: "md",
     fontWeight: "normal",
     lineHeight: 6,
