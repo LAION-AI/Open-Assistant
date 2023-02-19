@@ -12,6 +12,7 @@ from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.models import ApiClient
 from oasst_shared.exceptions import OasstError, OasstErrorCode
+from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
 
 
@@ -161,6 +162,46 @@ class UserRateLimiter(RateLimiter):
         # Skip when api_key and user information are not available
         # (such that it will be handled by `APIClientRateLimiter`)
         if not api_key or not user or not user.get("id"):
+            return
+
+        return await super().__call__(request, response)
+
+
+class UserMessageRateLimiter(RateLimiter):
+    """
+    User-level rate limiter which only kicks in for messages.
+    """
+
+    def __init__(
+        self, times: int = 100, milliseconds: int = 0, seconds: int = 0, minutes: int = 1, hours: int = 0
+    ) -> None:
+        async def identifier(request: Request) -> str:
+            """Identify a request based on api_key and user.id"""
+            api_key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
+            user = (await request.json()).get("user")
+            return f"{api_key}:{user.get('id')}"
+
+        super().__init__(times, milliseconds, seconds, minutes, hours, identifier)
+
+    async def __call__(self, request: Request, response: Response, api_key: str = Depends(get_api_key)) -> None:
+        # Skip if rate limiting is disabled
+        if not settings.RATE_LIMIT:
+            return
+
+        # Attempt to retrieve api_key and user information
+        user = (await request.json()).get("user")
+
+        # Skip when api_key and user information are not available
+        # (such that it will be handled by `APIClientRateLimiter`)
+        if not api_key or not user or not user.get("id"):
+            return
+
+        # Skip when the request is not a message
+        if not isinstance(request, protocol_schema.TaskRequest) or request.type not in (
+            protocol_schema.TaskRequestType.initial_prompt,
+            protocol_schema.TaskRequestType.assistant_reply,
+            protocol_schema.TaskRequestType.prompter_reply,
+        ):
             return
 
         return await super().__call__(request, response)

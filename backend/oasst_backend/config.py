@@ -256,6 +256,9 @@ class Settings(BaseSettings):
     RATE_LIMIT_TASK_API_TIMES: int = 10_000
     RATE_LIMIT_TASK_API_MINUTES: int = 1
 
+    RATE_LIMIT_MESSAGE_USER_TIMES: int = 15
+    RATE_LIMIT_MESSAGE_USER_MINUTES: int = 5
+
     TASK_VALIDITY_MINUTES: int = 60 * 24 * 2  # tasks expire after 2 days
 
     class Config:
