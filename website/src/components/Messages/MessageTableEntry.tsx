@@ -34,7 +34,7 @@ import {
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
@@ -106,12 +106,15 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
   const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
   const { t } = useTranslation(["message"]);
 
+  const router = useRouter();
+  const handleOnClick = useCallback(() => {
+    enabled && router.push(ROUTES.MESSAGE_DETAIL(message.id));
+  }, [enabled, message.id, router]);
+
   return (
     <HStack w={["full", "full", "full", "fit-content"]} gap={0.5} alignItems="start" maxW="full" position="relative">
       {!inlineAvatar && avatar}
       <Box
-        as={enabled ? NextLink : undefined}
-        href={enabled ? ROUTES.MESSAGE_DETAIL(message.id) : undefined}
         width={["full", "full", "full", "fit-content"]}
         maxWidth={["full", "full", "full", "2xl"]}
         p={[3, 4]}
@@ -121,6 +124,7 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
         outlineColor={highlightColor}
         cursor={enabled ? "pointer" : undefined}
         overflowX="auto"
+        onClick={handleOnClick}
       >
         {inlineAvatar && avatar}
         <Suspense fallback={message.text}>
