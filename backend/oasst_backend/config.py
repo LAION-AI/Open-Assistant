@@ -251,7 +251,7 @@ class Settings(BaseSettings):
 
     CACHED_STATS_UPDATE_INTERVAL: int = 60  # minutes
 
-    RATE_LIMIT_TASK_USER_TIMES: int = 60
+    RATE_LIMIT_TASK_USER_TIMES: int = 30
     RATE_LIMIT_TASK_USER_MINUTES: int = 5
     RATE_LIMIT_TASK_API_TIMES: int = 10_000
     RATE_LIMIT_TASK_API_MINUTES: int = 1
