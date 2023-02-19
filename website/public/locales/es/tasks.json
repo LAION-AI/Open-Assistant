@@ -1,4 +1,5 @@
 {
+  "any_feedback_on_this_task": "¿Alguna realimentación sobre esta tarea?",
   "available_task_count": "{{count}} tareas disponibles",
   "classify_assistant_reply": {
     "label": "Clasificar respuesta del asistente",
@@ -24,7 +25,8 @@
   },
   "default": {
     "unchanged_title": "Sin cambios",
-    "unchanged_message": "¿Estás seguro de que quieres continuar?"
+    "unchanged_message": "¿Estás seguro de que quieres continuar?",
+    "continue_anyway": "Continuar de todas formas"
   },
   "label_assistant_reply": {
     "label": "Etiquetar respuesta del asistente",
@@ -32,7 +34,7 @@
     "overview": "Dada la discusión siguiente, proporciona etiquetas para la última entrada."
   },
   "label_initial_prompt": {
-    "label": "Etiquetar instrucciones inciales",
+    "label": "Etiquetar instrucciones iniciales",
     "desc": "Proporciona etiquetas para unas instrucciones.",
     "overview": "Proporciona etiquetas para las siguientes instrucciones"
   },
@@ -41,6 +43,7 @@
     "desc": "Proporciona etiquetas para unas instrucciones.",
     "overview": "Dada la discusión siguiente, proporciona etiquetas para la última entrada."
   },
+  "no_more_tasks": "Parece que no se ha encontrado ninguna tarea.",
   "random": {
     "label": "Voy a tener suerte",
     "desc": "Ayúdanos a mejorar Open Assistant empezando con una tarea aleatoria."
@@ -50,21 +53,24 @@
     "desc": "Puntúa respuestas dadas por Open Assistant basándote en su precisión y legibilidad.",
     "overview": "Dadas las siguientes respuestas del asistente, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
     "unchanged_title": "Orden sin cambiar",
-    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?"
+    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?",
+    "continue_anyway": "Continuar de todas formas"
   },
   "rank_initial_prompts": {
     "label": "Ordenar instrucciones iniciales",
     "desc": "Puntúa instrucciones a Open Assistant basándote en su precisión y legibilidad.",
-    "overview": "Dados las siguientes instrucciones inciales, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
+    "overview": "Dadas las siguientes instrucciones iniciales, ordénalas de mejor a peor, siendo la primera la mejor y la última la peor.",
     "unchanged_title": "Orden sin cambiar",
-    "unchanged_message": "No has cambiado el orden de las entradas. ¿Seguro que quieres continuar?"
+    "unchanged_message": "No has cambiado el orden de las entradas. ¿Seguro que quieres continuar?",
+    "continue_anyway": "Continuar de todas formas"
   },
   "rank_user_replies": {
     "label": "Ordenar respuestas de usuarios",
     "desc": "Ayuda a Open Assistant a mejorar sus respuestas a conversaciones con otros usuarios.",
     "overview": "Dadas las siguientes respuestas de usuarios, ordénalas de mejor a peor, con la primera siendo la mejor y la última, la peor.",
     "unchanged_title": "Orden sin cambiar",
-    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?"
+    "unchanged_message": "No has cambiado el orden de las respuestas. ¿Seguro que quieres continuar?",
+    "continue_anyway": "Continuar de todas formas"
   },
   "reply_as_assistant": {
     "label": "Contestar como asistente",
@@ -79,6 +85,8 @@
     "instruction": "Proporciona la respuesta del usuario",
     "response_placeholder": "Escribe tu respuesta aquí..."
   },
-  "writing_wrong_langauge_a_b": "Parece que estás escribiendo en {{detected_lang}} pero esto se enviará como {{submit_lang}}.",
-  "submitted_as": "Esto será enviado como {{submit_lang}}"
+  "submitted_as": "Esto será enviado como {{submit_lang}}",
+  "tab_write": "Redacte",
+  "tab_preview": "Previsualicé",
+  "writing_wrong_langauge_a_b": "Parece que estás escribiendo en {{detected_lang}} pero esto se enviará como {{submit_lang}}."
 }

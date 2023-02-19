@@ -14,6 +14,14 @@ from oasst_backend.models.message_tree_state import State as TreeState
 from pydantic import BaseModel
 
 
+class LabelAvgValue(BaseModel):
+    value: float | None
+    count: int
+
+
+LabelValues = dict[str, LabelAvgValue]
+
+
 class ExportMessageNode(BaseModel):
     message_id: str
     parent_id: str | None
@@ -27,9 +35,10 @@ class ExportMessageNode(BaseModel):
     model_name: str | None
     emojis: dict[str, int] | None
     replies: list[ExportMessageNode] | None
+    labels: LabelValues | None
 
     @staticmethod
-    def prep_message_export(message: Message) -> ExportMessageNode:
+    def prep_message_export(message: Message, labels: Optional[LabelValues] = None) -> ExportMessageNode:
         return ExportMessageNode(
             message_id=str(message.id),
             parent_id=str(message.parent_id) if message.parent_id else None,
@@ -42,6 +51,7 @@ class ExportMessageNode(BaseModel):
             model_name=message.model_name,
             emojis=message.emojis,
             rank=message.rank,
+            labels=labels,
         )
 
 
@@ -52,9 +62,12 @@ class ExportMessageTree(BaseModel):
 
 
 def build_export_tree(
-    message_tree_id: UUID, message_tree_state: TreeState, messages: list[Message]
+    message_tree_id: UUID,
+    message_tree_state: TreeState,
+    messages: list[Message],
+    labels: Optional[dict[UUID, LabelValues]] = None,
 ) -> ExportMessageTree:
-    export_messages = [ExportMessageNode.prep_message_export(m) for m in messages]
+    export_messages = [ExportMessageNode.prep_message_export(m, labels.get(m.id) if labels else None) for m in messages]
 
     messages_by_parent = defaultdict(list)
     for message in export_messages:
@@ -103,7 +116,12 @@ def write_trees_to_file(filename: str | None, trees: list[ExportMessageTree], us
             f.write("\n")
 
 
-def write_messages_to_file(filename: str | None, messages: Iterable[Message], use_compression: bool = True) -> None:
+def write_messages_to_file(
+    filename: str | None,
+    messages: Iterable[Message],
+    use_compression: bool = True,
+    labels: Optional[dict[UUID, LabelValues]] = None,
+) -> None:
     out_buff: TextIO
 
     if use_compression:
@@ -115,7 +133,8 @@ def write_messages_to_file(filename: str | None, messages: Iterable[Message], us
 
     with out_buff as f:
         for m in messages:
-            export_message = ExportMessageNode.prep_message_export(m)
+            export_message = ExportMessageNode.prep_message_export(m, labels.get(m.id) if labels else None)
+
             file_data = jsonable_encoder(export_message, exclude_none=True)
             json.dump(file_data, f)
             f.write("\n")

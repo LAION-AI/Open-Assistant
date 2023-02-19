@@ -61,7 +61,7 @@ website [https://open-assistant.io/](https://open-assistant.io/). If you want to
 contribute code, take a look at the
 [tasks in GitHub](https://github.com/orgs/LAION-AI/projects/3) and grab one.
 Take a look at this
-[contributing guide](https://github.com/GuilleHoardings/Open-Assistant/blob/main/CONTRIBUTING.md).
+[contributing guide](https://github.com/LAION-AI/Open-Assistant/blob/main/CONTRIBUTING.md).
 
 ## Questions about the model training website
 
@@ -88,17 +88,25 @@ In your [account settings](https://open-assistant.io/account).
 
 There's no public interface for that yet. However, some updates are posted
 periodically in
-[the #general-discussion Discord channel](https://discord.com/channels/1055935572465700980/1055935573371658252).
-Search for `count`.
+[the #data-updates Discord channel](https://discord.com/channels/1055935572465700980/1073706683068596394).
 
 ### How do I write and label prompts?
 
 Check the
-[prompting guide](https://projects.laion.ai/Open-Assistant/docs/guides/prompting).
+[guidelines](https://projects.laion.ai/Open-Assistant/docs/guides/guidelines).
 
 ### Where can I report a bug or create a new feature request?
 
 In the [GitHub issues](https://github.com/LAION-AI/Open-Assistant/issues).
+
+### Why am I not allowed to write about this topic, even though it isn't illegal?
+
+We want to ensure that the Open Assistant dataset is as accessible as possible.
+As such, it's necessary to avoid any harmful or offensive content that could be
+grounds for removal on sites such as Hugging Face. Likewise, we want the model
+to be trained to reject as few questions as possible, so it's important to not
+include prompts that leave the assistant with no other choice but to refuse in
+order to avoid the generation of harmful content.
 
 ## Questions about developing
 

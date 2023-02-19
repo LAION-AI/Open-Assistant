@@ -29,6 +29,10 @@ const config = {
     defaultLocale: "en",
     locales: ["en"],
   },
+  markdown: {
+    mermaid: true,
+  },
+  themes: ["@docusaurus/theme-mermaid"],
 
   presets: [
     [
@@ -120,6 +124,10 @@ const config = {
               {
                 label: "GitHub",
                 href: "https://github.com/LAION-AI/Open-Assistant",
+              },
+              {
+                label: "FAQ",
+                href: "https://projects.laion.ai/Open-Assistant/docs/faq",
               },
             ],
           },

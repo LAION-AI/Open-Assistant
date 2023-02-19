@@ -16,7 +16,7 @@ export interface Message extends MessageEmojis {
   is_assistant: boolean;
   lang: string;
   created_date: string; // iso date string
-  parent_id: string;
+  parent_id: string | null;
   frontend_message_id?: string;
   user_id: string;
   user_is_author: boolean | null;
@@ -27,6 +27,7 @@ export interface Message extends MessageEmojis {
   rank: number | null;
   model_name: string | null;
   review_count: number | null;
+  review_result: boolean; // false is spam
 }
 
 export interface Conversation {
@@ -39,4 +40,8 @@ export type FetchUserMessagesCursorResponse = {
   sort_key: string;
   items: Message[];
   order: "asc" | "desc";
+};
+
+export type MessageWithChildren = Message & {
+  children: MessageWithChildren[];
 };
