@@ -21,6 +21,7 @@ module.exports = {
       "it",
       "ja",
       "ko",
+      "nb-NO",
       "nl",
       "pl",
       "pt-BR",
