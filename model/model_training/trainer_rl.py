@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     # trlx requires training data to be a list of prompts
     # iteratore prompts due to the randomness in the dataset generation
-    prompts = [train[i] for i in range(len(train)) for _ in range(training_conf.epochs)][:100]
+    prompts = [train[i] for i in range(len(train)) for _ in range(training_conf.epochs)]
 
     random.shuffle(prompts)
 
