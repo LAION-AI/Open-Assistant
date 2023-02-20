@@ -8,7 +8,7 @@ class Settings(pydantic.BaseSettings):
     api_key: str = "0000"
 
     max_input_length: int = 850
-    max_total_tokens: int = 1024
+    max_total_tokens: int = 1024  # must be <= model context length
 
     prefix: str = (
         "The following is a conversation between a user and an assistant. "
