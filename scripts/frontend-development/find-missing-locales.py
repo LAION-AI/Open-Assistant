@@ -14,7 +14,11 @@ def get_not_translated(en_json, translation_json, parent_key=None):
         if key in translation_json and translation_json[key] == en_json[key]:
             not_translated.append(("{0}.{1}".format(parent_key, key) if parent_key else key))
         elif isinstance(en_json[key], dict):
-            not_translated.extend(get_not_translated(en_json[key], translation_json[key], key))
+            if key not in translation_json:
+                msg = f"{parent_key}.{key} (and children)" if parent_key else "{key} (and children)"
+                not_translated.append(msg)
+            else:
+                not_translated.extend(get_not_translated(en_json[key], translation_json[key], key))
     return not_translated
 
 
