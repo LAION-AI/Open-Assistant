@@ -24,7 +24,7 @@ export const LikertButtons = ({
       style={{ display: "flex", justifyContent: "space-between" }}
     >
       {Object.keys(valueMap).map((value) => {
-        return <Radio key={value} value={value} data-cy="radio-option" size="md" padding="0.6em" />;
+        return <Radio key={value} value={value} borderColor='gray.600' data-cy="radio-option" size="md" padding="0.6em" />;
       })}
     </RadioGroup>
   );
