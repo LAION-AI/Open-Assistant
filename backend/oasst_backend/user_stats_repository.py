@@ -102,7 +102,7 @@ class UserStatsRepository:
                 UserStats,
             )
             .join(UserStats, User.id == UserStats.user_id)
-            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard)
+            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard, User.enabled)
             .order_by(UserStats.rank)
             .limit(limit)
         )
@@ -121,7 +121,7 @@ class UserStatsRepository:
         window_size: int = 5,
     ) -> LeaderboardStats | None:
         # no window for users who don't show themselves
-        if not user.show_on_leaderboard:
+        if not user.show_on_leaderboard or not user.enabled:
             return None
 
         qry = self.session.query(UserStats).filter(UserStats.user_id == user.id, UserStats.time_frame == time_frame)
@@ -144,7 +144,7 @@ class UserStatsRepository:
                 UserStats,
             )
             .join(UserStats, User.id == UserStats.user_id)
-            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard)
+            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard, User.enabled)
             .where(UserStats.rank >= min_rank, UserStats.rank <= max_rank)
             .order_by(UserStats.rank)
         )
@@ -158,7 +158,16 @@ class UserStatsRepository:
 
     def get_user_stats_all_time_frames(self, user_id: UUID) -> dict[str, UserScore | None]:
         qry = (
-            self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
+            self.session.query(
+                User.id.label("user_id"),
+                User.username,
+                User.auth_method,
+                User.display_name,
+                User.streak_days,
+                User.streak_last_day_date,
+                User.last_activity_date,
+                UserStats,
+            )
             .outerjoin(UserStats, User.id == UserStats.user_id)
             .filter(User.id == user_id)
         )
@@ -538,7 +547,7 @@ FROM
             ORDER BY leader_score DESC, user_id
         ) AS "rank", user_id, time_frame
     FROM user_stats us2
-    INNER JOIN "user" u ON us2.user_id = u.id AND u.show_on_leaderboard
+    INNER JOIN "user" u ON us2.user_id = u.id AND u.show_on_leaderboard AND u.enabled
     WHERE (:time_frame IS NULL OR time_frame = :time_frame)) AS r
 WHERE
     us.user_id = r.user_id

@@ -1,15 +1,21 @@
-import { CircularProgress } from "@chakra-ui/react";
+import { Box, CircularProgress, Flex, Link, useColorModeValue } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
+import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
-import React, { useMemo, useState } from "react";
-import { get } from "src/lib/api";
+import React, { useMemo } from "react";
+import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
-import useSWRImmutable from "swr/immutable";
 
-import { DataTable } from "../DataTable";
+import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
+import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
+import { useBoardPagination } from "./useBoardPagination";
+import { useBoardRowProps } from "./useBoardRowProps";
+import { useFetchBoard } from "./useFetchBoard";
+type WindowLeaderboardEntity = LeaderboardEntity & { isSpaceRow?: boolean };
 
-const columnHelper = createColumnHelper<LeaderboardEntity>();
-
+const columnHelper = createColumnHelper<WindowLeaderboardEntity>();
+const jsonExpandRowModel = createJsonExpandRowModel<WindowLeaderboardEntity>();
 /**
  * Presents a grid of leaderboard entries with more detailed information.
  */
@@ -17,27 +23,52 @@ export const LeaderboardTable = ({
   timeFrame,
   limit: limit,
   rowPerPage,
+  hideCurrentUserRanking,
 }: {
   timeFrame: LeaderboardTimeFrame;
   limit: number;
   rowPerPage: number;
+  hideCurrentUserRanking?: boolean;
 }) => {
   const { t } = useTranslation("leaderboard");
+
   const {
     data: reply,
     isLoading,
     error,
-  } = useSWRImmutable<LeaderboardReply>(`/api/leaderboard?time_frame=${timeFrame}&limit=${limit}`, get, {
-    revalidateOnMount: true,
-  });
+    lastUpdated,
+  } = useFetchBoard<LeaderboardReply & { user_stats_window?: LeaderboardReply["leaderboard"] }>(
+    `/api/leaderboard?time_frame=${timeFrame}&limit=${limit}&includeUserStats=${!hideCurrentUserRanking}`
+  );
 
-  const columns = useMemo(
+  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
+
+  const columns: DataTableColumnDef<WindowLeaderboardEntity>[] = useMemo(
     () => [
-      columnHelper.accessor("rank", {
-        header: t("rank"),
-      }),
+      {
+        ...columnHelper.accessor("rank", {
+          header: t("rank"),
+          cell: (ctx) =>
+            ctx.row.original.isSpaceRow ? (
+              <SpaceRow></SpaceRow>
+            ) : isAdminOrMod ? (
+              jsonExpandRowModel.renderCell(ctx)
+            ) : (
+              ctx.getValue()
+            ),
+        }),
+        span: (cell) => (cell.row.original.isSpaceRow ? 6 : jsonExpandRowModel.span(cell)),
+      },
       columnHelper.accessor("display_name", {
         header: t("user"),
+        cell: ({ getValue, row }) =>
+          isAdminOrMod ? (
+            <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
+              {getValue()}
+            </Link>
+          ) : (
+            getValue()
+          ),
       }),
       columnHelper.accessor("leader_score", {
         header: t("score"),
@@ -52,19 +83,32 @@ export const LeaderboardTable = ({
         header: t("label"),
       }),
     ],
-    [t]
+    [isAdminOrMod, t]
   );
 
-  const lastUpdated = useMemo(() => {
-    const val = new Date(reply?.last_updated);
-    return t("last_updated_at", { val, formatParams: { val: { dateStyle: "full", timeStyle: "short" } } });
-  }, [t, reply?.last_updated]);
-
-  const [page, setPage] = useState(1);
+  const {
+    data: paginatedData,
+    end,
+    ...pagnationProps
+  } = useBoardPagination({ rowPerPage, data: jsonExpandRowModel.toExpandable(reply?.leaderboard || []), limit });
   const data = useMemo(() => {
-    const start = (page - 1) * rowPerPage;
-    return reply?.leaderboard.slice(start, start + rowPerPage) || [];
-  }, [rowPerPage, page, reply?.leaderboard]);
+    if (hideCurrentUserRanking || !reply?.user_stats_window || reply.user_stats_window.length === 0) {
+      return paginatedData;
+    }
+    const userStatsWindow: WindowLeaderboardEntity[] = jsonExpandRowModel.toExpandable(reply.user_stats_window);
+    const userStats = userStatsWindow.find((stats) => stats.highlighted);
+    if (userStats && userStats.rank > end) {
+      paginatedData.push(
+        { isSpaceRow: true } as WindowLeaderboardEntity,
+        ...userStatsWindow.filter(
+          (stats) => paginatedData.findIndex((leaderBoardEntity) => leaderBoardEntity.user_id === stats.user_id) === -1
+        ) // filter to avoid duplicated row
+      );
+    }
+    return paginatedData;
+  }, [hideCurrentUserRanking, reply?.user_stats_window, end, paginatedData]);
+
+  const rowProps = useBoardRowProps<WindowLeaderboardEntity>();
 
   if (isLoading) {
     return <CircularProgress isIndeterminate></CircularProgress>;
@@ -74,18 +118,23 @@ export const LeaderboardTable = ({
     return <span>Unable to load leaderboard</span>;
   }
 
-  const maxPage = Math.ceil(reply.leaderboard.length / rowPerPage);
-
   return (
-    <DataTable
+    <DataTable<WindowLeaderboardEntity>
       data={data}
       columns={columns}
       caption={lastUpdated}
-      disablePagination={limit <= rowPerPage}
-      disableNext={page === maxPage}
-      disablePrevious={page === 1}
-      onNextClick={() => setPage((p) => p + 1)}
-      onPreviousClick={() => setPage((p) => p - 1)}
+      rowProps={rowProps}
+      getSubRows={jsonExpandRowModel.getSubRows}
+      {...pagnationProps}
     ></DataTable>
+  );
+};
+
+const SpaceRow = () => {
+  const color = useColorModeValue("gray.600", "gray.400");
+  return (
+    <Flex justify="center">
+      <Box as={MoreHorizontal} color={color}></Box>
+    </Flex>
   );
 };

@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo } from "react";
 import { useCookies } from "react-cookie";
+import { getLocaleDisplayName } from "src/lib/languages";
 
 const LanguageSelector = () => {
   const router = useRouter();
@@ -24,7 +25,7 @@ const LanguageSelector = () => {
   const localesAndNames = useMemo(() => {
     return router.locales.map((locale) => ({
       locale,
-      name: new Intl.DisplayNames([locale], { type: "language" }).of(locale),
+      name: getLocaleDisplayName(locale),
     }));
   }, [router.locales]);
 
@@ -33,9 +34,10 @@ const LanguageSelector = () => {
       const locale = option.target.value;
       setCookie("NEXT_LOCALE", locale, { path: "/" });
       const path = router.asPath;
-      return router.push(path, path, { locale });
+      await router.push(path, path, { locale });
+      router.reload();
     },
-    [router]
+    [router, setCookie]
   );
 
   const { language: currentLanguage } = i18n;

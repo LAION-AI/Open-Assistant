@@ -1,0 +1,25 @@
+FROM ghcr.io/yk/text-generation-inference
+
+ARG MODULE="inference"
+ARG SERVICE="worker"
+
+ARG APP_RELATIVE_PATH="${MODULE}/${SERVICE}"
+
+WORKDIR /worker
+COPY ./oasst-shared /tmp/oasst-shared
+RUN conda create -n worker python=3.10 -y
+RUN /opt/miniconda/envs/worker/bin/pip install /tmp/oasst-shared
+
+COPY ./${APP_RELATIVE_PATH}/requirements.txt .
+RUN /opt/miniconda/envs/worker/bin/pip install -r requirements.txt
+
+COPY ./${APP_RELATIVE_PATH}/*.py .
+COPY ./${APP_RELATIVE_PATH}/worker_full_main.sh /entrypoint.sh
+
+ENV MODEL_ID="distilgpt2"
+ENV MAX_INPUT_LENGTH="850"
+ENV MAX_TOTAL_TOKENS="1024"
+ENV BACKEND_URL="ws://localhost:8000"
+ENV PARALLELISM="4"
+
+ENTRYPOINT ["/entrypoint.sh"]

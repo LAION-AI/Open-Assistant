@@ -115,6 +115,7 @@ export const Task = () => {
 
   useEffect(() => {
     taskEvent({ action: "NEW_TASK" });
+    scrollToTop(rootEl.current);
   }, [task.id]);
 
   const onReplyChanged = useCallback(
@@ -128,7 +129,6 @@ export const Task = () => {
     if (taskStatus.mode === "REVIEW") {
       taskEvent({ action: "SET_SUBMITTED" });
       await completeTask(replyContent.current);
-      scrollToTop(rootEl.current);
     }
   }, [taskStatus.mode, completeTask]);
 
@@ -184,9 +184,9 @@ export const Task = () => {
       />
       <UnchangedWarning
         show={taskStatus.mode === "DEFAULT_WARN"}
-        title={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_title`)) || t("default.unchanged_title")}
-        message={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_message`)) || t("default.unchanged_message")}
-        continueButtonText={"Continue anyway"}
+        title={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_title`), t("default.unchanged_title"))}
+        message={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_message`), t("default.unchanged_message"))}
+        continueButtonText={t(getTypeSafei18nKey(`${taskInfo.id}.continue_anyway`), t("default.continue_anyway"))}
         onClose={() => taskEvent({ action: "RETURN_EDIT" })}
         onContinueAnyway={() => {
           taskEvent({ action: "ACCEPT_DEFAULT" });

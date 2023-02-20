@@ -1,0 +1,23 @@
+{
+  "blurb": "Đây sẽ là cuộc cách mạng công nghệ mới.",
+  "blurb1": "Giống như Stable Diffusion với tranh ảnh bằng AI, Open Assistant sẽ làm tương tự như vậy với con chatbot mã nguồn mở mạnh nhất thế giới.",
+  "description": "Chatbot trí tuệ nhân tạo mã nguồn mở, dựa trên mô hình ngôn ngữ lớn của LAION và các tình nguyện.",
+  "faq_items": {
+    "q0": "Dự án Open Assistant bây giờ thế nào rồi?",
+    "a0": "Dự án này đang trong giai đoạn phát triển, từ những nghiên cứu về sử dụng RLHF (học từ phản hồi con người) trong trí tuệ nhân tạo.",
+    "q1": "Open Assistant được phát triển bởi ai?",
+    "a1": "Open Assistant là dự ản được phát triển bởi LAION and các tình nguyện viên.",
+    "q2": "Open Assistant sẽ sử dụng giấy phép gì?",
+    "a2": "Mã nguồn và phần mềm trí tuệ nhân tạo sẽ được phát hành dưới giấy phép the Apache 2.0.",
+    "q3": "Khi nào thì tôi sẽ có dữ liệu?",
+    "a3": "Sắp, dữ liệu sẽ phát hành dưới giấy phép CC BY 4.0.",
+    "q4": "Tôi tải về Open Assistant được không?",
+    "a4": "Yes, Open Assistant là phần mềm mã nguồn mở cho phép người dùng thích làm gì thì làm, miễn là theo giấy phép.",
+    "q5": "Máy tính phải mạnh đến mức nào thì mới chạy được Open Assistant?",
+    "a5": "Sẽ có phiên bản mà chạy được trên PC bình thường."
+  },
+  "faq_title": "Câu hỏi",
+  "join_us_description": "Các dự án mã nguồn mở được phát triển bởi những người như bạn. Triết lý mã nguồn mở là hợp tác để tạo và phát triển công nghệ mới mà làm giàu thế giới quanh ta. Bạn có muốn tham gia không? Liên hệ chúng tôi ở đây:",
+  "join_us_title": "Tham gia",
+  "subtitle": "Chatbot AI cho mọi người"
+}

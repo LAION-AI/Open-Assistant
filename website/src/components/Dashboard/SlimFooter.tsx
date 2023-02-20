@@ -1,7 +1,7 @@
 import { Box, Divider } from "@chakra-ui/react";
-import { useTranslation } from "next-i18next";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
 
 export function SlimFooter() {
@@ -23,6 +23,7 @@ export function SlimFooter() {
               <FooterLink href="https://github.com/LAION-AI/Open-Assistant" label={t("github")} />
               <FooterLink href="https://ykilcher.com/open-assistant-discord" label={t("discord")} />
               <FooterLink href="https://projects.laion.ai/Open-Assistant/" label={t("docs")} />
+              <FooterLink href="https://projects.laion.ai/Open-Assistant/docs/faq" label={t("faq")} />
             </Box>
           </nav>
         </Box>

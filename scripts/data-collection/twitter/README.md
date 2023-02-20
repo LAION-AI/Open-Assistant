@@ -57,7 +57,7 @@ conversation, or at least as a prompt with replies.
   guarantee of the quality of the tweets.
 - The tweet quality is the other major issue. We can get conversations through
   the currently made scripts, but they most likely don't match a useful
-  instruction -> fulfilment. We are trying to filter the tweets through various
+  instruction -> fulfillment. We are trying to filter the tweets through various
   means such as matching useful hashtags, or by using cosine similarity against
   known instructions.
 - The modern Twitter API has conversation_id as a field which can be a way to
@@ -68,7 +68,7 @@ conversation, or at least as a prompt with replies.
 ## TODO
 
 - Write scripts to filter existing conversations into useful instructions ->
-  fulfilment with hashtags or cosine similarity.
+  fulfillment with hashtags or cosine similarity.
 - Train model to detect if text is a suitable instruction. This could then be
   run through the conversations (or full tweet dump) to simplify the process.
   Related to issue #143.

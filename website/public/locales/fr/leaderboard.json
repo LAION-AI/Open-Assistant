@@ -1,18 +1,18 @@
 {
   "daily": "Journalier",
+  "label": "Étiquettes",
   "last_updated_at": "Dernière mise à jour à: {{val, datetime}}",
   "leaderboard": "Classement",
   "monthly": "Mensuel",
+  "next": "Suivant",
   "overall": "Global",
-  "rank": "Rang",
-  "score": "Score",
-  "user": "Utilisateur",
-  "weekly": "Hebdomadaire",
-  "prompt": "Invitations",
-  "reply": "Réponses",
-  "label": "Étiquettes",
-  "view_all": "Voir tout",
-  "top_5_contributors_today": "Les 5 meilleurs contributeurs aujourd'hui",
   "previous": "Précédent",
-  "next": "Suivant"
+  "prompt": "Invitations",
+  "rank": "Rang",
+  "reply": "Réponses",
+  "score": "Score",
+  "top_5_contributors_today": "Les 5 meilleurs contributeurs aujourd'hui",
+  "user": "Utilisateur",
+  "view_all": "Voir tout",
+  "weekly": "Hebdomadaire"
 }

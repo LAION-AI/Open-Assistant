@@ -1,0 +1,14 @@
+{
+  "create": "Tạo",
+  "dashboard": "Trang chính",
+  "evaluate": "Kiểm tra",
+  "go": "Xem",
+  "grab_a_task": "Danh sách việc",
+  "label": "Nhãn",
+  "welcome_message": {
+    "label": "Xin chào, {{username}}!",
+    "contributor": "Người đóng góp",
+    "description": "Open Assistant là chatbot mã nguồn mở sử dụng AI để hiểu và trả lời tin nhắn.",
+    "instruction": "Hoàn thành các nhiệm vụ ở dưới để làm dữ liệu cho Open Assistant và có thêm điểm."
+  }
+}

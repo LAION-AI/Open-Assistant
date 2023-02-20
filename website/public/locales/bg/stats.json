@@ -1,0 +1,17 @@
+{
+  "aborted_low_grade": "Прекратени с ниска оценка",
+  "backlog_ranking": "Рангиране на резервната копия",
+  "count": "Брой",
+  "growing": "Развива се",
+  "halted_by_moderator": "Спрени от модератор",
+  "human_messages_by_lang": "Съобщения от хора по език",
+  "human_messages_by_role": "Съобщения от хора по роля",
+  "initial_prompt_review": "Преглед на първоначалните подбуди",
+  "message_trees_by_state": "Дървета на съобщенията по състояние",
+  "message_trees_states_by_lang": "Дървета на съобщенията по език",
+  "prompt_lottery_waiting": "Изчакващи томболата",
+  "ranking": "Рангиране",
+  "ready_for_export": "Готови за износ",
+  "stats": "Статистики",
+  "users_accepted_tos": "Потребители, приели Условията за ползване"
+}

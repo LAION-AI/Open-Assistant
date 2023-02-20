@@ -1,0 +1,82 @@
+{
+  "available_task_count": "{{count}} compiti disponibili",
+  "classify_assistant_reply": {
+    "label": "Classifica la risposta dell'assistente",
+    "desc": "Fornisci etichette per una richiesta.",
+    "overview": "Leggi la seguente conversazione e rispondi alla domanda riguardante l'ultima risposta della discussione."
+  },
+  "classify_initial_prompt": {
+    "label": "Classifica la richiesta iniziale",
+    "desc": "Fornisci etichette per una richiesta.",
+    "overview": "Leggi la seguente richiesta e rispondi alla domanda che la riguarda."
+  },
+  "classify_prompter_reply": {
+    "label": "Classifica la risposta dell'utente",
+    "desc": "Fornisci etichette per una richiesta.",
+    "overview": "Leggi la seguente conversazione e rispondi alla domanda riguardante l'ultima risposta della discussione."
+  },
+  "create_initial_prompt": {
+    "label": "Crea richiesta iniziale",
+    "desc": "Scrivi una richiesta iniziale per aiutare Open Assistant a rispondere a diversi messaggi.",
+    "overview": "Crea un messaggio iniziale da mandare all'assistente",
+    "instruction": "Fornisci una richiesta iniziale",
+    "response_placeholder": "Scrivi qui la tua richiesta..."
+  },
+  "default": {
+    "unchanged_title": "Non sono presenti modifiche",
+    "unchanged_message": "Sei sicuro di voler continuare?"
+  },
+  "label_assistant_reply": {
+    "label": "Etichetta la risposta dell'assistente",
+    "desc": "Fornisci etichette per una richiesta.",
+    "overview": "Data la seguente conversazione, fornisci etichette per la richiesta finale."
+  },
+  "label_initial_prompt": {
+    "label": "Etichetta le richieste iniziali",
+    "desc": "Fornisci delle etichette per le richieste.",
+    "overview": "Fornisci etichette per la seguente richiesta"
+  },
+  "label_prompter_reply": {
+    "label": "Etichetta la risposta dell'utente",
+    "desc": "Fornisci etichette per una richiesta.",
+    "overview": "Data la seguente conversazione, fornisci etichette per la richiesta finale."
+  },
+  "random": {
+    "label": "Mi sento fortunato",
+    "desc": "Aiutaci a migliorare Open Assistant iniziando un compito a caso."
+  },
+  "rank_assistant_replies": {
+    "label": "Classifica le risposte dell'assistente",
+    "desc": "Valuta le richieste di Open Assistant in base alla loro accuratezza e leggibilità.",
+    "overview": "Date le seguenti risposte dell'assistente, ordinale dalla migliore alla peggiore, la migliore come prima e la peggiore come ultima.",
+    "unchanged_title": "L'ordine non è cambiato",
+    "unchanged_message": "Non hai cambiato l'ordine delle richieste . Sei sicuro di voler continuare?"
+  },
+  "rank_initial_prompts": {
+    "label": "Classifica le richieste iniziali",
+    "desc": "Valuta le richieste di Open Assistant in base alla loro accuratezza e leggibilità.",
+    "overview": "Date le seguenti risposte dell'assistente, ordinale dalla migliore alla peggiore, la migliore come prima e la peggiore come ultima.",
+    "unchanged_title": "L'ordine non è cambiato",
+    "unchanged_message": "Non hai cambiato l'ordine delle richieste . Sei sicuro di voler continuare?"
+  },
+  "rank_user_replies": {
+    "label": "Classifica le risposte degli utenti",
+    "desc": "Aiuta Open Assistant a migliorare le sue risposte a conversazioni con altri utenti.",
+    "overview": "Date le seguenti risposte degli utenti, ordinale dalla migliore alla peggiore, la migliore come prima e la peggiore come ultima.",
+    "unchanged_title": "L'ordine non è cambiato",
+    "unchanged_message": "Non hai cambiato l'ordine delle richieste . Sei sicuro di voler continuare?"
+  },
+  "reply_as_assistant": {
+    "label": "Rispondi come assistente",
+    "desc": "Aiuta Open Assistant a migliorare le sue risposte a conversazioni con altri utenti.",
+    "overview": "Date le seguenti conversazioni, fornisci una risposta adeguata",
+    "response_placeholder": "Scrivi qui la tua risposta..."
+  },
+  "reply_as_user": {
+    "label": "Rispondi come un utente",
+    "desc": "Parla con Open Assistant e aiuta a migliorare le sue risposte mentre ci interagisci.",
+    "overview": "Date le seguenti conversazioni fornisci una risposta adeguata",
+    "instruction": "Fornisci la risposta dell'utente",
+    "response_placeholder": "Scrivi qui la tua risposta..."
+  }
+}

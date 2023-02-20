@@ -9,6 +9,7 @@ import {
   ModalHeader,
   ModalOverlay,
 } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 
 interface UnchangedWarningProps {
   show: boolean;
@@ -20,6 +21,8 @@ interface UnchangedWarningProps {
 }
 
 export const UnchangedWarning = (props: UnchangedWarningProps) => {
+  const { t } = useTranslation();
+
   return (
     <>
       <Modal isOpen={props.show} onClose={props.onClose} isCentered>
@@ -31,7 +34,7 @@ export const UnchangedWarning = (props: UnchangedWarningProps) => {
           <ModalFooter>
             <Flex justify="center" ml="auto" gap={2}>
               <Button variant={"ghost"} onClick={props.onClose}>
-                Cancel
+                {t("cancel")}
               </Button>
               <Button onClick={props.onContinueAnyway}>{props.continueButtonText}</Button>
             </Flex>
