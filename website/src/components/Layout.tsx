@@ -58,7 +58,7 @@ export const getDashboardLayout = (page: React.ReactElement) => (
               icon: TrendingUp,
             },
             {
-              labelID: "guidelines",
+              labelID: "Guidelines",
               pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
               icon: HelpCircle,
               target: "_blank",
