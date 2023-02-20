@@ -82,7 +82,17 @@ export const Sortable = (props: SortableProps) => {
         <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
           <Flex direction="column" gap={2} className={extraClasses}>
             {itemsWithIds.map(({ id, item }, index) => (
-              <SortableItem key={id} id={id} index={index} isEditable={props.isEditable} isDisabled={props.isDisabled}>
+              <SortableItem
+                OpenModal={() => {
+                  setModalText(item);
+                  onOpen();
+                }}
+                key={id}
+                id={id}
+                index={index}
+                isEditable={props.isEditable}
+                isDisabled={props.isDisabled}
+              >
                 <button
                   className="w-full text-left"
                   aria-label="show full text"
