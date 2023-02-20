@@ -12,7 +12,6 @@ from oasst_backend.config import settings
 from oasst_backend.database import engine
 from oasst_backend.models import ApiClient
 from oasst_shared.exceptions import OasstError, OasstErrorCode
-from oasst_shared.schemas import protocol as protocol_schema
 from sqlmodel import Session
 
 
@@ -167,13 +166,19 @@ class UserRateLimiter(RateLimiter):
         return await super().__call__(request, response)
 
 
-class UserReplyRateLimiter(RateLimiter):
+class UserTaskTypeRateLimiter(RateLimiter):
     """
-    User-level rate limiter which only kicks in for messages.
+    User-level rate limiter for a specific task type.
     """
 
     def __init__(
-        self, times: int = 100, milliseconds: int = 0, seconds: int = 0, minutes: int = 1, hours: int = 0
+        self,
+        task_types: list[str],
+        times: int = 100,
+        milliseconds: int = 0,
+        seconds: int = 0,
+        minutes: int = 1,
+        hours: int = 0,
     ) -> None:
         async def identifier(request: Request) -> str:
             """Identify a request based on api_key and user.id"""
@@ -182,6 +187,7 @@ class UserReplyRateLimiter(RateLimiter):
             return f"{api_key}:{user.get('id')}"
 
         super().__init__(times, milliseconds, seconds, minutes, hours, identifier)
+        self.task_types = task_types
 
     async def __call__(self, request: Request, response: Response, api_key: str = Depends(get_api_key)) -> None:
         # Skip if rate limiting is disabled
@@ -197,11 +203,8 @@ class UserReplyRateLimiter(RateLimiter):
         if not api_key or not user or not user.get("id"):
             return
 
-        # Skip when the request is not a message
-        if not json.get("type") or json.get("type") not in (
-            protocol_schema.TaskRequestType.assistant_reply,
-            protocol_schema.TaskRequestType.prompter_reply,
-        ):
+        # Skip when the request is not in our task types of interest
+        if not json.get("type") or json.get("type") not in self.task_types:
             return
 
         return await super().__call__(request, response)

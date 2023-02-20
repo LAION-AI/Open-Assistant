@@ -35,9 +35,21 @@ router = APIRouter()
             )
         ),
         Depends(
-            deps.UserReplyRateLimiter(
-                times=settings.RATE_LIMIT_MESSAGE_USER_TIMES,
-                minutes=settings.RATE_LIMIT_MESSAGE_USER_MINUTES,
+            deps.UserTaskTypeRateLimiter(
+                [
+                    protocol_schema.TaskRequestType.assistant_reply,
+                ],
+                times=settings.RATE_LIMIT_ASSISTANT_USER_TIMES,
+                minutes=settings.RATE_LIMIT_ASSISTANT_USER_MINUTES,
+            )
+        ),
+        Depends(
+            deps.UserTaskTypeRateLimiter(
+                [
+                    protocol_schema.TaskRequestType.prompter_reply,
+                ],
+                times=settings.RATE_LIMIT_PROMPTER_USER_TIMES,
+                minutes=settings.RATE_LIMIT_PROMPTER_USER_MINUTES,
             )
         ),
     ],
