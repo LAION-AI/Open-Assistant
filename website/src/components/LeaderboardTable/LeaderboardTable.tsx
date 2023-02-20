@@ -4,6 +4,7 @@ import { MoreHorizontal } from "lucide-react";
 import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
 import React, { useMemo } from "react";
+import Image from "next/image";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 
@@ -61,14 +62,34 @@ export const LeaderboardTable = ({
       },
       columnHelper.accessor("display_name", {
         header: t("user"),
-        cell: ({ getValue, row }) =>
-          isAdminOrMod ? (
-            <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
-              {getValue()}
-            </Link>
-          ) : (
-            getValue()
-          ),
+        cell: ({ getValue, row }) => (
+          <div className="flex flex-row items-center gap-2">
+            {row.original.avatar_url ? (
+              <Image
+                src={`${row.original.avatar_url}`}
+                alt={`${getValue()}'s avatar`}
+                width={30}
+                height={30}
+                className="rounded-full"
+              />
+            ) : (
+              <Image
+                src={`https://api.dicebear.com/5.x/initials/png?seed=${getValue()}&radius=50&backgroundType=gradientLinear`}
+                alt={`${getValue()}'s avatar`}
+                width={30}
+                height={30}
+              />
+            )}
+
+            {isAdminOrMod ? (
+              <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
+                {getValue()}
+              </Link>
+            ) : (
+              getValue()
+            )}
+          </div>
+        ),
       }),
       columnHelper.accessor("leader_score", {
         header: t("score"),
