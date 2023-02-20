@@ -5,6 +5,8 @@ PARALLELISM=${PARALLELISM:-1}
 
 text-generation-launcher &
 
+export INFERENCE_SERVER_URL="http://localhost:80"
+
 # launch PARALLELISM workers
 for i in $(seq 1 $PARALLELISM); do
     /opt/miniconda/envs/worker/bin/python /worker &

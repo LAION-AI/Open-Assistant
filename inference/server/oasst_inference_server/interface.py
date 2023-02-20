@@ -13,7 +13,8 @@ class MessageRequest(pydantic.BaseModel):
 
 
 class MessageResponseEvent(pydantic.BaseModel):
-    id: str
+    prompter_message: inference.MessageRead
+    assistant_message: inference.MessageRead | None
 
 
 class TokenResponseEvent(pydantic.BaseModel):

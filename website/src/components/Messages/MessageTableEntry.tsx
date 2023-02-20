@@ -84,6 +84,7 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
         size={inlineAvatar ? "xs" : "sm"}
         mr={inlineAvatar ? 2 : 0}
         mt={inlineAvatar ? 0 : `6px`}
+        mb={inlineAvatar ? 1.5 : 0}
         name={`${boolean(message.is_assistant) ? "Assistant" : "User"}`}
         src={`${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
       />
