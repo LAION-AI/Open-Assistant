@@ -25,7 +25,7 @@ def freeze_top_n_layers(model, target_layers):
     return model
 
 
-def get_specific_model(model_name, seq2seqmodel=False, cache_dir=".cache", **kwargs):
+def get_specific_model(model_name, seq2seqmodel=False, cache_dir=".cache", quantization=False, **kwargs):
     # encoder-decoder support for Flan-T5 like models
     # for now, we can use an argument but in the future,
     # we can automate this
