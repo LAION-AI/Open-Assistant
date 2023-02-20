@@ -18,7 +18,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core/dist/types/events";
-import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { restrictToVerticalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
@@ -77,7 +77,7 @@ export const Sortable = (props: SortableProps) => {
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
-        modifiers={[restrictToParentElement, restrictToVerticalAxis]}
+        modifiers={[restrictToWindowEdges, restrictToVerticalAxis]}
       >
         <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
           <Flex direction="column" gap={2} className={extraClasses}>
