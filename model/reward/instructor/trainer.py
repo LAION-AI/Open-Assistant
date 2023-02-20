@@ -22,6 +22,7 @@ parser.add_argument("--deepspeed", action="store_true")
 parser.set_defaults(deepspeed=False)
 parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
 parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+parser.add_argument("--output_dir", type=str, default=None)
 
 
 def compute_metrics(eval_pred):
@@ -66,6 +67,7 @@ class RankTrainer(Trainer):
                 raise NotImplementedError("Only ranking loss has been implemented for rankgen model")
             outputs = torch.hstack((positive_outputs, negative_outputs))  # logits
         else:
+            inputs.pop("token_type_ids", None)
             outputs = model(**inputs)
             logits = outputs.get("logits").view(-1, 2)
             if self.loss_function == "rank":
@@ -133,7 +135,7 @@ if __name__ == "__main__":
 
     optimizer = OptimizerNames.ADAMW_HF
     args = TrainingArguments(
-        output_dir=f"{model_name}-finetuned",
+        output_dir=training_conf["output_dir"],
         num_train_epochs=training_conf["num_train_epochs"],
         warmup_steps=training_conf["warmup_steps"],
         optim=optimizer,
