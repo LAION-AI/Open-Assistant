@@ -795,8 +795,9 @@ class TreeManager:
                                     f"Initial prompt message was accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
                                 )
                             else:
-                                msg.review_result = False
-                                self.db.add(msg)
+                                if msg.review_result is None:
+                                    msg.review_result = False
+                                    self.db.add(msg)
                                 self.enter_low_grade_state(msg.message_tree_id)
                         self.check_condition_for_prompt_lottery(msg.message_tree_id)
                     elif msg.review_count >= self.cfg.num_reviews_reply:
@@ -806,7 +807,7 @@ class TreeManager:
                             logger.info(
                                 f"Reply message message accepted: {msg.id=}, {acceptance_score=}, {len(reviews)=}"
                             )
-                        else:
+                        elif msg.review_result is None:  # do not overwrite existing review result
                             msg.review_result = False
                             self.db.add(msg)
 
