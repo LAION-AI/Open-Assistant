@@ -117,3 +117,16 @@ cd text-client
 pip install -r requirements.txt
 python __main__.py
 ```
+
+## Distributed Testing
+
+We run distributed load tests using the
+[`locust`](https://github.com/locustio/locust) Python package.
+
+```bash
+pip install locust
+cd tests/locust
+locust
+```
+
+Navigate to http://0.0.0.0:8089/ to view the locust UI.
