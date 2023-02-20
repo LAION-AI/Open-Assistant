@@ -53,9 +53,10 @@ export const getDashboardLayout = (page: React.ReactElement) => (
           label: "Guidelines",
           pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
           icon: HelpCircle,
-          target: "_blank"
+          target: "_blank",
         },
-      ]}>
+      ]}
+    >
       <Grid templateRows="1fr min-content" h="full">
         <Box>{page}</Box>
         <Box mt="10">
