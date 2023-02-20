@@ -74,6 +74,8 @@ const sx: SystemStyleObject = {
 
 const plugins = [remarkGfm];
 
+const disallowedElements = ["img"];
+
 // eslint-disable-next-line react/display-name
 const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -160,7 +162,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
 const MemorizedMarkdown = memo((props: ReactMarkdownOptions) => {
   return (
     <Prose as="div" sx={sx}>
-      <ReactMarkdown remarkPlugins={plugins} {...props}></ReactMarkdown>
+      <ReactMarkdown {...props} disallowedElements={disallowedElements} remarkPlugins={plugins}></ReactMarkdown>
     </Prose>
   );
 });
