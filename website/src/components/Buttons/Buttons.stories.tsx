@@ -1,7 +1,6 @@
 import { ComponentMeta } from "@storybook/react";
 
 import { LikertButtons } from "./LikertButtons";
-import { SkipButton } from "./Skip";
 import { SubmitButton } from "./Submit";
 
 export default {
@@ -20,5 +19,3 @@ export const Likert = () => {
     ></LikertButtons>
   );
 };
-
-export const Skip = () => <SkipButton onSkip={() => console.log("onClick")}>Skip</SkipButton>;
