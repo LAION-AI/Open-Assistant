@@ -52,6 +52,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v3.2.0
         with:
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           file: ${{ inputs.dockerfile }}
           context: ${{ inputs.context }}
           build-args: ${{ inputs.build-args }}
