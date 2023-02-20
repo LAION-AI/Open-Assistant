@@ -32,7 +32,7 @@ class Task(SQLModel, table=True):
     ack: Optional[bool] = None
     done: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
     skipped: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
-    skip_reason: str = Field(nullable=True, max_length=512)
+    skip_reason: Optional[str] = Field(nullable=True, max_length=512)
     frontend_message_id: Optional[str] = None
     message_tree_id: Optional[UUID] = None
     parent_message_id: Optional[UUID] = None

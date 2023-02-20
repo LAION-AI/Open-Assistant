@@ -1063,7 +1063,7 @@ WHERE message.id = cc.id;
         )
 
     @managed_tx_method()
-    def skip_task(self, task_id: UUID, reason: str):
+    def skip_task(self, task_id: UUID, reason: Optional[str]):
         self.ensure_user_is_enabled()
 
         task = self.task_repository.fetch_task_by_id(task_id)

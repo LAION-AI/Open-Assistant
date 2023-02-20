@@ -141,7 +141,7 @@ class TaskAck(BaseModel):
 class TaskNAck(BaseModel):
     """The frontend acknowledges that it has received a task but cannot create a message."""
 
-    reason: str
+    reason: str | None = Field(None, nullable=True)
 
 
 class TaskClose(BaseModel):
