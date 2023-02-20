@@ -1,0 +1,17 @@
+{
+  "aborted_low_grade": "低評価で中止",
+  "backlog_ranking": "バックログランキング",
+  "count": "カウント",
+  "growing": "増加中",
+  "halted_by_moderator": "モデレーターによって停止",
+  "human_messages_by_lang": "言語別のヒューマンメッセージ",
+  "human_messages_by_role": "役割別のヒューマンメッセージ",
+  "initial_prompt_review": "初期プロンプトレビュー",
+  "message_trees_by_state": "状態別のメッセージツリー",
+  "message_trees_states_by_lang": "言語別のメッセージツリーの状態",
+  "prompt_lottery_waiting": "プロンプト抽選待ち",
+  "ranking": "ランキング",
+  "ready_for_export": "エクスポート準備完了",
+  "stats": "統計情報",
+  "users_accepted_tos": "利用規約に同意したユーザー数"
+}

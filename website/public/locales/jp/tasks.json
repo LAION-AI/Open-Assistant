@@ -1,0 +1,92 @@
+{
+  "any_feedback_on_this_task": "このタスクに関するフィードバックはありますか？",
+  "available_task_count": "タスクが{{count}}個あります",
+  "default": {
+    "unchanged_title": "変更なし",
+    "unchanged_message": "本当に続けますか？",
+    "continue_anyway": "とにかく続ける"
+  },
+  "no_more_tasks": "タスクが見つかりませんでした。",
+  "random": {
+    "label": "おまかせ",
+    "desc": "Open Assistantの改善に役立つ、ランダムなタスクを始めます。"
+  },
+  "create_initial_prompt": {
+    "label": "初期プロンプトの作成",
+    "desc": "様々なメッセージに応答するために、Open Assistantが使用できる初期プロンプトを作成します。（抽選に参加）",
+    "overview": "Assistantに送信する最初のメッセージを作成してください。",
+    "instruction": "初期プロンプトを入力してください。",
+    "response_placeholder": "ここにプロンプトを入力してください..."
+  },
+  "reply_as_user": {
+    "label": "ユーザーとして返信",
+    "desc": "Open Assistantとチャットし、相互作用しながら応答を改善します。",
+    "overview": "以下の会話が与えられた場合、適切な返信を提供してください。",
+    "instruction": "ユーザーの返信を入力してください。",
+    "response_placeholder": "ここに返信を入力してください..."
+  },
+  "reply_as_assistant": {
+    "label": "Assistantとして返信",
+    "desc": "他のユーザーとの会話でAssistantの応答を改善するのを手伝います。",
+    "overview": "以下の会話が与えられた場合、適切な返信を提供してください。",
+    "response_placeholder": "ここに返信を入力してください..."
+  },
+  "rank_user_replies": {
+    "label": "ユーザーの返信をランク付け",
+    "desc": "他のユーザーとの会話でOpen Assistantの返答を改善するのを手伝ってください。",
+    "overview": "以下のユーザーの返信が与えられた場合、最高から最低の順に並べ替えてください。最高が最初で最低が最後です。",
+    "unchanged_title": "順序が変わっていません",
+    "unchanged_message": "プロンプトの順序を変更していません。それでも続けてよろしいですか？",
+    "continue_anyway": "とにかく続行"
+  },
+  "rank_assistant_replies": {
+    "label": "アシスタントの返信をランク付け",
+    "desc": "正確性と読みやすさに基づいて、Open Assistantが提供するプロンプトのスコアリングを行います。",
+    "overview": "以下のアシスタントの返信が与えられた場合、最高から最低の順に並べ替えてください。最高が最初で最低が最後です。",
+    "unchanged_title": "順序が変わっていません",
+    "unchanged_message": "プロンプトの順序を変更していません。それでも続けてよろしいですか？",
+    "continue_anyway": "とにかく続行"
+  },
+  "rank_initial_prompts": {
+    "label": "初期プロンプトをランク付け",
+    "desc": "正確性と読みやすさに基づいて、Open Assistantが提供するプロンプトのスコアリングを行います。",
+    "overview": "以下の初期プロンプトが与えられた場合、最高から最低の順に並べ替えてください。最高が最初で最低が最後です。",
+    "unchanged_title": "順序が変わっていません",
+    "unchanged_message": "プロンプトの順序を変更していません。それでも続けてよろしいですか？",
+    "continue_anyway": "とにかく続行"
+  },
+  "label_initial_prompt": {
+    "label": "ラベル付け初期プロンプト",
+    "desc": "言語理解を向上させるため、プロンプトに説明的なラベルを付けます。",
+    "overview": "以下のプロンプトに対して説明的なラベルを提供してください。"
+  },
+  "label_prompter_reply": {
+    "label": "ラベル付け促進者返信",
+    "desc": "言語理解を向上させるため、プロンプトに説明的なラベルを付けます。",
+    "overview": "以下の会話に対して、最後のプロンプトに説明的なラベルを提供してください。"
+  },
+  "label_assistant_reply": {
+    "label": "ラベル付けアシスタント返信",
+    "desc": "言語理解を向上させるため、プロンプトに説明的なラベルを付けます。",
+    "overview": "以下の会話に対して、最後の返信に説明的なラベルを提供してください。"
+  },
+  "classify_initial_prompt": {
+    "label": "分類初期プロンプト",
+    "desc": "言語理解を向上させるため、プロンプトに分類ラベルを付けます。",
+    "overview": "以下のプロンプトを読んで、それについての質問に答えてください。"
+  },
+  "classify_prompter_reply": {
+    "label": "分類促進者返信",
+    "desc": "言語理解を向上させるため、プロンプトに分類ラベルを付けます。",
+    "overview": "以下の会話を読んで、最後の返信についての質問に答えてください。"
+  },
+  "classify_assistant_reply": {
+    "label": "分類アシスタント返信",
+    "desc": "言語理解を向上させるため、プロンプトに分類ラベルを付けます。",
+    "overview": "以下の会話を読んで、最後の返信についての質問に答えてください。"
+  },
+  "submitted_as": "これは{{submit_lang}}として送信されます。",
+  "tab_write": "書く",
+  "tab_preview": "プレビュー",
+  "writing_wrong_langauge_a_b": "あなたは{{detected_lang}}で書いているようですが、これは{{submit_lang}}として送信されます。"
+}
