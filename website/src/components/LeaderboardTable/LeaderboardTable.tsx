@@ -64,9 +64,9 @@ export const LeaderboardTable = ({
         header: t("user"),
         cell: ({ getValue, row }) => (
           <div className="flex flex-row items-center gap-2">
-            {row.original.avatar_url ? (
+            {row.original.image ? (
               <Image
-                src={`${row.original.avatar_url}`}
+                src={`${row.original.image}`}
                 alt={`${getValue()}'s avatar`}
                 width={30}
                 height={30}
