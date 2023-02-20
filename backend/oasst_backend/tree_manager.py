@@ -193,7 +193,7 @@ class TreeManager:
             task_weights[TaskType.REPLY.value] = 2
 
         if num_missing_prompts > 0:
-            task_weights[TaskType.PROMPT.value] = 1
+            task_weights[TaskType.PROMPT.value] = 0.01
 
         task_weights = np.array(task_weights)
         weight_sum = task_weights.sum()
