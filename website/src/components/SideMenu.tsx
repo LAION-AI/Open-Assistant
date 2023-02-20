@@ -8,6 +8,7 @@ export interface MenuButtonOption {
   label: string;
   pathname: string;
   icon: LucideIcon;
+  target?: HTMLAnchorElement["target"]
 }
 
 export interface SideMenuProps {
@@ -35,7 +36,7 @@ export function SideMenu(props: SideMenuProps) {
               placement="right"
               className="hidden lg:hidden sm:block"
             >
-              <Link key={`${item.label}-${itemIndex}`} href={item.pathname} style={{ textDecoration: "none" }}>
+              <Link key={`${item.label}-${itemIndex}`} href={item.pathname} target={!item.target ? "_self" : item.target } style={{ textDecoration: "none" }}>
                 <Button
                   justifyContent={["center", "center", "center", "left"]}
                   gap="3"
