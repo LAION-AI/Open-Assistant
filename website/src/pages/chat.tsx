@@ -11,9 +11,8 @@ import useSWRMutation from "swr/mutation";
 const Chat = () => {
   const { t } = useTranslation("common");
   const inputRef = useRef<HTMLTextAreaElement>();
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<InferenceMessage[]>([]);
   const [activeMessage, setActiveMessage] = useState("");
-  const [lastMessageId, setLastMessageId] = useState(null);
   const { trigger: createChat, data: createChatResponse } = useSWRMutation<{ id: string }>("/api/chat", post);
 
   const chatID = createChatResponse?.id;
@@ -27,21 +26,22 @@ const Chat = () => {
     }
 
     setActiveMessage("...");
-    setMessages((old) => [...old, content]);
 
+    const parent_id = messages[messages.length - 1]?.id ?? null;
     // we have to do this manually since we want to stream the chunks
     // there is also EventSource, but it only works with get requests.
     const { body } = await fetch("/api/chat/message", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ chat_id: chatID, content, parent_id: lastMessageId }),
+      body: JSON.stringify({ chat_id: chatID, content, parent_id }),
     });
 
-    // first chunk is message id
+    // first chunk is message information
     const stream = iterator(body);
-    const { value: response } = await stream.next();
-    const messageInfo = JSON.parse(response.data);
-    setLastMessageId(messageInfo.id);
+    const { value } = await stream.next();
+    const response: InferenceResponse = JSON.parse(value.data);
+
+    setMessages((messages) => [...messages, response.prompter_message]);
 
     // remaining messages are the tokens
     let responseMessage = "";
@@ -53,14 +53,14 @@ const Chat = () => {
       await new Promise(requestAnimationFrame);
     }
 
-    setMessages((old) => [...old, responseMessage]);
+    setMessages((old) => [...old, { ...response.assistant_message, content: responseMessage }]);
     setActiveMessage(null);
-  }, [chatID, lastMessageId]);
+  }, [chatID, messages]);
 
   return (
     <>
       <Head>
-        <meta name="description" content="Chat with Open Assistant and provide feedback." key="description" />
+        <title>{t("chat")}</title>
       </Head>
 
       <Flags authorizedFlags={["chatEnabled"]}>
@@ -68,9 +68,9 @@ const Chat = () => {
           {!chatID && <Button onClick={() => createChat()}>{t("create_chat")}</Button>}
           {chatID && (
             <>
-              {messages.map((message, idx) => (
-                <Entry key={idx} isAssistant={idx % 2 === 1}>
-                  {message}
+              {messages.map((message) => (
+                <Entry key={message.id} isAssistant={message.role === "assistant"}>
+                  {message.content}
                 </Entry>
               ))}
               {activeMessage ? <Entry isAssistant>{activeMessage}</Entry> : <Textarea ref={inputRef} autoFocus />}
@@ -120,3 +120,15 @@ async function* iterator(stream: ReadableStream<Uint8Array>) {
 Chat.getLayout = getDashboardLayout;
 
 export default Chat;
+
+interface InferenceResponse {
+  assistant_message: InferenceMessage;
+  prompter_message: InferenceMessage;
+}
+
+interface InferenceMessage {
+  id: string;
+  content: string | null;
+  state: "manual" | "pending";
+  role: "assistant" | "prompter";
+}
