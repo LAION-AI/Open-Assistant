@@ -15,7 +15,8 @@ Replies generated from other chatbots such as ChatGPT are **not** permitted and
 in many cases against the terms of service of the provider. Answers that were
 generated from LLMs should be penalized accordingly. You can use detectors such
 as [ZeroGPT](https://www.zerogpt.com/) to determine if a message was written by
-a human.
+a human - just keep in mind that these tools aren't foolproof and can falsely
+accuse human-written text as machine-generated, and vice versa.
 
 Please make sure to read the
 [guidelines](https://projects.laion.ai/Open-Assistant/docs/guides/guidelines#classifying-assistant)
