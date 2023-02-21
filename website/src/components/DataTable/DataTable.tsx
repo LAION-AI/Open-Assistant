@@ -35,7 +35,7 @@ import {
 } from "@tanstack/react-table";
 import { Filter } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, Dispatch, ReactNode, SetStateAction, useRef, useState } from "react";
+import { ChangeEvent, ReactNode, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,8 +49,6 @@ export type FilterItem = {
   id: string;
   value: string;
 };
-
-export type FilterOption = "display_name" | "username";
 
 export type DataTableRowPropsCallback<T> = (row: Row<T>) => TableRowProps;
 

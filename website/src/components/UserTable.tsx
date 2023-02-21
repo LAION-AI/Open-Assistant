@@ -7,7 +7,7 @@ import { get } from "src/lib/api";
 import type { FetchUsersResponse, User } from "src/types/Users";
 import useSWR from "swr";
 
-import { DataTable, DataTableColumnDef, FilterItem, FilterOption } from "./DataTable/DataTable";
+import { DataTable, DataTableColumnDef, FilterItem } from "./DataTable/DataTable";
 import { useCursorPagination } from "./DataTable/useCursorPagination";
 
 const columnHelper = createColumnHelper<User>();
