@@ -1,7 +1,9 @@
 alembic
 fastapi[all]==0.88.0
 loguru
+nvidia-ml-py
 prometheus-fastapi-instrumentator
+psutil
 psycopg2-binary
 pydantic
 redis
