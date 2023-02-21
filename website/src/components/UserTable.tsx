@@ -65,9 +65,9 @@ export const UserTable = memo(function UserTable() {
     `/api/admin/users?direction=${pagination.direction}&cursor=${
       pagination.cursor
     }&searchDisplayName=${display_name}&sortKey=${
-      filterValues[filterValues.length - 1]?.id === "display_name"
-        ? filterValues[filterValues.length - 1]?.id
-        : "username"
+      filterValues[filterValues.length - 1]?.id === "id"
+        ? "username"
+        :  filterValues[filterValues.length - 1]?.id || 'display_name'
     }`,
     get,
     {
