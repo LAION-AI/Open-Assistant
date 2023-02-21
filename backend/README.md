@@ -5,7 +5,7 @@
 ### Local Database
 
 In root directory, run
-`docker compose up backend-dev --build --attach-dependencies` to start a
+`docker compose up --profile backend-dev up --build --attach-dependencies` to start a
 database in a docker container. The default settings are already configured to
 connect to the database at `localhost:5432`.
 
