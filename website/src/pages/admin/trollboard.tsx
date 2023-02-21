@@ -42,10 +42,10 @@ const Leaderboard = () => {
               <RadioGroup defaultValue="1" onChange={setEnabled.toggle}>
                 <Stack direction="row" spacing={5}>
                   <Radio value="1" colorScheme="green">
-                    {t("show_active_user")}
+                    Show active users
                   </Radio>
                   <Radio value="2" colorScheme="red">
-                    {t("show_banned_user")}
+                    Show banned users
                   </Radio>
                 </Stack>
               </RadioGroup>
