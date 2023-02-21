@@ -59,13 +59,11 @@ export const UserTable = memo(function UserTable() {
   // This follows useSWR's recommendation for simple pagination:
   //   https://swr.vercel.app/docs/pagination#when-to-use-useswr
 
-  // TODO this should probably change names + back-end changes since we are search by not only display name
-  const display_name =
-    filterValues.find((value) => value.id === filterValues[filterValues.length - 1]?.id)?.value ?? "";
+  const filterValue = filterValues.find((value) => value.id === filterValues[filterValues.length - 1]?.id)?.value ?? "";
   const { data, error } = useSWR<FetchUsersResponse<User>>(
     `/api/admin/users?direction=${pagination.direction}&cursor=${
       pagination.cursor
-    }&searchDisplayName=${display_name}&sortKey=${
+    }&searchDisplayName=${filterValue}&sortKey=${
       filterValues[filterValues.length - 1]?.id === "id"
         ? "username"
         : filterValues[filterValues.length - 1]?.id || "display_name"

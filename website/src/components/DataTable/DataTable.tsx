@@ -59,7 +59,7 @@ export type DataTableProps<T> = {
   filterValues?: FilterItem[];
   onNextClick?: () => void;
   onPreviousClick?: () => void;
-  onFilterChange?: (items: FilterItem[], filterByColumn?: string) => void;
+  onFilterChange?: (items: FilterItem[]) => void;
   disableNext?: boolean;
   disablePrevious?: boolean;
   disablePagination?: boolean;
