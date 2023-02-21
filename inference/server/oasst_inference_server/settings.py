@@ -45,6 +45,9 @@ class Settings(pydantic.BaseSettings):
 
     use_auth: bool = True
 
+    auth_info: bytes = b"NextAuth.js Generated Encryption Key"
+    auth_salt: bytes = b""
+    auth_length: int = 32
     auth_secret: str = ""
     auth_algorithm: str = "HS256"
     auth_access_token_expire_minutes: int = 60

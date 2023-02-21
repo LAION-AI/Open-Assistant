@@ -275,9 +275,9 @@ def decode_user_access_token(token: str = Security(oauth2_scheme)) -> dict:
     # We first generate a key from the auth secret
     hkdf = HKDF(
         algorithm=hashes.SHA256(),
-        length=settings.AUTH_LENGTH,
-        salt=settings.AUTH_SALT,
-        info=settings.AUTH_INFO,
+        length=settings.auth_length,
+        salt=settings.auth_salt,
+        info=settings.auth_info,
     )
     key = hkdf.derive(settings.auth_secret)
     # Next we decrypt the JWE token
