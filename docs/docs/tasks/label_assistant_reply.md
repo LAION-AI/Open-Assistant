@@ -11,6 +11,12 @@ instead. If you are unsure of the definition of any of the labels, look up their
 definition
 [here](https://projects.laion.ai/Open-Assistant/docs/guides/guidelines#label-explanation).
 
+Replies generated from other chatbots such as ChatGPT are **not** permitted and
+in many cases against the terms of service of the provider. Answers that were
+generated from LLMs should be penalized accordingly. You can use detectors such
+as [ZeroGPT](https://www.zerogpt.com/) to determine if a message was written by
+a human.
+
 Please make sure to read the
 [guidelines](https://projects.laion.ai/Open-Assistant/docs/guides/guidelines#classifying-assistant)
 before submitting.
