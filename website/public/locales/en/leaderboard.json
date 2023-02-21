@@ -24,6 +24,8 @@
   "reply": "Replies",
   "reply_ranked_1": "Replies ranked first",
   "score": "Score",
+  "show_active_user": "Show active users",
+  "show_banned_user": "Show banned users",
   "top_5_contributors_today": "Top 5 Contributors Today",
   "total": "Total",
   "user": "User",
