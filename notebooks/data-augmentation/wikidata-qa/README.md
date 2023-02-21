@@ -4,7 +4,7 @@ The goal of this notebook is to help users generate questions and answer prompt
 pairs by generating a few plausible ones based on the information publicly
 available in the network of the WikiData graphs.
 
-NOTE: the method has **limited** and manual review of each generated question
+NOTE: the method is **limited** and manual review of each generated question
 and answer pair is necessary!
 
 A step-by-step guide:
