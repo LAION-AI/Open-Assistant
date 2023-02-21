@@ -1,4 +1,4 @@
-requests
-tqdm
 numpy
 pandas
+requests
+tqdm
