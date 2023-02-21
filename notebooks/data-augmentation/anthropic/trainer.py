@@ -1,10 +1,9 @@
-from datasets import load_dataset
 import numpy as np
-from sklearn.metrics import f1_score
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
 import torch
+from datasets import load_dataset
+from sklearn.metrics import f1_score
 from torch.utils.data import Dataset
-
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, Trainer, TrainingArguments
 
 MAXLEN = 128
 BATCH_SIZE = 128
@@ -18,14 +17,13 @@ LABEL2ID = {
 }
 
 
-
 class ProSocialDataset(Dataset):
     def __init__(self, split):
 
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained(MODEL)
         self.sep_token = self.tokenizer.sep_token
-        self.dataset = load_dataset("allenai/prosocial-dialog",split=split)
+        self.dataset = load_dataset("allenai/prosocial-dialog", split=split)
         self.label2id = LABEL2ID
         self.id2label = {v: k for k, v in LABEL2ID.items()}
 
@@ -56,15 +54,14 @@ class ProSocialDataset(Dataset):
 
         return encoding
 
+
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
     return {"f1": f1_score(labels, predictions, average="micro")}
 
 
-
 if __name__ == "__main__":
-
 
     train_dataset = ProSocialDataset("train")
     eval_dataset = ProSocialDataset("validation")
@@ -72,16 +69,16 @@ if __name__ == "__main__":
     model = AutoModelForSequenceClassification.from_pretrained(MODEL, num_labels=len(LABEL2ID))
 
     training_args = TrainingArguments(
-    output_dir="test_trainer",
-    overwrite_output_dir=True,
-    per_device_train_batch_size=BATCH_SIZE,
-    per_device_eval_batch_size=BATCH_SIZE,
-    learning_rate=3e-5,
-    weight_decay=0.01,
-    evaluation_strategy="epoch",
-    num_train_epochs=5,
-    load_best_model_at_end=True,
-    save_strategy="epoch",
+        output_dir="test_trainer",
+        overwrite_output_dir=True,
+        per_device_train_batch_size=BATCH_SIZE,
+        per_device_eval_batch_size=BATCH_SIZE,
+        learning_rate=3e-5,
+        weight_decay=0.01,
+        evaluation_strategy="epoch",
+        num_train_epochs=5,
+        load_best_model_at_end=True,
+        save_strategy="epoch",
     )
 
     trainer_bert = Trainer(
@@ -91,5 +88,5 @@ if __name__ == "__main__":
         eval_dataset=eval_dataset,
         compute_metrics=compute_metrics,
     )
-    
+
     trainer_bert.train()
