@@ -1,5 +1,5 @@
 import { Card, CardBody, IconButton } from "@chakra-ui/react";
-import { createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper, HeaderGroup } from "@tanstack/react-table";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { memo, useState } from "react";
@@ -7,7 +7,7 @@ import { get } from "src/lib/api";
 import type { FetchUsersResponse, User } from "src/types/Users";
 import useSWR from "swr";
 
-import { DataTable, DataTableColumnDef, FilterItem } from "./DataTable/DataTable";
+import { DataTable, DataTableColumnDef, FilterItem, FilterOption } from "./DataTable/DataTable";
 import { useCursorPagination } from "./DataTable/useCursorPagination";
 
 const columnHelper = createColumnHelper<User>();
@@ -16,9 +16,12 @@ const columns: DataTableColumnDef<User>[] = [
   columnHelper.accessor("user_id", {
     header: "ID",
   }),
-  columnHelper.accessor("id", {
-    header: "Auth ID",
-  }),
+  {
+    ...columnHelper.accessor("id", {
+      header: "Auth ID",
+    }),
+    filterable: true,
+  },
   columnHelper.accessor("auth_method", {
     header: "Auth Method",
   }),
@@ -47,7 +50,9 @@ const columns: DataTableColumnDef<User>[] = [
 export const UserTable = memo(function UserTable() {
   const { pagination, resetCursor, toNextPage, toPreviousPage } = useCursorPagination();
   const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
-  const handleFilterValuesChange = (values: FilterItem[]) => {
+  const [filterOption, setFilterOption] = useState<string>("display_name");
+  const handleFilterValuesChange = (values: FilterItem[], filterByColumn?: string) => {
+    if (filterOption) setFilterOption(filterOption);
     setFilterValues(values);
     resetCursor();
   };
@@ -55,9 +60,13 @@ export const UserTable = memo(function UserTable() {
   // Fetch and save the users.
   // This follows useSWR's recommendation for simple pagination:
   //   https://swr.vercel.app/docs/pagination#when-to-use-useswr
-  const display_name = filterValues.find((value) => value.id === "display_name")?.value ?? "";
+
+  // TODO this should probably change names + back-end changes since we are search by not only display name
+  const display_name = filterValues.find((value) => value.id === filterOption)?.value ?? "";
   const { data, error } = useSWR<FetchUsersResponse<User>>(
-    `/api/admin/users?direction=${pagination.direction}&cursor=${pagination.cursor}&searchDisplayName=${display_name}&sortKey=display_name`,
+    `/api/admin/users?direction=${pagination.direction}&cursor=${
+      pagination.cursor
+    }&searchDisplayName=${display_name}&sortKey=${filterOption === "display_name" ? filterOption : "username"}`,
     get,
     {
       keepPreviousData: true,
