@@ -30,10 +30,12 @@ import { Role, RoleSelect } from "src/components/RoleSelect";
 import { get, post } from "src/lib/api";
 import { userlessApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
+import { getFrontendUserIdForDiscordUser } from "src/lib/users";
 import { FetchUserMessagesCursorResponse } from "src/types/Conversation";
 import { User } from "src/types/Users";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
+
 interface UserForm {
   user_id: string;
   id: string;
@@ -175,20 +177,29 @@ export const getServerSideProps: GetServerSideProps<{ user: User<Role> }, { id: 
   params,
   locale = "en",
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const backend_user = await userlessApiClient.fetch_user(params!.id as string);
-
+  const backend_user = await userlessApiClient.fetch_user(params.id as string);
   if (!backend_user) {
     return {
       notFound: true,
     };
   }
+
+  let frontendUserId = backend_user.id;
+  if (backend_user.auth_method === "discord") {
+    frontendUserId = await getFrontendUserIdForDiscordUser(backend_user.id);
+  }
+
   const local_user = await prisma.user.findUnique({
-    where: { id: backend_user.id },
-    select: {
-      role: true,
-    },
+    where: { id: frontendUserId },
+    select: { role: true },
   });
+
+  if (!local_user) {
+    return {
+      notFound: true,
+    };
+  }
+
   const user = {
     ...backend_user,
     role: (local_user?.role || "general") as Role,

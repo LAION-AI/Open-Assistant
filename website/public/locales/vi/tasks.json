@@ -79,6 +79,7 @@
     "response_placeholder": "Viết vào đây..."
   },
   "available_task_count": "{{count}} việc",
+  "any_feedback_on_this_task": "Bạn có phản hồi gì về nhiệm vụ này?",
   "writing_wrong_langauge_a_b": "Tin nhắn có vẻ được viết trong ngôn ngữ {{detected_lang}} nhưng sẽ được gửi đi là ngôn ngữ {{submit_lang}}.",
   "submitted_as": "Câu trả lời sẽ được gửi đi là ngôn ngữ {{submit_lang}}"
 }

@@ -1,11 +1,13 @@
 import React from "react";
 
+import { SessionDecorator } from "../../../.storybook/decorators";
 import { MessageEmojiButton } from "./MessageEmojiButton";
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
   title: "Messages/MessageEmojiButton",
   component: MessageEmojiButton,
+  decorators: [SessionDecorator],
 };
 
 const Template = ({

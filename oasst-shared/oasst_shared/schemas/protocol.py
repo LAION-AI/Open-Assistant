@@ -141,7 +141,7 @@ class TaskAck(BaseModel):
 class TaskNAck(BaseModel):
     """The frontend acknowledges that it has received a task but cannot create a message."""
 
-    reason: str
+    reason: str | None = Field(None, nullable=True)
 
 
 class TaskClose(BaseModel):
@@ -495,6 +495,9 @@ class TrollScore(BaseModel):
     auth_method: str
     display_name: str
     last_activity_date: Optional[datetime]
+    enabled: bool
+    deleted: bool
+    show_on_leaderboard: bool
 
     troll_score: int = 0
 
@@ -571,3 +574,21 @@ class CreateFrontendUserRequest(User):
     enabled: bool = True
     tos_acceptance: Optional[bool] = None
     notes: Optional[str] = None
+
+
+class CachedStatsName(str, enum.Enum):
+    human_messages_by_lang = "human_messages_by_lang"
+    human_messages_by_role = "human_messages_by_role"
+    message_trees_by_state = "message_trees_by_state"
+    message_trees_states_by_lang = "message_trees_states_by_lang"
+    users_accepted_tos = "users_accepted_tos"
+
+
+class CachedStatsResponse(BaseModel):
+    name: CachedStatsName | str
+    last_updated: datetime
+    stats: dict | list
+
+
+class AllCachedStatsResponse(BaseModel):
+    stats_by_name: dict[CachedStatsName | str, CachedStatsResponse]

@@ -1,0 +1,92 @@
+{
+  "any_feedback_on_this_task": "Noen tilbakemelding på denne oppgaven?",
+  "available_task_count": "{{count}} oppgaver tilgjengelig",
+  "default": {
+    "unchanged_title": "Ingen endringer",
+    "unchanged_message": "Er du sikker på at du vil fortsette?",
+    "continue_anyway": "Fortsett likevel"
+  },
+  "no_more_tasks": "Det ser ut til at ingen oppgaver ble funnet.",
+  "random": {
+    "label": "Jeg har flaks",
+    "desc": "Hjelp oss å forbedre Open Assistant ved å starte en tilfeldig oppgave."
+  },
+  "create_initial_prompt": {
+    "label": "Opprett oppstartsprompt",
+    "desc": "Skriv innledende instruksjoner for å hjelpe Open Assistant med å svare på forskjellige meldinger (få tegnet en oppgave).",
+    "overview": "Opprett en første melding som skal sendes til deltakeren",
+    "instruction": "Gi innledende instruksjoner",
+    "response_placeholder": "Skriv inn forespørselen her..."
+  },
+  "reply_as_user": {
+    "label": "Svar som bruker",
+    "desc": "Chat med Open Assistant og hjelp til å forbedre svarene ved å samhandle med den.",
+    "overview": "Med tanke på følgende samtale, gi et passende svar.",
+    "instruction": "Gi brukerens svar",
+    "response_placeholder": "Skriv inn svaret ditt her..."
+  },
+  "reply_as_assistant": {
+    "label": "Svar som assistent",
+    "desc": "Hjelp Open Assistant med å forbedre svarene sine i samtaler med andre brukere.",
+    "overview": "Gi den følgende samtalen, gi et passende svar.",
+    "response_placeholder": "Skriv inn svaret ditt her..."
+  },
+  "rank_user_replies": {
+    "label": "Sorter brukersvar",
+    "desc": "Hjelp Open Assistant med å forbedre svarene sine i samtaler med andre brukere.",
+    "overview": "Sorter følgende brukersvar fra best til dårligst, med best først og dårligst sist.",
+    "unchanged_title": "Rekkefølge uendret",
+    "unchanged_message": "Du har ikke endret rekkefølgen på svarene. Er du sikker på at du vil fortsette?",
+    "continue_anyway": "Fortsett likevel"
+  },
+  "rank_assistant_replies": {
+    "label": "Sorter assistentsvar",
+    "desc": "Vurder Open Assistants svar basert på deres nøyaktighet og lesbarhet.",
+    "overview": "Sorter følgende assistentsvar fra best til dårligst, med best først og dårligst sist.",
+    "unchanged_title": "Rekkefølge uendret",
+    "unchanged_message": "Du har ikke endret rekkefølgen på spørsmålene. Er du sikker på at du vil fortsette?",
+    "continue_anyway": "Fortsett likevel"
+  },
+  "rank_initial_prompts": {
+    "label": "Ranger innledende spørsmål",
+    "desc": "Vurder Open Assistant-spørringer basert på deres nøyaktighet og lesbarhet.",
+    "overview": "Sorter følgende innledende spørsmål fra best til dårligst, med best først og dårligst sist.",
+    "unchanged_title": "Rekkefølge uendret",
+    "unchanged_message": "Du har ikke endret rekkefølgen på svarene. Er du sikker på at du vil fortsette?",
+    "continue_anyway": "Fortsett likevel"
+  },
+  "label_initial_prompt": {
+    "label": "Innledende etiketter",
+    "desc": "Skriv etikett på de første ledetekstene.",
+    "overview": "Velg etiketter for følgende ledetekst."
+  },
+  "label_prompter_reply": {
+    "label": "Svar på etikett",
+    "desc": "Merk svaret.",
+    "overview": "Velg etiketter for den siste meldingen gitt følgende diskusjon."
+  },
+  "label_assistant_reply": {
+    "label": "Kontifiser assistentens svar",
+    "desc": "Merk svaret.",
+    "overview": "Velg etiketter på den siste meldingen gitt følgende diskusjon."
+  },
+  "classify_initial_prompt": {
+    "label": "Klassifiser innledende melding",
+    "desc": "Merk den første ledeteksten.",
+    "overview": "Les følgende ledetekst og svar deretter på spørsmålet."
+  },
+  "classify_prompter_reply": {
+    "label": "Klassifiser promptersvar",
+    "desc": "Tilordne etiketter til en ledetekst.",
+    "overview": "Les følgende samtale, og svar deretter på det siste svaret i diskusjonen."
+  },
+  "classify_assistant_reply": {
+    "label": "Klassifiser assistentens svar",
+    "desc": "Tilordne etiketter til en ledetekst.",
+    "overview": "Les følgende samtale, og svar deretter på det siste svaret i diskusjonen."
+  },
+  "submitted_as": "Dette vil bli sendt inn som {{submit_lang}}",
+  "tab_write": "Skriv",
+  "tab_preview": "Forhåndsvisning",
+  "writing_wrong_langauge_a_b": "Du ser ut til å skrive på {{detected_lang}}, men dette vil bli sendt inn som {{submit_lang}}."
+}

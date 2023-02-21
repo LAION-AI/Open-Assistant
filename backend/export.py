@@ -3,12 +3,14 @@ from pathlib import Path
 from typing import List, Optional
 from uuid import UUID
 
+import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.database import engine
-from oasst_backend.models import Message, MessageTreeState
+from oasst_backend.models import Message, MessageTreeState, TextLabels
 from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_backend.utils import tree_export
-from sqlmodel import Session, not_
+from oasst_shared.schemas.protocol import TextLabel
+from sqlmodel import Session, func, not_
 
 
 def fetch_tree_ids(
@@ -60,6 +62,43 @@ def fetch_tree_messages(
     return qry.all()
 
 
+def fetch_tree_messages_and_avg_labels(
+    db: Session,
+    message_tree_id: Optional[UUID] = None,
+    user_id: Optional[UUID] = None,
+    deleted: bool = None,
+    prompts_only: bool = False,
+    lang: Optional[str] = None,
+    review_result: Optional[bool] = None,
+) -> List[Message]:
+
+    args = [Message]
+
+    for l in TextLabel:
+        args.append(func.avg(TextLabels.labels[l].cast(sa.Float)).label(l.value))
+        args.append(func.count(TextLabels.labels[l]).label(l.value + "_count"))
+
+    qry = db.query(*args).select_from(Message).join(TextLabels, Message.id == TextLabels.message_id)
+    if message_tree_id:
+        qry = qry.filter(Message.message_tree_id == message_tree_id)
+    if user_id:
+        qry = qry.filter(Message.user_id == user_id)
+    if deleted is not None:
+        qry = qry.filter(Message.deleted == deleted)
+    if prompts_only:
+        qry = qry.filter(Message.parent_id.is_(None))
+    if lang:
+        qry = qry.filter(Message.lang == lang)
+    if review_result is False:
+        qry = qry.filter(not_(Message.review_result), Message.review_count > 2)
+    elif review_result is True:
+        qry = qry.filter(Message.review_result)
+
+    qry = qry.group_by(Message.id)
+
+    return qry.all()
+
+
 def export_trees(
     db: Session,
     export_file: Optional[Path] = None,
@@ -70,11 +109,12 @@ def export_trees(
     state_filter: Optional[TreeState] = None,
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
+    export_labels: bool = False,
 ) -> None:
-    trees_to_export: List[tree_export.ExportMessageTree] = []
-
-    if user_id or review_result is False:
-        messages = fetch_tree_messages(
+    message_labels: dict[UUID, tree_export.LabelValues] = {}
+    if user_id:
+        # when filtering by user we don't have complete message trees, export as list
+        result = fetch_tree_messages_and_avg_labels(
             db,
             user_id=user_id,
             deleted=deleted,
@@ -82,32 +122,80 @@ def export_trees(
             lang=lang,
             review_result=review_result,
         )
-        tree_export.write_messages_to_file(export_file, messages, use_compression)
+
+        messages: list[Message] = []
+        for r in result:
+            msg = r["Message"]
+            messages.append(msg)
+            if export_labels:
+                labels: tree_export.LabelValues = {
+                    l.value: tree_export.LabelAvgValue(value=r[l.value], count=r[l.value + "_count"])
+                    for l in TextLabel
+                    if r[l.value] is not None
+                }
+                message_labels[msg.id] = labels
+
+        tree_export.write_messages_to_file(export_file, messages, use_compression, labels=message_labels)
     else:
         message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang)
 
-        message_trees = [
-            fetch_tree_messages(
-                db,
-                message_tree_id=tree_id,
-                deleted=deleted,
-                prompts_only=prompts_only,
-                lang=None,
-                review_result=review_result,
-            )
-            for (tree_id, _) in message_tree_ids
-        ]
+        message_trees: list[list[Message]] = []
 
-        # when exporting only-deleted we don't have a porper tree structure, export as list
-        if deleted is True:
-            messages = [m for t in message_trees for m in t]
-            tree_export.write_messages_to_file(export_file, messages, use_compression)
+        for tree_id, _ in message_tree_ids:
+            if export_labels:
+                result = fetch_tree_messages_and_avg_labels(
+                    db,
+                    message_tree_id=tree_id,
+                    deleted=deleted,
+                    prompts_only=prompts_only,
+                    lang=None,  # pass None here, trees were selected based on lang of prompt
+                    review_result=review_result,
+                )
+
+                messages: list[Message] = []
+                for r in result:
+                    msg = r["Message"]
+                    messages.append(msg)
+                    labels: tree_export.LabelValues = {
+                        l.value: tree_export.LabelAvgValue(value=r[l.value], count=r[l.value + "_count"])
+                        for l in TextLabel
+                        if r[l.value] is not None
+                    }
+                    message_labels[msg.id] = labels
+
+                message_trees.append(messages)
+            else:
+                messages = fetch_tree_messages(
+                    db,
+                    message_tree_id=tree_id,
+                    deleted=deleted,
+                    prompts_only=prompts_only,
+                    lang=None,  # pass None here, trees were selected based on lang of prompt
+                    review_result=review_result,
+                )
+                message_trees.append(messages)
+
+        if review_result is False or deleted is True:
+            # when exporting filtered we don't have complete message trees, export as list
+            messages = [m for t in message_trees for m in t]  # flatten message list
+            tree_export.write_messages_to_file(export_file, messages, use_compression, labels=message_labels)
         else:
+            trees_to_export: List[tree_export.ExportMessageTree] = []
+
             for (message_tree_id, message_tree_state), message_tree in zip(message_tree_ids, message_trees):
-                t = tree_export.build_export_tree(message_tree_id, message_tree_state, message_tree)
-                if prompts_only:
-                    t.prompt.replies = None
-                trees_to_export.append(t)
+                if len(message_tree) > 0:
+                    try:
+                        t = tree_export.build_export_tree(
+                            message_tree_id=message_tree_id,
+                            message_tree_state=message_tree_state,
+                            messages=message_tree,
+                            labels=message_labels,
+                        )
+                        if prompts_only:
+                            t.prompt.replies = None
+                        trees_to_export.append(t)
+                    except Exception as ex:
+                        logger.warning(f"Corrupted tree: {message_tree_id} ({ex})")
 
             tree_export.write_trees_to_file(export_file, trees_to_export, use_compression)
 
@@ -146,7 +234,7 @@ def parse_args():
     parser.add_argument(
         "--include-spam",
         action="store_true",
-        help="Export only messages with negative review result.",
+        help="Export including messages with negative review result.",
     )
     parser.add_argument(
         "--spam-only",
@@ -172,6 +260,11 @@ def parse_args():
         "--prompts-only",
         action="store_true",
         help="Export a list of initial prompt messages",
+    )
+    parser.add_argument(
+        "--export-labels",
+        action="store_true",
+        help="Include average label values for messages",
     )
 
     args = parser.parse_args()
@@ -204,13 +297,14 @@ def main():
         export_trees(
             db,
             Path(args.export_file) if args.export_file is not None else None,
-            args.use_compression,
+            use_compression=args.use_compression,
             deleted=deleted,
             user_id=UUID(args.user) if args.user is not None else None,
             prompts_only=args.prompts_only,
             state_filter=state_filter,
             lang=args.lang,
             review_result=review_result,
+            export_labels=args.export_labels,
         )
 
 

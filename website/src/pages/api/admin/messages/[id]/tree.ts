@@ -5,7 +5,10 @@ import { Message, MessageWithChildren } from "src/types/Conversation";
 export default withAnyRole(["admin", "moderator"], async (req, res, token) => {
   const client = await createApiClient(token);
   const messageId = req.query.id as string;
-  const response = await client.fetch_message_tree(messageId);
+  const response = await client.fetch_message_tree(messageId, {
+    include_deleted: true,
+    include_spam: true,
+  });
 
   if (!response) {
     return res.json({ tree: null });
@@ -17,7 +20,7 @@ export default withAnyRole(["admin", "moderator"], async (req, res, token) => {
 });
 
 // https://medium.com/@lizhuohang.selina/building-a-hierarchical-tree-from-a-flat-list-an-easy-to-understand-solution-visualisation-19cb24bdfa33
-const buildTree = (messages: Message[]): MessageWithChildren | null => {
+export const buildTree = (messages: Message[]): MessageWithChildren | null => {
   const map: Record<string, MessageWithChildren> = {};
   const tree = [];
 

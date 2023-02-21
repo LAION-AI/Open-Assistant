@@ -1,5 +1,6 @@
 import type { EmojiOp, FetchUserMessagesCursorResponse, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
+import { Stats } from "src/types/Stat";
 import type { AvailableTasks } from "src/types/Task";
 import { FetchTrollBoardResponse, TrollboardTimeFrame } from "src/types/Trollboard";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
@@ -140,8 +141,8 @@ export class OasstApiClient {
     return this.post(`/api/v1/tasks/${taskId}/ack`, { message_id: messageId });
   }
 
-  async nackTask(taskId: string, reason: string): Promise<null> {
-    return this.post(`/api/v1/tasks/${taskId}/nack`, { reason });
+  async nackTask(taskId: string): Promise<null> {
+    return this.post(`/api/v1/tasks/${taskId}/nack`, {});
   }
 
   // TODO return a strongly typed Task?
@@ -189,11 +190,11 @@ export class OasstApiClient {
     return this.get<Message>(`/api/v1/messages/${message_id}?username=${user.id}&auth_method=${user.auth_method}`);
   }
 
-  async fetch_message_tree(message_id: string) {
+  async fetch_message_tree(message_id: string, options?: { include_spam?: boolean; include_deleted?: boolean }) {
     return this.get<{
       id: string;
       messages: Message[];
-    }>(`/api/v1/messages/${message_id}/tree`);
+    }>(`/api/v1/messages/${message_id}/tree`, options);
   }
 
   /**
@@ -222,6 +223,13 @@ export class OasstApiClient {
       is_report: true,
       user,
     });
+  }
+
+  /**
+   * Returns cached dataset stats from the backend.
+   */
+  async fetch_cached_stats(): Promise<Stats> {
+    return this.get("/api/v1/stats/cached");
   }
 
   /**

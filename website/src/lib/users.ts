@@ -15,7 +15,7 @@ const LOCALE_SET = new Set(i18n.locales);
  *    the i18n module.
  * 3. "en" as a final fallback.
  */
-const getUserLanguage = (req: NextApiRequest): string => {
+export const getUserLanguage = (req: NextApiRequest): string => {
   const cookieLanguage = req.cookies["NEXT_LOCALE"];
   if (cookieLanguage) {
     return cookieLanguage;
@@ -33,7 +33,7 @@ const getUserLanguage = (req: NextApiRequest): string => {
  * @param {string} id The user's web auth id.
  *
  */
-const getBackendUserCore = async (id: string): Promise<BackendUserCore | null> => {
+export const getBackendUserCore = async (id: string): Promise<BackendUserCore | null> => {
   const user = await prisma.user.findUnique({
     where: { id },
     select: {
@@ -66,4 +66,18 @@ const getBackendUserCore = async (id: string): Promise<BackendUserCore | null> =
   };
 };
 
-export { getBackendUserCore, getUserLanguage };
+/**
+ * The frontend user id for discord users is saved differently from the email users
+ *
+ * this functions gets the "correct" user id for interacting with the frontend db, more specifically
+ * the users table, when calling `prisma.user....`
+ *
+ * Ideally, this function does not need to exist, but this might require huge migrations
+ *
+ * @param {string} id the id of the user, this field is called 'username' in the python backend's user table
+ * not to be confused with the user's UUID
+ */
+export const getFrontendUserIdForDiscordUser = async (id: string) => {
+  const { userId } = await prisma.account.findFirst({ where: { provider: "discord", providerAccountId: id } });
+  return userId;
+};
