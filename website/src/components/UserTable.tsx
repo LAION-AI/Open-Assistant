@@ -52,7 +52,7 @@ export const UserTable = memo(function UserTable() {
   const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
   const [filterOption, setFilterOption] = useState<string>("display_name");
   const handleFilterValuesChange = (values: FilterItem[], filterByColumn?: string) => {
-    if (filterOption) setFilterOption(filterOption);
+    if (filterByColumn) setFilterOption(filterByColumn);
     setFilterValues(values);
     resetCursor();
   };
