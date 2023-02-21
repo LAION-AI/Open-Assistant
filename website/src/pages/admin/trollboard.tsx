@@ -40,7 +40,7 @@ const Leaderboard = () => {
           <Card>
             <CardBody>
               <RadioGroup defaultValue="1" onChange={setEnabled.toggle}>
-                <Stack direction="row">
+                <Stack direction="row" spacing={5}>
                   <Radio value="1" colorScheme="green">
                     {t("show_active_user")}
                   </Radio>
