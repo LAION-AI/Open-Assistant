@@ -8,7 +8,11 @@ import uswSWRImmutable from "swr/immutable";
 const StatsPage = () => {
   const { data } = uswSWRImmutable<StatsType>("/api/stats/cached_stats", get);
 
-  return <Stats data={data} />;
+  return 
+    <Head>
+        <title>{`${t("stats")} - ${t("common:title")}`}</title>
+    </Head>
+  <Stats data={data} />;
 };
 
 StatsPage.getLayout = getDashboardLayout;
