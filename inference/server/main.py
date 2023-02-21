@@ -3,17 +3,16 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
+import aiohttp
 import alembic.command
 import alembic.config
 import fastapi
 import sqlmodel
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyCookie
-from fastapi_discord import DiscordOAuthClient
-from fastapi_discord.models import User as DiscordUser
 from jose import jwe, jwt
 from loguru import logger
 from oasst_inference_server import client_handler, deps, interface, worker_handler
@@ -25,12 +24,6 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 app = fastapi.FastAPI()
 oauth2_scheme = APIKeyCookie(name=settings.auth_cookie_name)
-discord = DiscordOAuthClient(
-    settings.auth_discord_client_id,
-    settings.auth_discord_client_secret,
-    "/auth/callback/discord/",
-    ("identify",),
-)
 
 
 # add prometheus metrics at /metrics
@@ -42,11 +35,6 @@ async def enable_prom_metrics():
 @app.on_event("startup")
 async def log_inference_protocol_version():
     logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
-
-
-@app.on_event("startup")
-async def init_discord_oauth():
-    await discord.init()
 
 
 # Allow CORS
@@ -123,28 +111,53 @@ def maybe_add_debug_api_keys():
 
 
 @app.get("/auth/login/discord")
-async def login_discord():
-    # Provide Discord OAuth login URL, which will redirect to our callback after login
-    return {"url": discord.oauth_login_url}
+async def login_discord(request: Request):
+    domain = str(request.url).split("/auth/")[0]
+    redirect_uri = f"{domain}/auth/callback/discord"
+    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify"
+    raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
 @app.get("/auth/callback/discord", response_model=protocol.Token)
 async def callback_discord(
     code: str,
+    request: Request,
     db: sqlmodel.Session = Depends(deps.create_session),
 ):
-    # Exchange code for access token with Discord
-    token, _ = await discord.get_access_token(code)
+    domain = str(request.url).split("/auth/")[0]
+    redirect_uri = f"{domain}/auth/callback/discord"
 
-    # Get user info from Discord using Discord access token
-    discord_user: DiscordUser = DiscordUser(**(await discord.request("/users/@me", token)))
+    async with aiohttp.ClientSession(raise_for_status=True) as session:
+        # Exchange the auth code for a Discord access token
+        async with session.post(
+            "https://discord.com/api/oauth2/token",
+            data={
+                "client_id": settings.auth_discord_client_id,
+                "client_secret": settings.auth_discord_client_secret,
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "scope": "identify",
+            },
+        ) as token_response:
+            token_response_json = await token_response.json()
+            access_token = token_response_json["access_token"]
+
+        # Retrieve user's Discord information using access token
+        async with session.get(
+            "https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"}
+        ) as user_response:
+            user_response_json = await user_response.json()
+
+    discord_id = user_response_json["id"]
+    discord_username = user_response_json["username"]
 
     # Get user in our DB linked to the Discord user
-    user: DbUser = get_user_from_provider_id(db, discord_id=discord_user.id)
+    user: DbUser = get_user_from_provider_id(db, discord_id=discord_id)
 
     # Create if no user exists
     if not user:
-        user = DbUser(provider="discord", provider_account_id=discord_user.id, display_name=discord_user.username)
+        user = DbUser(provider="discord", provider_account_id=discord_id, display_name=discord_username)
 
         db.add(user)
         db.commit()
