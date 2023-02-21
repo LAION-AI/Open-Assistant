@@ -14,8 +14,7 @@
         "varsIgnorePattern": "^_",
         "caughtErrorsIgnorePattern": "^_"
       }
-    ],
-    "@typescript-eslint/no-non-null-assertion": 0
+    ]
   },
   "plugins": ["simple-import-sort", "unused-imports"]
 }
