@@ -1,0 +1,92 @@
+{
+  "any_feedback_on_this_task": "Någon feedback på denna uppgift?",
+  "available_task_count": "{{count}} uppgifter tillgängliga",
+  "default": {
+    "unchanged_title": "Inga ändringar",
+    "unchanged_message": "Är du säker på att du vill fortsätta?",
+    "continue_anyway": "Fortsätt ändå"
+  },
+  "no_more_tasks": "Det verkar som om inga uppgifter hittades.",
+  "random": {
+    "label": "Jag har tur",
+    "desc": "Hjälp oss att förbättra Open Assistant genom att starta en slumpmässig uppgift."
+  },
+  "create_initial_prompt": {
+    "label": "Skapa startprompt",
+    "desc": "Skriv inledande instruktioner för att hjälpa Open Assistant att svara på olika meddelanden (bli lottad en uppgift).",
+    "overview": "Skapa ett första meddelande att skicka till deltagaren",
+    "instruction": "Ge inledande instruktioner",
+    "response_placeholder": "Skriv din prompt här..."
+  },
+  "reply_as_user": {
+    "label": "Svara som användare",
+    "desc": "Chatta med Open Assistant och hjälp till att förbättra svaren genom att interagera med den.",
+    "overview": "Med tanke på följande konversation, ge ett lämpligt svar.",
+    "instruction": "Ge användarens svar",
+    "response_placeholder": "Skriv ditt svar här..."
+  },
+  "reply_as_assistant": {
+    "label": "Svara som assistent",
+    "desc": "Hjälp Open Assistant att förbättra sina svar i konversationer med andra användare.",
+    "overview": "Med tanke på följande konversation, ge ett lämpligt svar.",
+    "response_placeholder": "Skriv ditt svar här..."
+  },
+  "rank_user_replies": {
+    "label": "Sortera användarsvar",
+    "desc": "Hjälp Open Assistant att förbättra sina svar i konversationer med andra användare.",
+    "overview": "Sortera följande användarsvar från bäst till sämst, med bäst först och sämst sist.",
+    "unchanged_title": "Ordning oförändrad",
+    "unchanged_message": "Du har inte ändrat ordningen på svaren. Är du säker på att du vill fortsätta?",
+    "continue_anyway": "Fortsätt ändå"
+  },
+  "rank_assistant_replies": {
+    "label": "Sortera assistentsvar",
+    "desc": "Betygsätt Open Assistants svar baserat på deras noggrannhet och läsbarhet.",
+    "overview": "Sortera följande assistentsvar från bäst till sämst, med bäst först och sämst sist.",
+    "unchanged_title": "Ordning oförändrad",
+    "unchanged_message": "Du har inte ändrat ordningen på frågorna. Är du säker på att du vill fortsätta?",
+    "continue_anyway": "Fortsätt ändå"
+  },
+  "rank_initial_prompts": {
+    "label": "Rangordna inledande frågor",
+    "desc": "Betygsätt frågor till Open Assistant baserat på deras noggrannhet och läsbarhet.",
+    "overview": "Sortera följande inledande frågor från bäst till sämst, med bäst först och sämst sist.",
+    "unchanged_title": "Ordning oförändrad",
+    "unchanged_message": "Du har inte ändrat ordningen på svaren. Är du säker på att du vill fortsätta?",
+    "continue_anyway": "Fortsätt ändå"
+  },
+  "label_initial_prompt": {
+    "label": "Inledande etiketter",
+    "desc": "Skriv etikett på de första uppmaningarna.",
+    "overview": "Välj etiketter för följande prompt."
+  },
+  "label_prompter_reply": {
+    "label": "Svar på prompten",
+    "desc": "Märk svaret.",
+    "overview": "Välj etiketter för det senaste meddelandet med tanke på följande diskussion."
+  },
+  "label_assistant_reply": {
+    "label": "Kassificera assistentens svar",
+    "desc": "Märk svaret.",
+    "overview": "Välj etiketter på det senaste meddelandet med tanke på följande diskussion."
+  },
+  "classify_initial_prompt": {
+    "label": "Klassificera inledande prompt",
+    "desc": "Märk den initiala uppmaningen.",
+    "overview": "Läs följande uppmaning och besvara sedan på frågan."
+  },
+  "classify_prompter_reply": {
+    "label": "Klassificera promptersvar",
+    "desc": "Tilldela etiketter till en prompt.",
+    "overview": "Läs följande konversation och besvara sedan det sista svaret i diskussionen."
+  },
+  "classify_assistant_reply": {
+    "label": "Klassificera assistentens svar",
+    "desc": "Tilldela etiketter till en prompt.",
+    "overview": "Läs följande konversation och besvara sedan det sista svaret i diskussionen."
+  },
+  "submitted_as": "Detta kommer att skickas som {{submit_lang}}",
+  "tab_write": "Skriv",
+  "tab_preview": "Förhandsgranska",
+  "writing_wrong_langauge_a_b": "Du verkar skriva på {{detected_lang}} men detta kommer att skickas in som {{submit_lang}}."
+}

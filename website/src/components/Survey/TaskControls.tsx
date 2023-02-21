@@ -1,6 +1,6 @@
-import { Box, Flex, IconButton, Progress, Tooltip, useColorModeValue } from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton, Progress, Tooltip, useColorModeValue } from "@chakra-ui/react";
 import { Edit2 } from "lucide-react";
-import { SkipButton } from "src/components/Buttons/Skip";
+import { useTranslation } from "next-i18next";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 import { TaskStatus } from "src/components/Tasks/Task";
@@ -13,7 +13,7 @@ export interface TaskControlsProps {
   onEdit: () => void;
   onReview: () => void;
   onSubmit: () => void;
-  onSkip: (reason: string) => void;
+  onSkip: () => void;
 }
 
 export const TaskControls = ({
@@ -25,24 +25,27 @@ export const TaskControls = ({
   onSubmit,
   onSkip,
 }: TaskControlsProps) => {
+  const { t } = useTranslation();
   const backgroundColor = useColorModeValue("white", "gray.800");
 
   return (
     <Box width="full" bg={backgroundColor} borderRadius="xl" shadow="base">
       {isLoading && <Progress size="sm" isIndeterminate />}
       <Flex p="6" gap="4" direction={["column", "row"]}>
-        <TaskInfo id={task.id} output="Submit your answer" />
+        <TaskInfo id={task.id} output={t("submit_your_answer")} />
         <Flex width={["full", "fit-content"]} justify="center" ml="auto" gap={2}>
           {taskStatus.mode === "EDIT" ? (
             <>
-              <SkipButton onSkip={onSkip} />
+              <Button size="lg" variant="outline" onClick={onSkip}>
+                {t("skip")}
+              </Button>
               <SubmitButton
                 colorScheme="blue"
                 data-cy="review"
                 isDisabled={taskStatus.replyValidity === "INVALID"}
                 onClick={onReview}
               >
-                Review
+                {t("review")}
               </SubmitButton>
             </>
           ) : (
@@ -56,7 +59,7 @@ export const TaskControls = ({
                 isDisabled={taskStatus.mode === "SUBMITTED"}
                 onClick={onSubmit}
               >
-                Submit
+                {t("submit")}
               </SubmitButton>
             </>
           )}

@@ -1,0 +1,20 @@
+{
+  "copy_message_id": "Copiar ID de mensagem",
+  "label_action": "Classificar",
+  "label_title": "Classificar",
+  "message": "Mensagem",
+  "message_deleted": "Mensagem apagada",
+  "open_new_tab_action": "Abrir em nova aba",
+  "parent": "Raiz",
+  "reactions": "Reações",
+  "recent_messages": "Mensagens recentes",
+  "report_action": "Relatar",
+  "report_placeholder": "Por que devemos rever essa mensagem?",
+  "report_title": "Relatar",
+  "send_report": "Enviar",
+  "stop_tree": "Parar árvore",
+  "submit_labels": "Enviar",
+  "tree_stopped": "Árvore parada {{id}}",
+  "view_user": "Ver usuário",
+  "your_recent_messages": "Suas Mensagens Recentes"
+}

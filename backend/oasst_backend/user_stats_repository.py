@@ -69,6 +69,9 @@ def _create_troll_score(r, highlighted_user_id: UUID | None) -> TrollScore:
         "auth_method",
         "display_name",
         "last_activity_date",
+        "enabled",
+        "deleted",
+        "show_on_leaderboard",
     ]:
         d[k] = r[k]
     if highlighted_user_id:
@@ -102,7 +105,7 @@ class UserStatsRepository:
                 UserStats,
             )
             .join(UserStats, User.id == UserStats.user_id)
-            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard)
+            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard, User.enabled)
             .order_by(UserStats.rank)
             .limit(limit)
         )
@@ -121,7 +124,7 @@ class UserStatsRepository:
         window_size: int = 5,
     ) -> LeaderboardStats | None:
         # no window for users who don't show themselves
-        if not user.show_on_leaderboard:
+        if not user.show_on_leaderboard or not user.enabled:
             return None
 
         qry = self.session.query(UserStats).filter(UserStats.user_id == user.id, UserStats.time_frame == time_frame)
@@ -144,7 +147,7 @@ class UserStatsRepository:
                 UserStats,
             )
             .join(UserStats, User.id == UserStats.user_id)
-            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard)
+            .filter(UserStats.time_frame == time_frame.value, User.show_on_leaderboard, User.enabled)
             .where(UserStats.rank >= min_rank, UserStats.rank <= max_rank)
             .order_by(UserStats.rank)
         )
@@ -158,7 +161,16 @@ class UserStatsRepository:
 
     def get_user_stats_all_time_frames(self, user_id: UUID) -> dict[str, UserScore | None]:
         qry = (
-            self.session.query(User.id.label("user_id"), User.username, User.auth_method, User.display_name, UserStats)
+            self.session.query(
+                User.id.label("user_id"),
+                User.username,
+                User.auth_method,
+                User.display_name,
+                User.streak_days,
+                User.streak_last_day_date,
+                User.last_activity_date,
+                UserStats,
+            )
             .outerjoin(UserStats, User.id == UserStats.user_id)
             .filter(User.id == user_id)
         )
@@ -176,6 +188,7 @@ class UserStatsRepository:
         self,
         time_frame: UserStatsTimeFrame,
         limit: int = 100,
+        enabled: Optional[bool] = None,
         highlighted_user_id: Optional[UUID] = None,
     ) -> TrollboardStats:
         """
@@ -189,13 +202,19 @@ class UserStatsRepository:
                 User.auth_method,
                 User.display_name,
                 User.last_activity_date,
+                User.enabled,
+                User.deleted,
+                User.show_on_leaderboard,
                 TrollStats,
             )
             .join(TrollStats, User.id == TrollStats.user_id)
             .filter(TrollStats.time_frame == time_frame.value)
-            .order_by(TrollStats.rank)
-            .limit(limit)
         )
+
+        if enabled is not None:
+            qry = qry.filter(User.enabled == enabled)
+
+        qry = qry.order_by(TrollStats.rank).limit(limit)
 
         trollboard = [_create_troll_score(r, highlighted_user_id) for r in self.session.exec(qry)]
         if len(trollboard) > 0:
@@ -538,7 +557,7 @@ FROM
             ORDER BY leader_score DESC, user_id
         ) AS "rank", user_id, time_frame
     FROM user_stats us2
-    INNER JOIN "user" u ON us2.user_id = u.id AND u.show_on_leaderboard
+    INNER JOIN "user" u ON us2.user_id = u.id AND u.show_on_leaderboard AND u.enabled
     WHERE (:time_frame IS NULL OR time_frame = :time_frame)) AS r
 WHERE
     us.user_id = r.user_id

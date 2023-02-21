@@ -7,6 +7,7 @@ import { useTranslation } from "next-i18next";
 import { Flags } from "react-feature-flags";
 import { LanguageSelector } from "src/components/LanguageSelector";
 
+import { ColorModeToggler } from "./ColorModeToggler";
 import { UserMenu } from "./UserMenu";
 
 function AccountButton() {
@@ -36,19 +37,20 @@ export function Header() {
         <Link href={homeURL} aria-label="Home">
           <Flex alignItems="center">
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
-            <Text fontFamily="inter" fontSize="2xl" fontWeight="bold" ml="3">
+            <Text fontFamily="inter" fontSize={["lg", "2xl"]} fontWeight="bold" ml="3" className="hidden sm:block">
               {t("title")}
             </Text>
           </Flex>
         </Link>
 
-        <Flex alignItems="center" gap="4">
+        <Flex alignItems="center" gap={["2", "4"]}>
           <Flags authorizedFlags={["flagTest"]}>
             <Text>FlagTest</Text>
           </Flags>
           <LanguageSelector />
           <AccountButton />
           <UserMenu />
+          <ColorModeToggler />
         </Flex>
       </Box>
     </nav>

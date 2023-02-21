@@ -1,8 +1,8 @@
 {
-  "grab_a_task": "Schnapp dir eine Aufgabe!",
   "create": "Erstellen",
-  "evaluate": "Auswerten",
-  "label": "Label",
   "dashboard": "Dashboard",
-  "go": "Los"
+  "evaluate": "Auswerten",
+  "go": "Los",
+  "grab_a_task": "Schnappen Sie sich eine Aufgabe!",
+  "label": "Label"
 }

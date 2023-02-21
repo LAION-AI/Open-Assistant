@@ -4,7 +4,7 @@ export interface LeaderboardEntry {
   score: number;
 }
 
-export const enum LeaderboardTimeFrame {
+export enum LeaderboardTimeFrame {
   day = "day",
   week = "week",
   month = "month",
@@ -40,4 +40,5 @@ export interface LeaderboardEntity {
   reply_ranked_3: number;
   streak_last_day_date: number | null;
   streak_days: number | null;
+  highlighted: boolean;
 }

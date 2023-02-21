@@ -14,10 +14,11 @@
     [] support additional negative samples generated from other models.
 
         For example we can use galactica-125m to generate a TLDR and assume it was
-        inferior than the human perference one
+        inferior than the human preference one
 
 
 """
+import os
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
@@ -298,3 +299,44 @@ class AnthropicRLHF(Dataset):
         context, pair = self.pairs[index]
 
         return context, [pair]
+
+
+class OAPrivate(Dataset):
+    """
+    {
+        "prompt": <prompt string>,
+        "history": [("prompt1", "answer2"), ("prompt2", "answer2")],
+        "pos": <pos answer string>,
+        "neg_replies": [list of bad answers]
+    }
+    """
+
+    split_name_mapping = {
+        "train": "rm_train.jsonl",
+        "test": "rm_test.jsonl",
+        "val": "rm_val.jsonl",
+    }
+
+    def __init__(self, split="train", sep_token="<sep>", data_path=".cache") -> None:
+        super().__init__()
+        import json
+
+        jsonl_file = os.path.join(data_path, self.split_name_mapping[split])
+        self.pairs = []
+        with open(jsonl_file, "r", encoding="utf-8") as f:
+            for line in f:
+                data = json.loads(line)
+                prefix = sep_token.join([sep_token.join(p) for p in data["history"][-2:]])
+                prefix += sep_token + data["prompt"]
+                pair = []
+                for neg_text in data["neg_replies"]:
+                    pair.append((data["pos"], neg_text))
+                self.pairs.append((prefix, pair))
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, index):
+        context, pair = self.pairs[index]
+
+        return context, pair

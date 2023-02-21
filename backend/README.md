@@ -5,11 +5,11 @@
 ### Local Database
 
 In root directory, run
-`docker compose up --profile backend-dev up --build --attach-dependencies` to start a
-database in a docker container. The default settings are already configured to
-connect to the database at `localhost:5432`.
-
-### Python
+`docker compose --profile backend-dev up --build --attach-dependencies` to start
+a database. The default settings are already configured to connect to the
+database at `localhost:5432`. (See
+[FAQ](https://projects.laion.ai/Open-Assistant/docs/faq#enable-dockers-buildkit-backend)
+if you face any docker problems).
 
 Python 3.10 is required. It is recommended to use `pyenv` which will recognise
 the `.python-version` in the project root directory.

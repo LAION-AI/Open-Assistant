@@ -1,6 +1,6 @@
 Some other reward features we can use
 
-0. Finish classifcation feature
+0. Finish classification feature
 
 1. Summaries from human feedback
 

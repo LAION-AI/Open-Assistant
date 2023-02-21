@@ -1,18 +1,18 @@
 {
   "daily": "일일",
+  "label": "레이블",
   "last_updated_at": "최종 업데이트 시간: {{val, datetime}}",
   "leaderboard": "리더보드",
   "monthly": "월간",
+  "next": "다음",
   "overall": "종합",
-  "rank": "순위",
-  "score": "점수",
-  "user": "사용자",
-  "weekly": "주간",
-  "prompt": "프롬프트",
-  "reply": "답변",
-  "label": "레이블",
-  "view_all": "전체보기",
-  "top_5_contributors_today": "금일 상위 5명의 기여자",
   "previous": "이전",
-  "next": "다음"
+  "prompt": "프롬프트",
+  "rank": "순위",
+  "reply": "답변",
+  "score": "점수",
+  "top_5_contributors_today": "금일 상위 5명의 기여자",
+  "user": "사용자",
+  "view_all": "전체보기",
+  "weekly": "주간"
 }

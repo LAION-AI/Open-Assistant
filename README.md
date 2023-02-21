@@ -18,6 +18,8 @@
 
 [open-assistant.io](https://open-assistant.io)
 
+(project documentation lives [here](https://laion-ai.github.io/Open-Assistant/))
+
 # Table of Contents
 
 - [What is Open Assistant?](#what-is-open-assistant)
@@ -51,14 +53,20 @@ directly helping to improve the capabilities of Open Assistant.
 
 ### Running Locally
 
-If you are interested in taking a look at the current state of the project, you
-can set up an entire stack needed to run **Open-Assistant**, including the
-website, backend, and associated dependent services.
+**You do not need to run the project locally unless you are contributing to the
+development process. The website link above will take you to the public website
+where you can use the data collection app.**
 
-##### To start the demo, run this in the root directory of the repository:
+If you would like to run the data collection app locally for development, you
+can set up an entire stack needed to run **Open-Assistant**, including the
+website, backend, and associated dependent services, with Docker.
+
+To start the demo, run this in the root directory of the repository (check
+[this FAQ](https://projects.laion.ai/Open-Assistant/docs/faq#docker-compose-instead-of-docker-compose)
+if you have problems):
 
 ```sh
-docker compose up --build
+docker compose --profile ci up --build --attach-dependencies
 ```
 
 Then, navigate to `http://localhost:3000` (It may take some time to boot up) and

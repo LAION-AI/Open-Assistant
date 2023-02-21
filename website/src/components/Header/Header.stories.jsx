@@ -2,6 +2,7 @@ import { SessionContext } from "next-auth/react";
 import React from "react";
 import { FlagsProvider } from "react-feature-flags";
 
+import { RouterDecorator } from "../../../.storybook/decorators";
 import { Header } from "./Header";
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -11,6 +12,7 @@ export default {
   parameters: {
     layout: "fullscreen",
   },
+  decorators: [RouterDecorator],
 };
 
 const Template = (args) => {
