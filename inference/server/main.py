@@ -9,7 +9,7 @@ import fastapi
 import sqlmodel
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from fastapi import Depends, HTTPException, Request, Security
+from fastapi import Depends, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyCookie
 from jose import jwe, jwt
@@ -114,9 +114,8 @@ def maybe_add_debug_api_keys():
 
 
 @app.get("/auth/login/discord")
-async def login_discord(request: Request):
-    domain = str(request.url).split("/auth/")[0]
-    redirect_uri = f"{domain}/auth/callback/discord"
+async def login_discord():
+    redirect_uri = f"{settings.api_root}/inference/auth/callback/discord"
     auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
@@ -124,11 +123,9 @@ async def login_discord(request: Request):
 @app.get("/auth/callback/discord", response_model=protocol.Token)
 async def callback_discord(
     code: str,
-    request: Request,
     db: sqlmodel.Session = Depends(deps.create_session),
 ):
-    domain = str(request.url).split("/auth/")[0]
-    redirect_uri = f"{domain}/auth/callback/discord"
+    redirect_uri = f"{settings.api_root}/auth/callback/discord"
 
     async with aiohttp.ClientSession(raise_for_status=True) as session:
         # Exchange the auth code for a Discord access token
@@ -144,7 +141,11 @@ async def callback_discord(
             },
         ) as token_response:
             token_response_json = await token_response.json()
+
+        try:
             access_token = token_response_json["access_token"]
+        except KeyError:
+            raise HTTPException(status_code=400, detail="Invalid access token response from Discord")
 
         # Retrieve user's Discord information using access token
         async with session.get(
@@ -152,8 +153,11 @@ async def callback_discord(
         ) as user_response:
             user_response_json = await user_response.json()
 
-    discord_id = user_response_json["id"]
-    discord_username = user_response_json["username"]
+    try:
+        discord_id = user_response_json["id"]
+        discord_username = user_response_json["username"]
+    except KeyError:
+        raise HTTPException(status_code=400, detail="Invalid user info response from Discord")
 
     # Try to find a user in our DB linked to the Discord user
     user: models.DbUser = query_user_by_provider_id(db, discord_id=discord_id)
