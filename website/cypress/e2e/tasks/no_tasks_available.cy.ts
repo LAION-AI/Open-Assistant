@@ -4,7 +4,7 @@ describe("no tasks available", () => {
     cy.intercept(
       {
         method: "GET",
-        url: "/api/new_task/prompter_reply",
+        url: "/api/new_task/prompter_reply?lang=en",
       },
       {
         statusCode: 500,
