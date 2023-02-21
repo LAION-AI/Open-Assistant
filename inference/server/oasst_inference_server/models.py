@@ -92,3 +92,5 @@ class DbUser(SQLModel, table=True):
 
     provider: str = Field(..., index=True)
     provider_account_id: str = Field(..., index=True)
+
+    display_name: str = Field(nullable=False, max_length=256)

@@ -1,4 +1,5 @@
 alembic
+fastapi-discord
 fastapi[all]==0.88.0
 loguru
 prometheus-fastapi-instrumentator

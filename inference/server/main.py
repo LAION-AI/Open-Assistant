@@ -24,9 +24,12 @@ from oasst_shared.schemas import inference, protocol
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = fastapi.FastAPI()
-oauth2_scheme = APIKeyCookie(name=settings.AUTH_COOKIE_NAME)
+oauth2_scheme = APIKeyCookie(name=settings.auth_cookie_name)
 discord = DiscordOAuthClient(
-    settings.auth_discord_client_id, settings.auth_discord_client_secret, "/auth/callback/discord/", ("identify",)
+    settings.auth_discord_client_id,
+    settings.auth_discord_client_secret,
+    "/auth/callback/discord/",
+    ("identify",),
 )
 
 
@@ -136,8 +139,16 @@ async def callback_discord(
     # Get user info from Discord using Discord access token
     discord_user: DiscordUser = DiscordUser(**(await discord.request("/users/@me", token)))
 
-    # Get user in our DB linked to the Discord user, creating if not exists
-    user: DbUser = get_user_from_discord_id(db, discord_user.id, create_if_not_exists=True)
+    # Get user in our DB linked to the Discord user
+    user: DbUser = get_user_from_provider_id(db, discord_id=discord_user.id)
+
+    # Create if no user exists
+    if not user:
+        user = DbUser(provider="discord", provider_account_id=discord_user.id, display_name=discord_user.username)
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
     # Discord account is authenticated and linked to a user; create JWT
     access_token = create_access_token(
@@ -222,23 +233,17 @@ def delete_worker(
     return fastapi.Response(status_code=200)
 
 
-def get_user_from_discord_id(
-    db: sqlmodel.Session, discord_id: str, create_if_not_exists: bool = False
-) -> Optional[DbUser]:
-    """Returns the user associated with the given Discord ID if any."""
-    user: DbUser = (
-        db.query(DbUser).filter(DbUser.provider_account_id == discord_id).filter(DbUser.provider == "discord").first()
-    )
+def get_user_from_provider_id(db: sqlmodel.Session, discord_id: Optional[str] = None) -> Optional[DbUser]:
+    """Returns the user associated with a given provider ID if any."""
+    user_qry = db.query(DbUser)
 
-    if not user and create_if_not_exists:
-        user = DbUser(
-            provider="discord",
-            provider_account_id=discord_id,
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+    if discord_id:
+        user_qry = user_qry.filter(DbUser.provider == "discord").filter(DbUser.provider_account_id == discord_id)
+    # elif other IDs...
+    else:
+        return None
 
+    user: DbUser = user_qry.first()
     return user
 
 
@@ -252,7 +257,7 @@ def create_access_token(data: dict, secret: str, algorithm: str, expire_minutes:
     return encoded_jwt
 
 
-def decode_access_token(token: str = Security(oauth2_scheme)) -> dict:
+def decode_user_access_token(token: str = Security(oauth2_scheme)) -> dict:
     """Decode the current user JWT token and return the payload."""
     # We first generate a key from the auth secret
     hkdf = HKDF(
@@ -264,5 +269,4 @@ def decode_access_token(token: str = Security(oauth2_scheme)) -> dict:
     key = hkdf.derive(settings.auth_secret)
     # Next we decrypt the JWE token
     payload = jwe.decrypt(token, key)
-    # This JSON payload will have "user_id" and "exp" keys
     return payload
