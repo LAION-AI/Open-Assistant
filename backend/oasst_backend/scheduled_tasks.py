@@ -25,14 +25,7 @@ app.conf.result_backend = os.environ.get("CELERY_RESULT_BACKEND")
 logger.info(f"celery.conf.broker_url {app.conf.broker_url}, app.conf.result_backend{app.conf.result_backend}")
 startup_time: datetime = utcnow()
 
-# Load task modules from all registered Django applications.
 app.autodiscover_tasks()
-
-
-@app.task(bind=True)
-def info_task(self):
-    logger.info("Request: {0!r}".format(self.request))
-
 
 app.conf.beat_schedule = {
     # Scheduler Name
@@ -41,30 +34,14 @@ app.conf.beat_schedule = {
         "task": "update_user_streak",
         # Schedule
         "schedule": 60.0 * 60.0 * 4,
-        # Function Arguments
-        # 'args': (10,20)
     },
 }
-
-
-@app.task
-def test(arg):
-    logger.info(arg)
-
-
-@app.task(name="create_task")
-def create_task(a, b, c):
-    # time.sleep(a)
-    logger.info(f"IN create task ... {a}")
-    return b + c
 
 
 async def useHFApi(text, url, model_name):
     hugging_face_api: HuggingFaceAPI = HuggingFaceAPI(f"{url}/{model_name}")
     # TODO: This is some wierd error that commenting the next line causes a 400 error
     hugging_face_api.headers: Dict[str, str] = {"Authorization": f"Bearer {hugging_face_api.api_key}"}
-    logger.info(f"hf {hugging_face_api.headers}")
-    logger.info(f"{str(hugging_face_api)}")
     result = await hugging_face_api.post(text)
     return result
 
@@ -80,10 +57,7 @@ def toxicity(text, message_id, api_client):
             toxicity: List[List[Dict[str, Any]]] = async_to_sync(useHFApi)(text=text, url=url, model_name=model_name)
             toxicity = toxicity[0][0]
             logger.info(f"toxicity from HF {toxicity}")
-            print(f"toxicity from HF {toxicity}")
             api_client_m = ApiClient(**api_client)
-            logger.info(f"api_client_m: {api_client_m}")
-            print(f"api_client_m: {api_client_m}")
             if toxicity is not None:
                 pr = PromptRepository(db=session, api_client=api_client_m)
                 pr.insert_toxicity(
@@ -91,7 +65,7 @@ def toxicity(text, message_id, api_client):
                 )
 
     except Exception as e:
-        print(f"Could not compute toxicity for text reply to {message_id=} with {text=} by.error {str(e)}")
+        logger.error(f"Could not compute toxicity for text reply to {message_id=} with {text=} by.error {str(e)}")
 
 
 @app.task(name="hf_feature_extraction")
@@ -101,18 +75,16 @@ def hf_feature_extraction(text, message_id, api_client):
             model_name: str = HfEmbeddingModel.MINILM.value
             url: str = HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value
             embedding = async_to_sync(useHFApi)(text=text, url=url, model_name=model_name)
-            logger.info(f"emmbedding from HF {embedding}")
-            print(f"emmbedding from HF {embedding}")
             api_client_m = ApiClient(**api_client)
-            logger.info(f"api_client_m: {api_client_m}")
             if embedding is not None:
+                logger.info(f"emmbedding from HF {len(embedding)}")
                 pr = PromptRepository(db=session, api_client=api_client_m)
                 pr.insert_message_embedding(
                     message_id=message_id, model=HfEmbeddingModel.MINILM.value, embedding=embedding
                 )
 
     except Exception as e:
-        print(f"Could not extract embedding for text reply to {message_id=} with {text=} by.error {str(e)}")
+        logger.error(f"Could not extract embedding for text reply to {message_id=} with {text=} by.error {str(e)}")
 
 
 @shared_task(name="update_user_streak")

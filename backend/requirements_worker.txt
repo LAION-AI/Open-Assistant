@@ -8,7 +8,7 @@ fastapi-limiter==0.1.5
 fastapi-utils==0.2.1
 loguru==0.6.0
 numpy>=1.22.4
-psycopg2-binary==2.9.5
+psycopg2==2.9.3
 pydantic==1.9.1
 pydantic[email]==1.9.1
 python-dotenv==0.21.0
