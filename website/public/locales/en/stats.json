@@ -1,6 +1,8 @@
 {
   "aborted_low_grade": "Aborted low grade",
+  "assistant": "Assistant",
   "backlog_ranking": "Backlog ranking",
+  "choose_a_language": "Choose a language",
   "count": "Count",
   "growing": "Growing",
   "halted_by_moderator": "Halted by moderator",
@@ -10,6 +12,7 @@
   "message_trees_by_state": "Message trees by state",
   "message_trees_states_by_lang": "Message trees states by language",
   "prompt_lottery_waiting": "Prompt lottery waiting",
+  "prompter": "Prompter",
   "ranking": "Ranking",
   "ready_for_export": "Ready for export",
   "stats": "Stats",

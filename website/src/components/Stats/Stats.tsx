@@ -17,7 +17,19 @@ export const Stats = ({ data }: StatsProps) => {
     return null;
   }
 
-  const keys = Object.keys(data.stats_by_name);
+  const keys = Object.keys(data.stats_by_name).filter((key) => key !== "users_accepted_tos");
+
+  // Add two copies of the message_trees_states_by_lang for creating the
+  // stacked bar and the table in addition to the donough chart
+  if (keys.indexOf("message_trees_states_by_lang_table") == -1) {
+    keys.push("message_trees_states_by_lang_table");
+    data.stats_by_name["message_trees_states_by_lang_table"] = data.stats_by_name["message_trees_states_by_lang"];
+  }
+
+  if (keys.indexOf("message_trees_states_by_lang_stacked") == -1) {
+    keys.push("message_trees_states_by_lang_stacked");
+    data.stats_by_name["message_trees_states_by_lang_stacked"] = data.stats_by_name["message_trees_states_by_lang"];
+  }
 
   const getStatByName = (name: string): Stat => {
     return data.stats_by_name[name];
@@ -28,13 +40,15 @@ export const Stats = ({ data }: StatsProps) => {
       <Heading size="lg" className="pb-4">
         {t("stats")}
       </Heading>
-      <SimpleGrid spacing={2} columns={{ base: 1, md: 2, lg: 3 }}>
+      <SimpleGrid spacing={2} columns={{ base: 1, md: 2, lg: 2 }}>
         {keys.map((key) => {
           const stat = getStatByName(key);
           const component = statComponents[key];
+          const colSpan =
+            key === "message_trees_states_by_lang_table" || key === "message_trees_states_by_lang_stacked" ? 2 : 1;
           return (
-            <GridItem key={key}>
-              <Card minH={230}>
+            <GridItem key={key} colSpan={colSpan}>
+              <Card minH={500}>
                 <CardHeader>
                   <Heading size="md">{t(getTypeSafei18nKey(stat.name))}</Heading>
                 </CardHeader>
