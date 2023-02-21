@@ -1,7 +1,6 @@
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 import aiohttp
 import alembic.command
@@ -15,9 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyCookie
 from jose import jwe, jwt
 from loguru import logger
-from oasst_inference_server import client_handler, deps, interface, worker_handler
+from oasst_inference_server import client_handler, deps, interface, models, worker_handler
 from oasst_inference_server.chat_repository import ChatRepository
-from oasst_inference_server.models import DbUser, DbWorker
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference, protocol
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -99,9 +97,14 @@ def maybe_add_debug_api_keys():
         with deps.manual_create_session() as session:
             for api_key in settings.debug_api_keys:
                 logger.info(f"Checking if debug API key {api_key} exists")
-                if session.exec(sqlmodel.select(DbWorker).where(DbWorker.api_key == api_key)).one_or_none() is None:
+                if (
+                    session.exec(
+                        sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key)
+                    ).one_or_none()
+                    is None
+                ):
                     logger.info(f"Adding debug API key {api_key}")
-                    session.add(DbWorker(api_key=api_key, name="Debug API Key"))
+                    session.add(models.DbWorker(api_key=api_key, name="Debug API Key"))
                     session.commit()
                 else:
                     logger.info(f"Debug API key {api_key} already exists")
@@ -152,12 +155,12 @@ async def callback_discord(
     discord_id = user_response_json["id"]
     discord_username = user_response_json["username"]
 
-    # Get user in our DB linked to the Discord user
-    user: DbUser = get_user_from_provider_id(db, discord_id=discord_id)
+    # Try to find a user in our DB linked to the Discord user
+    user: models.DbUser = query_user_by_provider_id(db, discord_id=discord_id)
 
     # Create if no user exists
     if not user:
-        user = DbUser(provider="discord", provider_account_id=discord_id, display_name=discord_username)
+        user = models.DbUser(provider="discord", provider_account_id=discord_id, display_name=discord_username)
 
         db.add(user)
         db.commit()
@@ -214,9 +217,7 @@ def create_worker(
     session: sqlmodel.Session = Depends(deps.create_session),
 ):
     """Allows a client to register a worker."""
-    worker = DbWorker(
-        name=request.name,
-    )
+    worker = models.DbWorker(name=request.name)
     session.add(worker)
     session.commit()
     session.refresh(worker)
@@ -229,7 +230,7 @@ def list_workers(
     session: sqlmodel.Session = Depends(deps.create_session),
 ):
     """Lists all workers."""
-    workers = session.exec(sqlmodel.select(DbWorker)).all()
+    workers = session.exec(sqlmodel.select(models.DbWorker)).all()
     return list(workers)
 
 
@@ -240,23 +241,25 @@ def delete_worker(
     session: sqlmodel.Session = Depends(deps.create_session),
 ):
     """Deletes a worker."""
-    worker = session.get(DbWorker, worker_id)
+    worker = session.get(models.DbWorker, worker_id)
     session.delete(worker)
     session.commit()
     return fastapi.Response(status_code=200)
 
 
-def get_user_from_provider_id(db: sqlmodel.Session, discord_id: Optional[str] = None) -> Optional[DbUser]:
+def query_user_by_provider_id(db: sqlmodel.Session, discord_id: str | None = None) -> models.DbUser | None:
     """Returns the user associated with a given provider ID if any."""
-    user_qry = db.query(DbUser)
+    user_qry = db.query(models.DbUser)
 
     if discord_id:
-        user_qry = user_qry.filter(DbUser.provider == "discord").filter(DbUser.provider_account_id == discord_id)
+        user_qry = user_qry.filter(models.DbUser.provider == "discord").filter(
+            models.DbUser.provider_account_id == discord_id
+        )
     # elif other IDs...
     else:
         return None
 
-    user: DbUser = user_qry.first()
+    user: models.DbUser = user_qry.first()
     return user
 
 
