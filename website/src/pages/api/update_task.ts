@@ -1,8 +1,9 @@
 import { Prisma } from "@prisma/client";
 import { withoutRole } from "src/lib/auth";
+import { getLanguageFromRequest } from "src/lib/languages";
 import { createApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
-import { getBackendUserCore, getUserLanguage } from "src/lib/users";
+import { getBackendUserCore } from "src/lib/users";
 
 /**
  * Stores the task interaction with the Task Backend and then returns the next task generated.
@@ -17,6 +18,8 @@ import { getBackendUserCore, getUserLanguage } from "src/lib/users";
 const handler = withoutRole("banned", async (req, res, token) => {
   // Parse out the local task ID and the interaction contents.
   const { id: frontendId, content, update_type } = req.body;
+
+  const lang = getLanguageFromRequest(req);
 
   // do in parallel since they are independent
   const [_, registeredTask, oasstApiClient] = await Promise.all([
@@ -46,18 +49,9 @@ const handler = withoutRole("banned", async (req, res, token) => {
   });
 
   const user = await getBackendUserCore(token.sub);
-  const userLanguage = getUserLanguage(req);
   let newTask;
   try {
-    newTask = await oasstApiClient.interactTask(
-      update_type,
-      taskId,
-      frontendId,
-      interaction.id,
-      content,
-      user,
-      userLanguage
-    );
+    newTask = await oasstApiClient.interactTask(update_type, taskId, frontendId, interaction.id, content, user!, lang);
   } catch (err) {
     console.error(JSON.stringify(err));
     return res.status(500).json(err);

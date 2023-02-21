@@ -1,27 +1,31 @@
 import { useCallback, useState } from "react";
 import { TaskInfos } from "src/components/Tasks/TaskTypes";
 import { get, post } from "src/lib/api";
+import { API_ROUTES } from "src/lib/routes";
 import { TaskApiHook } from "src/types/Hooks";
 import { BaseTask, ServerTaskResponse, TaskResponse, TaskType as TaskTypeEnum } from "src/types/Task";
 import { AllTaskReplies } from "src/types/TaskResponses";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
+import { useCurrentLocale } from "../locale/useCurrentLocale";
+
 export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = AllTaskReplies>(
   taskType: TaskTypeEnum
 ): TaskApiHook<TaskType, ResponseContent> => {
   const [response, setResponse] = useState<TaskResponse<TaskType>>({ taskAvailability: "AWAITING_INITIAL" });
-
+  const locale = useCurrentLocale();
   // Note: We use isValidating to indicate we are loading because it signals eash load, not just the first one.
   const { isValidating: isLoading, mutate: requestNewTask } = useSWRImmutable<ServerTaskResponse<TaskType>>(
-    "/api/new_task/" + taskType,
+    API_ROUTES.NEW_TASK(taskType, { lang: locale }),
     get,
     {
       onSuccess: (taskResponse) => {
         setResponse({
           ...taskResponse,
           taskAvailability: "AVAILABLE",
-          taskInfo: TaskInfos.find((taskType) => taskType.type === taskResponse.task.type),
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          taskInfo: TaskInfos.find((taskType) => taskType.type === taskResponse.task.type)!,
         });
       },
       onError: () => {
@@ -33,7 +37,7 @@ export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = A
     }
   );
 
-  const { trigger: sendTaskContent } = useSWRMutation("/api/update_task", post, {
+  const { trigger: sendTaskContent } = useSWRMutation(API_ROUTES.UPDATE_TASK, post, {
     onSuccess: () => {
       requestNewTask();
     },
@@ -63,9 +67,9 @@ export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = A
       if (response.taskAvailability !== "AVAILABLE") {
         throw new Error("Cannot complete task that is not yet ready");
       }
-      await sendTaskContent({ id: response.id, update_type: response.taskInfo.update_type, content });
+      await sendTaskContent({ id: response.id, update_type: response.taskInfo.update_type, content, lang: locale });
     },
-    [response, sendTaskContent]
+    [response, sendTaskContent, locale]
   );
 
   return { response, isLoading, rejectTask, completeTask };

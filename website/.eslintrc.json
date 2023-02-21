@@ -1,10 +1,6 @@
 {
   "root": true,
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "next/core-web-vitals"
-  ],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "next/core-web-vitals"],
   "rules": {
     "unused-imports/no-unused-imports": "warn",
     "simple-import-sort/imports": "warn",
@@ -18,7 +14,8 @@
         "varsIgnorePattern": "^_",
         "caughtErrorsIgnorePattern": "^_"
       }
-    ]
+    ],
+    "@typescript-eslint/no-non-null-assertion": 0
   },
   "plugins": ["simple-import-sort", "unused-imports"]
 }
