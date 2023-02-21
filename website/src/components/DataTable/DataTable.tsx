@@ -104,7 +104,7 @@ export const DataTable = <T,>({
     } else {
       newValues = filterValues.map((oldValue) => (oldValue.id === value.id ? value : oldValue));
     }
-    onFilterChange && onFilterChange(newValues, value.id);
+    onFilterChange && onFilterChange(newValues);
   };
   return (
     <>

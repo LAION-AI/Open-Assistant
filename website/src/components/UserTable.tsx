@@ -1,5 +1,5 @@
 import { Card, CardBody, IconButton } from "@chakra-ui/react";
-import { createColumnHelper, HeaderGroup } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { memo, useState } from "react";
@@ -50,9 +50,7 @@ const columns: DataTableColumnDef<User>[] = [
 export const UserTable = memo(function UserTable() {
   const { pagination, resetCursor, toNextPage, toPreviousPage } = useCursorPagination();
   const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
-  const [filterOption, setFilterOption] = useState<string>("display_name");
-  const handleFilterValuesChange = (values: FilterItem[], filterByColumn?: string) => {
-    if (filterByColumn) setFilterOption(filterByColumn);
+  const handleFilterValuesChange = (values: FilterItem[]) => {
     setFilterValues(values);
     resetCursor();
   };
@@ -62,11 +60,15 @@ export const UserTable = memo(function UserTable() {
   //   https://swr.vercel.app/docs/pagination#when-to-use-useswr
 
   // TODO this should probably change names + back-end changes since we are search by not only display name
-  const display_name = filterValues.find((value) => value.id === filterOption)?.value ?? "";
+  const display_name = filterValues.find((value) => value.id === filterValues[filterValues.length - 1].id)?.value ?? "";
   const { data, error } = useSWR<FetchUsersResponse<User>>(
     `/api/admin/users?direction=${pagination.direction}&cursor=${
       pagination.cursor
-    }&searchDisplayName=${display_name}&sortKey=${filterOption === "display_name" ? filterOption : "username"}`,
+    }&searchDisplayName=${display_name}&sortKey=${
+      filterValues[filterValues.length - 1].id === "display_name"
+        ? filterValues[filterValues.length - 1].id
+        : "username"
+    }`,
     get,
     {
       keepPreviousData: true,
