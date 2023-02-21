@@ -7,6 +7,7 @@ export default withAnyRole(["admin", "moderator"], async (req, res, token) => {
 
   const trollboard = await client.fetch_trollboard(req.query.time_frame as TrollboardTimeFrame, {
     limit: req.query.limit as unknown as number,
+    enabled: req.query.enabled as unknown as boolean,
   });
 
   return res.status(200).json(trollboard);
