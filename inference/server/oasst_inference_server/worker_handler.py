@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 import fastapi
 import sqlmodel
@@ -101,6 +102,20 @@ def get_worker(
     return worker
 
 
+def add_worker_connect_event(
+    session: sqlmodel.Session,
+    worker_id: str,
+    worker_config: inference.WorkerConfig,
+):
+    event = models.DbWorkerEvent(
+        worker_id=worker_id,
+        event_type=models.WorkerEventType.connect,
+        worker_config=worker_config,
+    )
+    session.add(event)
+    session.commit()
+
+
 def find_compliance_work_request_message(
     session: sqlmodel.Session, worker_config: inference.WorkerConfig, worker_id: str
 ) -> models.DbMessage | None:
@@ -191,7 +206,12 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(g
     worker_config = inference.WorkerConfig.parse_raw(await websocket.receive_text())
     worker_compat_hash = worker_config.compat_hash
     work_queue = queueing.work_queue(deps.redis_client, worker_compat_hash)
+    redis_client = deps.redis_client
+    worker_session_id = str(uuid.uuid4())
     try:
+        with deps.manual_create_session() as session:
+            add_worker_connect_event(session=session, worker_id=worker_id, worker_config=worker_config)
+        await redis_client.set(f"worker_session:{worker_session_id}", worker_config.json())
         while True:
             if websocket.client_state == fastapi.websockets.WebSocketState.DISCONNECTED:
                 raise WSException("Worker disconnected")
@@ -217,6 +237,34 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(g
         logger.warning(f"Websocket closed for worker {worker_id}")
     except Exception as e:
         logger.exception(f"Error while handling worker {worker_id}: {str(e)}")
+    finally:
+        logger.info(f"Worker {worker_id} disconnected")
+        await redis_client.getdel(f"worker_session:{worker_session_id}")
+
+
+async def list_worker_sessions() -> list[inference.WorkerConfig]:
+    redis_client = deps.redis_client
+    try:
+        worker_configs = []
+        async for key in redis_client.scan_iter("worker_session:*"):
+            worker_config_json = await redis_client.get(key)
+            worker_config = inference.WorkerConfig.parse_raw(worker_config_json)
+            worker_configs.append(worker_config)
+    except Exception as e:
+        logger.exception(f"Error while listing worker sessions: {str(e)}")
+        raise
+    return worker_configs
+
+
+async def clear_worker_sessions():
+    redis_client = deps.redis_client
+    try:
+        logger.info("Clearing worker sessions")
+        async for key in redis_client.scan_iter("worker_session:*"):
+            await redis_client.getdel(key)
+    except Exception as e:
+        logger.exception(f"Error while clearing worker sessions: {str(e)}")
+        raise
 
 
 def build_work_request(
