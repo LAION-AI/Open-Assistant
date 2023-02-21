@@ -101,6 +101,9 @@ Run one (or more) workers:
 cd worker
 pip install -r requirements.txt
 API_KEY=0000 python __main__.py
+
+# to add another worker, simply run
+API_KEY=0001 python __main__.py
 ```
 
 For the worker, you'll also want to have the text-generation-inference server
