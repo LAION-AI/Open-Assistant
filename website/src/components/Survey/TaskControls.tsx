@@ -1,7 +1,6 @@
-import { Box, Flex, IconButton, Progress, Tooltip, useColorModeValue } from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton, Progress, Tooltip, useColorModeValue } from "@chakra-ui/react";
 import { Edit2 } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 import { TaskStatus } from "src/components/Tasks/Task";
@@ -14,7 +13,7 @@ export interface TaskControlsProps {
   onEdit: () => void;
   onReview: () => void;
   onSubmit: () => void;
-  onSkip: (reason: string) => void;
+  onSkip: () => void;
 }
 
 export const TaskControls = ({
@@ -37,7 +36,9 @@ export const TaskControls = ({
         <Flex width={["full", "fit-content"]} justify="center" ml="auto" gap={2}>
           {taskStatus.mode === "EDIT" ? (
             <>
-              <SkipButton onSkip={onSkip} />
+              <Button size="lg" variant="outline" onClick={onSkip}>
+                {t("skip")}
+              </Button>
               <SubmitButton
                 colorScheme="blue"
                 data-cy="review"

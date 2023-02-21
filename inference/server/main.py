@@ -179,6 +179,9 @@ app.post("/chat/{chat_id}/message")(client_handler.handle_create_message)
 
 app.websocket("/work")(worker_handler.handle_worker)
 
+app.on_event("startup")(worker_handler.clear_worker_sessions)
+app.get("/worker_session")(worker_handler.list_worker_sessions)
+
 
 @app.put("/worker")
 def create_worker(

@@ -141,8 +141,8 @@ export class OasstApiClient {
     return this.post(`/api/v1/tasks/${taskId}/ack`, { message_id: messageId });
   }
 
-  async nackTask(taskId: string, reason: string): Promise<null> {
-    return this.post(`/api/v1/tasks/${taskId}/nack`, { reason });
+  async nackTask(taskId: string): Promise<null> {
+    return this.post(`/api/v1/tasks/${taskId}/nack`, {});
   }
 
   // TODO return a strongly typed Task?

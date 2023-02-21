@@ -127,6 +127,7 @@ services:
       - ENABLE_EMAIL_SIGNIN_CAPTCHA=false
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
+      - INFERENCE_SERVER_HOST=http://inference-server:8000
     depends_on:
       webdb:
         condition: service_healthy
