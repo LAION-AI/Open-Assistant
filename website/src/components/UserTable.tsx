@@ -50,8 +50,12 @@ const columns: DataTableColumnDef<User>[] = [
 export const UserTable = memo(function UserTable() {
   const { pagination, resetCursor, toNextPage, toPreviousPage } = useCursorPagination();
   const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
+
   const handleFilterValuesChange = (values: FilterItem[]) => {
-    setFilterValues(values);
+    const last = values.pop();
+    if (last) {
+      setFilterValues([last]);
+    }
     resetCursor();
   };
 
