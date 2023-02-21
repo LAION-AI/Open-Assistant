@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 from datasets import load_dataset
 from sklearn.metrics import f1_score
 from torch.utils.data import Dataset
