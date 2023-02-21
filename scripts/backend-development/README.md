@@ -1,9 +1,9 @@
 # Backend Development Setup
 
 In root directory, run
-`docker compose up --profile backend-dev up --build --attach-dependencies` to start a
-database. The default settings are already configured to connect to the database
-at `localhost:5432`.
+`docker compose up --profile backend-dev up --build --attach-dependencies` to
+start a database. The default settings are already configured to connect to the
+database at `localhost:5432`.
 
 Make sure you have all requirements installed. You can do this by running
 `pip install -r requirements.txt` inside the `backend` folder and
