@@ -67,7 +67,6 @@ class DataCollatorForPairRank:
     """
 
     tokenizer: PreTrainedTokenizerBase
-    num_choices: int = 2
     padding: Union[bool, str, PaddingStrategy] = True
     max_length: Optional[int] = None
     pad_to_multiple_of: Optional[int] = None
@@ -76,13 +75,10 @@ class DataCollatorForPairRank:
     def __call__(self, features):
 
         flatten_features = []
-        batch_size = 0
         for question, pairs in features:
             for (pos, neg) in pairs:
                 flatten_features.append(self.tokenizer(question, pos, truncation=True, max_length=self.max_length))
                 flatten_features.append(self.tokenizer(question, neg, truncation=True, max_length=self.max_length))
-                batch_size += 1
-
         batch = self.tokenizer.pad(
             flatten_features,
             padding=self.padding,
@@ -92,7 +88,6 @@ class DataCollatorForPairRank:
         )
         if self.drop_token_type:
             batch.pop("token_type_ids")
-        # batch = {k: v.view(batch_size, self.num_choices, -1) for k, v in batch.items()}
         return batch
 
 
