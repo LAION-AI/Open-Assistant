@@ -64,7 +64,6 @@ class SODASyntheticDialogueDataset(datasets.GeneratorBasedBuilder):
     DEFAULT_CONFIG_NAME = f"{_DATASETNAME}_dialogue_modeling"
 
     def _info(self) -> datasets.DatasetInfo:
-
         return datasets.DatasetInfo(
             description=_DESCRIPTION,
             features=features,

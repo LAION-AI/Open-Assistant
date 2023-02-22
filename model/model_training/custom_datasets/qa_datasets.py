@@ -167,13 +167,11 @@ class QADataset(Dataset):
         return self.length
 
     def __getitem__(self, idx):
-
         data = self.dataset[idx]
         return format_pair(self.index_fn(data))
 
 
 class WebGPT(Dataset):
-
     name = "webgpt"
 
     def __init__(self) -> None:
@@ -206,7 +204,6 @@ class WebGPT(Dataset):
 
 
 class SODA(Dataset):
-
     name = "soda"
 
     def process_soda_convo(self, data):
@@ -252,7 +249,7 @@ class SODA(Dataset):
         dataset = load_dataset("allenai/soda", cache_dir=cache_dir)["train"]
         for data in dataset:
             data_pair = self.process_soda_convo(data)
-            for (prompt, answer) in data_pair:
+            for prompt, answer in data_pair:
                 if len(prompt) < input_max_length:
                     self.pairs.append((prompt, answer))
 
@@ -268,7 +265,6 @@ class SODADialogue(Dataset):
     url = "https://drive.google.com/uc?id=1TOGQfr419n8wpzJpYLLw4nB3tSKD8zXV"
 
     def __init__(self, cache_dir, verbose=True):
-
         path = os.path.join(cache_dir, "soda_dialog.jsonl")
 
         if not os.path.exists(path):
@@ -316,7 +312,6 @@ class SODADialogue(Dataset):
 
 
 class JokeExplaination(Dataset):
-
     name = "joke"
     url = "https://gist.github.com/theblackcat102/42b697e24a13fdb499e20edfbf618361/raw/1834dca207898c15f93b809d1195f6f6e47c9e1e/joke_explained.jsonl"
 

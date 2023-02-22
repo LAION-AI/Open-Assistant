@@ -87,7 +87,6 @@ def role_decide(user_id, prompt_user):
 
 class ConversationTreeNode:
     def __init__(self, tweet_id, prompt_user, from_df, children_df, metadata=None):
-
         if metadata:
             self.metadata = metadata
         else:
@@ -118,7 +117,6 @@ class ConversationTreeNode:
 
 class ConversationTree:
     def __init__(self, tweet_id, prompt_user, from_df, children_df, r_metadata=None):
-
         self.root = ConversationTreeNode(
             tweet_id=tweet_id, prompt_user=prompt_user, from_df=from_df, children_df=children_df, metadata=r_metadata
         )

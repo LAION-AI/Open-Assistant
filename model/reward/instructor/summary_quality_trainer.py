@@ -89,7 +89,6 @@ class QualityTrainer(Trainer):
         prediction_loss_only: bool,
         ignore_keys: Optional[List[str]] = None,
     ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
-
         with torch.no_grad():
             # compute loss on predict data
             loss, logits = self._compute_loss(model, inputs)

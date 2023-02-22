@@ -18,7 +18,6 @@ LABEL2ID = {
 
 class ProSocialDataset(Dataset):
     def __init__(self, split):
-
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained(MODEL)
         self.sep_token = self.tokenizer.sep_token
@@ -30,7 +29,6 @@ class ProSocialDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, idx):
-
         context = self.dataset[idx]
         idx_start = idx
         end = self.dataset[max(0, idx_start - 1)]["episode_done"]
@@ -61,7 +59,6 @@ def compute_metrics(eval_pred):
 
 
 if __name__ == "__main__":
-
     train_dataset = ProSocialDataset("train")
     eval_dataset = ProSocialDataset("validation")
 
