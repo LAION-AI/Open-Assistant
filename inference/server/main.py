@@ -1,3 +1,4 @@
+import json
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -12,7 +13,7 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from fastapi import Depends, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyCookie
-from jose import jwe, jwt
+from jose import jwe
 from loguru import logger
 from oasst_inference_server import client_handler, deps, interface, models, worker_handler
 from oasst_inference_server.chat_repository import ChatRepository
@@ -267,19 +268,14 @@ def query_user_by_provider_id(db: sqlmodel.Session, discord_id: str | None = Non
     return user
 
 
-def create_access_token(data: dict, secret: str, algorithm: str, expire_minutes: int) -> str:
+def create_access_token(data: dict) -> str:
     """Create encoded JSON Web Token (JWT) using the given data."""
-    expires_delta = timedelta(minutes=expire_minutes)
+    expires_delta = timedelta(minutes=settings.auth_access_token_expire_minutes)
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, secret, algorithm=algorithm)
-    return encoded_jwt
 
-
-def decode_user_access_token(token: str = Security(oauth2_scheme)) -> dict:
-    """Decode the current user JWT token and return the payload."""
-    # We first generate a key from the auth secret
+    # Generate a key from the auth secret
     hkdf = HKDF(
         algorithm=hashes.SHA256(),
         length=settings.auth_length,
@@ -287,6 +283,36 @@ def decode_user_access_token(token: str = Security(oauth2_scheme)) -> dict:
         info=settings.auth_info,
     )
     key = hkdf.derive(settings.auth_secret)
-    # Next we decrypt the JWE token
-    payload = jwe.decrypt(token, key)
-    return payload
+
+    # Encrypt the payload using JWE
+    token: bytes = jwe.encrypt(to_encode, key)
+    return token.decode()
+
+
+def get_current_user_id(token: str = Security(oauth2_scheme)) -> str:
+    """Decode the current user JWT token and return the payload."""
+    # Generate a key from the auth secret
+    hkdf = HKDF(
+        algorithm=hashes.SHA256(),
+        length=settings.auth_length,
+        salt=settings.auth_salt,
+        info=settings.auth_info,
+    )
+    key = hkdf.derive(settings.auth_secret)
+
+    # Decrypt the JWE token
+    try:
+        token: bytes = jwe.decrypt(token, key)
+    except jwe.exceptions.InvalidJWEData:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    payload: dict = json.loads(token.decode())
+    user_id = payload.get("user_id")
+    exp = payload.get("exp")
+
+    if not user_id or not exp:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    if datetime.utcnow() >= datetime.fromtimestamp(exp):
+        raise HTTPException(status_code=401, detail="Token expired")
+
+    return user_id
