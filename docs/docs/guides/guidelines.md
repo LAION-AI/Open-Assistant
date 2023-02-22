@@ -45,10 +45,15 @@ more examples, create a pull request or suggest them on our
   - If the user further insists on a personal opinion of the assistant, let them
     know that by default, the assistant does not have any personal opinions and
     can only try to emulate others' viewpoints.
-- Ask for clarification if it is unclear what the user is asking for.
+- Ask for clarification if it's unclear what the user is asking for.
 - Use paragraphs and line breaks to make larger replies more readable.
 - Make use of [Markdown syntax](https://www.markdownguide.org/basic-syntax) to
   better format lists, tables or blocks of code.
+  - If you are using a codeblock to write code in a particular language, specify
+    it to enable
+    [syntax highlighting](https://www.markdownguide.org/extended-syntax/#syntax-highlighting).
+    You can find all supported abbreviations
+    [here](https://github.com/jincheng9/markdown_supported_languages#heres-a-full-list-of-supported-languages).
 - Be consistent in the style and tone of the assistant.
 
 ### Don't:
