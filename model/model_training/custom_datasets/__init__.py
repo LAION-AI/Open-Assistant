@@ -1,7 +1,7 @@
 """
     High level functions for model training
 """
-from custom_datasets.prompt_dialogue import InstructionTuning, OAPrivate, PrivateInstructionTuning
+from custom_datasets.prompt_dialogue import OAPrivate, PrivateInstructionTuning
 from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, TranslatedQA, WebGPT
 from custom_datasets.summarization import SummarizationDataset
 from custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
@@ -20,7 +20,7 @@ SUMMARIZATION_DATASETS = [
     "debate_sum",
     "tldr_news",
 ]
-OTHER = ["prosocial_dialogue", "explain_prosocial", "instruct_tuning", "private_tuning", "oa_translated", "oa_private"]
+OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_translated", "oa_private"]
 
 RL_DATASETS = ["oa_private"]
 
@@ -75,12 +75,11 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         dataset = SODADialogue(data_path)
     elif dataset_name == "joke":
         dataset = JokeExplaination(data_path)
-    elif dataset_name == "instruct_tuning":
-        dataset = InstructionTuning(data_path)
     elif dataset_name == "private_tuning":
         dataset = PrivateInstructionTuning(data_path)
     elif dataset_name == "oa_translated":
-        dataset = TranslatedQA(data_path)  # TODO make val_split lower..?
+        # TODO make val_split lower..? by saganos
+        dataset = TranslatedQA(data_path)
     elif dataset_name == "oa_private":
         dataset = OAPrivate(data_path, **kwargs)
     else:
