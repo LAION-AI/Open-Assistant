@@ -1,14 +1,15 @@
 import { Box, Select, useColorModeValue } from "@chakra-ui/react";
-import { ArcElement, BarElement, CategoryScale, Chart as ChartJS, Colors, LinearScale, Tooltip } from "chart.js";
 import { createColumnHelper } from "@tanstack/react-table";
+import { ArcElement, BarElement, CategoryScale, Chart as ChartJS, Colors, LinearScale, Tooltip } from "chart.js";
 import { useTranslation } from "next-i18next";
-import { useState, useMemo } from "react";
-import { Doughnut, Pie, Bar } from "react-chartjs-2";
+import { useMemo, useState } from "react";
+import { Bar, Doughnut, Pie } from "react-chartjs-2";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { getLocaleDisplayName } from "src/lib/languages";
 import { colors } from "src/styles/Theme/colors";
+import { MessageTreesStatesByLang, Stat as StatType } from "src/types/Stat";
+
 import { DataTable } from "../DataTable/DataTable";
-import { Stat as StatType } from "src/types/Stat";
 
 ChartJS.register(ArcElement, Tooltip, Colors, CategoryScale, BarElement, LinearScale);
 
@@ -30,13 +31,9 @@ type ChartProps = {
 };
 
 type MessageTreeStateStatsProps = {
-  titleFn: (name: string) => string;
+  titleFn?: (name: string) => string;
   stat: StatType & {
-    stats: {
-      lang: string;
-      state: string;
-      count: number;
-    }[];
+    stats: MessageTreesStatesByLang;
   };
 };
 
@@ -70,11 +67,7 @@ type LangRow = {
 
 function getTableData(
   stat: StatType & {
-    stats: {
-      lang: string;
-      state: string;
-      count: number;
-    }[];
+    stats: MessageTreesStatesByLang;
   },
   t
 ) {
@@ -190,7 +183,7 @@ export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsPr
           </option>
         ))}
       </Select>
-      <Box minH={330}>
+      <Box minH={410}>
         <Doughnut
           width={100}
           height={50}
@@ -211,6 +204,7 @@ export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsPr
 
 const barOptions = {
   responsive: true,
+  maintainAspectRatio: false,
   scales: {
     x: {
       stacked: true,
@@ -221,10 +215,10 @@ const barOptions = {
   },
 };
 
-export const MessageTreeStateStatsStacked = ({ stat, titleFn }: MessageTreeStateStatsProps) => {
+export const MessageTreeStateStatsStacked = ({ stat }: MessageTreeStateStatsProps) => {
   const { t } = useTranslation("stats");
-  const uniqueLangs = useMemo(() => Array.from(new Set(stat.stats.map((s) => s.lang))), stat.stats);
-  const uniqueStates = useMemo(() => Array.from(new Set(stat.stats.map((s) => s.state))), stat.stats);
+  const uniqueLangs = useMemo(() => Array.from(new Set(stat.stats.map((s) => s.lang))), [stat.stats]);
+  const uniqueStates = useMemo(() => Array.from(new Set(stat.stats.map((s) => s.state))), [stat.stats]);
 
   const barDatasets = [];
   uniqueStates.forEach((state) => {
@@ -276,7 +270,7 @@ export const Chart = ({ stat, titleFn, type: Component }: ChartProps) => {
   );
 };
 
-export const MessageTreeStateStatsTable = ({ stat, titleFn }: MessageTreeStateStatsProps) => {
+export const MessageTreeStateStatsTable = ({ stat }: MessageTreeStateStatsProps) => {
   const { t } = useTranslation("stats");
   const { data, columns } = getTableData(stat, t);
 
@@ -286,15 +280,8 @@ export const MessageTreeStateStatsTable = ({ stat, titleFn }: MessageTreeStateSt
 export const statComponents: Record<string, React.FC<{ stat: StatType }>> = {
   human_messages_by_role: ({ stat }: ChartProps) => <Chart stat={stat} type={Pie} />,
   message_trees_by_state: ({ stat }: ChartProps) => <Chart stat={stat} type={Doughnut} />,
-  users_accepted_tos: () => null,
   message_trees_states_by_lang: ({ stat }: MessageTreeStateStatsProps) => (
     <MessageTreeStateStats stat={stat} titleFn={getLocaleDisplayName} />
-  ),
-  message_trees_states_by_lang_table: ({ stat }: MessageTreeStateStatsProps) => (
-    <MessageTreeStateStatsTable stat={stat} titleFn={getLocaleDisplayName} />
-  ),
-  message_trees_states_by_lang_stacked: ({ stat }: MessageTreeStateStatsProps) => (
-    <MessageTreeStateStatsStacked stat={stat} titleFn={getLocaleDisplayName} />
   ),
   human_messages_by_lang: ({ stat }: ChartProps) => (
     <Chart stat={stat} titleFn={getLocaleDisplayName} type={Doughnut} />
