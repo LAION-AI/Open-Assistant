@@ -9,5 +9,9 @@ export const validDisplayNameRegex = /^\S+/g;
  * @returns {string} A valid display name.
  */
 export const getValidDisplayName = (displayName: string, id: string): string => {
-  return !displayName || !displayName.match(validDisplayNameRegex) ? id : displayName;
+  return !isValidDisplayName(displayName) ? id : displayName;
+};
+
+export const isValidDisplayName = (displayName: string) => {
+  return displayName && displayName.match(validDisplayNameRegex);
 };
