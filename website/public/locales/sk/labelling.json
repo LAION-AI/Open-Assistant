@@ -33,7 +33,7 @@
   "label_highlighted_flag_instruction": "Vyberte všetky, ktoré sa vzťahujú na zvýraznenú správu:",
   "label_highlighted_likert_instruction": "Ohodnoťte zvýraznenú správu:",
   "label_highlighted_yes_no_instruction": "Odpovedzte na nasledujúce otázky týkajúce sa zvýraznenej správy:",
-  "label_message_flag_instruction": "Označenie_správy_flag_instruction": "Vyberte všetky, ktoré sa vzťahujú na správu:",
+  "label_message_flag_instruction": "Vyberte všetky, ktoré sa vzťahujú na správu:",
   "label_message_likert_instruction": "Ohodnoťte správu:",
   "label_message_yes_no_instruction":  "Odpovedzte na nasledujúce otázky o správe:",
   "lang_mismatch": "Nie {{language}}",
