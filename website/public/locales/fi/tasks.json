@@ -4,7 +4,7 @@
   "default": {
     "unchanged_title": "Ei muutoksia",
     "unchanged_message": "Haluatko varmasti jatkaa?",
-    "continue_anyway": "Jatka tästää huolimatta"
+    "continue_anyway": "Jatka tästä huolimatta"
   },
   "no_more_tasks": "Uusia tehtäviä ei löytynyt.",
   "random": {
@@ -13,7 +13,7 @@
   },
   "create_initial_prompt": {
     "label": "Luo aloitusviestejä",
-    "desc": "Kirjoita aloitusviestejä auttaaksesi Open Assistantia vastaamaan monimuotoisiin kysymyksiin. (arvontaan)",
+    "desc": "Kirjoita aloitusviestejä auttaaksesi Open Assistantia vastaamaan monimuotoisiin kysymyksiin. (jotka lisätään arvontaan)",
     "overview": "Kirjoita aloitusviesti, joka annetaan Open Assistantille",
     "instruction": "Kirjoita aloituskehotteet",
     "response_placeholder": "Kirjoita kehotteesi tähän..."
@@ -66,7 +66,7 @@
     "overview": "Arvioi seuraavan keskustelun viimeinen viesti."
   },
   "label_assistant_reply": {
-    "label": "Arvioi assistentin vastus",
+    "label": "Arvioi assistentin vastaus",
     "desc": "Arvioi assistentin vastausviesti.",
     "overview": "Arvioi seuraavan keskustelun viimeinen viesti."
   },
@@ -81,7 +81,7 @@
     "overview": "Lue seuraava viestiketju ja vastaa sen viimeiseen viestiin liittyviin kysymyksiin."
   },
   "classify_assistant_reply": {
-    "label": "Lajittele assistentin vastus",
+    "label": "Lajittele assistentin vastaus",
     "desc": "Lajittele viesti.",
     "overview": "Lue seuraava viestiketju ja vastaa sen viimeiseen viestiin liittyviin kysymyksiin."
   },
