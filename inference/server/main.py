@@ -1,6 +1,4 @@
-import json
 import time
-from datetime import datetime, timedelta
 from pathlib import Path
 
 import aiohttp
@@ -8,21 +6,16 @@ import alembic.command
 import alembic.config
 import fastapi
 import sqlmodel
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import APIKeyCookie
-from jose import jwe
 from loguru import logger
-from oasst_inference_server import client_handler, deps, interface, models, worker_handler
+from oasst_inference_server import auth, client_handler, deps, interface, models, worker_handler
 from oasst_inference_server.chat_repository import ChatRepository
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference, protocol
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = fastapi.FastAPI()
-oauth2_scheme = APIKeyCookie(name=settings.auth_cookie_name)
 
 
 # add prometheus metrics at /metrics
@@ -172,7 +165,7 @@ async def callback_discord(
         db.refresh(user)
 
     # Discord account is authenticated and linked to a user; create JWT
-    access_token = create_access_token(
+    access_token = auth.create_access_token(
         {"user_id": user.id},
         settings.auth_secret,
         settings.auth_algorithm,
@@ -183,7 +176,10 @@ async def callback_discord(
 
 
 @app.get("/chat")
-async def list_chats(cr: ChatRepository = Depends(deps.create_chat_repository)) -> interface.ListChatsResponse:
+async def list_chats(
+    user_id: str = Depends(auth.get_current_user_id),
+    cr: ChatRepository = Depends(deps.create_chat_repository),
+) -> interface.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
     chats = cr.get_chat_list()
@@ -192,7 +188,9 @@ async def list_chats(cr: ChatRepository = Depends(deps.create_chat_repository)) 
 
 @app.post("/chat")
 async def create_chat(
-    request: interface.CreateChatRequest, cr: ChatRepository = Depends(deps.create_chat_repository)
+    request: interface.CreateChatRequest,
+    user_id: str = Depends(auth.get_current_user_id),
+    cr: ChatRepository = Depends(deps.create_chat_repository),
 ) -> interface.ChatListRead:
     """Allows a client to create a new chat."""
     logger.info(f"Received {request=}")
@@ -201,7 +199,11 @@ async def create_chat(
 
 
 @app.get("/chat/{id}")
-async def get_chat(id: str, cr: ChatRepository = Depends(deps.create_chat_repository)) -> interface.ChatRead:
+async def get_chat(
+    id: str,
+    user_id: str = Depends(auth.get_current_user_id),
+    cr: ChatRepository = Depends(deps.create_chat_repository),
+) -> interface.ChatRead:
     """Allows a client to get the current state of a chat."""
     chat = cr.get_chat_by_id(id)
     return chat.to_read()
@@ -266,53 +268,3 @@ def query_user_by_provider_id(db: sqlmodel.Session, discord_id: str | None = Non
 
     user: models.DbUser = user_qry.first()
     return user
-
-
-def create_access_token(data: dict) -> str:
-    """Create encoded JSON Web Token (JWT) using the given data."""
-    expires_delta = timedelta(minutes=settings.auth_access_token_expire_minutes)
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-
-    # Generate a key from the auth secret
-    hkdf = HKDF(
-        algorithm=hashes.SHA256(),
-        length=settings.auth_length,
-        salt=settings.auth_salt,
-        info=settings.auth_info,
-    )
-    key = hkdf.derive(settings.auth_secret)
-
-    # Encrypt the payload using JWE
-    token: bytes = jwe.encrypt(to_encode, key)
-    return token.decode()
-
-
-def get_current_user_id(token: str = Security(oauth2_scheme)) -> str:
-    """Decode the current user JWT token and return the payload."""
-    # Generate a key from the auth secret
-    hkdf = HKDF(
-        algorithm=hashes.SHA256(),
-        length=settings.auth_length,
-        salt=settings.auth_salt,
-        info=settings.auth_info,
-    )
-    key = hkdf.derive(settings.auth_secret)
-
-    # Decrypt the JWE token
-    try:
-        token: bytes = jwe.decrypt(token, key)
-    except jwe.exceptions.InvalidJWEData:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    payload: dict = json.loads(token.decode())
-    user_id = payload.get("user_id")
-    exp = payload.get("exp")
-
-    if not user_id or not exp:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    if datetime.utcnow() >= datetime.fromtimestamp(exp):
-        raise HTTPException(status_code=401, detail="Token expired")
-
-    return user_id
