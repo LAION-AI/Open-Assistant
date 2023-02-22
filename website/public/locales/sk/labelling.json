@@ -37,7 +37,7 @@
   "label_message_likert_instruction": "Ohodnoťte správu:",
   "label_message_yes_no_instruction":  "Odpovedzte na nasledujúce otázky o správe:",
   "lang_mismatch": "Nie {{language}}",
-  "lang_mismatch.explanation": "Nie je napísané v {{language}}."
+  "lang_mismatch.explanation": "Nie je napísané v {{language}}.",
   "low_quality": "Nízka Kvalita",
   "misleading": "Zavádzajúce",
   "misleading.one_desc": "Obsahuje nesprávny alebo zavádzajúci text",
