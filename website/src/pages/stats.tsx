@@ -12,8 +12,7 @@ const StatsPage = () => {
   const { t } = useTranslation();
   const title = `${t("stats")} - ${t("title")}`;
 
-
-return (
+  return (
     <>
       <Head>
         <title>{title}</title>
