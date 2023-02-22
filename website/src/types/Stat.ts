@@ -8,9 +8,14 @@ export type HumanMessagesByRole = {
 };
 
 export type MessageTreesByState = {
-  state: string;
-  count: number;
-}[];
+  growing: number;
+  ranking: number;
+  ready_for_export: number;
+  aborted_low_grade: number;
+  halted_by_moderator: number;
+  initial_prompt_review: number;
+  prompt_lottery_waiting: number;
+};
 
 export type MessageTreesStatesByLang = {
   lang: string;

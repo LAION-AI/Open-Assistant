@@ -217,7 +217,7 @@ all necessary TODOs. There are three key methods that are important:
 For the `_info_` function, you will need to define `features` for your
 `DatasetInfo` object. For each dataset config, choose the right schema from our
 list of examples. You can find the schemas in the
-[schemas directory](https://github.com/LAION-AI/Open-Assistant/tree/main/openassistant).
+[schemas directory](https://github.com/LAION-AI/Open-Assistant/blob/main/docs/docs/data/schemas.mdx).
 
 You will use this schema in the `_generate_examples` return value.
 

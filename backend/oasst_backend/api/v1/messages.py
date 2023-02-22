@@ -3,6 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
+from loguru import logger
 from oasst_backend.api import deps
 from oasst_backend.api.v1 import utils
 from oasst_backend.models import ApiClient, MessageTreeState
@@ -95,7 +96,7 @@ def get_messages_cursor(
         gte_created_date, gt_id = split_cursor(after)
         query_desc = before is not None and not after
 
-    print(f"{desc=} {query_desc=} {gte_created_date=} {lte_created_date=}")
+    logger.debug(f"{desc=} {query_desc=} {gte_created_date=} {lte_created_date=}")
 
     qry_max_count = max_count + 1 if before is None or after is None else max_count
 
@@ -178,7 +179,7 @@ def get_conv(
 def get_tree(
     *,
     message_id: UUID,
-    include_spam: Optional[bool] = False,
+    include_spam: Optional[bool] = True,
     include_deleted: Optional[bool] = False,
     frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
@@ -203,7 +204,6 @@ def get_message_tree_state(
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ) -> MessageTreeStateResponse:
-
     pr = PromptRepository(db, api_client, frontend_user=frontend_user)
     message = pr.fetch_message(message_id=message_id, fail_if_missing=True)
     mts = pr.fetch_tree_state(message.message_tree_id)

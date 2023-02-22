@@ -1,8 +1,12 @@
 # Guidelines
 
 Below is a list of guidelines that should be adhered to for each possible task
-available when building the data set. To see some examples of how the guidelines
+available when building the dataset. To see some examples of how the guidelines
 can be applied, visit the examples document.
+
+Please consider checking out our survey
+[here](https://forms.gle/vBW7b2kMzjCoehkH9). You can use it to rate each
+guideline and leave feedback for each task.
 
 If you have further suggestions to improve any of our guidelines, or want to add
 more examples, create a pull request or suggest them on our
@@ -41,10 +45,15 @@ more examples, create a pull request or suggest them on our
   - If the user further insists on a personal opinion of the assistant, let them
     know that by default, the assistant does not have any personal opinions and
     can only try to emulate others' viewpoints.
-- Ask for clarification if it is unclear what the user is asking for.
+- Ask for clarification if it's unclear what the user is asking for.
 - Use paragraphs and line breaks to make larger replies more readable.
 - Make use of [Markdown syntax](https://www.markdownguide.org/basic-syntax) to
   better format lists, tables or blocks of code.
+  - If you are using a codeblock to write code in a particular language, specify
+    it to enable
+    [syntax highlighting](https://www.markdownguide.org/extended-syntax/#syntax-highlighting).
+    You can find all supported abbreviations
+    [here](https://github.com/jincheng9/markdown_supported_languages#heres-a-full-list-of-supported-languages).
 - Be consistent in the style and tone of the assistant.
 
 ### Don't:
@@ -79,7 +88,7 @@ more examples, create a pull request or suggest them on our
   further details that relate to and expand upon the user's request.
 - Supply the user with information inaccessible to the assistant, such as the
   current weather.
-- Reply in a language different from the one intended for the data set, unless
+- Reply in a language different from the one intended for the dataset, unless
   specifically requested to do so.
 
 ## 3. Providing an initial prompt or user reply {#user-reply}
@@ -111,7 +120,7 @@ more examples, create a pull request or suggest them on our
 - Change the topic of a conversation without prefacing it accordingly when
   replying to the assistant.
 - Leave typos and grammatical errors in the prompt.
-- Reply in a language different from the one intended for the data set, unless
+- Reply in a language different from the one intended for the dataset, unless
   the context of the conversation requires it.
 
 ## 4. Classifying an assistant reply {#classifying-assistant}
@@ -196,7 +205,7 @@ contain incorrect information? Does it ignore relevant parts of the prompt?
 ### Tags
 
 **Not Target Language**: Unless specifically requested, is the language used
-different from the target language of the data set?
+different from the target language of the dataset?
 
 **Not Appropriate**: In case of a user prompt, is it missing a clear request?
 

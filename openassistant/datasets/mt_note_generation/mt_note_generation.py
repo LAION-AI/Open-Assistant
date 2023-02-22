@@ -72,7 +72,6 @@ class MTNoteGenerationDataset(datasets.GeneratorBasedBuilder):
     DEFAULT_CONFIG_NAME = f"{_DATASETNAME}_dialogue_modeling"
 
     def _info(self) -> datasets.DatasetInfo:
-
         return datasets.DatasetInfo(
             description=_DESCRIPTION,
             features=features,
@@ -82,7 +81,6 @@ class MTNoteGenerationDataset(datasets.GeneratorBasedBuilder):
         )
 
     def _split_generators(self, dl_manager) -> List[datasets.SplitGenerator]:
-
         urls = _URLS[_DATASETNAME]
         data_dir = dl_manager.download_and_extract(urls)
         return [

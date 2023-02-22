@@ -1,6 +1,9 @@
 loguru
+nvidia-ml-py
+psutil
 pydantic
 rel
 requests
 sseclient-py
+tokenizers
 websocket-client

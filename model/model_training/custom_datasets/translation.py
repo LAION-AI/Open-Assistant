@@ -131,7 +131,6 @@ class WMT2019(TranslationPair):
 
 
 class DiveMT(TranslationPair):
-
     REMAP = {"tur": "tr", "ita": "it", "ukr": "uk", "nld": "nl", "vie": "vi", "ara": "ar"}
 
     def __init__(self, split="train", mix_prob=0.2) -> None:

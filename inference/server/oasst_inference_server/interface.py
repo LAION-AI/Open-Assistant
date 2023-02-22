@@ -1,45 +1,42 @@
-import enum
-
 import pydantic
-from oasst_shared.schemas import inference, protocol
+from oasst_shared.schemas import inference
 
 
 class MessageRequest(pydantic.BaseModel):
-    message: str = pydantic.Field(..., repr=False)
-    model_name: str = "distilgpt2"
-    max_new_tokens: int = 100
+    parent_id: str | None = None
+    content: str = pydantic.Field(..., repr=False)
+    work_parameters: inference.WorkParameters = pydantic.Field(default_factory=inference.WorkParameters)
 
     @property
     def worker_compat_hash(self) -> str:
-        return inference.compat_hash(model_name=self.model_name)
+        return inference.compat_hash(model_name=self.work_parameters.model_name)
+
+
+class MessageResponseEvent(pydantic.BaseModel):
+    prompter_message: inference.MessageRead
+    assistant_message: inference.MessageRead | None
 
 
 class TokenResponseEvent(pydantic.BaseModel):
-    token: inference.TokenResponse
-
-
-class MessageRequestState(str, enum.Enum):
-    pending = "pending"
-    in_progress = "in_progress"
-    complete = "complete"
-    aborted_by_worker = "aborted_by_worker"
+    token: inference.TokenResponse | None
+    error: str | None
 
 
 class CreateChatRequest(pydantic.BaseModel):
     pass
 
 
-class ChatListEntry(pydantic.BaseModel):
+class ChatListRead(pydantic.BaseModel):
     id: str
 
 
-class ChatEntry(pydantic.BaseModel):
+class ChatRead(pydantic.BaseModel):
     id: str
-    conversation: protocol.Conversation
+    messages: list[inference.MessageRead]
 
 
 class ListChatsResponse(pydantic.BaseModel):
-    chats: list[ChatListEntry]
+    chats: list[ChatListRead]
 
 
 class CreateWorkerRequest(pydantic.BaseModel):

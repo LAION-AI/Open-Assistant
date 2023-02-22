@@ -1,26 +1,27 @@
-import asyncio
-import contextlib
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
 
+import aiohttp
 import alembic.command
 import alembic.config
 import fastapi
-import redis.asyncio as redis
 import sqlmodel
-import websockets.exceptions
-from fastapi import Depends
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from fastapi import Depends, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import APIKeyCookie
+from jose import jwe, jwt
 from loguru import logger
-from oasst_inference_server import interface, models, queueing
+from oasst_inference_server import client_handler, deps, interface, models, worker_handler
 from oasst_inference_server.chat_repository import ChatRepository
-from oasst_inference_server.database import db_engine
 from oasst_inference_server.settings import settings
-from oasst_shared.schemas import inference
+from oasst_shared.schemas import inference, protocol
 from prometheus_fastapi_instrumentator import Instrumentator
-from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
+oauth2_scheme = APIKeyCookie(name=settings.auth_cookie_name)
 
 
 # add prometheus metrics at /metrics
@@ -44,76 +45,6 @@ app.add_middleware(
 )
 
 
-# create async redis client
-redis_client = redis.Redis(
-    host=settings.redis_host, port=settings.redis_port, db=settings.redis_db, decode_responses=True
-)
-
-
-def create_session():
-    with sqlmodel.Session(db_engine) as session:
-        yield session
-
-
-@contextlib.contextmanager
-def manual_create_session():
-    with contextlib.contextmanager(create_session)() as session:
-        yield session
-
-
-def create_chat_repository(session: sqlmodel.Session = Depends(create_session)):
-    repository = ChatRepository(session)
-    return repository
-
-
-@contextlib.contextmanager
-def manual_chat_repository():
-    with manual_create_session() as session:
-        yield create_chat_repository(session)
-
-
-api_key_header = fastapi.Header(None, alias="X-API-Key")
-
-
-def get_api_key(api_key: str = api_key_header) -> str:
-    if api_key is None:
-        raise fastapi.HTTPException(
-            status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
-            detail="Missing API key",
-        )
-    return api_key
-
-
-protocol_version_header = fastapi.Header(None, alias="X-Protocol-Version")
-
-
-def get_protocol_version(protocol_version: str = protocol_version_header) -> str:
-    if protocol_version != inference.INFERENCE_PROTOCOL_VERSION:
-        logger.warning(f"Got worker with incompatible protocol version: {protocol_version}")
-        raise fastapi.HTTPException(
-            status_code=fastapi.status.HTTP_426_UPGRADE_REQUIRED,
-            detail=f"Incompatible protocol version: {protocol_version}. Expected: {inference.INFERENCE_PROTOCOL_VERSION}.",
-        )
-    return protocol_version
-
-
-def get_worker(
-    api_key: str = Depends(get_api_key),
-    protocol_version: str = Depends(get_protocol_version),
-    session: sqlmodel.Session = Depends(create_session),
-) -> models.DbWorkerEntry:
-    logger.info(f"get_worker: {api_key=}, {protocol_version=}")
-    worker = session.exec(
-        sqlmodel.select(models.DbWorkerEntry).where(models.DbWorkerEntry.api_key == api_key)
-    ).one_or_none()
-    if worker is None:
-        raise fastapi.HTTPException(
-            status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid API key",
-        )
-    return worker
-
-
 def get_bearer_token(authorization_header: str) -> str:
     if not authorization_header.startswith("Bearer "):
         raise ValueError("Authorization header must start with 'Bearer '")
@@ -124,7 +55,7 @@ def get_root_token(token: str = Depends(get_bearer_token)) -> str:
     root_token = settings.root_token
     if token == root_token:
         return token
-    raise fastapi.HTTPException(
+    raise HTTPException(
         status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
         detail="Invalid token",
     )
@@ -161,188 +92,136 @@ def maybe_add_debug_api_keys():
     if not settings.debug_api_keys:
         logger.info("No debug API keys configured, skipping")
         return
-    logger.info("Adding debug API keys")
-    with manual_create_session() as session:
-        for api_key in settings.debug_api_keys:
-            logger.info(f"Checking if debug API key {api_key} exists")
-            if (
-                session.exec(
-                    sqlmodel.select(models.DbWorkerEntry).where(models.DbWorkerEntry.api_key == api_key)
-                ).one_or_none()
-                is None
-            ):
-                logger.info(f"Adding debug API key {api_key}")
-                session.add(models.DbWorkerEntry(api_key=api_key, name="Debug API Key"))
-                session.commit()
-            else:
-                logger.info(f"Debug API key {api_key} already exists")
+    try:
+        logger.info("Adding debug API keys")
+        with deps.manual_create_session() as session:
+            for api_key in settings.debug_api_keys:
+                logger.info(f"Checking if debug API key {api_key} exists")
+                if (
+                    session.exec(
+                        sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key)
+                    ).one_or_none()
+                    is None
+                ):
+                    logger.info(f"Adding debug API key {api_key}")
+                    session.add(models.DbWorker(api_key=api_key, name="Debug API Key"))
+                    session.commit()
+                else:
+                    logger.info(f"Debug API key {api_key} already exists")
+    except Exception:
+        logger.exception("Failed to add debug API keys")
+        raise
+
+
+@app.get("/auth/login/discord")
+async def login_discord():
+    redirect_uri = f"{settings.api_root}/auth/callback/discord"
+    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify"
+    raise HTTPException(status_code=302, headers={"location": auth_url})
+
+
+@app.get("/auth/callback/discord", response_model=protocol.Token)
+async def callback_discord(
+    code: str,
+    db: sqlmodel.Session = Depends(deps.create_session),
+):
+    redirect_uri = f"{settings.api_root}/auth/callback/discord"
+
+    async with aiohttp.ClientSession(raise_for_status=True) as session:
+        # Exchange the auth code for a Discord access token
+        async with session.post(
+            "https://discord.com/api/oauth2/token",
+            data={
+                "client_id": settings.auth_discord_client_id,
+                "client_secret": settings.auth_discord_client_secret,
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "scope": "identify",
+            },
+        ) as token_response:
+            token_response_json = await token_response.json()
+
+        try:
+            access_token = token_response_json["access_token"]
+        except KeyError:
+            raise HTTPException(status_code=400, detail="Invalid access token response from Discord")
+
+        # Retrieve user's Discord information using access token
+        async with session.get(
+            "https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"}
+        ) as user_response:
+            user_response_json = await user_response.json()
+
+    try:
+        discord_id = user_response_json["id"]
+        discord_username = user_response_json["username"]
+    except KeyError:
+        raise HTTPException(status_code=400, detail="Invalid user info response from Discord")
+
+    # Try to find a user in our DB linked to the Discord user
+    user: models.DbUser = query_user_by_provider_id(db, discord_id=discord_id)
+
+    # Create if no user exists
+    if not user:
+        user = models.DbUser(provider="discord", provider_account_id=discord_id, display_name=discord_username)
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    # Discord account is authenticated and linked to a user; create JWT
+    access_token = create_access_token(
+        {"user_id": user.id},
+        settings.auth_secret,
+        settings.auth_algorithm,
+        settings.auth_access_token_expire_minutes,
+    )
+
+    return protocol.Token(access_token=access_token, token_type="bearer")
 
 
 @app.get("/chat")
-async def list_chats(chat_repository: ChatRepository = Depends(create_chat_repository)) -> interface.ListChatsResponse:
+async def list_chats(cr: ChatRepository = Depends(deps.create_chat_repository)) -> interface.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
-    chats = chat_repository.get_chat_list()
+    chats = cr.get_chat_list()
     return interface.ListChatsResponse(chats=chats)
 
 
 @app.post("/chat")
 async def create_chat(
-    request: interface.CreateChatRequest, chat_repository: ChatRepository = Depends(create_chat_repository)
-) -> interface.ChatListEntry:
+    request: interface.CreateChatRequest, cr: ChatRepository = Depends(deps.create_chat_repository)
+) -> interface.ChatListRead:
     """Allows a client to create a new chat."""
     logger.info(f"Received {request=}")
-    chat = chat_repository.create_chat()
-    return chat.to_list_entry()
+    chat = cr.create_chat()
+    return chat.to_list_read()
 
 
 @app.get("/chat/{id}")
-async def get_chat(id: str, chat_repository: ChatRepository = Depends(create_chat_repository)) -> interface.ChatEntry:
+async def get_chat(id: str, cr: ChatRepository = Depends(deps.create_chat_repository)) -> interface.ChatRead:
     """Allows a client to get the current state of a chat."""
-    chat = chat_repository.get_chat_entry_by_id(id)
-    return chat
+    chat = cr.get_chat_by_id(id)
+    return chat.to_read()
 
 
-@app.post("/chat/{chat_id}/message")
-async def create_message(
-    chat_id: str,
-    message_request: interface.MessageRequest,
-    fastapi_request: fastapi.Request,
-    chat_repository: ChatRepository = Depends(create_chat_repository),
-) -> EventSourceResponse:
-    """Allows the client to stream the results of a request."""
+app.post("/chat/{chat_id}/message")(client_handler.handle_create_message)
 
-    try:
-        chat_repository.add_prompter_message(chat_id=chat_id, message_request=message_request)
-        queue = queueing.work_queue(redis_client, message_request.worker_compat_hash)
-        logger.debug(f"Adding {chat_id} to {queue.queue_id}")
-        await queue.enqueue(chat_id)
-        logger.debug(f"Added message to {queue.queue_id} for {chat_id}")
-    except Exception:
-        logger.exception("Error adding prompter message")
-        return fastapi.Response(status_code=500)
+app.websocket("/work")(worker_handler.handle_worker)
 
-    async def event_generator(chat_id):
-        queue = queueing.chat_queue(redis_client, chat_id)
-        result_data = []
-        try:
-            while True:
-                if await fastapi_request.is_disconnected():
-                    logger.warning("Client disconnected")
-                    return
-                item = await queue.dequeue()
-                if item is None:
-                    continue
-
-                _, response_packet_str = item
-                response_packet = inference.WorkResponsePacket.parse_raw(response_packet_str)
-                result_data.append(response_packet)
-
-                if response_packet.is_end:
-                    break
-
-                yield {
-                    "retry": settings.sse_retry_timeout,
-                    "data": interface.TokenResponseEvent(token=response_packet.token).json(),
-                }
-            logger.info(f"Finished streaming {chat_id} {len(result_data)=}")
-        except Exception:
-            logger.exception(f"Error streaming {chat_id}")
-            raise
-
-        try:
-            with manual_chat_repository() as chat_repository:
-                chat_repository.add_assistant_message(chat_id=chat_id, text=response_packet.generated_text.text)
-        except Exception:
-            logger.exception("Error adding assistant message")
-
-    return EventSourceResponse(event_generator(chat_id))
-
-
-@app.websocket("/work")
-async def work(websocket: fastapi.WebSocket, worker: models.DbWorkerEntry = Depends(get_worker)):
-    await websocket.accept()
-    worker_config = inference.WorkerConfig.parse_raw(await websocket.receive_text())
-    work_queue = queueing.work_queue(redis_client, worker_config.compat_hash)
-    try:
-        while True:
-            if websocket.client_state == fastapi.websockets.WebSocketState.DISCONNECTED:
-                logger.warning("Worker disconnected")
-                break
-            # find a pending task that matches the worker's config
-            # could also be implemented using task queues
-            # but general compatibility matching is tricky
-            item = await work_queue.dequeue()
-            if item is None:
-                await asyncio.sleep(1)
-                continue
-            else:
-                _, chat_id = item
-
-            with manual_chat_repository() as chat_repository:
-                chat = chat_repository.get_chat_by_id(chat_id)
-                request = chat.pending_message_request
-
-                chat_repository.set_chat_state(chat.id, interface.MessageRequestState.in_progress)
-
-                work_request = inference.WorkRequest(
-                    conversation=chat.conversation,
-                    model_name=request.model_name,
-                    max_new_tokens=request.max_new_tokens,
-                )
-
-                logger.info(f"Created {work_request=}")
-                try:
-                    await websocket.send_text(work_request.json())
-                except websockets.exceptions.ConnectionClosedError:
-                    logger.warning("Worker disconnected")
-                    websocket.close()
-                    chat_repository.set_chat_state(chat.id, interface.MessageRequestState.pending)
-                    await work_queue.enqueue(chat.id)
-                    break
-
-                logger.debug(f"Sent {work_request=} to worker.")
-
-                chat_queue = queueing.chat_queue(redis_client, chat.id)
-
-                try:
-                    in_progress = False
-                    while True:
-                        # maybe unnecessary to parse and re-serialize
-                        # could just pass the raw string and mark end via empty string
-                        response_packet = inference.WorkResponsePacket.parse_raw(await websocket.receive_text())
-                        in_progress = True
-                        await chat_queue.enqueue(response_packet.json())
-                        if response_packet.is_end:
-                            logger.debug(f"Received {response_packet=} from worker. Ending.")
-                            break
-                except fastapi.WebSocketException:
-                    # TODO: handle this better
-                    logger.exception(f"Websocket closed during handling of {chat.id}")
-                    if in_progress:
-                        logger.warning(f"Aborting {chat.id=}")
-                        chat_repository.set_chat_state(chat.id, interface.MessageRequestState.aborted_by_worker)
-                    else:
-                        logger.warning(f"Marking {chat.id=} as pending since no work was done.")
-                        chat_repository.set_chat_state(chat.id, interface.MessageRequestState.pending)
-                        await work_queue.enqueue(chat.id)
-                    raise
-
-                chat_repository.set_chat_state(chat.id, interface.MessageRequestState.complete)
-    except fastapi.WebSocketException:
-        logger.exception("Websocket closed")
+app.on_event("startup")(worker_handler.clear_worker_sessions)
+app.get("/worker_session")(worker_handler.list_worker_sessions)
 
 
 @app.put("/worker")
 def create_worker(
     request: interface.CreateWorkerRequest,
-    root_token: str = fastapi.Depends(get_root_token),
-    session: sqlmodel.Session = fastapi.Depends(create_session),
+    root_token: str = Depends(get_root_token),
+    session: sqlmodel.Session = Depends(deps.create_session),
 ):
     """Allows a client to register a worker."""
-    worker = models.DbWorkerEntry(
-        name=request.name,
-    )
+    worker = models.DbWorker(name=request.name)
     session.add(worker)
     session.commit()
     session.refresh(worker)
@@ -351,22 +230,63 @@ def create_worker(
 
 @app.get("/worker")
 def list_workers(
-    root_token: str = fastapi.Depends(get_root_token),
-    session: sqlmodel.Session = fastapi.Depends(create_session),
+    root_token: str = Depends(get_root_token),
+    session: sqlmodel.Session = Depends(deps.create_session),
 ):
     """Lists all workers."""
-    workers = session.exec(sqlmodel.select(models.DbWorkerEntry)).all()
+    workers = session.exec(sqlmodel.select(models.DbWorker)).all()
     return list(workers)
 
 
 @app.delete("/worker/{worker_id}")
 def delete_worker(
     worker_id: str,
-    root_token: str = fastapi.Depends(get_root_token),
-    session: sqlmodel.Session = fastapi.Depends(create_session),
+    root_token: str = Depends(get_root_token),
+    session: sqlmodel.Session = Depends(deps.create_session),
 ):
     """Deletes a worker."""
-    worker = session.get(models.DbWorkerEntry, worker_id)
+    worker = session.get(models.DbWorker, worker_id)
     session.delete(worker)
     session.commit()
     return fastapi.Response(status_code=200)
+
+
+def query_user_by_provider_id(db: sqlmodel.Session, discord_id: str | None = None) -> models.DbUser | None:
+    """Returns the user associated with a given provider ID if any."""
+    user_qry = db.query(models.DbUser)
+
+    if discord_id:
+        user_qry = user_qry.filter(models.DbUser.provider == "discord").filter(
+            models.DbUser.provider_account_id == discord_id
+        )
+    # elif other IDs...
+    else:
+        return None
+
+    user: models.DbUser = user_qry.first()
+    return user
+
+
+def create_access_token(data: dict, secret: str, algorithm: str, expire_minutes: int) -> str:
+    """Create encoded JSON Web Token (JWT) using the given data."""
+    expires_delta = timedelta(minutes=expire_minutes)
+    to_encode = data.copy()
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, secret, algorithm=algorithm)
+    return encoded_jwt
+
+
+def decode_user_access_token(token: str = Security(oauth2_scheme)) -> dict:
+    """Decode the current user JWT token and return the payload."""
+    # We first generate a key from the auth secret
+    hkdf = HKDF(
+        algorithm=hashes.SHA256(),
+        length=settings.auth_length,
+        salt=settings.auth_salt,
+        info=settings.auth_info,
+    )
+    key = hkdf.derive(settings.auth_secret)
+    # Next we decrypt the JWE token
+    payload = jwe.decrypt(token, key)
+    return payload

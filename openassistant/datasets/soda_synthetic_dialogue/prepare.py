@@ -83,7 +83,6 @@ def main(output_dir: str = "data"):
 
     for split in ["train", "test", "validation"]:
         with open(f"{output_dir}/{split}.jsonl", "w", encoding="utf8") as output:
-
             for i in tqdm(range(len(dataset[split])), desc=split):
                 dat = dataset["train"][i]
                 title = dat["literal"]

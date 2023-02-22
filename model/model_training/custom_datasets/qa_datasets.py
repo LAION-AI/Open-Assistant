@@ -78,6 +78,14 @@ def index_eli5(example):
     return example["title"], example["answers"]["text"][0]
 
 
+def index_gsm_hard(example):
+    return example[
+        "input"
+    ] + "\nWrite a small snippet of python code to answer this", "Here's the code solution to the question\n```python\n{}\n```\n The answer should be {}".format(
+        example["code"].strip(), example["target"]
+    )
+
+
 class QADataset(Dataset):
     """
     How to define a new QA dataset:
@@ -115,6 +123,7 @@ class QADataset(Dataset):
             "index_fn": index_adversarial_qa,
             "params": {"name": "adversarialQA"},
         },
+        "gsm8k_hard": {"index_fn": index_gsm_hard, "name": "reasoning-machines/gsm-hard", "no_val": True},
         "gsm8k": {"index_fn": index_gsm8k, "params": {"name": "main"}, "validation": "test"},
         "wikihow": {"name": "b-mc2/wikihow_lists", "index_fn": index_wikihow, "no_val": True},
         "essay_instruction": {
@@ -158,13 +167,11 @@ class QADataset(Dataset):
         return self.length
 
     def __getitem__(self, idx):
-
         data = self.dataset[idx]
         return format_pair(self.index_fn(data))
 
 
 class WebGPT(Dataset):
-
     name = "webgpt"
 
     def __init__(self) -> None:
@@ -197,7 +204,6 @@ class WebGPT(Dataset):
 
 
 class SODA(Dataset):
-
     name = "soda"
 
     def process_soda_convo(self, data):
@@ -243,7 +249,7 @@ class SODA(Dataset):
         dataset = load_dataset("allenai/soda", cache_dir=cache_dir)["train"]
         for data in dataset:
             data_pair = self.process_soda_convo(data)
-            for (prompt, answer) in data_pair:
+            for prompt, answer in data_pair:
                 if len(prompt) < input_max_length:
                     self.pairs.append((prompt, answer))
 
@@ -259,7 +265,6 @@ class SODADialogue(Dataset):
     url = "https://drive.google.com/uc?id=1TOGQfr419n8wpzJpYLLw4nB3tSKD8zXV"
 
     def __init__(self, cache_dir, verbose=True):
-
         path = os.path.join(cache_dir, "soda_dialog.jsonl")
 
         if not os.path.exists(path):
@@ -307,7 +312,6 @@ class SODADialogue(Dataset):
 
 
 class JokeExplaination(Dataset):
-
     name = "joke"
     url = "https://gist.github.com/theblackcat102/42b697e24a13fdb499e20edfbf618361/raw/1834dca207898c15f93b809d1195f6f6e47c9e1e/joke_explained.jsonl"
 

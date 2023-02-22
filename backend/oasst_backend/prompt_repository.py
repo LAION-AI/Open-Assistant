@@ -132,7 +132,8 @@ class PromptRepository:
         payload_type: str = None,
         depth: int = 0,
         review_count: int = 0,
-        review_result: bool = False,
+        review_result: bool = None,
+        deleted: bool = False,
     ) -> Message:
         if payload_type is None:
             if payload is None:
@@ -155,6 +156,7 @@ class PromptRepository:
             depth=depth,
             review_count=review_count,
             review_result=review_result,
+            deleted=deleted,
         )
         self.db.add(message)
         return message
@@ -198,7 +200,7 @@ class PromptRepository:
         frontend_message_id: str,
         user_frontend_message_id: str,
         review_count: int = 0,
-        review_result: bool = False,
+        review_result: bool = None,
         check_tree_state: bool = True,
         check_duplicate: bool = True,
     ) -> Message:
@@ -211,8 +213,9 @@ class PromptRepository:
         self._validate_task(task)
 
         # If there's no parent message assume user started new conversation
-        role = None
-        depth = 0
+        role: str = None
+        depth: int = 0
+        deleted: bool = False
 
         # reject whitespaces match with ^\s+$
         if re.match(r"^\s+$", text):
@@ -231,11 +234,25 @@ class PromptRepository:
 
             # check tree state
             if check_tree_state:
+                # We store messages even after a tree has been completed.
+                # Although these messages will never be labeled nor ranked they should be
+                # included in the dataset because sometime users put a lot of effort into
+                # writing their reply.
+
                 ts = self.fetch_tree_state(parent_message.message_tree_id)
-                if not ts.active or ts.state != message_tree_state.State.GROWING:
+                if ts.state not in (
+                    message_tree_state.State.GROWING,
+                    message_tree_state.State.RANKING,
+                    message_tree_state.State.READY_FOR_SCORING,
+                    message_tree_state.State.READY_FOR_EXPORT,
+                ):
                     raise OasstError(
-                        "Message insertion failed. Message tree is no longer in 'growing' state.",
-                        OasstErrorCode.TREE_NOT_IN_GROWING_STATE,
+                        "Message insertion failed. Message tree is no longer accepting messages.",
+                        OasstErrorCode.TREE_IN_ABORTED_STATE,
+                    )
+                if not ts.active:
+                    logger.warning(
+                        f"Received messsage for inactive tree {parent_message.message_tree_id} (state='{ts.state.value}')."
                     )
 
             if check_duplicate and not settings.DEBUG_ALLOW_DUPLICATE_TASKS:
@@ -251,6 +268,7 @@ class PromptRepository:
             self.db.add(parent_message)
 
             depth = parent_message.depth + 1
+            deleted = parent_message.deleted
 
         task_payload: db_payload.TaskPayload = task.payload.payload
         if isinstance(task_payload, db_payload.InitialPromptPayload):
@@ -283,6 +301,7 @@ class PromptRepository:
             depth=depth,
             review_count=review_count,
             review_result=review_result,
+            deleted=deleted,
         )
         if not task.collective:
             task.done = True
@@ -338,7 +357,6 @@ class PromptRepository:
         )
 
         match type(task_payload):
-
             case db_payload.RankPrompterRepliesPayload | db_payload.RankAssistantRepliesPayload:
                 # validate ranking
                 if sorted(ranking.ranking) != list(range(num_replies := len(task_payload.reply_messages))):
@@ -717,7 +735,6 @@ class PromptRepository:
         return message
 
     def fetch_non_task_text_labels(self, message_id: UUID, user_id: UUID) -> Optional[TextLabels]:
-
         query = (
             self.db.query(TextLabels)
             .outerjoin(Task, Task.id == TextLabels.id)
@@ -1044,7 +1061,7 @@ WHERE message.id = cc.id;
         )
 
     @managed_tx_method()
-    def skip_task(self, task_id: UUID, reason: str):
+    def skip_task(self, task_id: UUID, reason: Optional[str]):
         self.ensure_user_is_enabled()
 
         task = self.task_repository.fetch_task_by_id(task_id)
@@ -1170,7 +1187,6 @@ WHERE message.id = cc.id;
         return qry.all()
 
     def process_flagged_message(self, message_id: UUID) -> FlaggedMessage:
-
         message = self.db.query(FlaggedMessage).get(message_id)
 
         if not message:

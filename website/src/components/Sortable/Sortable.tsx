@@ -18,7 +18,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core/dist/types/events";
-import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { restrictToVerticalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
@@ -77,12 +77,22 @@ export const Sortable = (props: SortableProps) => {
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
-        modifiers={[restrictToParentElement, restrictToVerticalAxis]}
+        modifiers={[restrictToWindowEdges, restrictToVerticalAxis]}
       >
         <SortableContext items={itemsWithIds} strategy={verticalListSortingStrategy}>
           <Flex direction="column" gap={2} className={extraClasses}>
             {itemsWithIds.map(({ id, item }, index) => (
-              <SortableItem key={id} id={id} index={index} isEditable={props.isEditable} isDisabled={props.isDisabled}>
+              <SortableItem
+                OpenModal={() => {
+                  setModalText(item);
+                  onOpen();
+                }}
+                key={id}
+                id={id}
+                index={index}
+                isEditable={props.isEditable}
+                isDisabled={props.isDisabled}
+              >
                 <button
                   className="w-full text-left"
                   aria-label="show full text"
@@ -104,7 +114,7 @@ export const Sortable = (props: SortableProps) => {
           setModalText(null);
           onClose();
         }}
-        size="xl"
+        size="6xl"
         scrollBehavior={"inside"}
         isCentered
       >
@@ -112,7 +122,7 @@ export const Sortable = (props: SortableProps) => {
           <ModalContent pb={5} alignItems="center">
             <ModalHeader>Full Text</ModalHeader>
             <ModalCloseButton />
-            <ModalBody>
+            <ModalBody maxW="full">
               <Suspense fallback={modalText}>
                 <RenderedMarkdown markdown={modalText}></RenderedMarkdown>
               </Suspense>

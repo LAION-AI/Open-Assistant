@@ -35,7 +35,6 @@ class DataCollatorForSummaryScore:
     drop_token_type: bool = False  # galactica
 
     def __call__(self, batch):
-
         features = []
         labels = []
         for feature, label in batch:
@@ -67,7 +66,6 @@ class HFSummaryQuality(Dataset):
         self.responses = []
         self.labels = []
         for data in dataset:
-
             if "article" in data["info"] and data["info"]["article"] is not None:
                 context = data["info"]["article"]
             elif "post" in data["info"]:

@@ -141,6 +141,10 @@ class TreeManagerConfiguration(BaseModel):
     recent_tasks_span_sec: int = 5 * 60  # 5 min
     """Time in seconds of recent tasks to consider for exclusion during task selection."""
 
+    max_pending_tasks_per_user: int = 8
+    """Maximum number of pending tasks (neither canceled nor completed) by a single user within
+    the time span defined by `recent_tasks_span_sec`."""
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "open-assistant backend"
@@ -247,7 +251,7 @@ class Settings(BaseSettings):
 
     CACHED_STATS_UPDATE_INTERVAL: int = 60  # minutes
 
-    RATE_LIMIT_TASK_USER_TIMES: int = 60
+    RATE_LIMIT_TASK_USER_TIMES: int = 30
     RATE_LIMIT_TASK_USER_MINUTES: int = 5
     RATE_LIMIT_TASK_API_TIMES: int = 10_000
     RATE_LIMIT_TASK_API_MINUTES: int = 1

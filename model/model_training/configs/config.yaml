@@ -50,15 +50,27 @@ defaults:
   log_wandb: true
   samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
   verbose: false
+  output_dir: saved_model
 
 oa_dataset_only:
   datasets:
     - oa_private:
-        data_path: .cache
         split: sft
         val_split: 0.0
         fraction: 1
         file: 2023-02-10_oasst_prod.jsonl
+
+pythia:
+  learning_rate: 8e-6
+  model_name: EleutherAI/pythia-70m-deduped
+  weight_decay: 0.01
+  max_length: 520
+  warmup_steps: 1000
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 9
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 4
+  output_dir: pythia_model
 
 galactica-125m:
   learning_rate: 5e-5
@@ -103,3 +115,4 @@ debug:
   quantization: false
   log_wandb: false
   verbose: true
+  num_train_epochs: 0.2

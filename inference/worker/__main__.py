@@ -5,8 +5,9 @@ import sseclient
 import utils
 import websocket
 from loguru import logger
-from oasst_shared.schemas import inference, protocol
+from oasst_shared.schemas import inference
 from settings import settings
+from tokenizers import Tokenizer
 
 # touch
 
@@ -14,6 +15,7 @@ from settings import settings
 def main():
     logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
 
+    tokenizer = Tokenizer.from_pretrained(settings.model_id)
     utils.wait_for_inference_server(settings.inference_server_url)
 
     def on_open(ws: websocket.WebSocket):
@@ -26,23 +28,31 @@ def main():
         # TODO: what if this comes in, but one is already in progress?
         # also need to think of enabling batching
         work_request = inference.WorkRequest.parse_raw(message)
+        logger.info(f"Received {work_request=}")
+        parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
 
-        def _prepare_message(message: protocol.ConversationMessage) -> str:
+        def _prepare_message(message: inference.MessageRead) -> str:
             prefix = "Assistant: " if message.is_assistant else "User: "
-            return prefix + message.text
+            return prefix + message.content
 
         # construct prompt
-        messages = [_prepare_message(message) for message in work_request.conversation.messages]
+        messages = [_prepare_message(message) for message in work_request.thread.messages]
 
-        prefix = (
-            "The following is a conversation between a user and an assistant. "
-            "The assistant is helpful, creative, clever, and very friendly.\n"
-            "Assistant: Hello! How can I help you today?\n"
-        )
+        prompt = settings.prefix + "\n".join(messages) + "\nAssistant:"
 
-        prompt = prefix + "\n".join(messages) + "\nAssistant:"
+        encoding = tokenizer.encode(prompt)
+        ids = encoding.ids
+        if len(ids) > settings.max_input_length:
+            logger.warning(f"Prompt too long, left-truncating to {settings.max_input_length} tokens")
+            ids = ids[-(settings.max_input_length - 1) :]
+            prompt = tokenizer.decode(ids)
 
-        parameters = interface.GenerateStreamParameters.from_work_request(work_request)
+        input_length = len(ids)
+        spare = settings.max_total_tokens - input_length - 1
+        if parameters.max_new_tokens > spare:
+            logger.warning(f"Max new tokens too high, reducing to {spare}")
+            parameters.max_new_tokens = spare
+
         response = requests.post(
             f"{settings.inference_server_url}/generate_stream",
             json={
@@ -57,14 +67,23 @@ def main():
         except requests.HTTPError:
             logger.exception("Failed to get response from inference server")
             logger.error(f"Response: {response.text}")
+            ws.close()
             return
 
         client = sseclient.SSEClient(response)
         stream_response = None
         token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)
         for event in client.events():
-            logger.debug(f"Received event: {event}")
             stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
+            if stream_response.is_error:
+                logger.error(f"Error from inference server: {stream_response.error}")
+                ws.send(
+                    inference.WorkResponsePacket(
+                        error=stream_response.error,
+                    ).json()
+                )
+                ws.close()
+                return
             token = stream_response.token
             for send_token in token_buffer.add(token):
                 ws.send(
@@ -72,8 +91,10 @@ def main():
                         token=send_token.to_token_response(),
                     ).json()
                 )
+
         if stream_response is None:
             logger.error("No stream response received")
+            ws.close()
             return
 
         for send_token in token_buffer.finish(reason=stream_response.details.finish_reason):

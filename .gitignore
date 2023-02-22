@@ -8,4 +8,8 @@ __pycache__
 .DS_Store
 
 # Generated files
+backend/oasst-openapi.json
 backend/openapi.json
+
+# ignore jupyter notebook checkpoints
+.ipynb_checkpoints
