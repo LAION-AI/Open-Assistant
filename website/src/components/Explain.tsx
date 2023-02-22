@@ -9,9 +9,10 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Info } from "lucide-react";
+import { ReactElement } from "react";
 
 interface ExplainProps {
-  explanation: string[];
+  explanation: ReactElement[];
 }
 
 export const Explain = ({ explanation }: ExplainProps) => {
@@ -25,17 +26,8 @@ export const Explain = ({ explanation }: ExplainProps) => {
         <PopoverCloseButton />
         <PopoverBody>
           {explanation.map((paragraph, idx) => (
-            <Text key={idx}>
+            <Text key={idx} mt={idx === 0 ? 0 : 3}>
               {paragraph}
-
-              {
-                explanation.length > 1 ? (
-                  <>
-                    <br />
-                    <br />
-                  </>
-                ) : null /* Add line breaks between multiple paragraphs */
-              }
             </Text>
           ))}
         </PopoverBody>
