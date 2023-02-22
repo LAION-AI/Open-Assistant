@@ -22,7 +22,7 @@ SUMMARIZATION_DATASETS = [
 ]
 OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_translated", "oa_private"]
 
-RL_DATASETS = ["oa_private"]
+RL_DATASETS = ["oa_private", "webgpt", "private_tuning"]
 
 
 def train_val_dataset(dataset, val_split=0.2):
