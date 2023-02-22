@@ -32,7 +32,10 @@ def create_access_token(data: dict) -> str:
     return token.decode()
 
 
-def get_current_user_id(token: str = Security(oauth2_scheme)) -> str:
+def get_current_user_id(token: str = Security(oauth2_scheme)) -> str | None:
+    if not settings.use_auth:
+        return None
+
     """Decode the current user JWT token and return the payload."""
     # Generate a key from the auth secret
     hkdf = HKDF(
