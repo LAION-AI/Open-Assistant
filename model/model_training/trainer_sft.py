@@ -94,7 +94,6 @@ class SFTTrainer(Trainer):
         prediction_loss_only: bool,
         ignore_keys: Optional[List[str]] = None,
     ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
-
         with torch.no_grad():
             loss, logits, labels, labels_mask = self._compute_loss(model, inputs)
             labels[~labels_mask.bool()] = -100  # padding_index
@@ -223,8 +222,14 @@ if __name__ == "__main__":
     if training_conf.fuse_gelu:
         model = fuse_gelu(model)
 
+    output_dir = (
+        training_conf.output_dir
+        if training_conf.output_dir
+        else f"{training_conf.model_name}-{training_conf.log_dir}-finetuned"
+    )
+
     args = TrainingArguments(
-        output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
+        output_dir=output_dir,
         num_train_epochs=training_conf.num_train_epochs,
         warmup_steps=training_conf.warmup_steps,
         learning_rate=float(training_conf.learning_rate),

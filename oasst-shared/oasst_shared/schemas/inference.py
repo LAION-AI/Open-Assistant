@@ -64,9 +64,7 @@ class WorkerHardwareInfo(pydantic.BaseModel):
 
 class WorkerConfig(pydantic.BaseModel):
     model_name: str = DEFAULT_MODEL_NAME
-    hardware_info: WorkerHardwareInfo = pydantic.Field(
-        default_factory=WorkerHardwareInfo
-    )
+    hardware_info: WorkerHardwareInfo = pydantic.Field(default_factory=WorkerHardwareInfo)
 
     @property
     def compat_hash(self) -> str:
@@ -81,9 +79,7 @@ class WorkParameters(pydantic.BaseModel):
     top_p: float = 0.9
     temperature: float = 1.0
     repetition_penalty: float | None = None
-    seed: int = pydantic.Field(
-        default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1)
-    )
+    seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1))
 
 
 class MessageState(str, enum.Enum):
@@ -111,9 +107,7 @@ class Thread(pydantic.BaseModel):
 
 class WorkRequest(pydantic.BaseModel):
     thread: Thread = pydantic.Field(..., repr=False)
-    created_at: datetime.datetime = pydantic.Field(
-        default_factory=datetime.datetime.utcnow
-    )
+    created_at: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
 
 

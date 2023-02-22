@@ -41,7 +41,7 @@ class RankGenCollator:
         better_answers = []
         worse_answers = []
         for question, pairs in batch:
-            for (pos, neg) in pairs:
+            for pos, neg in pairs:
                 prefixes.append("pre " + question)
                 better_answers.append("suffi " + pos)
                 worse_answers.append("suffi " + neg)
@@ -74,11 +74,10 @@ class DataCollatorForPairRank:
     drop_token_type: bool = False  # galactica
 
     def __call__(self, features):
-
         flatten_features = []
         batch_size = 0
         for question, pairs in features:
-            for (pos, neg) in pairs:
+            for pos, neg in pairs:
                 flatten_features.append(self.tokenizer(question, pos, truncation=True, max_length=self.max_length))
                 flatten_features.append(self.tokenizer(question, neg, truncation=True, max_length=self.max_length))
                 batch_size += 1

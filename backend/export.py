@@ -71,7 +71,6 @@ def fetch_tree_messages_and_avg_labels(
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
 ) -> List[Message]:
-
     args = [Message]
 
     for l in TextLabel:

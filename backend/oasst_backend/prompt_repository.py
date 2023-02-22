@@ -357,7 +357,6 @@ class PromptRepository:
         )
 
         match type(task_payload):
-
             case db_payload.RankPrompterRepliesPayload | db_payload.RankAssistantRepliesPayload:
                 # validate ranking
                 if sorted(ranking.ranking) != list(range(num_replies := len(task_payload.reply_messages))):
@@ -736,7 +735,6 @@ class PromptRepository:
         return message
 
     def fetch_non_task_text_labels(self, message_id: UUID, user_id: UUID) -> Optional[TextLabels]:
-
         query = (
             self.db.query(TextLabels)
             .outerjoin(Task, Task.id == TextLabels.id)
@@ -1189,7 +1187,6 @@ WHERE message.id = cc.id;
         return qry.all()
 
     def process_flagged_message(self, message_id: UUID) -> FlaggedMessage:
-
         message = self.db.query(FlaggedMessage).get(message_id)
 
         if not message:
