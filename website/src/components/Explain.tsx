@@ -12,7 +12,7 @@ import { Info } from "lucide-react";
 import { ReactElement } from "react";
 
 interface ExplainProps {
-  explanation: ReactElement[];
+  explanation: ReactElement[] | string[];
 }
 
 export const Explain = ({ explanation }: ExplainProps) => {
