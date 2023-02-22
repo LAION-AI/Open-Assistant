@@ -43,7 +43,7 @@ class Settings(pydantic.BaseSettings):
     do_compliance_checks: bool = True
     compliance_check_interval: int = 60
 
-    api_root: str = "https://open-assistant.io/inference/api/v1"
+    api_root: str = "https://inference.prod.open-assistant.io"
 
     use_auth: bool = True
 

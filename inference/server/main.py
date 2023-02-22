@@ -115,7 +115,7 @@ def maybe_add_debug_api_keys():
 
 @app.get("/auth/login/discord")
 async def login_discord():
-    redirect_uri = f"{settings.api_root}/inference/auth/callback/discord"
+    redirect_uri = f"{settings.api_root}/auth/callback/discord"
     auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
