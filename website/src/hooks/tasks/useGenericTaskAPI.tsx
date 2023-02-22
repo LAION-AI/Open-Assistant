@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
 import { TaskInfos } from "src/components/Tasks/TaskTypes";
 import { get, post } from "src/lib/api";
+import { ERROR_CODES } from "src/lib/errors";
+import { OasstError } from "src/lib/oasst_api_client";
 import { API_ROUTES } from "src/lib/routes";
 import { TaskApiHook } from "src/types/Hooks";
 import { BaseTask, ServerTaskResponse, TaskResponse, TaskType as TaskTypeEnum } from "src/types/Task";
@@ -37,13 +39,17 @@ export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = A
     }
   );
 
-  const { trigger: sendTaskContent } = useSWRMutation(API_ROUTES.UPDATE_TASK, post, {
+  const { trigger: sendTaskContent, isMutating: isSubmitting } = useSWRMutation(API_ROUTES.UPDATE_TASK, post, {
     onSuccess: () => {
       requestNewTask();
     },
-    onError: () => {
-      // We could check for code 503 here for truly unavailable, but we need to do something with other errors anyway.
-      setResponse({ taskAvailability: "NONE_AVAILABLE" });
+    onError: (err: unknown) => {
+      if (err instanceof OasstError && err.errorCode === ERROR_CODES.TASK_REQUESTED_TYPE_NOT_AVAILABLE) {
+        setResponse({ taskAvailability: "NONE_AVAILABLE" });
+      } else {
+        // we should never reach here
+        console.error(err);
+      }
     },
   });
 
@@ -54,7 +60,9 @@ export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = A
     await requestNewTask();
   }, [requestNewTask]);
 
-  const { trigger: sendRejection } = useSWRMutation("/api/reject_task", post, { onSuccess: skipTask });
+  const { trigger: sendRejection, isMutating: isRejecting } = useSWRMutation("/api/reject_task", post, {
+    onSuccess: skipTask,
+  });
   const rejectTask = useCallback(async () => {
     if (response.taskAvailability !== "AVAILABLE") {
       throw new Error("Cannot reject task that is not yet ready");
@@ -72,5 +80,5 @@ export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = A
     [response, sendTaskContent, locale]
   );
 
-  return { response, isLoading, rejectTask, completeTask };
+  return { response, isLoading, rejectTask, completeTask, isRejecting, isSubmitting };
 };
