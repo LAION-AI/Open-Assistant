@@ -6,7 +6,6 @@ from custom_datasets.prompt_dialogue import OAPrivate, PrivateInstructionTuning
 
 
 def test_rl_sft_mode_switch():
-
     dataset = OAPrivate(".cache", split="sft")
     row = dataset[0]
     assert isinstance(row, list)

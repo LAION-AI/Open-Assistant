@@ -125,7 +125,7 @@ if __name__ == "__main__":
             seed_prompt = row["prompt"]
             initial = seed_prompt["text"]
             all_convo = extract_all_pair_rank(row["prompt"])
-            for (convo, replies) in all_convo:
+            for convo, replies in all_convo:
                 if len(replies) > 1:
                     prefix = process_context(convo)
                     if "rank" not in replies[0]:
