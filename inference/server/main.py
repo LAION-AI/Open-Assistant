@@ -1,20 +1,27 @@
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
 
+import aiohttp
 import alembic.command
 import alembic.config
 import fastapi
 import sqlmodel
-from fastapi import Depends
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from fastapi import Depends, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import APIKeyCookie
+from jose import jwe, jwt
 from loguru import logger
 from oasst_inference_server import client_handler, deps, interface, models, worker_handler
 from oasst_inference_server.chat_repository import ChatRepository
 from oasst_inference_server.settings import settings
-from oasst_shared.schemas import inference
+from oasst_shared.schemas import inference, protocol
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = fastapi.FastAPI()
+oauth2_scheme = APIKeyCookie(name=settings.auth_cookie_name)
 
 
 # add prometheus metrics at /metrics
@@ -48,7 +55,7 @@ def get_root_token(token: str = Depends(get_bearer_token)) -> str:
     root_token = settings.root_token
     if token == root_token:
         return token
-    raise fastapi.HTTPException(
+    raise HTTPException(
         status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
         detail="Invalid token",
     )
@@ -106,6 +113,74 @@ def maybe_add_debug_api_keys():
         raise
 
 
+@app.get("/auth/login/discord")
+async def login_discord():
+    redirect_uri = f"{settings.api_root}/auth/callback/discord"
+    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify"
+    raise HTTPException(status_code=302, headers={"location": auth_url})
+
+
+@app.get("/auth/callback/discord", response_model=protocol.Token)
+async def callback_discord(
+    code: str,
+    db: sqlmodel.Session = Depends(deps.create_session),
+):
+    redirect_uri = f"{settings.api_root}/auth/callback/discord"
+
+    async with aiohttp.ClientSession(raise_for_status=True) as session:
+        # Exchange the auth code for a Discord access token
+        async with session.post(
+            "https://discord.com/api/oauth2/token",
+            data={
+                "client_id": settings.auth_discord_client_id,
+                "client_secret": settings.auth_discord_client_secret,
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "scope": "identify",
+            },
+        ) as token_response:
+            token_response_json = await token_response.json()
+
+        try:
+            access_token = token_response_json["access_token"]
+        except KeyError:
+            raise HTTPException(status_code=400, detail="Invalid access token response from Discord")
+
+        # Retrieve user's Discord information using access token
+        async with session.get(
+            "https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"}
+        ) as user_response:
+            user_response_json = await user_response.json()
+
+    try:
+        discord_id = user_response_json["id"]
+        discord_username = user_response_json["username"]
+    except KeyError:
+        raise HTTPException(status_code=400, detail="Invalid user info response from Discord")
+
+    # Try to find a user in our DB linked to the Discord user
+    user: models.DbUser = query_user_by_provider_id(db, discord_id=discord_id)
+
+    # Create if no user exists
+    if not user:
+        user = models.DbUser(provider="discord", provider_account_id=discord_id, display_name=discord_username)
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    # Discord account is authenticated and linked to a user; create JWT
+    access_token = create_access_token(
+        {"user_id": user.id},
+        settings.auth_secret,
+        settings.auth_algorithm,
+        settings.auth_access_token_expire_minutes,
+    )
+
+    return protocol.Token(access_token=access_token, token_type="bearer")
+
+
 @app.get("/chat")
 async def list_chats(cr: ChatRepository = Depends(deps.create_chat_repository)) -> interface.ListChatsResponse:
     """Lists all chats."""
@@ -142,13 +217,11 @@ app.get("/worker_session")(worker_handler.list_worker_sessions)
 @app.put("/worker")
 def create_worker(
     request: interface.CreateWorkerRequest,
-    root_token: str = fastapi.Depends(get_root_token),
-    session: sqlmodel.Session = fastapi.Depends(deps.create_session),
+    root_token: str = Depends(get_root_token),
+    session: sqlmodel.Session = Depends(deps.create_session),
 ):
     """Allows a client to register a worker."""
-    worker = models.DbWorker(
-        name=request.name,
-    )
+    worker = models.DbWorker(name=request.name)
     session.add(worker)
     session.commit()
     session.refresh(worker)
@@ -157,8 +230,8 @@ def create_worker(
 
 @app.get("/worker")
 def list_workers(
-    root_token: str = fastapi.Depends(get_root_token),
-    session: sqlmodel.Session = fastapi.Depends(deps.create_session),
+    root_token: str = Depends(get_root_token),
+    session: sqlmodel.Session = Depends(deps.create_session),
 ):
     """Lists all workers."""
     workers = session.exec(sqlmodel.select(models.DbWorker)).all()
@@ -168,11 +241,52 @@ def list_workers(
 @app.delete("/worker/{worker_id}")
 def delete_worker(
     worker_id: str,
-    root_token: str = fastapi.Depends(get_root_token),
-    session: sqlmodel.Session = fastapi.Depends(deps.create_session),
+    root_token: str = Depends(get_root_token),
+    session: sqlmodel.Session = Depends(deps.create_session),
 ):
     """Deletes a worker."""
     worker = session.get(models.DbWorker, worker_id)
     session.delete(worker)
     session.commit()
     return fastapi.Response(status_code=200)
+
+
+def query_user_by_provider_id(db: sqlmodel.Session, discord_id: str | None = None) -> models.DbUser | None:
+    """Returns the user associated with a given provider ID if any."""
+    user_qry = db.query(models.DbUser)
+
+    if discord_id:
+        user_qry = user_qry.filter(models.DbUser.provider == "discord").filter(
+            models.DbUser.provider_account_id == discord_id
+        )
+    # elif other IDs...
+    else:
+        return None
+
+    user: models.DbUser = user_qry.first()
+    return user
+
+
+def create_access_token(data: dict, secret: str, algorithm: str, expire_minutes: int) -> str:
+    """Create encoded JSON Web Token (JWT) using the given data."""
+    expires_delta = timedelta(minutes=expire_minutes)
+    to_encode = data.copy()
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, secret, algorithm=algorithm)
+    return encoded_jwt
+
+
+def decode_user_access_token(token: str = Security(oauth2_scheme)) -> dict:
+    """Decode the current user JWT token and return the payload."""
+    # We first generate a key from the auth secret
+    hkdf = HKDF(
+        algorithm=hashes.SHA256(),
+        length=settings.auth_length,
+        salt=settings.auth_salt,
+        info=settings.auth_info,
+    )
+    key = hkdf.derive(settings.auth_secret)
+    # Next we decrypt the JWE token
+    payload = jwe.decrypt(token, key)
+    return payload

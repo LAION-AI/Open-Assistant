@@ -261,7 +261,6 @@ class UserRepository:
         limit: Optional[int] = 100,
         desc: bool = False,
     ) -> list[User]:
-
         if not self.api_client.trusted:
             if not api_client_id:
                 # Let unprivileged api clients query their own users without api_client_id being set

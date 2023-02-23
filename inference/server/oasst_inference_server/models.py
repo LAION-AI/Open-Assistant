@@ -6,7 +6,7 @@ import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from oasst_inference_server import interface
 from oasst_shared.schemas import inference
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Index, Relationship, SQLModel
 
 
 class DbMessage(SQLModel, table=True):
@@ -81,5 +81,16 @@ class DbWorker(SQLModel, table=True):
 
     in_compliance_check: bool = Field(default=False, sa_column=sa.Column(sa.Boolean, server_default=sa.text("false")))
     next_compliance_check: datetime.datetime | None = Field(None)
-
     events: list[DbWorkerEvent] = Relationship(back_populates="worker")
+
+
+class DbUser(SQLModel, table=True):
+    __tablename__ = "user"
+    __table_args__ = (Index("provider", "provider_account_id", unique=True),)
+
+    id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
+
+    provider: str = Field(..., index=True)
+    provider_account_id: str = Field(..., index=True)
+
+    display_name: str = Field(nullable=False, max_length=256)
