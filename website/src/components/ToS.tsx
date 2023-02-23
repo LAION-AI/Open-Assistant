@@ -75,7 +75,7 @@ const TermsData = [
       {
         number: "3.5",
         title: "",
-        desc: "When you submit or modify text to which you hold the copyright, you agree to license it under: Creative Commons Attribution-ShareAlike 4.0 (“CC BY-SA ”)",
+        desc: "When you submit or modify text to which you hold the copyright, you agree to license it under: Creative Commons Attribution 4.0 International (CC BY 4.0)",
       },
     ],
   },
