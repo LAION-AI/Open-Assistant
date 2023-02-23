@@ -144,15 +144,20 @@ class TaskRepository:
         return task_model
 
     @managed_tx_method(CommitMode.COMMIT)
-    def bind_frontend_message_id(self, task_id: UUID, frontend_message_id: str):
+    def bind_frontend_message_id(self, task_id: UUID, frontend_message_id: str) -> None:
         validate_frontend_message_id(frontend_message_id)
 
         # find task
         task: Task = self.db.query(Task).filter(Task.id == task_id, Task.api_client_id == self.api_client.id).first()
         if task is None:
             raise OasstError(f"Task for {task_id=} not found", OasstErrorCode.TASK_NOT_FOUND, HTTP_404_NOT_FOUND)
+
+        if task.ack and task.frontend_message_id == frontend_message_id:
+            return  # ACK is idempotent if called with the same frontend_message_id
+
         if task.expired:
             raise OasstError("Task already expired.", OasstErrorCode.TASK_EXPIRED)
+
         if task.done or task.ack is not None:
             raise OasstError("Task already updated.", OasstErrorCode.TASK_ALREADY_UPDATED)
 
