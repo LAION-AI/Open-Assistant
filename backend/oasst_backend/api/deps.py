@@ -145,8 +145,8 @@ class UserRateLimiter(RateLimiter):
         async def identifier(request: Request) -> str:
             """Identify a request based on api_key and user.id"""
             api_key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
-            user = (await request.json()).get("user")
-            return f"{api_key}:{user.get('id')}"
+            user = request.headers.get("x-oasst-user")
+            return f"{api_key}:{user}"
 
         super().__init__(times, milliseconds, seconds, minutes, hours, identifier)
 
@@ -183,8 +183,8 @@ class UserTaskTypeRateLimiter(RateLimiter):
         async def identifier(request: Request) -> str:
             """Identify a request based on api_key and user.id"""
             api_key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
-            user = (await request.json()).get("user")
-            return f"{api_key}:{user.get('id')}"
+            user = request.headers.get("x-oasst-user")
+            return f"{api_key}:{user}"
 
         super().__init__(times, milliseconds, seconds, minutes, hours, identifier)
         self.task_types = task_types
