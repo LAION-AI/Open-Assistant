@@ -33,11 +33,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
 
   const taskId = (registeredTask.task as Prisma.JsonObject).id as string;
 
-  try {
-    await oasstApiClient.ackTask(taskId, registeredTask.id);
-  } catch (e) {
-    console.error(e);
-  }
+  await oasstApiClient.ackTask(taskId, registeredTask.id);
 
   // Log the interaction locally to create our user_post_id needed by the Task
   // Backend.
