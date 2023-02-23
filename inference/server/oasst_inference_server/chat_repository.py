@@ -31,9 +31,8 @@ class ChatRepository:
             )
         ).all()
 
-    def get_chat_list(self) -> list[interface.ChatListRead]:
-        chats = self.get_chats()
-        return [chat.to_read() for chat in chats]
+    def get_user_chats(self, user_id: str) -> list[models.DbChat]:
+        return self.session.exec(sqlmodel.select(models.DbChat).filter(models.DbChat.user_id == user_id)).all()
 
     def get_prompter_message_by_id(self, message_id: str, for_update=False) -> models.DbMessage:
         query = sqlmodel.select(models.DbMessage).where(
@@ -60,8 +59,8 @@ class ChatRepository:
         chat = self.session.exec(query).one()
         return chat
 
-    def create_chat(self) -> models.DbChat:
-        chat = models.DbChat()
+    def create_chat(self, user_id: str) -> models.DbChat:
+        chat = models.DbChat(user_id=user_id)
         self.session.add(chat)
         self.maybe_commit()
         return chat
