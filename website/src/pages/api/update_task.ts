@@ -49,28 +49,13 @@ const handler = withoutRole("banned", async (req, res, token) => {
   });
 
   const user = await getBackendUserCore(token.sub);
-  let newTask;
   try {
-    newTask = await oasstApiClient.interactTask(update_type, taskId, frontendId, interaction.id, content, user!, lang);
+    await oasstApiClient.interactTask(update_type, taskId, frontendId, interaction.id, content, user!, lang);
+    return res.status(204).send("");
   } catch (err: unknown) {
     console.error(JSON.stringify(err));
     return res.status(500).json(err);
   }
-
-  // Stores the new task with our database.
-  const newRegisteredTask = await prisma.registeredTask.create({
-    data: {
-      task: newTask,
-      user: {
-        connect: {
-          id: token.sub,
-        },
-      },
-    },
-  });
-
-  // Send the next task in the sequence to the client.
-  res.status(200).json(newRegisteredTask);
 });
 
 export default handler;
