@@ -52,8 +52,8 @@ class UserStats(SQLModel, table=True):
     reply_ranked_3: int = 0
 
     def compute_leader_score(self) -> int:
-        return (
-            int(self.prompts * 0.05
+        return int
+            self.prompts * 0.05
             + self.replies_assistant * 4
             + self.replies_prompter
             + self.labels_simple
