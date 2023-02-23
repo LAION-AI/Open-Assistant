@@ -9,31 +9,31 @@
   "no_more_tasks": "Zdá sa, že sa nenašli žiadne pracovné miesta.",
   "random": {
     "label": "Mám pocit, že mám šťastie",
-    "desc": "Pomôžte nám zlepšiť službu Otvorený Asistent spustením náhodnej úlohy."
+    "desc": "Pomôžte nám zlepšiť službu Open Assistant spustením náhodnej úlohy."
   },
   "create_initial_prompt": {
     "label": "Vytvorenie Počiatočných Príkazov",
-    "desc": "Napíšte počiatočné príkazy, ktoré pomôžu aplikácii Otvorený Asistent vyskúšať odpovedanie na rôzne správy. (zadajte do lotérie)",
+    "desc": "Napíšte počiatočné príkazy, ktoré pomôžu aplikácii Open Assistant vyskúšať odpovedanie na rôzne správy. (zadajte do lotérie)",
     "overview": "Vytvorenie počiatočného príkazu, ktorý sa odošle asistentovi",
     "instruction": "Zadajte počiatočné príkazy",
     "response_placeholder": "Napíšte sem svoj príkaz..."
   },
   "reply_as_user": {
     "label": "Odpovedať ako Používateľ",
-    "desc": "Chatujte s aplikáciou Otvorený Asistent a pomáhajte zlepšovať jej reakcie pri interakcii s ňou.",
+    "desc": "Chatujte s aplikáciou Open Assistant a pomáhajte zlepšovať jej reakcie pri interakcii s ňou.",
     "overview": "Vzhľadom na nasledujúcu konverzáciu poskytnite dobrú odpoveď",
     "instruction": "Poskytnúť odpoveď používateľa",
     "response_placeholder": "Napíšte svoju odpoveď sem..."
   },
   "reply_as_assistant": {
     "label": "Odpovedať ako asistent",
-    "desc": "Pomôžte aplikácii Otvorený Asistent zlepšiť jej reakcie na konverzácie s inými používateľmi.",
+    "desc": "Pomôžte aplikácii Open Assistant zlepšiť jej reakcie na konverzácie s inými používateľmi.",
     "overview": "Vzhľadom na nasledujúcu konverzáciu poskytnite dobrú odpoveď",
     "response_placeholder": "Napíšte svoju odpoveď sem..."
   },
   "rank_user_replies": {
     "label": "Poradie Odpovede Používateľa",
-    "desc": "Pomôžte aplikácii Otvorený Asistent zlepšiť jej reakcie na konverzácie s inými používateľmi.",
+    "desc": "Pomôžte aplikácii Open Assistant zlepšiť jej reakcie na konverzácie s inými používateľmi.",
     "overview": "Vzhľadom na nasledujúce odpovede používateľov ich zoraďte od najlepších po najhoršie, pričom najlepšie sú na prvom mieste a najhoršie na poslednom.",
     "unchanged_title": "Objednávka Nezmenená",
     "unchanged_message": "Poradie výziev ste nezmenili. Ste si istí, že chcete pokračovať?",
@@ -41,18 +41,18 @@
   },
   "rank_assistant_replies": {
     "label": "Hodnosť Asistent Odpovede",
-    "desc": "Hodnotenie odpovedí poskytnutých programom Otvorený Asistent na základe ich presnosti a čitateľnosti.",
+    "desc": "Hodnotenie odpovedí poskytnutých programom Open Assistant na základe ich presnosti a čitateľnosti.",
     "overview": "Vzhľadom na nasledujúce odpovede asistentov ich zoraďte od najlepších po najhoršie, pričom najlepší je prvý, najhorší posledný.",
     "unchanged_title": "Objednávka Nezmenená",
     "unchanged_message": "Poradie výziev ste nezmenili. Ste si istí, že chcete pokračovať?",
     "continue_anyway": "Pokračujte aj tak"
   },
   "rank_initial_prompts": {
-    "label": "Rank Initial Prompts",
-    "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
-    "overview": "Given the following initial prompts, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?",
+    "label": "Poradie Počiatočné Príkazy",
+    "desc": "Hodnotenie výziev poskytovaných aplikáciou Open Assistant na základe ich presnosti a čitateľnosti.",
+    "overview": "Vzhľadom na nasledujúce úvodné podnety ich zoraďte od najlepšieho po najhorší, pričom najlepší je prvý a najhorší posledný.",
+    "unchanged_title": "Objednávka Nezmenená",
+    "unchanged_message": "Poradie výziev ste nezmenili. Ste si istí, že chcete pokračovať?",
     "continue_anyway": "Pokračujte aj tak"
   },
   "label_initial_prompt": {
