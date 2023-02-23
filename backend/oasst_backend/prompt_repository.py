@@ -888,6 +888,7 @@ class PromptRepository:
         if self.user_id is None:
             return qry.all()
 
+        order_by_clauses = qry._order_by_clauses
         sq = qry.subquery("m")
         qry = (
             self.db.query(Message, func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis"))
@@ -902,6 +903,7 @@ class PromptRepository:
             )
             .group_by(sq)
         )
+        qry._order_by_clauses = order_by_clauses
         messages: list[Message] = []
         for x in qry:
             m: Message = x.Message
