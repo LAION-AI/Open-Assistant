@@ -28,6 +28,7 @@ module.exports = {
       "pt-BR",
       "ro",
       "ru",
+      "sk",
       "sv",
       "uk-UA",
       "vi",
