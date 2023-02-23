@@ -443,6 +443,7 @@ AnyInteraction = Union[
 class SystemStats(BaseModel):
     all: int = 0
     active: int = 0
+    active_by_lang: dict[str, int] = {}
     deleted: int = 0
     message_trees: int = 0
 
