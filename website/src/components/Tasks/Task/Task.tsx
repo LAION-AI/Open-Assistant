@@ -141,15 +141,16 @@ export const Task = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         if (!(err instanceof OasstError)) {
-          console.log(err); // should not reach here
+          return console.log(err); // should not reach here
         }
         const errorCode = err.errorCode;
         if (errorCode === ERROR_CODES.TASK_REQUESTED_TYPE_NOT_AVAILABLE) {
           throw err; // will be handled in useGernericTaskAPI hook
         }
+        const fallbackMessage = err.message || t("error:default");
         toast({
           status: "error",
-          description: t(getTypeSafei18nKey(`err_${errorCode}`), t("error:default"), {
+          description: t(getTypeSafei18nKey(`err_${errorCode}`), fallbackMessage, {
             task_type: t(getTypeSafei18nKey(`tasks:${taskInfo.type}.label`)),
           }),
         });
