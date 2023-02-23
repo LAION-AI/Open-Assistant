@@ -9,9 +9,10 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Info } from "lucide-react";
+import { ReactElement } from "react";
 
 interface ExplainProps {
-  explanation: string[];
+  explanation: ReactElement[] | string[];
 }
 
 export const Explain = ({ explanation }: ExplainProps) => {
@@ -25,7 +26,9 @@ export const Explain = ({ explanation }: ExplainProps) => {
         <PopoverCloseButton />
         <PopoverBody>
           {explanation.map((paragraph, idx) => (
-            <Text key={idx}>{paragraph}</Text>
+            <Text key={idx} mt={idx === 0 ? 0 : 3}>
+              {paragraph}
+            </Text>
           ))}
         </PopoverBody>
       </PopoverContent>

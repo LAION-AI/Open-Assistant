@@ -5,10 +5,11 @@ import glob
 import json
 import os
 import re
+from collections import OrderedDict
 from urllib.request import urlopen
 
 import numpy as np
-from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
+from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair, format_rl_text
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -173,10 +174,11 @@ class QADataset(Dataset):
 
 class WebGPT(Dataset):
     name = "webgpt"
+    splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
 
-    def __init__(self) -> None:
+    def __init__(self, split="sft") -> None:
         super().__init__()
-
+        self.mode = split
         dataset = load_dataset("openai/webgpt_comparisons")
         questions = {}
         # using prompt as our index will allows us
@@ -200,7 +202,10 @@ class WebGPT(Dataset):
     def __getitem__(self, index):
         question = self.index2question[index]
         answer = self.questions[question]
-        return format_pair((question, answer))
+        if self.mode == "sft":
+            return format_pair((question, answer))
+        elif self.mode == "rl":
+            return format_rl_text((question, answer))
 
 
 class SODA(Dataset):
