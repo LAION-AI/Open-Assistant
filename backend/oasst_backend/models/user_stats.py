@@ -63,7 +63,7 @@ class UserStats(SQLModel, table=True):
             + int(self.accepted_prompts * 0.05)
             + self.accepted_replies_assistant * 4
             + self.accepted_replies_prompter
-            + int(self.reply_ranked_1 * 9 * 1.2)
-            + int(self.reply_ranked_2 * 3 * 1.2)
-            + int(self.reply_ranked_3 * 1.2)
+            + self.reply_ranked_1 * 11
+            + self.reply_ranked_2 * 3
+            + self.reply_ranked_3
         )
