@@ -21,6 +21,7 @@ class ExportMessageNode(BaseModel):
     lang: str | None
     review_count: int | None
     review_result: bool | None
+    deleted: bool | None
     rank: int | None
     synthetic: bool | None
     model_name: str | None

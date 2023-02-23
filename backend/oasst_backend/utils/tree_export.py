@@ -21,6 +21,7 @@ def prepare_export_message_node(message: Message, labels: Optional[LabelValues] 
         text=str(message.payload.payload.text),
         role=message.role,
         lang=message.lang,
+        deleted=message.deleted,
         review_count=message.review_count,
         review_result=message.review_result if message.review_result or message.review_count > 2 else None,
         synthetic=message.synthetic,
