@@ -1,0 +1,17 @@
+{
+  "aborted_low_grade": "Opustený nízky stupeň",
+  "backlog_ranking": "Poradie nevybavených vecí",
+  "count": "Počítať",
+  "growing": "Rastúce",
+  "halted_by_moderator": "Zastavené moderátorom",
+  "human_messages_by_lang": "Ľudské správy podľa jazyka",
+  "human_messages_by_role": "Ľudské správy podľa roly",
+  "initial_prompt_review": "Počiatočná kontrola príkazov",
+  "message_trees_by_state": "Stromy správ podľa stavu",
+  "message_trees_states_by_lang": "Stavy stromov správ podľa jazyka",
+  "prompt_lottery_waiting": "Čakanie na príkazovú lotériu",
+  "ranking": "Rebríček",
+  "ready_for_export": "Pripravené na export",
+  "stats": "Štatistiky",
+  "users_accepted_tos": "Používatelia prijali podmienky"
+}
