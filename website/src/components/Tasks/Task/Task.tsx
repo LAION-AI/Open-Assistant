@@ -148,9 +148,10 @@ export const Task = () => {
           throw err; // will be handled in useGernericTaskAPI hook
         }
         const fallbackMessage = err.message || t("error:default");
+
         toast({
           status: "error",
-          description: t(getTypeSafei18nKey(`err_${errorCode}`), fallbackMessage, {
+          description: t(getTypeSafei18nKey(`error:err_${errorCode}`), fallbackMessage, {
             task_type: t(getTypeSafei18nKey(`tasks:${taskInfo.type}.label`)),
           }),
         });
