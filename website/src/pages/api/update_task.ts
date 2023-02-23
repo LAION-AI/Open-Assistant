@@ -52,7 +52,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   let newTask;
   try {
     newTask = await oasstApiClient.interactTask(update_type, taskId, frontendId, interaction.id, content, user!, lang);
-  } catch (err) {
+  } catch (err: unknown) {
     console.error(JSON.stringify(err));
     return res.status(500).json(err);
   }
