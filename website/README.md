@@ -41,14 +41,15 @@ To contribute to the website, make sure you have the following setup and install
 
 If you're doing active development we suggest the following workflow:
 
-1.  In one tab, navigate to the project root.
+1.  Open the terminal, navigate to the project root.
 1.  Run `docker compose --profile frontend-dev up --build --attach-dependencies`. You can optionally include `-d` to
     detach and later track the logs if desired.
     - If you want to work on the chat api, you need to run the inference profile as well. Your new command would look
       like: `docker compose --profile frontend-dev --profile inference up --build --attach-dependencies`
     - See [FAQ](https://projects.laion.ai/Open-Assistant/docs/faq#enable-dockers-buildkit-backend) if you face any
       docker problems.
-1.  In another tab navigate to `${OPEN_ASSISTANT_ROOT/website`.
+    - Leave this running in the background and continue:
+1.  Open another terminal tab, navigate to `${OPEN_ASSISTANT_ROOT/website`.
 1.  Run `npm ci`
 1.  Run `npx prisma db push` (This is also needed when you restart the docker stack from scratch).
 1.  Run `npm run dev`. Now the website is up and running locally at `http://localhost:3000`.
