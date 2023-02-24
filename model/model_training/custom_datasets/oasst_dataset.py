@@ -40,7 +40,7 @@ class ListDataset(Dataset):
         return self.data[index]
 
 
-def load_oaast_export(
+def load_oasst_export(
     input_file_path: str | Path,
     val_split: float = 0.2,
     lang: str = "en",
