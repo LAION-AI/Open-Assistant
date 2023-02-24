@@ -1,6 +1,6 @@
 import { Box, Card, CardBody, CardHeader, Divider, Flex, Heading } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import React, { useCallback } from "react";
+import React from "react";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { Stats as StatsType } from "src/types/Stat";
 
