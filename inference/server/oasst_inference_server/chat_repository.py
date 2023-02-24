@@ -20,8 +20,11 @@ class ChatRepository:
         if self.do_commit:
             self.session.commit()
 
-    def get_chats(self) -> list[models.DbChat]:
-        return self.session.exec(sqlmodel.select(models.DbChat)).all()
+    def get_chats(self, user_id: str | None = None) -> list[models.DbChat]:
+        query = sqlmodel.select(models.DbChat)
+        if user_id:
+            query = query.filter(models.DbChat.user_id == user_id)
+        return self.session.exec(query).all()
 
     def get_pending_chats(self) -> list[models.DbChat]:
         return self.session.exec(
@@ -30,9 +33,6 @@ class ChatRepository:
                 models.DbChat.message_request_state == interface.MessageRequestState.pending,
             )
         ).all()
-
-    def get_user_chats(self, user_id: str) -> list[models.DbChat]:
-        return self.session.exec(sqlmodel.select(models.DbChat).filter(models.DbChat.user_id == user_id)).all()
 
     def get_prompter_message_by_id(self, message_id: str, for_update=False) -> models.DbMessage:
         query = sqlmodel.select(models.DbMessage).where(

@@ -182,7 +182,7 @@ async def list_chats(
 ) -> interface.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
-    chats = cr.get_user_chats(user_id)
+    chats = cr.get_chats(user_id)
     chats_list = [chat.to_list_read() for chat in chats]
     return interface.ListChatsResponse(chats=chats_list)
 
@@ -207,7 +207,8 @@ async def get_chat(
 ) -> interface.ChatRead:
     """Allows a client to get the current state of a chat."""
     chat = cr.get_chat_by_id(id)
-    if chat.user_id != user_id:
+    # currently, user_id will be None if server auth is disabled
+    if user_id and chat.user_id != user_id:
         raise HTTPException(status_code=404, detail="Chat not found")
     return chat.to_read()
 
