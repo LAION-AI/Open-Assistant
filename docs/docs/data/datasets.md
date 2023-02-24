@@ -14,7 +14,7 @@ and then running:
 ```python
 from datasets import load_dataset
 
-dataset = load_dataset("data/{dataset-name}")
+dataset = load_dataset("OpenAssistant/{dataset-name}")
 ```
 
 We use this GitHub repository to accept new submissions and standardize quality
@@ -419,7 +419,7 @@ At this point, you can load the dataset by running:
 ```python
 from datasets import load_dataset
 
-load_dataset("data/{dataset_name}")
+load_dataset("OpenAssistant/{dataset_name}")
 ```
 
 Congratulations - you've now added a dataset to the OpenAssistant org!
