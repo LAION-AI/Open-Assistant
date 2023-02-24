@@ -63,7 +63,6 @@ def load_oaast_export(
         file_in = input_file_path.open("r", encoding="UTF-8")
 
     threads_per_tree = []
-    total_threads = 0
 
     with file_in:
         # read one message tree per line
@@ -111,7 +110,6 @@ def load_oaast_export(
                     t.pop()
 
             threads_per_tree.append(threads)
-            total_threads += len(threads)
 
     # split on tree basis, messages from same tree must not end up in different splits
     trees = ListDataset(threads_per_tree)
@@ -124,11 +122,3 @@ def load_oaast_export(
     val = flatten(splits[1])
 
     return train, val
-
-
-if __name__ == "__main__":
-    train, val = load_oaast_export(
-        "/home/koepf/LAION/exports/2023-02-19_oasst_ready_with_spam_deleted.jsonl.gz", top_k=1
-    )
-    print("train", len(train))
-    print("val", len(val))
