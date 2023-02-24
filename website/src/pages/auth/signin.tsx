@@ -208,7 +208,7 @@ const EmailSignInForm = ({
           data-cy="signin-email-button"
           leftIcon={<Mail />}
           mt="4"
-          disabled={!captchaSuccess && enableEmailSigninCaptcha}
+          isDisabled={!captchaSuccess && enableEmailSigninCaptcha}
         >
           Continue with Email
         </SigninButton>

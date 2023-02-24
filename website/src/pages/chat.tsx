@@ -74,7 +74,7 @@ const Chat = () => {
                 </Entry>
               ))}
               {activeMessage ? <Entry isAssistant>{activeMessage}</Entry> : <Textarea ref={inputRef} autoFocus />}
-              <Button onClick={send} disabled={isLoading}>
+              <Button onClick={send} isDisabled={isLoading}>
                 {t("submit")}
               </Button>
             </>

@@ -110,11 +110,11 @@ export const DataTable = <T,>({
     <>
       {!disablePagination && (
         <Flex mb="2">
-          <Button onClick={onPreviousClick} disabled={disablePrevious}>
+          <Button onClick={onPreviousClick} isDisabled={disablePrevious}>
             {t("previous")}
           </Button>
           <Spacer />
-          <Button onClick={onNextClick} disabled={disableNext}>
+          <Button onClick={onNextClick} isDisabled={disableNext}>
             {t("next")}
           </Button>
         </Flex>

@@ -30,6 +30,11 @@ export const Stats = ({ data }: StatsProps) => {
 
   const messageTreeStats = getStatByName("message_trees_states_by_lang");
 
+  // this will be empty on a fresh db:
+  if (!messageTreeStats) {
+    return null;
+  }
+
   return (
     <>
       <Heading size="lg" className="pb-4">

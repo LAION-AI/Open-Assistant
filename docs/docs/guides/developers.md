@@ -204,7 +204,7 @@ Transformers from Hugging Face.
 The collection of the instruction datasets is organized in the
 [open assistant](https://github.com/LAION-AI/Open-Assistant/tree/main/openassistant)
 directory.
-[This guide](https://github.com/LAION-AI/Open-Assistant/blob/main/openassistant/datasets/README.md)
+[This guide](https://github.com/LAION-AI/Open-Assistant/blob/main/data/datasets/README.md)
 explains how to contribute a new dataset.
 
 There's also a
