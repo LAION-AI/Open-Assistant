@@ -54,11 +54,10 @@ defaults:
 
 oa_dataset_only:
   datasets:
-    - oa_private:
-        split: sft
-        val_split: 0.0
-        fraction: 1
-        file: 2023-02-10_oasst_prod.jsonl
+    - oasst_export:
+        lang: "en,es,de,fr"
+        top_k: 2
+        input_file_path: 2023-02-19_oasst_ready_with_spam_deleted.jsonl.gz
 
 pythia:
   learning_rate: 8e-6

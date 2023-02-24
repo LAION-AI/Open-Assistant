@@ -6,104 +6,129 @@ from typing import Callable, Optional
 import pydantic
 from custom_datasets.formatting import format_pair
 from oasst_shared.schemas.export import ExportMessageNode, ExportMessageTree
-from torch.utils.data import Dataset
+from torch import Generator, default_generator
+from torch.utils.data import Dataset, random_split
 
 
-def _visit_messages_depth_first(
+def _visit_threads_depth_first(
     node: ExportMessageNode,
-    visitor: Callable[[ExportMessageNode, list[ExportMessageNode]], None],
-    predicate: Optional[Callable[[ExportMessageNode, list[ExportMessageNode]], bool]] = None,
+    visitor: Callable[[list[ExportMessageNode]], None],
+    predicate: Optional[Callable[[list[ExportMessageNode]], bool]] = None,
     parents: list[ExportMessageNode] = None,
 ):
     parents = parents or []
-    if not node or predicate is not None and not predicate(node, parents):
+    if not node:
         return
-    visitor(node, parents.copy())
+    thread = parents + [node]
+    if predicate is None or predicate(thread):
+        visitor(thread)
     if node.replies:
-        parents = parents + [node]
+        parents = thread
         for c in node.replies:
-            _visit_messages_depth_first(node=c, visitor=visitor, predicate=predicate, parents=parents)
+            _visit_threads_depth_first(node=c, visitor=visitor, predicate=predicate, parents=parents)
 
 
-def _visit_assistant_leaves(
-    node: ExportMessageNode, visitor: Callable[[ExportMessageNode, list[ExportMessageNode]], None]
-):
-    def is_assistant_leave(node: ExportMessageNode, parents: list[ExportMessageNode]):
-        return node.role == "assistant" and not node.replies
-
-    _visit_messages_depth_first(node=node, visitor=visitor, predicate=is_assistant_leave)
-
-
-class OasstDataset(Dataset):
-    # splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
-
-    def __init__(
-        self,
-        input_file_path: str | Path,
-        lang: str = "en",
-        top_k: Optional[int] = None,
-    ) -> None:
+class ListDataset(Dataset):
+    def __init__(self, data: list):
         super().__init__()
-
-        lang_codes = lang.split(",")
-
-        if isinstance(input_file_path, str):
-            input_file_path = Path(input_file_path)
-
-        if input_file_path.suffix == ".gz":
-            file_in = gzip.open(str(input_file_path), mode="tr", encoding="UTF-8")
-        else:
-            file_in = input_file_path.open("r", encoding="UTF-8")
-
-        i = 0
-        with file_in:
-            # read one message tree per line
-            for line in file_in:
-                dict_tree = json.loads(line)
-
-                # validate data
-                tree: ExportMessageTree = pydantic.parse_obj_as(ExportMessageTree, dict_tree)
-
-                if (
-                    tree.tree_state != "ready_for_export"
-                    or not tree.prompt.review_result
-                    or tree.prompt.lang not in lang_codes
-                ):
-                    continue
-
-                # identify all assistant leaf-nodes
-                tree.prompt
-                print(tree.message_tree_id, tree.tree_state)
-                i += 1
-
-        """
-        total_prob = reduce(lambda prev, split: prev + split[1], self.splits.items(), 0)
-        assert math.isclose(total_prob, 1), "Make sure OAPrivate split ratios add to 1"
-
-        self.mode = split
-
-        jsonl_file = os.path.join(data_path, file)
-
-        with open(jsonl_file, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-
-        # take a subset of the dataset based on the split
-        rng = np.random.default_rng(seed=0)
-        indices = np.arange(len(lines)).astype(int)
-        rng.shuffle(indices)
-
-        cumsums = np.cumsum([[0] + list(self.splits.values())])
-        split_index = list(self.splits.keys()).index(split)
-
-        start_index, end_index = int(cumsums[split_index] * len(lines)), int(cumsums[split_index + 1] * len(lines))
-
-        self.data = [json.loads(lines[index].strip()) for index in indices[start_index:end_index]]
-        """
+        self.data = data
 
     def __len__(self):
         return len(self.data)
 
+    def __getitem__(self, index):
+        return self.data[index]
+
+
+def load_oaast_export(
+    input_file_path: str | Path,
+    val_split: float = 0.2,
+    lang: str = "en",
+    top_k: Optional[int] = None,
+    generator: Optional[Generator] = default_generator,
+    data_path: str | Path = None,
+) -> tuple[ListDataset, ListDataset]:
+    lang_codes = lang.split(",")
+
+    if not isinstance(input_file_path, Path):
+        input_file_path = Path(input_file_path)
+    if not input_file_path.is_absolute() and data_path:
+        if not isinstance(data_path, Path):
+            data_path = Path(data_path)
+        input_file_path = data_path / input_file_path
+
+    if input_file_path.suffix == ".gz":
+        file_in = gzip.open(str(input_file_path), mode="tr", encoding="UTF-8")
+    else:
+        file_in = input_file_path.open("r", encoding="UTF-8")
+
+    threads_per_tree = []
+    total_threads = 0
+
+    with file_in:
+        # read one message tree per line
+        for line in file_in:
+            dict_tree = json.loads(line)
+
+            # validate data
+            tree: ExportMessageTree = pydantic.parse_obj_as(ExportMessageTree, dict_tree)
+
+            if (
+                tree.tree_state != "ready_for_export"
+                or not tree.prompt.review_result
+                or tree.prompt.lang not in lang_codes
+            ):
+                continue
+
+            # extract all threads up to last asssitant reply
+            threads: list[list[ExportMessageNode]] = []
+
+            def thread_filter(thread: list[ExportMessageNode]) -> bool:
+                if any(m.deleted for m in thread):
+                    return False
+
+                if top_k is not None:
+                    for i, m in enumerate(thread):
+                        if m.role == "assistant":
+                            if m.rank is None:
+                                if len(thread[i - 1].replies) > 1:
+                                    return False
+                            elif m.rank >= top_k:
+                                return False
+                return True
+
+            def leaf_filter(thread: list[ExportMessageNode]) -> bool:
+                return (
+                    len(thread) > 1
+                    and not thread[-1].replies
+                    and (thread[-1].role == "assistant" or thread[-2].replies[0] == thread[-1])
+                    and thread_filter(thread)
+                )
+
+            _visit_threads_depth_first(tree.prompt, threads.append, leaf_filter)
+            for t in threads:
+                if t[-1].role == "prompter":
+                    t.pop()
+
+            threads_per_tree.append(threads)
+            total_threads += len(threads)
+
+    # split on tree basis, messages from same tree must not end up in different splits
+    trees = ListDataset(threads_per_tree)
+    splits = random_split(trees, lengths=[1.0 - val_split, val_split], generator=generator)
+
+    def flatten(d: ListDataset) -> ListDataset:
+        return ListDataset([format_pair([m.text for m in t]) for ts in d for t in ts])
+
+    train = flatten(splits[0])
+    val = flatten(splits[1])
+
+    return train, val
+
 
 if __name__ == "__main__":
-    print(format_pair(("q1", "a1", "q2", "a2")))
-    # x = OasstDataset("/home/koepf/LAION/exports/2023-02-19_oasst_ready_with_spam_deleted.jsonl.gz")
+    train, val = load_oaast_export(
+        "/home/koepf/LAION/exports/2023-02-19_oasst_ready_with_spam_deleted.jsonl.gz", top_k=1
+    )
+    print("train", len(train))
+    print("val", len(val))
