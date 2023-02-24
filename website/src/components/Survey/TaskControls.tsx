@@ -53,7 +53,7 @@ export const TaskControls = ({
             </>
           ) : (
             <>
-              <Tooltip label="Edit">
+              <Tooltip label={t("edit")}>
                 <IconButton size="lg" data-cy="edit" aria-label="edit" onClick={onEdit} icon={<Edit2 size="1em" />} />
               </Tooltip>
               <SubmitButton
