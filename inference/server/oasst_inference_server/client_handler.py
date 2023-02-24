@@ -77,3 +77,31 @@ async def handle_create_message(
             assistant_message=assistant_message_read,
         )
     )
+
+
+async def handle_create_vote(
+    message_id: str,
+    vote_request: interface.VoteRequest,
+    cr: deps.ChatRepository = fastapi.Depends(deps.create_chat_repository),
+) -> fastapi.Response:
+    """Allows the client to vote on a message."""
+    try:
+        cr.add_vote(message_id=message_id, score=vote_request.score)
+        return fastapi.Response(status_code=200)
+    except Exception:
+        logger.exception("Error adding vote")
+        return fastapi.Response(status_code=500)
+
+
+async def handle_create_report(
+    message_id: str,
+    report_request: interface.ReportRequest,
+    cr: deps.ChatRepository = fastapi.Depends(deps.create_chat_repository),
+) -> fastapi.Response:
+    """Allows the client to report a message."""
+    try:
+        cr.add_report(message_id=message_id, report_type=report_request.report_type, reason=report_request.reason)
+        return fastapi.Response(status_code=200)
+    except Exception:
+        logger.exception("Error adding report")
+        return fastapi.Response(status_code=500)

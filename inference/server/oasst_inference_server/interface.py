@@ -41,3 +41,12 @@ class ListChatsResponse(pydantic.BaseModel):
 
 class CreateWorkerRequest(pydantic.BaseModel):
     name: str
+
+
+class VoteRequest(pydantic.BaseModel):
+    score: int
+
+
+class ReportRequest(pydantic.BaseModel):
+    report_type: inference.ReportType
+    reason: str

@@ -35,6 +35,15 @@ class ChatRepository:
         chats = self.get_chats()
         return [chat.to_read() for chat in chats]
 
+    def get_message_by_id(self, message_id: str, for_update=False) -> models.DbMessage:
+        query = sqlmodel.select(models.DbMessage).where(
+            models.DbMessage.id == message_id,
+        )
+        if for_update:
+            query = query.with_for_update()
+        message = self.session.exec(query).one()
+        return message
+
     def get_prompter_message_by_id(self, message_id: str, for_update=False) -> models.DbMessage:
         query = sqlmodel.select(models.DbMessage).where(
             models.DbMessage.id == message_id, models.DbMessage.role == "prompter"
@@ -109,6 +118,23 @@ class ChatRepository:
         logger.debug(f"Initiated assistant message of {parent_id=}")
         self.session.refresh(message)
         return message
+
+    def add_vote(self, message_id: str, score: int) -> None:
+        logger.info(f"Adding vote to {message_id=}: {score=}")
+        message = self.get_message_by_id(message_id)
+        vote = models.DbVote(
+            message_id=message.id,
+            score=score,
+        )
+        self.session.add(vote)
+        self.maybe_commit()
+
+    def add_report(self, message_id: str, reason: str, report_type: inference.ReportType) -> None:
+        logger.info(f"Adding report to {message_id=}: {reason=}")
+        message = self.get_message_by_id(message_id)
+        report = models.DbReport(message_id=message.id, reason=reason, report_type=report_type)
+        self.session.add(report)
+        self.maybe_commit()
 
     def start_work(self, *, message_id: str, worker_id: str, worker_config: inference.WorkerConfig) -> models.DbMessage:
         logger.info(f"Starting work on message {message_id}")
