@@ -1,7 +1,9 @@
 import fastapi
+from fastapi import Depends
 from loguru import logger
-from oasst_inference_server import deps, interface, queueing
+from oasst_inference_server import auth, deps, interface, queueing
 from oasst_shared.schemas import inference
+from sqlalchemy.exc import NoResultFound
 from sse_starlette.sse import EventSourceResponse
 
 
@@ -9,10 +11,17 @@ async def handle_create_message(
     chat_id: str,
     message_request: interface.MessageRequest,
     fastapi_request: fastapi.Request,
+    user_id: str = Depends(auth.get_current_user_id),
 ) -> EventSourceResponse:
     """Allows the client to stream the results of a request."""
 
     with deps.manual_chat_repository() as cr:
+        try:
+            # Ensure the user can access the chat
+            cr.get_chat_by_id(chat_id, user_id=user_id)
+        except NoResultFound:
+            return fastapi.Response(status_code=404)
+
         try:
             prompter_message = cr.add_prompter_message(
                 chat_id=chat_id, parent_id=message_request.parent_id, content=message_request.content
