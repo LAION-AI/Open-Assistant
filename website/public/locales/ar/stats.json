@@ -1,0 +1,20 @@
+{
+  "aborted_low_grade": "أُحبط بسبب سوء الجودة",
+  "assistant": "مساعد",
+  "backlog_ranking": "ترتيب التراكم",
+  "choose_a_language": "اختر لغةً",
+  "count": "العدد",
+  "growing": "ينمو",
+  "halted_by_moderator": "أوقفه مدير",
+  "human_messages_by_lang": "رسائل الناس حسب اللغة",
+  "human_messages_by_role": "رسائل الناس حسب الدور",
+  "initial_prompt_review": "مراجعة مطالبة مبدئية",
+  "message_trees_by_state": "أشجار الرسائل حسب الحالة",
+  "message_trees_states_by_lang": "حالات شجر الرسائل حسب اللغة",
+  "prompt_lottery_waiting": "انتظار يانصيب المطالبات",
+  "prompter": "مطالب",
+  "ranking": "الترتيب",
+  "ready_for_export": "جاهز ليصدَّر",
+  "stats": "إحصاءات",
+  "users_accepted_tos": "وافق المستخدم على الشروط"
+}
