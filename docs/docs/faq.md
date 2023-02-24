@@ -2,7 +2,6 @@
 
 In this page, there are some of the most frequently asked questions.
 
-
 ## Questions about the project
 
 <details>
@@ -21,6 +20,7 @@ applying RLHF to large language models.
 <summary>
 
 ### Can I install Open Assistant locally and chat with it?
+
 </summary>
 
 The project is not at that stage yet. See
@@ -261,7 +261,7 @@ order to avoid the generation of harmful content.
 If you are using `docker-compose` instead of `docker compose` (note the " "
 instead of the "-"), you should update your docker cli to the latest version.
 `docker compose` is the most recent version and should be used instead of
-`docker-compose`
+`docker-compose`.
 
 For more details and information check out
 [this SO thread](https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose)

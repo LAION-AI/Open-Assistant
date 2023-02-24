@@ -15,7 +15,7 @@
   --ifm-color-primary-lightest: #307bf3;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
-  
+
   --ifm-color-info-dark: #307bf3;
   --ifm-color-info-contrast-background: #0944a105;
   --ifm-color-info-contrast-foreground: rgba(0, 0, 0, 0.85);
@@ -43,5 +43,3 @@ details > summary > h3 {
   display: inline-block;
   margin-bottom: 0;
 }
-
-
