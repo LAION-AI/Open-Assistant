@@ -45,7 +45,7 @@ dataset_info:
 ## Dataset Description
 
 - **Repository:**
-  [Code](https://github.com/LAION-AI/Open-Assistant/openassistant/datasets/soda_synthetic_dialogue/)
+  [Code](https://github.com/LAION-AI/Open-Assistant/data/datasets/soda_synthetic_dialogue/)
 
 ## Dataset Summary
 

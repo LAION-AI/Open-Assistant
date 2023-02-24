@@ -41,7 +41,7 @@ dataset_info:
 ## Dataset Description
 
 - **Repository:**
-  [Code](https://github.com/LAION-AI/Open-Assistant/openassistant/datasets/mt_note_generation/)
+  [Code](https://github.com/LAION-AI/Open-Assistant/data/datasets/mt_note_generation/)
 
 ## Dataset Summary
 
