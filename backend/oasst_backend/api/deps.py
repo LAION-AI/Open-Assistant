@@ -138,17 +138,23 @@ def get_root_token(bearer_token: HTTPAuthorizationCredentials = Security(bearer_
     )
 
 
+async def user_identifier(request: Request) -> str:
+    """Identify a request by user based on api_key and user header"""
+    api_key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
+    user = request.headers.get("x-oasst-user")
+    if not user:
+        payload = await request.json()
+        auth_method = payload.get("user").get("auth_method")
+        user_id = payload.get("user").get("id")
+        user = f"{auth_method}:{user_id}"
+    return f"{api_key}:{user}"
+
+
 class UserRateLimiter(RateLimiter):
     def __init__(
         self, times: int = 100, milliseconds: int = 0, seconds: int = 0, minutes: int = 1, hours: int = 0
     ) -> None:
-        async def identifier(request: Request) -> str:
-            """Identify a request based on api_key and user.id"""
-            api_key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
-            user = request.headers.get("x-oasst-user")
-            return f"{api_key}:{user}"
-
-        super().__init__(times, milliseconds, seconds, minutes, hours, identifier)
+        super().__init__(times, milliseconds, seconds, minutes, hours, user_identifier)
 
     async def __call__(self, request: Request, response: Response, api_key: str = Depends(get_api_key)) -> None:
         # Skip if rate limiting is disabled
@@ -180,13 +186,7 @@ class UserTaskTypeRateLimiter(RateLimiter):
         minutes: int = 1,
         hours: int = 0,
     ) -> None:
-        async def identifier(request: Request) -> str:
-            """Identify a request based on api_key and user.id"""
-            api_key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
-            user = request.headers.get("x-oasst-user")
-            return f"{api_key}:{user}"
-
-        super().__init__(times, milliseconds, seconds, minutes, hours, identifier)
+        super().__init__(times, milliseconds, seconds, minutes, hours, user_identifier)
         self.task_types = task_types
 
     async def __call__(self, request: Request, response: Response, api_key: str = Depends(get_api_key)) -> None:
