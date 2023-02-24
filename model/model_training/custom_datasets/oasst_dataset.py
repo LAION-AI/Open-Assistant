@@ -1,17 +1,48 @@
 import gzip
 import json
 from pathlib import Path
+from typing import Callable, Optional
 
 import pydantic
 from custom_datasets.formatting import format_pair
-from oasst_shared.schemas.export import ExportMessageTree
+from oasst_shared.schemas.export import ExportMessageNode, ExportMessageTree
 from torch.utils.data import Dataset
+
+
+def _visit_messages_depth_first(
+    node: ExportMessageNode,
+    visitor: Callable[[ExportMessageNode, list[ExportMessageNode]], None],
+    predicate: Optional[Callable[[ExportMessageNode, list[ExportMessageNode]], bool]] = None,
+    parents: list[ExportMessageNode] = None,
+):
+    parents = parents or []
+    if not node or predicate is not None and not predicate(node, parents):
+        return
+    visitor(node, parents.copy())
+    if node.replies:
+        parents = parents + [node]
+        for c in node.replies:
+            _visit_messages_depth_first(node=c, visitor=visitor, predicate=predicate, parents=parents)
+
+
+def _visit_assistant_leaves(
+    node: ExportMessageNode, visitor: Callable[[ExportMessageNode, list[ExportMessageNode]], None]
+):
+    def is_assistant_leave(node: ExportMessageNode, parents: list[ExportMessageNode]):
+        return node.role == "assistant" and not node.replies
+
+    _visit_messages_depth_first(node=node, visitor=visitor, predicate=is_assistant_leave)
 
 
 class OasstDataset(Dataset):
     # splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
 
-    def __init__(self, input_file_path: str | Path, lang: str = "en") -> None:
+    def __init__(
+        self,
+        input_file_path: str | Path,
+        lang: str = "en",
+        top_k: Optional[int] = None,
+    ) -> None:
         super().__init__()
 
         lang_codes = lang.split(",")
@@ -34,12 +65,16 @@ class OasstDataset(Dataset):
                 tree: ExportMessageTree = pydantic.parse_obj_as(ExportMessageTree, dict_tree)
 
                 if (
-                    tree.tree_state == "ready_for_export"
-                    and tree.prompt.review_result
-                    and tree.prompt.lang in lang_codes
+                    tree.tree_state != "ready_for_export"
+                    or not tree.prompt.review_result
+                    or tree.prompt.lang not in lang_codes
                 ):
-                    print(tree.message_tree_id, tree.tree_state)
-                    i += 1
+                    continue
+
+                # identify all assistant leaf-nodes
+                tree.prompt
+                print(tree.message_tree_id, tree.tree_state)
+                i += 1
 
         """
         total_prob = reduce(lambda prev, split: prev + split[1], self.splits.items(), 0)
