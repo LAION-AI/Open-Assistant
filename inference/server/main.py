@@ -10,13 +10,12 @@ from fastapi import Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_inference_server import auth, client_handler, deps, models, worker_handler
+from oasst_inference_server.schemas import chat as chat_schema
+from oasst_inference_server.schemas import worker as worker_schema
 from oasst_inference_server.settings import settings
 from oasst_inference_server.user_chat_repository import UserChatRepository
 from oasst_shared.schemas import inference, protocol
 from prometheus_fastapi_instrumentator import Instrumentator
-
-from inference.server.oasst_inference_server.schemas import chat as chat_schema
-from inference.server.oasst_inference_server.schemas import worker as worker_schema
 
 app = fastapi.FastAPI()
 

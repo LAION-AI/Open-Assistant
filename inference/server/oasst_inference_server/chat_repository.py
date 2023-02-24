@@ -3,7 +3,8 @@ import datetime
 import fastapi
 import sqlmodel
 from loguru import logger
-from oasst_inference_server import interface, models
+from oasst_inference_server import models
+from oasst_inference_server.schemas import chat as chat_schema
 from oasst_shared.schemas import inference
 from sqlalchemy.sql.operators import is_not
 
@@ -28,7 +29,7 @@ class ChatRepository:
         return self.session.exec(
             sqlmodel.select(models.DbChat).where(
                 is_not(models.DbChat.pending_message_request, None),
-                models.DbChat.message_request_state == interface.MessageRequestState.pending,
+                models.DbChat.message_request_state == chat_schema.MessageRequestState.pending,
             )
         ).all()
 

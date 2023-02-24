@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from oasst_inference_server import interface
+from oasst_inference_server.schemas import chat as chat_schema
 from oasst_shared.schemas import inference
 from sqlmodel import Field, Index, Relationship, SQLModel
 
@@ -49,11 +49,11 @@ class DbChat(SQLModel, table=True):
 
     messages: list[DbMessage] = Relationship(back_populates="chat")
 
-    def to_list_read(self) -> interface.ChatListRead:
-        return interface.ChatListRead(id=self.id)
+    def to_list_read(self) -> chat_schema.ChatListRead:
+        return chat_schema.ChatListRead(id=self.id)
 
-    def to_read(self) -> interface.ChatRead:
-        return interface.ChatRead(id=self.id, messages=[m.to_read() for m in self.messages])
+    def to_read(self) -> chat_schema.ChatRead:
+        return chat_schema.ChatRead(id=self.id, messages=[m.to_read() for m in self.messages])
 
     def get_msg_dict(self) -> dict[str, DbMessage]:
         return {m.id: m for m in self.messages}
