@@ -112,8 +112,8 @@ class MessageRead(pydantic.BaseModel):
     content: str | None
     role: Literal["prompter", "assistant"]
     state: MessageState
-    vote: int | None
-    report: Report
+    vote: Vote | None
+    report: Report | None
 
     @property
     def is_assistant(self) -> bool:
