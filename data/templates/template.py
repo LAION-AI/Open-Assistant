@@ -39,7 +39,7 @@ import datasets
 from .hub import OpenAssistantConfig
 
 # TODO: import the schema (i.e. features) that fits your dataset:
-from .hub import
+# from .hub import {dataset_schema}
 
 # TODO: Add BibTeX citation where appropriate
 _CITATION = """\
@@ -133,6 +133,8 @@ class NewDataset(datasets.GeneratorBasedBuilder):
         # TODO: Implement the schema for your dataset here.
         raise NotImplementedError()
 
+        features = datasets.Features()
+        # define features, see https://huggingface.co/docs/datasets/v2.10.0/en/package_reference/main_classes#datasets.Features
         return datasets.DatasetInfo(
             description=_DESCRIPTION,
             features=features,
@@ -194,10 +196,11 @@ class NewDataset(datasets.GeneratorBasedBuilder):
 
         # NOTE: For local datasets you will have access to self.config.data_dir and self.config.data_files
 
-        if self.config.schema == "[schema_name]":
-            # TODO: yield (key, example) tuples in the given schema
-            for key, example in thing:
-                yield key, example
+        # if self.config.schema == "[schema_name]":
+        #     # TODO: yield (key, example) tuples in the given schema
+        #     for key, example in thing:
+        #         yield key, example
+
 
 # This allows you to run your dataloader with `python [dataset_name].py` during development
 # TODO: Remove this before making your PR

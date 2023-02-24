@@ -14,7 +14,7 @@ and then running:
 ```python
 from datasets import load_dataset
 
-dataset = load_dataset("OpenAssistant/{dataset-name}")
+dataset = load_dataset("data/{dataset-name}")
 ```
 
 We use this GitHub repository to accept new submissions and standardize quality
@@ -151,10 +151,10 @@ Make sure your `pip` package points to your environment's source.
 
 ### 3. Prepare a folder in `datasets` for your dataloader
 
-Make a new directory within the `openassistant/datasets` directory:
+Make a new directory within the `data/datasets` directory:
 
 ```bash
-mkdir openassistant/datasets/<dataset_name>
+mkdir data/datasets/<dataset_name>
 ```
 
 **NOTE**: Please use snake_case, i.e. lowercase letters and underscores when
@@ -163,7 +163,7 @@ choosing a `<dataset_name>`.
 Add an `__init__.py` file to this directory:
 
 ```bash
-touch openassistant/datasets/<dataset_name>/__init__.py
+touch data/datasets/<dataset_name>/__init__.py
 ```
 
 Next, copy the `template.py` script and `hub.py` module of `templates` into your
@@ -171,8 +171,8 @@ dataset folder. The `template.py` script has "TODOs" to fill in for your
 dataloading script:
 
 ```bash
-cp templates/hub.py openassistant/datasets/<dataset_name>/
-cp templates/template.py openassistant/datasets/<dataset_name>/<dataset_name>.py
+cp templates/hub.py data/datasets/<dataset_name>/
+cp templates/template.py data/datasets/<dataset_name>/<dataset_name>.py
 ```
 
 #### (Optional) Prepare local dataset files
@@ -185,7 +185,7 @@ Datasets.
 To do so, first copy the template script for dataset creation:
 
 ```bash
-cp templates/prepare.py openassistant/datasets/<dataset_name>/
+cp templates/prepare.py data/datasets/<dataset_name>/
 ```
 
 Next, implement any logic that is needed to prepare a local version of the
@@ -194,8 +194,8 @@ Add any extra dependencies to a `requirements.txt` file and provide instructions
 on how to prepare the dataset files in a README:
 
 ```bash
-touch openassistant/datasets/<dataset_name>/requirements.txt
-cp templates/README.py openassistant/datasets/<dataset_name>/
+touch data/datasets/<dataset_name>/requirements.txt
+cp templates/README.py data/datasets/<dataset_name>/
 ```
 
 **Note:** Do not commit any dataset files to the OpenAssistant repo - all data
@@ -232,7 +232,7 @@ TODO
 
 You can run your data loader script during development by appending the
 following statement to your code
-([templates/template.py](https://github.com/LAION-AI/Open-Assistant/blob/main/openassistant/templates/template.py)
+([templates/template.py](https://github.com/LAION-AI/Open-Assistant/blob/main/data/templates/template.py)
 already includes this):
 
 ```python
@@ -254,7 +254,7 @@ following commands:
 ```python
 from datasets import load_dataset
 
-data = load_dataset("openassistant/datasets/<dataset_name>/<dataset_name>.py", name="<dataset_name>_<schema>")
+data = load_dataset("data/datasets/<dataset_name>/<dataset_name>.py", name="<dataset_name>_<schema>")
 ```
 
 Run these commands from the top level of the `OpenAssistant` repo.
@@ -264,7 +264,7 @@ Run these commands from the top level of the `OpenAssistant` repo.
 Copy and fill out the template dataset card:
 
 ```bash
-cp templates/dataset_card.md openassistant/datasets/<dataset_name>/README.md
+cp templates/dataset_card.md data/datasets/<dataset_name>/README.md
 ```
 
 ### 7. Format your code
@@ -283,7 +283,7 @@ readable and looks nice. Flake8 linting errors may require manual changes.
 First, commit your changes to the branch to "add" the work:
 
 ```
-git add openassistant/datasets/<dataset_name>/*.py
+git add data/datasets/<dataset_name>/*.py
 git commit -m "A message describing your commits"
 ```
 
@@ -317,8 +317,8 @@ in the PR's description, e.g. `resolves #17`.
 
 ## [Admins] Uploading a dataset to the Hugging Face Hub
 
-Uploading a new dataset from `openassistant/datasets/<dataset_name>` to the
-Hugging Face Hub typically involves the following steps:
+Uploading a new dataset from `data/datasets/<dataset_name>` to the Hugging Face
+Hub typically involves the following steps:
 
 1. Setup
 2. Create a new dataset repository
@@ -384,12 +384,12 @@ python -m pip install datasets
 
 Follow [this guide](https://huggingface.co/docs/datasets/upload_dataset) for
 instructions on creating a new dataset repo on the Hub. Use the same snake_case
-name as the dataset in `openassistant/datasets/<dataset_name>`.
+name as the dataset in `data/datasets/<dataset_name>`.
 
 Once you've created the dataset repo, clone it by running:
 
 ```bash
-git clone https://huggingface.co/datasets/OpenAssistant/<dataset_name>
+git clone https://huggingface.co/datasets/data/<dataset_name>
 cd <dataset_name>
 ```
 
@@ -398,16 +398,16 @@ cd <dataset_name>
 Next, copy the loading script and dataset card to your repo:
 
 ```bash
-cp openassistant/datasets/<dataset_name>/<dataset_name>.py .
-cp openassistant/datasets/<dataset_name>/README.md .
+cp data/datasets/<dataset_name>/<dataset_name>.py .
+cp data/datasets/<dataset_name>/README.md .
 ```
 
 #### (Optional) Prepare local dataset files
 
-If the dataset files of `openassistant/datasets/<dataset_name>` aren't public,
-you'll need to run the `openassistant/datasets/<dataset_name>/prepare.py` script
-to create them. Store them in the same directory that is specified by the
-loading script (`data` by default).
+If the dataset files of `data/datasets/<dataset_name>` aren't public, you'll
+need to run the `data/datasets/<dataset_name>/prepare.py` script to create them.
+Store them in the same directory that is specified by the loading script (`data`
+by default).
 
 ### 4. Upload to the Hub
 
@@ -419,7 +419,7 @@ At this point, you can load the dataset by running:
 ```python
 from datasets import load_dataset
 
-load_dataset("OpenAssistant/{dataset_name}")
+load_dataset("data/{dataset_name}")
 ```
 
 Congratulations - you've now added a dataset to the OpenAssistant org!
