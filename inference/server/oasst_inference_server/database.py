@@ -44,4 +44,6 @@ db_engine = sqlmodel.create_engine(
     settings.database_uri,
     json_serializer=custom_json_serializer,
     json_deserializer=custom_json_deserializer,
+    pool_size=settings.db_pool_size,
+    max_overflow=settings.db_max_overflow,
 )

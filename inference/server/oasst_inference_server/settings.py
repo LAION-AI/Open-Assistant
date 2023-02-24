@@ -36,6 +36,9 @@ class Settings(pydantic.BaseSettings):
             path=f"/{values.get('postgres_db') or ''}",
         )
 
+    db_pool_size: int = 75
+    db_max_overflow: int = 20
+
     root_token: str = "1234"
 
     debug_api_keys: list[str] = []
