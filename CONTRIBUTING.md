@@ -102,6 +102,8 @@ Meaning we'd be happy for anyone to do these tasks.**
 If you want to work on something, assign yourself to it or write a comment that
 you want to work on it and what you plan to do.
 
+- There's an [introduction for developers](docs/docs/guides/developers.md) that
+  gives an overview of the different tools and technologies used in the project.
 - To get started with development, if you want to work on the backend, have a
   look at `scripts/backend-development/README.md`.
 - If you want to work on any frontend, have a look at

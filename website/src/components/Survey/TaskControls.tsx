@@ -1,4 +1,4 @@
-import { Box, Button, Flex, IconButton, Progress, Tooltip, useColorModeValue } from "@chakra-ui/react";
+import { Button, Card, Flex, IconButton, Progress, Tooltip } from "@chakra-ui/react";
 import { Edit2 } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { SubmitButton } from "src/components/Buttons/Submit";
@@ -10,6 +10,8 @@ export interface TaskControlsProps {
   task: BaseTask;
   taskStatus: TaskStatus;
   isLoading: boolean;
+  isSubmitting: boolean;
+  isRejecting: boolean;
   onEdit: () => void;
   onReview: () => void;
   onSubmit: () => void;
@@ -20,23 +22,24 @@ export const TaskControls = ({
   task,
   taskStatus,
   isLoading,
+  isRejecting,
+  isSubmitting,
   onEdit,
   onReview,
   onSubmit,
   onSkip,
 }: TaskControlsProps) => {
   const { t } = useTranslation();
-  const backgroundColor = useColorModeValue("white", "gray.800");
 
   return (
-    <Box width="full" bg={backgroundColor} borderRadius="xl" shadow="base">
+    <Card>
       {isLoading && <Progress size="sm" isIndeterminate />}
       <Flex p="6" gap="4" direction={["column", "row"]}>
         <TaskInfo id={task.id} output={t("submit_your_answer")} />
         <Flex width={["full", "fit-content"]} justify="center" ml="auto" gap={2}>
           {taskStatus.mode === "EDIT" ? (
             <>
-              <Button size="lg" variant="outline" onClick={onSkip}>
+              <Button size="lg" variant="outline" onClick={onSkip} isLoading={isRejecting}>
                 {t("skip")}
               </Button>
               <SubmitButton
@@ -56,6 +59,7 @@ export const TaskControls = ({
               <SubmitButton
                 colorScheme="green"
                 data-cy="submit"
+                isLoading={isSubmitting}
                 isDisabled={taskStatus.mode === "SUBMITTED"}
                 onClick={onSubmit}
               >
@@ -65,6 +69,6 @@ export const TaskControls = ({
           )}
         </Flex>
       </Flex>
-    </Box>
+    </Card>
   );
 };
