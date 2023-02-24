@@ -22,15 +22,7 @@ const sidebars = {
         type: "doc",
         id: "guides/README",
       },
-      items: [
-        "guides/guidelines",
-        "guides/examples",
-        {
-          type: "doc",
-          id: "guides/developers",
-          label: "Developers",
-        },
-      ],
+      items: ["guides/guidelines", "guides/examples", "guides/developers"],
     },
     {
       type: "category",
