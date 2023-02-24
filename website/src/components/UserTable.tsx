@@ -78,6 +78,8 @@ export const UserTable = memo(function UserTable() {
     }
   );
 
+  console.log(!data?.next);
+
   return (
     <Card>
       <CardBody>

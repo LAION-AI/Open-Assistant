@@ -84,7 +84,7 @@ const EditForm = () => {
 const SubmitButton = ({ control }: { control: Control<{ username: string }> }) => {
   const username = useWatch({ control, name: "username" });
   return (
-    <Button disabled={!username} type="submit" value="Change">
+    <Button isDisabled={!username} type="submit" value="Change">
       Submit
     </Button>
   );
