@@ -1,5 +1,6 @@
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Optional
 from uuid import UUID
@@ -168,7 +169,7 @@ def main():
     input_file_path = Path(args.input_file_path)
     if not input_file_path.exists() or not input_file_path.is_file():
         print("Invalid input file:", args.input_file_path)
-        exit(1)
+        sys.exit(1)
 
     dry_run = args.dry_run
     num_imported = import_file(

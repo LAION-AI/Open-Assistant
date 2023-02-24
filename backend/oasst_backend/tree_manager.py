@@ -255,7 +255,6 @@ class TreeManager:
         activated = 0
 
         while True:
-
             stats = self.tree_counts_by_state_stats(lang=lang, only_active=True)
 
             remaining_prompt_review = max(0, self.cfg.max_initial_prompt_review - stats.initial_prompt_review)
@@ -267,7 +266,6 @@ class TreeManager:
 
             @managed_tx_function(CommitMode.COMMIT)
             def activate_one(db: Session) -> int:
-
                 # select among distinct users
                 authors_qry = (
                     db.query(Message.user_id)
@@ -397,7 +395,6 @@ class TreeManager:
         desired_task_type: protocol_schema.TaskRequestType = protocol_schema.TaskRequestType.random,
         lang: str = "en",
     ) -> Tuple[protocol_schema.Task, Optional[UUID], Optional[UUID]]:
-
         logger.debug(f"TreeManager.next_task({desired_task_type=}, {lang=})")
 
         self.pr.ensure_user_is_enabled()
@@ -537,7 +534,6 @@ class TreeManager:
                     message_tree_id = messages[-1].message_tree_id
 
             case TaskType.LABEL_REPLY:
-
                 if task_role == TaskRole.PROMPTER:
                     replies_need_review = list(filter(lambda m: m.role == "prompter", replies_need_review))
                 elif task_role == TaskRole.ASSISTANT:
@@ -610,7 +606,6 @@ class TreeManager:
                     message_tree_id = message.message_tree_id
 
             case TaskType.REPLY:
-
                 if task_role == TaskRole.PROMPTER:
                     extendible_parents = list(filter(lambda x: x.parent_role == "assistant", extendible_parents))
                 elif task_role == TaskRole.ASSISTANT:
@@ -920,7 +915,6 @@ class TreeManager:
     def update_message_ranks(
         self, message_tree_id: UUID, rankings_by_message: dict[UUID, list[MessageReaction]]
     ) -> bool:
-
         mts = self.pr.fetch_tree_state(message_tree_id)
         # check state, allow retry if in SCORING_FAILED state
         if mts.state not in (message_tree_state.State.READY_FOR_SCORING, message_tree_state.State.SCORING_FAILED):
@@ -1015,7 +1009,6 @@ class TreeManager:
     def _query_need_review(
         self, state: message_tree_state.State, required_reviews: int, root: bool, lang: str
     ) -> list[Message]:
-
         need_review = (
             self.db.query(Message)
             .select_from(MessageTreeState)
@@ -1668,7 +1661,6 @@ DELETE FROM message WHERE message_tree_id = :message_tree_id;
         min_date: datetime = None,
         max_date: datetime = None,
     ):
-
         # find all affected message trees
         replies_by_tree, prompts = self.get_user_messages_by_tree(user_id, min_date, max_date)
         total_messages = sum(len(x) for x in replies_by_tree.values())

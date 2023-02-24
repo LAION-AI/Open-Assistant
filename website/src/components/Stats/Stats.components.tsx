@@ -1,14 +1,15 @@
 import { Box, Select, useColorModeValue } from "@chakra-ui/react";
-import { ArcElement, BarElement, CategoryScale, Chart as ChartJS, Colors, LinearScale, Tooltip } from "chart.js";
 import { createColumnHelper } from "@tanstack/react-table";
+import { ArcElement, BarElement, CategoryScale, Chart as ChartJS, Colors, LinearScale, Tooltip } from "chart.js";
 import { useTranslation } from "next-i18next";
-import { useState, useMemo } from "react";
-import { Doughnut, Pie, Bar } from "react-chartjs-2";
+import { useMemo, useState } from "react";
+import { Bar, Doughnut, Pie } from "react-chartjs-2";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { getLocaleDisplayName } from "src/lib/languages";
 import { colors } from "src/styles/Theme/colors";
+import { MessageTreesStatesByLang, Stat as StatType } from "src/types/Stat";
+
 import { DataTable } from "../DataTable/DataTable";
-import { Stat as StatType } from "src/types/Stat";
 
 ChartJS.register(ArcElement, Tooltip, Colors, CategoryScale, BarElement, LinearScale);
 
@@ -30,13 +31,9 @@ type ChartProps = {
 };
 
 type MessageTreeStateStatsProps = {
-  titleFn: (name: string) => string;
+  titleFn?: (name: string) => string;
   stat: StatType & {
-    stats: {
-      lang: string;
-      state: string;
-      count: number;
-    }[];
+    stats: MessageTreesStatesByLang;
   };
 };
 
@@ -56,6 +53,17 @@ const interestingStates = [
   "halted_by_moderator",
 ];
 
+const STATE_COLORS = {
+  initial_prompt_review: "rgba(54, 162, 235, 0.5)",
+  prompt_lottery_waiting: "rgba(255, 99, 132, 0.5)",
+  growing: "rgba(255, 159, 64, 0.5)",
+  backlog_ranking: "rgba(255, 205, 86, 0.5)",
+  ranking: "rgba(75, 192, 192, 0.5)",
+  ready_for_export: "rgba(153, 102, 255, 0.5)",
+  aborted_low_grade: "rgba(201, 203, 207, 0.5)",
+  halted_by_moderator: "rgba(100, 100, 100, 0.5)",
+};
+
 type LangRow = {
   language: string;
   initial_prompt_review: number;
@@ -70,11 +78,7 @@ type LangRow = {
 
 function getTableData(
   stat: StatType & {
-    stats: {
-      lang: string;
-      state: string;
-      count: number;
-    }[];
+    stats: MessageTreesStatesByLang;
   },
   t
 ) {
@@ -179,7 +183,13 @@ export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsPr
   const color = useColorModeValue(colors.light.text, colors.dark.text);
   const uniqueLangs = Array.from(new Set(stat.stats.map((s) => s.lang)));
   const [selectedLang, setSelectedLang] = useState("en");
-  const stats = stat.stats.filter((item) => item.lang === selectedLang);
+  const stats = stat.stats
+    .filter((item) => item.lang === selectedLang)
+    .sort((a, b) => {
+      const aIndex = interestingStates.indexOf(a.state);
+      const bIndex = interestingStates.indexOf(b.state);
+      return aIndex - bIndex;
+    });
 
   return (
     <>
@@ -190,7 +200,7 @@ export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsPr
           </option>
         ))}
       </Select>
-      <Box minH={330}>
+      <Box minH={410}>
         <Doughnut
           width={100}
           height={50}
@@ -200,6 +210,7 @@ export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsPr
             datasets: [
               {
                 data: stats.map((item) => item.count),
+                backgroundColor: stats.map((item) => STATE_COLORS[item.state]),
               },
             ],
           }}
@@ -211,6 +222,7 @@ export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsPr
 
 const barOptions = {
   responsive: true,
+  maintainAspectRatio: false,
   scales: {
     x: {
       stacked: true,
@@ -221,10 +233,10 @@ const barOptions = {
   },
 };
 
-export const MessageTreeStateStatsStacked = ({ stat, titleFn }: MessageTreeStateStatsProps) => {
+export const MessageTreeStateStatsStacked = ({ stat }: MessageTreeStateStatsProps) => {
   const { t } = useTranslation("stats");
-  const uniqueLangs = useMemo(() => Array.from(new Set(stat.stats.map((s) => s.lang))), stat.stats);
-  const uniqueStates = useMemo(() => Array.from(new Set(stat.stats.map((s) => s.state))), stat.stats);
+  const uniqueLangs = useMemo(() => Array.from(new Set(stat.stats.map((s) => s.lang))), [stat.stats]);
+  const uniqueStates = useMemo(() => Array.from(new Set(stat.stats.map((s) => s.state))), [stat.stats]);
 
   const barDatasets = [];
   uniqueStates.forEach((state) => {
@@ -238,6 +250,7 @@ export const MessageTreeStateStatsStacked = ({ stat, titleFn }: MessageTreeState
     barDatasets.push({
       label: t(getTypeSafei18nKey(state)),
       data: uniqueLangs.map((item) => langCount[item]),
+      backgroundColor: STATE_COLORS[state],
     });
   });
 
@@ -255,10 +268,30 @@ export const MessageTreeStateStatsStacked = ({ stat, titleFn }: MessageTreeState
   );
 };
 
+// Returns the color for the bar chart. If the stat is a message tree state, it returns
+// an array of colors depending on the state. Otherwise, it returns an empty string, so
+// that the default color is used.
+function getBackgroundColor(stat, data) {
+  if (stat.name === "message_trees_by_state") {
+    return data.map((item) => STATE_COLORS[item]);
+  }
+  return "";
+}
+
 export const Chart = ({ stat, titleFn, type: Component }: ChartProps) => {
   const data = Object.keys(stat.stats);
   const { t } = useTranslation("stats");
   const color = useColorModeValue(colors.light.text, colors.dark.text);
+
+  if (stat.name === "message_trees_by_state") {
+    // Order data by interesting state
+    data.sort((a, b) => {
+      const aIndex = interestingStates.indexOf(a);
+      const bIndex = interestingStates.indexOf(b);
+      return aIndex - bIndex;
+    });
+  }
+
   return (
     <Component
       width={100}
@@ -269,6 +302,7 @@ export const Chart = ({ stat, titleFn, type: Component }: ChartProps) => {
         datasets: [
           {
             data: data.map((lang) => stat.stats[lang]),
+            backgroundColor: getBackgroundColor(stat, data),
           },
         ],
       }}
@@ -276,7 +310,7 @@ export const Chart = ({ stat, titleFn, type: Component }: ChartProps) => {
   );
 };
 
-export const MessageTreeStateStatsTable = ({ stat, titleFn }: MessageTreeStateStatsProps) => {
+export const MessageTreeStateStatsTable = ({ stat }: MessageTreeStateStatsProps) => {
   const { t } = useTranslation("stats");
   const { data, columns } = getTableData(stat, t);
 
@@ -286,15 +320,8 @@ export const MessageTreeStateStatsTable = ({ stat, titleFn }: MessageTreeStateSt
 export const statComponents: Record<string, React.FC<{ stat: StatType }>> = {
   human_messages_by_role: ({ stat }: ChartProps) => <Chart stat={stat} type={Pie} />,
   message_trees_by_state: ({ stat }: ChartProps) => <Chart stat={stat} type={Doughnut} />,
-  users_accepted_tos: () => null,
   message_trees_states_by_lang: ({ stat }: MessageTreeStateStatsProps) => (
     <MessageTreeStateStats stat={stat} titleFn={getLocaleDisplayName} />
-  ),
-  message_trees_states_by_lang_table: ({ stat }: MessageTreeStateStatsProps) => (
-    <MessageTreeStateStatsTable stat={stat} titleFn={getLocaleDisplayName} />
-  ),
-  message_trees_states_by_lang_stacked: ({ stat }: MessageTreeStateStatsProps) => (
-    <MessageTreeStateStatsStacked stat={stat} titleFn={getLocaleDisplayName} />
   ),
   human_messages_by_lang: ({ stat }: ChartProps) => (
     <Chart stat={stat} titleFn={getLocaleDisplayName} type={Doughnut} />

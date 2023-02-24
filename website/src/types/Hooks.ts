@@ -7,6 +7,8 @@ export type TaskApiHook<Task extends BaseTask, ResponseContent> = {
   isLoading: boolean;
   completeTask: (interaction: ResponseContent) => Promise<void>;
   rejectTask: () => Promise<void>;
+  isSubmitting: boolean;
+  isRejecting: boolean;
 };
 
 export type TaskApiHooks = Record<TaskType, (args: TaskType) => TaskApiHook<BaseTask, AllTaskReplies>>;

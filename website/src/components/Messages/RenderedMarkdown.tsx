@@ -70,6 +70,9 @@ const sx: SystemStyleObject = {
       borderBottomColor: "gray.700",
     },
   },
+  "ol li::marker": {
+    content: "counter(list-item) '.'",
+  },
 };
 
 const plugins = [remarkGfm];

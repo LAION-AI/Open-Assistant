@@ -1,3 +1,4 @@
+import { useToast } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useReducer } from "react";
 import { useMemo, useRef } from "react";
@@ -7,7 +8,9 @@ import { EvaluateTask } from "src/components/Tasks/EvaluateTask";
 import { LabelTask } from "src/components/Tasks/LabelTask";
 import { UnchangedWarning } from "src/components/Tasks/UnchangedWarning";
 import { useTaskContext } from "src/context/TaskContext";
+import { ERROR_CODES } from "src/lib/errors";
 import { getTypeSafei18nKey } from "src/lib/i18n";
+import { OasstError } from "src/lib/oasst_api_client";
 import { TaskCategory, TaskInfo } from "src/types/Task";
 import { BaseTask, TaskContent, TaskReplyValidity } from "src/types/Task";
 import { CreateTaskType, LabelTaskType, RankTaskType } from "src/types/Tasks";
@@ -63,10 +66,10 @@ export interface TaskSurveyProps<TaskType extends BaseTask, ReplyContent> {
 }
 
 export const Task = () => {
-  const { t } = useTranslation("tasks");
+  const { t } = useTranslation(["tasks", "error"]);
   const rootEl = useRef<HTMLDivElement>(null);
   const replyContent = useRef<TaskContent>(null);
-  const { rejectTask, completeTask, isLoading, task, taskInfo } = useTaskContext();
+  const { rejectTask, completeTask, isLoading, task, taskInfo, isRejecting, isSubmitting } = useTaskContext();
   const [taskStatus, taskEvent] = useReducer(
     (
       status: TaskStatus,
@@ -96,6 +99,9 @@ export const Task = () => {
               return { mode: "EDIT", replyValidity: "VALID" };
             case "DEFAULT_WARN":
               return { mode: "EDIT", replyValidity: "DEFAULT" };
+            case "SUBMITTED":
+              // allow return to edit from subbmitted mode (error happen during submitting task)
+              return { mode: "EDIT", replyValidity: "VALID" };
             default:
               return status;
           }
@@ -115,7 +121,7 @@ export const Task = () => {
 
   useEffect(() => {
     taskEvent({ action: "NEW_TASK" });
-    scrollToTop(rootEl.current);
+    rootEl.current && scrollToTop(rootEl.current);
   }, [task.id]);
 
   const onReplyChanged = useCallback(
@@ -125,12 +131,34 @@ export const Task = () => {
     [replyContent]
   );
 
+  const toast = useToast();
+
   const submitResponse = useCallback(async () => {
     if (taskStatus.mode === "REVIEW") {
       taskEvent({ action: "SET_SUBMITTED" });
-      await completeTask(replyContent.current);
+      try {
+        await completeTask(replyContent.current);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        if (!(err instanceof OasstError)) {
+          return console.log(err); // should not reach here
+        }
+        const errorCode = err.errorCode;
+        if (errorCode === ERROR_CODES.TASK_REQUESTED_TYPE_NOT_AVAILABLE) {
+          throw err; // will be handled in useGernericTaskAPI hook
+        }
+        const fallbackMessage = err.message || t("error:default");
+
+        toast({
+          status: "error",
+          description: t(getTypeSafei18nKey(`error:err_${errorCode}`), fallbackMessage, {
+            task_type: t(getTypeSafei18nKey(`tasks:${taskInfo.type}.label`)),
+          }),
+        });
+        taskEvent({ action: "RETURN_EDIT" });
+      }
     }
-  }, [taskStatus.mode, completeTask]);
+  }, [taskStatus.mode, completeTask, toast, t, taskInfo.type]);
 
   const taskTypeComponent = useMemo(() => {
     switch (taskInfo.category) {
@@ -177,6 +205,8 @@ export const Task = () => {
         task={task}
         taskStatus={taskStatus}
         isLoading={isLoading}
+        isRejecting={isRejecting}
+        isSubmitting={isSubmitting}
         onEdit={() => taskEvent({ action: "RETURN_EDIT" })}
         onReview={() => taskEvent({ action: "REVIEW" })}
         onSubmit={submitResponse}
@@ -196,7 +226,7 @@ export const Task = () => {
   );
 };
 
-const scrollToTop = (element: HTMLElement) => {
+const scrollToTop = (element: HTMLElement | null) => {
   while (element) {
     element.scrollTop = 0;
     element = element.parentElement;
