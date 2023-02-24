@@ -9,11 +9,14 @@ import sqlmodel
 from fastapi import Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from oasst_inference_server import auth, client_handler, deps, interface, models, worker_handler
-from oasst_inference_server.chat_repository import ChatRepository
+from oasst_inference_server import auth, client_handler, deps, models, worker_handler
 from oasst_inference_server.settings import settings
+from oasst_inference_server.user_chat_repository import UserChatRepository
 from oasst_shared.schemas import inference, protocol
 from prometheus_fastapi_instrumentator import Instrumentator
+
+from inference.server.oasst_inference_server.schemas import chat as chat_schema
+from inference.server.oasst_inference_server.schemas import worker as worker_schema
 
 app = fastapi.FastAPI()
 
@@ -177,39 +180,33 @@ async def callback_discord(
 
 @app.get("/chat")
 async def list_chats(
-    user_id: str = Depends(auth.get_current_user_id),
-    cr: ChatRepository = Depends(deps.create_chat_repository),
-) -> interface.ListChatsResponse:
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+) -> chat_schema.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
-    chats = cr.get_chats(user_id)
+    chats = ucr.get_chats()
     chats_list = [chat.to_list_read() for chat in chats]
-    return interface.ListChatsResponse(chats=chats_list)
+    return chats.ListChatsResponse(chats=chats_list)
 
 
 @app.post("/chat")
 async def create_chat(
-    request: interface.CreateChatRequest,
-    user_id: str = Depends(auth.get_current_user_id),
-    cr: ChatRepository = Depends(deps.create_chat_repository),
-) -> interface.ChatListRead:
+    request: chat_schema.CreateChatRequest,
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+) -> chat_schema.ChatListRead:
     """Allows a client to create a new chat."""
     logger.info(f"Received {request=}")
-    chat = cr.create_chat(user_id)
+    chat = ucr.create_chat()
     return chat.to_list_read()
 
 
 @app.get("/chat/{id}")
 async def get_chat(
     id: str,
-    user_id: str = Depends(auth.get_current_user_id),
-    cr: ChatRepository = Depends(deps.create_chat_repository),
-) -> interface.ChatRead:
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+) -> chat_schema.ChatRead:
     """Allows a client to get the current state of a chat."""
-    chat = cr.get_chat_by_id(id)
-    # currently, user_id will be None if server auth is disabled
-    if user_id and chat.user_id != user_id:
-        raise HTTPException(status_code=404, detail="Chat not found")
+    chat = ucr.get_chat_by_id(id)
     return chat.to_read()
 
 
@@ -223,7 +220,7 @@ app.get("/worker_session")(worker_handler.list_worker_sessions)
 
 @app.put("/worker")
 def create_worker(
-    request: interface.CreateWorkerRequest,
+    request: worker_schema.CreateWorkerRequest,
     root_token: str = Depends(get_root_token),
     session: sqlmodel.Session = Depends(deps.create_session),
 ):
