@@ -52,8 +52,10 @@ class ChatRepository:
         message = self.session.exec(query).one()
         return message
 
-    def get_chat_by_id(self, chat_id: str, for_update=False) -> models.DbChat:
+    def get_chat_by_id(self, chat_id: str, user_id: str | None = None, for_update=False) -> models.DbChat:
         query = sqlmodel.select(models.DbChat).where(models.DbChat.id == chat_id)
+        if user_id:
+            query = query.where(models.DbChat.user_id == user_id)
         if for_update:
             query = query.with_for_update()
         chat = self.session.exec(query).one()
