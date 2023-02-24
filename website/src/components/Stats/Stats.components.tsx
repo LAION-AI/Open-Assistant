@@ -53,6 +53,17 @@ const interestingStates = [
   "halted_by_moderator",
 ];
 
+const STATE_COLORS = {
+  initial_prompt_review: "rgba(54, 162, 235, 0.5)",
+  prompt_lottery_waiting: "rgba(255, 99, 132, 0.5)",
+  growing: "rgba(255, 159, 64, 0.5)",
+  backlog_ranking: "rgba(255, 205, 86, 0.5)",
+  ranking: "rgba(75, 192, 192, 0.5)",
+  ready_for_export: "rgba(153, 102, 255, 0.5)",
+  aborted_low_grade: "rgba(201, 203, 207, 0.5)",
+  halted_by_moderator: "rgba(100, 100, 100, 0.5)",
+};
+
 type LangRow = {
   language: string;
   initial_prompt_review: number;
@@ -172,7 +183,13 @@ export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsPr
   const color = useColorModeValue(colors.light.text, colors.dark.text);
   const uniqueLangs = Array.from(new Set(stat.stats.map((s) => s.lang)));
   const [selectedLang, setSelectedLang] = useState("en");
-  const stats = stat.stats.filter((item) => item.lang === selectedLang);
+  const stats = stat.stats
+    .filter((item) => item.lang === selectedLang)
+    .sort((a, b) => {
+      const aIndex = interestingStates.indexOf(a.state);
+      const bIndex = interestingStates.indexOf(b.state);
+      return aIndex - bIndex;
+    });
 
   return (
     <>
@@ -193,6 +210,7 @@ export const MessageTreeStateStats = ({ stat, titleFn }: MessageTreeStateStatsPr
             datasets: [
               {
                 data: stats.map((item) => item.count),
+                backgroundColor: stats.map((item) => STATE_COLORS[item.state]),
               },
             ],
           }}
@@ -232,6 +250,7 @@ export const MessageTreeStateStatsStacked = ({ stat }: MessageTreeStateStatsProp
     barDatasets.push({
       label: t(getTypeSafei18nKey(state)),
       data: uniqueLangs.map((item) => langCount[item]),
+      backgroundColor: STATE_COLORS[state],
     });
   });
 
@@ -249,10 +268,30 @@ export const MessageTreeStateStatsStacked = ({ stat }: MessageTreeStateStatsProp
   );
 };
 
+// Returns the color for the bar chart. If the stat is a message tree state, it returns
+// an array of colors depending on the state. Otherwise, it returns an empty string, so
+// that the default color is used.
+function getBackgroundColor(stat, data) {
+  if (stat.name === "message_trees_by_state") {
+    return data.map((item) => STATE_COLORS[item]);
+  }
+  return "";
+}
+
 export const Chart = ({ stat, titleFn, type: Component }: ChartProps) => {
   const data = Object.keys(stat.stats);
   const { t } = useTranslation("stats");
   const color = useColorModeValue(colors.light.text, colors.dark.text);
+
+  if (stat.name === "message_trees_by_state") {
+    // Order data by interesting state
+    data.sort((a, b) => {
+      const aIndex = interestingStates.indexOf(a);
+      const bIndex = interestingStates.indexOf(b);
+      return aIndex - bIndex;
+    });
+  }
+
   return (
     <Component
       width={100}
@@ -263,6 +302,7 @@ export const Chart = ({ stat, titleFn, type: Component }: ChartProps) => {
         datasets: [
           {
             data: data.map((lang) => stat.stats[lang]),
+            backgroundColor: getBackgroundColor(stat, data),
           },
         ],
       }}
