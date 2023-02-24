@@ -1,6 +1,6 @@
 import { Box, Card, CardBody, CardHeader, Divider, Flex, Heading } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import React from "react";
+import React, { useCallback } from "react";
 import { getTypeSafei18nKey } from "src/lib/i18n";
 import { Stats as StatsType } from "src/types/Stat";
 
@@ -29,6 +29,11 @@ export const Stats = ({ data }: StatsProps) => {
   const getStatByName = (name: string) => data.stats_by_name[name];
 
   const messageTreeStats = getStatByName("message_trees_states_by_lang");
+
+  // this will be empty on a fresh db:
+  if (!messageTreeStats) {
+    return null;
+  }
 
   return (
     <>
