@@ -30,6 +30,7 @@ def get_title(video_id, languages=['en']):
 
 
 def generate_instruction(title: str) -> str:
+    # TODO: Ask a generative LM, "Can you rephrase the title of {title} into a request form?"
     raise NotImplementedError
 
 
@@ -50,9 +51,8 @@ def main(output_dir: str = "data"):
     video_id_pattern = '"[0-9A-Za-z_-]{11}"'
     video_ids = get_video_ids(filename, video_id_pattern)
 
-    # TODO: get title and make a "instruction" of asking for how-to
+    # TODO: get title and generate an "instruction" from it, using an LLM
     # TODO: get_subtitles and organize them into a long string as a "response"
-    # TODO: organize as instruction, response, source as YouTube
     dataset = []
     for video_id in video_ids:
         title = get_title(video_id)
