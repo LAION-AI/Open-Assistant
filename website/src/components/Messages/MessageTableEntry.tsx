@@ -309,6 +309,9 @@ const MessageActions = ({
           >
             {t("copy_message_link")}
           </MenuItem>
+          <MenuItem onClick={() => handleCopy(message.text)} icon={<Copy />}>
+            {t("copy_message_text")}
+          </MenuItem>
           {!!isAdminOrMod && (
             <>
               <MenuDivider />
