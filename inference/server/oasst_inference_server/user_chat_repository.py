@@ -23,14 +23,12 @@ class UserChatRepository(pydantic.BaseModel):
 
     def get_chats(self) -> list[models.DbChat]:
         query = sqlmodel.select(models.DbChat)
-        if self.user_id:
-            query = query.where(models.DbChat.user_id == self.user_id)
+        query = query.where(models.DbChat.user_id == self.user_id)
         return self.session.exec(query).all()
 
     def get_chat_by_id(self, chat_id: str, for_update=False) -> models.DbChat:
         query = sqlmodel.select(models.DbChat).where(models.DbChat.id == chat_id)
-        if self.user_id:
-            query = query.where(models.DbChat.user_id == self.user_id)
+        query = query.where(models.DbChat.user_id == self.user_id)
         if for_update:
             query = query.with_for_update()
         chat = self.session.exec(query).one()
@@ -47,11 +45,11 @@ class UserChatRepository(pydantic.BaseModel):
             models.DbMessage.id == message_id,
             models.DbMessage.role == "prompter",
         )
-        if self.user_id:
-            query = query.where(models.DbMessage.user_id == self.user_id)
         if for_update:
             query = query.with_for_update()
         message = self.session.exec(query).one()
+        if message.chat.user_id != self.user_id:
+            raise fastapi.HTTPException(status_code=400, detail="Message not found")
         return message
 
     def add_prompter_message(self, chat_id: str, parent_id: str | None, content: str) -> models.DbMessage:
