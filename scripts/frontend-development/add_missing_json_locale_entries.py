@@ -63,7 +63,11 @@ parser.add_argument(
     required=True,
 )
 parser.add_argument(
-    "--sort", help="Use to sort entries following source entries order", action="store_true", dest="sort_keys", default=False
+    "--sort",
+    help="Use to sort entries following source entries order",
+    action="store_true",
+    dest="sort_keys",
+    default=False,
 )
 
 
