@@ -6,7 +6,7 @@ from oasst_inference_server import models
 from oasst_shared.schemas import inference
 
 
-class UserChatRepository:
+class UserChatRepository(pydantic.BaseModel):
     session: sqlmodel.Session
     user_id: str = pydantic.Field(..., min_length=1)
     do_commit: bool = True
