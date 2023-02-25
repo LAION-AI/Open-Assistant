@@ -45,6 +45,8 @@ class DbChat(SQLModel, table=True):
 
     id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
 
+    user_id: str = Field(foreign_key="user.id", index=True)
+
     messages: list[DbMessage] = Relationship(back_populates="chat")
 
     def to_list_read(self) -> interface.ChatListRead:

@@ -20,8 +20,11 @@ class ChatRepository:
         if self.do_commit:
             self.session.commit()
 
-    def get_chats(self) -> list[models.DbChat]:
-        return self.session.exec(sqlmodel.select(models.DbChat)).all()
+    def get_chats(self, user_id: str | None = None) -> list[models.DbChat]:
+        query = sqlmodel.select(models.DbChat)
+        if user_id:
+            query = query.filter(models.DbChat.user_id == user_id)
+        return self.session.exec(query).all()
 
     def get_pending_chats(self) -> list[models.DbChat]:
         return self.session.exec(
@@ -30,10 +33,6 @@ class ChatRepository:
                 models.DbChat.message_request_state == interface.MessageRequestState.pending,
             )
         ).all()
-
-    def get_chat_list(self) -> list[interface.ChatListRead]:
-        chats = self.get_chats()
-        return [chat.to_read() for chat in chats]
 
     def get_prompter_message_by_id(self, message_id: str, for_update=False) -> models.DbMessage:
         query = sqlmodel.select(models.DbMessage).where(
@@ -53,15 +52,17 @@ class ChatRepository:
         message = self.session.exec(query).one()
         return message
 
-    def get_chat_by_id(self, chat_id: str, for_update=False) -> models.DbChat:
+    def get_chat_by_id(self, chat_id: str, user_id: str | None = None, for_update=False) -> models.DbChat:
         query = sqlmodel.select(models.DbChat).where(models.DbChat.id == chat_id)
+        if user_id:
+            query = query.where(models.DbChat.user_id == user_id)
         if for_update:
             query = query.with_for_update()
         chat = self.session.exec(query).one()
         return chat
 
-    def create_chat(self) -> models.DbChat:
-        chat = models.DbChat()
+    def create_chat(self, user_id: str) -> models.DbChat:
+        chat = models.DbChat(user_id=user_id)
         self.session.add(chat)
         self.maybe_commit()
         return chat

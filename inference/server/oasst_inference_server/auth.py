@@ -11,6 +11,18 @@ from oasst_inference_server.settings import settings
 oauth2_scheme = APIKeyCookie(name=settings.auth_cookie_name)
 
 
+def derive_key() -> bytes:
+    """Derive a key from the auth secret."""
+    hkdf = HKDF(
+        algorithm=hashes.SHA256(),
+        length=settings.auth_length,
+        salt=settings.auth_salt,
+        info=settings.auth_info,
+    )
+    key = hkdf.derive(settings.auth_secret)
+    return key
+
+
 def create_access_token(data: dict) -> str:
     """Create encoded JSON Web Token (JWT) using the given data."""
     expires_delta = timedelta(minutes=settings.auth_access_token_expire_minutes)
@@ -19,13 +31,7 @@ def create_access_token(data: dict) -> str:
     to_encode.update({"exp": expire})
 
     # Generate a key from the auth secret
-    hkdf = HKDF(
-        algorithm=hashes.SHA256(),
-        length=settings.auth_length,
-        salt=settings.auth_salt,
-        info=settings.auth_info,
-    )
-    key = hkdf.derive(settings.auth_secret)
+    key = derive_key()
 
     # Encrypt the payload using JWE
     token: bytes = jwe.encrypt(to_encode, key)
@@ -33,18 +39,12 @@ def create_access_token(data: dict) -> str:
 
 
 def get_current_user_id(token: str = Security(oauth2_scheme)) -> str | None:
+    """Decode the current user JWT token and return the payload."""
     if not settings.use_auth:
         return None
 
-    """Decode the current user JWT token and return the payload."""
     # Generate a key from the auth secret
-    hkdf = HKDF(
-        algorithm=hashes.SHA256(),
-        length=settings.auth_length,
-        salt=settings.auth_salt,
-        info=settings.auth_info,
-    )
-    key = hkdf.derive(settings.auth_secret)
+    key = derive_key()
 
     # Decrypt the JWE token
     try:
