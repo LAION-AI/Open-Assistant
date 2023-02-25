@@ -52,13 +52,34 @@ docker attach open-assistant-inference-text-client-1
 > **Note:** Please wait for the `inference-text-generation-server` service to
 > output `{"message":"Connected"}` before starting to chat.
 
-## Development Variant 2 (you'll need tmux)
+## Development Variant 2 (tmux terminal multiplexing)
 
-Run `./full-dev-setup.sh` to start the full development setup. Make sure to wait
-until the 2nd terminal is ready and says `{"message":"Connected"}` before
-entering input into the last terminal.
+Ensure you have `tmux` installed on you machine and the following packages
+installed into the Python environment;
+
+- `uvicorn`
+- `worker/requirements.txt`
+- `server/requirements.txt`
+- `text-client/requirements.txt`
+- `oasst_shared`
+
+You can run development setup to start the full development setup.
+
+```bash
+cd inference
+./full-dev-setup.sh
+```
+
+> Make sure to wait until the 2nd terminal is ready and says
+> `{"message":"Connected"}` before entering input into the last terminal.
 
 ## Development Variant 3 (you'll need multiple terminals)
+
+Run a postgres container:
+
+```bash
+docker run --rm -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres --name postgres postgres
+```
 
 Run a redis container (or use the one of the general docker compose file):
 
@@ -71,7 +92,7 @@ Run the inference server:
 ```bash
 cd server
 pip install -r requirements.txt
-uvicorn main:app --reload
+DEBUG_API_KEYS='["0000"]' uvicorn main:app --reload
 ```
 
 Run one (or more) workers:
@@ -89,7 +110,7 @@ running:
 docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 ghcr.io/huggingface/text-generation-inference
 ```
 
-Run the client:
+Run the text client:
 
 ```bash
 cd text-client

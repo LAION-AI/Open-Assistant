@@ -23,10 +23,16 @@ def custom_json_deserializer(s):
     if not isinstance(d, dict):
         return d
     match d.get("_classname_"):
-        case "Conversation":
-            return models.protocol.Conversation.parse_obj(d)
+        case "WorkParameters":
+            return models.inference.WorkParameters.parse_obj(d)
+        case "WorkerConfig":
+            return models.inference.WorkerConfig.parse_obj(d)
         case "MessageRequest":
             return models.interface.MessageRequest.parse_obj(d)
+        case "WorkRequest":
+            return models.inference.WorkRequest.parse_obj(d)
+        case "WorkResponsePacket":
+            return models.inference.WorkResponsePacket.parse_obj(d)
         case None:
             return d
         case _:

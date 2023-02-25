@@ -51,15 +51,12 @@ export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = A
   }, [requestNewTask]);
 
   const { trigger: sendRejection } = useSWRMutation("/api/reject_task", post, { onSuccess: skipTask });
-  const rejectTask = useCallback(
-    async (reason: string) => {
-      if (response.taskAvailability !== "AVAILABLE") {
-        throw new Error("Cannot reject task that is not yet ready");
-      }
-      await sendRejection({ id: response.id, reason });
-    },
-    [response, sendRejection]
-  );
+  const rejectTask = useCallback(async () => {
+    if (response.taskAvailability !== "AVAILABLE") {
+      throw new Error("Cannot reject task that is not yet ready");
+    }
+    await sendRejection({ id: response.id });
+  }, [response, sendRejection]);
 
   const completeTask = useCallback(
     async (content: ResponseContent) => {

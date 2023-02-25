@@ -21,7 +21,15 @@ def chat_queue(redis_client: redis.Redis, chat_id: str) -> RedisQueue:
     return RedisQueue(redis_client, f"chat:{chat_id}")
 
 
+def message_queue(redis_client: redis.Redis, message_id: str) -> RedisQueue:
+    return RedisQueue(redis_client, f"message:{message_id}")
+
+
 def work_queue(redis_client: redis.Redis, worker_compat_hash: str) -> RedisQueue:
     if worker_compat_hash not in settings.allowed_worker_compat_hashes:
         raise ValueError(f"Worker compat hash {worker_compat_hash} not allowed")
     return RedisQueue(redis_client, f"work:{worker_compat_hash}")
+
+
+def compliance_queue(redis_client: redis.Redis, worker_id: str) -> RedisQueue:
+    return RedisQueue(redis_client, f"compliance:{worker_id}")

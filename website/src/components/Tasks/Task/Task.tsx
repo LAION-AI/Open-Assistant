@@ -184,9 +184,9 @@ export const Task = () => {
       />
       <UnchangedWarning
         show={taskStatus.mode === "DEFAULT_WARN"}
-        title={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_title`)) || t("default.unchanged_title")}
-        message={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_message`)) || t("default.unchanged_message")}
-        continueButtonText={"Continue anyway"}
+        title={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_title`), t("default.unchanged_title"))}
+        message={t(getTypeSafei18nKey(`${taskInfo.id}.unchanged_message`), t("default.unchanged_message"))}
+        continueButtonText={t(getTypeSafei18nKey(`${taskInfo.id}.continue_anyway`), t("default.continue_anyway"))}
         onClose={() => taskEvent({ action: "RETURN_EDIT" })}
         onContinueAnyway={() => {
           taskEvent({ action: "ACCEPT_DEFAULT" });

@@ -143,8 +143,8 @@ class SFTTrainer(Trainer):
             train_sampler = self._get_train_sampler()
         else:
             train_sampler = self.sampler
-
-        return DataLoader(
+            print("custom sampler found!!", len(train_sampler))
+        dataloader = DataLoader(
             train_dataset,
             batch_size=self._train_batch_size,
             sampler=train_sampler,
@@ -154,6 +154,8 @@ class SFTTrainer(Trainer):
             pin_memory=self.args.dataloader_pin_memory,
             worker_init_fn=seed_worker,
         )
+        print(len(dataloader))
+        return dataloader
 
 
 def argument_parsing(notebook=False, notebook_args=None):
