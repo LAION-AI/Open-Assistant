@@ -9,13 +9,25 @@ import sqlmodel
 from fastapi import Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from oasst_inference_server import auth, client_handler, deps, interface, models, worker_handler
-from oasst_inference_server.chat_repository import ChatRepository
+from oasst_inference_server import auth, client_handler, deps, models, worker_handler
+from oasst_inference_server.schemas import chat as chat_schema
+from oasst_inference_server.schemas import worker as worker_schema
 from oasst_inference_server.settings import settings
+from oasst_inference_server.user_chat_repository import UserChatRepository
 from oasst_shared.schemas import inference, protocol
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = fastapi.FastAPI()
+
+
+@app.middleware("http")
+async def log_exceptions(request: fastapi.Request, call_next):
+    try:
+        response = await call_next(request)
+    except Exception:
+        logger.exception("Exception in request")
+        raise
+    return response
 
 
 # add prometheus metrics at /metrics
@@ -165,47 +177,40 @@ async def callback_discord(
         db.refresh(user)
 
     # Discord account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token(
-        {"user_id": user.id},
-        settings.auth_secret,
-        settings.auth_algorithm,
-        settings.auth_access_token_expire_minutes,
-    )
+    access_token = auth.create_access_token({"user_id": user.id})
 
     return protocol.Token(access_token=access_token, token_type="bearer")
 
 
 @app.get("/chat")
 async def list_chats(
-    user_id: str = Depends(auth.get_current_user_id),
-    cr: ChatRepository = Depends(deps.create_chat_repository),
-) -> interface.ListChatsResponse:
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+) -> chat_schema.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
-    chats = cr.get_chat_list()
-    return interface.ListChatsResponse(chats=chats)
+    chats = ucr.get_chats()
+    chats_list = [chat.to_list_read() for chat in chats]
+    return chats.ListChatsResponse(chats=chats_list)
 
 
 @app.post("/chat")
 async def create_chat(
-    request: interface.CreateChatRequest,
-    user_id: str = Depends(auth.get_current_user_id),
-    cr: ChatRepository = Depends(deps.create_chat_repository),
-) -> interface.ChatListRead:
+    request: chat_schema.CreateChatRequest,
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+) -> chat_schema.ChatListRead:
     """Allows a client to create a new chat."""
     logger.info(f"Received {request=}")
-    chat = cr.create_chat()
+    chat = ucr.create_chat()
     return chat.to_list_read()
 
 
 @app.get("/chat/{id}")
 async def get_chat(
     id: str,
-    user_id: str = Depends(auth.get_current_user_id),
-    cr: ChatRepository = Depends(deps.create_chat_repository),
-) -> interface.ChatRead:
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+) -> chat_schema.ChatRead:
     """Allows a client to get the current state of a chat."""
-    chat = cr.get_chat_by_id(id)
+    chat = ucr.get_chat_by_id(id)
     return chat.to_read()
 
 
@@ -221,7 +226,7 @@ app.get("/worker_session")(worker_handler.list_worker_sessions)
 
 @app.put("/worker")
 def create_worker(
-    request: interface.CreateWorkerRequest,
+    request: worker_schema.CreateWorkerRequest,
     root_token: str = Depends(get_root_token),
     session: sqlmodel.Session = Depends(deps.create_session),
 ):
@@ -270,3 +275,29 @@ def query_user_by_provider_id(db: sqlmodel.Session, discord_id: str | None = Non
 
     user: models.DbUser = user_qry.first()
     return user
+
+
+@app.get("/auth/login/debug")
+async def login_debug(username: str, db: sqlmodel.Session = Depends(deps.create_session)):
+    """Login using a debug username, which the system will accept unconditionally."""
+
+    if not settings.allow_debug_auth:
+        raise HTTPException(status_code=403, detail="Debug auth is not allowed")
+
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required")
+
+    # Try to find the user
+    user: models.DbUser = db.exec(sqlmodel.select(models.DbUser).where(models.DbUser.id == username)).one_or_none()
+
+    if user is None:
+        logger.info(f"Creating new debug user {username=}")
+        user = models.DbUser(id=username, display_name=username, provider="debug", provider_account_id=username)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    # Discord account is authenticated and linked to a user; create JWT
+    access_token = auth.create_access_token({"user_id": user.id})
+
+    return protocol.Token(access_token=access_token, token_type="bearer")

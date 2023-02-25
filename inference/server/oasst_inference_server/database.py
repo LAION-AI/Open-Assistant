@@ -28,7 +28,7 @@ def custom_json_deserializer(s):
         case "WorkerConfig":
             return models.inference.WorkerConfig.parse_obj(d)
         case "MessageRequest":
-            return models.interface.MessageRequest.parse_obj(d)
+            return models.chat_schema.MessageRequest.parse_obj(d)
         case "WorkRequest":
             return models.inference.WorkRequest.parse_obj(d)
         case "WorkResponsePacket":
@@ -44,4 +44,6 @@ db_engine = sqlmodel.create_engine(
     settings.database_uri,
     json_serializer=custom_json_serializer,
     json_deserializer=custom_json_deserializer,
+    pool_size=settings.db_pool_size,
+    max_overflow=settings.db_max_overflow,
 )
