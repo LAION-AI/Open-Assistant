@@ -7,4 +7,3 @@ describe("Home page", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Open Assistant");
   });
 });
-
