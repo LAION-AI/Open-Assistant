@@ -1,14 +1,14 @@
 {
-  "grab_a_task": "タスクを取得する！",
+  "grab_a_task": "タスクをどうぞ！",
   "create": "作成する",
   "evaluate": "評価する",
-  "label": "ラベル",
+  "label": "ラベリング",
   "dashboard": "ダッシュボード",
-  "go": "移動する",
+  "go": "やる",
   "welcome_message": {
-    "label": "{{username}}さん、ようこそ！",
+    "label": "ようこそ、{{username}}さん！",
     "contributor": "貢献者",
-    "description": "Open Assistantは、高度な言語モデルを使用して人間の言葉を理解し、応答するオープンソースのAIアシスタントです。",
-    "instruction": "タスクを完了してモデルのトレーニングを支援し、ポイントを獲得しましょう。"
+    "description": "Open Assistantは、人間を理解し、応答する、高度な言語モデルを使用・育成する、オープンソースのＡＩアシスタントです。",
+    "instruction": "タスクをこなして、モデルを育て、ポイントを稼ぎましょう。"
   }
 }
