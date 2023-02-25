@@ -1,0 +1,27 @@
+name: Test Website
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - website/**
+
+jobs:
+  test-frontend:
+    strategy:
+      matrix:
+        node: [16, 18]
+    runs-on: ubuntu-latest
+    name: Test node ${{ matrix.node }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "npm"
+          cache-dependency-path: |
+            website/package-lock.json
+      - run: npm ci
+      - run: npm test

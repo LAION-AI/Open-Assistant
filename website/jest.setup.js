@@ -18,19 +18,24 @@ CONSOLE_FAIL_TYPES.forEach((type) => {
   };
 });
 
-// Mock out useTranslation hook as per https://react.i18next.com/misc/testing
-jest.mock("react-i18next", () => ({
-  // this mock makes sure any components using the translate hook can use it without a warning being shown
-  useTranslation: () => {
-    return {
-      t: (str) => str,
-      i18n: {
-        changeLanguage: () => new Promise(() => {}),
-      },
-    };
+// use the actual localization values for testing:
+import i18n from "i18next";
+import common from "public/locales/en/common.json";
+import dashboard from "public/locales/en/dashboard.json";
+import error from "public/locales/en/error.json";
+import index from "public/locales/en/index.json";
+import labelling from "public/locales/en/labelling.json";
+import leaderboard from "public/locales/en/leaderboard.json";
+import message from "public/locales/en/message.json";
+import stats from "public/locales/en/stats.json";
+import tasks from "public/locales/en/tasks.json";
+import tos from "public/locales/en/tos.json";
+import { initReactI18next } from "react-i18next";
+
+i18n.use(initReactI18next).init({
+  lng: "en",
+  fallbackLng: "en",
+  resources: {
+    en: { common, dashboard, error, index, labelling, leaderboard, message, stats, tasks, tos },
   },
-  initReactI18next: {
-    type: "3rdParty",
-    init: () => {},
-  },
-}));
+});
