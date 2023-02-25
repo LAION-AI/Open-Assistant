@@ -60,7 +60,7 @@ class DbChat(SQLModel, table=True):
         return chat_schema.ChatRead(id=self.id, messages=[m.to_read() for m in self.messages])
 
     def get_msg_dict(self) -> dict[str, DbMessage]:
-        return {m.id: m for m in self.messagesl}
+        return {m.id: m for m in self.messages}
 
 
 class DbVote(SQLModel, table=True):

@@ -52,6 +52,18 @@ class UserChatRepository(pydantic.BaseModel):
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
         return message
 
+    def get_assistant_message_by_id(self, message_id: str, for_update=False) -> models.DbMessage:
+        query = sqlmodel.select(models.DbMessage).where(
+            models.DbMessage.id == message_id,
+            models.DbMessage.role == "assistant",
+        )
+        if for_update:
+            query = query.with_for_update()
+        message = self.session.exec(query).one()
+        if message.chat.user_id != self.user_id:
+            raise fastapi.HTTPException(status_code=400, detail="Message not found")
+        return message
+
     def add_prompter_message(self, chat_id: str, parent_id: str | None, content: str) -> models.DbMessage:
         logger.info(f"Adding prompter message {len(content)=} to chat {chat_id}")
         chat = self.get_chat_by_id(chat_id)
@@ -96,19 +108,23 @@ class UserChatRepository(pydantic.BaseModel):
         self.session.refresh(message)
         return message
 
-    def add_vote(self, message_id: str, score: int) -> None:
+    def add_vote(self, message_id: str, score: int) -> models.DbVote:
         logger.info(f"Adding vote to {message_id=}: {score=}")
-        message = self.get_message_by_id(message_id)
+        message = self.get_assistant_message_by_id(message_id)
         vote = models.DbVote(
             message_id=message.id,
             score=score,
         )
         self.session.add(vote)
         self.maybe_commit()
+        self.session.refresh(vote)
+        return vote
 
-    def add_report(self, message_id: str, reason: str, report_type: inference.ReportType) -> None:
+    def add_report(self, message_id: str, reason: str, report_type: inference.ReportType) -> models.DbReport:
         logger.info(f"Adding report to {message_id=}: {reason=}")
-        message = self.get_message_by_id(message_id)
+        message = self.get_assistant_message_by_id(message_id)
         report = models.DbReport(message_id=message.id, reason=reason, report_type=report_type)
         self.session.add(report)
         self.maybe_commit()
+        self.session.refresh(report)
+        return report
