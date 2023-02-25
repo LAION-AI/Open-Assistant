@@ -215,6 +215,8 @@ async def get_chat(
 
 
 app.post("/chat/{chat_id}/message")(client_handler.handle_create_message)
+app.post("/chat/{chat_id}/message/{message_id}/vote")(client_handler.handle_create_vote)
+app.post("/chat/{chat_id}/message/{message_id}/report")(client_handler.handle_create_report)
 
 app.websocket("/work")(worker_handler.handle_worker)
 

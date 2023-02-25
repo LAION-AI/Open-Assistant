@@ -82,6 +82,23 @@ class WorkParameters(pydantic.BaseModel):
     seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1))
 
 
+class ReportType(str, enum.Enum):
+    spam = "spam"
+    offensive = "offensive"
+    feeback = "feedback"
+
+
+class Vote(pydantic.BaseModel):
+    id: str
+    score: int
+
+
+class Report(pydantic.BaseModel):
+    id: str
+    type: ReportType
+    reason: str
+
+
 class MessageState(str, enum.Enum):
     manual = "manual"
     pending = "pending"
@@ -95,6 +112,8 @@ class MessageRead(pydantic.BaseModel):
     content: str | None
     role: Literal["prompter", "assistant"]
     state: MessageState
+    vote: Vote | None
+    report: Report | None
 
     @property
     def is_assistant(self) -> bool:

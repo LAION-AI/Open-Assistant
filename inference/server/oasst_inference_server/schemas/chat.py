@@ -37,3 +37,12 @@ class MessageResponseEvent(pydantic.BaseModel):
 class TokenResponseEvent(pydantic.BaseModel):
     token: inference.TokenResponse | None
     error: str | None
+
+
+class VoteRequest(pydantic.BaseModel):
+    score: int
+
+
+class ReportRequest(pydantic.BaseModel):
+    report_type: inference.ReportType
+    reason: str
