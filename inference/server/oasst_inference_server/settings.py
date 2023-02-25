@@ -48,7 +48,7 @@ class Settings(pydantic.BaseSettings):
 
     api_root: str = "https://inference.prod.open-assistant.io"
 
-    use_auth: bool = True
+    allow_debug_auth: bool = False
 
     auth_info: bytes = b"NextAuth.js Generated Encryption Key"
     auth_salt: bytes = b""
@@ -56,7 +56,6 @@ class Settings(pydantic.BaseSettings):
     auth_secret: bytes = b""
     auth_algorithm: str = "HS256"
     auth_access_token_expire_minutes: int = 60
-    auth_cookie_name: str = "temp"
 
     auth_discord_client_id: str = ""
     auth_discord_client_secret: str = ""
