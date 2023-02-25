@@ -28,12 +28,12 @@ import { getAdminLayout } from "src/components/Layout";
 import { AdminMessageTable } from "src/components/Messages/AdminMessageTable";
 import { Role, RoleSelect } from "src/components/RoleSelect";
 import { get, post } from "src/lib/api";
+import { getValidDisplayName } from "src/lib/display_name_validation";
 import { userlessApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { getFrontendUserIdForDiscordUser } from "src/lib/users";
 import { FetchUserMessagesCursorResponse } from "src/types/Conversation";
 import { User } from "src/types/Users";
-import { getValidDisplayName } from "src/lib/display_name_validation";
 import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 

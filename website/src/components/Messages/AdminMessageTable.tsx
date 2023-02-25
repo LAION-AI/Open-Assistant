@@ -1,10 +1,24 @@
 import { Avatar } from "@chakra-ui/avatar";
 import { Badge, Flex } from "@chakra-ui/layout";
-import { Tooltip } from "@chakra-ui/react";
+import {
+  Button,
+  HStack,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Tooltip,
+} from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/table-core";
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
-import { Eye } from "lucide-react";
+import { Eye, Trash } from "lucide-react";
 import NextLink from "next/link";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useAdminDeleteMessageTrigger } from "src/hooks/swr/useSwr";
 import { ROUTES } from "src/lib/routes";
 import { Message } from "src/types/Conversation";
 import { isKnownEmoji } from "src/types/Emoji";
@@ -16,7 +30,7 @@ import { MessageEmojiButton } from "./MessageEmojiButton";
 
 const columnHelper = createColumnHelper<Message>();
 
-const columns = [
+const getColumns = ({ handleDeleteMessage }: { handleDeleteMessage: (id: string) => void }) => [
   columnHelper.accessor("text", {
     cell: ({ getValue, row }) => {
       const limit = 80;
@@ -89,13 +103,18 @@ const columns = [
   }),
   columnHelper.accessor((row) => row.id, {
     header: "Actions",
-    cell: ({ getValue }) => (
-      <DataTableAction
-        as={NextLink}
-        href={ROUTES.ADMIN_MESSAGE_DETAIL(getValue())}
-        icon={Eye}
-        aria-label="View message"
-      />
+    cell: ({ getValue, row }) => (
+      <HStack spacing="2">
+        <DataTableAction
+          as={NextLink}
+          href={ROUTES.ADMIN_MESSAGE_DETAIL(getValue())}
+          icon={Eye}
+          aria-label="View message"
+        />
+        {!row.original.deleted && (
+          <DataTableAction onClick={() => handleDeleteMessage(getValue())} icon={Trash} aria-label="Delete message" />
+        )}
+      </HStack>
     ),
   }),
 ];
@@ -111,5 +130,42 @@ const DateDiff = ({ children }: { children: string | Date | number }) => {
 };
 
 export const AdminMessageTable = (props: StrictOmit<DataTableProps<Message>, "columns">) => {
-  return <DataTable columns={columns} {...props}></DataTable>;
+  const deleteMessage = useAdminDeleteMessageTrigger();
+  const [deleteMessageId, setDeleteMessageId] = useState<string | null>(null);
+  function onClose() {
+    setDeleteMessageId(null);
+  }
+  async function handleDeleteMessage() {
+    if (deleteMessageId) {
+      deleteMessage(deleteMessageId);
+    }
+    onClose();
+  }
+
+  const columns = useMemo(() => getColumns({ handleDeleteMessage: setDeleteMessageId }), []);
+  const { t } = useTranslation(["common", "message"]);
+
+  return (
+    <>
+      <Modal isOpen={!!deleteMessageId} onClose={onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirm deleting this message</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <div>Delete this message?</div>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onClose}>
+              {t("cancel")}
+            </Button>
+            <Button colorScheme="blue" onClick={handleDeleteMessage}>
+              {t("confirm")}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <DataTable columns={columns} {...props}></DataTable>
+    </>
+  );
 };

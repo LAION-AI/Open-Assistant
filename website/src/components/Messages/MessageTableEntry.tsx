@@ -39,12 +39,12 @@ import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
-import { del, post, put } from "src/lib/api";
+import { useAdminDeleteMessageTrigger } from "src/hooks/swr/useSwr";
+import { post, put } from "src/lib/api";
 import { ROUTES } from "src/lib/routes";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
-import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 
 const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
@@ -232,7 +232,7 @@ const MessageActions = ({
   const toast = useToast();
   const { t } = useTranslation(["message", "common"]);
   const { id } = message;
-  const { trigger: deleteMessage } = useSWRMutation(`/api/admin/delete_message/${id}`, del);
+  const deleteMessage = useAdminDeleteMessageTrigger();
 
   const { trigger: stopTree } = useSWRMutation(`/api/admin/stop_tree/${id}`, put, {
     onSuccess: () => {
@@ -248,8 +248,8 @@ const MessageActions = ({
   });
 
   const handleDelete = async () => {
-    await deleteMessage();
-    mutate((key) => typeof key === "string" && key.startsWith("/api/messages"), undefined, { revalidate: true });
+    console.log("deleting", id);
+    await deleteMessage(id);
   };
 
   const handleStop = () => {
