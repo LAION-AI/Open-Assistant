@@ -31,8 +31,13 @@ const columns = [
           ></Avatar>
           {renderText}
           {row.original.deleted && (
-            <Badge colorScheme="red" ml="1">
+            <Badge colorScheme="red" ml="1" textTransform="capitalize">
               Deleted
+            </Badge>
+          )}
+          {row.original.review_result === false && (
+            <Badge colorScheme="yellow" textTransform="capitalize">
+              Spam
             </Badge>
           )}
         </Flex>
