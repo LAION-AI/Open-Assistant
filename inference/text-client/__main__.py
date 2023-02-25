@@ -6,6 +6,7 @@ import time
 import requests
 import sseclient
 import typer
+from loguru import logger
 
 app = typer.Typer()
 
@@ -15,7 +16,14 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
     """Simple REPL client."""
     while True:
         try:
-            chat_id = requests.post(f"{backend_url}/chat", json={}).json()["id"]
+            # login
+            auth_data = requests.get(f"{backend_url}/auth/login/debug", params={"username": "test1"}).json()
+            assert auth_data["token_type"] == "bearer"
+            bearer_token = auth_data["access_token"]
+            auth_headers = {"Authorization": f"Bearer {bearer_token}"}
+
+            chat_data = requests.post(f"{backend_url}/chat", json={}, headers=auth_headers).json()
+            chat_id = chat_data["id"]
             typer.echo(f"Chat ID: {chat_id}")
             parent_id = None
             while True:
@@ -34,7 +42,10 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
                         "content": message,
                     },
                     stream=True,
-                    headers={"Accept": "text/event-stream"},
+                    headers={
+                        "Accept": "text/event-stream",
+                        **auth_headers,
+                    },
                 )
                 response.raise_for_status()
 
@@ -57,6 +68,7 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
             typer.echo("Exiting...")
             break
         except Exception as e:
+            logger.exception("Chat Error")
             typer.echo(f"Error: {e}")
             typer.echo("Error, restarting chat...")
             time.sleep(1)

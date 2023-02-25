@@ -1,4 +1,5 @@
 import fastapi
+import pydantic
 import sqlmodel
 from loguru import logger
 from oasst_inference_server import models
@@ -6,13 +7,15 @@ from oasst_shared.schemas import inference
 
 
 class UserChatRepository:
-    def __init__(self, session: sqlmodel.Session, user_id: str | None, do_commit=True) -> None:
-        self.session = session
-        self.user_id = user_id
-        self.do_commit = do_commit
+    session: sqlmodel.Session
+    user_id: str = pydantic.Field(..., min_length=1)
+    do_commit: bool = True
+
+    class Config:
+        arbitrary_types_allowed = True
 
     def as_no_commit(self) -> "UserChatRepository":
-        return UserChatRepository(self.session, self.user_id, do_commit=False)
+        return UserChatRepository(session=self.session, user_id=self.user_id, do_commit=False)
 
     def maybe_commit(self) -> None:
         if self.do_commit:

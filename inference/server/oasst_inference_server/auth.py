@@ -7,6 +7,7 @@ from fastapi import HTTPException, Security
 from fastapi.security import APIKeyCookie
 from jose import jwe
 from jose.exceptions import JWEError
+from loguru import logger
 from oasst_inference_server.settings import settings
 from starlette.status import HTTP_403_FORBIDDEN
 
@@ -30,21 +31,21 @@ def create_access_token(data: dict) -> str:
     expires_delta = timedelta(minutes=settings.auth_access_token_expire_minutes)
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire.timestamp()})
 
     # Generate a key from the auth secret
     key = derive_key()
 
     # Encrypt the payload using JWE
-    token: bytes = jwe.encrypt(to_encode, key)
+    to_encode_bytes: bytes = json.dumps(to_encode).encode()
+    token: bytes = jwe.encrypt(to_encode_bytes, key)
     return token.decode()
 
 
-def get_current_user_id(token: str = Security(oauth2_scheme)) -> str | None:
+def get_current_user_id(token: str = Security(oauth2_scheme)) -> str:
     """Get the current user ID by decoding the JWT token."""
-    if not settings.use_auth:
-        return None
     if token is None:
+        logger.debug("Received a request without a token")
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Not authenticated")
 
     # Generate a key from the auth secret

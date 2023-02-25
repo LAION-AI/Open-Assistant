@@ -20,6 +20,16 @@ from prometheus_fastapi_instrumentator import Instrumentator
 app = fastapi.FastAPI()
 
 
+@app.middleware("http")
+async def log_exceptions(request: fastapi.Request, call_next):
+    try:
+        response = await call_next(request)
+    except Exception:
+        logger.exception("Exception in request")
+        raise
+    return response
+
+
 # add prometheus metrics at /metrics
 @app.on_event("startup")
 async def enable_prom_metrics():
@@ -167,12 +177,7 @@ async def callback_discord(
         db.refresh(user)
 
     # Discord account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token(
-        {"user_id": user.id},
-        settings.auth_secret,
-        settings.auth_algorithm,
-        settings.auth_access_token_expire_minutes,
-    )
+    access_token = auth.create_access_token({"user_id": user.id})
 
     return protocol.Token(access_token=access_token, token_type="bearer")
 
@@ -268,3 +273,29 @@ def query_user_by_provider_id(db: sqlmodel.Session, discord_id: str | None = Non
 
     user: models.DbUser = user_qry.first()
     return user
+
+
+@app.get("/auth/login/debug")
+async def login_debug(username: str, db: sqlmodel.Session = Depends(deps.create_session)):
+    """Login using a debug username, which the system will accept unconditionally."""
+
+    if not settings.allow_debug_auth:
+        raise HTTPException(status_code=403, detail="Debug auth is not allowed")
+
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required")
+
+    # Try to find the user
+    user: models.DbUser = db.exec(sqlmodel.select(models.DbUser).where(models.DbUser.id == username)).one_or_none()
+
+    if user is None:
+        logger.info(f"Creating new debug user {username=}")
+        user = models.DbUser(id=username, display_name=username, provider="debug", provider_account_id=username)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    # Discord account is authenticated and linked to a user; create JWT
+    access_token = auth.create_access_token({"user_id": user.id})
+
+    return protocol.Token(access_token=access_token, token_type="bearer")

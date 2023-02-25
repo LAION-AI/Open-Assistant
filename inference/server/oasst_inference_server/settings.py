@@ -48,7 +48,7 @@ class Settings(pydantic.BaseSettings):
 
     api_root: str = "https://inference.prod.open-assistant.io"
 
-    use_auth: bool = True
+    allow_debug_auth: bool = False
 
     auth_info: bytes = b"NextAuth.js Generated Encryption Key"
     auth_salt: bytes = b""

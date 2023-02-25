@@ -35,7 +35,7 @@ def create_user_chat_repository(
     session: sqlmodel.Session = Depends(create_session),
     user_id: str = Depends(auth.get_current_user_id),
 ) -> UserChatRepository:
-    repository = UserChatRepository(session, user_id)
+    repository = UserChatRepository(session=session, user_id=user_id)
     return repository
 
 
