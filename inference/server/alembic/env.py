@@ -1,9 +1,12 @@
+import asyncio
 from logging.config import fileConfig
 
 import sqlmodel
 from alembic import context
+from loguru import logger
 from oasst_inference_server import models  # noqa: F401
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -50,7 +53,16 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def run_migrations_online() -> None:
+def do_run_migrations(connection):
+    context.configure(connection=connection, target_metadata=target_metadata)
+
+    with context.begin_transaction():
+        context.get_context()._ensure_version_table()
+        connection.execute(text("LOCK TABLE alembic_version IN ACCESS EXCLUSIVE MODE"))
+        context.run_migrations()
+
+
+async def run_async_migrations() -> None:
     """Run migrations in 'online' mode.
 
     In this scenario we need to create an Engine
@@ -61,18 +73,27 @@ def run_migrations_online() -> None:
         config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        future=True,
     )
 
-    with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+    connectable = AsyncEngine(connectable)
 
-        with context.begin_transaction():
-            context.get_context()._ensure_version_table()
-            connection.execute("LOCK TABLE alembic_version IN ACCESS EXCLUSIVE MODE")
-            context.run_migrations()
+    logger.info(f"Running migrations on {connectable.url}")
+
+    async with connectable.connect() as connection:
+        logger.info("Connected to database")
+        await connection.run_sync(do_run_migrations)
+        logger.info("Migrations complete")
+    logger.info("Disconnecting from database")
+    await connectable.dispose()
+    logger.info("Disconnected from database")
 
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online()
+    connection = config.attributes.get("connection", None)
+    if connection is None:
+        asyncio.run(run_async_migrations())
+    else:
+        do_run_migrations(connection)

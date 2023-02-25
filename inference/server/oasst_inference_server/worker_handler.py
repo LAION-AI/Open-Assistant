@@ -8,7 +8,7 @@ import sqlmodel
 import websockets.exceptions
 from fastapi import Depends
 from loguru import logger
-from oasst_inference_server import chat_repository, deps, models, queueing, worker_handler
+from oasst_inference_server import deps, models, queueing, worker_handler
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from sqlalchemy.sql.functions import random as sql_random
@@ -71,13 +71,15 @@ def get_protocol_version(protocol_version: str = protocol_version_header) -> str
     return protocol_version
 
 
-def get_worker_id(
+async def get_worker_id(
     api_key: str = Depends(get_api_key),
     protocol_version: str = Depends(get_protocol_version),
-    session: sqlmodel.Session = Depends(deps.create_session),
+    session: deps.AsyncSession = Depends(deps.create_session),
 ) -> models.DbWorker:
     logger.info(f"get_worker: {api_key=}, {protocol_version=}")
-    worker = session.exec(sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key)).one_or_none()
+    worker = (
+        await session.exec(sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key))
+    ).one_or_none()
     if worker is None:
         raise fastapi.HTTPException(
             status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
@@ -105,20 +107,20 @@ async def receive_worker_config(
     return inference.WorkerConfig.parse_raw(await websocket.receive_text())
 
 
-def get_worker(
+async def get_worker(
     worker_id: str = Depends(get_worker_id),
-    session: sqlmodel.Session = Depends(deps.create_session),
+    session: deps.AsyncSession = Depends(deps.create_session),
     with_for_update: bool = False,
 ) -> models.DbWorker:
     query = sqlmodel.select(models.DbWorker).where(models.DbWorker.id == worker_id)
     if with_for_update:
         query = query.with_for_update()
-    worker = session.exec(query).one()
+    worker = (await session.exec(query)).one()
     return worker
 
 
-def add_worker_connect_event(
-    session: sqlmodel.Session,
+async def add_worker_connect_event(
+    session: deps.AsyncSession,
     worker_id: str,
     worker_config: inference.WorkerConfig,
 ):
@@ -128,28 +130,30 @@ def add_worker_connect_event(
         worker_config=worker_config,
     )
     session.add(event)
-    session.commit()
+    await session.commit()
 
 
-def find_compliance_work_request_message(
-    session: sqlmodel.Session, worker_config: inference.WorkerConfig, worker_id: str
+async def find_compliance_work_request_message(
+    session: deps.AsyncSession, worker_config: inference.WorkerConfig, worker_id: str
 ) -> models.DbMessage | None:
     compat_hash = worker_config.compat_hash
-    message = session.exec(
-        sqlmodel.select(models.DbMessage)
-        .where(
-            models.DbMessage.role == "assistant",
-            models.DbMessage.state == inference.MessageState.complete,
-            models.DbMessage.worker_compat_hash == compat_hash,
-            models.DbMessage.worker_id != worker_id,
+    message = (
+        await session.exec(
+            sqlmodel.select(models.DbMessage)
+            .where(
+                models.DbMessage.role == "assistant",
+                models.DbMessage.state == inference.MessageState.complete,
+                models.DbMessage.worker_compat_hash == compat_hash,
+                models.DbMessage.worker_id != worker_id,
+            )
+            .order_by(sql_random())
         )
-        .order_by(sql_random())
     ).first()
     return message
 
 
-def should_do_compliance_check(session: sqlmodel.Session, worker_id: str) -> bool:
-    worker = get_worker(worker_id, session)
+async def should_do_compliance_check(session: deps.AsyncSession, worker_id: str) -> bool:
+    worker = await get_worker(worker_id, session)
     if worker.in_compliance_check:
         return False
     if worker.next_compliance_check is None:
@@ -158,21 +162,21 @@ def should_do_compliance_check(session: sqlmodel.Session, worker_id: str) -> boo
 
 
 async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, worker_config: inference.WorkerConfig):
-    with deps.manual_create_session() as session:
+    async with deps.manual_create_session() as session:
         try:
-            worker = get_worker(worker_id, session, with_for_update=True)
+            worker = await get_worker(worker_id, session, with_for_update=True)
             if worker.in_compliance_check:
                 logger.info(f"Worker {worker.id} is already in compliance check")
                 return
             worker.in_compliance_check = True
         finally:
-            session.commit()
+            await session.commit()
 
     logger.info(f"Running compliance check for worker {worker_id}")
 
-    with deps.manual_create_session() as session:
+    async with deps.manual_create_session() as session:
         try:
-            message = find_compliance_work_request_message(session, worker_config, worker_id)
+            message = await find_compliance_work_request_message(session, worker_config, worker_id)
             if message is None:
                 logger.warning(
                     f"Could not find message for compliance check for worker {worker_id} with config {worker_config}"
@@ -198,18 +202,18 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             logger.info(f"Worker {worker_id} passed compliance check: {passes}")
 
         finally:
-            worker = get_worker(worker_id, session, with_for_update=True)
+            worker = await get_worker(worker_id, session, with_for_update=True)
             worker.next_compliance_check = datetime.datetime.utcnow() + datetime.timedelta(
                 seconds=settings.compliance_check_interval
             )
             worker.in_compliance_check = False
             logger.info(f"set next compliance check for worker {worker_id} to {worker.next_compliance_check}")
-            session.commit()
+            await session.commit()
 
 
 async def maybe_do_compliance_check(websocket, worker_id, worker_config, worker_session_id):
-    with deps.manual_create_session() as session:
-        should_check = should_do_compliance_check(session, worker_id)
+    async with deps.manual_create_session() as session:
+        should_check = await should_do_compliance_check(session, worker_id)
     if should_check:
         logger.info(f"Worker {worker_id} needs compliance check")
         try:
@@ -254,8 +258,8 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(g
     work_queue = queueing.work_queue(deps.redis_client, worker_compat_hash)
     worker_session_id = str(uuid.uuid4())
     try:
-        with deps.manual_create_session() as session:
-            add_worker_connect_event(session=session, worker_id=worker_id, worker_config=worker_config)
+        async with deps.manual_create_session() as session:
+            await add_worker_connect_event(session=session, worker_id=worker_id, worker_config=worker_config)
         await store_worker_session(worker_session_id, worker_id, worker_config)
         while True:
             if websocket.client_state == fastapi.websockets.WebSocketState.DISCONNECTED:
@@ -341,10 +345,8 @@ async def perform_work(
     worker_id: str,
     worker_config: inference.WorkerConfig,
 ):
-    with deps.manual_create_session() as session:
-        cr = chat_repository.ChatRepository(session)
-
-        message = cr.start_work(
+    async with deps.manual_chat_repository() as cr:
+        message = await cr.start_work(
             message_id=message_id,
             worker_id=worker_id,
             worker_config=worker_config,
@@ -355,7 +357,7 @@ async def perform_work(
         try:
             await send_work_request(websocket, work_request)
         except WSException:
-            cr.reset_work(message_id)
+            await cr.reset_work(message_id)
             await work_queue.enqueue(message_id)
             raise WorkerError("Worker disconnected while sending work request", did_work=False)
 
@@ -388,20 +390,21 @@ async def perform_work(
 
         logger.info(f"Message {message_id=} is complete.")
         assert response_packet.is_end, "Response packet is not end packet"
-        with deps.manual_chat_repository() as cr:
-            cr.complete_work(message_id, response_packet.generated_text.text)
+        async with deps.manual_chat_repository() as cr:
+            await cr.complete_work(message_id, response_packet.generated_text.text)
 
     except WorkerError as e:
-        with deps.manual_chat_repository() as cr:
+        async with deps.manual_chat_repository() as cr:
             if e.did_work:
                 logger.warning(f"Marking {message_id=} as pending since no work was done.")
-                cr.reset_work(message_id)
+                await cr.reset_work(message_id)
                 await work_queue.enqueue(message_id)
             else:
                 logger.warning(f"Aborting {message_id=}")
-                cr.abort_work(message_id, reason=str(e))
+                await cr.abort_work(message_id, reason=str(e))
         raise
     except Exception as e:
         logger.exception(f"Error handling {message_id=}")
-        cr.abort_work(message_id, reason=str(e))
+        async with deps.manual_chat_repository() as cr:
+            await cr.abort_work(message_id, reason=str(e))
         raise WorkerError("Error handling chat", did_work=True)

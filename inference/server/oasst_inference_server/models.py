@@ -6,7 +6,20 @@ import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from oasst_inference_server.schemas import chat as chat_schema
 from oasst_shared.schemas import inference
-from sqlmodel import Field, Index, Relationship, SQLModel
+from sqlmodel import Field, Index
+from sqlmodel import Relationship as sqlmodel_Relationship
+from sqlmodel import SQLModel
+
+rel_args_selectin = {"sa_relationship_kwargs": {"lazy": "selectin"}}
+rel_args_joined = {"sa_relationship_kwargs": {"lazy": "joined"}}
+
+
+def prop_rel(*args, **kwargs):
+    return sqlmodel_Relationship(*args, **kwargs, **rel_args_joined)
+
+
+def coll_rel(*args, **kwargs):
+    return sqlmodel_Relationship(*args, **kwargs, **rel_args_selectin)
 
 
 class DbMessage(SQLModel, table=True):
@@ -16,9 +29,9 @@ class DbMessage(SQLModel, table=True):
     id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
     chat_id: str = Field(foreign_key="chat.id", index=True)
-    chat: "DbChat" = Relationship(back_populates="messages")
-    votes: list["DbVote"] = Relationship(back_populates="message")
-    reports: list["DbReport"] = Relationship(back_populates="message")
+    chat: "DbChat" = prop_rel(back_populates="messages")
+    votes: list["DbVote"] = coll_rel(back_populates="message")
+    reports: list["DbReport"] = coll_rel(back_populates="message")
 
     parent_id: str | None = Field(None)
 
@@ -51,7 +64,7 @@ class DbChat(SQLModel, table=True):
 
     user_id: str = Field(foreign_key="user.id", index=True)
 
-    messages: list[DbMessage] = Relationship(back_populates="chat")
+    messages: list[DbMessage] = coll_rel(back_populates="chat")
 
     def to_list_read(self) -> chat_schema.ChatListRead:
         return chat_schema.ChatListRead(id=self.id)
@@ -68,7 +81,7 @@ class DbVote(SQLModel, table=True):
 
     id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
     message_id: str = Field(..., foreign_key="message.id", index=True)
-    message: DbMessage = Relationship(back_populates="votes")
+    message: DbMessage = prop_rel(back_populates="votes")
     score: int = Field(...)
 
     def to_read(self) -> inference.Vote:
@@ -80,7 +93,7 @@ class DbReport(SQLModel, table=True):
 
     id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
     message_id: str = Field(..., foreign_key="message.id", index=True)
-    message: DbMessage = Relationship(back_populates="reports")
+    message: DbMessage = prop_rel(back_populates="reports")
     report_type: inference.ReportType = Field(...)
     reason: str = Field(...)
 
@@ -97,7 +110,7 @@ class DbWorkerEvent(SQLModel, table=True):
 
     id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
     worker_id: str = Field(foreign_key="worker.id", index=True)
-    worker: "DbWorker" = Relationship(back_populates="events")
+    worker: "DbWorker" = prop_rel(back_populates="events")
     time: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
     event_type: WorkerEventType
     worker_config: inference.WorkerConfig | None = Field(None, sa_column=sa.Column(pg.JSONB))
@@ -112,7 +125,7 @@ class DbWorker(SQLModel, table=True):
 
     in_compliance_check: bool = Field(default=False, sa_column=sa.Column(sa.Boolean, server_default=sa.text("false")))
     next_compliance_check: datetime.datetime | None = Field(None)
-    events: list[DbWorkerEvent] = Relationship(back_populates="worker")
+    events: list[DbWorkerEvent] = coll_rel(back_populates="worker")
 
 
 class DbUser(SQLModel, table=True):
