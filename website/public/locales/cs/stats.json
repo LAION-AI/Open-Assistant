@@ -1,0 +1,20 @@
+{
+  "aborted_low_grade": "Zrušeno pro nízké hodnocení",
+  "assistant": "Asistent",
+  "backlog_ranking": "Hodnocení nevyřízených",
+  "choose_a_language": "Vyberte jazyk",
+  "count": "Počet",
+  "growing": "Rostoucí",
+  "halted_by_moderator": "Zastaveno moderátorem",
+  "human_messages_by_lang": "Lidské zprávy podle jazyka",
+  "human_messages_by_role": "Lidské zprávy podle role",
+  "initial_prompt_review": "Úvodní hodnocení zpráv",
+  "message_trees_by_state": "Stormy zpráv podle stavu",
+  "message_trees_states_by_lang": "Stromy zpráv podle jazyka",
+  "prompt_lottery_waiting": "Loterie čekajících zpráv",
+  "prompter": "Tazatel",
+  "ranking": "Hodnocení",
+  "ready_for_export": "Připraveno na export",
+  "stats": "Statistiky",
+  "users_accepted_tos": "Uživateli přijaté smluvní podmínky"
+}
