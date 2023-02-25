@@ -39,7 +39,7 @@ import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
-import { useAdminDeleteMessageTrigger } from "src/hooks/swr/useSwr";
+import { useDeleteMessage } from "src/hooks/message/useDeleteMessage";
 import { post, put } from "src/lib/api";
 import { ROUTES } from "src/lib/routes";
 import { colors } from "src/styles/Theme/colors";
@@ -232,7 +232,6 @@ const MessageActions = ({
   const toast = useToast();
   const { t } = useTranslation(["message", "common"]);
   const { id } = message;
-  const deleteMessage = useAdminDeleteMessageTrigger();
 
   const { trigger: stopTree } = useSWRMutation(`/api/admin/stop_tree/${id}`, put, {
     onSuccess: () => {
@@ -247,10 +246,7 @@ const MessageActions = ({
     },
   });
 
-  const handleDelete = async () => {
-    console.log("deleting", id);
-    await deleteMessage(id);
-  };
+  const { trigger: handleDelete } = useDeleteMessage(message.id);
 
   const handleStop = () => {
     stopTree();
@@ -321,7 +317,7 @@ const MessageActions = ({
               <MenuItem as={NextLink} href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
                 View in admin area
               </MenuItem>
-              <MenuItem as={NextLink} href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
+              <MenuItem as={NextLink} href={ROUTES.ADMIN_USER_DETAIL(message.user_id)} target="_blank" icon={<User />}>
                 {t("view_user")}
               </MenuItem>
               {!message.deleted && (
