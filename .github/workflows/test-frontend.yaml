@@ -14,7 +14,10 @@ jobs:
       matrix:
         node: [16, 18]
     runs-on: ubuntu-latest
-    name: Test node ${{ matrix.node }}
+    name: Node ${{ matrix.node }}
+    defaults:
+      run:
+        working-directory: "website"
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
