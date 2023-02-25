@@ -1,7 +1,9 @@
 import datetime
+import enum
 import uuid
 
 import fastapi
+import pydantic
 import sqlmodel
 import websockets.exceptions
 from fastapi import Depends
@@ -29,6 +31,19 @@ class WorkerError(Exception):
         super().__init__(message)
         self.did_work = did_work
         self.original_exception = original_exception
+
+
+class WorkerSessionStatus(str, enum.Enum):
+    waiting = "waiting"
+    working = "working"
+    compliance_check = "compliance_check"
+
+
+class WorkerSession(pydantic.BaseModel):
+    session_id: str
+    worker_id: str
+    config: inference.WorkerConfig
+    status: WorkerSessionStatus = WorkerSessionStatus.waiting
 
 
 api_key_header = fastapi.Header(None, alias="X-API-Key")
@@ -192,12 +207,43 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             session.commit()
 
 
-async def maybe_do_compliance_check(websocket, worker_id, worker_config):
+async def maybe_do_compliance_check(websocket, worker_id, worker_config, worker_session_id):
     with deps.manual_create_session() as session:
         should_check = should_do_compliance_check(session, worker_id)
     if should_check:
         logger.info(f"Worker {worker_id} needs compliance check")
-        await run_compliance_check(websocket, worker_id, worker_config)
+        try:
+            await update_worker_session_status(worker_session_id, WorkerSessionStatus.compliance_check)
+            await run_compliance_check(websocket, worker_id, worker_config)
+        finally:
+            await update_worker_session_status(worker_session_id, WorkerSessionStatus.waiting)
+
+
+async def store_worker_session(
+    worker_session_id: str,
+    worker_id: str,
+    worker_config: inference.WorkerConfig,
+):
+    worker_session = WorkerSession(
+        session_id=worker_session_id,
+        worker_id=worker_id,
+        config=worker_config,
+        status=WorkerSessionStatus.waiting,
+    )
+    await deps.redis_client.set(f"worker_session:{worker_session_id}", worker_session.json())
+
+
+async def delete_worker_session(worker_session_id: str):
+    await deps.redis_client.delete(f"worker_session:{worker_session_id}")
+
+
+async def update_worker_session_status(
+    worker_session_id: str,
+    status: WorkerSessionStatus,
+):
+    worker_session = WorkerSession.parse_raw(await deps.redis_client.get(f"worker_session:{worker_session_id}"))
+    worker_session.status = status
+    await deps.redis_client.set(f"worker_session:{worker_session_id}", worker_session.json())
 
 
 async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(get_worker_id)):
@@ -206,18 +252,17 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(g
     worker_config = inference.WorkerConfig.parse_raw(await websocket.receive_text())
     worker_compat_hash = worker_config.compat_hash
     work_queue = queueing.work_queue(deps.redis_client, worker_compat_hash)
-    redis_client = deps.redis_client
     worker_session_id = str(uuid.uuid4())
     try:
         with deps.manual_create_session() as session:
             add_worker_connect_event(session=session, worker_id=worker_id, worker_config=worker_config)
-        await redis_client.set(f"worker_session:{worker_session_id}", worker_config.json())
+        await store_worker_session(worker_session_id, worker_id, worker_config)
         while True:
             if websocket.client_state == fastapi.websockets.WebSocketState.DISCONNECTED:
                 raise WSException("Worker disconnected")
 
             if settings.do_compliance_checks:
-                await maybe_do_compliance_check(websocket, worker_id, worker_config)
+                await maybe_do_compliance_check(websocket, worker_id, worker_config, worker_session_id)
 
             item = await work_queue.dequeue()
             if item is None:
@@ -225,13 +270,17 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(g
             else:
                 _, message_id = item
 
-            await perform_work(
-                websocket=websocket,
-                work_queue=work_queue,
-                message_id=message_id,
-                worker_id=worker_id,
-                worker_config=worker_config,
-            )
+            try:
+                await update_worker_session_status(worker_session_id, WorkerSessionStatus.working)
+                await perform_work(
+                    websocket=websocket,
+                    work_queue=work_queue,
+                    message_id=message_id,
+                    worker_id=worker_id,
+                    worker_config=worker_config,
+                )
+            finally:
+                await update_worker_session_status(worker_session_id, WorkerSessionStatus.waiting)
 
     except WSException:
         logger.warning(f"Websocket closed for worker {worker_id}")
@@ -239,7 +288,7 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(g
         logger.exception(f"Error while handling worker {worker_id}: {str(e)}")
     finally:
         logger.info(f"Worker {worker_id} disconnected")
-        await redis_client.getdel(f"worker_session:{worker_session_id}")
+        await delete_worker_session(worker_session_id)
 
 
 async def list_worker_sessions() -> list[inference.WorkerConfig]:
