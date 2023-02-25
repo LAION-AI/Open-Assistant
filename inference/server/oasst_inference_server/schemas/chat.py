@@ -2,6 +2,23 @@ import pydantic
 from oasst_shared.schemas import inference
 
 
+class CreateChatRequest(pydantic.BaseModel):
+    pass
+
+
+class ChatListRead(pydantic.BaseModel):
+    id: str
+
+
+class ChatRead(pydantic.BaseModel):
+    id: str
+    messages: list[inference.MessageRead]
+
+
+class ListChatsResponse(pydantic.BaseModel):
+    chats: list[ChatListRead]
+
+
 class MessageRequest(pydantic.BaseModel):
     parent_id: str | None = None
     content: str = pydantic.Field(..., repr=False)
@@ -20,24 +37,3 @@ class MessageResponseEvent(pydantic.BaseModel):
 class TokenResponseEvent(pydantic.BaseModel):
     token: inference.TokenResponse | None
     error: str | None
-
-
-class CreateChatRequest(pydantic.BaseModel):
-    pass
-
-
-class ChatListRead(pydantic.BaseModel):
-    id: str
-
-
-class ChatRead(pydantic.BaseModel):
-    id: str
-    messages: list[inference.MessageRead]
-
-
-class ListChatsResponse(pydantic.BaseModel):
-    chats: list[ChatListRead]
-
-
-class CreateWorkerRequest(pydantic.BaseModel):
-    name: str

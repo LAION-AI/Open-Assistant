@@ -1,32 +1,26 @@
 import fastapi
 from fastapi import Depends
 from loguru import logger
-from oasst_inference_server import auth, deps, interface, queueing
+from oasst_inference_server import auth, deps, queueing
+from oasst_inference_server.schemas import chat as chat_schema
 from oasst_shared.schemas import inference
-from sqlalchemy.exc import NoResultFound
 from sse_starlette.sse import EventSourceResponse
 
 
 async def handle_create_message(
     chat_id: str,
-    message_request: interface.MessageRequest,
+    message_request: chat_schema.MessageRequest,
     fastapi_request: fastapi.Request,
     user_id: str = Depends(auth.get_current_user_id),
 ) -> EventSourceResponse:
     """Allows the client to stream the results of a request."""
 
-    with deps.manual_chat_repository() as cr:
+    with deps.manual_user_chat_repository(user_id) as ucr:
         try:
-            # Ensure the user can access the chat
-            cr.get_chat_by_id(chat_id, user_id=user_id)
-        except NoResultFound:
-            return fastapi.Response(status_code=404)
-
-        try:
-            prompter_message = cr.add_prompter_message(
+            prompter_message = ucr.add_prompter_message(
                 chat_id=chat_id, parent_id=message_request.parent_id, content=message_request.content
             )
-            assistant_message = cr.initiate_assistant_message(
+            assistant_message = ucr.initiate_assistant_message(
                 parent_id=prompter_message.id,
                 work_parameters=message_request.work_parameters,
             )
@@ -44,7 +38,7 @@ async def handle_create_message(
         queue = queueing.message_queue(deps.redis_client, assistant_message.id)
         try:
             yield {
-                "data": interface.MessageResponseEvent(
+                "data": chat_schema.MessageResponseEvent(
                     prompter_message=prompter_message,
                     assistant_message=assistant_message,
                 ).json(),
@@ -58,7 +52,7 @@ async def handle_create_message(
                 response_packet = inference.WorkResponsePacket.parse_raw(response_packet_str)
                 if response_packet.error is not None:
                     yield {
-                        "data": interface.TokenResponseEvent(error=response_packet.error).json(),
+                        "data": chat_schema.TokenResponseEvent(error=response_packet.error).json(),
                     }
                     break
 
@@ -69,7 +63,7 @@ async def handle_create_message(
                     continue
 
                 yield {
-                    "data": interface.TokenResponseEvent(token=response_packet.token).json(),
+                    "data": chat_schema.TokenResponseEvent(token=response_packet.token).json(),
                 }
 
             if await fastapi_request.is_disconnected():
