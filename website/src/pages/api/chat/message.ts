@@ -1,19 +1,12 @@
-import axios from "axios";
-import { IncomingMessage } from "http";
 import { withoutRole } from "src/lib/auth";
-
-import { INFERENCE_HOST } from ".";
+import { OasstInferenceClient } from "src/lib/oasst_inference_client";
 
 const handler = withoutRole("banned", async (req, res, token) => {
   const { chat_id, parent_id, content } = req.body;
-
-  const { data } = await axios.post<IncomingMessage>(
-    INFERENCE_HOST + `/chat/${chat_id}/message`,
-    { parent_id, content },
-    { responseType: "stream" }
-  );
+  const client = new OasstInferenceClient(req, res, token);
+  const responseStream = await client.post_prompt({ chat_id, parent_id, content });
   res.status(200);
-  data.pipe(res);
+  responseStream.pipe(res);
 });
 
 export default handler;
