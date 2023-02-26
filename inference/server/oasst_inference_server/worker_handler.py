@@ -418,7 +418,9 @@ async def perform_work(
 
 async def compute_worker_compliance_score(worker_id: str) -> float:
     """
-    Compute a float between 0 and 1 (inclusive) representing the compliance score of the worker. Workers are rewarded for passing compliance checks, and penalised for failing to respond to a check, erroring during a check, or failing a check. In-progress checks are ignored.
+    Compute a float between 0 and 1 (inclusive) representing the compliance score of the worker.
+    Workers are rewarded for passing compliance checks, and penalised for failing to respond to a check, erroring during a check, or failing a check.
+    In-progress checks are ignored.
     """
     with deps.manual_create_session() as session:
         worker_checks: list[models.DbWorkerComplianceCheck] = session.exec(
