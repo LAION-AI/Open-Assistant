@@ -1,5 +1,5 @@
 import Image from "next/image";
-export async function UserAvatar(options: { displayName: string; avatarUrl: string | null }) {
+export function UserAvatar(options: { displayName: string; avatarUrl: string | null }) {
   const { displayName, avatarUrl } = options;
   return (
     <>
