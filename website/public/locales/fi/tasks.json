@@ -1,0 +1,92 @@
+{
+  "any_feedback_on_this_task": "Haluatko antaa palautetta tästä tehtävästä?",
+  "available_task_count": "{{count}} tehtävää saatavilla",
+  "default": {
+    "unchanged_title": "Ei muutoksia",
+    "unchanged_message": "Haluatko varmasti jatkaa?",
+    "continue_anyway": "Jatka tästä huolimatta"
+  },
+  "no_more_tasks": "Uusia tehtäviä ei löytynyt.",
+  "random": {
+    "label": "Kokeilen onneani",
+    "desc": "Auta meitä parantamaan Open Assistantia suorittamalla satunnainen tehtävä."
+  },
+  "create_initial_prompt": {
+    "label": "Luo aloitusviestejä",
+    "desc": "Kirjoita aloitusviestejä auttaaksesi Open Assistantia vastaamaan monimuotoisiin kysymyksiin. (jotka lisätään arvontaan)",
+    "overview": "Kirjoita aloitusviesti, joka annetaan Open Assistantille",
+    "instruction": "Kirjoita aloituskehotteet",
+    "response_placeholder": "Kirjoita kehotteesi tähän..."
+  },
+  "reply_as_user": {
+    "label": "Vastaa käyttäjänä",
+    "desc": "Keskustele Open Assistantin kanssa ja auta parantamaan sen vastauksia.",
+    "overview": "Vastaa annettuun keskusteluun sopivalla tavalla",
+    "instruction": "Kirjoita käyttäjän vastaus",
+    "response_placeholder": "Kirjoita vastauksesi tähän..."
+  },
+  "reply_as_assistant": {
+    "label": "Vastaa assistenttina",
+    "desc": "Auta Open Assistantia parantamaan vastauksiaan sen keskustellessa käyttäjien kanssa.",
+    "overview": "Vastaa annettuun keskusteluun sopivalla tavalla",
+    "response_placeholder": "Kirjoita vastauksesi tähän..."
+  },
+  "rank_user_replies": {
+    "label": "Järjestä käyttäjien vastaukset",
+    "desc": "Auta Open Assistantia parantamaan vastauksiaan sen keskustellessa käyttäjien kanssa.",
+    "overview": "Järjestä annetut käyttäjien vastaukset siten, että paras on ensimmäisenä ja huonoin viimeisenä.",
+    "unchanged_title": "Järjestys ei muuttunut",
+    "unchanged_message": "Et muuttanut kehotteiden järjestystä. Haluatko varmasti jatkaa?",
+    "continue_anyway": "Jatka tästä huolimatta"
+  },
+  "rank_assistant_replies": {
+    "label": "Järjestä assistentin vastaukset",
+    "desc": "Arvioi Open Assistantin kirjoittamia viestejä niiden tarkkuuden ja luotettavuuden mukaan.",
+    "overview": "Järjestä annetut assistentin vastaukset siten, että paras on ensimmäisenä ja huonoin viimeisenä.",
+    "unchanged_title": "Järjestys ei muuttunut",
+    "unchanged_message": "Et muuttanut kehotteiden järjestystä. Haluatko varmasti jatkaa?",
+    "continue_anyway": "Jatka tästä huolimatta"
+  },
+  "rank_initial_prompts": {
+    "label": "Järjestä aloitusviestit",
+    "desc": "Arvioi aloitusviestejä niiden tarkkuuden ja luotettavuuden mukaan.",
+    "overview": "Järjestä annetut aloitusviestit siten, että paras on ensimmäisenä ja huonoin viimeisenä.",
+    "unchanged_title": "Järjestys ei muuttunut",
+    "unchanged_message": "Et muuttanut kehotteiden järjestystä. Haluatko varmasti jatkaa?",
+    "continue_anyway": "Jatka tästä huolimatta"
+  },
+  "label_initial_prompt": {
+    "label": "Arvioi aloitusviesti",
+    "desc": "Arvioi viestiketjun aloitusviesti.",
+    "overview": "Arvioi seuraava viesti"
+  },
+  "label_prompter_reply": {
+    "label": "Arvioi käyttäjän vastaus",
+    "desc": "Arvioi käyttäjän kirjoittama vastaus",
+    "overview": "Arvioi seuraavan keskustelun viimeinen viesti."
+  },
+  "label_assistant_reply": {
+    "label": "Arvioi assistentin vastaus",
+    "desc": "Arvioi assistentin vastausviesti.",
+    "overview": "Arvioi seuraavan keskustelun viimeinen viesti."
+  },
+  "classify_initial_prompt": {
+    "label": "Lajittele aloitusviesti",
+    "desc": "Lajittele viesti.",
+    "overview": "Lue seuraava viesti ja vastaa siihen liittyviin kysymyksiin."
+  },
+  "classify_prompter_reply": {
+    "label": "Lajittele käyttäjän vastaus",
+    "desc": "Lajittele viesti.",
+    "overview": "Lue seuraava viestiketju ja vastaa sen viimeiseen viestiin liittyviin kysymyksiin."
+  },
+  "classify_assistant_reply": {
+    "label": "Lajittele assistentin vastaus",
+    "desc": "Lajittele viesti.",
+    "overview": "Lue seuraava viestiketju ja vastaa sen viimeiseen viestiin liittyviin kysymyksiin."
+  },
+  "submitted_as": "Tämän kieleksi merkitään {{submit_lang}}",
+  "tab_write": "Kirjoita",
+  "tab_preview": "Esikatsele",
+  "writing_wrong_langauge_a_b": "Kirjoitat ilmeisesti kielellä {{detected_lang}}, vaikka kieleksi on merkitty {{submit_lang}}."
+}

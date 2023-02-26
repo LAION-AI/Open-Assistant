@@ -9,6 +9,7 @@ from oasst_backend.database import engine
 from oasst_backend.models import Message, MessageTreeState, TextLabels
 from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_backend.utils import tree_export
+from oasst_shared.schemas.export import ExportMessageTree, LabelAvgValue, LabelValues
 from oasst_shared.schemas.protocol import TextLabel
 from sqlmodel import Session, func, not_
 
@@ -71,7 +72,6 @@ def fetch_tree_messages_and_avg_labels(
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
 ) -> List[Message]:
-
     args = [Message]
 
     for l in TextLabel:
@@ -111,7 +111,7 @@ def export_trees(
     review_result: Optional[bool] = None,
     export_labels: bool = False,
 ) -> None:
-    message_labels: dict[UUID, tree_export.LabelValues] = {}
+    message_labels: dict[UUID, LabelValues] = {}
     if user_id:
         # when filtering by user we don't have complete message trees, export as list
         result = fetch_tree_messages_and_avg_labels(
@@ -128,8 +128,8 @@ def export_trees(
             msg = r["Message"]
             messages.append(msg)
             if export_labels:
-                labels: tree_export.LabelValues = {
-                    l.value: tree_export.LabelAvgValue(value=r[l.value], count=r[l.value + "_count"])
+                labels: LabelValues = {
+                    l.value: LabelAvgValue(value=r[l.value], count=r[l.value + "_count"])
                     for l in TextLabel
                     if r[l.value] is not None
                 }
@@ -156,8 +156,8 @@ def export_trees(
                 for r in result:
                     msg = r["Message"]
                     messages.append(msg)
-                    labels: tree_export.LabelValues = {
-                        l.value: tree_export.LabelAvgValue(value=r[l.value], count=r[l.value + "_count"])
+                    labels: LabelValues = {
+                        l.value: LabelAvgValue(value=r[l.value], count=r[l.value + "_count"])
                         for l in TextLabel
                         if r[l.value] is not None
                     }
@@ -180,7 +180,7 @@ def export_trees(
             messages = [m for t in message_trees for m in t]  # flatten message list
             tree_export.write_messages_to_file(export_file, messages, use_compression, labels=message_labels)
         else:
-            trees_to_export: List[tree_export.ExportMessageTree] = []
+            trees_to_export: List[ExportMessageTree] = []
 
             for (message_tree_id, message_tree_state), message_tree in zip(message_tree_ids, message_trees):
                 if len(message_tree) > 0:

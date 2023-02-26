@@ -1,0 +1,23 @@
+{
+  "blurb": "Veríme, že dokážeme vytvoriť revolúciu.",
+  "blurb1": "Rovnakým spôsobom, akým spoločnosť Stable Diffusion pomohla svetu vytvárať umenie a obrazy novými spôsobmi, chceme zlepšiť svet poskytovaním úžasnej konverzačnej umelej inteligencie.",
+  "description": "Konverzačná AI pre každého. Projekt s otvoreným zdrojovým kódom na vytvorenie GPT LLM s možnosťou konverzácie, ktorý prevádzkuje LAION a prispievatelia z celého sveta.",
+  "faq_items": {
+    "q0": "Ako ďaleko je tento projekt?",
+    "a0": "Sme v počiatočnom štádiu vývoja, pracujeme na základe zavedeného výskumu v oblasti uplatňovania RLHF na veľké jazykové modely.",
+    "q1": "Kto stojí za projektom Open Assistant?",
+    "a1": "Open Assistant je projekt organizovaný spoločnosťou LAION a jednotlivcami z celého sveta, ktorí majú záujem sprístupniť túto technológiu všetkým.",
+    "q2": "Akú licenciu používa Open Assistant?",
+    "a2": "Kód a modely sú licencované pod licenciou Apache 2.0.",
+    "q3": "Budú zverejnené aj údaje o tréningu?",
+    "a3": "Áno, pod licenciou CC BY 4.0.",
+    "q4": "Bude Open Assistant zadarmo?",
+    "a4": "Áno, Open Assistant sa bude môcť používať a upravovať bezplatne.",
+    "q5": "Aký hardvér bude potrebný na spustenie modelov?",
+    "a5": "Budú existovať verzie, ktoré bude možné spustiť na spotrebnom hardvéri."
+  },
+  "faq_title": "Často kladené otázky",
+  "join_us_description": "Všetky projekty s otvoreným zdrojovým kódom začínajú s ľuďmi, ako ste vy. Open source je viera, že ak budeme spolupracovať, môžeme spoločne darovať svoje znalosti a technológie svetu v prospech ľudstva. Ste v tom aj vy? Nájdite nás tu:",
+  "join_us_title": "Pridajte sa k nám",
+  "subtitle": "Konverzačná umelá inteligencia pre každého."
+}

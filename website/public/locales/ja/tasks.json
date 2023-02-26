@@ -1,0 +1,92 @@
+{
+  "any_feedback_on_this_task": "タスクについて申し送りがありますか？",
+  "available_task_count": "タスク {{count}} 個",
+  "default": {
+    "unchanged_title": "変更なし",
+    "unchanged_message": "継続しますか？",
+    "continue_anyway": "続ける"
+  },
+  "no_more_tasks": "タスクが無かったようです。",
+  "random": {
+    "label": "おまかせ",
+    "desc": "手当たり次第タスクをこなして、Open Assistantを育てます。"
+  },
+  "create_initial_prompt": {
+    "label": "始点プロンプトを作成",
+    "desc": "Open Assistantに様々なメッセージへの返答を学ばせるため、最初のプロンプトを作成します。（抽選に参加）",
+    "overview": "アシスタントに送る最初のメッセージを作成します。",
+    "instruction": "最初のメッセージをどうぞ",
+    "response_placeholder": "プロンプトはこちらへ..."
+  },
+  "reply_as_user": {
+    "label": "ユーザとして返信",
+    "desc": "チャットを通して、Open Assistantの応答力を鍛えます。",
+    "overview": "会話の流れを見て、適切に返信してください。",
+    "instruction": "ユーザの返信をどうぞ",
+    "response_placeholder": "返信はこちらへ..."
+  },
+  "reply_as_assistant": {
+    "label": "アシスタントとして返信",
+    "desc": "他のユーザとの会話で、Open Assistantの応答力を鍛えます。",
+    "overview": "次の会話に、適切な返信をしてください。",
+    "response_placeholder": "返信はこちらへ..."
+  },
+  "rank_user_replies": {
+    "label": "ユーザの返答を順位付け",
+    "desc": "他のユーザとの会話で、Open Assistantの会話力を鍛えます。",
+    "overview": "ユーザの返信を、できの良い順に並べてください。（最良が先頭、最悪が末尾）",
+    "unchanged_title": "順番が変わっていません",
+    "unchanged_message": "順番を変えていませんが、大丈夫ですか？",
+    "continue_anyway": "大丈夫"
+  },
+  "rank_assistant_replies": {
+    "label": "アシスタントの返信を順位付け",
+    "desc": "Open Assistantの返答の、正確さと読みやすさを採点します。",
+    "overview": "アシスタントの返答を、できの良い順に並べてください。（最良が先頭、最悪が末尾）",
+    "unchanged_title": "順番が変わっていません",
+    "unchanged_message": "順番を変えていませんが、大丈夫ですか？",
+    "continue_anyway": "大丈夫"
+  },
+  "rank_initial_prompts": {
+    "label": "始点プロンプトを順位付け",
+    "desc": "始点プロンプトの、正確さと読みやすさを採点します。",
+    "overview": "始点プロンプトを、できの良い順に並べてください。（最良が先頭、最悪が末尾）",
+    "unchanged_title": "順番が変わっていません",
+    "unchanged_message": "順番を変えていませんが、大丈夫ですか？",
+    "continue_anyway": "大丈夫"
+  },
+  "label_initial_prompt": {
+    "label": "始点プロンプトをラベル付け",
+    "desc": "プロンプトにラベルを付けます。",
+    "overview": "次のプロンプトにラベルを付けてください。"
+  },
+  "label_prompter_reply": {
+    "label": "ユーザの返信をラベル付け",
+    "desc": "プロンプトにラベルを付けます。",
+    "overview": "次の会話の最後のプロンプトにラベルを付けてください。"
+  },
+  "label_assistant_reply": {
+    "label": "アシスタントの返信をラベル付け",
+    "desc": "プロンプトにラベルを付けます。",
+    "overview": "次の会話の最後のプロンプトにラベルを付けてください。"
+  },
+  "classify_initial_prompt": {
+    "label": "始点プロンプトを分類",
+    "desc": "プロンプトにラベルを付けます。",
+    "overview": "プロンプトを読んで、それについての質問に答えてください。"
+  },
+  "classify_prompter_reply": {
+    "label": "ユーザの返信を分類",
+    "desc": "プロンプトにラベルを付けます。",
+    "overview": "会話を読んで、最後の返信についての質問に答えてください。"
+  },
+  "classify_assistant_reply": {
+    "label": "アシスタントの返信を分類",
+    "desc": "プロンプトにラベルを付けます。",
+    "overview": "会話を読んで、最後の返信についての質問に答えてください。"
+  },
+  "submitted_as": "{{submit_lang}}で登録されます。",
+  "tab_write": "書き込み",
+  "tab_preview": "プレビュー",
+  "writing_wrong_langauge_a_b": "{{detected_lang}}でお書きのようですが、{{submit_lang}}として登録されます。"
+}

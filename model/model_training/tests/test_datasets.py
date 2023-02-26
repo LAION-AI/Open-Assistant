@@ -2,12 +2,29 @@ from argparse import Namespace
 
 from custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
+from custom_datasets.prompt_dialogue import OAPrivate, PrivateInstructionTuning
+
+
+def test_rl_sft_mode_switch():
+    dataset = OAPrivate(".cache", split="sft")
+    row = dataset[0]
+    assert isinstance(row, list)
+    dataset = OAPrivate(".cache", split="rl")
+    row = dataset[0]
+    assert isinstance(row, str)
+
+    dataset = PrivateInstructionTuning(".cache", split="sft")
+    row = dataset[0]
+    assert isinstance(row, tuple)
+    dataset = PrivateInstructionTuning(".cache", split="rl")
+    row = dataset[0]
+    assert isinstance(row, str)
 
 
 def test_all_datasets():
     qa_base = QA_DATASETS
     summarize_base = SUMMARIZATION_DATASETS
-    others = ["prompt_dialogue", "webgpt", "soda", "joke", "instruct_tuning", "explain_prosocial", "prosocial_dialogue"]
+    others = ["webgpt", "soda", "joke", "explain_prosocial", "prosocial_dialogue"]
     translation = ["dive_mt", "wmt2019_zh-en", "wmt2019_ru-en", "ted_trans_de-ja", "ted_trans_nl-en"]
 
     config = Namespace(cache_dir=".cache")
@@ -30,7 +47,7 @@ def test_collate_fn():
     collate_fn = DialogueDataCollator(tokenizer, max_length=620)
     qa_base = QA_DATASETS
     summarize_base = SUMMARIZATION_DATASETS
-    others = ["prompt_dialogue", "webgpt", "soda", "joke", "gsm8k"]
+    others = ["webgpt", "soda", "joke", "gsm8k"]
     trains, evals = [], []
     for dataset_name in others + qa_base + summarize_base:
         print(dataset_name)
@@ -48,6 +65,3 @@ def test_collate_fn():
     dataloader = DataLoader(ConcatDataset(evals), collate_fn=collate_fn, batch_size=128)
     for batch in dataloader:
         assert batch["targets"].shape[1] <= 620
-
-
-test_collate_fn()

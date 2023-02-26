@@ -17,9 +17,9 @@ import { useTranslation } from "next-i18next";
 import { memo, MouseEvent, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { ReactMarkdownOptions } from "react-markdown/lib/react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import remarkGfm from "remark-gfm";
+import { RenderedCodeblock } from "src/components/Messages/RenderedCodeblock";
+
 interface RenderedMarkdownProps {
   markdown: string;
 }
@@ -27,6 +27,7 @@ interface RenderedMarkdownProps {
 const sx: SystemStyleObject = {
   overflowX: "auto",
   pre: {
+    width: "100%",
     bg: "transparent",
   },
   code: {
@@ -36,6 +37,12 @@ const sx: SystemStyleObject = {
     bg: "gray.300",
     p: 0.5,
     borderRadius: "2px",
+    _rtl: {
+      marginLeft: "3.2rem",
+    },
+    _ltr: {
+      marginRight: "3.2rem",
+    },
     _dark: {
       bg: "gray.700",
     },
@@ -70,9 +77,14 @@ const sx: SystemStyleObject = {
       borderBottomColor: "gray.700",
     },
   },
+  "ol li::marker": {
+    content: "counter(list-item) '.'",
+  },
 };
 
 const plugins = [remarkGfm];
+
+const disallowedElements = ["img"];
 
 // eslint-disable-next-line react/display-name
 const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
@@ -82,19 +94,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
   const components: ReactMarkdownOptions["components"] = useMemo(() => {
     return {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      code({ node, inline, className, children, style, ...props }) {
-        const match = /language-(\w+)/.exec(className || "");
-        const lang = match ? match[1] : "";
-        return !inline ? (
-          <SyntaxHighlighter style={oneDark} language={lang} {...props}>
-            {String(children).replace(/\n$/, "")}
-          </SyntaxHighlighter>
-        ) : (
-          <code className={className} {...props}>
-            {children}
-          </code>
-        );
-      },
+      code: RenderedCodeblock,
       a({ href, ...props }) {
         if (!href) {
           return props.children;
@@ -160,7 +160,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
 const MemorizedMarkdown = memo((props: ReactMarkdownOptions) => {
   return (
     <Prose as="div" sx={sx}>
-      <ReactMarkdown remarkPlugins={plugins} {...props}></ReactMarkdown>
+      <ReactMarkdown {...props} disallowedElements={disallowedElements} remarkPlugins={plugins}></ReactMarkdown>
     </Prose>
   );
 });

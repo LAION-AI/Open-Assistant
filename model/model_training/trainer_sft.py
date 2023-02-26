@@ -1,4 +1,5 @@
 import argparse
+import os
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -94,7 +95,6 @@ class SFTTrainer(Trainer):
         prediction_loss_only: bool,
         ignore_keys: Optional[List[str]] = None,
     ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
-
         with torch.no_grad():
             loss, logits, labels, labels_mask = self._compute_loss(model, inputs)
             labels[~labels_mask.bool()] = -100  # padding_index
@@ -137,6 +137,7 @@ class SFTTrainer(Trainer):
                 num_workers=self.args.dataloader_num_workers,
                 pin_memory=self.args.dataloader_pin_memory,
             )
+
         if self.sampler is None:
             train_sampler = self._get_train_sampler()
         else:
@@ -186,6 +187,12 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
 
+    # get the world size in deeepspeed
+    if conf["deepspeed"]:
+        conf["world_size"] = int(os.getenv("WORLD_SIZE", default="1"))
+    else:
+        conf["world_size"] = 1
+
     # Override config from command-line
     parser = argparse.ArgumentParser()
     for key, value in conf.items():
@@ -209,7 +216,10 @@ if __name__ == "__main__":
     )
     eval_collate_fn = DialogueDataCollator(tokenizer, max_length=training_conf.max_length, samples_mixing=False)
 
-    sampler = PerDatasetSampler.build_sampler_from_config(training_conf, train.datasets)
+    sampler = PerDatasetSampler.build_sampler_from_config(
+        training_conf, train.datasets, rank=training_conf.local_rank, world_size=training_conf.world_size
+    )
+
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
 
@@ -223,8 +233,14 @@ if __name__ == "__main__":
     if training_conf.fuse_gelu:
         model = fuse_gelu(model)
 
+    output_dir = (
+        training_conf.output_dir
+        if training_conf.output_dir
+        else f"{training_conf.model_name}-{training_conf.log_dir}-finetuned"
+    )
+
     args = TrainingArguments(
-        output_dir=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
+        output_dir=output_dir,
         num_train_epochs=training_conf.num_train_epochs,
         warmup_steps=training_conf.warmup_steps,
         learning_rate=float(training_conf.learning_rate),

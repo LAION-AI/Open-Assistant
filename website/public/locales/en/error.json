@@ -1,0 +1,16 @@
+{
+  "default": "Something went wrong!",
+  "err_1000": "Ivalid task type",
+  "err_1001": "Failed to acknowledge task",
+  "err_1002": "Failed to not acknowledge task",
+  "err_1003": "Invalid response type",
+  "err_1004": "Interaction request failed",
+  "err_1005": "Failed to generate task",
+  "err_1006": "No tasks of type {{task_type}} are currently available.",
+  "err_1007": "Task availability query failed",
+  "err_1008": "Message size too long",
+  "err_1009": "Your recent messages have duplicates",
+  "err_1010": "Message text is empty",
+  "err_1011": "You cannot reply twice to the same message",
+  "err_1012": "You has too many pending tasks. Please try again in minutes."
+}

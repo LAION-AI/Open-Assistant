@@ -81,17 +81,21 @@ export const TrollboardTable = ({
   limit,
   rowPerPage,
   timeFrame,
+  enabled,
 }: {
   timeFrame: TrollboardTimeFrame;
   limit: number;
   rowPerPage: number;
+  enabled: boolean;
 }) => {
   const {
     data: trollboardRes,
     isLoading,
     error,
     lastUpdated,
-  } = useFetchBoard<FetchTrollBoardResponse>(`/api/admin/trollboard?time_frame=${timeFrame}&limit=${limit}`);
+  } = useFetchBoard<FetchTrollBoardResponse>(
+    `/api/admin/trollboard?time_frame=${timeFrame}&limit=${limit}&enabled=${enabled}`
+  );
 
   const { data, ...paginationProps } = useBoardPagination<TrollboardEntity>({
     rowPerPage,

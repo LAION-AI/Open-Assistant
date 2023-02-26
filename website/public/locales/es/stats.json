@@ -1,6 +1,8 @@
 {
   "aborted_low_grade": "Abortado por baja puntuación",
+  "assistant": "Asistente",
   "backlog_ranking": "Pendiente de ordenación",
+  "choose_a_language": "Escoje un idioma",
   "count": "Cuenta",
   "growing": "Creciendo",
   "halted_by_moderator": "Parado por un moderador",
@@ -10,6 +12,7 @@
   "message_trees_by_state": "Árboles de mensaje por estado",
   "message_trees_states_by_lang": "Árboles de mensaje por idioma",
   "prompt_lottery_waiting": "Esperando a la lotería de instrucciones",
+  "prompter": "Apuntador",
   "ranking": "Ordenando",
   "ready_for_export": "Preparado para ser exportado",
   "stats": "Estadísticas",

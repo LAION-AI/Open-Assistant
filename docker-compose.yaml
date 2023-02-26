@@ -127,6 +127,7 @@ services:
       - ENABLE_EMAIL_SIGNIN_CAPTCHA=false
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
+      - INFERENCE_SERVER_HOST=http://inference-server:8000
     depends_on:
       webdb:
         condition: service_healthy
@@ -152,6 +153,21 @@ services:
       retries: 10
     profiles: ["inference"]
 
+  inference-redis:
+    image: redis
+    restart: always
+    profiles: ["inference"]
+    ports:
+      - 6389:6379
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+
   inference-server:
     build:
       dockerfile: docker/inference/Dockerfile.server
@@ -160,10 +176,11 @@ services:
     image: oasst-inference-server:dev
     environment:
       PORT: 8000
-      REDIS_HOST: redis
+      REDIS_HOST: inference-redis
       POSTGRES_HOST: inference-db
       POSTGRES_DB: oasst_inference
       DEBUG_API_KEYS: '["0000"]'
+      ALLOW_DEBUG_AUTH: "True"
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/server:/opt/inference/server"
@@ -171,7 +188,7 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      redis:
+      inference-redis:
         condition: service_healthy
       inference-db:
         condition: service_healthy

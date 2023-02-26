@@ -141,8 +141,8 @@ export class OasstApiClient {
     return this.post(`/api/v1/tasks/${taskId}/ack`, { message_id: messageId });
   }
 
-  async nackTask(taskId: string, reason: string): Promise<null> {
-    return this.post(`/api/v1/tasks/${taskId}/nack`, { reason });
+  async nackTask(taskId: string): Promise<null> {
+    return this.post(`/api/v1/tasks/${taskId}/nack`, {});
   }
 
   // TODO return a strongly typed Task?
@@ -389,9 +389,10 @@ export class OasstApiClient {
     return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
   }
 
-  fetch_trollboard(time_frame: TrollboardTimeFrame, { limit }: { limit?: number }) {
+  fetch_trollboard(time_frame: TrollboardTimeFrame, { limit, enabled }: { limit?: number; enabled?: boolean }) {
     return this.get<FetchTrollBoardResponse>(`/api/v1/trollboards/${time_frame}`, {
       max_count: limit,
+      enabled: enabled,
     });
   }
 }

@@ -139,6 +139,9 @@
           TREE_MANAGER__MIN_ACTIVE_RANKINGS_PER_LANG:
             "{{ lookup('ansible.builtin.env', 'MIN_ACTIVE_RANKINGS_PER_LANG') |
             default('0', true) }}"
+          TREE_MANAGER__MAX_PROMPT_LOTTERY_WAITING:
+            "{{ lookup('ansible.builtin.env', 'MAX_PROMPT_LOTTERY_WAITING') |
+            default('250', true) }}"
           MESSAGE_SIZE_LIMIT:
             "{{ lookup('ansible.builtin.env', 'MESSAGE_SIZE_LIMIT') |
             default('2000', true) }}"

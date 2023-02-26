@@ -141,7 +141,7 @@ class TaskAck(BaseModel):
 class TaskNAck(BaseModel):
     """The frontend acknowledges that it has received a task but cannot create a message."""
 
-    reason: str
+    reason: str | None = Field(None, nullable=True)
 
 
 class TaskClose(BaseModel):
@@ -443,6 +443,7 @@ AnyInteraction = Union[
 class SystemStats(BaseModel):
     all: int = 0
     active: int = 0
+    active_by_lang: dict[str, int] = {}
     deleted: int = 0
     message_trees: int = 0
 
@@ -495,6 +496,9 @@ class TrollScore(BaseModel):
     auth_method: str
     display_name: str
     last_activity_date: Optional[datetime]
+    enabled: bool
+    deleted: bool
+    show_on_leaderboard: bool
 
     troll_score: int = 0
 
