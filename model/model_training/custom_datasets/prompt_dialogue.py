@@ -12,10 +12,15 @@ from torch.utils.data import Dataset
 
 
 class OAPrivate(Dataset):
-    splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
+    splits = OrderedDict(sft=0.5, rl=0.5)  # fractions per task
 
     def __init__(self, data_path, split="sft", file="2023-02-10_oasst_prod.jsonl") -> None:
         super().__init__()
+
+        # Ensure reward and sft data split are the same
+        if split == 'reward_model':
+            print('Using same split for reward_model and sft')
+            split = 'sft'
 
         total_prob = reduce(lambda prev, split: prev + split[1], self.splits.items(), 0)
         assert math.isclose(total_prob, 1), "Make sure OAPrivate split ratios add to 1"
