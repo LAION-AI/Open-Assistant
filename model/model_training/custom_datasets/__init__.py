@@ -1,6 +1,7 @@
 """
     High level functions for model training
 """
+from custom_datasets.oasst_dataset import load_oasst_export
 from custom_datasets.prompt_dialogue import OAPrivate, PrivateInstructionTuning
 from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, TranslatedQA, WebGPT
 from custom_datasets.summarization import SummarizationDataset
@@ -82,6 +83,8 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         dataset = TranslatedQA(data_path)
     elif dataset_name == "oa_private":
         dataset = OAPrivate(data_path, **kwargs)
+    elif dataset_name == "oasst_export":
+        train, eval = load_oasst_export(data_path=data_path, val_split=val_split, **kwargs)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
