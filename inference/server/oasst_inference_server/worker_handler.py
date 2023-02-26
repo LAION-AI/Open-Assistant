@@ -445,7 +445,6 @@ async def compute_worker_compliance_score(worker_id: str) -> float:
         no_response_count = sum(1 for _ in filter(lambda c: not c.responded, checked))
 
         compare_fail_count = sum(1 for _ in filter(lambda c: not c.passed, compared))
+        fail_count = len(checked) - pass_count - error_count - no_response_count
 
-        fail_count = total_count - pass_count - error_count - no_response_count - compare_fail_count
-
-        return fail_count / total_count
+        return (fail_count + compare_fail_count) / total_count
