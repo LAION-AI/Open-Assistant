@@ -5,7 +5,7 @@ from uuid import UUID
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Index, SQLModel
 
 
 class State(str, Enum):
@@ -74,6 +74,7 @@ TERMINAL_STATES = (
 
 class MessageTreeState(SQLModel, table=True):
     __tablename__ = "message_tree_state"
+    __table_args__ = (Index("ix_message_tree_state__lang__state", "state", "lang", unique=False),)
 
     message_tree_id: UUID = Field(
         sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("message.id"), primary_key=True)
@@ -81,7 +82,8 @@ class MessageTreeState(SQLModel, table=True):
     goal_tree_size: int = Field(nullable=False)
     max_depth: int = Field(nullable=False)
     max_children_count: int = Field(nullable=False)
-    state: str = Field(nullable=False, max_length=128, index=True)
+    state: str = Field(nullable=False, max_length=128)
     active: bool = Field(nullable=False, index=True)
     origin: str = Field(sa_column=sa.Column(sa.String(1024), nullable=True))
     won_prompt_lottery_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True))
+    lang: str = Field(sa_column=sa.Column(sa.String(32), nullable=False))
