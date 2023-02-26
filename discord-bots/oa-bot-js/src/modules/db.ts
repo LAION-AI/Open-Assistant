@@ -11,9 +11,9 @@ export default class Database {
       fs.writeFileSync(dbPath, `{"users": {}, "tasks": {}}`);
     }
   }
-  get(key) {
+  get(table, key) {
     const data = JSON.parse(fs.readFileSync(dbPath, "utf-8"));
-    return data[key];
+    return data[table][key];
   }
   set(table, key, value) {
     const data = JSON.parse(fs.readFileSync(dbPath, "utf-8"));

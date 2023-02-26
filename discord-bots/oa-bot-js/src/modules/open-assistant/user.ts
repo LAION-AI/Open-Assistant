@@ -2,7 +2,7 @@ import Database from "../db.js";
 
 export async function getUserLang(userId: string) {
   var db = new Database();
-  var lang = db.get(`open-assistant-users_${userId}_lang`);
+  var lang = db.get("users", userId).lang;
 
   if (lang) {
     return lang;
