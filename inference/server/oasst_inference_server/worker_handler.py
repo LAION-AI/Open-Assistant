@@ -113,8 +113,8 @@ async def get_worker(
     with_for_update: bool = False,
 ) -> models.DbWorker:
     query = sqlmodel.select(models.DbWorker).where(models.DbWorker.id == worker_id)
-    if with_for_update:
-        query = query.with_for_update()
+    # if with_for_update:
+    #     query = query.with_for_update()
     worker = (await session.exec(query)).one()
     return worker
 

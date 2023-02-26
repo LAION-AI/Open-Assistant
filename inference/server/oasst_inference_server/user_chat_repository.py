@@ -36,8 +36,8 @@ class UserChatRepository(pydantic.BaseModel):
         # )
         query = query.where(models.DbChat.id == chat_id)
         query = query.where(models.DbChat.user_id == self.user_id)
-        if for_update:
-            query = query.with_for_update()
+        # if for_update:
+        #     query = query.with_for_update()
         result = await self.session.exec(query)
         # result = result.unique()
         chat = result.one()
@@ -54,8 +54,8 @@ class UserChatRepository(pydantic.BaseModel):
             models.DbMessage.id == message_id,
             models.DbMessage.role == "prompter",
         )
-        if for_update:
-            query = query.with_for_update()
+        # if for_update:
+        #     query = query.with_for_update()
         message = (await self.session.exec(query)).one()
         if message.chat.user_id != self.user_id:
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
@@ -66,8 +66,8 @@ class UserChatRepository(pydantic.BaseModel):
             models.DbMessage.id == message_id,
             models.DbMessage.role == "assistant",
         )
-        if for_update:
-            query = query.with_for_update()
+        # if for_update:
+        #     query = query.with_for_update()
         message = (await self.session.exec(query)).one()
         if message.chat.user_id != self.user_id:
             raise fastapi.HTTPException(status_code=400, detail="Message not found")

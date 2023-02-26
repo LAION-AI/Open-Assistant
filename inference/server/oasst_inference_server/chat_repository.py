@@ -23,8 +23,8 @@ class ChatRepository:
         query = sqlmodel.select(models.DbMessage).where(
             models.DbMessage.id == message_id, models.DbMessage.role == role
         )
-        if for_update:
-            query = query.with_for_update()
+        # if for_update:
+        #     query = query.with_for_update()
         message = (await self.session.exec(query)).one()
         return message
 
@@ -70,7 +70,7 @@ class ChatRepository:
 
     async def abort_work(self, message_id: str, reason: str) -> models.DbMessage:
         logger.info(f"Aborting work on message {message_id}")
-        message = self.get_assistant_message_by_id(message_id, for_update=True)
+        message = await self.get_assistant_message_by_id(message_id, for_update=True)
         message.state = inference.MessageState.aborted_by_worker
         message.work_end_at = datetime.datetime.utcnow()
         message.error = reason
@@ -81,7 +81,7 @@ class ChatRepository:
 
     async def complete_work(self, message_id: str, content: str) -> models.DbMessage:
         logger.info(f"Completing work on message {message_id}")
-        message = self.get_assistant_message_by_id(message_id, for_update=True)
+        message = await self.get_assistant_message_by_id(message_id, for_update=True)
         message.state = inference.MessageState.complete
         message.work_end_at = datetime.datetime.utcnow()
         message.content = content
