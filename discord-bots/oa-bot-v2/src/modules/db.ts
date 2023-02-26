@@ -4,11 +4,11 @@ import path from "node:path";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const dbPath = path.join(__dirname, "../db.json");
+const dbPath = path.join(__dirname, "../../db.json");
 export default class Database {
   constructor() {
     if (!fs.existsSync(dbPath)) {
-      fs.writeFileSync(dbPath, "{}");
+      fs.writeFileSync(dbPath, `{"users": {}, "tasks": {}}`);
     }
   }
   get(key) {
