@@ -12,7 +12,7 @@ from oasst_inference_server import chat_repository, deps, models, queueing, work
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from sqlalchemy.sql.functions import random as sql_random
-from sqlmodel import not_
+from sqlmodel import not_, or_
 
 WSException = (
     websockets.exceptions.WebSocketException,
@@ -182,6 +182,7 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
                 )
                 return
 
+            compliance_check.compare_worker_id = message.worker_id
             compliance_work_request = worker_handler.build_work_request(message)
 
             logger.info(f"Found work request for compliance check for worker {worker_id}: {compliance_work_request}")
@@ -425,16 +426,26 @@ async def compute_worker_compliance_score(worker_id: str) -> float:
     with deps.manual_create_session() as session:
         worker_checks: list[models.DbWorkerComplianceCheck] = session.exec(
             sqlmodel.select(models.DbWorkerComplianceCheck).where(
-                models.DbWorkerComplianceCheck.worker_id == worker_id,
+                or_(
+                    models.DbWorkerComplianceCheck.worker_id == worker_id,
+                    models.DbWorkerComplianceCheck.compare_worker_id == worker_id,
+                ),
                 not_(models.DbWorkerComplianceCheck.end_time.is_(None)),
             )
         ).all()
 
         # Rudimentary scoring algorithm, we may want to add weightings or other factors
         total_count = len(worker_checks)
-        pass_count = sum(1 for _ in filter(lambda c: c.passed, worker_checks))
-        error_count = sum(1 for _ in filter(lambda c: c.error is not None, worker_checks))
-        no_response_count = sum(1 for _ in filter(lambda c: not c.responded, worker_checks))
-        fail_count = total_count - pass_count - error_count - no_response_count
 
-        return pass_count / (pass_count + fail_count + error_count + no_response_count)
+        checked = [c for c in worker_checks if c.worker_id == worker_id]
+        compared = [c for c in worker_checks if c.compare_worker_id == worker_id]
+
+        pass_count = sum(1 for _ in filter(lambda c: c.passed, checked))
+        error_count = sum(1 for _ in filter(lambda c: c.error is not None, checked))
+        no_response_count = sum(1 for _ in filter(lambda c: not c.responded, checked))
+
+        compare_fail_count = sum(1 for _ in filter(lambda c: not c.passed, compared))
+
+        fail_count = total_count - pass_count - error_count - no_response_count - compare_fail_count
+
+        return fail_count / total_count

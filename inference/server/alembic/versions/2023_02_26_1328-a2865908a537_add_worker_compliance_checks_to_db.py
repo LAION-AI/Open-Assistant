@@ -22,6 +22,7 @@ def upgrade() -> None:
         "worker_compliance_check",
         sa.Column("id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("worker_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("compare_worker_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("start_time", sa.DateTime(), nullable=False),
         sa.Column("end_time", sa.DateTime(), nullable=True),
         sa.Column("responded", sa.Boolean(), nullable=False),
@@ -36,6 +37,12 @@ def upgrade() -> None:
     op.create_index(
         op.f("ix_worker_compliance_check_worker_id"), "worker_compliance_check", ["worker_id"], unique=False
     )
+    op.create_index(
+        op.f("ix_worker_compliance_check_compare_worker_id"),
+        "worker_compliance_check",
+        ["compare_worker_id"],
+        unique=False,
+    )
     op.alter_column("chat", "user_id", existing_type=sa.VARCHAR(), nullable=False)
     op.create_index(op.f("ix_report_message_id"), "report", ["message_id"], unique=False)
     op.create_index(op.f("ix_vote_message_id"), "vote", ["message_id"], unique=False)
@@ -48,5 +55,6 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_report_message_id"), table_name="report")
     op.alter_column("chat", "user_id", existing_type=sa.VARCHAR(), nullable=True)
     op.drop_index(op.f("ix_worker_compliance_check_worker_id"), table_name="worker_compliance_check")
+    op.drop_index(op.f("ix_worker_compliance_check_compare_worker_id"), table_name="worker_compliance_check")
     op.drop_table("worker_compliance_check")
     # ### end Alembic commands ###
