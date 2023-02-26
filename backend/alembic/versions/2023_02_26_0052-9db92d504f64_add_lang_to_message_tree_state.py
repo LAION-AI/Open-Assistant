@@ -21,7 +21,7 @@ def upgrade() -> None:
     op.execute(
         "WITH msg AS (SELECT id, lang FROM message WHERE parent_id is NULL) UPDATE message_tree_state mts SET lang = msg.lang FROM msg WHERE mts.message_tree_id = msg.id"
     )
-    op.alter_column("message_tree_state", "lang", nullable=False, existing_nullable=True)
+    op.alter_column("message_tree_state", "lang", nullable=False)
     op.drop_index("ix_message_tree_state_state", table_name="message_tree_state")
     op.create_index("ix_message_tree_state__lang__state", "message_tree_state", ["state", "lang"], unique=False)
     # ### end Alembic commands ###
