@@ -13,6 +13,7 @@ import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
+import { UserAvatar } from "../UserAvatar";
 type WindowLeaderboardEntity = LeaderboardEntity & { isSpaceRow?: boolean };
 
 const columnHelper = createColumnHelper<WindowLeaderboardEntity>();
@@ -64,23 +65,7 @@ export const LeaderboardTable = ({
         header: t("user"),
         cell: ({ getValue, row }) => (
           <div className="flex flex-row items-center gap-2">
-            {row.original.image ? (
-              <Image
-                src={`${row.original.image}`}
-                alt={`${getValue()}'s avatar`}
-                width={30}
-                height={30}
-                className="rounded-full"
-              />
-            ) : (
-              <Image
-                src={`https://api.dicebear.com/5.x/initials/png?seed=${getValue()}&radius=50&backgroundType=gradientLinear`}
-                alt={`${getValue()}'s avatar`}
-                width={30}
-                height={30}
-              />
-            )}
-
+            <UserAvatar displayName={getValue()} avatarUrl={row.original.image}></UserAvatar>
             {isAdminOrMod ? (
               <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
                 {getValue()}
