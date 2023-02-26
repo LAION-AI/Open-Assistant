@@ -428,6 +428,7 @@ async def compute_worker_compliance_score(worker_id: str) -> float:
             )
         ).all()
 
+        # Rudimentary scoring algorithm, we may want to add weightings or other factors
         total_count = len(worker_checks)
         pass_count = sum(1 for _ in filter(lambda c: c.passed, worker_checks))
         error_count = sum(1 for _ in filter(lambda c: c.error is not None, worker_checks))
