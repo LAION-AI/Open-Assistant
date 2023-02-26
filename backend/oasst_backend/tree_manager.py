@@ -1791,9 +1791,6 @@ if __name__ == "__main__":
         tm = TreeManager(db, pr, cfg)
         tm.ensure_tree_states()
 
-        cnt = tm.query_missing_prompt_lottery_waiting("en")
-        print(cnt)
-
         # tm.purge_user_messages(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"), purge_initial_prompts=False)
         # tm.purge_user(user_id=UUID("2ef9ad21-0dc5-442d-8750-6f7f1790723f"))
         # db.commit()
