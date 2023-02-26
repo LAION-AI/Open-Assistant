@@ -36,8 +36,8 @@ def print_result(missing, not_translated, file):
 
 
 def audit(file, en_file):
-    en_json = load(open(en_file))
-    translation_json = load(open(file))
+    en_json = load(open(en_file, encoding="utf-8"))
+    translation_json = load(open(file, encoding="utf-8"))
     return (get_missing(en_json, translation_json), get_not_translated(en_json, translation_json), file)
 
 
