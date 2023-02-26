@@ -95,7 +95,6 @@ class SFTTrainer(Trainer):
         prediction_loss_only: bool,
         ignore_keys: Optional[List[str]] = None,
     ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
-
         with torch.no_grad():
             loss, logits, labels, labels_mask = self._compute_loss(model, inputs)
             labels[~labels_mask.bool()] = -100  # padding_index
@@ -190,7 +189,7 @@ def argument_parsing(notebook=False, notebook_args=None):
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
-        conf["world_size"] = int(os.environ["WORLD_SIZE"])
+        conf["world_size"] = int(os.getenv("WORLD_SIZE", default="1"))
     else:
         conf["world_size"] = 1
 
