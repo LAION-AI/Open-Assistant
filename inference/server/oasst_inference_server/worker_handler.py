@@ -12,6 +12,7 @@ from oasst_inference_server import chat_repository, deps, models, queueing, work
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from sqlalchemy.sql.functions import random as sql_random
+from sqlmodel import not_
 
 WSException = (
     websockets.exceptions.WebSocketException,
@@ -413,3 +414,24 @@ async def perform_work(
         logger.exception(f"Error handling {message_id=}")
         cr.abort_work(message_id, reason=str(e))
         raise WorkerError("Error handling chat", did_work=True)
+
+
+async def compute_worker_compliance_score(worker_id: str) -> float:
+    """
+    Compute a float between 0 and 1 (inclusive) representing the compliance score of the worker. Workers are rewarded for passing compliance checks, and penalised for failing to respond to a check, erroring during a check, or failing a check. In-progress checks are ignored.
+    """
+    with deps.manual_create_session() as session:
+        worker_checks: list[models.DbWorkerComplianceCheck] = session.exec(
+            sqlmodel.select(models.DbWorkerComplianceCheck).where(
+                models.DbWorkerComplianceCheck.worker_id == worker_id,
+                not_(models.DbWorkerComplianceCheck.end_time.is_(None)),
+            )
+        ).all()
+
+        total_count = len(worker_checks)
+        pass_count = sum(1 for _ in filter(lambda c: c.passed, worker_checks))
+        error_count = sum(1 for _ in filter(lambda c: c.error is not None, worker_checks))
+        no_response_count = sum(1 for _ in filter(lambda c: not c.responded, worker_checks))
+        fail_count = total_count - pass_count - error_count - no_response_count
+
+        return pass_count / (pass_count + fail_count + error_count + no_response_count)
