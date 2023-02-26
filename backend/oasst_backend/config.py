@@ -54,7 +54,7 @@ class TreeManagerConfiguration(BaseModel):
     p_full_labeling_review_prompt: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for initial prompts."""
 
-    p_full_labeling_review_reply_assistant: float = 0.5
+    p_full_labeling_review_reply_assistant: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for assistant replies."""
 
     p_full_labeling_review_reply_prompter: float = 0.25
@@ -144,6 +144,10 @@ class TreeManagerConfiguration(BaseModel):
     max_pending_tasks_per_user: int = 8
     """Maximum number of pending tasks (neither canceled nor completed) by a single user within
     the time span defined by `recent_tasks_span_sec`."""
+
+    max_prompt_lottery_waiting: int = 250
+    """Maximum number of prompts in prompt_lottery_waiting state per language. If this value
+    is exceeded no new initial prompt tasks for that language are generated."""
 
 
 class Settings(BaseSettings):
