@@ -18,9 +18,9 @@ class OAPrivate(Dataset):
         super().__init__()
 
         # Ensure reward and sft data split are the same
-        if split == 'reward_model':
+        if split == "reward_model":
             print('Using same split for reward_model and sft')
-            split = 'sft'
+            split = "sft"
 
         total_prob = reduce(lambda prev, split: prev + split[1], self.splits.items(), 0)
         assert math.isclose(total_prob, 1), "Make sure OAPrivate split ratios add to 1"
