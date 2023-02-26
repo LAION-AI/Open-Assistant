@@ -171,6 +171,8 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
     logger.info(f"Running compliance check for worker {worker_id}")
 
     with deps.manual_create_session() as session:
+        compliance_check = models.DbWorkerComplianceCheck(worker_id=worker_id)
+
         try:
             message = find_compliance_work_request_message(session, worker_config, worker_id)
             if message is None:
@@ -187,6 +189,8 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             while True:
                 response = await receive_work_response_packet(websocket)
                 if response.error is not None:
+                    compliance_check.responded = True
+                    compliance_check.error = response.error
                     logger.warning(f"Worker {worker_id} errored during compliance check: {response.error}")
                     return
                 if response.is_end:
@@ -194,10 +198,14 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             if response is None:
                 logger.warning(f"Worker {worker_id} did not respond to compliance check")
                 return
+            compliance_check.responded = True
             passes = response.generated_text.text == message.content
+            compliance_check.passed = passes
             logger.info(f"Worker {worker_id} passed compliance check: {passes}")
 
         finally:
+            compliance_check.end_time = datetime.datetime.utcnow()
+            session.add(compliance_check)
             worker = get_worker(worker_id, session, with_for_update=True)
             worker.next_compliance_check = datetime.datetime.utcnow() + datetime.timedelta(
                 seconds=settings.compliance_check_interval
