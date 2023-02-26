@@ -10,7 +10,8 @@ The other will download the data used for Microsoft CodeT for tuning a model for
 Python test generation from corresponding function docstrings, augment the data
 into prompt and solution pairs and write them to `.jsonl` files.
 
-All datasets are then uploaded to HuggingFace Hub.
+All datasets are then uploaded to HuggingFace Hub, the code generation data is
+uploaded separately from the test generation data.
 
 ## Requirements
 
