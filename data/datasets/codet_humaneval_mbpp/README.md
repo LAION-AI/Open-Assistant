@@ -1,6 +1,17 @@
-## CodeT Datasets (HumanEval and MBPP)
+# Python Code and Test Generation Datasets
 
-Prepares two of the datasets used for Microsoft CodeT, namely HumanEval and
-MBPP, for QA format. Each dataset has a portion dedicated to creating Python
-functions from docstrings, and a portion dedicated to creating Python unit tests
-from docstrings.
+This folder contains two notebooks.
+
+One will download the HumanEval and MBPP datasets used for Microsoft CodeT for
+tuning a model for Python code generation from function docstrings, augment the
+data into prompt and solution pairs and write them to `.jsonl` files.
+
+The other will download the data used for Microsoft CodeT for tuning a model for
+Python test generation from corresponding function docstrings, augment the data
+into prompt and solution pairs and write them to `.jsonl` files.
+
+All datasets are then uploaded to HuggingFace Hub.
+
+## Requirements
+
+Both notebooks require the library `requests`.
