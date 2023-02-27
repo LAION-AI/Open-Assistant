@@ -16,9 +16,9 @@ export class OasstInferenceClient {
     this.userTokenSub = token.sub;
   }
 
-  async request(method: "GET" | "POST" | "PUT" | "DELETE", path: string, init?: AxiosRequestConfig) {
+  async request<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, init?: AxiosRequestConfig) {
     const token = await this.get_token();
-    const { data } = await axios(process.env.INFERENCE_SERVER_HOST + path, {
+    const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
       method,
       ...init,
       headers: {
@@ -56,6 +56,14 @@ export class OasstInferenceClient {
     return this.request("POST", `/chat/${chat_id}/message`, {
       data: { parent_id, content },
       responseType: "stream",
+    });
+  }
+
+  vote({ chat_id, messasge_id, score }: { chat_id: string; messasge_id: string; score: number }) {
+    return this.request("POST", `/chat/${chat_id}/message/${messasge_id}/vote`, {
+      data: {
+        score,
+      },
     });
   }
 }

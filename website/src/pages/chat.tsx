@@ -1,4 +1,4 @@
-import { Button, Progress } from "@chakra-ui/react";
+import { Button, Card, CardBody, Progress } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import { useCallback, useMemo } from "react";
@@ -25,7 +25,13 @@ const Chat = () => {
     }
     const chatId = createChatResponse?.id;
     if (chatId) {
-      return <ChatConversation chatId={chatId} />;
+      return (
+        <Card>
+          <CardBody>
+            <ChatConversation chatId={chatId} />
+          </CardBody>
+        </Card>
+      );
     }
     return <Button onClick={createChat}>{t("create_chat")}</Button>;
   }, [createChat, createChatResponse?.id, isCreatingChat, t]);

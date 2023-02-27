@@ -11,6 +11,7 @@ interface MessageEmojiButtonProps {
   disabled?: boolean;
   userReacted: boolean;
   sx?: ButtonProps["sx"];
+  forceHideCount?: boolean;
 }
 
 export const MessageEmojiButton = ({
@@ -21,6 +22,7 @@ export const MessageEmojiButton = ({
   disabled,
   userReacted,
   sx,
+  forceHideCount,
 }: MessageEmojiButtonProps) => {
   const EmojiIcon = emojiIcons.get(emoji.name);
   const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
@@ -28,7 +30,8 @@ export const MessageEmojiButton = ({
   if (!EmojiIcon) return null;
 
   const isDisabled = !!(userIsAuthor ? true : disabled);
-  const showCount = (emoji.count > 0 && userReacted) || userIsAuthor || isAdminOrMod;
+  const showCount =
+    forceHideCount !== undefined ? !forceHideCount : (emoji.count > 0 && userReacted) || userIsAuthor || isAdminOrMod;
 
   return (
     <Button

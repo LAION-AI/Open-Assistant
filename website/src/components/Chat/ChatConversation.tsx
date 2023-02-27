@@ -1,21 +1,31 @@
-import { Box, Button, Flex, Textarea, useColorModeValue } from "@chakra-ui/react";
+import { Button, Flex, Textarea, useColorModeValue } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { useCallback, useRef, useState } from "react";
+import { post } from "src/lib/api";
+import { API_ROUTES } from "src/lib/routes";
 import { InferenceMessage, InferenceResponse } from "src/types/Chat";
+import useSWRMutation from "swr/mutation";
 
+import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
+import { MessageEmojiButton } from "../Messages/MessageEmojiButton";
+import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
 interface ChatConversationProps {
   chatId: string;
 }
 
 export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   const { t } = useTranslation("common");
-  const inputRef = useRef<HTMLTextAreaElement>();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
-  const [streamedResponse, setResponse] = useState("");
+  const [streamedResponse, setResponse] = useState<string | null>("");
 
   const isLoading = Boolean(streamedResponse);
 
   const send = useCallback(async () => {
+    if (!inputRef.current) {
+      return;
+    }
+
     const content = inputRef.current.value.trim();
 
     if (!content || !chatId) {
@@ -34,7 +44,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     });
 
     // first chunk is message information
-    const stream = iteratorSSE(body);
+    const stream = iteratorSSE(body!);
     const { value } = await stream.next();
     const response: InferenceResponse = JSON.parse(value.data);
 
@@ -57,11 +67,23 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   return (
     <Flex flexDir="column" gap={4} overflowY="auto">
       {messages.map((message) => (
-        <Entry key={message.id} isAssistant={message.role === "assistant"}>
+        <ChatMessageEntry
+          key={message.id}
+          isAssistant={message.role === "assistant"}
+          messageId={message.id}
+          chatId={chatId}
+          isPending={false}
+        >
           {message.content}
-        </Entry>
+        </ChatMessageEntry>
       ))}
-      {streamedResponse ? <Entry isAssistant>{streamedResponse}</Entry> : <Textarea ref={inputRef} autoFocus />}
+      {streamedResponse ? (
+        <ChatMessageEntry isAssistant chatId={chatId} isPending>
+          {streamedResponse}
+        </ChatMessageEntry>
+      ) : (
+        <Textarea ref={inputRef} autoFocus />
+      )}
       <Button onClick={send} isDisabled={isLoading}>
         {t("submit")}
       </Button>
@@ -69,13 +91,60 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   );
 };
 
-const Entry = ({ children, isAssistant }: { isAssistant: boolean; children: InferenceMessage["content"] }) => {
+type ChatMessageEntryProps = {
+  isAssistant: boolean;
+  children: InferenceMessage["content"];
+  chatId: string;
+} & (
+  | {
+      messageId: string;
+      isPending: false;
+    }
+  | { messageId?: undefined; isPending: true }
+);
+
+const ChatMessageEntry = ({ children, isAssistant, isPending, chatId, messageId }: ChatMessageEntryProps) => {
   const bgUser = useColorModeValue("gray.100", "gray.700");
   const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
+  const { trigger } = useSWRMutation(API_ROUTES.CHAT_MESSAGE_VOTE, post);
+  const handleVote = useCallback(() => {
+    if (isPending) {
+      return;
+    }
+    trigger();
+  }, []);
   return (
-    <Box bg={isAssistant ? bgAssistant : bgUser} borderRadius="lg" p="4" whiteSpace="pre-line">
-      {children}
-    </Box>
+    <BaseMessageEntry
+      avatarProps={{
+        src: isAssistant ? `/images/temp-avatars/av1.jpg` : "/images/temp-avatars/av1.jpg",
+      }}
+      bg={isAssistant ? bgAssistant : bgUser}
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      content={children!}
+    >
+      {isAssistant &&
+        !isPending(
+          <MessageInlineEmojiRow>
+            <MessageEmojiButton
+              emoji={{ name: "+1", count: 0 }}
+              checked={false}
+              userReacted={false}
+              userIsAuthor={false}
+              forceHideCount
+              onClick={() => trigger({ score: 1 })}
+              // onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+            />
+            <MessageEmojiButton
+              emoji={{ name: "-1", count: 0 }}
+              checked={false}
+              userReacted={false}
+              userIsAuthor={false}
+              forceHideCount
+              // onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+            />
+          </MessageInlineEmojiRow>
+        )}
+    </BaseMessageEntry>
   );
 };
 
