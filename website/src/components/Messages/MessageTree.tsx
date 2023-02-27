@@ -11,8 +11,14 @@ const avartarMarginTop = 6;
 const maxDepth = 100; // this only used for debug UI in mobile
 const toPx = (val: number) => `${val}px`;
 
+interface MessageTreeProps {
+  tree: MessageWithChildren;
+  messageId?: string;
+  scrollToHighlighted?: boolean;
+}
+
 // eslint-disable-next-line react/display-name
-export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildren; messageId?: string }) => {
+export const MessageTree = memo(({ tree, messageId, scrollToHighlighted }: MessageTreeProps) => {
   const renderChildren = (children: MessageWithChildren[], depth = 1) => {
     const hasSibling = children.length > 1;
     return children.map((child, idx) => {
@@ -28,6 +34,7 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
                 {hasChildren && depth < maxDepth && <Connection className="connection1"></Connection>}
                 <MessageTableEntry
                   showAuthorBadge
+                  scrollToHighlighted={scrollToHighlighted}
                   highlight={child.id === messageId}
                   message={child}
                 ></MessageTableEntry>
@@ -70,7 +77,12 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
             ></Box>
           </>
         )}
-        <MessageTableEntry showAuthorBadge message={tree} highlight={tree.id === messageId}></MessageTableEntry>
+        <MessageTableEntry
+          scrollToHighlighted={scrollToHighlighted}
+          showAuthorBadge
+          message={tree}
+          highlight={tree.id === messageId}
+        />
       </Box>
       {renderChildren(tree.children)}
     </>
