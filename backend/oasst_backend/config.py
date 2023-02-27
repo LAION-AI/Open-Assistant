@@ -149,7 +149,7 @@ class TreeManagerConfiguration(BaseModel):
     """Maximum number of prompts in prompt_lottery_waiting state per language. If this value
     is exceeded no new initial prompt tasks for that language are generated."""
 
-    init_prompt_disabled_langs: list = [en, es]
+    init_prompt_disabled_langs: list = ["en", "es"]
 
 
 class Settings(BaseSettings):
