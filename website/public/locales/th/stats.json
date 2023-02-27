@@ -1,0 +1,20 @@
+{
+  "aborted_low_grade": "ละเลยข้อความที่ต่ำกว่าเกณฑ์",
+  "assistant": "ผู้ช่วย",
+  "backlog_ranking": "การจัดอันดับงานในมือ",
+  "choose_a_language": "เลือกภาษา",
+  "count": "การนับ",
+  "growing": "กำลังขยาย",
+  "halted_by_moderator": "ถูกเตะโดยผู้ดูแล",
+  "human_messages_by_lang": "จำนวนข้อความจากมนุษย์ในแต่ละภาษา",
+  "human_messages_by_role": "จำนวนข้อความจากมนุษย์ในแต่ละบทบาท",
+  "initial_prompt_review": "ข้อความ Prompt ที่อยู่ระหว่างการตรวจสอบ",
+  "message_trees_by_state": "จำนวนกิ่งข้อความแต่ละขั้นตอน",
+  "message_trees_states_by_lang": "จำนวนกิ่งข้อความในขั้นตอน แต่ละภาษา",
+  "prompt_lottery_waiting": "ข้อความ Prompt",
+  "prompter": "prompter",
+  "ranking": "การจัดอันดับ",
+  "ready_for_export": "พร้อมให้ผู้เชี่ยวชาญตรวจสอบ",
+  "stats": "สถิติ",
+  "users_accepted_tos": "ผู้ใช้ที่ยอมรับ TOS"
+}
