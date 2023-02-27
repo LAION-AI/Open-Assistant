@@ -190,7 +190,8 @@ async def list_chats(
     logger.info("Listing all chats.")
     chats = ucr.get_chats()
     chats_list = [chat.to_list_read() for chat in chats]
-    return chats.ListChatsResponse(chats=chats_list)
+    print(chats_list)
+    return chat_schema.ListChatsResponse(chats=chats_list)
 
 
 @app.post("/chat")
