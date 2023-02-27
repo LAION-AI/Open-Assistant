@@ -108,17 +108,12 @@ class UserChatRepository(pydantic.BaseModel):
         self.session.refresh(message)
         return message
 
-    def add_vote(self, message_id: str, score: int) -> models.DbVote:
-        logger.info(f"Adding vote to {message_id=}: {score=}")
+    def update_score(self, message_id: str, score: int):
+        logger.info(f"Updating message score to {message_id=}: {score=}")
         message = self.get_assistant_message_by_id(message_id)
-        vote = models.DbVote(
-            message_id=message.id,
-            score=score,
-        )
-        self.session.add(vote)
-        self.maybe_commit()
-        self.session.refresh(vote)
-        return vote
+        message.score = score
+        self.session.commit()
+        return message
 
     def add_report(self, message_id: str, reason: str, report_type: inference.ReportType) -> models.DbReport:
         logger.info(f"Adding report to {message_id=}: {reason=}")
