@@ -63,6 +63,7 @@ class DbChat(SQLModel, table=True):
     def get_msg_dict(self) -> dict[str, DbMessage]:
         return {m.id: m for m in self.messages}
 
+
 class DbReport(SQLModel, table=True):
     __tablename__ = "report"
 
