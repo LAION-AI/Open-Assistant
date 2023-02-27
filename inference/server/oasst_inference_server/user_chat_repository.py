@@ -108,7 +108,7 @@ class UserChatRepository(pydantic.BaseModel):
         self.session.refresh(message)
         return message
 
-    def update_score(self, message_id: str, score: int):
+    def update_score(self, message_id: str, score: int) -> models.DbMessage:
         if score < -1 and score > 1:
             raise fastapi.HTTPException(status_code=400, detail="Invalid score")
 
