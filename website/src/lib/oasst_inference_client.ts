@@ -59,8 +59,8 @@ export class OasstInferenceClient {
     });
   }
 
-  vote({ chat_id, messasge_id, score }: { chat_id: string; messasge_id: string; score: number }) {
-    return this.request("POST", `/chat/${chat_id}/message/${messasge_id}/vote`, {
+  vote({ chat_id, message_id, score }: { chat_id: string; message_id: string; score: number }) {
+    return this.request("POST", `/chat/${chat_id}/message/${message_id}/vote`, {
       data: {
         score,
       },

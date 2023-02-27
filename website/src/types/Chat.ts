@@ -17,4 +17,5 @@ export interface InferenceMessage {
   content: string | null;
   state: "manual" | "pending";
   role: "assistant" | "prompter";
+  vote: null | number
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Flex, Textarea, useColorModeValue } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { useCallback, useRef, useState } from "react";
@@ -106,13 +107,26 @@ type ChatMessageEntryProps = {
 const ChatMessageEntry = ({ children, isAssistant, isPending, chatId, messageId }: ChatMessageEntryProps) => {
   const bgUser = useColorModeValue("gray.100", "gray.700");
   const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
-  const { trigger } = useSWRMutation(API_ROUTES.CHAT_MESSAGE_VOTE, post);
-  const handleVote = useCallback(() => {
-    if (isPending) {
-      return;
+  const { trigger } = useSWRMutation<
+    any,
+    any,
+    any,
+    {
+      message_id: string;
+      chat_id: string;
+      score: number;
     }
-    trigger();
-  }, []);
+  >(API_ROUTES.CHAT_MESSAGE_VOTE, post);
+  const handleVote = useCallback(
+    (score: number) => {
+      if (isPending) {
+        return;
+      }
+      trigger({ chat_id: chatId, message_id: messageId, score });
+    },
+    [chatId, isPending, messageId, trigger]
+  );
+
   return (
     <BaseMessageEntry
       avatarProps={{
@@ -122,28 +136,28 @@ const ChatMessageEntry = ({ children, isAssistant, isPending, chatId, messageId 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       content={children!}
     >
-      {isAssistant &&
-        !isPending(
-          <MessageInlineEmojiRow>
-            <MessageEmojiButton
-              emoji={{ name: "+1", count: 0 }}
-              checked={false}
-              userReacted={false}
-              userIsAuthor={false}
-              forceHideCount
-              onClick={() => trigger({ score: 1 })}
-              // onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-            />
-            <MessageEmojiButton
-              emoji={{ name: "-1", count: 0 }}
-              checked={false}
-              userReacted={false}
-              userIsAuthor={false}
-              forceHideCount
-              // onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-            />
-          </MessageInlineEmojiRow>
-        )}
+      {isAssistant && !isPending && (
+        <MessageInlineEmojiRow>
+          <MessageEmojiButton
+            emoji={{ name: "+1", count: 0 }}
+            checked={false}
+            userReacted={false}
+            userIsAuthor={false}
+            forceHideCount
+            onClick={handleVote}
+            // onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+          />
+          <MessageEmojiButton
+            emoji={{ name: "-1", count: 0 }}
+            checked={false}
+            userReacted={false}
+            userIsAuthor={false}
+            forceHideCount
+            onClick={handleVote}
+            // onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+          />
+        </MessageInlineEmojiRow>
+      )}
     </BaseMessageEntry>
   );
 };
