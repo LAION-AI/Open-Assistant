@@ -118,13 +118,9 @@ We can then take the resulting model and continue with completion sampling step
 
 ## The Vision
 
-We are not going to stop at replicating ChatGPT. We want to build the assistant
-of the future, able to not only write email and cover letters, but do meaningful
-work, use APIs, dynamically research information, and much more, with the
-ability to be personalized and extended by anyone. And we want to do this in a
-way that is open and accessible, which means we must not only build a great
-assistant, but also make it small and efficient enough to run on consumer
-hardware.
+Our endeavor to develop the ultimate digital assistant extends beyond the mere replication of ChatGPT. Our aim is to create a paradigm-shifting assistant that transcends the boundaries of conventional virtual assistants. We envision an assistant that can execute meaningful work, integrate with APIs, conduct dynamic research, and much more, all while being customizable and extensible by anyone. Moreover, our objective is to ensure that the assistant is accessible to all, which necessitates building a tool that is not only potent but also compact and efficient enough to run on consumer-grade-hardware.
+
+In essence, our goal is to construct an assistant that is not only capable of streamlining daily work but also empowers individuals with a comprehensive range of capabilities that enhances their professional efficiency. We aspire to craft a digital assistant that becomes a user's indispensable companion and an agent of productivity.
 
 ### Slide Decks
 
