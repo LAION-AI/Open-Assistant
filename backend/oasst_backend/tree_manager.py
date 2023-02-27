@@ -366,7 +366,7 @@ class TreeManager:
             lang = "en"
             logger.warning("Task availability request without lang tag received, assuming lang='en'.")
 
-        if lang in init_prompt_disabled_langs:
+        if lang in self.cfg.init_prompt_disabled_langs:
             num_missing_prompts = 0
         else:
             num_missing_prompts = self._prompt_lottery(lang=lang, max_activate=1)
