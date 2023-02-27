@@ -190,7 +190,6 @@ async def list_chats(
     logger.info("Listing all chats.")
     chats = ucr.get_chats()
     chats_list = [chat.to_list_read() for chat in chats]
-    print(chats_list)
     return chat_schema.ListChatsResponse(chats=chats_list)
 
 
