@@ -69,7 +69,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   );
 };
 
-const Entry = ({ children, isAssistant }) => {
+const Entry = ({ children, isAssistant }: { isAssistant: boolean; children: InferenceMessage["content"] }) => {
   const bgUser = useColorModeValue("gray.100", "gray.700");
   const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
   return (
