@@ -112,6 +112,9 @@
             "{{ lookup('ansible.builtin.env', 'SKIP_TOXICITY_CALCULATION') |
             default('true', true) }}"
           OFFICIAL_WEB_API_KEY: "{{ web_api_key }}"
+          TREE_MANAGER__INIT_PROMPT_DISABLED_LANGS:
+            "{{ lookup('ansible.builtin.env', 'INIT_PROMPT_DISABLED_LANGS') |
+            default("xx", true) }}"
           TREE_MANAGER__MAX_ACTIVE_TREES:
             "{{ lookup('ansible.builtin.env', 'MAX_ACTIVE_TREES') |
             default('10', true) }}"
