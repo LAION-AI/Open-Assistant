@@ -151,7 +151,7 @@ class TreeManagerConfiguration(BaseModel):
     
     init_promt_disabled_langs: str = "en,es"
     
-    init_prompt_disabled_langs: array = init_prompt_disabled_langs.split(",")
+    init_prompt_disabled_langs: list = init_prompt_disabled_langs.split(",")
 
 
 class Settings(BaseSettings):
