@@ -2,3 +2,4 @@ numpy
 pandas
 pyarrow
 tqdm
+requests
