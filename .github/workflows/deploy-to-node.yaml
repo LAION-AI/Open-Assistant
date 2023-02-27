@@ -38,6 +38,7 @@ jobs:
       S3_REGION: ${{ secrets.S3_REGION }}
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      INIT_PROMPT_DISABLED_LANGS : ${{ vars.INIT_PROMPT_DISABLED_LANGS }}
       MAX_ACTIVE_TREES: ${{ vars.MAX_ACTIVE_TREES }}
       MAX_INITIAL_PROMPT_REVIEW: ${{ vars.MAX_INITIAL_PROMPT_REVIEW }}
       MAX_TREE_DEPTH: ${{ vars.MAX_TREE_DEPTH }}
