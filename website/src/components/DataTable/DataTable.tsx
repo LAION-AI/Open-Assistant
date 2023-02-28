@@ -124,7 +124,7 @@ export const DataTable = <T,>({
           <TableCaption pb={0}>{caption}</TableCaption>
           <Thead>
             {getHeaderGroups().map((headerGroup) => (
-              <Tr key={headerGroup.id} sx={{ "white-space": "normal" }}>
+              <Tr key={headerGroup.id} whiteSpace="normal">
                 {headerGroup.headers.map((header) => (
                   <Th key={header.id}>
                     <Box display="flex" alignItems="center">

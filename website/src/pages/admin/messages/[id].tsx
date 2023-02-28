@@ -45,7 +45,7 @@ const MessageDetail = () => {
                   Tree {data.tree.id}
                 </CardHeader>
                 <CardBody>
-                  <MessageTree tree={data.tree} messageId={data.message?.id}></MessageTree>
+                  <MessageTree tree={data.tree} messageId={data.message?.id} scrollToHighlighted />
                 </CardBody>
               </Card>
             </Grid>
