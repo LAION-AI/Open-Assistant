@@ -6,5 +6,4 @@ rel
 requests
 sseclient-py
 tokenizers
-tokenizers
 websocket-client
