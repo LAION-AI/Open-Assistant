@@ -15,10 +15,14 @@
   --ifm-color-primary-lightest: #307bf3;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+
+  --ifm-color-info-dark: #307bf3;
+  --ifm-color-info-contrast-background: #0944a105;
+  --ifm-color-info-contrast-foreground: rgba(0, 0, 0, 0.85);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme="dark"] {
+[data-theme="dark"]:root {
   --ifm-color-primary: #307bf3;
   --ifm-color-primary-dark: #0d5ddf;
   --ifm-color-primary-darker: #0d5ddf;
@@ -27,4 +31,15 @@
   --ifm-color-primary-lighter: #307bf3;
   --ifm-color-primary-lightest: #307bf3;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+
+  /*Colors for collapsible info items (used in FAQ page)*/
+  --ifm-color-info-dark: #307bf3;
+  --ifm-color-info-contrast-background: #0944a110;
+  --ifm-color-info-contrast-foreground: rgba(255, 255, 255, 0.95);
+}
+
+/* In collapsible info items, this prevents the summary heading to move*/
+details > summary > h3 {
+  display: inline-block;
+  margin-bottom: 0;
 }

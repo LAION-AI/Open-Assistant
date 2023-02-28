@@ -16,9 +16,12 @@ const columns: DataTableColumnDef<User>[] = [
   columnHelper.accessor("user_id", {
     header: "ID",
   }),
-  columnHelper.accessor("id", {
-    header: "Auth ID",
-  }),
+  {
+    ...columnHelper.accessor("id", {
+      header: "Auth ID",
+    }),
+    filterable: true,
+  },
   columnHelper.accessor("auth_method", {
     header: "Auth Method",
   }),
@@ -47,17 +50,28 @@ const columns: DataTableColumnDef<User>[] = [
 export const UserTable = memo(function UserTable() {
   const { pagination, resetCursor, toNextPage, toPreviousPage } = useCursorPagination();
   const [filterValues, setFilterValues] = useState<FilterItem[]>([]);
+
   const handleFilterValuesChange = (values: FilterItem[]) => {
-    setFilterValues(values);
+    const last = values.pop();
+    if (last) {
+      setFilterValues([last]);
+    }
     resetCursor();
   };
 
   // Fetch and save the users.
   // This follows useSWR's recommendation for simple pagination:
   //   https://swr.vercel.app/docs/pagination#when-to-use-useswr
-  const display_name = filterValues.find((value) => value.id === "display_name")?.value ?? "";
+
+  const filterValue = filterValues.find((value) => value.id === filterValues[filterValues.length - 1]?.id)?.value ?? "";
   const { data, error } = useSWR<FetchUsersResponse<User>>(
-    `/api/admin/users?direction=${pagination.direction}&cursor=${pagination.cursor}&searchDisplayName=${display_name}&sortKey=display_name`,
+    `/api/admin/users?direction=${pagination.direction}&cursor=${
+      pagination.cursor
+    }&searchDisplayName=${filterValue}&sortKey=${
+      filterValues[filterValues.length - 1]?.id === "id"
+        ? "username"
+        : filterValues[filterValues.length - 1]?.id || "display_name"
+    }`,
     get,
     {
       keepPreviousData: true,

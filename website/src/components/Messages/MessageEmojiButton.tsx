@@ -39,7 +39,7 @@ export const MessageEmojiButton = ({
       height="1.6em"
       minWidth={0}
       padding="0"
-      disabled={disabled}
+      isDisabled={disabled}
       sx={{
         ":hover": {
           backgroundColor: isDisabled ? "transparent" : undefined,

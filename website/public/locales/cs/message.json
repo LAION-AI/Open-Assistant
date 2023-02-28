@@ -1,10 +1,16 @@
 {
+  "confirm_open_link_body": "Chcete otevřít tento odkaz?",
+  "confirm_open_link_header": "Potvrzení otevření odkazu",
   "copy_message_id": "Zkopírovat ID zprávy",
+  "copy_message_text": "Zkopírovat neupravenou zprávu",
   "copy_message_link": "Zkopírovat odkaz na zprávu",
   "label_action": "Označkovat",
   "label_title": "Označkovat",
+  "message_author_explain": "Jste autorem této zprávy",
+  "message_author": "Autor",
   "message_deleted": "Zpráva byla odstraněna",
   "message": "Zpráva",
+  "no_messages": "Žádné zprávy",
   "open_new_tab_action": "Otevřít v novém panelu",
   "parent": "Rodič",
   "reactions": "Reakce",
@@ -13,7 +19,9 @@
   "report_placeholder": "Proč by tato zpráva měla být zkontrolována?",
   "report_title": "Nahlásit",
   "send_report": "Odeslat",
+  "stop_tree": "Ukončit strom",
   "submit_labels": "Odeslat",
+  "tree_stopped": "Strom ukončen {{id}}",
   "view_user": "Zobrazit uživatele",
   "your_recent_messages": "Vaše poslední zprávy"
 }

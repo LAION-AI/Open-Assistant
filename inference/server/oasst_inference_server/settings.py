@@ -36,12 +36,29 @@ class Settings(pydantic.BaseSettings):
             path=f"/{values.get('postgres_db') or ''}",
         )
 
+    db_pool_size: int = 75
+    db_max_overflow: int = 20
+
     root_token: str = "1234"
 
     debug_api_keys: list[str] = []
 
     do_compliance_checks: bool = True
     compliance_check_interval: int = 60
+
+    api_root: str = "https://inference.prod.open-assistant.io"
+
+    allow_debug_auth: bool = False
+
+    auth_info: bytes = b"NextAuth.js Generated Encryption Key"
+    auth_salt: bytes = b""
+    auth_length: int = 32
+    auth_secret: bytes = b""
+    auth_algorithm: str = "HS256"
+    auth_access_token_expire_minutes: int = 60
+
+    auth_discord_client_id: str = ""
+    auth_discord_client_secret: str = ""
 
 
 settings = Settings()

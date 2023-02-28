@@ -1,5 +1,6 @@
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Optional
 from uuid import UUID
@@ -15,7 +16,7 @@ from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import UserRepository
-from oasst_backend.utils.tree_export import ExportMessageNode, ExportMessageTree
+from oasst_shared.schemas.export import ExportMessageNode, ExportMessageTree
 from sqlmodel import Session
 
 # well known id
@@ -168,7 +169,7 @@ def main():
     input_file_path = Path(args.input_file_path)
     if not input_file_path.exists() or not input_file_path.is_file():
         print("Invalid input file:", args.input_file_path)
-        exit(1)
+        sys.exit(1)
 
     dry_run = args.dry_run
     num_imported = import_file(

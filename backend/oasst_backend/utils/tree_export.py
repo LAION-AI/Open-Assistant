@@ -11,54 +11,25 @@ from uuid import UUID
 from fastapi.encoders import jsonable_encoder
 from oasst_backend.models import Message
 from oasst_backend.models.message_tree_state import State as TreeState
-from pydantic import BaseModel
+from oasst_shared.schemas.export import ExportMessageNode, ExportMessageTree, LabelValues
 
 
-class LabelAvgValue(BaseModel):
-    value: float | None
-    count: int
-
-
-LabelValues = dict[str, LabelAvgValue]
-
-
-class ExportMessageNode(BaseModel):
-    message_id: str
-    parent_id: str | None
-    text: str
-    role: str
-    lang: str | None
-    review_count: int | None
-    review_result: bool | None
-    rank: int | None
-    synthetic: bool | None
-    model_name: str | None
-    emojis: dict[str, int] | None
-    replies: list[ExportMessageNode] | None
-    labels: LabelValues | None
-
-    @staticmethod
-    def prep_message_export(message: Message, labels: Optional[LabelValues] = None) -> ExportMessageNode:
-        return ExportMessageNode(
-            message_id=str(message.id),
-            parent_id=str(message.parent_id) if message.parent_id else None,
-            text=str(message.payload.payload.text),
-            role=message.role,
-            lang=message.lang,
-            review_count=message.review_count,
-            review_result=message.review_result if message.review_result or message.review_count > 2 else None,
-            synthetic=message.synthetic,
-            model_name=message.model_name,
-            emojis=message.emojis,
-            rank=message.rank,
-            labels=labels,
-        )
-
-
-class ExportMessageTree(BaseModel):
-    message_tree_id: str
-    tree_state: Optional[str]
-    prompt: Optional[ExportMessageNode]
+def prepare_export_message_node(message: Message, labels: Optional[LabelValues] = None) -> ExportMessageNode:
+    return ExportMessageNode(
+        message_id=str(message.id),
+        parent_id=str(message.parent_id) if message.parent_id else None,
+        text=str(message.payload.payload.text),
+        role=message.role,
+        lang=message.lang,
+        deleted=message.deleted,
+        review_count=message.review_count,
+        review_result=message.review_result if message.review_result or message.review_count > 2 else None,
+        synthetic=message.synthetic,
+        model_name=message.model_name,
+        emojis=message.emojis,
+        rank=message.rank,
+        labels=labels,
+    )
 
 
 def build_export_tree(
@@ -67,7 +38,7 @@ def build_export_tree(
     messages: list[Message],
     labels: Optional[dict[UUID, LabelValues]] = None,
 ) -> ExportMessageTree:
-    export_messages = [ExportMessageNode.prep_message_export(m, labels.get(m.id) if labels else None) for m in messages]
+    export_messages = [prepare_export_message_node(m, labels.get(m.id) if labels else None) for m in messages]
 
     messages_by_parent = defaultdict(list)
     for message in export_messages:
@@ -133,7 +104,7 @@ def write_messages_to_file(
 
     with out_buff as f:
         for m in messages:
-            export_message = ExportMessageNode.prep_message_export(m, labels.get(m.id) if labels else None)
+            export_message = prepare_export_message_node(m, labels.get(m.id) if labels else None)
 
             file_data = jsonable_encoder(export_message, exclude_none=True)
             json.dump(file_data, f)

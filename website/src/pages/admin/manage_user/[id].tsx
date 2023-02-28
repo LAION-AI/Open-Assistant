@@ -28,6 +28,7 @@ import { getAdminLayout } from "src/components/Layout";
 import { AdminMessageTable } from "src/components/Messages/AdminMessageTable";
 import { Role, RoleSelect } from "src/components/RoleSelect";
 import { get, post } from "src/lib/api";
+import { getValidDisplayName } from "src/lib/display_name_validation";
 import { userlessApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { getFrontendUserIdForDiscordUser } from "src/lib/users";
@@ -204,6 +205,7 @@ export const getServerSideProps: GetServerSideProps<{ user: User<Role> }, { id: 
     ...backend_user,
     role: (local_user?.role || "general") as Role,
   };
+  user.display_name = getValidDisplayName(user.display_name, user.id);
   return {
     props: {
       user,

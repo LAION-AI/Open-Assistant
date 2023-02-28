@@ -7,7 +7,6 @@ defaults_rlhf:
   epochs: 10
   datasets:
     - oa_private:
-        data_path: .cache
         split: rl
         val_split: 0.0
         fraction: 1
@@ -15,9 +14,10 @@ defaults_rlhf:
   cache_dir: .cache
   quantization: false
   seq2seqmodel: false
+  output_dir: output
+  reward_model_batch_size: 32
 
 debug_rlhf:
-  model_name: gpt2
   rank_model: /local/home/sanagnos/general/Open-Assistant/model/reward/instructor/facebook/galactica-125m-finetuned/checkpoint-500/
   sft_model: /local/home/sanagnos/general/Open-Assistant/model/model_training/EleutherAI/pythia-70m-deduped-base-finetuned/checkpoint-20/
   batch_size: 2

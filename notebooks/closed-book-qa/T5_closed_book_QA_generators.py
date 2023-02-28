@@ -78,7 +78,7 @@ model = AutoModelForSeq2SeqLM.from_pretrained(
 
 # Load an array of strings that are are reference or verified knowledge sources for QA generation. You can do this with a pickle.
 objects = []
-with (open("paragraphs.pkl", "rb")) as openfile:
+with open("paragraphs.pkl", "rb") as openfile:
     while True:
         try:
             objects.append(pickle.load(openfile))

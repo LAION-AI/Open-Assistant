@@ -1,9 +1,15 @@
+aiohttp
 alembic
+cryptography==39.0.0
 fastapi[all]==0.88.0
 loguru
+nvidia-ml-py
 prometheus-fastapi-instrumentator
+psutil
 psycopg2-binary
 pydantic
+pynvml
+python-jose[cryptography]==3.3.0
 redis
 sqlmodel
 sse-starlette

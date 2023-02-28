@@ -35,7 +35,7 @@ import {
 } from "@tanstack/react-table";
 import { Filter } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, ReactNode, useState } from "react";
+import { ChangeEvent, ReactNode, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,11 +110,11 @@ export const DataTable = <T,>({
     <>
       {!disablePagination && (
         <Flex mb="2">
-          <Button onClick={onPreviousClick} disabled={disablePrevious}>
+          <Button onClick={onPreviousClick} isDisabled={disablePrevious}>
             {t("previous")}
           </Button>
           <Spacer />
-          <Button onClick={onNextClick} disabled={disableNext}>
+          <Button onClick={onNextClick} isDisabled={disableNext}>
             {t("next")}
           </Button>
         </Flex>
@@ -124,7 +124,7 @@ export const DataTable = <T,>({
           <TableCaption pb={0}>{caption}</TableCaption>
           <Thead>
             {getHeaderGroups().map((headerGroup) => (
-              <Tr key={headerGroup.id}>
+              <Tr key={headerGroup.id} whiteSpace="normal">
                 {headerGroup.headers.map((header) => (
                   <Th key={header.id}>
                     <Box display="flex" alignItems="center">
@@ -198,13 +198,13 @@ const FilterModal = ({
   value: string;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-
+  const initialFocusRef = useRef();
   const handleInputChange = useDebouncedCallback((e: ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   }, 500);
 
   return (
-    <Popover isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
+    <Popover isOpen={isOpen} onOpen={onOpen} initialFocusRef={initialFocusRef} onClose={onClose}>
       <PopoverTrigger>
         <Button variant={"unstyled"} ml="2">
           <Filter size="1em"></Filter>
@@ -216,7 +216,7 @@ const FilterModal = ({
         <PopoverBody mt="4">
           <FormControl>
             <FormLabel>{label}</FormLabel>
-            <Input onChange={handleInputChange} defaultValue={value}></Input>
+            <Input ref={initialFocusRef} onChange={handleInputChange} autoFocus defaultValue={value}></Input>
           </FormControl>
         </PopoverBody>
       </PopoverContent>

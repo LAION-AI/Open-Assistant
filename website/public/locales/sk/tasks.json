@@ -1,0 +1,92 @@
+{
+  "any_feedback_on_this_task": "Máte nejaké pripomienky k tejto úlohe?",
+  "available_task_count": "{{count}} dostupné úlohy",
+  "default": {
+    "unchanged_title": "Žiadne cahnges",
+    "unchanged_message": "Ste si istí, že chcete pokračovať?",
+    "continue_anyway": "Pokračujte aj tak"
+  },
+  "no_more_tasks": "Zdá sa, že sa nenašli žiadne pracovné miesta.",
+  "random": {
+    "label": "Mám pocit, že mám šťastie",
+    "desc": "Pomôžte nám zlepšiť službu Open Assistant spustením náhodnej úlohy."
+  },
+  "create_initial_prompt": {
+    "label": "Vytvorenie Počiatočných Príkazov",
+    "desc": "Napíšte počiatočné príkazy, ktoré pomôžu aplikácii Open Assistant vyskúšať odpovedanie na rôzne správy. (zadajte do lotérie)",
+    "overview": "Vytvorenie počiatočného príkazu, ktorý sa odošle asistentovi",
+    "instruction": "Zadajte počiatočné príkazy",
+    "response_placeholder": "Napíšte sem svoj príkaz..."
+  },
+  "reply_as_user": {
+    "label": "Odpovedať ako Používateľ",
+    "desc": "Chatujte s aplikáciou Open Assistant a pomáhajte zlepšovať jej reakcie pri interakcii s ňou.",
+    "overview": "Vzhľadom na nasledujúcu konverzáciu poskytnite dobrú odpoveď",
+    "instruction": "Poskytnúť odpoveď používateľa",
+    "response_placeholder": "Napíšte svoju odpoveď sem..."
+  },
+  "reply_as_assistant": {
+    "label": "Odpovedať ako asistent",
+    "desc": "Pomôžte aplikácii Open Assistant zlepšiť jej reakcie na konverzácie s inými používateľmi.",
+    "overview": "Vzhľadom na nasledujúcu konverzáciu poskytnite dobrú odpoveď",
+    "response_placeholder": "Napíšte svoju odpoveď sem..."
+  },
+  "rank_user_replies": {
+    "label": "Poradie Odpovede Používateľa",
+    "desc": "Pomôžte aplikácii Open Assistant zlepšiť jej reakcie na konverzácie s inými používateľmi.",
+    "overview": "Vzhľadom na nasledujúce odpovede používateľov ich zoraďte od najlepších po najhoršie, pričom najlepšie sú na prvom mieste a najhoršie na poslednom.",
+    "unchanged_title": "Objednávka Nezmenená",
+    "unchanged_message": "Poradie výziev ste nezmenili. Ste si istí, že chcete pokračovať?",
+    "continue_anyway": "Pokračujte aj tak"
+  },
+  "rank_assistant_replies": {
+    "label": "Hodnosť Asistent Odpovede",
+    "desc": "Hodnotenie odpovedí poskytnutých programom Open Assistant na základe ich presnosti a čitateľnosti.",
+    "overview": "Vzhľadom na nasledujúce odpovede asistentov ich zoraďte od najlepších po najhoršie, pričom najlepší je prvý, najhorší posledný.",
+    "unchanged_title": "Objednávka Nezmenená",
+    "unchanged_message": "Poradie výziev ste nezmenili. Ste si istí, že chcete pokračovať?",
+    "continue_anyway": "Pokračujte aj tak"
+  },
+  "rank_initial_prompts": {
+    "label": "Poradie Počiatočné Príkazy",
+    "desc": "Hodnotenie výziev poskytovaných aplikáciou Open Assistant na základe ich presnosti a čitateľnosti.",
+    "overview": "Vzhľadom na nasledujúce úvodné podnety ich zoraďte od najlepšieho po najhorší, pričom najlepší je prvý a najhorší posledný.",
+    "unchanged_title": "Objednávka Nezmenená",
+    "unchanged_message": "Poradie výziev ste nezmenili. Ste si istí, že chcete pokračovať?",
+    "continue_anyway": "Pokračujte aj tak"
+  },
+  "label_initial_prompt": {
+    "label": "Označenie Počiatočný Príkaz",
+    "desc": "Poskytnutie štítkov pre príkaz.",
+    "overview": "Uveďte štítky pre nasledujúci príkaz"
+  },
+  "label_prompter_reply": {
+    "label": "Štítok Prompter Odpoveď",
+    "desc": "Poskytnutie štítkov pre príkaz.",
+    "overview": "Vzhľadom na nasledujúcu diskusiu uveďte označenia pre záverečný príkaz."
+  },
+  "label_assistant_reply": {
+    "label": "Asistent pre štítky Odpovedať",
+    "desc": "Poskytnite štítky pre asistenčnú odpoveď.",
+    "overview": "Vzhľadom na nasledujúcu diskusiu uveďte označenia pre záverečnú odpoveď asistenta."
+  },
+  "classify_initial_prompt": {
+    "label": "Klasifikovať Počiatočný Príkaz",
+    "desc": "Poskytnutie štítkov pre príkaz.",
+    "overview": "Prečítajte si nasledujúci príkaz a potom odpovedzte na otázku k nemu."
+  },
+  "classify_prompter_reply": {
+    "label": "Klasifikovať odpoveď Prompter",
+    "desc": "Poskytnutie štítkov pre príkaz.",
+    "overview": "Prečítajte si nasledujúcu konverzáciu a potom odpovedzte na otázku týkajúcu sa poslednej odpovede v diskusii."
+  },
+  "classify_assistant_reply": {
+    "label": "Klasifikovať asistent Odpovedať",
+    "desc": "Poskytnite štítky pre asistenčnú odpoveď.",
+    "overview": "Prečítajte si nasledujúcu konverzáciu a potom odpovedzte na otázku týkajúcu sa poslednej odpovede v diskusii."
+  },
+  "submitted_as": "Toto bude predložené ako {{submit_lang}}",
+  "tab_write": "Napíšte",
+  "tab_preview": "Náhľad",
+  "writing_wrong_langauge_a_b": "Zdá sa, že píšete v {{detected_lang}}, ale toto bude odoslané ako {{submit_lang}}."
+}

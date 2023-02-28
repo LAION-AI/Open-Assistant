@@ -1,7 +1,7 @@
 // https://nextjs.org/docs/basic-features/layouts
 
 import { Box, Grid } from "@chakra-ui/react";
-import { Activity, BarChart2, Layout, MessageSquare, Settings, Users, TrendingUp } from "lucide-react";
+import { Activity, BarChart2, ExternalLink, Layout, MessageSquare, Settings, TrendingUp, Users } from "lucide-react";
 import type { NextPage } from "next";
 import { Header } from "src/components/Header";
 
@@ -55,6 +55,12 @@ export const getDashboardLayout = (page: React.ReactElement) => (
             labelID: "stats",
             pathname: "/stats",
             icon: TrendingUp,
+          },
+          {
+            labelID: "guidelines",
+            pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
+            icon: ExternalLink,
+            target: "_blank",
           },
         ]}
       >

@@ -34,17 +34,18 @@ import {
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
-import { del, post, put } from "src/lib/api";
+import { useDeleteMessage } from "src/hooks/message/useDeleteMessage";
+import { useScrollToElementOnMount } from "src/hooks/ui/useScrollToElementOnMount";
+import { post, put } from "src/lib/api";
 import { ROUTES } from "src/lib/routes";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
-import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 
 const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
@@ -54,9 +55,16 @@ interface MessageTableEntryProps {
   enabled?: boolean;
   highlight?: boolean;
   showAuthorBadge?: boolean;
+  scrollToHighlighted?: boolean;
 }
 
-export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge }: MessageTableEntryProps) {
+export function MessageTableEntry({
+  message,
+  enabled,
+  highlight,
+  scrollToHighlighted,
+  showAuthorBadge,
+}: MessageTableEntryProps) {
   const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
   useEffect(() => {
     const emojis = { ...message.emojis };
@@ -108,6 +116,8 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
   const { t } = useTranslation(["message"]);
 
   const router = useRouter();
+  const highlightedElementRef = useRef();
+  useScrollToElementOnMount(scrollToHighlighted ? highlightedElementRef : undefined);
   const handleOnClick = useCallback(() => {
     enabled && router.push(ROUTES.MESSAGE_DETAIL(message.id));
   }, [enabled, message.id, router]);
@@ -124,6 +134,7 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
         outline={highlight ? "2px solid black" : undefined}
         outlineColor={highlightColor}
         cursor={enabled ? "pointer" : undefined}
+        ref={highlight ? highlightedElementRef : undefined}
         overflowX="auto"
         onClick={handleOnClick}
       >
@@ -232,7 +243,6 @@ const MessageActions = ({
   const toast = useToast();
   const { t } = useTranslation(["message", "common"]);
   const { id } = message;
-  const { trigger: deleteMessage } = useSWRMutation(`/api/admin/delete_message/${id}`, del);
 
   const { trigger: stopTree } = useSWRMutation(`/api/admin/stop_tree/${id}`, put, {
     onSuccess: () => {
@@ -247,10 +257,7 @@ const MessageActions = ({
     },
   });
 
-  const handleDelete = async () => {
-    await deleteMessage();
-    mutate((key) => typeof key === "string" && key.startsWith("/api/messages"), undefined, { revalidate: true });
-  };
+  const { trigger: handleDelete } = useDeleteMessage(message.id);
 
   const handleStop = () => {
     stopTree();
@@ -309,6 +316,9 @@ const MessageActions = ({
           >
             {t("copy_message_link")}
           </MenuItem>
+          <MenuItem onClick={() => handleCopy(message.text)} icon={<Copy />}>
+            {t("copy_message_text")}
+          </MenuItem>
           {!!isAdminOrMod && (
             <>
               <MenuDivider />
@@ -318,7 +328,7 @@ const MessageActions = ({
               <MenuItem as={NextLink} href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
                 View in admin area
               </MenuItem>
-              <MenuItem as={NextLink} href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
+              <MenuItem as={NextLink} href={ROUTES.ADMIN_USER_DETAIL(message.user_id)} target="_blank" icon={<User />}>
                 {t("view_user")}
               </MenuItem>
               {!message.deleted && (

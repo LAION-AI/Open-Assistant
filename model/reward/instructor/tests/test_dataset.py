@@ -5,7 +5,6 @@ from transformers import AutoTokenizer
 
 
 def test_hfsummary():
-
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForPairRank(tokenizer, max_length=200)
     dataset = HFSummary("train")
@@ -16,7 +15,6 @@ def test_hfsummary():
 
 
 def test_webgpt():
-
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForPairRank(tokenizer, max_length=200)
     dataset = WebGPT()
@@ -26,7 +24,6 @@ def test_webgpt():
 
 
 def test_anthropic_rlhf():
-
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForPairRank(tokenizer, max_length=200)
     dataset = AnthropicRLHF("test", sep_token=tokenizer.sep_token)
@@ -36,7 +33,6 @@ def test_anthropic_rlhf():
 
 
 def test_hf_summary_quality():
-
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForSummaryScore(tokenizer, max_length=200)
     dataset = HFSummaryQuality("validation", tokenizer)

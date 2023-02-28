@@ -1,0 +1,17 @@
+{
+  "aborted_low_grade": "Kansellert på grunn av lav vurdering",
+  "backlog_ranking": "Backlograngering",
+  "count": "Opptelling",
+  "growing": "Vokser",
+  "halted_by_moderator": "Stoppet av moderator",
+  "human_messages_by_lang": "Menneskelige meldinger etter språk",
+  "human_messages_by_role": "Menneskemeldinger etter rolle",
+  "initial_prompt_review": "Første gjennomgang",
+  "message_trees_by_state": "Send meldinger til trær etter tillstand",
+  "message_trees_states_by_lang": "Meldingstretilstander etter språk",
+  "prompt_lottery_waiting": "Promptlotteri venter",
+  "ranking": "Rangering",
+  "ready_for_export": "Klar for eksport",
+  "stats": "Statistikk",
+  "users_accepted_tos": "Av brukere aksepterte vilkår"
+}

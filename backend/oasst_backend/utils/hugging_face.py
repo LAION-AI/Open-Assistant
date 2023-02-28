@@ -27,7 +27,6 @@ class HuggingFaceAPI:
         self,
         api_url: str,
     ):
-
         # The API endpoint we want to access
         self.api_url: str = api_url
 

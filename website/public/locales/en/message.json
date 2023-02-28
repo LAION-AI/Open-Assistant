@@ -2,6 +2,7 @@
   "confirm_open_link_body": "Do you want to open this link?",
   "confirm_open_link_header": "Confirm open link",
   "copy_message_id": "Copy message ID",
+  "copy_message_text": "Copy raw message",
   "copy_message_link": "Copy message link",
   "label_action": "Label",
   "label_title": "Label",

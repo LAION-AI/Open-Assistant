@@ -1,7 +1,6 @@
-import { Box, Flex, IconButton, Progress, Tooltip, useColorModeValue } from "@chakra-ui/react";
+import { Button, Card, Flex, IconButton, Progress, Tooltip } from "@chakra-ui/react";
 import { Edit2 } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { SkipButton } from "src/components/Buttons/Skip";
 import { SubmitButton } from "src/components/Buttons/Submit";
 import { TaskInfo } from "src/components/TaskInfo/TaskInfo";
 import { TaskStatus } from "src/components/Tasks/Task";
@@ -11,33 +10,38 @@ export interface TaskControlsProps {
   task: BaseTask;
   taskStatus: TaskStatus;
   isLoading: boolean;
+  isSubmitting: boolean;
+  isRejecting: boolean;
   onEdit: () => void;
   onReview: () => void;
   onSubmit: () => void;
-  onSkip: (reason: string) => void;
+  onSkip: () => void;
 }
 
 export const TaskControls = ({
   task,
   taskStatus,
   isLoading,
+  isRejecting,
+  isSubmitting,
   onEdit,
   onReview,
   onSubmit,
   onSkip,
 }: TaskControlsProps) => {
   const { t } = useTranslation();
-  const backgroundColor = useColorModeValue("white", "gray.800");
 
   return (
-    <Box width="full" bg={backgroundColor} borderRadius="xl" shadow="base">
+    <Card>
       {isLoading && <Progress size="sm" isIndeterminate />}
       <Flex p="6" gap="4" direction={["column", "row"]}>
         <TaskInfo id={task.id} output={t("submit_your_answer")} />
         <Flex width={["full", "fit-content"]} justify="center" ml="auto" gap={2}>
           {taskStatus.mode === "EDIT" ? (
             <>
-              <SkipButton onSkip={onSkip} />
+              <Button size="lg" variant="outline" onClick={onSkip} isLoading={isRejecting}>
+                {t("skip")}
+              </Button>
               <SubmitButton
                 colorScheme="blue"
                 data-cy="review"
@@ -49,12 +53,19 @@ export const TaskControls = ({
             </>
           ) : (
             <>
-              <Tooltip label="Edit">
-                <IconButton size="lg" data-cy="edit" aria-label="edit" onClick={onEdit} icon={<Edit2 size="1em" />} />
+              <Tooltip label={t("edit")}>
+                <IconButton
+                  size="lg"
+                  data-cy="edit"
+                  aria-label={t("edit")}
+                  onClick={onEdit}
+                  icon={<Edit2 size="1em" />}
+                />
               </Tooltip>
               <SubmitButton
                 colorScheme="green"
                 data-cy="submit"
+                isLoading={isSubmitting}
                 isDisabled={taskStatus.mode === "SUBMITTED"}
                 onClick={onSubmit}
               >
@@ -64,6 +75,6 @@ export const TaskControls = ({
           )}
         </Flex>
       </Flex>
-    </Box>
+    </Card>
   );
 };

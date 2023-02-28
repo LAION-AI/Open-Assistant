@@ -1,3 +1,4 @@
+import copy
 import random
 from distutils.util import strtobool
 from pathlib import Path
@@ -12,14 +13,14 @@ from losses import CrossEntropyLoss, PolyLoss
 from models import freeze_top_n_layers, get_specific_model
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
-from torch.utils.data.sampler import Sampler
+from torch.utils.data.distributed import DistributedSampler
 
 
 def _strtobool(x):
     return bool(strtobool(x))
 
 
-class PerDatasetSampler(Sampler):
+class PerDatasetSampler(DistributedSampler):
     """Sampler which returns a fixed number of samples per dataset, per epoch.
 
     Example:
@@ -44,30 +45,59 @@ class PerDatasetSampler(Sampler):
     e.g. using torch.utils.data.ConcatDataset which is current behaviour.
     """
 
-    def __init__(self, dataset_sizes: List[int], dataset_size_per_epoch: List[int]):
+    def __init__(
+        self,
+        dataset_sizes: List[int],
+        dataset_size_per_epoch: List[int],
+        rank: int = None,
+        world_size: int = None,
+        shuffle: bool = True,
+        seed: int = 0,
+    ):
         self.dataset_sizes = dataset_sizes
         self.dataset_size_per_epoch = dataset_size_per_epoch
         self.num_datasets = len(dataset_sizes)
+        self.shuffle = shuffle
+        self.rank = rank
+        self.world_size = world_size
+
+        if world_size == 1:
+            self.rank = 0
+
+        self.num_samples = sum(dataset_size_per_epoch) // world_size
+        self.seed = seed
+
+    def set_epoch(self, epoch) -> None:
+        self.epoch = epoch
+
+    def __len__(self) -> int:
+        return self.num_samples
 
     def __iter__(self):
         epoch_idx = []
         n = 0
+
+        random.seed(self.epoch + self.seed)
+
         for i in range(self.num_datasets):
             sampled_idx = random.sample(range(n, self.dataset_sizes[i] + n), self.dataset_size_per_epoch[i])
             n += self.dataset_sizes[i]
             epoch_idx.extend(sampled_idx)
-        random.shuffle(epoch_idx)
+
+        if self.shuffle:
+            random.shuffle(epoch_idx)
+
+        # split epoch_idx in world_size chunks
+        epoch_idx = epoch_idx[self.rank : self.num_samples : self.world_size]
+
         return iter(epoch_idx)
 
-    def __len__(self):
-        return int(sum(self.dataset_size_per_epoch))
-
     @classmethod
-    def build_sampler_from_config(cls, training_conf, datasets):
+    def build_sampler_from_config(cls, training_conf, datasets, *args, **kwargs):
         dataset_sizes = [len(x) for x in datasets]
         fractions = get_dataset_fractions(training_conf.datasets, dataset_sizes, verbose=training_conf.verbose)
         dataset_size_per_epoch = [int(size * frac) for size, frac in zip(dataset_sizes, fractions)]
-        return cls(dataset_sizes, dataset_size_per_epoch)
+        return cls(dataset_sizes, dataset_size_per_epoch, *args, **kwargs)
 
 
 def get_dataset_fractions(conf, dataset_sizes, verbose=False):
@@ -214,7 +244,9 @@ def get_metrics(conf, tokenizer):
 
 
 def get_model(conf, tokenizer):
-    model = get_specific_model(conf.model_name, cache_dir=conf.cache_dir, seq2seqmodel=conf.seq2seqmodel)
+    model = get_specific_model(
+        conf.model_name, cache_dir=conf.cache_dir, quantization=conf.quantization, seq2seqmodel=conf.seq2seqmodel
+    )
 
     if len(tokenizer) != model.get_input_embeddings().num_embeddings:
         assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
@@ -234,8 +266,10 @@ def get_model(conf, tokenizer):
 def get_dataset_name_and_kwargs_from_data_config(data_config):
     if isinstance(data_config, dict):
         name = list(data_config.keys())[0]
-        kwargs = data_config[name]
-        # remove 'fraction' or 'size' from kwargs
+
+        # first copy the dict, then remove the size and fraction
+        kwargs = copy.deepcopy(data_config[name])
+
         kwargs.pop("fraction", None)
         kwargs.pop("size", None)
         return name, kwargs

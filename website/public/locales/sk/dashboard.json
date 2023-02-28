@@ -1,0 +1,14 @@
+{
+  "grab_a_task": "Vyberte si úlohu!",
+  "create": "Vytvoriť",
+  "evaluate": "Vyhodnotiť",
+  "label": "Štítok",
+  "dashboard": "Prístrojová Doska",
+  "go": "Choďte",
+  "welcome_message": {
+    "label": "Vitaj, {{username}}!",
+    "contributor": "Prispievateľ",
+    "description": "Open Assistant je asistent s otvoreným zdrojovým kódom umelej inteligencie, ktorý používa a trénuje pokročilé jazykové modely na porozumenie a reagovanie na ľudí.",
+    "instruction": "Plňte úlohy, ktoré pomáhajú trénovať model a získavať body."
+  }
+}
