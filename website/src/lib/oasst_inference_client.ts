@@ -35,7 +35,6 @@ export class OasstInferenceClient {
     if (this.inferenceToken) {
       return this.inferenceToken;
     }
-    console.log("fetching new token");
     // we might want to include the inference token in our JWT, but this won't be trivial.
     // or we might have to force log-in the user every time a new JWT is created
 
@@ -43,7 +42,9 @@ export class OasstInferenceClient {
     const res = await fetch(process.env.INFERENCE_SERVER_HOST + `/auth/login/debug?username=${this.userTokenSub}`);
     const inferenceResponse: InferenceDebugTokenResponse = await res.json();
     this.inferenceToken = inferenceResponse.access_token;
-    this.cookies.set("inference_token", this.inferenceToken);
+    this.cookies.set("inference_token", this.inferenceToken, {
+      maxAge: 1000 * 60 * 5, // 5 minutes
+    });
     // console.dir(this.inferenceToken);
     return this.inferenceToken;
   }
@@ -57,5 +58,9 @@ export class OasstInferenceClient {
       data: { parent_id, content },
       responseType: "stream",
     });
+  }
+
+  get_my_chats() {
+    return this.request("GET", "/chat");
   }
 }
