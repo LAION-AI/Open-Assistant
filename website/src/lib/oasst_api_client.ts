@@ -351,6 +351,23 @@ export class OasstApiClient {
     return this.get<Message[]>(`/api/v1/messages?${params}`);
   }
 
+  fetch_my_messages_cursor(
+    user: BackendUserCore,
+    {
+      direction,
+      cursor,
+      ...rest
+    }: { include_deleted?: boolean; max_count?: number; cursor?: string; direction: "forward" | "back"; desc?: boolean }
+  ) {
+    return this.get<FetchUserMessagesCursorResponse>(`/api/v1/messages/cursor`, {
+      ...rest,
+      username: user.id,
+      auth_method: user.auth_method,
+      after: direction === "forward" ? cursor : undefined,
+      before: direction === "back" ? cursor : undefined,
+    });
+  }
+
   fetch_recent_messages(lang: string) {
     return this.get<Message[]>(`/api/v1/messages`, { lang });
   }

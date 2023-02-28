@@ -6,6 +6,7 @@ import { MessageConversation } from "src/components/Messages/MessageConversation
 import { get } from "src/lib/api";
 import useSWRImmutable from "swr/immutable";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+import UserMessageConversation from "src/components/UserMessageConversation";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { getLocaleDisplayName } from "src/lib/languages";
 import { API_ROUTES } from "src/lib/routes";
@@ -17,7 +18,6 @@ const MessagesDashboard = () => {
 
   const lang = useCurrentLocale();
   const { data: messages } = useSWRImmutable(API_ROUTES.RECENT_MESSAGES({ lang }), get, { revalidateOnMount: true });
-  const { data: userMessages } = useSWRImmutable(`/api/messages/user`, get, { revalidateOnMount: true });
 
   const currentLanguage = useCurrentLocale();
 
@@ -55,11 +55,7 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {userMessages ? (
-              <MessageConversation enableLink messages={userMessages} />
-            ) : (
-              <CircularProgress isIndeterminate />
-            )}
+            <UserMessageConversation />
           </Box>
         </Box>
       </SimpleGrid>
