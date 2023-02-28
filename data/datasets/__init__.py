@@ -1,6 +1,6 @@
 TEXT_DATASETS = {
     "gutenberg_english": "sedthh/gutenberg_english",
-    "gutenberg_multilang": "sedthh/gutenberg_multilang", 
+    "gutenberg_multilang": "sedthh/gutenberg_multilang",
 }
 
 INSTRUCTION_DATASETS = {
