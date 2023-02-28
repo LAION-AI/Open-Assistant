@@ -1,5 +1,6 @@
 import json
 import random
+import string
 import time
 
 import sseclient
@@ -13,19 +14,44 @@ class ChatUser(HttpUser):
 
     @task
     def chat(self):
-        chat_id = self.client.post("/chat", json={}).json()["id"]
+        # login
+        auth_data = self.client.get(
+            "/auth/login/debug", params={"username": "".join(random.choice(string.ascii_lowercase) for _ in range(20))}
+        ).json()
+        assert auth_data["token_type"] == "bearer"
+        bearer_token = auth_data["access_token"]
+        auth_headers = {"Authorization": f"Bearer {bearer_token}"}
+
+        chat_data = self.client.post("/chat", json={}, headers=auth_headers).json()
+        chat_id = chat_data["id"]
+        parent_id = None
 
         for _ in range(self.conversation_length):
             response = self.client.post(
                 f"/chat/{chat_id}/message",
-                json={"message": "yo"},
+                json={
+                    "parent_id": parent_id,
+                    "content": "hello",
+                },
                 stream=True,
-                headers={"Accept": "text/event-stream"},
+                headers={
+                    "Accept": "text/event-stream",
+                    **auth_headers,
+                },
             )
             response.raise_for_status()
 
             client = sseclient.SSEClient(response)
-            for event in client.events():
-                _ = json.loads(event.data)
+            print("Assistant: ", end="", flush=True)
+            events = iter(client.events())
+            message_id = json.loads(next(events).data)["assistant_message"]["id"]
+            for event in events:
+                try:
+                    data = json.loads(event.data)
+                except json.JSONDecodeError:
+                    raise
+                if error := data.get("error"):
+                    raise Exception(error)
+            parent_id = message_id
 
             time.sleep(self.time_to_respond)
