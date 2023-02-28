@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Flex, Textarea, useColorModeValue } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { useCallback, useRef, useState } from "react";
+import { ReactNode, useCallback, useRef, useState } from "react";
 import { post } from "src/lib/api";
 import { API_ROUTES } from "src/lib/routes";
 import { InferenceMessage, InferenceResponse } from "src/types/Chat";
@@ -61,9 +61,43 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
       await new Promise(requestAnimationFrame);
     }
 
-    setMessages((old) => [...old, { ...response.assistant_message, content: responseMessage }]);
+    setMessages((old) => [...old, { ...response.assistant_message, content: responseMessage, score: 0 }]);
     setResponse(null);
   }, [chatId, messages]);
+
+  const { trigger } = useSWRMutation<
+    any,
+    any,
+    any,
+    {
+      message_id: string;
+      chat_id: string;
+      score: number;
+    }
+  >(API_ROUTES.CHAT_MESSAGE_VOTE, post);
+
+  const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
+    async ({ chatId, messageId, newScore, oldScore }) => {
+      // immediately set score
+      setMessages((messages) =>
+        messages.map((message) => {
+          return message.id !== messageId ? message : { ...message, score: newScore };
+        })
+      );
+      try {
+        await trigger({ chat_id: chatId, message_id: messageId, score: newScore });
+      } catch {
+        // TODO maybe we should trigger a toast or something
+        // revert on any error
+        setMessages((messages) =>
+          messages.map((message) => {
+            return message.id !== messageId ? message : { ...message, score: oldScore };
+          })
+        );
+      }
+    },
+    [trigger]
+  );
 
   return (
     <Flex flexDir="column" gap={4} overflowY="auto">
@@ -73,15 +107,14 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
           isAssistant={message.role === "assistant"}
           messageId={message.id}
           chatId={chatId}
-          isPending={false}
+          score={message.score}
+          onVote={handleOnVote}
         >
           {message.content}
         </ChatMessageEntry>
       ))}
       {streamedResponse ? (
-        <ChatMessageEntry isAssistant chatId={chatId} isPending>
-          {streamedResponse}
-        </ChatMessageEntry>
+        <PendingMessageEntry isAssistant content={streamedResponse}></PendingMessageEntry>
       ) : (
         <Textarea ref={inputRef} autoFocus />
       )}
@@ -96,37 +129,77 @@ type ChatMessageEntryProps = {
   isAssistant: boolean;
   children: InferenceMessage["content"];
   chatId: string;
-} & (
-  | {
-      messageId: string;
-      isPending: false;
-    }
-  | { messageId?: undefined; isPending: true }
-);
+  messageId: string;
+  score: number;
+  onVote: (data: { newScore: number; oldScore: number; chatId: string; messageId: string }) => void;
+};
 
-const ChatMessageEntry = ({ children, isAssistant, isPending, chatId, messageId }: ChatMessageEntryProps) => {
-  const bgUser = useColorModeValue("gray.100", "gray.700");
-  const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
-  const { trigger } = useSWRMutation<
-    any,
-    any,
-    any,
-    {
-      message_id: string;
-      chat_id: string;
-      score: number;
+const getNewScore = (emoji: "+1" | "-1", currentScore: number) => {
+  if (emoji === "+1") {
+    if (currentScore === 1) {
+      return 0;
     }
-  >(API_ROUTES.CHAT_MESSAGE_VOTE, post);
+    return 1;
+  }
+  // emoji is -1
+  if (currentScore === -1) {
+    return 0;
+  }
+  return -1;
+};
+
+const ChatMessageEntry = ({ children, isAssistant, chatId, messageId, score, onVote }: ChatMessageEntryProps) => {
   const handleVote = useCallback(
-    (score: number) => {
-      if (isPending) {
-        return;
-      }
-      trigger({ chat_id: chatId, message_id: messageId, score });
+    (emoji: "+1" | "-1") => {
+      const newScore = getNewScore(emoji, score);
+      onVote({ newScore, chatId, messageId, oldScore: score });
     },
-    [chatId, isPending, messageId, trigger]
+    [chatId, messageId, onVote, score]
   );
 
+  const handleThumbsUp = useCallback(() => {
+    handleVote("+1");
+  }, [handleVote]);
+
+  const handleThumbsDown = useCallback(() => {
+    handleVote("-1");
+  }, [handleVote]);
+
+  return (
+    <PendingMessageEntry isAssistant={isAssistant} content={children!}>
+      {isAssistant && (
+        <MessageInlineEmojiRow>
+          <MessageEmojiButton
+            emoji={{ name: "+1", count: 0 }}
+            checked={score === 1}
+            userReacted={false}
+            userIsAuthor={false}
+            forceHideCount
+            onClick={handleThumbsUp}
+          />
+          <MessageEmojiButton
+            emoji={{ name: "-1", count: 0 }}
+            checked={score === -1}
+            userReacted={false}
+            userIsAuthor={false}
+            forceHideCount
+            onClick={handleThumbsDown}
+          />
+        </MessageInlineEmojiRow>
+      )}
+    </PendingMessageEntry>
+  );
+};
+
+type PendingMessageEntryProps = {
+  isAssistant: boolean;
+  content: string;
+  children?: ReactNode;
+};
+
+const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageEntryProps) => {
+  const bgUser = useColorModeValue("gray.100", "gray.700");
+  const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
   return (
     <BaseMessageEntry
       avatarProps={{
@@ -134,30 +207,9 @@ const ChatMessageEntry = ({ children, isAssistant, isPending, chatId, messageId 
       }}
       bg={isAssistant ? bgAssistant : bgUser}
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      content={children!}
+      content={content!}
     >
-      {isAssistant && !isPending && (
-        <MessageInlineEmojiRow>
-          <MessageEmojiButton
-            emoji={{ name: "+1", count: 0 }}
-            checked={false}
-            userReacted={false}
-            userIsAuthor={false}
-            forceHideCount
-            onClick={handleVote}
-            // onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-          />
-          <MessageEmojiButton
-            emoji={{ name: "-1", count: 0 }}
-            checked={false}
-            userReacted={false}
-            userIsAuthor={false}
-            forceHideCount
-            onClick={handleVote}
-            // onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-          />
-        </MessageInlineEmojiRow>
-      )}
+      {children}
     </BaseMessageEntry>
   );
 };

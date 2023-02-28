@@ -94,77 +94,75 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
     }, [enabled, message.id, router]);
 
     return (
-      <>
-        <BaseMessageEntry
-          ref={ref}
-          content={message.text}
-          avatarProps={{
-            name: `${boolean(message.is_assistant) ? "Assistant" : "User"}`,
-            src: `${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`,
+      <BaseMessageEntry
+        ref={ref}
+        content={message.text}
+        avatarProps={{
+          name: `${boolean(message.is_assistant) ? "Assistant" : "User"}`,
+          src: `${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`,
+        }}
+        outline={highlight ? "2px solid black" : undefined}
+        outlineColor={highlightColor}
+        cursor={enabled ? "pointer" : undefined}
+        overflowX="auto"
+        onClick={handleOnClick}
+      >
+        <MessageInlineEmojiRow>
+          <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
+            {message.lang}
+          </Badge>
+          {Object.entries(emojiState.emojis)
+            .filter(([emoji]) => isKnownEmoji(emoji))
+            .sort(([emoji]) => -emoji)
+            .map(([emoji, count]) => {
+              return (
+                <MessageEmojiButton
+                  key={emoji}
+                  emoji={{ name: emoji, count }}
+                  checked={emojiState.user_emojis.includes(emoji)}
+                  userReacted={emojiState.user_emojis.length > 0}
+                  userIsAuthor={!!message.user_is_author}
+                  onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+                />
+              );
+            })}
+          <MessageActions
+            react={react}
+            userEmoji={emojiState.user_emojis}
+            onLabel={showLabelPopup}
+            onReport={showReportPopup}
+            message={message}
+          />
+          <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
+          <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
+        </MessageInlineEmojiRow>
+        <Flex
+          position="absolute"
+          gap="2"
+          top="-2.5"
+          style={{
+            insetInlineEnd: "1.25rem",
           }}
-          outline={highlight ? "2px solid black" : undefined}
-          outlineColor={highlightColor}
-          cursor={enabled ? "pointer" : undefined}
-          overflowX="auto"
-          onClick={handleOnClick}
         >
-          <MessageInlineEmojiRow>
-            <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
-              {message.lang}
+          {showAuthorBadge && message.user_is_author && (
+            <Tooltip label={t("message_author_explain")} placement="top">
+              <Badge size="sm" colorScheme="green" textTransform="capitalize">
+                {t("message_author")}
+              </Badge>
+            </Tooltip>
+          )}
+          {message.deleted && isAdminOrMod && (
+            <Badge colorScheme="red" textTransform="capitalize">
+              Deleted {/* dont translate, it's admin only feature */}
             </Badge>
-            {Object.entries(emojiState.emojis)
-              .filter(([emoji]) => isKnownEmoji(emoji))
-              .sort(([emoji]) => -emoji)
-              .map(([emoji, count]) => {
-                return (
-                  <MessageEmojiButton
-                    key={emoji}
-                    emoji={{ name: emoji, count }}
-                    checked={emojiState.user_emojis.includes(emoji)}
-                    userReacted={emojiState.user_emojis.length > 0}
-                    userIsAuthor={!!message.user_is_author}
-                    onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-                  />
-                );
-              })}
-            <MessageActions
-              react={react}
-              userEmoji={emojiState.user_emojis}
-              onLabel={showLabelPopup}
-              onReport={showReportPopup}
-              message={message}
-            />
-            <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
-            <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
-          </MessageInlineEmojiRow>
-          <Flex
-            position="absolute"
-            gap="2"
-            top="-2.5"
-            style={{
-              insetInlineEnd: "1.25rem",
-            }}
-          >
-            {showAuthorBadge && message.user_is_author && (
-              <Tooltip label={t("message_author_explain")} placement="top">
-                <Badge size="sm" colorScheme="green" textTransform="capitalize">
-                  {t("message_author")}
-                </Badge>
-              </Tooltip>
-            )}
-            {message.deleted && isAdminOrMod && (
-              <Badge colorScheme="red" textTransform="capitalize">
-                Deleted {/* dont translate, it's admin only feature */}
-              </Badge>
-            )}
-            {message.review_result === false && isAdminOrMod && (
-              <Badge colorScheme="yellow" textTransform="capitalize">
-                Spam {/* dont translate, it's admin only feature */}
-              </Badge>
-            )}
-          </Flex>
-        </BaseMessageEntry>
-      </>
+          )}
+          {message.review_result === false && isAdminOrMod && (
+            <Badge colorScheme="yellow" textTransform="capitalize">
+              Spam {/* dont translate, it's admin only feature */}
+            </Badge>
+          )}
+        </Flex>
+      </BaseMessageEntry>
     );
   }
 );
