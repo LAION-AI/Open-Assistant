@@ -89,13 +89,14 @@ import pandas as pd
 df = pd.read_json(...) # or any other way
 
 # Save the file in the Parquet format
-df.to_parquet("dataset.parquet", row_group_size=100, engine="pyarrow")
+df.to_parquet("dataset.parquet", row_group_size=100, engine="pyarrow", index=False)
 ```
 
 #### 2. Install Hugging Face Hub
 
 ```bash
 pip install huggingface_hub
+pip install 'huggingface_hub[cli]'
 ```
 
 #### 3. Log in to Hugging Face
@@ -154,7 +155,7 @@ INSTRUCTION_DATASETS = {
 #### 4. Stage your changes and run the pre-commit hook
 
 ```bash
-pre-commit run
+pre-commit run --all-files
 ```
 
 #### 5. Submit a pull request
