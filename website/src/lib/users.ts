@@ -7,7 +7,7 @@ import type { BackendUserCore } from "src/types/Users";
  * @param {string} id The user's web auth id.
  *
  */
-export const getBackendUserCore = async (id: string): Promise<BackendUserCore | null> => {
+export const getBackendUserCore = async (id: string): Promise<BackendUserCore> => {
   const user = await prisma.user.findUnique({
     where: { id },
     select: {
@@ -18,7 +18,7 @@ export const getBackendUserCore = async (id: string): Promise<BackendUserCore | 
   });
 
   if (!user) {
-    return null;
+    throw new Error("User not found");
   }
 
   // If there are no linked accounts, just use what we have locally.
