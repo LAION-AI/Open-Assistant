@@ -107,6 +107,7 @@ class YouTubeSubsHowTo100MDataset(datasets.GeneratorBasedBuilder):
                     yield key, json.loads(line)
                     key += 1
 
+
 # This allows you to run your dataloader with `python [dataset_name].py` during development
 # TODO: Remove this before making your PR
 if __name__ == "__main__":
