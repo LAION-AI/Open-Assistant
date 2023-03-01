@@ -2,6 +2,7 @@ import argparse
 import gzip
 import json
 import random
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -32,7 +33,7 @@ class Configuration(pydantic.BaseModel):
 class SamplingResult(pydantic.BaseModel):
     sampling_config: str
     sampling_params: dict
-    output: str
+    outputs: list[str]
 
 
 class PromptResults(pydantic.BaseModel):
@@ -111,32 +112,38 @@ def sample_prompt_continuations(
     mode: str,
     config: Configuration,
     device: torch.DeviceObjType,
+    num_samples: int = 1,
     verbose: bool = False,
 ) -> list[PromptResults]:
     prompt_results: list[PromptResults] = []
     for p in tqdm(prompts):
         sampling_results: list[SamplingResult] = []
         for sc in config.configurations:
-            output_tokens, sampling_params = sample(
-                p,
-                model=model,
-                tokenizer=tokenizer,
-                mode=mode,
-                sampling_config=sc,
-                default_args=config.default_args,
-                device=device,
-            )
-            output = tokenizer.decode(
-                output_tokens, truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"], skip_special_tokens=True
-            )
+            outputs = []
+            if sc.generate_args.get("do_sample") is False:
+                num_samples = 1
+            for i in range(num_samples):
+                output_tokens, sampling_params = sample(
+                    p,
+                    model=model,
+                    tokenizer=tokenizer,
+                    mode=mode,
+                    sampling_config=sc,
+                    default_args=config.default_args,
+                    device=device,
+                )
+                output = tokenizer.decode(
+                    output_tokens, truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"], skip_special_tokens=True
+                )
 
-            if verbose:
-                print(f"===[ Config: {sc.name} ]===\n")
-                print(f'User: "{p}"')
-                print(f'Assistant: "{output}"\n')
+                if verbose:
+                    print(f"===[ Config: {sc.name} [{i+1}/{num_samples}] ]===\n")
+                    print(f'User: "{p}"')
+                    print(f'Assistant: "{output}"\n')
+                outputs.append(output)
 
             sampling_results.append(
-                SamplingResult(sampling_config=sc.name, sampling_params=sampling_params, output=output)
+                SamplingResult(sampling_config=sc.name, sampling_params=sampling_params, outputs=outputs)
             )
 
         prompt_results.append(PromptResults(prompt=p, results=sampling_results))
@@ -161,11 +168,14 @@ def parse_args():
         default="legacy",
         help="legacy, v2",
     )
-    parser.add_argument("--prompt-file", type=str, help="jsonl string prompts input file name")
-    parser.add_argument("--report", type=str, help="json sampling report output file name", default="report.json")
+    parser.add_argument(
+        "--prompts", type=str, help="jsonl string prompts input file name", default="./data/en_100_text.jsonl"
+    )
+    parser.add_argument("--report", type=str, help="json sampling report output file name")
     parser.add_argument("--seed", type=int, default="42", help="psoudo random number generator seed")
     parser.add_argument("--verbose", action="store_true", default=False)
     parser.add_argument("-n", type=int)
+    parser.add_argument("--num-samples", type=int, default=1)
     parser.add_argument("--config", type=str, default="config/default.json")
     return parser.parse_args()
 
@@ -193,8 +203,8 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(model_name).eval()
     model = model.to(device)
 
-    print(f"Loading prompts: {args.prompt_file}")
-    prompts = load_jsonl(input_file_path=args.prompt_file)
+    print(f"Loading prompts file: {args.prompts}")
+    prompts = load_jsonl(input_file_path=args.prompts)
     print(f"prompt count: {len(prompts)}")
 
     if args.n:
@@ -209,12 +219,20 @@ def main():
             tokenizer=tokenizer,
             mode=args.mode,
             config=config,
+            num_samples=args.num_samples,
             verbose=args.verbose,
             device=device,
         ),
     )
 
-    report_path = Path(args.report)
+    preport_filename = args.report
+    if not preport_filename:
+        save_model_name = re.sub(r"[^\w\d-]", "_", model_name)
+        preport_filename = f"{save_model_name}_sampling.json"
+    print("preport_filename", preport_filename)
+
+    report_path = Path(preport_filename)
+    print(f"writing report: {str(report_path)}")
     with report_path.open(mode="wt", encoding="UTF-8") as rf:
         x = report.dict(exclude_none=True)
         json.dump(x, rf, indent=2)
