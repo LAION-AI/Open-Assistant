@@ -26,7 +26,7 @@ const Chat = ({ id }: { id: string }) => {
             </Button>
           </Link>
 
-          <ChatConversation chatId={id as string} />
+          <ChatConversation chatId={id} />
         </Flex>
       </Flags>
     </>
