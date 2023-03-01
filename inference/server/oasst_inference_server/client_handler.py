@@ -89,7 +89,7 @@ async def handle_create_vote(
 ) -> fastapi.Response:
     """Allows the client to vote on a message."""
     try:
-        ucr.add_vote(message_id=message_id, score=vote_request.score)
+        ucr.update_score(message_id=message_id, score=vote_request.score)
         return fastapi.Response(status_code=200)
     except Exception:
         logger.exception("Error adding vote")
