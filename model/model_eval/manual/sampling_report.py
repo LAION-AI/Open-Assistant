@@ -44,6 +44,7 @@ class PromptResults(pydantic.BaseModel):
 class SamplingReport(pydantic.BaseModel):
     model_name: str
     date: str
+    args: dict
     prompts: list[PromptResults]
 
 
@@ -98,7 +99,6 @@ def sample(
     outputs = model.generate(
         input_ids,
         **sampling_params,
-        early_stopping=True,
         pad_token_id=tokenizer.eos_token_id,
     )
     output_tokens = outputs[0, input_ids.size(1) :]
@@ -209,6 +209,7 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
     model = AutoModelForCausalLM.from_pretrained(model_name).eval()
+    tokenizer.eos_token_id = model.config.eos_token_id
     model = model.to(device)
 
     print(f"Loading prompts file: {args.prompts}")
@@ -221,6 +222,7 @@ def main():
     report = SamplingReport(
         model_name=model_name,
         date=datetime.utcnow().isoformat(),
+        args=vars(args),
         prompts=sample_prompt_continuations(
             prompts=prompts,
             model=model,
