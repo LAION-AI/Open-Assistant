@@ -1,5 +1,6 @@
 import os
 import sys
+import pickle
 import requests, zipfile, io
 import urllib
 import json
@@ -7,6 +8,7 @@ import math
 import random
 import re
 from typing import List
+from tqdm import tqdm
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
@@ -18,13 +20,13 @@ def get_video_ids(raw_file: str, video_id_pattern: str) -> List[str]:
         while True:
             chunk = f.read(100000) # arbitrary chunk size
             if not chunk: break
-            chunk += overlap
+            chunk = overlap + chunk
             match = re.findall(video_id_pattern, chunk)
             if match:
                 for vid in match:
                     video_ids.append(vid.strip("'\""))
             overlap = chunk[-10:] # in case video_id is split between chunks
-    return set(video_ids) # dedup
+    return list(set(video_ids)) # dedup
 
 
 def get_title(video_id):
@@ -73,16 +75,20 @@ def main(output_dir: str = "data"):
         zipped = zipfile.ZipFile(io.BytesIO(response.content))
         zipped.extractall("./temp")
 
-    print("Retrieving video ids...")
-    filename="./temp/raw_caption.json"
-    video_id_pattern = '"[0-9A-Za-z_-]{11}"'
-    video_ids = get_video_ids(filename, video_id_pattern)
-    # TODO: need to delete .temp/raw_caption.json, after the job done
+    if not os.path.exists("./temp/video_ids.pkl"):
+        print("Retrieving video ids...")
+        filename="./temp/raw_caption.json"
+        video_id_pattern = '"[0-9A-Za-z_-]{11}"'
+        video_ids = get_video_ids(filename, video_id_pattern)
+        with open("./temp/video_ids.pkl", "wb") as f:
+            pickle.dump(video_ids, f)
+    else:
+        with open("./temp/video_ids.pkl", "rb") as f:
+            video_ids = pickle.load(f)
 
     print("Extracting instruction-response pairs...")
     dataset = []
-    from tqdm import tqdm
-    for video_id in tqdm(list(video_ids)):
+    for video_id in tqdm(video_ids):
         title = get_title(video_id)
         if title is None: # video is not available any more
             continue
