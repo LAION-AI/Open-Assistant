@@ -12,6 +12,7 @@ from oasst_inference_server import chat_repository, deps, models, queueing, work
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from sqlalchemy.sql.functions import random as sql_random
+from sqlmodel import not_, or_
 
 WSException = (
     websockets.exceptions.WebSocketException,
@@ -171,6 +172,8 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
     logger.info(f"Running compliance check for worker {worker_id}")
 
     with deps.manual_create_session() as session:
+        compliance_check = models.DbWorkerComplianceCheck(worker_id=worker_id)
+
         try:
             message = find_compliance_work_request_message(session, worker_config, worker_id)
             if message is None:
@@ -179,6 +182,7 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
                 )
                 return
 
+            compliance_check.compare_worker_id = message.worker_id
             compliance_work_request = worker_handler.build_work_request(message)
 
             logger.info(f"Found work request for compliance check for worker {worker_id}: {compliance_work_request}")
@@ -187,6 +191,8 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             while True:
                 response = await receive_work_response_packet(websocket)
                 if response.error is not None:
+                    compliance_check.responded = True
+                    compliance_check.error = response.error
                     logger.warning(f"Worker {worker_id} errored during compliance check: {response.error}")
                     return
                 if response.is_end:
@@ -194,10 +200,14 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             if response is None:
                 logger.warning(f"Worker {worker_id} did not respond to compliance check")
                 return
+            compliance_check.responded = True
             passes = response.generated_text.text == message.content
+            compliance_check.passed = passes
             logger.info(f"Worker {worker_id} passed compliance check: {passes}")
 
         finally:
+            compliance_check.end_time = datetime.datetime.utcnow()
+            session.add(compliance_check)
             worker = get_worker(worker_id, session, with_for_update=True)
             worker.next_compliance_check = datetime.datetime.utcnow() + datetime.timedelta(
                 seconds=settings.compliance_check_interval
@@ -405,3 +415,36 @@ async def perform_work(
         logger.exception(f"Error handling {message_id=}")
         cr.abort_work(message_id, reason=str(e))
         raise WorkerError("Error handling chat", did_work=True)
+
+
+async def compute_worker_compliance_score(worker_id: str) -> float:
+    """
+    Compute a float between 0 and 1 (inclusive) representing the compliance score of the worker.
+    Workers are rewarded for passing compliance checks, and penalised for failing to respond to a check, erroring during a check, or failing a check.
+    In-progress checks are ignored.
+    """
+    with deps.manual_create_session() as session:
+        worker_checks: list[models.DbWorkerComplianceCheck] = session.exec(
+            sqlmodel.select(models.DbWorkerComplianceCheck).where(
+                or_(
+                    models.DbWorkerComplianceCheck.worker_id == worker_id,
+                    models.DbWorkerComplianceCheck.compare_worker_id == worker_id,
+                ),
+                not_(models.DbWorkerComplianceCheck.end_time.is_(None)),
+            )
+        ).all()
+
+        # Rudimentary scoring algorithm, we may want to add weightings or other factors
+        total_count = len(worker_checks)
+
+        checked = [c for c in worker_checks if c.worker_id == worker_id]
+        compared = [c for c in worker_checks if c.compare_worker_id == worker_id]
+
+        pass_count = sum(1 for _ in filter(lambda c: c.passed, checked))
+        error_count = sum(1 for _ in filter(lambda c: c.error is not None, checked))
+        no_response_count = sum(1 for _ in filter(lambda c: not c.responded, checked))
+
+        compare_fail_count = sum(1 for _ in filter(lambda c: not c.passed, compared))
+        fail_count = len(checked) - pass_count - error_count - no_response_count
+
+        return (fail_count + compare_fail_count) / total_count
