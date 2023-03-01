@@ -14,9 +14,10 @@ class OpenAssistantConfig(datasets.BuilderConfig):
     subset_id: str = None
 
 
-lm_features = datasets.Features(
+instruction_features = datasets.Features(
     {
-        "text": datasets.Value("string"),
-        "meta": [datasets.Value("string")],
+        "instruction": datasets.Value("string"),
+        "response": datasets.Value("string"),
+        "source": datasets.Value("string"),
     }
 )
