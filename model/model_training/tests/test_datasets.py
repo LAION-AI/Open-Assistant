@@ -1,13 +1,14 @@
 from argparse import Namespace
 
 import pytest
+from custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
+from custom_datasets.dialogue_collator import DialogueDataCollator
+from torch.utils.data import ConcatDataset, DataLoader
+from utils import get_tokenizer
 
 
-# TODO:
-@pytest.mark.skip(reason="Cannot import glibcxx in pytest")
 def test_all_datasets():
-    from custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
-    from custom_datasets.dialogue_collator import DialogueDataCollator
+
     qa_base = QA_DATASETS
     summarize_base = SUMMARIZATION_DATASETS
     others = ["prompt_dialogue", "webgpt", "soda", "joke", "instruct_tuning", "explain_prosocial", "prosocial_dialogue"]
@@ -23,12 +24,8 @@ def test_all_datasets():
         for idx in range(min(len(eval), 1000)):
             eval[idx]
 
-@pytest.mark.skip(reason="Cannot import glibcxx in pytest")
+
 def test_collate_fn():
-    from custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
-    from custom_datasets.dialogue_collator import DialogueDataCollator
-    from torch.utils.data import ConcatDataset, DataLoader
-    from utils import get_tokenizer
 
     config = Namespace(cache_dir=".cache", model_name="Salesforce/codegen-2B-multi")
     tokenizer = get_tokenizer(config)

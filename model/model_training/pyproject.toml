@@ -16,7 +16,7 @@ dependencies = [
     "deepspeed==0.7.7",
     "evaluate==0.4.0",
     "gdown",
-    #"git+https://github.com/CarperAI/trlx.git@b91da7b03d8e9fa0c0d6dce10a8f2611aca3013f",
+    #"git+https://github.com/CarperAI/trlx.git@b91da7b03d8e9fa0c0d6dce10a8f2611aca3013f", # this doesnt work
     "nltk==3.8.1",
     "numpy>=1.22.4",
     "py7zr",
@@ -25,6 +25,7 @@ dependencies = [
     "torch>=1.12.1",
     "transformers==4.25.1",
     "wandb==0.13.7",
+    "pandas==1.3", # down grade to prevent errors with version `GLIBCXX_3.4.29' not found
 ]
 
 [tool.setuptools]
