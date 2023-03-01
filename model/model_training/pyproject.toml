@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "model_training"
+description = "Open Assistant Model Training Module"
+version = "1.0.0"
+authors = [
+    { name = "LAION-AI", email = "contact@laion.ai" }
+]
+dependencies = [
+    "accelerate==0.15.0",
+    "bitsandbytes==0.36.0.post2",
+    "datasets==2.8.0",
+    "deepspeed==0.7.7",
+    "evaluate==0.4.0",
+    "gdown",
+    #"git+https://github.com/CarperAI/trlx.git@b91da7b03d8e9fa0c0d6dce10a8f2611aca3013f",
+    "nltk==3.8.1",
+    "numpy>=1.22.4",
+    "py7zr",
+    "scikit-learn==1.2.0",
+    "sentencepiece==0.1.97",
+    "torch>=1.12.1",
+    "transformers==4.25.1",
+    "wandb==0.13.7",
+]
+
+[tool.setuptools]
+py-modules = []
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
