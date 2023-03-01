@@ -1,0 +1,13 @@
+[
+  {
+    "name": "config_0",
+    "generate_args": {
+      "temperature": 1,
+      "max_new_tokens": 128,
+      "top_k": 50,
+      "top_p": 0.95
+    },
+    "pre_text": "You are a helpful assistant called Joi trained by OpenAssistant on large corpus of data, you will now help user to answer the question as concise as possible",
+    "bot_name": "Joi"
+  }
+]
