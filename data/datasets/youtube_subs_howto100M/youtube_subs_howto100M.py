@@ -23,7 +23,7 @@ from typing import Dict, List, Tuple
 
 import datasets
 
-from .hub import OpenAssistantConfig, features
+from .hub import OpenAssistantConfig, instruction_features
 
 _CITATION = """\
 @inproceedings{miech19howto100m,
@@ -70,7 +70,7 @@ class YouTubeSubsHowTo100MDataset(datasets.GeneratorBasedBuilder):
     def _info(self) -> datasets.DatasetInfo:
         return datasets.DatasetInfo(
             description=_DESCRIPTION,
-            features=features,
+            features=instruction_features,
             homepage=_HOMEPAGE,
             license=_LICENSE,
             citation=_CITATION,
