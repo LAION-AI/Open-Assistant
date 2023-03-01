@@ -120,9 +120,9 @@ def sample_prompt_continuations(
         sampling_results: list[SamplingResult] = []
         for sc in config.configurations:
             outputs = []
-            if sc.generate_args.get("do_sample") is False:
-                num_samples = 1
             for i in range(num_samples):
+                if i > 0 and sc.generate_args.get("do_sample") is False:
+                    break  # don't repeat greedy sampling
                 output_tokens, sampling_params = sample(
                     p,
                     model=model,
@@ -181,6 +181,14 @@ def parse_args():
 
 
 def main():
+    """
+    Usage example:
+    python sampling_report.py --model-name facebook/galactica-125m --config config/default.json --prompts data/en_100_text.jsonl --report report_file.json -n 10 --verbose
+
+    eval oasst model:
+    python sampling_report.py --model-name theblackcat102/pythia-3b-deduped-sft --mode v2 --config config/default.json --prompts data/en_100_text.jsonl -n 2 --verbose
+    """
+
     print("Using pytorch version {}".format(torch.__version__))
 
     args = parse_args()
