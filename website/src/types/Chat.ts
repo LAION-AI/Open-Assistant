@@ -18,3 +18,7 @@ export interface InferenceMessage {
   state: "manual" | "pending";
   role: "assistant" | "prompter";
 }
+
+export interface GetChatsResponse {
+  chats: InferenceCreateChatResponse[];
+}

@@ -1,3 +1,4 @@
+import type chat from "public/locales/en/chat.json";
 import type common from "public/locales/en/common.json";
 import type dashboard from "public/locales/en/dashboard.json";
 import type error from "public/locales/en/error.json";
@@ -8,9 +9,11 @@ import type message from "public/locales/en/message.json";
 import type stats from "public/locales/en/stats.json";
 import type tasks from "public/locales/en/tasks.json";
 import type tos from "public/locales/en/tos.json";
+
 declare module "i18next" {
   interface CustomTypeOptions {
     resources: {
+      chat: typeof chat;
       common: typeof common;
       dashboard: typeof dashboard;
       error: typeof error;
