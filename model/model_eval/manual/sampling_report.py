@@ -160,7 +160,7 @@ def load_configs(path: Path) -> Configuration:
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", default="cuda", type=str, help="device to use")
-    parser.add_argument("--device-index", default=1, type=int, help="device index")
+    parser.add_argument("--device-index", default=0, type=int, help="device index")
     parser.add_argument("--model-name", type=str, default="facebook/galactica-125m")
     parser.add_argument(
         "--mode",
@@ -175,7 +175,7 @@ def parse_args():
     parser.add_argument("--seed", type=int, default="42", help="psoudo random number generator seed")
     parser.add_argument("--verbose", action="store_true", default=False)
     parser.add_argument("-n", type=int)
-    parser.add_argument("--num-samples", type=int, default=1)
+    parser.add_argument("--num-samples", type=int, default=2)
     parser.add_argument("--config", type=str, default="config/default.json")
     return parser.parse_args()
 
