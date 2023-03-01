@@ -16,7 +16,7 @@ dependencies = [
     "deepspeed==0.7.7",
     "evaluate==0.4.0",
     "gdown",
-    #"git+https://github.com/CarperAI/trlx.git@b91da7b03d8e9fa0c0d6dce10a8f2611aca3013f", # this doesnt work
+    "trlx @ git+https://github.com/CarperAI/trlx.git@b91da7b03d8e9fa0c0d6dce10a8f2611aca3013f",
     "nltk==3.8.1",
     "numpy>=1.22.4",
     "py7zr",
