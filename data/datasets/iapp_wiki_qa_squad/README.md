@@ -1,12 +1,12 @@
 ---
 license: mit
 language:
-- th
+  - th
 tags:
-- Open Assistant
+  - Open Assistant
 task_categories:
-- question-answering
-- text-generation
+  - question-answering
+  - text-generation
 ---
 
 This dataset is fork from [https://huggingface.co/datasets/iapp_wiki_qa_squad](https://huggingface.co/datasets/iapp_wiki_qa_squad) that made for Open Assistant.
