@@ -177,6 +177,7 @@ def parse_args():
     parser.add_argument("-n", type=int)
     parser.add_argument("--num-samples", type=int, default=2)
     parser.add_argument("--config", type=str, default="config/default.json")
+    parser.add_argument("--half", action="store_true", default=False, help="use float16")
     return parser.parse_args()
 
 
@@ -210,6 +211,8 @@ def main():
     tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
     model = AutoModelForCausalLM.from_pretrained(model_name).eval()
     tokenizer.eos_token_id = model.config.eos_token_id
+    if args.half:
+        model = model.half()
     model = model.to(device)
 
     print(f"Loading prompts file: {args.prompts}")
