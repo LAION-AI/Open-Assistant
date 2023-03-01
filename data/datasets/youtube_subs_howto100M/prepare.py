@@ -106,7 +106,7 @@ def main(output_dir: str = "data"):
     )
     splits = {"train": train, "validation": validation, "test": test}
     for split in ["train", "validation", "test"]:
-        with open(f"{output_dir}/youtube_subs_{split}.jsonl", "w") as f:
+        with open(f"{output_dir}/youtube_subs_howto100M_{split}.jsonl", "w") as f:
             for datapoint in splits[split]:
                 f.write(f"{json.dumps(datapoint)}\n")
     print("All Done!")
