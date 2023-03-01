@@ -2,7 +2,8 @@
   "default_args": {
     "max_new_tokens": 128,
     "do_sample": true,
-    "temperature": 1.0
+    "temperature": 1.0,
+    "min_length": 10
   },
   "configurations": [
     {
