@@ -357,7 +357,7 @@ class MessageRanking(Interaction):
     type: Literal["message_ranking"] = "message_ranking"
     message_id: str  # parent message of replies that were ranked
     ranking: conlist(item_type=int, min_items=1)
-    not_rankable: Optional[bool]  # all options flawed/factually incorrect/inaccaptable
+    not_rankable: Optional[bool]  # all options flawed, factually incorrect or unacceptable
 
 
 class LabelWidget(str, enum.Enum):
