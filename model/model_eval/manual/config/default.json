@@ -35,6 +35,15 @@
       }
     },
     {
+      "name": "typical95",
+      "generate_args": {
+        "top_k": 1000,
+        "top_p": 0.95,
+        "typical_p": 0.95,
+        "repetition_penalty": 1.2
+      }
+    },
+    {
       "name": "greedy",
       "generate_args": {
         "do_sample": false,
