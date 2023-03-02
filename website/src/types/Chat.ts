@@ -19,3 +19,7 @@ export interface InferenceMessage {
   role: "assistant" | "prompter";
   score: number;
 }
+
+export interface GetChatsResponse {
+  chats: InferenceCreateChatResponse[];
+}
