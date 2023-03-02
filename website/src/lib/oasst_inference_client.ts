@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosRequestConfig } from "axios";
 import Cookies from "cookies";
 import type { NextApiRequest, NextApiResponse } from "next";
@@ -16,7 +17,7 @@ export class OasstInferenceClient {
     this.userTokenSub = token.sub;
   }
 
-  async request<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, init?: AxiosRequestConfig) {
+  async request<T = any>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, init?: AxiosRequestConfig) {
     const token = await this.get_token();
     const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
       method,
