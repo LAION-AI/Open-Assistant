@@ -2,7 +2,7 @@
 
 ## Requirements
 
-`pip install -r requirements.txt`
+`pip install .`
 
 Start training SFT model
 

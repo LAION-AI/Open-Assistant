@@ -2,11 +2,9 @@
 
 Trainer code based on huggingface. Compatible with deepspeed or accelerate
 
-Install Python requirements
+## Requirements
 
-```bash
-pip install -r requirements.txt
-```
+`pip install .`
 
 Write or inherit a `configs/<config-name>.yml` file to store training
 configuration details.
