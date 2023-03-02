@@ -77,8 +77,11 @@ const sx: SystemStyleObject = {
       borderBottomColor: "gray.700",
     },
   },
-  "ol li::marker": {
-    content: "counter(list-item) '.'",
+  ol: {
+    listStyleType: "none",
+  },
+  "ol li::before": {
+    content: "counter(list-item) '.' ' '",
   },
 };
 
