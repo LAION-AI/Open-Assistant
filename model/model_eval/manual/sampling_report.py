@@ -5,7 +5,7 @@ import random
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import pydantic
 import torch
@@ -16,17 +16,17 @@ QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<
 
 
 class SamplingConfig(pydantic.BaseModel):
-    name: str
-    generate_args: dict[str, Any]
-    pre_text: str
+    name: Optional[str]
+    generate_args: dict[str, Any] = {}
+    pre_text: Optional[str]
 
-    # for legacy models
-    human_name: str = "User"
-    bot_name: str = "Joi"
+    # for legacy mode
+    human_name: Optional[str]
+    bot_name: Optional[str]
 
 
 class Configuration(pydantic.BaseModel):
-    default_args: dict[str, Any]
+    default: Optional[SamplingConfig]
     configurations: list[SamplingConfig]
 
 
@@ -74,9 +74,9 @@ def sample(
     tokenizer: PreTrainedTokenizer,
     mode: str,
     sampling_config: SamplingConfig,
-    default_args: dict,
     device: torch.DeviceObjType,
 ):
+    assert sampling_config.name, "'name' must be specified for sampling configuration"
     sc = sampling_config
     prefix = ""
     if sampling_config.pre_text:
@@ -88,12 +88,11 @@ def sample(
     if mode == "v2":
         input_text = f"{prefix}{QA_SPECIAL_TOKENS['Question']}{prompt}{QA_SPECIAL_TOKENS['Answer']}"
     else:
+        print(sc, sc.dict())
+        assert sc.human_name and sc.bot_name, "'human_name' and 'bot_name' parameters must be specified in config "
         input_text = f"{prefix}\n{sc.human_name}: {prompt}\n\n{sc.bot_name}: "
 
-    sampling_params = default_args.copy()
-    for k, v in sampling_config.generate_args.items():
-        sampling_params[k] = v
-
+    sampling_params = sampling_config.generate_args
     inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(device)
     input_ids = inputs.input_ids
     outputs = model.generate(
@@ -103,6 +102,27 @@ def sample(
     )
     output_tokens = outputs[0, input_ids.size(1) :]
     return output_tokens, sampling_params
+
+
+def merge_configs(*configs: tuple[Optional[SamplingConfig]]) -> Optional[SamplingConfig]:
+    merged: SamplingConfig | None = None
+    for c in configs:
+        if not merged:
+            if c:
+                merged = c.copy(deep=True)
+        else:
+            # simple fields
+            fields = ["name", "pre_text", "human_name", "bot_name"]
+            for field_name in fields:
+                v = getattr(c, field_name)
+                if v:
+                    setattr(merged, field_name, v)
+            # generate args
+            if c.generate_args:
+                for k, v in c.generate_args.items():
+                    merged.generate_args[k] = v
+
+    return merged
 
 
 def sample_prompt_continuations(
@@ -128,8 +148,7 @@ def sample_prompt_continuations(
                     model=model,
                     tokenizer=tokenizer,
                     mode=mode,
-                    sampling_config=sc,
-                    default_args=config.default_args,
+                    sampling_config=merge_configs(config.default, sc),
                     device=device,
                 )
                 output = tokenizer.decode(
@@ -169,7 +188,7 @@ def parse_args():
         help="legacy, v2",
     )
     parser.add_argument(
-        "--prompts", type=str, help="jsonl string prompts input file name", default="./data/en_100_text.jsonl"
+        "--prompts", type=str, help="jsonl string prompts input file name", default="./data/en_100_text.jsonl.gz"
     )
     parser.add_argument("--report", type=str, help="json sampling report output file name")
     parser.add_argument("--seed", type=int, default="42", help="psoudo random number generator seed")
