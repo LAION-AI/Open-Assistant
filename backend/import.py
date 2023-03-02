@@ -92,6 +92,7 @@ class Importer:
             state=state,
             origin=self.origin,
             active=active,
+            lang=root_msg.lang or "en",
         )
         self.db.add(mts)
         return mts, root_msg
