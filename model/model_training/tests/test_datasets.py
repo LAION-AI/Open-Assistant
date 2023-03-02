@@ -52,4 +52,3 @@ def test_collate_fn():
     dataloader = DataLoader(ConcatDataset(evals), collate_fn=collate_fn, batch_size=128)
     for batch in dataloader:
         assert batch["targets"].shape[1] <= 620
-
