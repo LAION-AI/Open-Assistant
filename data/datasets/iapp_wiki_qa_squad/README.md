@@ -9,6 +9,9 @@ task_categories:
   - text-generation
 ---
 
-This dataset is fork from [https://huggingface.co/datasets/iapp_wiki_qa_squad](https://huggingface.co/datasets/iapp_wiki_qa_squad) that made for Open Assistant.
+This dataset is fork from
+[https://huggingface.co/datasets/iapp_wiki_qa_squad](https://huggingface.co/datasets/iapp_wiki_qa_squad)
+that made for Open Assistant.
 
-Pull request: [Add iapp_wiki_qa_squad to datasets #1903 ](https://github.com/LAION-AI/Open-Assistant/pull/1903)
+Pull request:
+[Add iapp_wiki_qa_squad to datasets #1903 ](https://github.com/LAION-AI/Open-Assistant/pull/1903)
