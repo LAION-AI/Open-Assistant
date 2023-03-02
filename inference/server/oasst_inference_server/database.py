@@ -3,9 +3,9 @@ import json
 import pydantic.json
 import sqlmodel
 from loguru import logger
-from oasst_shared.schemas import inference
-from oasst_inference_server.settings import settings
 from oasst_inference_server.schemas import chat as chat_schema
+from oasst_inference_server.settings import settings
+from oasst_shared.schemas import inference
 
 
 def default_json_serializer(obj):
