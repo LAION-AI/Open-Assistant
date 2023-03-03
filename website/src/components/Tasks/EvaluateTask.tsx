@@ -70,7 +70,13 @@ export const EvaluateTask = ({
               revealSynthetic={task.reveal_synthetic}
               onChange={setRanking}
             />
-            <Checkbox size="lg" mt="4" checked={notRankable} isDisabled={isDisabled} onChange={handleNotRankableChange}>
+            <Checkbox
+              size="lg"
+              mt="4"
+              checked={notRankable}
+              isDisabled={isDisabled || !isEditable}
+              onChange={handleNotRankableChange}
+            >
               {t("not_rankable")}
             </Checkbox>
           </Box>
