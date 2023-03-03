@@ -91,11 +91,11 @@ def get_events_for_messages(db: Session, message_ids: list[UUID]) -> dict[UUID, 
         match reaction.payload_type:
             case "RatingReactionPayload":
                 key = "rating"
-                payload = db_payload.RatingReactionPayload(**reaction.payload.payload.dict())
+                payload: db_payload.RatingReactionPayload = reaction.payload.payload
                 event = ExportMessageEventRating(user_id=str(reaction.user_id), rating=payload.rating)
             case "RankingReactionPayload":
                 key = "ranking"
-                payload = db_payload.RankingReactionPayload(**reaction.payload.payload.dict())
+                payload: db_payload.RankingReactionPayload = reaction.payload.payload
                 event = ExportMessageEventRanking(
                     user_id=str(reaction.user_id),
                     ranking=payload.ranking,
