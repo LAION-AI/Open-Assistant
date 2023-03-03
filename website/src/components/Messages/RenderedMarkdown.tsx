@@ -37,12 +37,6 @@ const sx: SystemStyleObject = {
     bg: "gray.300",
     p: 0.5,
     borderRadius: "2px",
-    _rtl: {
-      marginLeft: "3.2rem",
-    },
-    _ltr: {
-      marginRight: "3.2rem",
-    },
     _dark: {
       bg: "gray.700",
     },
