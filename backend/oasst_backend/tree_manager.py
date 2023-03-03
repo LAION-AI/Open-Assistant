@@ -510,8 +510,14 @@ class TreeManager:
                     assert len(replies) > 1
                     random.shuffle(replies)  # hand out replies in random order
                     reply_messages = prepare_conversation_message_list(replies)
-                    replies = [p.text for p in replies]
+                    if any(not m.synthetic for m in reply_messages):
+                        reveal_synthetic = False
+                        for rm in reply_messages:
+                            rm.synthetic = None
+                    else:
+                        reveal_synthetic = True
 
+                    replies = [p.text for p in replies]
                     if messages[-1].role == "assistant":
                         logger.info("Generating a RankPrompterRepliesTask.")
                         task = protocol_schema.RankPrompterRepliesTask(
@@ -520,6 +526,7 @@ class TreeManager:
                             reply_messages=reply_messages,
                             ranking_parent_id=ranking_parent.id,
                             message_tree_id=ranking_parent.message_tree_id,
+                            reveal_synthetic=reveal_synthetic,
                         )
                     else:
                         logger.info("Generating a RankAssistantRepliesTask.")
@@ -529,6 +536,7 @@ class TreeManager:
                             reply_messages=reply_messages,
                             ranking_parent_id=ranking_parent.id,
                             message_tree_id=ranking_parent.message_tree_id,
+                            reveal_synthetic=reveal_synthetic,
                         )
 
                     parent_message_id = ranking_parent_id
@@ -718,7 +726,7 @@ class TreeManager:
                     logger.info(
                         f"TreeManager: Inserting new tree state for initial prompt {message.id=} [{message.lang}]"
                     )
-                    self._insert_default_state(message.id, message.lang)
+                    self._insert_default_state(message.id, lang=message.lang)
 
                 if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
                     try:

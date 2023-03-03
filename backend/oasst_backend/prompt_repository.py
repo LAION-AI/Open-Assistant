@@ -382,6 +382,7 @@ class PromptRepository:
                     ranked_message_ids=ranked_message_ids,
                     ranking_parent_id=task_payload.ranking_parent_id,
                     message_tree_id=task_payload.message_tree_id,
+                    not_rankable=ranking.not_rankable,
                 )
                 reaction = self.insert_reaction(task_id=task.id, payload=reaction_payload, message_id=parent_msg.id)
                 self.journal.log_ranking(task, message_id=parent_msg.id, ranking=ranking.ranking)
