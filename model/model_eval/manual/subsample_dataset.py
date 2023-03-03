@@ -3,12 +3,18 @@ import gzip
 import json
 import random
 from pathlib import Path
+from typing import Optional
 
 import pydantic
 from oasst_shared.schemas.export import ExportMessageTree
 
 
-def load_messega_trees(input_file_path: str | Path, lang_codes: list[str]) -> list[ExportMessageTree]:
+def load_messega_trees(
+    input_file_path: str | Path,
+    lang_codes: list[str],
+    tree_state: str,
+    max_length: Optional[int] = None,
+) -> list[ExportMessageTree]:
     if not isinstance(input_file_path, Path):
         input_file_path = Path(input_file_path)
 
@@ -27,7 +33,13 @@ def load_messega_trees(input_file_path: str | Path, lang_codes: list[str]) -> li
             # validate data
             tree: ExportMessageTree = pydantic.parse_obj_as(ExportMessageTree, dict_tree)
 
-            if tree.prompt.lang not in lang_codes or tree.tree_state != "ready_for_export":
+            if (
+                tree.prompt.lang not in lang_codes
+                or tree.prompt.deleted
+                or not tree.prompt.review_result
+                or tree.tree_state != tree_state
+                or (max_length and len(tree.prompt.text) > max_length)
+            ):
                 continue
 
             trees.append(tree)
@@ -68,6 +80,9 @@ def parse_args():
         help="Output file name",
     )
 
+    parser.add_argument("--state", type=str, default="ready_for_export", help="tree state to filter")
+    parser.add_argument("--max-length", type=int, help="max length of prompt")
+
     parser.add_argument("-k", type=int, default=100, help="Number of trees to sample")
 
     parser.add_argument(
@@ -96,7 +111,15 @@ def main():
     args = parse_args()
     lang_codes = args.lang.split(",")
     random.seed(args.seed)
-    trees = load_messega_trees(args.input_file, lang_codes)
+    trees = load_messega_trees(
+        args.input_file,
+        lang_codes=lang_codes,
+        tree_state=args.state,
+        max_length=args.max_length,
+    )
+    print(f"Matching messages trees: {len(trees)}")
+    assert len(trees) > args.k, f"Not enough trees ({len(trees)} found, {args.k} required)"
+
     sub_sample = random.sample(trees, k=args.k)
 
     if args.only_prompts:

@@ -132,6 +132,7 @@ def sample_prompt_continuations(
     config: Configuration,
     device: torch.DeviceObjType,
     num_samples: int = 1,
+    skip_special_tokens: bool = False,
     verbose: bool = False,
 ) -> list[PromptResults]:
     prompt_results: list[PromptResults] = []
@@ -151,7 +152,9 @@ def sample_prompt_continuations(
                     device=device,
                 )
                 output = tokenizer.decode(
-                    output_tokens, truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"], skip_special_tokens=True
+                    output_tokens,
+                    truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"],  # only used for codegen model
+                    skip_special_tokens=skip_special_tokens,
                 )
 
                 if verbose:
@@ -196,6 +199,7 @@ def parse_args():
     parser.add_argument("--num-samples", type=int, default=2)
     parser.add_argument("--config", type=str, default="config/default.json")
     parser.add_argument("--half", action="store_true", default=False, help="use float16")
+    parser.add_argument("--skip-special-tokens", action="store_true", default=False)
     return parser.parse_args()
 
 
@@ -250,9 +254,10 @@ def main():
             tokenizer=tokenizer,
             mode=args.mode,
             config=config,
-            num_samples=args.num_samples,
-            verbose=args.verbose,
             device=device,
+            num_samples=args.num_samples,
+            skip_special_tokens=args.skip_special_tokens,
+            verbose=args.verbose,
         ),
     )
 
