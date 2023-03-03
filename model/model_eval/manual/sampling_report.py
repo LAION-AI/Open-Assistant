@@ -19,6 +19,7 @@ class SamplingConfig(pydantic.BaseModel):
     name: Optional[str]
     generate_args: dict[str, Any] = {}
     pre_text: Optional[str]
+    add_prefix_tokens: Optional[bool] = False
 
     # for legacy mode
     human_name: Optional[str]
@@ -80,7 +81,7 @@ def sample(
     sc = sampling_config
     prefix = ""
     if sampling_config.pre_text:
-        if mode == "v2":
+        if mode == "v2" and sampling_config.add_prefix_tokens:
             prefix = f"<prefix>{sampling_config.pre_text}</prefix>"
         else:
             prefix = sampling_config.pre_text
@@ -111,7 +112,7 @@ def merge_configs(*configs: tuple[Optional[SamplingConfig]]) -> Optional[Samplin
                 merged = c.copy(deep=True)
         else:
             # simple fields
-            fields = ["name", "pre_text", "human_name", "bot_name"]
+            fields = ["name", "pre_text", "human_name", "bot_name", "add_prefix_tokens"]
             for field_name in fields:
                 v = getattr(c, field_name)
                 if v:
