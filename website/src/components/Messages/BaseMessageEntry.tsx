@@ -1,13 +1,12 @@
 import { Avatar, AvatarProps, Box, BoxProps, HStack, useBreakpointValue, useColorModeValue } from "@chakra-ui/react";
-import { forwardRef, lazy, PropsWithChildren, Suspense, useMemo } from "react";
+import { forwardRef, lazy, Suspense, useMemo } from "react";
 
 const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
 
-export type BaseMessageEntryProps = PropsWithChildren<{
+export type BaseMessageEntryProps = BoxProps & {
   content: string;
   avatarProps: Pick<AvatarProps, "name" | "src">;
-}> &
-  BoxProps;
+};
 
 // eslint-disable-next-line react/display-name
 export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps>(
