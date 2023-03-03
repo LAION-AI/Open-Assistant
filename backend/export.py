@@ -71,6 +71,7 @@ def fetch_tree_messages_and_avg_labels(
     prompts_only: bool = False,
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
+    limit: int = 0,
 ) -> List[Message]:
     args = [Message]
 
@@ -96,6 +97,9 @@ def fetch_tree_messages_and_avg_labels(
 
     qry = qry.group_by(Message.id)
 
+    if limit is not None and limit > 0:
+        qry = qry.limit(limit)
+
     return qry.all()
 
 
@@ -110,6 +114,7 @@ def export_trees(
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
     export_labels: bool = False,
+    limit: int = 0,
 ) -> None:
     message_labels: dict[UUID, LabelValues] = {}
     if user_id:
@@ -121,6 +126,7 @@ def export_trees(
             prompts_only=prompts_only,
             lang=lang,
             review_result=review_result,
+            limit=limit,
         )
 
         messages: list[Message] = []
@@ -266,6 +272,12 @@ def parse_args():
         action="store_true",
         help="Include average label values for messages",
     )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        help="Maximum number of trees to export. Set to 0 to export all trees.",
+        default=0,
+    )
 
     args = parser.parse_args()
     return args
@@ -305,6 +317,7 @@ def main():
             lang=args.lang,
             review_result=review_result,
             export_labels=args.export_labels,
+            limit=args.limit,
         )
 
 
