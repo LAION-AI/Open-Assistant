@@ -1,3 +1,4 @@
 .cache
+.saved_models
 wandb
 saved_model
