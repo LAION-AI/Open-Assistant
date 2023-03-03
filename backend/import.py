@@ -44,6 +44,9 @@ class Importer:
         self.pr = PromptRepository(db=db, api_client=api_client, user_repository=ur)
         self.api_client = api_client
 
+    def fetch_message(self, message_id: UUID) -> Message:
+        return self.db.query(Message).filter(Message.id == message_id).one_or_none()
+
     def fetch_message_tree_state(self, message_tree_id: UUID) -> MessageTreeState:
         return self.db.query(MessageTreeState).filter(MessageTreeState.message_tree_id == message_tree_id).one_or_none()
 
@@ -114,24 +117,34 @@ def import_file(
         with input_file_path.open() as file_in:
             # read line tree object
             for line in file_in:
-                dict_tree = json.loads(line)
+                dict_node = json.loads(line)
 
                 # validate data
-                tree: ExportMessageTree = pydantic.parse_obj_as(ExportMessageTree, dict_tree)
-                existing_mts = importer.fetch_message_tree_state(tree.message_tree_id)
-                if existing_mts:
-                    logger.info(f"Skipping existing message tree: {tree.message_tree_id}")
-                else:
-                    state = TreeState.BACKLOG_RANKING if i >= num_activate else TreeState.RANKING
-                    mts, root_msg = importer.import_tree(tree, state=state)
-                    i += 1
-                    logger.info(
-                        f"imported tree: {mts.message_tree_id}, {mts.state=}, {mts.active=}, {root_msg.children_count=}"
-                    )
+                if dict_node.get("message_tree_id"):  # tree
+                    tree: ExportMessageTree = pydantic.parse_obj_as(ExportMessageTree, dict_node)
+                    existing_mts = importer.fetch_message_tree_state(tree.message_tree_id)
+                    if existing_mts:
+                        logger.info(f"Skipping existing message tree: {tree.message_tree_id}")
+                    else:
+                        state = TreeState.BACKLOG_RANKING if i >= num_activate else TreeState.RANKING
+                        mts, root_msg = importer.import_tree(tree, state=state)
+                        i += 1
+                        logger.info(
+                            f"imported tree: {mts.message_tree_id}, {mts.state=}, {mts.active=}, {root_msg.children_count=}"
+                        )
 
-                if max_count and i >= max_count:
-                    logger.info(f"Reached max count {max_count} of trees to import.")
-                    break
+                    if max_count and i >= max_count:
+                        logger.info(f"Reached max count {max_count} of trees to import.")
+                        break
+                elif dict_node.get("message_id"):  # message
+                    message: ExportMessageNode = pydantic.parse_obj_as(ExportMessageNode, dict_node)
+                    existing_msg = importer.fetch_message(message.message_id)
+                    if existing_msg:
+                        logger.info(f"Skipping existing message: {message.message_id}")
+                    else:
+                        msg = importer.import_message(message, message_tree_id=message.message_id)
+                        i += 1
+                        logger.info(f"imported message: {msg.id}")
         return i
 
     if dry_run:
