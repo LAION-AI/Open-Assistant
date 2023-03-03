@@ -115,8 +115,10 @@ def export_trees(
     review_result: Optional[bool] = None,
     export_labels: bool = False,
     limit: int = 0,
+    anonymizer_seed: Optional[str] = None,
 ) -> None:
     message_labels: dict[UUID, LabelValues] = {}
+    anonymizer = tree_export.Anonymizer(anonymizer_seed) if anonymizer_seed else None
     if user_id:
         # when filtering by user we don't have complete message trees, export as list
         result = fetch_tree_messages_and_avg_labels(
@@ -141,7 +143,9 @@ def export_trees(
                 }
                 message_labels[msg.id] = labels
 
-        tree_export.write_messages_to_file(export_file, messages, use_compression, labels=message_labels)
+        tree_export.write_messages_to_file(
+            export_file, messages, use_compression, labels=message_labels, anonymizer=anonymizer
+        )
     else:
         message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang)
 
@@ -184,7 +188,9 @@ def export_trees(
         if review_result is False or deleted is True:
             # when exporting filtered we don't have complete message trees, export as list
             messages = [m for t in message_trees for m in t]  # flatten message list
-            tree_export.write_messages_to_file(export_file, messages, use_compression, labels=message_labels)
+            tree_export.write_messages_to_file(
+                export_file, messages, use_compression, labels=message_labels, anonymizer=anonymizer
+            )
         else:
             trees_to_export: List[ExportMessageTree] = []
 
@@ -196,6 +202,7 @@ def export_trees(
                             message_tree_state=message_tree_state,
                             messages=message_tree,
                             labels=message_labels,
+                            anonymizer=anonymizer,
                         )
                         if prompts_only:
                             t.prompt.replies = None
@@ -278,6 +285,11 @@ def parse_args():
         help="Maximum number of trees to export. Set to 0 to export all trees.",
         default=0,
     )
+    parser.add_argument(
+        "--anonymizer-seed",
+        type=int,
+        help="Seed for the anonymizer. If not specified, no anonymization will be performed.",
+    )
 
     args = parser.parse_args()
     return args
@@ -305,6 +317,9 @@ def main():
     if args.spam_only:
         review_result = False
 
+    if args.anonymizer_seed is None:
+        logger.warning("No anonymizer seed provided, no anonymization will be performed.")
+
     with Session(engine) as db:
         export_trees(
             db,
@@ -318,6 +333,7 @@ def main():
             review_result=review_result,
             export_labels=args.export_labels,
             limit=args.limit,
+            anonymizer_seed=args.anonymizer_seed,
         )
 
 

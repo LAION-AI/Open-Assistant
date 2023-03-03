@@ -16,6 +16,7 @@ LabelValues = dict[str, LabelAvgValue]
 class ExportMessageNode(BaseModel):
     message_id: str
     parent_id: str | None
+    user_id: str | None
     text: str
     role: str
     lang: str | None
