@@ -22,7 +22,7 @@ export async function langInteraction(interaction) {
   //   .setTimestamp();
   const row = new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
-      .setCustomId(`open-assistant_lang_n_${interaction.user.id}`)
+      .setCustomId(`oa_lang_n_${interaction.user.id}`)
       .setPlaceholder("Nothing selected")
       .setMinValues(1)
       .setMaxValues(1)

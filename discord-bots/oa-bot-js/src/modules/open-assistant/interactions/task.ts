@@ -60,9 +60,7 @@ export async function taskInteraction(
   ) {
     row.addComponents(
       new ButtonBuilder()
-        .setCustomId(
-          `open-assistant_text-modal_${task.id}_${interaction.user.id}`
-        )
+        .setCustomId(`oa_text-modal_${task.id}_${interaction.user.id}`)
         .setLabel(`${translation[formatTaskType(task.type)].label}`)
         .setStyle(ButtonStyle.Primary)
     );
@@ -92,7 +90,7 @@ export async function taskInteraction(
   } else {
     row.addComponents(
       new ButtonBuilder()
-        .setCustomId(`open-assistant_label_${task.id}_${interaction.user.id}`)
+        .setCustomId(`oa_label_${task.id}_${interaction.user.id}`)
         .setLabel(`${translation[formatTaskType(task.type)].label}`)
         .setStyle(ButtonStyle.Primary)
     );
@@ -120,12 +118,12 @@ export async function taskInteraction(
   }
   row.addComponents(
     new ButtonBuilder()
-      .setCustomId(`open-assistant_skip_${task.id}_${interaction.user.id}`)
+      .setCustomId(`oa_skip_${task.id}_${interaction.user.id}`)
       .setLabel(`${translation.skip}`)
       .setStyle(ButtonStyle.Danger),
     new ButtonBuilder()
       .setLabel("Change language")
-      .setCustomId(`open-assistant_lang-btn_n_${interaction.user.id}`)
+      .setCustomId(`oa_lang-btn_n_${interaction.user.id}`)
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(false)
   );

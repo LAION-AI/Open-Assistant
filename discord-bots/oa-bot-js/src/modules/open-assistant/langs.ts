@@ -23,6 +23,10 @@ export async function getTranlation(lang: string) {
     `https://open-assistant.io/locales/${lang}/message.json`
   );
   var json6 = await res6.json();
+  var res7 = await fetch(
+    `https://open-assistant.io/locales/${lang}/index.json`
+  );
+  var json7 = await res7.json();
   var translationObject = {
     ...json,
     ...json2,
@@ -30,6 +34,7 @@ export async function getTranlation(lang: string) {
     ...json4,
     ...json5,
     ...json6,
+    ...json7,
   };
   if (!translationObject["skip"]) {
     var englishTranslation = await getTranlation("en");

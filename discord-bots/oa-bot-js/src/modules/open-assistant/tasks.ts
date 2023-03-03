@@ -42,9 +42,11 @@ export async function submitTask(
   solution,
   lang,
   task,
-  client
+  client,
+  messageId?
 ) {
-  var messageId = await oa.acceptTask(taskId, user);
+  var res = await oa.acceptTask(taskId, user, messageId);
+  if (!messageId) messageId = res;
   var solveTask = await oa.solveTask(task, user, lang, solution, messageId);
   await saveTask(task, lang, user, { messageId: messageId, ...solution });
   var index = client.tasks.findIndex((x) => x.id == taskId);
