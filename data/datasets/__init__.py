@@ -1,7 +1,12 @@
-TEXT_DATASETS = {}
+TEXT_DATASETS = {
+    "gutenberg_english": "sedthh/gutenberg_english",
+    "gutenberg_multilang": "sedthh/gutenberg_multilang",
+}
 
 INSTRUCTION_DATASETS = {
-    "grade-school-math-instructions": "qwedsacf/grade-school-math-instructions",
+    "humaneval_mbpp_codegen_qa": "OllieStanley/humaneval-mbpp-codegen-qa",
+    "humaneval_mbpp_testgen_qa": "OllieStanley/humaneval-mbpp-testgen-qa",
+    "grade_school_math_instructions": "qwedsacf/grade-school-math-instructions",
     "recipes": "dctanner/oa_recipes",
     "ubuntu_dialogue_qa": "sedthh/ubuntu_dialogue_qa",
     "cmu_wiki_qa": "sedthh/cmu_wiki_qa",
