@@ -51,8 +51,9 @@ export const EvaluateTask = ({
   }, []);
 
   const { t } = useTranslation("tasks");
-  const sortables = task.type === TaskType.rank_initial_prompts ? "prompts" : "replies";
-
+  // @notmd: I haven't test `rank_initial_prompts` type yet
+  const sortableItems =
+    task.type === TaskType.rank_initial_prompts ? (task.prompts as unknown as Message[]) : task.reply_messages;
   return (
     <div data-cy="task" data-task-type="evaluate-task">
       <Box mb="4">
@@ -62,7 +63,13 @@ export const EvaluateTask = ({
             <MessageConversation messages={messages} highlightLastMessage />
           </Box>
           <Box mt="8">
-            <Sortable items={task[sortables]} isDisabled={isDisabled} isEditable={isEditable} onChange={setRanking} />
+            <Sortable
+              items={sortableItems}
+              isDisabled={isDisabled}
+              isEditable={isEditable}
+              revealSynthetic={task.reveal_synthetic}
+              onChange={setRanking}
+            />
             <Checkbox size="lg" mt="4" checked={notRankable} isDisabled={isDisabled} onChange={handleNotRankableChange}>
               {t("not_rankable")}
             </Checkbox>

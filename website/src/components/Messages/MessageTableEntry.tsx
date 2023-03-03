@@ -56,7 +56,6 @@ interface MessageTableEntryProps {
   highlight?: boolean;
   showAuthorBadge?: boolean;
   scrollToHighlighted?: boolean;
-  revealSynthetic?: boolean;
 }
 
 export function MessageTableEntry({

@@ -7,7 +7,6 @@ interface MessageConversationProps {
   messages: Message[];
   enableLink?: boolean;
   highlightLastMessage?: boolean;
-  revealSynthetic?: boolean;
 }
 
 export function MessageConversation({ messages, enableLink, highlightLastMessage }: MessageConversationProps) {
