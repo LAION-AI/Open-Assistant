@@ -23,5 +23,7 @@
   "submit_labels": "Submit",
   "tree_stopped": "Tree stopped {{id}}",
   "view_user": "View user",
-  "your_recent_messages": "Your Recent Messages"
+  "your_recent_messages": "Your Recent Messages",
+  "synthetic": "Synthetic",
+  "synthetic_explain": "This message is AI generated"
 }
