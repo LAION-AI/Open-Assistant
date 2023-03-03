@@ -6,10 +6,18 @@ from uuid import UUID
 import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.database import engine
-from oasst_backend.models import Message, MessageTreeState, TextLabels
+from oasst_backend.models import Message, MessageEmoji, MessageReaction, MessageTreeState, TextLabels, db_payload
 from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_backend.utils import tree_export
-from oasst_shared.schemas.export import ExportMessageTree, LabelAvgValue, LabelValues
+from oasst_shared.schemas.export import (
+    ExportMessageEvent,
+    ExportMessageEventEmoji,
+    ExportMessageEventRanking,
+    ExportMessageEventRating,
+    ExportMessageTree,
+    LabelAvgValue,
+    LabelValues,
+)
 from oasst_shared.schemas.protocol import TextLabel
 from sqlmodel import Session, func, not_
 
@@ -18,6 +26,7 @@ def fetch_tree_ids(
     db: Session,
     state_filter: Optional[TreeState] = None,
     lang: Optional[str] = None,
+    limit: int = 0,
 ) -> list[tuple[UUID, TreeState]]:
     tree_qry = (
         db.query(MessageTreeState)
@@ -31,6 +40,9 @@ def fetch_tree_ids(
     if state_filter:
         tree_qry = tree_qry.filter(MessageTreeState.state == state_filter)
 
+    if limit > 0:
+        tree_qry = tree_qry.limit(limit)
+
     return [(tree.message_tree_id, tree.state) for tree in tree_qry]
 
 
@@ -42,6 +54,7 @@ def fetch_tree_messages(
     prompts_only: bool = False,
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
+    limit: int = 0,
 ) -> List[Message]:
     qry = db.query(Message)
 
@@ -59,8 +72,43 @@ def fetch_tree_messages(
         qry = qry.filter(not_(Message.review_result), Message.review_count > 2)
     elif review_result is True:
         qry = qry.filter(Message.review_result)
+    if limit is not None and limit > 0:
+        qry = qry.limit(limit)
 
     return qry.all()
+
+
+def get_events_for_messages(db: Session, message_ids: list[UUID]) -> dict[UUID, ExportMessageEvent]:
+    events = {}
+    emojis = db.query(MessageEmoji).filter(MessageEmoji.message_id.in_(message_ids)).all()
+    for emoji in emojis:
+        event = ExportMessageEventEmoji(user_id=str(emoji.user_id), emoji=emoji.emoji)
+        events.setdefault(emoji.message_id, {}).setdefault("emoji", []).append(event)
+    reactions: list[MessageReaction] = (
+        db.query(MessageReaction).filter(MessageReaction.message_id.in_(message_ids)).all()
+    )
+    for reaction in reactions:
+        match reaction.payload_type:
+            case "RatingReactionPayload":
+                key = "rating"
+                payload = db_payload.RatingReactionPayload(**reaction.payload.payload.dict())
+                event = ExportMessageEventRating(user_id=str(reaction.user_id), rating=payload.rating)
+            case "RankingReactionPayload":
+                key = "ranking"
+                payload = db_payload.RankingReactionPayload(**reaction.payload.payload.dict())
+                event = ExportMessageEventRanking(
+                    user_id=str(reaction.user_id),
+                    ranking=payload.ranking,
+                    ranked_message_ids=[str(id) for id in payload.ranked_message_ids],
+                    ranking_parent_id=str(payload.ranking_parent_id) if payload.ranking_parent_id else None,
+                    message_tree_id=str(payload.message_tree_id) if payload.message_tree_id else None,
+                    not_rankable=payload.not_rankable if payload.not_rankable else None,
+                )
+            case _:
+                raise ValueError(f"Unknown payload type {reaction.payload_type}")
+        events.setdefault(reaction.message_id, {}).setdefault(key, []).append(event)
+
+    return events
 
 
 def fetch_tree_messages_and_avg_labels(
@@ -114,6 +162,7 @@ def export_trees(
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
     export_labels: bool = False,
+    export_events: bool = False,
     limit: int = 0,
     anonymizer_seed: Optional[str] = None,
 ) -> None:
@@ -143,11 +192,20 @@ def export_trees(
                 }
                 message_labels[msg.id] = labels
 
+        events = {}
+        if export_events:
+            events = get_events_for_messages(db, [msg.id for msg in messages])
+
         tree_export.write_messages_to_file(
-            export_file, messages, use_compression, labels=message_labels, anonymizer=anonymizer
+            export_file,
+            messages,
+            use_compression,
+            labels=message_labels,
+            anonymizer=anonymizer,
+            events=events,
         )
     else:
-        message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang)
+        message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang, limit=limit)
 
         message_trees: list[list[Message]] = []
 
@@ -188,14 +246,25 @@ def export_trees(
         if review_result is False or deleted is True:
             # when exporting filtered we don't have complete message trees, export as list
             messages = [m for t in message_trees for m in t]  # flatten message list
+            events = {}
+            if export_events:
+                events = get_events_for_messages(db, [msg.id for msg in messages])
             tree_export.write_messages_to_file(
-                export_file, messages, use_compression, labels=message_labels, anonymizer=anonymizer
+                export_file,
+                messages,
+                use_compression,
+                labels=message_labels,
+                anonymizer=anonymizer,
+                events=events,
             )
         else:
             trees_to_export: List[ExportMessageTree] = []
 
             for (message_tree_id, message_tree_state), message_tree in zip(message_tree_ids, message_trees):
                 if len(message_tree) > 0:
+                    events = {}
+                    if export_events:
+                        events = get_events_for_messages(db, [msg.id for msg in message_tree])
                     try:
                         t = tree_export.build_export_tree(
                             message_tree_id=message_tree_id,
@@ -203,6 +272,7 @@ def export_trees(
                             messages=message_tree,
                             labels=message_labels,
                             anonymizer=anonymizer,
+                            events=events,
                         )
                         if prompts_only:
                             t.prompt.replies = None
@@ -280,6 +350,11 @@ def parse_args():
         help="Include average label values for messages",
     )
     parser.add_argument(
+        "--export-events",
+        action="store_true",
+        help="Include events for messages",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         help="Maximum number of trees to export. Set to 0 to export all trees.",
@@ -332,6 +407,7 @@ def main():
             lang=args.lang,
             review_result=review_result,
             export_labels=args.export_labels,
+            export_events=args.export_events,
             limit=args.limit,
             anonymizer_seed=args.anonymizer_seed,
         )

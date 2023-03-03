@@ -12,7 +12,15 @@ from typing import Iterable, Optional, TextIO
 from fastapi.encoders import jsonable_encoder
 from oasst_backend.models import Message
 from oasst_backend.models.message_tree_state import State as TreeState
-from oasst_shared.schemas.export import ExportMessageNode, ExportMessageTree, LabelValues
+from oasst_shared.schemas.export import (
+    ExportMessageEvent,
+    ExportMessageEventEmoji,
+    ExportMessageEventRanking,
+    ExportMessageEventRating,
+    ExportMessageNode,
+    ExportMessageTree,
+    LabelValues,
+)
 
 
 def sha256_hash(key: str, seed: int) -> str:
@@ -42,7 +50,10 @@ class Anonymizer:
 
 
 def prepare_export_message_node(
-    message: Message, labels: Optional[LabelValues] = None, anonymizer: Anonymizer | None = None
+    message: Message,
+    labels: Optional[LabelValues] = None,
+    anonymizer: Anonymizer | None = None,
+    events: dict[str, list[ExportMessageEvent]] | None = None,
 ) -> ExportMessageNode:
     message_id = str(message.id)
     parent_id = str(message.parent_id) if message.parent_id else None
@@ -51,6 +62,31 @@ def prepare_export_message_node(
         message_id = anonymizer.anonymize("message", message_id)
         parent_id = anonymizer.anonymize("message", parent_id)
         user_id = anonymizer.anonymize("user", user_id)
+        if events is not None:
+            for event_key, event_values in events.items():
+                for event in event_values:
+                    match event_key:
+                        case "emoji":
+                            event: ExportMessageEventEmoji = event
+                            if event.user_id is not None:
+                                event.user_id = anonymizer.anonymize("user", event.user_id)
+                        case "rating":
+                            event: ExportMessageEventRating = event
+                            if event.user_id is not None:
+                                event.user_id = anonymizer.anonymize("user", event.user_id)
+                        case "ranking":
+                            event: ExportMessageEventRanking = event
+                            if event.user_id is not None:
+                                event.user_id = anonymizer.anonymize("user", event.user_id)
+                            event.ranked_message_ids = [
+                                anonymizer.anonymize("message", m) for m in event.ranked_message_ids
+                            ]
+                            if event.ranking_parent_id is not None:
+                                event.ranking_parent_id = anonymizer.anonymize("message", event.ranking_parent_id)
+                            if event.message_tree_id is not None:
+                                event.message_tree_id = anonymizer.anonymize("message_tree", event.message_tree_id)
+                        case _:
+                            raise ValueError(f"Unknown event type {event_key}")
     assert message_id is not None
     return ExportMessageNode(
         message_id=message_id,
@@ -67,6 +103,7 @@ def prepare_export_message_node(
         emojis=message.emojis,
         rank=message.rank,
         labels=labels,
+        events=events,
     )
 
 
@@ -76,9 +113,13 @@ def build_export_tree(
     messages: list[Message],
     labels: Optional[dict[uuid.UUID, LabelValues]] = None,
     anonymizer: Anonymizer | None = None,
+    events: dict[uuid.UUID, dict[str, list[ExportMessageEvent]]] | None = None,
 ) -> ExportMessageTree:
     export_messages = [
-        prepare_export_message_node(m, (labels.get(m.id) if labels else None), anonymizer=anonymizer) for m in messages
+        prepare_export_message_node(
+            m, (labels.get(m.id) if labels else None), anonymizer=anonymizer, events=events.get(m.id)
+        )
+        for m in messages
     ]
 
     messages_by_parent = defaultdict(list)
@@ -134,6 +175,7 @@ def write_messages_to_file(
     use_compression: bool = True,
     labels: Optional[dict[uuid.UUID, LabelValues]] = None,
     anonymizer: Anonymizer | None = None,
+    events: dict[uuid.UUID, dict[str, list[ExportMessageEvent]]] | None = None,
 ) -> None:
     out_buff: TextIO
 
@@ -147,7 +189,7 @@ def write_messages_to_file(
     with out_buff as f:
         for m in messages:
             export_message = prepare_export_message_node(
-                m, (labels.get(m.id) if labels else None), anonymizer=anonymizer
+                m, (labels.get(m.id) if labels else None), anonymizer=anonymizer, events=events.get(m.id)
             )
 
             file_data = jsonable_encoder(export_message, exclude_none=True)

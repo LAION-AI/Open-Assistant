@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -11,6 +11,30 @@ class LabelAvgValue(BaseModel):
 
 
 LabelValues = dict[str, LabelAvgValue]
+
+
+class ExportMessageEvent(BaseModel):
+    type: str
+    user_id: str | None
+
+
+class ExportMessageEventEmoji(ExportMessageEvent):
+    type: Literal["emoji"] = "emoji"
+    emoji: str
+
+
+class ExportMessageEventRating(ExportMessageEvent):
+    type: Literal["rating"] = "rating"
+    rating: str
+
+
+class ExportMessageEventRanking(ExportMessageEvent):
+    type: Literal["ranking"] = "ranking"
+    ranking: list[int]
+    ranked_message_ids: list[str]
+    ranking_parent_id: Optional[str]
+    message_tree_id: Optional[str]
+    not_rankable: Optional[bool]  # all options flawed, factually incorrect or unacceptable
 
 
 class ExportMessageNode(BaseModel):
@@ -29,6 +53,7 @@ class ExportMessageNode(BaseModel):
     emojis: dict[str, int] | None
     replies: list[ExportMessageNode] | None
     labels: LabelValues | None
+    events: dict[str, list[ExportMessageEvent]] | None
 
 
 class ExportMessageTree(BaseModel):
