@@ -69,7 +69,7 @@ export class OasstApiClient {
     });
 
     if (resp.status === 204) {
-      return null;
+      return null as T;
     }
 
     if (resp.status >= 300) {

@@ -49,13 +49,16 @@ export function SideMenu(props: SideMenuProps) {
                     gap="3"
                     size="lg"
                     width="full"
-                    bg={router.pathname === item.pathname ? "blue.500" : null}
-                    _hover={router.pathname === item.pathname ? { bg: "blue.600" } : null}
+                    bg={router.pathname === item.pathname ? "blue.500" : undefined}
+                    _hover={router.pathname === item.pathname ? { bg: "blue.600" } : undefined}
                   >
-                    <item.icon size={"1em"} className={router.pathname === item.pathname ? "text-blue-200" : null} />
+                    <item.icon
+                      size={"1em"}
+                      className={router.pathname === item.pathname ? "text-blue-200" : undefined}
+                    />
                     <Text
                       fontWeight="normal"
-                      color={router.pathname === item.pathname ? "white" : null}
+                      color={router.pathname === item.pathname ? "white" : undefined}
                       className="hidden lg:block"
                     >
                       {label}

@@ -71,7 +71,7 @@ export function UserMenu() {
     <Menu>
       <MenuButton border="solid" borderRadius="full" borderWidth="thin" borderColor={borderColor}>
         <Box display="flex" alignItems="center" gap="3" p="1" paddingRight={[1, 1, 1, 6, 6]}>
-          <Avatar size="sm" src={session.user.image}></Avatar>
+          <Avatar size="sm" src={session.user.image!} />
           <Text data-cy="username" className="hidden lg:flex">
             {session.user.name || "New User"}
           </Text>
@@ -87,9 +87,6 @@ export function UserMenu() {
               </Badge>
             ) : null}
           </Text>
-          {/* <Text color="blue.500" fontWeight="bold" fontSize="xl">
-            3,200
-          </Text> */}
         </Box>
         <MenuDivider />
         <MenuGroup>

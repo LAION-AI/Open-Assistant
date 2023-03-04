@@ -17,7 +17,7 @@ const MessageStackProps: StackProps = {
   justifyContent: "center",
 };
 
-interface MessageWithChildrenProps {
+export interface MessageWithChildrenProps {
   id: string;
   depth?: number;
   maxDepth: number;

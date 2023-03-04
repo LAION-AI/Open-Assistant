@@ -11,13 +11,14 @@ import { RefObject, useEffect, useState } from "react";
  *   return <div ref={ref} />
  *   ```
  */
-export const useScrollToElementOnMount = (ref: RefObject<HTMLElement> | undefined) => {
+export const useScrollToElementOnMount = (ref: RefObject<HTMLElement>) => {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    if (!ref?.current || scrolled) {
+    if (!ref.current || scrolled) {
       return;
     }
 
+    ref.current.style.scrollMarginTop = "2em";
     ref.current.scrollIntoView();
     setScrolled(true);
   }, [ref, scrolled]);

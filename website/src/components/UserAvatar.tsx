@@ -1,5 +1,6 @@
 import Image from "next/image";
-export function UserAvatar(options: { displayName: string; avatarUrl: string | null }) {
+
+export function UserAvatar(options: { displayName: string; avatarUrl?: string }) {
   const { displayName, avatarUrl } = options;
   return (
     <>
@@ -12,6 +13,7 @@ export function UserAvatar(options: { displayName: string; avatarUrl: string | n
         alt={`${displayName}'s avatar`}
         width={30}
         height={30}
+        className="rounded-full"
       />
     </>
   );

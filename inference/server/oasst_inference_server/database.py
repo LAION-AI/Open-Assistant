@@ -3,8 +3,9 @@ import json
 import pydantic.json
 import sqlmodel
 from loguru import logger
-from oasst_inference_server import models
+from oasst_inference_server.schemas import chat as chat_schema
 from oasst_inference_server.settings import settings
+from oasst_shared.schemas import inference
 
 
 def default_json_serializer(obj):
@@ -24,15 +25,15 @@ def custom_json_deserializer(s):
         return d
     match d.get("_classname_"):
         case "WorkParameters":
-            return models.inference.WorkParameters.parse_obj(d)
+            return inference.WorkParameters.parse_obj(d)
         case "WorkerConfig":
-            return models.inference.WorkerConfig.parse_obj(d)
+            return inference.WorkerConfig.parse_obj(d)
         case "MessageRequest":
-            return models.chat_schema.MessageRequest.parse_obj(d)
+            return chat_schema.MessageRequest.parse_obj(d)
         case "WorkRequest":
-            return models.inference.WorkRequest.parse_obj(d)
+            return inference.WorkRequest.parse_obj(d)
         case "WorkResponsePacket":
-            return models.inference.WorkResponsePacket.parse_obj(d)
+            return inference.WorkResponsePacket.parse_obj(d)
         case None:
             return d
         case _:
