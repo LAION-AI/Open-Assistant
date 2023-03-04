@@ -17,12 +17,20 @@ import os
 jobid = os.environ.get("SLURM_JOB_ID")
 ROOT_DIR = os.path.join("/scratch/c.scmse/safety",jobid)
 
+# LABEL2ID = {
+#     "__casual__": "0",
+#     "__needs_caution__": "1",
+#     "__needs_intervention__": "2",
+#     "__probably_needs_caution__": "3",
+#     "__possibly_needs_caution__": "4",
+# }
+
 LABEL2ID = {
-    "__casual__": "0",
-    "__needs_caution__": "1",
-    "__needs_intervention__": "2",
-    "__probably_needs_caution__": "3",
-    "__possibly_needs_caution__": "4",
+    "__casual__": "__casual__",
+    "__needs_caution__": "__needs_caution__",
+    "__needs_intervention__": "__needs_intervention__",
+    "__probably_needs_caution__": "__probably_needs_caution__",
+    "__possibly_needs_caution__": "__possibly_needs_caution__",
 }
 
 SPECIAL_TOKENS = {"context_token":"<ctx>","sep_token":"<sep>","label_token":"<cls>","rot_token":"<rot>"}
@@ -40,7 +48,7 @@ CONFIG = {"special_tokens":SPECIAL_TOKENS,
 "lr":1e-5,
 "epochs":1,
 "train_dataset":"allenai/prosocial-dialog",
-"Notes":"using train+validation"
+"Notes":"using train+validation train with label2id"
 }
 
 def add_special_tokens(tokenizer,model):
