@@ -8,7 +8,7 @@ from transformers import (
     TrainingArguments)
 from datasets import load_dataset
 from torch.utils.data import Dataset, DataLoader
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field,concatenate_datasets
 from typing import Dict, List, Optional
 import json
 import wandb
