@@ -1,4 +1,5 @@
 import Image from "next/image";
+
 export function UserAvatar(options: { displayName: string; avatarUrl: string | null }) {
   const { displayName, avatarUrl } = options;
   return (

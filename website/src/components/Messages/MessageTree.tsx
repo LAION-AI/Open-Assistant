@@ -1,5 +1,6 @@
 import { Box, BoxProps } from "@chakra-ui/react";
-import { Fragment, memo } from "react";
+import { Fragment, memo, useRef } from "react";
+import { useScrollToElementOnMount } from "src/hooks/ui/useScrollToElementOnMount";
 import { MessageWithChildren } from "src/types/Conversation";
 
 import { MessageTableEntry } from "./MessageTableEntry";
@@ -19,6 +20,9 @@ interface MessageTreeProps {
 
 // eslint-disable-next-line react/display-name
 export const MessageTree = memo(({ tree, messageId, scrollToHighlighted }: MessageTreeProps) => {
+  const highlightedElementRef = useRef<HTMLDivElement>(null);
+  useScrollToElementOnMount(highlightedElementRef);
+
   const renderChildren = (children: MessageWithChildren[], depth = 1) => {
     const hasSibling = children.length > 1;
     return children.map((child, idx) => {
@@ -33,8 +37,8 @@ export const MessageTree = memo(({ tree, messageId, scrollToHighlighted }: Messa
               <Box pt={`${messagePaddingTop}px`} position="relative" className="box4">
                 {hasChildren && depth < maxDepth && <Connection className="connection1"></Connection>}
                 <MessageTableEntry
+                  ref={scrollToHighlighted && child.id === messageId ? highlightedElementRef : undefined}
                   showAuthorBadge
-                  scrollToHighlighted={scrollToHighlighted}
                   highlight={child.id === messageId}
                   message={child}
                 ></MessageTableEntry>
@@ -78,7 +82,7 @@ export const MessageTree = memo(({ tree, messageId, scrollToHighlighted }: Messa
           </>
         )}
         <MessageTableEntry
-          scrollToHighlighted={scrollToHighlighted}
+          ref={scrollToHighlighted && tree.id === messageId ? highlightedElementRef : undefined}
           showAuthorBadge
           message={tree}
           highlight={tree.id === messageId}
