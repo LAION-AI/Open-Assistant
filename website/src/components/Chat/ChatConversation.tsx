@@ -218,11 +218,14 @@ async function* iteratorSSE(stream: ReadableStream<Uint8Array>) {
   const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
 
   let done = false,
-    value = "";
+    value: string | undefined = "";
   while (!done) {
     ({ value, done } = await reader.read());
     if (done) {
       break;
+    }
+    if (!value) {
+      continue;
     }
 
     const fields = value
