@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
     train_dataset = SafetyDataset(dataset,split="train",tokenizer=tokenizer,max_len=MAX_LEN)
     valid_dataset = SafetyDataset(dataset,split="validation",tokenizer=tokenizer,max_len=MAX_LEN)
-    training_args = TrainingArguments(output_dir="/safety", 
+    training_args = TrainingArguments(output_dir="/scratch/c.scmse/safety", 
                                   per_device_train_batch_size=8, 
                                   per_device_eval_batch_size=8,
 #                                   gradient_accumulation_steps=16,
