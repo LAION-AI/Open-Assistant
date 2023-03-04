@@ -1,4 +1,5 @@
 import { getValidDisplayName } from "src/lib/display_name_validation";
+import prisma from "src/lib/prismadb";
 import { getBatchFrontendUserIdFromBackendUser } from "src/lib/users";
 
 export const updateUsersDisplayNames = <T extends { display_name: string; username: string }>(entries: T[]) => {
