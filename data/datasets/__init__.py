@@ -1,6 +1,7 @@
 TEXT_DATASETS = {
     "gutenberg_english": "sedthh/gutenberg_english",
     "gutenberg_multilang": "sedthh/gutenberg_multilang",
+    "tlcv2.0_oa": "pythainlp/tlcv2.0_oa",
 }
 
 INSTRUCTION_DATASETS = {
