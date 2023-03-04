@@ -1,7 +1,7 @@
 FROM python:3.10-slim-bullseye
 RUN mkdir /app
 WORKDIR /app
-COPY ./discord-bot /app
+COPY ./discord-bots/oa-bot-py /app
 COPY ./oasst-shared/oasst_shared /app/oasst_shared
 RUN pip install -r requirements.txt
 CMD ["python","-m","bot"]
