@@ -198,7 +198,7 @@ const FilterModal = ({
   value: string;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const initialFocusRef = useRef();
+  const initialFocusRef = useRef<HTMLInputElement>(null);
   const handleInputChange = useDebouncedCallback((e: ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   }, 500);

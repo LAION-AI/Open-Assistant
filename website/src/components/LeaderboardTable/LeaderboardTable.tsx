@@ -65,7 +65,7 @@ export const LeaderboardTable = ({
         header: t("user"),
         cell: ({ getValue, row }) => (
           <div className="flex flex-row items-center gap-2">
-            <UserAvatar displayName={getValue()} avatarUrl={row.original.image}></UserAvatar>
+            <UserAvatar displayName={getValue()} avatarUrl={row.original.image} />
             {isAdminOrMod ? (
               <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
                 {getValue()}
