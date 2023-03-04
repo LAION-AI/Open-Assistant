@@ -148,8 +148,8 @@ if __name__ == "__main__":
     
     dataset = load_dataset(CONFIG["train_dataset"])
 
-    model = T5ForConditionalGeneration.from_pretrained(MODEL)
-    tokenizer = T5Tokenizer.from_pretrained(MODEL,padding_side="right",truncation_side="right",model_max_length=512)
+    model = T5ForConditionalGeneration.from_pretrained(CONFIG["model"])
+    tokenizer = T5Tokenizer.from_pretrained(CONFIG["model"],padding_side="right",truncation_side="right",model_max_length=512)
     add_special_tokens(tokenizer,model)
     train_dataset = SafetyDataset(dataset,split=CONFIG["train"],tokenizer=tokenizer,max_len=CONFIG["max_len"])
     valid_dataset = SafetyDataset(dataset,split=CONFIG["test"],tokenizer=tokenizer,max_len=CONFIG["max_len"])
