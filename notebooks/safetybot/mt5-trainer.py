@@ -13,6 +13,7 @@ from typing import Dict, List, Optional
 import json
 import wandb
 
+MODEL = "t5-base"
 LABEL2ID = {
     "__casual__": "0",
     "__needs_caution__": "1",
@@ -21,6 +22,7 @@ LABEL2ID = {
     "__possibly_needs_caution__": "4",
 }
 MAX_LEN = 256
+SPECIAL_TOKENS = {"context_token":"<ctx>","sep_token":"<sep>","label_token":"<cls>","rot_token":"<rot>"}
 
 wandb_key = json.load(open("/home/c.scmse/credentials/wandb.json" ))["key"]
 
@@ -124,6 +126,10 @@ class T2TDataCollator():
 if __name__ == "__main__":
 
     dataset = load_dataset("allenai/prosocial-dialog")
+
+    model = T5ForConditionalGeneration.from_pretrained(MODEL)
+    tokenizer = T5Tokenizer.from_pretrained(MODEL,padding_side="right",truncation_side="right",model_max_length=512)
+
     train_dataset = SafetyDataset(dataset,split="train",tokenizer=tokenizer,max_len=MAX_LEN)
     valid_dataset = SafetyDataset(dataset,split="validation",tokenizer=tokenizer,max_len=MAX_LEN)
     training_args = TrainingArguments(output_dir="/safety", 
