@@ -143,7 +143,7 @@ if __name__ == "__main__":
     if not os.path.exists(ROOT_DIR):
         os.mkdir(ROOT_DIR)
     
-    with open(os.path.join(ROOT_DIR,"config.json")) as file:
+    with open(os.path.join(ROOT_DIR,"config.json"),"w") as file:
         json.dump(json.dumps(CONFIG),file)
     
     dataset = load_dataset(CONFIG["train_dataset"])
