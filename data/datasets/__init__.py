@@ -10,4 +10,5 @@ INSTRUCTION_DATASETS = {
     "recipes": "dctanner/oa_recipes",
     "ubuntu_dialogue_qa": "sedthh/ubuntu_dialogue_qa",
     "cmu_wiki_qa": "sedthh/cmu_wiki_qa",
+    "iapp_wiki_qa_squad": "wannaphong/iapp_wiki_qa_squad_oa",
 }
