@@ -142,7 +142,12 @@ if __name__ == "__main__":
     if not os.path.exists(ROOT_DIR):
         os.mkdir(ROOT_DIR)
 
-    wandb.log(CONFIG)
+    run = wandb.init(
+        project="safetybot",
+        notes="training with train+valid",
+        tags=["baseline", ""]
+        )
+    wandb.config = CONFIG
     dataset = load_dataset(CONFIG["train_dataset"])
 
     model = T5ForConditionalGeneration.from_pretrained(MODEL)
