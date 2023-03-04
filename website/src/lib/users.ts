@@ -97,13 +97,14 @@ export const getBatchFrontendUserIdFromBackendUser = async (users: { username: s
       provider: "discord",
       providerAccountId: { in: discordAccountIds },
     },
-    select: { userId: true },
+    select: { userId: true, providerAccountId: true },
   });
 
-  console.assert(discordAccountIds.length === discordAccounts.length);
-  discordAccounts.forEach(({ userId }, index) => {
-    const outputIndex = indicesOfDiscordUsers[index];
-    outputIds[outputIndex] = userId;
+  indicesOfDiscordUsers.forEach((userIdx) => {
+    // NOTE: findMany will return the values unsorted, which is why we have to 'find' here
+    const account = discordAccounts.find((a) => a.providerAccountId === users[userIdx].username);
+    outputIds[userIdx] = account.userId;
   });
+
   return outputIds;
 };
