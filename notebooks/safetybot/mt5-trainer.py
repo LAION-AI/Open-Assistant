@@ -138,8 +138,8 @@ if __name__ == "__main__":
     model = T5ForConditionalGeneration.from_pretrained(MODEL)
     tokenizer = T5Tokenizer.from_pretrained(MODEL,padding_side="right",truncation_side="right",model_max_length=512)
     add_special_tokens(tokenizer,model)
-    train_dataset = SafetyDataset(dataset,split="train",tokenizer=tokenizer,max_len=MAX_LEN)
-    valid_dataset = SafetyDataset(dataset,split="validation",tokenizer=tokenizer,max_len=MAX_LEN)
+    train_dataset = SafetyDataset(dataset,split=["train","validation"],tokenizer=tokenizer,max_len=MAX_LEN)
+    valid_dataset = SafetyDataset(dataset,split="test",tokenizer=tokenizer,max_len=MAX_LEN)
     training_args = TrainingArguments(output_dir="/scratch/c.scmse/safety", 
                                   per_device_train_batch_size=8, 
                                   per_device_eval_batch_size=8,
