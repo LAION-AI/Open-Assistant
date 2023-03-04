@@ -24,7 +24,7 @@ MAX_LEN = 256
 
 wandb_key = json.load(open("/home/c.scmse/credentials/wandb.json" ))["key"]
 
-wandb.login(key=wandb_api)
+wandb.login(key=wandb_key)
 
 def add_special_tokens(tokenizer,model):
     for key,value in SPECIAL_TOKENS.items():
@@ -47,7 +47,7 @@ class SafetyDataset(Dataset):
         else:
             self.split = split
             self.dataset = dataset[split]
-            
+
         self.max_len = max_len
         self.tokenizer = tokenizer
         self.label2id = LABEL2ID
