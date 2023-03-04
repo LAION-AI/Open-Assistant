@@ -26,7 +26,7 @@ def fetch_tree_ids(
     db: Session,
     state_filter: Optional[TreeState] = None,
     lang: Optional[str] = None,
-    limit: int = 0,
+    limit: Optional[int] = None,
 ) -> list[tuple[UUID, TreeState]]:
     tree_qry = (
         db.query(MessageTreeState)
@@ -40,7 +40,7 @@ def fetch_tree_ids(
     if state_filter:
         tree_qry = tree_qry.filter(MessageTreeState.state == state_filter)
 
-    if limit > 0:
+    if limit is not None:
         tree_qry = tree_qry.limit(limit)
 
     return [(tree.message_tree_id, tree.state) for tree in tree_qry]
@@ -54,7 +54,7 @@ def fetch_tree_messages(
     prompts_only: bool = False,
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
-    limit: int = 0,
+    limit: Optional[int] = None,
 ) -> List[Message]:
     qry = db.query(Message)
 
@@ -72,7 +72,7 @@ def fetch_tree_messages(
         qry = qry.filter(not_(Message.review_result), Message.review_count > 2)
     elif review_result is True:
         qry = qry.filter(Message.review_result)
-    if limit is not None and limit > 0:
+    if limit is not None:
         qry = qry.limit(limit)
 
     return qry.all()
@@ -119,7 +119,7 @@ def fetch_tree_messages_and_avg_labels(
     prompts_only: bool = False,
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
-    limit: int = 0,
+    limit: Optional[int] = None,
 ) -> List[Message]:
     args = [Message]
 
@@ -145,7 +145,7 @@ def fetch_tree_messages_and_avg_labels(
 
     qry = qry.group_by(Message.id)
 
-    if limit is not None and limit > 0:
+    if limit is not None:
         qry = qry.limit(limit)
 
     return qry.all()
@@ -163,7 +163,7 @@ def export_trees(
     review_result: Optional[bool] = None,
     export_labels: bool = False,
     export_events: bool = False,
-    limit: int = 0,
+    limit: Optional[int] = None,
     anonymizer_seed: Optional[str] = None,
 ) -> None:
     message_labels: dict[UUID, LabelValues] = {}
@@ -357,8 +357,7 @@ def parse_args():
     parser.add_argument(
         "--limit",
         type=int,
-        help="Maximum number of trees to export. Set to 0 to export all trees.",
-        default=0,
+        help="Maximum number of trees to export. Leave at `None` to export all trees.",
     )
     parser.add_argument(
         "--anonymizer-seed",
