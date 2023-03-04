@@ -11,7 +11,7 @@ export default {
   decorators: [SessionDecorator],
 };
 
-const Template: Story = ({
+const Template: Story<any> = ({
   emoji,
   count,
   ...rest
