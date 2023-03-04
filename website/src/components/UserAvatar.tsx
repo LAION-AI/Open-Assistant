@@ -12,6 +12,7 @@ export function UserAvatar(options: { displayName: string; avatarUrl: string | n
         alt={`${displayName}'s avatar`}
         width={30}
         height={30}
+        className="rounded-full"
       />
     </>
   );
