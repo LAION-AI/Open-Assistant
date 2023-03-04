@@ -103,6 +103,8 @@ def sample(
     )
     if skip_input_tokens:
         output_tokens = outputs[0, input_ids.size(1) :]
+    else:
+        output_tokens = outputs[0]
     return output_tokens, sampling_params
 
 
@@ -249,6 +251,8 @@ def main():
 
         model = T5ForConditionalGeneration.from_pretrained(model_name)
         skip_input_tokens = False
+    else:
+        raise RuntimeError("Invalid model_type specified")
 
     tokenizer.eos_token_id = model.config.eos_token_id
 
