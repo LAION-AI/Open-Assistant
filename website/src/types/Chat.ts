@@ -17,6 +17,7 @@ export interface InferenceMessage {
   content: string | null;
   state: "manual" | "pending";
   role: "assistant" | "prompter";
+  score: number;
 }
 
 export interface GetChatsResponse {

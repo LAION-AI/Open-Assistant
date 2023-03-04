@@ -37,12 +37,6 @@ const sx: SystemStyleObject = {
     bg: "gray.300",
     p: 0.5,
     borderRadius: "2px",
-    _rtl: {
-      marginLeft: "3.2rem",
-    },
-    _ltr: {
-      marginRight: "3.2rem",
-    },
     _dark: {
       bg: "gray.700",
     },
@@ -77,8 +71,11 @@ const sx: SystemStyleObject = {
       borderBottomColor: "gray.700",
     },
   },
-  "ol li::marker": {
-    content: "counter(list-item) '.'",
+  ol: {
+    listStyleType: "none",
+  },
+  "ol li::before": {
+    content: "counter(list-item) '.' ' '",
   },
 };
 

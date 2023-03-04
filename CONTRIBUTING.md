@@ -105,9 +105,8 @@ you want to work on it and what you plan to do.
 - There's an [introduction for developers](docs/docs/guides/developers.md) that
   gives an overview of the different tools and technologies used in the project.
 - To get started with development, if you want to work on the backend, have a
-  look at `scripts/backend-development/README.md`.
-- If you want to work on any frontend, have a look at
-  `scripts/frontend-development/README.md` to make a backend available.
+  look at `backend/README.md`.
+- If you want to work on any frontend, have a look at `website/README.md`.
 
 There is also a minimal implementation of a frontend in the `text-frontend`
 folder.
