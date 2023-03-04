@@ -40,6 +40,7 @@ CONFIG = {"special_tokens":SPECIAL_TOKENS,
 "lr":1e-5,
 "epochs":1,
 "train_dataset":"allenai/prosocial-dialog",
+"Notes":"using train+validation"
 }
 
 def add_special_tokens(tokenizer,model):
@@ -141,13 +142,10 @@ if __name__ == "__main__":
 
     if not os.path.exists(ROOT_DIR):
         os.mkdir(ROOT_DIR)
-
-    run = wandb.init(
-        project="safetybot",
-        notes="training with train+valid",
-        tags=["baseline", ""]
-        )
-    wandb.config = CONFIG
+    
+    with open(os.path.join(ROOT_DIR,"config.json")) as file:
+        json.dump(json.dumps(CONFIG),file)
+    
     dataset = load_dataset(CONFIG["train_dataset"])
 
     model = T5ForConditionalGeneration.from_pretrained(MODEL)
@@ -188,4 +186,4 @@ if __name__ == "__main__":
 
     wandb.finish()
     #trainer.save_model(os.path.join(ROOT_DIR,"safety-model"))
-    #tokenizer.save_pretrained(os.path.join(ROOT_DIR,"safety-tokenizer"))
+    tokenizer.save_vocabulary(os.path.join(ROOT_DIR,"safety-tokenizer"))
