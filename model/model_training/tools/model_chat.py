@@ -6,7 +6,7 @@ A very simple script to test model locally
 """
 import argparse
 
-from custom_datasets.formatting import QA_SPECIAL_TOKENS
+from custom_datasets.formatting import QA_SPECIAL_TOKENS, ChatRole, SeqToken
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from utils import _strtobool
 
@@ -38,6 +38,18 @@ def talk(human_input, history, sep_token, prefix=""):
             # add sep at the end
             prefix += sep_token
         prefix += "{}{}{}".format(QA_SPECIAL_TOKENS["Question"], human_input, QA_SPECIAL_TOKENS["Answer"])
+    elif method == "v3":
+        personality = "You are a helpful assistant called Makima"
+        prefix = f"{SeqToken.begin}{ChatRole.system}{SeqToken.delimiter}{personality}{SeqToken.end}"
+        for question, answer in history:
+            histories.append(
+                f"{SeqToken.begin}{ChatRole.prompter}{SeqToken.delimiter}{question}{SeqToken.end}"
+                + f"{SeqToken.begin}{ChatRole.assistant}{SeqToken.delimiter}{answer}{SeqToken.end}"
+            )
+        if len(histories) > 0:
+            prefix += "".join(histories)
+            # add sep at the end
+        prefix += f"{SeqToken.begin}{ChatRole.prompter}{SeqToken.delimiter}{human_input}{SeqToken.end}{SeqToken.begin}{ChatRole.assistant}{SeqToken.delimiter}"
     else:
         for question, answer in history:
             histories.append("User: " + question + "\n\n{}: ".format(bot_name) + answer + "\n")
@@ -52,6 +64,9 @@ def process_output(output):
     if method == "v2":
         answer = output.split(QA_SPECIAL_TOKENS["Answer"])[-1]
         answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split(QA_SPECIAL_TOKENS["Answer"])[0]
+    elif method == "v3":
+        answer = output.split(f"{SeqToken.begin}{ChatRole.assistant}{SeqToken.delimiter}")[-1]
+        answer = answer.split("</s>")[0].replace(SeqToken.end, "").lstrip()
     else:
         answer = output.split("\n\n{}:".format(bot_name))[-1]
         answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split("\n\n{}:".format(bot_name))[0]
