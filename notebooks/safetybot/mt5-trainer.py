@@ -22,7 +22,7 @@ LABEL2ID = {
 }
 MAX_LEN = 256
 
-wandb_key = json.load(open("~/wandb.json" ))["key"]
+wandb_key = json.load(open("/home/c.scmse/credentials/wandb.json" ))["key"]
 
 wandb.login(key=wandb_api)
 
@@ -40,8 +40,14 @@ class SafetyDataset(Dataset):
     def __init__(self,dataset,split,tokenizer,max_len=512):
         
         super().__init__()
-        self.split = split
-        self.dataset = dataset[split]
+
+        if isinstance(split,List):
+            self.split = "-".join(split)
+            self.dataset = concatenate_datasets([dataset[sp] for sp in split])
+        else:
+            self.split = split
+            self.dataset = dataset[split]
+            
         self.max_len = max_len
         self.tokenizer = tokenizer
         self.label2id = LABEL2ID
