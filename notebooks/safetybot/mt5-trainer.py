@@ -22,7 +22,7 @@ LABEL2ID = {
 }
 MAX_LEN = 256
 
-wandb_key = json.load(open("~/wandb_cred.json" ))["wandb_key"]
+wandb_key = json.load(open("~/wandb.json" ))["key"]
 
 wandb.login(key=wandb_api)
 
