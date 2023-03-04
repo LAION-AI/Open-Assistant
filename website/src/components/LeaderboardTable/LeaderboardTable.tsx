@@ -4,16 +4,16 @@ import { MoreHorizontal } from "lucide-react";
 import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
 import React, { useMemo } from "react";
-import Image from "next/image";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 
 import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
 import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
+import { UserAvatar } from "../UserAvatar";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
-import { UserAvatar } from "../UserAvatar";
+
 type WindowLeaderboardEntity = LeaderboardEntity & { isSpaceRow?: boolean };
 
 const columnHelper = createColumnHelper<WindowLeaderboardEntity>();
