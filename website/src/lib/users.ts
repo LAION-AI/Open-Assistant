@@ -25,8 +25,7 @@ export const getBackendUserCore = async (id: string): Promise<BackendUserCore> =
   if (user.accounts.length === 0) {
     return {
       id: user.id,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      display_name: user.name!,
+      display_name: user.name,
       auth_method: "local",
     };
   }
@@ -34,8 +33,7 @@ export const getBackendUserCore = async (id: string): Promise<BackendUserCore> =
   // Otherwise, use the first linked account that the user created.
   return {
     id: user.accounts[0].providerAccountId,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    display_name: user.name!,
+    display_name: user.name,
     auth_method: user.accounts[0].provider,
   };
 };
@@ -54,4 +52,58 @@ export const getBackendUserCore = async (id: string): Promise<BackendUserCore> =
 export const getFrontendUserIdForDiscordUser = async (id: string) => {
   const { userId } = await prisma.account.findFirst({ where: { provider: "discord", providerAccountId: id } });
   return userId;
+};
+
+/**
+ *
+ * @param {string} username the id of the user, this field is called 'username' in the python backend's user table
+ * not to be confused with the user's UUID
+ * @param auth_method either "local" or "discord"
+ */
+export const getFrontendUserIdFromBackendUser = async (username: string, auth_method: string) => {
+  if (auth_method === "local") {
+    return username;
+  } else if (auth_method === "discord") {
+    return getFrontendUserIdForDiscordUser(username);
+  }
+  throw new Error(`Unexpected auth_method: ${auth_method}`);
+};
+
+/**
+ * this function is similar to `getFrontendUserIdFromBackendUser`, but optimized for reducing the
+ * number of database calls if fetching the data for many users (i.e. leaderboard)
+ */
+export const getBatchFrontendUserIdFromBackendUser = async (users: { username: string; auth_method: string }[]) => {
+  // for users signed up with email, the 'username' field from the backend is the id of the user in the frontend db
+  // we initialize the output for all users with the username for now:
+  const outputIds = users.map((user) => user.username);
+
+  // handle discord users a bit differently
+  const indicesOfDiscordUsers = users
+    .map((user, idx) => ({ idx, isDiscord: user.auth_method === "discord" }))
+    .filter((x) => x.isDiscord)
+    .map((x) => x.idx);
+
+  if (indicesOfDiscordUsers.length === 0) {
+    // no discord users, save a database call
+    return outputIds;
+  }
+
+  // get the frontendUserIds for the discord users
+  // the `username` field for discord users is the id of the discord account
+  const discordAccountIds = indicesOfDiscordUsers.map((idx) => users[idx].username);
+  const discordAccounts = await prisma.account.findMany({
+    where: {
+      provider: "discord",
+      providerAccountId: { in: discordAccountIds },
+    },
+    select: { userId: true },
+  });
+
+  console.assert(discordAccountIds.length === discordAccounts.length);
+  discordAccounts.forEach(({ userId }, index) => {
+    const outputIndex = indicesOfDiscordUsers[index];
+    outputIds[outputIndex] = userId;
+  });
+  return outputIds;
 };
