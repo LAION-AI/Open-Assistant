@@ -91,7 +91,7 @@ class SafetyDataset(Dataset):
             end = self.dataset[max(0, idx_start - 2)]["episode_done"]
             idx_start -= 1
         idx_start = max(0, idx_start)
-        context = [f'User: {self.dataset[i]["context"]}\n bot:{self.dataset[i]["response"]}' for i in range(idx_start, idx)]
+        context = [f'\nUser: {self.dataset[i]["context"]}\n bot:{self.dataset[i]["response"]}' for i in range(idx_start, idx)]
         context = self.tokenizer.sep_token.join(context)
         rots = self.dataset[idx]["rots"]
         label = self.label2id[self.dataset[idx]["safety_label"]]
