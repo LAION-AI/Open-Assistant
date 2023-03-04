@@ -59,3 +59,24 @@ def scrap_subreddit(subreddit: str, reddit) -> pd.DataFrame | None:
 
     df = pd.concat(dfs)
     return df.drop_duplicates(subset=["post_id"])
+
+
+def get_comments(post_ids: list, reddit: praw.Reddit):
+    """
+    Get comments for the give list of post_ids.
+    """
+    NUM_COMMENTS = 5
+    items = []
+    for i, post_id in enumerate(tqdm(post_ids)):
+        try:
+            item = {"post_id": post_id}
+            post = reddit.submission(post_id)
+            for j, c in enumerate(post.comments[:NUM_COMMENTS]):
+                item[f"C{j+1}"] = c.body
+            items.append(item)
+        except Exception as e:  # noqa
+            logger.error(f"Error getting comments for {post_id}: {e}")
+        if not (i + 1) % 100:
+            pd.DataFrame(items).to_csv(f"comments_cache/num_{i}.csv", index=False)
+            print(f"[epoch-{i}]: Saved!")
+    pd.DataFrame(items).to_csv("df_with_comments.csv", index=False)
