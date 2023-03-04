@@ -10,7 +10,7 @@ from typing import Any, Optional
 import pydantic
 import torch
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer, T5ForConditionalGeneration
+from transformers import AutoTokenizer, PreTrainedTokenizer
 
 QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
 
@@ -76,6 +76,7 @@ def sample(
     mode: str,
     sampling_config: SamplingConfig,
     device: torch.DeviceObjType,
+    skip_input_tokens: bool,
 ):
     assert sampling_config.name, "'name' must be specified for sampling configuration"
     sc = sampling_config
@@ -100,7 +101,8 @@ def sample(
         **sampling_params,
         pad_token_id=tokenizer.eos_token_id,
     )
-    output_tokens = outputs[0, input_ids.size(1) :]
+    if skip_input_tokens:
+        output_tokens = outputs[0, input_ids.size(1) :]
     return output_tokens, sampling_params
 
 
@@ -134,6 +136,7 @@ def sample_prompt_continuations(
     device: torch.DeviceObjType,
     num_samples: int = 1,
     skip_special_tokens: bool = False,
+    skip_input_tokens: bool = False,
     verbose: bool = False,
 ) -> list[PromptResults]:
     prompt_results: list[PromptResults] = []
@@ -151,6 +154,7 @@ def sample_prompt_continuations(
                     mode=mode,
                     sampling_config=merge_configs(config.default, sc),
                     device=device,
+                    skip_input_tokens=skip_input_tokens,
                 )
                 output = tokenizer.decode(
                     output_tokens,
@@ -202,6 +206,7 @@ def parse_args():
     parser.add_argument("--half", action="store_true", default=False, help="use float16")
     parser.add_argument("--skip-special-tokens", action="store_true", default=False)
     parser.add_argument("--model-type", type=str, default="CausalLM", help="CausalLM, T5Conditional")
+
     return parser.parse_args()
 
 
@@ -234,10 +239,16 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
 
-    if args.model_tpye == "CausalLM":
+    if args.model_type == "CausalLM":
+        from transformers import AutoModelForCausalLM
+
         model = AutoModelForCausalLM.from_pretrained(model_name)
+        skip_input_tokens = True
     elif args.model_type == "T5Conditional":
+        from transformers import T5ForConditionalGeneration
+
         model = T5ForConditionalGeneration.from_pretrained(model_name)
+        skip_input_tokens = False
 
     tokenizer.eos_token_id = model.config.eos_token_id
 
@@ -266,6 +277,7 @@ def main():
             device=device,
             num_samples=args.num_samples,
             skip_special_tokens=args.skip_special_tokens,
+            skip_input_tokens=skip_input_tokens,
             verbose=args.verbose,
         ),
     )
