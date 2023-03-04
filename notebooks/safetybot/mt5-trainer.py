@@ -12,6 +12,11 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 import json
 import wandb
+import os
+
+jobid = os.environ.get("SLURM_JOB_ID")
+ROOT_DIR = os.path.join("/scratch/c.scmse/safety",jobid)
+
 
 MODEL = "t5-base"
 LABEL2ID = {
@@ -125,6 +130,9 @@ class T2TDataCollator():
 
 if __name__ == "__main__":
 
+    if not os.path.exists(ROOT_DIR):
+        os.mkdir(ROOT_DIR)
+
     dataset = load_dataset("allenai/prosocial-dialog")
 
     model = T5ForConditionalGeneration.from_pretrained(MODEL)
@@ -145,7 +153,7 @@ if __name__ == "__main__":
                                   report_to="wandb",
                                   push_to_hub=False,
                                   fp16=True,
-                                  run_name="safety-bot-sample",)
+                                  run_name=f"safety-bot-sample-hawk-{jobid}",)
 
 
     # Initialize our Trainer
@@ -164,3 +172,5 @@ if __name__ == "__main__":
     #trainer.push_to_hub("t5-end2end-questions-generation")
 
     wandb.finish()
+    trainer.save_model(os.path.join(ROOT_DIR,"safety-model"))
+    tokenizer.save_pretrained(os.path.join(ROOT_DIR,"safety-tokenizer"))
