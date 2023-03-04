@@ -52,7 +52,10 @@ export function SideMenu(props: SideMenuProps) {
                     bg={router.pathname === item.pathname ? "blue.500" : undefined}
                     _hover={router.pathname === item.pathname ? { bg: "blue.600" } : undefined}
                   >
-                    <item.icon size={"1em"} className={router.pathname === item.pathname ? "text-blue-200" : undefined} />
+                    <item.icon
+                      size={"1em"}
+                      className={router.pathname === item.pathname ? "text-blue-200" : undefined}
+                    />
                     <Text
                       fontWeight="normal"
                       color={router.pathname === item.pathname ? "white" : undefined}
