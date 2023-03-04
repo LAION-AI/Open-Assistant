@@ -10,7 +10,7 @@ from typing import Any, Optional
 import pydantic
 import torch
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer, T5ForConditionalGeneration
 
 QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
 
@@ -201,6 +201,7 @@ def parse_args():
     parser.add_argument("--config", type=str, default="config/default.json")
     parser.add_argument("--half", action="store_true", default=False, help="use float16")
     parser.add_argument("--skip-special-tokens", action="store_true", default=False)
+    parser.add_argument("--model-type", type=str, default="CausalLM", help="CausalLM, T5Conditional")
     return parser.parse_args()
 
 
@@ -232,8 +233,15 @@ def main():
     print(f"Loading model: {model_name}")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
-    model = AutoModelForCausalLM.from_pretrained(model_name).eval()
+
+    if args.model_tpye == "CausalLM":
+        model = AutoModelForCausalLM.from_pretrained(model_name)
+    elif args.model_type == "T5Conditional":
+        model = T5ForConditionalGeneration.from_pretrained(model_name)
+
     tokenizer.eos_token_id = model.config.eos_token_id
+
+    model.eval()
     if args.half:
         model = model.half()
     model = model.to(device)
