@@ -17,8 +17,6 @@ import os
 jobid = os.environ.get("SLURM_JOB_ID")
 ROOT_DIR = os.path.join("/scratch/c.scmse/safety",jobid)
 
-
-MODEL = "t5-base"
 LABEL2ID = {
     "__casual__": "0",
     "__needs_caution__": "1",
@@ -26,12 +24,23 @@ LABEL2ID = {
     "__probably_needs_caution__": "3",
     "__possibly_needs_caution__": "4",
 }
-MAX_LEN = 256
+
 SPECIAL_TOKENS = {"context_token":"<ctx>","sep_token":"<sep>","label_token":"<cls>","rot_token":"<rot>"}
 
 wandb_key = json.load(open("/home/c.scmse/credentials/wandb.json" ))["key"]
 
 wandb.login(key=wandb_key)
+
+
+CONFIG = {"special_tokens":SPECIAL_TOKENS,
+"model":"t5-base",
+"max_len":256,
+"train_split":["train","validation"],
+"test_split":["test"],
+"lr":1e-5,
+"epochs":1,
+"train_dataset":"allenai/prosocial-dialog",
+}
 
 def add_special_tokens(tokenizer,model):
     for key,value in SPECIAL_TOKENS.items():
@@ -133,22 +142,23 @@ if __name__ == "__main__":
     if not os.path.exists(ROOT_DIR):
         os.mkdir(ROOT_DIR)
 
-    dataset = load_dataset("allenai/prosocial-dialog")
+    wandb.log(CONFIG)
+    dataset = load_dataset(CONFIG["train_dataset"])
 
     model = T5ForConditionalGeneration.from_pretrained(MODEL)
     tokenizer = T5Tokenizer.from_pretrained(MODEL,padding_side="right",truncation_side="right",model_max_length=512)
     add_special_tokens(tokenizer,model)
-    train_dataset = SafetyDataset(dataset,split=["train","validation"],tokenizer=tokenizer,max_len=MAX_LEN)
-    valid_dataset = SafetyDataset(dataset,split="test",tokenizer=tokenizer,max_len=MAX_LEN)
-    training_args = TrainingArguments(output_dir="/scratch/c.scmse/safety", 
+    train_dataset = SafetyDataset(dataset,split=CONFIG["train"],tokenizer=tokenizer,max_len=CONFIG["max_len"])
+    valid_dataset = SafetyDataset(dataset,split=CONFIG["test"],tokenizer=tokenizer,max_len=CONFIG["max_len"])
+    training_args = TrainingArguments(output_dir=ROOT_DIR, 
                                   per_device_train_batch_size=8, 
                                   per_device_eval_batch_size=8,
 #                                   gradient_accumulation_steps=16,
-                                  learning_rate=1e-4, 
-                                  num_train_epochs=1,
+                                  learning_rate=CONFIG["lr"], 
+                                  num_train_epochs=CONFIG["epochs"],
                                   logging_steps=100,
                                   evaluation_strategy="steps",
-                                  eval_steps=5000,
+                                  eval_steps=1000,
                                   save_steps=5000,
                                   report_to="wandb",
                                   push_to_hub=False,
@@ -172,5 +182,5 @@ if __name__ == "__main__":
     #trainer.push_to_hub("t5-end2end-questions-generation")
 
     wandb.finish()
-    trainer.save_model(os.path.join(ROOT_DIR,"safety-model"))
-    tokenizer.save_pretrained(os.path.join(ROOT_DIR,"safety-tokenizer"))
+    #trainer.save_model(os.path.join(ROOT_DIR,"safety-model"))
+    #tokenizer.save_pretrained(os.path.join(ROOT_DIR,"safety-tokenizer"))
