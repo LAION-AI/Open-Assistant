@@ -15,12 +15,12 @@ async def handle_create_message(
 ) -> EventSourceResponse:
     """Allows the client to stream the results of a request."""
 
-    with deps.manual_user_chat_repository(user_id) as ucr:
+    async with deps.manual_user_chat_repository(user_id) as ucr:
         try:
-            prompter_message = ucr.add_prompter_message(
+            prompter_message = await ucr.add_prompter_message(
                 chat_id=chat_id, parent_id=message_request.parent_id, content=message_request.content
             )
-            assistant_message = ucr.initiate_assistant_message(
+            assistant_message = await ucr.initiate_assistant_message(
                 parent_id=prompter_message.id,
                 work_parameters=message_request.work_parameters,
             )
@@ -89,7 +89,7 @@ async def handle_create_vote(
 ) -> fastapi.Response:
     """Allows the client to vote on a message."""
     try:
-        ucr.update_score(message_id=message_id, score=vote_request.score)
+        await ucr.update_score(message_id=message_id, score=vote_request.score)
         return fastapi.Response(status_code=200)
     except Exception:
         logger.exception("Error adding vote")
@@ -103,7 +103,9 @@ async def handle_create_report(
 ) -> fastapi.Response:
     """Allows the client to report a message."""
     try:
-        ucr.add_report(message_id=message_id, report_type=report_request.report_type, reason=report_request.reason)
+        await ucr.add_report(
+            message_id=message_id, report_type=report_request.report_type, reason=report_request.reason
+        )
         return fastapi.Response(status_code=200)
     except Exception:
         logger.exception("Error adding report")

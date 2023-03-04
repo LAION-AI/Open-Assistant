@@ -1,10 +1,16 @@
 import json
+from pathlib import Path
 
+import alembic.command
+import alembic.config
 import pydantic.json
-import sqlmodel
 from loguru import logger
-from oasst_inference_server import models
+from oasst_inference_server.schemas import chat as chat_schema
 from oasst_inference_server.settings import settings
+from oasst_shared.schemas import inference
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import sessionmaker
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 
 def default_json_serializer(obj):
@@ -24,15 +30,15 @@ def custom_json_deserializer(s):
         return d
     match d.get("_classname_"):
         case "WorkParameters":
-            return models.inference.WorkParameters.parse_obj(d)
+            return inference.WorkParameters.parse_obj(d)
         case "WorkerConfig":
-            return models.inference.WorkerConfig.parse_obj(d)
+            return inference.WorkerConfig.parse_obj(d)
         case "MessageRequest":
-            return models.chat_schema.MessageRequest.parse_obj(d)
+            return chat_schema.MessageRequest.parse_obj(d)
         case "WorkRequest":
-            return models.inference.WorkRequest.parse_obj(d)
+            return inference.WorkRequest.parse_obj(d)
         case "WorkResponsePacket":
-            return models.inference.WorkResponsePacket.parse_obj(d)
+            return inference.WorkResponsePacket.parse_obj(d)
         case None:
             return d
         case _:
@@ -40,10 +46,31 @@ def custom_json_deserializer(s):
             raise ValueError(f"Unknown class {d['_classname_']}")
 
 
-db_engine = sqlmodel.create_engine(
-    settings.database_uri,
-    json_serializer=custom_json_serializer,
-    json_deserializer=custom_json_deserializer,
-    pool_size=settings.db_pool_size,
-    max_overflow=settings.db_max_overflow,
-)
+def make_engine():
+    engine = create_async_engine(
+        settings.database_uri,
+        json_serializer=custom_json_serializer,
+        json_deserializer=custom_json_deserializer,
+        pool_size=settings.db_pool_size,
+        max_overflow=settings.db_max_overflow,
+        echo=settings.db_echo,
+        future=True,
+    )
+    return engine
+
+
+db_engine = make_engine()
+
+
+async def get_async_session(autoflush=True):
+    async_session = sessionmaker(bind=db_engine, class_=AsyncSession, expire_on_commit=False, autoflush=autoflush)
+    async with async_session() as session:
+        yield session
+
+
+def alembic_upgrade(connection):
+    alembic_ini_path = Path(__file__).parent.parent / "alembic.ini"
+    alembic_cfg = alembic.config.Config(str(alembic_ini_path))
+    alembic_cfg.set_main_option("sqlalchemy.url", settings.database_uri)
+    alembic_cfg.attributes["connection"] = connection
+    alembic.command.upgrade(alembic_cfg, "head")

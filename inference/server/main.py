@@ -1,15 +1,14 @@
-import time
-from pathlib import Path
+import asyncio
+import signal
+import sys
 
 import aiohttp
-import alembic.command
-import alembic.config
 import fastapi
 import sqlmodel
 from fastapi import Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from oasst_inference_server import auth, client_handler, deps, models, worker_handler
+from oasst_inference_server import auth, client_handler, database, deps, models, worker_handler
 from oasst_inference_server.schemas import chat as chat_schema
 from oasst_inference_server.schemas import worker as worker_schema
 from oasst_inference_server.settings import settings
@@ -67,8 +66,14 @@ def get_root_token(token: str = Depends(get_bearer_token)) -> str:
     )
 
 
+def terminate_server(signum, frame):
+    logger.info(f"Signal {signum}. Terminating server...")
+    sys.exit(0)
+
+
 @app.on_event("startup")
-def alembic_upgrade():
+async def alembic_upgrade():
+    signal.signal(signal.SIGINT, terminate_server)
     if not settings.update_alembic:
         logger.info("Skipping alembic upgrade on startup (update_alembic is False)")
         return
@@ -76,10 +81,8 @@ def alembic_upgrade():
     retry = 0
     while True:
         try:
-            alembic_ini_path = Path(__file__).parent / "alembic.ini"
-            alembic_cfg = alembic.config.Config(str(alembic_ini_path))
-            alembic_cfg.set_main_option("sqlalchemy.url", settings.database_uri)
-            alembic.command.upgrade(alembic_cfg, "head")
+            async with database.make_engine().begin() as conn:
+                await conn.run_sync(database.alembic_upgrade)
             logger.info("Successfully upgraded alembic on startup")
             break
         except Exception:
@@ -90,28 +93,26 @@ def alembic_upgrade():
 
             timeout = settings.alembic_retry_timeout * 2**retry
             logger.warning(f"Retrying alembic upgrade in {timeout} seconds")
-            time.sleep(timeout)
+            await asyncio.sleep(timeout)
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 @app.on_event("startup")
-def maybe_add_debug_api_keys():
+async def maybe_add_debug_api_keys():
     if not settings.debug_api_keys:
         logger.info("No debug API keys configured, skipping")
         return
     try:
         logger.info("Adding debug API keys")
-        with deps.manual_create_session() as session:
+        async with deps.manual_create_session() as session:
             for api_key in settings.debug_api_keys:
                 logger.info(f"Checking if debug API key {api_key} exists")
                 if (
-                    session.exec(
-                        sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key)
-                    ).one_or_none()
-                    is None
-                ):
+                    await session.exec(sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key))
+                ).one_or_none() is None:
                     logger.info(f"Adding debug API key {api_key}")
                     session.add(models.DbWorker(api_key=api_key, name="Debug API Key"))
-                    session.commit()
+                    await session.commit()
                 else:
                     logger.info(f"Debug API key {api_key} already exists")
     except Exception:
@@ -129,7 +130,7 @@ async def login_discord():
 @app.get("/auth/callback/discord", response_model=protocol.Token)
 async def callback_discord(
     code: str,
-    db: sqlmodel.Session = Depends(deps.create_session),
+    db: database.AsyncSession = Depends(deps.create_session),
 ):
     redirect_uri = f"{settings.api_root}/auth/callback/discord"
 
@@ -166,15 +167,15 @@ async def callback_discord(
         raise HTTPException(status_code=400, detail="Invalid user info response from Discord")
 
     # Try to find a user in our DB linked to the Discord user
-    user: models.DbUser = query_user_by_provider_id(db, discord_id=discord_id)
+    user: models.DbUser = await query_user_by_provider_id(db, discord_id=discord_id)
 
     # Create if no user exists
     if not user:
         user = models.DbUser(provider="discord", provider_account_id=discord_id, display_name=discord_username)
 
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
 
     # Discord account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token({"user_id": user.id})
@@ -188,7 +189,7 @@ async def list_chats(
 ) -> chat_schema.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
-    chats = ucr.get_chats()
+    chats = await ucr.get_chats()
     chats_list = [chat.to_list_read() for chat in chats]
     return chat_schema.ListChatsResponse(chats=chats_list)
 
@@ -200,7 +201,7 @@ async def create_chat(
 ) -> chat_schema.ChatListRead:
     """Allows a client to create a new chat."""
     logger.info(f"Received {request=}")
-    chat = ucr.create_chat()
+    chat = await ucr.create_chat()
     return chat.to_list_read()
 
 
@@ -210,7 +211,7 @@ async def get_chat(
     ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
 ) -> chat_schema.ChatRead:
     """Allows a client to get the current state of a chat."""
-    chat = ucr.get_chat_by_id(id)
+    chat = await ucr.get_chat_by_id(id)
     return chat.to_read()
 
 
@@ -225,45 +226,45 @@ app.get("/worker_session")(worker_handler.list_worker_sessions)
 
 
 @app.put("/worker")
-def create_worker(
+async def create_worker(
     request: worker_schema.CreateWorkerRequest,
     root_token: str = Depends(get_root_token),
-    session: sqlmodel.Session = Depends(deps.create_session),
-):
+    session: database.AsyncSession = Depends(deps.create_session),
+) -> worker_schema.WorkerRead:
     """Allows a client to register a worker."""
     worker = models.DbWorker(name=request.name)
     session.add(worker)
-    session.commit()
-    session.refresh(worker)
-    return worker
+    await session.commit()
+    await session.refresh(worker)
+    return worker_schema.WorkerRead.from_orm(worker)
 
 
 @app.get("/worker")
-def list_workers(
+async def list_workers(
     root_token: str = Depends(get_root_token),
-    session: sqlmodel.Session = Depends(deps.create_session),
-):
+    session: database.AsyncSession = Depends(deps.create_session),
+) -> list[worker_schema.WorkerRead]:
     """Lists all workers."""
-    workers = session.exec(sqlmodel.select(models.DbWorker)).all()
-    return list(workers)
+    workers = (await session.exec(sqlmodel.select(models.DbWorker))).all()
+    return [worker_schema.WorkerRead.from_orm(worker) for worker in workers]
 
 
 @app.delete("/worker/{worker_id}")
-def delete_worker(
+async def delete_worker(
     worker_id: str,
     root_token: str = Depends(get_root_token),
-    session: sqlmodel.Session = Depends(deps.create_session),
+    session: database.AsyncSession = Depends(deps.create_session),
 ):
     """Deletes a worker."""
-    worker = session.get(models.DbWorker, worker_id)
+    worker = await session.get(models.DbWorker, worker_id)
     session.delete(worker)
-    session.commit()
+    await session.commit()
     return fastapi.Response(status_code=200)
 
 
-def query_user_by_provider_id(db: sqlmodel.Session, discord_id: str | None = None) -> models.DbUser | None:
+async def query_user_by_provider_id(db: database.AsyncSession, discord_id: str | None = None) -> models.DbUser | None:
     """Returns the user associated with a given provider ID if any."""
-    user_qry = db.query(models.DbUser)
+    user_qry = sqlmodel.select(models.DbUser)
 
     if discord_id:
         user_qry = user_qry.filter(models.DbUser.provider == "discord").filter(
@@ -273,12 +274,12 @@ def query_user_by_provider_id(db: sqlmodel.Session, discord_id: str | None = Non
     else:
         return None
 
-    user: models.DbUser = user_qry.first()
+    user: models.DbUser = (await db.exec(user_qry)).first()
     return user
 
 
 @app.get("/auth/login/debug")
-async def login_debug(username: str, db: sqlmodel.Session = Depends(deps.create_session)):
+async def login_debug(username: str, db: database.AsyncSession = Depends(deps.create_session)):
     """Login using a debug username, which the system will accept unconditionally."""
 
     if not settings.allow_debug_auth:
@@ -288,14 +289,16 @@ async def login_debug(username: str, db: sqlmodel.Session = Depends(deps.create_
         raise HTTPException(status_code=400, detail="Username is required")
 
     # Try to find the user
-    user: models.DbUser = db.exec(sqlmodel.select(models.DbUser).where(models.DbUser.id == username)).one_or_none()
+    user: models.DbUser = (
+        await db.exec(sqlmodel.select(models.DbUser).where(models.DbUser.id == username))
+    ).one_or_none()
 
     if user is None:
         logger.info(f"Creating new debug user {username=}")
         user = models.DbUser(id=username, display_name=username, provider="debug", provider_account_id=username)
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
 
     # Discord account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token({"user_id": user.id})
