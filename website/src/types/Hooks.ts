@@ -1,6 +1,4 @@
-import { BaseTask, TaskResponse, TaskType } from "src/types/Task";
-
-import { AllTaskReplies } from "./TaskResponses";
+import { BaseTask, TaskResponse } from "src/types/Task";
 
 export type TaskApiHook<Task extends BaseTask, ResponseContent> = {
   response: TaskResponse<Task>;
@@ -10,5 +8,3 @@ export type TaskApiHook<Task extends BaseTask, ResponseContent> = {
   isSubmitting: boolean;
   isRejecting: boolean;
 };
-
-export type TaskApiHooks = Record<TaskType, (args: TaskType) => TaskApiHook<BaseTask, AllTaskReplies>>;

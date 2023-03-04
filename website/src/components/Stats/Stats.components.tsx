@@ -260,11 +260,9 @@ export const MessageTreeStateStatsStacked = ({ stat }: MessageTreeStateStatsProp
   };
 
   return (
-    <>
-      <Box minH={330}>
-        <Bar options={barOptions} data={barData} />
-      </Box>
-    </>
+    <Box minH={330}>
+      <Bar options={barOptions} data={barData} />
+    </Box>
   );
 };
 
@@ -317,7 +315,7 @@ export const MessageTreeStateStatsTable = ({ stat }: MessageTreeStateStatsProps)
   return <DataTable data={data} columns={columns} disablePagination={true}></DataTable>;
 };
 
-export const statComponents: Record<string, React.FC<{ stat: StatType }>> = {
+export const statComponents = {
   human_messages_by_role: ({ stat }: ChartProps) => <Chart stat={stat} type={Pie} />,
   message_trees_by_state: ({ stat }: ChartProps) => <Chart stat={stat} type={Doughnut} />,
   message_trees_states_by_lang: ({ stat }: MessageTreeStateStatsProps) => (

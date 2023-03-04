@@ -15,7 +15,8 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "baseUrl": ".",
-    "strictBindCallApply": true
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "cypress"]
