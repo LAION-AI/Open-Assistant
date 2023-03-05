@@ -11,6 +11,7 @@ export const useUserScore = () => {
     get,
     {
       dedupingInterval: 1000 * 60, // once per minute
+      keepPreviousData: true,
     }
   );
   const score: number | undefined = entries?.total?.leader_score;
