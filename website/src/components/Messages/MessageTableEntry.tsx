@@ -112,7 +112,13 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
         onClick={handleOnClick}
       >
         <Flex justifyContent="space-between" mt="2" alignItems="center">
-          <Text as="span" fontSize="small" color={createdDateColor} fontWeight="medium" me={{ base: 3, md: 6 }}>
+          <Text
+            as="span"
+            fontSize="small"
+            color={createdDateColor}
+            fontWeight="medium"
+            me={showCreatedDate ? { base: 3, md: 6 } : 0}
+          >
             {showCreatedDate
               ? new Intl.DateTimeFormat(locale, {
                   hour: "2-digit",
