@@ -156,7 +156,7 @@ def prepare_dataset(tokenizer,col):
         for key,value in CONFIG[col].items():
             dataset = load_dataset(key)
             try:
-                dataset = dataset.rename_columns({"Human":"user","Assistant":"response"})
+                dataset = dataset.rename_columns({"Human":"context","Assistant":"response"})
             except Exception as e:
                 print(e)
             train_dataset = SafetyDataset(dataset,split=value,tokenizer=tokenizer,max_len=CONFIG["max_len"])
