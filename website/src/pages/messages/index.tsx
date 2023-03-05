@@ -41,7 +41,11 @@ const MessagesDashboard = () => {
             borderRadius="xl"
             className="p-6 shadow-sm"
           >
-            {messages ? <MessageConversation enableLink messages={messages} /> : <CircularProgress isIndeterminate />}
+            {messages ? (
+              <MessageConversation enableLink messages={messages} showCreatedDate />
+            ) : (
+              <CircularProgress isIndeterminate />
+            )}
           </Box>
         </Box>
         <Box>
