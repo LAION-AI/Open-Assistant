@@ -4,6 +4,9 @@
 
 `pip install .`
 
+Run tests:
+`pytest .`
+
 Start training SFT model
 
 ```bash

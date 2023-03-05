@@ -1,0 +1,5 @@
+kaggle
+numpy
+pandas
+pyarrow
+tqdm

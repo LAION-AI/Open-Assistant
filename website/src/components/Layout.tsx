@@ -1,7 +1,7 @@
 // https://nextjs.org/docs/basic-features/layouts
 
 import { Box, Grid } from "@chakra-ui/react";
-import { Activity, BarChart2, HelpCircle, Layout, MessageSquare, Settings, Users, TrendingUp } from "lucide-react";
+import { Activity, BarChart2, ExternalLink, Layout, MessageSquare, Settings, TrendingUp, Users } from "lucide-react";
 import type { NextPage } from "next";
 import { Header } from "src/components/Header";
 
@@ -33,45 +33,43 @@ export const getTransparentHeaderLayout = (page: React.ReactElement) => (
 export const getDashboardLayout = (page: React.ReactElement) => (
   <Grid templateRows="min-content 1fr" h="full" gridTemplateColumns="minmax(0, 1fr)">
     <Header />
-    <Grid templateRows="1fr min-content" h="full">
-      <ToSWrapper>
-        <SideMenuLayout
-          menuButtonOptions={[
-            {
-              labelID: "dashboard",
-              pathname: "/dashboard",
-              icon: Layout,
-            },
-            {
-              labelID: "messages",
-              pathname: "/messages",
-              icon: MessageSquare,
-            },
-            {
-              labelID: "leaderboard",
-              pathname: "/leaderboard",
-              icon: BarChart2,
-            },
-            {
-              labelID: "stats",
-              pathname: "/stats",
-              icon: TrendingUp,
-            },
-            {
-              labelID: "Guidelines",
-              pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
-              icon: HelpCircle,
-              target: "_blank",
-            },
-          ]}
-        >
-          <Box>{page}</Box>
-          <Box mt="10">
-            <SlimFooter />
-          </Box>
-        </SideMenuLayout>
-      </ToSWrapper>
-    </Grid>
+    <ToSWrapper>
+      <SideMenuLayout
+        menuButtonOptions={[
+          {
+            labelID: "dashboard",
+            pathname: "/dashboard",
+            icon: Layout,
+          },
+          {
+            labelID: "messages",
+            pathname: "/messages",
+            icon: MessageSquare,
+          },
+          {
+            labelID: "leaderboard",
+            pathname: "/leaderboard",
+            icon: BarChart2,
+          },
+          {
+            labelID: "stats",
+            pathname: "/stats",
+            icon: TrendingUp,
+          },
+          {
+            labelID: "guidelines",
+            pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
+            icon: ExternalLink,
+            target: "_blank",
+          },
+        ]}
+      >
+        <Box>{page}</Box>
+        <Box mt="10">
+          <SlimFooter />
+        </Box>
+      </SideMenuLayout>
+    </ToSWrapper>
   </Grid>
 );
 

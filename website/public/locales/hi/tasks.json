@@ -1,90 +1,90 @@
 {
-  "any_feedback_on_this_task": "Any feedback on this task?",
-  "available_task_count": "{{count}} tasks available",
+  "any_feedback_on_this_task": "इस कार्य पर कोई फ़ीडबैक है?",
+  "available_task_count": "{{count}} कार्य उपलब्ध हैं",
   "default": {
-    "unchanged_title": "No changes",
-    "unchanged_message": "Are you sure you would like to continue?",
-    "continue_anyway": "Continue anyway"
+    "unchanged_title": "कोई बदलाव नहीं",
+    "unchanged_message": "क्या आप निश्चित होकर जारी रखना चाहते हैं?",
+    "continue_anyway": "फिर भी जारी रखें"
   },
-  "no_more_tasks": "Looks like no tasks were found.",
+  "no_more_tasks": "लगता है कोई कार्य नहीं मिला।",
   "random": {
-    "label": "I'm feeling lucky",
-    "desc": "Help us improve Open Assistant by starting a random task."
+    "label": "मैं भाग्यशाली महसूस कर रहा हूँ",
+    "desc": "विविध संदेशों का जवाब देने के लिए ओपन असिस्टेंट को सुधारने में मदद करें।"
   },
   "create_initial_prompt": {
-    "label": "Create Initial Prompts",
-    "desc": "Write initial prompts to help Open Assistant to try replying to diverse messages. (enter into lottery)",
-    "overview": "Create an initial message to send to the assistant",
-    "instruction": "Provide the initial prompts",
-    "response_placeholder": "Write your prompt here..."
+    "label": "शुरुआती प्रॉम्प्ट बनाएं",
+    "desc": "ओपन असिस्टेंट को विभिन्न संदेशों का जवाब देने के लिए शुरुआती प्रॉम्प्ट लिखें। (लॉटरी में शामिल हों)",
+    "overview": "असिस्टेंट को भेजने के लिए एक शुरुआती संदेश लिखें",
+    "instruction": "शुरुआती प्रॉम्प्ट दें",
+    "response_placeholder": "यहां अपना प्रॉम्प्ट लिखें..."
   },
   "reply_as_user": {
-    "label": "Reply as User",
-    "desc": "Chat with Open Assistant and help improve it's responses as you interact with it.",
-    "overview": "Given the following conversation, provide an adequate reply",
-    "instruction": "Provide the user's reply",
-    "response_placeholder": "Write your reply here..."
+    "label": "उपयोगकर्ता के रूप में जवाब दें",
+    "desc": "ओपन असिस्टेंट के साथ चैट करें और उससे इंटरैक्ट करते हुए उसके जवाबों को सुधारें।",
+    "overview": "दिए गए वार्तालाप के आधार पर, एक उचित जवाब दें",
+    "instruction": "उपयोगकर्ता का जवाब दें",
+    "response_placeholder": "अपना जवाब यहां लिखें ..."
   },
   "reply_as_assistant": {
-    "label": "Reply as Assistant",
-    "desc": "Help Open Assistant improve its responses to conversations with other users.",
-    "overview": "Given the following conversation, provide an adequate reply",
-    "response_placeholder": "Write your reply here..."
+    "label": "सहायक के रूप में जवाब दें",
+    "desc": "अन्य उपयोगकर्ताओं के साथ वार्तालापों के जवाब में ओपन असिस्टेंट को सहायता करें।",
+    "overview": "दिए गए वार्तालाप के आधार पर, एक उचित जवाब दें",
+    "response_placeholder": "अपना जवाब यहां लिखें ..."
   },
   "rank_user_replies": {
-    "label": "Rank User Replies",
-    "desc": "Help Open Assistant improve its responses to conversations with other users.",
-    "overview": "Given the following User replies, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?",
-    "continue_anyway": "Continue anyway"
+    "label": "उपयोगकर्ता उत्तरों को रैंक करें",
+    "desc": "अन्य उपयोगकर्ताओं के साथ वार्तालापों के जवाब में ओपन असिस्टेंट को सहायता करें।",
+    "overview": "दिए गए उपयोगकर्ता उत्तरों के आधार पर उन्हें सबसे अच्छा से सबसे खराब तक सॉर्ट करें, सबसे अच्छा पहला होता है, सबसे खराब अंतिम होता है।",
+    "unchanged_title": "ऑर्डर अभी भी नहीं बदला",
+    "unchanged_message": "आपने प्रॉम्प्ट्स के आदेश में कोई बदलाव नहीं किया है। क्या आप वाकई जारी रखना चाहते हैं?",
+    "continue_anyway": "फिर भी जारी रखें"
   },
   "rank_assistant_replies": {
-    "label": "Rank Assistant Replies",
-    "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
-    "overview": "Given the following Assistant replies, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?",
-    "continue_anyway": "Continue anyway"
+    "label": "सहायक उत्तरों को रैंक करें",
+    "desc": "ओपन असिस्टेंट द्वारा दिए गए प्रॉम्प्ट को उनकी सटीकता और पठनीयता के आधार पर स्कोर करें।",
+    "overview": "निम्नलिखित सहायक उत्तरों को दिए गए आदेश के अनुसार बेहतर से बेहतर से छोटा और बुरा से बुरा छोटा करें, सबसे अच्छा पहला होता है, सबसे खराब अंतिम होता है।",
+    "unchanged_title": "आदेश अभी भी नहीं बदला गया",
+    "unchanged_message": "आपने प्रॉम्प्टों के आदेश में कोई बदलाव नहीं किया है। क्या आप वाकई जारी रखना चाहते हैं?",
+    "continue_anyway": "फिर भी जारी रखें"
   },
   "rank_initial_prompts": {
-    "label": "Rank Initial Prompts",
-    "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
-    "overview": "Given the following initial prompts, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?",
-    "continue_anyway": "Continue anyway"
+    "label": "प्रारंभिक प्रॉम्प्ट को रैंक करें",
+    "desc": "ओपन असिस्टेंट द्वारा दिए गए प्रॉम्प्ट को उनकी सटीकता और पठनीयता के आधार पर स्कोर करें।",
+    "overview": "निम्नलिखित प्रारंभिक प्रॉम्प्ट को बेहतर से बेहतर से छोटा करें और बुरा से बुरा छोटा करें, आदेश के अनुसार सबसे अच्छा पहला होता है, सबसे खराब अंतिम होता है।",
+    "unchanged_title": "आदेश अपरिवर्तित",
+    "unchanged_message": "आपने प्रोंप्ट के आदेश में कोई बदलाव नहीं किया है। क्या आप जारी रखना चाहते हैं?",
+    "continue_anyway": "फिर भी जारी रखें"
   },
   "label_initial_prompt": {
-    "label": "Label Initial Prompt",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Provide labels for the following prompt"
+    "label": "प्रारंभिक प्रॉम्प्ट का लेबल लगाएं",
+    "desc": "एक प्रॉम्प्ट के लिए लेबल प्रदान करें।",
+    "overview": "निम्नलिखित प्रॉम्प्ट के लिए लेबल प्रदान करें"
   },
   "label_prompter_reply": {
-    "label": "Label Prompter Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Given the following discussion, provide labels for the final prompt."
+    "label": "प्रोंप्टर जवाब का लेबल लगाएं",
+    "desc": "एक प्रॉम्प्ट के लिए लेबल प्रदान करें।",
+    "overview": "निम्नलिखित वार्तालाप के आधार पर, अंतिम प्रॉम्प्ट के लिए लेबल प्रदान करें।"
   },
   "label_assistant_reply": {
-    "label": "Label Assistant Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Given the following discussion, provide labels for the final prompt."
+    "label": "असिस्टेंट जवाब का लेबल लगाएं",
+    "desc": "एक प्रॉम्प्ट के लिए लेबल प्रदान करें।",
+    "overview": "निम्नलिखित वार्तालाप के आधार पर, अंतिम प्रॉम्प्ट के लिए लेबल प्रदान करें।"
   },
   "classify_initial_prompt": {
-    "label": "Classify Initial Prompt",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following prompt and then answer the question about it."
+    "label": "श्रेणीबद्ध मूल प्रॉम्प्ट",
+    "desc": "एक प्रॉम्प्ट के लिए लेबल प्रदान करें।",
+    "overview": "निम्नलिखित प्रॉम्प्ट को पढ़ें और फिर इसके बारे में पूछे गए प्रश्न का जवाब दें।"
   },
   "classify_prompter_reply": {
-    "label": "Classify Prompter Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
+    "label": "श्रेणीबद्ध प्रॉम्प्टर उत्तर",
+    "desc": "एक प्रॉम्प्ट के लिए लेबल प्रदान करें।",
+    "overview": "निम्नलिखित वार्तालाप को पढ़ें और फिर चर्चा में अंतिम उत्तर के बारे में पूछे गए प्रश्न का जवाब दें।"
   },
   "classify_assistant_reply": {
-    "label": "Classify Assistant Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
+    "label": "श्रेणीबद्ध सहायक उत्तर",
+    "desc": "एक प्रॉम्प्ट के लिए लेबल प्रदान करें।",
+    "overview": "निम्नलिखित वार्तालाप को पढ़ें और फिर चर्चा में अंतिम उत्तर के बारे में पूछे गए प्रश्न का जवाब दें।"
   },
-  "submitted_as": "This will be submitted as {{submit_lang}}",
-  "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}."
+  "submitted_as": "यह {{submit_lang}} के रूप में जमा किया जाएगा",
+  "writing_wrong_langauge_a_b": "आप {{detected_lang}} में लिख रहे हैं, लेकिन यह {{submit_lang}} के रूप में जमा किया जाएगा।"
 }

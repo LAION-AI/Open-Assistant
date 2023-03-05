@@ -55,7 +55,7 @@ def payload_column_type(pydantic_type):
             json_encoder=json,
         ):
             self.json_encoder = json_encoder
-            super(PayloadJSONBType, self).__init__()
+            super().__init__()
 
         # serialize
         def bind_processor(self, dialect):

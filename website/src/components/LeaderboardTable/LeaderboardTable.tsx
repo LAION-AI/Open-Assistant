@@ -9,9 +9,11 @@ import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/t
 
 import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
 import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
+import { UserAvatar } from "../UserAvatar";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
+
 type WindowLeaderboardEntity = LeaderboardEntity & { isSpaceRow?: boolean };
 
 const columnHelper = createColumnHelper<WindowLeaderboardEntity>();
@@ -61,14 +63,18 @@ export const LeaderboardTable = ({
       },
       columnHelper.accessor("display_name", {
         header: t("user"),
-        cell: ({ getValue, row }) =>
-          isAdminOrMod ? (
-            <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
-              {getValue()}
-            </Link>
-          ) : (
-            getValue()
-          ),
+        cell: ({ getValue, row }) => (
+          <div className="flex flex-row items-center gap-2">
+            <UserAvatar displayName={getValue()} avatarUrl={row.original.image} />
+            {isAdminOrMod ? (
+              <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
+                {getValue()}
+              </Link>
+            ) : (
+              getValue()
+            )}
+          </div>
+        ),
       }),
       columnHelper.accessor("leader_score", {
         header: t("score"),

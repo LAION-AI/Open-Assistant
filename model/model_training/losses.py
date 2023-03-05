@@ -5,7 +5,7 @@ from torch import nn
 
 class CrossEntropyLoss(nn.CrossEntropyLoss):
     def __init__(self, weight=None, size_average=None, ignore_index=-100, reduce=None, reduction="mean"):
-        super(CrossEntropyLoss, self).__init__(weight, size_average, ignore_index, reduce, reduction)
+        super().__init__(weight, size_average, ignore_index, reduce, reduction)
 
     def forward(self, input, target, mask=None):
         if mask is not None:
@@ -14,12 +14,12 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
             target = target.view(-1)
             input = input[mask]
             target = target[mask]
-        return super(CrossEntropyLoss, self).forward(input, target)
+        return super().forward(input, target)
 
 
 class PolyLoss(nn.Module):
     def __init__(self, weight=None, size_average=None, ignore_index=-100, reduce=None, reduction="mean", epsilon=1.0):
-        super(PolyLoss, self).__init__()
+        super().__init__()
         self.weight = torch.tensor(weight)
         self.ignore_index = ignore_index
         self.reduction = reduction

@@ -1,0 +1,14 @@
+{
+  "grab_a_task": "Valitse tehtävä!",
+  "create": "Luo",
+  "evaluate": "Arvostele",
+  "label": "Arvioi",
+  "dashboard": "Etusivu",
+  "go": "Aloita",
+  "welcome_message": {
+    "label": "Tervetuloa, {{username}}!",
+    "contributor": "Osallistuja",
+    "description": "Open Assistant on avoimen lähdekoodin tekoälyassistentti, joka käyttää ja kouluttaa kehittyneitä kielimalleja ymmärtääkseen ja vastatakseen ihmisille.",
+    "instruction": "Suorita tehtäviä kouluttaaksesi kielimallia ja ansaitaksesi pisteitä."
+  }
+}

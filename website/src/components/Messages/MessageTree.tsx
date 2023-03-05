@@ -1,5 +1,6 @@
 import { Box, BoxProps } from "@chakra-ui/react";
-import { Fragment, memo } from "react";
+import { Fragment, memo, useRef } from "react";
+import { useScrollToElementOnMount } from "src/hooks/ui/useScrollToElementOnMount";
 import { MessageWithChildren } from "src/types/Conversation";
 
 import { MessageTableEntry } from "./MessageTableEntry";
@@ -11,8 +12,17 @@ const avartarMarginTop = 6;
 const maxDepth = 100; // this only used for debug UI in mobile
 const toPx = (val: number) => `${val}px`;
 
+interface MessageTreeProps {
+  tree: MessageWithChildren;
+  messageId?: string;
+  scrollToHighlighted?: boolean;
+}
+
 // eslint-disable-next-line react/display-name
-export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildren; messageId?: string }) => {
+export const MessageTree = memo(({ tree, messageId, scrollToHighlighted }: MessageTreeProps) => {
+  const highlightedElementRef = useRef<HTMLDivElement>(null);
+  useScrollToElementOnMount(highlightedElementRef);
+
   const renderChildren = (children: MessageWithChildren[], depth = 1) => {
     const hasSibling = children.length > 1;
     return children.map((child, idx) => {
@@ -27,6 +37,7 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
               <Box pt={`${messagePaddingTop}px`} position="relative" className="box4">
                 {hasChildren && depth < maxDepth && <Connection className="connection1"></Connection>}
                 <MessageTableEntry
+                  ref={scrollToHighlighted && child.id === messageId ? highlightedElementRef : undefined}
                   showAuthorBadge
                   highlight={child.id === messageId}
                   message={child}
@@ -70,7 +81,12 @@ export const MessageTree = memo(({ tree, messageId }: { tree: MessageWithChildre
             ></Box>
           </>
         )}
-        <MessageTableEntry showAuthorBadge message={tree} highlight={tree.id === messageId}></MessageTableEntry>
+        <MessageTableEntry
+          ref={scrollToHighlighted && tree.id === messageId ? highlightedElementRef : undefined}
+          showAuthorBadge
+          message={tree}
+          highlight={tree.id === messageId}
+        />
       </Box>
       {renderChildren(tree.children)}
     </>

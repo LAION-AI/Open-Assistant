@@ -96,6 +96,7 @@ def argument_parsing(parser):
         "wandb_entity": args.wandb_entity,
         "fp16": True,
         "tokenizer_name": training_conf["model_name"],
+        "output_dir": "output",
     }
 
     params = {**default_params, **training_conf}
@@ -110,6 +111,9 @@ def argument_parsing(parser):
         params[name] = int(params[name])
     for name in ["learning_rate", "weight_decay", "max_grad_norm"]:
         params[name] = float(params[name])
+
+    if args.output_dir:
+        params["output_dir"] = args.output_dir
 
     return params
 

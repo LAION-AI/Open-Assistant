@@ -110,7 +110,7 @@ def ranked_pairs(ranks: List[List[int]]):
     sorted_majorities = np.array(sorted(sorted_majorities, key=lambda x: x[2], reverse=True))
     # now do lock ins
     lock_ins = []
-    for (x, y, _) in sorted_majorities:
+    for x, y, _ in sorted_majorities:
         # invariant: lock_ins has no cycles here
         lock_ins.append((x, y))
         # print("lock ins are now",np.array(lock_ins))
@@ -130,7 +130,6 @@ def ranked_pairs(ranks: List[List[int]]):
 
 
 if __name__ == "__main__":
-
     ranks = """ (
         [("w", "x", "z", "y") for _ in range(1)]
         + [("w", "y", "x", "z") for _ in range(2)]

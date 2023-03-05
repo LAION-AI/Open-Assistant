@@ -88,5 +88,6 @@
   "submitted_as": "This will be submitted as {{submit_lang}}",
   "tab_write": "Write",
   "tab_preview": "Preview",
-  "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}."
+  "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}.",
+  "not_rankable": "All answers are factually incorrect and cannot be ranked"
 }

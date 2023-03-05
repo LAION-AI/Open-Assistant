@@ -1,4 +1,6 @@
 loguru
+nvidia-ml-py
+psutil
 pydantic
 rel
 requests
