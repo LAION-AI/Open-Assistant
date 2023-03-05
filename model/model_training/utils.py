@@ -1,4 +1,5 @@
 import copy
+import math
 import random
 from distutils.util import strtobool
 from pathlib import Path
@@ -248,10 +249,12 @@ def get_model(conf, tokenizer):
         conf.model_name, cache_dir=conf.cache_dir, quantization=conf.quantization, seq2seqmodel=conf.seq2seqmodel
     )
 
-    if len(tokenizer) != model.get_input_embeddings().num_embeddings:
+    n_embs = model.get_input_embeddings().num_embeddings
+    if len(tokenizer) != n_embs:
         assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
 
-    model.resize_token_embeddings(len(tokenizer))
+    if (len(tokenizer) != n_embs or n_embs % 8 == 0) and not conf.freeze_layer:
+        model.resize_token_embeddings(math.ceil(len(tokenizer) / 8) * 8)
 
     if conf.freeze_layer:
         model = freeze_top_n_layers(model, conf.freeze_layer)
