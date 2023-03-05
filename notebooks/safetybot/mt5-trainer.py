@@ -13,6 +13,7 @@ from typing import Dict, List, Optional
 import json
 import wandb
 import os
+from transformers import ConversationalPipeline
 
 jobid = os.environ.get("SLURM_JOB_ID")
 ROOT_DIR = os.path.join("/scratch/c.scmse/safety",jobid)
@@ -45,8 +46,9 @@ CONFIG = {"special_tokens":SPECIAL_TOKENS,
 "max_len":256,
 "train":["train","validation"],
 "test":"test",
-"lr":1e-5,
 "epochs":1,
+"batch_size":8,
+"fp16":False,
 "train_dataset":"allenai/prosocial-dialog",
 "Notes":"using train+validation train with label2id"
 }
@@ -162,10 +164,9 @@ if __name__ == "__main__":
     train_dataset = SafetyDataset(dataset,split=CONFIG["train"],tokenizer=tokenizer,max_len=CONFIG["max_len"])
     valid_dataset = SafetyDataset(dataset,split=CONFIG["test"],tokenizer=tokenizer,max_len=CONFIG["max_len"])
     training_args = TrainingArguments(output_dir=ROOT_DIR, 
-                                  per_device_train_batch_size=8, 
-                                  per_device_eval_batch_size=8,
+                                  per_device_train_batch_size=CONFIG["batch_size"], 
+                                  per_device_eval_batch_size=CONFIG["batch_size"],
 #                                   gradient_accumulation_steps=16,
-                                  learning_rate=CONFIG["lr"], 
                                   num_train_epochs=CONFIG["epochs"],
                                   logging_steps=100,
                                   evaluation_strategy="steps",
@@ -173,7 +174,7 @@ if __name__ == "__main__":
                                   save_steps=5000,
                                   report_to="wandb",
                                   push_to_hub=False,
-                                  fp16=True,
+                                  fp16=CONFIG["fp16"],
                                   run_name=f"safety-bot-sample-hawk-{jobid}",)
 
 
