@@ -7,7 +7,7 @@ from transformers import (
     Trainer,
     TrainingArguments)
 from datasets import load_dataset,concatenate_datasets
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, ConcatDataset
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 import json
@@ -44,13 +44,15 @@ wandb.login(key=wandb_key)
 CONFIG = {"special_tokens":SPECIAL_TOKENS,
 "model":"t5-base",
 "max_len":256,
-"train":["train","validation"],
-"test":"test",
 "epochs":1,
 "batch_size":8,
 "fp16":False,
 "train_dataset":"allenai/prosocial-dialog",
-"Notes":"using train+validation train with label2id"
+"Notes":"using train+validation train with label2id",
+"train_dataset":{
+    "shahules786/prosocial_augmented":"train","allenai/prosocial-dialog":["train","validation"]
+},
+"test_dataset":{"allenai/prosocial-dialog":"test"}
 }
 
 def add_special_tokens(tokenizer,model):
@@ -147,6 +149,21 @@ class T2TDataCollator():
     }
 
 
+def prepare_dataset(tokenizer,col):
+
+    all_datasets=[]
+    if isinstance(CONFIG[col],dict):
+        for key,value in CONFIG[col].items():
+            dataset = load_dataset(key)
+            try:
+                dataset = dataset.rename_columns({"Human":"user","Assistant":"response"})
+            except Exception as e:
+                print(e)
+            train_dataset = SafetyDataset(dataset,split=value,tokenizer=tokenizer,max_len=CONFIG["max_len"])
+            all_datasets.append(train_dataset)
+    
+    return ConcatDataset(all_datasets)
+
 
 if __name__ == "__main__":
 
@@ -161,8 +178,10 @@ if __name__ == "__main__":
     model = T5ForConditionalGeneration.from_pretrained(CONFIG["model"])
     tokenizer = T5Tokenizer.from_pretrained(CONFIG["model"],padding_side="right",truncation_side="right",model_max_length=512)
     add_special_tokens(tokenizer,model)
-    train_dataset = SafetyDataset(dataset,split=CONFIG["train"],tokenizer=tokenizer,max_len=CONFIG["max_len"])
-    valid_dataset = SafetyDataset(dataset,split=CONFIG["test"],tokenizer=tokenizer,max_len=CONFIG["max_len"])
+    
+    train_dataset = prepare_dataset(tokenizer,"train_dataset")
+    valid_dataset = prepare_dataset(tokenizer,"test_dataset")
+    
     training_args = TrainingArguments(output_dir=ROOT_DIR, 
                                   per_device_train_batch_size=CONFIG["batch_size"], 
                                   per_device_eval_batch_size=CONFIG["batch_size"],
