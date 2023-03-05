@@ -87,6 +87,17 @@ pythia-1B:
   per_device_train_batch_size: 16
   per_device_eval_batch_size: 32
 
+pythia-6.9B:
+  learning_rate: 8e-6
+  model_name: EleutherAI/pythia-6.9b-deduped
+  weight_decay: 0.0
+  max_length: 512
+  warmup_steps: 500
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+
 galactica-125m:
   learning_rate: 5e-5
   model_name: facebook/galactica-125m
