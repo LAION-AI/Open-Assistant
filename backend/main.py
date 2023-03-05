@@ -200,7 +200,7 @@ if settings.DEBUG_USE_SEED_DATA:
                     tr.bind_frontend_message_id(task.id, msg.task_message_id)
                     message = pr.store_text_reply(
                         msg.text,
-                        msg.lang,
+                        msg.lang or "en",
                         msg.task_message_id,
                         msg.user_message_id,
                         review_count=5,
@@ -210,7 +210,9 @@ if settings.DEBUG_USE_SEED_DATA:
                     )
                     if message.parent_id is None:
                         tm._insert_default_state(
-                            root_message_id=message.id, state=msg.tree_state or message_tree_state.State.GROWING
+                            root_message_id=message.id,
+                            lang=message.lang,
+                            state=msg.tree_state or message_tree_state.State.GROWING,
                         )
                         session.flush()
 

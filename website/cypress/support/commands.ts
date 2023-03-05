@@ -51,7 +51,7 @@ Cypress.Commands.add("signInUsingEmailedLink", (emailAddress) => {
     // we do a GET to this url to force the python backend to add an entry for our user
     // in the database, otherwise the tos acceptance will error with 404 user not found
     // then we accept the tos
-    cy.request("GET", "/api/available_tasks").then(() => cy.request("POST", "/api/tos", {}));
+    cy.request("GET", "/api/available_tasks?lang=en").then(() => cy.request("POST", "/api/tos", {}));
   });
 });
 

@@ -44,6 +44,7 @@ def prepare_conversation_message(message: Message) -> protocol.ConversationMessa
         emojis=message.emojis or {},
         user_emojis=message.user_emojis or [],
         user_is_author=message.user_is_author,
+        synthetic=message.synthetic,
     )
 
 

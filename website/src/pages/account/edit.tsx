@@ -1,9 +1,10 @@
-import { Button, Input, InputGroup } from "@chakra-ui/react";
+import { Button, FormControl, FormErrorMessage, Input, InputGroup } from "@chakra-ui/react";
 import Head from "next/head";
 import Router from "next/router";
 import { useSession } from "next-auth/react";
 import React from "react";
 import { Control, useForm, useWatch } from "react-hook-form";
+import { validDisplayNameRegex } from "src/lib/display_name_validation";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 export default function Account() {
@@ -49,7 +50,12 @@ const EditForm = () => {
     }
   };
 
-  const { register, handleSubmit, control } = useForm<{ username: string }>({
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+    control,
+  } = useForm<{ username: string }>({
     defaultValues: {
       username: session?.user.name,
     },
@@ -58,7 +64,17 @@ const EditForm = () => {
   return (
     <form onSubmit={handleSubmit(updateUser)}>
       <InputGroup>
-        <Input placeholder="Edit Username" type="text" {...register("username")}></Input>
+        <FormControl isInvalid={errors.username ? true : false}>
+          <Input
+            placeholder="Edit Username"
+            type="text"
+            {...register("username", { required: true, pattern: validDisplayNameRegex })}
+          ></Input>
+          <FormErrorMessage>
+            {errors.username?.type === "required" && "Username is required"}
+            {errors.username?.type === "pattern" && "Username is invalid"}
+          </FormErrorMessage>
+        </FormControl>
         <SubmitButton control={control}></SubmitButton>
       </InputGroup>
     </form>
@@ -68,7 +84,7 @@ const EditForm = () => {
 const SubmitButton = ({ control }: { control: Control<{ username: string }> }) => {
   const username = useWatch({ control, name: "username" });
   return (
-    <Button disabled={!username} type="submit" value="Change">
+    <Button isDisabled={!username} type="submit" value="Change">
       Submit
     </Button>
   );

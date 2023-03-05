@@ -1,9 +1,6 @@
 import {
-  Avatar,
   Badge,
-  Box,
   Flex,
-  HStack,
   Menu,
   MenuButton,
   MenuDivider,
@@ -13,7 +10,6 @@ import {
   Portal,
   SimpleGrid,
   Tooltip,
-  useBreakpointValue,
   useColorModeValue,
   useDisclosure,
   useToast,
@@ -34,20 +30,22 @@ import {
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { forwardRef } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
-import { del, post, put } from "src/lib/api";
+import { useDeleteMessage } from "src/hooks/message/useDeleteMessage";
+import { post, put } from "src/lib/api";
 import { ROUTES } from "src/lib/routes";
 import { colors } from "src/styles/Theme/colors";
 import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
-import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 
-const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
+import { BaseMessageEntry } from "./BaseMessageEntry";
+import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
 
 interface MessageTableEntryProps {
   message: Message;
@@ -56,86 +54,60 @@ interface MessageTableEntryProps {
   showAuthorBadge?: boolean;
 }
 
-export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge }: MessageTableEntryProps) {
-  const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
-  useEffect(() => {
-    const emojis = { ...message.emojis };
-    emojis["+1"] = emojis["+1"] || 0;
-    emojis["-1"] = emojis["-1"] || 0;
-    setEmojis({
-      emojis: emojis,
-      user_emojis: message?.user_emojis || [],
+// eslint-disable-next-line react/display-name
+export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryProps>(
+  ({ message, enabled, highlight, showAuthorBadge }, ref) => {
+    const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
+    useEffect(() => {
+      const emojis = { ...message.emojis };
+      emojis["+1"] = emojis["+1"] || 0;
+      emojis["-1"] = emojis["-1"] || 0;
+      setEmojis({
+        emojis: emojis,
+        user_emojis: message?.user_emojis || [],
+      });
+    }, [message.emojis, message.user_emojis]);
+
+    const { isOpen: reportPopupOpen, onOpen: showReportPopup, onClose: closeReportPopup } = useDisclosure();
+    const { isOpen: labelPopupOpen, onOpen: showLabelPopup, onClose: closeLabelPopup } = useDisclosure();
+
+    const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
+
+    const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
+      onSuccess: (data) => {
+        data.emojis["+1"] = data.emojis["+1"] || 0;
+        data.emojis["-1"] = data.emojis["-1"] || 0;
+        setEmojis(data);
+      },
     });
-  }, [message.emojis, message.user_emojis]);
+    const react = (emoji: string, state: boolean) => {
+      sendEmojiChange({ op: state ? "add" : "remove", emoji });
+    };
 
-  const { isOpen: reportPopupOpen, onOpen: showReportPopup, onClose: closeReportPopup } = useDisclosure();
-  const { isOpen: labelPopupOpen, onOpen: showLabelPopup, onClose: closeLabelPopup } = useDisclosure();
+    const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
+    const { t } = useTranslation(["message"]);
 
-  const bg = useColorModeValue("#DFE8F1", "#42536B");
+    const router = useRouter();
 
-  const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
+    const handleOnClick = useCallback(() => {
+      enabled && router.push(ROUTES.MESSAGE_DETAIL(message.id));
+    }, [enabled, message.id, router]);
 
-  const inlineAvatar = useBreakpointValue({ base: true, md: false });
-
-  const avatar = useMemo(
-    () => (
-      <Avatar
-        borderColor={borderColor}
-        size={inlineAvatar ? "xs" : "sm"}
-        mr={inlineAvatar ? 2 : 0}
-        mt={inlineAvatar ? 0 : `6px`}
-        mb={inlineAvatar ? 1.5 : 0}
-        name={`${boolean(message.is_assistant) ? "Assistant" : "User"}`}
-        src={`${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
-      />
-    ),
-    [borderColor, inlineAvatar, message.is_assistant]
-  );
-  const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
-
-  const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
-    onSuccess: (data) => {
-      data.emojis["+1"] = data.emojis["+1"] || 0;
-      data.emojis["-1"] = data.emojis["-1"] || 0;
-      setEmojis(data);
-    },
-  });
-  const react = (emoji: string, state: boolean) => {
-    sendEmojiChange({ op: state ? "add" : "remove", emoji });
-  };
-
-  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
-  const { t } = useTranslation(["message"]);
-
-  const router = useRouter();
-  const handleOnClick = useCallback(() => {
-    enabled && router.push(ROUTES.MESSAGE_DETAIL(message.id));
-  }, [enabled, message.id, router]);
-
-  return (
-    <HStack w={["full", "full", "full", "fit-content"]} gap={0.5} alignItems="start" maxW="full" position="relative">
-      {!inlineAvatar && avatar}
-      <Box
-        width={["full", "full", "full", "fit-content"]}
-        maxWidth={["full", "full", "full", "2xl"]}
-        p={[3, 4]}
-        borderRadius="18px"
-        bg={bg}
+    return (
+      <BaseMessageEntry
+        ref={ref}
+        content={message.text}
+        avatarProps={{
+          name: `${boolean(message.is_assistant) ? "Assistant" : "User"}`,
+          src: `${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`,
+        }}
         outline={highlight ? "2px solid black" : undefined}
         outlineColor={highlightColor}
         cursor={enabled ? "pointer" : undefined}
         overflowX="auto"
         onClick={handleOnClick}
       >
-        {inlineAvatar && avatar}
-        <Suspense fallback={message.text}>
-          <RenderedMarkdown markdown={message.text}></RenderedMarkdown>
-        </Suspense>
-        <HStack
-          justifyContent="end"
-          style={{ position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <MessageInlineEmojiRow>
           <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
             {message.lang}
           </Badge>
@@ -163,7 +135,7 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
           />
           <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
           <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
-        </HStack>
+        </MessageInlineEmojiRow>
         <Flex
           position="absolute"
           gap="2"
@@ -190,10 +162,10 @@ export function MessageTableEntry({ message, enabled, highlight, showAuthorBadge
             </Badge>
           )}
         </Flex>
-      </Box>
-    </HStack>
-  );
-}
+      </BaseMessageEntry>
+    );
+  }
+);
 
 const EmojiMenuItem = ({
   emoji,
@@ -232,7 +204,6 @@ const MessageActions = ({
   const toast = useToast();
   const { t } = useTranslation(["message", "common"]);
   const { id } = message;
-  const { trigger: deleteMessage } = useSWRMutation(`/api/admin/delete_message/${id}`, del);
 
   const { trigger: stopTree } = useSWRMutation(`/api/admin/stop_tree/${id}`, put, {
     onSuccess: () => {
@@ -247,10 +218,7 @@ const MessageActions = ({
     },
   });
 
-  const handleDelete = async () => {
-    await deleteMessage();
-    mutate((key) => typeof key === "string" && key.startsWith("/api/messages"), undefined, { revalidate: true });
-  };
+  const { trigger: handleDelete } = useDeleteMessage(message.id);
 
   const handleStop = () => {
     stopTree();
@@ -309,6 +277,9 @@ const MessageActions = ({
           >
             {t("copy_message_link")}
           </MenuItem>
+          <MenuItem onClick={() => handleCopy(message.text)} icon={<Copy />}>
+            {t("copy_message_text")}
+          </MenuItem>
           {!!isAdminOrMod && (
             <>
               <MenuDivider />
@@ -318,7 +289,7 @@ const MessageActions = ({
               <MenuItem as={NextLink} href={ROUTES.ADMIN_MESSAGE_DETAIL(message.id)} target="_blank" icon={<Shield />}>
                 View in admin area
               </MenuItem>
-              <MenuItem as={NextLink} href={`/admin/manage_user/${message.user_id}`} target="_blank" icon={<User />}>
+              <MenuItem as={NextLink} href={ROUTES.ADMIN_USER_DETAIL(message.user_id)} target="_blank" icon={<User />}>
                 {t("view_user")}
               </MenuItem>
               {!message.deleted && (

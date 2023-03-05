@@ -69,7 +69,7 @@ export class OasstApiClient {
     });
 
     if (resp.status === 204) {
-      return null;
+      return null as T;
     }
 
     if (resp.status >= 300) {
@@ -351,6 +351,23 @@ export class OasstApiClient {
     return this.get<Message[]>(`/api/v1/messages?${params}`);
   }
 
+  fetch_my_messages_cursor(
+    user: BackendUserCore,
+    {
+      direction,
+      cursor,
+      ...rest
+    }: { include_deleted?: boolean; max_count?: number; cursor?: string; direction: "forward" | "back"; desc?: boolean }
+  ) {
+    return this.get<FetchUserMessagesCursorResponse>(`/api/v1/messages/cursor`, {
+      ...rest,
+      username: user.id,
+      auth_method: user.auth_method,
+      after: direction === "forward" ? cursor : undefined,
+      before: direction === "back" ? cursor : undefined,
+    });
+  }
+
   fetch_recent_messages(lang: string) {
     return this.get<Message[]>(`/api/v1/messages`, { lang });
   }
@@ -389,9 +406,10 @@ export class OasstApiClient {
     return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
   }
 
-  fetch_trollboard(time_frame: TrollboardTimeFrame, { limit }: { limit?: number }) {
+  fetch_trollboard(time_frame: TrollboardTimeFrame, { limit, enabled }: { limit?: number; enabled?: boolean }) {
     return this.get<FetchTrollBoardResponse>(`/api/v1/trollboards/${time_frame}`, {
       max_count: limit,
+      enabled: enabled,
     });
   }
 }

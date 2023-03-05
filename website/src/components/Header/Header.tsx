@@ -13,7 +13,7 @@ import { UserMenu } from "./UserMenu";
 function AccountButton() {
   const { data: session } = useSession();
   if (session) {
-    return;
+    return null;
   }
   return (
     <Link href="/auth/signin" aria-label="Home">

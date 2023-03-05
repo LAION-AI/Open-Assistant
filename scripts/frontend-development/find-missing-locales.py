@@ -12,7 +12,7 @@ def get_not_translated(en_json, translation_json, parent_key=None):
     not_translated = []
     for key in en_json.keys():
         if key in translation_json and translation_json[key] == en_json[key]:
-            not_translated.append(("{0}.{1}".format(parent_key, key) if parent_key else key))
+            not_translated.append((f"{parent_key}.{key}" if parent_key else key))
         elif isinstance(en_json[key], dict):
             if key not in translation_json:
                 msg = f"{parent_key}.{key} (and children)" if parent_key else "{key} (and children)"
@@ -28,18 +28,16 @@ def get_missing(en_json, translation_json):
 
 def print_result(missing, not_translated, file):
     if len(missing):
-        print("[{0}] - {1}\tmissing: {2}".format(path.basename(path.dirname(file)), path.basename(file), missing))
+        print(f"[{path.basename(path.dirname(file))}] - {path.basename(file)}\tmissing: {missing}")
     if len(not_translated):
         print(
-            "[{0}] - {1}\tpotentially untranslated: {2}".format(
-                path.basename(path.dirname(file)), path.basename(file), not_translated
-            )
+            f"[{path.basename(path.dirname(file))}] - {path.basename(file)}\tpotentially untranslated: {not_translated}"
         )
 
 
 def audit(file, en_file):
-    en_json = load(open(en_file))
-    translation_json = load(open(file))
+    en_json = load(open(en_file, encoding="utf-8"))
+    translation_json = load(open(file, encoding="utf-8"))
     return (get_missing(en_json, translation_json), get_not_translated(en_json, translation_json), file)
 
 

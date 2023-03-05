@@ -1,9 +1,12 @@
 {
+  "any_feedback_on_this_task": "Máte nějakou zpětnou vazbu k této úloze?",
   "available_task_count": "{{count}} dostupných úloh",
   "default": {
     "unchanged_title": "Žádné změny",
-    "unchanged_message": "Víte jistě, že chcete pokračovat?"
+    "unchanged_message": "Víte jistě, že chcete pokračovat?",
+    "continue_anyway": "Přesto pokračovat"
   },
+  "no_more_tasks": "Vypadá to, že tu nejsou žádné další úlohy.",
   "random": {
     "label": "Zkusím štěstí",
     "desc": "Pomozte nám vylepšit Open Assistant splněním náhodné úlohy."
@@ -33,23 +36,25 @@
     "desc": "Pomozte Open Assistant vylepšit jeho odpovědi v konverzacích ostatních uživatelů.",
     "overview": "Seřaďte navržené odpovědi uživatelů od nejlepší po nejhoší. Nejlepší odpověď bude první, nejhorší poslední.",
     "unchanged_title": "Původní pořadí",
-    "unchanged_message": "Pořadí zpráv nebylo změněno. Jste si jistí, že chcete pokračovat?"
+    "unchanged_message": "Pořadí zpráv nebylo změněno. Jste si jistí, že chcete pokračovat?",
+    "continue_anyway": "Přesto pokračovat"
   },
   "rank_assistant_replies": {
     "label": "Seřadit odpovědi Asistenta",
     "desc": "Ohodnoťte odpovědi Asistenta podle jejich správnosti a čitelnosti.",
     "overview": "Seřaďte možné odpovědi Asistenta od nejlepší po nejhoší. Nejlepší odpověď bude první, nejhorší poslední.",
     "unchanged_title": "Původní pořadí",
-    "unchanged_message": "Pořadí zpráv nebylo změněno. Jste si jistí, že chcete pokračovat?"
+    "unchanged_message": "Pořadí zpráv nebylo změněno. Jste si jistí, že chcete pokračovat?",
+    "continue_anyway": "Přesto pokračovat"
   },
   "rank_initial_prompts": {
     "label": "Seřaďte úvodní dotazy",
     "desc": "Seřaďte dotazy uživatelů podle kvality.",
     "overview": "Seřaďte dotazy uživatelů od nejlepšího po nejhoší. Nejlepší odpověď bude první, nejhorší poslední.",
     "unchanged_title": "Původní pořadí",
-    "unchanged_message": "Pořadí zpráv nebylo změněno. Jste si jistí, že chcete pokračovat?"
+    "unchanged_message": "Pořadí zpráv nebylo změněno. Jste si jistí, že chcete pokračovat?",
+    "continue_anyway": "Přesto pokračovat"
   },
-  "no_more_tasks": "Vypadá to, že tu nejdou žádné další úlohy.",
   "label_initial_prompt": {
     "label": "Označkovat úvodní dotaz",
     "desc": "Označkujte úvodní dotaz.",
@@ -81,5 +86,7 @@
     "overview": "Přečtěte si následující konverzaci a odpovězte na otázky o poslední zprávě."
   },
   "submitted_as": "Zpráva bude nahrána jako zpráva v jazyce {{submit_lang}}.",
+  "tab_write": "Psát",
+  "tab_preview": "Náhled",
   "writing_wrong_langauge_a_b": "Vypadá to, že píšete v jazyce {{detected_lang}}, ale zpráva bude nahrána jako zpráva v jazyce {{submit_lang}}."
 }

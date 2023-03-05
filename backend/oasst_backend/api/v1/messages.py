@@ -204,7 +204,6 @@ def get_message_tree_state(
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
 ) -> MessageTreeStateResponse:
-
     pr = PromptRepository(db, api_client, frontend_user=frontend_user)
     message = pr.fetch_message(message_id=message_id, fail_if_missing=True)
     mts = pr.fetch_tree_state(message.message_tree_id)

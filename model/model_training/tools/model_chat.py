@@ -29,7 +29,7 @@ def talk(human_input, history, sep_token, prefix=""):
     histories = []
     if method == "v2":
         prefix = "<prefix>You are a helpful assistant called Joi trained by OpenAssistant on large corpus of data, you will now help user to answer the question as concise as possible</prefix>"
-        for (question, answer) in history:
+        for question, answer in history:
             histories.append(
                 "{}{}{}{}".format(QA_SPECIAL_TOKENS["Question"], question, QA_SPECIAL_TOKENS["Answer"], answer)
             )
@@ -39,7 +39,7 @@ def talk(human_input, history, sep_token, prefix=""):
             prefix += sep_token
         prefix += "{}{}{}".format(QA_SPECIAL_TOKENS["Question"], human_input, QA_SPECIAL_TOKENS["Answer"])
     else:
-        for (question, answer) in history:
+        for question, answer in history:
             histories.append("User: " + question + "\n\n{}: ".format(bot_name) + answer + "\n")
         if len(histories) > 0:
             prefix += "\n".join(histories)
@@ -64,7 +64,6 @@ if method != "v2":
 model = AutoModelForCausalLM.from_pretrained(model_name).half().eval().cuda()
 
 if __name__ == "__main__":
-
     histories = []
     prefix = ""
     while True:

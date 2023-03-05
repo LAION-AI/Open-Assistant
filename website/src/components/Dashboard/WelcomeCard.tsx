@@ -10,32 +10,25 @@ export function WelcomeCard() {
   const { data: session } = useSession();
   const { t } = useTranslation("dashboard");
 
-  if (!session) {
-    return <></>;
+  const isNew = session?.user?.isNew;
+  if (!isNew) {
+    return null;
   }
-  if (session && session.user && session.user.isNew)
-    return (
-      <>
-        <Box
-          bgGradient="linear(to-r, blue.300, purple.500)"
-          borderRadius="xl"
-          p="1px"
-          shadow="base"
-          position="relative"
-        >
-          <Box bg={backgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
-            <Box pb="2">
-              <Text as="h1" fontWeight="extrabold" fontSize="3xl" color={titleColor}>
-                {t("welcome_message.label", { username: session.user.name || t("welcome_message.contributor") })}
-              </Text>
-            </Box>
-            <Box>
-              <Text>{t("welcome_message.description")}</Text>
-              <Divider my="4" />
-              <Text>{t("welcome_message.instruction")}</Text>
-            </Box>
-          </Box>
+
+  return (
+    <Box bgGradient="linear(to-r, blue.300, purple.500)" borderRadius="xl" p="1px" shadow="base" position="relative">
+      <Box bg={backgroundColor} borderRadius="xl" p="6" pt="4" pr="12">
+        <Box pb="2">
+          <Text as="h1" fontWeight="extrabold" fontSize="3xl" color={titleColor}>
+            {t("welcome_message.label", { username: session.user.name || t("welcome_message.contributor") })}
+          </Text>
         </Box>
-      </>
-    );
+        <Box>
+          <Text>{t("welcome_message.description")}</Text>
+          <Divider my="4" />
+          <Text>{t("welcome_message.instruction")}</Text>
+        </Box>
+      </Box>
+    </Box>
+  );
 }

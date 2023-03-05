@@ -357,7 +357,6 @@ class PromptRepository:
         )
 
         match type(task_payload):
-
             case db_payload.RankPrompterRepliesPayload | db_payload.RankAssistantRepliesPayload:
                 # validate ranking
                 if sorted(ranking.ranking) != list(range(num_replies := len(task_payload.reply_messages))):
@@ -383,6 +382,7 @@ class PromptRepository:
                     ranked_message_ids=ranked_message_ids,
                     ranking_parent_id=task_payload.ranking_parent_id,
                     message_tree_id=task_payload.message_tree_id,
+                    not_rankable=ranking.not_rankable,
                 )
                 reaction = self.insert_reaction(task_id=task.id, payload=reaction_payload, message_id=parent_msg.id)
                 self.journal.log_ranking(task, message_id=parent_msg.id, ranking=ranking.ranking)
@@ -736,7 +736,6 @@ class PromptRepository:
         return message
 
     def fetch_non_task_text_labels(self, message_id: UUID, user_id: UUID) -> Optional[TextLabels]:
-
         query = (
             self.db.query(TextLabels)
             .outerjoin(Task, Task.id == TextLabels.id)
@@ -890,6 +889,7 @@ class PromptRepository:
         if self.user_id is None:
             return qry.all()
 
+        order_by_clauses = qry._order_by_clauses
         sq = qry.subquery("m")
         qry = (
             self.db.query(Message, func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis"))
@@ -904,6 +904,7 @@ class PromptRepository:
             )
             .group_by(sq)
         )
+        qry._order_by_clauses = order_by_clauses
         messages: list[Message] = []
         for x in qry:
             m: Message = x.Message
@@ -1050,16 +1051,36 @@ WHERE message.id = cc.id;
         Get data stats such as number of all messages in the system,
         number of deleted and active messages and number of message trees.
         """
-        deleted = self.db.query(Message.deleted, func.count()).group_by(Message.deleted)
-        nthreads = self.db.query(None, func.count(Message.id)).filter(Message.parent_id.is_(None))
-        query = deleted.union_all(nthreads)
-        result = {k: v for k, v in query.all()}
+        # With columns: lang, deleted, count
+        group_count_query = self.db.query(Message.lang, Message.deleted, func.count()).group_by(
+            Message.lang, Message.deleted
+        )
+        # With columns: None, None, count
+        msg_tree_query = self.db.query(None, None, func.count(Message.id)).filter(Message.parent_id.is_(None))
+        # Union both queries, so that we can fetch the counts in one database query
+        query = group_count_query.union_all(msg_tree_query)
+
+        nactives = 0
+        ndeleted = 0
+        nactives_by_lang = {}
+        nthreads = 0
+
+        for lang, deleted, count in query.all():
+            if lang is None:  # corresponds to msg_tree_query
+                nthreads = count
+                continue
+            if deleted is False:  # corresponds to group_count_query (lang, deleted=False)
+                nactives_by_lang[lang] = count
+                nactives += count
+            else:  # corresponds to group_count_query (lang, deleted=True)
+                ndeleted += count
 
         return SystemStats(
-            all=result.get(True, 0) + result.get(False, 0),
-            active=result.get(False, 0),
-            deleted=result.get(True, 0),
-            message_trees=result.get(None, 0),
+            all=nactives + ndeleted,
+            active=nactives,
+            active_by_lang=nactives_by_lang,
+            deleted=ndeleted,
+            message_trees=nthreads,
         )
 
     @managed_tx_method()
@@ -1189,7 +1210,6 @@ WHERE message.id = cc.id;
         return qry.all()
 
     def process_flagged_message(self, message_id: UUID) -> FlaggedMessage:
-
         message = self.db.query(FlaggedMessage).get(message_id)
 
         if not message:
