@@ -48,7 +48,7 @@ CONFIG = {"special_tokens":SPECIAL_TOKENS,
 "batch_size":8,
 "fp16":False,
 "train_dataset":"allenai/prosocial-dialog",
-"Notes":"using train+validation train with label2id",
+"Notes":"using prosocial+pro_social_aug",
 "train_dataset":{
     "shahules786/prosocial_augmented":"train","allenai/prosocial-dialog":["train","validation"]
 },
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     
     train_dataset = prepare_dataset(tokenizer,"train_dataset")
     valid_dataset = prepare_dataset(tokenizer,"test_dataset")
-    
+
     training_args = TrainingArguments(output_dir=ROOT_DIR, 
                                   per_device_train_batch_size=CONFIG["batch_size"], 
                                   per_device_eval_batch_size=CONFIG["batch_size"],
