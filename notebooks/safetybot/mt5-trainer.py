@@ -173,7 +173,6 @@ if __name__ == "__main__":
     with open(os.path.join(ROOT_DIR,"config.json"),"w") as file:
         json.dump(json.dumps(CONFIG),file)
     
-    dataset = load_dataset(CONFIG["train_dataset"])
 
     model = T5ForConditionalGeneration.from_pretrained(CONFIG["model"])
     tokenizer = T5Tokenizer.from_pretrained(CONFIG["model"],padding_side="right",truncation_side="right",model_max_length=512)
