@@ -48,9 +48,9 @@ CONFIG = {"special_tokens":SPECIAL_TOKENS,
 "batch_size":8,
 "fp16":True,
 "train_dataset":"allenai/prosocial-dialog",
-"Notes":"MT5 using prosocial+pro_social_aug",
+"Notes":"MT5 using prosocial",
 "train_dataset":{
-    "shahules786/prosocial_augmented":"train","allenai/prosocial-dialog":["train","validation"]
+    "allenai/prosocial-dialog":["train","validation"]
 },
 "test_dataset":{"allenai/prosocial-dialog":"test"}
 }
