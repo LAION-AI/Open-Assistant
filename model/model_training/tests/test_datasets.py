@@ -3,7 +3,7 @@ from argparse import Namespace
 import pytest
 from custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
-from custom_datasets.prompt_dialogue import OAPrivate, PrivateInstructionTuning
+from custom_datasets.prompt_dialogue import OAPrivate
 from torch.utils.data import ConcatDataset, DataLoader
 from utils import get_tokenizer
 
@@ -20,7 +20,6 @@ def test_rl_sft_mode_switch():
 
 @pytest.mark.skip(reason="very slow")
 def test_all_datasets():
-
     qa_base = QA_DATASETS
     summarize_base = SUMMARIZATION_DATASETS
     others = ["webgpt", "soda", "joke", "explain_prosocial", "prosocial_dialogue"]
@@ -39,7 +38,6 @@ def test_all_datasets():
 
 @pytest.mark.skip(reason="very slow")
 def test_collate_fn():
-
     config = Namespace(cache_dir=".cache", model_name="Salesforce/codegen-2B-multi")
     tokenizer = get_tokenizer(config)
     collate_fn = DialogueDataCollator(tokenizer, max_length=620)

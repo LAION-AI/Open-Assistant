@@ -4,8 +4,7 @@
 
 `pip install .`
 
-Run tests:
-`pytest .`
+Run tests: `pytest .`
 
 Start training SFT model
 

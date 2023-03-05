@@ -6,8 +6,7 @@ Trainer code based on huggingface. Compatible with deepspeed or accelerate
 
 `pip install .`
 
-Run tests:
-`pytest .`
+Run tests: `pytest .`
 
 Write or inherit a `configs/<config-name>.yml` file to store training
 configuration details.
