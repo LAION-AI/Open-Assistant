@@ -55,11 +55,11 @@ class DialogueDataCollator:
                 )
             )
             label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
-            try:
-                label_mask[[i for i in range(len(message_indices)) if message_indices[i] == -2][0] - 1] = True
-            except IndexError:
-                # due to truncation, we might not have the last termination token
-                label_mask[-1] = False
+            # try:
+            #     label_mask[[i for i in range(len(message_indices)) if message_indices[i] == -2][0] - 1] = True
+            # except IndexError:
+            #     # due to truncation, we might not have the last termination token
+            #     label_mask[-1] = False
 
             label_masks.append(label_mask)
             if len(flatten_message["input_ids"]) < self.mix_length_threshold and self.samples_mixing:
