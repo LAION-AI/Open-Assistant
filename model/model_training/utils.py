@@ -244,7 +244,7 @@ def get_metrics(conf, tokenizer):
     return metrics, preprocess_fns
 
 
-def get_model(conf, tokenizer):
+def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     model = get_specific_model(
         conf.model_name, cache_dir=conf.cache_dir, quantization=conf.quantization, seq2seqmodel=conf.seq2seqmodel
     )
@@ -253,8 +253,10 @@ def get_model(conf, tokenizer):
     if len(tokenizer) != n_embs:
         assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
 
-    if (len(tokenizer) != n_embs or n_embs % 8 == 0) and not conf.freeze_layer:
-        model.resize_token_embeddings(math.ceil(len(tokenizer) / 8) * 8)
+    if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
+        p = pad_vocab_size_to_multiple_of
+        target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
+        model.resize_token_embeddings(target_size)
 
     if conf.freeze_layer:
         model = freeze_top_n_layers(model, conf.freeze_layer)

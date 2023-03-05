@@ -215,7 +215,7 @@ if __name__ == "__main__":
         tokenizer,
         max_length=training_conf.max_length,
         samples_mixing=training_conf.samples_mixing,
-        pad_to_multiple_of=32,
+        pad_to_multiple_of=16,
     )
     eval_collate_fn = DialogueDataCollator(tokenizer, max_length=training_conf.max_length, samples_mixing=False)
 
