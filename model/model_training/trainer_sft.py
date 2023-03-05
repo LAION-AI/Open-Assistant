@@ -212,7 +212,10 @@ if __name__ == "__main__":
 
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
-        tokenizer, max_length=training_conf.max_length, samples_mixing=training_conf.samples_mixing
+        tokenizer,
+        max_length=training_conf.max_length,
+        samples_mixing=training_conf.samples_mixing,
+        pad_to_multiple_of=16,
     )
     eval_collate_fn = DialogueDataCollator(tokenizer, max_length=training_conf.max_length, samples_mixing=False)
 
