@@ -8,7 +8,10 @@ export const useUserScore = () => {
   const isLoggedIn = status === "authenticated";
   const { data: entries } = uswSWRImmutable<Partial<{ [time in LeaderboardTimeFrame]: LeaderboardEntity }>>(
     isLoggedIn && "/api/user_stats",
-    get
+    get,
+    {
+      dedupingInterval: 1000 * 60, // once per minute
+    }
   );
   const score: number | undefined = entries?.total?.leader_score;
   return score;
