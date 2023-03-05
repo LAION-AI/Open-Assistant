@@ -17,6 +17,7 @@ import NextLink from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import React, { ElementType, useCallback } from "react";
+import { UserScore } from "src/components/Header/UserScore";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 
 interface MenuOption {
@@ -70,15 +71,15 @@ export function UserMenu() {
   return (
     <Menu>
       <MenuButton border="solid" borderRadius="full" borderWidth="thin" borderColor={borderColor}>
-        <Box display="flex" alignItems="center" gap="3" p="1" paddingRight={[1, 1, 1, 6, 6]}>
+        <Box display="flex" alignItems="center" gap="3" p="1">
           <Avatar size="sm" src={session.user.image!} />
-          <Text data-cy="username" className="hidden lg:flex">
+          <Text data-cy="username" className="hidden lg:flex ltr:pr-2 rtl:pl-2">
             {session.user.name || "New User"}
           </Text>
         </Box>
       </MenuButton>
       <MenuList p="2" borderRadius="xl" shadow="none">
-        <Box display="flex" flexDirection="column" alignItems="center" borderRadius="md" p="4">
+        <Box display="flex" flexDirection="column" alignItems="center" borderRadius="md" p="1" gap="2">
           <Text>
             {session.user.name}
             {isAdminOrMod ? (
@@ -87,6 +88,7 @@ export function UserMenu() {
               </Badge>
             ) : null}
           </Text>
+          <UserScore />
         </Box>
         <MenuDivider />
         <MenuGroup>

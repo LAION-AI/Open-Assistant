@@ -4,11 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import { Flags } from "react-feature-flags";
 import { LanguageSelector } from "src/components/LanguageSelector";
 
 import { ColorModeToggler } from "./ColorModeToggler";
 import { UserMenu } from "./UserMenu";
+import { UserScore } from "./UserScore";
 
 function AccountButton() {
   const { data: session } = useSession();
@@ -44,12 +44,12 @@ export function Header() {
         </Link>
 
         <Flex alignItems="center" gap={["2", "4"]}>
-          <Flags authorizedFlags={["flagTest"]}>
-            <Text>FlagTest</Text>
-          </Flags>
           <LanguageSelector />
           <AccountButton />
           <UserMenu />
+          <div className="hidden md:block">
+            <UserScore />
+          </div>
           <ColorModeToggler />
         </Flex>
       </Box>
