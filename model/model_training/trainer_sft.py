@@ -254,7 +254,7 @@ if __name__ == "__main__":
         per_device_eval_batch_size=training_conf.per_device_eval_batch_size,
         adam_beta1=training_conf.adam_beta1,
         adam_beta2=training_conf.adam_beta2,
-        adam_epsilon=training_conf.adam_epsilon,
+        adam_epsilon=float(training_conf.adam_epsilon),
         weight_decay=training_conf.weight_decay,
         max_grad_norm=training_conf.max_grad_norm,
         logging_steps=training_conf.logging_steps,
