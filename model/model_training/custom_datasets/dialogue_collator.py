@@ -54,7 +54,7 @@ class DialogueDataCollator:
                     list(map(lambda x: x[1], flatten_message["offset_mapping"])),
                 )
             )
-            label_mask = np.roll(list(map(lambda x: x % 2 == 1, message_indices)), -1, -1)
+            label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
             try:
                 label_mask[[i for i in range(len(message_indices)) if message_indices[i] == -2][0] - 1] = True
             except IndexError:

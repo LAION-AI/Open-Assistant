@@ -3,10 +3,7 @@ QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<
 
 def format_pair(pairs):
     return [
-        "{}{}{}".format(QA_SPECIAL_TOKENS["Question"], pairs[i], QA_SPECIAL_TOKENS["Answer"])
-        if i % 2 == 0
-        else pairs[i]
-        for i in range(len(pairs))
+        "{}{}".format(QA_SPECIAL_TOKENS["Question" if i % 2 == 0 else "Answer"], pairs[i]) for i in range(len(pairs))
     ]
 
 
