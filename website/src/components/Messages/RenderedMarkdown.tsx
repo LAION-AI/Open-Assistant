@@ -48,7 +48,10 @@ const sx: SystemStyleObject = {
   },
   p: {
     whiteSpace: "pre-wrap",
-    my: 4,
+    mb: 4,
+    fontSize: "md",
+    fontWeight: "normal",
+    lineHeight: 6,
   },
   "> blockquote": {
     borderInlineStartColor: "gray.300",
