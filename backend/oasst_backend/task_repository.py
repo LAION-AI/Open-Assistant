@@ -83,6 +83,7 @@ class TaskRepository:
                     reply_messages=task.reply_messages,
                     ranking_parent_id=task.ranking_parent_id,
                     message_tree_id=task.message_tree_id,
+                    reveal_synthetic=task.reveal_synthetic,
                 )
 
             case protocol_schema.RankAssistantRepliesTask:
@@ -92,6 +93,7 @@ class TaskRepository:
                     reply_messages=task.reply_messages,
                     ranking_parent_id=task.ranking_parent_id,
                     message_tree_id=task.message_tree_id,
+                    reveal_synthetic=task.reveal_synthetic,
                 )
 
             case protocol_schema.LabelInitialPromptTask:

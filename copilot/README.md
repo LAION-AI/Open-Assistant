@@ -3,7 +3,7 @@
 ## Introduction
 
 [Copilot](https://aws.github.io/copilot-cli/) helps simplify AWS resources and
-automate deploymnents for projects.
+automate deployments for projects.
 
 This sample configuration runs the Open Assistant web app as an ECS Fargate
 services backed by a Serverless Aurora Postgres database.

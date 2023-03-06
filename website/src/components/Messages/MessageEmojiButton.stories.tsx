@@ -1,3 +1,4 @@
+import { Story } from "@storybook/react";
 import React from "react";
 
 import { SessionDecorator } from "../../../.storybook/decorators";
@@ -10,7 +11,7 @@ export default {
   decorators: [SessionDecorator],
 };
 
-const Template = ({
+const Template: Story<any> = ({
   emoji,
   count,
   ...rest

@@ -1,8 +1,8 @@
+import { Story } from "@storybook/react";
 import { SessionProvider } from "next-auth/react";
 import React from "react";
-import { Message } from "src/types/Conversation";
 
-import { MessageConversation } from "./MessageConversation";
+import { MessageConversation, MessageConversationProps } from "./MessageConversation";
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
@@ -10,15 +10,7 @@ export default {
   component: MessageConversation,
 };
 
-const Template = ({
-  messages,
-  enableLink,
-  highlightLastMessage,
-}: {
-  messages: Message[];
-  enableLink: boolean;
-  highlightLastMessage: boolean;
-}) => {
+const Template: Story<any> = ({ messages, enableLink, highlightLastMessage }: MessageConversationProps) => {
   return (
     <SessionProvider>
       <MessageConversation messages={messages} enableLink={enableLink} highlightLastMessage={highlightLastMessage} />;

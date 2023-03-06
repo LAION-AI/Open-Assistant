@@ -212,7 +212,10 @@ if __name__ == "__main__":
 
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
-        tokenizer, max_length=training_conf.max_length, samples_mixing=training_conf.samples_mixing
+        tokenizer,
+        max_length=training_conf.max_length,
+        samples_mixing=training_conf.samples_mixing,
+        pad_to_multiple_of=16,
     )
     eval_collate_fn = DialogueDataCollator(tokenizer, max_length=training_conf.max_length, samples_mixing=False)
 
@@ -252,6 +255,9 @@ if __name__ == "__main__":
         gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
         per_device_train_batch_size=training_conf.per_device_train_batch_size,
         per_device_eval_batch_size=training_conf.per_device_eval_batch_size,
+        adam_beta1=training_conf.adam_beta1,
+        adam_beta2=training_conf.adam_beta2,
+        adam_epsilon=float(training_conf.adam_epsilon),
         weight_decay=training_conf.weight_decay,
         max_grad_norm=training_conf.max_grad_norm,
         logging_steps=training_conf.logging_steps,

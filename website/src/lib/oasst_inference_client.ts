@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosRequestConfig } from "axios";
 import Cookies from "cookies";
 import type { NextApiRequest, NextApiResponse } from "next";
@@ -16,9 +17,9 @@ export class OasstInferenceClient {
     this.userTokenSub = token.sub;
   }
 
-  async request(method: "GET" | "POST" | "PUT" | "DELETE", path: string, init?: AxiosRequestConfig) {
+  async request<T = any>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, init?: AxiosRequestConfig) {
     const token = await this.get_token();
-    const { data } = await axios(process.env.INFERENCE_SERVER_HOST + path, {
+    const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
       method,
       ...init,
       headers: {
@@ -35,7 +36,6 @@ export class OasstInferenceClient {
     if (this.inferenceToken) {
       return this.inferenceToken;
     }
-    console.log("fetching new token");
     // we might want to include the inference token in our JWT, but this won't be trivial.
     // or we might have to force log-in the user every time a new JWT is created
 
@@ -43,7 +43,9 @@ export class OasstInferenceClient {
     const res = await fetch(process.env.INFERENCE_SERVER_HOST + `/auth/login/debug?username=${this.userTokenSub}`);
     const inferenceResponse: InferenceDebugTokenResponse = await res.json();
     this.inferenceToken = inferenceResponse.access_token;
-    this.cookies.set("inference_token", this.inferenceToken);
+    this.cookies.set("inference_token", this.inferenceToken, {
+      maxAge: 1000 * 60 * 5, // 5 minutes
+    });
     // console.dir(this.inferenceToken);
     return this.inferenceToken;
   }
@@ -57,5 +59,17 @@ export class OasstInferenceClient {
       data: { parent_id, content },
       responseType: "stream",
     });
+  }
+
+  vote({ chat_id, message_id, score }: { chat_id: string; message_id: string; score: number }) {
+    return this.request("POST", `/chat/${chat_id}/message/${message_id}/vote`, {
+      data: {
+        score,
+      },
+    });
+  }
+
+  get_my_chats() {
+    return this.request("GET", "/chat");
   }
 }

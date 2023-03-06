@@ -3,7 +3,7 @@ import { useTranslation } from "next-i18next";
 import { MessageTableEntry } from "src/components/Messages/MessageTableEntry";
 import { Message } from "src/types/Conversation";
 
-interface MessageConversationProps {
+export interface MessageConversationProps {
   messages: Message[];
   enableLink?: boolean;
   highlightLastMessage?: boolean;

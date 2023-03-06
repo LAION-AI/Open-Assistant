@@ -21,18 +21,23 @@ export type CreateTaskType = CreateInitialPromptTask | CreateAssistantReplyTask 
 export interface RankInitialPromptsTask extends BaseTask {
   type: TaskType.rank_initial_prompts;
   prompts: string[];
+  reveal_synthetic?: boolean;
 }
 
 export interface RankAssistantRepliesTask extends BaseTask {
   type: TaskType.rank_assistant_replies;
   conversation: Conversation;
   replies: string[];
+  reply_messages: Message[];
+  reveal_synthetic?: boolean;
 }
 
 export interface RankPrompterRepliesTask extends BaseTask {
   type: TaskType.rank_prompter_replies;
   conversation: Conversation;
   replies: string[];
+  reply_messages: Message[]; // not tested
+  reveal_synthetic?: boolean;
 }
 
 export type RankTaskType = RankInitialPromptsTask | RankAssistantRepliesTask | RankPrompterRepliesTask;

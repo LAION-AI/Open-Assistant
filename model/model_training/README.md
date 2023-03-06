@@ -138,6 +138,15 @@ the end to trigger deepspeed
 python trainer_sft.py --configs defaults your-model-name --deepspeed
 ```
 
+### Troubleshooting
+
+- If training on a VM, you might need to install OpenMPI. Check out
+  [this blog post](https://lambdalabs.com/blog/horovod-keras-for-multi-gpu-training#open-mpi-optional)
+  by Lambda on how to install OpenMPI on their machines.
+- Installing `mpi4py` requires `python-dev`, which can be installed via
+  `sudo apt install libpython3.10-dev` (replace `3.10` with whatever Python
+  version you're running).
+
 ## Results
 
 Experimental results in wandb
