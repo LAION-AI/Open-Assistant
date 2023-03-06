@@ -14,6 +14,11 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
             target = target.view(-1)
             input = input[mask]
             target = target[mask]
+
+            # if all input is masked, return 0
+            if input.numel() == 0:
+                return torch.tensor(0, dtype=input.dtype, device=input.device)
+
         return super().forward(input, target)
 
 
