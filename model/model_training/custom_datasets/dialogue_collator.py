@@ -54,12 +54,13 @@ class DialogueDataCollator:
                     list(map(lambda x: x[1], flatten_message["offset_mapping"])),
                 )
             )
-            label_mask = np.roll(list(map(lambda x: x % 2 == 1, message_indices)), -1, -1)
-            try:
-                label_mask[[i for i in range(len(message_indices)) if message_indices[i] == -2][0] - 1] = True
-            except IndexError:
-                # due to truncation, we might not have the last termination token
-                label_mask[-1] = False
+            label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
+            label_mask[-1] = False  # make sure last token is inactive, has an effect only when truncatting
+            # try:
+            #     label_mask[[i for i in range(len(message_indices)) if message_indices[i] == -2][0] - 1] = True
+            # except IndexError:
+            #     # due to truncation, we might not have the last termination token
+            #     label_mask[-1] = False
 
             label_masks.append(label_mask)
             if len(flatten_message["input_ids"]) < self.mix_length_threshold and self.samples_mixing:
