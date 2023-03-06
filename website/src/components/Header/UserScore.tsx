@@ -13,11 +13,9 @@ export const UserScore = () => {
   }
 
   return (
-    <div className="hidden md:block">
-      <HStack gap="1" title={t("score")}>
-        <>{score}</>
-        <Icon as={Star} fill="gold" w="5" h="5" color="gold" />
-      </HStack>
-    </div>
+    <HStack gap="1" title={t("score")}>
+      <>{score}</>
+      <Icon as={Star} fill="gold" w="5" h="5" color="gold" />
+    </HStack>
   );
 };
