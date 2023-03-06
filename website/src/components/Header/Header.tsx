@@ -47,9 +47,7 @@ export function Header() {
           <LanguageSelector />
           <AccountButton />
           <UserMenu />
-          <div className="hidden md:block">
-            <UserScore />
-          </div>
+          <UserScore />
           <ColorModeToggler />
         </Flex>
       </Box>
