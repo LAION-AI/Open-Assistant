@@ -1,7 +1,7 @@
 import { HStack } from "@chakra-ui/react";
 import { Icon } from "@chakra-ui/react";
 import { Star } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 import { useUserScore } from "src/hooks/ui/useUserScore";
 
 export const UserScore = () => {
