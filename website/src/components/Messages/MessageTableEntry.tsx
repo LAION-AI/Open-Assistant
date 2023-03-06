@@ -95,8 +95,7 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
     const handleOnClick = useCallback(() => {
       enabled && router.push(ROUTES.MESSAGE_DETAIL(message.id));
     }, [enabled, message.id, router]);
-    const locale = useCurrentLocale();
-    const createdDateColor = useColorModeValue("blackAlpha.600", "gray.400");
+
     return (
       <BaseMessageEntry
         ref={ref}
@@ -112,23 +111,12 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
         onClick={handleOnClick}
       >
         <Flex justifyContent="space-between" mt="2" alignItems="center">
-          <Text
-            as="span"
-            fontSize="small"
-            color={createdDateColor}
-            fontWeight="medium"
-            me={showCreatedDate ? { base: 3, md: 6 } : 0}
-          >
-            {showCreatedDate
-              ? new Intl.DateTimeFormat(locale, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  year: "numeric",
-                  month: "2-digit",
-                  day: "2-digit",
-                }).format(new Date(message.created_date))
-              : ""}
-          </Text>
+          {showCreatedDate ? (
+            <MessageCreateDate date={message.created_date}></MessageCreateDate>
+          ) : (
+            // empty span is required to make emoji displayed at the end of row
+            <span></span>
+          )}
           <MessageInlineEmojiRow>
             <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
               {message.lang}
@@ -189,6 +177,24 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
     );
   }
 );
+
+const me = { base: 3, md: 6 };
+
+const MessageCreateDate = ({ date }: { date: string }) => {
+  const locale = useCurrentLocale();
+  const createdDateColor = useColorModeValue("blackAlpha.600", "gray.400");
+  return (
+    <Text as="span" fontSize="small" color={createdDateColor} fontWeight="medium" me={me}>
+      {new Intl.DateTimeFormat(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date(date))}
+    </Text>
+  );
+};
 
 const EmojiMenuItem = ({
   emoji,
