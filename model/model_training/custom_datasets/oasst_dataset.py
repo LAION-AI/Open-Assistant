@@ -121,4 +121,6 @@ def load_oasst_export(
     train = flatten(splits[0])
     val = flatten(splits[1])
 
+    print(f"OASST data {str(input_file_path)}: {len(train)=}, {len(val)=}")
+
     return train, val
