@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { LanguageSelector } from "src/components/LanguageSelector";
-import { Show } from '@chakra-ui/react';
+import { Show } from "@chakra-ui/react";
 
 import { ColorModeToggler } from "./ColorModeToggler";
 import { UserMenu } from "./UserMenu";
