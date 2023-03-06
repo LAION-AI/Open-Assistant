@@ -40,7 +40,7 @@ const UserMessageConversation = () => {
           {t("next")}
         </Button>
       </Flex>
-      <MessageConversation enableLink messages={userMessages} />
+      <MessageConversation enableLink messages={userMessages} showCreatedDate />
     </div>
   );
 };

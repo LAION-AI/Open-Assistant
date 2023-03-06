@@ -7,9 +7,15 @@ export interface MessageConversationProps {
   messages: Message[];
   enableLink?: boolean;
   highlightLastMessage?: boolean;
+  showCreatedDate?: boolean;
 }
 
-export function MessageConversation({ messages, enableLink, highlightLastMessage }: MessageConversationProps) {
+export function MessageConversation({
+  messages,
+  enableLink,
+  highlightLastMessage,
+  showCreatedDate,
+}: MessageConversationProps) {
   const { t } = useTranslation("message");
   return (
     <Stack spacing="4">
@@ -22,6 +28,7 @@ export function MessageConversation({ messages, enableLink, highlightLastMessage
             message={message}
             key={message.id + message.frontend_message_id}
             highlight={highlightLastMessage && idx === messages.length - 1}
+            showCreatedDate={showCreatedDate}
           />
         ))
       )}
