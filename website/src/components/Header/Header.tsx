@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { LanguageSelector } from "src/components/LanguageSelector";
+import { Show } from "@chakra-ui/react";
 
 import { ColorModeToggler } from "./ColorModeToggler";
 import { UserMenu } from "./UserMenu";
@@ -47,9 +48,9 @@ export function Header() {
           <LanguageSelector />
           <AccountButton />
           <UserMenu />
-          <div className="hidden md:block">
+          <Show above="md">
             <UserScore />
-          </div>
+          </Show>
           <ColorModeToggler />
         </Flex>
       </Box>
