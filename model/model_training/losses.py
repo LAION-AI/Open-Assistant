@@ -15,9 +15,7 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
             input = input[mask]
             target = target[mask]
 
-            size = input.size(0)
-        else:
-            size = target.numel()
+        size = target.numel()
 
         loss = super().forward(input, target)
 
