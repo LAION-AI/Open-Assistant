@@ -9,7 +9,7 @@ defaults:
   adam_epsilon: 1e-8
   weight_decay: 0.00
   warmup_steps: 600
-  eval_steps: 500
+  eval_steps: 200
   save_steps: 500
   max_length: 512
   num_train_epochs: 3
@@ -54,6 +54,7 @@ defaults:
   samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
   verbose: false
   output_dir: saved_model
+  use_custom_sampler: false
 
 oa_dataset_only:
   datasets:
@@ -67,7 +68,7 @@ oasst_export_eu:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        top_k: 2
+        #top_k: 2
         input_file_path: 2023-02-26_oasst_default.jsonl.gz
 
 pythia:
@@ -94,10 +95,10 @@ pythia-1B:
   per_device_eval_batch_size: 32
 
 pythia-6.9B:
-  learning_rate: 8e-6
+  learning_rate: 1.5e-6
   model_name: EleutherAI/pythia-6.9b-deduped
   weight_decay: 0.0
-  max_length: 512
+  max_length: 520
   warmup_steps: 500
   gradient_checkpointing: false
   gradient_accumulation_steps: 2
