@@ -129,7 +129,7 @@ def main():
         logger.warning(f"Connection closed: {close_status_code=} {close_msg=}")
 
     ws = websocket.WebSocketApp(
-        f"{settings.backend_url}/work",
+        f"{settings.backend_url}/workers/work",
         on_message=on_message,
         on_error=on_error,
         on_close=on_close,

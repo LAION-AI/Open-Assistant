@@ -22,7 +22,7 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
             bearer_token = auth_data["access_token"]
             auth_headers = {"Authorization": f"Bearer {bearer_token}"}
 
-            chat_data = requests.post(f"{backend_url}/chat", json={}, headers=auth_headers).json()
+            chat_data = requests.post(f"{backend_url}/chats", json={}, headers=auth_headers).json()
             chat_id = chat_data["id"]
             typer.echo(f"Chat ID: {chat_id}")
             parent_id = None
@@ -36,7 +36,7 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
                 # could be implemented with long polling
                 # but server load needs to be considered
                 response = requests.post(
-                    f"{backend_url}/chat/{chat_id}/message",
+                    f"{backend_url}/chats/{chat_id}/messages",
                     json={
                         "parent_id": parent_id,
                         "content": message,

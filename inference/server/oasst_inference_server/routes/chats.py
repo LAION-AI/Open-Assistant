@@ -3,11 +3,50 @@ from fastapi import Depends
 from loguru import logger
 from oasst_inference_server import auth, deps, queueing
 from oasst_inference_server.schemas import chat as chat_schema
+from oasst_inference_server.user_chat_repository import UserChatRepository
 from oasst_shared.schemas import inference
 from sse_starlette.sse import EventSourceResponse
 
+router = fastapi.APIRouter(
+    prefix="/chats",
+    tags=["chats"],
+)
 
-async def handle_create_message(
+
+@router.get("/")
+async def list_chats(
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+) -> chat_schema.ListChatsResponse:
+    """Lists all chats."""
+    logger.info("Listing all chats.")
+    chats = await ucr.get_chats()
+    chats_list = [chat.to_list_read() for chat in chats]
+    return chat_schema.ListChatsResponse(chats=chats_list)
+
+
+@router.post("/")
+async def create_chat(
+    request: chat_schema.CreateChatRequest,
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+) -> chat_schema.ChatListRead:
+    """Allows a client to create a new chat."""
+    logger.info(f"Received {request=}")
+    chat = await ucr.create_chat()
+    return chat.to_list_read()
+
+
+@router.get("/{chat_id}")
+async def get_chat(
+    chat_id: str,
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+) -> chat_schema.ChatRead:
+    """Allows a client to get the current state of a chat."""
+    chat = await ucr.get_chat_by_id(chat_id)
+    return chat.to_read()
+
+
+@router.post("/{chat_id}/messages")
+async def create_message(
     chat_id: str,
     message_request: chat_schema.MessageRequest,
     fastapi_request: fastapi.Request,
@@ -82,6 +121,7 @@ async def handle_create_message(
     )
 
 
+@router.post("/{chat_id}/messages/{message_id}/votes")
 async def handle_create_vote(
     message_id: str,
     vote_request: chat_schema.VoteRequest,
@@ -96,6 +136,7 @@ async def handle_create_vote(
         return fastapi.Response(status_code=500)
 
 
+@router.post("/{chat_id}/messages/{message_id}/reports")
 async def handle_create_report(
     message_id: str,
     report_request: chat_schema.ReportRequest,

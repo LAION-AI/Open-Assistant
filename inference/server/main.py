@@ -2,21 +2,27 @@ import asyncio
 import signal
 import sys
 
-import aiohttp
 import fastapi
 import sqlmodel
-from fastapi import Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from oasst_inference_server import auth, client_handler, database, deps, models, worker_handler
-from oasst_inference_server.schemas import chat as chat_schema
-from oasst_inference_server.schemas import worker as worker_schema
+from oasst_inference_server import database, deps, models
+from oasst_inference_server.routes import admin, auth, chats, workers
 from oasst_inference_server.settings import settings
-from oasst_inference_server.user_chat_repository import UserChatRepository
-from oasst_shared.schemas import inference, protocol
+from oasst_shared.schemas import inference
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = fastapi.FastAPI()
+
+
+# Allow CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.middleware("http")
@@ -38,32 +44,6 @@ async def enable_prom_metrics():
 @app.on_event("startup")
 async def log_inference_protocol_version():
     logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
-
-
-# Allow CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-def get_bearer_token(authorization_header: str) -> str:
-    if not authorization_header.startswith("Bearer "):
-        raise ValueError("Authorization header must start with 'Bearer '")
-    return authorization_header[len("Bearer ") :]
-
-
-def get_root_token(token: str = Depends(get_bearer_token)) -> str:
-    root_token = settings.root_token
-    if token == root_token:
-        return token
-    raise HTTPException(
-        status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid token",
-    )
 
 
 def terminate_server(signum, frame):
@@ -120,187 +100,8 @@ async def maybe_add_debug_api_keys():
         raise
 
 
-@app.get("/auth/login/discord")
-async def login_discord():
-    redirect_uri = f"{settings.api_root}/auth/callback/discord"
-    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify"
-    raise HTTPException(status_code=302, headers={"location": auth_url})
-
-
-@app.get("/auth/callback/discord", response_model=protocol.Token)
-async def callback_discord(
-    code: str,
-    db: database.AsyncSession = Depends(deps.create_session),
-):
-    redirect_uri = f"{settings.api_root}/auth/callback/discord"
-
-    async with aiohttp.ClientSession(raise_for_status=True) as session:
-        # Exchange the auth code for a Discord access token
-        async with session.post(
-            "https://discord.com/api/oauth2/token",
-            data={
-                "client_id": settings.auth_discord_client_id,
-                "client_secret": settings.auth_discord_client_secret,
-                "grant_type": "authorization_code",
-                "code": code,
-                "redirect_uri": redirect_uri,
-                "scope": "identify",
-            },
-        ) as token_response:
-            token_response_json = await token_response.json()
-
-        try:
-            access_token = token_response_json["access_token"]
-        except KeyError:
-            raise HTTPException(status_code=400, detail="Invalid access token response from Discord")
-
-        # Retrieve user's Discord information using access token
-        async with session.get(
-            "https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"}
-        ) as user_response:
-            user_response_json = await user_response.json()
-
-    try:
-        discord_id = user_response_json["id"]
-        discord_username = user_response_json["username"]
-    except KeyError:
-        raise HTTPException(status_code=400, detail="Invalid user info response from Discord")
-
-    # Try to find a user in our DB linked to the Discord user
-    user: models.DbUser = await query_user_by_provider_id(db, discord_id=discord_id)
-
-    # Create if no user exists
-    if not user:
-        user = models.DbUser(provider="discord", provider_account_id=discord_id, display_name=discord_username)
-
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-
-    # Discord account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token({"user_id": user.id})
-
-    return protocol.Token(access_token=access_token, token_type="bearer")
-
-
-@app.get("/chat")
-async def list_chats(
-    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
-) -> chat_schema.ListChatsResponse:
-    """Lists all chats."""
-    logger.info("Listing all chats.")
-    chats = await ucr.get_chats()
-    chats_list = [chat.to_list_read() for chat in chats]
-    return chat_schema.ListChatsResponse(chats=chats_list)
-
-
-@app.post("/chat")
-async def create_chat(
-    request: chat_schema.CreateChatRequest,
-    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
-) -> chat_schema.ChatListRead:
-    """Allows a client to create a new chat."""
-    logger.info(f"Received {request=}")
-    chat = await ucr.create_chat()
-    return chat.to_list_read()
-
-
-@app.get("/chat/{id}")
-async def get_chat(
-    id: str,
-    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
-) -> chat_schema.ChatRead:
-    """Allows a client to get the current state of a chat."""
-    chat = await ucr.get_chat_by_id(id)
-    return chat.to_read()
-
-
-app.post("/chat/{chat_id}/message")(client_handler.handle_create_message)
-app.post("/chat/{chat_id}/message/{message_id}/vote")(client_handler.handle_create_vote)
-app.post("/chat/{chat_id}/message/{message_id}/report")(client_handler.handle_create_report)
-
-app.websocket("/work")(worker_handler.handle_worker)
-
-app.on_event("startup")(worker_handler.clear_worker_sessions)
-app.get("/worker_session")(worker_handler.list_worker_sessions)
-
-
-@app.put("/worker")
-async def create_worker(
-    request: worker_schema.CreateWorkerRequest,
-    root_token: str = Depends(get_root_token),
-    session: database.AsyncSession = Depends(deps.create_session),
-) -> worker_schema.WorkerRead:
-    """Allows a client to register a worker."""
-    worker = models.DbWorker(name=request.name)
-    session.add(worker)
-    await session.commit()
-    await session.refresh(worker)
-    return worker_schema.WorkerRead.from_orm(worker)
-
-
-@app.get("/worker")
-async def list_workers(
-    root_token: str = Depends(get_root_token),
-    session: database.AsyncSession = Depends(deps.create_session),
-) -> list[worker_schema.WorkerRead]:
-    """Lists all workers."""
-    workers = (await session.exec(sqlmodel.select(models.DbWorker))).all()
-    return [worker_schema.WorkerRead.from_orm(worker) for worker in workers]
-
-
-@app.delete("/worker/{worker_id}")
-async def delete_worker(
-    worker_id: str,
-    root_token: str = Depends(get_root_token),
-    session: database.AsyncSession = Depends(deps.create_session),
-):
-    """Deletes a worker."""
-    worker = await session.get(models.DbWorker, worker_id)
-    session.delete(worker)
-    await session.commit()
-    return fastapi.Response(status_code=200)
-
-
-async def query_user_by_provider_id(db: database.AsyncSession, discord_id: str | None = None) -> models.DbUser | None:
-    """Returns the user associated with a given provider ID if any."""
-    user_qry = sqlmodel.select(models.DbUser)
-
-    if discord_id:
-        user_qry = user_qry.filter(models.DbUser.provider == "discord").filter(
-            models.DbUser.provider_account_id == discord_id
-        )
-    # elif other IDs...
-    else:
-        return None
-
-    user: models.DbUser = (await db.exec(user_qry)).first()
-    return user
-
-
-@app.get("/auth/login/debug")
-async def login_debug(username: str, db: database.AsyncSession = Depends(deps.create_session)):
-    """Login using a debug username, which the system will accept unconditionally."""
-
-    if not settings.allow_debug_auth:
-        raise HTTPException(status_code=403, detail="Debug auth is not allowed")
-
-    if not username:
-        raise HTTPException(status_code=400, detail="Username is required")
-
-    # Try to find the user
-    user: models.DbUser = (
-        await db.exec(sqlmodel.select(models.DbUser).where(models.DbUser.id == username))
-    ).one_or_none()
-
-    if user is None:
-        logger.info(f"Creating new debug user {username=}")
-        user = models.DbUser(id=username, display_name=username, provider="debug", provider_account_id=username)
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-
-    # Discord account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token({"user_id": user.id})
-
-    return protocol.Token(access_token=access_token, token_type="bearer")
+# add routes
+app.include_router(auth.router)
+app.include_router(admin.router)
+app.include_router(chats.router)
+app.include_router(workers.router)

@@ -22,6 +22,11 @@ WSException = (
     fastapi.WebSocketDisconnect,
 )
 
+router = fastapi.APIRouter(
+    prefix="/workers",
+    tags=["workers"],
+)
+
 
 class WorkerError(Exception):
     def __init__(
@@ -257,6 +262,7 @@ async def update_worker_session_status(
     await deps.redis_client.set(f"worker_session:{worker_session_id}", worker_session.json())
 
 
+@router.websocket("/work")
 async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(get_worker_id)):
     logger.info(f"handle_worker: {worker_id=}")
     await websocket.accept()
@@ -302,6 +308,7 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(g
         await delete_worker_session(worker_session_id)
 
 
+@router.get("/sessions")
 async def list_worker_sessions() -> list[inference.WorkerConfig]:
     redis_client = deps.redis_client
     try:
@@ -316,6 +323,7 @@ async def list_worker_sessions() -> list[inference.WorkerConfig]:
     return worker_configs
 
 
+@router.on_event("startup")
 async def clear_worker_sessions():
     redis_client = deps.redis_client
     try:
@@ -364,7 +372,7 @@ async def perform_work(
     worker_config: inference.WorkerConfig,
 ):
     async with deps.manual_create_session() as session:
-        cr = chat_repository.ChatRepository(session)
+        cr = chat_repository.ChatRepository(session=session)
 
         message = await cr.start_work(
             message_id=message_id,
