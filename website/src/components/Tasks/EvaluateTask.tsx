@@ -34,14 +34,9 @@ export const EvaluateTask = ({
       } else {
         onReplyChanged({ ranking: task.replies.map((_, idx) => idx), not_rankable: notRankable });
       }
-      if (!notRankable) {
-        onValidityChanged("DEFAULT");
-      }
+      onValidityChanged(notRankable ? "VALID" : "DEFAULT");
     } else {
       onReplyChanged({ ranking, not_rankable: notRankable });
-      onValidityChanged("VALID");
-    }
-    if (!notRankable) {
       onValidityChanged("VALID");
     }
   }, [task, ranking, onReplyChanged, onValidityChanged, notRankable]);
@@ -70,7 +65,13 @@ export const EvaluateTask = ({
               revealSynthetic={task.reveal_synthetic}
               onChange={setRanking}
             />
-            <Checkbox size="lg" mt="4" checked={notRankable} isDisabled={isDisabled} onChange={handleNotRankableChange}>
+            <Checkbox
+              size="lg"
+              mt="4"
+              checked={notRankable}
+              isDisabled={isDisabled || !isEditable}
+              onChange={handleNotRankableChange}
+            >
               {t("not_rankable")}
             </Checkbox>
           </Box>

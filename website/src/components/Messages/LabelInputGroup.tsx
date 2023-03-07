@@ -27,6 +27,14 @@ interface LabelInputGroupProps {
   onChange: (values: number[]) => void;
 }
 
+/**
+ * A component that renders a group of labels and allows the user to input values for them.
+ *
+ * Note that Label is a type that include a name, like "spam" or "fails_task", and a widget value,
+ * like "yes_no".
+ * The LabelYesNoGroup will then look for spam.question or fails_task.qustion strings in the translation files.
+ *
+ */
 export const LabelInputGroup = ({
   labels,
   values,

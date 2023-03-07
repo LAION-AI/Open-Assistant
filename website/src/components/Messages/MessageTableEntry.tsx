@@ -1,9 +1,6 @@
 import {
-  Avatar,
   Badge,
-  Box,
   Flex,
-  HStack,
   Menu,
   MenuButton,
   MenuDivider,
@@ -12,8 +9,8 @@ import {
   MenuList,
   Portal,
   SimpleGrid,
+  Text,
   Tooltip,
-  useBreakpointValue,
   useColorModeValue,
   useDisclosure,
   useToast,
@@ -34,13 +31,14 @@ import {
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { forwardRef } from "react";
 import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
+import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { useDeleteMessage } from "src/hooks/message/useDeleteMessage";
-import { useScrollToElementOnMount } from "src/hooks/ui/useScrollToElementOnMount";
 import { post, put } from "src/lib/api";
 import { ROUTES } from "src/lib/routes";
 import { colors } from "src/styles/Theme/colors";
@@ -48,133 +46,107 @@ import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
 import useSWRMutation from "swr/mutation";
 
-const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
+import { BaseMessageEntry } from "./BaseMessageEntry";
+import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
 
 interface MessageTableEntryProps {
   message: Message;
   enabled?: boolean;
   highlight?: boolean;
   showAuthorBadge?: boolean;
-  scrollToHighlighted?: boolean;
+  showCreatedDate?: boolean;
 }
 
-export function MessageTableEntry({
-  message,
-  enabled,
-  highlight,
-  scrollToHighlighted,
-  showAuthorBadge,
-}: MessageTableEntryProps) {
-  const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
-  useEffect(() => {
-    const emojis = { ...message.emojis };
-    emojis["+1"] = emojis["+1"] || 0;
-    emojis["-1"] = emojis["-1"] || 0;
-    setEmojis({
-      emojis: emojis,
-      user_emojis: message?.user_emojis || [],
+// eslint-disable-next-line react/display-name
+export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryProps>(
+  ({ message, enabled, highlight, showAuthorBadge, showCreatedDate }, ref) => {
+    const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
+    useEffect(() => {
+      const emojis = { ...message.emojis };
+      emojis["+1"] = emojis["+1"] || 0;
+      emojis["-1"] = emojis["-1"] || 0;
+      setEmojis({
+        emojis: emojis,
+        user_emojis: message?.user_emojis || [],
+      });
+    }, [message.emojis, message.user_emojis]);
+
+    const { isOpen: reportPopupOpen, onOpen: showReportPopup, onClose: closeReportPopup } = useDisclosure();
+    const { isOpen: labelPopupOpen, onOpen: showLabelPopup, onClose: closeLabelPopup } = useDisclosure();
+
+    const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
+
+    const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
+      onSuccess: (data) => {
+        data.emojis["+1"] = data.emojis["+1"] || 0;
+        data.emojis["-1"] = data.emojis["-1"] || 0;
+        setEmojis(data);
+      },
     });
-  }, [message.emojis, message.user_emojis]);
+    const react = (emoji: string, state: boolean) => {
+      sendEmojiChange({ op: state ? "add" : "remove", emoji });
+    };
 
-  const { isOpen: reportPopupOpen, onOpen: showReportPopup, onClose: closeReportPopup } = useDisclosure();
-  const { isOpen: labelPopupOpen, onOpen: showLabelPopup, onClose: closeLabelPopup } = useDisclosure();
+    const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
+    const { t } = useTranslation(["message"]);
 
-  const bg = useColorModeValue("#DFE8F1", "#42536B");
+    const router = useRouter();
 
-  const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
+    const handleOnClick = useCallback(() => {
+      enabled && router.push(ROUTES.MESSAGE_DETAIL(message.id));
+    }, [enabled, message.id, router]);
 
-  const inlineAvatar = useBreakpointValue({ base: true, md: false });
-
-  const avatar = useMemo(
-    () => (
-      <Avatar
-        borderColor={borderColor}
-        size={inlineAvatar ? "xs" : "sm"}
-        mr={inlineAvatar ? 2 : 0}
-        mt={inlineAvatar ? 0 : `6px`}
-        mb={inlineAvatar ? 1.5 : 0}
-        name={`${boolean(message.is_assistant) ? "Assistant" : "User"}`}
-        src={`${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`}
-      />
-    ),
-    [borderColor, inlineAvatar, message.is_assistant]
-  );
-  const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
-
-  const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
-    onSuccess: (data) => {
-      data.emojis["+1"] = data.emojis["+1"] || 0;
-      data.emojis["-1"] = data.emojis["-1"] || 0;
-      setEmojis(data);
-    },
-  });
-  const react = (emoji: string, state: boolean) => {
-    sendEmojiChange({ op: state ? "add" : "remove", emoji });
-  };
-
-  const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
-  const { t } = useTranslation(["message"]);
-
-  const router = useRouter();
-  const highlightedElementRef = useRef();
-  useScrollToElementOnMount(scrollToHighlighted ? highlightedElementRef : undefined);
-  const handleOnClick = useCallback(() => {
-    enabled && router.push(ROUTES.MESSAGE_DETAIL(message.id));
-  }, [enabled, message.id, router]);
-
-  return (
-    <HStack w={["full", "full", "full", "fit-content"]} gap={0.5} alignItems="start" maxW="full" position="relative">
-      {!inlineAvatar && avatar}
-      <Box
-        width={["full", "full", "full", "fit-content"]}
-        maxWidth={["full", "full", "full", "2xl"]}
-        p={[3, 4]}
-        borderRadius="18px"
-        bg={bg}
+    return (
+      <BaseMessageEntry
+        ref={ref}
+        content={message.text}
+        avatarProps={{
+          name: `${boolean(message.is_assistant) ? "Assistant" : "User"}`,
+          src: `${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`,
+        }}
         outline={highlight ? "2px solid black" : undefined}
         outlineColor={highlightColor}
         cursor={enabled ? "pointer" : undefined}
-        ref={highlight ? highlightedElementRef : undefined}
         overflowX="auto"
         onClick={handleOnClick}
       >
-        {inlineAvatar && avatar}
-        <Suspense fallback={message.text}>
-          <RenderedMarkdown markdown={message.text}></RenderedMarkdown>
-        </Suspense>
-        <HStack
-          justifyContent="end"
-          style={{ position: "relative", right: "-0.3em", bottom: "-0em", marginLeft: "1em" }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
-            {message.lang}
-          </Badge>
-          {Object.entries(emojiState.emojis)
-            .filter(([emoji]) => isKnownEmoji(emoji))
-            .sort(([emoji]) => -emoji)
-            .map(([emoji, count]) => {
-              return (
-                <MessageEmojiButton
-                  key={emoji}
-                  emoji={{ name: emoji, count }}
-                  checked={emojiState.user_emojis.includes(emoji)}
-                  userReacted={emojiState.user_emojis.length > 0}
-                  userIsAuthor={!!message.user_is_author}
-                  onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-                />
-              );
-            })}
-          <MessageActions
-            react={react}
-            userEmoji={emojiState.user_emojis}
-            onLabel={showLabelPopup}
-            onReport={showReportPopup}
-            message={message}
-          />
-          <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
-          <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
-        </HStack>
+        <Flex justifyContent="space-between" mt="2" alignItems="center">
+          {showCreatedDate ? (
+            <MessageCreateDate date={message.created_date}></MessageCreateDate>
+          ) : (
+            // empty span is required to make emoji displayed at the end of row
+            <span></span>
+          )}
+          <MessageInlineEmojiRow>
+            <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
+              {message.lang}
+            </Badge>
+            {Object.entries(emojiState.emojis)
+              .filter(([emoji]) => isKnownEmoji(emoji))
+              .sort(([emoji]) => -emoji)
+              .map(([emoji, count]) => {
+                return (
+                  <MessageEmojiButton
+                    key={emoji}
+                    emoji={{ name: emoji, count }}
+                    checked={emojiState.user_emojis.includes(emoji)}
+                    userReacted={emojiState.user_emojis.length > 0}
+                    userIsAuthor={!!message.user_is_author}
+                    onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+                  />
+                );
+              })}
+            <MessageActions
+              react={react}
+              userEmoji={emojiState.user_emojis}
+              onLabel={showLabelPopup}
+              onReport={showReportPopup}
+              message={message}
+            />
+            <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
+            <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
+          </MessageInlineEmojiRow>
+        </Flex>
         <Flex
           position="absolute"
           gap="2"
@@ -201,10 +173,28 @@ export function MessageTableEntry({
             </Badge>
           )}
         </Flex>
-      </Box>
-    </HStack>
+      </BaseMessageEntry>
+    );
+  }
+);
+
+const me = { base: 3, md: 6 };
+
+const MessageCreateDate = ({ date }: { date: string }) => {
+  const locale = useCurrentLocale();
+  const createdDateColor = useColorModeValue("blackAlpha.600", "gray.400");
+  return (
+    <Text as="span" fontSize="small" color={createdDateColor} fontWeight="medium" me={me}>
+      {new Intl.DateTimeFormat(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date(date))}
+    </Text>
   );
-}
+};
 
 const EmojiMenuItem = ({
   emoji,

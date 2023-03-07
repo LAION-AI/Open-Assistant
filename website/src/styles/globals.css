@@ -20,10 +20,6 @@
     src: url("/fonts/Inter-italic.var.woff2") format("woff2");
 }
 
-/* @tailwind base; */
-@tailwind components;
-@tailwind utilities;
-
 #__next {
     min-height: 100%;
 }

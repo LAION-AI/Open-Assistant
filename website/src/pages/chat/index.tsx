@@ -22,8 +22,8 @@ const Chat = () => {
   const { trigger: newChatTrigger } = useSWRMutation<{ id: string }>("/api/chat", post);
 
   const createChat = useCallback(async () => {
-    const { id } = await newChatTrigger();
-    router.push(`/chat/${id}`);
+    const chat = await newChatTrigger();
+    router.push(`/chat/${chat!.id}`);
   }, [newChatTrigger, router]);
 
   const content = useMemo(() => {
