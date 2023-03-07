@@ -1,7 +1,5 @@
 
 
-
-
 def add_special_tokens(special_tokens,tokenizer,model):
     for key,value in special_tokens.items():
         setattr(tokenizer,key,value)
