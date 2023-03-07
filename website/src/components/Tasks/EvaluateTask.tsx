@@ -34,14 +34,9 @@ export const EvaluateTask = ({
       } else {
         onReplyChanged({ ranking: task.replies.map((_, idx) => idx), not_rankable: notRankable });
       }
-      if (!notRankable) {
-        onValidityChanged("DEFAULT");
-      }
+      onValidityChanged(notRankable ? "VALID" : "DEFAULT");
     } else {
       onReplyChanged({ ranking, not_rankable: notRankable });
-      onValidityChanged("VALID");
-    }
-    if (!notRankable) {
       onValidityChanged("VALID");
     }
   }, [task, ranking, onReplyChanged, onValidityChanged, notRankable]);
