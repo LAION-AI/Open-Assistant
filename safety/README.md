@@ -5,7 +5,6 @@ This is the Open Assistant Safety Folder and contains the following:
 * Model training scripts
 * Model infrence scripts
 * Data collection and processing scripts 
-* Ethical decision making 
 
 
 ## Mission Statment
