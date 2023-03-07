@@ -6,51 +6,29 @@ from transformers import (
     DataCollator,
     Trainer,
     TrainingArguments)
+import os
+from omegaconf import DictConfig, OmegaConf
+import hydra
+from hydra.utils import instantiate
+from utils import add_special_tokens
+from datasets import load_dataset
+from custom_datasets.rot_dataset import SafetyDataset, SafetyDataCollator
 
 
-LABEL2ID = {
-    "__casual__": "__casual__",
-    "__needs_caution__": "__needs_caution__",
-    "__needs_intervention__": "__needs_intervention__",
-    "__probably_needs_caution__": "__probably_needs_caution__",
-    "__possibly_needs_caution__": "__possibly_needs_caution__",
-}
-
-SPECIAL_TOKENS = {"context_token":"<ctx>","sep_token":"<sep>","label_token":"<cls>","rot_token":"<rot>"}
-MAX_LEN = 256
-EPOCHS = 1
-MODEL = "t5-base"
-BATCH_SIZE = 8
-DATASET_NAME = "allenai/prosocial-dialog"
-FP16 = False
-ROOT_DIR = ""
-
-
-
-if __name__ == "__main__":
-
-    if not os.path.exists(ROOT_DIR):
-        os.mkdir(ROOT_DIR)
+@hydra.main(version_base=None, config_path="config",config_name="config")
+def train(cfg: DictConfig) -> None:
     
-    model = T5ForConditionalGeneration.from_pretrained(MODEL)
-    tokenizer = T5Tokenizer.from_pretrained(MODEL,padding_side="right",truncation_side="right",model_max_length=512)
-    add_special_tokens(SPECIAL_TOKENS,tokenizer,model)
+    if not os.path.exists(cfg.save_folder):
+        os.mkdir(cfg.save_folder)
 
-    dataset = load_dataset(DATASET_NAME)
-    train_dataset = SafetyDataset(dataset,split=["train","validation"],tokenizer=tokenizer,max_len=MAX_LEN)
-    valid_dataset = SafetyDataset(dataset,split="test",tokenizer=tokenizer,max_len=MAX_LEN)
-    
-    training_args = TrainingArguments(output_dir=ROOT_DIR, 
-                                  per_device_train_batch_size=BATCH_SIZE, 
-                                  per_device_eval_batch_size=BATCH_SIZE,
-                                  num_train_epochs=EPOCHS,
-                                  logging_steps=100,
-                                  evaluation_strategy="steps",
-                                  eval_steps=1000,
-                                  save_steps=5000,
-                                  push_to_hub=False,
-                                  fp16=FP16)
+    model = T5ForConditionalGeneration.from_pretrained(cfg.model)
+    tokenizer = T5Tokenizer.from_pretrained(cfg.model,padding_side=cfg.padding_side,truncation_side=cfg.truncation_side,model_max_length=model.config.n_positions)
+    add_special_tokens(cfg.special_tokens,tokenizer,model)
+    training_args = instantiate(cfg.trainer)
 
+    dataset = load_dataset(cfg.dataset.name)
+    train_dataset = SafetyDataset(dataset,split=OmegaConf.to_object(cfg.dataset.train),tokenizer=tokenizer,max_len=cfg.max_length)
+    valid_dataset = SafetyDataset(dataset,split=cfg.dataset.test,tokenizer=tokenizer,max_len=cfg.max_length)
 
     # Initialize our Trainer
     trainer = Trainer(
@@ -58,13 +36,16 @@ if __name__ == "__main__":
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=valid_dataset,
-        data_collator=T2TDataCollator()
+        data_collator=SafetyDataCollator()
     )
 
     # Training
     trainer.train()
 
-    #trainer.push_to_hub("")
+    trainer.save_model(os.path.join(cfg.save_folder,f"{cfg.model_name}-model"))
+    tokenizer.save_vocabulary(os.path.join(cfg.save_folder,f"{cfg.model_name}-tokenizer"))
 
-    #trainer.save_model(os.path.join(ROOT_DIR,"safety-model"))
-    tokenizer.save_vocabulary(os.path.join(ROOT_DIR,"safety-tokenizer"))
+
+if __name__ == "__main__":
+
+    train()
