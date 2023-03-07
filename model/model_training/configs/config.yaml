@@ -54,7 +54,7 @@ defaults:
   samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
   verbose: false
   output_dir: saved_model
-  use_custom_sampler: false
+  use_custom_sampler: true
   random_offset_probability: 0.5 # probability for random message offsets
   label_masking: true
   residual_dropout: 0.0

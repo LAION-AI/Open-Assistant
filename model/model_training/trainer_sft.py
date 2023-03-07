@@ -238,7 +238,7 @@ if __name__ == "__main__":
             train.datasets,
             rank=training_conf.local_rank,
             world_size=training_conf.world_size,
-            get_sample_length_fn=list(
+            samples_length=list(
                 map(
                     lambda x: train_collate_fn.process_one(x, return_length=True),
                     tqdm(train, desc="Calculating lengths per sample"),
