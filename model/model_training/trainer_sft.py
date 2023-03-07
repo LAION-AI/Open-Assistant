@@ -8,6 +8,7 @@ import datasets
 import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
+from models.patch_resid_dropout import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
 from transformers import PreTrainedModel, Trainer, TrainingArguments
@@ -209,6 +210,9 @@ if __name__ == "__main__":
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
+
+    if training_conf.residual_dropout > 0:
+        patch_model(model, resid_pdrop=training_conf.residual_dropout)
 
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(

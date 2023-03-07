@@ -6,7 +6,7 @@ defaults:
   per_device_eval_batch_size: 2
   adam_beta1: 0.9
   adam_beta2: 0.95
-  adam_epsilon: 1e-8
+  adam_epsilon: 1e-12
   weight_decay: 0.00
   warmup_steps: 600
   eval_steps: 200
@@ -57,6 +57,7 @@ defaults:
   use_custom_sampler: false
   random_offset_probability: 0.5 # probability for random message offsets
   label_masking: true
+  residual_dropout: 0.2
 
 oa_dataset_only:
   datasets:
@@ -97,11 +98,11 @@ pythia-1B:
   per_device_eval_batch_size: 32
 
 pythia-6.9B:
-  learning_rate: 1.5e-6
+  learning_rate: 8e-6
   model_name: EleutherAI/pythia-6.9b-deduped
   weight_decay: 0.0
   max_length: 520
-  warmup_steps: 500
+  warmup_steps: 5
   gradient_checkpointing: false
   gradient_accumulation_steps: 2
   per_device_train_batch_size: 2
