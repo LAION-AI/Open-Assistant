@@ -214,10 +214,18 @@ if __name__ == "__main__":
     train_collate_fn = DialogueDataCollator(
         tokenizer,
         max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
         samples_mixing=training_conf.samples_mixing,
         pad_to_multiple_of=16,
     )
-    eval_collate_fn = DialogueDataCollator(tokenizer, max_length=training_conf.max_length, samples_mixing=False)
+    eval_collate_fn = DialogueDataCollator(
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=False,
+    )
 
     if training_conf.use_custom_sampler:
         sampler = PerDatasetSampler.build_sampler_from_config(

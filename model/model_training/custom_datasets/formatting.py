@@ -1,4 +1,10 @@
-QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
+QA_SPECIAL_TOKENS = {
+    "Question": "<|prompter|>",
+    "Answer": "<|assistant|>",
+    "System": "<|system|>",
+    "StartPrefix": "<|prefix_begin|>",
+    "EndPrefix": "<|prefix_end|>",
+}
 
 
 def format_pair(pairs):
