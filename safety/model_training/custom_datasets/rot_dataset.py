@@ -1,8 +1,18 @@
 
 import torch
-import torch.utils.data import Dataset
+from torch.utils.data import Dataset
+from datasets import concatenate_datasets
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
+
+LABEL2ID = {
+    "__casual__": "__casual__",
+    "__needs_caution__": "__needs_caution__",
+    "__needs_intervention__": "__needs_intervention__",
+    "__probably_needs_caution__": "__probably_needs_caution__",
+    "__possibly_needs_caution__": "__possibly_needs_caution__",
+}
+
 
 class SafetyDataset(Dataset):
     
