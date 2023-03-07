@@ -219,9 +219,12 @@ if __name__ == "__main__":
     )
     eval_collate_fn = DialogueDataCollator(tokenizer, max_length=training_conf.max_length, samples_mixing=False)
 
-    sampler = PerDatasetSampler.build_sampler_from_config(
-        training_conf, train.datasets, rank=training_conf.local_rank, world_size=training_conf.world_size
-    )
+    if training_conf.use_custom_sampler:
+        sampler = PerDatasetSampler.build_sampler_from_config(
+            training_conf, train.datasets, rank=training_conf.local_rank, world_size=training_conf.world_size
+        )
+    else:
+        sampler = None
 
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
@@ -293,3 +296,5 @@ if __name__ == "__main__":
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
     trainer.train()
+    trainer.save_model()
+    tokenizer.save_pretrained(output_dir)
