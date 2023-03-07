@@ -41,6 +41,13 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
                         "parent_id": parent_id,
                         "content": message,
                     },
+                    headers=auth_headers,
+                )
+                response.raise_for_status()
+                message_id = response.json()["assistant_message"]["id"]
+
+                response = requests.get(
+                    f"{backend_url}/chats/{chat_id}/messages/{message_id}/events",
                     stream=True,
                     headers={
                         "Accept": "text/event-stream",
@@ -48,11 +55,9 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
                     },
                 )
                 response.raise_for_status()
-
                 client = sseclient.SSEClient(response)
                 print("Assistant: ", end="", flush=True)
                 events = iter(client.events())
-                message_id = json.loads(next(events).data)["assistant_message"]["id"]
                 for event in events:
                     try:
                         data = json.loads(event.data)

@@ -33,6 +33,21 @@ class UserChatRepository(pydantic.BaseModel):
         chat = (await self.session.exec(query)).one()
         return chat
 
+    async def get_message_by_id(self, chat_id: str, message_id: str) -> models.DbMessage:
+        query = (
+            sqlmodel.select(models.DbMessage)
+            .where(
+                models.DbMessage.id == message_id,
+                models.DbMessage.chat_id == chat_id,
+            )
+            .join(models.DbChat)
+            .where(
+                models.DbChat.user_id == self.user_id,
+            )
+        )
+        message = (await self.session.exec(query)).one()
+        return message
+
     async def create_chat(self) -> models.DbChat:
         chat = models.DbChat(user_id=self.user_id)
         self.session.add(chat)

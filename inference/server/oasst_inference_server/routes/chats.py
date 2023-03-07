@@ -1,7 +1,7 @@
 import fastapi
 from fastapi import Depends
 from loguru import logger
-from oasst_inference_server import auth, deps, queueing
+from oasst_inference_server import auth, deps, models, queueing
 from oasst_inference_server.schemas import chat as chat_schema
 from oasst_inference_server.user_chat_repository import UserChatRepository
 from oasst_shared.schemas import inference
@@ -48,22 +48,21 @@ async def get_chat(
 @router.post("/{chat_id}/messages")
 async def create_message(
     chat_id: str,
-    message_request: chat_schema.MessageRequest,
-    fastapi_request: fastapi.Request,
+    request: chat_schema.CreateMessageRequest,
     user_id: str = Depends(auth.get_current_user_id),
-) -> EventSourceResponse:
+) -> chat_schema.CreateMessageResponse:
     """Allows the client to stream the results of a request."""
 
     async with deps.manual_user_chat_repository(user_id) as ucr:
         try:
             prompter_message = await ucr.add_prompter_message(
-                chat_id=chat_id, parent_id=message_request.parent_id, content=message_request.content
+                chat_id=chat_id, parent_id=request.parent_id, content=request.content
             )
             assistant_message = await ucr.initiate_assistant_message(
                 parent_id=prompter_message.id,
-                work_parameters=message_request.work_parameters,
+                work_parameters=request.work_parameters,
             )
-            queue = queueing.work_queue(deps.redis_client, message_request.worker_compat_hash)
+            queue = queueing.work_queue(deps.redis_client, request.worker_compat_hash)
             logger.debug(f"Adding {assistant_message.id=} to {queue.queue_id} for {chat_id}")
             await queue.enqueue(assistant_message.id)
             logger.debug(f"Added {assistant_message.id=} to {queue.queue_id} for {chat_id}")
@@ -73,15 +72,26 @@ async def create_message(
             logger.exception("Error adding prompter message")
             return fastapi.Response(status_code=500)
 
-    async def event_generator(prompter_message: inference.MessageRead, assistant_message: inference.MessageRead):
-        queue = queueing.message_queue(deps.redis_client, assistant_message.id)
+    return chat_schema.CreateMessageResponse(
+        prompter_message=prompter_message_read,
+        assistant_message=assistant_message_read,
+    )
+
+
+@router.get("/{chat_id}/messages/{message_id}/events")
+async def message_events(
+    chat_id: str,
+    message_id: str,
+    fastapi_request: fastapi.Request,
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+) -> EventSourceResponse:
+    message: models.DbMessage = await ucr.get_message_by_id(chat_id=chat_id, message_id=message_id)
+    if message.role != "assistant":
+        raise fastapi.HTTPException(status_code=400, detail="Only assistant messages can be streamed.")
+
+    async def event_generator(chat_id: str, message_id: str):
+        queue = queueing.message_queue(deps.redis_client, message_id=message_id)
         try:
-            yield {
-                "data": chat_schema.MessageResponseEvent(
-                    prompter_message=prompter_message,
-                    assistant_message=assistant_message,
-                ).json(),
-            }
             while True:
                 item = await queue.dequeue()
                 if item is None:
@@ -113,12 +123,7 @@ async def create_message(
             logger.exception(f"Error streaming {chat_id}")
             raise
 
-    return EventSourceResponse(
-        event_generator(
-            prompter_message=prompter_message_read,
-            assistant_message=assistant_message_read,
-        )
-    )
+    return EventSourceResponse(event_generator(chat_id=chat_id, message_id=message_id))
 
 
 @router.post("/{chat_id}/messages/{message_id}/votes")

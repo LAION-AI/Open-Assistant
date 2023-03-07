@@ -33,8 +33,8 @@ def custom_json_deserializer(s):
             return inference.WorkParameters.parse_obj(d)
         case "WorkerConfig":
             return inference.WorkerConfig.parse_obj(d)
-        case "MessageRequest":
-            return chat_schema.MessageRequest.parse_obj(d)
+        case "CreateMessageRequest":
+            return chat_schema.CreateMessageRequest.parse_obj(d)
         case "WorkRequest":
             return inference.WorkRequest.parse_obj(d)
         case "WorkResponsePacket":
