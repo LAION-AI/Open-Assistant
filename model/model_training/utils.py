@@ -93,7 +93,8 @@ class PerDatasetSampler(DistributedSampler):
             epoch_idx.extend(sampled_idx)
 
         if self.samples_length is not None:
-            epoch_idx = sorted(epoch_idx, key=lambda x: -self.samples_length[x])
+            # sort by samples length and in case of ties randomize
+            epoch_idx = sorted(epoch_idx, key=lambda x: (self.samples_length[x], random.random()))
 
             if self.shuffle:
                 # do some minor shuffling to avoid repeating the same order
