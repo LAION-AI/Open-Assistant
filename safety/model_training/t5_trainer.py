@@ -1,14 +1,11 @@
 import os
+
 import hydra
 from custom_datasets.rot_dataset import SafetyDataCollator, SafetyDataset
 from datasets import load_dataset
 from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
-from transformers import (
-    T5ForConditionalGeneration,
-    T5Tokenizer,
-    Trainer,
-)
+from transformers import T5ForConditionalGeneration, T5Tokenizer, Trainer
 from utils import add_special_tokens
 
 
