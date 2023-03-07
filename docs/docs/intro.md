@@ -1,15 +1,36 @@
 # Introduction
+> The FAQ page is available at [here](https://projects.laion.ai/Open-Assistant/docs/faq).
 
-OpenAssistant is a chat-based assistant that understands tasks, can interact
-with third-party systems, and retrieve information dynamically to do so.
+Open Assistant (abbreviated as OA) is a chat-based and open-source assistant. The vision of the project is to make a large language model that can run on a single high-end consumer GPU.
 
-It can be extended and personalized easily and is developed as free, open-source
-software.
+While Open Assistant is often compared to ChatGPT, Open Assistant should be more natural to interact with and capable at dealing with sensitive topics. When adapted from the conversational form, Open Assistant can interface with other third-party applications easily as well as retrieve information from databases and the Internet.
 
-## Our Vision
+There are four main areas that you can work on:
+1. Ranking responses in [open-assistant.io](https://www.open-assistant.io). You can take a look at [tasks docs section](https://projects.laion.ai/Open-Assistant/docs/tasks) for more information.
+2. Curating datasets and performing data augmentation. This includes scraping, gathering other public datasets, etc. Most of these efforts will be concentrated at [`/data/datasets`](https://github.com/LAION-AI/Open-Assistant/tree/main/data/datasets) and are documented at [here](https://projects.laion.ai/Open-Assistant/docs/data/datasets).
+3. Creating and fine-tuning Open Assistant itself. For that, you should pay special attention to [`/model`](https://github.com/LAION-AI/Open-Assistant/tree/main/inference).
+4. [open-assistant.io](https://www.open-assistant.io) dev. Take a close look at [`/website`](https://github.com/LAION-AI/Open-Assistant/tree/main/website) as well as [`/backend`](https://github.com/LAION-AI/Open-Assistant/tree/main/backend).
 
-We want OpenAssistant to be the single, unifying platform that all other systems
-use to interface with humans.
+## GitHub folders explanation
+> Do read the [developer guide](https://projects.laion.ai/Open-Assistant/docs/guides/developers) for further information.
+
+Here's a list of first-level folders at [Open Assistant's Github page](https://github.com/LAION-AI/Open-Assistant/).
+- [`/ansible`](https://github.com/LAION-AI/Open-Assistant/tree/main/ansible) - for managing the full stack using [Ansible](https://en.wikipedia.org/wiki/Ansible_(software))
+- [`/assets`](https://github.com/LAION-AI/Open-Assistant/tree/main/assets) - contains logos
+- [`/backend`](https://github.com/LAION-AI/Open-Assistant/tree/main/backend) - backend for open-assistant.io and discord bots, maybe helpful for locally test API calls
+- [`/copilot`](https://github.com/LAION-AI/Open-Assistant/tree/main/copilot) - read more at AWS's [Copilot](https://aws.github.io/copilot-cli/). And no, this is not a folder that contains something similar to OpenAI's Codex.
+- [`/data`](https://github.com/LAION-AI/Open-Assistant/tree/main/data) - contains [`/data/datasets`](https://github.com/LAION-AI/Open-Assistant/tree/main/data/datasets) that contains datasets in each folder, including the human response data from open-assistant.io
+- [`/deploy`](https://github.com/LAION-AI/Open-Assistant/tree/main/deploy)
+- [`/discord-bot`](https://github.com/LAION-AI/Open-Assistant/tree/main/discord-bots) - frontend as discord bots for volunteer data collection
+- [`/docker`](https://github.com/LAION-AI/Open-Assistant/tree/main/docker)
+- [`/docs`](https://github.com/LAION-AI/Open-Assistant/tree/main/docs) - this website!
+- [`/inference`](https://github.com/LAION-AI/Open-Assistant/tree/main/inference) - inference pipeline for Open Assistant model
+- [`/model`](https://github.com/LAION-AI/Open-Assistant/tree/main/inference) - currently contains scripts and tools for training/fine-tuning Open Assistant and other neural networks
+- [*`/notebooks`](https://github.com/LAION-AI/Open-Assistant/tree/main/inference) - DEPRECIATED in favor of* [`/data/datasets`](https://github.com/LAION-AI/Open-Assistant/tree/main/data/datasets). Contains jupyter notebooks for data scraping and augmentation
+- [`/oasst-shared`](https://github.com/LAION-AI/Open-Assistant/tree/main/oasst-shared) - shared Python code for Open Assistant
+- [`/scripts`](https://github.com/LAION-AI/Open-Assistant/tree/main/scripts) - contains various scripts for things
+- [`/text-frontend`](https://github.com/LAION-AI/Open-Assistant/tree/main/text-frontend)
+- [`/website`](https://github.com/LAION-AI/Open-Assistant/tree/main/website) - everything in [open-assistant.io](https://www.open-assistant.io), including gamification
 
 ## Principles
 
@@ -17,18 +38,7 @@ use to interface with humans.
 - We need to get the MVP out fast, while we still have momentum
 - We pull in one direction
 - We are pragmatic
-- We aim for models that can (or could, with some effort) be run on consumer
-  hardware
+- We aim for models that can (or could, with some effort) be run on consumer hardware
 - We rapidly validate our ML experiments on a small scale, before going to a
   supercluster
 
-## Main Efforts
-
-- Data Collection Code → Backend, website, and discord bot to collect data
-- Instruction Dataset Gathering → Scraping & cleaning web data
-- Gamification → Leaderboards & more, to make data collection more fun
-- Model Training → Experiments on pseudo- and real-data
-- Infrastructure → Collection, training, and inference
-- Data Collection → This is the bulk of the work
-- Data Augmentation → Making more data from little data
-- Privacy and Safety → Protecting sensitive data
