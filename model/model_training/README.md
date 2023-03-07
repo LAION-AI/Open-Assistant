@@ -71,11 +71,11 @@ This works with `torch.distributed`.
 To experiment with the Open Assistant data simply run:
 
 ```bash
-python trainer_sft.py --configs defaults oa_dataset_only galactica-125m
+python trainer_sft.py --configs defaults oasst_export_eu galactica-125m
 ```
 
-Change the `data_path` in the `oa_dataset_only` from the `configs/config.yaml`
-file to the correct path.
+Change the `input_file_path` in the `oasst_export_eu` from the
+`configs/config.yaml` file to the correct path.
 
 ## Training with RL
 

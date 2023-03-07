@@ -55,6 +55,8 @@ defaults:
   verbose: false
   output_dir: saved_model
   use_custom_sampler: false
+  random_offset_probability: 0.5 # probability for random message offsets
+  label_masking: true
 
 oa_dataset_only:
   datasets:
@@ -69,7 +71,7 @@ oasst_export_eu:
     - oasst_export:
         lang: "en,es,de,fr"
         #top_k: 2
-        input_file_path: 2023-02-26_oasst_default.jsonl.gz
+        input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
 
 pythia:
   learning_rate: 8e-6
