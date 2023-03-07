@@ -8,7 +8,7 @@ import sqlmodel
 import websockets.exceptions
 from fastapi import Depends
 from loguru import logger
-from oasst_inference_server import chat_repository, deps, models, queueing, worker_handler
+from oasst_inference_server import chat_repository, deps, models, queueing
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from sqlalchemy.sql.functions import random as sql_random
@@ -19,6 +19,11 @@ WSException = (
     websockets.exceptions.ConnectionClosedError,
     fastapi.WebSocketException,
     fastapi.WebSocketDisconnect,
+)
+
+router = fastapi.APIRouter(
+    prefix="/workers",
+    tags=["workers"],
 )
 
 
@@ -183,7 +188,7 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
                 return
 
             compliance_check.compare_worker_id = message.worker_id
-            compliance_work_request = worker_handler.build_work_request(message)
+            compliance_work_request = build_work_request(message)
 
             logger.info(f"Found work request for compliance check for worker {worker_id}: {compliance_work_request}")
             await send_work_request(websocket, compliance_work_request)
@@ -256,6 +261,7 @@ async def update_worker_session_status(
     await deps.redis_client.set(f"worker_session:{worker_session_id}", worker_session.json())
 
 
+@router.websocket("/ws")
 async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(get_worker_id)):
     logger.info(f"handle_worker: {worker_id=}")
     await websocket.accept()
@@ -301,6 +307,7 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(g
         await delete_worker_session(worker_session_id)
 
 
+@router.get("/sessions")
 async def list_worker_sessions() -> list[inference.WorkerConfig]:
     redis_client = deps.redis_client
     try:
@@ -315,6 +322,7 @@ async def list_worker_sessions() -> list[inference.WorkerConfig]:
     return worker_configs
 
 
+@router.on_event("startup")
 async def clear_worker_sessions():
     redis_client = deps.redis_client
     try:
