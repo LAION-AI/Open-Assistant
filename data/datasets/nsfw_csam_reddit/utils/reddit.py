@@ -5,7 +5,6 @@ import pandas as pd
 import praw
 import prawcore
 import utils
-from datasets import load_dataset
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
