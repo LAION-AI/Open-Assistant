@@ -54,7 +54,13 @@ class PerDatasetSampler(DistributedSampler):
         world_size: int = None,
         shuffle: bool = True,
         seed: int = 0,
+        samples_length: List[int] = None,
     ):
+        """
+        if samples_length is not None, then the sampler
+        will order the samples by dataset length
+        with some variability across epochs
+        """
         self.dataset_sizes = dataset_sizes
         self.dataset_size_per_epoch = dataset_size_per_epoch
         self.num_datasets = len(dataset_sizes)
@@ -67,6 +73,7 @@ class PerDatasetSampler(DistributedSampler):
 
         self.num_samples = sum(dataset_size_per_epoch) // world_size
         self.seed = seed
+        self.samples_length = samples_length
 
     def set_epoch(self, epoch) -> None:
         self.epoch = epoch
@@ -85,8 +92,18 @@ class PerDatasetSampler(DistributedSampler):
             n += self.dataset_sizes[i]
             epoch_idx.extend(sampled_idx)
 
-        if self.shuffle:
-            random.shuffle(epoch_idx)
+        if self.samples_length is not None:
+            epoch_idx = sorted(epoch_idx, key=lambda x: -self.samples_length[x])
+
+            if self.shuffle:
+                # do some minor shuffling to avoid repeating the same order
+                # but not too much to avoid too much padding
+                # quasi random basically
+                for i in range(0, len(epoch_idx), 200):  # this should be batch_size dependent
+                    random.shuffle(epoch_idx[i : i + 200])
+        else:
+            if self.shuffle:
+                random.shuffle(epoch_idx)
 
         # split epoch_idx in world_size chunks
         epoch_idx = epoch_idx[self.rank : self.num_samples : self.world_size]

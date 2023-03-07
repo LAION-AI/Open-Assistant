@@ -11,6 +11,7 @@ from efficiency_utils import fuse_gelu
 from models.patch_resid_dropout import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
@@ -233,7 +234,18 @@ if __name__ == "__main__":
 
     if training_conf.use_custom_sampler:
         sampler = PerDatasetSampler.build_sampler_from_config(
-            training_conf, train.datasets, rank=training_conf.local_rank, world_size=training_conf.world_size
+            training_conf,
+            train.datasets,
+            rank=training_conf.local_rank,
+            world_size=training_conf.world_size,
+            get_sample_length_fn=list(
+                map(
+                    lambda x: train_collate_fn.process_one(x, return_length=True),
+                    tqdm(train, desc="Calculating lengths per sample"),
+                )
+            )
+            if training_conf.sort_by_length
+            else None,
         )
     else:
         sampler = None

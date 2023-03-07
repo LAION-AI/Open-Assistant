@@ -24,65 +24,75 @@ class DialogueDataCollator:
     random_offset_probability: Optional[float] = 0.5
     label_masking: bool = True
 
+    def process_one(self, messages, return_length=False):
+        total_short_context_one = 0
+        messages = list(messages)
+
+        if random.random() < self.random_offset_probability:
+            truncation = TruncationStrategy.DO_NOT_TRUNCATE
+            max_length = None
+        else:
+            truncation = TruncationStrategy.LONGEST_FIRST
+            max_length = self.max_length
+
+        # append eos token to each messages
+        assert self.tokenizer.eos_token
+        messages = [m + self.tokenizer.eos_token for m in messages]
+
+        flatten_message = self.tokenizer(
+            "".join(messages),
+            max_length=max_length,
+            truncation=truncation,
+            return_offsets_mapping=True,
+            padding=False,
+        )
+
+        if return_length:
+            return len(flatten_message["input_ids"])
+
+        message_change_indices = np.cumsum([len(x) for x in messages])
+        # for each token an integer indicating the index of the message it belongs to. Just to create the label mask.
+        # Label mask is true when predicting a token that is part of the answer, false otherwise.
+        # TEXT:             Question: Hello, how are you? Answer: I am fine. Question: What is your name? Answer: My name is John.
+        # MESSAGE_INDICES:  0         0      0   0   0    1       1 1  1     2         2    2  2    2     3       3  3    3  3
+        # LABEL_MASK:       0         0      0   0   0    1       1 1  1     0         0    0  0    0     1       1  1    1  1
+
+        # If no result in next, we are predicting the last termination token(s)
+        message_indices = list(
+            map(
+                lambda x: next((i for i, val in enumerate(message_change_indices) if val >= x)),
+                list(map(lambda x: x[1], flatten_message["offset_mapping"])),
+            )
+        )
+
+        if self.max_length and len(message_indices) > self.max_length:
+            offset = random.randint(0, len(message_indices) - self.max_length)
+            for k in flatten_message.keys():
+                v = flatten_message[k]
+                if isinstance(v, list) and len(v) == len(message_indices):
+                    flatten_message[k] = v[offset : offset + self.max_length]
+            message_indices = message_indices[offset : offset + self.max_length]
+
+        if self.label_masking:
+            label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
+        else:
+            label_mask = np.ones(len(message_indices), dtype=bool)
+        label_mask[-1] = False  # make sure last token is inactive, has an effect only when truncating
+
+        if len(flatten_message["input_ids"]) < self.mix_length_threshold and self.samples_mixing:
+            total_short_context_one += len(flatten_message["input_ids"])
+
+        return {k: v for k, v in flatten_message.items() if k != "offset_mapping"}, label_mask, total_short_context_one
+
     def __call__(self, features):
         flatten_messages = []
         label_masks = []
         total_short_context = 0
         for messages in features:
-            messages = list(messages)
-
-            if random.random() < self.random_offset_probability:
-                truncation = TruncationStrategy.DO_NOT_TRUNCATE
-                max_length = None
-            else:
-                truncation = TruncationStrategy.LONGEST_FIRST
-                max_length = self.max_length
-
-            # append eos token to each messages
-            assert self.tokenizer.eos_token
-            messages = [m + self.tokenizer.eos_token for m in messages]
-
-            flatten_message = self.tokenizer(
-                "".join(messages),
-                max_length=max_length,
-                truncation=truncation,
-                return_offsets_mapping=True,
-                padding=False,
-            )
-
-            message_change_indices = np.cumsum([len(x) for x in messages])
-            # for each token an integer indicating the index of the message it belongs to. Just to create the label mask.
-            # Label mask is true when predicting a token that is part of the answer, false otherwise.
-            # TEXT:             Question: Hello, how are you? Answer: I am fine. Question: What is your name? Answer: My name is John. Question:
-            # MESSAGE_INDICES:  0         0      0   0   0    0       1 1  1     2         2    2  2    2     2       3  3    3  3     -2
-            # LABEL_MASK:       0         0      0   0   0    1       1 1  1     0         0    0  0    0     1       1  1    1  1     0
-
-            # If no result in next, we are predicting the last termination token(s)
-            message_indices = list(
-                map(
-                    lambda x: next((i for i, val in enumerate(message_change_indices) if val >= x), -2),
-                    list(map(lambda x: x[1], flatten_message["offset_mapping"])),
-                )
-            )
-
-            if self.max_length and len(message_indices) > self.max_length:
-                offset = random.randint(0, len(message_indices) - self.max_length)
-                for k in flatten_message.keys():
-                    v = flatten_message[k]
-                    if isinstance(v, list) and len(v) == len(message_indices):
-                        flatten_message[k] = v[offset : offset + self.max_length]
-                message_indices = message_indices[offset : offset + self.max_length]
-
-            if self.label_masking:
-                label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
-            else:
-                label_mask = np.ones(len(message_indices), dtype=bool)
-            label_mask[-1] = False  # make sure last token is inactive, has an effect only when truncating
-
+            flatten_message, label_mask, total_short_context_one = self.process_one(messages)
+            flatten_messages.append(flatten_message)
             label_masks.append(label_mask)
-            if len(flatten_message["input_ids"]) < self.mix_length_threshold and self.samples_mixing:
-                total_short_context += len(flatten_message["input_ids"])
-            flatten_messages.append({k: v for k, v in flatten_message.items() if k != "offset_mapping"})
+            total_short_context += total_short_context_one
 
         # packing
         if total_short_context > 2 and self.samples_mixing:
