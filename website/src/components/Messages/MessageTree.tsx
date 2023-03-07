@@ -41,6 +41,7 @@ export const MessageTree = memo(({ tree, messageId, scrollToHighlighted }: Messa
                   showAuthorBadge
                   highlight={child.id === messageId}
                   message={child}
+                  showCreatedDate
                 ></MessageTableEntry>
               </Box>
               {depth < maxDepth && renderChildren(child.children, depth + 1)}
@@ -86,6 +87,7 @@ export const MessageTree = memo(({ tree, messageId, scrollToHighlighted }: Messa
           showAuthorBadge
           message={tree}
           highlight={tree.id === messageId}
+          showCreatedDate
         />
       </Box>
       {renderChildren(tree.children)}

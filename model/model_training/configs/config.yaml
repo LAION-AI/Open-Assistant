@@ -6,10 +6,10 @@ defaults:
   per_device_eval_batch_size: 2
   adam_beta1: 0.9
   adam_beta2: 0.95
-  adam_epsilon: 1e-8
+  adam_epsilon: 1e-12
   weight_decay: 0.00
   warmup_steps: 600
-  eval_steps: 500
+  eval_steps: 200
   save_steps: 500
   max_length: 512
   num_train_epochs: 3
@@ -54,15 +54,25 @@ defaults:
   samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
   verbose: false
   output_dir: saved_model
+  use_custom_sampler: false
+  random_offset_probability: 0.5 # probability for random message offsets
+  label_masking: true
+  residual_dropout: 0.2
 
 oa_dataset_only:
   datasets:
+    - oa_private:
+        split: sft
+        val_split: 0.0
+        fraction: 1
+        file: 2023-02-10_oasst_prod.jsonl
+
+oasst_export_eu:
+  datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        top_k: 2
-        input_file_path: 2023-02-19_oasst_ready_with_spam_deleted.jsonl.gz
-  num_train_epochs: 10
-  save_steps: 2000
+        #top_k: 2
+        input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
 
 pythia:
   learning_rate: 8e-6
@@ -86,6 +96,17 @@ pythia-1B:
   gradient_accumulation_steps: 2
   per_device_train_batch_size: 16
   per_device_eval_batch_size: 32
+
+pythia-6.9B:
+  learning_rate: 8e-6
+  model_name: EleutherAI/pythia-6.9b-deduped
+  weight_decay: 0.0
+  max_length: 520
+  warmup_steps: 5
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
 
 galactica-125m:
   learning_rate: 5e-5

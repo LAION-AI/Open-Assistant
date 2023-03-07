@@ -9,6 +9,7 @@ import {
   MenuList,
   Portal,
   SimpleGrid,
+  Text,
   Tooltip,
   useColorModeValue,
   useDisclosure,
@@ -36,6 +37,7 @@ import { LabelMessagePopup } from "src/components/Messages/LabelPopup";
 import { MessageEmojiButton } from "src/components/Messages/MessageEmojiButton";
 import { ReportPopup } from "src/components/Messages/ReportPopup";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
+import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { useDeleteMessage } from "src/hooks/message/useDeleteMessage";
 import { post, put } from "src/lib/api";
 import { ROUTES } from "src/lib/routes";
@@ -52,11 +54,12 @@ interface MessageTableEntryProps {
   enabled?: boolean;
   highlight?: boolean;
   showAuthorBadge?: boolean;
+  showCreatedDate?: boolean;
 }
 
 // eslint-disable-next-line react/display-name
 export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryProps>(
-  ({ message, enabled, highlight, showAuthorBadge }, ref) => {
+  ({ message, enabled, highlight, showAuthorBadge, showCreatedDate }, ref) => {
     const [emojiState, setEmojis] = useState<MessageEmojis>({ emojis: {}, user_emojis: [] });
     useEffect(() => {
       const emojis = { ...message.emojis };
@@ -107,35 +110,43 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
         overflowX="auto"
         onClick={handleOnClick}
       >
-        <MessageInlineEmojiRow>
-          <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
-            {message.lang}
-          </Badge>
-          {Object.entries(emojiState.emojis)
-            .filter(([emoji]) => isKnownEmoji(emoji))
-            .sort(([emoji]) => -emoji)
-            .map(([emoji, count]) => {
-              return (
-                <MessageEmojiButton
-                  key={emoji}
-                  emoji={{ name: emoji, count }}
-                  checked={emojiState.user_emojis.includes(emoji)}
-                  userReacted={emojiState.user_emojis.length > 0}
-                  userIsAuthor={!!message.user_is_author}
-                  onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
-                />
-              );
-            })}
-          <MessageActions
-            react={react}
-            userEmoji={emojiState.user_emojis}
-            onLabel={showLabelPopup}
-            onReport={showReportPopup}
-            message={message}
-          />
-          <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
-          <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
-        </MessageInlineEmojiRow>
+        <Flex justifyContent="space-between" mt="2" alignItems="center">
+          {showCreatedDate ? (
+            <MessageCreateDate date={message.created_date}></MessageCreateDate>
+          ) : (
+            // empty span is required to make emoji displayed at the end of row
+            <span></span>
+          )}
+          <MessageInlineEmojiRow>
+            <Badge variant="subtle" colorScheme="gray" fontSize="xx-small">
+              {message.lang}
+            </Badge>
+            {Object.entries(emojiState.emojis)
+              .filter(([emoji]) => isKnownEmoji(emoji))
+              .sort(([emoji]) => -emoji)
+              .map(([emoji, count]) => {
+                return (
+                  <MessageEmojiButton
+                    key={emoji}
+                    emoji={{ name: emoji, count }}
+                    checked={emojiState.user_emojis.includes(emoji)}
+                    userReacted={emojiState.user_emojis.length > 0}
+                    userIsAuthor={!!message.user_is_author}
+                    onClick={() => react(emoji, !emojiState.user_emojis.includes(emoji))}
+                  />
+                );
+              })}
+            <MessageActions
+              react={react}
+              userEmoji={emojiState.user_emojis}
+              onLabel={showLabelPopup}
+              onReport={showReportPopup}
+              message={message}
+            />
+            <LabelMessagePopup message={message} show={labelPopupOpen} onClose={closeLabelPopup} />
+            <ReportPopup messageId={message.id} show={reportPopupOpen} onClose={closeReportPopup} />
+          </MessageInlineEmojiRow>
+        </Flex>
         <Flex
           position="absolute"
           gap="2"
@@ -166,6 +177,24 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
     );
   }
 );
+
+const me = { base: 3, md: 6 };
+
+const MessageCreateDate = ({ date }: { date: string }) => {
+  const locale = useCurrentLocale();
+  const createdDateColor = useColorModeValue("blackAlpha.600", "gray.400");
+  return (
+    <Text as="span" fontSize="small" color={createdDateColor} fontWeight="medium" me={me}>
+      {new Intl.DateTimeFormat(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date(date))}
+    </Text>
+  );
+};
 
 const EmojiMenuItem = ({
   emoji,

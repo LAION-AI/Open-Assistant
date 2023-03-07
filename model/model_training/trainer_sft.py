@@ -8,6 +8,7 @@ import datasets
 import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
+from models.patch_resid_dropout import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
 from transformers import PreTrainedModel, Trainer, TrainingArguments
@@ -210,15 +211,32 @@ if __name__ == "__main__":
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
 
+    if training_conf.residual_dropout > 0:
+        patch_model(model, resid_pdrop=training_conf.residual_dropout)
+
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
-        tokenizer, max_length=training_conf.max_length, samples_mixing=training_conf.samples_mixing
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=training_conf.samples_mixing,
+        pad_to_multiple_of=16,
     )
-    eval_collate_fn = DialogueDataCollator(tokenizer, max_length=training_conf.max_length, samples_mixing=False)
+    eval_collate_fn = DialogueDataCollator(
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=False,
+    )
 
-    sampler = PerDatasetSampler.build_sampler_from_config(
-        training_conf, train.datasets, rank=training_conf.local_rank, world_size=training_conf.world_size
-    )
+    if training_conf.use_custom_sampler:
+        sampler = PerDatasetSampler.build_sampler_from_config(
+            training_conf, train.datasets, rank=training_conf.local_rank, world_size=training_conf.world_size
+        )
+    else:
+        sampler = None
 
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
@@ -290,3 +308,5 @@ if __name__ == "__main__":
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
     trainer.train()
+    trainer.save_model()
+    tokenizer.save_pretrained(output_dir)

@@ -5,7 +5,7 @@ from typing import Optional, Union
 import numpy as np
 import torch
 from torch.nn import functional as F
-from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
+from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase, TruncationStrategy
 
 
 @dataclass
@@ -18,9 +18,11 @@ class DialogueDataCollator:
     padding: Union[bool, str, PaddingStrategy] = True
     max_length: Optional[int] = None
     mix_length_threshold: Optional[int] = 256
-    mix_probability: Optional[int] = 0.6
+    mix_probability: Optional[float] = 0.6
     pad_to_multiple_of: Optional[int] = None
     samples_mixing: Optional[bool] = False
+    random_offset_probability: Optional[float] = 0.5
+    label_masking: bool = True
 
     def __call__(self, features):
         flatten_messages = []
@@ -29,18 +31,26 @@ class DialogueDataCollator:
         for messages in features:
             messages = list(messages)
 
-            # Add a way for the model to terminate generation
-            # When we predict the start of a new expected question, we want to be able to stop generation
-            messages.append(self.tokenizer.eos_token)
+            if random.random() < self.random_offset_probability:
+                truncation = TruncationStrategy.DO_NOT_TRUNCATE
+                max_length = None
+            else:
+                truncation = TruncationStrategy.LONGEST_FIRST
+                max_length = self.max_length
+
+            # append eos token to each messages
+            assert self.tokenizer.eos_token
+            messages = [m + self.tokenizer.eos_token for m in messages]
 
             flatten_message = self.tokenizer(
                 "".join(messages),
-                truncation=True,
-                max_length=self.max_length,
+                max_length=max_length,
+                truncation=truncation,
                 return_offsets_mapping=True,
+                padding=False,
             )
 
-            message_change_indices = np.cumsum([len(x) for x in messages[:-1]])
+            message_change_indices = np.cumsum([len(x) for x in messages])
             # for each token an integer indicating the index of the message it belongs to. Just to create the label mask.
             # Label mask is true when predicting a token that is part of the answer, false otherwise.
             # TEXT:             Question: Hello, how are you? Answer: I am fine. Question: What is your name? Answer: My name is John. Question:
@@ -54,13 +64,20 @@ class DialogueDataCollator:
                     list(map(lambda x: x[1], flatten_message["offset_mapping"])),
                 )
             )
-            label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
-            label_mask[-1] = False  # make sure last token is inactive, has an effect only when truncatting
-            # try:
-            #     label_mask[[i for i in range(len(message_indices)) if message_indices[i] == -2][0] - 1] = True
-            # except IndexError:
-            #     # due to truncation, we might not have the last termination token
-            #     label_mask[-1] = False
+
+            if self.max_length and len(message_indices) > self.max_length:
+                offset = random.randint(0, len(message_indices) - self.max_length)
+                for k in flatten_message.keys():
+                    v = flatten_message[k]
+                    if isinstance(v, list) and len(v) == len(message_indices):
+                        flatten_message[k] = v[offset : offset + self.max_length]
+                message_indices = message_indices[offset : offset + self.max_length]
+
+            if self.label_masking:
+                label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
+            else:
+                label_mask = np.ones(len(message_indices), dtype=bool)
+            label_mask[-1] = False  # make sure last token is inactive, has an effect only when truncating
 
             label_masks.append(label_mask)
             if len(flatten_message["input_ids"]) < self.mix_length_threshold and self.samples_mixing:
@@ -102,7 +119,6 @@ class DialogueDataCollator:
         batch = self.tokenizer.pad(
             flatten_messages,
             padding=self.padding,
-            max_length=self.max_length,
             pad_to_multiple_of=self.pad_to_multiple_of,
             return_tensors="pt",
         )
