@@ -15,9 +15,4 @@ backend/openapi.json
 .ipynb_checkpoints
 
 # edit docs using obsidian.md, these files should not appear in the repo
-docs/docs/.obsidian/workspace.json
-docs/docs/.obsidian/hotkeys.json
-docs/docs/.obsidian/core-plugins.json
-docs/docs/.obsidian/core-plugins-migration.json
-docs/docs/.obsidian/appearance.json
-docs/docs/.obsidian/app.json
+.obsidian/
