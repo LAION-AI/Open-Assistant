@@ -39,6 +39,7 @@ generate more research in this field, and allow others to create safe LLM based
 systems.
 
 ## Training
+
 - Set training configuration using `config.yaml`
 
 ```python
