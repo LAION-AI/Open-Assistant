@@ -15,13 +15,14 @@ LABEL2ID = {
 
 
 class SafetyDataset(Dataset):
-    
+
     """
     Dataset to train safety model with context and ROT from prosocial-dialog
     input format : input<ctx>context</s>
     output format : <cls>safety_label<rot>ROTs</s>
-    
+
     """
+
     def __init__(self, dataset, split, tokenizer, max_len=512):
         super().__init__()
 
@@ -37,11 +38,9 @@ class SafetyDataset(Dataset):
         self.label2id = LABEL2ID
 
     def __len__(self):
-
         return len(self.dataset)
 
     def __getitem__(self, idx):
-
         idx_start = idx
         end = self.dataset[max(0, idx_start - 1)]["episode_done"]
         while (not end) and (idx_start > 0):
@@ -83,7 +82,6 @@ class SafetyDataset(Dataset):
 
 @dataclass
 class SafetyDataCollator:
-
     def __call__(self, batch: List) -> Dict[str, torch.Tensor]:
         """
         Take a list of samples from a Dataset and collate them into a batch.
