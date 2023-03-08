@@ -10,6 +10,9 @@ EXPOSE 8080
 COPY ./oasst-shared /oasst-shared
 RUN pip install -e /oasst-shared
 
+COPY ./oasst-data /oasst-data
+RUN pip install -e /oasst-data
+
 COPY ./backend/alembic /app/alembic
 COPY ./backend/alembic.ini /app/alembic.ini
 COPY ./backend/main.py /app/main.py
