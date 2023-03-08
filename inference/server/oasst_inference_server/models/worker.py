@@ -46,6 +46,7 @@ class DbWorker(SQLModel, table=True):
     id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
     api_key: str = Field(default_factory=lambda: str(uuid4()), index=True)
     name: str
+    trusted: bool = Field(default=False, nullable=False)
 
     compliance_checks: list[DbWorkerComplianceCheck] = Relationship(back_populates="worker")
     in_compliance_check_since: datetime.datetime | None = Field(None)

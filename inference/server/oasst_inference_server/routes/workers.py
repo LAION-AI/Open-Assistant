@@ -156,6 +156,8 @@ async def find_compliance_work_request_message(
 
 async def should_do_compliance_check(session: database.AsyncSession, worker_id: str) -> bool:
     worker = await get_worker(worker_id, session)
+    if worker.trusted:
+        return False
     if worker.in_compliance_check:
         return False
     if worker.next_compliance_check is None:
