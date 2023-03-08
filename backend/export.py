@@ -26,6 +26,7 @@ def fetch_tree_ids(
     db: Session,
     state_filter: Optional[TreeState] = None,
     lang: Optional[str] = None,
+    has_origin: Optional[bool] = None,
     limit: Optional[int] = None,
 ) -> list[tuple[UUID, TreeState]]:
     tree_qry = (
@@ -39,6 +40,11 @@ def fetch_tree_ids(
 
     if state_filter:
         tree_qry = tree_qry.filter(MessageTreeState.state == state_filter)
+
+    if has_origin is True:
+        tree_qry = tree_qry.filter(MessageTreeState.origin.is_not(None))
+    elif has_origin is False:
+        tree_qry = tree_qry.filter(MessageTreeState.origin.is_(None))
 
     if limit is not None:
         tree_qry = tree_qry.limit(limit)
@@ -213,7 +219,7 @@ def export_trees(
             events=events,
         )
     else:
-        message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang, limit=limit)
+        message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang, limit=limit, has_origin=synthetic)
 
         message_trees: list[list[Message]] = []
 
@@ -223,7 +229,7 @@ def export_trees(
                     db,
                     message_tree_id=tree_id,
                     deleted=deleted,
-                    synthetic=synthetic,
+                    synthetic=None,  # pass None here, trees were selected based on has_origin
                     prompts_only=prompts_only,
                     lang=None,  # pass None here, trees were selected based on lang of prompt
                     review_result=review_result,
@@ -246,7 +252,7 @@ def export_trees(
                     db,
                     message_tree_id=tree_id,
                     deleted=deleted,
-                    synthetic=synthetic,
+                    synthetic=None,  # pass None here, trees were selected based on has_origin
                     prompts_only=prompts_only,
                     lang=None,  # pass None here, trees were selected based on lang of prompt
                     review_result=review_result,
