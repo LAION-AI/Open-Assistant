@@ -37,3 +37,10 @@ communities of users must be able accommodate user prefrences. This is paramount
 in introducing LLM based systems all over the world. We hope that our work will
 generate more research in this field, and allow others to create safe LLM based
 systems.
+
+## Training
+- Set training configuration using `config.yaml`
+
+```python
+python model_training/t5_trainer.py
+```
