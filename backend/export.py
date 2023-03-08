@@ -415,7 +415,7 @@ def main():
     if args.include_synth:
         synthetic = None
     if args.synth_only:
-        synthetic = False
+        synthetic = True
 
     if args.anonymizer_seed is None:
         logger.warning("No anonymizer seed provided, no anonymization will be performed.")
