@@ -45,5 +45,9 @@ export const API_ROUTES = {
   AVAILABLE_TASK: withLang("/api/available_tasks"),
   RECENT_MESSAGES: withLang("/api/messages"),
   ADMIN_DELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/delete_message/${messageId}`),
+  GET_CHAT_MESSAGES: (chat_id: string) => `/api/chat/message?${new URLSearchParams({ chat_id })}`,
+  CREATE_CHAT_MESSAGE: `/api/chat/message`,
   CHAT_MESSAGE_VOTE: `/api/chat/vote`,
+  STREAM_CHAT_MESSAGE: (chat_id: string, message_id: string) =>
+    `/api/chat/events?${new URLSearchParams({ chat_id, message_id })}`,
 };

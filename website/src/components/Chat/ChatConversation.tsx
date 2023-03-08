@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Flex, Textarea, useColorModeValue } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { ReactNode, useCallback, useRef, useState } from "react";
-import { post } from "src/lib/api";
+import { memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
+import { get, post } from "src/lib/api";
 import { API_ROUTES } from "src/lib/routes";
-import { InferenceMessage, InferenceResponse } from "src/types/Chat";
+import { InferenceMessage, InferencePostMessageResponse } from "src/types/Chat";
+import useSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
@@ -18,6 +19,11 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   const { t } = useTranslation("common");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
+
+  useSWRImmutable<InferenceMessage[]>(API_ROUTES.GET_CHAT_MESSAGES(chatId), get, {
+    onSuccess: setMessages,
+  });
+
   const [streamedResponse, setResponse] = useState<string | null>("");
 
   const isLoading = Boolean(streamedResponse);
@@ -35,25 +41,23 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
 
     setResponse("...");
 
-    const parent_id = messages[messages.length - 1]?.id ?? null;
-    // we have to do this manually since we want to stream the chunks
-    // there is also EventSource, but it only works with get requests.
-    const { body } = await fetch("/api/chat/message", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, content, parent_id }),
+    // find last assistant message, is usually last message but not always
+    const parent_id =
+      messages
+        .slice()
+        .reverse()
+        .find((m) => m.role === "assistant")?.id ?? null;
+    const response: InferencePostMessageResponse = await post(API_ROUTES.CREATE_CHAT_MESSAGE, {
+      arg: { chat_id: chatId, content, parent_id },
     });
-
-    // first chunk is message information
-    const stream = iteratorSSE(body!);
-    const { value } = await stream.next();
-    const response: InferenceResponse = JSON.parse(value.data);
 
     setMessages((messages) => [...messages, response.prompter_message]);
 
-    // remaining messages are the tokens
+    // we have to do this manually since we want to stream the chunks
+    // there is also EventSource, but it is callback based
+    const { body } = await fetch(API_ROUTES.STREAM_CHAT_MESSAGE(chatId, response.assistant_message.id));
     let responseMessage = "";
-    for await (const { data } of stream) {
+    for await (const { data } of iteratorSSE(body)) {
       const text = JSON.parse(data).token.text;
       responseMessage += text;
       setResponse(responseMessage);
@@ -99,9 +103,9 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     [trigger]
   );
 
-  return (
-    <Flex flexDir="column" gap={4} overflowY="auto">
-      {messages.map((message) => (
+  const entires = useMemo(
+    () =>
+      messages.map((message) => (
         <ChatMessageEntry
           key={message.id}
           isAssistant={message.role === "assistant"}
@@ -112,9 +116,15 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
         >
           {message.content}
         </ChatMessageEntry>
-      ))}
+      )),
+    [chatId, handleOnVote, messages]
+  );
+
+  return (
+    <Flex flexDir="column" gap={4} overflowY="auto">
+      {entires}
       {streamedResponse ? (
-        <PendingMessageEntry isAssistant content={streamedResponse}></PendingMessageEntry>
+        <PendingMessageEntry isAssistant content={streamedResponse} />
       ) : (
         <Textarea ref={inputRef} autoFocus />
       )}
@@ -148,7 +158,14 @@ const getNewScore = (emoji: "+1" | "-1", currentScore: number) => {
   return -1;
 };
 
-const ChatMessageEntry = ({ children, isAssistant, chatId, messageId, score, onVote }: ChatMessageEntryProps) => {
+const ChatMessageEntry = memo(function ChatMessageEntry({
+  children,
+  isAssistant,
+  chatId,
+  messageId,
+  score,
+  onVote,
+}: ChatMessageEntryProps) {
   const handleVote = useCallback(
     (emoji: "+1" | "-1") => {
       const newScore = getNewScore(emoji, score);
@@ -189,7 +206,7 @@ const ChatMessageEntry = ({ children, isAssistant, chatId, messageId, score, onV
       )}
     </PendingMessageEntry>
   );
-};
+});
 
 type PendingMessageEntryProps = {
   isAssistant: boolean;
@@ -203,7 +220,7 @@ const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageE
   return (
     <BaseMessageEntry
       avatarProps={{
-        src: isAssistant ? `/images/temp-avatars/av1.jpg` : "/images/temp-avatars/av1.jpg",
+        src: isAssistant ? `/images/logos/logo.png` : "/images/temp-avatars/av1.jpg",
       }}
       bg={isAssistant ? bgAssistant : bgUser}
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
