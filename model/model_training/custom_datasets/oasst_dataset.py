@@ -5,7 +5,7 @@ from typing import Callable, Optional
 
 import pydantic
 from custom_datasets.formatting import format_pair
-from oasst_shared.schemas.export import ExportMessageNode, ExportMessageTree
+from oasst_data import ExportMessageNode, ExportMessageTree
 from torch import Generator
 from torch.utils.data import Dataset, random_split
 
