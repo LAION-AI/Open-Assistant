@@ -77,7 +77,6 @@ const sidebars = {
         type: "doc",
         id: "presentations/README",
       },
-      items: ["presentations/list"],
     },
     {
       type: "doc",
