@@ -904,13 +904,11 @@ class PromptRepository:
 
         order_by_clauses = qry._order_by_clauses
         sq = qry.subquery("m")
-        additional_entities = [User] if include_user else []
+        select_entities = [Message, func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis")]
+        if include_user:
+            select_entities.append(User)
         qry = (
-            self.db.query(
-                Message,
-                *additional_entities,
-                func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis"),
-            )
+            self.db.query(*select_entities)
             .select_entity_from(sq)
             .outerjoin(
                 MessageEmoji,
