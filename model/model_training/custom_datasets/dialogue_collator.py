@@ -48,7 +48,7 @@ class DialogueDataCollator:
         )
 
         if return_length:
-            return len(flatten_message["input_ids"])
+            return min(len(flatten_message["input_ids"]), self.max_length)
 
         message_change_indices = np.cumsum([len(x) for x in messages])
         # for each token an integer indicating the index of the message it belongs to. Just to create the label mask.
