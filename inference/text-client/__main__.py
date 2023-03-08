@@ -59,10 +59,14 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
                 print("Assistant: ", end="", flush=True)
                 events = iter(client.events())
                 for event in events:
+                    if event.event == "error":
+                        raise Exception(event.data)
+                    if event.event == "ping":
+                        continue
                     try:
                         data = json.loads(event.data)
                     except json.JSONDecodeError:
-                        typer.echo(f"Failed to decode event data: {event.data}")
+                        typer.echo(f"Failed to decode {event.data=}")
                         raise
                     if error := data.get("error"):
                         raise Exception(error)
