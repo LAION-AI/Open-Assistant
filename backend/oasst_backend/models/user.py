@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from oasst_shared.schemas import protocol
-from sqlmodel import AutoString, Field, Index, SQLModel
+from sqlmodel import AutoString, Field, Index, Relationship, SQLModel
 
 
 class User(SQLModel, table=True):
@@ -43,6 +43,8 @@ class User(SQLModel, table=True):
 
     # terms of service acceptance date
     tos_acceptance_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True))
+
+    # messages: list["Message"] = Relationship(back_populates="user")
 
     def to_protocol_frontend_user(self):
         return protocol.FrontEndUser(
