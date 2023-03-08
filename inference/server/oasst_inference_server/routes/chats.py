@@ -89,6 +89,9 @@ async def message_events(
     if message.role != "assistant":
         raise fastapi.HTTPException(status_code=400, detail="Only assistant messages can be streamed.")
 
+    if message.state not in (inference.MessageState.in_progress, inference.MessageState.pending):
+        raise fastapi.HTTPException(status_code=204, detail="Message is not in progress.")
+
     async def event_generator(chat_id: str, message_id: str):
         queue = queueing.message_queue(deps.redis_client, message_id=message_id)
         try:

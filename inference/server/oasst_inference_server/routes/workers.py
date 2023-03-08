@@ -402,6 +402,7 @@ async def perform_work(
             while True:
                 response_packet = await receive_work_response_packet(websocket)
                 await message_queue.enqueue(response_packet.json())
+                await message_queue.set_expire(timeout=settings.message_queue_expire)
                 if response_packet.error is not None:
                     raise WorkerError(f"Worker errored: {response_packet.error}", did_work=True)
                 if response_packet.is_end:
