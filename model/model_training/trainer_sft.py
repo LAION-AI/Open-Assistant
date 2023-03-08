@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -144,7 +145,8 @@ class SFTTrainer(Trainer):
             train_sampler = self._get_train_sampler()
         else:
             train_sampler = self.sampler
-            print("custom sampler found!!", len(train_sampler))
+            logging.warning("Custom sampler found!")
+
         dataloader = DataLoader(
             train_dataset,
             batch_size=self._train_batch_size,
@@ -155,7 +157,6 @@ class SFTTrainer(Trainer):
             pin_memory=self.args.dataloader_pin_memory,
             worker_init_fn=seed_worker,
         )
-        print(len(dataloader))
         return dataloader
 
 

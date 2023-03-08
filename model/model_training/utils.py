@@ -71,7 +71,7 @@ class PerDatasetSampler(DistributedSampler):
         if world_size == 1:
             self.rank = 0
 
-        self.num_samples = sum(dataset_size_per_epoch) // world_size
+        self.num_samples = sum(dataset_size_per_epoch)
         self.seed = seed
         self.samples_length = samples_length
 
@@ -79,7 +79,7 @@ class PerDatasetSampler(DistributedSampler):
         self.epoch = epoch
 
     def __len__(self) -> int:
-        return self.num_samples
+        return self.num_samples // self.world_size
 
     def __iter__(self):
         epoch_idx = []

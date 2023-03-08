@@ -54,7 +54,7 @@ defaults:
   samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
   verbose: false
   output_dir: saved_model
-  use_custom_sampler: true
+  use_custom_sampler: false
   random_offset_probability: 0.5 # probability for random message offsets
   label_masking: true
   residual_dropout: 0.0
@@ -75,6 +75,7 @@ oasst_export_eu:
         #top_k: 2
         input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
   sort_by_length: true
+  use_custom_sampler: true
 
 pythia:
   learning_rate: 8e-6
