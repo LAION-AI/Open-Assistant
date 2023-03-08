@@ -4,6 +4,8 @@ from uuid import uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
+from loguru import logger
+from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -46,6 +48,16 @@ class DbWorker(SQLModel, table=True):
     name: str
 
     compliance_checks: list[DbWorkerComplianceCheck] = Relationship(back_populates="worker")
-    in_compliance_check: bool = Field(default=False, sa_column=sa.Column(sa.Boolean, server_default=sa.text("false")))
+    in_compliance_check_since: datetime.datetime | None = Field(None)
     next_compliance_check: datetime.datetime | None = Field(None)
     events: list[DbWorkerEvent] = Relationship(back_populates="worker")
+
+    @property
+    def in_compliance_check(self) -> bool:
+        if self.in_compliance_check_since is None:
+            return False
+        timeout_dt = self.in_compliance_check_since + datetime.timedelta(seconds=settings.compliance_check_timeout)
+        if timeout_dt < datetime.datetime.utcnow():
+            logger.warning(f"Worker {self.id} compliance check timed out")
+            return False
+        return True
