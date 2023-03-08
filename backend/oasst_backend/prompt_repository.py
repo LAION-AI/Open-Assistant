@@ -963,12 +963,10 @@ class PromptRepository:
 
         qry = self.db.query(Message)
         if include_user:
-            print("add user")
             qry = self.db.query(Message, User)
         if user_id:
             qry = qry.filter(Message.user_id == user_id)
         if username or auth_method or include_user:
-            print("join user")
             qry = qry.join(User)
         if username or auth_method:
             if not (username and auth_method):
