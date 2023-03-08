@@ -116,9 +116,8 @@ def get_messages_cursor(
         desc=query_desc,
         limit=qry_max_count,
         lang=lang,
-        include_user=include_user
+        include_user=include_user,
     )
-    # print(items[0].user)
 
     num_rows = len(items)
     if qry_max_count > max_count and num_rows == qry_max_count:
@@ -129,7 +128,6 @@ def get_messages_cursor(
         items.reverse()
 
     items = utils.prepare_message_list(items)
-    # print(items[0].user)
     n, p = None, None
     if len(items) > 0:
         if (num_rows > max_count and before) or after:

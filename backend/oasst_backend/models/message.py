@@ -5,12 +5,12 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from oasst_backend.models.user import User
 from oasst_backend.models.db_payload import MessagePayload
+from oasst_backend.models.user import User
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from pydantic import PrivateAttr
 from sqlalchemy import false
-from sqlmodel import Field, Index, Relationship, SQLModel
+from sqlmodel import Field, Index, SQLModel
 
 from .payload_column_type import PayloadContainer, payload_column_type
 
@@ -90,8 +90,7 @@ class Message(SQLModel, table=True):
     @property
     def user_is_author(self) -> str:
         return self._user_is_author
-    
+
     @property
     def user(self) -> User:
         return self._user
-    

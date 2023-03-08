@@ -888,16 +888,16 @@ class PromptRepository:
         max_message = max(tree, key=lambda m: m.children_count)
         return max_message, [m for m in tree if m.parent_id == max_message.id]
 
-    def _add_user_emojis_all(self, qry: Query, include_user = False) -> list[Message]:
+    def _add_user_emojis_all(self, qry: Query, include_user=False) -> list[Message]:
         if self.user_id is None:
             if not include_user:
                 return qry.all()
-            
+
             messages: list[Message] = []
 
             for element in qry:
-                message = element['Message']
-                user = element['User']
+                message = element["Message"]
+                user = element["User"]
                 message._user = user
                 messages.append(message)
             return messages
@@ -906,7 +906,11 @@ class PromptRepository:
         sq = qry.subquery("m")
         additional_entities = [User] if include_user else []
         qry = (
-            self.db.query(Message, *additional_entities, func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis"))
+            self.db.query(
+                Message,
+                *additional_entities,
+                func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis"),
+            )
             .select_entity_from(sq)
             .outerjoin(
                 MessageEmoji,
@@ -930,7 +934,6 @@ class PromptRepository:
                 m._user = x["User"]
             messages.append(m)
 
-        # print("Ewqeqw", messages[0].user)
         return messages
 
     def query_messages_ordered_by_created_date(
@@ -949,9 +952,8 @@ class PromptRepository:
         desc: bool = False,
         limit: Optional[int] = 100,
         lang: Optional[str] = None,
-        include_user: Optional[bool] = None
+        include_user: Optional[bool] = None,
     ) -> list[Message]:
-        print("include_user", include_user)
         if not self.api_client.trusted:
             if not api_client_id:
                 # Let unprivileged api clients query their own messages without api_client_id being set
@@ -1025,7 +1027,7 @@ class PromptRepository:
 
         if limit is not None:
             qry = qry.limit(limit)
-        
+
         return self._add_user_emojis_all(qry, include_user=include_user)
 
     def update_children_counts(self, message_tree_id: UUID):
