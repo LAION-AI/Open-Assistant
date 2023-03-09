@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -11,6 +12,7 @@ from efficiency_utils import fuse_gelu
 from models.patch_resid_dropout import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
@@ -143,7 +145,8 @@ class SFTTrainer(Trainer):
             train_sampler = self._get_train_sampler()
         else:
             train_sampler = self.sampler
-            print("custom sampler found!!", len(train_sampler))
+            logging.warning("Custom sampler found!")
+
         dataloader = DataLoader(
             train_dataset,
             batch_size=self._train_batch_size,
@@ -154,7 +157,6 @@ class SFTTrainer(Trainer):
             pin_memory=self.args.dataloader_pin_memory,
             worker_init_fn=seed_worker,
         )
-        print(len(dataloader))
         return dataloader
 
 
@@ -233,7 +235,18 @@ if __name__ == "__main__":
 
     if training_conf.use_custom_sampler:
         sampler = PerDatasetSampler.build_sampler_from_config(
-            training_conf, train.datasets, rank=training_conf.local_rank, world_size=training_conf.world_size
+            training_conf,
+            train.datasets,
+            rank=training_conf.local_rank,
+            world_size=training_conf.world_size,
+            samples_length=list(
+                map(
+                    lambda x: train_collate_fn.process_one(x, return_length=True),
+                    tqdm(train, desc="Calculating lengths per sample"),
+                )
+            )
+            if training_conf.sort_by_length
+            else None,
         )
     else:
         sampler = None
