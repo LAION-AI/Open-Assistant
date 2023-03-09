@@ -31,6 +31,8 @@ jobs:
 
       - run: pip install ./oasst-shared[dev]
 
+      - run: pip install ./oasst-data[dev]
+
       - run: cd backend && pip install -r requirements.txt
 
       - run: cd website && npm ci

@@ -9,6 +9,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 import { checkCaptcha } from "src/lib/captcha";
+import { discordAvatarRefresh } from "src/lib/discord_avatar_refresh";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { BackendUserCore } from "src/types/Users";
@@ -127,6 +128,11 @@ const authOptions: AuthOptions = {
         auth_method: accounts.length > 0 ? accounts[0].provider : "local",
       };
       const oasstApiClient = createApiClientFromUser(user);
+
+      if (user.auth_method === "discord") {
+        const discordAccount = accounts.find((a) => a.provider === "discord");
+        discordAvatarRefresh.updateImageIfNecessary(discordAccount);
+      }
 
       let tosAcceptanceDate = null;
       try {

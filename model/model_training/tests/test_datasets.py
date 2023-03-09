@@ -1,10 +1,14 @@
 from argparse import Namespace
 
+import pytest
 from custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
 from custom_datasets.dialogue_collator import DialogueDataCollator
-from custom_datasets.prompt_dialogue import OAPrivate, PrivateInstructionTuning
+from custom_datasets.prompt_dialogue import OAPrivate
+from torch.utils.data import ConcatDataset, DataLoader
+from utils import get_tokenizer
 
 
+@pytest.mark.skip(reason="cache not populated")
 def test_rl_sft_mode_switch():
     dataset = OAPrivate(".cache", split="sft")
     row = dataset[0]
@@ -13,14 +17,8 @@ def test_rl_sft_mode_switch():
     row = dataset[0]
     assert isinstance(row, str)
 
-    dataset = PrivateInstructionTuning(".cache", split="sft")
-    row = dataset[0]
-    assert isinstance(row, tuple)
-    dataset = PrivateInstructionTuning(".cache", split="rl")
-    row = dataset[0]
-    assert isinstance(row, str)
 
-
+@pytest.mark.skip(reason="very slow")
 def test_all_datasets():
     qa_base = QA_DATASETS
     summarize_base = SUMMARIZATION_DATASETS
@@ -38,10 +36,8 @@ def test_all_datasets():
             eval[idx]
 
 
+@pytest.mark.skip(reason="very slow")
 def test_collate_fn():
-    from torch.utils.data import ConcatDataset, DataLoader
-    from utils import get_tokenizer
-
     config = Namespace(cache_dir=".cache", model_name="Salesforce/codegen-2B-multi")
     tokenizer = get_tokenizer(config)
     collate_fn = DialogueDataCollator(tokenizer, max_length=620)

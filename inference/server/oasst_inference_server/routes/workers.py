@@ -156,11 +156,15 @@ async def find_compliance_work_request_message(
 
 async def should_do_compliance_check(session: database.AsyncSession, worker_id: str) -> bool:
     worker = await get_worker(worker_id, session)
+    if worker.trusted:
+        return False
     if worker.in_compliance_check:
         return False
     if worker.next_compliance_check is None:
         return True
-    return worker.next_compliance_check < datetime.datetime.utcnow()
+    if worker.next_compliance_check < datetime.datetime.utcnow():
+        return True
+    return False
 
 
 async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, worker_config: inference.WorkerConfig):
@@ -170,7 +174,7 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             if worker.in_compliance_check:
                 logger.info(f"Worker {worker.id} is already in compliance check")
                 return
-            worker.in_compliance_check = True
+            worker.in_compliance_check_since = datetime.datetime.utcnow()
         finally:
             await session.commit()
 
@@ -217,7 +221,7 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             worker.next_compliance_check = datetime.datetime.utcnow() + datetime.timedelta(
                 seconds=settings.compliance_check_interval
             )
-            worker.in_compliance_check = False
+            worker.in_compliance_check_since = None
             logger.info(f"set next compliance check for worker {worker_id} to {worker.next_compliance_check}")
             await session.commit()
             await session.flush()
@@ -402,6 +406,7 @@ async def perform_work(
             while True:
                 response_packet = await receive_work_response_packet(websocket)
                 await message_queue.enqueue(response_packet.json())
+                await message_queue.set_expire(timeout=settings.message_queue_expire)
                 if response_packet.error is not None:
                     raise WorkerError(f"Worker errored: {response_packet.error}", did_work=True)
                 if response_packet.is_end:
