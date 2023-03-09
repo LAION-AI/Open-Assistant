@@ -17,28 +17,28 @@ defaults:
   eval_accumulation_steps:
   freeze_layer:
   datasets:
-    # - webgpt
-    # - squad_v2
+    - webgpt
+    - squad_v2
     - adversarial_qa
-    # - trivia_qa_nocontext
-    # - xsum
-    # - cnn_dailymail
-    # - prompt_dialogue # TODO: need to fix the url
-    # - multi_news
-    # - scitldr
-    # - soda
-    # - joke
-    # - gsm8k
-    # - dive_mt
-    # - wmt2019_zh-en
-    # - wmt2019_ru-en
-    # - wmt2019_de-en
-    # - ted_trans_nl-en
-    # - ted_trans_de-ja
-    # - instruct_tuning
-    # - wmt2019_de-en
-    # - samsum
-    # - soda_dialogue
+    - trivia_qa_nocontext
+    - xsum
+    - cnn_dailymail
+    - prompt_dialogue # TODO: need to fix the url
+    - multi_news
+    - scitldr
+    - soda
+    - joke
+    - gsm8k
+    - dive_mt
+    - wmt2019_zh-en
+    - wmt2019_ru-en
+    - wmt2019_de-en
+    - ted_trans_nl-en
+    - ted_trans_de-ja
+    - instruct_tuning
+    - wmt2019_de-en
+    - samsum
+    - soda_dialogue
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
   eval_size:
@@ -52,14 +52,14 @@ defaults:
   verbose: false
   output_dir: saved_model
 
-# oa_dataset_only:
-#   datasets:
-#     - oasst_export:
-#         lang: "en,es,de,fr"
-#         top_k: 2
-#         input_file_path: 2023-02-19_oasst_ready_with_spam_deleted.jsonl.gz
-#   num_train_epochs: 10
-#   save_steps: 2000
+oa_dataset_only:
+  datasets:
+    - oasst_export:
+        lang: "en,es,de,fr"
+        top_k: 2
+        input_file_path: 2023-02-19_oasst_ready_with_spam_deleted.jsonl.gz
+  num_train_epochs: 10
+  save_steps: 2000
 
 pythia:
   learning_rate: 8e-6

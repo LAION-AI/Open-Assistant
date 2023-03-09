@@ -206,13 +206,11 @@ def argument_parsing(notebook=False, notebook_args=None):
 
 if __name__ == "__main__":
     training_conf = argument_parsing()
-    print(training_conf)
+
     tokenizer = get_tokenizer(training_conf)
-    print(tokenizer)
     model = get_model(training_conf, tokenizer)
 
     train, evals = get_dataset(training_conf)
-    print(train)
     train_collate_fn = DialogueDataCollator(
         tokenizer, max_length=training_conf.max_length, samples_mixing=training_conf.samples_mixing
     )
