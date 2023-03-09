@@ -144,6 +144,8 @@ class QADataset(Dataset):
         self.no_val = False
         if dataset in self.DATASET_FORMAT_MAPPING:
             context = self.DATASET_FORMAT_MAPPING[dataset]
+            print("Loading dataset : ", dataset)
+            print(context)
             if split == "validation" and "validation" in context:
                 split = context["validation"]
             if "name" not in context:
@@ -159,6 +161,7 @@ class QADataset(Dataset):
             if "no_val" in context:
                 self.no_val = True
             self.index_fn = context["index_fn"]
+            print('index is :', context["index_fn"], 'name is', context["name"], 'params is:', context["params"])
             self.dataset = load_dataset(context["name"], **context["params"])
         else:
             raise ValueError("Unknown dataset : " + dataset)
