@@ -412,4 +412,28 @@ export class OasstApiClient {
       enabled: enabled,
     });
   }
+
+  fetch_messages_cursor({
+    direction,
+    cursor,
+    ...rest
+  }: {
+    direction: "back" | "forward";
+    cursor?: string;
+    user_id?: string;
+    auth_method?: string;
+    username?: string;
+    api_client_id?: string;
+    only_roots?: boolean;
+    include_deleted?: boolean;
+    max_count?: number;
+    desc?: boolean;
+    lang?: string;
+  }) {
+    return this.get<FetchUserMessagesCursorResponse>("/api/v1/messages/cursor", {
+      ...rest,
+      after: direction === "forward" ? cursor : undefined,
+      before: direction === "back" ? cursor : undefined,
+    });
+  }
 }

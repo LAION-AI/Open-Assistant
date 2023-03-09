@@ -84,6 +84,11 @@ export const getAdminLayout = (page: React.ReactElement) => (
           icon: Users,
         },
         {
+          labelID: "Messages",
+          pathname: "/admin/messages",
+          icon: MessageSquare,
+        },
+        {
           labelID: "trollboard",
           pathname: "/admin/trollboard",
           icon: BarChart2,
