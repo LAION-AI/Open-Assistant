@@ -888,7 +888,7 @@ class PromptRepository:
         max_message = max(tree, key=lambda m: m.children_count)
         return max_message, [m for m in tree if m.parent_id == max_message.id]
 
-    def _add_user_emojis_all(self, qry: Query, include_user=False) -> list[Message]:
+    def _add_user_emojis_all(self, qry: Query, include_user: bool = False) -> list[Message]:
         if self.user_id is None:
             if not include_user:
                 return qry.all()

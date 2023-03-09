@@ -5,8 +5,8 @@ from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
+from oasst_backend.models import User
 from oasst_backend.models.db_payload import MessagePayload
-from oasst_backend.models.user import User
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from pydantic import PrivateAttr
 from sqlalchemy import false
