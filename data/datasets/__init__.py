@@ -12,4 +12,5 @@ INSTRUCTION_DATASETS = {
     "cmu_wiki_qa": "sedthh/cmu_wiki_qa",
     "youtube_subs_howto100M": "totuta/youtube_subs_howto100M",
     "iapp_wiki_qa_squad": "wannaphong/iapp_wiki_qa_squad_oa",
+    "zhihu-kol": "wangrui6/zhihu-kol",
 }
