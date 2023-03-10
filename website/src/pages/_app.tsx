@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 import "focus-visible";
-
+import App from "next/app";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { SessionProvider } from "next-auth/react";
@@ -12,10 +12,13 @@ import flags from "src/flags";
 import { SWRConfig, SWRConfiguration } from "swr";
 
 import nextI18NextConfig from "../../next-i18next.config.js";
-import { Chakra, getServerSideProps } from "../styles/Chakra";
+import { Chakra } from "../styles/Chakra";
+import { NextPageContext } from "next/types";
+import { Cookie } from "next-auth/core/lib/cookie";
 
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
+  cookies: Cookie
 };
 
 const swrConfig: SWRConfiguration = {
@@ -23,7 +26,7 @@ const swrConfig: SWRConfiguration = {
   revalidateOnMount: true,
 };
 
-function MyApp({ Component, pageProps: { session, cookies, ...pageProps } }: AppPropsWithLayout) {
+function MyApp({ Component, pageProps, cookies }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? getDefaultLayout;
   const page = getLayout(<Component {...pageProps} />);
   const { t, i18n } = useTranslation();
@@ -39,12 +42,19 @@ function MyApp({ Component, pageProps: { session, cookies, ...pageProps } }: App
       <FlagsProvider value={flags}>
         <Chakra cookies={cookies}>
           <SWRConfig value={swrConfig}>
-            <SessionProvider session={session}>{page}</SessionProvider>
+            <SessionProvider session={pageProps.session}>{page}</SessionProvider>
           </SWRConfig>
         </Chakra>
       </FlagsProvider>
     </>
   );
 }
-export { getServerSideProps };
+
+MyApp.getInitialProps = async (appContext) => {
+  const cookies = appContext['ctx'].req?.client?.parser?.incoming?.cookies ?? { 'chakra-ui-color-mode': 'light' };
+  return {
+    cookies
+  }
+}
+
 export default appWithTranslation(MyApp, nextI18NextConfig);
