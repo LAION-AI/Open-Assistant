@@ -63,6 +63,7 @@ def toxicity(text, message_id, api_client):
                 pr.insert_toxicity(
                     message_id=message_id, model=model_name, score=toxicity["score"], label=toxicity["label"]
                 )
+            session.commit()
 
     except Exception as e:
         logger.error(f"Could not compute toxicity for text reply to {message_id=} with {text=} by.error {str(e)}")
@@ -82,6 +83,7 @@ def hf_feature_extraction(text, message_id, api_client):
                 pr.insert_message_embedding(
                     message_id=message_id, model=HfEmbeddingModel.MINILM.value, embedding=embedding
                 )
+                session.commit()
 
     except Exception as e:
         logger.error(f"Could not extract embedding for text reply to {message_id=} with {text=} by.error {str(e)}")
