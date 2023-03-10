@@ -2,7 +2,9 @@
 
 ## Requirements
 
-`pip install -r requirements.txt`
+`pip install .`
+
+Run tests: `pytest .`
 
 Start training SFT model
 

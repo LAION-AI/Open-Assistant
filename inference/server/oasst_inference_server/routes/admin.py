@@ -36,7 +36,7 @@ async def create_worker(
 ) -> worker_schema.WorkerRead:
     """Allows a client to register a worker."""
     logger.info(f"Creating worker {request.name}")
-    worker = models.DbWorker(name=request.name)
+    worker = models.DbWorker(name=request.name, trusted=request.trusted)
     session.add(worker)
     await session.commit()
     await session.refresh(worker)

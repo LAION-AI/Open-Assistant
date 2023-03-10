@@ -888,14 +888,27 @@ class PromptRepository:
         max_message = max(tree, key=lambda m: m.children_count)
         return max_message, [m for m in tree if m.parent_id == max_message.id]
 
-    def _add_user_emojis_all(self, qry: Query) -> list[Message]:
+    def _add_user_emojis_all(self, qry: Query, include_user: bool = False) -> list[Message]:
         if self.user_id is None:
-            return qry.all()
+            if not include_user:
+                return qry.all()
+
+            messages: list[Message] = []
+
+            for element in qry:
+                message = element["Message"]
+                user = element["User"]
+                message._user = user
+                messages.append(message)
+            return messages
 
         order_by_clauses = qry._order_by_clauses
         sq = qry.subquery("m")
+        select_entities = [Message, func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis")]
+        if include_user:
+            select_entities.append(User)
         qry = (
-            self.db.query(Message, func.string_agg(MessageEmoji.emoji, literal_column("','")).label("user_emojis"))
+            self.db.query(*select_entities)
             .select_entity_from(sq)
             .outerjoin(
                 MessageEmoji,
@@ -915,7 +928,10 @@ class PromptRepository:
             if user_emojis:
                 m._user_emojis = user_emojis.split(",")
             m._user_is_author = self.user_id and self.user_id == m.user_id
+            if include_user:
+                m._user = x["User"]
             messages.append(m)
+
         return messages
 
     def query_messages_ordered_by_created_date(
@@ -934,6 +950,7 @@ class PromptRepository:
         desc: bool = False,
         limit: Optional[int] = 100,
         lang: Optional[str] = None,
+        include_user: Optional[bool] = None,
     ) -> list[Message]:
         if not self.api_client.trusted:
             if not api_client_id:
@@ -945,12 +962,15 @@ class PromptRepository:
                 raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTPStatus.FORBIDDEN)
 
         qry = self.db.query(Message)
+        if include_user:
+            qry = self.db.query(Message, User)
         if user_id:
             qry = qry.filter(Message.user_id == user_id)
+        if username or auth_method or include_user:
+            qry = qry.join(User)
         if username or auth_method:
             if not (username and auth_method):
                 raise OasstError("Auth method or username missing.", OasstErrorCode.AUTH_AND_USERNAME_REQUIRED)
-            qry = qry.join(User)
             qry = qry.filter(User.username == username, User.auth_method == auth_method)
         if api_client_id:
             qry = qry.filter(Message.api_client_id == api_client_id)
@@ -1004,7 +1024,7 @@ class PromptRepository:
         if limit is not None:
             qry = qry.limit(limit)
 
-        return self._add_user_emojis_all(qry)
+        return self._add_user_emojis_all(qry, include_user=include_user)
 
     def update_children_counts(self, message_tree_id: UUID):
         sql_update_children_count = """
