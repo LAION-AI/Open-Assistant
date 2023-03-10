@@ -70,6 +70,7 @@ def get_messages_cursor(
     max_count: Optional[int] = Query(10, gt=0, le=1000),
     desc: Optional[bool] = False,
     lang: Optional[str] = None,
+    include_user: Optional[bool] = None,
     frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
     api_client: ApiClient = Depends(deps.get_api_client),
     db: Session = Depends(deps.get_db),
@@ -115,6 +116,7 @@ def get_messages_cursor(
         desc=query_desc,
         limit=qry_max_count,
         lang=lang,
+        include_user=include_user,
     )
 
     num_rows = len(items)
