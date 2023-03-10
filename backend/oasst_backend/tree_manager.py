@@ -10,6 +10,7 @@ import pydantic
 import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
+from oasst_backend.celery_worker.scheduled_tasks import hf_feature_extraction, toxicity
 from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import (
     Message,
@@ -22,7 +23,6 @@ from oasst_backend.models import (
     message_tree_state,
 )
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.scheduled_tasks import hf_feature_extraction, toxicity
 from oasst_backend.utils.database_utils import (
     CommitMode,
     async_managed_tx_method,

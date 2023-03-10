@@ -114,7 +114,7 @@ services:
     build:
       dockerfile: docker/Dockerfile.backendworker
       context: .
-    command: celery -A oasst_backend worker -l info
+    command: celery -A celery_worker worker -l info
     image: oasst-backend-cworker
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
@@ -134,7 +134,7 @@ services:
     build:
       dockerfile: docker/Dockerfile.backendworker
       context: .
-    command: celery -A oasst_backend beat -l info
+    command: celery -A celery_worker beat -l info
     image: oasst-backend-cworker-beat
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0

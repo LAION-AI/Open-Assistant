@@ -26,3 +26,5 @@ COPY ./backend/main.py /worker/main.py
 COPY ./backend/import.py /worker/import.py
 COPY ./backend/oasst_backend /worker/oasst_backend
 COPY ./backend/test_data /worker/test_data
+WORKDIR /worker/oasst_backend
+ENV PYTHONPATH "${PYTHONPATH}:..:../.."
