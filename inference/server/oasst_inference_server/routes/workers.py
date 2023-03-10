@@ -429,12 +429,12 @@ async def perform_work(
     except WorkerError as e:
         async with deps.manual_chat_repository() as cr:
             if e.did_work:
+                logger.warning(f"Aborting {message_id=}")
+                await cr.abort_work(message_id, reason=str(e))
+            else:
                 logger.warning(f"Marking {message_id=} as pending since no work was done.")
                 await cr.reset_work(message_id)
                 await work_queue.enqueue(message_id)
-            else:
-                logger.warning(f"Aborting {message_id=}")
-                await cr.abort_work(message_id, reason=str(e))
         raise
     except Exception as e:
         logger.exception(f"Error handling {message_id=}")
