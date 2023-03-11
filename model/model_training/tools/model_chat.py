@@ -74,6 +74,7 @@ if __name__ == "__main__":
         else:
             input_text = talk(prompt, histories, prefix)
             inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(0)
+            del inputs['token_type_ids']
             outputs = model.generate(
                 **inputs,
                 early_stopping=True,
