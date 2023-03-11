@@ -387,13 +387,14 @@ async def perform_work(
         )
         work_request = await build_work_request(session, message.id)
 
-        logger.info(f"Created {work_request=} with {len(work_request.thread.messages)=}")
-        try:
-            await send_work_request(websocket, work_request)
-        except WSException:
+    logger.info(f"Created {work_request=} with {len(work_request.thread.messages)=}")
+    try:
+        await send_work_request(websocket, work_request)
+    except WSException:
+        async with deps.manual_create_session() as session:
             await cr.reset_work(message_id)
-            await work_queue.enqueue(message_id)
-            raise WorkerError("Worker disconnected while sending work request", did_work=False)
+        await work_queue.enqueue(message_id)
+        raise WorkerError("Worker disconnected while sending work request", did_work=False)
 
     logger.debug(f"Sent {work_request=} to worker.")
 
@@ -433,18 +434,20 @@ async def perform_work(
             await cr.complete_work(message_id, response_packet.text)
 
     except WorkerError as e:
-        async with deps.manual_chat_repository() as cr:
-            if e.did_work:
-                logger.warning(f"Aborting {message_id=}")
+        if e.did_work:
+            logger.warning(f"Aborting {message_id=}")
+            async with deps.manual_chat_repository() as cr:
                 await cr.abort_work(message_id, reason=str(e))
-            else:
-                logger.warning(f"Marking {message_id=} as pending since no work was done.")
+        else:
+            logger.warning(f"Marking {message_id=} as pending since no work was done.")
+            async with deps.manual_chat_repository() as cr:
                 await cr.reset_work(message_id)
-                await work_queue.enqueue(message_id)
+            await work_queue.enqueue(message_id)
         raise
     except Exception as e:
         logger.exception(f"Error handling {message_id=}")
-        await cr.abort_work(message_id, reason=str(e))
+        async with deps.manual_chat_repository() as cr:
+            await cr.abort_work(message_id, reason=str(e))
         raise WorkerError("Error handling chat", did_work=True)
 
 
