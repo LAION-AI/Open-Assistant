@@ -28,6 +28,10 @@ class DiscordAvatarRefresher {
         headers: { Authorization: `${token_type} ${access_token}` },
       }).then((res) => res.json());
 
+      if (!user || !user.id || !user.avatar) {
+        return;
+      }
+
       const imgURL = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
       await prisma.user.update({
         where: { id: userId },
