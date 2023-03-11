@@ -26,12 +26,21 @@ def format_pair(pairs):
     conversations = []
     for i, text in enumerate(pairs):
         if i % 2 == 0:
-            text = f"{ChatRole.prompter}{text}{SeqToken.end}{ChatRole.assistant}"
-        else:  # label mask = 1
+            text = tokenize_question(text)
             text = f"{text}{SeqToken.end}"
         conversations.append(text)
 
     return conversations
+
+
+def tokenize_question(text):
+    return f"{ChatRole.prompter}{text}{SeqToken.end}{ChatRole.assistant}"
+
+
+def join_pair(question, answer):
+    prefix = tokenize_question(question)
+    postfix = f"{answer}{SeqToken.end}"
+    return prefix + postfix
 
 
 def format_rl_text(pairs):

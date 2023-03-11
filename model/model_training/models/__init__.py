@@ -29,7 +29,11 @@ def get_specific_model(model_name, seq2seqmodel=False, cache_dir=".cache", quant
     # encoder-decoder support for Flan-T5 like models
     # for now, we can use an argument but in the future,
     # we can automate this
-    if seq2seqmodel:
+    if "llama" in model_name:
+        from .modeling_llama import LLaMAForCausalLM
+
+        model = LLaMAForCausalLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
+    elif seq2seqmodel:
         model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     else:
         model = transformers.AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)

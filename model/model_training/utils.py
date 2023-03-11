@@ -162,6 +162,7 @@ TOKENIZER_CONFIGS = {
     "GPT-JT": TokenizerConfig(special_tokens=SpecialTokens(sep_token="<|extratoken_100|>")),
     "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
     "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
+    "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
 }
 
 
@@ -180,7 +181,13 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 
 
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
-    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    if "llama" in conf.model_name:
+        # I am sorry for the hack, the original decapoda-research/llama-7b-hf config
+        # was incorrect so we can't really use PreTrainedTokenizerFast
+        tokenizer = transformers.AutoTokenizer.from_pretrained("theblackcat102/llama-7b-test", cache_dir=conf.cache_dir)
+    else:
+        tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+
     tokenizer_config = match_tokenizer_name(conf.model_name)
 
     if tokenizer_config.special_tokens:
