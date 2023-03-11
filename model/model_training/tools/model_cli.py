@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import os
 import sys
@@ -23,16 +24,20 @@ if __name__ == "__main__":
     parser.add_argument("--top_k", type=int, default=40)
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--do-sample", type=_strtobool, default=True)
+    parser.add_argument("--8bit", action="store_true", dest="eightbit")
     args = parser.parse_args()
 
-    model = get_specific_model(
-        args.model_path,
-        load_in_8bit=True,
-        device_map="auto",
-        low_cpu_mem_usage=True,
-        torch_dtype=torch.float16,
-        offload_state_dict=True,
-    )
+    if args.eightbit:
+        model = get_specific_model(
+            args.model_path,
+            load_in_8bit=True,
+            device_map="auto",
+            low_cpu_mem_usage=True,
+            torch_dtype=torch.float16,
+            offload_state_dict=True,
+        )
+    else:
+        model = get_specific_model(args.model_path)
 
     model.gradient_checkpointing_enable()  # reduce number of stored activations
     tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_path)
@@ -54,7 +59,10 @@ if __name__ == "__main__":
 
             conversation_history.append(user_input)
 
-            batch = tokenizer.encode("".join(format_pair(conversation_history)), return_tensors="pt")
+            pairs = format_pair(conversation_history)
+            pairs = ["{}{}".format(p, tokenizer.eos_token) for p in pairs]
+            pairs.append(QA_SPECIAL_TOKENS["Answer"])
+            batch = tokenizer.encode("".join(pairs), return_tensors="pt")
 
             with torch.cuda.amp.autocast():
                 out = model.generate(
@@ -72,6 +80,10 @@ if __name__ == "__main__":
             conversation_history.append(response)
         except KeyboardInterrupt:
             conversation_history = []
+            print()
             print("Conversation restarted")
             time.sleep(1)
             continue
+        except EOFError:  # Catch ctrl+d
+            print()
+            break

@@ -67,7 +67,7 @@ if __name__ == "__main__":
     @torch.no_grad()
     def rank_model_fn(samples, **kwargs):
         inputs = rank_tokenizer(samples, return_tensors="pt", padding=True)
-        inputs.pop("token_type_ids", None)
+        del inputs["token_type_ids"]
         return rank_model(**inputs).logits[:, 0].detach().cpu()
 
     trlx_config = TRLConfig.load_yaml("configs/ppo_config.yaml")
