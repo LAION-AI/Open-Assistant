@@ -70,7 +70,7 @@ def main(backend_url: str = "http://127.0.0.1:8000"):
                         raise
                     if error := data.get("error"):
                         raise Exception(error)
-                    print(data["token"]["text"], end="", flush=True)
+                    print(data["text"], end="", flush=True)
                 print()
                 parent_id = message_id
         except typer.Abort:
