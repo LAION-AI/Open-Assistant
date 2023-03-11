@@ -26,7 +26,7 @@ def format_pair(pairs):
     conversations = []
     for i, text in enumerate(pairs):
         if i % 2 == 0:
-            text = f"{SeqToken.begin}{ChatRole.prompter}{SeqToken.delimiter}{text}{SeqToken.end}{SeqToken.begin}{ChatRole.assistant}{SeqToken.delimiter}"
+            text = f"{ChatRole.prompter}{text}{SeqToken.end}{ChatRole.assistant}"
         else:  # label mask = 1
             text = f"{text}{SeqToken.end}"
         conversations.append(text)
