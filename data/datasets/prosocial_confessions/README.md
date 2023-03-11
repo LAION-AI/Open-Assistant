@@ -1,8 +1,12 @@
 ## Contents
 
-- This notebook uses data from [one million reddit confessions](https://www.kaggle.com/datasets/pavellexyr/one-million-reddit-confessions) and [prosocial-dialog]() to synthesize samples to help train safety models.
-- A [classifier](https://huggingface.co/shahules786/prosocial-classifier) trained on prosocial dialog dataset is used for pseudo labeling.
-- More information on dataset can be found [here](https://huggingface.co/datasets/shahules786/prosocial-confessions)
+- This notebook uses data from
+  [one million reddit confessions](https://www.kaggle.com/datasets/pavellexyr/one-million-reddit-confessions)
+  and [prosocial-dialog]() to synthesize samples to help train safety models.
+- A [classifier](https://huggingface.co/shahules786/prosocial-classifier)
+  trained on prosocial dialog dataset is used for pseudo labeling.
+- More information on dataset can be found
+  [here](https://huggingface.co/datasets/shahules786/prosocial-confessions)
 
 ## Example
 
