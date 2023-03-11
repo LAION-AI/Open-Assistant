@@ -5,8 +5,8 @@ from typing import Callable, Optional
 
 import pydantic
 from custom_datasets.formatting import format_pair
-from oasst_shared.schemas.export import ExportMessageNode, ExportMessageTree
-from torch import Generator, default_generator
+from oasst_data import ExportMessageNode, ExportMessageTree
+from torch import Generator
 from torch.utils.data import Dataset, random_split
 
 
@@ -45,10 +45,13 @@ def load_oasst_export(
     val_split: float = 0.2,
     lang: str = "en",
     top_k: Optional[int] = None,
-    generator: Optional[Generator] = default_generator,
+    manual_seed: int = 287631038922,
     data_path: str | Path = None,
 ) -> tuple[ListDataset, ListDataset]:
     lang_codes = lang.split(",")
+
+    generator = Generator()
+    generator.manual_seed(manual_seed)
 
     if not isinstance(input_file_path, Path):
         input_file_path = Path(input_file_path)
@@ -120,5 +123,7 @@ def load_oasst_export(
 
     train = flatten(splits[0])
     val = flatten(splits[1])
+
+    print(f"OASST data {str(input_file_path)}: {len(train)=}, {len(val)=}")
 
     return train, val

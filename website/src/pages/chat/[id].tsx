@@ -1,4 +1,4 @@
-import { Button, Flex } from "@chakra-ui/react";
+import { Button, Card, CardBody, Flex } from "@chakra-ui/react";
 import { List } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -19,15 +19,19 @@ const Chat = ({ id }: { id: string }) => {
       </Head>
 
       <Flags authorizedFlags={["chat"]}>
-        <Flex direction="column" gap="2">
-          <Link href="/chat">
-            <Button leftIcon={<List />} size="lg">
-              {t("chat:back_to_chat_list")}
-            </Button>
-          </Link>
+        <Card>
+          <CardBody>
+            <Flex direction="column" gap="2">
+              <Link href="/chat">
+                <Button leftIcon={<List />} size="lg">
+                  {t("chat:back_to_chat_list")}
+                </Button>
+              </Link>
 
-          <ChatConversation chatId={id} />
-        </Flex>
+              <ChatConversation chatId={id} />
+            </Flex>
+          </CardBody>
+        </Card>
       </Flags>
     </>
   );

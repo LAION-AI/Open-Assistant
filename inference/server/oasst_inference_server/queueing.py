@@ -16,6 +16,9 @@ class RedisQueue:
         else:
             return await self.redis_client.lpop(self.queue_id)
 
+    async def set_expire(self, timeout: int) -> None:
+        return await self.redis_client.expire(self.queue_id, timeout)
+
 
 def chat_queue(redis_client: redis.Redis, chat_id: str) -> RedisQueue:
     return RedisQueue(redis_client, f"chat:{chat_id}")

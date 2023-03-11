@@ -1,4 +1,5 @@
 import copy
+import math
 import random
 from distutils.util import strtobool
 from pathlib import Path
@@ -53,7 +54,13 @@ class PerDatasetSampler(DistributedSampler):
         world_size: int = None,
         shuffle: bool = True,
         seed: int = 0,
+        samples_length: List[int] = None,
     ):
+        """
+        if samples_length is not None, then the sampler
+        will order the samples by dataset length
+        with some variability across epochs
+        """
         self.dataset_sizes = dataset_sizes
         self.dataset_size_per_epoch = dataset_size_per_epoch
         self.num_datasets = len(dataset_sizes)
@@ -64,14 +71,15 @@ class PerDatasetSampler(DistributedSampler):
         if world_size == 1:
             self.rank = 0
 
-        self.num_samples = sum(dataset_size_per_epoch) // world_size
+        self.num_samples = sum(dataset_size_per_epoch)
         self.seed = seed
+        self.samples_length = samples_length
 
     def set_epoch(self, epoch) -> None:
         self.epoch = epoch
 
     def __len__(self) -> int:
-        return self.num_samples
+        return self.num_samples // self.world_size
 
     def __iter__(self):
         epoch_idx = []
@@ -84,8 +92,19 @@ class PerDatasetSampler(DistributedSampler):
             n += self.dataset_sizes[i]
             epoch_idx.extend(sampled_idx)
 
-        if self.shuffle:
-            random.shuffle(epoch_idx)
+        if self.samples_length is not None:
+            # sort by samples length and in case of ties randomize
+            epoch_idx = sorted(epoch_idx, key=lambda x: (self.samples_length[x], random.random()))
+
+            if self.shuffle:
+                # do some minor shuffling to avoid repeating the same order
+                # but not too much to avoid too much padding
+                # quasi random basically
+                for i in range(0, len(epoch_idx), 200):  # this should be batch_size dependent
+                    random.shuffle(epoch_idx[i : i + 200])
+        else:
+            if self.shuffle:
+                random.shuffle(epoch_idx)
 
         # split epoch_idx in world_size chunks
         epoch_idx = epoch_idx[self.rank : self.num_samples : self.world_size]
@@ -243,15 +262,19 @@ def get_metrics(conf, tokenizer):
     return metrics, preprocess_fns
 
 
-def get_model(conf, tokenizer):
+def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     model = get_specific_model(
         conf.model_name, cache_dir=conf.cache_dir, quantization=conf.quantization, seq2seqmodel=conf.seq2seqmodel
     )
 
-    if len(tokenizer) != model.get_input_embeddings().num_embeddings:
+    n_embs = model.get_input_embeddings().num_embeddings
+    if len(tokenizer) != n_embs:
         assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
 
-    model.resize_token_embeddings(len(tokenizer))
+    if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
+        p = pad_vocab_size_to_multiple_of
+        target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
+        model.resize_token_embeddings(target_size)
 
     if conf.freeze_layer:
         model = freeze_top_n_layers(model, conf.freeze_layer)

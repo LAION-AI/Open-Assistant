@@ -7,7 +7,7 @@ export interface InferenceCreateChatResponse {
   id: string;
 }
 
-export interface InferenceResponse {
+export interface InferencePostMessageResponse {
   assistant_message: InferenceMessage;
   prompter_message: InferenceMessage;
 }
@@ -17,8 +17,14 @@ export interface InferenceMessage {
   content: string | null;
   state: "manual" | "pending";
   role: "assistant" | "prompter";
+  score: number;
 }
 
 export interface GetChatsResponse {
   chats: InferenceCreateChatResponse[];
+}
+
+export interface ChatResponse {
+  id: string;
+  messages: InferenceMessage[];
 }

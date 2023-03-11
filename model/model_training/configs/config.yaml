@@ -4,9 +4,12 @@ defaults:
   gradient_accumulation_steps: 32
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 2
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1e-12
   weight_decay: 0.00
   warmup_steps: 600
-  eval_steps: 500
+  eval_steps: 200
   save_steps: 500
   max_length: 512
   num_train_epochs: 3
@@ -51,20 +54,33 @@ defaults:
   samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
   verbose: false
   output_dir: saved_model
+  use_custom_sampler: false
+  random_offset_probability: 0.5 # probability for random message offsets
+  label_masking: true
+  residual_dropout: 0.0
+  sort_by_length: false
 
 oa_dataset_only:
   datasets:
+    - oa_private:
+        split: sft
+        val_split: 0.0
+        fraction: 1
+        file: 2023-02-10_oasst_prod.jsonl
+
+oasst_export_eu:
+  datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        top_k: 2
-        input_file_path: 2023-02-19_oasst_ready_with_spam_deleted.jsonl.gz
-  num_train_epochs: 10
-  save_steps: 2000
+        #top_k: 2
+        input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
+  sort_by_length: true
+  use_custom_sampler: true
 
 pythia:
   learning_rate: 8e-6
   model_name: EleutherAI/pythia-70m-deduped
-  weight_decay: 0.01
+  weight_decay: 0.0
   max_length: 520
   warmup_steps: 1000
   gradient_checkpointing: false
@@ -76,7 +92,7 @@ pythia:
 pythia-1B:
   learning_rate: 8e-6
   model_name: EleutherAI/pythia-1b-deduped
-  weight_decay: 0.01
+  weight_decay: 0.0
   max_length: 520
   warmup_steps: 1000
   gradient_checkpointing: false
@@ -84,10 +100,21 @@ pythia-1B:
   per_device_train_batch_size: 16
   per_device_eval_batch_size: 32
 
+pythia-6.9B:
+  learning_rate: 8e-6
+  model_name: EleutherAI/pythia-6.9b-deduped
+  weight_decay: 0.0
+  max_length: 520
+  warmup_steps: 5
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+
 galactica-125m:
   learning_rate: 5e-5
   model_name: facebook/galactica-125m
-  weight_decay: 0.01
+  weight_decay: 0.0
   warmup_steps: 600
   gradient_checkpointing: false
   gradient_accumulation_steps: 2
@@ -95,20 +122,20 @@ galactica-125m:
   per_device_eval_batch_size: 4
 
 gpt-jt:
-  learning_rate: 2e-6
+  learning_rate: 8e-6
   model_name: togethercomputer/GPT-JT-6B-v1
-  weight_decay: 0.01
+  weight_decay: 0.0
   max_length: 1024
   warmup_steps: 600
   gradient_checkpointing: false
-  gradient_accumulation_steps: 2
+  gradient_accumulation_steps: 8
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
 
 codegen:
   learning_rate: 8e-6
   model_name: Salesforce/codegen-2B-multi
-  weight_decay: 0.01
+  weight_decay: 0.0
   max_length: 520
   warmup_steps: 1000
   gradient_checkpointing: false

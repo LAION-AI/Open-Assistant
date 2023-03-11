@@ -12,7 +12,7 @@ tmux send-keys "docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 \
     --name text-generation-inference ghcr.io/yk/text-generation-inference" C-m
 tmux split-window -h
 tmux send-keys "cd server" C-m
-tmux send-keys "DEBUG_API_KEYS='[\"0000\", \"0001\", \"0002\"]' ALLOW_DEBUG_AUTH=True uvicorn main:app --reload" C-m
+tmux send-keys "DEBUG_API_KEYS='[\"0000\", \"0001\"]' ALLOW_DEBUG_AUTH=True uvicorn main:app" C-m
 tmux split-window -h
 tmux send-keys "cd text-client" C-m
 tmux send-keys "sleep 5" C-m
@@ -23,8 +23,5 @@ tmux send-keys "API_KEY=0000 python __main__.py" C-m
 tmux split-window -v
 tmux send-keys "cd worker" C-m
 tmux send-keys "API_KEY=0001 python __main__.py" C-m
-tmux split-window -v
-tmux send-keys "cd worker" C-m
-tmux send-keys "API_KEY=0002 python __main__.py" C-m
 tmux select-layout even-horizontal
 tmux attach-session -t "inference-dev-setup"

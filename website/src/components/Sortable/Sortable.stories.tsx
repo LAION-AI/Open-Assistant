@@ -1,3 +1,4 @@
+import { Story } from "@storybook/react";
 import React from "react";
 
 import { Sortable } from "./Sortable";
@@ -8,7 +9,7 @@ export default {
   component: Sortable,
 };
 
-const Template = ({ items, isEditable, isDisabled }) => {
+const Template: Story<any> = ({ items, isEditable, isDisabled }) => {
   return <Sortable items={items} isEditable={isEditable} isDisabled={isDisabled} className="my-8" />;
 };
 

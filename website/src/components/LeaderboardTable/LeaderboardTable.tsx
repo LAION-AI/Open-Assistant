@@ -4,16 +4,16 @@ import { MoreHorizontal } from "lucide-react";
 import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
 import React, { useMemo } from "react";
-import Image from "next/image";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
 
 import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
 import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
+import { UserAvatar } from "../UserAvatar";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
-import { UserAvatar } from "../UserAvatar";
+
 type WindowLeaderboardEntity = LeaderboardEntity & { isSpaceRow?: boolean };
 
 const columnHelper = createColumnHelper<WindowLeaderboardEntity>();
@@ -63,18 +63,21 @@ export const LeaderboardTable = ({
       },
       columnHelper.accessor("display_name", {
         header: t("user"),
-        cell: ({ getValue, row }) => (
-          <div className="flex flex-row items-center gap-2">
-            <UserAvatar displayName={getValue()} avatarUrl={row.original.image}></UserAvatar>
-            {isAdminOrMod ? (
-              <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
-                {getValue()}
-              </Link>
-            ) : (
-              getValue()
-            )}
-          </div>
-        ),
+        cell: ({ getValue, row }) => {
+          const display_name = getValue();
+          return (
+            <div className="flex flex-row items-center gap-2">
+              <UserAvatar displayName={display_name} avatarUrl={row.original.image} />
+              {isAdminOrMod ? (
+                <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
+                  {display_name}
+                </Link>
+              ) : (
+                display_name
+              )}
+            </div>
+          );
+        },
       }),
       columnHelper.accessor("leader_score", {
         header: t("score"),
@@ -117,7 +120,7 @@ export const LeaderboardTable = ({
   const rowProps = useBoardRowProps<WindowLeaderboardEntity>();
 
   if (isLoading) {
-    return <CircularProgress isIndeterminate></CircularProgress>;
+    return <CircularProgress isIndeterminate />;
   }
 
   if (error) {
@@ -132,7 +135,7 @@ export const LeaderboardTable = ({
       rowProps={rowProps}
       getSubRows={jsonExpandRowModel.getSubRows}
       {...pagnationProps}
-    ></DataTable>
+    />
   );
 };
 
@@ -140,7 +143,7 @@ const SpaceRow = () => {
   const color = useColorModeValue("gray.600", "gray.400");
   return (
     <Flex justify="center">
-      <Box as={MoreHorizontal} color={color}></Box>
+      <Box as={MoreHorizontal} color={color} />
     </Flex>
   );
 };

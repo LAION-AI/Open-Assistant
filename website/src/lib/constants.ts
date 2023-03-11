@@ -14,10 +14,9 @@ import {
   useLabelInitialPromptTask,
   useLabelPrompterReplyTask,
 } from "src/hooks/tasks/useLabelingTask";
-import { TaskApiHooks } from "src/types/Hooks";
 import { TaskType } from "src/types/Task";
 
-export const taskApiHooks: TaskApiHooks = {
+export const taskApiHooks = {
   [TaskType.random]: useGenericTaskAPI,
   [TaskType.assistant_reply]: useCreateAssistantReply,
   [TaskType.initial_prompt]: useCreateInitialPrompt,
@@ -28,4 +27,4 @@ export const taskApiHooks: TaskApiHooks = {
   [TaskType.rank_assistant_replies]: useRankAssistantRepliesTask,
   [TaskType.rank_initial_prompts]: useRankInitialPromptsTask,
   [TaskType.rank_prompter_replies]: useRankPrompterRepliesTask,
-};
+} as const;

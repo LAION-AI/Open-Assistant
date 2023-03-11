@@ -26,6 +26,7 @@ def prepare_message(m: Message) -> protocol.Message:
         model_name=m.model_name,
         message_tree_id=m.message_tree_id,
         rank=m.rank,
+        user=m.user.to_protocol_frontend_user() if m.user else None,
     )
 
 

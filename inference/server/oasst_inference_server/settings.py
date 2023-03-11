@@ -8,6 +8,8 @@ class Settings(pydantic.BaseSettings):
     redis_port: int = 6379
     redis_db: int = 0
 
+    message_queue_expire: int = 60
+
     allowed_worker_compat_hashes: list[str] = ["distilgpt2"]
 
     sse_retry_timeout: int = 15000
@@ -28,7 +30,7 @@ class Settings(pydantic.BaseSettings):
         if isinstance(v, str):
             return v
         return pydantic.PostgresDsn.build(
-            scheme="postgresql",
+            scheme="postgresql+asyncpg",
             user=values.get("postgres_user"),
             password=values.get("postgres_password"),
             host=values.get("postgres_host"),
@@ -38,6 +40,7 @@ class Settings(pydantic.BaseSettings):
 
     db_pool_size: int = 75
     db_max_overflow: int = 20
+    db_echo: bool = False
 
     root_token: str = "1234"
 
@@ -45,6 +48,7 @@ class Settings(pydantic.BaseSettings):
 
     do_compliance_checks: bool = True
     compliance_check_interval: int = 60
+    compliance_check_timeout: int = 60
 
     api_root: str = "https://inference.prod.open-assistant.io"
 

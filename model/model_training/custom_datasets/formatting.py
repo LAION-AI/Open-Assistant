@@ -1,10 +1,12 @@
 from enum import Enum
 
 QA_SPECIAL_TOKENS = {
-    "Question": "<|startoftext|>",
-    "Answer": "<bot>",
-    "StartPrefix": "<prefix>",
-    "EndPrefix": "</prefix>",
+    "Question": "<|prompter|>",
+    "Answer": "<|assistant|>",
+    "System": "<|system|>",
+    "Start": "<|startoftext|>",
+    "StartPrefix": "<|prefix_begin|>",
+    "EndPrefix": "<|prefix_end|>",
 }
 
 
@@ -15,9 +17,9 @@ class SeqToken(str, Enum):
 
 
 class ChatRole(str, Enum):
-    system = "system"
-    prompter = "prompter"
-    assistant = "assistant"
+    system = "<|system|>"
+    prompter = "<|prompter|>"
+    assistant = "<|assistant|>"
 
 
 def format_pair(pairs):

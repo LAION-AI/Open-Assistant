@@ -23,7 +23,7 @@ const LanguageSelector = () => {
 
   // Memo the set of locales and their display names.
   const localesAndNames = useMemo(() => {
-    return router.locales.map((locale) => ({
+    return router.locales!.map((locale) => ({
       locale,
       name: getLocaleDisplayName(locale),
     }));

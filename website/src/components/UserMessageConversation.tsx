@@ -1,5 +1,5 @@
 import { Button, CircularProgress, Flex, Spacer } from "@chakra-ui/react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 import { get } from "src/lib/api";
 import { FetchUserMessagesCursorResponse } from "src/types/Conversation";
 import useSWRImmutable from "swr/immutable";
@@ -40,7 +40,7 @@ const UserMessageConversation = () => {
           {t("next")}
         </Button>
       </Flex>
-      <MessageConversation enableLink messages={userMessages} />
+      <MessageConversation enableLink messages={userMessages} showCreatedDate />
     </div>
   );
 };

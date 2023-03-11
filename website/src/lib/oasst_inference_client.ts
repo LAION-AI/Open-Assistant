@@ -1,8 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosRequestConfig } from "axios";
 import Cookies from "cookies";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { JWT } from "next-auth/jwt";
-import { InferenceCreateChatResponse, InferenceDebugTokenResponse } from "src/types/Chat";
+import {
+  ChatResponse,
+  InferenceCreateChatResponse,
+  InferenceDebugTokenResponse,
+  InferenceMessage,
+  InferencePostMessageResponse,
+} from "src/types/Chat";
 
 // TODO: this class could be structured better
 export class OasstInferenceClient {
@@ -16,9 +23,9 @@ export class OasstInferenceClient {
     this.userTokenSub = token.sub;
   }
 
-  async request(method: "GET" | "POST" | "PUT" | "DELETE", path: string, init?: AxiosRequestConfig) {
+  async request<T = any>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, init?: AxiosRequestConfig) {
     const token = await this.get_token();
-    const { data } = await axios(process.env.INFERENCE_SERVER_HOST + path, {
+    const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
       method,
       ...init,
       headers: {
@@ -49,18 +56,42 @@ export class OasstInferenceClient {
     return this.inferenceToken;
   }
 
-  create_chat(): Promise<InferenceCreateChatResponse> {
-    return this.request("POST", "/chat", { data: "" });
+  get_my_chats() {
+    return this.request("GET", "/chats");
   }
 
-  post_prompt({ chat_id, parent_id, content }: { chat_id: string; parent_id: string | null; content: string }) {
-    return this.request("POST", `/chat/${chat_id}/message`, {
+  create_chat(): Promise<InferenceCreateChatResponse> {
+    return this.request("POST", "/chats", { data: "" });
+  }
+
+  get_chat(chat_id: string): Promise<ChatResponse> {
+    return this.request("GET", `/chats/${chat_id}`);
+  }
+
+  post_prompt({
+    chat_id,
+    parent_id,
+    content,
+  }: {
+    chat_id: string;
+    parent_id: string | null;
+    content: string;
+  }): Promise<InferencePostMessageResponse> {
+    return this.request("POST", `/chats/${chat_id}/messages`, {
       data: { parent_id, content },
+    });
+  }
+
+  stream_events({ chat_id, message_id }: { chat_id: string; message_id: string }) {
+    return this.request("GET", `/chats/${chat_id}/messages/${message_id}/events`, {
+      headers: {
+        Accept: "text/event-stream",
+      },
       responseType: "stream",
     });
   }
 
-  get_my_chats() {
-    return this.request("GET", "/chat");
+  vote({ chat_id, message_id, score }: { chat_id: string; message_id: string; score: number }) {
+    return this.request("POST", `/chats/${chat_id}/messages/${message_id}/votes`, { data: { score } });
   }
 }

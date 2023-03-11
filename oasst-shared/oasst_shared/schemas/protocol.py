@@ -108,6 +108,7 @@ class Message(ConversationMessage):
     message_tree_id: Optional[UUID]
     ranking_count: Optional[int]
     rank: Optional[int]
+    user: Optional[FrontEndUser]
 
 
 class MessagePage(PageResult):

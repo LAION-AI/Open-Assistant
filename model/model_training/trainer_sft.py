@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -8,8 +9,10 @@ import datasets
 import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
+from models.patch_resid_dropout import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
@@ -142,7 +145,8 @@ class SFTTrainer(Trainer):
             train_sampler = self._get_train_sampler()
         else:
             train_sampler = self.sampler
-            print("custom sampler found!!", len(train_sampler))
+            logging.warning("Custom sampler found!")
+
         dataloader = DataLoader(
             train_dataset,
             batch_size=self._train_batch_size,
@@ -153,7 +157,6 @@ class SFTTrainer(Trainer):
             pin_memory=self.args.dataloader_pin_memory,
             worker_init_fn=seed_worker,
         )
-        print(len(dataloader))
         return dataloader
 
 
@@ -210,15 +213,43 @@ if __name__ == "__main__":
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
 
+    if training_conf.residual_dropout > 0:
+        patch_model(model, resid_pdrop=training_conf.residual_dropout)
+
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
-        tokenizer, max_length=training_conf.max_length, samples_mixing=training_conf.samples_mixing
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=training_conf.samples_mixing,
+        pad_to_multiple_of=16,
     )
-    eval_collate_fn = DialogueDataCollator(tokenizer, max_length=training_conf.max_length, samples_mixing=False)
+    eval_collate_fn = DialogueDataCollator(
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=False,
+    )
 
-    sampler = PerDatasetSampler.build_sampler_from_config(
-        training_conf, train.datasets, rank=training_conf.local_rank, world_size=training_conf.world_size
-    )
+    if training_conf.use_custom_sampler:
+        sampler = PerDatasetSampler.build_sampler_from_config(
+            training_conf,
+            train.datasets,
+            rank=training_conf.local_rank,
+            world_size=training_conf.world_size,
+            samples_length=list(
+                map(
+                    lambda x: train_collate_fn.process_one(x, return_length=True),
+                    tqdm(train, desc="Calculating lengths per sample"),
+                )
+            )
+            if training_conf.sort_by_length
+            else None,
+        )
+    else:
+        sampler = None
 
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
@@ -252,6 +283,9 @@ if __name__ == "__main__":
         gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
         per_device_train_batch_size=training_conf.per_device_train_batch_size,
         per_device_eval_batch_size=training_conf.per_device_eval_batch_size,
+        adam_beta1=training_conf.adam_beta1,
+        adam_beta2=training_conf.adam_beta2,
+        adam_epsilon=float(training_conf.adam_epsilon),
         weight_decay=training_conf.weight_decay,
         max_grad_norm=training_conf.max_grad_norm,
         logging_steps=training_conf.logging_steps,
@@ -287,3 +321,5 @@ if __name__ == "__main__":
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
     trainer.train()
+    trainer.save_model()
+    tokenizer.save_pretrained(output_dir)

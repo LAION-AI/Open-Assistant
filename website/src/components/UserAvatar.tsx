@@ -1,18 +1,21 @@
 import Image from "next/image";
-export function UserAvatar(options: { displayName: string; avatarUrl: string | null }) {
-  const { displayName, avatarUrl } = options;
+import { useEffect, useState } from "react";
+export function UserAvatar({ displayName, avatarUrl }: { displayName: string; avatarUrl?: string }) {
+  const diceBearURL = `https://api.dicebear.com/5.x/initials/png?seed=${displayName}&radius=50&backgroundType=gradientLinear`;
+
+  const [src, setSrc] = useState(avatarUrl ?? diceBearURL);
+  useEffect(() => {
+    setSrc(avatarUrl ?? diceBearURL);
+  }, [avatarUrl, diceBearURL]);
+
   return (
-    <>
-      <Image
-        src={
-          avatarUrl
-            ? avatarUrl
-            : `https://api.dicebear.com/5.x/initials/png?seed=${displayName}&radius=50&backgroundType=gradientLinear`
-        }
-        alt={`${displayName}'s avatar`}
-        width={30}
-        height={30}
-      />
-    </>
+    <Image
+      src={src}
+      onError={() => setSrc(diceBearURL)}
+      alt={`${displayName}'s avatar`}
+      width={30}
+      height={30}
+      className="rounded-full"
+    />
   );
 }

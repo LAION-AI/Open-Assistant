@@ -113,7 +113,7 @@ class MessageRead(pydantic.BaseModel):
     role: Literal["prompter", "assistant"]
     state: MessageState
     score: int
-    report: Report | None
+    reports: list[Report] = []
 
     @property
     def is_assistant(self) -> bool:

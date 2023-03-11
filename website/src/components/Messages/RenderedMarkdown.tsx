@@ -26,6 +26,7 @@ interface RenderedMarkdownProps {
 
 const sx: SystemStyleObject = {
   overflowX: "auto",
+  wordBreak: "break-word",
   pre: {
     width: "100%",
     bg: "transparent",
@@ -42,6 +43,7 @@ const sx: SystemStyleObject = {
     },
   },
   "p:only-child": {
+    whiteSpace: "pre-wrap",
     my: 0, // ovoid margin when markdown only render 1 p tag
   },
   p: {
@@ -51,7 +53,6 @@ const sx: SystemStyleObject = {
     fontWeight: "normal",
     lineHeight: 6,
   },
-  wordBreak: "break-word",
   "> blockquote": {
     borderInlineStartColor: "gray.300",
     _dark: {
@@ -71,11 +72,14 @@ const sx: SystemStyleObject = {
       borderBottomColor: "gray.700",
     },
   },
-  ol: {
-    listStyleType: "none",
+  hr: {
+    my: "revert",
   },
-  "ol li::before": {
-    content: "counter(list-item) '.' ' '",
+  ol: {
+    paddingInlineStart: "revert",
+  },
+  ul: {
+    paddingInlineStart: "revert",
   },
 };
 
@@ -83,14 +87,12 @@ const plugins = [remarkGfm];
 
 const disallowedElements = ["img"];
 
-// eslint-disable-next-line react/display-name
 const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [link, setLink] = useState<string | undefined>();
 
   const components: ReactMarkdownOptions["components"] = useMemo(() => {
     return {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       code: RenderedCodeblock,
       a({ href, ...props }) {
         if (!href) {
@@ -108,7 +110,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
               setLink(href);
               onOpen();
             }}
-          ></NextLink>
+          />
         );
       },
     } as ReactMarkdownOptions["components"];
@@ -153,11 +155,10 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
   );
 };
 
-// eslint-disable-next-line react/display-name
-const MemorizedMarkdown = memo((props: ReactMarkdownOptions) => {
+const MemorizedMarkdown = memo(function MemorizedMarkdown(props: ReactMarkdownOptions) {
   return (
     <Prose as="div" sx={sx}>
-      <ReactMarkdown {...props} disallowedElements={disallowedElements} remarkPlugins={plugins}></ReactMarkdown>
+      <ReactMarkdown {...props} disallowedElements={disallowedElements} remarkPlugins={plugins} />
     </Prose>
   );
 });
