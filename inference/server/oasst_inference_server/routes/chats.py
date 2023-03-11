@@ -1,4 +1,5 @@
 import fastapi
+import pydantic
 from fastapi import Depends
 from loguru import logger
 from oasst_inference_server import auth, deps, models, queueing
@@ -101,21 +102,21 @@ async def message_events(
                     continue
 
                 _, response_packet_str = item
-                response_packet = inference.WorkResponsePacket.parse_raw(response_packet_str)
-                if response_packet.error is not None:
+                response_packet = pydantic.parse_raw_as(inference.WorkResponse, response_packet_str)
+                if response_packet.response_type == "error":
                     yield {
-                        "data": chat_schema.TokenResponseEvent(error=response_packet.error).json(),
+                        "data": chat_schema.ErrorResponseEvent(error=response_packet.error).json(),
                     }
                     break
 
-                if response_packet.is_end:
+                if response_packet.response_type == "generated_text":
                     break
 
                 if await fastapi_request.is_disconnected():
                     continue
 
                 yield {
-                    "data": chat_schema.TokenResponseEvent(token=response_packet.token).json(),
+                    "data": chat_schema.TokenResponseEvent(text=response_packet.text).json(),
                 }
 
             if await fastapi_request.is_disconnected():

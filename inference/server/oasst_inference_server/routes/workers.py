@@ -1,6 +1,7 @@
 import datetime
 import enum
 import uuid
+from typing import cast
 
 import fastapi
 import pydantic
@@ -101,10 +102,10 @@ async def send_work_request(
     return await websocket.send_text(work_request.json())
 
 
-async def receive_work_response_packet(
+async def receive_work_response(
     websocket: fastapi.WebSocket,
-) -> inference.WorkResponsePacket:
-    return inference.WorkResponsePacket.parse_raw(await websocket.receive_text())
+) -> inference.WorkResponse:
+    return pydantic.parse_raw_as(inference.WorkResponse, await websocket.receive_text())
 
 
 async def receive_worker_config(
@@ -198,19 +199,20 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             await send_work_request(websocket, compliance_work_request)
             response = None
             while True:
-                response = await receive_work_response_packet(websocket)
-                if response.error is not None:
+                response = await receive_work_response(websocket)
+                if response.response_type == "error":
                     compliance_check.responded = True
                     compliance_check.error = response.error
                     logger.warning(f"Worker {worker_id} errored during compliance check: {response.error}")
                     return
-                if response.is_end:
+                if response.response_type == "generated_text":
                     break
             if response is None:
                 logger.warning(f"Worker {worker_id} did not respond to compliance check")
                 return
             compliance_check.responded = True
-            passes = response.generated_text.text == message.content
+            response = cast(inference.GeneratedTextResponse, response)
+            passes = response.text == message.content
             compliance_check.passed = passes
             logger.info(f"Worker {worker_id} passed compliance check: {passes}")
 
@@ -270,7 +272,7 @@ async def update_worker_session_status(
 async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(get_worker_id)):
     logger.info(f"handle_worker: {worker_id=}")
     await websocket.accept()
-    worker_config = inference.WorkerConfig.parse_raw(await websocket.receive_text())
+    worker_config = await receive_worker_config(websocket)
     worker_compat_hash = worker_config.compat_hash
     work_queue = queueing.work_queue(deps.redis_client, worker_compat_hash)
     worker_session_id = str(uuid.uuid4())
@@ -404,12 +406,15 @@ async def perform_work(
         response_packet = None
         try:
             while True:
-                response_packet = await receive_work_response_packet(websocket)
+                response_packet = await receive_work_response(websocket)
+                if response_packet.response_type == "metrics":
+                    # TODO: store metrics
+                    logger.debug(f"Received {response_packet=} from worker.")
                 await message_queue.enqueue(response_packet.json())
                 await message_queue.set_expire(timeout=settings.message_queue_expire)
-                if response_packet.error is not None:
+                if response_packet.response_type == "error":
                     raise WorkerError(f"Worker errored: {response_packet.error}", did_work=True)
-                if response_packet.is_end:
+                if response_packet.response_type == "generated_text":
                     logger.debug(f"Received {response_packet=} from worker. Ending.")
                     break
         except WSException:
@@ -422,9 +427,10 @@ async def perform_work(
             raise WorkerError("Worker did not respond", did_work=False)
 
         logger.info(f"Message {message_id=} is complete.")
-        assert response_packet.is_end, "Response packet is not end packet"
+        assert response_packet.response_type == "generated_text", "Response packet is not end packet"
+        response_packet = cast(inference.GeneratedTextResponse, response_packet)
         async with deps.manual_chat_repository() as cr:
-            await cr.complete_work(message_id, response_packet.generated_text.text)
+            await cr.complete_work(message_id, response_packet.text)
 
     except WorkerError as e:
         async with deps.manual_chat_repository() as cr:

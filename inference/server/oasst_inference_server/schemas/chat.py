@@ -1,3 +1,5 @@
+from typing import Annotated, Literal, Union
+
 import pydantic
 from oasst_shared.schemas import inference
 
@@ -18,8 +20,16 @@ class CreateMessageResponse(pydantic.BaseModel):
 
 
 class TokenResponseEvent(pydantic.BaseModel):
-    token: inference.TokenResponse | None
-    error: str | None
+    event_type: Literal["token"] = "token"
+    text: str
+
+
+class ErrorResponseEvent(pydantic.BaseModel):
+    event_type: Literal["error"] = "error"
+    error: str
+
+
+ResponseEvent = Annotated[Union[TokenResponseEvent, ErrorResponseEvent], pydantic.Field(discriminator="event_type")]
 
 
 class VoteRequest(pydantic.BaseModel):
