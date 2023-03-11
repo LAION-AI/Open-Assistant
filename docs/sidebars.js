@@ -71,13 +71,9 @@ const sidebars = {
       items: ["research/general", "research/search-based-qa"],
     },
     {
-      type: "category",
+      type: "doc",
       label: "Presentations",
-      link: {
-        type: "doc",
-        id: "presentations/README",
-      },
-      items: ["presentations/list"],
+      id: "presentations/README",
     },
     {
       type: "doc",

@@ -13,3 +13,6 @@ backend/openapi.json
 
 # ignore jupyter notebook checkpoints
 .ipynb_checkpoints
+
+# edit docs using obsidian.md, these files should not appear in the repo
+.obsidian/
