@@ -1,0 +1,16 @@
+{
+  "default": "Có lỗi!",
+  "err_1000": "Loại công việc không hợp lệ",
+  "err_1001": "Không thể nhận cộng việc",
+  "err_1002": "Không thể từ chối nhận công việc",
+  "err_1003": "Câu trả lời không hợp lệ",
+  "err_1004": "Không nhận được câu trả lời cho yêu cầu tương tác với API",
+  "err_1005": "Không thể tạo ra việc mới",
+  "err_1006": "Hiện chưa có công việc {{task_type}}.",
+  "err_1007": "Không nhận được câu trả lời cho số lượng việc",
+  "err_1008": "Câu trả lời quá dài",
+  "err_1009": "Vài câu trả lời gân đây của bạn bị lặp",
+  "err_1010": "Mục trả lời trống",
+  "err_1011": "Không được phép trả lời hai lần cho một việc",
+  "err_1012": "Bạn đã nhận quá nhiều việc, đợi khoảng vài phút trước khi nhận thêm việc"
+}
