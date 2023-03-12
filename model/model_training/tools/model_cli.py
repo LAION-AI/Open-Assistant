@@ -6,6 +6,7 @@ import torch
 import transformers
 from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs, format_system_prefix
 from models import get_specific_model
+from tokenizers import pre_tokenizers
 from utils import _strtobool
 
 if __name__ == "__main__":
@@ -19,8 +20,10 @@ if __name__ == "__main__":
     parser.add_argument("--top_k", type=int, default=40)
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--do-sample", type=_strtobool, default=True)
+    parser.add_argument("--format", type=str, default="v2")
     parser.add_argument("--8bit", action="store_true", dest="eightbit")
     parser.add_argument("--system_prefix", type=str, default=None)
+    parser.add_argument("--per-digit-tokens", action="store_true")
     args = parser.parse_args()
 
     if args.eightbit:
@@ -37,6 +40,8 @@ if __name__ == "__main__":
 
     model.gradient_checkpointing_enable()  # reduce number of stored activations
     tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_path)
+    if args.per_digit_tokens:
+        tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 
     human_token_id = tokenizer.additional_special_tokens_ids[
         tokenizer.additional_special_tokens.index(QA_SPECIAL_TOKENS["Question"])
@@ -67,7 +72,7 @@ if __name__ == "__main__":
                 out = model.generate(
                     input_ids=batch.to(model.device),
                     max_new_tokens=args.max_new_tokens,
-                    do_sample=True,
+                    do_sample=args.do_sample,
                     top_k=args.top_k,
                     temperature=args.temperature,
                     eos_token_id=human_token_id,

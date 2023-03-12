@@ -1,10 +1,10 @@
+#!/usr/bin/env python3
 import argparse
 import logging
 import os
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-import bitsandbytes
 import datasets
 import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
@@ -161,7 +161,20 @@ class SFTTrainer(Trainer):
 
 def argument_parsing(notebook=False, notebook_args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--configs", nargs="+", required=True)
+    parser.add_argument(
+        "--configs",
+        nargs="+",
+        required=True,
+        help="""
+        Multiple configs can be passed to set different options.
+        For example, run as:
+
+           ./trainer_sft.py --configs galactica-125m webgpt_dataset_only per_digit_tokens
+
+        to run the galactica-125m model, using the webgpt dataset only (as opposed to all
+        the datasets listed in defaults in config.yaml) and treat each digit as a separate token.
+    """,
+    )
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
@@ -178,12 +191,17 @@ def argument_parsing(notebook=False, notebook_args=None):
     # Config from YAML
     conf = {}
     configs = read_yamls("./configs")
-    for name in args.configs:
-        if "," in name:
-            for n in name.split(","):
-                conf.update(configs[n])
-        else:
-            conf.update(configs[name])
+    conf.update(configs["defaults"])
+    try:
+        for name in args.configs:
+            if "," in name:
+                for n in name.split(","):
+                    conf.update(configs[n])
+            else:
+                conf.update(configs[name])
+    except KeyError as e:
+        print(f'Error: Could not find the config "{e.args[0]}" in config.yaml')
+        exit(1)
 
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
@@ -208,6 +226,7 @@ def argument_parsing(notebook=False, notebook_args=None):
 
 if __name__ == "__main__":
     training_conf = argument_parsing()
+    import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
