@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 
 A very simple script to test model locally
@@ -8,6 +9,13 @@ import argparse
 
 import torch
 from custom_datasets.formatting import QA_SPECIAL_TOKENS, ChatRole, SeqToken
+
+if __name__ == "__main__":
+    import os
+    import sys
+
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from utils import _strtobool
 
@@ -107,12 +115,17 @@ if __name__ == "__main__":
     prefix = ""
     while True:
         print(">", end=" ")
-        prompt = input()
+        try:
+            prompt = input()
+        except (EOFError, KeyboardInterrupt):  # Catch ctrl+d and ctrl+c respectively
+            print()
+            break
         if prompt == "!reset":
             histories = []
         else:
             input_text = talk(prompt, histories, prefix)
             inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(0)
+            del inputs["token_type_ids"]
             outputs = model.generate(
                 **inputs,
                 early_stopping=True,

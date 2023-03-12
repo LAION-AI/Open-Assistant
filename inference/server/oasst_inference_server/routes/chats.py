@@ -1,4 +1,5 @@
 import fastapi
+import pydantic
 from fastapi import Depends
 from loguru import logger
 from oasst_inference_server import auth, deps, models, queueing
@@ -53,8 +54,8 @@ async def create_message(
 ) -> chat_schema.CreateMessageResponse:
     """Allows the client to stream the results of a request."""
 
-    async with deps.manual_user_chat_repository(user_id) as ucr:
-        try:
+    try:
+        async with deps.manual_user_chat_repository(user_id) as ucr:
             prompter_message = await ucr.add_prompter_message(
                 chat_id=chat_id, parent_id=request.parent_id, content=request.content
             )
@@ -62,15 +63,15 @@ async def create_message(
                 parent_id=prompter_message.id,
                 work_parameters=request.work_parameters,
             )
-            queue = queueing.work_queue(deps.redis_client, request.worker_compat_hash)
-            logger.debug(f"Adding {assistant_message.id=} to {queue.queue_id} for {chat_id}")
-            await queue.enqueue(assistant_message.id)
-            logger.debug(f"Added {assistant_message.id=} to {queue.queue_id} for {chat_id}")
-            prompter_message_read = prompter_message.to_read()
-            assistant_message_read = assistant_message.to_read()
-        except Exception:
-            logger.exception("Error adding prompter message")
-            return fastapi.Response(status_code=500)
+        queue = queueing.work_queue(deps.redis_client, request.worker_compat_hash)
+        logger.debug(f"Adding {assistant_message.id=} to {queue.queue_id} for {chat_id}")
+        await queue.enqueue(assistant_message.id)
+        logger.debug(f"Added {assistant_message.id=} to {queue.queue_id} for {chat_id}")
+        prompter_message_read = prompter_message.to_read()
+        assistant_message_read = assistant_message.to_read()
+    except Exception:
+        logger.exception("Error adding prompter message")
+        return fastapi.Response(status_code=500)
 
     return chat_schema.CreateMessageResponse(
         prompter_message=prompter_message_read,
@@ -83,9 +84,10 @@ async def message_events(
     chat_id: str,
     message_id: str,
     fastapi_request: fastapi.Request,
-    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+    user_id: str = Depends(auth.get_current_user_id),
 ) -> EventSourceResponse:
-    message: models.DbMessage = await ucr.get_message_by_id(chat_id=chat_id, message_id=message_id)
+    async with deps.manual_user_chat_repository(user_id) as ucr:
+        message: models.DbMessage = await ucr.get_message_by_id(chat_id=chat_id, message_id=message_id)
     if message.role != "assistant":
         raise fastapi.HTTPException(status_code=400, detail="Only assistant messages can be streamed.")
 
@@ -101,21 +103,21 @@ async def message_events(
                     continue
 
                 _, response_packet_str = item
-                response_packet = inference.WorkResponsePacket.parse_raw(response_packet_str)
-                if response_packet.error is not None:
+                response_packet = pydantic.parse_raw_as(inference.WorkResponse, response_packet_str)
+                if response_packet.response_type == "error":
                     yield {
-                        "data": chat_schema.TokenResponseEvent(error=response_packet.error).json(),
+                        "data": chat_schema.ErrorResponseEvent(error=response_packet.error).json(),
                     }
                     break
 
-                if response_packet.is_end:
+                if response_packet.response_type == "generated_text":
                     break
 
                 if await fastapi_request.is_disconnected():
                     continue
 
                 yield {
-                    "data": chat_schema.TokenResponseEvent(token=response_packet.token).json(),
+                    "data": chat_schema.TokenResponseEvent(text=response_packet.text).json(),
                 }
 
             if await fastapi_request.is_disconnected():

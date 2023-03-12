@@ -9,7 +9,7 @@ import datasets
 import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
-from models.patch_resid_dropout import patch_model
+from models.patching import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -213,8 +213,11 @@ if __name__ == "__main__":
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
 
-    if training_conf.residual_dropout > 0:
-        patch_model(model, resid_pdrop=training_conf.residual_dropout)
+    patch_model(
+        model,
+        resid_pdrop=training_conf.residual_dropout,
+        flash_attention=training_conf.use_flash_attention,
+    )
 
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
@@ -297,13 +300,17 @@ if __name__ == "__main__":
         report_to="wandb" if training_conf.log_wandb else None,
     )
 
-    if training_conf.log_wandb and not training_conf.deepspeed or training_conf.local_rank == 0:
+    if not training_conf.log_wandb:
+        os.environ["WANDB_MODE"] = "offline"
+
+    if training_conf.log_wandb and (not training_conf.deepspeed or training_conf.local_rank == 0):
         import wandb
 
         wandb.init(
             project="supervised-finetuning",
             entity=training_conf.wandb_entity,
             name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
+            config=training_conf,
         )
 
     trainer = SFTTrainer(

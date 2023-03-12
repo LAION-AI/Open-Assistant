@@ -24,11 +24,16 @@ class DiscordAvatarRefresher {
 
     this.lastUpdated[providerAccountId] = now;
     try {
-      const user = await fetch("https://discord.com/api/v10/users/@me", {
+      const response = await fetch("https://discord.com/api/v10/users/@me", {
         headers: { Authorization: `${token_type} ${access_token}` },
-      }).then((res) => res.json());
+      });
+      const user = await response.json();
 
-      const imgURL = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+      let imgURL = null;
+      if (user && user.id && user.avatar) {
+        imgURL = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+      }
+
       await prisma.user.update({
         where: { id: userId },
         data: { image: imgURL },

@@ -89,17 +89,22 @@ python trainer_rl.py --configs defaults_rlhf
 
 ## Test your model
 
-You can itneractively test your model like this:
+You can interactively test your model like this:
 
 ```bash
-python tools/model_cli.py --model_path <saved_path/huggingface>
+python3 tools/model_cli.py --model_path <saved_path/huggingface>
+# For example, if you trained with the default config:
+python3 tools/model_cli.py --model_path saved_model
+# Add --8bit  if it is an 8bit model
 ```
 
 Or start a conversation with your bot interactively, mainly for testing context
 switch ability
 
 ```bash
-python -m tools.model_chat --model_path <saved_path/huggingface>
+python3 tools/model_chat.py --model_path <saved_path/huggingface>
+# For example, if you trained with the default config:
+python3 tools/model_chat.py --model_path saved_model
 ```
 
 ## Model

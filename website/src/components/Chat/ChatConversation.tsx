@@ -58,7 +58,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     const { body } = await fetch(API_ROUTES.STREAM_CHAT_MESSAGE(chatId, response.assistant_message.id));
     let responseMessage = "";
     for await (const { data } of iteratorSSE(body)) {
-      const text = JSON.parse(data).token.text;
+      const text = JSON.parse(data).text;
       responseMessage += text;
       setResponse(responseMessage);
       // wait for re-render

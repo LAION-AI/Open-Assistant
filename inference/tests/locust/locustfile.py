@@ -22,17 +22,24 @@ class ChatUser(HttpUser):
         bearer_token = auth_data["access_token"]
         auth_headers = {"Authorization": f"Bearer {bearer_token}"}
 
-        chat_data = self.client.post("/chat", json={}, headers=auth_headers).json()
+        chat_data = self.client.post("/chats", json={}, headers=auth_headers).json()
         chat_id = chat_data["id"]
         parent_id = None
 
         for _ in range(self.conversation_length):
             response = self.client.post(
-                f"/chat/{chat_id}/message",
+                f"/chats/{chat_id}/messages",
                 json={
                     "parent_id": parent_id,
                     "content": "hello",
                 },
+                headers=auth_headers,
+            )
+            response.raise_for_status()
+            message_id = response.json()["assistant_message"]["id"]
+
+            response = self.client.get(
+                f"/chats/{chat_id}/messages/{message_id}/events",
                 stream=True,
                 headers={
                     "Accept": "text/event-stream",
@@ -44,8 +51,11 @@ class ChatUser(HttpUser):
             client = sseclient.SSEClient(response)
             print("Assistant: ", end="", flush=True)
             events = iter(client.events())
-            message_id = json.loads(next(events).data)["assistant_message"]["id"]
             for event in events:
+                if event.event == "error":
+                    raise Exception(event.data)
+                if event.event == "ping":
+                    continue
                 try:
                     data = json.loads(event.data)
                 except json.JSONDecodeError:
