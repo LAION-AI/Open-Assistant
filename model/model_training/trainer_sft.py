@@ -179,6 +179,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+    parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -206,6 +207,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
+    conf["resume_from_checkpoint"] = args.resume_from_checkpoint
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -313,6 +315,7 @@ if __name__ == "__main__":
         eval_steps=training_conf.eval_steps,
         save_steps=training_conf.save_steps,
         eval_accumulation_steps=training_conf.eval_accumulation_steps,
+        resume_from_checkpoint=training_conf.resume_from_checkpoint,
         report_to="wandb" if training_conf.log_wandb else None,
     )
 
@@ -325,6 +328,8 @@ if __name__ == "__main__":
         wandb.init(
             project="supervised-finetuning",
             entity=training_conf.wandb_entity,
+            config=training_conf,
+            resume=training_conf.resume_from_checkpoint,
             name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
             config=training_conf,
         )
@@ -343,6 +348,6 @@ if __name__ == "__main__":
         compute_metrics=partial(compute_metrics, metrics=metrics, preprocess_fns=preprocess_fns),
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
-    trainer.train()
+    trainer.train(resume_from_checkpoint=training_conf.resume_from_checkpoint)
     trainer.save_model()
     tokenizer.save_pretrained(output_dir)
