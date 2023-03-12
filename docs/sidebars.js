@@ -34,6 +34,21 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "Architecture",
+      link: {
+        type: "doc",
+        id: "architecture/README",
+      },
+      items: [
+        "architecture/inference",
+        {
+          type: "doc",
+          id: "architecture/inference",
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Tasks",
       link: {
         type: "doc",
