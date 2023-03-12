@@ -2,7 +2,7 @@
     High level functions for model training
 """
 from custom_datasets.oasst_dataset import load_oasst_export
-from custom_datasets.prompt_dialogue import OAPrivate, PrivateInstructionTuning
+from custom_datasets.prompt_dialogue import OAPrivate  # , PrivateInstructionTuning
 from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, TranslatedQA, WebGPT
 from custom_datasets.summarization import SummarizationDataset
 from custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
@@ -76,8 +76,8 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         dataset = SODADialogue(data_path)
     elif dataset_name == "joke":
         dataset = JokeExplaination(data_path)
-    elif dataset_name == "private_tuning":
-        dataset = PrivateInstructionTuning(data_path)
+    # elif dataset_name == "private_tuning":
+    #     dataset = PrivateInstructionTuning(data_path)
     elif dataset_name == "oa_translated":
         # TODO make val_split lower..? by saganos
         dataset = TranslatedQA(data_path)

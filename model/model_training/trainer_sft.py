@@ -9,7 +9,6 @@ import datasets
 import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
-from models.patching import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -213,12 +212,6 @@ if __name__ == "__main__":
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
 
-    patch_model(
-        model,
-        resid_pdrop=training_conf.residual_dropout,
-        flash_attention=training_conf.use_flash_attention,
-    )
-
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
         tokenizer,
@@ -227,6 +220,8 @@ if __name__ == "__main__":
         label_masking=training_conf.label_masking,
         samples_mixing=training_conf.samples_mixing,
         pad_to_multiple_of=16,
+        use_system_prefix=training_conf.use_system_prefix,
+        system_prefix=training_conf.system_prefix,
     )
     eval_collate_fn = DialogueDataCollator(
         tokenizer,
@@ -234,6 +229,8 @@ if __name__ == "__main__":
         random_offset_probability=training_conf.random_offset_probability,
         label_masking=training_conf.label_masking,
         samples_mixing=False,
+        use_system_prefix=training_conf.use_system_prefix,
+        system_prefix=training_conf.system_prefix,
     )
 
     if training_conf.use_custom_sampler:

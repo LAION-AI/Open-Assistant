@@ -9,9 +9,10 @@ import evaluate
 import transformers
 import yaml
 from custom_datasets import get_one_dataset
-from custom_datasets.qa_datasets import QA_SPECIAL_TOKENS
+from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from losses import CrossEntropyLoss, PolyLoss
 from models import freeze_top_n_layers, get_specific_model
+from models.patching import patch_model
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
 from torch.utils.data.distributed import DistributedSampler
@@ -282,6 +283,12 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     model_parameters = filter(lambda p: p.requires_grad, model.parameters())
     params = sum([p.numel() for p in model_parameters])
     print("Number of trainable parameters: {}M".format(int(params / 1e6)))
+
+    patch_model(
+        model,
+        resid_pdrop=conf.residual_dropout,
+        flash_attention=conf.use_flash_attention,
+    )
 
     return model
 

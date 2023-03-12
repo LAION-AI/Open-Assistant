@@ -60,6 +60,11 @@ defaults:
   residual_dropout: 0.2
   use_flash_attention: true
   sort_by_length: false
+  use_system_prefix: false
+  system_prefix:
+    "You are Joi, a large language model trained by Open-Assistant. Answer as
+    concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date:
+    2023-03-12"
 
 oa_dataset_only:
   datasets:
