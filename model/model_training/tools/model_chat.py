@@ -6,6 +6,7 @@ A very simple script to test model locally
 """
 import argparse
 
+import torch
 from custom_datasets.formatting import QA_SPECIAL_TOKENS, ChatRole, SeqToken
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from utils import _strtobool
@@ -18,6 +19,7 @@ parser.add_argument("--max_new_tokens", type=int, default=200)
 parser.add_argument("--top_k", type=int, default=40)
 parser.add_argument("--temperature", type=float, default=1.0)
 parser.add_argument("--do-sample", type=_strtobool, default=True)
+parser.add_argument("--llama", type=_strtobool, default=False)
 args = parser.parse_args()
 
 bot_name = args.bot_name
@@ -39,7 +41,7 @@ def talk(human_input, history, sep_token, prefix=""):
             prefix += sep_token
         prefix += "{}{}{}".format(QA_SPECIAL_TOKENS["Question"], human_input, QA_SPECIAL_TOKENS["Answer"])
     elif method == "v3":
-        personality = "You are a helpful assistant called Makima"
+        personality = "You are a helpful assistant called Joi, you are a smart and helpful bot."
         prefix = f"{SeqToken.begin}{ChatRole.system}{SeqToken.delimiter}{personality}{SeqToken.end}"
         for question, answer in history:
             histories.append(
@@ -50,6 +52,17 @@ def talk(human_input, history, sep_token, prefix=""):
             prefix += "".join(histories)
             # add sep at the end
         prefix += f"{SeqToken.begin}{ChatRole.prompter}{SeqToken.delimiter}{human_input}{SeqToken.end}{SeqToken.begin}{ChatRole.assistant}{SeqToken.delimiter}"
+    elif method == "v2.5":
+        personality = "You are a helpful assistant called Joi, you are a smart and helpful bot."
+        prefix = f"{ChatRole.system}{personality}{SeqToken.end}"
+        for question, answer in history:
+            histories.append(
+                f"{ChatRole.prompter}{question}{SeqToken.end}" + f"{ChatRole.assistant}{answer}{SeqToken.end}"
+            )
+        if len(histories) > 0:
+            prefix += "".join(histories)
+            # add sep at the end
+        prefix += f"{ChatRole.prompter}{human_input}{SeqToken.end}{SeqToken.begin}{ChatRole.assistant}"
     else:
         for question, answer in history:
             histories.append("User: " + question + "\n\n{}: ".format(bot_name) + answer + "\n")
@@ -67,6 +80,9 @@ def process_output(output):
     elif method == "v3":
         answer = output.split(f"{SeqToken.begin}{ChatRole.assistant}{SeqToken.delimiter}")[-1]
         answer = answer.split("</s>")[0].replace(SeqToken.end, "").lstrip()
+    elif method == "v2.5":
+        answer = output.split(f"{ChatRole.assistant}")[-1]
+        answer = answer.split("</s>")[0].replace(SeqToken.end, "").lstrip()
     else:
         answer = output.split("\n\n{}:".format(bot_name))[-1]
         answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split("\n\n{}:".format(bot_name))[0]
@@ -76,7 +92,15 @@ def process_output(output):
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 if method != "v2":
     tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
-model = AutoModelForCausalLM.from_pretrained(model_name).half().eval().cuda()
+
+if args.llama:
+    from models.modeling_llama import LLaMAForCausalLM
+
+    model = LLaMAForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+else:
+    model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+
+model.eval().cuda()
 
 if __name__ == "__main__":
     histories = []
