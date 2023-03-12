@@ -55,6 +55,7 @@ async def create_message(
     """Allows the client to stream the results of a request."""
 
     try:
+        ucr: UserChatRepository
         async with deps.manual_user_chat_repository(user_id) as ucr:
             prompter_message = await ucr.add_prompter_message(
                 chat_id=chat_id, parent_id=request.parent_id, content=request.content
