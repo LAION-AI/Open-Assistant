@@ -10,13 +10,13 @@ defaults:
   weight_decay: 0.00
   warmup_steps: 600
   eval_steps: 200
-  save_steps: 500
+  save_steps: 1000
   max_length: 512
   num_train_epochs: 3
   logging_steps: 10
   max_grad_norm: 2.0
   save_total_limit: 4
-  fp16: false
+  fp16: true
   eval_accumulation_steps:
   freeze_layer:
   datasets:
@@ -55,9 +55,10 @@ defaults:
   verbose: false
   output_dir: saved_model
   use_custom_sampler: false
-  random_offset_probability: 0.5 # probability for random message offsets
+  random_offset_probability: 0.8 # probability for random message offsets
   label_masking: true
-  residual_dropout: 0.0
+  residual_dropout: 0.2
+  use_flash_attention: true
   sort_by_length: false
 
 oa_dataset_only:
@@ -94,20 +95,31 @@ pythia-1B:
   model_name: EleutherAI/pythia-1b-deduped
   weight_decay: 0.0
   max_length: 520
-  warmup_steps: 1000
+  warmup_steps: 10
   gradient_checkpointing: false
-  gradient_accumulation_steps: 2
-  per_device_train_batch_size: 16
-  per_device_eval_batch_size: 32
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 16
 
 pythia-6.9B:
   learning_rate: 8e-6
   model_name: EleutherAI/pythia-6.9b-deduped
   weight_decay: 0.0
-  max_length: 520
-  warmup_steps: 5
+  max_length: 2048
+  warmup_steps: 20
   gradient_checkpointing: false
   gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+
+pythia-12B:
+  learning_rate: 6e-6
+  model_name: EleutherAI/pythia-12b-deduped
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 20
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 4
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 2
 
