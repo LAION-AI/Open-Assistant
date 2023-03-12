@@ -31,7 +31,8 @@ def main():
 
     while True:
         try:
-            utils.wait_for_inference_server(settings.inference_server_url)
+            if settings.model_id != "_lorem":
+                utils.wait_for_inference_server(settings.inference_server_url)
             connect_and_do_work(tokenizer)
 
         except websocket.WebSocketBadStatusException as e:

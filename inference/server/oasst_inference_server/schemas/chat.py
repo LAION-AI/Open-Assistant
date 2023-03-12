@@ -19,6 +19,12 @@ class CreateMessageResponse(pydantic.BaseModel):
     assistant_message: inference.MessageRead
 
 
+class PendingResponseEvent(pydantic.BaseModel):
+    event_type: Literal["pending"] = "pending"
+    queue_position: int
+    queue_size: int
+
+
 class TokenResponseEvent(pydantic.BaseModel):
     event_type: Literal["token"] = "token"
     text: str

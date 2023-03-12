@@ -104,19 +104,25 @@ async def message_events(
     if message.role != "assistant":
         raise fastapi.HTTPException(status_code=400, detail="Only assistant messages can be streamed.")
 
-    if not message.has_started:
-        raise fastapi.HTTPException(status_code=400, detail=message.state)
-
     if message.has_finished:
         raise fastapi.HTTPException(status_code=204, detail=message.state)
 
     async def event_generator(chat_id: str, message_id: str):
         queue = queueing.message_queue(deps.redis_client, message_id=message_id)
+        has_started = False
         try:
             while True:
                 item = await queue.dequeue()
                 if item is None:
+                    if not has_started:
+                        yield {
+                            "data": chat_schema.PendingResponseEvent(
+                                queue_position=0,
+                                queue_size=1,
+                            ).json()
+                        }
                     continue
+                has_started = True
 
                 _, response_packet_str = item
                 response_packet = pydantic.parse_raw_as(inference.WorkResponse, response_packet_str)
@@ -135,9 +141,6 @@ async def message_events(
                         "data": chat_schema.MessageResponseEvent(message=response_packet.message).json(),
                     }
                     break
-
-                if await fastapi_request.is_disconnected():
-                    continue
 
                 yield {
                     "data": chat_schema.TokenResponseEvent(text=response_packet.text).json(),

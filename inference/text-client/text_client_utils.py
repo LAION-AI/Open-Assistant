@@ -1,6 +1,4 @@
-import itertools as itt
 import json
-import time
 
 import requests
 import sseclient
@@ -43,19 +41,6 @@ class DebugClient:
         response.raise_for_status()
         self.message_id = response.json()["assistant_message"]["id"]
 
-        # wait for message to not be pending
-        for i in itt.count():
-            response = self.http_client.get(
-                f"{self.backend_url}/chats/{self.chat_id}/messages/{self.message_id}",
-                headers=self.auth_headers,
-            )
-            response.raise_for_status()
-            message_state = response.json()["state"]
-            if message_state != "pending":
-                break
-            sleep_time = min(i * 0.5, 2)
-            time.sleep(sleep_time)
-
         response = self.http_client.get(
             f"{self.backend_url}/chats/{self.chat_id}/messages/{self.message_id}/events",
             stream=True,
@@ -93,3 +78,6 @@ class DebugClient:
                     break
                 elif event_type == "error":
                     raise RuntimeError(data["error"])
+                elif event_type == "pending":
+                    # just wait
+                    pass
