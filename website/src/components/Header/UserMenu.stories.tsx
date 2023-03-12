@@ -1,3 +1,4 @@
+import type { ComponentStory } from "@storybook/react";
 import { SessionContext } from "next-auth/react";
 import React from "react";
 
@@ -9,8 +10,8 @@ export default {
   component: UserMenu,
 };
 
-const Template = (args) => {
-  var { session } = args;
+const Template: ComponentStory<any> = (args) => {
+  const { session } = args;
   return (
     <SessionContext.Provider value={session}>
       <div className="flex flex-col">
