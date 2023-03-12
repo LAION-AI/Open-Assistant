@@ -60,6 +60,7 @@ class CreateChatRequest(pydantic.BaseModel):
 class ChatListRead(pydantic.BaseModel):
     id: str
     created_at: datetime.datetime
+    modified_at: datetime.datetime
     title: str | None
 
 

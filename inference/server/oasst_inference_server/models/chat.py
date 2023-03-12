@@ -74,6 +74,7 @@ class DbChat(SQLModel, table=True):
         return chat_schema.ChatListRead(
             id=self.id,
             created_at=self.created_at,
+            modified_at=self.modified_at,
             title=self.title,
         )
 
@@ -81,6 +82,7 @@ class DbChat(SQLModel, table=True):
         return chat_schema.ChatRead(
             id=self.id,
             created_at=self.created_at,
+            modified_at=self.modified_at,
             title=self.title,
             messages=[m.to_read() for m in self.messages],
         )
