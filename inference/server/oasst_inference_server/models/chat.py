@@ -33,6 +33,20 @@ class DbMessage(SQLModel, table=True):
 
     score: int = Field(0)
 
+    @property
+    def has_finished(self) -> bool:
+        return self.state in (
+            inference.MessageState.manual,
+            inference.MessageState.complete,
+            inference.MessageState.aborted_by_worker,
+        )
+
+    @property
+    def has_started(self) -> bool:
+        if self.has_finished:
+            return True
+        return self.state in (inference.MessageState.in_progress,)
+
     def to_read(self) -> inference.MessageRead:
         return inference.MessageRead(
             id=self.id,

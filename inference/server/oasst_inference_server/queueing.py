@@ -7,8 +7,11 @@ class RedisQueue:
         self.redis_client = redis_client
         self.queue_id = queue_id
 
-    async def enqueue(self, value: str) -> None:
-        return await self.redis_client.rpush(self.queue_id, value)
+    async def enqueue(self, value: str, expire: int | None = None) -> None:
+        pushed = await self.redis_client.rpush(self.queue_id, value)
+        if expire is not None:
+            await self.set_expire(expire)
+        return pushed
 
     async def dequeue(self, block: bool = True, timeout: int = 1) -> str:
         if block:

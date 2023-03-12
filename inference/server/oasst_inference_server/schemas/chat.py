@@ -29,6 +29,11 @@ class ErrorResponseEvent(pydantic.BaseModel):
     error: str
 
 
+class MessageResponseEvent(pydantic.BaseModel):
+    event_type: Literal["message"] = "message"
+    message: inference.MessageRead
+
+
 ResponseEvent = Annotated[Union[TokenResponseEvent, ErrorResponseEvent], pydantic.Field(discriminator="event_type")]
 
 

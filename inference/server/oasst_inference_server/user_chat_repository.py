@@ -40,6 +40,9 @@ class UserChatRepository(pydantic.BaseModel):
                 models.DbMessage.id == message_id,
                 models.DbMessage.chat_id == chat_id,
             )
+            .options(
+                sqlalchemy.orm.selectinload(models.DbMessage.reports),
+            )
             .join(models.DbChat)
             .where(
                 models.DbChat.user_id == self.user_id,

@@ -4,6 +4,7 @@ import time
 from contextlib import closing
 
 import interface
+import lorem
 import requests
 import sseclient
 import tokenizers
@@ -23,7 +24,10 @@ def main():
     signal.signal(signal.SIGINT, terminate_worker)
     logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
 
-    tokenizer = tokenizers.Tokenizer.from_pretrained(settings.model_id)
+    if settings.model_id != "_lorem":
+        tokenizer = tokenizers.Tokenizer.from_pretrained(settings.model_id)
+    else:
+        tokenizer = None
 
     while True:
         try:
@@ -74,40 +78,40 @@ def connect_and_do_work(tokenizer: tokenizers.Tokenizer):
 
             prompt = settings.prefix + "\n".join(messages) + "\nAssistant: "
 
-            encoding: tokenizers.Encoding = tokenizer.encode(prompt)
-            ids = encoding.ids
-            if len(ids) > settings.max_input_length:
-                logger.warning(f"Prompt too long, left-truncating to {settings.max_input_length} tokens")
-                ids = ids[-(settings.max_input_length - 1) :]
-                prompt = tokenizer.decode(ids)
-
-            input_length = len(ids)
-            spare = settings.max_total_tokens - input_length - 1
-            if parameters.max_new_tokens > spare:
-                logger.warning(f"Max new tokens too high, reducing to {spare}")
-                parameters.max_new_tokens = spare
-
-            response = requests.post(
-                f"{settings.inference_server_url}/generate_stream",
-                json={
-                    "inputs": prompt,
-                    "parameters": parameters.dict(),
-                },
-                stream=True,
-                headers={"Accept": "text/event-stream"},
-            )
-            try:
-                response.raise_for_status()
-            except requests.HTTPError:
-                logger.exception("Failed to get response from inference server")
-                logger.error(f"Response: {response.text}")
-                raise
-
-            client = sseclient.SSEClient(response)
             stream_response = None
             token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)
-            for event in client.events():
-                stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
+            if settings.model_id == "_lorem":
+
+                def _lorem_events(parameters=parameters):
+                    sentence = lorem.sentence()
+                    print(sentence)
+                    tokens = sentence.split()
+                    for token in tokens[:-1]:
+                        yield interface.GenerateStreamResponse(
+                            token=interface.Token(
+                                text=token + " ",
+                                logprob=0.1,
+                                id=0,
+                            ),
+                        )
+                    yield interface.GenerateStreamResponse(
+                        token=interface.Token(
+                            text=tokens[-1],
+                            logprob=0.1,
+                            id=0,
+                        ),
+                        generated_text=sentence,
+                        details=interface.StreamDetails(
+                            finish_reason="length",
+                            generated_tokens=len(tokens),
+                            seed=parameters.seed,
+                        ),
+                    )
+
+                stream_events = _lorem_events()
+            else:
+                stream_events = get_stream_events(tokenizer, parameters, prompt)
+            for stream_response in stream_events:
                 if stream_response.is_error:
                     logger.error(f"Error from inference server: {stream_response.error}")
                     ws.send(
@@ -138,6 +142,42 @@ def connect_and_do_work(tokenizer: tokenizers.Tokenizer):
                 ).json()
             )
             logger.info("Work complete. Waiting for more work...")
+
+
+def get_stream_events(tokenizer, parameters, prompt):
+    encoding: tokenizers.Encoding = tokenizer.encode(prompt)
+    ids = encoding.ids
+    if len(ids) > settings.max_input_length:
+        logger.warning(f"Prompt too long, left-truncating to {settings.max_input_length} tokens")
+        ids = ids[-(settings.max_input_length - 1) :]
+        prompt = tokenizer.decode(ids)
+
+    input_length = len(ids)
+    spare = settings.max_total_tokens - input_length - 1
+    if parameters.max_new_tokens > spare:
+        logger.warning(f"Max new tokens too high, reducing to {spare}")
+        parameters.max_new_tokens = spare
+
+    response = requests.post(
+        f"{settings.inference_server_url}/generate_stream",
+        json={
+            "inputs": prompt,
+            "parameters": parameters.dict(),
+        },
+        stream=True,
+        headers={"Accept": "text/event-stream"},
+    )
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        logger.exception("Failed to get response from inference server")
+        logger.error(f"Response: {response.text}")
+        raise
+
+    client = sseclient.SSEClient(response)
+    for event in client.events():
+        stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
+        yield stream_response
 
 
 if __name__ == "__main__":
