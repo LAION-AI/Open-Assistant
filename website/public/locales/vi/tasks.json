@@ -86,5 +86,5 @@
   "tab_write": "Viết",
   "tab_preview": "Xem trước",
   "writing_wrong_langauge_a_b": "Tin nhắn có vẻ được viết trong ngôn ngữ {{detected_lang}} nhưng sẽ được gửi đi là ngôn ngữ {{submit_lang}}.",
-  "not_rankable": "Tất cả các câu trả lời đều sai và không thể phân loại được"
+  "not_rankable": "Tất cả các câu trả lời đều sai và không thể xếp hạng được"
 }
