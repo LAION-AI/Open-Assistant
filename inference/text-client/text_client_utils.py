@@ -2,6 +2,7 @@ import json
 
 import requests
 import sseclient
+from loguru import logger
 
 
 class DebugClient:
@@ -79,5 +80,4 @@ class DebugClient:
                 elif event_type == "error":
                     raise RuntimeError(data["error"])
                 elif event_type == "pending":
-                    # just wait
-                    pass
+                    logger.debug(f"Message pending. {data=}")
