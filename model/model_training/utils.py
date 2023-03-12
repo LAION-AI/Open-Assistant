@@ -314,7 +314,7 @@ def get_dataset_name_and_kwargs_from_data_config(data_config):
 def get_dataset(conf, mode="sft"):
     train_datasets, evals = [], {}
 
-    for data_config in conf.datasets:
+    for data_config in conf.datasets + conf.datasets_extra:
         dataset_name, kwargs = get_dataset_name_and_kwargs_from_data_config(data_config)
         train, val = get_one_dataset(conf, dataset_name, mode=mode, **kwargs)
         train_datasets.append(train)

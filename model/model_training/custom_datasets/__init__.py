@@ -1,6 +1,7 @@
 """
     High level functions for model training
 """
+from custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
 from custom_datasets.oasst_dataset import load_oasst_export
 from custom_datasets.prompt_dialogue import OAPrivate  # , PrivateInstructionTuning
 from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, TranslatedQA, WebGPT
@@ -53,6 +54,8 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         if dataset_name != "debate_sum":
             eval = SummarizationDataset(dataset_name, data_path, "validation")
             train = dataset
+    elif dataset_name in INSTRUCTION_DATASETS:
+        dataset = InstructionDataset(dataset_name, data_path, "train")
     elif "ted_trans" in dataset_name:
         language_pair = dataset_name.split("_")[-1]
         dataset = TEDTalk(pair=language_pair, split="train")
@@ -89,7 +92,7 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         raise ValueError(f"Unknown dataset {dataset_name}")
 
     # if eval not already defined
-    if "dataset" in locals():
+    if not ("eval" in locals() and "train" in locals()):
         train, eval = train_val_dataset(dataset, val_split=val_split)
 
     return train, eval
