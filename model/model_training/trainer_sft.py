@@ -10,7 +10,7 @@ import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
 
-# from models.patching import patch_model    # AKo: dimitri please fix for llama :-)
+from models.patching import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -254,12 +254,11 @@ if __name__ == "__main__":
 
     model = get_model(training_conf, tokenizer)
 
-    # AKo: dimitri please fix for llama :-)
-    # patch_model(
-    #     model,
-    #     resid_pdrop=training_conf.residual_dropout,
-    #     flash_attention=training_conf.use_flash_attention,
-    # )
+    patch_model(
+        model,
+        resid_pdrop=training_conf.residual_dropout,
+        flash_attention=training_conf.use_flash_attention,
+    )
 
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
