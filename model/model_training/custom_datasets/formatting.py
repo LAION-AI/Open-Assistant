@@ -21,6 +21,6 @@ def format_pairs(pairs, eos_token, add_initial_reply_token=False):
         for i in range(len(pairs))
     ]
     if add_initial_reply_token:
-        conversations.appned(QA_SPECIAL_TOKENS["Answer"])
+        conversations.append(QA_SPECIAL_TOKENS["Answer"])
 
     return conversations
