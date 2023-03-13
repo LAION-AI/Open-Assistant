@@ -6,9 +6,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from flash_attn.modules.mha import FlashSelfAttention
+from modeling_llama import LlamaForCausalLM, LlamaModel
 from torch.nn.utils.rnn import pad_sequence
 from transformers import GPTNeoXForCausalLM, GPTNeoXModel
-from modeling_llama import LlamaForCausalLM, LlamaModel
 
 SUPPORTED_MODELS = [
     GPTNeoXModel,
@@ -94,7 +94,12 @@ def add_flash_attn(module: nn.Module, causal: bool = True):
     module._attn = partial(_patched_gpt_neox_attn, module, flash_attn)
 
 
-def patch_model(model: GPTNeoXModel, resid_pdrop: Optional[float] = 0.1, flash_attention: bool = True, patch_unsupported: bool = False):
+def patch_model(
+    model: GPTNeoXModel,
+    resid_pdrop: Optional[float] = 0.1,
+    flash_attention: bool = True,
+    patch_unsupported: bool = False,
+):
     """
     Helper function for patching HF language models.
     Currently supports: GPTNeoX-based models
@@ -123,13 +128,12 @@ def patch_model(model: GPTNeoXModel, resid_pdrop: Optional[float] = 0.1, flash_a
             f"Please make sure that it also works for `{model.__class__.__name__}`."
         )
 
-
     if isinstance(model, GPTNeoXForCausalLM):
         model = model.gpt_neox
 
     if isinstance(model, LlamaForCausalLM):
         model = model.model
-    
+
     attention_key_lookup = {
         GPTNeoXModel: "attention",
         LlamaModel: "self_attn",
