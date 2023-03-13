@@ -57,7 +57,7 @@ defaults:
   use_custom_sampler: false
   random_offset_probability: 0.8 # probability for random message offsets
   label_masking: true
-  residual_dropout: 0.2
+  residual_dropout: 0.0
   use_flash_attention: false
   sort_by_length: false
 
@@ -85,13 +85,32 @@ llama-7b:
   #model_name: decapoda-research/llama-7b-hf
   model_name: /home/ubuntu/llama_hf/llama-7b
   output_dir: llama_model
-  weight_decay: 0.01
+  weight_decay: 0.0
   max_length: 620
   warmup_steps: 100
   gradient_checkpointing: false
   gradient_accumulation_steps: 4
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 10
+  eval_steps: 100
+  save_steps: 500
+  num_train_epochs: 16
+  save_total_limit: 4
+
+llama-13b:
+  fp16: true
+  log_dir: "llama_log_13b"
+  learning_rate: 8e-6
+  #model_name: decapoda-research/llama-7b-hf
+  model_name: /home/ubuntu/llama_hf/llama-13b
+  output_dir: llama_model_13b
+  weight_decay: 0.0
+  max_length: 620
+  warmup_steps: 100
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 5
   eval_steps: 100
   save_steps: 500
   num_train_epochs: 16

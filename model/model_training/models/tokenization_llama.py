@@ -107,11 +107,11 @@ class LLaMATokenizer(PreTrainedTokenizer):
         token = self.sp_model.IdToPiece(index)
         return token
 
-    def _maybe_add_prefix_space(self, tokens, decoded):
-        if tokens and tokens[0] not in self.no_prefix_space_tokens:
-            return " " + decoded
-        else:
-            return decoded
+    # def _maybe_add_prefix_space(self, tokens, decoded):
+    #     if tokens and tokens[0] not in self.no_prefix_space_tokens:
+    #         return " " + decoded
+    #     else:
+    #         return decoded
 
     def convert_tokens_to_string(self, tokens):
         """Converts a sequence of tokens (string) in a single string."""
@@ -130,7 +130,7 @@ class LLaMATokenizer(PreTrainedTokenizer):
                 current_sub_tokens.append(token)
                 prev_is_special = False
         out_string += self.sp_model.decode(current_sub_tokens)
-        out_string = self._maybe_add_prefix_space(tokens=tokens, decoded=out_string)
+        #out_string = self._maybe_add_prefix_space(tokens=tokens, decoded=out_string)
         return out_string
 
     def save_vocabulary(self, save_directory, filename_prefix: Optional[str] = None) -> Tuple[str]:

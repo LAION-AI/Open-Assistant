@@ -174,8 +174,8 @@ def argument_parsing(notebook=False, notebook_args=None):
     else:
         args, remaining = parser.parse_known_args()
 
-    if not training_conf.deepspeed or training_conf.local_rank == 0:
-        print(args)
+    # if not training_conf.deepspeed or training_conf.local_rank == 0:
+    #     print(args)
 
     # Config from YAML
     conf = {}
