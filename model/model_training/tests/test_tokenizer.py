@@ -1,11 +1,25 @@
-from models.tokenization_llama import LLaMATokenizer
+from models.tokenization_llama import LLaMaConverter, LLaMATokenizer
+from models.tokenization_llama_fast import LLaMATokenizerFast
 from transformers import AutoTokenizer
+from transformers.convert_slow_tokenizer import SLOW_TO_FAST_CONVERTERS
+
+SLOW_TO_FAST_CONVERTERS["LLaMATokenizer"] = LLaMaConverter
 
 
-def testing_llama_tokenizer():
+def test_converter():
+    # still byte fallback warning, not good
+    converted_tokenizer = LLaMATokenizerFast.from_pretrained("decapoda-research/llama-7b-hf")
+    # converted_tokenizer = LLaMaConverter(tokenizer).converted()
+    encodes = converted_tokenizer.encode_plus("what it is", return_offsets_mapping=True)
+    assert "offset_mapping" in encodes
+    print(converted_tokenizer)
+
+
+def test_llama_tokenizer():
     texts = [
         "danke schön",
         "This is fined",
+        "你好啊",
         "Je vous remercie. C'est très gentil de votre part.",
         "Hi\nWho are you?",
         '```Python\nname = input("What is your name? ")\nprint("Hello, " + name + "! Nice to meet you!")\n```',
@@ -43,4 +57,4 @@ def testing_llama_tokenizer():
 
 
 if __name__ == "__main__":
-    testing_llama_tokenizer()
+    test_converter()

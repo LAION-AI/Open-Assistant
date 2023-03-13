@@ -23,6 +23,8 @@ from shutil import copyfile
 from typing import Any, Dict, List, Optional, Tuple
 
 import sentencepiece as spm
+from tokenizers import processors
+from transformers.convert_slow_tokenizer import SpmConverter
 from transformers.tokenization_utils import PreTrainedTokenizer
 from transformers.utils import logging
 
@@ -31,6 +33,31 @@ logger = logging.get_logger(__name__)
 VOCAB_FILES_NAMES = {"vocab_file": "tokenizer.model"}
 
 PRETRAINED_VOCAB_FILES_MAP = {}
+
+
+class LLaMaConverter(SpmConverter):
+    def vocab(self, proto):
+        vocab = [
+            ("<s>", 0.0),
+            ("</s>", 0.0),
+            ("<unk>", 0.0),
+        ]
+        vocab += [(piece.piece, piece.score) for piece in proto.pieces[3:]]
+        return vocab
+
+    def unk_id(self, proto):
+        unk_id = 3
+        return unk_id
+
+    def post_processor(self):
+        return processors.TemplateProcessing(
+            single="<s> $A </s>",
+            pair="<s> $A </s> </s> $B </s>",
+            special_tokens=[
+                ("<s>", self.original_tokenizer.convert_tokens_to_ids("<s>")),
+                ("</s>", self.original_tokenizer.convert_tokens_to_ids("</s>")),
+            ],
+        )
 
 
 class LLaMATokenizer(PreTrainedTokenizer):
