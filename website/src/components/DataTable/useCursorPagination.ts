@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
-export interface CursorPaginationState {
+export type CursorPaginationState = {
   /**
    * The user's `display_name` used for pagination.
    */
@@ -10,26 +10,26 @@ export interface CursorPaginationState {
    * The pagination direction.
    */
   direction: "forward" | "back";
-}
+};
 
 export const useCursorPagination = () => {
   const [pagination, setPagination] = useState<CursorPaginationState>({ cursor: "", direction: "forward" });
 
-  const toPreviousPage = (data: undefined | { prev?: string; next?: string }) => {
+  const toPreviousPage = useCallback((data: undefined | { prev?: string; next?: string }) => {
     setPagination({
       cursor: data?.prev || "",
       direction: "back",
     });
-  };
+  }, []);
 
-  const toNextPage = (data: undefined | { prev?: string; next?: string }) => {
+  const toNextPage = useCallback((data: undefined | { prev?: string; next?: string }) => {
     setPagination({
       cursor: data?.next || "",
       direction: "forward",
     });
-  };
+  }, []);
 
-  const resetCursor = () => setPagination((old) => ({ ...old, cursor: "" }));
+  const resetCursor = useCallback(() => setPagination((old) => ({ ...old, cursor: "" })), []);
 
   return {
     pagination,
