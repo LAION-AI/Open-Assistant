@@ -1,3 +1,4 @@
+import type { ComponentStory } from "@storybook/react";
 import { SessionContext } from "next-auth/react";
 import React from "react";
 import { FlagsProvider } from "react-feature-flags";
@@ -15,8 +16,8 @@ export default {
   decorators: [RouterDecorator],
 };
 
-const Template = (args) => {
-  var { session } = args;
+const Template: ComponentStory<any> = (args) => {
+  const { session } = args;
   return (
     <SessionContext.Provider value={session}>
       <FlagsProvider value={[{ name: "flagTest", isActive: false }]}>

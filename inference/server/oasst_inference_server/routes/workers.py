@@ -1,6 +1,7 @@
 import datetime
 import enum
 import uuid
+from typing import cast
 
 import fastapi
 import pydantic
@@ -101,10 +102,10 @@ async def send_work_request(
     return await websocket.send_text(work_request.json())
 
 
-async def receive_work_response_packet(
+async def receive_work_response(
     websocket: fastapi.WebSocket,
-) -> inference.WorkResponsePacket:
-    return inference.WorkResponsePacket.parse_raw(await websocket.receive_text())
+) -> inference.WorkResponse:
+    return pydantic.parse_raw_as(inference.WorkResponse, await websocket.receive_text())
 
 
 async def receive_worker_config(
@@ -156,11 +157,15 @@ async def find_compliance_work_request_message(
 
 async def should_do_compliance_check(session: database.AsyncSession, worker_id: str) -> bool:
     worker = await get_worker(worker_id, session)
+    if worker.trusted:
+        return False
     if worker.in_compliance_check:
         return False
     if worker.next_compliance_check is None:
         return True
-    return worker.next_compliance_check < datetime.datetime.utcnow()
+    if worker.next_compliance_check < datetime.datetime.utcnow():
+        return True
+    return False
 
 
 async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, worker_config: inference.WorkerConfig):
@@ -170,7 +175,7 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             if worker.in_compliance_check:
                 logger.info(f"Worker {worker.id} is already in compliance check")
                 return
-            worker.in_compliance_check = True
+            worker.in_compliance_check_since = datetime.datetime.utcnow()
         finally:
             await session.commit()
 
@@ -194,19 +199,20 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             await send_work_request(websocket, compliance_work_request)
             response = None
             while True:
-                response = await receive_work_response_packet(websocket)
-                if response.error is not None:
+                response = await receive_work_response(websocket)
+                if response.response_type == "error":
                     compliance_check.responded = True
                     compliance_check.error = response.error
                     logger.warning(f"Worker {worker_id} errored during compliance check: {response.error}")
                     return
-                if response.is_end:
+                if response.response_type == "generated_text":
                     break
             if response is None:
                 logger.warning(f"Worker {worker_id} did not respond to compliance check")
                 return
             compliance_check.responded = True
-            passes = response.generated_text.text == message.content
+            response = cast(inference.GeneratedTextResponse, response)
+            passes = response.text == message.content
             compliance_check.passed = passes
             logger.info(f"Worker {worker_id} passed compliance check: {passes}")
 
@@ -217,7 +223,7 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             worker.next_compliance_check = datetime.datetime.utcnow() + datetime.timedelta(
                 seconds=settings.compliance_check_interval
             )
-            worker.in_compliance_check = False
+            worker.in_compliance_check_since = None
             logger.info(f"set next compliance check for worker {worker_id} to {worker.next_compliance_check}")
             await session.commit()
             await session.flush()
@@ -266,7 +272,7 @@ async def update_worker_session_status(
 async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(get_worker_id)):
     logger.info(f"handle_worker: {worker_id=}")
     await websocket.accept()
-    worker_config = inference.WorkerConfig.parse_raw(await websocket.receive_text())
+    worker_config = await receive_worker_config(websocket)
     worker_compat_hash = worker_config.compat_hash
     work_queue = queueing.work_queue(deps.redis_client, worker_compat_hash)
     worker_session_id = str(uuid.uuid4())
@@ -381,13 +387,14 @@ async def perform_work(
         )
         work_request = await build_work_request(session, message.id)
 
-        logger.info(f"Created {work_request=} with {len(work_request.thread.messages)=}")
-        try:
-            await send_work_request(websocket, work_request)
-        except WSException:
+    logger.info(f"Created {work_request=} with {len(work_request.thread.messages)=}")
+    try:
+        await send_work_request(websocket, work_request)
+    except WSException:
+        async with deps.manual_create_session() as session:
             await cr.reset_work(message_id)
-            await work_queue.enqueue(message_id)
-            raise WorkerError("Worker disconnected while sending work request", did_work=False)
+        await work_queue.enqueue(message_id)
+        raise WorkerError("Worker disconnected while sending work request", did_work=False)
 
     logger.debug(f"Sent {work_request=} to worker.")
 
@@ -400,13 +407,16 @@ async def perform_work(
         response_packet = None
         try:
             while True:
-                response_packet = await receive_work_response_packet(websocket)
-                await message_queue.enqueue(response_packet.json())
-                if response_packet.error is not None:
-                    raise WorkerError(f"Worker errored: {response_packet.error}", did_work=True)
-                if response_packet.is_end:
+                response_packet = await receive_work_response(websocket)
+                if response_packet.response_type == "metrics":
+                    # TODO: store metrics
+                    logger.debug(f"Received {response_packet=} from worker.")
+                if response_packet.response_type == "generated_text":
                     logger.debug(f"Received {response_packet=} from worker. Ending.")
                     break
+                await message_queue.enqueue(response_packet.json(), expire=settings.message_queue_expire)
+                if response_packet.response_type == "error":
+                    raise WorkerError(f"Worker errored: {response_packet.error}", did_work=True)
         except WSException:
             logger.exception(f"Websocket closed during handling of {message_id=}")
             if response_packet is not None:
@@ -417,23 +427,30 @@ async def perform_work(
             raise WorkerError("Worker did not respond", did_work=False)
 
         logger.info(f"Message {message_id=} is complete.")
-        assert response_packet.is_end, "Response packet is not end packet"
+        assert response_packet.response_type == "generated_text", "Response packet is not end packet"
+        response_packet = cast(inference.GeneratedTextResponse, response_packet)
         async with deps.manual_chat_repository() as cr:
-            await cr.complete_work(message_id, response_packet.generated_text.text)
+            finished_message = await cr.complete_work(message_id, response_packet.text)
+        finished_message_packet = inference.InternalFinishedMessageResponse(
+            message=finished_message.to_read(),
+        )
+        await message_queue.enqueue(finished_message_packet.json(), expire=settings.message_queue_expire)
 
     except WorkerError as e:
-        async with deps.manual_chat_repository() as cr:
-            if e.did_work:
-                logger.warning(f"Marking {message_id=} as pending since no work was done.")
-                await cr.reset_work(message_id)
-                await work_queue.enqueue(message_id)
-            else:
-                logger.warning(f"Aborting {message_id=}")
+        if e.did_work:
+            logger.warning(f"Aborting {message_id=}")
+            async with deps.manual_chat_repository() as cr:
                 await cr.abort_work(message_id, reason=str(e))
+        else:
+            logger.warning(f"Marking {message_id=} as pending since no work was done.")
+            async with deps.manual_chat_repository() as cr:
+                await cr.reset_work(message_id)
+            await work_queue.enqueue(message_id)
         raise
     except Exception as e:
         logger.exception(f"Error handling {message_id=}")
-        await cr.abort_work(message_id, reason=str(e))
+        async with deps.manual_chat_repository() as cr:
+            await cr.abort_work(message_id, reason=str(e))
         raise WorkerError("Error handling chat", did_work=True)
 
 

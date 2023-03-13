@@ -6,6 +6,7 @@ warmup_steps: X
 scheduler: X
 learning_rate: X
 deepspeed: X
+per_digit_tokens: X
 fp16: X
 local_rank: X
 gradient_checkpointing: X

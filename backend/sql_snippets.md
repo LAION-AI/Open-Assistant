@@ -144,6 +144,25 @@ group by mts.message_tree_id)
 select state, count(t.*) as trees, sum(t.tree_size) as total_msgs, max(t.tree_size), avg(t.tree_size) from t group by t.state;
 ```
 
+## Tasks
+
+```sql
+-- average time between task creation and completion
+(select t.payload#>>'{payload, type}' as type, count(*), avg(r.created_date-t.created_date)
+from task t
+  join message_reaction r on t.id = task_id
+where t.done and not t.skipped group by t.payload#>>'{payload, type}') union
+(select t.payload#>>'{payload, type}' as type, count(*), avg(l.created_date-t.created_date)
+from task t join
+  text_labels l on t.id = l.task_id
+where t.done and not t.skipped group by t.payload#>>'{payload, type}') union
+(
+select t.payload#>>'{payload, type}' as type, count(*), avg(m.created_date-t.created_date)
+from task t join
+  message m on t.id = m.task_id
+where t.done and not t.skipped group by t.payload#>>'{payload, type}');
+```
+
 ## Connections
 
 ```sql

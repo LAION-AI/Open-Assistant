@@ -3,7 +3,6 @@
 """
 import random
 
-from custom_datasets.formatting import format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -77,4 +76,4 @@ class SummarizationDataset(Dataset):
             prompt = random.choice(SUMMARIZATION_SPECIAL_TOKENS["Summary"])
 
         context = "".join([SUMMARIZATION_SPECIAL_TOKENS["Text"], " ".join(text.split(" ")[: self.max_words]), prompt])
-        return format_pair((context, summary))
+        return (context, summary)

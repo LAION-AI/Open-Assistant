@@ -5,7 +5,7 @@ import random
 from pathlib import Path
 
 import pydantic
-from oasst_shared.schemas.export import ExportMessageTree
+from oasst_data import ExportMessageTree
 
 
 def load_messega_trees(input_file_path: str | Path, lang_codes: list[str]) -> list[ExportMessageTree]:

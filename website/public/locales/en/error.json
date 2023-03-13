@@ -1,6 +1,6 @@
 {
   "default": "Something went wrong!",
-  "err_1000": "Ivalid task type",
+  "err_1000": "Invalid task type",
   "err_1001": "Failed to acknowledge task",
   "err_1002": "Failed to not acknowledge task",
   "err_1003": "Invalid response type",

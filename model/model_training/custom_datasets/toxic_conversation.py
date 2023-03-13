@@ -4,7 +4,6 @@
 """
 import random
 
-from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -37,7 +36,7 @@ class ProsocialDialogueExplaination(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, idx):
-        return format_pair(self.pairs[idx])
+        return self.pairs[idx]
 
 
 class ProsocialDialogue(Dataset):
@@ -52,16 +51,15 @@ class ProsocialDialogue(Dataset):
         (2) asking humans to write unethical, toxic, or problematic utterances could result
             in psychological harms (Roberts, 2017; Steiger et al., 2021).
     """
-    PREFIX = "<prefix>You are now a prosocial chatbot, be caution and casual when reply</prefix>"
 
     def __init__(self, split="train", cache_dir=".cache") -> None:
         super().__init__()
         dataset = load_dataset("allenai/prosocial-dialog", cache_dir=cache_dir)[split]
         self.pairs = []
         for row in dataset:
-            prompt = QA_SPECIAL_TOKENS["Question"] + row["context"] + QA_SPECIAL_TOKENS["Answer"]
+            prompt = row["context"]
             for answer in row["rots"]:
-                self.pairs.append((self.PREFIX + prompt, answer))
+                self.pairs.append((prompt, answer))
 
     def __len__(self):
         return len(self.pairs)
