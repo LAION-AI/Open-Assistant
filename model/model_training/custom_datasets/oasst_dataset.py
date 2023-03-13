@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Callable, Optional
 
 import pydantic
-from custom_datasets.formatting import format_pair
 from oasst_data import ExportMessageNode, ExportMessageTree
 from torch import Generator
 from torch.utils.data import Dataset, random_split
@@ -119,7 +118,7 @@ def load_oasst_export(
     splits = random_split(trees, lengths=[1.0 - val_split, val_split], generator=generator)
 
     def flatten(d: ListDataset) -> ListDataset:
-        return ListDataset([format_pair([m.text for m in t]) for ts in d for t in ts])
+        return ListDataset([[m.text for m in t] for ts in d for t in ts])
 
     train = flatten(splits[0])
     val = flatten(splits[1])
