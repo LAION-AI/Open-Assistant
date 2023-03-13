@@ -411,13 +411,12 @@ async def perform_work(
                 if response_packet.response_type == "metrics":
                     # TODO: store metrics
                     logger.debug(f"Received {response_packet=} from worker.")
-                await message_queue.enqueue(response_packet.json())
-                await message_queue.set_expire(timeout=settings.message_queue_expire)
-                if response_packet.response_type == "error":
-                    raise WorkerError(f"Worker errored: {response_packet.error}", did_work=True)
                 if response_packet.response_type == "generated_text":
                     logger.debug(f"Received {response_packet=} from worker. Ending.")
                     break
+                await message_queue.enqueue(response_packet.json(), expire=settings.message_queue_expire)
+                if response_packet.response_type == "error":
+                    raise WorkerError(f"Worker errored: {response_packet.error}", did_work=True)
         except WSException:
             logger.exception(f"Websocket closed during handling of {message_id=}")
             if response_packet is not None:
@@ -431,7 +430,11 @@ async def perform_work(
         assert response_packet.response_type == "generated_text", "Response packet is not end packet"
         response_packet = cast(inference.GeneratedTextResponse, response_packet)
         async with deps.manual_chat_repository() as cr:
-            await cr.complete_work(message_id, response_packet.text)
+            finished_message = await cr.complete_work(message_id, response_packet.text)
+        finished_message_packet = inference.InternalFinishedMessageResponse(
+            message=finished_message.to_read(),
+        )
+        await message_queue.enqueue(finished_message_packet.json(), expire=settings.message_queue_expire)
 
     except WorkerError as e:
         if e.did_work:

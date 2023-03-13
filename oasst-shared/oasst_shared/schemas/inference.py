@@ -170,6 +170,11 @@ class GeneratedTextResponse(pydantic.BaseModel):
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
 
 
+class InternalFinishedMessageResponse(pydantic.BaseModel):
+    response_type: Literal["internal_finished_message"] = "internal_finished_message"
+    message: MessageRead
+
+
 class ErrorResponse(pydantic.BaseModel):
     response_type: Literal["error"] = "error"
     error: str
@@ -181,6 +186,6 @@ class MetricsResponse(pydantic.BaseModel):
 
 
 WorkResponse = Annotated[
-    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, MetricsResponse],
+    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, MetricsResponse, InternalFinishedMessageResponse],
     pydantic.Field(discriminator="response_type"),
 ]

@@ -1,3 +1,4 @@
+import datetime
 from typing import Annotated, Literal, Union
 
 import pydantic
@@ -19,6 +20,12 @@ class CreateMessageResponse(pydantic.BaseModel):
     assistant_message: inference.MessageRead
 
 
+class PendingResponseEvent(pydantic.BaseModel):
+    event_type: Literal["pending"] = "pending"
+    queue_position: int
+    queue_size: int
+
+
 class TokenResponseEvent(pydantic.BaseModel):
     event_type: Literal["token"] = "token"
     text: str
@@ -27,6 +34,11 @@ class TokenResponseEvent(pydantic.BaseModel):
 class ErrorResponseEvent(pydantic.BaseModel):
     event_type: Literal["error"] = "error"
     error: str
+
+
+class MessageResponseEvent(pydantic.BaseModel):
+    event_type: Literal["message"] = "message"
+    message: inference.MessageRead
 
 
 ResponseEvent = Annotated[Union[TokenResponseEvent, ErrorResponseEvent], pydantic.Field(discriminator="event_type")]
@@ -47,10 +59,12 @@ class CreateChatRequest(pydantic.BaseModel):
 
 class ChatListRead(pydantic.BaseModel):
     id: str
+    created_at: datetime.datetime
+    modified_at: datetime.datetime
+    title: str | None
 
 
-class ChatRead(pydantic.BaseModel):
-    id: str
+class ChatRead(ChatListRead):
     messages: list[inference.MessageRead]
 
 
