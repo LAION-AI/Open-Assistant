@@ -36,7 +36,6 @@ PRETRAINED_VOCAB_FILES_MAP = {}
 class LLaMATokenizer(PreTrainedTokenizer):
     """
     Construct a LLaMA tokenizer. Based on byte-level Byte-Pair-Encoding.
-
     Args:
         vocab_file (`str`):
             Path to the vocabulary file.
@@ -49,23 +48,32 @@ class LLaMATokenizer(PreTrainedTokenizer):
     def __init__(
         self,
         vocab_file,
-        unk_token="",
-        bos_token="",
-        eos_token="",
+        unk_token="<unk>",
+        bos_token="<s>",
+        eos_token="</s>",
         sp_model_kwargs: Optional[Dict[str, Any]] = None,
         add_bos_token=False,
         add_eos_token=False,
+        decode_with_prefix_space=False,
         **kwargs,
     ):
+        """Initialisation"""
         self.sp_model_kwargs = {} if sp_model_kwargs is None else sp_model_kwargs
         super().__init__(bos_token=bos_token, eos_token=eos_token, unk_token=unk_token, **kwargs)
         self.vocab_file = vocab_file
         self.add_bos_token = add_bos_token
         self.add_eos_token = add_eos_token
+        self.decode_with_prefix_space = decode_with_prefix_space
         self.sp_model = spm.SentencePieceProcessor(**self.sp_model_kwargs)
         self.sp_model.Load(vocab_file)
+        self._no_prefix_space_tokens = None
 
-        """ Initialisation"""
+    @property
+    def no_prefix_space_tokens(self):
+        vocab = self.convert_ids_to_tokens(list(range(self.vocab_size)))
+        if self._no_prefix_space_tokens is None:
+            self._no_prefix_space_tokens = {i for i, tok in enumerate(vocab) if not tok.startswith("▁")}
+        return self._no_prefix_space_tokens
 
     @property
     def vocab_size(self):
@@ -99,6 +107,12 @@ class LLaMATokenizer(PreTrainedTokenizer):
         token = self.sp_model.IdToPiece(index)
         return token
 
+    def _maybe_add_prefix_space(self, tokens, decoded):
+        if tokens and tokens[0] not in self.no_prefix_space_tokens:
+            return " " + decoded
+        else:
+            return decoded
+
     def convert_tokens_to_string(self, tokens):
         """Converts a sequence of tokens (string) in a single string."""
         current_sub_tokens = []
@@ -116,7 +130,8 @@ class LLaMATokenizer(PreTrainedTokenizer):
                 current_sub_tokens.append(token)
                 prev_is_special = False
         out_string += self.sp_model.decode(current_sub_tokens)
-        return out_string.strip()
+        out_string = self._maybe_add_prefix_space(tokens=tokens, decoded=out_string)
+        return out_string
 
     def save_vocabulary(self, save_directory, filename_prefix: Optional[str] = None) -> Tuple[str]:
         """
@@ -161,32 +176,32 @@ class LLaMATokenizer(PreTrainedTokenizer):
 
         return output
 
-    def get_special_tokens_mask(
-        self, token_ids_0: List[int], token_ids_1: Optional[List[int]] = None, already_has_special_tokens: bool = False
-    ) -> List[int]:
-        """
-        Retrieve sequence ids from a token list that has no special tokens added. This method is called when adding
-        special tokens using the tokenizer `prepare_for_model` method.
+    # def get_special_tokens_mask(
+    #     self, token_ids_0: List[int], token_ids_1: Optional[List[int]] = None, already_has_special_tokens: bool = False
+    # ) -> List[int]:
+    #     """
+    #     Retrieve sequence ids from a token list that has no special tokens added. This method is called when adding
+    #     special tokens using the tokenizer `prepare_for_model` method.
 
-        Args:
-            token_ids_0 (`List[int]`):
-                List of IDs.
-            token_ids_1 (`List[int]`, *optional*):
-                Optional second list of IDs for sequence pairs.
-            already_has_special_tokens (`bool`, *optional*, defaults to `False`):
-                Whether or not the token list is already formatted with special tokens for the model.
+    #     Args:
+    #         token_ids_0 (`List[int]`):
+    #             List of IDs.
+    #         token_ids_1 (`List[int]`, *optional*):
+    #             Optional second list of IDs for sequence pairs.
+    #         already_has_special_tokens (`bool`, *optional*, defaults to `False`):
+    #             Whether or not the token list is already formatted with special tokens for the model.
 
-        Returns:
-            `List[int]`: A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence token.
-        """
-        if already_has_special_tokens:
-            return super().get_special_tokens_mask(
-                token_ids_0=token_ids_0, token_ids_1=token_ids_1, already_has_special_tokens=True
-            )
+    #     Returns:
+    #         `List[int]`: A list of integers in the range [0, 1]: 1 for a special token, 0 for a sequence token.
+    #     """
+    #     if already_has_special_tokens:
+    #         return super().get_special_tokens_mask(
+    #             token_ids_0=token_ids_0, token_ids_1=token_ids_1, already_has_special_tokens=True
+    #         )
 
-        if token_ids_1 is None:
-            return [1] + ([0] * len(token_ids_0)) + [1]
-        return [1] + ([0] * len(token_ids_0)) + [1, 1] + ([0] * len(token_ids_1)) + [1]
+    #     if token_ids_1 is None:
+    #         return [1] + ([0] * len(token_ids_0)) + [1]
+    #     return [1] + ([0] * len(token_ids_0)) + [1, 1] + ([0] * len(token_ids_1)) + [1]
 
     def create_token_type_ids_from_sequences(
         self, token_ids_0: List[int], token_ids_1: Optional[List[int]] = None

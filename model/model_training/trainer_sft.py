@@ -9,7 +9,8 @@ import datasets
 import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
-from models.patching import patch_model
+
+# from models.patching import patch_model    # AKo: dimitri please fix for llama :-)
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -174,7 +175,8 @@ def argument_parsing(notebook=False, notebook_args=None):
     else:
         args, remaining = parser.parse_known_args()
 
-    print(args)
+    if not training_conf.deepspeed or training_conf.local_rank == 0:
+        print(args)
 
     # Config from YAML
     conf = {}
@@ -207,17 +209,57 @@ def argument_parsing(notebook=False, notebook_args=None):
     return parser.parse_args(remaining)
 
 
+def tokenizer_sanity_check(tokenizer):
+    print("Tokenizer sanity check:")
+    print(f"Type: {type(tokenizer).__name__}")
+
+    print("special_tokens_map:", tokenizer.special_tokens_map)
+
+    print(f"bos_token='{tokenizer.bos_token}', bos_token_id={tokenizer.bos_token_id}")
+    print(f"eos_token='{tokenizer.eos_token}', eos_token_id={tokenizer.eos_token_id}")
+
+    from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
+
+    in_text = format_pair(["Q1", "A1", "Q2", "A2"])
+    in_text = "".join(in_text)
+
+    prompter_token_id = tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Question"])
+    assistant_token_id = tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Answer"])
+    print(f"{prompter_token_id=}, {assistant_token_id=}")
+
+    tr = tokenizer(in_text, max_length=1024, pad_to_max_length=False, truncation=True)
+
+    message_indices = []
+    i = -1
+    for id in tr.input_ids:
+        if id in (prompter_token_id, assistant_token_id):
+            i += 1
+        message_indices.append(i)
+
+    print("encoding result:", tr)
+    for i, xs in enumerate(tr.input_ids):
+        decoded = tokenizer.decode(xs)
+        print(f'{i}: {xs} -> "{decoded}"')
+
+    print("message_indices:", message_indices)
+
+
 if __name__ == "__main__":
     training_conf = argument_parsing()
 
     tokenizer = get_tokenizer(training_conf)
+
+    if not training_conf.deepspeed or training_conf.local_rank == 0:
+        tokenizer_sanity_check(tokenizer)
+
     model = get_model(training_conf, tokenizer)
 
-    patch_model(
-        model,
-        resid_pdrop=training_conf.residual_dropout,
-        flash_attention=training_conf.use_flash_attention,
-    )
+    # AKo: dimitri please fix for llama :-)
+    # patch_model(
+    #     model,
+    #     resid_pdrop=training_conf.residual_dropout,
+    #     flash_attention=training_conf.use_flash_attention,
+    # )
 
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(

@@ -12,6 +12,7 @@ from custom_datasets import get_one_dataset
 from custom_datasets.qa_datasets import QA_SPECIAL_TOKENS
 from losses import CrossEntropyLoss, PolyLoss
 from models import freeze_top_n_layers, get_specific_model
+from models.tokenization_llama import LLaMATokenizer
 from sklearn.model_selection import train_test_split
 from torch.utils.data import ConcatDataset, Subset
 from torch.utils.data.distributed import DistributedSampler
@@ -182,9 +183,9 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
     if "llama" in conf.model_name:
-        # I am sorry for the hack, the original decapoda-research/llama-7b-hf config
-        # was incorrect so we can't really use PreTrainedTokenizerFast
-        tokenizer = transformers.AutoTokenizer.from_pretrained("theblackcat102/llama-7b-test", cache_dir=conf.cache_dir)
+        # explicitly specify LLaMATokenizer class until AutoTokenizer works
+        # assumes that the tokenizer config is stored in the same directory as the model weights
+        tokenizer = LLaMATokenizer.from_pretrained(conf.model_name)
     else:
         tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
 
