@@ -32,6 +32,7 @@ function ServerError() {
               className="flex items-center"
               _hover={{ textDecoration: "none" }}
               isExternal
+              rel="noopener noreferrer"
             >
               Report a Bug
             </Link>
