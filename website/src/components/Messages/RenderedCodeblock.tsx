@@ -1,7 +1,6 @@
-import { Button, Flex, useToast } from "@chakra-ui/react";
+import { Box, Flex, IconButton, useToast } from "@chakra-ui/react";
 import { Check, Copy } from "lucide-react";
 import { HTMLAttributes, lazy, MouseEvent, Suspense, useState } from "react";
-import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
 const SyntaxHighlighter = lazy(() => import("./SyntaxHighlighter"));
 
@@ -47,16 +46,16 @@ export const RenderedCodeblock = ({
     <Flex pos="relative" flexDir="row" role="group">
       <Suspense
         fallback={
-          <code className={className} {...props}>
+          <Box as="pre" className={className} my=".5em" p="1em" bgColor="#282C34 !important" borderRadius="0.3em">
             {children}
-          </code>
+          </Box>
         }
       >
-        <SyntaxHighlighter language={lang} {...props} style={oneDark}>
-          {String(children).replace(/\n$/, "")}
-        </SyntaxHighlighter>
+        <SyntaxHighlighter language={lang}>{String(children).replace(/\n$/, "")}</SyntaxHighlighter>
       </Suspense>
-      <Button
+      <IconButton
+        size="sm"
+        aria-label="Copy"
         onClick={handleCopyClick}
         top="0"
         pos="absolute"
@@ -74,8 +73,8 @@ export const RenderedCodeblock = ({
         }}
         colorScheme={isCopied ? "blue" : "gray"}
       >
-        {isCopied ? <Check /> : <Copy />}
-      </Button>
+        {isCopied ? <Check size={16} /> : <Copy size={16} />}
+      </IconButton>
     </Flex>
   ) : (
     <code className={className} {...props}>
