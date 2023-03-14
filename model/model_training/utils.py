@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List, NamedTuple
 
 import evaluate
+import torch
 import transformers
 import yaml
 from custom_datasets import get_one_dataset
@@ -265,7 +266,11 @@ def get_metrics(conf, tokenizer):
 
 def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     model = get_specific_model(
-        conf.model_name, cache_dir=conf.cache_dir, quantization=conf.quantization, seq2seqmodel=conf.seq2seqmodel
+        conf.model_name,
+        cache_dir=conf.cache_dir,
+        quantization=conf.quantization,
+        seq2seqmodel=conf.seq2seqmodel,
+        torch_dtype=torch.float16 if conf.fp16 else torch.float32,
     )
 
     n_embs = model.get_input_embeddings().num_embeddings
