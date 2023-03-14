@@ -48,3 +48,16 @@ class PolyLoss(nn.Module):
         elif self.reduction == "sum":
             poly1 = poly1.sum()
         return poly1
+
+
+class RMLoss(nn.Module):
+    def __init__(self, reduction="mean"):
+        super().__init__()
+        self.reduction = reduction
+
+    def forward(self, pos_logits, neg_logits):
+        loss = F.logsigmoid(pos_logits - neg_logits)
+
+        if self.reduction == "none":
+            return loss
+        return loss.mean()

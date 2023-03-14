@@ -1,0 +1,36 @@
+defaults_rm:
+  is_reward_model: true
+  learning_rate: 1e-5
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1e-12
+  weight_decay: 0.00
+  warmup_steps: 600
+  eval_steps: 200
+  save_steps: 1000
+  max_length: 512
+  num_train_epochs: 3
+  logging_steps: 10
+  max_grad_norm: 2.0
+  save_total_limit: 4
+  fp16: true
+  eval_accumulation_steps:
+  freeze_layer:
+  cache_dir: .cache
+  loss_fn: RMLoss
+  eval_size:
+  log_dir: "base"
+  quantization: false
+  seq2seqmodel: false
+  fuse_gelu: true
+  log_wandb: true
+  verbose: false
+  output_dir: .saved_models_rm
+  use_custom_sampler: false
+  residual_dropout: null
+  use_flash_attention: false
+  sort_by_length: false
