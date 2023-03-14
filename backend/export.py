@@ -317,7 +317,7 @@ def parse_args():
     parser.add_argument(
         "--include-spam",
         action="store_true",
-        help="Export including messages with negative review result.",
+        help="Export including messages with no review or negative review result.",
     )
     parser.add_argument(
         "--spam-only",
