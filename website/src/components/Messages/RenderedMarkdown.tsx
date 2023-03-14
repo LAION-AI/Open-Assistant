@@ -119,7 +119,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
   const linkProps = useMemo(() => {
     return {
       as: NextLink,
-      href: link,
+      href: link!,
       target: "_blank",
       rel: "noopener noreferrer",
     };
@@ -145,7 +145,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
             <Button variant="ghost" mr={3} onClick={onClose}>
               {t("cancel")}
             </Button>
-            <Button colorScheme="blue" as={NextLink} {...linkProps} onClick={onClose}>
+            <Button colorScheme="blue" {...linkProps} onClick={onClose}>
               {t("confirm")}
             </Button>
           </ModalFooter>

@@ -1,10 +1,16 @@
 import { Button, Flex, useToast } from "@chakra-ui/react";
-import { Copy, Check } from "lucide-react";
-import { useState, MouseEvent } from "react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { Check, Copy } from "lucide-react";
+import { HTMLAttributes, lazy, MouseEvent, Suspense, useState } from "react";
 import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
-export const RenderedCodeblock = ({ node, inline, className, children, style, ...props }) => {
+const SyntaxHighlighter = lazy(() => import("./SyntaxHighlighter"));
+
+export const RenderedCodeblock = ({
+  inline,
+  className,
+  children,
+  ...props
+}: HTMLAttributes<HTMLElement> & { inline?: boolean }) => {
   const match = /language-(\w+)/.exec(className || "");
   const lang = match ? match[1] : "";
 
@@ -39,9 +45,17 @@ export const RenderedCodeblock = ({ node, inline, className, children, style, ..
 
   return !inline ? (
     <Flex pos="relative" flexDir="row" role="group">
-      <SyntaxHighlighter style={oneDark} language={lang} {...props}>
-        {String(children).replace(/\n$/, "")}
-      </SyntaxHighlighter>
+      <Suspense
+        fallback={
+          <code className={className} {...props}>
+            {children}
+          </code>
+        }
+      >
+        <SyntaxHighlighter language={lang} {...props} style={oneDark}>
+          {String(children).replace(/\n$/, "")}
+        </SyntaxHighlighter>
+      </Suspense>
       <Button
         onClick={handleCopyClick}
         top="0"
