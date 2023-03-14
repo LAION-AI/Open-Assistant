@@ -87,7 +87,6 @@ oasst_export_latin_cyrillic:
   sort_by_length: false
   use_custom_sampler: false
 
-
 llama-7b:
   fp16: true
   log_dir: "llama_log"
