@@ -30,7 +30,7 @@ describe("handles random tasks", () => {
                 // Rank an item using the keyboard so that the submit button is enabled
                 cy.get('[aria-roledescription="sortable"]')
                   .first()
-                  .click("left")
+                  .click("right")
                   .type("{enter}")
                   .wait(100)
                   .type("{downArrow}")

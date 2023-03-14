@@ -1,0 +1,20 @@
+{
+  "aborted_low_grade": "Đã huỷ do chất lượng kém",
+  "assistant": "Tin nhắn đóng vai Open Assistant",
+  "backlog_ranking": "Chuẩn bị sắp xếp",
+  "choose_a_language": "Chọn ngôn ngữ",
+  "count": "Số lần",
+  "growing": "Đang đợi thêm tin nhắn",
+  "halted_by_moderator": "Bị dừng bởi admin",
+  "human_messages_by_lang": "Số tin nhắn theo ngôn ngữ",
+  "human_messages_by_role": "Số tin nhắn theo vai người/trợ lý",
+  "initial_prompt_review": "Initial prompt review",
+  "message_trees_by_state": "Số nhánh tin nhắn theo loại",
+  "message_trees_states_by_lang": "Số nhánh tin nhắn theo ngôn ngữ",
+  "prompt_lottery_waiting": "Câu đầu đang đợi phân loại",
+  "prompter": "Tin nhắn đóng vai người",
+  "ranking": "Phân loại",
+  "ready_for_export": "Đã dài đủ",
+  "stats": "Thống kê",
+  "users_accepted_tos": "Số người dùng đã đăng ký"
+}

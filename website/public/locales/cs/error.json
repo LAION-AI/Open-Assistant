@@ -1,0 +1,16 @@
+{
+  "default": "Omlouváme se, něco se pokazilo.",
+  "err_1000": "Špatný druh úlohy",
+  "err_1001": "Nepodařilo se potvrdit úlohu",
+  "err_1002": "Nepodařilo se nepotvrdit úlohu",
+  "err_1003": "Špatný druh odpovědi",
+  "err_1004": "Požadavek na interakci selhal",
+  "err_1005": "Nepodařilo se vytvořit úlohu",
+  "err_1006": "Žádná úloha typu {{task_type}} není právě dostupná.",
+  "err_1007": "Dotaz na dostupnost úloh selhal",
+  "err_1008": "Příliš velká zpráva",
+  "err_1009": "Vaše nedávné zprávy mají duplikáty",
+  "err_1010": "Text zprávy je prázdný",
+  "err_1011": "Nemůžete odpovědět dvakrát na tu samou zprávu",
+  "err_1012": "Máte příliš mnoho čekajících úloh. Zkuste to znovu za několik minut."
+}

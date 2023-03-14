@@ -4,10 +4,8 @@ import os
 import random
 from collections import OrderedDict
 from functools import reduce
-from urllib.request import urlopen
 
 import numpy as np
-from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
 from torch.utils.data import Dataset
 
 
@@ -69,148 +67,56 @@ class OAPrivate(Dataset):
 
         if self.mode == "sft":
             # return all dialogue history
-            return format_pair(pairs)
+            return pairs
         elif self.mode == "rl":
             # random stop at the end of a new prompt
-            pairs = format_pair(pairs[: random.choice([i for i in range(len(pairs)) if i % 2 == 1])])
-            return "".join(pairs)
+            pairs = pairs[: random.choice([i for i in range(len(pairs)) if i % 2 == 1])]
+            return pairs
 
 
-class PromptGeneratedDataset(Dataset):
-    """Generates from flan 11B
-    User: What are the best methods for preventing a slave trade?
+# class PrivateInstructionTuning(Dataset):
+#     """
+#     We have seen some promising capabilities from instruction tuning
+#     with the following mix of datasets that are derived from datasets
+#     available online.
+#     The files for this data are in json format as a list of tuples
+#     where each tuple is (source,instruction_response_pair)
 
-    Rosey: The best methods ....
-    <|endoftext|>
+#     Not to be confused with unatural instruction
+#     """
 
-    we are ignoring results with multiple lines for now
-    """
+#     name = "private_tuning"
+#     # how to switch it in get_one_dataset?
+#     splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
 
-    name = "prompt_dialogue"
-    url = "https://github.com/Rallio67/language-model-agents/raw/main/chat_dialogue_v2_c.txt"
+#     def __init__(self, cache_dir, split="sft", filename="oa_v3_fixed_plus_safety.jsonl") -> None:
+#         super().__init__()
+#         self.mode = split
 
-    def __init__(self, cache_dir) -> None:
-        super().__init__()
-        os.makedirs(cache_dir, exist_ok=True)
-        chat_dialogue = os.path.join(cache_dir, "chat_dialogue_v2_c.txt")
-        if not os.path.exists(chat_dialogue):
-            with urlopen(self.url) as file:
-                content = file.read().decode()
-            with open(chat_dialogue, "w") as fout:
-                fout.write(content)
+#         os.makedirs(cache_dir, exist_ok=True)
 
-        question = ""
-        answer = ""
-        self.pairs = []
-        with open(chat_dialogue, "r") as f:
-            corpus = f.read().split("<|endoftext|>")
-            for dialogue in corpus:
-                dialogue = dialogue.strip()
-                if "Rosey:" in dialogue:
-                    user, bot = dialogue.split("Rosey:", maxsplit=1)
-                    question = user.split(":", maxsplit=1)[1].strip()
-                    answer = bot.strip()
-                    if len(answer) and len(question):
-                        self.pairs.append((question, answer))
+#         self.pairs = []
+#         for file_link in [filename]:
+#             basename = file_link.split("/")[-1]
+#             instruction_tune_file = os.path.join(cache_dir, basename)
 
-        if len(question) > 0 and len(answer) > 0:
-            self.pairs.append((question, answer))
+#             with open(instruction_tune_file, "r", encoding="utf-8") as f:
+#                 for line in f:
+#                     row = json.loads(line)
+#                     prefix = ""
+#                     for _, convo in enumerate(row["text"].split("User:")):
+#                         if "Assistant" in convo:
+#                             prompt, answer = convo.split("Assistant:", maxsplit=1)
+#                             answer = answer.replace("<|endoftext|>", "").strip()
+#                             self.pairs.append((prefix + QA_SPECIAL_TOKENS["Question"] + prompt, answer))
+#                             prefix += "".join(format_pair((prompt, answer)))
 
-    def __len__(self):
-        return len(self.pairs)
+#     def __len__(self):
+#         return len(self.pairs)
 
-    def __getitem__(self, index):
-        return format_pair(self.pairs[index])
-
-
-class InstructionTuning(Dataset):
-    """
-    We have seen some promising capabilities from instruction tuning
-    with the following mix of datasets that are derived from datasets
-    available online.
-    The files for this data are in json format as a list of tuples
-    where each tuple is (source,instruction_response_pair)
-
-        - instruction_tuning_dataset_alpha_part1.json
-        - instruction_tuning_dataset_alpha_part2.json
-
-    Not to be confused with unatural instruction
-    """
-
-    name = "instruction_dataset"
-    url_part_2 = (
-        "https://github.com/Rallio67/language-model-agents/raw/main/instruction_tuning_dataset_alpha_part2.json"
-    )
-    url_part_1 = (
-        "https://github.com/Rallio67/language-model-agents/raw/main/instruction_tuning_dataset_alpha_part1.json"
-    )
-
-    def __init__(self, cache_dir) -> None:
-        super().__init__()
-        os.makedirs(cache_dir, exist_ok=True)
-
-        self.pairs = []
-        for file_link in [self.url_part_1, self.url_part_2]:
-            basename = file_link.split("/")[-1]
-            instruction_tune_file = os.path.join(cache_dir, basename)
-            if not os.path.exists(instruction_tune_file):
-                with urlopen(file_link) as file:
-                    content = file.read().decode()
-                with open(instruction_tune_file, "w", encoding="utf-8") as fout:
-                    fout.write(content)
-
-            with open(instruction_tune_file, "r", encoding="utf-8") as f:
-                datasets = json.load(f)
-                for row in datasets:
-                    _, response_pair = row
-                    question, answer = response_pair.split("\n\n", maxsplit=1)
-                    answer = answer.replace("<|endoftext|>", "").strip()
-                    self.pairs.append((question, answer))
-
-    def __len__(self):
-        return len(self.pairs)
-
-    def __getitem__(self, index):
-        return format_pair(self.pairs[index])
-
-
-class PrivateInstructionTuning(Dataset):
-    """
-    We have seen some promising capabilities from instruction tuning
-    with the following mix of datasets that are derived from datasets
-    available online.
-    The files for this data are in json format as a list of tuples
-    where each tuple is (source,instruction_response_pair)
-
-    Not to be confused with unatural instruction
-    """
-
-    name = "private_tuning"
-    filename = "oa_v3_fixed_plus_safety.jsonl"
-
-    def __init__(self, cache_dir) -> None:
-        super().__init__()
-        os.makedirs(cache_dir, exist_ok=True)
-
-        self.pairs = []
-        for file_link in [self.filename]:
-            basename = file_link.split("/")[-1]
-            instruction_tune_file = os.path.join(cache_dir, basename)
-
-            with open(instruction_tune_file, "r", encoding="utf-8") as f:
-                for line in f:
-                    row = json.loads(line)
-                    prefix = ""
-                    for _, convo in enumerate(row["text"].split("User:")):
-                        if "Assistant" in convo:
-                            prompt, answer = convo.split("Assistant:", maxsplit=1)
-                            answer = answer.replace("<|endoftext|>", "").strip()
-                            self.pairs.append((prefix + QA_SPECIAL_TOKENS["Question"] + prompt, answer))
-                            prefix += "".join(format_pair((prompt, answer)))
-
-    def __len__(self):
-        return len(self.pairs)
-
-    def __getitem__(self, index):
-        prompt, answer = self.pairs[index]
-        return "{}{}".format(prompt, QA_SPECIAL_TOKENS["Answer"]), answer
+#     def __getitem__(self, index):
+#         prompt, answer = self.pairs[index]
+#         if self.mode == "sft":
+#             return "{}{}".format(prompt, QA_SPECIAL_TOKENS["Answer"]), answer
+#         elif self.mode == "rl":
+#             return "{}{}".format(prompt, QA_SPECIAL_TOKENS["Answer"])

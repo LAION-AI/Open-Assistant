@@ -1,7 +1,7 @@
 import collections
 import random
 import time
-from typing import Literal
+from typing import Iterable, Literal
 
 import interface
 import requests
@@ -32,7 +32,7 @@ class TokenBuffer:
             else:
                 break
 
-    def finish(self, reason: Literal["length", "eos_token", "stop_sequence"]):
+    def finish(self, reason: Literal["length", "eos_token", "stop_sequence"]) -> Iterable[interface.Token]:
         if reason == "stop_sequence":
             end_sequence = ""
             while self.tokens:

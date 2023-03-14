@@ -3,8 +3,8 @@
   "blurb1": "De la misma forma que Stable Diffusion ayudó al mundo a crear arte e imágenes de nuevas maneras, queremos mejorar el mundo proporcionando una IA conversacional asombrosa.",
   "description": "IA conversacional para todos. Un proyecto de código abierto para crear un GPT LLM preparado para chatear administrado por LAION y colaboradores de todo el mundo.",
   "faq_items": {
-    "q0": "¿Cómo de avanzado está el proyecto?",
-    "a0": "Estamos en las primeras etapas de desarrollo, trabajando a partir de la investigación establecida para aplicar RLHF (aprendizaje por refuerzo con realimentación humana) a modelos de lenguaje de gran tamaño.",
+    "q0": "¿Qué tan avanzado está el proyecto?",
+    "a0": "Estamos en las primeras etapas de desarrollo, trabajando a partir de la investigación establecida para aplicar RLHF (Aprendizaje por Refuerzo con Retroalimientación Humana) a modelos de lenguaje de gran tamaño.",
     "q1": "¿Quién está detrás de Open Assistant?",
     "a1": "Open Assistant es un proyecto organizado por LAION y personas de todo el planeta interesadas en acercar esta tecnología a todo el mundo.",
     "q2": "¿Qué licencia usa Open Assistant?",

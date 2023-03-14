@@ -24,6 +24,7 @@ export interface LeaderboardEntity {
   display_name: string;
   leader_score: number;
   base_date: string;
+  image?: string;
   modified_date: string;
   prompts: number;
   replies_assistant: number;

@@ -8,7 +8,7 @@
   "label_message_flag_instruction": "Wählen Sie aus, was auf die Nachricht zutrifft:",
   "label_message_likert_instruction": "Nachricht bewerten:",
   "label_message_yes_no_instruction": "Beantworten Sie die folgende(n) Frage(n) zur Nachricht:",
-  "lang_mismatch": "Sprachkonflikt",
+  "lang_mismatch": "Nicht {{language}}",
   "lang_mismatch.explanation": "Nicht in der aktuell ausgewählten Sprache geschrieben.",
   "moral_judgement": "Moralisches Urteil",
   "moral_judgement.explanation": "Drückt ein moralisches Urteil aus.",

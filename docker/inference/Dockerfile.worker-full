@@ -1,4 +1,4 @@
-FROM ghcr.io/huggingface/text-generation-inference
+FROM ghcr.io/yk/text-generation-inference
 
 ARG MODULE="inference"
 ARG SERVICE="worker"
@@ -17,6 +17,9 @@ COPY ./${APP_RELATIVE_PATH}/*.py .
 COPY ./${APP_RELATIVE_PATH}/worker_full_main.sh /entrypoint.sh
 
 ENV MODEL_ID="distilgpt2"
-ENV INFERENCE_SERVER_URL="http://localhost:80"
+ENV MAX_INPUT_LENGTH="850"
+ENV MAX_TOTAL_TOKENS="1024"
+ENV BACKEND_URL="ws://localhost:8000"
+ENV PARALLELISM="4"
 
 ENTRYPOINT ["/entrypoint.sh"]

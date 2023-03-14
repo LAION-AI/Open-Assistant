@@ -1,8 +1,7 @@
-import { LucideIcon, LucideProps } from "lucide-react";
+import { LucideProps } from "lucide-react";
 import { forwardRef } from "react";
 
-// eslint-disable-next-line react/display-name
-export const Discord: LucideIcon = forwardRef<SVGSVGElement, LucideProps>(function ({ size = 24, ...rest }, ref) {
+export const Discord = forwardRef<SVGSVGElement, LucideProps>(function Discord({ size = 24, ...rest }, ref) {
   return (
     <svg
       ref={ref}

@@ -1,3 +1,4 @@
+import { Story } from "@storybook/react";
 import React from "react";
 import { Task } from "src/components/Tasks/Task";
 import { TaskInfos } from "src/components/Tasks/TaskTypes";
@@ -11,7 +12,7 @@ const story = {
   decorators: [SessionDecorator],
 };
 
-const Template = ({ providerValue }) => {
+const Template: Story = ({ providerValue }) => {
   return (
     <TaskContext.Provider value={providerValue}>
       <Task />

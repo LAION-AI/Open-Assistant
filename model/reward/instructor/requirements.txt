@@ -1,7 +1,0 @@
-datasets==2.8.0
-evaluate==0.4.0
-scikit-learn==1.2.0
-sentencepiece==0.1.97
-torch>=1.12.1
-transformers==4.25.1
-wandb==0.13.7

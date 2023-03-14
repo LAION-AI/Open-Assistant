@@ -21,7 +21,7 @@ from oasst_backend.database import engine
 from oasst_backend.models import message_tree_state
 from oasst_backend.prompt_repository import PromptRepository, UserRepository
 from oasst_backend.task_repository import TaskRepository, delete_expired_tasks
-from oasst_backend.tree_manager import TreeManager
+from oasst_backend.tree_manager import TreeManager, halt_prompts_of_disabled_users
 from oasst_backend.user_repository import User
 from oasst_backend.user_stats_repository import UserStatsRepository, UserStatsTimeFrame
 from oasst_backend.utils.database_utils import CommitMode, default_session_factory, managed_tx_function
@@ -204,7 +204,7 @@ if settings.DEBUG_USE_SEED_DATA:
                     tr.bind_frontend_message_id(task.id, msg.task_message_id)
                     message = pr.store_text_reply(
                         msg.text,
-                        msg.lang,
+                        msg.lang or "en",
                         msg.task_message_id,
                         msg.user_message_id,
                         review_count=5,
@@ -214,7 +214,9 @@ if settings.DEBUG_USE_SEED_DATA:
                     )
                     if message.parent_id is None:
                         tm._insert_default_state(
-                            root_message_id=message.id, state=msg.tree_state or message_tree_state.State.GROWING
+                            root_message_id=message.id,
+                            lang=message.lang,
+                            state=msg.tree_state or message_tree_state.State.GROWING,
                         )
                         session.flush()
 
@@ -339,6 +341,7 @@ def update_user_streak() -> None:
 @managed_tx_function(auto_commit=CommitMode.COMMIT)
 def cronjob_delete_expired_tasks(session: Session) -> None:
     delete_expired_tasks(session)
+    halt_prompts_of_disabled_users(session)
 
 
 @app.on_event("startup")

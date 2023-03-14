@@ -1,3 +1,4 @@
+loguru
 requests
 sseclient-py
 typer

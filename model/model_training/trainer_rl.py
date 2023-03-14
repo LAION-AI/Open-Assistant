@@ -1,9 +1,10 @@
 import argparse
-import itertools
+import random
 
 import torch
 import transformers
 import trlx
+from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from models import get_specific_model
 from trlx.data.configs import TRLConfig
 from utils import _strtobool, get_dataset, read_yamls
@@ -66,29 +67,39 @@ if __name__ == "__main__":
     @torch.no_grad()
     def rank_model_fn(samples, **kwargs):
         inputs = rank_tokenizer(samples, return_tensors="pt", padding=True)
-        inputs.pop("token_type_ids", None)
+        del inputs["token_type_ids"]
         return rank_model(**inputs).logits[:, 0].detach().cpu()
 
     trlx_config = TRLConfig.load_yaml("configs/ppo_config.yaml")
 
     train, _ = get_dataset(training_conf, mode="rl")
 
-    print([train[i] for i in range(5)])
+    # trlx requires training data to be a list of prompts
+    # iteratore prompts due to the randomness in the dataset generation
+    prompts = [train[i] for i in range(len(train)) for _ in range(training_conf.epochs)]
 
-    # trlx requires training data to be a list of prompts?
-    prompts = list(itertools.chain(*[list(train[i]) for i in range(len(train)) for _ in range(training_conf.epochs)]))
+    random.shuffle(prompts)
 
     model = get_specific_model(
-        training_conf.sft_model, training_conf.cache_dir, training_conf.quantization, training_conf.seq2seqmodel
+        training_conf.sft_model,
+        cache_dir=training_conf.cache_dir,
+        quantization=training_conf.quantization,
+        seq2seqmodel=training_conf.seq2seqmodel,
     )
     tokenizer = transformers.AutoTokenizer.from_pretrained(training_conf.sft_model)
 
-    trlx_config.tokenizer.tokenizer_path = training_conf.model_name
+    trlx_config.tokenizer.tokenizer_path = training_conf.sft_model
+    trlx_config.model.model_path = training_conf.sft_model
     trlx_config.train.batch_size = training_conf.batch_size
 
     trainer = trlx.train(
-        training_conf.model_name,
+        training_conf.sft_model,
         reward_fn=rank_model_fn,
         prompts=prompts,
         config=trlx_config,
+        stop_sequences=[tokenizer.eos_token, QA_SPECIAL_TOKENS["Question"]],
     )
+
+    training_conf.output_dir = training_conf.output_dir if training_conf.output_dir else training_conf.model_name
+
+    trainer.save_pretrained(training_conf.output_dir)

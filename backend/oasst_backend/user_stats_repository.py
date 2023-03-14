@@ -69,6 +69,9 @@ def _create_troll_score(r, highlighted_user_id: UUID | None) -> TrollScore:
         "auth_method",
         "display_name",
         "last_activity_date",
+        "enabled",
+        "deleted",
+        "show_on_leaderboard",
     ]:
         d[k] = r[k]
     if highlighted_user_id:
@@ -185,6 +188,7 @@ class UserStatsRepository:
         self,
         time_frame: UserStatsTimeFrame,
         limit: int = 100,
+        enabled: Optional[bool] = None,
         highlighted_user_id: Optional[UUID] = None,
     ) -> TrollboardStats:
         """
@@ -198,13 +202,19 @@ class UserStatsRepository:
                 User.auth_method,
                 User.display_name,
                 User.last_activity_date,
+                User.enabled,
+                User.deleted,
+                User.show_on_leaderboard,
                 TrollStats,
             )
             .join(TrollStats, User.id == TrollStats.user_id)
             .filter(TrollStats.time_frame == time_frame.value)
-            .order_by(TrollStats.rank)
-            .limit(limit)
         )
+
+        if enabled is not None:
+            qry = qry.filter(User.enabled == enabled)
+
+        qry = qry.order_by(TrollStats.rank).limit(limit)
 
         trollboard = [_create_troll_score(r, highlighted_user_id) for r in self.session.exec(qry)]
         if len(trollboard) > 0:

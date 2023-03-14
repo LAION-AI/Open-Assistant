@@ -84,7 +84,7 @@ docker run --rm -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres --name postgres p
 Run a redis container (or use the one of the general docker compose file):
 
 ```bash
-docker run --rm -it -p 6379:6379 redis
+docker run --rm -it -p 6379:6379 --name redis redis
 ```
 
 Run the inference server:
@@ -92,7 +92,7 @@ Run the inference server:
 ```bash
 cd server
 pip install -r requirements.txt
-DEBUG_API_KEYS='["0000"]' uvicorn main:app --reload
+DEBUG_API_KEYS='["0000", "0001", "0002"]' uvicorn main:app --reload
 ```
 
 Run one (or more) workers:
@@ -100,14 +100,19 @@ Run one (or more) workers:
 ```bash
 cd worker
 pip install -r requirements.txt
-python __main__.py
+API_KEY=0000 python __main__.py
+
+# to add another worker, simply run
+API_KEY=0001 python __main__.py
 ```
 
 For the worker, you'll also want to have the text-generation-inference server
 running:
 
 ```bash
-docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 ghcr.io/huggingface/text-generation-inference
+docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 \
+    -v $HOME/.cache/huggingface:/root/.cache/huggingface \
+    --name text-generation-inference ghcr.io/yk/text-generation-inference
 ```
 
 Run the text client:
@@ -117,3 +122,16 @@ cd text-client
 pip install -r requirements.txt
 python __main__.py
 ```
+
+## Distributed Testing
+
+We run distributed load tests using the
+[`locust`](https://github.com/locustio/locust) Python package.
+
+```bash
+pip install locust
+cd tests/locust
+locust
+```
+
+Navigate to http://0.0.0.0:8089/ to view the locust UI.

@@ -1,14 +1,15 @@
 """
     Open / close book QA datasets
 """
+import copy
 import glob
 import json
 import os
 import re
+from collections import OrderedDict
 from urllib.request import urlopen
 
 import numpy as np
-from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -167,18 +168,17 @@ class QADataset(Dataset):
         return self.length
 
     def __getitem__(self, idx):
-
         data = self.dataset[idx]
-        return format_pair(self.index_fn(data))
+        return self.index_fn(data)
 
 
 class WebGPT(Dataset):
-
     name = "webgpt"
+    splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
 
-    def __init__(self) -> None:
+    def __init__(self, split="sft") -> None:
         super().__init__()
-
+        self.mode = split
         dataset = load_dataset("openai/webgpt_comparisons")
         questions = {}
         # using prompt as our index will allows us
@@ -202,11 +202,13 @@ class WebGPT(Dataset):
     def __getitem__(self, index):
         question = self.index2question[index]
         answer = self.questions[question]
-        return format_pair((question, answer))
+        if self.mode == "sft":
+            return (question, answer)
+        elif self.mode == "rl":
+            return (question,)
 
 
 class SODA(Dataset):
-
     name = "soda"
 
     def process_soda_convo(self, data):
@@ -214,11 +216,11 @@ class SODA(Dataset):
         play_as = data["speakers"][1]
         question, answer = "", ""
         prefix, postfix = "", ""
-        dialogue_bg = "{}{} {}{}".format(
-            QA_SPECIAL_TOKENS["StartPrefix"],
+        dialogue_bg = "{}{}".format(
+            # QA_SPECIAL_TOKENS["StartPrefix"],
             data["narrative"],
             "your are {}".format(play_as),
-            QA_SPECIAL_TOKENS["EndPrefix"],
+            # QA_SPECIAL_TOKENS["EndPrefix"],
         )
         previous_chat = []
 
@@ -231,17 +233,16 @@ class SODA(Dataset):
                 postfix = data["speakers"][idx]
 
             if len(question) and len(answer) and prefix != postfix and postfix == play_as:
-                history = "<sep>".join(
-                    [
-                        "{}{}{}{}".format(QA_SPECIAL_TOKENS["Question"], p[0], QA_SPECIAL_TOKENS["Answer"], p[1])
-                        for p in previous_chat
-                    ]
-                )
-                if len(history):
-                    history += "<sep>"
-                prompt = QA_SPECIAL_TOKENS["Question"] + question + QA_SPECIAL_TOKENS["Answer"]
-                pairs.append((dialogue_bg + history + prompt, answer))
-                previous_chat.append((question, answer))
+                history = copy.deepcopy(previous_chat)
+                history[0] = dialogue_bg + history[0]
+
+                # if len(history):
+                #     history += "<sep>"
+                # prompt = QA_SPECIAL_TOKENS["Question"] + question + QA_SPECIAL_TOKENS["Answer"]
+                pairs.append(history + [question, answer])
+                # pairs.append((dialogue_bg + history + prompt, answer))
+                previous_chat.append(question)
+                previous_chat.append(answer)
 
         return pairs
 
@@ -251,10 +252,10 @@ class SODA(Dataset):
         self.pairs = []
         dataset = load_dataset("allenai/soda", cache_dir=cache_dir)["train"]
         for data in dataset:
-            data_pair = self.process_soda_convo(data)
-            for (prompt, answer) in data_pair:
-                if len(prompt) < input_max_length:
-                    self.pairs.append((prompt, answer))
+            self.pairs.append(self.process_soda_convo(data))
+            # for prompt, answer in data_pair:
+            #     if len(prompt) < input_max_length:
+            #         self.pairs.append((prompt, answer))
 
     def __len__(self):
         return len(self.pairs)
@@ -268,7 +269,6 @@ class SODADialogue(Dataset):
     url = "https://drive.google.com/uc?id=1TOGQfr419n8wpzJpYLLw4nB3tSKD8zXV"
 
     def __init__(self, cache_dir, verbose=True):
-
         path = os.path.join(cache_dir, "soda_dialog.jsonl")
 
         if not os.path.exists(path):
@@ -312,11 +312,10 @@ class SODADialogue(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        return format_pair(self.pairs[index])
+        return self.pairs[index]
 
 
 class JokeExplaination(Dataset):
-
     name = "joke"
     url = "https://gist.github.com/theblackcat102/42b697e24a13fdb499e20edfbf618361/raw/1834dca207898c15f93b809d1195f6f6e47c9e1e/joke_explained.jsonl"
 
@@ -350,7 +349,7 @@ class JokeExplaination(Dataset):
         return self.length
 
     def __getitem__(self, index):
-        return format_pair(self.pairs[index])
+        return self.pairs[index]
 
 
 class TranslatedQA(Dataset):
@@ -389,16 +388,17 @@ class TranslatedQA(Dataset):
                         continue
                     prefix = ""
                     for convo_round in data["translate"]:
-                        human, answer = format_pair((convo_round["human"], convo_round["answer"]))
+                        human, answer = convo_round["human"], convo_round["answer"]
                         if convo_round["round"] > 2:
-                            self.pairs.append(("{}{}{}".format(prefix, "<sep>", human), answer))
+                            self.pairs.append((prefix, human, answer))
                         else:
-                            self.pairs.append((human, answer))
+                            self.pairs.append(("", human, answer))
 
+                        # Does this make sense?
                         prefix += "{}{}{}{}".format(
-                            QA_SPECIAL_TOKENS["Question"],
+                            "Question:",
                             convo_round["human"],
-                            QA_SPECIAL_TOKENS["Answer"],
+                            "Answer:",
                             convo_round["answer"],
                         )
 

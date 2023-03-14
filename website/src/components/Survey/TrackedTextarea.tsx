@@ -3,7 +3,8 @@ import { Progress, Stack, Textarea, TextareaProps, useColorModeValue } from "@ch
 import lande from "lande";
 import { useTranslation } from "next-i18next";
 import React from "react";
-import { useCookies } from "react-cookie";
+import TextareaAutosize, { TextareaAutosizeProps } from "react-textarea-autosize";
+import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { LanguageAbbreviations } from "src/lib/iso6393";
 import { getLocaleDisplayName } from "src/lib/languages";
 import { colors } from "src/styles/Theme/colors";
@@ -15,7 +16,7 @@ interface TrackedTextboxProps {
     medium: number;
     goal: number;
   };
-  textareaProps?: TextareaProps;
+  textareaProps?: TextareaProps & TextareaAutosizeProps;
   onTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
@@ -23,8 +24,7 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
   const { t } = useTranslation("tasks");
   const wordLimitForLangDetection = 4;
   const backgroundColor = useColorModeValue("gray.100", "gray.900");
-  const [cookies] = useCookies(["NEXT_LOCALE"]);
-  const currentLanguage = cookies["NEXT_LOCALE"];
+  const currentLanguage = useCurrentLocale();
   const wordCount = (props.text.match(/\w+/g) || []).length;
 
   const detectLang = (text: string) => {
@@ -62,6 +62,7 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
           value={props.text}
           onChange={props.onTextChange}
           {...props.textareaProps}
+          as={TextareaAutosize}
         />
         <div
           style={{

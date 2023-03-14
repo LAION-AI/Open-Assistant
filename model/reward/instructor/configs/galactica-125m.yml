@@ -8,6 +8,7 @@ eval_steps: 200
 save_steps: 500
 max_length: 512
 num_train_epochs: 2
+drop_token_type: true
 datasets:
   - webgpt
   - hfsummary

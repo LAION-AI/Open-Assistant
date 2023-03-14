@@ -4,7 +4,7 @@
   "description": "Konversations-AI för alla. Ett projekt med öppen källkod för att bygga en chattaktiverad GPT stor språkmodell, underhållen av LAION och bidragsgivare runt om i världen.",
   "faq_items": {
     "q0": "Hur långt har projektet kommit?",
-    "a0": "Vi är i det tidiga utvecklingsstadiet och vårt arbete framåt  bygger på etablerad forskning för att tillämpa RLHF (Human Feedback Reinforcement Learning) på stora språkmodeller.",
+    "a0": "Vi är i det tidiga utvecklingsstadiet och vårt arbete framåt  bygger på etablerad forskning för att tillämpa RLHF (Reinforcement Learning with Human Feedback) på stora språkmodeller.",
     "q1": "Vem ligger bakom Open Assistant?",
     "a1": "Open Assistant är ett projekt organiserat av LAION och individer runt om i världen. Vårt mål är att göra Open Assistant-språkmodellen fritt tillgänglig för alla människor.",
     "q2": "Vilken licens använder Open Assistant?",

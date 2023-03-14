@@ -1,0 +1,23 @@
+{
+  "blurb": "Vi tror vi kan skape noe revolusjonerende.",
+  "blurb1": "Akkurat som Stable Diffusion muliggjorde nye måter å lage kunst og bilder på, streber vi etter å forbedre verden ved å tilby samtale-AI i verdensklasse.",
+  "description": "Konversasjons-AI for alle. Et åpen kildekode-prosjekt for å bygge en chat-aktivert GPT-storspråklig modell, vedlikeholdt av LAION og bidragsytere over hele verden.",
+  "faq_items": {
+    "q0": "Hvor langt har prosjektet kommet?",
+    "a0": "Vi er i de tidlige utviklingsstadiene og vårt arbeid fremover er basert på etablert forskning for å anvende RLHF Reinforcement Learning with Human Feedback) på store språkmodeller.",
+    "q1": "Hvem står bak Open Assistant?",
+    "a1": "Open Assistant er et prosjekt organisert av LAION og enkeltpersoner over hele verden. Målet vårt er å gjøre Open Assistant-språkmodellen fritt tilgjengelig for alle mennesker.",
+    "q2": "Hvilken lisens bruker Open Assistant?",
+    "a2": "Koden og modellen er lisensiert under Apache 2.0-lisensen.",
+    "q3": "Vil treningsdata bli publisert?",
+    "a3": "Ja, under CC BY 4.0-lisensen.",
+    "q4": "Vil Open Assistant være gratis?",
+    "a4": "Ja, Open Assistant vil være gratis å bruke og å endre.",
+    "q5": "Hvilken maskinvare kreves for å kjøre modellene?",
+    "a5": "Det vil være versjoner som kan kjøres på forbrukermaskinvare."
+  },
+  "faq_title": "Ofte stilte spørsmål",
+  "join_us_description": "Alle åpen kildekode-prosjekter starter med folk som deg! Åpen kildekode er troen på at hvis vi jobber sammen, kan vi gi vår kunnskap og teknologi til verden til fordel for menneskeheten. Er du med? Du kan finne oss her: ",
+  "join_us_title": "Bli med oss",
+  "subtitle": "Konversasjons-AI for alle."
+}

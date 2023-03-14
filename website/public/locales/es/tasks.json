@@ -86,5 +86,7 @@
     "response_placeholder": "Escribe tu respuesta aquí..."
   },
   "submitted_as": "Esto será enviado como {{submit_lang}}",
+  "tab_write": "Escribir",
+  "tab_preview": "Previsualizar",
   "writing_wrong_langauge_a_b": "Parece que estás escribiendo en {{detected_lang}} pero esto se enviará como {{submit_lang}}."
 }

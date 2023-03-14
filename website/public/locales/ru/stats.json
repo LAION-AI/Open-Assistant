@@ -1,6 +1,6 @@
 {
-  "aborted_low_grade": "Осталновлено из-за низкой оценки",
-  "backlog_ranking": "Оцениваются (Приоритетные)",
+  "aborted_low_grade": "Остановлено из-за низкой оценки",
+  "backlog_ranking": "Оцениваются (В резерве)",
   "count": "Количество",
   "growing": "В процессе",
   "halted_by_moderator": "Отклонено модератором",
@@ -9,6 +9,7 @@
   "initial_prompt_review": "Оценено изначальных запросов",
   "message_trees_by_state": "Состояние ветвей сообщений",
   "message_trees_states_by_lang": "Состояние ветвей сообщений по языковому признаку",
+  "prompt_lottery_waiting": "Запросов участвуют в голосовании",
   "ranking": "Оцениваются",
   "ready_for_export": "Готовы для экспорта",
   "stats": "Статистика",

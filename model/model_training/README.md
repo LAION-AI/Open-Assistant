@@ -2,13 +2,20 @@
 
 ## Requirements
 
-`pip install -r requirements.txt`
+`pip install .`
+
+Run tests: `pytest .`
 
 Start training SFT model
 
 ```bash
-python trainer_sft.py --configs defaults galactica-125m
+python trainer_sft.py --configs galactica-125m
 ```
+
+If you want to get started with a small amount of test data to begin with, add
+the config `webgpt_dataset_only`.
+
+If you kill and want to resume, see the `--resume_from_checkpoint` option.
 
 For `wandb`: update the `entity` argument in `trainer_sft.py`'s call to
 `wandb.init` to be your weights and biases username per
@@ -71,11 +78,11 @@ This works with `torch.distributed`.
 To experiment with the Open Assistant data simply run:
 
 ```bash
-python trainer_sft.py --configs defaults oa_dataset_only galactica-125m
+python trainer_sft.py --configs oasst_export_eu galactica-125m
 ```
 
-Change the `data_path` in the `oa_dataset_only` from the `configs/config.yaml`
-file to the correct path.
+Change the `input_file_path` in the `oasst_export_eu` from the
+`configs/config.yaml` file to the correct path.
 
 ## Training with RL
 
@@ -87,17 +94,22 @@ python trainer_rl.py --configs defaults_rlhf
 
 ## Test your model
 
-You can itneractively test your model like this:
+You can interactively test your model like this:
 
 ```bash
-python tools/model_cli.py --model_path <saved_path/huggingface>
+python3 tools/model_cli.py --model_path <saved_path/huggingface>
+# For example, if you trained with the default config:
+python3 tools/model_cli.py --model_path saved_model
+# Add --8bit  if it is an 8bit model
 ```
 
 Or start a conversation with your bot interactively, mainly for testing context
 switch ability
 
 ```bash
-python -m tools.model_chat --model_path <saved_path/huggingface>
+python3 tools/model_chat.py --model_path <saved_path/huggingface>
+# For example, if you trained with the default config:
+python3 tools/model_chat.py --model_path saved_model
 ```
 
 ## Model
@@ -137,6 +149,15 @@ the end to trigger deepspeed
 ```
 python trainer_sft.py --configs defaults your-model-name --deepspeed
 ```
+
+### Troubleshooting
+
+- If training on a VM, you might need to install OpenMPI. Check out
+  [this blog post](https://lambdalabs.com/blog/horovod-keras-for-multi-gpu-training#open-mpi-optional)
+  by Lambda on how to install OpenMPI on their machines.
+- Installing `mpi4py` requires `python-dev`, which can be installed via
+  `sudo apt install libpython3.10-dev` (replace `3.10` with whatever Python
+  version you're running).
 
 ## Results
 
