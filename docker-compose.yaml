@@ -110,12 +110,12 @@ services:
       - "8080:8080"
 
   # The oassist backend celery worker service.
-  backend-cworker:
+  backend-worker:
     build:
-      dockerfile: docker/Dockerfile.backendworker
+      dockerfile: docker/Dockerfile.backend-worker
       context: .
     command: celery -A celery_worker worker -l info
-    image: oasst-backend-cworker
+    image: oasst-backend-worker
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -130,12 +130,12 @@ services:
     profiles: ["frontend-dev", "ci"]
 
   # The oassist backend celery worker service.
-  backend-cworker-beat:
+  backend-worker-beat:
     build:
-      dockerfile: docker/Dockerfile.backendworker
+      dockerfile: docker/Dockerfile.backend-worker
       context: .
     command: celery -A celery_worker beat -l info
-    image: oasst-backend-cworker-beat
+    image: oasst-backend-worker-beat
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
