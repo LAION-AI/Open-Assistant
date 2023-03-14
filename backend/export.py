@@ -19,7 +19,7 @@ from oasst_data import (
     LabelValues,
 )
 from oasst_shared.schemas.protocol import TextLabel
-from sqlmodel import Session, func, not_
+from sqlmodel import Session, func
 
 
 def fetch_tree_ids(
@@ -83,10 +83,8 @@ def fetch_tree_messages(
         qry = qry.filter(Message.parent_id.is_(None))
     if lang:
         qry = qry.filter(Message.lang == lang)
-    if review_result is False:
-        qry = qry.filter(not_(Message.review_result), Message.review_count > 2)
-    elif review_result is True:
-        qry = qry.filter(Message.review_result)
+    if review_result is not None:
+        qry = qry.filter(Message.review_result == review_result)
     if limit is not None:
         qry = qry.limit(limit)
 
@@ -156,10 +154,8 @@ def fetch_tree_messages_and_avg_labels(
         qry = qry.filter(Message.parent_id.is_(None))
     if lang:
         qry = qry.filter(Message.lang == lang)
-    if review_result is False:
-        qry = qry.filter(~Message.review_result, Message.review_count > 2)
-    elif review_result is True:
-        qry = qry.filter(Message.review_result)
+    if review_result is not None:
+        qry = qry.filter(Message.review_result == review_result)
 
     qry = qry.group_by(Message.id)
 
