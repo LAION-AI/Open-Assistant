@@ -16,7 +16,7 @@ from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_backend.models.payload_column_type import PayloadContainer
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import UserRepository
-from oasst_shared.schemas.export import ExportMessageNode, ExportMessageTree
+from oasst_data import ExportMessageNode, ExportMessageTree
 from sqlmodel import Session
 
 # well known id

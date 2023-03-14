@@ -2,7 +2,7 @@ import datetime
 import enum
 import platform
 import random
-from typing import Literal
+from typing import Annotated, Literal, Union
 
 import psutil
 import pydantic
@@ -71,6 +71,33 @@ class WorkerConfig(pydantic.BaseModel):
         return compat_hash(model_name=self.model_name)
 
 
+class WorkerMetricsInfo(pydantic.BaseModel):
+    cpu_usage: float
+    mem_usage: float
+    swap_usage: float
+    gpu_usage: float | None = None
+    gpu_memory_usage: float | None = None
+
+    def __init__(self, **data):
+        data["cpu_usage"] = psutil.cpu_percent()
+        data["mem_usage"] = psutil.virtual_memory().percent
+        data["swap_usage"] = psutil.swap_memory().percent
+        try:
+            pynvml.nvmlInit()
+            data["nvidia_driver_version"] = pynvml.nvmlSystemGetDriverVersion()
+            gpu_usages = []
+            gpu_memory_usages = []
+            for i in range(pynvml.nvmlDeviceGetCount()):
+                handle = pynvml.nvmlDeviceGetHandleByIndex(i)
+                gpu_usages.append(pynvml.nvmlDeviceGetUtilizationRates(handle).gpu)
+                gpu_memory_usages.append(pynvml.nvmlDeviceGetMemoryInfo(handle).used)
+            data["gpu_usage"] = sum(gpu_usages) / len(gpu_usages)
+            data["gpu_memory_usage"] = sum(gpu_memory_usages) / len(gpu_memory_usages)
+        except Exception:
+            pass
+        super().__init__(**data)
+
+
 class WorkParameters(pydantic.BaseModel):
     model_name: str = DEFAULT_MODEL_NAME
     max_new_tokens: int = 100
@@ -131,18 +158,34 @@ class WorkRequest(pydantic.BaseModel):
 
 
 class TokenResponse(pydantic.BaseModel):
+    response_type: Literal["token"] = "token"
     text: str
     log_prob: float
     token_id: int
 
 
 class GeneratedTextResponse(pydantic.BaseModel):
+    response_type: Literal["generated_text"] = "generated_text"
     text: str
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
 
 
-class WorkResponsePacket(pydantic.BaseModel):
-    token: TokenResponse | None = None
-    generated_text: GeneratedTextResponse | None = None
-    is_end: bool = False
-    error: str | None = None
+class InternalFinishedMessageResponse(pydantic.BaseModel):
+    response_type: Literal["internal_finished_message"] = "internal_finished_message"
+    message: MessageRead
+
+
+class ErrorResponse(pydantic.BaseModel):
+    response_type: Literal["error"] = "error"
+    error: str
+
+
+class MetricsResponse(pydantic.BaseModel):
+    response_type: Literal["metrics"] = "metrics"
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+
+
+WorkResponse = Annotated[
+    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, MetricsResponse, InternalFinishedMessageResponse],
+    pydantic.Field(discriminator="response_type"),
+]

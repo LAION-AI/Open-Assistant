@@ -24,7 +24,7 @@ async def manual_create_session(autoflush=True):
 
 
 async def create_chat_repository(session: AsyncSession = Depends(create_session)) -> ChatRepository:
-    repository = ChatRepository(session)
+    repository = ChatRepository(session=session)
     return repository
 
 

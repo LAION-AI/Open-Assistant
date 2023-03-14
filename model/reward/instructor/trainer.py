@@ -16,13 +16,15 @@ os.environ["WANDB_PROJECT"] = "reward-model"
 
 accuracy = evaluate.load("accuracy")
 parser = ArgumentParser()
+# Note, these override the config yaml, and get merged in argument_parsing() in utils.py
+# Do not set defaults here, but set them in utils.py so that the config yaml can override them.
 parser.add_argument("config", type=str)
-parser.add_argument("--local_rank", type=int, default=-1)
+parser.add_argument("--local_rank", type=int)
 parser.add_argument("--deepspeed", action="store_true")
-parser.set_defaults(deepspeed=False)
 parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
-parser.add_argument("--wandb-entity", type=str, default="open-assistant")
-parser.add_argument("--output_dir", type=str, default=None)
+parser.add_argument("--wandb-entity", type=str)
+parser.add_argument("--per-digit-tokens", action="store_true")
+parser.add_argument("--output_dir", type=str)
 
 
 def compute_metrics(eval_pred):
@@ -160,7 +162,7 @@ if __name__ == "__main__":
         report_to="wandb",
     )
 
-    tokenizer = get_tokenizer(training_conf["tokenizer_name"])
+    tokenizer = get_tokenizer(training_conf["tokenizer_name"], training_conf["per_digit_tokens"])
     train, evals = get_datasets(training_conf["datasets"], tokenizer)
     if "rankgen" in model_name:
         collate_fn = RankGenCollator(tokenizer, max_length=training_conf["max_length"])

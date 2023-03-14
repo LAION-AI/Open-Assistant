@@ -1,10 +1,11 @@
-import { Badge, Box, Flex, Tooltip, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
-import { useTranslation } from "next-i18next";
 import { PointerEventHandler, PropsWithChildren, useMemo } from "react";
+
+import { MessageSyntheticBadge } from "../Messages/MessageSyntheticBadge";
 
 export const SortableItem = ({
   children,
@@ -38,8 +39,6 @@ export const SortableItem = ({
     }),
     [isEditable, activeBackgroundColor, backgroundColor]
   );
-
-  const { t } = useTranslation("message");
 
   return (
     <Box
@@ -75,13 +74,7 @@ export const SortableItem = ({
           insetInlineEnd: "1.25rem",
         }}
       >
-        {synthetic && (
-          <Tooltip label={t("synthetic_explain")} placement="top" hasArrow>
-            <Badge size="sm" colorScheme="green" textTransform="capitalize">
-              {t("synthetic")}
-            </Badge>
-          </Tooltip>
-        )}
+        {synthetic && <MessageSyntheticBadge />}
       </Flex>
     </Box>
   );

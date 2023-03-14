@@ -20,6 +20,7 @@ export const updateUsersProfilePictures = async <T extends { auth_method: string
   return entires.map((entry, idx) => ({
     ...entry,
     // NOTE: findMany will return the values unsorted, which is why we have to 'find' here
-    image: items.find((i) => i.id === frontendUserIds[idx]).image,
+    // TODO: Check why there is no image for a better fix
+    image: items.find((i) => i.id === frontendUserIds[idx])?.image || "",
   }));
 };

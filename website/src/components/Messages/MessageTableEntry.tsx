@@ -48,6 +48,7 @@ import useSWRMutation from "swr/mutation";
 
 import { BaseMessageEntry } from "./BaseMessageEntry";
 import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
+import { MessageSyntheticBadge } from "./MessageSyntheticBadge";
 
 interface MessageTableEntryProps {
   message: Message;
@@ -155,6 +156,7 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
             insetInlineEnd: "1.25rem",
           }}
         >
+          {message.synthetic && <MessageSyntheticBadge />}
           {showAuthorBadge && message.user_is_author && (
             <Tooltip label={t("message_author_explain")} placement="top">
               <Badge size="sm" colorScheme="green" textTransform="capitalize">

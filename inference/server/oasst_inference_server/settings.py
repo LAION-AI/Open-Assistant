@@ -8,7 +8,9 @@ class Settings(pydantic.BaseSettings):
     redis_port: int = 6379
     redis_db: int = 0
 
-    allowed_worker_compat_hashes: list[str] = ["distilgpt2"]
+    message_queue_expire: int = 60
+
+    allowed_worker_compat_hashes: list[str] = ["distilgpt2", "_lorem"]
 
     sse_retry_timeout: int = 15000
     update_alembic: bool = True
@@ -46,6 +48,7 @@ class Settings(pydantic.BaseSettings):
 
     do_compliance_checks: bool = True
     compliance_check_interval: int = 60
+    compliance_check_timeout: int = 60
 
     api_root: str = "https://inference.prod.open-assistant.io"
 

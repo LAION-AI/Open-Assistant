@@ -33,6 +33,24 @@ class UserChatRepository(pydantic.BaseModel):
         chat = (await self.session.exec(query)).one()
         return chat
 
+    async def get_message_by_id(self, chat_id: str, message_id: str) -> models.DbMessage:
+        query = (
+            sqlmodel.select(models.DbMessage)
+            .where(
+                models.DbMessage.id == message_id,
+                models.DbMessage.chat_id == chat_id,
+            )
+            .options(
+                sqlalchemy.orm.selectinload(models.DbMessage.reports),
+            )
+            .join(models.DbChat)
+            .where(
+                models.DbChat.user_id == self.user_id,
+            )
+        )
+        message = (await self.session.exec(query)).one()
+        return message
+
     async def create_chat(self) -> models.DbChat:
         chat = models.DbChat(user_id=self.user_id)
         self.session.add(chat)
@@ -54,6 +72,7 @@ class UserChatRepository(pydantic.BaseModel):
         if parent_id is None:
             if len(chat.messages) > 0:
                 raise fastapi.HTTPException(status_code=400, detail="Trying to add first message to non-empty chat")
+            chat.title = content
         else:
             msg_dict = chat.get_msg_dict()
             if parent_id not in msg_dict:
@@ -69,6 +88,7 @@ class UserChatRepository(pydantic.BaseModel):
             content=content,
         )
         self.session.add(message)
+        chat.modified_at = message.created_at
 
         await self.session.commit()
         logger.debug(f"Added prompter message {len(content)=} to chat {chat_id}")

@@ -33,6 +33,20 @@ class DbMessage(SQLModel, table=True):
 
     score: int = Field(0)
 
+    @property
+    def has_finished(self) -> bool:
+        return self.state in (
+            inference.MessageState.manual,
+            inference.MessageState.complete,
+            inference.MessageState.aborted_by_worker,
+        )
+
+    @property
+    def has_started(self) -> bool:
+        if self.has_finished:
+            return True
+        return self.state in (inference.MessageState.in_progress,)
+
     def to_read(self) -> inference.MessageRead:
         return inference.MessageRead(
             id=self.id,
@@ -50,14 +64,28 @@ class DbChat(SQLModel, table=True):
     id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
 
     user_id: str = Field(foreign_key="user.id", index=True)
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow, index=True)
+    modified_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow, index=True)
+    title: str | None = Field(None)
 
     messages: list[DbMessage] = Relationship(back_populates="chat")
 
     def to_list_read(self) -> chat_schema.ChatListRead:
-        return chat_schema.ChatListRead(id=self.id)
+        return chat_schema.ChatListRead(
+            id=self.id,
+            created_at=self.created_at,
+            modified_at=self.modified_at,
+            title=self.title,
+        )
 
     def to_read(self) -> chat_schema.ChatRead:
-        return chat_schema.ChatRead(id=self.id, messages=[m.to_read() for m in self.messages])
+        return chat_schema.ChatRead(
+            id=self.id,
+            created_at=self.created_at,
+            modified_at=self.modified_at,
+            title=self.title,
+            messages=[m.to_read() for m in self.messages],
+        )
 
     def get_msg_dict(self) -> dict[str, DbMessage]:
         return {m.id: m for m in self.messages}

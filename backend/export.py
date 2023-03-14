@@ -9,7 +9,7 @@ from oasst_backend.database import engine
 from oasst_backend.models import Message, MessageEmoji, MessageReaction, MessageTreeState, TextLabels, db_payload
 from oasst_backend.models.message_tree_state import State as TreeState
 from oasst_backend.utils import tree_export
-from oasst_shared.schemas.export import (
+from oasst_data import (
     ExportMessageEvent,
     ExportMessageEventEmoji,
     ExportMessageEventRanking,

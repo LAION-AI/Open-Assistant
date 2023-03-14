@@ -7,7 +7,6 @@ from utils import TOKENIZER_CONFIGS, get_tokenizer, match_tokenizer_name
 def test_tokenizer():
     get_tokenizer(Namespace(model_name="Salesforce/codegen-2B-multi", cache_dir=".cache"))
     get_tokenizer(Namespace(model_name="facebook/galactica-1.3b", cache_dir=".cache"))
-    get_tokenizer(Namespace(model_name="", cache_dir=".cache"))
 
 
 def test_tokenizer_successful_match():
