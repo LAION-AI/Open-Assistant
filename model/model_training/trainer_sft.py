@@ -166,6 +166,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
+    parser.add_argument("--deepspeed_config", type=str, default="configs/zero_config.json")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
     parser.set_defaults(deepspeed=False)
 
@@ -189,6 +190,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
+    conf["deepspeed_config"] = args.deepspeed_config
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -278,7 +280,7 @@ if __name__ == "__main__":
         num_train_epochs=training_conf.num_train_epochs,
         warmup_steps=training_conf.warmup_steps,
         learning_rate=float(training_conf.learning_rate),
-        deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
+        deepspeed=training_conf.deepspeed_config if training_conf.deepspeed else None,
         optim=optimizer,
         fp16=training_conf.fp16,
         local_rank=training_conf.local_rank,
