@@ -78,6 +78,16 @@ oasst_export_eu:
   sort_by_length: false
   use_custom_sampler: false
 
+oasst_export_latin_cyrillic:
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        #top_k: 2
+        input_file_path: 2023-03-13_oasst_ready_labels.jsonl.gz
+  sort_by_length: false
+  use_custom_sampler: false
+
+
 llama-7b:
   fp16: true
   log_dir: "llama_log"
