@@ -1,10 +1,9 @@
 import { Card, CardBody } from "@chakra-ui/react";
-import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { AdminArea } from "src/components/AdminArea";
 import { getAdminLayout } from "src/components/Layout";
 import { AdminMessageTable } from "src/components/Messages/AdminMessageTable";
+export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 const MessageList = () => {
   return (
@@ -26,11 +25,3 @@ const MessageList = () => {
 MessageList.getLayout = getAdminLayout;
 
 export default MessageList;
-
-export const getServerSideProps: GetServerSideProps = async ({ locale = "en" }) => {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale, ["common", "labelling", "message"])),
-    },
-  };
-};

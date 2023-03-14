@@ -15,19 +15,25 @@ export type CursorPaginationState = {
 export const useCursorPagination = () => {
   const [pagination, setPagination] = useState<CursorPaginationState>({ cursor: "", direction: "forward" });
 
-  const toPreviousPage = useCallback((data: undefined | { prev?: string; next?: string }) => {
-    setPagination({
-      cursor: data?.prev || "",
-      direction: "back",
-    });
-  }, []);
+  const toPreviousPage = useCallback(
+    (data: undefined | { prev?: string; next?: string }) => {
+      setPagination({
+        cursor: data?.prev || "",
+        direction: "back",
+      });
+    },
+    [setPagination]
+  );
 
-  const toNextPage = useCallback((data: undefined | { prev?: string; next?: string }) => {
-    setPagination({
-      cursor: data?.next || "",
-      direction: "forward",
-    });
-  }, []);
+  const toNextPage = useCallback(
+    (data: undefined | { prev?: string; next?: string }) => {
+      setPagination({
+        cursor: data?.next || "",
+        direction: "forward",
+      });
+    },
+    [setPagination]
+  );
 
   const resetCursor = useCallback(() => setPagination((old) => ({ ...old, cursor: "" })), []);
 

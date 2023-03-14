@@ -56,8 +56,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
   const {
     data: res,
     isLoading,
-    error,
-    mutate,
+    mutate: mutateMessageList,
   } = useSWRImmutable<FetchMessagesCursorResponse>(
     API_ROUTES.ADMIN_MESSAGE_LIST({
       cursor: pagination.cursor,
@@ -75,7 +74,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
     return res?.items.map((m) => ({ ...m, isActive: m.id === activeMessageId })) || [];
   }, [activeMessageId, res?.items]);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { isMutating, trigger } = useDeleteMessage(deleteMessageId!, mutate);
+  const { isMutating, trigger } = useDeleteMessage(deleteMessageId!, mutateMessageList);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -204,13 +203,16 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
   }, [deleteMessageId, isMutating, onOpen]);
 
   const { t } = useTranslation(["common", "message"]);
-  const rowProps: DataTableRowPropsCallback<Message> = useCallback((row) => {
-    return {
-      onClick: () => {
-        setActiveMessageId(row.original.id);
-      },
-    };
-  }, []);
+  const rowProps: DataTableRowPropsCallback<Message> = useCallback(
+    (row) => {
+      return {
+        onClick: () => {
+          setActiveMessageId(row.original.id);
+        },
+      };
+    },
+    [setActiveMessageId]
+  );
   const columnVisibility = useMemo(() => ({ user: !!includeUser }), [includeUser]);
   return (
     <>
