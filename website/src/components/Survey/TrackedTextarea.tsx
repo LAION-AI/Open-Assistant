@@ -1,6 +1,8 @@
 import { Tooltip } from "@chakra-ui/react";
+import Link from "next/link";
 import { Progress, Stack, Textarea, TextareaProps, useColorModeValue } from "@chakra-ui/react";
 import lande from "lande";
+import { Highlighter } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import React from "react";
 import TextareaAutosize, { TextareaAutosizeProps } from "react-textarea-autosize";
@@ -90,14 +92,22 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
           </Tooltip>
         </div>
       </div>
-      <Progress
-        size={"md"}
-        height={"2"}
-        rounded={"md"}
-        value={wordCount}
-        colorScheme={progressColor}
-        max={props.thresholds.goal}
-      />
+      <Stack direction={"row"}>
+        <Progress
+          size={"md"}
+          height={"2"}
+          width={"100%"}
+          rounded={"md"}
+          value={wordCount}
+          colorScheme={progressColor}
+          max={props.thresholds.goal}
+        />
+        <Tooltip>
+          <Link href="https://www.markdownguide.org/basic-syntax" rel="noopener noreferrer nofollow" target="_blank">
+            <Highlighter size={"1em"}></Highlighter>
+          </Link>
+        </Tooltip>
+      </Stack>
     </Stack>
   );
 };
