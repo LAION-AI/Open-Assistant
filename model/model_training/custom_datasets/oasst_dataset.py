@@ -28,7 +28,7 @@ def load_oasst_export(
     data_path: str | Path = None,
     mode: Literal["sft", "rm"] = "sft",
 ) -> tuple[ListDataset, ListDataset]:
-    if mode not in ["sft", "rm"]:
+    if mode not in ("sft", "rm"):
         raise ValueError(f"Unknown dataset mode: {mode}")
 
     lang_codes = lang.split(",")
@@ -59,39 +59,53 @@ def load_oasst_export(
                 for i, m in enumerate(thread):
                     if m.role == "assistant":
                         if m.rank is None:
-                            if len(thread[i - 1].replies) > 1:
+                            if i > 0 and len(thread[i - 1].replies) > 1:
                                 return False
                         elif m.rank >= top_k:
                             return False
             return True
 
         def leaf_filter(thread: list[ExportMessageNode]) -> bool:
-            if len(thread) <= 1 or not thread_filter(thread):
-                return False
             if mode == "sft":
-                return not thread[-1].replies and (
-                    thread[-1].role == "assistant"
-                )  # or thread[-2].replies[0] == thread[-1])
-            else:  # mode == "rm"
-                return thread[-1].role == "prompter" and len([r for r in thread[-1].replies if r.rank is not None]) > 1
+                # in SFT mode `not thread[-1].replies` finds nodes without children (leaves).
+                # We are interested in those which are role='assistant' but some trees don't end on assistant nodes
+                # but have prompter leaves .. we want to use those trees too .. e.g. remove the last prompter message(s)
+                # so that they end with assistant. The `thread[-2].replies[0] == thread[-1]` check makes sure that only
+                # the FIRST prompter reply is added .. e.g. the parent does not appear multiple times and we can use
+                # pop() to remove superfluous prompter leaf node later.
+                return (
+                    len(thread) > 1
+                    and not thread[-1].replies(thread[-1].role == "assistant" or thread[-2].replies[0] == thread[-1])
+                    and thread_filter(thread)
+                )
+            elif mode == "rm":
+                return (
+                    thread[-1].role == "prompter"
+                    and len([r for r in thread[-1].replies if r.rank is not None]) > 1
+                    and thread_filter(thread)
+                )
+
+            raise RuntimeError()
 
         visit_threads_depth_first(tree.prompt, visitor=threads.append, predicate=leaf_filter)
-        # for t in threads:
-        #     if mode == "sft":
-        #         if t[-1].role == "prompter":
-        #             t.pop()
+        if mode == "sft":
+            for t in threads:
+                if t[-1].role == "prompter":
+                    t.pop()
 
         threads_per_tree.append(threads)
 
     def process_thread(thread):
         if mode == "sft":
             return format_pair([m.text for m in thread])
-        else:  # mode == "rm"
+        elif mode == "rm":
             prefix = format_pair([m.text for m in thread])
             replies = [r for r in thread[-1].replies if r.role == "assistant" and r.rank is not None]
             replies = sorted(replies, key=lambda r: r.rank)
             replies = [format_reply(r.text) for r in replies]
             return (prefix, replies)
+
+        raise RuntimeError()
 
     # split on tree basis, messages from same tree must not end up in different splits
     trees = ListDataset(threads_per_tree)
