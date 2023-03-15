@@ -1,12 +1,15 @@
+from __future__ import annotations
 from datetime import datetime
 from http import HTTPStatus
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
+
+if TYPE_CHECKING:
+    from oasst_backend.models.user import User
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from oasst_backend.models.db_payload import MessagePayload
-from oasst_backend.models.user import User
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from pydantic import PrivateAttr
 from sqlalchemy import false

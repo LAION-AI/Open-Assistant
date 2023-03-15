@@ -15,8 +15,9 @@ def get_trollboard(
     time_frame: UserStatsTimeFrame,
     max_count: Optional[int] = Query(100, gt=0, le=10000),
     enabled: Optional[bool] = None,
+    lang: Optional[str] = None,
     api_client: ApiClient = Depends(deps.get_trusted_api_client),
     db: Session = Depends(deps.get_db),
 ) -> TrollboardStats:
     usr = UserStatsRepository(db)
-    return usr.get_trollboard(time_frame, limit=max_count, enabled=enabled)
+    return usr.get_trollboard(time_frame, limit=max_count, enabled=enabled, lang=lang)

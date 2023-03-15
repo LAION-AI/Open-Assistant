@@ -189,13 +189,13 @@ class UserStatsRepository:
         time_frame: UserStatsTimeFrame,
         limit: int = 100,
         enabled: Optional[bool] = None,
+        lang: Optional[str] = None,
         highlighted_user_id: Optional[UUID] = None,
     ) -> TrollboardStats:
         """
         Get trollboard stats for the specified time frame
         """
-
-        qry = (
+        querry = (
             self.session.query(
                 User.id.label("user_id"),
                 User.username,
@@ -212,11 +212,15 @@ class UserStatsRepository:
         )
 
         if enabled is not None:
-            qry = qry.filter(User.enabled == enabled)
+            querry = querry.filter(User.enabled == enabled)
 
-        qry = qry.order_by(TrollStats.rank).limit(limit)
+        if lang is not None:
+            print(lang)
+            querry = querry.filter(User.most_used_lang(session=self.session) == lang)
 
-        trollboard = [_create_troll_score(r, highlighted_user_id) for r in self.session.exec(qry)]
+        querry = querry.order_by(TrollStats.rank).limit(limit)
+
+        trollboard = [_create_troll_score(r, highlighted_user_id) for r in self.session.exec(querry)]
         if len(trollboard) > 0:
             last_update = max(x.modified_date for x in trollboard)
         else:

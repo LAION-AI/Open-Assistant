@@ -1,11 +1,12 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from oasst_shared.schemas import protocol
-from sqlmodel import AutoString, Field, Index, SQLModel
+from sqlmodel import AutoString, Field, Index, SQLModel, Session
+from oasst_backend.models.message import Message
 
 
 class User(SQLModel, table=True):
@@ -43,6 +44,27 @@ class User(SQLModel, table=True):
 
     # terms of service acceptance date
     tos_acceptance_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True))
+
+    _most_used_lang: Optional[str] = None
+
+    @classmethod
+    def most_used_lang(self, session: Session):
+        print(self._most_used_lang)
+        print("UserSM : ", self.username, self._most_used_lang)
+        if self._most_used_lang is not None:
+            return self._most_used_lang
+
+        query = session.query(Message.lang, sa.func.count(Message.lang).label("total"))\
+            .filter(Message.user_id == self.id)\
+            .group_by(Message.lang)\
+            .order_by(sa.text("total DESC"))\
+            .first()
+
+        if query:
+            self._most_used_lang = query[0]
+            return query
+
+        return None
 
     def to_protocol_frontend_user(self):
         return protocol.FrontEndUser(
