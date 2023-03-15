@@ -126,7 +126,7 @@ async def message_events(
                 has_started = True
 
                 _, response_packet_str = item
-                response_packet = pydantic.parse_raw_as(inference.WorkResponse, response_packet_str)
+                response_packet = pydantic.parse_raw_as(inference.WorkerResponse, response_packet_str)
                 if response_packet.response_type == "error":
                     yield {
                         "data": chat_schema.ErrorResponseEvent(error=response_packet.error).json(),

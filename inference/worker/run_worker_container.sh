@@ -12,5 +12,5 @@ image_name="ghcr.io/laion-ai/open-assistant/oasst-inference-worker-full:latest"
 
 while true; do
     docker pull $image_name
-    docker run --rm -it -e retry_on_error=False $image_name
+    docker run --rm -it --runtime=nvidia --gpus all -e retry_on_error=False $image_name
 done

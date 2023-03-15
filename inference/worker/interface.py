@@ -12,7 +12,11 @@ class GenerateStreamParameters(pydantic.BaseModel):
     temperature: float | None
     repetition_penalty: float | None
     seed: int | None
-    stop: list[str] = ["\nUser:", "\nAssistant:"]  # TODO: make this a bit more workable because it's mutliple tokens
+    stop: list[str] = [
+        "<|endoftext|>",
+        "<|prompter|>",
+        "<|assistant|>",
+    ]  # TODO: make this a bit more workable because it's mutliple tokens
     details: bool = True
 
     @staticmethod
