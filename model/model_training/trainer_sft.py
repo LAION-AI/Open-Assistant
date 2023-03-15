@@ -9,6 +9,7 @@ import datasets
 import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
+from models.patching import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -272,6 +273,12 @@ if __name__ == "__main__":
         tokenizer_sanity_check(tokenizer)
 
     model = get_model(training_conf, tokenizer)
+
+    patch_model(
+        model,
+        resid_pdrop=training_conf.residual_dropout,
+        flash_attention=training_conf.use_flash_attention,
+    )
 
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
