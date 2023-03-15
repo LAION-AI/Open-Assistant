@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
 import argparse
-import os
-import sys
 import time
 
 import torch
 import transformers
+from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs, format_system_prefix
+from models import get_specific_model
+from tokenizers import pre_tokenizers
+from utils import _strtobool
 
 if __name__ == "__main__":
     import warnings
 
     warnings.filterwarnings("ignore")
-
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-    from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
-    from models import get_specific_model
-    from utils import _strtobool
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", type=str, required=True)
@@ -24,7 +20,10 @@ if __name__ == "__main__":
     parser.add_argument("--top_k", type=int, default=40)
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--do-sample", type=_strtobool, default=True)
+    parser.add_argument("--format", type=str, default="v2")
     parser.add_argument("--8bit", action="store_true", dest="eightbit")
+    parser.add_argument("--system_prefix", type=str, default=None)
+    parser.add_argument("--per-digit-tokens", action="store_true")
     args = parser.parse_args()
 
     if args.eightbit:
@@ -41,6 +40,8 @@ if __name__ == "__main__":
 
     model.gradient_checkpointing_enable()  # reduce number of stored activations
     tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_path)
+    if args.per_digit_tokens:
+        tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 
     human_token_id = tokenizer.additional_special_tokens_ids[
         tokenizer.additional_special_tokens.index(QA_SPECIAL_TOKENS["Question"])
@@ -59,21 +60,29 @@ if __name__ == "__main__":
 
             conversation_history.append(user_input)
 
-            pairs = format_pair(conversation_history)
-            pairs = ["{}{}".format(p, tokenizer.eos_token) for p in pairs]
-            pairs.append(QA_SPECIAL_TOKENS["Answer"])
-            batch = tokenizer.encode("".join(pairs), return_tensors="pt")
+            batch = tokenizer.encode(
+                format_system_prefix(args.system_prefix, tokenizer.eos_token)
+                if args.system_prefix
+                else ""
+                + "".join(format_pairs(conversation_history, tokenizer.eos_token, add_initial_reply_token=True)),
+                return_tensors="pt",
+            )
 
             with torch.cuda.amp.autocast():
                 out = model.generate(
                     input_ids=batch.to(model.device),
                     max_new_tokens=args.max_new_tokens,
-                    do_sample=True,
+                    do_sample=args.do_sample,
                     top_k=args.top_k,
                     temperature=args.temperature,
                     eos_token_id=human_token_id,
                     pad_token_id=tokenizer.eos_token_id,
                 )
+
+            if out[0][-1] == tokenizer.eos_token_id:
+                response = out[0][:-1]
+            else:
+                response = out[0]
 
             response = tokenizer.decode(out[0]).split(QA_SPECIAL_TOKENS["Answer"])[-1]
             print(f"Bot: {response}")

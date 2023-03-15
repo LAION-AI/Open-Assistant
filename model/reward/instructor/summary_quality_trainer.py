@@ -105,7 +105,7 @@ if __name__ == "__main__":
     training_conf = argument_parsing(parser)
 
     model_name = training_conf["model_name"]
-    tokenizer = get_tokenizer(model_name)
+    tokenizer = get_tokenizer(model_name, training_conf["per_digit_tokens"])
     collate_fn = DataCollatorForSummaryScore(
         tokenizer, max_length=training_conf["max_length"], drop_token_type="galactica" in model_name
     )
