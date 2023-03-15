@@ -6,9 +6,9 @@
   vars:
     stack_name: "dev"
     image_tag: latest
-    worker_port: 8080
     backend_url: "ws://localhost:8000"
     api_key: "1234"
+    parallelism: 4
   tasks:
     - name: Create network
       community.docker.docker_network:
@@ -36,5 +36,3 @@
         env:
           BACKEND_URL: "{{ backend_url }}"
           API_KEY: "{{ api_key }}"
-        ports:
-          - "{{ worker_port }}:8080"
