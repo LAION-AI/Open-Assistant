@@ -237,9 +237,9 @@ def tokenizer_sanity_check(tokenizer):
     print(f"bos_token='{tokenizer.bos_token}', bos_token_id={tokenizer.bos_token_id}")
     print(f"eos_token='{tokenizer.eos_token}', eos_token_id={tokenizer.eos_token_id}")
 
-    from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
+    from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
 
-    in_text = format_pair(["Q1", "A1", "Q2", "A2"])
+    in_text = format_pairs(["Q1", "A1", "Q2", "A2"], tokenizer.eos_token)
     in_text = "".join(in_text)
 
     prompter_token_id = tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Question"])
@@ -378,7 +378,6 @@ if __name__ == "__main__":
             config=training_conf,
             resume=training_conf.resume_from_checkpoint,
             name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
-            config=training_conf,
         )
 
     trainer = SFTTrainer(
