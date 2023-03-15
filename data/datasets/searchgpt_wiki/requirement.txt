@@ -1,0 +1,18 @@
+## python 3.10.8
+# basic
+# openai==0.27.0
+pandas==1.5.3
+PyYAML==6.0
+
+# embedding
+# matplotlib==3.7.1
+# plotly==5.13.1
+# scipy==1.10.1
+# scikit-learn==1.2.1
+
+# misc
+psutil==5.9.4
+
+# huggingface
+datasets
+transformers
