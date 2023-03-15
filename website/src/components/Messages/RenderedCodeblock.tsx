@@ -1,10 +1,15 @@
-import { Button, Flex, useToast } from "@chakra-ui/react";
-import { Copy, Check } from "lucide-react";
-import { useState, MouseEvent } from "react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { Box, Flex, IconButton, useToast } from "@chakra-ui/react";
+import { Check, Copy } from "lucide-react";
+import { HTMLAttributes, lazy, MouseEvent, Suspense, useState } from "react";
 
-export const RenderedCodeblock = ({ node, inline, className, children, style, ...props }) => {
+const SyntaxHighlighter = lazy(() => import("./SyntaxHighlighter"));
+
+export const RenderedCodeblock = ({
+  inline,
+  className,
+  children,
+  ...props
+}: HTMLAttributes<HTMLElement> & { inline?: boolean }) => {
   const match = /language-(\w+)/.exec(className || "");
   const lang = match ? match[1] : "";
 
@@ -39,10 +44,18 @@ export const RenderedCodeblock = ({ node, inline, className, children, style, ..
 
   return !inline ? (
     <Flex pos="relative" flexDir="row" role="group">
-      <SyntaxHighlighter style={oneDark} language={lang} {...props}>
-        {String(children).replace(/\n$/, "")}
-      </SyntaxHighlighter>
-      <Button
+      <Suspense
+        fallback={
+          <Box as="pre" className={className} my=".5em" p="1em" bgColor="#282C34 !important" borderRadius="0.3em">
+            {children}
+          </Box>
+        }
+      >
+        <SyntaxHighlighter language={lang}>{String(children).replace(/\n$/, "")}</SyntaxHighlighter>
+      </Suspense>
+      <IconButton
+        size="sm"
+        aria-label="Copy"
         onClick={handleCopyClick}
         top="0"
         pos="absolute"
@@ -60,8 +73,8 @@ export const RenderedCodeblock = ({ node, inline, className, children, style, ..
         }}
         colorScheme={isCopied ? "blue" : "gray"}
       >
-        {isCopied ? <Check /> : <Copy />}
-      </Button>
+        {isCopied ? <Check size={16} /> : <Copy size={16} />}
+      </IconButton>
     </Flex>
   ) : (
     <code className={className} {...props}>

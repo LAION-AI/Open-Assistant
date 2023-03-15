@@ -152,9 +152,28 @@ class Thread(pydantic.BaseModel):
 
 
 class WorkRequest(pydantic.BaseModel):
+    request_type: Literal["work"] = "work"
     thread: Thread = pydantic.Field(..., repr=False)
     created_at: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
+
+
+class PingRequest(pydantic.BaseModel):
+    request_type: Literal["ping"] = "ping"
+
+
+class ErrorRequest(pydantic.BaseModel):
+    request_type: Literal["error"] = "error"
+    error: str
+
+
+class TerminateRequest(pydantic.BaseModel):
+    request_type: Literal["terminate"] = "terminate"
+
+
+class PongResponse(pydantic.BaseModel):
+    response_type: Literal["pong"] = "pong"
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
 
 
 class TokenResponse(pydantic.BaseModel):
@@ -168,6 +187,7 @@ class GeneratedTextResponse(pydantic.BaseModel):
     response_type: Literal["generated_text"] = "generated_text"
     text: str
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
 
 
 class InternalFinishedMessageResponse(pydantic.BaseModel):
@@ -177,15 +197,16 @@ class InternalFinishedMessageResponse(pydantic.BaseModel):
 
 class ErrorResponse(pydantic.BaseModel):
     response_type: Literal["error"] = "error"
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
     error: str
 
 
-class MetricsResponse(pydantic.BaseModel):
-    response_type: Literal["metrics"] = "metrics"
-    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+WorkerRequest = Annotated[
+    Union[WorkRequest, PingRequest, ErrorRequest, TerminateRequest],
+    pydantic.Field(discriminator="request_type"),
+]
 
-
-WorkResponse = Annotated[
-    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, MetricsResponse, InternalFinishedMessageResponse],
+WorkerResponse = Annotated[
+    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, PongResponse, InternalFinishedMessageResponse],
     pydantic.Field(discriminator="response_type"),
 ]

@@ -85,7 +85,7 @@ def load_oasst_export(
             threads: list[list[ExportMessageNode]] = []
 
             def thread_filter(thread: list[ExportMessageNode]) -> bool:
-                if any(m.deleted for m in thread):
+                if any(m.deleted or m.synthetic for m in thread):
                     return False
 
                 if top_k is not None:

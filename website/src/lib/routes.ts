@@ -1,3 +1,4 @@
+import { CursorPaginationState } from "src/components/DataTable/useCursorPagination";
 import { TaskType } from "src/types/Task";
 
 export type RouteQuery = Record<string, string | number | boolean | undefined>;
@@ -50,4 +51,6 @@ export const API_ROUTES = {
   CHAT_MESSAGE_VOTE: `/api/chat/vote`,
   STREAM_CHAT_MESSAGE: (chat_id: string, message_id: string) =>
     `/api/chat/events?${new URLSearchParams({ chat_id, message_id })}`,
+  ADMIN_MESSAGE_LIST: (query: CursorPaginationState & { user_id?: string; include_user?: boolean }) =>
+    createRoute("/api/admin/messages", query),
 };
