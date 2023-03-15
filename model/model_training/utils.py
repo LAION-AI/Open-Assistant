@@ -295,11 +295,11 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     params = sum([p.numel() for p in model_parameters])
     print("Number of trainable parameters: {}M".format(int(params / 1e6)))
 
-    #patch_model(
+    # patch_model(
     #    model,
     #    resid_pdrop=conf.residual_dropout,
     #    flash_attention=conf.use_flash_attention,
-    #)
+    # )
 
     return model
 

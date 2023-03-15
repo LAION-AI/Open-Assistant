@@ -7,10 +7,11 @@ A very simple script to test model locally
 """
 import argparse
 from enum import Enum
+from typing import List, Tuple
 
 import torch
 from custom_datasets.formatting import QA_SPECIAL_TOKENS
-from typing import List, Tuple
+from utils import _strtobool
 
 if __name__ == "__main__":
     import os
@@ -18,10 +19,8 @@ if __name__ == "__main__":
 
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from tokenizers import pre_tokenizers
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from utils import _strtobool, process_output
 
 
 class ChatRole(str, Enum):
