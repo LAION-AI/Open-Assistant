@@ -1,6 +1,6 @@
 import random
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Iterable, Optional, Union
 
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase, TruncationStrategy
 
@@ -17,7 +17,7 @@ class RankingDataCollator:
     random_offset_probability: Optional[float] = 0.5
     pad_to_multiple_of: Optional[int] = None
 
-    def process_one(self, messages, return_length=False):
+    def process_one(self, messages: Iterable[str], return_length: bool = False):
         messages = list(messages)
 
         if random.random() < self.random_offset_probability:

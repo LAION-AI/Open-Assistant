@@ -184,7 +184,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     return parser.parse_args(remaining)
 
 
-if __name__ == "__main__":
+def main():
     training_conf = argument_parsing()
 
     tokenizer = get_tokenizer(training_conf)
@@ -300,3 +300,7 @@ if __name__ == "__main__":
     trainer.train()
     trainer.save_model()
     tokenizer.save_pretrained(output_dir)
+
+
+if __name__ == "__main__":
+    main()
