@@ -195,7 +195,7 @@ class UserStatsRepository:
         """
         Get trollboard stats for the specified time frame
         """
-        querry = (
+        qry = (
             self.session.query(
                 User.id.label("user_id"),
                 User.username,
@@ -212,15 +212,14 @@ class UserStatsRepository:
         )
 
         if enabled is not None:
-            querry = querry.filter(User.enabled == enabled)
+            qry = qry.filter(User.enabled == enabled)
 
-        if lang is not None:
-            print(lang)
-            querry = querry.filter(User.most_used_lang(session=self.session) == lang)
+        if lang is not None and not "":
+            qry = qry.filter(User.most_used_lang(session=self.session) == lang)
 
-        querry = querry.order_by(TrollStats.rank).limit(limit)
+        qry = qry.order_by(TrollStats.rank).limit(limit)
 
-        trollboard = [_create_troll_score(r, highlighted_user_id) for r in self.session.exec(querry)]
+        trollboard = [_create_troll_score(r, highlighted_user_id) for r in self.session.exec(qry)]
         if len(trollboard) > 0:
             last_update = max(x.modified_date for x in trollboard)
         else:

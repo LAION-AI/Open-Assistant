@@ -49,20 +49,29 @@ class User(SQLModel, table=True):
 
     @classmethod
     def most_used_lang(self, session: Session):
+        """Return the most_used_lang for a user and cache it in the _most_used_lang property
+
+        Args:
+            session (Session): Current 
+
+        Return:
+            most_used_lang: local lang string
+        """
         print(self._most_used_lang)
         print("UserSM : ", self.username, self._most_used_lang)
         if self._most_used_lang is not None:
             return self._most_used_lang
 
-        query = session.query(Message.lang, sa.func.count(Message.lang).label("total"))\
+        qry = session.query(Message.lang, sa.func.count(Message.lang).label("total"))\
             .filter(Message.user_id == self.id)\
             .group_by(Message.lang)\
             .order_by(sa.text("total DESC"))\
             .first()
 
-        if query:
-            self._most_used_lang = query[0]
-            return query
+        if qry:
+            # Caching to prevent doing the calculation multiple times
+            self._most_used_lang = qry[0]
+            return qry
 
         return None
 
