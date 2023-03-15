@@ -325,7 +325,7 @@ def mark_message_deleted(
     pr.mark_messages_deleted(message_id)
 
 
-@router.put("/{message_id}/reintroduce")
+@router.put("/{message_id}/reintroduce", status_code=HTTP_202_ACCEPTED)
 def reintroduce_message(
     *,
     message_id: UUID,

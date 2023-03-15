@@ -1070,34 +1070,37 @@ WHERE message.id = cc.id;
                 parent_ids = self.db.execute(query).scalars().all()
 
     @managed_tx_method(CommitMode.COMMIT)
-    def reintroduce_deleted_message(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):
+    def reintroduce_deleted_message(self, message: Message | UUID, recursive: bool = True):
         """
         Reintroduce deleted messages and all their descendants.
         """
-        if isinstance(messages, (Message, UUID)):
-            messages = [messages]
 
-        ids = []
-        for message in messages:
-            if isinstance(message, UUID):
-                ids.append(message)
-            elif isinstance(message, Message):
-                ids.append(message.id)
-            else:
-                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR1, HTTPStatus.INTERNAL_SERVER_ERROR)
+        message_id = None
+        if isinstance(message, UUID):
+            message_id = message
+        elif isinstance(message, Message):
+            message_id = message.id
+        else:
+            raise OasstError("Server error", OasstErrorCode.SERVER_ERROR1, HTTPStatus.INTERNAL_SERVER_ERROR)
 
-        query = update(Message).where(Message.id.in_(ids)).values(deleted=False)
+        query = update(Message).where(Message.id == message_id).values(deleted=False)
         self.db.execute(query)
 
-        parent_ids = ids
         if recursive:
-            while parent_ids:
-                query = (
-                    update(Message).filter(Message.parent_id.in_(parent_ids)
-                                           ).values(deleted=False).returning(Message.id)
-                )
+            parent_id = None
+            if isinstance(message, UUID):
+                parent_id = self.db.query(Message.parent_id).where(Message.id == message).first()[0]
+            elif isinstance(message, Message):
+                parent_id = message.parent_id
 
-                parent_ids = self.db.execute(query).scalars().all()
+            if parent_id is None:
+                return
+
+            # Fetching the entire parent_message so there is no parent_id query executed after
+            parent_message: Message = self.db.query(Message).where(Message.id == parent_id).first()
+
+            if parent_message is not None:
+                self.reintroduce_deleted_message(parent_message)
 
     def get_stats(self) -> SystemStats:
         """
