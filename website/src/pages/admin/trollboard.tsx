@@ -1,11 +1,12 @@
-import React from "react";
 import {
   Box,
   Card,
   CardBody,
+  Flex,
   Heading,
   Radio,
   RadioGroup,
+  Spacer,
   Stack,
   Tab,
   TabList,
@@ -16,8 +17,10 @@ import {
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
+import React from "react";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import { AdminArea } from "src/components/AdminArea";
+import { GeneralLanguageSelector } from "src/components/LanguageSelector/GeneralLanguageSelector";
 import { getAdminLayout } from "src/components/Layout";
 import { TrollboardTable } from "src/components/LeaderboardTable/TrollboardTable";
 import { TrollboardTimeFrame } from "src/types/Trollboard";
@@ -25,6 +28,11 @@ import { TrollboardTimeFrame } from "src/types/Trollboard";
 const Leaderboard = () => {
   const { t } = useTranslation(["leaderboard", "common"]);
   const [enabled, setEnabled] = useBoolean(true);
+  let lang: string | undefined;
+
+  function handleLangChange(newLang?: string) {
+    lang = newLang;
+  }
 
   return (
     <>
@@ -39,16 +47,25 @@ const Leaderboard = () => {
           </Heading>
           <Card>
             <CardBody>
-              <RadioGroup defaultValue="1" onChange={setEnabled.toggle}>
-                <Stack direction="row" spacing={5}>
-                  <Radio value="1" colorScheme="green">
-                    Show active users
-                  </Radio>
-                  <Radio value="2" colorScheme="red">
-                    Show banned users
-                  </Radio>
-                </Stack>
-              </RadioGroup>
+              <Flex justify="space-between">
+                <RadioGroup defaultValue="1" onChange={setEnabled.toggle}>
+                  <Stack direction="row" spacing={5}>
+                    <Radio value="1" colorScheme="green">
+                      Show active users
+                    </Radio>
+                    <Radio value="2" colorScheme="red">
+                      Show banned users
+                    </Radio>
+                  </Stack>
+                </RadioGroup>
+                <GeneralLanguageSelector
+                  permitNoInput={true}
+                  // TODO: Make the translation
+                  noInputDefaultValue="Every Languages"
+                  handleChange={handleLangChange}
+                />
+              </Flex>
+              {/* ICI il me faut la sélection de langue */}
               <Tabs isFitted isLazy>
                 <TabList mb={4}>
                   <Tab>{t("daily")}</Tab>
@@ -63,6 +80,7 @@ const Leaderboard = () => {
                       limit={100}
                       rowPerPage={20}
                       enabled={enabled}
+                      lang={lang}
                     />
                   </TabPanel>
                   <TabPanel p="0">
@@ -71,6 +89,7 @@ const Leaderboard = () => {
                       limit={100}
                       rowPerPage={20}
                       enabled={enabled}
+                      lang={lang}
                     />
                   </TabPanel>
                   <TabPanel p="0">
@@ -79,6 +98,7 @@ const Leaderboard = () => {
                       limit={100}
                       rowPerPage={20}
                       enabled={enabled}
+                      lang={lang}
                     />
                   </TabPanel>
                   <TabPanel p="0">
@@ -87,6 +107,7 @@ const Leaderboard = () => {
                       limit={100}
                       rowPerPage={20}
                       enabled={enabled}
+                      lang={lang}
                     />
                   </TabPanel>
                 </TabPanels>

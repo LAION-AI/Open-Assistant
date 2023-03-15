@@ -402,10 +402,11 @@ export class OasstApiClient {
     return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
   }
 
-  fetch_trollboard(time_frame: TrollboardTimeFrame, { limit, enabled }: { limit?: number; enabled?: boolean }) {
+  fetch_trollboard(time_frame: TrollboardTimeFrame, { limit, enabled, lang }: { limit?: number; enabled?: boolean, lang?: string }) {
     return this.get<FetchTrollBoardResponse>(`/api/v1/trollboards/${time_frame}`, {
       max_count: limit,
       enabled: enabled,
+      lang: lang,
     });
   }
 

@@ -79,11 +79,13 @@ export const TrollboardTable = ({
   rowPerPage,
   timeFrame,
   enabled,
+  lang,
 }: {
   timeFrame: TrollboardTimeFrame;
   limit: number;
   rowPerPage: number;
   enabled: boolean;
+  lang?: string;
 }) => {
   const {
     data: trollboardRes,
@@ -91,7 +93,8 @@ export const TrollboardTable = ({
     error,
     lastUpdated,
   } = useFetchBoard<FetchTrollBoardResponse>(
-    `/api/admin/trollboard?time_frame=${timeFrame}&limit=${limit}&enabled=${enabled}`
+    // Doing this because I think lang="" cause problem to test
+    `/api/admin/trollboard?time_frame=${timeFrame}&limit=${limit}&enabled=${enabled}${lang ? "&lang=" + lang : ""}`
   );
 
   const { data, ...paginationProps } = useBoardPagination<TrollboardEntity>({

@@ -7,10 +7,12 @@ export default withAnyRole(["admin", "moderator"], async (req, res, token) => {
   const client = await createApiClient(token);
   const limit = parseInt(req.query.limit as string);
   const enabled = req.query.enabled === "true";
+  const lang = req.query.lang as string;
 
   const trollboardReply = await client.fetch_trollboard(req.query.time_frame as TrollboardTimeFrame, {
     limit,
     enabled,
+    lang
   });
 
   trollboardReply.trollboard = updateUsersDisplayNames(trollboardReply.trollboard);
