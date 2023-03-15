@@ -60,12 +60,10 @@ const Leaderboard = () => {
                 </RadioGroup>
                 <GeneralLanguageSelector
                   permitNoInput={true}
-                  // TODO: Make the translation
-                  noInputDefaultValue="Every Languages"
+                  noInputDefaultValue={t("leaderboard:every_languages")}
                   handleChange={handleLangChange}
                 />
               </Flex>
-              {/* ICI il me faut la sélection de langue */}
               <Tabs isFitted isLazy>
                 <TabList mb={4}>
                   <Tab>{t("daily")}</Tab>
