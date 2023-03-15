@@ -1,16 +1,14 @@
 import gzip
 import json
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Iterable, Optional
 
 import pydantic
 
 from .schemas import ExportMessageTree
 
 
-def load_trees(
-    input_file_path: str | Path, filter: Optional[Callable[[ExportMessageTree], bool]] = None
-) -> list[ExportMessageTree]:
+def load_trees(input_file_path: str | Path) -> Iterable[ExportMessageTree]:
     if not isinstance(input_file_path, Path):
         input_file_path = Path(input_file_path)
     if input_file_path.suffix == ".gz":
@@ -18,17 +16,16 @@ def load_trees(
     else:
         file_in = input_file_path.open("r", encoding="UTF-8")
 
-    trees = []
     with file_in:
         # read one message tree per line
         for line in file_in:
             dict_tree = json.loads(line)
 
             # validate data
-            tree: ExportMessageTree = pydantic.parse_obj_as(ExportMessageTree, dict_tree)
-            if filter and not filter(tree):
-                continue
+            yield pydantic.parse_obj_as(ExportMessageTree, dict_tree)
 
-            trees.append(tree)
 
-    return trees
+def load_tree_list(
+    input_file_path: str | Path, filter: Optional[Callable[[ExportMessageTree], bool]] = None
+) -> list[ExportMessageTree]:
+    return [t for t in load_trees(input_file_path) if not filter or filter(t)]

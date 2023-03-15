@@ -1,4 +1,4 @@
-from oasst_data.loader import load_trees
+from oasst_data.loader import load_tree_list, load_trees
 from oasst_data.schemas import (
     ExportMessageEvent,
     ExportMessageEventEmoji,
@@ -21,6 +21,7 @@ __all__ = [
     "ExportMessageNode",
     "ExportMessageTree",
     "load_trees",
+    "load_tree_list",
     "visit_threads_depth_first",
     "visit_messages_depth_first",
 ]

@@ -1,31 +1,10 @@
-import gzip
-import json
 from pathlib import Path
-from typing import Callable, Literal, Optional
+from typing import Literal, Optional
 
-import pydantic
 from custom_datasets.formatting import format_pair, format_reply
-from oasst_data import ExportMessageNode, ExportMessageTree
+from oasst_data import ExportMessageNode, load_trees, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
-
-
-def _visit_threads_depth_first(
-    node: ExportMessageNode,
-    visitor: Callable[[list[ExportMessageNode]], None],
-    predicate: Optional[Callable[[list[ExportMessageNode]], bool]] = None,
-    parents: list[ExportMessageNode] = None,
-):
-    parents = parents or []
-    if not node:
-        return
-    thread = parents + [node]
-    if predicate is None or predicate(thread):
-        visitor(thread)
-    if node.replies:
-        parents = thread
-        for c in node.replies:
-            _visit_threads_depth_first(node=c, visitor=visitor, predicate=predicate, parents=parents)
 
 
 class ListDataset(Dataset):
@@ -49,7 +28,7 @@ def load_oasst_export(
     data_path: str | Path = None,
     mode: Literal["sft", "rm"] = "sft",
 ) -> tuple[ListDataset, ListDataset]:
-    if mode not in ["sft", "rm"]:
+    if mode not in ("sft", "rm"):
         raise ValueError(f"Unknown dataset mode: {mode}")
 
     lang_codes = lang.split(",")
@@ -64,74 +43,69 @@ def load_oasst_export(
             data_path = Path(data_path)
         input_file_path = data_path / input_file_path
 
-    if input_file_path.suffix == ".gz":
-        file_in = gzip.open(str(input_file_path), mode="tr", encoding="UTF-8")
-    else:
-        file_in = input_file_path.open("r", encoding="UTF-8")
-
     threads_per_tree = []
+    for tree in load_trees(input_file_path):
+        if tree.tree_state != "ready_for_export" or not tree.prompt.review_result or tree.prompt.lang not in lang_codes:
+            continue
 
-    with file_in:
-        # read one message tree per line
-        for line in file_in:
-            dict_tree = json.loads(line)
+        # extract all threads up to last asssitant reply
+        threads: list[list[ExportMessageNode]] = []
 
-            # validate data
-            tree: ExportMessageTree = pydantic.parse_obj_as(ExportMessageTree, dict_tree)
+        def thread_filter(thread: list[ExportMessageNode]) -> bool:
+            if any(m.deleted for m in thread):
+                return False
 
-            if (
-                tree.tree_state != "ready_for_export"
-                or not tree.prompt.review_result
-                or tree.prompt.lang not in lang_codes
-            ):
-                continue
-
-            # extract all threads up to last asssitant reply
-            threads: list[list[ExportMessageNode]] = []
-
-            def thread_filter(thread: list[ExportMessageNode]) -> bool:
-                if any(m.deleted for m in thread):
-                    return False
-
-                if top_k is not None:
-                    for i, m in enumerate(thread):
-                        if m.role == "assistant":
-                            if m.rank is None:
-                                if len(thread[i - 1].replies) > 1:
-                                    return False
-                            elif m.rank >= top_k:
+            if top_k is not None:
+                for i, m in enumerate(thread):
+                    if m.role == "assistant":
+                        if m.rank is None:
+                            if i > 0 and len(thread[i - 1].replies) > 1:
                                 return False
-                return True
+                        elif m.rank >= top_k:
+                            return False
+            return True
 
-            def leaf_filter(thread: list[ExportMessageNode]) -> bool:
-                if len(thread) <= 1 or not thread_filter(thread):
-                    return False
-                if mode == "sft":
-                    return not thread[-1].replies and (
-                        thread[-1].role == "assistant"
-                    )  # or thread[-2].replies[0] == thread[-1])
-                else:  # mode == "rm"
-                    return (
-                        thread[-1].role == "prompter" and len([r for r in thread[-1].replies if r.rank is not None]) > 1
-                    )
+        def leaf_filter(thread: list[ExportMessageNode]) -> bool:
+            if mode == "sft":
+                # in SFT mode `not thread[-1].replies` finds nodes without children (leaves).
+                # We are interested in those which are role='assistant' but some trees don't end on assistant nodes
+                # but have prompter leaves .. we want to use those trees too .. e.g. remove the last prompter message(s)
+                # so that they end with assistant. The `thread[-2].replies[0] == thread[-1]` check makes sure that only
+                # the FIRST prompter reply is added .. e.g. the parent does not appear multiple times and we can use
+                # pop() to remove superfluous prompter leaf node later.
+                return (
+                    len(thread) > 1
+                    and not thread[-1].replies(thread[-1].role == "assistant" or thread[-2].replies[0] == thread[-1])
+                    and thread_filter(thread)
+                )
+            elif mode == "rm":
+                return (
+                    thread[-1].role == "prompter"
+                    and len([r for r in thread[-1].replies if r.rank is not None]) > 1
+                    and thread_filter(thread)
+                )
 
-            _visit_threads_depth_first(tree.prompt, threads.append, leaf_filter)
-            # for t in threads:
-            #     if mode == "sft":
-            #         if t[-1].role == "prompter":
-            #             t.pop()
+            raise RuntimeError()
 
-            threads_per_tree.append(threads)
+        visit_threads_depth_first(tree.prompt, visitor=threads.append, predicate=leaf_filter)
+        if mode == "sft":
+            for t in threads:
+                if t[-1].role == "prompter":
+                    t.pop()
+
+        threads_per_tree.append(threads)
 
     def process_thread(thread):
         if mode == "sft":
             return format_pair([m.text for m in thread])
-        else:  # mode == "rm"
+        elif mode == "rm":
             prefix = format_pair([m.text for m in thread])
             replies = [r for r in thread[-1].replies if r.role == "assistant" and r.rank is not None]
             replies = sorted(replies, key=lambda r: r.rank)
             replies = [format_reply(r.text) for r in replies]
             return (prefix, replies)
+
+        raise RuntimeError()
 
     # split on tree basis, messages from same tree must not end up in different splits
     trees = ListDataset(threads_per_tree)
