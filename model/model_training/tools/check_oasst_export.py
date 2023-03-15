@@ -1,12 +1,12 @@
 import argparse
 
-from oasst_data import ExportMessageTree, load_trees, visit_messages_depth_first
+from oasst_data import ExportMessageTree, load_tree_list, visit_messages_depth_first
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_file_path", type=str)
-    parser.add_argument("--lang", type=str)
+    parser.add_argument("input_file_path", type=str, help=".jsonl or jsonl.gz OA export")
+    parser.add_argument("--lang", type=str, help="comma separated list of lang-codes")
     args = parser.parse_args()
     return args
 
@@ -31,7 +31,7 @@ def main():
             and (lang_codes is None or tree.prompt.lang in lang_codes)
         )
 
-    trees = load_trees(args.input_file_path, filter=tree_filter)
+    trees = load_tree_list(args.input_file_path, filter=tree_filter)
     print(f"{len(trees)} trees")
 
     all_messages = []
