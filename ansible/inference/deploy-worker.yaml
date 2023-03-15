@@ -6,6 +6,7 @@
   vars:
     stack_name: "dev"
     image_tag: latest
+    worker_port: 8080
     backend_url: "ws://localhost:8000"
     api_key: "1234"
   tasks:
