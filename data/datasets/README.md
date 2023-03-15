@@ -50,7 +50,8 @@ proposed. The text-only dataset must include the following columns:
 
 ### **Prosocial format**
 
-For datasets that are intended to be used to train safety models, prosocial format is proposed. The format is given below
+For datasets that are intended to be used to train safety models, prosocial
+format is proposed. The format is given below
 
 1. **USER** (string)
 2. **RESPONSE** (string, optional)
