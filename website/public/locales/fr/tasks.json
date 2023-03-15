@@ -78,5 +78,12 @@
     "overview": "Compte tenu de la conversation suivante, fournir une réponse adéquate",
     "instruction": "Fournir la réponse de l'utilisateur",
     "response_placeholder": "Ecrivez votre réponse ici..."
-  }
+  },
+  "any_feedback_on_this_task": "Des retours sur cette tâche ?",
+  "no_more_tasks": "On dirait bien qu'il ne reste plus aucune tâche.",
+  "submitted_as": "Ce sera envoyé en tant que {{submit_lang}}",
+  "tab_write": "Écrire",
+  "tab_preview": "Aperçu",
+  "writing_wrong_langauge_a_b": "Il semblerait que vous écriviez en {{detected_lang}} mais sera envoyé en {{submit_lang}}.",
+  "not_rankable": "Toutes les réponses sont factuellement incorrectes et ne peuvent pas être classées"
 }
