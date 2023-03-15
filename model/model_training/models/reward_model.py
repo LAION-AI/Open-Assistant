@@ -12,7 +12,7 @@ class RewardModel(nn.Module):
         self.pooling = pooling
 
     def forward(self, input_ids, attention_mask=None):
-        hiddens = self.transformer(input_ids=input_ids, attention_maks=attention_mask).last_hidden_state
+        hiddens = self.transformer(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state
         if self.pooling == "mean":
             if attention_mask is None:
                 pooled = hiddens.mean(dim=1)

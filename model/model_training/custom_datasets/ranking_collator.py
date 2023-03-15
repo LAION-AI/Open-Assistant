@@ -1,8 +1,7 @@
-import random
 from dataclasses import dataclass
-from typing import Iterable, Optional, Union
+from typing import Optional, Union
 
-from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase, TruncationStrategy
+from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
 
 
 @dataclass
@@ -14,51 +13,55 @@ class RankingDataCollator:
     tokenizer: PreTrainedTokenizerBase
     padding: Union[bool, str, PaddingStrategy] = True
     max_length: Optional[int] = None
-    random_offset_probability: Optional[float] = 0.5
+    min_prefix_length: int = 256
     pad_to_multiple_of: Optional[int] = None
 
-    def process_one(self, messages: Iterable[str], return_length: bool = False):
-        messages = list(messages)
-
-        if random.random() < self.random_offset_probability:
-            truncation = TruncationStrategy.DO_NOT_TRUNCATE
-            max_length = None
-        else:
-            truncation = TruncationStrategy.LONGEST_FIRST
-            max_length = self.max_length
+    def process_one(self, example, return_length=False):
+        messages, replies = example
 
         # append eos token to each messages
         assert self.tokenizer.eos_token
-        messages = [m + self.tokenizer.eos_token for m in messages]
+        eos = self.tokenizer.eos_token
+        prefix = "".join(m + eos for m in messages)
+        replies = [r + eos for r in replies]
 
-        flatten_message = self.tokenizer(
-            "".join(messages),
-            max_length=max_length,
-            truncation=truncation,
-            return_offsets_mapping=True,
-            padding=False,
-        )
+        prefix_tokens = self.tokenizer(prefix, padding=False, truncation=False)
+        reply_tokens = [self.tokenizer(r, padding=False, truncation=False) for r in replies]
 
+        prefix_len = len(prefix_tokens["input_ids"])
+        suffix_len = max(len(r["input_ids"]) for r in reply_tokens)
         if return_length:
-            return min(len(flatten_message["input_ids"]), self.max_length)
+            return min(prefix_len + suffix_len, self.max_length)
 
-    def __call__(self, features):
-        flatten_features = []
-        for pairs in features:
-            for pos, neg in pairs:
-                tokens = self.tokenizer(pos, truncation=True, max_length=self.max_length)
-                neg_tokens = self.tokenizer(neg, truncation=True, max_length=self.max_length)
-                tokens["pos_input_ids"] = tokens.pop("input_ids")
-                tokens["pos_attention_mask"] = tokens.pop("attention_mask")
-                tokens["neg_token_ids"] = neg_tokens["input_ids"]
-                tokens["neg_attention_mask"] = neg_tokens["attention_mask"]
+        for r in reply_tokens:
+            max_prefix_len = (
+                prefix_len if self.max_length is None else max(self.min_prefix_length, self.max_length - len(r))
+            )
+            max_suffix_len = len(r) if self.max_length is None else self.max_length - max_prefix_len
+
+            for k in r.keys():
+                r[k] = prefix_tokens[k][-max_prefix_len:] + r[k][:max_suffix_len]
+
+        return reply_tokens
+
+    def __call__(self, examples):
+        flat_tokenized, cu_lens = [], [0]
+        n_samples = 0
+        for example in examples:
+            tokenized = self.process_one(example)
+            flat_tokenized.extend(tokenized)
+
+            n_samples += len(tokenized)
+            cu_lens.append(n_samples)
+
         batch = self.tokenizer.pad(
-            flatten_features,
+            tokenized,
             padding=self.padding,
             max_length=self.max_length,
             pad_to_multiple_of=self.pad_to_multiple_of,
             return_tensors="pt",
         )
+
         if "token_type_ids" in batch:
             batch.pop("token_type_ids")
-        return batch
+        return (batch, cu_lens)

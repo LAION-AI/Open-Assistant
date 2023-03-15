@@ -1,7 +1,7 @@
 import argparse
 import logging
 import os
-from typing import Any, Callable, Dict, Literal, Optional, Tuple, Union
+from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
 import bitsandbytes
 import datasets
@@ -22,20 +22,18 @@ from utils import PerDatasetSampler, _strtobool, get_dataset, get_loss, get_mode
 
 
 def compute_metrics(eval_pred):
-    scores, labels = eval_pred.predictions, eval_pred.label_ids
-    score_mse = np.mean((scores - labels) ** 2)
-    mean_pos_score = np.sum(scores * labels) / np.sum(labels)
-    mean_neg_score = np.sum(scores * (1 - labels)) / np.sum(1 - labels)
+    scores = eval_pred.predictions
+    pos_scores, neg_scores = scores[0], scores[1]
+    mean_pos_score = np.mean(pos_scores)
+    mean_neg_score = np.mean(neg_scores)
     return {
-        "mse": score_mse,
         "mean_pos_score": mean_pos_score,
         "mean_neg_score": mean_neg_score,
     }
 
 
 def preprocess_logits_for_metrics(logits, labels):
-    score = logits.sigmoid()
-    return score
+    return logits
 
 
 class RMTrainer(Trainer):
@@ -53,38 +51,40 @@ class RMTrainer(Trainer):
         self.loss_fct = get_loss(loss_function)
         self.sampler = sampler
 
-    def compute_loss(self, model, batch, return_logits=False):
-        n_pos = batch["pos_input_ids"].size(0)
-        input_ids = torch.cat([batch["pos_input_ids"], batch["neg_input_ids"]], dim=0)
-        if "pos_attention_mask" in batch and "neg_attention_mask" in batch:
-            attention_mask = torch.cat([batch["pos_attention_mask"], batch["neg_attention_mask"]], dim=0)
-        else:
-            attention_mask = None
+    def compute_loss(self, model, inputs, return_logits=False):
+        batch, cu_lens = inputs
 
-        outputs = model(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
+        logits = model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
         )
 
-        pos_logits = outputs.logits[:n_pos]
-        neg_logits = outputs.logits[n_pos:]
-        loss = self.loss_fct(pos_logits, outputs.logits[n_pos:])
+        loss = self.loss_fct(logits, cu_lens)
 
-        return (loss, pos_logits, neg_logits) if return_logits else loss
+        return (loss, logits) if return_logits else loss
 
     def prediction_step(
         self,
         model: nn.Module,
-        inputs: Dict[str, Union[torch.Tensor, Any]],
+        inputs: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], List[int]],
+        prediction_loss_only: bool,
+        ignore_keys: Optional[List[str]] = None,
     ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
+        batch, cu_lens = inputs
         with torch.no_grad():
-            loss, pos_logits, neg_logits = self.compute_loss(model, inputs, return_outputs=True)
+            batch = self._prepare_inputs(batch)
+            loss, logits = self.compute_loss(model, (batch, cu_lens), return_logits=True)
 
         loss = loss.mean().detach()
-        logits = torch.cat([pos_logits, neg_logits])
-        labels = torch.cat([torch.ones_like(pos_logits), torch.zeros_like(neg_logits)])
 
-        return (loss, logits, labels)
+        pos_logits, neg_logits = [], []
+        for start, end in zip(cu_lens[:-1], cu_lens[1:]):
+            pos_logits.append(logits[start])
+            neg_logits.append(logits[end - 1])
+        pos_logits = torch.cat(pos_logits).detach()
+        neg_logits = torch.cat(neg_logits).detach()
+
+        return (loss, torch.stack([pos_logits, neg_logits]), None)
 
     def get_train_dataloader(self):
         """
@@ -196,7 +196,7 @@ def main():
         flash_attention=training_conf.use_flash_attention,
     )
 
-    train, evals = get_dataset(training_conf)
+    train, evals = get_dataset(training_conf, mode="rm")
     train_collate_fn = RankingDataCollator(
         tokenizer,
         max_length=training_conf.max_length,

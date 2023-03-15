@@ -1,10 +1,10 @@
 import gzip
 import json
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Literal, Optional
 
 import pydantic
-from custom_datasets.formatting import format_pair
+from custom_datasets.formatting import format_pair, format_reply
 from oasst_data import ExportMessageNode, ExportMessageTree
 from torch import Generator
 from torch.utils.data import Dataset, random_split
@@ -47,7 +47,11 @@ def load_oasst_export(
     top_k: Optional[int] = None,
     manual_seed: int = 287631038922,
     data_path: str | Path = None,
+    mode: Literal["sft", "rm"] = "sft",
 ) -> tuple[ListDataset, ListDataset]:
+    if mode not in ["sft", "rm"]:
+        raise ValueError(f"Unknown dataset mode: {mode}")
+
     lang_codes = lang.split(",")
 
     generator = Generator()
@@ -100,26 +104,41 @@ def load_oasst_export(
                 return True
 
             def leaf_filter(thread: list[ExportMessageNode]) -> bool:
-                return (
-                    len(thread) > 1
-                    and not thread[-1].replies
-                    and (thread[-1].role == "assistant" or thread[-2].replies[0] == thread[-1])
-                    and thread_filter(thread)
-                )
+                if len(thread) <= 1 or not thread_filter(thread):
+                    return False
+                if mode == "sft":
+                    return not thread[-1].replies and (
+                        thread[-1].role == "assistant"
+                    )  # or thread[-2].replies[0] == thread[-1])
+                else:  # mode == "rm"
+                    return (
+                        thread[-1].role == "prompter" and len([r for r in thread[-1].replies if r.rank is not None]) > 1
+                    )
 
             _visit_threads_depth_first(tree.prompt, threads.append, leaf_filter)
-            for t in threads:
-                if t[-1].role == "prompter":
-                    t.pop()
+            # for t in threads:
+            #     if mode == "sft":
+            #         if t[-1].role == "prompter":
+            #             t.pop()
 
             threads_per_tree.append(threads)
+
+    def process_thread(thread):
+        if mode == "sft":
+            return format_pair([m.text for m in thread])
+        else:  # mode == "rm"
+            prefix = format_pair([m.text for m in thread])
+            replies = [r for r in thread[-1].replies if r.role == "assistant" and r.rank is not None]
+            replies = sorted(replies, key=lambda r: r.rank)
+            replies = [format_reply(r.text) for r in replies]
+            return (prefix, replies)
 
     # split on tree basis, messages from same tree must not end up in different splits
     trees = ListDataset(threads_per_tree)
     splits = random_split(trees, lengths=[1.0 - val_split, val_split], generator=generator)
 
-    def flatten(d: ListDataset) -> ListDataset:
-        return ListDataset([format_pair([m.text for m in t]) for ts in d for t in ts])
+    def flatten(ds: ListDataset) -> ListDataset:
+        return ListDataset([process_thread(thread) for tree_threads in ds for thread in tree_threads])
 
     train = flatten(splits[0])
     val = flatten(splits[1])

@@ -16,3 +16,7 @@ def format_pair(pairs):
 def format_rl_text(pairs):
     # convert question answer pairs to only the prefix prompt for RLHF
     return "{}{}{}".format(QA_SPECIAL_TOKENS["Question"], pairs[0], QA_SPECIAL_TOKENS["Answer"])
+
+
+def format_reply(text):
+    return "{}{}".format(QA_SPECIAL_TOKENS["Answer"], text)

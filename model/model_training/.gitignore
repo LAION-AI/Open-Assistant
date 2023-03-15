@@ -2,3 +2,5 @@
 wandb
 saved_model
 .saved_models
+.saved_models_rm
+llama_model
