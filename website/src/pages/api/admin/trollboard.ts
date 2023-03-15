@@ -12,7 +12,7 @@ export default withAnyRole(["admin", "moderator"], async (req, res, token) => {
   const trollboardReply = await client.fetch_trollboard(req.query.time_frame as TrollboardTimeFrame, {
     limit,
     enabled,
-    lang
+    lang,
   });
 
   trollboardReply.trollboard = updateUsersDisplayNames(trollboardReply.trollboard);

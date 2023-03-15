@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from oasst_shared.schemas import protocol
-from sqlmodel import AutoString, Field, Index, SQLModel, Session
 from oasst_backend.models.message import Message
+from oasst_shared.schemas import protocol
+from sqlmodel import AutoString, Field, Index, Session, SQLModel
 
 
 class User(SQLModel, table=True):
@@ -52,7 +52,7 @@ class User(SQLModel, table=True):
         """Return the most_used_lang for a user and cache it in the _most_used_lang property
 
         Args:
-            session (Session): Current 
+            session (Session): Current
 
         Return:
             most_used_lang: local lang string
@@ -62,11 +62,13 @@ class User(SQLModel, table=True):
         if self._most_used_lang is not None:
             return self._most_used_lang
 
-        qry = session.query(Message.lang, sa.func.count(Message.lang).label("total"))\
-            .filter(Message.user_id == self.id)\
-            .group_by(Message.lang)\
-            .order_by(sa.text("total DESC"))\
+        qry = (
+            session.query(Message.lang, sa.func.count(Message.lang).label("total"))
+            .filter(Message.user_id == self.id)
+            .group_by(Message.lang)
+            .order_by(sa.text("total DESC"))
             .first()
+        )
 
         if qry:
             # Caching to prevent doing the calculation multiple times

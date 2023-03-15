@@ -6,7 +6,6 @@ import {
   Heading,
   Radio,
   RadioGroup,
-  Spacer,
   Stack,
   Tab,
   TabList,
@@ -19,6 +18,7 @@ import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import React from "react";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+import { useState } from "react";
 import { AdminArea } from "src/components/AdminArea";
 import { GeneralLanguageSelector } from "src/components/LanguageSelector/GeneralLanguageSelector";
 import { getAdminLayout } from "src/components/Layout";
@@ -28,10 +28,10 @@ import { TrollboardTimeFrame } from "src/types/Trollboard";
 const Leaderboard = () => {
   const { t } = useTranslation(["leaderboard", "common"]);
   const [enabled, setEnabled] = useBoolean(true);
-  let lang: string | undefined;
+  const [lang, setLang] = useState(null);
 
   function handleLangChange(newLang?: string) {
-    lang = newLang;
+    setLang(newLang || null);
   }
 
   return (
@@ -59,8 +59,8 @@ const Leaderboard = () => {
                   </Stack>
                 </RadioGroup>
                 <GeneralLanguageSelector
-                  permitNoInput={true}
-                  noInputDefaultValue={t("leaderboard:every_languages")}
+                  permitNoInput
+                  noInputPlaceholderValue={t("leaderboard:every_languages")}
                   handleChange={handleLangChange}
                 />
               </Flex>

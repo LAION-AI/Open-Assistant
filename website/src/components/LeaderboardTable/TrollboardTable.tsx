@@ -93,7 +93,6 @@ export const TrollboardTable = ({
     error,
     lastUpdated,
   } = useFetchBoard<FetchTrollBoardResponse>(
-    // Doing this because I think lang="" cause problem to test
     `/api/admin/trollboard?time_frame=${timeFrame}&limit=${limit}&enabled=${enabled}${lang ? "&lang=" + lang : ""}`
   );
 

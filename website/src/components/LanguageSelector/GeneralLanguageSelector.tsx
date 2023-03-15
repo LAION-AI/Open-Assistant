@@ -7,7 +7,7 @@ import { getLocaleDisplayName } from "src/lib/languages";
 const GeneralLanguageSelector = (props: {
   handleChange: (newValue?: string) => void;
   permitNoInput?: boolean;
-  noInputDefaultValue?: string;
+  noInputPlaceholderValue?: string;
 }) => {
   const router = useRouter();
   const { i18n } = useTranslation();
@@ -24,7 +24,7 @@ const GeneralLanguageSelector = (props: {
   const languageChanged = useCallback(
     async (option) => {
       const locale = option.target.value as string;
-      if (props.handleChange) props.handleChange(locale === "none" ? props.noInputDefaultValue : locale);
+      if (props.handleChange) props.handleChange(locale === "none" ? undefined : locale);
     },
     [props]
   );
@@ -34,7 +34,7 @@ const GeneralLanguageSelector = (props: {
       <Select onChange={languageChanged} defaultValue={props.permitNoInput ? "none" : selectedLanguage}>
         {props.permitNoInput ? (
           <option key="none" value="none">
-            {props.noInputDefaultValue}
+            {props.noInputPlaceholderValue}
           </option>
         ) : undefined}
         {localesAndNames.map(({ locale, name }) => (

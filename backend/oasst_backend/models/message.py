@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 from datetime import datetime
 from http import HTTPStatus
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID, uuid4
 
 if TYPE_CHECKING:
