@@ -11,6 +11,11 @@ class RewardModel(nn.Module):
         self.out_proj = nn.Linear(transformer.config.hidden_size, 1)
         self.pooling = pooling
 
+    @property
+    def config(self):
+        # required for HF-deepspeed integration
+        return self.transformer.config
+
     def forward(self, input_ids, attention_mask=None):
         hiddens = self.transformer(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state
         if self.pooling == "mean":

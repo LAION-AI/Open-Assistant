@@ -31,6 +31,6 @@ defaults_rm:
   verbose: false
   output_dir: .saved_models_rm
   use_custom_sampler: false
-  residual_dropout: null
+  residual_dropout: 0.0
   use_flash_attention: false
   sort_by_length: false

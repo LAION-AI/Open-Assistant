@@ -23,17 +23,13 @@ from utils import PerDatasetSampler, _strtobool, get_dataset, get_loss, get_mode
 
 def compute_metrics(eval_pred):
     scores = eval_pred.predictions
-    pos_scores, neg_scores = scores[0], scores[1]
-    mean_pos_score = np.mean(pos_scores)
-    mean_neg_score = np.mean(neg_scores)
-    return {
-        "mean_pos_score": mean_pos_score,
-        "mean_neg_score": mean_neg_score,
+    pos_scores, neg_scores = scores[:, 0], scores[:, 1]
+    metrics = {
+        "pos_score": np.mean(pos_scores),
+        "neg_score": np.mean(neg_scores),
+        "score_diff": np.mean(pos_scores - neg_scores),
     }
-
-
-def preprocess_logits_for_metrics(logits, labels):
-    return logits
+    return metrics
 
 
 class RMTrainer(Trainer):
@@ -84,7 +80,12 @@ class RMTrainer(Trainer):
         pos_logits = torch.cat(pos_logits).detach()
         neg_logits = torch.cat(neg_logits).detach()
 
-        return (loss, torch.stack([pos_logits, neg_logits]), None)
+        out_logits = torch.stack([pos_logits, neg_logits])
+        # we can't pass something (not nothing) for `compute_metrics` to be called`
+        # also, it has to have the same size as logits, otherwise `_pad_across_processes` hangs
+        labels = torch.ones_like(out_logits[:, 0])
+
+        return (loss, out_logits, labels)
 
     def get_train_dataloader(self):
         """
@@ -295,7 +296,6 @@ def main():
         data_collator=eval_collate_fn,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
-        preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
     trainer.train()
     trainer.save_model()
