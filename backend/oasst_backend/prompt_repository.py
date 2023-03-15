@@ -1069,6 +1069,36 @@ WHERE message.id = cc.id;
 
                 parent_ids = self.db.execute(query).scalars().all()
 
+    @managed_tx_method(CommitMode.COMMIT)
+    def reintroduce_deleted_message(self, messages: Message | UUID | list[Message | UUID], recursive: bool = True):
+        """
+        Reintroduce deleted messages and all their descendants.
+        """
+        if isinstance(messages, (Message, UUID)):
+            messages = [messages]
+
+        ids = []
+        for message in messages:
+            if isinstance(message, UUID):
+                ids.append(message)
+            elif isinstance(message, Message):
+                ids.append(message.id)
+            else:
+                raise OasstError("Server error", OasstErrorCode.SERVER_ERROR1, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+        query = update(Message).where(Message.id.in_(ids)).values(deleted=False)
+        self.db.execute(query)
+
+        parent_ids = ids
+        if recursive:
+            while parent_ids:
+                query = (
+                    update(Message).filter(Message.parent_id.in_(parent_ids)
+                                           ).values(deleted=False).returning(Message.id)
+                )
+
+                parent_ids = self.db.execute(query).scalars().all()
+
     def get_stats(self) -> SystemStats:
         """
         Get data stats such as number of all messages in the system,
