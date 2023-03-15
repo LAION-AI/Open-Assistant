@@ -16,5 +16,7 @@ class Settings(pydantic.BaseSettings):
         "Assistant: Hello! How can I help you today?\n"
     )
 
+    retry_on_error: bool = True
+
 
 settings = Settings()

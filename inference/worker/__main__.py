@@ -39,11 +39,12 @@ def main():
             logger.error(f"Bad status: {e.status_code=} {str(e)=}")
             logger.error("Did you provide the correct API key?")
             logger.error("Try upgrading the worker to get the latest protocol version")
-            signal.signal(signal.SIGINT, signal.SIG_DFL)
-            break
+            raise
         except Exception:
             logger.exception("Error in websocket")
             logger.info("Retrying in 5 seconds...")
+            if not settings.retry_on_error:
+                sys.exit(1)
             time.sleep(5)
 
 
