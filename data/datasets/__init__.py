@@ -13,3 +13,8 @@ INSTRUCTION_DATASETS = {
     "youtube_subs_howto100M": "totuta/youtube_subs_howto100M",
     "iapp_wiki_qa_squad": "wannaphong/iapp_wiki_qa_squad_oa",
 }
+
+SAFETY_DATASETS = {
+    "prosocial-dialog": "allenai/prosocial-dialog",
+    "prosocial-confessions": "shahules786/prosocial-confessions",
+}
