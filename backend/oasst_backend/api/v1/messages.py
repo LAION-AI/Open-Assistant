@@ -14,7 +14,7 @@ from oasst_backend.utils.database_utils import CommitMode, managed_tx_function
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol
 from sqlmodel import Session
-from starlette.status import HTTP_204_NO_CONTENT, HTTP_202_ACCEPTED
+from starlette.status import HTTP_202_ACCEPTED, HTTP_204_NO_CONTENT
 
 router = APIRouter()
 
