@@ -35,7 +35,9 @@ class RankingDataCollator:
 
         for r in reply_tokens:
             max_prefix_len = (
-                prefix_len if self.max_length is None else max(self.min_prefix_length, self.max_length - len(r))
+                prefix_len
+                if self.max_length is None
+                else max(self.min_prefix_length, self.max_length - len(r["input_ids"]))
             )
             max_suffix_len = len(r) if self.max_length is None else self.max_length - max_prefix_len
 
@@ -55,7 +57,7 @@ class RankingDataCollator:
             cu_lens.append(n_samples)
 
         batch = self.tokenizer.pad(
-            tokenized,
+            flat_tokenized,
             padding=self.padding,
             max_length=self.max_length,
             pad_to_multiple_of=self.pad_to_multiple_of,

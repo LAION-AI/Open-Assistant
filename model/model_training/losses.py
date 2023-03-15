@@ -63,7 +63,7 @@ class RMLoss(nn.Module):
         device = logits.device
         losses = []
         for start, end in zip(cu_lengths[:-1], cu_lengths[1:]):
-            pairs = torch.combinations(torch.arange(end - start), 2).to(device)
+            pairs = torch.combinations(torch.arange(end - start, device=device), 2)
             pos_ids, neg_ids = pairs[:, 0], pairs[:, 1]
             pos_logits = logits.take(start + pos_ids)
             neg_logits = logits.take(start + neg_ids)
