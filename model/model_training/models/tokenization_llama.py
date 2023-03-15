@@ -130,7 +130,7 @@ class LLaMATokenizer(PreTrainedTokenizer):
                 current_sub_tokens.append(token)
                 prev_is_special = False
         out_string += self.sp_model.decode(current_sub_tokens)
-        #out_string = self._maybe_add_prefix_space(tokens=tokens, decoded=out_string)
+        # out_string = self._maybe_add_prefix_space(tokens=tokens, decoded=out_string)
         return out_string
 
     def save_vocabulary(self, save_directory, filename_prefix: Optional[str] = None) -> Tuple[str]:

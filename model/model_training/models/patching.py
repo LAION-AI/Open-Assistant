@@ -6,9 +6,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from flash_attn.modules.mha import FlashSelfAttention
-from .modeling_llama import LLaMAForCausalLM, LLaMAModel
 from torch.nn.utils.rnn import pad_sequence
 from transformers import GPTNeoXForCausalLM, GPTNeoXModel
+
+from .modeling_llama import LLaMAForCausalLM, LLaMAModel
 
 SUPPORTED_MODELS = [
     GPTNeoXModel,

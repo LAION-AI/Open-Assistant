@@ -39,8 +39,9 @@ def main():
 
     if args.llama:
         # execute in model_training dir via python -m tools.export_model ...
-        from models.tokenization_llama import LLaMATokenizer
         from models.modeling_llama import LLaMAForCausalLM
+        from models.tokenization_llama import LLaMATokenizer
+
         print(f"Loading tokenizer '{args.model_name}' ...")
         tokenizer = LLaMATokenizer.from_pretrained(args.model_name)
         print(f"{type(tokenizer).__name__} (vocab_size={len(tokenizer)})")
