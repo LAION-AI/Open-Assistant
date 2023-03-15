@@ -25,8 +25,8 @@
       community.docker.docker_container:
         name: "oasst-worker-{{ stack_name }}"
         image:
-          "ghcr.io/laion-ai/open-assistant/oasst-inference-worker:{{ image_tag
-          }}"
+          "ghcr.io/laion-ai/open-assistant/oasst-inference-worker-full:{{
+          image_tag }}"
         state: started
         recreate: true
         pull: true
