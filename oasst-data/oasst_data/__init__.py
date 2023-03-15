@@ -1,3 +1,4 @@
+from oasst_data.loader import load_trees
 from oasst_data.schemas import (
     ExportMessageEvent,
     ExportMessageEventEmoji,
@@ -8,6 +9,7 @@ from oasst_data.schemas import (
     LabelAvgValue,
     LabelValues,
 )
+from oasst_data.traversal import visit_messages_depth_first, visit_threads_depth_first
 
 __all__ = [
     "LabelAvgValue",
@@ -18,4 +20,7 @@ __all__ = [
     "ExportMessageEventRanking",
     "ExportMessageNode",
     "ExportMessageTree",
+    "load_trees",
+    "visit_threads_depth_first",
+    "visit_messages_depth_first",
 ]
