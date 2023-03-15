@@ -23,6 +23,7 @@ import {
   Link,
   MessageSquare,
   MoreHorizontal,
+  RefreshCw,
   Shield,
   Slash,
   Trash,
@@ -49,6 +50,7 @@ import useSWRMutation from "swr/mutation";
 import { BaseMessageEntry } from "./BaseMessageEntry";
 import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
 import { MessageSyntheticBadge } from "./MessageSyntheticBadge";
+import { useReintroduceMessage } from "../../hooks/message/useReintroduceMessage";
 
 interface MessageTableEntryProps {
   message: Message;
@@ -250,6 +252,11 @@ const MessageActions = ({
   });
 
   const { trigger: handleDelete } = useDeleteMessage(message.id);
+  const { trigger: reintroduceTrigger } = useReintroduceMessage(message.id);
+
+  const handleReintroduce = () => {
+    reintroduceTrigger();
+  };
 
   const handleStop = () => {
     stopTree();
@@ -323,9 +330,13 @@ const MessageActions = ({
               <MenuItem as={NextLink} href={ROUTES.ADMIN_USER_DETAIL(message.user_id)} target="_blank" icon={<User />}>
                 {t("view_user")}
               </MenuItem>
-              {!message.deleted && (
+              {!message.deleted ? (
                 <MenuItem onClick={handleDelete} icon={<Trash />}>
                   {t("common:delete")}
+                </MenuItem>
+              ) : (
+                <MenuItem onClick={handleReintroduce} icon={<RefreshCw />}>
+                  Reintroduce message
                 </MenuItem>
               )}
               <MenuItem onClick={handleStop} icon={<Slash />}>
