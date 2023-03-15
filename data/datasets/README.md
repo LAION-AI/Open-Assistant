@@ -48,6 +48,17 @@ proposed. The text-only dataset must include the following columns:
 2. **SOURCE** (string)
 3. **METADATA** (JSON string, optional)
 
+### **Prosocial format**
+
+For datasets that are intended to be used to train safety models, prosocial format is proposed. The format is given below
+
+1. **USER** (string)
+2. **RESPONSE** (string, optional)
+3. **ROTs** (List)
+4. **SAFETY_LABEL** (string - categorical)
+5. **EPISODE_DONE** (bool)
+6. **SOURCE** (string,optional)
+
 ## **Dataset Requirements**
 
 The dataset must adhere to the following requirements:
