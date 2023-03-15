@@ -44,7 +44,7 @@ def get_thresholds(baseline: int = 3, alpha: float = 1.1521, max_level: int = 10
     return np.array([0] + level.astype(int).tolist())
 
 
-# lookup table, never change
+# lookup table, never changes
 THRESHOLDS = get_thresholds()
 
 
@@ -66,7 +66,6 @@ def _create_user_score(r, highlighted_user_id: UUID | None) -> UserScore:
     if highlighted_user_id:
         d["highlighted"] = r["user_id"] == highlighted_user_id
     d["level"] = (THRESHOLDS <= d["leader_score"]).sum()
-    print(d["level"])
     return UserScore(**d)
 
 
