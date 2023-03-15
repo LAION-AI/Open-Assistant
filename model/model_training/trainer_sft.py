@@ -331,7 +331,6 @@ if __name__ == "__main__":
             config=training_conf,
             resume=training_conf.resume_from_checkpoint,
             name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
-            config=training_conf,
         )
 
     trainer = SFTTrainer(
