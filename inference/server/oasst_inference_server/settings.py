@@ -64,5 +64,8 @@ class Settings(pydantic.BaseSettings):
     auth_discord_client_id: str = ""
     auth_discord_client_secret: str = ""
 
+    auth_github_client_id: str = ""
+    auth_github_client_secret: str = ""
+
 
 settings = Settings()
