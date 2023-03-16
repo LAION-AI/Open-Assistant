@@ -35,3 +35,5 @@ defaults_rm:
   residual_dropout: 0.0
   use_flash_attention: false
   sort_by_length: false
+  per_digit_tokens: false
+  datasets_extra: []

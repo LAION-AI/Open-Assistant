@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Literal, Optional
 
-from custom_datasets.formatting import format_pair, format_reply
 from oasst_data import ExportMessageNode, load_trees, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
@@ -100,10 +99,10 @@ def load_oasst_export(
         if mode == "sft":
             return [m.text for m in thread]
         elif mode == "rm":
-            prefix = format_pair([m.text for m in thread])
+            prefix = [m.text for m in thread]
             replies = [r for r in thread[-1].replies if r.role == "assistant" and r.rank is not None]
             replies = sorted(replies, key=lambda r: r.rank)
-            replies = [format_reply(r.text) for r in replies]
+            replies = [r.text for r in replies]
             return (prefix, replies)
 
         raise RuntimeError()

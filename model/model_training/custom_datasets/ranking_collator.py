@@ -3,6 +3,8 @@ from typing import Optional, Union
 
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
 
+from .formatting import format_pairs, format_reply
+
 
 @dataclass
 class RankingDataCollator:
@@ -22,8 +24,9 @@ class RankingDataCollator:
         # append eos token to each messages
         assert self.tokenizer.eos_token
         eos = self.tokenizer.eos_token
-        prefix = "".join(m + eos for m in messages)
-        replies = [r + eos for r in replies]
+        prefix = "".join(format_pairs(messages, eos))
+
+        replies = [format_reply(r, eos) for r in replies]
 
         prefix_tokens = self.tokenizer(prefix, padding=False, truncation=False)
         reply_tokens = [self.tokenizer(r, padding=False, truncation=False) for r in replies]

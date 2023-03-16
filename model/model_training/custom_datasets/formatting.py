@@ -30,5 +30,5 @@ def format_rl_text(pairs):
     return "{}{}{}".format(QA_SPECIAL_TOKENS["Question"], pairs[0], QA_SPECIAL_TOKENS["Answer"])
 
 
-def format_reply(text):
-    return "{}{}".format(QA_SPECIAL_TOKENS["Answer"], text)
+def format_reply(text, eos_token):
+    return "{}{}{}".format(QA_SPECIAL_TOKENS["Answer"], text, eos_token)
