@@ -51,8 +51,10 @@ THRESHOLDS = get_thresholds()
 def _create_user_score(r, highlighted_user_id: UUID | None) -> UserScore:
     if r["UserStats"]:
         d = r["UserStats"].dict()
+        d["level"] = (THRESHOLDS <= d["leader_score"]).sum()
     else:
         d = {"modified_date": utcnow()}
+        d["level"] = 0
     for k in [
         "user_id",
         "username",
@@ -65,7 +67,7 @@ def _create_user_score(r, highlighted_user_id: UUID | None) -> UserScore:
         d[k] = r[k]
     if highlighted_user_id:
         d["highlighted"] = r["user_id"] == highlighted_user_id
-    d["level"] = (THRESHOLDS <= d["leader_score"]).sum()
+
     return UserScore(**d)
 
 
