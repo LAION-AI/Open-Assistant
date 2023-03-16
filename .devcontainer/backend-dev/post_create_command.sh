@@ -1,5 +1,9 @@
 #!/bin/bash
 
+
+# allow git usage
+git config --global --add safe.directory "*"
+
 # ensure pre-commit is installed
 pre-commit install
 
