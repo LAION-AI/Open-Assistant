@@ -36,3 +36,4 @@
         env:
           BACKEND_URL: "{{ backend_url }}"
           API_KEY: "{{ api_key }}"
+          PARALLELISM: "{{ parallelism }}"
