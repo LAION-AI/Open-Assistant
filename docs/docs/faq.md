@@ -7,6 +7,91 @@ In this page, there are some of the most frequently asked questions.
 <details>
 <summary>
 
+### What is Open Asisstant?
+
+</summary>
+Open Assistant is an open-source, AI-powered virtual assistant that can help you with various tasks, such as scheduling appointments, setting reminders, and answering common questions.
+</details>
+
+
+<details>
+<summary>
+
+### What programming language is Open Assistant built in?
+
+</summary>
+Open Assistant is primarily developed using Python, with some additional technologies and frameworks such as Flask, spaCy, and TensorFlow.
+</details>
+
+<details>
+<summary>
+
+### Can I customize Open Assistant to work for my specific needs?
+
+</summary>
+Yes, Open Assistant is highly customizable, and you can easily modify its code to add new functionality or tailor it to your specific use case.
+</details>
+
+
+<details>
+<summary>
+
+### How does Open Assistant work?
+
+
+</summary>
+Open Assistant uses natural language processing (NLP) algorithms to understand user input and respond appropriately. It also integrates with various APIs to perform tasks such as booking appointments or retrieving information from third-party services.
+
+</details>
+
+<details>
+<summary>
+
+### Is Open Assistant free to use?
+
+
+</summary>
+Yes, Open Assistant is completely free and open-source under the MIT License.
+</details>
+
+<details>
+<summary>
+
+###  How can I contribute to the development of Open Assistant?
+
+
+</summary>
+You can contribute to Open Assistant by submitting bug reports, feature requests, or pull requests on GitHub. You can also join the community to discuss ideas or get help from other developers.
+</details>
+
+
+<details>
+<summary>
+
+### Can I use Open Assistant commercially?
+
+
+</summary>
+Yes, you can use Open Assistant for commercial purposes, but you should review the terms of the MIT License and comply with any applicable laws and regulations.
+</details>
+
+
+<details>
+<summary>
+
+### How secure is Open Assistant?
+
+
+
+</summary>
+Open Assistant uses industry-standard encryption and security practices to protect user data and prevent unauthorized access. However, as with any software, there is always a risk of vulnerabilities, so you should review the code and follow best practices when deploying it.
+</details>
+
+
+
+<details>
+<summary>
+
 ### How far along is this project?
 
 </summary>
