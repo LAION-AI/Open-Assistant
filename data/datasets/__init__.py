@@ -15,3 +15,8 @@ INSTRUCTION_DATASETS = {
     "iapp_wiki_qa_squad": "wannaphong/iapp_wiki_qa_squad_oa",
     "zhihu-kol": "wangrui6/zhihu-kol",
 }
+
+SAFETY_DATASETS = {
+    "prosocial-dialog": "allenai/prosocial-dialog",
+    "prosocial-confessions": "shahules786/prosocial-confessions",
+}
