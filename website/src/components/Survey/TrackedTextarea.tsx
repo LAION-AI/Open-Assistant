@@ -11,9 +11,8 @@ import {
   TextareaProps,
   useColorModeValue,
   useDisclosure,
+  Tooltip,
 } from "@chakra-ui/react";
-import { Tooltip } from "@chakra-ui/react";
-import { Progress, Stack, Textarea, TextareaProps, useColorModeValue } from "@chakra-ui/react";
 import lande from "lande";
 import { useTranslation } from "next-i18next";
 import React from "react";
