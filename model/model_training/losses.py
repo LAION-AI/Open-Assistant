@@ -68,9 +68,9 @@ class RMLoss(nn.Module):
             pos_ids, neg_ids = pairs[:, 0], pairs[:, 1]
             pos_logits = logits.take(start + pos_ids)
             neg_logits = logits.take(start + neg_ids)
-            
-            l2 = 0.5*(pos_logits**2 + neg_logits**2)
-            _loss = (-F.logsigmoid(pos_logits - neg_logits) + self.beta*l2).mean()
+
+            l2 = 0.5 * (pos_logits**2 + neg_logits**2)
+            _loss = (-F.logsigmoid(pos_logits - neg_logits) + self.beta * l2).mean()
             losses.append(_loss)
         loss = torch.stack(losses)
 
