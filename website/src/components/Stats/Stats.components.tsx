@@ -115,7 +115,7 @@ function getTableData(
   const columns = [
     columnHelper.accessor("language", {
       cell: (info) => info.getValue(),
-      header: "Language",
+      header: t("language_stats"),
     }),
     columnHelper.accessor("initial_prompt_review", {
       cell: (info) => info.getValue(),
