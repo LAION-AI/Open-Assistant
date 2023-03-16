@@ -1,5 +1,7 @@
+requests
 numpy
 pandas
 pyarrow
-requests
+beautifulsoup4
 tqdm
+kaggle
