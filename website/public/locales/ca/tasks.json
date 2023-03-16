@@ -1,22 +1,23 @@
 {
+  "any_feedback_on_this_task": "Tens algun comentari sobre aquesta tasca?",
   "available_task_count": "{{count}} tasques disponibles",
   "classify_assistant_reply": {
-    "label": "Classifica una resposta de l'assistent",
-    "desc": "Proporciona etiquetes per a una resposta de l'assistent.",
-    "overview": "Llegeix la conversa següent i contesta la pregunta relacionada amb l'última resposta."
+    "label": "Classificar respostes de l'assistent",
+    "desc": "Proporciona etiquetes per a respostes de l'assistent.",
+    "overview": "Llegeix la conversa següent i contesta la pregunta sobre l'última resposta de la conversa."
   },
   "classify_initial_prompt": {
-    "label": "Classifica instruccions inicials",
-    "desc": "Proporciona etiquetes per a una instrucció.",
+    "label": "Classificar instruccions inicials",
+    "desc": "Proporciona etiquetes per a instruccions.",
     "overview": "Llegeix la instrucció següent i contesta la pregunta relacionada."
   },
   "classify_prompter_reply": {
-    "label": "Classifica la resposta de l'apuntador",
-    "desc": "Proporciona etiquetes per a una instrucció.",
-    "overview": "Llegeix la conversa següent i contesta la pregunta relacionada amb l'última resposta."
+    "label": "Classificar respostes a una instrucció",
+    "desc": "Proporciona etiquetes per a instruccions.",
+    "overview": "Llegeix la conversa següent i contesta la pregunta sobre l'última resposta de la conversa."
   },
   "create_initial_prompt": {
-    "label": "Crea instruccions inicials",
+    "label": "Crear instruccions inicials",
     "desc": "Escriu instruccions inicials perquè Open Assistant provi de contestar missatges variats.",
     "overview": "Crea un missatge per a inciar conversa amb l'assistent",
     "instruction": "Proporciona les instruccions inicials",
@@ -27,56 +28,58 @@
     "unchanged_message": "Segur que vols continuar?"
   },
   "label_assistant_reply": {
-    "label": "Etiqueta la resposta de l'assistent",
-    "desc": "Proporciona etiquetes per a una instrucció.",
-    "overview": "Donada la conversa següent, proporciona etiquetes per a l'última entrada."
+    "label": "Etiquetar respostes de l'assistent",
+    "desc": "Proporciona etiquetes per a instruccions.",
+    "overview": "Donada la conversa següent, proporciona etiquetes per a l'última instrucció."
   },
   "label_initial_prompt": {
-    "label": "Etiqueta instruccions inicials",
-    "desc": "Proporciona etiquetes per a una instrucció.",
+    "label": "Etiquetar instruccions inicials",
+    "desc": "Proporciona etiquetes per a instruccions.",
     "overview": "Proporciona etiquetes per a la instrucció següent"
   },
   "label_prompter_reply": {
-    "label": "Etiqueta la resposta de l'apuntador",
-    "desc": "Proporciona etiquetes per a una instrucció.",
-    "overview": "Donada la conversa següent, proporciona etiquetes per a l'última entrada."
+    "label": "Etiquetar respostes de l'usuari",
+    "desc": "Proporciona etiquetes per a instruccions.",
+    "overview": "Donada la conversa següent, proporciona etiquetes per a l'última instrucció."
   },
   "random": {
     "label": "Segur que tinc sort",
     "desc": "Ajuda'ns a millorar Open Assistant començant amb una tasca aleatòria."
   },
   "rank_assistant_replies": {
-    "label": "Classifica les respostes de l'assistent",
-    "desc": "Puntua les respostes d'Open Assistant basant-te en la precisió i llegibilitat.",
-    "overview": "Donades les respostes següents de l'assistent, ordena-les de millor a pitjor, sent la primera la millor i l'última, la pitjor.",
+    "label": "Ordenar respostes de l'assistent",
+    "desc": "Ordena respostes d'Open Assistant basant-te en la precisió i llegibilitat.",
+    "overview": "Donades les respostes següents de l'assistent, ordena-les de millor a pitjor, amb la primera sent la millor i l'última, la pitjor.",
     "unchanged_title": "Ordre sense canviar",
     "unchanged_message": "No has canviat l'ordre de les respostes. Segur que vols continuar?"
   },
   "rank_initial_prompts": {
-    "label": "Classifica les instruccions inicials",
-    "desc": "Puntua les instruccions donades a Open Assistant basant-te en la precisió i llegibilitat.",
-    "overview": "Donades les instruccions inicials següents, ordena-les de millor a pitjor, sent la primera la millor i l'última, la pitjor.",
+    "label": "Ordenar instruccions inicials",
+    "desc": "Ordena instruccions a Open Assistant basant-te en la precisió i llegibilitat.",
+    "overview": "Donades les instruccions inicials següents, ordena-les de millor a pitjor, amb la primera sent la millor i l'última, la pitjor.",
     "unchanged_title": "Ordre sense canviar",
-    "unchanged_message": "No has canviat l'ordre de les entrades. Segur que vols continuar?"
+    "unchanged_message": "No has canviat l'ordre de les instruccions. Segur que vols continuar?"
   },
   "rank_user_replies": {
-    "label": "Classifica les respostes dels usuaris",
-    "desc": "Ajuda Open Assistant a millorar les seves respostes en converses amb altres usuaris.",
-    "overview": "Donades les respostes següents d'usuaris, ordena-les de millor a pitjor, sent la primera la millor i l'última, la pitjor.",
+    "label": "Ordena respostes d'usuaris",
+    "desc": "Ajuda Open Assistant a millorar les seves respostes a converses amb altres usuaris.",
+    "overview": "Donades les respostes d'usuaris següents, ordena-les de millor a pitjor, amb la primera sent la millor i l'última, la pitjor.",
     "unchanged_title": "Ordre sense canviar",
     "unchanged_message": "No has canviat l'ordre de les respostes. Segur que vols continuar?"
   },
   "reply_as_assistant": {
-    "label": "Contesta com a assistent",
+    "label": "Contestar com a assistent",
     "desc": "Ajuda Open Assistant a millorar les seves respostes en converses amb altres usuaris.",
     "overview": "Donada la conversa següent, proporciona una resposta adequada",
     "response_placeholder": "Escriu la resposta aquí..."
   },
   "reply_as_user": {
-    "label": "Contesta com a usuari",
+    "label": "Contestar com a usuari",
     "desc": "Parla amb Open Assistant i intenta millorar les respostes mentre interacciones amb ell.",
     "overview": "Donada la conversa següent, proporciona una resposta adequada",
     "instruction": "Proporciona la resposta de l'usuari",
     "response_placeholder": "Escriu la resposta aquí..."
-  }
+  },
+  "submitted_as": "S'enviarà en {{submit_lang}}",
+  "writing_wrong_langauge_a_b": "Sembla que estàs escrivint en {{detected_lang}}, però s'enviarà com a {{submit_lang}}."
 }

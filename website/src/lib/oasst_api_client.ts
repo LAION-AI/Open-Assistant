@@ -1,5 +1,6 @@
-import type { EmojiOp, FetchUserMessagesCursorResponse, Message } from "src/types/Conversation";
+import type { EmojiOp, FetchMessagesCursorResponse, Message } from "src/types/Conversation";
 import { LeaderboardReply, LeaderboardTimeFrame } from "src/types/Leaderboard";
+import { Stats } from "src/types/Stat";
 import type { AvailableTasks } from "src/types/Task";
 import { FetchTrollBoardResponse, TrollboardTimeFrame } from "src/types/Trollboard";
 import type { BackendUser, BackendUserCore, FetchUsersParams, FetchUsersResponse } from "src/types/Users";
@@ -51,11 +52,7 @@ export class OasstApiClient {
     }
   }
 
-  private async request<T>(
-    method: "GET" | "POST" | "PUT" | "DELETE",
-    path: string,
-    init?: RequestInit
-  ): Promise<T | null> {
+  private async request<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, init?: RequestInit): Promise<T> {
     const resp = await fetch(`${this.oasstApiUrl}${path}`, {
       method,
       ...init,
@@ -68,7 +65,7 @@ export class OasstApiClient {
     });
 
     if (resp.status === 204) {
-      return null;
+      return null as T;
     }
 
     if (resp.status >= 300) {
@@ -140,8 +137,8 @@ export class OasstApiClient {
     return this.post(`/api/v1/tasks/${taskId}/ack`, { message_id: messageId });
   }
 
-  async nackTask(taskId: string, reason: string): Promise<null> {
-    return this.post(`/api/v1/tasks/${taskId}/nack`, { reason });
+  async nackTask(taskId: string): Promise<null> {
+    return this.post(`/api/v1/tasks/${taskId}/nack`, {});
   }
 
   // TODO return a strongly typed Task?
@@ -189,11 +186,11 @@ export class OasstApiClient {
     return this.get<Message>(`/api/v1/messages/${message_id}?username=${user.id}&auth_method=${user.auth_method}`);
   }
 
-  async fetch_message_tree(message_id: string) {
+  async fetch_message_tree(message_id: string, options?: { include_spam?: boolean; include_deleted?: boolean }) {
     return this.get<{
       id: string;
       messages: Message[];
-    }>(`/api/v1/messages/${message_id}/tree`);
+    }>(`/api/v1/messages/${message_id}/tree`, options);
   }
 
   /**
@@ -222,6 +219,13 @@ export class OasstApiClient {
       is_report: true,
       user,
     });
+  }
+
+  /**
+   * Returns cached dataset stats from the backend.
+   */
+  async fetch_cached_stats(): Promise<Stats> {
+    return this.get("/api/v1/stats/cached");
   }
 
   /**
@@ -279,7 +283,7 @@ export class OasstApiClient {
       ...rest
     }: { include_deleted?: boolean; max_count?: number; cursor?: string; direction: "forward" | "back"; desc?: boolean }
   ) {
-    return this.get<FetchUserMessagesCursorResponse>(`/api/v1/users/${user_id}/messages/cursor`, {
+    return this.get<FetchMessagesCursorResponse>(`/api/v1/users/${user_id}/messages/cursor`, {
       ...rest,
       after: direction === "forward" ? cursor : undefined,
       before: direction === "back" ? cursor : undefined,
@@ -343,6 +347,23 @@ export class OasstApiClient {
     return this.get<Message[]>(`/api/v1/messages?${params}`);
   }
 
+  fetch_my_messages_cursor(
+    user: BackendUserCore,
+    {
+      direction,
+      cursor,
+      ...rest
+    }: { include_deleted?: boolean; max_count?: number; cursor?: string; direction: "forward" | "back"; desc?: boolean }
+  ) {
+    return this.get<FetchMessagesCursorResponse>(`/api/v1/messages/cursor`, {
+      ...rest,
+      username: user.id,
+      auth_method: user.auth_method,
+      after: direction === "forward" ? cursor : undefined,
+      before: direction === "back" ? cursor : undefined,
+    });
+  }
+
   fetch_recent_messages(lang: string) {
     return this.get<Message[]>(`/api/v1/messages`, { lang });
   }
@@ -381,9 +402,35 @@ export class OasstApiClient {
     return this.get<BackendUser>(`/api/v1/frontend_users/${user.auth_method}/${user.id}`);
   }
 
-  fetch_trollboard(time_frame: TrollboardTimeFrame, { limit }: { limit?: number }) {
+  fetch_trollboard(time_frame: TrollboardTimeFrame, { limit, enabled }: { limit?: number; enabled?: boolean }) {
     return this.get<FetchTrollBoardResponse>(`/api/v1/trollboards/${time_frame}`, {
       max_count: limit,
+      enabled: enabled,
+    });
+  }
+
+  fetch_messages_cursor({
+    direction,
+    cursor,
+    ...rest
+  }: {
+    direction: "back" | "forward";
+    cursor?: string;
+    user_id?: string;
+    auth_method?: string;
+    username?: string;
+    api_client_id?: string;
+    only_roots?: boolean;
+    include_deleted?: boolean;
+    max_count?: number;
+    desc?: boolean;
+    lang?: string;
+    include_user?: boolean;
+  }) {
+    return this.get<FetchMessagesCursorResponse>("/api/v1/messages/cursor", {
+      ...rest,
+      after: direction === "forward" ? cursor : undefined,
+      before: direction === "back" ? cursor : undefined,
     });
   }
 }

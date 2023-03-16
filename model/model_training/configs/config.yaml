@@ -1,0 +1,198 @@
+defaults:
+  learning_rate: 1e-5
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 32
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1e-12
+  weight_decay: 0.00
+  warmup_steps: 600
+  eval_steps: 200
+  save_steps: 1000
+  max_length: 512
+  num_train_epochs: 3
+  logging_steps: 10
+  max_grad_norm: 2.0
+  save_total_limit: 4
+  fp16: true
+  eval_accumulation_steps:
+  freeze_layer:
+  datasets:
+    - webgpt
+    - squad_v2
+    - adversarial_qa
+    - trivia_qa_nocontext
+    - xsum
+    - cnn_dailymail
+    - prompt_dialogue # TODO: need to fix the url
+    - multi_news
+    - scitldr
+    - soda
+    - joke
+    - gsm8k
+    - dive_mt
+    - wmt2019_zh-en
+    - wmt2019_ru-en
+    - wmt2019_de-en
+    - ted_trans_nl-en
+    - ted_trans_de-ja
+    - instruct_tuning
+    - wmt2019_de-en
+    - samsum
+    - soda_dialogue
+    # instructional_datasets:
+    # - humaneval_mbpp_codegen_qa
+    # - humaneval_mbpp_testgen_qa
+    # - grade_school_math_instructions
+    # - recipes
+    # - ubuntu_dialogue_qa
+    # - cmu_wiki_qa
+    # - youtube_subs_howto100M
+    # - iapp_wiki_qa_squad
+    # - zhihu-kol
+  datasets_extra: [] # For config options to add additional datasets, since yaml doesn't let us extend arrays
+  cache_dir: .cache
+  loss_fn: CrossEntropyLoss
+  eval_size:
+  log_dir: "base"
+  quantization: false
+  seq2seqmodel: false
+  poly_eps: 1.0
+  fuse_gelu: true
+  log_wandb: true
+  samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
+  verbose: false
+  output_dir: saved_model
+  use_custom_sampler: false
+  random_offset_probability: 0.8 # probability for random message offsets
+  label_masking: true
+  residual_dropout: 0.2
+  use_flash_attention: true
+  sort_by_length: false
+  use_system_prefix: false
+  system_prefix:
+    "You are Joi, a large language model trained by Open-Assistant. Answer as
+    concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date:
+    2023-03-12"
+  per_digit_tokens: false
+
+webgpt_dataset_only:
+  datasets:
+    - webgpt
+
+per_digit_tokens:
+  per_digit_tokens: true
+
+math:
+  datasets_extra: # Will get merged with datasets
+    - math_qa
+    - grade_school_math_instructions
+
+oa_dataset_only:
+  datasets:
+    - oa_private:
+        split: sft
+        val_split: 0.0
+        fraction: 1
+        file: 2023-02-10_oasst_prod.jsonl
+
+oasst_export_eu:
+  datasets:
+    - oasst_export:
+        lang: "en,es,de,fr"
+        #top_k: 2
+        input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
+  sort_by_length: true
+  use_custom_sampler: true
+
+pythia:
+  learning_rate: 8e-6
+  model_name: EleutherAI/pythia-70m-deduped
+  weight_decay: 0.0
+  max_length: 520
+  warmup_steps: 1000
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 9
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 4
+  output_dir: pythia_model
+
+pythia-1B:
+  learning_rate: 8e-6
+  model_name: EleutherAI/pythia-1b-deduped
+  weight_decay: 0.0
+  max_length: 520
+  warmup_steps: 10
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 16
+
+pythia-6.9B:
+  learning_rate: 8e-6
+  model_name: EleutherAI/pythia-6.9b-deduped
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 20
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+
+pythia-12B:
+  learning_rate: 6e-6
+  model_name: EleutherAI/pythia-12b-deduped
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 20
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+
+galactica-125m:
+  learning_rate: 5e-5
+  model_name: facebook/galactica-125m
+  weight_decay: 0.0
+  warmup_steps: 600
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+
+gpt-jt:
+  learning_rate: 8e-6
+  model_name: togethercomputer/GPT-JT-6B-v1
+  weight_decay: 0.0
+  max_length: 1024
+  warmup_steps: 600
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+
+codegen:
+  learning_rate: 8e-6
+  model_name: Salesforce/codegen-2B-multi
+  weight_decay: 0.0
+  max_length: 520
+  warmup_steps: 1000
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 9
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 4
+
+debug:
+  model_name: EleutherAI/pythia-70m-deduped
+  eval_steps: 20
+  eval_size: 20
+  save_steps: 20
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  quantization: false
+  log_wandb: false
+  verbose: true
+  num_train_epochs: 0.2

@@ -1,5 +1,7 @@
 {
+  "any_feedback_on_this_task": "Zeregin honi buruzko feedbackik?",
   "available_task_count": "{{count}} zeregin eskuragarri",
+  "no_more_tasks": "Ez dira ataza gehiago aurkitu.",
   "classify_assistant_reply": {
     "desc": "Jarri etiketak instrukzio bati.",
     "label": "Sailkatu asistentearen erantzuna",
@@ -80,5 +82,5 @@
     "response_placeholder": "Idatzi zure erantzuna hemen..."
   },
   "submitted_as": "Hau {{submit_lang}} hizkuntzan bidaliko da",
-  "writing_wrong_langauge_a_b": "Ematen du {{detected_lang}} hizkuntzan baina hau {{submit_lang}} hizkuntzan bidaliko da."
+  "writing_wrong_langauge_a_b": "Ematen du {{detected_lang}} hizkuntzan idazten ari zarela baina hau {{submit_lang}} hizkuntzan bidaliko da."
 }

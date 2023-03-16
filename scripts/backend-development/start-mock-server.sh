@@ -1,14 +1,21 @@
 #!/usr/bin/env bash
+
+function die() {
+    popd > /dev/null
+    echo "Mock server failed to start"
+    exit 1
+}
+
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 # switch to backend directory
-pushd "$parent_path/../../backend"
+pushd "$parent_path/../../backend" > /dev/null
 
 MOCK_SERVER_PORT=8080
 OPENAPI_JSON_FILE_NAME=openapi.json
 
 echo "Generating OpenAPI schema..."
-python -m main --print-openapi-schema > $OPENAPI_JSON_FILE_NAME
+python -m main --print-openapi-schema > $OPENAPI_JSON_FILE_NAME || die
 echo "Done!"
 
 echo "Formatting & Copying OpenAPI schema to docs directory..."
@@ -30,15 +37,8 @@ else
 fi
 
 echo "Waiting for server to be live..."
-curl --retry-all-errors --retry 5 localhost:$MOCK_SERVER_PORT
+curl --retry-all-errors --retry 10 --silent localhost:$MOCK_SERVER_PORT > /dev/null || die
 echo ""
 
-# if return code is successful, print successful response
-if [ $? -eq 0 ]; then
-    echo "Mock server is running at localhost:$MOCK_SERVER_PORT"
-else
-    echo "Mock server failed to start"
-fi
-
-
+echo "Mock server is running at localhost:$MOCK_SERVER_PORT"
 popd

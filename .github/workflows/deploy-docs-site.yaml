@@ -28,21 +28,28 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: "18"
 
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "YARN_CACHE_DIR=$(yarn cache dir)" >> "${GITHUB_OUTPUT}"
+      - name: Setup yarn
+        run:
+          corepack enable && corepack prepare yarn@stable --activate && mkdir
+          ~/.yarn
 
-      - name: Cache dependencies
+      - id: yarn-cache-dir-path
+        name: Get yarn cache directory path
+        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+        working-directory: docs
+
+      - name: Restore yarn cache
         uses: actions/cache@v3
         with:
-          path: ${{ steps.yarn-cache.outputs.YARN_CACHE_DIR }}
-          key: ${{ runner.os }}-docs-${{ hashFiles('**/yarn.lock') }}
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key:
+            yarn-cache-folder-${{ hashFiles('docs/yarn.lock', '.yarnrc.yml') }}
           restore-keys: |
-            ${{ runner.os }}-docs-
+            yarn-cache-folder-
 
-      - run: yarn install --frozen-lockfile
+      - run: yarn install --immutable
       - run: yarn build
 
       - name: Deploy

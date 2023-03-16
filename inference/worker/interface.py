@@ -12,19 +12,23 @@ class GenerateStreamParameters(pydantic.BaseModel):
     temperature: float | None
     repetition_penalty: float | None
     seed: int | None
-    stop: list[str] = ["\nUser:", "\nAssistant:"]  # TODO: make this a bit more workable because it's mutliple tokens
+    stop: list[str] = [
+        "<|endoftext|>",
+        "<|prompter|>",
+        "<|assistant|>",
+    ]  # TODO: make this a bit more workable because it's mutliple tokens
     details: bool = True
 
     @staticmethod
-    def from_work_request(work_request: inference.WorkRequest) -> "GenerateStreamParameters":
+    def from_work_parameters(params: inference.WorkParameters) -> "GenerateStreamParameters":
         return GenerateStreamParameters(
-            max_new_tokens=work_request.max_new_tokens,
-            do_sample=work_request.do_sample,
-            top_k=work_request.top_k,
-            top_p=work_request.top_p,
-            temperature=work_request.temperature,
-            repetition_penalty=work_request.repetition_penalty,
-            seed=work_request.seed,
+            max_new_tokens=params.max_new_tokens,
+            do_sample=params.do_sample,
+            top_k=params.top_k,
+            top_p=params.top_p,
+            temperature=params.temperature,
+            repetition_penalty=params.repetition_penalty,
+            seed=params.seed,
         )
 
 
@@ -51,6 +55,15 @@ class StreamDetails(pydantic.BaseModel):
 
 
 class GenerateStreamResponse(pydantic.BaseModel):
-    token: Token
+    token: Token | None
     generated_text: str | None
     details: StreamDetails | None
+    error: str | None
+
+    @property
+    def is_end(self) -> bool:
+        return self.generated_text is not None
+
+    @property
+    def is_error(self) -> bool:
+        return self.error is not None

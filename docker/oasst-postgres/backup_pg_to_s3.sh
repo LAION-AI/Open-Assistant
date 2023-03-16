@@ -4,7 +4,7 @@ set -e
 set -x
 
 # filename with timestamp
-filename="postgres-$(date +%Y-%m-%d_%H-%M-%S).sql.gz"
+filename="postgres-$S3_PREFIX-$(date +%Y-%m-%d_%H-%M-%S).sql.gz"
 
 # perform pg_dump
 pg_dump -U postgres postgres | gzip -c > /tmp/$filename

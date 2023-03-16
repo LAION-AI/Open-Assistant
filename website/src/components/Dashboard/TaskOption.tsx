@@ -34,7 +34,7 @@ export const TaskOption = ({ content }: TasksOptionProps) => {
       Object.values(content)
         .flat()
         .reduce((obj, { taskType }) => {
-          obj[taskType] = TaskInfos.filter((t) => t.type === taskType).pop();
+          obj[taskType] = TaskInfos.filter((t) => t.type === taskType).pop()!;
           return obj;
         }, {} as Record<TaskType, TaskInfo>),
     [content]
@@ -49,7 +49,7 @@ export const TaskOption = ({ content }: TasksOptionProps) => {
               {t(TaskCategoryLabels[category])}
             </Heading>
             <Spacer />
-            <ExternalLink href="https://projects.laion.ai/Open-Assistant/" isExternal>
+            <ExternalLink href="https://projects.laion.ai/Open-Assistant/docs/guides/guidelines" isExternal>
               <IconButton variant="ghost" aria-label="More Information" icon={<HelpCircle size="2em" />} />
             </ExternalLink>
           </Flex>

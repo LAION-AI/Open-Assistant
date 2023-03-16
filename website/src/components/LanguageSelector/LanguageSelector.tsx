@@ -23,7 +23,7 @@ const LanguageSelector = () => {
 
   // Memo the set of locales and their display names.
   const localesAndNames = useMemo(() => {
-    return router.locales.map((locale) => ({
+    return router.locales!.map((locale) => ({
       locale,
       name: getLocaleDisplayName(locale),
     }));
@@ -37,7 +37,7 @@ const LanguageSelector = () => {
       await router.push(path, path, { locale });
       router.reload();
     },
-    [router]
+    [router, setCookie]
   );
 
   const { language: currentLanguage } = i18n;

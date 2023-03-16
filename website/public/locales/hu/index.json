@@ -1,15 +1,23 @@
 {
-  "blurb": "Hiszük, hogy forradalmat csinálunk.",
-  "blurb1": "Ahogy a Stable Diffusion bárki számára elérhetővé tette, hogy műveket alkothasson, úgy akarjuk mi is megváltoztatni a világot a társalgási Mesterséges Intelligenciák területén.",
-  "description": "Társalgási MI Mindenkinek. Egy nyílt forráskódú projekt a LAION és sokak mások által, melynek célja egy chatelésre alkalmas nyelvi modell létrehozása.",
+  "blurb": "Hiszünk abban, hogy forradalmat indíthatunk.",
+  "blurb1": "Ahogy a Stable Diffusion bárki számára lehetővé tette, hogy új módokon hozzon létre műveket és képeket, úgy akarjuk mi is megváltoztatni a világot a társalgási MI-k területén.",
+  "description": "Társalgási MI mindenkinek. Egy nyílt forráskódú projekt, melynek célja egy csevegésre alkalmas GPT nyelvi modell létrehozása, melyet a LAION és a világszintű közreműködői közösség üzemeltet.",
   "faq_items": {
     "q0": "Hol tart a projekt?",
-    "a0": "A fejlesztés kezdeti fázisában vagyunk, már létező kutatásokból kiindulva dolgozunk az RLHF nagy nyelvi modelleken történő alkalmazásán.",
+    "a0": "A fejlesztés korai fázisában vagyunk, már létező kutatásokból kiindulva azon dolgozunk, hogy nagy nyelvi modellekre alkalmazzuk az RLHF módszert.",
     "q1": "Kik állnak az Open Assistant mögött?",
-    "a1": "Az Open Assistant projekt szervezője a LAION és olyan önkéntesek, akik szeretnék mindenki számára elérhetővé tenni a technológiát!"
+    "a1": "Az Open Assistant projekt szervezője a LAION, és azok az emberek, akik szeretnék elérhetővé tenni ezt a technológiát mindenki számára.",
+    "q2": "Milyen licencet használt az Open Assistant?",
+    "a2": "A kód és a modellek Apache 2.0 licenc alatt érhetők el.",
+    "q3": "A tanítási adatok is közzé lesznek téve?",
+    "a3": "Igen, CC BY 4.0 licenc alatt.",
+    "q4": "Az Open Assistant szabad és ingyenes lesz?",
+    "a4": "Igen, az Open Assistant ingyenes lesz, és szabadon módosítható.",
+    "q5": "Milyen hardverre lesz szükség a modellek futtatásához?",
+    "a5": "Lesznek olyan verziók, melyek végfelhasználói hardveren is futtathatók lesznek."
   },
   "faq_title": "Gyakran Ismételt Kérdések",
-  "join_us_description": "Minden nyílt forráskódú projekt hozzád hasonló emberekkel kezdődik! Az Open Source az abba vetett hit, hogy tudásunkkal és technológiánkkal, közösen jobbá tehetjük a világot! Ha téged is érdekel, itt érhetsz el bennünket:",
+  "join_us_description": "Minden nyílt forráskódú projekt hozzád hasonló emberekkel kezdődik. A nyílt forráskód az abba vetett hit, hogy tudásunkkal és technológiánkkal, közösen jobbá tehetjük a világot. Ha téged is érdekel, itt érhetsz el bennünket:",
   "join_us_title": "Csatlakozás",
-  "subtitle": "Társalgási MI Mindenkinek."
+  "subtitle": "Társalgási MI mindenkinek."
 }

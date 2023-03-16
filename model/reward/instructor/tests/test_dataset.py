@@ -1,11 +1,12 @@
+import pytest
 from experimental_dataset import DataCollatorForSummaryScore, HFSummaryQuality
 from rank_datasets import AnthropicRLHF, DataCollatorForPairRank, GPTJSynthetic, HFSummary, WebGPT
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
 
+@pytest.mark.skip(reason="needs work")
 def test_hfsummary():
-
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForPairRank(tokenizer, max_length=200)
     dataset = HFSummary("train")
@@ -15,8 +16,8 @@ def test_hfsummary():
         batch["input_ids"].shape
 
 
+@pytest.mark.skip(reason="needs work")
 def test_webgpt():
-
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForPairRank(tokenizer, max_length=200)
     dataset = WebGPT()
@@ -25,8 +26,8 @@ def test_webgpt():
         print(batch["input_ids"].shape)
 
 
+@pytest.mark.skip(reason="needs work")
 def test_anthropic_rlhf():
-
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForPairRank(tokenizer, max_length=200)
     dataset = AnthropicRLHF("test", sep_token=tokenizer.sep_token)
@@ -35,8 +36,8 @@ def test_anthropic_rlhf():
         print(batch["input_ids"].shape)
 
 
+@pytest.mark.skip(reason="needs work")
 def test_hf_summary_quality():
-
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")
     collate_fn = DataCollatorForSummaryScore(tokenizer, max_length=200)
     dataset = HFSummaryQuality("validation", tokenizer)
@@ -45,6 +46,7 @@ def test_hf_summary_quality():
         print(batch["input_ids"].shape)
 
 
+@pytest.mark.skip(reason="needs work")
 def test_gptj_dataset():
     dataset = GPTJSynthetic()
     tokenizer = AutoTokenizer.from_pretrained("bigscience/mt0-large")

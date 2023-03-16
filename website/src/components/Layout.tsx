@@ -1,7 +1,7 @@
 // https://nextjs.org/docs/basic-features/layouts
 
 import { Box, Grid } from "@chakra-ui/react";
-import { Activity, BarChart2, Layout, MessageSquare, Settings, Users } from "lucide-react";
+import { Activity, BarChart2, ExternalLink, Layout, MessageSquare, Settings, TrendingUp, Users } from "lucide-react";
 import type { NextPage } from "next";
 import { Header } from "src/components/Header";
 
@@ -51,6 +51,17 @@ export const getDashboardLayout = (page: React.ReactElement) => (
             pathname: "/leaderboard",
             icon: BarChart2,
           },
+          {
+            labelID: "stats",
+            pathname: "/stats",
+            icon: TrendingUp,
+          },
+          {
+            labelID: "guidelines",
+            pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
+            icon: ExternalLink,
+            target: "_blank",
+          },
         ]}
       >
         <Box>{page}</Box>
@@ -71,6 +82,11 @@ export const getAdminLayout = (page: React.ReactElement) => (
           labelID: "users",
           pathname: "/admin",
           icon: Users,
+        },
+        {
+          labelID: "Messages",
+          pathname: "/admin/messages",
+          icon: MessageSquare,
         },
         {
           labelID: "trollboard",

@@ -13,12 +13,12 @@
   "moral_judgement": "Judici moral",
   "moral_judgement.explanation": "Expressa un judici moral.",
   "not_appropriate": "No apropiada",
-  "not_appropriate.explanation": "No apropiada per a un assistent de client.",
-  "pii": "Conté IPI",
-  "pii.explanation": "Conté Informació Personal Identificable, com detalls de contacte personal, números d'identificació personal o detalls bancaris",
+  "not_appropriate.explanation": "No és apropiada per a un assistent de client.",
+  "pii": "Conté informació d'identificació personal",
+  "pii.explanation": "Conté informació personal com dades de contacte personals, números d'identificació o dades bancàries.",
   "political_content": "Contingut polític",
   "political_content.explanation": "Expressa una opinió política.",
   "sexual_content": "Contingut sexual",
   "sexual_content.explanation": "Conté contingut sexual.",
-  "spam.question": "És un missatge brossa?"
+  "spam.question": "És contingut brossa?"
 }

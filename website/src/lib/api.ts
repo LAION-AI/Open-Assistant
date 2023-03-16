@@ -26,7 +26,7 @@ api.interceptors.response.use(
   (error) => {
     const err = error?.response?.data;
     throw new OasstError({
-      message: err?.message ?? error,
+      message: err?.message || "",
       errorCode: err?.errorCode,
       httpStatusCode: error?.response?.httpStatusCode || -1,
       method: err?.config?.method,

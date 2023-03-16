@@ -6,6 +6,7 @@
   "message_deleted": "Mensaxe eliminada",
   "message": "Mensaxe",
   "open_new_tab_action": "Abrir nunha nova lapela",
+  "no_messages": "Sen mensaxes",
   "parent": "Pai",
   "reactions": "Reaccións",
   "recent_messages": "Mensaxes recentes en {{language}}",

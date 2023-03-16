@@ -1,0 +1,20 @@
+[project]
+name = "oasst_data"
+description = "Open Assistant Data Module"
+version = "1.0.0"
+authors = [
+    { name = "LAION-AI", email = "contact@laion.ai" }
+]
+dependencies = [
+    "pydantic>=1.10.4",
+    "loguru==0.6.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[build-system]
+build-backend = "flit_core.buildapi"
+requires = ["flit_core >=3.2,<4"]

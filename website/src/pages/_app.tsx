@@ -5,6 +5,7 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import { SessionProvider } from "next-auth/react";
 import { appWithTranslation, useTranslation } from "next-i18next";
+import React, { useEffect } from "react";
 import { FlagsProvider } from "react-feature-flags";
 import { getDefaultLayout, NextPageWithLayout } from "src/components/Layout";
 import flags from "src/flags";
@@ -12,8 +13,6 @@ import { SWRConfig, SWRConfiguration } from "swr";
 
 import nextI18NextConfig from "../../next-i18next.config.js";
 import { Chakra, getServerSideProps } from "../styles/Chakra";
-
-import React, { useEffect } from "react";
 
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;

@@ -9,6 +9,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 import { checkCaptcha } from "src/lib/captcha";
+import { discordAvatarRefresh } from "src/lib/discord_avatar_refresh";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { BackendUserCore } from "src/types/Users";
@@ -128,6 +129,11 @@ const authOptions: AuthOptions = {
       };
       const oasstApiClient = createApiClientFromUser(user);
 
+      if (user.auth_method === "discord") {
+        const discordAccount = accounts.find((a) => a.provider === "discord");
+        discordAvatarRefresh.updateImageIfNecessary(discordAccount);
+      }
+
       let tosAcceptanceDate = null;
       try {
         /**
@@ -210,11 +216,13 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
     callbacks: {
       ...authOptions.callbacks,
       async signIn({ account }) {
-        if (account.provider !== "email" || !boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN_CAPTCHA)) {
+        const isVerifyEmail = req.url ? req.url.includes("/api/auth/callback/email") : false;
+
+        if (account.provider !== "email" || !boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA) || isVerifyEmail) {
           return true;
         }
 
-        if (account.provider === "email" && !boolean(process.env.NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN)) {
+        if (account.provider === "email" && !boolean(process.env.ENABLE_EMAIL_SIGNIN)) {
           return false;
         }
 
