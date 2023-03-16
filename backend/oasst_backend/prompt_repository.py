@@ -1070,11 +1070,10 @@ WHERE message.id = cc.id;
                 parent_ids = self.db.execute(query).scalars().all()
 
     @managed_tx_method(CommitMode.COMMIT)
-    def reintroduce_deleted_message(self, message: Message | UUID, recursive: bool = True):
+    def undelete_deleted_message(self, message: Message | UUID):
         """
-        Reintroduce deleted messages and all their descendants.
+        Undelete deleted messages and all their parents.
         """
-
         message_id = None
         if isinstance(message, UUID):
             message_id = message
@@ -1086,21 +1085,20 @@ WHERE message.id = cc.id;
         query = update(Message).where(Message.id == message_id).values(deleted=False)
         self.db.execute(query)
 
-        if recursive:
-            parent_id = None
-            if isinstance(message, UUID):
-                parent_id = self.db.query(Message.parent_id).where(Message.id == message).first()[0]
-            elif isinstance(message, Message):
-                parent_id = message.parent_id
+        parent_id = None
+        if isinstance(message, UUID):
+            parent_id = self.db.query(Message.parent_id).where(Message.id == message_id).first()[0]
+        elif isinstance(message, Message):
+            parent_id = message.parent_id
 
-            if parent_id is None:
-                return
+        if parent_id is None:
+            return
 
-            # Fetching the entire parent_message so there is no parent_id query executed after
-            parent_message: Message = self.db.query(Message).where(Message.id == parent_id).first()
+        # Fetching the entire parent_message so there is no parent_id query executed after
+        parent_message: Message = self.db.query(Message).where(Message.id == parent_id).first()
 
-            if parent_message is not None:
-                self.reintroduce_deleted_message(parent_message)
+        if parent_message is not None:
+            self.undelete_deleted_message(parent_message)
 
     def get_stats(self) -> SystemStats:
         """

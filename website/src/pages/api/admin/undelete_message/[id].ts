@@ -5,10 +5,10 @@ const handler = withAnyRole(["admin", "moderator"], async (req, res, token) => {
   const { id } = req.query;
   try {
     const client = await createApiClient(token);
-    await client.reintroduce_message(id as string);
-    res.status(200).json({ message: "Message reintroduced" });
+    await client.undelete_message(id as string);
+    res.status(200).json({ message: "Message undeleted" });
   } catch (e) {
-    res.status(500).json({ message: "Failed to reintroduce the message" });
+    res.status(500).json({ message: "Failed to undelete the message" });
   }
 });
 

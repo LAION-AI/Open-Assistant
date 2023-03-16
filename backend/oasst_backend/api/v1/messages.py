@@ -325,8 +325,8 @@ def mark_message_deleted(
     pr.mark_messages_deleted(message_id)
 
 
-@router.put("/{message_id}/reintroduce", status_code=HTTP_202_ACCEPTED)
-def reintroduce_message(
+@router.put("/{message_id}/undelete", status_code=HTTP_202_ACCEPTED, response_model=None)
+def undelete_message(
     *,
     message_id: UUID,
     frontend_user: deps.FrontendUserId = Depends(deps.get_frontend_user_id),
@@ -334,7 +334,7 @@ def reintroduce_message(
     db: Session = Depends(deps.get_db),
 ):
     pr = PromptRepository(db, api_client, frontend_user=frontend_user)
-    pr.reintroduce_deleted_message(message_id)
+    pr.undelete_deleted_message(message_id)
 
 
 @router.post("/{message_id}/emoji", status_code=HTTP_202_ACCEPTED)

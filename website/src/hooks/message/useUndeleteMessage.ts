@@ -3,8 +3,8 @@ import { API_ROUTES } from "src/lib/routes";
 import { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
 
-export const useReintroduceMessage = (messageId: string, onSuccess?: () => void) => {
-  return useSWRMutation(API_ROUTES.ADMIN_REINTRODUCE_MESSAGE(messageId), put, {
+export const useUndeleteMessage = (messageId: string, onSuccess?: () => void) => {
+  return useSWRMutation(API_ROUTES.ADMIN_UNDELETE_MESSAGE(messageId), put, {
     onSuccess: async () => {
       onSuccess?.();
       await mutate(

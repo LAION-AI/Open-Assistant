@@ -7,7 +7,6 @@ import {
   ChatResponse,
   InferenceCreateChatResponse,
   InferenceDebugTokenResponse,
-  InferenceMessage,
   InferencePostMessageResponse,
 } from "src/types/Chat";
 

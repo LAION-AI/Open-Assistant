@@ -201,10 +201,10 @@ export class OasstApiClient {
   }
 
   /**
-   * Reintroduce a message by its id
+   * Undelete a message by its id
    */
-  async reintroduce_message(message_id: string): Promise<void> {
-    return this.put<void>(`/api/v1/messages/${message_id}/reintroduce`);
+  async undelete_message(message_id: string): Promise<void> {
+    return this.put<void>(`/api/v1/messages/${message_id}/undelete`);
   }
 
   /**

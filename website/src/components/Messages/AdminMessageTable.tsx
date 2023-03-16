@@ -26,12 +26,12 @@ import { FetchMessagesCursorResponse, Message } from "src/types/Conversation";
 import { isKnownEmoji } from "src/types/Emoji";
 import useSWRImmutable from "swr/immutable";
 
+import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
 import { DataTable, DataTableRowPropsCallback } from "../DataTable/DataTable";
 import { DataTableAction } from "../DataTable/DataTableAction";
 import { useCursorPagination } from "../DataTable/useCursorPagination";
 import { UserDisplayNameCell } from "../UserDisplayNameCell";
 import { MessageEmojiButton } from "./MessageEmojiButton";
-import { useReintroduceMessage } from "../../hooks/message/useReintroduceMessage";
 
 const columnHelper = createColumnHelper<
   Message & {
@@ -52,7 +52,7 @@ const DateDiff = ({ children }: { children: string | Date | number }) => {
 
 export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; includeUser?: boolean }) => {
   const [deleteMessageId, setDeleteMessageId] = useState<string | null>(null);
-  const [reintroduceMessageId, setReintroduceMessageId] = useState<string | null>(null);
+  const [undeleteMessageId, setUndeleteMessageId] = useState<string | null>(null);
   const [activeMessageId, setActiveMessageId] = useState<string>();
   const { pagination, toNextPage, toPreviousPage } = useCursorPagination();
   const {
@@ -80,8 +80,8 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
     deleteMessageId!,
     mutateMessageList
   );
-  const { isMutating: isReintroduceMutating, trigger: reintroduceTrigger } = useReintroduceMessage(
-    reintroduceMessageId,
+  const { isMutating: isUndeleteMutating, trigger: undeleteTrigger } = useUndeleteMessage(
+    undeleteMessageId,
     mutateMessageList
   );
 
@@ -89,7 +89,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
   const onClose = () => {
     disclosureClose();
     if (deleteMessageId) setDeleteMessageId(null);
-    if (reintroduceMessageId) setReintroduceMessageId(null);
+    if (undeleteMessageId) setUndeleteMessageId(null);
   };
 
   const columns = useMemo(() => {
@@ -211,12 +211,12 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
               ) : (
                 <DataTableAction
                   onClick={() => {
-                    setReintroduceMessageId(id);
+                    setUndeleteMessageId(id);
                     onOpen();
                   }}
                   icon={RotateCw}
-                  aria-label="Reintroduce message"
-                  isLoading={isReintroduceMutating && reintroduceMessageId === id}
+                  aria-label="Undelete message"
+                  isLoading={isUndeleteMutating && undeleteMessageId === id}
                 />
               )}
             </HStack>
@@ -224,7 +224,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
         },
       }),
     ];
-  }, [deleteMessageId, isDeleteMutating, isReintroduceMutating, onOpen, reintroduceMessageId]);
+  }, [deleteMessageId, isDeleteMutating, isUndeleteMutating, onOpen, undeleteMessageId]);
 
   const { t } = useTranslation(["common", "message"]);
   const rowProps: DataTableRowPropsCallback<Message> = useCallback(
@@ -243,15 +243,15 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Confirm {deleteMessageId ? "deleting" : "reintroducing"} this message</ModalHeader>
+          <ModalHeader>Confirm {deleteMessageId ? "deleting" : "undeleting"} this message</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <p>
-              {reintroduceMessageId
-                ? "By reintroducing this message you take the risk to reintroduce the parent message that may be also deleted."
+              {undeleteMessageId
+                ? "By undeleting this message you take the risk to undelete every parent messages that may also be deleted."
                 : ""}
             </p>
-            {deleteMessageId ? "Delete" : "Are you sure to reintroduce"} this message? <p></p>
+            {deleteMessageId ? "Delete" : "Are you sure to undelete"} this message? <p></p>
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>
@@ -261,7 +261,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
               colorScheme="blue"
               onClick={async () => {
                 if (deleteMessageId) await deleteTrigger();
-                else await reintroduceTrigger();
+                else await undeleteTrigger();
                 onClose();
               }}
             >

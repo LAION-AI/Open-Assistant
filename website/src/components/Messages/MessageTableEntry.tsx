@@ -47,10 +47,10 @@ import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
 import useSWRMutation from "swr/mutation";
 
+import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
 import { BaseMessageEntry } from "./BaseMessageEntry";
 import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
 import { MessageSyntheticBadge } from "./MessageSyntheticBadge";
-import { useReintroduceMessage } from "../../hooks/message/useReintroduceMessage";
 
 interface MessageTableEntryProps {
   message: Message;
@@ -252,10 +252,10 @@ const MessageActions = ({
   });
 
   const { trigger: handleDelete } = useDeleteMessage(message.id);
-  const { trigger: reintroduceTrigger } = useReintroduceMessage(message.id);
+  const { trigger: undeleteTrigger } = useUndeleteMessage(message.id);
 
-  const handleReintroduce = () => {
-    reintroduceTrigger();
+  const handleUndelete = () => {
+    undeleteTrigger();
   };
 
   const handleStop = () => {
@@ -335,8 +335,8 @@ const MessageActions = ({
                   {t("common:delete")}
                 </MenuItem>
               ) : (
-                <MenuItem onClick={handleReintroduce} icon={<RefreshCw />}>
-                  Reintroduce message
+                <MenuItem onClick={handleUndelete} icon={<RefreshCw />}>
+                  Undelete message
                 </MenuItem>
               )}
               <MenuItem onClick={handleStop} icon={<Slash />}>
