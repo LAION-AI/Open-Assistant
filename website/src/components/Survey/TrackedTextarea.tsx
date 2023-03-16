@@ -2,7 +2,6 @@ import { Tooltip, Text, Icon } from "@chakra-ui/react";
 import Link from "next/link";
 import { Progress, Stack, Textarea, TextareaProps, useColorModeValue } from "@chakra-ui/react";
 import lande from "lande";
-import { Highlighter } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import React from "react";
 import TextareaAutosize, { TextareaAutosizeProps } from "react-textarea-autosize";
