@@ -9,7 +9,6 @@ import numpy as np
 import torch
 from custom_datasets.ranking_collator import RankingDataCollator
 from efficiency_utils import fuse_gelu
-from models.patching import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -192,12 +191,6 @@ def main():
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
-
-    patch_model(
-        model,
-        resid_pdrop=training_conf.residual_dropout,
-        flash_attention=training_conf.use_flash_attention,
-    )
 
     train, evals = get_dataset(training_conf, mode="rm")
     train_collate_fn = RankingDataCollator(
