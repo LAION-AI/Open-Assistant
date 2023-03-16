@@ -39,12 +39,13 @@ class RMTrainer(Trainer):
         args: TrainingArguments = None,
         sampler: torch.utils.data.sampler.Sampler = None,
         loss_function: Literal["RMLoss"] = "RMLoss",
+        score_l2_reg: float = 0.001,
         train_collate_fn: Callable = None,
         **kwargs,
     ):
         super().__init__(model, args, **kwargs)
         self.train_collate_fn = train_collate_fn
-        self.loss_fct = get_loss(loss_function)
+        self.loss_fct = get_loss(loss_function, score_l2_reg=score_l2_reg)
         self.sampler = sampler
 
     def compute_loss(self, model, inputs, return_logits=False):
@@ -291,6 +292,7 @@ def main():
         sampler=sampler,
         train_collate_fn=train_collate_fn,
         loss_function=training_conf.loss_fn,
+        score_l2_reg=training_conf.score_l2_reg,
         train_dataset=train,
         eval_dataset=evals,
         data_collator=eval_collate_fn,

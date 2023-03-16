@@ -324,13 +324,13 @@ def get_dataset(conf, mode="sft"):
     return train, evals
 
 
-def get_loss(loss, poly_eps: float = 1.0):
+def get_loss(loss, poly_eps: float = 1.0, score_l2_reg: float = 0.001):
     if loss == "CrossEntropyLoss":
         return CrossEntropyLoss()
     elif loss == "Poly":
         return PolyLoss(epsilon=poly_eps)
     elif loss == "RMLoss":
-        return RMLoss()
+        return RMLoss(beta=score_l2_reg)
     else:
         raise ValueError(f"Loss {loss} not supported")
 

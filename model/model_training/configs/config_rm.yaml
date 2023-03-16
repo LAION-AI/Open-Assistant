@@ -9,11 +9,11 @@ defaults_rm:
   adam_beta2: 0.95
   adam_epsilon: 1e-12
   weight_decay: 0.00
-  warmup_steps: 600
-  eval_steps: 200
-  save_steps: 1000
+  warmup_steps: 10
+  eval_steps: 50
+  save_steps: 100
   max_length: 512
-  num_train_epochs: 3
+  num_train_epochs: 2
   logging_steps: 10
   max_grad_norm: 2.0
   save_total_limit: 4
@@ -22,6 +22,7 @@ defaults_rm:
   freeze_layer:
   cache_dir: .cache
   loss_fn: RMLoss
+  score_l2_reg: 0.001
   eval_size:
   log_dir: "base"
   quantization: false
