@@ -2,6 +2,7 @@ import datetime
 
 import fastapi
 import pydantic
+import sqlalchemy.orm
 import sqlmodel
 from loguru import logger
 from oasst_inference_server import database, models
@@ -15,8 +16,10 @@ class ChatRepository(pydantic.BaseModel):
         arbitrary_types_allowed = True
 
     async def get_assistant_message_by_id(self, message_id: str) -> models.DbMessage:
-        query = sqlmodel.select(models.DbMessage).where(
-            models.DbMessage.id == message_id, models.DbMessage.role == "assistant"
+        query = (
+            sqlmodel.select(models.DbMessage)
+            .options(sqlalchemy.orm.selectinload(models.DbMessage.reports))
+            .where(models.DbMessage.id == message_id, models.DbMessage.role == "assistant")
         )
         message = (await self.session.exec(query)).one()
         return message

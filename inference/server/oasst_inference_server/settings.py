@@ -10,7 +10,7 @@ class Settings(pydantic.BaseSettings):
 
     message_queue_expire: int = 60
 
-    allowed_worker_compat_hashes: list[str] = ["distilgpt2"]
+    allowed_worker_compat_hashes: list[str] = ["distilgpt2", "_lorem"]
 
     sse_retry_timeout: int = 15000
     update_alembic: bool = True

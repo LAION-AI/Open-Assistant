@@ -55,6 +55,7 @@ async def create_message(
     """Allows the client to stream the results of a request."""
 
     try:
+        ucr: UserChatRepository
         async with deps.manual_user_chat_repository(user_id) as ucr:
             prompter_message = await ucr.add_prompter_message(
                 chat_id=chat_id, parent_id=request.parent_id, content=request.content
@@ -79,6 +80,18 @@ async def create_message(
     )
 
 
+@router.get("/{chat_id}/messages/{message_id}")
+async def get_message(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(auth.get_current_user_id),
+) -> inference.MessageRead:
+    ucr: UserChatRepository
+    async with deps.manual_user_chat_repository(user_id) as ucr:
+        message: models.DbMessage = await ucr.get_message_by_id(chat_id=chat_id, message_id=message_id)
+    return message.to_read()
+
+
 @router.get("/{chat_id}/messages/{message_id}/events")
 async def message_events(
     chat_id: str,
@@ -86,24 +99,34 @@ async def message_events(
     fastapi_request: fastapi.Request,
     user_id: str = Depends(auth.get_current_user_id),
 ) -> EventSourceResponse:
+    ucr: UserChatRepository
     async with deps.manual_user_chat_repository(user_id) as ucr:
         message: models.DbMessage = await ucr.get_message_by_id(chat_id=chat_id, message_id=message_id)
     if message.role != "assistant":
         raise fastapi.HTTPException(status_code=400, detail="Only assistant messages can be streamed.")
 
-    if message.state not in (inference.MessageState.in_progress, inference.MessageState.pending):
-        raise fastapi.HTTPException(status_code=204, detail="Message is not in progress.")
+    if message.has_finished:
+        raise fastapi.HTTPException(status_code=204, detail=message.state)
 
     async def event_generator(chat_id: str, message_id: str):
         queue = queueing.message_queue(deps.redis_client, message_id=message_id)
+        has_started = False
         try:
             while True:
                 item = await queue.dequeue()
                 if item is None:
+                    if not has_started:
+                        yield {
+                            "data": chat_schema.PendingResponseEvent(
+                                queue_position=0,
+                                queue_size=1,
+                            ).json()
+                        }
                     continue
+                has_started = True
 
                 _, response_packet_str = item
-                response_packet = pydantic.parse_raw_as(inference.WorkResponse, response_packet_str)
+                response_packet = pydantic.parse_raw_as(inference.WorkerResponse, response_packet_str)
                 if response_packet.response_type == "error":
                     yield {
                         "data": chat_schema.ErrorResponseEvent(error=response_packet.error).json(),
@@ -111,10 +134,14 @@ async def message_events(
                     break
 
                 if response_packet.response_type == "generated_text":
+                    logger.warning(f"Received generated_text response for {chat_id}. This should not happen.")
                     break
 
-                if await fastapi_request.is_disconnected():
-                    continue
+                if response_packet.response_type == "internal_finished_message":
+                    yield {
+                        "data": chat_schema.MessageResponseEvent(message=response_packet.message).json(),
+                    }
+                    break
 
                 yield {
                     "data": chat_schema.TokenResponseEvent(text=response_packet.text).json(),

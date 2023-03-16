@@ -7,6 +7,7 @@ epochs: 1
 batch_size: 8
 save_folder: "safetyfiles"
 max_length: 256
+per_digit_tokens: False
 special_tokens:
   context_token: "<ctx>"
   sep_token: "<sep>"

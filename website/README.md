@@ -71,8 +71,8 @@ You can use the debug credentials provider to log in without fancy emails or OAu
 To develop components using [Storybook](https://storybook.js.org/) run `npm run storybook`. Then navigate to in your
 browser to `http://localhost:6006`.
 
-To create a new story create a file named `[componentName].stories.js`. An example how such a story could look like, see
-`Header.stories.jsx`.
+To create a new story create a file named `[componentName].stories.tsx`. An example how such a story could look like,
+see `Header.stories.tsx`.
 
 ## Code Layout
 

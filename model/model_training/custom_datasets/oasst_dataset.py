@@ -52,7 +52,7 @@ def load_oasst_export(
         threads: list[list[ExportMessageNode]] = []
 
         def thread_filter(thread: list[ExportMessageNode]) -> bool:
-            if any(m.deleted for m in thread):
+            if any(m.deleted or m.synthetic for m in thread):
                 return False
 
             if top_k is not None:
@@ -98,7 +98,7 @@ def load_oasst_export(
 
     def process_thread(thread):
         if mode == "sft":
-            return format_pair([m.text for m in thread])
+            return [m.text for m in thread]
         elif mode == "rm":
             prefix = format_pair([m.text for m in thread])
             replies = [r for r in thread[-1].replies if r.role == "assistant" and r.rank is not None]

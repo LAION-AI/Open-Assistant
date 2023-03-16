@@ -7,6 +7,8 @@ import torch
 from torch.nn import functional as F
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase, TruncationStrategy
 
+from .formatting import format_pairs, format_system_prefix
+
 
 @dataclass
 class DialogueDataCollator:
@@ -23,6 +25,20 @@ class DialogueDataCollator:
     samples_mixing: Optional[bool] = False
     random_offset_probability: Optional[float] = 0.5
     label_masking: bool = True
+    use_system_prefix: bool = False
+    system_prefix: str = None
+
+    def __post_init__(self):
+        assert self.tokenizer.eos_token
+
+        if self.use_system_prefix:
+            assert self.system_prefix
+            self.system_prefix = self.tokenizer.encode(
+                format_system_prefix(self.system_prefix, self.tokenizer.eos_token),
+                add_special_tokens=False,
+                return_tensors="np",
+            )[0]
+            self.max_length = self.max_length - len(self.system_prefix)
 
     def process_one(self, messages, return_length=False):
         total_short_context_one = 0
@@ -35,9 +51,7 @@ class DialogueDataCollator:
             truncation = TruncationStrategy.LONGEST_FIRST
             max_length = self.max_length
 
-        # append eos token to each messages
-        assert self.tokenizer.eos_token
-        messages = [m + self.tokenizer.eos_token for m in messages]
+        messages = format_pairs(messages, self.tokenizer.eos_token)
 
         flatten_message = self.tokenizer(
             "".join(messages),
@@ -77,6 +91,7 @@ class DialogueDataCollator:
             label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
         else:
             label_mask = np.ones(len(message_indices), dtype=bool)
+
         label_mask[-1] = False  # make sure last token is inactive, has an effect only when truncating
 
         if len(flatten_message["input_ids"]) < self.mix_length_threshold and self.samples_mixing:
@@ -125,6 +140,21 @@ class DialogueDataCollator:
 
             label_masks = _label_masks
             flatten_messages = _flatten_messages
+
+        if self.use_system_prefix:
+            flatten_messages = [
+                {
+                    "input_ids": np.concatenate([self.system_prefix, flatten_msg["input_ids"]]),
+                    "attention_mask": np.concatenate(
+                        [np.ones_like(self.system_prefix).astype(bool), flatten_msg["attention_mask"]]
+                    ),
+                }
+                for flatten_msg in flatten_messages
+            ]
+            label_masks = [
+                np.concatenate([np.zeros_like(self.system_prefix).astype(bool), label_mask])
+                for label_mask in label_masks
+            ]
 
         batch = self.tokenizer.pad(
             flatten_messages,

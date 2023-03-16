@@ -1,15 +1,14 @@
+#!/usr/bin/env python3
 import argparse
 import logging
 import os
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-import bitsandbytes
 import datasets
 import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
-from models.patching import patch_model
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -162,11 +161,25 @@ class SFTTrainer(Trainer):
 
 def argument_parsing(notebook=False, notebook_args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--configs", nargs="+", required=True)
+    parser.add_argument(
+        "--configs",
+        nargs="+",
+        required=True,
+        help="""
+        Multiple configs can be passed to set different options.
+        For example, run as:
+
+           ./trainer_sft.py --configs galactica-125m webgpt_dataset_only per_digit_tokens
+
+        to run the galactica-125m model, using the webgpt dataset only (as opposed to all
+        the datasets listed in defaults in config.yaml) and treat each digit as a separate token.
+    """,
+    )
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+    parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -179,16 +192,22 @@ def argument_parsing(notebook=False, notebook_args=None):
     # Config from YAML
     conf = {}
     configs = read_yamls("./configs")
-    for name in args.configs:
-        if "," in name:
-            for n in name.split(","):
-                conf.update(configs[n])
-        else:
-            conf.update(configs[name])
+    conf.update(configs["defaults"])
+    try:
+        for name in args.configs:
+            if "," in name:
+                for n in name.split(","):
+                    conf.update(configs[n])
+            else:
+                conf.update(configs[name])
+    except KeyError as e:
+        print(f'Error: Could not find the config "{e.args[0]}" in config.yaml')
+        exit(1)
 
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
+    conf["resume_from_checkpoint"] = args.resume_from_checkpoint
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -209,15 +228,10 @@ def argument_parsing(notebook=False, notebook_args=None):
 
 if __name__ == "__main__":
     training_conf = argument_parsing()
+    import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
-
-    patch_model(
-        model,
-        resid_pdrop=training_conf.residual_dropout,
-        flash_attention=training_conf.use_flash_attention,
-    )
 
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
@@ -227,6 +241,8 @@ if __name__ == "__main__":
         label_masking=training_conf.label_masking,
         samples_mixing=training_conf.samples_mixing,
         pad_to_multiple_of=16,
+        use_system_prefix=training_conf.use_system_prefix,
+        system_prefix=training_conf.system_prefix,
     )
     eval_collate_fn = DialogueDataCollator(
         tokenizer,
@@ -234,6 +250,8 @@ if __name__ == "__main__":
         random_offset_probability=training_conf.random_offset_probability,
         label_masking=training_conf.label_masking,
         samples_mixing=False,
+        use_system_prefix=training_conf.use_system_prefix,
+        system_prefix=training_conf.system_prefix,
     )
 
     if training_conf.use_custom_sampler:
@@ -297,6 +315,7 @@ if __name__ == "__main__":
         eval_steps=training_conf.eval_steps,
         save_steps=training_conf.save_steps,
         eval_accumulation_steps=training_conf.eval_accumulation_steps,
+        resume_from_checkpoint=training_conf.resume_from_checkpoint,
         report_to="wandb" if training_conf.log_wandb else None,
     )
 
@@ -309,8 +328,9 @@ if __name__ == "__main__":
         wandb.init(
             project="supervised-finetuning",
             entity=training_conf.wandb_entity,
-            name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
             config=training_conf,
+            resume=training_conf.resume_from_checkpoint,
+            name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
         )
 
     trainer = SFTTrainer(
@@ -327,6 +347,6 @@ if __name__ == "__main__":
         compute_metrics=partial(compute_metrics, metrics=metrics, preprocess_fns=preprocess_fns),
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
-    trainer.train()
+    trainer.train(resume_from_checkpoint=training_conf.resume_from_checkpoint)
     trainer.save_model()
     tokenizer.save_pretrained(output_dir)

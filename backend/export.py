@@ -19,13 +19,14 @@ from oasst_data import (
     LabelValues,
 )
 from oasst_shared.schemas.protocol import TextLabel
-from sqlmodel import Session, func, not_
+from sqlmodel import Session, func
 
 
 def fetch_tree_ids(
     db: Session,
     state_filter: Optional[TreeState] = None,
     lang: Optional[str] = None,
+    synthetic: Optional[bool] = None,
     limit: Optional[int] = None,
 ) -> list[tuple[UUID, TreeState]]:
     tree_qry = (
@@ -40,6 +41,17 @@ def fetch_tree_ids(
     if state_filter:
         tree_qry = tree_qry.filter(MessageTreeState.state == state_filter)
 
+    if synthetic is not None:
+        synth_exists_qry = (
+            db.query()
+            .filter(Message.message_tree_id == MessageTreeState.message_tree_id, Message.synthetic)
+            .exists()
+            .correlate(MessageTreeState)
+        )
+        if synthetic is False:
+            synth_exists_qry = ~synth_exists_qry
+        tree_qry = tree_qry.filter(synth_exists_qry)
+
     if limit is not None:
         tree_qry = tree_qry.limit(limit)
 
@@ -50,7 +62,8 @@ def fetch_tree_messages(
     db: Session,
     message_tree_id: Optional[UUID] = None,
     user_id: Optional[UUID] = None,
-    deleted: bool = None,
+    deleted: Optional[bool] = None,
+    synthetic: Optional[bool] = False,
     prompts_only: bool = False,
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
@@ -64,14 +77,14 @@ def fetch_tree_messages(
         qry = qry.filter(Message.user_id == user_id)
     if deleted is not None:
         qry = qry.filter(Message.deleted == deleted)
+    if synthetic is not None:
+        qry = qry.filter(Message.synthetic == synthetic)
     if prompts_only:
         qry = qry.filter(Message.parent_id.is_(None))
     if lang:
         qry = qry.filter(Message.lang == lang)
-    if review_result is False:
-        qry = qry.filter(not_(Message.review_result), Message.review_count > 2)
-    elif review_result is True:
-        qry = qry.filter(Message.review_result)
+    if review_result is not None:
+        qry = qry.filter(Message.review_result == review_result)
     if limit is not None:
         qry = qry.limit(limit)
 
@@ -115,7 +128,8 @@ def fetch_tree_messages_and_avg_labels(
     db: Session,
     message_tree_id: Optional[UUID] = None,
     user_id: Optional[UUID] = None,
-    deleted: bool = None,
+    deleted: Optional[bool] = None,
+    synthetic: Optional[bool] = False,
     prompts_only: bool = False,
     lang: Optional[str] = None,
     review_result: Optional[bool] = None,
@@ -127,21 +141,21 @@ def fetch_tree_messages_and_avg_labels(
         args.append(func.avg(TextLabels.labels[l].cast(sa.Float)).label(l.value))
         args.append(func.count(TextLabels.labels[l]).label(l.value + "_count"))
 
-    qry = db.query(*args).select_from(Message).join(TextLabels, Message.id == TextLabels.message_id)
+    qry = db.query(*args).select_from(Message).outerjoin(TextLabels, Message.id == TextLabels.message_id)
     if message_tree_id:
         qry = qry.filter(Message.message_tree_id == message_tree_id)
     if user_id:
         qry = qry.filter(Message.user_id == user_id)
     if deleted is not None:
         qry = qry.filter(Message.deleted == deleted)
+    if synthetic is not None:
+        qry = qry.filter(Message.synthetic == synthetic)
     if prompts_only:
         qry = qry.filter(Message.parent_id.is_(None))
     if lang:
         qry = qry.filter(Message.lang == lang)
-    if review_result is False:
-        qry = qry.filter(not_(Message.review_result), Message.review_count > 2)
-    elif review_result is True:
-        qry = qry.filter(Message.review_result)
+    if review_result is not None:
+        qry = qry.filter(Message.review_result == review_result)
 
     qry = qry.group_by(Message.id)
 
@@ -155,7 +169,8 @@ def export_trees(
     db: Session,
     export_file: Optional[Path] = None,
     use_compression: bool = False,
-    deleted: bool = False,
+    deleted: Optional[bool] = False,
+    synthetic: Optional[bool] = False,
     user_id: Optional[UUID] = None,
     prompts_only: bool = False,
     state_filter: Optional[TreeState] = None,
@@ -174,6 +189,7 @@ def export_trees(
             db,
             user_id=user_id,
             deleted=deleted,
+            synthetic=synthetic,
             prompts_only=prompts_only,
             lang=lang,
             review_result=review_result,
@@ -205,7 +221,8 @@ def export_trees(
             events=events,
         )
     else:
-        message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang, limit=limit)
+        # tree export mode
+        message_tree_ids = fetch_tree_ids(db, state_filter, lang=lang, limit=limit, synthetic=synthetic)
 
         message_trees: list[list[Message]] = []
 
@@ -215,8 +232,9 @@ def export_trees(
                     db,
                     message_tree_id=tree_id,
                     deleted=deleted,
+                    synthetic=None,  # pass None here (export trees, filtering happend in fetch_tree_ids)
                     prompts_only=prompts_only,
-                    lang=None,  # pass None here, trees were selected based on lang of prompt
+                    lang=None,  # pass None, trees were selected based on lang of prompt
                     review_result=review_result,
                 )
 
@@ -237,13 +255,14 @@ def export_trees(
                     db,
                     message_tree_id=tree_id,
                     deleted=deleted,
+                    synthetic=None,  # pass None here (export trees, filtering happend in fetch_tree_ids)
                     prompts_only=prompts_only,
                     lang=None,  # pass None here, trees were selected based on lang of prompt
                     review_result=review_result,
                 )
                 message_trees.append(messages)
 
-        if review_result is False or deleted is True:
+        if review_result is False or deleted is True or synthetic is True:
             # when exporting filtered we don't have complete message trees, export as list
             messages = [m for t in message_trees for m in t]  # flatten message list
             events = {}
@@ -317,12 +336,22 @@ def parse_args():
     parser.add_argument(
         "--include-spam",
         action="store_true",
-        help="Export including messages with negative review result.",
+        help="Export including messages with no review or negative review result.",
     )
     parser.add_argument(
         "--spam-only",
         action="store_true",
         help="Export only messages with negative review result (implies --include-spam).",
+    )
+    parser.add_argument(
+        "--include-synthetic",
+        action="store_true",
+        help="Include synthetic messages in export",
+    )
+    parser.add_argument(
+        "--synthetic-only",
+        action="store_true",
+        help="Export only synthetic messages (implies --include-synth)",
     )
     parser.add_argument(
         "--user",
@@ -391,6 +420,12 @@ def main():
     if args.spam_only:
         review_result = False
 
+    synthetic: Optional[bool] = False
+    if args.include_synthetic:
+        synthetic = None
+    if args.synthetic_only:
+        synthetic = True
+
     if args.anonymizer_seed is None:
         logger.warning("No anonymizer seed provided, no anonymization will be performed.")
 
@@ -400,6 +435,7 @@ def main():
             Path(args.export_file) if args.export_file is not None else None,
             use_compression=args.use_compression,
             deleted=deleted,
+            synthetic=synthetic,
             user_id=UUID(args.user) if args.user is not None else None,
             prompts_only=args.prompts_only,
             state_filter=state_filter,

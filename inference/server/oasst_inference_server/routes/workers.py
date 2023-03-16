@@ -95,17 +95,17 @@ async def get_worker_id(
     return worker.id
 
 
-async def send_work_request(
+async def send_worker_request(
     websocket: fastapi.WebSocket,
-    work_request: inference.WorkRequest,
+    request: inference.WorkerRequest,
 ):
-    return await websocket.send_text(work_request.json())
+    return await websocket.send_text(request.json())
 
 
-async def receive_work_response(
+async def receive_worker_response(
     websocket: fastapi.WebSocket,
-) -> inference.WorkResponse:
-    return pydantic.parse_raw_as(inference.WorkResponse, await websocket.receive_text())
+) -> inference.WorkerResponse:
+    return pydantic.parse_raw_as(inference.WorkerResponse, await websocket.receive_text())
 
 
 async def receive_worker_config(
@@ -196,10 +196,10 @@ async def run_compliance_check(websocket: fastapi.WebSocket, worker_id: str, wor
             compliance_work_request = await build_work_request(session, message.id)
 
             logger.info(f"Found work request for compliance check for worker {worker_id}: {compliance_work_request}")
-            await send_work_request(websocket, compliance_work_request)
+            await send_worker_request(websocket, compliance_work_request)
             response = None
             while True:
-                response = await receive_work_response(websocket)
+                response = await receive_worker_response(websocket)
                 if response.response_type == "error":
                     compliance_check.responded = True
                     compliance_check.error = response.error
@@ -268,6 +268,17 @@ async def update_worker_session_status(
     await deps.redis_client.set(f"worker_session:{worker_session_id}", worker_session.json())
 
 
+async def ping_worker(
+    websocket: fastapi.WebSocket,
+    worker_id: str,
+):
+    await send_worker_request(websocket, inference.PingRequest())
+    response = await receive_worker_response(websocket)
+    if not response.response_type == "pong":
+        raise WSException(f"Worker {worker_id} did not respond to ping")
+    # TODO: deal with metrics
+
+
 @router.websocket("/work")
 async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(get_worker_id)):
     logger.info(f"handle_worker: {worker_id=}")
@@ -289,6 +300,7 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(g
 
             item = await work_queue.dequeue()
             if item is None:
+                await ping_worker(websocket, worker_id)
                 continue
             else:
                 _, message_id = item
@@ -312,6 +324,11 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(g
     finally:
         logger.info(f"Worker {worker_id} disconnected")
         await delete_worker_session(worker_session_id)
+        # try closing websocket if it's still open
+        try:
+            await websocket.close()
+        except Exception:
+            pass
 
 
 @router.get("/sessions")
@@ -389,7 +406,7 @@ async def perform_work(
 
     logger.info(f"Created {work_request=} with {len(work_request.thread.messages)=}")
     try:
-        await send_work_request(websocket, work_request)
+        await send_worker_request(websocket, work_request)
     except WSException:
         async with deps.manual_create_session() as session:
             await cr.reset_work(message_id)
@@ -407,17 +424,16 @@ async def perform_work(
         response_packet = None
         try:
             while True:
-                response_packet = await receive_work_response(websocket)
-                if response_packet.response_type == "metrics":
+                response_packet = await receive_worker_response(websocket)
+                if response_packet.response_type == "pong":
                     # TODO: store metrics
                     logger.debug(f"Received {response_packet=} from worker.")
-                await message_queue.enqueue(response_packet.json())
-                await message_queue.set_expire(timeout=settings.message_queue_expire)
-                if response_packet.response_type == "error":
-                    raise WorkerError(f"Worker errored: {response_packet.error}", did_work=True)
                 if response_packet.response_type == "generated_text":
                     logger.debug(f"Received {response_packet=} from worker. Ending.")
                     break
+                await message_queue.enqueue(response_packet.json(), expire=settings.message_queue_expire)
+                if response_packet.response_type == "error":
+                    raise WorkerError(f"Worker errored: {response_packet.error}", did_work=True)
         except WSException:
             logger.exception(f"Websocket closed during handling of {message_id=}")
             if response_packet is not None:
@@ -431,7 +447,11 @@ async def perform_work(
         assert response_packet.response_type == "generated_text", "Response packet is not end packet"
         response_packet = cast(inference.GeneratedTextResponse, response_packet)
         async with deps.manual_chat_repository() as cr:
-            await cr.complete_work(message_id, response_packet.text)
+            finished_message = await cr.complete_work(message_id, response_packet.text)
+        finished_message_packet = inference.InternalFinishedMessageResponse(
+            message=finished_message.to_read(),
+        )
+        await message_queue.enqueue(finished_message_packet.json(), expire=settings.message_queue_expire)
 
     except WorkerError as e:
         if e.did_work:
