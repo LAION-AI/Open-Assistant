@@ -109,11 +109,12 @@ async def message_events(
         raise fastapi.HTTPException(status_code=204, detail=message.state)
 
     async def event_generator(chat_id: str, message_id: str):
-        queue = queueing.message_queue(deps.redis_client, message_id=message_id)
+        redis_client = deps.make_redis_client()
+        queue = queueing.message_queue(redis_client, message_id=message_id)
         has_started = False
         try:
             while True:
-                item = await queue.dequeue()
+                item = await queue.dequeue(timeout=1)
                 if item is None:
                     if not has_started:
                         yield {
@@ -154,6 +155,8 @@ async def message_events(
         except Exception:
             logger.exception(f"Error streaming {chat_id}")
             raise
+        finally:
+            await redis_client.close()
 
     return EventSourceResponse(event_generator(chat_id=chat_id, message_id=message_id))
 

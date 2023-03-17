@@ -2,6 +2,7 @@ import datetime
 import enum
 import platform
 import random
+import uuid
 from typing import Annotated, Literal, Union
 
 import psutil
@@ -64,7 +65,8 @@ class WorkerHardwareInfo(pydantic.BaseModel):
 
 class WorkerConfig(pydantic.BaseModel):
     model_name: str = DEFAULT_MODEL_NAME
-    hardware_info: WorkerHardwareInfo = pydantic.Field(default_factory=WorkerHardwareInfo)
+    hardware_info: WorkerHardwareInfo
+    max_parallel_requests: int = 8
 
     @property
     def compat_hash(self) -> str:
@@ -151,52 +153,66 @@ class Thread(pydantic.BaseModel):
     messages: list[MessageRead]
 
 
-class WorkRequest(pydantic.BaseModel):
+class WorkerRequestBase(pydantic.BaseModel):
+    id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
+
+
+class WorkRequest(WorkerRequestBase):
     request_type: Literal["work"] = "work"
     thread: Thread = pydantic.Field(..., repr=False)
     created_at: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
 
 
-class PingRequest(pydantic.BaseModel):
+class PingRequest(WorkerRequestBase):
     request_type: Literal["ping"] = "ping"
 
 
-class ErrorRequest(pydantic.BaseModel):
+class ErrorRequest(WorkerRequestBase):
     request_type: Literal["error"] = "error"
     error: str
 
 
-class TerminateRequest(pydantic.BaseModel):
+class TerminateRequest(WorkerRequestBase):
     request_type: Literal["terminate"] = "terminate"
 
 
-class PongResponse(pydantic.BaseModel):
+class WorkerResponseBase(pydantic.BaseModel):
+    request_id: str | None = None
+
+
+class PongResponse(WorkerResponseBase):
     response_type: Literal["pong"] = "pong"
     metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
 
 
-class TokenResponse(pydantic.BaseModel):
+class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
     log_prob: float
     token_id: int
 
 
-class GeneratedTextResponse(pydantic.BaseModel):
+class GeneratedTextResponse(WorkerResponseBase):
     response_type: Literal["generated_text"] = "generated_text"
     text: str
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
     metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
 
 
-class InternalFinishedMessageResponse(pydantic.BaseModel):
+class InternalFinishedMessageResponse(WorkerResponseBase):
     response_type: Literal["internal_finished_message"] = "internal_finished_message"
     message: MessageRead
 
 
-class ErrorResponse(pydantic.BaseModel):
+class ErrorResponse(WorkerResponseBase):
     response_type: Literal["error"] = "error"
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+    error: str
+
+
+class GeneralErrorResponse(WorkerResponseBase):
+    response_type: Literal["general_error"] = "general_error"
     metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
     error: str
 

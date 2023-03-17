@@ -1,11 +1,15 @@
 import collections
 import random
+import threading
 import time
 from typing import Iterable, Literal
 
 import interface
+import lorem
 import requests
+import websocket
 from loguru import logger
+from oasst_shared.schemas import inference
 
 
 class TokenBuffer:
@@ -60,3 +64,41 @@ def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
         else:
             logger.info("Inference server is ready")
             break
+
+
+def lorem_events(seed):
+    sentence = lorem.sentence()
+    tokens = sentence.split()
+    for token in tokens[:-1]:
+        yield interface.GenerateStreamResponse(
+            token=interface.Token(
+                text=token + " ",
+                logprob=0.1,
+                id=0,
+            ),
+        )
+    yield interface.GenerateStreamResponse(
+        token=interface.Token(
+            text=tokens[-1],
+            logprob=0.1,
+            id=0,
+        ),
+        generated_text=sentence,
+        details=interface.StreamDetails(
+            finish_reason="length",
+            generated_tokens=len(tokens),
+            seed=seed,
+        ),
+    )
+
+
+ws_lock = threading.Lock()
+
+
+def send_response(
+    ws: websocket.WebSocket,
+    repsonse: inference.WorkerResponse | inference.WorkerConfig,
+):
+    msg = repsonse.json()
+    with ws_lock:
+        ws.send(msg)

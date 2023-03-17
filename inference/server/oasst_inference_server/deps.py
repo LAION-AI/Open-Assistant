@@ -8,10 +8,16 @@ from oasst_inference_server.database import AsyncSession, get_async_session
 from oasst_inference_server.settings import settings
 from oasst_inference_server.user_chat_repository import UserChatRepository
 
+
 # create async redis client
-redis_client = redis.Redis(
-    host=settings.redis_host, port=settings.redis_port, db=settings.redis_db, decode_responses=True
-)
+def make_redis_client():
+    redis_client = redis.Redis(
+        host=settings.redis_host, port=settings.redis_port, db=settings.redis_db, decode_responses=True
+    )
+    return redis_client
+
+
+redis_client = make_redis_client()
 
 
 create_session = get_async_session
