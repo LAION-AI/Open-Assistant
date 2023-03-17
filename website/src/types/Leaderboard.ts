@@ -23,6 +23,7 @@ export interface LeaderboardEntity {
   auth_method: string;
   display_name: string;
   leader_score: number;
+  level: number; // between 0 and 100
   base_date: string;
   image?: string;
   modified_date: string;

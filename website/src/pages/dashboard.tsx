@@ -1,4 +1,4 @@
-import { Flex } from "@chakra-ui/react";
+import { Card, CardBody, Flex } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
@@ -7,6 +7,7 @@ import { getDashboardLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
 import { AvailableTasks, TaskCategory } from "src/types/Task";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+import { XPBar } from "src/components/Account/XPBar";
 import { TaskCategoryItem } from "src/components/Dashboard/TaskOption";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { API_ROUTES } from "src/lib/routes";
@@ -32,6 +33,11 @@ const Dashboard = () => {
       </Head>
       <Flex direction="column" gap="10">
         <WelcomeCard />
+        <Card>
+          <CardBody>
+            <XPBar />
+          </CardBody>
+        </Card>
         <TaskOption content={availableTaskTypes} />
         <LeaderboardWidget />
       </Flex>
