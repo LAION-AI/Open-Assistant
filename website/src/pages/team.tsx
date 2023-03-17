@@ -39,7 +39,7 @@ const Team = () => {
                             <Text fontWeight="bold">
                               {name}
                               <Badge ml="1">
-                                <Link href={githubURL} target="_default" title="github">
+                                <Link href={githubURL} target="_default" rel="noreferrer" title="github">
                                   <Github size={12} />
                                 </Link>
                               </Badge>
