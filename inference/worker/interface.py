@@ -40,8 +40,9 @@ class Token(pydantic.BaseModel):
     def __len__(self) -> int:
         return len(self.text)
 
-    def to_token_response(self) -> inference.TokenResponse:
+    def to_token_response(self, request_id: str) -> inference.TokenResponse:
         return inference.TokenResponse(
+            request_id=request_id,
             text=self.text,
             log_prob=self.logprob,
             token_id=self.id,

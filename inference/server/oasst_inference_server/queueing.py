@@ -13,11 +13,8 @@ class RedisQueue:
             await self.set_expire(expire)
         return pushed
 
-    async def dequeue(self, block: bool = True, timeout: int = 1) -> str:
-        if block:
-            return await self.redis_client.blpop(self.queue_id, timeout=timeout)
-        else:
-            return await self.redis_client.lpop(self.queue_id)
+    async def dequeue(self, timeout: int = 1) -> str:
+        return await self.redis_client.blpop(self.queue_id, timeout=timeout)
 
     async def set_expire(self, timeout: int) -> None:
         return await self.redis_client.expire(self.queue_id, timeout)
