@@ -17,6 +17,7 @@ dependencies = [
     "evaluate==0.4.0",
     "gdown",
     "trlx @ git+https://github.com/CarperAI/trlx.git@b91da7b03d8e9fa0c0d6dce10a8f2611aca3013f",
+    "ninja==1.11.1",
     "nltk==3.8.1",
     "numpy>=1.22.4",
     "py7zr",
