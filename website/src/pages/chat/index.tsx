@@ -37,13 +37,17 @@ const Chat = () => {
             {t("chat:your_chats")}
           </Text>
           <Divider />
-          {data.chats.map(({ id }) => (
+          {data.chats.map(({ id, modified_at, title }) => (
             <Link key={id} href={`/chat/${id}`}>
-              {/* TODO: we really only the have the id for each case our users will probably have no idea which is which
-               maybe we could show the last message & its date, this is not provided by the API right now */}
-              <Text as={Button} py={2} display="block" bg="inherit" w="full" textAlign="start" borderRadius="sm">
-                {id}
-              </Text>
+              <Flex as={Button} bg="inherit" py={2} w="full" borderRadius="sm" gap={6} justifyContent="start">
+                <Text>
+                  {t("chat:chat_date", {
+                    val: new Date(modified_at),
+                    formatParams: { val: { dateStyle: "short", timeStyle: "short" } },
+                  })}
+                </Text>
+                <Text>{title ?? t("chat:empty")}</Text>
+              </Flex>
             </Link>
           ))}
           <Divider />
