@@ -1,5 +1,8 @@
 {
-  "python.analysis.extraPaths": ["${workspaceFolder}/oasst-shared"],
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/oasst-shared",
+    "./oasst-data"
+  ],
   "prettier.singleQuote": false,
   "eslint.workingDirectories": ["./website", "./docs"],
   "python.testing.pytestArgs": ["backend/tests", "oasst-shared/tests"],
