@@ -14,8 +14,8 @@ class ChatUser(HttpUser):
     wait_time = between(1, 2)
     conversation_length = random.randint(3, 20)
     time_to_respond = random.randint(3, 5)  # for the user
-    model_id = "distilgpt2"
-    # model_id = "_lorem"
+    # model_id = "distilgpt2"
+    model_id = "_lorem"
 
     @task
     def chat(self):

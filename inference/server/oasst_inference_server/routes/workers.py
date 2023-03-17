@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-import uuid
+from typing import cast
 
 import fastapi
 import pydantic
@@ -94,13 +94,21 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
     worker_compat_hash = worker_config.compat_hash
     redis_client = deps.make_redis_client()
     work_queue = queueing.work_queue(redis_client, worker_compat_hash)
-    worker_session_id = str(uuid.uuid4())
+    worker_session = worker_utils.WorkerSession(
+        worker_id=worker_id,
+        config=worker_config,
+    )
     work_request_map: dict[str, WorkRequestContainer] = {}
     pending_futures = set()
     try:
         async with deps.manual_create_session() as session:
             await add_worker_connect_event(session=session, worker_id=worker_id, worker_config=worker_config)
-        await worker_utils.store_worker_session(worker_session_id, worker_id, worker_config)
+        await worker_utils.store_worker_session(worker_session)
+
+        async def _update_session(metrics: inference.WorkerMetricsInfo):
+            worker_session.requests_in_flight = len(work_request_map)
+            worker_session.metrics = metrics
+            await worker_utils.store_worker_session(worker_session)
 
         def _add_dequeue(ftrs: set):
             requests_in_progress = len(work_request_map)
@@ -118,7 +126,7 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
             if websocket.client_state == fastapi.websockets.WebSocketState.DISCONNECTED:
                 raise WorkerDisconnectException("Worker disconnected")
             (done, pending_futures) = await asyncio.wait(
-                pending_futures, timeout=1, return_when=asyncio.FIRST_COMPLETED
+                pending_futures, timeout=settings.worker_ping_interval, return_when=asyncio.FIRST_COMPLETED
             )
             ftr: asyncio.Future
             for ftr in done:
@@ -146,26 +154,34 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
                         worker_response: inference.WorkerResponse = result
                         match worker_response.response_type:
                             case "pong":
-                                pass
+                                worker_response = cast(inference.PongResponse, worker_response)
+                                await _update_session(worker_response.metrics)
                             case "token":
+                                worker_response = cast(inference.TokenResponse, worker_response)
                                 await handle_token_response(
                                     work_request_map=work_request_map,
                                     response=worker_response,
                                 )
                             case "generated_text":
+                                worker_response = cast(inference.GeneratedTextResponse, worker_response)
                                 await handle_generated_text_response(
                                     work_request_map=work_request_map,
                                     response=worker_response,
                                 )
+                                await _update_session(worker_response.metrics)
                             case "error":
+                                worker_response = cast(inference.ErrorResponse, worker_response)
                                 await handle_error_response(
                                     work_request_map=work_request_map,
                                     response=worker_response,
                                 )
+                                await _update_session(worker_response.metrics)
                             case "general_error":
+                                worker_response = cast(inference.GeneralErrorResponse, worker_response)
                                 await handle_general_error_response(
                                     response=worker_response,
                                 )
+                                await _update_session(worker_response.metrics)
                             case _:
                                 raise RuntimeError(f"Unknown response type: {worker_response.response_type}")
                     finally:
@@ -199,7 +215,7 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
         except Exception:
             logger.warning("Error while closing redis client")
         try:
-            await worker_utils.delete_worker_session(worker_session_id)
+            await worker_utils.delete_worker_session(worker_session.id)
         except Exception:
             logger.warning("Error while deleting worker session")
         # try closing websocket if it's still open

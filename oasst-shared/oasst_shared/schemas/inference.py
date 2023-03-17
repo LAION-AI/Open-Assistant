@@ -73,12 +73,16 @@ class WorkerConfig(pydantic.BaseModel):
         return compat_hash(model_name=self.model_name)
 
 
+class GpuMetricsInfo(pydantic.BaseModel):
+    gpu_usage: float
+    mem_usage: float
+
+
 class WorkerMetricsInfo(pydantic.BaseModel):
     cpu_usage: float
     mem_usage: float
     swap_usage: float
-    gpu_usage: float | None = None
-    gpu_memory_usage: float | None = None
+    gpus: list[GpuMetricsInfo] | None = None
 
     def __init__(self, **data):
         data["cpu_usage"] = psutil.cpu_percent()
@@ -87,14 +91,16 @@ class WorkerMetricsInfo(pydantic.BaseModel):
         try:
             pynvml.nvmlInit()
             data["nvidia_driver_version"] = pynvml.nvmlSystemGetDriverVersion()
-            gpu_usages = []
-            gpu_memory_usages = []
+            gpus = []
             for i in range(pynvml.nvmlDeviceGetCount()):
                 handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-                gpu_usages.append(pynvml.nvmlDeviceGetUtilizationRates(handle).gpu)
-                gpu_memory_usages.append(pynvml.nvmlDeviceGetMemoryInfo(handle).used)
-            data["gpu_usage"] = sum(gpu_usages) / len(gpu_usages)
-            data["gpu_memory_usage"] = sum(gpu_memory_usages) / len(gpu_memory_usages)
+                gpus.append(
+                    {
+                        "gpu_usage": pynvml.nvmlDeviceGetUtilizationRates(handle).gpu,
+                        "mem_usage": pynvml.nvmlDeviceGetMemoryInfo(handle).used,
+                    }
+                )
+            data["gpus"] = gpus
         except Exception:
             pass
         super().__init__(**data)

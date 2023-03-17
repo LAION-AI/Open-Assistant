@@ -4,6 +4,7 @@ from fastapi import Depends
 from loguru import logger
 from oasst_inference_server import auth, deps, models, queueing
 from oasst_inference_server.schemas import chat as chat_schema
+from oasst_inference_server.settings import settings
 from oasst_inference_server.user_chat_repository import UserChatRepository
 from oasst_shared.schemas import inference
 from sse_starlette.sse import EventSourceResponse
@@ -114,7 +115,7 @@ async def message_events(
         has_started = False
         try:
             while True:
-                item = await queue.dequeue(timeout=1)
+                item = await queue.dequeue(timeout=settings.pending_event_interval)
                 if item is None:
                     if not has_started:
                         yield {

@@ -46,7 +46,7 @@ class Settings(pydantic.BaseSettings):
 
     debug_api_keys: list[str] = []
 
-    do_compliance_checks: bool = True
+    do_compliance_checks: bool = False
     compliance_check_interval: int = 60
     compliance_check_timeout: int = 60
 
@@ -63,6 +63,9 @@ class Settings(pydantic.BaseSettings):
 
     auth_discord_client_id: str = ""
     auth_discord_client_secret: str = ""
+
+    pending_event_interval: int = 1
+    worker_ping_interval: int = 3
 
 
 settings = Settings()

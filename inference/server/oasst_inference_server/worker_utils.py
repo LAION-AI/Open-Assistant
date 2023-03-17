@@ -1,4 +1,5 @@
 import enum
+import uuid
 
 import fastapi
 import pydantic
@@ -17,10 +18,11 @@ class WorkerSessionStatus(str, enum.Enum):
 
 
 class WorkerSession(pydantic.BaseModel):
-    session_id: str
+    id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
     worker_id: str
     config: inference.WorkerConfig
-    status: WorkerSessionStatus = WorkerSessionStatus.waiting
+    requests_in_flight: int = 0
+    metrics: inference.WorkerMetricsInfo | None = None
 
 
 api_key_header = fastapi.Header(None, alias="X-API-Key")
@@ -92,29 +94,9 @@ async def receive_worker_config(
     return inference.WorkerConfig.parse_raw(await websocket.receive_text())
 
 
-async def update_worker_session_status(
-    worker_session_id: str,
-    status: WorkerSessionStatus,
-):
-    worker_session = WorkerSession.parse_raw(await deps.redis_client.get(f"worker_session:{worker_session_id}"))
-    worker_session.status = status
-    await deps.redis_client.set(f"worker_session:{worker_session_id}", worker_session.json())
-
-
-async def store_worker_session(
-    worker_session_id: str,
-    worker_id: str,
-    worker_config: inference.WorkerConfig,
-):
-    worker_session = WorkerSession(
-        session_id=worker_session_id,
-        worker_id=worker_id,
-        config=worker_config,
-        status=WorkerSessionStatus.waiting,
-    )
-    logger.debug(f"Saving worker session {worker_session_id}")
-    await deps.redis_client.set(f"worker_session:{worker_session_id}", worker_session.json())
-    logger.debug(f"Saved worker session {worker_session_id}")
+async def store_worker_session(worker_session: WorkerSession):
+    logger.debug(f"Saving worker session {worker_session.id}")
+    await deps.redis_client.set(f"worker_session:{worker_session.id}", worker_session.json())
 
 
 async def delete_worker_session(worker_session_id: str):
