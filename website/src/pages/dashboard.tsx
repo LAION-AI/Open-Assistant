@@ -33,12 +33,12 @@ const Dashboard = () => {
       </Head>
       <Flex direction="column" gap="10">
         <WelcomeCard />
+        <TaskOption content={availableTaskTypes} />
         <Card>
           <CardBody>
             <XPBar />
           </CardBody>
         </Card>
-        <TaskOption content={availableTaskTypes} />
         <LeaderboardWidget />
       </Flex>
     </>

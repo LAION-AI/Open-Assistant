@@ -19,8 +19,8 @@ export const XPBar = () => {
     if (reachedMaxLevel) {
       return t("reached_max_level");
     }
-    return t("xp_progress_message", { score, need: scoreUntilNextLevel });
-  }, [reachedMaxLevel, score, scoreUntilNextLevel, t]);
+    return t("xp_progress_message", { need: scoreUntilNextLevel });
+  }, [reachedMaxLevel, scoreUntilNextLevel, t]);
 
   return (
     <Grid
@@ -38,7 +38,7 @@ export const XPBar = () => {
         <Icon as={Star} boxSize={20} fill="gold" color="gold" animation={starAnimation} />
       </GridItem>
       <GridItem area="row1">
-        <Text>{t("level_progress_message", { level, total: 100 })}</Text>
+        <Text>{t("level_progress_message", { score, level })}</Text>
       </GridItem>
       <GridItem area="row2">
         <Text>{nextLevelText}</Text>
