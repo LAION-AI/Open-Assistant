@@ -114,7 +114,7 @@ def handle_work_request(
             finish_reason=stream_response.details.finish_reason,
         ),
     )
-    logger.info("Work complete. Waiting for more work...")
+    logger.debug("Work complete. Waiting for more work...")
 
 
 def get_inference_server_stream_events(parameters: interface.GenerateStreamParameters, prompt: str):

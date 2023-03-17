@@ -15,7 +15,7 @@ from settings import settings
 
 
 def terminate_worker(signum, frame):
-    logger.info(f"Signal {signum}. Terminating worker...")
+    logger.warning(f"Signal {signum}. Terminating worker...")
     sys.exit(0)
 
 
@@ -42,12 +42,12 @@ def main():
                     },
                 )
             ) as ws:
-                logger.info("Connected to backend, sending config...")
+                logger.warning("Connected to backend, sending config...")
                 worker_config = inference.WorkerConfig(
                     model_name=settings.model_id, hardware_info=inference.WorkerHardwareInfo()
                 )
                 utils.send_response(ws, worker_config)
-                logger.info("Config sent, waiting for work...")
+                logger.warning("Config sent, waiting for work...")
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=worker_config.max_parallel_requests) as executor:
                     ftrs = []
@@ -61,7 +61,7 @@ def main():
                         worker_request = pydantic.parse_raw_as(inference.WorkerRequest, message)
                         match worker_request.request_type:
                             case "work":
-                                logger.debug(f"Received work request: {worker_request.id=}")
+                                logger.info(f"Handling work request: {worker_request.id=}")
                                 ftr = executor.submit(work.handle_work_request, ws, tokenizer, worker_request)
                                 ftrs.append(ftr)
                             case "ping":
@@ -80,7 +80,7 @@ def main():
             raise
         except Exception:
             logger.exception("Error in websocket")
-            logger.info("Retrying in 5 seconds...")
+            logger.warning("Retrying in 5 seconds...")
             if not settings.retry_on_error:
                 sys.exit(1)
             time.sleep(5)

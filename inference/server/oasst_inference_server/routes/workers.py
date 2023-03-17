@@ -169,10 +169,11 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
                             case _:
                                 raise RuntimeError(f"Unknown response type: {worker_response.response_type}")
                     finally:
+                        if len(pending_futures) == 0:
+                            _add_dequeue(pending_futures)
                         _add_receive(pending_futures)
             if not done:
-                # await worker_utils.send_worker_request(websocket, inference.PingRequest())
-                pass
+                await worker_utils.send_worker_request(websocket, inference.PingRequest())
 
     except Exception as e:
         logger.exception(f"Error while handling worker {worker_id}: {str(e)}")
@@ -269,7 +270,6 @@ async def initiate_work_for_message(
         await work_queue.enqueue(message_id)
         raise
 
-    logger.debug(f"Sent {work_request=} to worker.")
     return work_request
 
 
