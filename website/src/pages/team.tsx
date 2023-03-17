@@ -3,6 +3,7 @@ import { Avatar, Badge, Box, Card, CardBody, Flex, Grid, Heading, Text } from "@
 import { Github } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
+import React from "react";
 import { getTransparentHeaderLayout } from "src/components/Layout";
 
 import data from "../data/team.json";
@@ -24,7 +25,7 @@ const Team = () => {
               </Heading>
               <Text>Open Assistant is only possible through the efforts of these amazing people</Text>
               {groups.map((group) => (
-                <>
+                <React.Fragment key={group.name}>
                   <Text as="h2" fontWeight="bold" size="lg">
                     {group.name}
                   </Text>
@@ -50,7 +51,7 @@ const Team = () => {
                       );
                     })}
                   </Grid>
-                </>
+                </React.Fragment>
               ))}
             </CardBody>
           </Card>
