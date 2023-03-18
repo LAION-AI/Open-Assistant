@@ -10,7 +10,7 @@
     postgres_password: postgres
     loguru_level: DEBUG
     allow_debug_auth: "False"
-    debug_api_keys: "[]"
+    debug_api_keys: ""
   tasks:
     - name: Create network
       community.docker.docker_network:

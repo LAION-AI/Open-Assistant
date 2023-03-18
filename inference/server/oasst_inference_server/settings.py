@@ -1,4 +1,3 @@
-from functools import cache
 from typing import Any
 
 import pydantic
@@ -13,8 +12,8 @@ class Settings(pydantic.BaseSettings):
 
     allowed_worker_compat_hashes: str = "distilgpt2,_lorem"
 
-    @cache
-    def get_allowed_worker_compat_hashes(self) -> list[str]:
+    @property
+    def allowed_worker_compat_hashes_list(self) -> list[str]:
         return self.allowed_worker_compat_hashes.split(",")
 
     sse_retry_timeout: int = 15000
@@ -51,8 +50,8 @@ class Settings(pydantic.BaseSettings):
 
     debug_api_keys: str = ""
 
-    @cache
-    def get_debug_api_keys(self) -> list[str]:
+    @property
+    def debug_api_keys_list(self) -> list[str]:
         return self.debug_api_keys.split(",")
 
     do_compliance_checks: bool = False

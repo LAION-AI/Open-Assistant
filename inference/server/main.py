@@ -79,7 +79,7 @@ async def alembic_upgrade():
 
 @app.on_event("startup")
 async def maybe_add_debug_api_keys():
-    debug_api_keys = settings.get_debug_api_keys()
+    debug_api_keys = settings.debug_api_keys_list
     if not debug_api_keys:
         logger.warning("No debug API keys configured, skipping")
         return
