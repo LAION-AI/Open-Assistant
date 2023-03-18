@@ -21,7 +21,7 @@ export interface InferencePostMessageResponse {
 export interface InferenceMessage {
   id: string;
   content: string | null;
-  state: "manual" | "pending";
+  state: "manual" | "pending" | "aborted_by_worker";
   role: "assistant" | "prompter";
   score: number;
   reports: any[];
