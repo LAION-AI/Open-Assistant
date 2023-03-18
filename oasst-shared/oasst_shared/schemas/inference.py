@@ -110,6 +110,7 @@ class WorkParametersInput(pydantic.BaseModel):
     model_name: str = DEFAULT_MODEL_NAME
     top_k: int | None = None
     top_p: float | None = None
+    typical_p: float | None = None
     temperature: float | None = None
     repetition_penalty: float | None = None
     max_new_tokens: int | None = None

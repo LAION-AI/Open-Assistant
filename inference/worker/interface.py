@@ -9,6 +9,7 @@ class GenerateStreamParameters(pydantic.BaseModel):
     do_sample: bool | None
     top_k: int | None
     top_p: float | None
+    typical_p: float | None
     temperature: float | None
     repetition_penalty: float | None
     seed: int | None
@@ -26,6 +27,7 @@ class GenerateStreamParameters(pydantic.BaseModel):
             do_sample=params.do_sample,
             top_k=params.top_k,
             top_p=params.top_p,
+            typical_p=params.typical_p,
             temperature=params.temperature,
             repetition_penalty=params.repetition_penalty,
             seed=params.seed,
