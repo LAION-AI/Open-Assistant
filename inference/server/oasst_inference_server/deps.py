@@ -21,7 +21,8 @@ redis_client = make_redis_client()
 
 
 async def create_session():
-    return await get_async_session()
+    async for session in get_async_session():
+        yield session
 
 
 @contextlib.asynccontextmanager
