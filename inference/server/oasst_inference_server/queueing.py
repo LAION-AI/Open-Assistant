@@ -29,7 +29,7 @@ def message_queue(redis_client: redis.Redis, message_id: str) -> RedisQueue:
 
 
 def work_queue(redis_client: redis.Redis, worker_compat_hash: str) -> RedisQueue:
-    if worker_compat_hash not in settings.allowed_worker_compat_hashes:
+    if worker_compat_hash not in settings.get_allowed_worker_compat_hashes():
         raise ValueError(f"Worker compat hash {worker_compat_hash} not allowed")
     return RedisQueue(redis_client, f"work:{worker_compat_hash}")
 
