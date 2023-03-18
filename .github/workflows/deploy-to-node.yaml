@@ -71,6 +71,7 @@ jobs:
       BACKEND_URL: ${{ vars.BACKEND_URL }}
       WEB_NEXT_PUBLIC_BACKEND_URL: ${{ vars.WEB_NEXT_PUBLIC_BACKEND_URL }}
       BACKEND_CORS_ORIGINS: ${{ vars.BACKEND_CORS_ORIGINS }}
+      WEB_INFERENCE_SERVER_HOST: ${{ vars.WEB_INFERENCE_SERVER_HOST }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
