@@ -43,14 +43,6 @@ jobs:
       context: .
       dockerfile: docker/inference/Dockerfile.server
       build-args: ""
-  build-inference-worker:
-    uses: ./.github/workflows/docker-build.yaml
-    needs: pre-commit
-    with:
-      image-name: oasst-inference-worker
-      context: .
-      dockerfile: docker/inference/Dockerfile.worker
-      build-args: ""
   build-inference-worker-full:
     uses: ./.github/workflows/docker-build.yaml
     needs: pre-commit
