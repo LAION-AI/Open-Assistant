@@ -99,7 +99,7 @@
           POSTGRES_PASSWORD: "{{ postgres_password }}"
           REDIS_HOST: "oasst-inference-{{ stack_name }}-redis"
           LOGURU_LEVEL: "{{ loguru_level }}"
-          DEBUG_API_KEYS: "{{ debug_api_keys | to_json | tojson | string }}"
+          DEBUG_API_KEYS: "{{ debug_api_keys | string }}"
           ALLOW_DEBUG_AUTH: "{{ allow_debug_auth | string }}"
         ports:
           - "{{ server_port }}:8080"

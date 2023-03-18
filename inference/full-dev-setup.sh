@@ -21,7 +21,7 @@ fi
 
 tmux split-window -h
 tmux send-keys "cd server" C-m
-tmux send-keys "LOGURU_LEVEL=$LOGLEVEL DEBUG_API_KEYS='[\"0000\", \"0001\"]' ALLOW_DEBUG_AUTH=True uvicorn main:app" C-m
+tmux send-keys "LOGURU_LEVEL=$LOGLEVEL DEBUG_API_KEYS='0000,0001' ALLOW_DEBUG_AUTH=True uvicorn main:app" C-m
 tmux split-window -h
 tmux send-keys "cd text-client" C-m
 tmux send-keys "sleep 5" C-m
