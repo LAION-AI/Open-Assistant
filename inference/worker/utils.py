@@ -49,6 +49,9 @@ class TokenBuffer:
             else:
                 self.tokens.extend(reversed(end_tokens))
             yield from self.tokens
+        elif reason == "eos_token":
+            self.tokens.pop()
+            yield from self.tokens
         else:
             yield from self.tokens
 
