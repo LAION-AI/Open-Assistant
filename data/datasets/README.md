@@ -60,16 +60,16 @@ Open-Assistant is collecting the data in a similar format
 
 The dataset must be a jsonl file with the following schema:
 
-```json
+```python
 {
   "thread": {
-    "text": "", // Message text
-    "role": "", // Message role: "prompter" or "assistant"
-    "meta": {}, // Message optional metadata, for example, message rank, safety score and so on
-    "replies": [] // A list of message responses, each with the same structure as "thread"
+    "text": "", # Message text
+    "role": "", # Message role: "prompter" or "assistant"
+    "meta": {}, # Message optional metadata, for example, message rank, safety score and so on
+    "replies": [] # A list of message responses, each with the same structure as "thread"
   },
-  "source": "", // Source of the conversation
-  "meta": {} // Optional metadata of the conversation
+  "source": "", # Source of the conversation
+  "meta": {} # Optional metadata of the conversation
 }
 ```
 
