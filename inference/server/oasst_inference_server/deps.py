@@ -26,7 +26,7 @@ async def create_session():
 
 @contextlib.asynccontextmanager
 async def manual_create_session(autoflush=True):
-    async with contextlib.asynccontextmanager(create_session)(autoflush=autoflush) as session:
+    async with contextlib.asynccontextmanager(get_async_session)(autoflush=autoflush) as session:
         yield session
 
 
