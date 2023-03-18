@@ -10,7 +10,7 @@ class Settings(pydantic.BaseSettings):
 
     message_queue_expire: int = 60
 
-    allowed_worker_compat_hashes: str = "OpenAssistant/oasst-sft-1-pythia-12b,distilgpt2,_lorem"
+    allowed_worker_compat_hashes: str = "*"
 
     @property
     def allowed_worker_compat_hashes_list(self) -> list[str]:
