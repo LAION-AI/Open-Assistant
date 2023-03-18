@@ -9,8 +9,8 @@
     server_port: 8080
     postgres_password: postgres
     loguru_level: DEBUG
-    allow_debug_auth: true
-    debug_api_keys: '["0000"]'
+    allow_debug_auth: "False"
+    debug_api_keys: "[]"
   tasks:
     - name: Create network
       community.docker.docker_network:

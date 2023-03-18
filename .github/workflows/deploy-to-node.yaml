@@ -19,6 +19,10 @@ on:
         required: false
         type: string
         default: 3000
+      inference-server-port:
+        required: false
+        type: string
+        default: 8085
 
 jobs:
   deploy:
@@ -70,7 +74,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Run playbook
+      - name: Run deploy playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
           # Required, playbook filepath
@@ -90,3 +94,25 @@ jobs:
             website_port=${{inputs.website-port}} \
             postgres_password=${{secrets.POSTGRES_PASSWORD}} \
             web_api_key=${{secrets.WEB_API_KEY}}"
+
+      - name: Run inference deploy playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          # Required, playbook filepath
+          playbook: inference/deploy-server.yaml
+          # Optional, directory where playbooks live
+          directory: ansible
+          # Optional, SSH private key
+          key: ${{secrets.DEV_NODE_PRIVATE_KEY}}
+          # Optional, literal inventory file contents
+          inventory: |
+            [dev]
+            dev01 ansible_host=${{secrets.DEV_NODE_IP}} ansible_connection=ssh ansible_user=web-team
+          options: |
+            --extra-vars "stack_name=${{inputs.stack-name}} \
+            image_tag=${{inputs.image-tag}} \
+            server_port=${{inputs.inference-server-port}} \
+            postgres_password=${{secrets.POSTGRES_PASSWORD}} \
+            allow_debug_auth=${{vars.INFERENCE_ALLOW_DEBUG_AUTH}} \
+            debug_api_keys=${{vars.INFERENCE_DEBUG_API_KEYS}} \
+            loguru_level=${{vars.INFERENCE_LOG_LEVEL}}"
