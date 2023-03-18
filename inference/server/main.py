@@ -52,12 +52,8 @@ def terminate_server(signum, frame):
 
 
 @app.on_event("startup")
-async def add_terminate_interrupt():
-    signal.signal(signal.SIGINT, terminate_server)
-
-
-@app.on_event("startup")
 async def alembic_upgrade():
+    signal.signal(signal.SIGINT, terminate_server)
     if not settings.update_alembic:
         logger.warning("Skipping alembic upgrade on startup (update_alembic is False)")
         return
@@ -78,6 +74,7 @@ async def alembic_upgrade():
             timeout = settings.alembic_retry_timeout * 2**retry
             logger.warning(f"Retrying alembic upgrade in {timeout} seconds")
             await asyncio.sleep(timeout)
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 @app.on_event("startup")
