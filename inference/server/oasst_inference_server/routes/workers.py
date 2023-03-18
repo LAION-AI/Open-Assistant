@@ -251,9 +251,10 @@ async def list_worker_sessions() -> list[worker_utils.WorkerSession]:
 async def clear_worker_sessions():
     redis_client = deps.redis_client
     try:
-        logger.info("Clearing worker sessions")
+        logger.warning("Clearing worker sessions")
         async for key in redis_client.scan_iter("worker_session:*"):
             await redis_client.getdel(key)
+        logger.warning("Successfully cleared worker sessions")
     except Exception as e:
         logger.exception(f"Error while clearing worker sessions: {str(e)}")
         raise
