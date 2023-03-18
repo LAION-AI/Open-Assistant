@@ -1,4 +1,6 @@
 {
+  "chat_date": "{{val, datetime}}",
+  "empty": "(empty)",
   "back_to_chat_list": "Back to chat list",
   "your_chats": "Your chats"
 }

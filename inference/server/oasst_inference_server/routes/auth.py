@@ -182,6 +182,7 @@ async def login_debug(username: str, db: database.AsyncSession = Depends(deps.cr
         db.add(user)
         await db.commit()
         await db.refresh(user)
+        logger.info(f"Created new debug user {user=}")
 
     # User exists; create JWT
     access_token = auth.create_access_token({"user_id": user.id})

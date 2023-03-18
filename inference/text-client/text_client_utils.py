@@ -14,6 +14,7 @@ class DebugClient:
         auth_data = self.http_client.get(f"{self.backend_url}/auth/login/debug", params={"username": username}).json()
         assert auth_data["token_type"] == "bearer"
         bearer_token = auth_data["access_token"]
+        logger.debug(f"Logged in as {username} with token {bearer_token}")
         self.auth_headers = {"Authorization": f"Bearer {bearer_token}"}
 
     def create_chat(self):
