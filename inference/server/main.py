@@ -52,8 +52,12 @@ def terminate_server(signum, frame):
 
 
 @app.on_event("startup")
-async def alembic_upgrade():
+async def add_terminate_interrupt():
     signal.signal(signal.SIGINT, terminate_server)
+
+
+@app.on_event("startup")
+async def alembic_upgrade():
     if not settings.update_alembic:
         logger.warning("Skipping alembic upgrade on startup (update_alembic is False)")
         return
@@ -74,7 +78,6 @@ async def alembic_upgrade():
             timeout = settings.alembic_retry_timeout * 2**retry
             logger.warning(f"Retrying alembic upgrade in {timeout} seconds")
             await asyncio.sleep(timeout)
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 @app.on_event("startup")
@@ -102,15 +105,15 @@ async def maybe_add_debug_api_keys():
         raise
 
 
-@app.on_event("startup")
-async def welcome_message():
-    logger.warning("Inference server started")
-    logger.warning("To stop the server, press Ctrl+C")
-
-
 # add routes
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(chats.router)
 app.include_router(workers.router)
 app.include_router(configs.router)
+
+
+@app.on_event("startup")
+async def welcome_message():
+    logger.warning("Inference server started")
+    logger.warning("To stop the server, press Ctrl+C")
