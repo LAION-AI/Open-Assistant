@@ -22,11 +22,22 @@ To see the datasets people are currently working on, please refer to
 
 ## **Dataset Formats**
 
-To simplify the training process, all datasets must be stored as Parquet files
-with the option `row_group_size=100`.<br/> There are two types of datasets
-accepted: instruction and text-only.
+To simplify the training process, all datasets must be stored in one of the two
+formats:
 
-### **Instruction format**
+- parquet with the option `row_group_size=100`
+- jsonl or jsonl.gz
+
+## **Dataset Types**
+
+There are 4 types of datasets that currently accepted:
+
+- Instruction
+- Multi-turn Dialog
+- Safety
+- Text-only
+
+### **Instruction dataset**
 
 Instruction datasets are designed to align language models with human
 interactions. These can take the form of question-answer, request-response,
@@ -39,22 +50,73 @@ following columns:
 4. **METADATA** (JSON string, optional): Any other useful information stored in
    JSON<br/> For example, NSFW content can be marked as `{"nsfw": true}`
 
-### **Text-only format**
+### **Multi-turn dialog dataset**
 
-For datasets that do not fit into the instruction format, text-only format is
-proposed. The text-only dataset must include the following columns:
+For datasets that are intentended to be a conversation with multiple
+continuations. The dataset must be a jsonl file with the following structure of
+each element:
 
-1. **TEXT** (string)
-2. **SOURCE** (string)
-3. **METADATA** (JSON string, optional)
+```json
+{
+  "thread": {
+    "text": "", // user text
+    "role": "", // user role: prompter or assistant
+    "meta": {}, // optional, any useful information
+    "replies": [] // array of response objects like thread
+  },
+  "source": "", // source of the conversation
+  "meta": {} // optional, any useful information
+}
+```
 
-### **Safety format**
+For example:
+
+```json
+{
+  "thread": {
+    "text": "User prompt",
+    "role": "prompter",
+    "meta": { "lang": "en" },
+    "replies": [
+      {
+        "text": "Assistant response 1",
+        "role": "assistant",
+        "meta": { "rank": 0 },
+        "replies": [
+          {
+            "text": "User response 1",
+            "role": "prompter",
+            "meta": { "rank": 0 },
+            "replies": []
+          },
+          {
+            "text": "User response 2",
+            "role": "prompter",
+            "meta": { "rank": 1 },
+            "replies": []
+          }
+        ]
+      },
+      {
+        "text": "Assistant response 2",
+        "role": "assistant",
+        "meta": { "rank": 1 },
+        "replies": []
+      }
+    ]
+  },
+  "source": "twitter",
+  "meta": { "post_id": "..." }
+}
+```
+
+### **Safety dataset**
 
 For datasets that are intended to be used to train safety models, prosocial
 format is proposed. The format is given below
 
 1. **USER** (string): the potentially unsafe utterance
-2. **RESPONSE** (string, optional ): the guiding utterance grounded on
+2. **RESPONSE** (string, optional): the guiding utterance grounded on
    rules-of-thumb (rots)
 3. **ROTs** (List): the relevant rules-of-thumb for text not labeled as
    **casual**
@@ -66,6 +128,15 @@ format is proposed. The format is given below
 6. **SOURCE** (string,optional) : the source of the seed text that was used to
    craft the first utterance of the dialogue: {socialchemistry, sbic,
    ethics_amt, ethics_reddit}
+
+### **Text-only dataset**
+
+For datasets that do not fit any previous types. The text-only dataset must
+include the following columns:
+
+1. **TEXT** (string)
+2. **SOURCE** (string)
+3. **METADATA** (JSON string, optional)
 
 ## **Dataset Requirements**
 
