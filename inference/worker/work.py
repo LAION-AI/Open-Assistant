@@ -3,7 +3,7 @@ import threading
 import interface
 import requests
 import sseclient
-import tokenizers
+import transformers
 import utils
 import websocket
 from loguru import logger
@@ -13,10 +13,11 @@ from settings import settings
 tokenizer_lock = threading.Lock()
 
 
-def truncate_prompt(tokenizer: tokenizers.Tokenizer, parameters: interface.GenerateStreamParameters, prompt: str):
+def truncate_prompt(
+    tokenizer: transformers.PreTrainedTokenizer, parameters: interface.GenerateStreamParameters, prompt: str
+):
     with tokenizer_lock:
-        encoding: tokenizers.Encoding = tokenizer.encode(prompt)
-    ids = encoding.ids
+        ids = tokenizer.encode(prompt)
     if len(ids) > settings.max_input_length:
         logger.warning(f"Prompt too long, left-truncating to {settings.max_input_length} tokens")
         ids = ids[-(settings.max_input_length - 1) :]
@@ -36,7 +37,7 @@ V2_PROMPTER_PREFIX = "<|prompter|>"
 
 
 def make_prompt_and_parameters(
-    tokenizer: tokenizers.Tokenizer,
+    tokenizer: transformers.PreTrainedTokenizer,
     work_request: inference.WorkRequest,
 ) -> tuple[str, interface.GenerateStreamParameters]:
     if settings.oa_protocol_version != "v2":
@@ -68,7 +69,7 @@ def make_prompt_and_parameters(
 
 def handle_work_request(
     ws: websocket.WebSocket,
-    tokenizer: tokenizers.Tokenizer,
+    tokenizer: transformers.PreTrainedTokenizer,
     work_request: inference.WorkRequest,
 ):
     prompt, parameters = make_prompt_and_parameters(tokenizer, work_request)

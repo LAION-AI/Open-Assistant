@@ -5,7 +5,7 @@ import time
 from contextlib import closing
 
 import pydantic
-import tokenizers
+import transformers
 import utils
 import websocket
 import work
@@ -24,7 +24,7 @@ def main():
     logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
 
     if settings.model_id != "_lorem":
-        tokenizer = tokenizers.Tokenizer.from_pretrained(settings.model_id)
+        tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(settings.model_id)
     else:
         tokenizer = None
 

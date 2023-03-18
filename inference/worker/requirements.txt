@@ -5,5 +5,5 @@ psutil
 pydantic
 requests
 sseclient-py
-tokenizers
+transformers
 websocket-client
