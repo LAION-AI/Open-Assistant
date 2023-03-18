@@ -33,5 +33,6 @@ class SHPDataset(Dataset):
     def __getitem__(self, idx):
 
         postid = self.postids[idx]
+        post, answers = self.post_dict.get(postid,{}).values()
+        return post, answers
 
-        return self.post_dict.get(postid,{}).values()
