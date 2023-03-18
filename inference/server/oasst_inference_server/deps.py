@@ -20,7 +20,8 @@ def make_redis_client():
 redis_client = make_redis_client()
 
 
-create_session = get_async_session
+async def create_session():
+    return await get_async_session()
 
 
 @contextlib.asynccontextmanager

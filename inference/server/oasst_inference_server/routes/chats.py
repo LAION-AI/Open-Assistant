@@ -15,7 +15,7 @@ router = fastapi.APIRouter(
 )
 
 
-@router.get("/")
+@router.get("")
 async def list_chats(
     ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
 ) -> chat_schema.ListChatsResponse:
@@ -26,7 +26,7 @@ async def list_chats(
     return chat_schema.ListChatsResponse(chats=chats_list)
 
 
-@router.post("/")
+@router.post("")
 async def create_chat(
     request: chat_schema.CreateChatRequest,
     ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
