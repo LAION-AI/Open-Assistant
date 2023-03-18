@@ -1,3 +1,4 @@
+hf_transfer
 loguru
 lorem
 nvidia-ml-py
