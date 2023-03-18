@@ -75,6 +75,18 @@
       "title": "",
       "githubURL": "https://github.com/bitplane",
       "imageURL": "https://avatars.githubusercontent.com/u/273059?v=4"
+    },
+    "SummerSigh": {
+      "name": "Summer",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/SummerSigh",
+      "imageURL": "https://avatars.githubusercontent.com/u/71572746?v=4"
+    },
+    "shahules786": {
+      "name": "Shahul ES",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/shahules786",
+      "imageURL": "https://avatars.githubusercontent.com/u/25312635?v=4"
     }
   },
   "groups": [
@@ -93,6 +105,10 @@
     {
       "name": "Data Team",
       "members": ["sedthh", "bitplane"]
+    },
+    {
+      "name": "Safety Team",
+      "members": ["SummerSigh", "shahules786"]
     }
   ]
 }
