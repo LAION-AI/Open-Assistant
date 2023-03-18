@@ -106,6 +106,7 @@ def handle_work_request(
             send_token.to_token_response(request_id=work_request.id),
         )
 
+    logger.debug(f"Generated text: {stream_response.generated_text}")
     utils.send_response(
         ws,
         inference.GeneratedTextResponse(

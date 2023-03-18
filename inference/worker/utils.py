@@ -39,10 +39,15 @@ class TokenBuffer:
     def finish(self, reason: Literal["length", "eos_token", "stop_sequence"]) -> Iterable[interface.Token]:
         if reason == "stop_sequence":
             end_sequence = ""
+            end_tokens = []
             while self.tokens:
-                end_sequence = self.tokens.pop().text + end_sequence
+                token = self.tokens.pop()
+                end_tokens.append(token)
+                end_sequence = token.text + end_sequence
                 if end_sequence in self.stop_sequences:
                     break
+            else:
+                self.tokens.extend(reversed(end_tokens))
             yield from self.tokens
         else:
             yield from self.tokens
