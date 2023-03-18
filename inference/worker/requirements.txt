@@ -1,4 +1,5 @@
 hf_transfer
+huggingface_hub
 loguru
 lorem
 nvidia-ml-py
