@@ -8,6 +8,9 @@
     image_tag: latest
     server_port: 8080
     postgres_password: postgres
+    loguru_level: DEBUG
+    allow_debug_auth: true
+    debug_api_keys: '["0000"]'
   tasks:
     - name: Create network
       community.docker.docker_network:
@@ -95,5 +98,8 @@
           POSTGRES_HOST: "oasst-inference-{{ stack_name }}-postgres"
           POSTGRES_PASSWORD: "{{ postgres_password }}"
           REDIS_HOST: "oasst-inference-{{ stack_name }}-redis"
+          LOGURU_LEVEL: "{{ loguru_level }}"
+          DEBUG_API_KEYS: "{{ debug_api_keys | string }}"
+          ALLOW_DEBUG_AUTH: "{{ allow_debug_auth | string }}"
         ports:
           - "{{ server_port }}:8080"

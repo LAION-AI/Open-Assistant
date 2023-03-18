@@ -35,6 +35,30 @@ jobs:
       context: .
       dockerfile: docker/Dockerfile.discord-bot
       build-args: ""
+  build-inference-server:
+    uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
+    with:
+      image-name: oasst-inference-server
+      context: .
+      dockerfile: docker/inference/Dockerfile.server
+      build-args: ""
+  build-inference-worker:
+    uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
+    with:
+      image-name: oasst-inference-worker
+      context: .
+      dockerfile: docker/inference/Dockerfile.worker
+      build-args: ""
+  build-inference-worker-full:
+    uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
+    with:
+      image-name: oasst-inference-worker-full
+      context: .
+      dockerfile: docker/inference/Dockerfile.worker-full
+      build-args: ""
   deploy-to-node:
     needs: [build-backend, build-web, build-bot]
     uses: ./.github/workflows/deploy-to-node.yaml
