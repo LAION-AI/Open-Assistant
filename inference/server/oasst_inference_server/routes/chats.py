@@ -61,9 +61,10 @@ async def create_message(
             prompter_message = await ucr.add_prompter_message(
                 chat_id=chat_id, parent_id=request.parent_id, content=request.content
             )
+            work_parameters = inference.WorkParameters(**request.work_parameters.dict())
             assistant_message = await ucr.initiate_assistant_message(
                 parent_id=prompter_message.id,
-                work_parameters=request.work_parameters,
+                work_parameters=work_parameters,
             )
         queue = queueing.work_queue(deps.redis_client, request.worker_compat_hash)
         logger.debug(f"Adding {assistant_message.id=} to {queue.queue_id} for {chat_id}")
