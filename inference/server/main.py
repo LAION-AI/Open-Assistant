@@ -79,13 +79,14 @@ async def alembic_upgrade():
 
 @app.on_event("startup")
 async def maybe_add_debug_api_keys():
-    if not settings.debug_api_keys:
+    debug_api_keys = settings.get_debug_api_keys()
+    if not debug_api_keys:
         logger.warning("No debug API keys configured, skipping")
         return
     try:
         logger.warning("Adding debug API keys")
         async with deps.manual_create_session() as session:
-            for api_key in settings.debug_api_keys:
+            for api_key in debug_api_keys:
                 logger.info(f"Checking if debug API key {api_key} exists")
                 if (
                     await session.exec(sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key))
