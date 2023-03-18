@@ -52,20 +52,24 @@ following columns:
 
 ### **Multi-turn dialog dataset**
 
-For datasets that are intentended to be a conversation with multiple
-continuations. The dataset must be a jsonl file with the following structure of
-each element:
+This type of dataset is designed for conversations with multiple continuations.
+In this format, each conversation is represented as a tree structure, where each
+node represents a message from the user or the assistant. For instance,
+Open-Assistant is collecting the data in a similar format
+([example](https://github.com/LAION-AI/Open-Assistant/blob/main/model/model_eval/manual/data/en_100_message.jsonl.gz)).
+
+The dataset must be a jsonl file with the following schema:
 
 ```json
 {
   "thread": {
-    "text": "", // user text
-    "role": "", // user role: prompter or assistant
-    "meta": {}, // optional, any useful information
-    "replies": [] // array of response objects like thread
+    "text": "", // Message text
+    "role": "", // Message role: "prompter" or "assistant"
+    "meta": {}, // Message optional metadata, for example, message rank, safety score and so on
+    "replies": [] // A list of message responses, each with the same structure as "thread"
   },
-  "source": "", // source of the conversation
-  "meta": {} // optional, any useful information
+  "source": "", // Source of the conversation
+  "meta": {} // Optional metadata of the conversation
 }
 ```
 
@@ -74,23 +78,23 @@ For example:
 ```json
 {
   "thread": {
-    "text": "User prompt",
+    "text": "What is the best programing language in 2023?",
     "role": "prompter",
     "meta": { "lang": "en" },
     "replies": [
       {
-        "text": "Assistant response 1",
+        "text": "It depends on the task that you aiming to solve.",
         "role": "assistant",
         "meta": { "rank": 0 },
         "replies": [
           {
-            "text": "User response 1",
+            "text": "I want to start learning to code",
             "role": "prompter",
             "meta": { "rank": 0 },
             "replies": []
           },
           {
-            "text": "User response 2",
+            "text": "I want to make money",
             "role": "prompter",
             "meta": { "rank": 1 },
             "replies": []
@@ -98,7 +102,7 @@ For example:
         ]
       },
       {
-        "text": "Assistant response 2",
+        "text": "Python is the best.",
         "role": "assistant",
         "meta": { "rank": 1 },
         "replies": []
