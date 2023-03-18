@@ -92,8 +92,9 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
     worker_config = await worker_utils.receive_worker_config(websocket)
     logger.info(f"handle_worker: {worker_config=}")
     worker_compat_hash = worker_config.compat_hash
+    work_queue = queueing.work_queue(deps.redis_client, worker_compat_hash)
     redis_client = deps.make_redis_client()
-    work_queue = queueing.work_queue(redis_client, worker_compat_hash)
+    blocking_work_queue = queueing.work_queue(redis_client, worker_compat_hash)
     worker_session = worker_utils.WorkerSession(
         worker_id=worker_id,
         config=worker_config,
@@ -113,7 +114,7 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
         def _add_dequeue(ftrs: set):
             requests_in_progress = len(work_request_map)
             if requests_in_progress < worker_config.max_parallel_requests:
-                ftrs.add(asyncio.ensure_future(work_queue.dequeue(timeout=0)))
+                ftrs.add(asyncio.ensure_future(blocking_work_queue.dequeue(timeout=0)))
 
         def _add_receive(ftrs: set):
             ftrs.add(asyncio.ensure_future(worker_utils.receive_worker_response(websocket=websocket)))
