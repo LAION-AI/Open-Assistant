@@ -35,7 +35,8 @@ const Team = () => {
                       const { name, title, githubURL, imageURL } = info;
                       return (
                         <Flex key={id} gap={2}>
-                          <Avatar src={imageURL} loading="lazy" />                          <Box ml="3">
+                          <Avatar src={imageURL} loading="lazy" />
+                          <Box ml="3">
                             <Text fontWeight="bold">
                               {name}
                               <Badge ml="1">
