@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo -n "$HF_TOKEN" > $HOME/.huggingface/token
+
 num_shards=${NUM_SHARDS:-1}
 model_id=${MODEL_ID:-"OpenAssistant/oasst-sft-1-pythia-12b"}
 
