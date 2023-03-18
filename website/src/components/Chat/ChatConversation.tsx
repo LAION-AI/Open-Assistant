@@ -122,7 +122,6 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
       {entires}
       {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
       <Textarea ref={inputRef} autoFocus={!isSending} />
-      {}
       <Button
         onClick={send}
         isLoading={isSending}
