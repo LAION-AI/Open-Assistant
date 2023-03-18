@@ -112,10 +112,10 @@ class WorkParametersInput(pydantic.BaseModel):
     top_p: float | None = None
     temperature: float | None = None
     repetition_penalty: float | None = None
+    max_new_tokens: int | None = None
 
 
 class WorkParameters(WorkParametersInput):
-    max_new_tokens: int = 1024
     do_sample: bool = True
     seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1))
 

@@ -26,7 +26,9 @@ def truncate_prompt(
 
     input_length = len(ids)
     spare = settings.max_total_tokens - input_length - 1
-    if parameters.max_new_tokens > spare:
+    if not parameters.max_new_tokens:
+        parameters.max_new_tokens = spare
+    elif parameters.max_new_tokens > spare:
         logger.warning(f"Max new tokens too high, reducing to {spare}")
         parameters.max_new_tokens = spare
     return prompt
