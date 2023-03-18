@@ -147,7 +147,9 @@ class MessageState(str, enum.Enum):
 
 class MessageRead(pydantic.BaseModel):
     id: str
+    parent_id: str | None
     content: str | None
+    created_at: datetime.datetime
     role: Literal["prompter", "assistant"]
     state: MessageState
     score: int
