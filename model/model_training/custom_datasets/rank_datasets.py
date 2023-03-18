@@ -1,7 +1,9 @@
 from torch.utils.data import Dataset
 from datasets import load_dataset
 from collections import defaultdict
+import numpy as np
 
+SEED = 2020
 
 class SHPDataset(Dataset):
     """
@@ -35,4 +37,35 @@ class SHPDataset(Dataset):
         postid = self.postids[idx]
         post, answers = self.post_dict.get(postid,{}).values()
         return post, answers
+
+
+class HellaSwagDataset(Dataset):
+
+    """
+    Dataset class to use data from https://arxiv.org/pdf/1905.07830.pdf 
+    for Reward modeling
+    """
+    name = "hellaswag"
+
+    def __init__(self, split) -> None:
+        super().__init__()
+
+        np.random.seed(SEED)
+        self.dataset_list = []
+        dataset = load_dataset("AlekseyKorshuk/hellaswag", split=split)
+        for item in dataset:
+            context = item.get("ctx")
+            endings = item.get("endings")
+            selected = endings.pop(item.get("label"))
+            ordered_ends = [selected, np.random.choice(endings)]
+            self.dataset_list.append({"context":context, "completions":ordered_ends})
+
+    def __len__(self):
+        return len(self.dataset_list)
+
+    def __getitem__(self, idx):
+
+        context, completions = self.dataset_list[idx].values()
+        return context, completions
+
 
