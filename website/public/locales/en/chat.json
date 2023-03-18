@@ -1,6 +1,7 @@
 {
+  "back_to_chat_list": "Back to chat list",
   "chat_date": "{{val, datetime}}",
   "empty": "(empty)",
-  "back_to_chat_list": "Back to chat list",
+  "queue_info": "Your message is queued, you are at position {{ queuePosition, number, integer }} in the queue.",
   "your_chats": "Your chats"
 }

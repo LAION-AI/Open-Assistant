@@ -10,14 +10,14 @@ import { useRouter } from "next/router";
 import { Flags } from "react-feature-flags";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { GetChatsResponse } from "src/types/Chat";
-import useSWRImmutable from "swr/immutable";
+import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
 const Chat = () => {
   const { t } = useTranslation(["common", "chat"]);
   const router = useRouter();
 
-  const { data } = useSWRImmutable<GetChatsResponse>("/api/chat", get);
+  const { data } = useSWR<GetChatsResponse>("/api/chat", get, { revalidateOnFocus: true });
 
   const { trigger: newChatTrigger } = useSWRMutation<{ id: string }>("/api/chat", post);
 
