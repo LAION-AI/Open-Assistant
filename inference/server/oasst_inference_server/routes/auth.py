@@ -76,7 +76,73 @@ async def callback_discord(
     return protocol.Token(access_token=access_token, token_type="bearer")
 
 
-async def query_user_by_provider_id(db: database.AsyncSession, discord_id: str | None = None) -> models.DbUser | None:
+@router.get("/login/github")
+async def login_github():
+    redirect_uri = f"{settings.api_root}/auth/callback/github"
+    auth_url = f"https://github.com/login/oauth/authorize?client_id={settings.auth_github_client_id}&redirect_uri={redirect_uri}"
+    raise HTTPException(status_code=302, headers={"location": auth_url})
+
+
+@router.get("/callback/github", response_model=protocol.Token)
+async def callback_github(
+    code: str,
+    db: database.AsyncSession = Depends(deps.create_session),
+):
+    redirect_uri = f"{settings.api_root}/auth/callback/github"
+
+    async with aiohttp.ClientSession(raise_for_status=True) as session:
+        # Exchange the auth code for a GitHub access token
+        async with session.post(
+            "https://github.com/login/oauth/access_token",
+            headers={"Accept": "application/json"},
+            data={
+                "client_id": settings.auth_github_client_id,
+                "client_secret": settings.auth_github_client_secret,
+                "code": code,
+                "redirect_uri": redirect_uri,
+            },
+        ) as token_response:
+            token_response_json = await token_response.json()
+
+        try:
+            access_token = token_response_json["access_token"]
+        except KeyError:
+            raise HTTPException(status_code=400, detail="Invalid access token response from GitHub")
+
+        # Retrieve user's GitHub information using access token
+        async with session.get(
+            "https://api.github.com/user", headers={"Authorization": f"Bearer {access_token}"}
+        ) as user_response:
+            user_response_json = await user_response.json()
+
+    try:
+        github_id = str(user_response_json["id"])
+        github_username = user_response_json["login"]
+    except KeyError:
+        raise HTTPException(status_code=400, detail="Invalid user info response from GitHub")
+
+    # Try to find a user in our DB linked to the GitHub user
+    user: models.DbUser = await query_user_by_provider_id(db, github_id=github_id)
+
+    # Create if no user exists
+    if not user:
+        user = models.DbUser(provider="github", provider_account_id=github_id, display_name=github_username)
+
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+
+    # GitHub account is authenticated and linked to a user; create JWT
+    access_token = auth.create_access_token({"user_id": user.id})
+
+    return protocol.Token(access_token=access_token, token_type="bearer")
+
+
+async def query_user_by_provider_id(
+    db: database.AsyncSession,
+    discord_id: str | None = None,
+    github_id: str | None = None,
+) -> models.DbUser | None:
     """Returns the user associated with a given provider ID if any."""
     user_qry = sqlmodel.select(models.DbUser)
 
@@ -84,7 +150,10 @@ async def query_user_by_provider_id(db: database.AsyncSession, discord_id: str |
         user_qry = user_qry.filter(models.DbUser.provider == "discord").filter(
             models.DbUser.provider_account_id == discord_id
         )
-    # elif other IDs...
+    elif github_id:
+        user_qry = user_qry.filter(models.DbUser.provider == "github").filter(
+            models.DbUser.provider_account_id == github_id
+        )
     else:
         return None
 
@@ -113,8 +182,9 @@ async def login_debug(username: str, db: database.AsyncSession = Depends(deps.cr
         db.add(user)
         await db.commit()
         await db.refresh(user)
+        logger.info(f"Created new debug user {user=}")
 
-    # Discord account is authenticated and linked to a user; create JWT
+    # User exists; create JWT
     access_token = auth.create_access_token({"user_id": user.id})
 
     return protocol.Token(access_token=access_token, token_type="bearer")

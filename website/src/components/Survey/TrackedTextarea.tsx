@@ -1,4 +1,5 @@
-import { Tooltip } from "@chakra-ui/react";
+import { Tooltip, Text, Icon } from "@chakra-ui/react";
+import Link from "next/link";
 import { Progress, Stack, Textarea, TextareaProps, useColorModeValue } from "@chakra-ui/react";
 import lande from "lande";
 import { useTranslation } from "next-i18next";
@@ -90,9 +91,19 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
           </Tooltip>
         </div>
       </div>
+
+      <Link href="https://www.markdownguide.org/basic-syntax" rel="noopener noreferrer nofollow" target="_blank">
+        <Stack direction={"row"} align={"center"}>
+          <Icon height={"1em"} viewBox={"0 0 1em 1em"}>
+            <path d="M14.85 3c.63 0 1.15.52 1.14 1.15v7.7c0 .63-.51 1.15-1.15 1.15H1.15C.52 13 0 12.48 0 11.84V4.15C0 3.52.52 3 1.15 3ZM9 11V5H7L5.5 7 4 5H2v6h2V8l1.5 1.92L7 8v3Zm2.99.5L14.5 8H13V5h-2v3H9.5Z"></path>
+          </Icon>
+          <Text fontSize={"0.7em"}>Styling with markdown supported</Text>
+        </Stack>
+      </Link>
       <Progress
         size={"md"}
         height={"2"}
+        width={"100%"}
         rounded={"md"}
         value={wordCount}
         colorScheme={progressColor}

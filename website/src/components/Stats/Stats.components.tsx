@@ -115,63 +115,39 @@ function getTableData(
   const columns = [
     columnHelper.accessor("language", {
       cell: (info) => info.getValue(),
-      header: "Language",
+      header: t("language_stats"),
     }),
     columnHelper.accessor("initial_prompt_review", {
       cell: (info) => info.getValue(),
       header: t("initial_prompt_review"),
-      meta: {
-        isNumeric: true,
-      },
     }),
     columnHelper.accessor("prompt_lottery_waiting", {
       cell: (info) => info.getValue(),
       header: t("prompt_lottery_waiting"),
-      meta: {
-        isNumeric: true,
-      },
     }),
     columnHelper.accessor("growing", {
       cell: (info) => info.getValue(),
       header: t("growing"),
-      meta: {
-        isNumeric: true,
-      },
     }),
     columnHelper.accessor("backlog_ranking", {
       cell: (info) => info.getValue(),
       header: t("backlog_ranking"),
-      meta: {
-        isNumeric: true,
-      },
     }),
     columnHelper.accessor("ranking", {
       cell: (info) => info.getValue(),
       header: t("ranking"),
-      meta: {
-        isNumeric: true,
-      },
     }),
     columnHelper.accessor("ready_for_export", {
       cell: (info) => info.getValue(),
       header: t("ready_for_export"),
-      meta: {
-        isNumeric: true,
-      },
     }),
     columnHelper.accessor("aborted_low_grade", {
       cell: (info) => info.getValue(),
       header: t("aborted_low_grade"),
-      meta: {
-        isNumeric: true,
-      },
     }),
     columnHelper.accessor("halted_by_moderator", {
       cell: (info) => info.getValue(),
       header: t("halted_by_moderator"),
-      meta: {
-        isNumeric: true,
-      },
     }),
   ];
 

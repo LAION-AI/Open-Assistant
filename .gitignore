@@ -18,3 +18,4 @@ backend/openapi.json
 *.db
 # edit docs using obsidian.md, these files should not appear in the repo
 .obsidian/
+.pytest_cache/

@@ -9,6 +9,7 @@
   "labels_simple": "Labels (simple)",
   "last_updated_at": "Last updated at: {{val, datetime}}",
   "leaderboard": "Leaderboard",
+  "level_progress_message": "With a total of {{score}} points, you have reached level {{level,number,integer}}!",
   "month": "Month",
   "monthly": "Monthly",
   "next": "Next",
@@ -19,6 +20,7 @@
   "prompt": "Prompts",
   "rank": "Rank",
   "rankings": "Rankings",
+  "reached_max_level": "You have reached max level, thank you for your hard work!",
   "replies_assistant": "Replies as Assistant",
   "replies_prompter": "Replies as Prompter",
   "reply": "Replies",
@@ -31,6 +33,7 @@
   "view_all": "View all",
   "week": "Week",
   "weekly": "Weekly",
+  "xp_progress_message": "You need {{need, number, integer}} more points to reach the next level!",
   "your_account": "Your account",
   "your_stats": "Your statistics"
 }

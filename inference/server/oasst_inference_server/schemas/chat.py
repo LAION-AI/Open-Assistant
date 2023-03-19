@@ -8,7 +8,7 @@ from oasst_shared.schemas import inference
 class CreateMessageRequest(pydantic.BaseModel):
     parent_id: str | None = None
     content: str = pydantic.Field(..., repr=False)
-    work_parameters: inference.WorkParameters = pydantic.Field(default_factory=inference.WorkParameters)
+    work_parameters: inference.WorkParametersInput = pydantic.Field(default_factory=inference.WorkParametersInput)
 
     @property
     def worker_compat_hash(self) -> str:

@@ -451,6 +451,7 @@ class TreeManager:
             )
 
             if task_type == TaskType.NONE:
+                logger.warning(f"No random tasks currently available, user: {self.pr.user_id}")
                 raise OasstError(
                     f"No tasks of type '{protocol_schema.TaskRequestType.random.value}' are currently available.",
                     OasstErrorCode.TASK_REQUESTED_TYPE_NOT_AVAILABLE,
@@ -467,6 +468,7 @@ class TreeManager:
 
             available_count = task_count_by_type.get(desired_task_type)
             if not available_count:
+                logger.warning(f"No '{desired_task_type.value}' tasks currently available, user: {self.pr.user_id}")
                 raise OasstError(
                     f"No tasks of type '{desired_task_type.value}' are currently available.",
                     OasstErrorCode.TASK_REQUESTED_TYPE_NOT_AVAILABLE,

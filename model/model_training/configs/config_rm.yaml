@@ -1,0 +1,71 @@
+defaults_rm:
+  is_reward_model: true
+  learning_rate: 1e-5
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1e-12
+  weight_decay: 0.00
+  warmup_steps: 10
+  eval_steps: 50
+  save_steps: 100
+  max_length: 512
+  num_train_epochs: 2
+  logging_steps: 10
+  max_grad_norm: 2.0
+  save_total_limit: 4
+  fp16: true
+  eval_accumulation_steps:
+  freeze_layer:
+  cache_dir: .cache
+  loss_fn: RMLoss
+  score_l2_reg: 0.001
+  eval_size:
+  log_dir: "base"
+  quantization: false
+  seq2seqmodel: false
+  fuse_gelu: true
+  log_wandb: true
+  verbose: false
+  output_dir: .saved_models_rm
+  use_custom_sampler: false
+  residual_dropout: 0.0
+  use_flash_attention: false
+  sort_by_length: false
+  per_digit_tokens: false
+  datasets_extra: []
+
+pythia-6.9B-rm:
+  model_name: EleutherAI/pythia-6.9b-deduped
+  learning_rate: 4.5e-6
+  residual_dropout: 0.0
+  weight_decay: 0.0
+  max_length: 512
+  warmup_steps: 20
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 3
+  per_device_eval_batch_size: 3
+  eval_steps: 25
+
+# params based on sweep result: https://wandb.ai/open-assistant/reward_model/runs/9102dee8
+# actual run for export: https://wandb.ai/open-assistant/reward-model/runs/3kwcf5iq
+oasst-rm-1-pythia-1b:
+  datasets:
+    - oasst_export:
+        lang: "en,es,de,fr"
+        input_file_path: 2023-03-13_oasst_ready_labels.jsonl.gz
+  model_name: EleutherAI/pythia-1b-deduped
+  learning_rate: 9.408293588829651e-06
+  residual_dropout: 0.3823726708604269
+  weight_decay: 0.09576145959249724
+  max_length: 520
+  warmup_steps: 10
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 16
+  num_train_epochs: 4
+  eval_steps: 100
+  save_steps: 2000
