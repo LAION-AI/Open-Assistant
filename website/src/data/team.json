@@ -106,6 +106,12 @@
       "githubURL": "https://github.com/0x22almostEvil",
       "imageURL": "https://avatars.githubusercontent.com/u/122345469?v=4"
     },
+    "~Zy~": {
+      "name": "~Zy~",
+      "title": "Community/Web Moderator, Armchair Data Scientist, Pizza Appreciator",
+      "githubURL": "https://github.com/Zyphre",
+      "imageURL": "https://avatars.githubusercontent.com/u/6561540?v=4"
+    },
     "you": {
       "name": "You!",
       "title": "It wouldn't have happened without you, thanks!",
@@ -136,7 +142,7 @@
     },
     {
       "name": "Moderation Team",
-      "members": ["almostEvil___"]
+      "members": ["almostEvil___", "~Zy~"]
     },
     {
       "name": "And also...",
