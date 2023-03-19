@@ -16,5 +16,14 @@
   "submit_labels": "Soumettre",
   "tree_stopped": "Tree stopped {{id}}",
   "view_user": "Voir l'utilisateur",
-  "your_recent_messages": "Vos messages récents"
+  "your_recent_messages": "Vos messages récents",
+  "confirm_open_link_body": "Voulez-vous ouvrir ce lien ?",
+  "confirm_open_link_header": "Confirmer l'ouverture du lien",
+  "copy_message_text": "Copier le message brut",
+  "copy_message_link": "Copier le lien du message",
+  "message_author_explain": "Vous êtes l'auteur de ce message",
+  "message_author": "Auteur",
+  "no_messages": "Pas de messages",
+  "synthetic": "Synthetique",
+  "synthetic_explain": "Ce message a été généré par une IA"
 }

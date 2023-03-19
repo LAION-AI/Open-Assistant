@@ -1,5 +1,9 @@
 FROM ghcr.io/yk/text-generation-inference
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
 ARG MODULE="inference"
 ARG SERVICE="worker"
 
@@ -17,9 +21,10 @@ COPY ./${APP_RELATIVE_PATH}/*.py .
 COPY ./${APP_RELATIVE_PATH}/worker_full_main.sh /entrypoint.sh
 
 ENV MODEL_ID="distilgpt2"
+ENV NUM_SHARDS="1"
 ENV MAX_INPUT_LENGTH="850"
 ENV MAX_TOTAL_TOKENS="1024"
 ENV BACKEND_URL="ws://localhost:8000"
-ENV PARALLELISM="4"
+ENV PARALLELISM="1"
 
 ENTRYPOINT ["/entrypoint.sh"]
