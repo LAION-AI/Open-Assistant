@@ -88,8 +88,7 @@ per_digit_tokens:
 
 math:
   datasets_extra: # Will get merged with datasets
-    - math_qa
-    - grade_school_math_instructions
+    - minimath
 
 oa_dataset_only:
   datasets:
