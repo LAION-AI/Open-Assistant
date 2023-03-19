@@ -1,5 +1,6 @@
 #!/bin/bash
 
+mkdir -p $HOME/.huggingface
 echo -n "$HF_TOKEN" > $HOME/.huggingface/token
 
 num_shards=${NUM_SHARDS:-1}
