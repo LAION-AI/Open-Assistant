@@ -41,12 +41,11 @@ def terminate_server(signum, frame):
 
 model: transformers.PreTrainedModel
 tokenizer: transformers.PreTrainedTokenizer
-use_gpu: bool = False
 
 
 @app.on_event("startup")
 async def load_models():
-    global model, tokenizer, use_gpu
+    global model, tokenizer
     signal.signal(signal.SIGINT, terminate_server)
     logger.warning(f"Loading model {settings.model_id}...")
     if "llama" in settings.model_id:
@@ -58,10 +57,8 @@ async def load_models():
         model = transformers.AutoModelForCausalLM.from_pretrained(settings.model_id)
     if torch.cuda.is_available():
         logger.warning("Using GPU")
-        use_gpu = True
-        if model.device.type == "cpu":
-            model = model.cuda()
-    logger.warning(f"Model loaded, device: {model.device}")
+        model = model.cuda()
+    logger.warning("Model loaded")
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
@@ -87,7 +84,7 @@ async def welcome_message():
 
 @app.post("/generate")
 async def generate(request: interface.GenerateStreamRequest):
-    global model, tokenizer, use_gpu
+    global model, tokenizer
     prompt = request.inputs
     params = request.parameters.dict()
     params.pop("seed")
@@ -95,8 +92,7 @@ async def generate(request: interface.GenerateStreamRequest):
     params.pop("details")
     with torch.no_grad():
         ids = tokenizer.encode(prompt, return_tensors="pt")
-        if use_gpu:
-            ids = ids.cuda()
+        ids = ids.to(model.device)
         output = model.generate(ids, **params)
         output = output.cpu()
         output_ids = output[0][len(ids[0]) :]
