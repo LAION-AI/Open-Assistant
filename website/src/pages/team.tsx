@@ -1,5 +1,5 @@
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
-import { Avatar, Badge, Box, Card, CardBody, Flex, Grid, Heading, Text, useColorModeValue, Stack } from "@chakra-ui/react";
+import { Avatar, Badge, Box, Flex, Grid, Heading, Text, useColorModeValue, Stack } from "@chakra-ui/react";
 import { Github } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
@@ -10,7 +10,7 @@ import data from "../data/team.json";
 
 const Team = () => {
   const cardBackgroundColor = useColorModeValue("gray.100", "gray.800");
-	const contributorBackgroundColor = useColorModeValue("gray.200", "gray.700");
+  const contributorBackgroundColor = useColorModeValue("gray.200", "gray.700");
 
   const { groups, people } = data;
   return (
@@ -25,7 +25,6 @@ const Team = () => {
               Who are we?
             </Heading>
             <Text fontWeight="bold">Open Assistant is only possible through the efforts of these amazing people:</Text>
-
             <Box bg={cardBackgroundColor} display="flex" flexDirection={"column"} gap={6} p="6" borderRadius="xl">
               {groups.map((group) => (
                 <React.Fragment key={group.name}>
@@ -57,7 +56,6 @@ const Team = () => {
                 </React.Fragment>
               ))}
             </Box>
-            
         </Stack>
       </Box>
     </>

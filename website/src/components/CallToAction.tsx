@@ -1,4 +1,4 @@
-import { Box, Link, Text, useColorMode, Badge, Heading } from "@chakra-ui/react";
+import { Box, Link, Text, useColorMode } from "@chakra-ui/react";
 import { Github, Users } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { useId } from "react";
