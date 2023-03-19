@@ -1,7 +1,7 @@
 #!/bin/bash
 
-mkdir -p $HOME/.huggingface
-echo -n "$HF_TOKEN" > $HOME/.huggingface/token
+mkdir -p $HOME/.cache/huggingface
+echo -n "$HF_TOKEN" > $HOME/.cache/huggingface/token
 
 num_shards=${NUM_SHARDS:-1}
 model_id=${MODEL_ID:-"OpenAssistant/oasst-sft-1-pythia-12b"}

@@ -24,7 +24,10 @@ def main():
     logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
 
     if settings.model_id != "_lorem":
-        tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(settings.model_id)
+        if "llama" in settings.model_id:
+            tokenizer: transformers.PreTrainedTokenizer = transformers.LlamaTokenizer.from_pretrained(settings.model_id)
+        else:
+            tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(settings.model_id)
     else:
         tokenizer = None
 
