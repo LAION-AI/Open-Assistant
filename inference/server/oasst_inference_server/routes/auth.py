@@ -17,6 +17,7 @@ router = fastapi.APIRouter(
 async def check_user_auth(user_id: str = Depends(auth.get_current_user_id)):
     return user_id
 
+
 @router.get("/login/discord")
 async def login_discord(state: str = r"{}"):
     redirect_uri = f"{settings.auth_callback_root}/discord"
@@ -30,7 +31,6 @@ async def callback_discord(
     db: database.AsyncSession = Depends(deps.create_session),
 ):
     redirect_uri = f"{settings.auth_callback_root}/discord"
-    # print(redirect_uri)
 
     async with aiohttp.ClientSession(raise_for_status=True) as session:
         # Exchange the auth code for a Discord access token

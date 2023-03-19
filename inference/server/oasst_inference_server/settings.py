@@ -64,9 +64,6 @@ class Settings(pydantic.BaseSettings):
     # in short: this should refer to the website, not to this server
     auth_callback_root: str = "https://open-assistant.io/api/inference_auth"
 
-
-
-
     allow_debug_auth: bool = False
 
     auth_info: bytes = b"NextAuth.js Generated Encryption Key"
