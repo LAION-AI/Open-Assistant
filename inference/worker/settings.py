@@ -13,7 +13,7 @@ class Settings(pydantic.BaseSettings):
     oa_protocol_version: str = "v2"
 
     retry_on_error: bool = True
-    hf_pause: float = 0.125
+    hf_pause: float = 0.075
     max_parallel_requests: int = 8
 
 
