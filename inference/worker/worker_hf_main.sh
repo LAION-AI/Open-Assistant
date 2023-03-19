@@ -7,7 +7,7 @@ python3 -m uvicorn --port 8883 basic_hf_server:app &
 
 export INFERENCE_SERVER_URL="http://localhost:8883"
 
-python3 /worker &
+python3 __main__.py &
 
 wait -n
 
