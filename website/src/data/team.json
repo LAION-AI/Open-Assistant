@@ -87,6 +87,12 @@
       "title": "ML engineer",
       "githubURL": "https://github.com/shahules786",
       "imageURL": "https://avatars.githubusercontent.com/u/25312635?v=4"
+    },
+    "jmete": {
+      "name": "James Mete",
+      "title": "Data Scientist",
+      "githubURL": "https://github.com/Jmete",
+      "imageURL": "https://avatars.githubusercontent.com/u/22094024?v=4"
     }
   },
   "groups": [
@@ -104,7 +110,7 @@
     },
     {
       "name": "Data Team",
-      "members": ["sedthh", "bitplane"]
+      "members": ["sedthh", "bitplane", "jmete"]
     },
     {
       "name": "Safety Team",
