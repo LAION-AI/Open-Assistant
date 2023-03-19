@@ -9,6 +9,7 @@
   "labels_simple": "Метки (простые)",
   "last_updated_at": "Последний раз обновлено: {{val, datetime}}",
   "leaderboard": "Таблица лидеров",
+  "level_progress_message": "У вас {{score}} очков, вы достигли уровня {{level,number,integer}}!",
   "month": "Месяц",
   "monthly": "За месяц",
   "next": "Вперед",
@@ -19,6 +20,7 @@
   "prompt": "Запросы",
   "rank": "Позиция",
   "rankings": "Сортировка",
+  "reached_max_level": "Вы достигли максимального уровня, спасибо вам за усердную работу!",
   "replies_assistant": "Ответы как Ассистент",
   "replies_prompter": "Ответы как Пользователь",
   "reply": "Ответы",
@@ -31,6 +33,7 @@
   "view_all": "Посмотреть все",
   "week": "Неделя",
   "weekly": "За неделю",
+  "xp_progress_message": "Вам нужно ещё {{need, number, integer}} очков, чтобы достичь нового уровня!",
   "your_account": "Аккаунт",
   "your_stats": "Статистика"
 }

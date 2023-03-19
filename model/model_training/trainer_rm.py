@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
 import argparse
 import logging
 import os
-from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
+import bitsandbytes
 import datasets
+import numpy as np
 import torch
-from custom_datasets.dialogue_collator import DialogueDataCollator
+from custom_datasets.ranking_collator import RankingDataCollator
 from efficiency_utils import fuse_gelu
 from torch import nn
 from torch.utils.data import DataLoader
@@ -17,96 +17,76 @@ from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
-from utils import (
-    PerDatasetSampler,
-    _strtobool,
-    get_dataset,
-    get_loss,
-    get_metrics,
-    get_model,
-    get_tokenizer,
-    read_yamls,
-)
+from utils import PerDatasetSampler, _strtobool, get_dataset, get_loss, get_model, get_tokenizer, read_yamls
 
 
-def compute_metrics(eval_pred, preprocess_fns, metrics):
-    out = {}
-    for metric, preprocess_fn in zip(metrics, preprocess_fns):
-        preds, labels = preprocess_fn(eval_pred)
-        out = dict(**out, **metric.compute(predictions=preds, references=labels))
-
-    return out
-
-
-def preprocess_logits_for_metrics(logits, labels):
-    pred_ids = torch.argmax(logits, dim=-1)
-    return pred_ids
+def compute_metrics(eval_pred):
+    scores = eval_pred.predictions
+    pos_scores, neg_scores = scores[0::2, :], scores[1::2, :]
+    metrics = {
+        "pos_score": np.mean(pos_scores),
+        "neg_score": np.mean(neg_scores),
+        "score_diff": np.mean(pos_scores - neg_scores),
+        "accuracy": np.mean(pos_scores > neg_scores),
+    }
+    return metrics
 
 
-class SFTTrainer(Trainer):
+class RMTrainer(Trainer):
     def __init__(
         self,
         model: Union[PreTrainedModel, nn.Module] = None,
         args: TrainingArguments = None,
         sampler: torch.utils.data.sampler.Sampler = None,
-        loss_function: str = "CrossEntropyLoss",
-        poly_eps: float = 1.0,
+        loss_function: Literal["RMLoss"] = "RMLoss",
+        score_l2_reg: float = 0.001,
         train_collate_fn: Callable = None,
         **kwargs,
     ):
         super().__init__(model, args, **kwargs)
         self.train_collate_fn = train_collate_fn
-        # By default CrossEntropyLoss ignores padding_index -100, but just in case use our own loss_fct
-        self.loss_fct = get_loss(loss_function, poly_eps)
+        self.loss_fct = get_loss(loss_function, score_l2_reg=score_l2_reg)
         self.sampler = sampler
 
-    def compute_loss(self, model, inputs, return_outputs=False):
-        labels_mask = inputs.pop("label_masks")
-        targets = inputs.pop("targets")
+    def compute_loss(self, model, inputs, return_logits=False):
+        batch, cu_lens = inputs
 
-        outputs = model(
-            input_ids=inputs["input_ids"],
-            attention_mask=inputs.get("attention_mask", None),
+        logits = model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
         )
 
-        loss = self.loss_fct(outputs.get("logits"), targets, mask=labels_mask)
+        loss = self.loss_fct(logits, cu_lens)
 
-        return (loss, outputs) if return_outputs else loss
-
-    def _compute_loss(self, model, inputs):
-        inputs = self._prepare_inputs(inputs)
-
-        labels_mask = inputs.pop("label_masks")
-        targets = inputs.pop("targets")
-
-        outputs = model(
-            input_ids=inputs["input_ids"],
-            attention_mask=inputs.get("attention_mask", None),
-        )
-
-        logits = outputs.get("logits")
-
-        loss = self.loss_fct(outputs.get("logits"), targets, mask=labels_mask)
-
-        return loss, logits, targets, labels_mask
+        return (loss, logits) if return_logits else loss
 
     def prediction_step(
         self,
         model: nn.Module,
-        inputs: Dict[str, Union[torch.Tensor, Any]],
+        inputs: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], List[int]],
         prediction_loss_only: bool,
         ignore_keys: Optional[List[str]] = None,
     ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
+        batch, cu_lens = inputs
         with torch.no_grad():
-            loss, logits, labels, labels_mask = self._compute_loss(model, inputs)
-            labels[~labels_mask.bool()] = -100  # padding_index
+            batch = self._prepare_inputs(batch)
+            loss, logits = self.compute_loss(model, (batch, cu_lens), return_logits=True)
 
         loss = loss.mean().detach()
 
-        if self.args.prediction_loss_only:
-            return (loss, None, None)
+        pos_logits, neg_logits = [], []
+        for start, end in zip(cu_lens[:-1], cu_lens[1:]):
+            pos_logits.append(logits[start])
+            neg_logits.append(logits[end - 1])
+        pos_logits = torch.cat(pos_logits).detach()
+        neg_logits = torch.cat(neg_logits).detach()
 
-        return (loss, logits, labels)
+        out_logits = torch.stack([pos_logits, neg_logits])
+        # we can't pass something (not nothing) for `compute_metrics` to be called`
+        # also, it has to have the same size as logits, otherwise `_pad_across_processes` hangs
+        labels = torch.zeros_like(out_logits[:, 0])
+
+        return (loss, out_logits, labels)
 
     def get_train_dataloader(self):
         """
@@ -161,25 +141,11 @@ class SFTTrainer(Trainer):
 
 def argument_parsing(notebook=False, notebook_args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--configs",
-        nargs="+",
-        required=True,
-        help="""
-        Multiple configs can be passed to set different options.
-        For example, run as:
-
-           ./trainer_sft.py --configs galactica-125m webgpt_dataset_only per_digit_tokens
-
-        to run the galactica-125m model, using the webgpt dataset only (as opposed to all
-        the datasets listed in defaults in config.yaml) and treat each digit as a separate token.
-    """,
-    )
+    parser.add_argument("--configs", nargs="+", required=True)
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
-    parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -187,25 +153,21 @@ def argument_parsing(notebook=False, notebook_args=None):
     else:
         args, remaining = parser.parse_known_args()
 
+    print(args)
+
     # Config from YAML
     conf = {}
     configs = read_yamls("./configs")
-    conf.update(configs["defaults"])
-    try:
-        for name in args.configs:
-            if "," in name:
-                for n in name.split(","):
-                    conf.update(configs[n])
-            else:
-                conf.update(configs[name])
-    except KeyError as e:
-        print(f'Error: Could not find the config "{e.args[0]}" in config.yaml')
-        exit(1)
+    for name in args.configs:
+        if "," in name:
+            for n in name.split(","):
+                conf.update(configs[n])
+        else:
+            conf.update(configs[name])
 
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
-    conf["resume_from_checkpoint"] = args.resume_from_checkpoint
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -220,40 +182,26 @@ def argument_parsing(notebook=False, notebook_args=None):
         if type_ == bool:
             type_ = _strtobool
         parser.add_argument(f"--{key}", type=type_, default=value)
-        # Allow --no-{key}  to remove it completely
-        parser.add_argument(f"--no-{key}", dest=key, action="store_const", const=None)
 
-    args = parser.parse_args(remaining)
-    print(args)
-    return args
+    return parser.parse_args(remaining)
 
 
-if __name__ == "__main__":
+def main():
     training_conf = argument_parsing()
-    import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
 
-    train, evals = get_dataset(training_conf)
-    train_collate_fn = DialogueDataCollator(
+    train, evals = get_dataset(training_conf, mode="rm")
+    train_collate_fn = RankingDataCollator(
         tokenizer,
         max_length=training_conf.max_length,
-        random_offset_probability=training_conf.random_offset_probability,
-        label_masking=training_conf.label_masking,
-        samples_mixing=training_conf.samples_mixing,
         pad_to_multiple_of=16,
-        use_system_prefix=training_conf.use_system_prefix,
-        system_prefix=training_conf.system_prefix,
     )
-    eval_collate_fn = DialogueDataCollator(
+    eval_collate_fn = RankingDataCollator(
         tokenizer,
         max_length=training_conf.max_length,
-        random_offset_probability=training_conf.random_offset_probability,
-        label_masking=training_conf.label_masking,
-        samples_mixing=False,
-        use_system_prefix=training_conf.use_system_prefix,
-        system_prefix=training_conf.system_prefix,
+        pad_to_multiple_of=16,
     )
 
     if training_conf.use_custom_sampler:
@@ -274,7 +222,6 @@ if __name__ == "__main__":
     else:
         sampler = None
 
-    metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
 
     if training_conf.quantization:
@@ -317,7 +264,6 @@ if __name__ == "__main__":
         eval_steps=training_conf.eval_steps,
         save_steps=training_conf.save_steps,
         eval_accumulation_steps=training_conf.eval_accumulation_steps,
-        resume_from_checkpoint=training_conf.resume_from_checkpoint,
         report_to="wandb" if training_conf.log_wandb else None,
     )
 
@@ -328,27 +274,29 @@ if __name__ == "__main__":
         import wandb
 
         wandb.init(
-            project="supervised-finetuning",
+            project="reward-model",
             entity=training_conf.wandb_entity,
+            name=f"{training_conf.model_name}-{training_conf.log_dir}-rm",
             config=training_conf,
-            resume=training_conf.resume_from_checkpoint,
-            name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
         )
 
-    trainer = SFTTrainer(
+    trainer = RMTrainer(
         model=model,
         args=args,
         sampler=sampler,
         train_collate_fn=train_collate_fn,
         loss_function=training_conf.loss_fn,
-        poly_eps=training_conf.poly_eps,
+        score_l2_reg=training_conf.score_l2_reg,
         train_dataset=train,
         eval_dataset=evals,
         data_collator=eval_collate_fn,
         tokenizer=tokenizer,
-        compute_metrics=partial(compute_metrics, metrics=metrics, preprocess_fns=preprocess_fns),
-        preprocess_logits_for_metrics=preprocess_logits_for_metrics,
+        compute_metrics=compute_metrics,
     )
-    trainer.train(resume_from_checkpoint=training_conf.resume_from_checkpoint)
+    trainer.train()
     trainer.save_model()
     tokenizer.save_pretrained(output_dir)
+
+
+if __name__ == "__main__":
+    main()

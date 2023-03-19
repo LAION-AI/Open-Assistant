@@ -74,9 +74,8 @@ def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
             break
 
 
-def lorem_events(seed):
-    sentence = lorem.sentence()
-    tokens = sentence.split()
+def text_to_events(text: str, seed: int | None = None):
+    tokens = text.split()
     for token in tokens[:-1]:
         yield interface.GenerateStreamResponse(
             token=interface.Token(
@@ -91,13 +90,18 @@ def lorem_events(seed):
             logprob=0.1,
             id=0,
         ),
-        generated_text=sentence,
+        generated_text=text,
         details=interface.StreamDetails(
             finish_reason="length",
             generated_tokens=len(tokens),
             seed=seed,
         ),
     )
+
+
+def lorem_events(seed):
+    sentence = lorem.sentence()
+    yield from text_to_events(sentence, seed=seed)
 
 
 ws_lock = threading.Lock()

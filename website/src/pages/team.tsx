@@ -2,6 +2,7 @@ export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_
 import { Avatar, Badge, Box, Flex, Grid, Heading, Text, useColorModeValue, Stack } from "@chakra-ui/react";
 import { Github } from "lucide-react";
 import Head from "next/head";
+import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import React from "react";
 import { getTransparentHeaderLayout } from "src/components/Layout";
@@ -11,20 +12,20 @@ import data from "../data/team.json";
 const Team = () => {
   const cardBackgroundColor = useColorModeValue("gray.100", "gray.800");
   const contributorBackgroundColor = useColorModeValue("gray.200", "gray.700");
-
   const { groups, people } = data;
+  const { t } = useTranslation();
   return (
     <>
       <Head>
-        <title>Who are we - Open Assistant</title>
+        <title>{t("who_are_we")} - Open Assistant</title>
         <meta name="description" content="The team begind Open Assistant" />
       </Head>
       <Box fontFamily="Inter" p="6" className="oa-basic-theme">
         <Stack className="max-w-6xl mx-auto" spacing="6" mb="6">
             <Heading as="h1" size="xl" color="blue.500">
-              Who are we?
+              {t("who_are_we")}
             </Heading>
-            <Text fontWeight="bold">Open Assistant is only possible through the efforts of these amazing people:</Text>
+            <Text fontWeight="bold">{t("team_message")}</Text>
             <Box bg={cardBackgroundColor} display="flex" flexDirection={"column"} gap={6} p="6" borderRadius="xl">
               {groups.map((group) => (
                 <React.Fragment key={group.name}>

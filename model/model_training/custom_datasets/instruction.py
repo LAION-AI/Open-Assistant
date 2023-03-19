@@ -1,7 +1,6 @@
 """
     These are in the form of 'INSTRUCTION', 'RESPONSE'
 """
-from custom_datasets.formatting import format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -17,6 +16,7 @@ INSTRUCTION_DATASETS = {
     "youtube_subs_howto100M": "totuta/youtube_subs_howto100M",
     "iapp_wiki_qa_squad": "wannaphong/iapp_wiki_qa_squad_oa",
     "zhihu-kol": "wangrui6/zhihu-kol",
+    "minimath": "kentsui/minimath",
 }
 
 
@@ -24,8 +24,8 @@ class InstructionDataset(Dataset):
     def __init__(self, dataset, cache_dir, split, max_words=512):
         self.name = dataset
         self.dataset = load_dataset(INSTRUCTION_DATASETS[dataset], cache_dir=cache_dir, split=split)
-        self.instruction_column = "INSTRUCTION"
-        self.response_column = "RESPONSE"
+        self.instruction_column = "INSTRUCTION" if dataset != "minimath" else "question"
+        self.response_column = "RESPONSE" if dataset != "minimath" else "answer"
         self.max_words = max_words
 
     def __len__(self):
@@ -33,4 +33,4 @@ class InstructionDataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.dataset[idx]
-        return format_pair((data[self.instruction_column], data[self.response_column]))
+        return (data[self.instruction_column], data[self.response_column])
