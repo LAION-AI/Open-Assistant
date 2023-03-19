@@ -63,6 +63,7 @@ export function Footer() {
                 <Text fontWeight="bold" color={textColor}>
                   {t("about")}
                 </Text>
+                <FooterLink href="/team" label={t("who_are_we")} />
                 <FooterLink href="https://projects.laion.ai/Open-Assistant" label={t("docs")} />
                 <FooterLink href="https://projects.laion.ai/Open-Assistant/docs/faq" label={t("faq")} />
               </Flex>
