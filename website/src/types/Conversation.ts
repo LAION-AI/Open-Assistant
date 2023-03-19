@@ -1,3 +1,5 @@
+import { BackendUser } from "./Users";
+
 export type EmojiOp = "add" | "remove" | "toggle";
 
 export interface MessageEmoji {
@@ -28,13 +30,14 @@ export interface Message extends MessageEmojis {
   model_name: string | null;
   review_count: number | null;
   review_result: boolean; // false is spam
+  user: BackendUser | null;
 }
 
 export interface Conversation {
   messages: Message[];
 }
 
-export type FetchUserMessagesCursorResponse = {
+export type FetchMessagesCursorResponse = {
   next?: string;
   prev?: string;
   sort_key: string;

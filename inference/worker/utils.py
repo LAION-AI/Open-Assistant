@@ -1,11 +1,15 @@
 import collections
 import random
+import threading
 import time
 from typing import Iterable, Literal
 
 import interface
+import lorem
 import requests
+import websocket
 from loguru import logger
+from oasst_shared.schemas import inference
 
 
 class TokenBuffer:
@@ -35,10 +39,18 @@ class TokenBuffer:
     def finish(self, reason: Literal["length", "eos_token", "stop_sequence"]) -> Iterable[interface.Token]:
         if reason == "stop_sequence":
             end_sequence = ""
+            end_tokens = []
             while self.tokens:
-                end_sequence = self.tokens.pop().text + end_sequence
+                token = self.tokens.pop()
+                end_tokens.append(token)
+                end_sequence = token.text + end_sequence
                 if end_sequence in self.stop_sequences:
                     break
+            else:
+                self.tokens.extend(reversed(end_tokens))
+            yield from self.tokens
+        elif reason == "eos_token":
+            self.tokens.pop()
             yield from self.tokens
         else:
             yield from self.tokens
@@ -60,3 +72,45 @@ def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
         else:
             logger.info("Inference server is ready")
             break
+
+
+def text_to_events(text: str, seed: int | None = None):
+    tokens = text.split()
+    for token in tokens[:-1]:
+        yield interface.GenerateStreamResponse(
+            token=interface.Token(
+                text=token + " ",
+                logprob=0.1,
+                id=0,
+            ),
+        )
+    yield interface.GenerateStreamResponse(
+        token=interface.Token(
+            text=tokens[-1],
+            logprob=0.1,
+            id=0,
+        ),
+        generated_text=text,
+        details=interface.StreamDetails(
+            finish_reason="length",
+            generated_tokens=len(tokens),
+            seed=seed,
+        ),
+    )
+
+
+def lorem_events(seed):
+    sentence = lorem.sentence()
+    yield from text_to_events(sentence, seed=seed)
+
+
+ws_lock = threading.Lock()
+
+
+def send_response(
+    ws: websocket.WebSocket,
+    repsonse: inference.WorkerResponse | inference.WorkerConfig,
+):
+    msg = repsonse.json()
+    with ws_lock:
+        ws.send(msg)

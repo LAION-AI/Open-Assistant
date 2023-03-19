@@ -108,6 +108,7 @@ class Message(ConversationMessage):
     message_tree_id: Optional[UUID]
     ranking_count: Optional[int]
     rank: Optional[int]
+    user: Optional[FrontEndUser]
 
 
 class MessagePage(PageResult):
@@ -459,6 +460,7 @@ class UserScore(BaseModel):
     display_name: str
 
     leader_score: int = 0
+    level: int = 0  # between 0 and 100
 
     base_date: Optional[datetime]
     modified_date: Optional[datetime]

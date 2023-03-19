@@ -3,6 +3,7 @@ from typing import AnyStr, List
 
 import yaml
 from sklearn.model_selection import train_test_split
+from tokenizers import pre_tokenizers
 from torch.utils.data import Subset
 from transformers import AutoTokenizer, T5Tokenizer
 
@@ -26,13 +27,16 @@ def webgpt_return_format(row):
     }
 
 
-def get_tokenizer(tokenizer_name):
+def get_tokenizer(tokenizer_name, per_digit_tokens=False):
     if "t5" in tokenizer_name:  # rankgen
         tokenizer = T5Tokenizer.from_pretrained(tokenizer_name, truncation_side="left")
     else:
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     if "galactica" in tokenizer_name:
         tokenizer.add_special_tokens({"pad_token": "<pad>", "eos_token": "</s>"})
+
+    if per_digit_tokens:
+        tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 
     return tokenizer
 
@@ -90,16 +94,21 @@ def argument_parsing(parser):
         "per_device_train_batch_size": 8,
         "gradient_accumulation_steps": 8,
         "gradient_checkpointing": False,
-        "deepspeed": args.deepspeed,
-        "local_rank": args.local_rank,
+        "deepspeed": False,
+        "local_rank": -1,
         "datasets": ["webgpt"],
-        "wandb_entity": args.wandb_entity,
+        "wandb_entity": "open-assistant",
+        "per_digit_tokens": False,
         "fp16": True,
         "tokenizer_name": training_conf["model_name"],
         "output_dir": "output",
     }
+    args_without_none = {k: v for (k, v) in vars(args).items() if v is not None}
+    if not args_without_none["per_digit_tokens"]:  # Don't let missing command line override the conf
+        del args_without_none["per_digit_tokens"]
 
-    params = {**default_params, **training_conf}
+    # Apply default params, then yaml config, then command line args where specific (i.e. not None)
+    params = {**default_params, **training_conf, **args_without_none}
     for name in [
         "gradient_accumulation_steps",
         "num_train_epochs",
@@ -112,8 +121,7 @@ def argument_parsing(parser):
     for name in ["learning_rate", "weight_decay", "max_grad_norm"]:
         params[name] = float(params[name])
 
-    if args.output_dir:
-        params["output_dir"] = args.output_dir
+    print("params", params)
 
     return params
 

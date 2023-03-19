@@ -1,6 +1,7 @@
-import { ReactNode } from "react";
+import { useBreakpointValue } from "@chakra-ui/react";
 
-export const CollapsableText = ({ text, maxLength = 220 }: { text: ReactNode; maxLength?: number }) => {
+export const CollapsableText = ({ text }: { text: string }) => {
+  const maxLength = useBreakpointValue({ base: 220, md: 500, lg: 700, xl: 1000 });
   if (typeof text !== "string" || text.length <= maxLength) {
     return <>{text}</>;
   } else {

@@ -1,15 +1,17 @@
+#!/usr/bin/env python3
 import argparse
+import logging
 import os
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-import bitsandbytes
 import datasets
 import torch
 from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
 from torch import nn
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
@@ -142,7 +144,8 @@ class SFTTrainer(Trainer):
             train_sampler = self._get_train_sampler()
         else:
             train_sampler = self.sampler
-            print("custom sampler found!!", len(train_sampler))
+            logging.warning("Custom sampler found!")
+
         dataloader = DataLoader(
             train_dataset,
             batch_size=self._train_batch_size,
@@ -153,17 +156,30 @@ class SFTTrainer(Trainer):
             pin_memory=self.args.dataloader_pin_memory,
             worker_init_fn=seed_worker,
         )
-        print(len(dataloader))
         return dataloader
 
 
 def argument_parsing(notebook=False, notebook_args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--configs", nargs="+", required=True)
+    parser.add_argument(
+        "--configs",
+        nargs="+",
+        required=True,
+        help="""
+        Multiple configs can be passed to set different options.
+        For example, run as:
+
+           ./trainer_sft.py --configs galactica-125m webgpt_dataset_only per_digit_tokens
+
+        to run the galactica-125m model, using the webgpt dataset only (as opposed to all
+        the datasets listed in defaults in config.yaml) and treat each digit as a separate token.
+    """,
+    )
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+    parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -171,21 +187,25 @@ def argument_parsing(notebook=False, notebook_args=None):
     else:
         args, remaining = parser.parse_known_args()
 
-    print(args)
-
     # Config from YAML
     conf = {}
     configs = read_yamls("./configs")
-    for name in args.configs:
-        if "," in name:
-            for n in name.split(","):
-                conf.update(configs[n])
-        else:
-            conf.update(configs[name])
+    conf.update(configs["defaults"])
+    try:
+        for name in args.configs:
+            if "," in name:
+                for n in name.split(","):
+                    conf.update(configs[n])
+            else:
+                conf.update(configs[name])
+    except KeyError as e:
+        print(f'Error: Could not find the config "{e.args[0]}" in config.yaml')
+        exit(1)
 
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
+    conf["resume_from_checkpoint"] = args.resume_from_checkpoint
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -200,25 +220,59 @@ def argument_parsing(notebook=False, notebook_args=None):
         if type_ == bool:
             type_ = _strtobool
         parser.add_argument(f"--{key}", type=type_, default=value)
+        # Allow --no-{key}  to remove it completely
+        parser.add_argument(f"--no-{key}", dest=key, action="store_const", const=None)
 
-    return parser.parse_args(remaining)
+    args = parser.parse_args(remaining)
+    print(args)
+    return args
 
 
 if __name__ == "__main__":
     training_conf = argument_parsing()
+    import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
 
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
-        tokenizer, max_length=training_conf.max_length, samples_mixing=training_conf.samples_mixing
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=training_conf.samples_mixing,
+        pad_to_multiple_of=16,
+        use_system_prefix=training_conf.use_system_prefix,
+        system_prefix=training_conf.system_prefix,
     )
-    eval_collate_fn = DialogueDataCollator(tokenizer, max_length=training_conf.max_length, samples_mixing=False)
+    eval_collate_fn = DialogueDataCollator(
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=False,
+        use_system_prefix=training_conf.use_system_prefix,
+        system_prefix=training_conf.system_prefix,
+    )
 
-    sampler = PerDatasetSampler.build_sampler_from_config(
-        training_conf, train.datasets, rank=training_conf.local_rank, world_size=training_conf.world_size
-    )
+    if training_conf.use_custom_sampler:
+        sampler = PerDatasetSampler.build_sampler_from_config(
+            training_conf,
+            train.datasets,
+            rank=training_conf.local_rank,
+            world_size=training_conf.world_size,
+            samples_length=list(
+                map(
+                    lambda x: train_collate_fn.process_one(x, return_length=True),
+                    tqdm(train, desc="Calculating lengths per sample"),
+                )
+            )
+            if training_conf.sort_by_length
+            else None,
+        )
+    else:
+        sampler = None
 
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
@@ -252,6 +306,9 @@ if __name__ == "__main__":
         gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
         per_device_train_batch_size=training_conf.per_device_train_batch_size,
         per_device_eval_batch_size=training_conf.per_device_eval_batch_size,
+        adam_beta1=training_conf.adam_beta1,
+        adam_beta2=training_conf.adam_beta2,
+        adam_epsilon=float(training_conf.adam_epsilon),
         weight_decay=training_conf.weight_decay,
         max_grad_norm=training_conf.max_grad_norm,
         logging_steps=training_conf.logging_steps,
@@ -260,15 +317,21 @@ if __name__ == "__main__":
         eval_steps=training_conf.eval_steps,
         save_steps=training_conf.save_steps,
         eval_accumulation_steps=training_conf.eval_accumulation_steps,
+        resume_from_checkpoint=training_conf.resume_from_checkpoint,
         report_to="wandb" if training_conf.log_wandb else None,
     )
 
-    if training_conf.log_wandb and not training_conf.deepspeed or training_conf.local_rank == 0:
+    if not training_conf.log_wandb:
+        os.environ["WANDB_MODE"] = "offline"
+
+    if training_conf.log_wandb and (not training_conf.deepspeed or training_conf.local_rank == 0):
         import wandb
 
         wandb.init(
             project="supervised-finetuning",
             entity=training_conf.wandb_entity,
+            config=training_conf,
+            resume=training_conf.resume_from_checkpoint,
             name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
         )
 
@@ -286,4 +349,6 @@ if __name__ == "__main__":
         compute_metrics=partial(compute_metrics, metrics=metrics, preprocess_fns=preprocess_fns),
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
-    trainer.train()
+    trainer.train(resume_from_checkpoint=training_conf.resume_from_checkpoint)
+    trainer.save_model()
+    tokenizer.save_pretrained(output_dir)

@@ -1,5 +1,8 @@
 {
+  "confirm_open_link_body": "Bạn có muốn mở đường dẫn này không?",
+  "confirm_open_link_header": "Xác nhận mở đường dẫn",
   "copy_message_id": "Sao chép ID",
+  "copy_message_text": "Sao chép tin nhắn",
   "copy_message_link": "Sao chép URL",
   "label_action": "Nhãn",
   "label_title": "Nhãn",
@@ -7,10 +10,11 @@
   "message_author": "Viết bởi bạn",
   "message_author_explain": "Bạn là tác giả của tin nhắn này",
   "message_deleted": "Tin nhắn đã xoá",
+  "no_messages": "Không có tin nhắn",
   "open_new_tab_action": "Mở ở trang mới",
   "parent": "Tin nhắn gốc",
-  "reactions": "Bình luận",
-  "recent_messages": "Tin nhắn gần đây",
+  "reactions": "Biểu tượng cảm xúc",
+  "recent_messages": "Tin nhắn bằng {{language}} gần đây",
   "report_action": "Báo cáo",
   "report_placeholder": "Nêu lý do để báo cáo",
   "report_title": "Báo cáo",
@@ -19,5 +23,7 @@
   "submit_labels": "Gửi",
   "tree_stopped": "Nhánh tin nhắn {{id}} đã dừng",
   "view_user": "Xem người dùng",
-  "your_recent_messages": "Tin nhắn gần đây của bạn"
+  "your_recent_messages": "Tin nhắn gần đây của bạn",
+  "synthetic": "Viết bởi máy",
+  "synthetic_explain": "Tin nhắn này là do AI tạo"
 }

@@ -216,6 +216,9 @@
             'WEB_NEXT_PUBLIC_ENABLE_EMAIL_SIGNIN') }}"
           MAINTENANCE_MODE:
             "{{ lookup('ansible.builtin.env', 'MAINTENANCE_MODE') }}"
+          INFERENCE_SERVER_HOST:
+            "{{ lookup('ansible.builtin.env', 'WEB_INFERENCE_SERVER_HOST') }}"
+          ENABLE_CHAT: "{{ lookup('ansible.builtin.env', 'WEB_ENABLE_CHAT') }}"
         ports:
           - "{{ website_port }}:3000"
         command: bash wait-for-postgres.sh node server.js

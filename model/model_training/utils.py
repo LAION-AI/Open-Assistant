@@ -1,4 +1,5 @@
 import copy
+import math
 import random
 from distutils.util import strtobool
 from pathlib import Path
@@ -8,10 +9,13 @@ import evaluate
 import transformers
 import yaml
 from custom_datasets import get_one_dataset
-from custom_datasets.qa_datasets import QA_SPECIAL_TOKENS
-from losses import CrossEntropyLoss, PolyLoss
+from custom_datasets.formatting import QA_SPECIAL_TOKENS
+from losses import CrossEntropyLoss, PolyLoss, RMLoss
 from models import freeze_top_n_layers, get_specific_model
+from models.patching import patch_model
+from models.reward_model import RewardModel
 from sklearn.model_selection import train_test_split
+from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
 from torch.utils.data.distributed import DistributedSampler
 
@@ -53,7 +57,13 @@ class PerDatasetSampler(DistributedSampler):
         world_size: int = None,
         shuffle: bool = True,
         seed: int = 0,
+        samples_length: List[int] = None,
     ):
+        """
+        if samples_length is not None, then the sampler
+        will order the samples by dataset length
+        with some variability across epochs
+        """
         self.dataset_sizes = dataset_sizes
         self.dataset_size_per_epoch = dataset_size_per_epoch
         self.num_datasets = len(dataset_sizes)
@@ -64,14 +74,15 @@ class PerDatasetSampler(DistributedSampler):
         if world_size == 1:
             self.rank = 0
 
-        self.num_samples = sum(dataset_size_per_epoch) // world_size
+        self.num_samples = sum(dataset_size_per_epoch)
         self.seed = seed
+        self.samples_length = samples_length
 
     def set_epoch(self, epoch) -> None:
         self.epoch = epoch
 
     def __len__(self) -> int:
-        return self.num_samples
+        return self.num_samples // self.world_size
 
     def __iter__(self):
         epoch_idx = []
@@ -84,8 +95,19 @@ class PerDatasetSampler(DistributedSampler):
             n += self.dataset_sizes[i]
             epoch_idx.extend(sampled_idx)
 
-        if self.shuffle:
-            random.shuffle(epoch_idx)
+        if self.samples_length is not None:
+            # sort by samples length and in case of ties randomize
+            epoch_idx = sorted(epoch_idx, key=lambda x: (self.samples_length[x], random.random()))
+
+            if self.shuffle:
+                # do some minor shuffling to avoid repeating the same order
+                # but not too much to avoid too much padding
+                # quasi random basically
+                for i in range(0, len(epoch_idx), 200):  # this should be batch_size dependent
+                    random.shuffle(epoch_idx[i : i + 200])
+        else:
+            if self.shuffle:
+                random.shuffle(epoch_idx)
 
         # split epoch_idx in world_size chunks
         epoch_idx = epoch_idx[self.rank : self.num_samples : self.world_size]
@@ -163,6 +185,9 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
     tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
     tokenizer_config = match_tokenizer_name(conf.model_name)
+
+    if conf.per_digit_tokens:
+        tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 
     if tokenizer_config.special_tokens:
         if "GPT-JT" in conf.model_name:
@@ -243,22 +268,39 @@ def get_metrics(conf, tokenizer):
     return metrics, preprocess_fns
 
 
-def get_model(conf, tokenizer):
+def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     model = get_specific_model(
-        conf.model_name, cache_dir=conf.cache_dir, quantization=conf.quantization, seq2seqmodel=conf.seq2seqmodel
+        conf.model_name,
+        cache_dir=conf.cache_dir,
+        quantization=conf.quantization,
+        seq2seqmodel=conf.seq2seqmodel,
+        without_head=conf.is_reward_model,
     )
 
-    if len(tokenizer) != model.get_input_embeddings().num_embeddings:
+    n_embs = model.get_input_embeddings().num_embeddings
+    if len(tokenizer) != n_embs:
         assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
 
-    model.resize_token_embeddings(len(tokenizer))
+    if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
+        p = pad_vocab_size_to_multiple_of
+        target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
+        model.resize_token_embeddings(target_size)
 
     if conf.freeze_layer:
         model = freeze_top_n_layers(model, conf.freeze_layer)
 
+    if conf.is_reward_model:
+        model = RewardModel(model)
+
     model_parameters = filter(lambda p: p.requires_grad, model.parameters())
     params = sum([p.numel() for p in model_parameters])
     print("Number of trainable parameters: {}M".format(int(params / 1e6)))
+
+    patch_model(
+        model,
+        resid_pdrop=conf.residual_dropout,
+        flash_attention=conf.use_flash_attention,
+    )
 
     return model
 
@@ -280,7 +322,7 @@ def get_dataset_name_and_kwargs_from_data_config(data_config):
 def get_dataset(conf, mode="sft"):
     train_datasets, evals = [], {}
 
-    for data_config in conf.datasets:
+    for data_config in conf.datasets + conf.datasets_extra:
         dataset_name, kwargs = get_dataset_name_and_kwargs_from_data_config(data_config)
         train, val = get_one_dataset(conf, dataset_name, mode=mode, **kwargs)
         train_datasets.append(train)
@@ -293,11 +335,13 @@ def get_dataset(conf, mode="sft"):
     return train, evals
 
 
-def get_loss(loss, poly_eps):
+def get_loss(loss, poly_eps: float = 1.0, score_l2_reg: float = 0.001):
     if loss == "CrossEntropyLoss":
         return CrossEntropyLoss()
     elif loss == "Poly":
         return PolyLoss(epsilon=poly_eps)
+    elif loss == "RMLoss":
+        return RMLoss(beta=score_l2_reg)
     else:
         raise ValueError(f"Loss {loss} not supported")
 
@@ -322,3 +366,13 @@ def train_val_dataset(dataset, val_split=0.2):
         list(range(len(dataset))), test_size=val_split, random_state=666, shuffle=True
     )
     return Subset(dataset, train_idx), Subset(dataset, val_idx)
+
+
+def process_output(output: str, method: str = "v2", bot_name: str = "Joi") -> str:
+    if method == "v2":
+        answer = output.split(QA_SPECIAL_TOKENS["Answer"])[-1]
+        answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split(QA_SPECIAL_TOKENS["Answer"])[0]
+    else:
+        answer = output.split("\n\n{}:".format(bot_name))[-1]
+        answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split("\n\n{}:".format(bot_name))[0]
+    return answer

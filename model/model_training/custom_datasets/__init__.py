@@ -1,8 +1,9 @@
 """
     High level functions for model training
 """
+from custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
 from custom_datasets.oasst_dataset import load_oasst_export
-from custom_datasets.prompt_dialogue import OAPrivate, PrivateInstructionTuning
+from custom_datasets.prompt_dialogue import OAPrivate  # , PrivateInstructionTuning
 from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, TranslatedQA, WebGPT
 from custom_datasets.summarization import SummarizationDataset
 from custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
@@ -25,6 +26,8 @@ OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_transl
 
 RL_DATASETS = ["oa_private", "webgpt", "private_tuning"]
 
+RM_DATASETS = ["oasst_export"]
+
 
 def train_val_dataset(dataset, val_split=0.2):
     if val_split == 0:
@@ -40,6 +43,9 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
     if mode == "rl":
         assert dataset_name in RL_DATASETS, f"Dataset {dataset_name} not supported for RL"
 
+    if mode == "rm":
+        assert dataset_name in RM_DATASETS, f"Dataset {dataset_name} not supported for reward modeling"
+
     data_path = data_path or conf.cache_dir
     dataset_name = dataset_name.lower()
 
@@ -53,6 +59,8 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         if dataset_name != "debate_sum":
             eval = SummarizationDataset(dataset_name, data_path, "validation")
             train = dataset
+    elif dataset_name in INSTRUCTION_DATASETS:
+        dataset = InstructionDataset(dataset_name, data_path, "train")
     elif "ted_trans" in dataset_name:
         language_pair = dataset_name.split("_")[-1]
         dataset = TEDTalk(pair=language_pair, split="train")
@@ -76,20 +84,20 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         dataset = SODADialogue(data_path)
     elif dataset_name == "joke":
         dataset = JokeExplaination(data_path)
-    elif dataset_name == "private_tuning":
-        dataset = PrivateInstructionTuning(data_path)
+    # elif dataset_name == "private_tuning":
+    #     dataset = PrivateInstructionTuning(data_path)
     elif dataset_name == "oa_translated":
         # TODO make val_split lower..? by saganos
         dataset = TranslatedQA(data_path)
     elif dataset_name == "oa_private":
         dataset = OAPrivate(data_path, **kwargs)
     elif dataset_name == "oasst_export":
-        train, eval = load_oasst_export(data_path=data_path, val_split=val_split, **kwargs)
+        train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
     # if eval not already defined
-    if "dataset" in locals():
+    if not ("eval" in locals() and "train" in locals()):
         train, eval = train_val_dataset(dataset, val_split=val_split)
 
     return train, eval

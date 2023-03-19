@@ -92,7 +92,7 @@ Run the inference server:
 ```bash
 cd server
 pip install -r requirements.txt
-DEBUG_API_KEYS='["0000", "0001", "0002"]' uvicorn main:app --reload
+DEBUG_API_KEYS='0000,0001,0002' uvicorn main:app --reload
 ```
 
 Run one (or more) workers:

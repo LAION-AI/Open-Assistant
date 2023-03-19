@@ -6,6 +6,7 @@ import React from "react";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import { Pencil } from "lucide-react";
 import { useTranslation } from "next-i18next";
+import { XPBar } from "src/components/Account/XPBar";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { get } from "src/lib/api";
 import { getTypeSafei18nKey } from "src/lib/i18n";
@@ -51,6 +52,8 @@ export default function Account() {
               <Text as="b">Email</Text>
               <Text>{session.user.email ?? t("no_email")}</Text>
             </Grid>
+            <Divider my={4} />
+            <XPBar />
           </SurveyCard>
           <SurveyCard>
             <Title>{t("your_stats")}</Title>

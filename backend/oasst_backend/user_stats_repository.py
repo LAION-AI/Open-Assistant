@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
+import numpy as np
 import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.config import settings
@@ -38,11 +39,22 @@ from sqlalchemy.sql.functions import coalesce
 from sqlmodel import Session, delete, func, text
 
 
+def get_thresholds(baseline: int = 3, alpha: float = 1.1521, max_level: int = 100) -> np.ndarray:
+    level = np.round(np.cumsum(np.arange(1, max_level) * alpha + baseline))
+    return np.array([0] + level.astype(int).tolist())
+
+
+# lookup table, never changes
+THRESHOLDS = get_thresholds()
+
+
 def _create_user_score(r, highlighted_user_id: UUID | None) -> UserScore:
     if r["UserStats"]:
         d = r["UserStats"].dict()
+        d["level"] = (THRESHOLDS <= d["leader_score"]).sum()
     else:
         d = {"modified_date": utcnow()}
+        d["level"] = 0
     for k in [
         "user_id",
         "username",
@@ -55,6 +67,7 @@ def _create_user_score(r, highlighted_user_id: UUID | None) -> UserScore:
         d[k] = r[k]
     if highlighted_user_id:
         d["highlighted"] = r["user_id"] == highlighted_user_id
+
     return UserScore(**d)
 
 

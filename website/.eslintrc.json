@@ -1,6 +1,7 @@
 {
   "root": true,
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "next/core-web-vitals"],
+  "plugins": ["simple-import-sort", "unused-imports"],
   "rules": {
     "unused-imports/no-unused-imports": "warn",
     "simple-import-sort/imports": "warn",
@@ -15,7 +16,13 @@
         "caughtErrorsIgnorePattern": "^_"
       }
     ],
-    "@typescript-eslint/no-non-null-assertion": "off"
-  },
-  "plugins": ["simple-import-sort", "unused-imports"]
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "no-restricted-imports": [
+      "error",
+      {
+        "name": "react-i18next",
+        "message": "please import from 'next-i18next'"
+      }
+    ]
+  }
 }

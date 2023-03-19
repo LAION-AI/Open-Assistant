@@ -19,7 +19,7 @@ interface LabelInfo {
   inverted: boolean;
 }
 
-const getLabelInfo = (label: string, t: (key: string) => string): LabelInfo => {
+export const getLabelInfo = (label: string, t: (key: string) => string): LabelInfo => {
   switch (label) {
     case "spam":
       return {
@@ -167,7 +167,7 @@ const getLabelInfo = (label: string, t: (key: string) => string): LabelInfo => {
         zeroText: t("ordinary"),
         zeroDescription: [],
         oneText: t("creative"),
-        oneDescription: [],
+        oneDescription: [t("creative.one_desc.line_1"), t("creative.one_desc.line_2")],
         inverted: false,
       };
     default:

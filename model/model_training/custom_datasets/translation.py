@@ -8,7 +8,6 @@
 """
 import random
 
-from custom_datasets.formatting import format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -103,12 +102,11 @@ class TranslationPair(Dataset):
             while additional == index:
                 additional = random.randint(0, 10) - 5
 
-            history_text = "".join(format_pair(self.pairs[additional + index]))
+            history_text = self.pairs[additional + index]
             question, answer = self.pairs[index]
-            question = history_text + question
-            return format_pair((question, answer))
+            return history_text + [question, answer]
 
-        return format_pair(self.pairs[index])
+        return self.pairs[index]
 
 
 class WMT2019(TranslationPair):

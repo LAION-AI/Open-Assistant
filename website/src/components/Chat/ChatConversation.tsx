@@ -1,15 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Flex, Textarea, useColorModeValue } from "@chakra-ui/react";
+import { Button, Flex, Textarea, useBoolean, useColorModeValue } from "@chakra-ui/react";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import { ReactNode, useCallback, useRef, useState } from "react";
-import { post } from "src/lib/api";
+import { memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
+import { useMessageVote } from "src/hooks/chat/useMessageVote";
+import { get, post } from "src/lib/api";
+import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
 import { API_ROUTES } from "src/lib/routes";
-import { InferenceMessage, InferenceResponse } from "src/types/Chat";
-import useSWRMutation from "swr/mutation";
+import { ChatItem, InferenceMessage, InferencePostMessageResponse } from "src/types/Chat";
+import useSWR from "swr";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { MessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
+import { QueueInfoMessage } from "./QueueInfoMessage";
 interface ChatConversationProps {
   chatId: string;
 }
@@ -17,64 +21,61 @@ interface ChatConversationProps {
 export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   const { t } = useTranslation("common");
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [messages, setMessages] = useState<InferenceMessage[]>([]);
-  const [streamedResponse, setResponse] = useState<string | null>("");
 
-  const isLoading = Boolean(streamedResponse);
+  const [messages, setMessages] = useState<InferenceMessage[]>([]);
+  const [streamedResponse, setResponse] = useState<string | null>(null);
+  const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
+  const [isSending, setIsSending] = useBoolean();
+
+  useSWR<ChatItem>(API_ROUTES.GET_CHAT(chatId), get, { onSuccess: (chat) => setMessages(chat.messages) });
 
   const send = useCallback(async () => {
-    if (!inputRef.current) {
-      return;
-    }
-
-    const content = inputRef.current.value.trim();
-
+    const content = inputRef.current?.value.trim();
     if (!content || !chatId) {
       return;
     }
+    setIsSending.on();
 
-    setResponse("...");
-
-    const parent_id = messages[messages.length - 1]?.id ?? null;
-    // we have to do this manually since we want to stream the chunks
-    // there is also EventSource, but it only works with get requests.
-    const { body } = await fetch("/api/chat/message", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, content, parent_id }),
+    // find last assistant message, is usually last message but not always
+    // TODO: the inference server does not return the messages sorted, this is only a best guess
+    const parent_id =
+      messages
+        .slice()
+        .reverse()
+        .find((m) => m.role === "assistant")?.id ?? null;
+    const response: InferencePostMessageResponse = await post(API_ROUTES.CREATE_CHAT_MESSAGE, {
+      arg: { chat_id: chatId, content, parent_id },
     });
-
-    // first chunk is message information
-    const stream = iteratorSSE(body!);
-    const { value } = await stream.next();
-    const response: InferenceResponse = JSON.parse(value.data);
 
     setMessages((messages) => [...messages, response.prompter_message]);
 
-    // remaining messages are the tokens
-    let responseMessage = "";
-    for await (const { data } of stream) {
-      const text = JSON.parse(data).token.text;
-      responseMessage += text;
-      setResponse(responseMessage);
-      // wait for re-render
-      await new Promise(requestAnimationFrame);
-    }
+    // we have to do this manually since we want to stream the chunks
+    // there is also EventSource, but it is callback based
+    const { body, status } = await fetch(API_ROUTES.STREAM_CHAT_MESSAGE(chatId, response.assistant_message.id));
 
-    setMessages((old) => [...old, { ...response.assistant_message, content: responseMessage, score: 0 }]);
+    let message: InferenceMessage;
+    if (status === 204) {
+      // message already processed, get it immediately
+      message = await get(API_ROUTES.GET_MESSAGE(chatId, response.assistant_message.id));
+    } else {
+      message = await handleChatEventStream({
+        stream: body,
+        onError: console.error,
+        onPending: setQueueInfo,
+        onToken: async (text) => {
+          setQueueInfo(null);
+          setResponse(text);
+          await new Promise(requestAnimationFrame);
+        },
+      });
+    }
+    setMessages((messages) => [...messages, message]);
+    setQueueInfo(null);
     setResponse(null);
-  }, [chatId, messages]);
+    setIsSending.off();
+  }, [chatId, messages, setIsSending]);
 
-  const { trigger } = useSWRMutation<
-    any,
-    any,
-    any,
-    {
-      message_id: string;
-      chat_id: string;
-      score: number;
-    }
-  >(API_ROUTES.CHAT_MESSAGE_VOTE, post);
+  const sendVote = useMessageVote();
 
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
     async ({ chatId, messageId, newScore, oldScore }) => {
@@ -85,7 +86,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
         })
       );
       try {
-        await trigger({ chat_id: chatId, message_id: messageId, score: newScore });
+        await sendVote({ chat_id: chatId, message_id: messageId, score: newScore });
       } catch {
         // TODO maybe we should trigger a toast or something
         // revert on any error
@@ -96,12 +97,12 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
         );
       }
     },
-    [trigger]
+    [sendVote]
   );
 
-  return (
-    <Flex flexDir="column" gap={4} overflowY="auto">
-      {messages.map((message) => (
+  const entires = useMemo(
+    () =>
+      messages.map((message) => (
         <ChatMessageEntry
           key={message.id}
           isAssistant={message.role === "assistant"}
@@ -112,13 +113,20 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
         >
           {message.content}
         </ChatMessageEntry>
-      ))}
-      {streamedResponse ? (
-        <PendingMessageEntry isAssistant content={streamedResponse}></PendingMessageEntry>
-      ) : (
-        <Textarea ref={inputRef} autoFocus />
-      )}
-      <Button onClick={send} isDisabled={isLoading}>
+      )),
+    [chatId, handleOnVote, messages]
+  );
+
+  return (
+    <Flex flexDir="column" gap={4}>
+      {entires}
+      {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
+      <Textarea ref={inputRef} autoFocus={!isSending} />
+      <Button
+        onClick={send}
+        isLoading={isSending}
+        spinner={queueInfo ? <QueueInfoMessage info={queueInfo} /> : undefined}
+      >
         {t("submit")}
       </Button>
     </Flex>
@@ -148,7 +156,14 @@ const getNewScore = (emoji: "+1" | "-1", currentScore: number) => {
   return -1;
 };
 
-const ChatMessageEntry = ({ children, isAssistant, chatId, messageId, score, onVote }: ChatMessageEntryProps) => {
+const ChatMessageEntry = memo(function ChatMessageEntry({
+  children,
+  isAssistant,
+  chatId,
+  messageId,
+  score,
+  onVote,
+}: ChatMessageEntryProps) {
   const handleVote = useCallback(
     (emoji: "+1" | "-1") => {
       const newScore = getNewScore(emoji, score);
@@ -189,7 +204,7 @@ const ChatMessageEntry = ({ children, isAssistant, chatId, messageId, score, onV
       )}
     </PendingMessageEntry>
   );
-};
+});
 
 type PendingMessageEntryProps = {
   isAssistant: boolean;
@@ -200,11 +215,19 @@ type PendingMessageEntryProps = {
 const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageEntryProps) => {
   const bgUser = useColorModeValue("gray.100", "gray.700");
   const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
+  const { data: session } = useSession();
+  const image = session?.user?.image;
+
+  const avatarProps = useMemo(
+    () => ({
+      src: isAssistant ? `/images/logos/logo.png` : image ?? "/images/temp-avatars/av1.jpg",
+    }),
+    [isAssistant, image]
+  );
+
   return (
     <BaseMessageEntry
-      avatarProps={{
-        src: isAssistant ? `/images/temp-avatars/av1.jpg` : "/images/temp-avatars/av1.jpg",
-      }}
+      avatarProps={avatarProps}
       bg={isAssistant ? bgAssistant : bgUser}
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       content={content!}
@@ -213,28 +236,3 @@ const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageE
     </BaseMessageEntry>
   );
 };
-
-async function* iteratorSSE(stream: ReadableStream<Uint8Array>) {
-  const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
-
-  let done = false,
-    value: string | undefined = "";
-  while (!done) {
-    ({ value, done } = await reader.read());
-    if (done) {
-      break;
-    }
-    if (!value) {
-      continue;
-    }
-
-    const fields = value
-      .split(/\r?\n/)
-      .filter(Boolean)
-      .map((line) => {
-        const colonIdx = line.indexOf(":");
-        return [line.slice(0, colonIdx), line.slice(colonIdx + 1).trimStart()];
-      });
-    yield Object.fromEntries(fields);
-  }
-}

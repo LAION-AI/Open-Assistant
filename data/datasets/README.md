@@ -48,6 +48,25 @@ proposed. The text-only dataset must include the following columns:
 2. **SOURCE** (string)
 3. **METADATA** (JSON string, optional)
 
+### **Safety format**
+
+For datasets that are intended to be used to train safety models, prosocial
+format is proposed. The format is given below
+
+1. **USER** (string): the potentially unsafe utterance
+2. **RESPONSE** (string, optional ): the guiding utterance grounded on
+   rules-of-thumb (rots)
+3. **ROTs** (List): the relevant rules-of-thumb for text not labeled as
+   **casual**
+4. **SAFETY_LABEL** (string): the final verdict of the context according to
+   safety_annotations: {**casual**, **possibly_needs_caution**,
+   **probably_needs_caution**, **needs_caution**, **needs_intervention**}
+5. **EPISODE_DONE** (bool): an indicator of whether it is the end of the
+   dialogue
+6. **SOURCE** (string,optional) : the source of the seed text that was used to
+   craft the first utterance of the dialogue: {socialchemistry, sbic,
+   ethics_amt, ethics_reddit}
+
 ## **Dataset Requirements**
 
 The dataset must adhere to the following requirements:

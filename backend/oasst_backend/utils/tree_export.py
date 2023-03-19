@@ -12,7 +12,7 @@ from typing import Iterable, Optional, TextIO
 from fastapi.encoders import jsonable_encoder
 from oasst_backend.models import Message
 from oasst_backend.models.message_tree_state import State as TreeState
-from oasst_shared.schemas.export import (
+from oasst_data import (
     ExportMessageEvent,
     ExportMessageEventEmoji,
     ExportMessageEventRanking,
