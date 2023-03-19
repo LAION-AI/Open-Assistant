@@ -37,3 +37,35 @@ defaults_rm:
   sort_by_length: false
   per_digit_tokens: false
   datasets_extra: []
+
+pythia-6.9B-rm:
+  model_name: EleutherAI/pythia-6.9b-deduped
+  learning_rate: 4.5e-6
+  residual_dropout: 0.0
+  weight_decay: 0.0
+  max_length: 512
+  warmup_steps: 20
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 3
+  per_device_eval_batch_size: 3
+  eval_steps: 25
+
+# params based on sweep result: https://wandb.ai/open-assistant/reward_model/runs/9102dee8
+# actual run for export: https://wandb.ai/open-assistant/reward-model/runs/3kwcf5iq
+oasst-rm-1-pythia-1b:
+  datasets:
+    - oasst_export:
+        lang: "en,es,de,fr"
+        input_file_path: 2023-03-13_oasst_ready_labels.jsonl.gz
+  model_name: EleutherAI/pythia-1b-deduped
+  learning_rate: 9.408293588829651e-06
+  residual_dropout: 0.3823726708604269
+  weight_decay: 0.09576145959249724
+  max_length: 520
+  warmup_steps: 10
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 16
+  num_train_epochs: 4
+  eval_steps: 100
+  save_steps: 2000
