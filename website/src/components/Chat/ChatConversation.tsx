@@ -7,7 +7,7 @@ import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
 import { API_ROUTES } from "src/lib/routes";
-import { ChatItem, InferenceMessage, InferencePostMessageResponse } from "src/types/Chat";
+import { ChatItem, InferenceMessage, InferencePostMessageResponse, WorkParametersInput } from "src/types/Chat";
 import useSWR from "swr";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
@@ -16,9 +16,10 @@ import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
 import { QueueInfoMessage } from "./QueueInfoMessage";
 interface ChatConversationProps {
   chatId: string;
+  getConfigValues: () => Required<WorkParametersInput>;
 }
 
-export const ChatConversation = ({ chatId }: ChatConversationProps) => {
+export const ChatConversation = ({ chatId, getConfigValues }: ChatConversationProps) => {
   const { t } = useTranslation("common");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -44,7 +45,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
         .reverse()
         .find((m) => m.role === "assistant")?.id ?? null;
     const response: InferencePostMessageResponse = await post(API_ROUTES.CREATE_CHAT_MESSAGE, {
-      arg: { chat_id: chatId, content, parent_id },
+      arg: { chat_id: chatId, content, parent_id, work_parameters: getConfigValues() },
     });
 
     setMessages((messages) => [...messages, response.prompter_message]);
