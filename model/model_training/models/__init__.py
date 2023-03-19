@@ -25,11 +25,15 @@ def freeze_top_n_layers(model, target_layers):
     return model
 
 
-def get_specific_model(model_name, seq2seqmodel=False, cache_dir=".cache", quantization=False, **kwargs):
+def get_specific_model(
+    model_name, seq2seqmodel=False, without_head=False, cache_dir=".cache", quantization=False, **kwargs
+):
     # encoder-decoder support for Flan-T5 like models
     # for now, we can use an argument but in the future,
     # we can automate this
-    if seq2seqmodel:
+    if without_head:
+        model = transformers.AutoModel.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
+    elif seq2seqmodel:
         model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     else:
         model = transformers.AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)

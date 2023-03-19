@@ -9,9 +9,12 @@ from flash_attn.modules.mha import FlashSelfAttention
 from torch.nn.utils.rnn import pad_sequence
 from transformers import GPTNeoXForCausalLM, GPTNeoXModel
 
+from .reward_model import RewardModel
+
 SUPPORTED_MODELS = [
     GPTNeoXModel,
     GPTNeoXForCausalLM,
+    RewardModel,
 ]
 
 
@@ -38,7 +41,7 @@ def _patched_gpt_neox_attn(
     attention_mask=None,
     head_mask=None,
 ):
-    # q, k, v: [bs, num_attention_heads, seq_len, attn_head_size]
+    # query, key, value: [bs, num_attention_heads, seq_len, attn_head_size]
     flash_attn.train(module.training)
     out_dtype = value.dtype
     batch_size, max_len = query.size(0), query.size(2)
@@ -91,7 +94,7 @@ def add_flash_attn(module: nn.Module, causal: bool = True):
     module._attn = partial(_patched_gpt_neox_attn, module, flash_attn)
 
 
-def patch_model(model: GPTNeoXModel, resid_pdrop: Optional[float] = 0.1, flash_attention: bool = True):
+def patch_model(model: nn.Module, resid_pdrop: Optional[float] = 0.1, flash_attention: bool = True):
     """
     Helper function for patching HF language models.
     Currently supports: GPTNeoX-based models
@@ -112,6 +115,9 @@ def patch_model(model: GPTNeoXModel, resid_pdrop: Optional[float] = 0.1, flash_a
 
     if isinstance(model, GPTNeoXForCausalLM):
         model = model.gpt_neox
+
+    if isinstance(model, RewardModel):
+        model = model.transformer
 
     for layer in model.layers:
         if resid_pdrop is not None:
