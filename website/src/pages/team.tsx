@@ -2,6 +2,7 @@ export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_
 import { Avatar, Badge, Box, Card, CardBody, Flex, Grid, Heading, Text } from "@chakra-ui/react";
 import { Github } from "lucide-react";
 import Head from "next/head";
+import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import React from "react";
 import { getTransparentHeaderLayout } from "src/components/Layout";
@@ -10,10 +11,11 @@ import data from "../data/team.json";
 
 const Team = () => {
   const { groups, people } = data;
+  const { t } = useTranslation();
   return (
     <>
       <Head>
-        <title>Who are we - Open Assistant</title>
+        <title>{t("who_are_we")} - Open Assistant</title>
         <meta name="description" content="The team begind Open Assistant" />
       </Head>
       <Box fontFamily="Inter" p="6" className="oa-basic-theme">
@@ -21,9 +23,9 @@ const Team = () => {
           <Card>
             <CardBody display="flex" flexDirection={"column"} gap={6}>
               <Heading as="h1" size="xl">
-                Who are we?
+                {t("who_are_we")}
               </Heading>
-              <Text>Open Assistant is only possible through the efforts of these amazing people</Text>
+              <Text>{t("team_message")}</Text>
               {groups.map((group) => (
                 <React.Fragment key={group.name}>
                   <Text as="h2" fontWeight="bold" size="lg">
