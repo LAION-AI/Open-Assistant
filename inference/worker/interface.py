@@ -6,7 +6,7 @@ from oasst_shared.schemas import inference
 
 class GenerateStreamParameters(pydantic.BaseModel):
     max_new_tokens: int | None
-    do_sample: bool | None
+    do_sample: bool = True
     top_k: int | None
     top_p: float | None
     typical_p: float | None
@@ -32,6 +32,11 @@ class GenerateStreamParameters(pydantic.BaseModel):
             repetition_penalty=params.repetition_penalty,
             seed=params.seed,
         )
+
+
+class GenerateStreamRequest(pydantic.BaseModel):
+    inputs: str
+    parameters: GenerateStreamParameters
 
 
 class Token(pydantic.BaseModel):

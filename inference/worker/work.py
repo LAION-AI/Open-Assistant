@@ -83,7 +83,11 @@ def handle_work_request(
         stream_events = utils.lorem_events(parameters.seed)
     else:
         prompt = truncate_prompt(tokenizer, parameters, prompt)
-        stream_events = get_inference_server_stream_events(parameters, prompt)
+        stream_request = interface.GenerateStreamRequest(
+            inputs=prompt,
+            parameters=parameters,
+        )
+        stream_events = get_inference_server_stream_events(stream_request)
     for stream_response in stream_events:
         if stream_response.is_error:
             logger.error(f"Error from inference server: {stream_response.error}")
@@ -121,13 +125,10 @@ def handle_work_request(
     logger.debug("Work complete. Waiting for more work...")
 
 
-def get_inference_server_stream_events(parameters: interface.GenerateStreamParameters, prompt: str):
+def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
     response = requests.post(
         f"{settings.inference_server_url}/generate_stream",
-        json={
-            "inputs": prompt,
-            "parameters": parameters.dict(),
-        },
+        json=request.dict(),
         stream=True,
         headers={"Accept": "text/event-stream"},
     )
