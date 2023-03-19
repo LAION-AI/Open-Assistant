@@ -42,9 +42,9 @@ export const ChatSection = ({ chatId }: { chatId: string }) => {
   const { control, getValues, register, setValue } = useForm<WorkParametersInput>({
     defaultValues: {
       temperature: 0.7,
-      top_p: 1,
-      top_k: 0,
-      repetition_penalty: 0,
+      top_p: 0.5,
+      top_k: 1.2,
+      repetition_penalty: 1.2,
       max_new_tokens: 256,
     },
   });
@@ -116,9 +116,13 @@ const sliderItems = [
   },
   {
     key: "repetition_penalty",
+    min: 1,
+    max: 2,
   },
   {
     key: "top_k",
+    min: 1,
+    max: 2,
   },
 ] as const;
 
