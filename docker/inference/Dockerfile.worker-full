@@ -1,5 +1,9 @@
 FROM ghcr.io/yk/text-generation-inference
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
 ARG MODULE="inference"
 ARG SERVICE="worker"
 
