@@ -1,7 +1,6 @@
 """
     These are in the form of 'INSTRUCTION', 'RESPONSE'
 """
-from custom_datasets.formatting import format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -33,4 +32,4 @@ class InstructionDataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.dataset[idx]
-        return format_pair((data[self.instruction_column], data[self.response_column]))
+        return (data[self.instruction_column], data[self.response_column])
