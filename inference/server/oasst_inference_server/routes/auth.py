@@ -116,7 +116,7 @@ async def callback_github(
             user_response_json = await user_response.json()
 
     try:
-        github_id = user_response_json["id"]
+        github_id = str(user_response_json["id"])
         github_username = user_response_json["login"]
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from GitHub")
