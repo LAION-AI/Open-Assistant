@@ -50,16 +50,18 @@ async def load_models():
     signal.signal(signal.SIGINT, terminate_server)
     logger.warning(f"Loading model {settings.model_id}...")
     if "llama" in settings.model_id:
+        config = transformers.LlamaConfig.from_pretrained(settings.model_id)
         tokenizer = transformers.LlamaTokenizer.from_pretrained(settings.model_id)
-        model = transformers.LlamaForCausalLM.from_pretrained(settings.model_id)
+        model = transformers.LlamaForCausalLM.from_pretrained(settings.model_id, torch_dtype=config.torch_dtype)
     else:
         tokenizer = transformers.AutoTokenizer.from_pretrained(settings.model_id)
         model = transformers.AutoModelForCausalLM.from_pretrained(settings.model_id)
     if torch.cuda.is_available():
         logger.warning("Using GPU")
         use_gpu = True
-        model = model.cuda()
-    logger.warning("Model loaded")
+        if model.device.type == "cpu":
+            model = model.cuda()
+    logger.warning(f"Model loaded, device: {model.device}")
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
