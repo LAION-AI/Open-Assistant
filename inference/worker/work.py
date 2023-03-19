@@ -79,14 +79,17 @@ def handle_work_request(
 
     stream_response = None
     token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)
+    stream_request = interface.GenerateStreamRequest(
+        inputs=prompt,
+        parameters=parameters,
+    )
     if settings.model_id == "_lorem":
         stream_events = utils.lorem_events(parameters.seed)
+    elif "llama" in settings.model_id:
+        prompt = truncate_prompt(tokenizer, parameters, prompt)
+        stream_events = get_hf_stream_events(stream_request)
     else:
         prompt = truncate_prompt(tokenizer, parameters, prompt)
-        stream_request = interface.GenerateStreamRequest(
-            inputs=prompt,
-            parameters=parameters,
-        )
         stream_events = get_inference_server_stream_events(stream_request)
     for stream_response in stream_events:
         if stream_response.is_error:
@@ -123,6 +126,22 @@ def handle_work_request(
         ),
     )
     logger.debug("Work complete. Waiting for more work...")
+
+
+def get_hf_stream_events(request: interface.GenerateStreamRequest):
+    response = requests.post(
+        f"{settings.inference_server_url}/generate",
+        json=request.dict(),
+    )
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        logger.exception("Failed to get response from inference server")
+        logger.error(f"Response: {response.text}")
+        raise
+    data = response.json()
+    output = data["text"]
+    yield from utils.text_to_events(output)
 
 
 def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
