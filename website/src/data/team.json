@@ -87,6 +87,18 @@
       "title": "ML engineer",
       "githubURL": "https://github.com/shahules786",
       "imageURL": "https://avatars.githubusercontent.com/u/25312635?v=4"
+    },
+    "gfjam": {
+      "name": "James Melvin Ebenezer",
+      "title": "Full stack and ML Engineer",
+      "githubURL": "https://github.com/melvinebenezer",
+      "imageURL": "https://avatars.githubusercontent.com/u/6395936?v=4"
+    },
+    "jmete": {
+      "name": "James Mete",
+      "title": "Data Scientist",
+      "githubURL": "https://github.com/Jmete",
+      "imageURL": "https://avatars.githubusercontent.com/u/22094024?v=4"
     }
   },
   "groups": [
@@ -96,7 +108,7 @@
     },
     {
       "name": "Fullstack developers",
-      "members": ["fozziethebeat", "AbdBarho", "notmd", "olliestanley"]
+      "members": ["fozziethebeat", "AbdBarho", "notmd", "olliestanley", "gfjam"]
     },
     {
       "name": "ML engineers",
@@ -104,7 +116,7 @@
     },
     {
       "name": "Data Team",
-      "members": ["sedthh", "bitplane"]
+      "members": ["sedthh", "bitplane", "jmete"]
     },
     {
       "name": "Safety Team",
