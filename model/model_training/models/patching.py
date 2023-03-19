@@ -41,7 +41,7 @@ def _patched_gpt_neox_attn(
     attention_mask=None,
     head_mask=None,
 ):
-    # q, k, v: [bs, num_attention_heads, seq_len, attn_head_size]
+    # query, key, value: [bs, num_attention_heads, seq_len, attn_head_size]
     flash_attn.train(module.training)
     out_dtype = value.dtype
     batch_size, max_len = query.size(0), query.size(2)
