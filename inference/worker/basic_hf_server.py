@@ -99,8 +99,9 @@ async def generate(request: interface.GenerateStreamRequest):
             ids = ids.cuda()
         output = model.generate(ids, **params)
         output = output.cpu()
-        decoded = tokenizer.decode(output[0], skip_special_tokens=True)
-    return {"text": decoded}
+        output_ids = output[0][len(ids[0]) :]
+        decoded = tokenizer.decode(output_ids, skip_special_tokens=True)
+    return {"text": decoded.strip()}
 
 
 @app.get("/health")

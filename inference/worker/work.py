@@ -141,7 +141,7 @@ def get_hf_stream_events(request: interface.GenerateStreamRequest):
         raise
     data = response.json()
     output = data["text"]
-    yield from utils.text_to_events(output)
+    yield from utils.text_to_events(output, pause=settings.hf_pause)
 
 
 def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
