@@ -20,7 +20,7 @@ interface ChatProps {
 export const getServerSideProps: GetServerSideProps<ChatProps> = async ({ locale }) => {
   return {
     props: {
-      enabled: process.env.ENABLE_CHAT === "true",
+      enabled: process.env.NODE_ENV === "development" || process.env.ENABLE_CHAT === "true",
       ...(await serverSideTranslations(locale)),
     },
   };
