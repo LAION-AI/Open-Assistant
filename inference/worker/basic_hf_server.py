@@ -9,7 +9,6 @@ import torch
 import transformers
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from prometheus_fastapi_instrumentator import Instrumentator
 from settings import settings
 
 app = fastapi.FastAPI()
@@ -33,12 +32,6 @@ async def log_exceptions(request: fastapi.Request, call_next):
         logger.exception("Exception in request")
         raise
     return response
-
-
-# add prometheus metrics at /metrics
-@app.on_event("startup")
-async def enable_prom_metrics():
-    Instrumentator().instrument(app).expose(app)
 
 
 def terminate_server(signum, frame):
@@ -71,6 +64,20 @@ async def load_models():
 
 
 @app.on_event("startup")
+async def use_model_once():
+    logger.warning("Generating once to warm up the model...")
+    await generate(
+        interface.GenerateStreamRequest(
+            inputs="Hello world",
+            parameters=interface.GenerateStreamParameters(
+                max_new_tokens=10,
+            ),
+        )
+    )
+    logger.warning("Model warmed up")
+
+
+@app.on_event("startup")
 async def welcome_message():
     logger.warning("Server started")
     logger.warning("To stop the server, press Ctrl+C")
@@ -92,3 +99,8 @@ async def generate(request: interface.GenerateStreamRequest):
         output = output.cpu()
         decoded = tokenizer.decode(output[0], skip_special_tokens=True)
     return {"text": decoded}
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
