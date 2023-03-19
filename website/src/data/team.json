@@ -93,6 +93,12 @@
       "title": "Full stack and ML Engineer",
       "githubURL": "https://github.com/melvinebenezer",
       "imageURL": "https://avatars.githubusercontent.com/u/6395936?s=40&v=4"
+    },
+    "jmete": {
+      "name": "James Mete",
+      "title": "Data Scientist",
+      "githubURL": "https://github.com/Jmete",
+      "imageURL": "https://avatars.githubusercontent.com/u/22094024?v=4"
     }
   },
   "groups": [
@@ -110,7 +116,7 @@
     },
     {
       "name": "Data Team",
-      "members": ["sedthh", "bitplane"]
+      "members": ["sedthh", "bitplane", "jmete"]
     },
     {
       "name": "Safety Team",
