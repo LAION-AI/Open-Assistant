@@ -105,6 +105,12 @@
       "title": "Community Moderator & Web Moderator & Translator & Others",
       "githubURL": "https://github.com/0x22almostEvil",
       "imageURL": "https://avatars.githubusercontent.com/u/122345469?v=4"
+    },
+    "you": {
+      "name": "You!",
+      "title": "It wouldn't have happened without you, thanks!",
+      "githubURL": "https://github.com/LAION-AI/Open-Assistant",
+      "imageURL": "https://avatars.githubusercontent.com/u/92627801?v=4"
     }
   },
   "groups": [
@@ -131,6 +137,10 @@
     {
       "name": "Moderation Team",
       "members": ["almostEvil___"]
+    },
+    {
+      "name": "And also...",
+      "members": ["you"]
     }
   ]
 }
