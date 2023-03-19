@@ -1,7 +1,7 @@
 import aiohttp
 import fastapi
 import sqlmodel
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Security
 from loguru import logger
 from oasst_inference_server import auth, database, deps, models
 from oasst_inference_server.settings import settings
@@ -11,6 +11,12 @@ router = fastapi.APIRouter(
     prefix="/auth",
     tags=["auth"],
 )
+
+
+@router.get("/refresh", response_model=protocol.Token)
+async def refresh_token(refresh_token: str = Security(auth.refresh_scheme)):
+    access_token = auth.refresh_access_token(refresh_token)
+    return protocol.Token(access_token=access_token, token_type="bearer")
 
 
 @router.get("/login/discord")
@@ -71,7 +77,7 @@ async def callback_discord(
         await db.refresh(user)
 
     # Discord account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token({"user_id": user.id})
+    access_token = auth.create_access_token(user.id)
 
     return protocol.Token(access_token=access_token, token_type="bearer")
 
@@ -133,7 +139,7 @@ async def callback_github(
         await db.refresh(user)
 
     # GitHub account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token({"user_id": user.id})
+    access_token = auth.create_access_token(user.id)
 
     return protocol.Token(access_token=access_token, token_type="bearer")
 
@@ -185,6 +191,6 @@ async def login_debug(username: str, db: database.AsyncSession = Depends(deps.cr
         logger.info(f"Created new debug user {user=}")
 
     # User exists; create JWT
-    access_token = auth.create_access_token({"user_id": user.id})
+    access_token = auth.create_access_token(user.id)
 
     return protocol.Token(access_token=access_token, token_type="bearer")
