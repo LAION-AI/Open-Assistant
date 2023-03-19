@@ -13,7 +13,15 @@ import { GetChatsResponse } from "src/types/Chat";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
-const Chat = () => {
+export function getServerSideProps() {
+  return {
+    props: {
+      enabled: process.env.ENABLE_CHAT === "true",
+    },
+  };
+}
+
+const Chat = ({ enabled }) => {
   const { t } = useTranslation(["common", "chat"]);
   const router = useRouter();
 
@@ -65,7 +73,7 @@ const Chat = () => {
         <title>{t("chat")}</title>
       </Head>
 
-      <Flags authorizedFlags={["chat"]}>{content}</Flags>
+      {enabled && content}
     </>
   );
 };
