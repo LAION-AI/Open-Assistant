@@ -40,6 +40,11 @@ class Token(BaseModel):
     token_type: str
 
 
+class TokenPair(BaseModel):
+    access_token: Token
+    refresh_token: Token
+
+
 class FrontEndUser(User):
     user_id: UUID
     enabled: bool

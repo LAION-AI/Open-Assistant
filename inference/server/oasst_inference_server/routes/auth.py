@@ -31,7 +31,7 @@ async def login_discord(state: str = r"{}"):
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
-@router.get("/callback/discord", response_model=protocol.Token)
+@router.get("/callback/discord", response_model=protocol.TokenPair)
 async def callback_discord(
     code: str,
     db: database.AsyncSession = Depends(deps.create_session),
@@ -83,8 +83,14 @@ async def callback_discord(
 
     # Discord account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token(user.id)
+    refresh_token = auth.create_refresh_token(user.id)
 
-    return protocol.Token(access_token=access_token, token_type="bearer")
+    token_pair = protocol.TokenPair(
+        protocol.Token(access_token=access_token, token_type="bearer"),
+        protocol.Token(access_token=refresh_token, token_type="refresh"),
+    )
+
+    return token_pair
 
 
 @router.get("/login/github")
@@ -94,7 +100,7 @@ async def login_github(state: str = r"{}"):
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
-@router.get("/callback/github", response_model=protocol.Token)
+@router.get("/callback/github", response_model=protocol.TokenPair)
 async def callback_github(
     code: str,
     db: database.AsyncSession = Depends(deps.create_session),
@@ -145,8 +151,14 @@ async def callback_github(
 
     # GitHub account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token(user.id)
+    refresh_token = auth.create_refresh_token(user.id)
 
-    return protocol.Token(access_token=access_token, token_type="bearer")
+    token_pair = protocol.TokenPair(
+        protocol.Token(access_token=access_token, token_type="bearer"),
+        protocol.Token(access_token=refresh_token, token_type="refresh"),
+    )
+
+    return token_pair
 
 
 async def query_user_by_provider_id(
@@ -172,7 +184,7 @@ async def query_user_by_provider_id(
     return user
 
 
-@router.get("/login/debug")
+@router.get("/login/debug", response_model=protocol.TokenPair)
 async def login_debug(username: str, db: database.AsyncSession = Depends(deps.create_session)):
     """Login using a debug username, which the system will accept unconditionally."""
 
@@ -197,5 +209,11 @@ async def login_debug(username: str, db: database.AsyncSession = Depends(deps.cr
 
     # User exists; create JWT
     access_token = auth.create_access_token(user.id)
+    refresh_token = auth.create_refresh_token(user.id)
 
-    return protocol.Token(access_token=access_token, token_type="bearer")
+    token_pair = protocol.TokenPair(
+        protocol.Token(access_token=access_token, token_type="bearer"),
+        protocol.Token(access_token=refresh_token, token_type="refresh"),
+    )
+
+    return token_pair
