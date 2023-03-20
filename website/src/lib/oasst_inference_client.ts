@@ -3,12 +3,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import Cookies from "cookies";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { JWT } from "next-auth/jwt";
-import {
-  ChatResponse,
-  InferenceCreateChatResponse,
-  InferenceDebugTokenResponse,
-  InferencePostMessageResponse,
-} from "src/types/Chat";
+import { ChatItem, InferenceTokenResponse, InferenceMessage, InferencePostMessageResponse } from "src/types/Chat";
 
 // TODO: this class could be structured better
 export class OasstInferenceClient {
@@ -46,7 +41,7 @@ export class OasstInferenceClient {
 
     // TODO: we have not decided on a format for the user yet, this is here for debug only
     const res = await fetch(process.env.INFERENCE_SERVER_HOST + `/auth/login/debug?username=${this.userTokenSub}`);
-    const inferenceResponse: InferenceDebugTokenResponse = await res.json();
+    const inferenceResponse: InferenceTokenResponse = await res.json();
     this.inferenceToken = inferenceResponse.access_token;
     this.cookies.set("inference_token", this.inferenceToken, {
       maxAge: 1000 * 60 * 5, // 5 minutes
@@ -59,12 +54,16 @@ export class OasstInferenceClient {
     return this.request("GET", "/chats");
   }
 
-  create_chat(): Promise<InferenceCreateChatResponse> {
+  create_chat(): Promise<ChatItem> {
     return this.request("POST", "/chats", { data: "" });
   }
 
-  get_chat(chat_id: string): Promise<ChatResponse> {
+  get_chat(chat_id: string): Promise<ChatItem> {
     return this.request("GET", `/chats/${chat_id}`);
+  }
+
+  get_message(chat_id: string, message_id: string): Promise<InferenceMessage> {
+    return this.request("GET", `/chats/${chat_id}/messages/${message_id}`);
   }
 
   post_prompt({

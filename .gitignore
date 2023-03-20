@@ -14,5 +14,10 @@ backend/openapi.json
 # ignore jupyter notebook checkpoints
 .ipynb_checkpoints
 
+*.log
+*.db
 # edit docs using obsidian.md, these files should not appear in the repo
 .obsidian/
+.pytest_cache/
+
+/docker-compose.override.yml

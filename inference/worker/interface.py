@@ -6,13 +6,18 @@ from oasst_shared.schemas import inference
 
 class GenerateStreamParameters(pydantic.BaseModel):
     max_new_tokens: int | None
-    do_sample: bool | None
+    do_sample: bool = True
     top_k: int | None
     top_p: float | None
+    typical_p: float | None
     temperature: float | None
     repetition_penalty: float | None
     seed: int | None
-    stop: list[str] = ["\nUser:", "\nAssistant:"]  # TODO: make this a bit more workable because it's mutliple tokens
+    stop: list[str] = [
+        "<|endoftext|>",
+        "<|prompter|>",
+        "<|assistant|>",
+    ]  # TODO: make this a bit more workable because it's mutliple tokens
     details: bool = True
 
     @staticmethod
@@ -22,10 +27,16 @@ class GenerateStreamParameters(pydantic.BaseModel):
             do_sample=params.do_sample,
             top_k=params.top_k,
             top_p=params.top_p,
+            typical_p=params.typical_p,
             temperature=params.temperature,
             repetition_penalty=params.repetition_penalty,
             seed=params.seed,
         )
+
+
+class GenerateStreamRequest(pydantic.BaseModel):
+    inputs: str
+    parameters: GenerateStreamParameters
 
 
 class Token(pydantic.BaseModel):
@@ -36,8 +47,9 @@ class Token(pydantic.BaseModel):
     def __len__(self) -> int:
         return len(self.text)
 
-    def to_token_response(self) -> inference.TokenResponse:
+    def to_token_response(self, request_id: str) -> inference.TokenResponse:
         return inference.TokenResponse(
+            request_id=request_id,
             text=self.text,
             log_prob=self.logprob,
             token_id=self.id,

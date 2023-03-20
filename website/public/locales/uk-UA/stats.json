@@ -1,6 +1,8 @@
 {
   "aborted_low_grade": "Перервано через низьку оцінку",
+  "assistant": "Асистент",
   "backlog_ranking": "Очікує на ранжування",
+  "choose_a_language": "Виберіть мову",
   "count": "Кількість",
   "growing": "Ростуть",
   "halted_by_moderator": "Зупинено модератором",
@@ -10,6 +12,7 @@
   "message_trees_by_state": "Дерева повідомлень за станом",
   "message_trees_states_by_lang": "Дерева повідомлень за мовою",
   "prompt_lottery_waiting": "Очікують на лотерею запитів",
+  "prompter": "Користувач",
   "ranking": "Ранжуються",
   "ready_for_export": "Готово до експорту",
   "stats": "Статистика",

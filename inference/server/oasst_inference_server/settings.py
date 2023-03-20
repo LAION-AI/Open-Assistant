@@ -10,7 +10,11 @@ class Settings(pydantic.BaseSettings):
 
     message_queue_expire: int = 60
 
-    allowed_worker_compat_hashes: list[str] = ["distilgpt2", "_lorem"]
+    allowed_worker_compat_hashes: str = "*"
+
+    @property
+    def allowed_worker_compat_hashes_list(self) -> list[str]:
+        return self.allowed_worker_compat_hashes.split(",")
 
     sse_retry_timeout: int = 15000
     update_alembic: bool = True
@@ -44,13 +48,21 @@ class Settings(pydantic.BaseSettings):
 
     root_token: str = "1234"
 
-    debug_api_keys: list[str] = []
+    debug_api_keys: str = ""
 
-    do_compliance_checks: bool = True
+    @property
+    def debug_api_keys_list(self) -> list[str]:
+        return self.debug_api_keys.split(",")
+
+    do_compliance_checks: bool = False
     compliance_check_interval: int = 60
     compliance_check_timeout: int = 60
 
-    api_root: str = "https://inference.prod.open-assistant.io"
+    # this is the URL which will be redirected to when authenticating with oauth2
+    # we decided on letting the nextjs / website backend handle the token at first
+    # and then proxy this information back to the inference server
+    # in short: this should refer to the website, not to this server
+    auth_callback_root: str = "https://open-assistant.io/api/inference_auth"
 
     allow_debug_auth: bool = False
 
@@ -63,6 +75,12 @@ class Settings(pydantic.BaseSettings):
 
     auth_discord_client_id: str = ""
     auth_discord_client_secret: str = ""
+
+    auth_github_client_id: str = ""
+    auth_github_client_secret: str = ""
+
+    pending_event_interval: int = 1
+    worker_ping_interval: int = 3
 
 
 settings = Settings()

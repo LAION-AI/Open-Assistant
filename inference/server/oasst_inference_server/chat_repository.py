@@ -27,7 +27,7 @@ class ChatRepository(pydantic.BaseModel):
     async def start_work(
         self, *, message_id: str, worker_id: str, worker_config: inference.WorkerConfig
     ) -> models.DbMessage:
-        logger.info(f"Starting work on message {message_id}")
+        logger.debug(f"Starting work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
 
         if message.state != inference.MessageState.pending:
@@ -44,7 +44,7 @@ class ChatRepository(pydantic.BaseModel):
         return message
 
     async def reset_work(self, message_id: str) -> models.DbMessage:
-        logger.info(f"Resetting work on message {message_id}")
+        logger.warning(f"Resetting work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
         message.state = inference.MessageState.pending
         message.work_begin_at = None
@@ -57,7 +57,7 @@ class ChatRepository(pydantic.BaseModel):
         return message
 
     async def abort_work(self, message_id: str, reason: str) -> models.DbMessage:
-        logger.info(f"Aborting work on message {message_id}")
+        logger.warning(f"Aborting work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
         message.state = inference.MessageState.aborted_by_worker
         message.work_end_at = datetime.datetime.utcnow()
@@ -68,7 +68,7 @@ class ChatRepository(pydantic.BaseModel):
         return message
 
     async def complete_work(self, message_id: str, content: str) -> models.DbMessage:
-        logger.info(f"Completing work on message {message_id}")
+        logger.debug(f"Completing work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
         message.state = inference.MessageState.complete
         message.work_end_at = datetime.datetime.utcnow()
