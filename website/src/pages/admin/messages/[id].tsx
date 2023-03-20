@@ -31,8 +31,6 @@ const MessageDetail = () => {
     origin: string; 
   }>(`/api/admin/messages/${messageId}/tree/state`, get);
 
-  console.log(treeState)
-
   return (
     <>
       <Head>
@@ -60,7 +58,7 @@ const MessageDetail = () => {
                 </CardHeader>
                 <CardBody>
                   <TableContainer>
-                    <Table variant='striped' colorScheme='teal'>
+                    <Table variant='simple' >
                       <TableCaption>Message tree state</TableCaption>
                       <Thead>
                         <Tr>
