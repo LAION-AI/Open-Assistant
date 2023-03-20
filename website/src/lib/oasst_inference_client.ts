@@ -3,7 +3,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import Cookies from "cookies";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { JWT } from "next-auth/jwt";
-import { ChatItem, InferenceDebugTokenResponse, InferenceMessage, InferencePostMessageResponse } from "src/types/Chat";
+import { ChatItem, InferenceTokenResponse, InferenceMessage, InferencePostMessageResponse } from "src/types/Chat";
 
 // TODO: this class could be structured better
 export class OasstInferenceClient {
@@ -41,7 +41,7 @@ export class OasstInferenceClient {
 
     // TODO: we have not decided on a format for the user yet, this is here for debug only
     const res = await fetch(process.env.INFERENCE_SERVER_HOST + `/auth/login/debug?username=${this.userTokenSub}`);
-    const inferenceResponse: InferenceDebugTokenResponse = await res.json();
+    const inferenceResponse: InferenceTokenResponse = await res.json();
     this.inferenceToken = inferenceResponse.access_token;
     this.cookies.set("inference_token", this.inferenceToken, {
       maxAge: 1000 * 60 * 5, // 5 minutes
