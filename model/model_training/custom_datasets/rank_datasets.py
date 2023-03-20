@@ -36,7 +36,7 @@ class SHPDataset(Dataset):
     def __getitem__(self, idx):
         postid = self.postids[idx]
         post, answers = self.post_dict.get(postid, {}).values()
-        return post, answers
+        return [post], answers
 
 
 class HellaSwagDataset(Dataset):
@@ -66,4 +66,4 @@ class HellaSwagDataset(Dataset):
 
     def __getitem__(self, idx):
         context, completions = self.dataset_list[idx].values()
-        return context, completions
+        return [context], completions
