@@ -5,11 +5,15 @@ import Head from "next/head";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { Flags } from "react-feature-flags";
 import { ChatConversation } from "src/components/Chat/ChatConversation";
 import { getDashboardLayout } from "src/components/Layout";
 
-const Chat = ({ id }: { id: string }) => {
+interface ChatProps {
+  id: string;
+  enabled: boolean;
+}
+
+const Chat = ({ id, enabled }: ChatProps) => {
   const { t } = useTranslation(["common", "chat"]);
 
   return (
@@ -18,7 +22,7 @@ const Chat = ({ id }: { id: string }) => {
         <title>{t("chat")}</title>
       </Head>
 
-      <Flags authorizedFlags={["chat"]}>
+      {enabled && (
         <Card>
           <CardBody>
             <Flex direction="column" gap="2">
@@ -32,19 +36,17 @@ const Chat = ({ id }: { id: string }) => {
             </Flex>
           </CardBody>
         </Card>
-      </Flags>
+      )}
     </>
   );
 };
 
 Chat.getLayout = getDashboardLayout;
 
-export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string }> = async ({
-  locale = "en",
-  params,
-}) => ({
+export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> = async ({ locale = "en", params }) => ({
   props: {
     id: params.id,
+    enabled: process.env.NODE_ENV === "development" || process.env.ENABLE_CHAT === "true",
     ...(await serverSideTranslations(locale)),
   },
 });
