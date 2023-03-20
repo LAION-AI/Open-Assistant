@@ -122,6 +122,12 @@
       "name": "Joak",
       "title": "Community Moderator & Web Moderator"
     },
+    "kenhktsui": {
+      "name": "Ken Tsui",
+      "title": "Data scientist and ML engineer",
+      "githubURL": "https://github.com/kenhktsui",
+      "imageURL": "https://avatars.githubusercontent.com/u/29099916?v=4"
+    },
     "you": {
       "name": "You!",
       "title": "It wouldn't have happened without you, thanks!",
@@ -144,7 +150,7 @@
     },
     {
       "name": "Data Team",
-      "members": ["sedthh", "bitplane", "jmete"]
+      "members": ["sedthh", "bitplane", "jmete", "kenhktsui"]
     },
     {
       "name": "Safety Team",
