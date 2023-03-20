@@ -74,7 +74,7 @@ def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
             break
 
 
-def text_to_events(text: str, seed: int | None = None):
+def text_to_events(text: str, seed: int | None = None, pause: float = 0.0):
     tokens = text.split()
     for token in tokens[:-1]:
         yield interface.GenerateStreamResponse(
@@ -84,6 +84,8 @@ def text_to_events(text: str, seed: int | None = None):
                 id=0,
             ),
         )
+        if pause > 0:
+            time.sleep(pause)
     yield interface.GenerateStreamResponse(
         token=interface.Token(
             text=tokens[-1],

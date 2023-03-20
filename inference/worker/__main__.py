@@ -47,7 +47,9 @@ def main():
             ) as ws:
                 logger.warning("Connected to backend, sending config...")
                 worker_config = inference.WorkerConfig(
-                    model_name=settings.model_id, hardware_info=inference.WorkerHardwareInfo()
+                    model_name=settings.model_id,
+                    hardware_info=inference.WorkerHardwareInfo(),
+                    max_parallel_requests=settings.max_parallel_requests,
                 )
                 utils.send_response(ws, worker_config)
                 logger.warning("Config sent, waiting for work...")
