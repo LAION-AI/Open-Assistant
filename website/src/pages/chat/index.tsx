@@ -9,24 +9,25 @@ import { useCallback, useMemo } from "react";
 import { getDashboardLayout } from "src/components/Layout";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { get, post } from "src/lib/api";
+import { isChatEnabled } from "src/lib/chat_enabled";
 import { GetChatsResponse } from "src/types/Chat";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
-interface ChatProps {
-  enabled: boolean;
-}
-
-export const getServerSideProps: GetServerSideProps<ChatProps> = async ({ locale }) => {
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+  if (!isChatEnabled()) {
+    return {
+      notFound: true,
+    };
+  }
   return {
     props: {
-      enabled: process.env.NODE_ENV === "development" || process.env.ENABLE_CHAT === "true",
       ...(await serverSideTranslations(locale)),
     },
   };
 };
 
-const Chat = ({ enabled }: ChatProps) => {
+const Chat = () => {
   const { t } = useTranslation(["common", "chat"]);
   const router = useRouter();
 
@@ -78,7 +79,7 @@ const Chat = ({ enabled }: ChatProps) => {
         <title>{t("chat")}</title>
       </Head>
 
-      {enabled && content}
+      {content}
     </>
   );
 };

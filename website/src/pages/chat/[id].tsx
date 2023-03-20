@@ -7,13 +7,13 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { ChatConversation } from "src/components/Chat/ChatConversation";
 import { getDashboardLayout } from "src/components/Layout";
+import { isChatEnabled } from "src/lib/chat_enabled";
 
 interface ChatProps {
   id: string;
-  enabled: boolean;
 }
 
-const Chat = ({ id, enabled }: ChatProps) => {
+const Chat = ({ id }: ChatProps) => {
   const { t } = useTranslation(["common", "chat"]);
 
   return (
@@ -22,33 +22,37 @@ const Chat = ({ id, enabled }: ChatProps) => {
         <title>{t("chat")}</title>
       </Head>
 
-      {enabled && (
-        <Card>
-          <CardBody>
-            <Flex direction="column" gap="2">
-              <Link href="/chat">
-                <Button leftIcon={<List />} size="lg">
-                  {t("chat:back_to_chat_list")}
-                </Button>
-              </Link>
+      <Card>
+        <CardBody>
+          <Flex direction="column" gap="2">
+            <Link href="/chat">
+              <Button leftIcon={<List />} size="lg">
+                {t("chat:back_to_chat_list")}
+              </Button>
+            </Link>
 
-              <ChatConversation chatId={id} />
-            </Flex>
-          </CardBody>
-        </Card>
-      )}
+            <ChatConversation chatId={id} />
+          </Flex>
+        </CardBody>
+      </Card>
     </>
   );
 };
 
 Chat.getLayout = getDashboardLayout;
 
-export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> = async ({ locale = "en", params }) => ({
-  props: {
-    id: params.id,
-    enabled: process.env.NODE_ENV === "development" || process.env.ENABLE_CHAT === "true",
-    ...(await serverSideTranslations(locale)),
-  },
-});
+export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> = async ({ locale = "en", params }) => {
+  if (!isChatEnabled()) {
+    return {
+      notFound: true,
+    };
+  }
+  return {
+    props: {
+      id: params.id,
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+};
 
 export default Chat;
