@@ -46,6 +46,12 @@
       "githubURL": "https://github.com/notmd",
       "imageURL": "https://avatars.githubusercontent.com/u/33456881?v=4"
     },
+    "johnflux": {
+      "name": "John Tapsell",
+      "title": "Full stack ML engineer",
+      "githubURL": "https://github.com/johnflux",
+      "imageURL": "https://avatars.githubusercontent.com/u/1230500?v=4"
+    },
     "theblackcat102": {
       "name": "theblackcat102",
       "title": "ML engineer",
@@ -134,7 +140,7 @@
     },
     {
       "name": "ML engineers",
-      "members": ["theblackcat102", "sanagno"]
+      "members": ["theblackcat102", "sanagno", "johnflux"]
     },
     {
       "name": "Data Team",
