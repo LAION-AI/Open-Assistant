@@ -60,7 +60,7 @@ const Leaderboard = () => {
                 </RadioGroup>
                 <GeneralLanguageSelector
                   permitNoInput
-                  noInputPlaceholderValue={t("leaderboard:every_languages")}
+                  noInputPlaceholderValue={t("leaderboard:every_language")}
                   handleChange={handleLangChange}
                 />
               </Flex>

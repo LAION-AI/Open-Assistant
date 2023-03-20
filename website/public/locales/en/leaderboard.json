@@ -36,5 +36,5 @@
   "xp_progress_message": "You need {{need, number, integer}} more points to reach the next level!",
   "your_account": "Your account",
   "your_stats": "Your statistics",
-  "every_languages": "Every Languages"
+  "every_language": "Every Language"
 }
