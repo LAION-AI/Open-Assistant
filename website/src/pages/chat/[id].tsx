@@ -1,11 +1,6 @@
-import {
-  Button,
-  Card,
-  CardBody,
-  Flex,
-} from "@chakra-ui/react";
+import { Button, Card, CardBody, Flex } from "@chakra-ui/react";
 import { List } from "lucide-react";
-import { GetServerSideProps } from "next";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
@@ -14,7 +9,7 @@ import { Flags } from "react-feature-flags";
 import { ChatSection } from "src/components/Chat/ChatSection";
 import { getDashboardLayout } from "src/components/Layout";
 
-const Chat = ({ id }: { id: string }) => {
+const Chat = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { t } = useTranslation(["common", "chat"]);
 
   return (
@@ -42,8 +37,6 @@ const Chat = ({ id }: { id: string }) => {
 };
 
 Chat.getLayout = getDashboardLayout;
-
-
 
 export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string }> = async ({
   locale = "en",
