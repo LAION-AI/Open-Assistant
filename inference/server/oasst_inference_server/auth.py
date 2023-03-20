@@ -7,6 +7,7 @@ from fastapi import HTTPException, Security
 from fastapi.security import APIKeyHeader
 from jose import jwe
 from jose.exceptions import JWEError
+from loguru import logger
 from oasst_inference_server.settings import settings
 from starlette.status import HTTP_403_FORBIDDEN
 
@@ -44,10 +45,12 @@ def create_access_token(data: dict) -> str:
 def get_current_user_id(token: str = Security(oauth2_scheme)) -> str:
     """Get the current user ID by decoding the JWT token."""
     if token is None or not token.startswith("Bearer "):
+        logger.warning(f"Invalid token: {token}")
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Not authenticated")
 
     token = token[len("Bearer ") :]
     if not token:
+        logger.warning(f"Invalid token: {token}")
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Not authenticated")
 
     # Generate a key from the auth secret

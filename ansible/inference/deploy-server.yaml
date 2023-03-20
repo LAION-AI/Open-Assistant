@@ -1,0 +1,106 @@
+# Ansible playbook to setup inference server
+
+- name: Deploy inference
+  hosts: dev
+  gather_facts: true
+  vars:
+    stack_name: "dev"
+    image_tag: latest
+    server_port: 8080
+    postgres_password: postgres
+    loguru_level: DEBUG
+    allow_debug_auth: "False"
+    debug_api_keys: ""
+  tasks:
+    - name: Create network
+      community.docker.docker_network:
+        name: "oasst-inference-{{ stack_name }}"
+        state: present
+        driver: bridge
+
+    - name: Create stack files directory
+      ansible.builtin.file:
+        path: "./{{ stack_name }}-inference"
+        state: directory
+        mode: 0755
+
+    - name: Copy redis.conf to managed node
+      ansible.builtin.copy:
+        src: ./redis.conf
+        dest: "./{{ stack_name }}-inference/redis.conf"
+        mode: 0644
+
+    - name: Set up inference Redis
+      community.docker.docker_container:
+        name: "oasst-inference-{{ stack_name }}-redis"
+        image: redis
+        state: started
+        recreate: "{{ (stack_name == 'dev') | bool }}"
+        restart_policy: always
+        network_mode: "oasst-inference-{{ stack_name }}"
+        healthcheck:
+          test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+          interval: 2s
+          timeout: 2s
+          retries: 10
+        command: redis-server /usr/local/etc/redis/redis.conf
+        volumes:
+          - "./{{ stack_name
+            }}-inference/redis.conf:/usr/local/etc/redis/redis.conf"
+
+    - name: Create volumes for inference postgres
+      community.docker.docker_volume:
+        name: "oasst-inference-{{ stack_name }}-postgres"
+        state: present
+
+    - name: Create postgres containers
+      community.docker.docker_container:
+        name: "oasst-inference-{{ stack_name }}-postgres"
+        image: postgres
+        state: started
+        pull: true
+        recreate: "{{ (stack_name == 'dev') | bool }}"
+        restart_policy: always
+        network_mode: "oasst-inference-{{ stack_name }}"
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
+          POSTGRES_DB: postgres
+          S3_BUCKET_NAME:
+            "{{ lookup('ansible.builtin.env', 'S3_BUCKET_NAME') }}"
+          S3_PREFIX: "inference"
+          AWS_ACCESS_KEY_ID:
+            "{{ lookup('ansible.builtin.env', 'AWS_ACCESS_KEY') }}"
+          AWS_SECRET_ACCESS_KEY:
+            "{{ lookup('ansible.builtin.env', 'AWS_SECRET_KEY') }}"
+          AWS_DEFAULT_REGION: "{{ lookup('ansible.builtin.env', 'S3_REGION') }}"
+        volumes:
+          - "oasst-inference-{{ stack_name }}-postgres:/var/lib/postgresql/data"
+        healthcheck:
+          test: ["CMD", "pg_isready", "-U", "postgres"]
+          interval: 2s
+          timeout: 2s
+          retries: 10
+        shm_size: 1G
+
+    - name: Run the oasst inference-server
+      community.docker.docker_container:
+        name: "oasst-inference-{{ stack_name }}-server"
+        image:
+          "ghcr.io/laion-ai/open-assistant/oasst-inference-server:{{ image_tag
+          }}"
+        state: started
+        recreate: true
+        pull: true
+        restart_policy: always
+        network_mode: "oasst-inference-{{ stack_name }}"
+        env:
+          POSTGRES_HOST: "oasst-inference-{{ stack_name }}-postgres"
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
+          REDIS_HOST: "oasst-inference-{{ stack_name }}-redis"
+          LOGURU_LEVEL: "{{ loguru_level }}"
+          DEBUG_API_KEYS: "{{ debug_api_keys | string }}"
+          ALLOW_DEBUG_AUTH: "{{ allow_debug_auth | string }}"
+          HF_TOKEN: "{{ lookup('ansible.builtin.env', 'INFERENCE_HF_TOKEN') }}"
+        ports:
+          - "{{ server_port }}:8080"
