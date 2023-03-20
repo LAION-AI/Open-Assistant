@@ -85,9 +85,9 @@ def handle_work_request(
     )
     if settings.model_id == "_lorem":
         stream_events = utils.lorem_events(parameters.seed)
-    elif "llama" in settings.model_id:
-        prompt = truncate_prompt(tokenizer, parameters, prompt)
-        stream_events = get_hf_stream_events(stream_request)
+    # elif "llama" in settings.model_id:
+    #     prompt = truncate_prompt(tokenizer, parameters, prompt)
+    #     stream_events = get_hf_stream_events(stream_request)
     else:
         prompt = truncate_prompt(tokenizer, parameters, prompt)
         stream_events = get_inference_server_stream_events(stream_request)
