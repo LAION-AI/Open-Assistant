@@ -1,19 +1,32 @@
 import { Button, Divider, Flex, Progress, Text } from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { useTranslation } from "next-i18next";
-import { useCallback, useMemo } from "react";
-import { getDashboardLayout } from "src/components/Layout";
-import { get, post } from "src/lib/api";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Flags } from "react-feature-flags";
+import { useTranslation } from "next-i18next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { useCallback, useMemo } from "react";
+import { getDashboardLayout } from "src/components/Layout";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
+import { get, post } from "src/lib/api";
 import { GetChatsResponse } from "src/types/Chat";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
-const Chat = () => {
+interface ChatProps {
+  enabled: boolean;
+}
+
+export const getServerSideProps: GetServerSideProps<ChatProps> = async ({ locale }) => {
+  return {
+    props: {
+      enabled: process.env.NODE_ENV === "development" || process.env.ENABLE_CHAT === "true",
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+};
+
+const Chat = ({ enabled }: ChatProps) => {
   const { t } = useTranslation(["common", "chat"]);
   const router = useRouter();
 
@@ -65,7 +78,7 @@ const Chat = () => {
         <title>{t("chat")}</title>
       </Head>
 
-      <Flags authorizedFlags={["chat"]}>{content}</Flags>
+      {enabled && content}
     </>
   );
 };
