@@ -41,7 +41,7 @@
       "imageURL": "https://avatars.githubusercontent.com/u/24505302?v=4"
     },
     "notmd": {
-      "name": "notmd",
+      "name": "Nguyen Minh Duc",
       "title": "Full stack engineer",
       "githubURL": "https://github.com/notmd",
       "imageURL": "https://avatars.githubusercontent.com/u/33456881?v=4"
@@ -112,6 +112,10 @@
       "githubURL": "https://github.com/Zyphre",
       "imageURL": "https://avatars.githubusercontent.com/u/6561540?v=4"
     },
+    "joak": {
+      "name": "Joak",
+      "title": "Community Moderator & Web Moderator"
+    },
     "you": {
       "name": "You!",
       "title": "It wouldn't have happened without you, thanks!",
@@ -142,7 +146,7 @@
     },
     {
       "name": "Moderation Team",
-      "members": ["almostEvil___", "~Zy~"]
+      "members": ["almostEvil___", "~Zy~", "joak"]
     },
     {
       "name": "And also...",
