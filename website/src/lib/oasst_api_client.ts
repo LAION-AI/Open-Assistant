@@ -200,11 +200,11 @@ export class OasstApiClient {
     return this.get<{
       message_tree_id: string;
       state: string;
-      active: boolean; 
-      goal_tree_size: number; 
-      max_children_count: number; 
+      active: boolean;
+      goal_tree_size: number;
+      max_children_count: number;
       max_depth: number;
-      origin: string; 
+      origin: string;
     }>(`/api/v1/messages/${message_id}/tree/state`);
   }
 

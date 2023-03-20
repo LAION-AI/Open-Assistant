@@ -1,5 +1,18 @@
-import { Card, CardBody, CardHeader, CircularProgress, Grid, Text, 
-    TableContainer, Table, TableCaption, Thead, Tr, Th, Tbody, Td, 
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  CircularProgress,
+  Grid,
+  Text,
+  TableContainer,
+  Table,
+  TableCaption,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Td,
 } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -21,14 +34,18 @@ const MessageDetail = () => {
     message?: Message;
   }>(`/api/admin/messages/${messageId}/tree`, get);
 
-  const { data: treeState, isLoading: isLoadingTreeState, error: errorTreeState } = useSWRImmutable<{
+  const {
+    data: treeState,
+    isLoading: isLoadingTreeState,
+    error: errorTreeState,
+  } = useSWRImmutable<{
     message_tree_id: string;
     state: string;
-    active: boolean; 
-    goal_tree_size: number; 
-    max_children_count: number; 
+    active: boolean;
+    goal_tree_size: number;
+    max_children_count: number;
     max_depth: number;
-    origin: string; 
+    origin: string;
   }>(`/api/admin/messages/${messageId}/tree/state`, get);
 
   return (
@@ -39,7 +56,8 @@ const MessageDetail = () => {
       <AdminArea>
         {isLoading && isLoadingTreeState && <CircularProgress isIndeterminate></CircularProgress>}
         {error && errorTreeState && "Unable to load message tree"}
-        {data && treeState && 
+        {data &&
+          treeState &&
           (data.tree === null ? (
             "Unable to build tree"
           ) : (
@@ -58,7 +76,7 @@ const MessageDetail = () => {
                 </CardHeader>
                 <CardBody>
                   <TableContainer>
-                    <Table variant='simple' >
+                    <Table variant="simple">
                       <TableCaption>Message tree state</TableCaption>
                       <Thead>
                         <Tr>
@@ -78,16 +96,16 @@ const MessageDetail = () => {
                         <Tr>
                           <Td>Max depth</Td>
                           <Td>{treeState.max_depth}</Td>
-                         </Tr>
+                        </Tr>
                         <Tr>
                           <Td>Max children count</Td>
                           <Td>{treeState.max_children_count}</Td>
                         </Tr>
                         <Tr>
                           <Td>Active</Td>
-                          <Td>{treeState.active ? "Active": "Not active"}</Td>
+                          <Td>{treeState.active ? "Active" : "Not active"}</Td>
                         </Tr>
-                        <Tr>  
+                        <Tr>
                           <Td>Origin</Td>
                           <Td>{treeState.origin || "null"}</Td>
                         </Tr>
@@ -99,8 +117,6 @@ const MessageDetail = () => {
                   <MessageTree tree={data.tree} messageId={data.message?.id} />
                 </CardBody>
               </Card>
-
-
             </Grid>
           ))}
       </AdminArea>

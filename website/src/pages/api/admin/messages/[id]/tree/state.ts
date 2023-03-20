@@ -6,8 +6,5 @@ export default withRole("admin", async (req, res, token) => {
   const messageId = req.query.id as string;
   const treeState = await client.fetch_message_tree_state(messageId);
 
-
   return res.json(treeState);
 });
-
-
