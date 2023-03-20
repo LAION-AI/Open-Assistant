@@ -20,8 +20,6 @@ startup_time: datetime = utcnow()
 
 async def useHFApi(text, url, model_name):
     hugging_face_api: HuggingFaceAPI = HuggingFaceAPI(f"{url}/{model_name}")
-    # TODO: This is some wierd error that commenting the next line causes a 400 error
-    hugging_face_api.headers: Dict[str, str] = {"Authorization": f"Bearer {hugging_face_api.api_key}"}
     result = await hugging_face_api.post(text)
     return result
 
