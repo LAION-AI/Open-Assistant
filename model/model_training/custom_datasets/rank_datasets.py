@@ -67,3 +67,37 @@ class HellaSwagDataset(Dataset):
     def __getitem__(self, idx):
         context, completions = self.dataset_list[idx].values()
         return [context], completions
+
+
+class HFDataset(Dataset):
+
+    """
+    Dataset class to use data from openai/summarize_from_feedback for Reward modeling.
+    Summaries ranked by overall score.
+    """
+
+    name = "hfsummary"
+
+    def __init__(self, split=None) -> None:
+        super().__init__()
+
+        dataset = load_dataset("openai/summarize_from_feedback", "axis", split=split)
+        self.post_ids = []
+        self.post_dict = defaultdict(dict)
+        for item in dataset:
+            if item["summary"].get("axes").get("overall") != None:
+                post_id = item.get("info")["id"]
+                if post_id not in self.post_ids:
+                    self.post_ids.append(post_id)
+                    self.post_dict[post_id].update({"post": item["info"]["post"], "summaries": [item["summary"]]})
+                else:
+                    self.post_dict[post_id]["summaries"].append(item["summary"])
+
+    def __len__(self):
+        return len(self.post_ids)
+
+    def __getitem__(self, idx):
+        post, summaries = self.post_dict[self.post_ids[idx]].values()
+        summaries = sorted(summaries, key=lambda x: x["axes"]["overall"], reverse=True)
+        summaries = [summary["text"] for summary in summaries]
+        return [post], summaries
