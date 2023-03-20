@@ -108,14 +108,15 @@ class WorkerMetricsInfo(pydantic.BaseModel):
 
 class WorkParametersInput(pydantic.BaseModel):
     model_name: str = DEFAULT_MODEL_NAME
-    top_k: int = 50
-    top_p: float = 0.9
-    temperature: float = 1.0
+    top_k: int | None = None
+    top_p: float | None = None
+    typical_p: float | None = None
+    temperature: float | None = None
     repetition_penalty: float | None = None
+    max_new_tokens: int | None = None
 
 
 class WorkParameters(WorkParametersInput):
-    max_new_tokens: int = 100
     do_sample: bool = True
     seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1))
 

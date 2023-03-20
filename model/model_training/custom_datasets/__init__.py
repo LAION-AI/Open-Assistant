@@ -26,6 +26,8 @@ OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_transl
 
 RL_DATASETS = ["oa_private", "webgpt", "private_tuning"]
 
+RM_DATASETS = ["oasst_export"]
+
 
 def train_val_dataset(dataset, val_split=0.2):
     if val_split == 0:
@@ -40,6 +42,9 @@ def train_val_dataset(dataset, val_split=0.2):
 def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft", **kwargs):
     if mode == "rl":
         assert dataset_name in RL_DATASETS, f"Dataset {dataset_name} not supported for RL"
+
+    if mode == "rm":
+        assert dataset_name in RM_DATASETS, f"Dataset {dataset_name} not supported for reward modeling"
 
     data_path = data_path or conf.cache_dir
     dataset_name = dataset_name.lower()
@@ -87,7 +92,7 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
     elif dataset_name == "oa_private":
         dataset = OAPrivate(data_path, **kwargs)
     elif dataset_name == "oasst_export":
-        train, eval = load_oasst_export(data_path=data_path, val_split=val_split, **kwargs)
+        train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 

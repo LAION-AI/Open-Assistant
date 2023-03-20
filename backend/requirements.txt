@@ -1,5 +1,7 @@
 aiohttp==3.8.3
 alembic==1.8.1
+asgiref==3.6.0
+Celery==5.2.0
 cryptography==39.0.0
 fastapi==0.88.0
 fastapi-limiter==0.1.5

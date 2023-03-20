@@ -1,5 +1,9 @@
 # Frequently Asked Questions
 
+> This pages covers specific questions. A more general introduction to the
+> project and its goals can be found
+> [here](https://projects.laion.ai/Open-Assistant/docs/intro).
+
 In this page, there are some of the most frequently asked questions.
 
 ## Questions about the project
@@ -11,8 +15,10 @@ In this page, there are some of the most frequently asked questions.
 
 </summary>
 
-We are in the early stages of development, working from established research in
-applying RLHF to large language models.
+We are in the early stages of development, generally following the process
+outlined in the InstructGPT paper. We have candidate supervised finetuning (SFT)
+models but we have not begun to apply Reinforcement Learning from Human Feedback
+(RLHF) yet.
 
 </details>
 
@@ -23,19 +29,12 @@ applying RLHF to large language models.
 
 </summary>
 
-The project is not at that stage yet. See
-[the plan](https://github.com/LAION-AI/Open-Assistant#the-plan).
-
-</details>
-
-<details>
-<summary>
-
-### What is the Docker command for?
-
-</summary>
-
-Only for local development. It does not launch an AI model.
+The candidate SFT models are
+[available on HuggingFace](https://huggingface.co/OpenAssistant) and can be
+loaded via the HuggingFace Transformers library. As such you may be able to use
+them with sufficient hardware. There are also spaces on HF which can be used to
+chat with the OA candidate without your own hardware. However, these models are
+not final and can produce poor or undesirable outputs.
 
 </details>
 
@@ -46,9 +45,22 @@ Only for local development. It does not launch an AI model.
 
 </summary>
 
-Not yet. The data you help us collect now through
-[https://open-assistant.io/](https://open-assistant.io/) will be used to improve
-it.
+You can help test the outputs from the initial SFT candidate models by ranking
+assistant replies at [https://open-assistant.io/](https://open-assistant.io/).
+These rankings will be used to produce improved models.
+
+</details>
+
+<details>
+<summary>
+
+### What is the Docker command for?
+
+</summary>
+
+The `docker compose` command in the README is for setting up the project for
+local development on the website or data collection backend. It does not launch
+an AI model or the inference server.
 
 </details>
 
@@ -59,7 +71,8 @@ it.
 
 </summary>
 
-The code and models are licensed under the Apache 2.0 license.
+The code and models are licensed under the Apache 2.0 license. This means they
+will be available for a wide range of uses including commercial use.
 
 </details>
 
@@ -83,9 +96,8 @@ HuggingFace. Follow the discussion in the Discord channel
 
 </summary>
 
-It's still being discussed. Options include Pythia, GPT-J, and a bunch more..
-You can follow the discussion in the Discord channel
-[#data-discussion](https://discord.com/channels/1055935572465700980/1058348535612985394).
+It's not finalised, but early candidate models are being tuned from Pythia. This
+may change in the future.
 
 </details>
 
@@ -97,7 +109,9 @@ You can follow the discussion in the Discord channel
 </summary>
 
 You will be able to, under CC BY 4.0, but it's not released yet. We want to
-remove spam and PII before releasing it.
+remove spam and PII before releasing it. Some cherrypicked samples which are
+confirmed to be safe are available in the `oasst-model-eval`
+[repository](https://github.com/Open-Assistant/oasst-model-eval).
 
 </details>
 
@@ -111,6 +125,9 @@ remove spam and PII before releasing it.
 Open Assistant is a project organized by [LAION](https://laion.ai/) and
 individuals around the world interested in bringing this technology to everyone.
 
+The project would not be possible without the many volunteers who have spent
+time contributing both to data collection and to the development process.
+
 </details>
 
 <details>
@@ -120,7 +137,8 @@ individuals around the world interested in bringing this technology to everyone.
 
 </summary>
 
-Yes, Open Assistant will be free to use and modify.
+Yes, the model code, weights, and data will be released for free. We also hope
+to host a free public instance of the final model.
 
 </details>
 
@@ -130,7 +148,12 @@ Yes, Open Assistant will be free to use and modify.
 ### What hardware will be required to run the models?
 
 </summary>
-There will be versions which will be runnable on consumer hardware.
+
+There will likely be multiple sizes of model, the smallest of which should be
+able to run on consumer hardware. Relatively high-end consumer hardware may be
+required. It is possible that future open-source developments from the community
+will bring down requirements after the model is published, but this cannot be
+guaranteed.
 
 </details>
 
@@ -142,15 +165,31 @@ There will be versions which will be runnable on consumer hardware.
 </summary>
 
 If you want to help in the data collection for training the model, go to the
-website [https://open-assistant.io/](https://open-assistant.io/). If you want to
-contribute code, take a look at the
-[tasks in GitHub](https://github.com/orgs/LAION-AI/projects/3) and grab one.
-Take a look at this
+website [https://open-assistant.io/](https://open-assistant.io/).
+
+If you want to contribute code, take a look at the
+[tasks in GitHub](https://github.com/orgs/LAION-AI/projects/3) and comment on an
+issue stating your wish to be assigned. You can also take a look at this
 [contributing guide](https://github.com/LAION-AI/Open-Assistant/blob/main/CONTRIBUTING.md).
 
 </details>
 
-## Questions about the model training website
+<details>
+<summary>
+
+### What technologies are used?
+
+</summary>
+
+The Python backend for the data collection app as well as for the inference
+backend uses FastAPI. The frontend is built with NextJS and Typescript.
+
+The ML codebase is largely PyTorch-based and uses HuggingFace Transformers as
+well as accelerate, DeepSpeed, bitsandbytes, NLTK, and other libraries.
+
+</details>
+
+## Questions about the data collection website
 
 <details>
 <summary>
@@ -204,9 +243,8 @@ In your [account settings](https://open-assistant.io/account).
 
 </summary>
 
-There's no public interface for that yet. However, some updates are posted
-periodically in
-[the #data-updates Discord channel](https://discord.com/channels/1055935572465700980/1073706683068596394)
+You can see a regularly updated interface at
+[https://open-assistant.io/stats](https://open-assistant.io/stats).
 
 </details>
 
@@ -249,7 +287,7 @@ order to avoid the generation of harmful content.
 
 </details>
 
-## Questions about developing
+## Questions about the development process
 
 <details>
 <summary>
@@ -264,7 +302,7 @@ instead of the "-"), you should update your docker cli to the latest version.
 `docker-compose`.
 
 For more details and information check out
-[this SO thread](https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose)
+[this StackOverflow thread](https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose)
 that explains it all in detail.
 
 </details>
@@ -316,16 +354,20 @@ code standard.
 The steps that you need to follow to be able to use it are:
 
 ```bash
-    # install pre-commit in your python environment
-    pip3 install pre-commit
+# install the pre-commit Python package
+pip3 install pre-commit
 
-    # install pre-commit in your github configuration
-    pre-commit install
+# install pre-commit to the Git repo to run automatically on commit
+pre-commit install
 ```
 
 So from now on, in your next commits it will run the `pre-commit` on the files
-that have been staged. If there has been any error, you will need to solve that,
-and then stage+commit again the changes.
+that have been staged. Most formatting issues are automatically resolved by the
+hooks so the files can simply be re-added and you can commit. Some issues may
+require manual resolution.
+
+If you wish to run pre-commit on all files, not just ones your last commit has
+modified, you can use `pre-commit run --all-files`.
 
 </details>
 
@@ -340,21 +382,21 @@ Instead of running docker with the root command always, you could create a
 `docker` group with granted permissions (root):
 
 ```bash
-    # Create new linux user
-    sudo groupadd docker
+# Create new linux user
+sudo groupadd docker
 
-    # Add the actual user to the group
-    sudo usermod -aG docker $USER
+# Add the actual user to the group
+sudo usermod -aG docker $USER
 
-    # Log in the group (apply the group changes to actual terminal session)
-    newgrp docker
+# Log in the group (apply the group changes to actual terminal session)
+newgrp docker
 ```
 
 After that, you should be able to run docker: `docker run .`. In the case you
 still are not able, can try to reboot terminal:
 
 ```bash
-    reboot
+reboot
 ```
 
 </details>
@@ -370,11 +412,11 @@ If you try to shut down the services (`docker-compose down`), and you are
 getting permission denied (using root user), you can try the following:
 
 ```bash
-    # Restart docker daemon
-    sudo systemctl restart docker.socket docker.service
+# Restart docker daemon
+sudo systemctl restart docker.socket docker.service
 
-    # And remove the container
-    docker rm -f <container id>
+# And remove the container
+docker rm -f <container id>
 ```
 
 </details>

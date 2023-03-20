@@ -49,6 +49,9 @@ class TokenBuffer:
             else:
                 self.tokens.extend(reversed(end_tokens))
             yield from self.tokens
+        elif reason == "eos_token":
+            self.tokens.pop()
+            yield from self.tokens
         else:
             yield from self.tokens
 
@@ -71,9 +74,8 @@ def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
             break
 
 
-def lorem_events(seed):
-    sentence = lorem.sentence()
-    tokens = sentence.split()
+def text_to_events(text: str, seed: int | None = None, pause: float = 0.0):
+    tokens = text.split()
     for token in tokens[:-1]:
         yield interface.GenerateStreamResponse(
             token=interface.Token(
@@ -82,19 +84,26 @@ def lorem_events(seed):
                 id=0,
             ),
         )
+        if pause > 0:
+            time.sleep(pause)
     yield interface.GenerateStreamResponse(
         token=interface.Token(
             text=tokens[-1],
             logprob=0.1,
             id=0,
         ),
-        generated_text=sentence,
+        generated_text=text,
         details=interface.StreamDetails(
             finish_reason="length",
             generated_tokens=len(tokens),
             seed=seed,
         ),
     )
+
+
+def lorem_events(seed):
+    sentence = lorem.sentence()
+    yield from text_to_events(sentence, seed=seed)
 
 
 ws_lock = threading.Lock()

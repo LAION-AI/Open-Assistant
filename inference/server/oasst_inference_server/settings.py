@@ -10,7 +10,7 @@ class Settings(pydantic.BaseSettings):
 
     message_queue_expire: int = 60
 
-    allowed_worker_compat_hashes: str = "OpenAssistant/oasst-sft-1-pythia-12b,distilgpt2,_lorem"
+    allowed_worker_compat_hashes: str = "*"
 
     @property
     def allowed_worker_compat_hashes_list(self) -> list[str]:
@@ -71,6 +71,9 @@ class Settings(pydantic.BaseSettings):
 
     auth_discord_client_id: str = ""
     auth_discord_client_secret: str = ""
+
+    auth_github_client_id: str = ""
+    auth_github_client_secret: str = ""
 
     pending_event_interval: int = 1
     worker_ping_interval: int = 3

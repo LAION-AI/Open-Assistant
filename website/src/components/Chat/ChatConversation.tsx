@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Flex, Textarea, useBoolean, useColorModeValue } from "@chakra-ui/react";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
 import { API_ROUTES } from "src/lib/routes";
-import { ChatItem, InferenceEvent, InferenceMessage, InferencePostMessageResponse } from "src/types/Chat";
-import useSWRImmutable from "swr/immutable";
-import useSWRMutation from "swr/mutation";
+import { ChatItem, InferenceMessage, InferencePostMessageResponse } from "src/types/Chat";
+import useSWR from "swr";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { MessageEmojiButton } from "../Messages/MessageEmojiButton";
@@ -21,13 +21,13 @@ interface ChatConversationProps {
 export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   const { t } = useTranslation("common");
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
-
-  useSWRImmutable<ChatItem>(API_ROUTES.GET_CHAT(chatId), get, { onSuccess: (chat) => setMessages(chat.messages) });
-
   const [streamedResponse, setResponse] = useState<string | null>(null);
-  const [pendingInfo, setPendingInfo] = useState<QueueInfo | null>(null);
+  const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
+
+  useSWR<ChatItem>(API_ROUTES.GET_CHAT(chatId), get, { onSuccess: (chat) => setMessages(chat.messages) });
 
   const send = useCallback(async () => {
     const content = inputRef.current?.value.trim();
@@ -35,7 +35,9 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
       return;
     }
     setIsSending.on();
+
     // find last assistant message, is usually last message but not always
+    // TODO: the inference server does not return the messages sorted, this is only a best guess
     const parent_id =
       messages
         .slice()
@@ -59,14 +61,16 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
       message = await handleChatEventStream({
         stream: body,
         onError: console.error,
-        onPending: setPendingInfo,
+        onPending: setQueueInfo,
         onToken: async (text) => {
-          setPendingInfo(null);
+          setQueueInfo(null);
           setResponse(text);
+          await new Promise(requestAnimationFrame);
         },
       });
     }
     setMessages((messages) => [...messages, message]);
+    setQueueInfo(null);
     setResponse(null);
     setIsSending.off();
   }, [chatId, messages, setIsSending]);
@@ -114,19 +118,15 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   );
 
   return (
-    <Flex flexDir="column" gap={4} overflowY="auto">
+    <Flex flexDir="column" gap={4}>
       {entires}
-      {isSending && (
-        <>
-          {pendingInfo ? (
-            <QueueInfoMessage info={pendingInfo} />
-          ) : (
-            <PendingMessageEntry isAssistant content={streamedResponse} />
-          )}
-        </>
-      )}
+      {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
       <Textarea ref={inputRef} autoFocus={!isSending} />
-      <Button onClick={send} disabled={isSending}>
+      <Button
+        onClick={send}
+        isLoading={isSending}
+        spinner={queueInfo ? <QueueInfoMessage info={queueInfo} /> : undefined}
+      >
         {t("submit")}
       </Button>
     </Flex>
@@ -215,12 +215,14 @@ type PendingMessageEntryProps = {
 const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageEntryProps) => {
   const bgUser = useColorModeValue("gray.100", "gray.700");
   const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
+  const { data: session } = useSession();
+  const image = session?.user?.image;
 
   const avatarProps = useMemo(
     () => ({
-      src: isAssistant ? `/images/logos/logo.png` : "/images/temp-avatars/av1.jpg",
+      src: isAssistant ? `/images/logos/logo.png` : image ?? "/images/temp-avatars/av1.jpg",
     }),
-    [isAssistant]
+    [isAssistant, image]
   );
 
   return (

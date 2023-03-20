@@ -98,14 +98,56 @@ services:
       - DEBUG_USE_SEED_DATA=True
       - DEBUG_ALLOW_SELF_LABELING=True
       - MAX_WORKERS=1
-      - DEBUG_SKIP_TOXICITY_CALCULATION=True
-      - DEBUG_SKIP_EMBEDDING_COMPUTATION=True
+      - DEBUG_SKIP_TOXICITY_CALCULATION=False
+      - DEBUG_SKIP_EMBEDDING_COMPUTATION=False
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
     profiles: ["frontend-dev", "ci"]
     ports:
       - "8080:8080"
+
+  # The oassist backend celery worker service.
+  backend-worker:
+    build:
+      dockerfile: docker/Dockerfile.backend-worker
+      context: .
+    command: celery -A celery_worker worker -l info
+    image: oasst-backend-worker
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
+      - MAX_WORKERS=1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles: ["frontend-dev", "ci"]
+
+  # The oassist backend celery worker service.
+  backend-worker-beat:
+    build:
+      dockerfile: docker/Dockerfile.backend-worker
+      context: .
+    command: celery -A celery_worker beat -l info
+    image: oasst-backend-worker-beat
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
+      - MAX_WORKERS=1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles: ["frontend-dev", "ci"]
 
   # The oassist web service.
   web:

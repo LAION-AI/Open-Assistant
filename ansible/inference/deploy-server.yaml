@@ -101,5 +101,6 @@
           LOGURU_LEVEL: "{{ loguru_level }}"
           DEBUG_API_KEYS: "{{ debug_api_keys | string }}"
           ALLOW_DEBUG_AUTH: "{{ allow_debug_auth | string }}"
+          HF_TOKEN: "{{ lookup('ansible.builtin.env', 'INFERENCE_HF_TOKEN') }}"
         ports:
           - "{{ server_port }}:8080"
