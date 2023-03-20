@@ -5,7 +5,7 @@ import { useTranslation } from "next-i18next";
 import { useUserScore } from "src/hooks/ui/useUserScore";
 
 export const UserScore = () => {
-  const score = useUserScore();
+  const { score } = useUserScore();
   const { t } = useTranslation("leaderboard");
 
   if (!Number.isFinite(score)) {

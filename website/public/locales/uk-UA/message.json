@@ -4,6 +4,7 @@
   "copy_message_id": "Скопіювати ID повідомлення",
   "label_action": "Маркувати",
   "copy_message_link": "Скопіювати посилання на повідомлення",
+  "copy_message_text": "Скопіювати текст повідомлення",
   "label_title": "Маркування",
   "message_author": "Автор",
   "message_author_explain": "Ви є автором цього повідомлення",
@@ -22,5 +23,7 @@
   "submit_labels": "Надіслати",
   "tree_stopped": "Дерево зупинено {{id}}",
   "view_user": "Профіль користувача",
-  "your_recent_messages": "Ваші останні повідомлення"
+  "your_recent_messages": "Ваші останні повідомлення",
+  "synthetic": "Згенероване AI",
+  "synthetic_explain": "Це повідомлення було згенеровано AI"
 }

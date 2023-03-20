@@ -2,6 +2,7 @@ import datetime
 import enum
 import platform
 import random
+import uuid
 from typing import Annotated, Literal, Union
 
 import psutil
@@ -64,19 +65,24 @@ class WorkerHardwareInfo(pydantic.BaseModel):
 
 class WorkerConfig(pydantic.BaseModel):
     model_name: str = DEFAULT_MODEL_NAME
-    hardware_info: WorkerHardwareInfo = pydantic.Field(default_factory=WorkerHardwareInfo)
+    hardware_info: WorkerHardwareInfo
+    max_parallel_requests: int = 8
 
     @property
     def compat_hash(self) -> str:
         return compat_hash(model_name=self.model_name)
 
 
+class GpuMetricsInfo(pydantic.BaseModel):
+    gpu_usage: float
+    mem_usage: float
+
+
 class WorkerMetricsInfo(pydantic.BaseModel):
     cpu_usage: float
     mem_usage: float
     swap_usage: float
-    gpu_usage: float | None = None
-    gpu_memory_usage: float | None = None
+    gpus: list[GpuMetricsInfo] | None = None
 
     def __init__(self, **data):
         data["cpu_usage"] = psutil.cpu_percent()
@@ -85,27 +91,33 @@ class WorkerMetricsInfo(pydantic.BaseModel):
         try:
             pynvml.nvmlInit()
             data["nvidia_driver_version"] = pynvml.nvmlSystemGetDriverVersion()
-            gpu_usages = []
-            gpu_memory_usages = []
+            gpus = []
             for i in range(pynvml.nvmlDeviceGetCount()):
                 handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-                gpu_usages.append(pynvml.nvmlDeviceGetUtilizationRates(handle).gpu)
-                gpu_memory_usages.append(pynvml.nvmlDeviceGetMemoryInfo(handle).used)
-            data["gpu_usage"] = sum(gpu_usages) / len(gpu_usages)
-            data["gpu_memory_usage"] = sum(gpu_memory_usages) / len(gpu_memory_usages)
+                gpus.append(
+                    {
+                        "gpu_usage": pynvml.nvmlDeviceGetUtilizationRates(handle).gpu,
+                        "mem_usage": pynvml.nvmlDeviceGetMemoryInfo(handle).used,
+                    }
+                )
+            data["gpus"] = gpus
         except Exception:
             pass
         super().__init__(**data)
 
 
-class WorkParameters(pydantic.BaseModel):
+class WorkParametersInput(pydantic.BaseModel):
     model_name: str = DEFAULT_MODEL_NAME
-    max_new_tokens: int = 100
-    do_sample: bool = True
-    top_k: int = 50
-    top_p: float = 0.9
-    temperature: float = 1.0
+    top_k: int | None = None
+    top_p: float | None = None
+    typical_p: float | None = None
+    temperature: float | None = None
     repetition_penalty: float | None = None
+    max_new_tokens: int | None = None
+
+
+class WorkParameters(WorkParametersInput):
+    do_sample: bool = True
     seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1))
 
 
@@ -136,7 +148,9 @@ class MessageState(str, enum.Enum):
 
 class MessageRead(pydantic.BaseModel):
     id: str
+    parent_id: str | None
     content: str | None
+    created_at: datetime.datetime
     role: Literal["prompter", "assistant"]
     state: MessageState
     score: int
@@ -151,41 +165,76 @@ class Thread(pydantic.BaseModel):
     messages: list[MessageRead]
 
 
-class WorkRequest(pydantic.BaseModel):
+class WorkerRequestBase(pydantic.BaseModel):
+    id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
+
+
+class WorkRequest(WorkerRequestBase):
+    request_type: Literal["work"] = "work"
     thread: Thread = pydantic.Field(..., repr=False)
     created_at: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
 
 
-class TokenResponse(pydantic.BaseModel):
+class PingRequest(WorkerRequestBase):
+    request_type: Literal["ping"] = "ping"
+
+
+class ErrorRequest(WorkerRequestBase):
+    request_type: Literal["error"] = "error"
+    error: str
+
+
+class TerminateRequest(WorkerRequestBase):
+    request_type: Literal["terminate"] = "terminate"
+
+
+class WorkerResponseBase(pydantic.BaseModel):
+    request_id: str | None = None
+
+
+class PongResponse(WorkerResponseBase):
+    response_type: Literal["pong"] = "pong"
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+
+
+class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
     log_prob: float
     token_id: int
 
 
-class GeneratedTextResponse(pydantic.BaseModel):
+class GeneratedTextResponse(WorkerResponseBase):
     response_type: Literal["generated_text"] = "generated_text"
     text: str
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
 
 
-class InternalFinishedMessageResponse(pydantic.BaseModel):
+class InternalFinishedMessageResponse(WorkerResponseBase):
     response_type: Literal["internal_finished_message"] = "internal_finished_message"
     message: MessageRead
 
 
-class ErrorResponse(pydantic.BaseModel):
+class ErrorResponse(WorkerResponseBase):
     response_type: Literal["error"] = "error"
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
     error: str
 
 
-class MetricsResponse(pydantic.BaseModel):
-    response_type: Literal["metrics"] = "metrics"
+class GeneralErrorResponse(WorkerResponseBase):
+    response_type: Literal["general_error"] = "general_error"
     metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+    error: str
 
 
-WorkResponse = Annotated[
-    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, MetricsResponse, InternalFinishedMessageResponse],
+WorkerRequest = Annotated[
+    Union[WorkRequest, PingRequest, ErrorRequest, TerminateRequest],
+    pydantic.Field(discriminator="request_type"),
+]
+
+WorkerResponse = Annotated[
+    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, PongResponse, InternalFinishedMessageResponse],
     pydantic.Field(discriminator="response_type"),
 ]

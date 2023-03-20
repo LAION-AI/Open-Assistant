@@ -1,9 +1,12 @@
+hf_transfer
+huggingface_hub
 loguru
 lorem
 nvidia-ml-py
 psutil
 pydantic
 requests
+sentencepiece
 sseclient-py
-tokenizers
+git+https://github.com/huggingface/transformers@60d51ef5123d949fd8c59cd4d3254e711541d278#egg=transformers
 websocket-client

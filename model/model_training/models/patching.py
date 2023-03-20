@@ -1,3 +1,5 @@
+from __future__ import annotations  # To make it not choke over FlashSelfAttention
+
 import warnings
 from functools import partial
 from typing import Callable, Optional
@@ -5,13 +7,15 @@ from typing import Callable, Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from flash_attn.modules.mha import FlashSelfAttention
 from torch.nn.utils.rnn import pad_sequence
 from transformers import GPTNeoXForCausalLM, GPTNeoXModel
+
+from .reward_model import RewardModel
 
 SUPPORTED_MODELS = [
     GPTNeoXModel,
     GPTNeoXForCausalLM,
+    RewardModel,
 ]
 
 
@@ -38,7 +42,7 @@ def _patched_gpt_neox_attn(
     attention_mask=None,
     head_mask=None,
 ):
-    # q, k, v: [bs, num_attention_heads, seq_len, attn_head_size]
+    # query, key, value: [bs, num_attention_heads, seq_len, attn_head_size]
     flash_attn.train(module.training)
     out_dtype = value.dtype
     batch_size, max_len = query.size(0), query.size(2)
@@ -79,7 +83,7 @@ def add_flash_attn(module: nn.Module, causal: bool = True):
     Limitations:
       - Only works for fp16 or bf16 inputs
       - Requires inputs to be on CUDA
-      - `outptu_attentions=True` does work after patching, attention weights will be None
+      - `output_attentions=True` does not work after patching, attention weights will be None
       - Non-contiguous attention masks are not supported (e.g. [1, 1, 0, 1, 1, 0, 0] will just become [1, 1, 1, 1, 1, 0, 0]).
 
     [1] https://github.com/HazyResearch/flash-attention
@@ -91,7 +95,7 @@ def add_flash_attn(module: nn.Module, causal: bool = True):
     module._attn = partial(_patched_gpt_neox_attn, module, flash_attn)
 
 
-def patch_model(model: GPTNeoXModel, resid_pdrop: Optional[float] = 0.1, flash_attention: bool = True):
+def patch_model(model: nn.Module, resid_pdrop: Optional[float] = 0.1, flash_attention: bool = True):
     """
     Helper function for patching HF language models.
     Currently supports: GPTNeoX-based models
@@ -100,6 +104,20 @@ def patch_model(model: GPTNeoXModel, resid_pdrop: Optional[float] = 0.1, flash_a
       - Flash attention requires CUDA and fp16/bf16 training. It also requires contiguous attention masks.
       - Residual dropout does not support multi-GPU training without DeepDpeed.
     """
+    global FlashSelfAttention
+    if flash_attention:
+        try:
+            from flash_attn.modules.mha import FlashSelfAttention  # pyright: reportMissingImports=false
+        except ModuleNotFoundError:
+            warnings.warn(
+                """\nmodule flash_attn not found - either install:
+  pip3 install flash_atten
+or run with:
+  --use_flash_attention=false """
+            )
+            exit(1)
+    if (resid_pdrop is None or resid_pdrop == 0.0) and not flash_attention:
+        return
 
     if resid_pdrop is not None and (resid_pdrop < 0 or resid_pdrop > 1.0):
         raise ValueError("Invalid argument: `resid_pdrop` must be between 0.0 and 1.0")
@@ -107,11 +125,16 @@ def patch_model(model: GPTNeoXModel, resid_pdrop: Optional[float] = 0.1, flash_a
     if not any(isinstance(model, model_class) for model_class in SUPPORTED_MODELS):
         warnings.warn(
             "Patching residual dropout has only been tested with this model class. "
-            f"Please make sure that it also works for `{model.__class__.__name__}`."
+            f"Please make sure that it also works for `{model.__class__.__name__}`.\n"
+            "Or disable flash_attention and residual_dropout with:\n"
+            "--use_flash_attention=false  --no-residual_dropout"
         )
 
     if isinstance(model, GPTNeoXForCausalLM):
         model = model.gpt_neox
+
+    if isinstance(model, RewardModel):
+        model = model.transformer
 
     for layer in model.layers:
         if resid_pdrop is not None:
