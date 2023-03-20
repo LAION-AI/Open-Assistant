@@ -1,4 +1,6 @@
-import { Card, CardBody, CardHeader, CircularProgress, Grid } from "@chakra-ui/react";
+import { Card, CardBody, CardHeader, CircularProgress, Grid, Text, 
+    TableContainer, Table, TableCaption, Thead, Tr, Th, Tbody, Td, 
+} from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -19,15 +21,27 @@ const MessageDetail = () => {
     message?: Message;
   }>(`/api/admin/messages/${messageId}/tree`, get);
 
+  const { data: treeState, isLoading: isLoadingTreeState, error: errorTreeState } = useSWRImmutable<{
+    message_tree_id: string;
+    state: string;
+    active: boolean; 
+    goal_tree_size: number; 
+    max_children_count: number; 
+    max_depth: number;
+    origin: string; 
+  }>(`/api/admin/messages/${messageId}/tree/state`, get);
+
+  console.log(treeState)
+
   return (
     <>
       <Head>
         <title>Open Assistant</title>
       </Head>
       <AdminArea>
-        {isLoading && <CircularProgress isIndeterminate></CircularProgress>}
-        {error && "Unable to load message tree"}
-        {data &&
+        {isLoading && isLoadingTreeState && <CircularProgress isIndeterminate></CircularProgress>}
+        {error && errorTreeState && "Unable to load message tree"}
+        {data && treeState && 
           (data.tree === null ? (
             "Unable to build tree"
           ) : (
@@ -45,9 +59,50 @@ const MessageDetail = () => {
                   Tree {data.tree.id}
                 </CardHeader>
                 <CardBody>
+                  <TableContainer>
+                    <Table variant='striped' colorScheme='teal'>
+                      <TableCaption>Message tree state</TableCaption>
+                      <Thead>
+                        <Tr>
+                          <Th>Property</Th>
+                          <Th>Value</Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        <Tr>
+                          <Td>State</Td>
+                          <Td>{treeState.state}</Td>
+                        </Tr>
+                        <Tr>
+                          <Td>Goal Tree Size</Td>
+                          <Td>{treeState.goal_tree_size}</Td>
+                        </Tr>
+                        <Tr>
+                          <Td>Max depth</Td>
+                          <Td>{treeState.max_depth}</Td>
+                         </Tr>
+                        <Tr>
+                          <Td>Max children count</Td>
+                          <Td>{treeState.max_children_count}</Td>
+                        </Tr>
+                        <Tr>
+                          <Td>Active</Td>
+                          <Td>{treeState.active ? "Active": "Not active"}</Td>
+                        </Tr>
+                        <Tr>  
+                          <Td>Origin</Td>
+                          <Td>{treeState.origin || "null"}</Td>
+                        </Tr>
+                      </Tbody>
+                    </Table>
+                  </TableContainer>
+                </CardBody>
+                <CardBody>
                   <MessageTree tree={data.tree} messageId={data.message?.id} />
                 </CardBody>
               </Card>
+
+
             </Grid>
           ))}
       </AdminArea>
