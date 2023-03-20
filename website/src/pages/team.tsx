@@ -2,8 +2,8 @@ export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_
 import { Avatar, Badge, Box, Card, CardBody, Flex, Grid, Heading, Text } from "@chakra-ui/react";
 import { Github } from "lucide-react";
 import Head from "next/head";
-import { useTranslation } from "next-i18next";
 import Link from "next/link";
+import { useTranslation } from "next-i18next";
 import React from "react";
 import { getTransparentHeaderLayout } from "src/components/Layout";
 
@@ -16,7 +16,7 @@ const Team = () => {
     <>
       <Head>
         <title>{t("who_are_we")} - Open Assistant</title>
-        <meta name="description" content="The team begind Open Assistant" />
+        <meta name="description" content="The team behind Open Assistant" />
       </Head>
       <Box fontFamily="Inter" p="6" className="oa-basic-theme">
         <Box className="max-w-6xl mx-auto">

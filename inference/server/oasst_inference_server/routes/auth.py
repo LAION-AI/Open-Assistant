@@ -13,10 +13,15 @@ router = fastapi.APIRouter(
 )
 
 
+@router.get("/check")
+async def check_user_auth(user_id: str = Depends(auth.get_current_user_id)):
+    return user_id
+
+
 @router.get("/login/discord")
-async def login_discord():
-    redirect_uri = f"{settings.api_root}/auth/callback/discord"
-    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify"
+async def login_discord(state: str = r"{}"):
+    redirect_uri = f"{settings.auth_callback_root}/discord"
+    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify&state={state}"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
@@ -25,7 +30,7 @@ async def callback_discord(
     code: str,
     db: database.AsyncSession = Depends(deps.create_session),
 ):
-    redirect_uri = f"{settings.api_root}/auth/callback/discord"
+    redirect_uri = f"{settings.auth_callback_root}/discord"
 
     async with aiohttp.ClientSession(raise_for_status=True) as session:
         # Exchange the auth code for a Discord access token
@@ -77,9 +82,9 @@ async def callback_discord(
 
 
 @router.get("/login/github")
-async def login_github():
-    redirect_uri = f"{settings.api_root}/auth/callback/github"
-    auth_url = f"https://github.com/login/oauth/authorize?client_id={settings.auth_github_client_id}&redirect_uri={redirect_uri}"
+async def login_github(state: str = r"{}"):
+    redirect_uri = f"{settings.auth_callback_root}/github"
+    auth_url = f"https://github.com/login/oauth/authorize?client_id={settings.auth_github_client_id}&redirect_uri={redirect_uri}&state={state}"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
@@ -88,7 +93,7 @@ async def callback_github(
     code: str,
     db: database.AsyncSession = Depends(deps.create_session),
 ):
-    redirect_uri = f"{settings.api_root}/auth/callback/github"
+    redirect_uri = f"{settings.auth_callback_root}/github"
 
     async with aiohttp.ClientSession(raise_for_status=True) as session:
         # Exchange the auth code for a GitHub access token
