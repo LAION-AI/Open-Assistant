@@ -145,6 +145,7 @@ class MessageState(str, enum.Enum):
     complete = "complete"
     aborted_by_worker = "aborted_by_worker"
     cancelled = "cancelled"
+    timeout = "timeout"
 
 
 class MessageRead(pydantic.BaseModel):
