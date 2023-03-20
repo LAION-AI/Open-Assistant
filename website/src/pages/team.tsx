@@ -1,5 +1,17 @@
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
-import { Avatar, Badge, Box, Card, CardBody, Flex, Grid, Heading, Stack, Text, useColorModeValue } from "@chakra-ui/react";
+import {
+  Avatar,
+  Badge,
+  Box,
+  Card,
+  CardBody,
+  Flex,
+  Grid,
+  Heading,
+  Stack,
+  Text,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { Github } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
