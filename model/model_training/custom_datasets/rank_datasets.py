@@ -85,7 +85,7 @@ class HFDataset(Dataset):
         self.post_ids = []
         self.post_dict = defaultdict(dict)
         for item in dataset:
-            if item["summary"].get("axes").get("overall") != None:
+            if item["summary"].get("axes").get("overall") is not None:
                 post_id = item.get("info")["id"]
                 if post_id not in self.post_ids:
                     self.post_ids.append(post_id)
