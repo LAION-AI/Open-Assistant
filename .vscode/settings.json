@@ -4,6 +4,5 @@
   "eslint.workingDirectories": ["./website", "./docs"],
   "python.testing.pytestArgs": ["backend/tests", "oasst-shared/tests"],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true,
-  "python.formatting.provider": "autopep8"
+  "python.testing.pytestEnabled": true
 }
