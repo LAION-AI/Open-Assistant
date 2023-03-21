@@ -9,6 +9,7 @@ class RewardModelConfig(PretrainedConfig):
     base_model_name: str
     pooling: Literal["mean", "last"]
     model_type = "reward_model"
+    hidden_size: int | None = None  # deepspeed reads this
 
     def __init__(
         self,
@@ -37,6 +38,7 @@ class RewardModel(PreTrainedModel):
         self.transformer = transformer
         self.out_proj = nn.Linear(transformer.config.hidden_size, 1)
         self.pooling = config.pooling
+        self.config.hidden_size = transformer.config.hidden_size
 
     def forward(self, input_ids, attention_mask=None):
         hiddens = self.transformer(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state
