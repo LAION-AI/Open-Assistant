@@ -149,7 +149,7 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
                         work_request_map[work_request.id] = WorkRequestContainer(
                             work_request=work_request, message_id=message_id
                         )
-                    except chat_schema.MessageCancelled as e:
+                    except chat_schema.MessageCancelledException as e:
                         logger.warning(f"Message was cancelled before work could be initiated: {e.message_id=}")
                     finally:
                         _add_dequeue(pending_futures)

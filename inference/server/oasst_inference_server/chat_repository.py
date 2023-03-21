@@ -32,7 +32,7 @@ class ChatRepository(pydantic.BaseModel):
         message = await self.get_assistant_message_by_id(message_id)
 
         if message.state == inference.MessageState.cancelled:
-            raise chat_schema.MessageCancelled(message_id=message_id)
+            raise chat_schema.MessageCancelledException(message_id=message_id)
 
         if message.state != inference.MessageState.pending:
             raise fastapi.HTTPException(status_code=400, detail="Message is not pending")
