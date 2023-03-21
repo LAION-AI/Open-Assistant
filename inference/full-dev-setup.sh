@@ -16,7 +16,7 @@ if [ "$MODEL_ID" != "_lorem" ]; then
 tmux split-window -h
 tmux send-keys "docker run --rm -it -p 8001:80 -e MODEL_ID=distilgpt2 \
     -v $HOME/.cache/huggingface:/root/.cache/huggingface \
-    --name text-generation-inference ghcr.io/yk/text-generation-inference" C-m
+    --name text-generation-inference ghcr.io/yk/text-generation-inference:llama" C-m
 fi
 
 tmux split-window -h
