@@ -18,6 +18,7 @@ gpus=${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}
 api_key=${API_KEY:-0000}
 backend_url=${BACKEND_URL:-wss://inference.prod.open-assistant.io}
 model_id=${MODEL_ID:-OpenAssistant/oasst_sft_llama_13b_mask_1500}
+max_parallel_requests=${MAX_PARALLEL_REQUESTS:-8}
 
 while true; do
     docker pull $image_name
@@ -28,5 +29,6 @@ while true; do
     -e MODEL_ID=$MODEL_ID \
     -e BACKEND_URL=$BACKEND_URL \
     -e HF_TOKEN=$HF_TOKEN \
+    -e MAX_PARALLEL_REQUESTS=$MAX_PARALLEL_REQUESTS \
     $image_name
 done
