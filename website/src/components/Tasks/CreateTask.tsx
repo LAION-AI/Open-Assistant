@@ -63,7 +63,6 @@ export const CreateTask = ({
     [inputText]
   );
 
-
   useEffect(() => {
     if (typeof window === undefined) {
       return;
