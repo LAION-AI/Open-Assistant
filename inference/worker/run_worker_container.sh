@@ -30,5 +30,6 @@ while true; do
     -e BACKEND_URL=$BACKEND_URL \
     -e HF_TOKEN=$HF_TOKEN \
     -e MAX_PARALLEL_REQUESTS=$MAX_PARALLEL_REQUESTS \
+    -e HF_HUB_ENABLE_HF_TRANSFER= \
     $image_name
 done
