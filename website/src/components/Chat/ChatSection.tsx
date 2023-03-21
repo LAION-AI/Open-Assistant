@@ -1,5 +1,4 @@
 import {
-  CircularProgress,
   Drawer,
   DrawerBody,
   DrawerCloseButton,
@@ -22,52 +21,37 @@ import {
   SliderThumb,
   SliderTrack,
   Stack,
+  Switch,
   useDisclosure,
 } from "@chakra-ui/react";
 import { Settings } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { useCallback, useState } from "react";
-import { Controller, useForm, UseFormReturn } from "react-hook-form";
-import { get } from "src/lib/api";
-import { API_ROUTES } from "src/lib/routes";
-import { ModelInfo, WorkParametersInput } from "src/types/Chat";
-import useSWRImmutable from "swr/immutable";
+import { ChangeEvent, useCallback, useState } from "react";
+import { Controller, FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
+import { WorkParametersInput } from "src/types/Chat";
 import { StrictOmit } from "ts-essentials";
 
+import { JsonCard } from "../JsonCard";
+import { useChatContext } from "./ChatContext";
 import { ChatConversation } from "./ChatConversation";
 
-type UseChatConfigForm = UseFormReturn<WorkParametersInput>;
-
 export const ChatSection = ({ chatId }: { chatId: string }) => {
-  const { control, getValues, register, setValue } = useForm<WorkParametersInput>({
-    defaultValues: {
-      temperature: 0.7,
-      top_p: 0.5,
-      top_k: 1.2,
-      repetition_penalty: 1.2,
-      max_new_tokens: 256,
-    },
+  const { modelInfos } = useChatContext();
+  const form = useForm<WorkParametersInput>({
+    defaultValues: modelInfos[0].parameter_configs[0].work_parameters,
   });
 
   return (
-    <>
-      <ChatConversation chatId={chatId} getConfigValues={getValues} />
-      <ChatConfigDrawer control={control} register={register} setValue={setValue}></ChatConfigDrawer>
-    </>
+    <FormProvider {...form}>
+      <ChatConversation chatId={chatId} getConfigValues={form.getValues} />
+      <ChatConfigDrawer></ChatConfigDrawer>
+    </FormProvider>
   );
 };
 
-type ChatConfigDrawerProps = Pick<UseChatConfigForm, "control" | "register" | "setValue">;
-
-const ChatConfigDrawer = ({ control, register, setValue }: ChatConfigDrawerProps) => {
+const ChatConfigDrawer = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { data, isLoading } = useSWRImmutable<ModelInfo[]>(API_ROUTES.GET_CHAT_MODELS, get, {
-    onSuccess(models) {
-      const model = models[0];
 
-      model && setValue("model_name", model.name);
-    },
-  });
   const { t } = useTranslation("chat");
   return (
     <>
@@ -78,7 +62,7 @@ const ChatConfigDrawer = ({ control, register, setValue }: ChatConfigDrawerProps
             insetInlineEnd: `52px`,
           }}
           bottom={10}
-          aria-label={t("chat_config.title")}
+          aria-label={t("config_title")}
           icon={<Settings></Settings>}
           size="lg"
           borderRadius="2xl"
@@ -90,10 +74,9 @@ const ChatConfigDrawer = ({ control, register, setValue }: ChatConfigDrawerProps
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader borderBottomWidth="1px">{t("chat_config.title")}</DrawerHeader>
+          <DrawerHeader borderBottomWidth="1px">{t("config_title")}</DrawerHeader>
           <DrawerBody>
-            {isLoading && !data && <CircularProgress></CircularProgress>}
-            {data && <ChatConfigForm modelInfos={data} control={control} register={register}></ChatConfigForm>}
+            <ChatConfigForm></ChatConfigForm>
           </DrawerBody>
         </DrawerContent>
       </Drawer>
@@ -101,9 +84,19 @@ const ChatConfigDrawer = ({ control, register, setValue }: ChatConfigDrawerProps
   );
 };
 
-const sliderItems = [
+const sliderItems: Readonly<
+  Array<{
+    key: Exclude<keyof WorkParametersInput, "model_name">;
+    max?: number;
+    min?: number;
+    precision?: number;
+    step?: number;
+  }>
+> = [
   {
     key: "temperature",
+    min: 0,
+    max: 1.5,
   },
   {
     key: "max_new_tokens",
@@ -121,21 +114,53 @@ const sliderItems = [
   },
   {
     key: "top_k",
-    min: 1,
-    max: 2,
   },
-] as const;
+];
 
-const ChatConfigForm = ({
-  modelInfos,
-  control,
-  register,
-}: { modelInfos: ModelInfo[] } & StrictOmit<ChatConfigDrawerProps, "setValue">) => {
+const customPresetName = "__custom__";
+const customPresetDefaultValue: StrictOmit<WorkParametersInput, "model_name"> = {
+  max_new_tokens: 256,
+  repetition_penalty: 1.2,
+  temperature: 1,
+  top_k: 50,
+  top_p: 0.95,
+};
+
+const parameterLabel: Record<keyof typeof customPresetDefaultValue, string> = {
+  max_new_tokens: "Max new tokens",
+  top_k: "Top K",
+  top_p: "Top P",
+  temperature: "Temperature",
+  repetition_penalty: "Repetition Penalty",
+};
+
+const ChatConfigForm = () => {
   const { t } = useTranslation("chat");
+  const { modelInfos } = useChatContext();
+
+  const { control, register, reset } = useFormContext<WorkParametersInput>();
+  const selectedModel = useWatch({ name: "model_name", control: control });
+
+  const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
+
+  const [presetName, setPresetName] = useState<string>(presets[0].name);
+
+  const handlePresetChange = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) => {
+      const newPresetName = e.target.value;
+      setPresetName(newPresetName);
+      if (newPresetName !== customPresetName) {
+        const config = presets.find((preset) => preset.name === newPresetName)!.work_parameters;
+        reset(config);
+      }
+    },
+    [presets, reset]
+  );
   return (
     <Stack gap="4">
+      <JsonCard>{useWatch({ control })}</JsonCard>
       <FormControl>
-        <FormLabel>{t("chat_config.model")}</FormLabel>
+        <FormLabel>{t("model")}</FormLabel>
         <Select {...register("model_name")}>
           {modelInfos.map(({ name }) => (
             <option value={name} key={name}>
@@ -144,13 +169,30 @@ const ChatConfigForm = ({
           ))}
         </Select>
       </FormControl>
+      <FormControl>
+        <FormLabel>{t("preset")}</FormLabel>
+        <Select value={presetName} onChange={handlePresetChange}>
+          {[...presets].map(({ name }) => (
+            <option value={name} key={name}>
+              {name}
+            </option>
+          ))}
+          <option value={customPresetName}>{t("preset_custom")}</option>
+        </Select>
+      </FormControl>
       {sliderItems.map((item) => (
         <Controller
           name={item.key}
           key={item.key}
           control={control}
-          render={({ field }) => (
-            <NumberInputSlider label={t(`chat_config.${item.key}`)} {...item} {...field}></NumberInputSlider>
+          render={({ field: { value, onChange, name } }) => (
+            <ChatParameterField
+              {...item}
+              value={value}
+              onChange={onChange}
+              name={name}
+              isCustomPreset={presetName === customPresetName}
+            ></ChatParameterField>
           )}
         ></Controller>
       ))}
@@ -159,54 +201,85 @@ const ChatConfigForm = ({
 };
 
 type NumberInputSliderProps = {
-  label: string;
   max?: number;
   min?: number;
   precision?: number;
   step?: number;
   onChange: (value: number) => void;
   value: number | null;
+  isCustomPreset: boolean;
+  name: keyof typeof customPresetDefaultValue;
 };
 
-// eslint-disable-next-line react/display-name
-const NumberInputSlider = (props: NumberInputSliderProps) => {
-  const { label, max = 1, precision = 2, step = 0.01, min = 0, value: propsValue } = props;
-  const [value, setValue] = useState(propsValue || 0);
+const ChatParameterField = (props: NumberInputSliderProps) => {
+  const { max = 1, precision = 2, step = 0.01, min = 0, value, isCustomPreset, name, onChange } = props;
+  const { setValue: setFormValue } = useFormContext<WorkParametersInput>();
+  const [showSlider, setShowSlider] = useState(false);
+
   const handleChange = useCallback(
     (val: string | number) => {
       const newVal = Number(val);
-      setValue(newVal);
-      props.onChange(newVal);
+      // setFormValue(name, newVal);
+      onChange(newVal);
     },
-    [props]
+    [onChange]
   );
+
+  const handleShowSliderChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const checked = e.target.checked;
+      setFormValue(name, checked ? customPresetDefaultValue[name] : null);
+      setShowSlider(e.target.checked);
+      if (checked && value === null) {
+        // setValue(customPresetDefaultValue[name]!);
+      }
+    },
+    [setFormValue, name, value]
+  );
+  const label = parameterLabel[name];
+
   return (
-    <FormControl>
+    <FormControl isDisabled={!isCustomPreset}>
       <Flex justifyContent="space-between" mb="2">
         <FormLabel mb="0">{label}</FormLabel>
-        <NumberInput
-          value={value}
-          onChange={handleChange}
-          size="xs"
-          maxW={20}
-          precision={precision}
-          step={step}
-          min={min}
-          max={max}
-        >
-          <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper height="12px" />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
+        {isCustomPreset && <Switch checked={showSlider} onChange={handleShowSliderChange}></Switch>}
       </Flex>
-      <Slider aria-label={label} min={min} max={max} step={step} value={value} onChange={handleChange}>
-        <SliderTrack>
-          <SliderFilledTrack />
-        </SliderTrack>
-        <SliderThumb />
-      </Slider>
+      {(!isCustomPreset || (showSlider && value !== null)) && (
+        <Flex gap="4">
+          <Slider
+            aria-label={label}
+            min={min}
+            max={max}
+            step={step}
+            value={value || min}
+            onChange={handleChange}
+            focusThumbOnChange={false}
+            isDisabled={!isCustomPreset}
+          >
+            <SliderTrack>
+              <SliderFilledTrack />
+            </SliderTrack>
+            <SliderThumb />
+          </Slider>
+          <NumberInput
+            value={value || min}
+            onChange={handleChange}
+            size="xs"
+            maxW="80px"
+            precision={precision}
+            step={step}
+            min={min}
+            max={max}
+            isDisabled={!isCustomPreset}
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper height="12px" />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+        </Flex>
+      )}
     </FormControl>
   );
 };

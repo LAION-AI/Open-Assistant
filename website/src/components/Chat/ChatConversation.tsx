@@ -3,6 +3,7 @@ import { Button, Flex, Textarea, useBoolean, useColorModeValue } from "@chakra-u
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
@@ -29,7 +30,7 @@ export const ChatConversation = ({ chatId, getConfigValues }: ChatConversationPr
   const [isSending, setIsSending] = useBoolean();
 
   useSWR<ChatItem>(API_ROUTES.GET_CHAT(chatId), get, { onSuccess: (chat) => setMessages(chat.messages) });
-
+  const { getValues } = useFormContext<WorkParametersInput>();
   const send = useCallback(async () => {
     const content = inputRef.current?.value.trim();
     if (!content || !chatId) {
@@ -44,8 +45,18 @@ export const ChatConversation = ({ chatId, getConfigValues }: ChatConversationPr
         .slice()
         .reverse()
         .find((m) => m.role === "assistant")?.id ?? null;
+    const params = getValues();
+
     const response: InferencePostMessageResponse = await post(API_ROUTES.CREATE_CHAT_MESSAGE, {
-      arg: { chat_id: chatId, content, parent_id, work_parameters: getConfigValues() },
+      arg: {
+        chat_id: chatId,
+        content,
+        parent_id,
+        work_parameters: {
+          ...params,
+          top_k: params.top_k === null ? null : Math.pow(32000, params.top_k),
+        },
+      },
     });
 
     setMessages((messages) => [...messages, response.prompter_message]);

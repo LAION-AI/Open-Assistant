@@ -4,13 +4,8 @@
   "empty": "(empty)",
   "queue_info": "Your message is queued, you are at position {{ queuePosition, number, integer }} in the queue.",
   "your_chats": "Your chats",
-  "chat_config": {
-    "title": "Chat configuration",
-    "model": "Model",
-    "top_k": "top_k",
-    "top_p": "Top P",
-    "temperature": "Temperature",
-    "repetition_penalty": "repetition_penalty",
-    "max_new_tokens": "Maximum length"
-  }
+  "config_title": "Chat configuration",
+  "model": "Model",
+  "preset": "Preset",
+  "preset_custom": "Custom"
 }

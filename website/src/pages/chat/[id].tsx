@@ -6,7 +6,8 @@ import Head from "next/head";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { ChatConversation } from "src/components/Chat/ChatConversation";
+import { ChatContextProvider } from "src/components/Chat/ChatContext";
+import { ChatSection } from "src/components/Chat/ChatSection";
 import { getDashboardLayout } from "src/components/Layout";
 import { isChatEnabled } from "src/lib/chat_enabled";
 import { ModelInfo } from "src/types/Chat";
@@ -16,7 +17,7 @@ interface ChatProps {
   modelInfos: ModelInfo[];
 }
 
-const Chat = ({ id }: ChatProps) => {
+const Chat = ({ id, modelInfos }: ChatProps) => {
   const { t } = useTranslation(["common", "chat"]);
 
   return (
@@ -25,19 +26,21 @@ const Chat = ({ id }: ChatProps) => {
         <title>{t("chat")}</title>
       </Head>
 
-      <Card>
-        <CardBody>
-          <Flex direction="column" gap="2">
-            <Link href="/chat">
-              <Button leftIcon={<List />} size="lg">
-                {t("chat:back_to_chat_list")}
-              </Button>
-            </Link>
+      <ChatContextProvider modelInfos={modelInfos}>
+        <Card>
+          <CardBody>
+            <Flex direction="column" gap="2">
+              <Link href="/chat">
+                <Button leftIcon={<List />} size="lg">
+                  {t("chat:back_to_chat_list")}
+                </Button>
+              </Link>
 
-            <ChatConversation chatId={id} />
-          </Flex>
-        </CardBody>
-      </Card>
+              <ChatSection chatId={id}></ChatSection>
+            </Flex>
+          </CardBody>
+        </Card>
+      </ChatContextProvider>
     </>
   );
 };
@@ -51,7 +54,7 @@ export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> =
     };
   }
 
-  const modelInfos = await axios.get("/configs/models", {
+  const { data: modelInfos } = await axios.get<ModelInfo[]>("/configs/models", {
     baseURL: process.env.INFERENCE_SERVER_HOST,
   });
 
