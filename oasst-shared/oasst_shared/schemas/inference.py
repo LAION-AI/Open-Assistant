@@ -187,6 +187,10 @@ class ErrorRequest(WorkerRequestBase):
     error: str
 
 
+class UpgradeProtocolRequest(WorkerRequestBase):
+    request_type: Literal["upgrade_protocol"] = "upgrade_protocol"
+
+
 class TerminateRequest(WorkerRequestBase):
     request_type: Literal["terminate"] = "terminate"
 
@@ -237,7 +241,7 @@ class GeneralErrorResponse(WorkerResponseBase):
 
 
 WorkerRequest = Annotated[
-    Union[WorkRequest, PingRequest, ErrorRequest, TerminateRequest],
+    Union[WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest],
     pydantic.Field(discriminator="request_type"),
 ]
 

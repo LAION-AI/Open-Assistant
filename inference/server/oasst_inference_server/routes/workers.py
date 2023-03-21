@@ -5,7 +5,6 @@ from typing import cast
 import fastapi
 import pydantic
 import websockets.exceptions
-from fastapi import Depends
 from loguru import logger
 from oasst_inference_server import chat_repository, database, deps, models, queueing, worker_utils
 from oasst_inference_server.schemas import chat as chat_schema
@@ -87,9 +86,28 @@ def get_work_request_container(work_request_map: WorkRequestContainerMap, reques
 
 
 @router.websocket("/work")
-async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(worker_utils.get_worker_id)):
-    logger.info(f"handle_worker: {worker_id=}")
+async def handle_worker(
+    websocket: fastapi.WebSocket,
+    api_key: str = worker_utils.api_key_header,
+    protocol_version: str = worker_utils.protocol_version_header,
+):
     await websocket.accept()
+
+    try:
+        worker_utils.get_protocol_version(protocol_version)
+        api_key = worker_utils.get_api_key(api_key)
+        worker_id = await worker_utils.get_worker_id(api_key=api_key, protocol_version=protocol_version)
+    except fastapi.HTTPException as e:
+        logger.warning(f"handle_worker: {e.status_code=} {e.detail=}")
+        if e.status_code == fastapi.status.HTTP_426_UPGRADE_REQUIRED:
+            await worker_utils.send_worker_request(websocket=websocket, request=inference.UpgradeProtocolRequest())
+        try:
+            await websocket.close(code=e.status_code, reason=e.detail)
+        except Exception:
+            pass
+        raise fastapi.WebSocketException(e.status_code, e.detail)
+
+    logger.info(f"handle_worker: {worker_id=}")
     worker_config = await worker_utils.receive_worker_config(websocket)
     logger.info(f"handle_worker: {worker_config=}")
     worker_compat_hash = worker_config.compat_hash
