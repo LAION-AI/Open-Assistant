@@ -37,7 +37,7 @@ class DbWorkerEvent(SQLModel, table=True):
     worker: "DbWorker" = Relationship(back_populates="events")
     time: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
     event_type: WorkerEventType
-    worker_config: inference.WorkerConfig | None = Field(None, sa_column=sa.Column(pg.JSONB))
+    worker_info: inference.WorkerInfo | None = Field(None, sa_column=sa.Column(pg.JSONB))
 
 
 class DbWorker(SQLModel, table=True):
