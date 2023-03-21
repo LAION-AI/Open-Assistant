@@ -42,7 +42,7 @@ export const ChatSection = ({ chatId }: { chatId: string }) => {
 
   return (
     <FormProvider {...form}>
-      <ChatConversation chatId={chatId} getConfigValues={form.getValues} />
+      <ChatConversation chatId={chatId} />
       <ChatConfigDrawer></ChatConfigDrawer>
     </FormProvider>
   );
