@@ -17,10 +17,9 @@ import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
 import { QueueInfoMessage } from "./QueueInfoMessage";
 interface ChatConversationProps {
   chatId: string;
-  getConfigValues: () => Required<WorkParametersInput>;
 }
 
-export const ChatConversation = ({ chatId, getConfigValues }: ChatConversationProps) => {
+export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   const { t } = useTranslation("common");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -54,7 +53,7 @@ export const ChatConversation = ({ chatId, getConfigValues }: ChatConversationPr
         parent_id,
         work_parameters: {
           ...params,
-          top_k: params.top_k === null ? null : Math.pow(32000, params.top_k),
+          top_k: params.top_k === null ? null : Math.floor(Math.pow(32000, params.top_k)),
         },
       },
     });
@@ -85,7 +84,7 @@ export const ChatConversation = ({ chatId, getConfigValues }: ChatConversationPr
     setQueueInfo(null);
     setResponse(null);
     setIsSending.off();
-  }, [chatId, messages, setIsSending]);
+  }, [chatId, getValues, messages, setIsSending]);
 
   const sendVote = useMessageVote();
 
