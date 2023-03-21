@@ -42,7 +42,7 @@ export class OasstInferenceClient {
     // TODO: we have not decided on a format for the user yet, this is here for debug only
     const res = await fetch(process.env.INFERENCE_SERVER_HOST + `/auth/login/debug?username=${this.userTokenSub}`);
     const inferenceResponse: InferenceTokenResponse = await res.json();
-    this.inferenceToken = inferenceResponse.access_token;
+    this.inferenceToken = inferenceResponse.access_token.access_token;
     this.cookies.set("inference_token", this.inferenceToken, {
       maxAge: 1000 * 60 * 5, // 5 minutes
     });
