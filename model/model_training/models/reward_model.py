@@ -1,20 +1,42 @@
-from typing import Literal
+from typing import Literal, Optional
 
 import torch.nn as nn
-from transformers import PreTrainedModel
+from models import get_specific_model
+from transformers import PretrainedConfig, PreTrainedModel
 
 
-class RewardModel(nn.Module):
-    def __init__(self, transformer: PreTrainedModel, pooling: Literal["mean", "last"] = "last"):
-        super().__init__()
+class RewardModelConfig(PretrainedConfig):
+    base_model_name: str
+    pooling: Literal["mean", "last"]
+    model_type = "reward_model"
+
+    def __init__(
+        self,
+        base_model_name: str = None,
+        pooling: Literal["mean", "last"] = "last",
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.base_model_name = base_model_name
+        self.pooling = pooling or "last"
+
+
+class RewardModel(PreTrainedModel):
+    config_class = RewardModelConfig
+
+    def __init__(self, config: RewardModelConfig, cache_dir: Optional[str] = None):
+        super().__init__(config=config)
+
+        transformer = get_specific_model(
+            config.base_model_name,
+            seq2seqmodel=False,
+            without_head=True,
+            cache_dir=cache_dir,
+        )
+
         self.transformer = transformer
         self.out_proj = nn.Linear(transformer.config.hidden_size, 1)
-        self.pooling = pooling
-
-    @property
-    def config(self):
-        # required for HF-deepspeed integration
-        return self.transformer.config
+        self.pooling = config.pooling
 
     def forward(self, input_ids, attention_mask=None):
         hiddens = self.transformer(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state

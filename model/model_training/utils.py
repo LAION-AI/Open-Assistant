@@ -13,7 +13,7 @@ from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from losses import CrossEntropyLoss, PolyLoss, RMLoss
 from models import freeze_top_n_layers, get_specific_model
 from models.patching import patch_model
-from models.reward_model import RewardModel
+from models.reward_model import RewardModel, RewardModelConfig
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
@@ -269,28 +269,29 @@ def get_metrics(conf, tokenizer):
 
 
 def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
-    model = get_specific_model(
-        conf.model_name,
-        cache_dir=conf.cache_dir,
-        quantization=conf.quantization,
-        seq2seqmodel=conf.seq2seqmodel,
-        without_head=conf.is_reward_model,
-    )
-
-    n_embs = model.get_input_embeddings().num_embeddings
-    if len(tokenizer) != n_embs:
-        assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
-
-    if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
-        p = pad_vocab_size_to_multiple_of
-        target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
-        model.resize_token_embeddings(target_size)
-
-    if conf.freeze_layer:
-        model = freeze_top_n_layers(model, conf.freeze_layer)
-
     if conf.is_reward_model:
-        model = RewardModel(model)
+        rm_config = RewardModelConfig(base_model_name=conf.model_name, pooling=conf.pooling)
+        model = RewardModel(config=rm_config, cache_dir=conf.cache_dir)
+    else:
+        model = get_specific_model(
+            conf.model_name,
+            cache_dir=conf.cache_dir,
+            quantization=conf.quantization,
+            seq2seqmodel=conf.seq2seqmodel,
+            without_head=conf.is_reward_model,
+        )
+
+        n_embs = model.get_input_embeddings().num_embeddings
+        if len(tokenizer) != n_embs:
+            assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
+
+        if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
+            p = pad_vocab_size_to_multiple_of
+            target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
+            model.resize_token_embeddings(target_size)
+
+        if conf.freeze_layer:
+            model = freeze_top_n_layers(model, conf.freeze_layer)
 
     model_parameters = filter(lambda p: p.requires_grad, model.parameters())
     params = sum([p.numel() for p in model_parameters])

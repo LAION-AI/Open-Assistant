@@ -1,5 +1,6 @@
 defaults_rm:
   is_reward_model: true
+  pooling: last
   learning_rate: 1e-5
   gradient_checkpointing: false
   gradient_accumulation_steps: 2
