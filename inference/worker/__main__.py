@@ -48,10 +48,13 @@ def main():
                 logger.warning("Connected to backend, sending config...")
                 worker_config = inference.WorkerConfig(
                     model_name=settings.model_id,
-                    hardware_info=inference.WorkerHardwareInfo(),
                     max_parallel_requests=settings.max_parallel_requests,
                 )
-                utils.send_response(ws, worker_config)
+                worker_info = inference.WorkerInfo(
+                    config=worker_config,
+                    hardware_info=inference.WorkerHardwareInfo(),
+                )
+                utils.send_response(ws, worker_info)
                 logger.warning("Config sent, waiting for work...")
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=worker_config.max_parallel_requests) as executor:

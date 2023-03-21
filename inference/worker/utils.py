@@ -111,7 +111,7 @@ ws_lock = threading.Lock()
 
 def send_response(
     ws: websocket.WebSocket,
-    repsonse: inference.WorkerResponse | inference.WorkerConfig,
+    repsonse: inference.WorkerResponse | inference.WorkerInfo,
 ):
     msg = repsonse.json()
     with ws_lock:

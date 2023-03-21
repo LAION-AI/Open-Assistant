@@ -20,7 +20,7 @@ class WorkerSessionStatus(str, enum.Enum):
 class WorkerSession(pydantic.BaseModel):
     id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
     worker_id: str
-    config: inference.WorkerConfig
+    worker_info: inference.WorkerInfo
     requests_in_flight: int = 0
     metrics: inference.WorkerMetricsInfo | None = None
 
@@ -88,10 +88,10 @@ async def receive_worker_response(
     return pydantic.parse_raw_as(inference.WorkerResponse, await websocket.receive_text())
 
 
-async def receive_worker_config(
+async def receive_worker_info(
     websocket: fastapi.WebSocket,
-) -> inference.WorkerConfig:
-    return inference.WorkerConfig.parse_raw(await websocket.receive_text())
+) -> inference.WorkerInfo:
+    return inference.WorkerInfo.parse_raw(await websocket.receive_text())
 
 
 async def store_worker_session(worker_session: WorkerSession):
