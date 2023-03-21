@@ -216,6 +216,13 @@ export class OasstApiClient {
   }
 
   /**
+   * Undelete a message by its id
+   */
+  async undelete_message(message_id: string): Promise<void> {
+    return this.put<void>(`/api/v1/messages/${message_id}/undelete`);
+  }
+
+  /**
    * Stop message tree
    */
   async stop_tree(message_id: string): Promise<void> {
