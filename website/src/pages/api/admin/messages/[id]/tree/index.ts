@@ -9,6 +9,7 @@ export default withAnyRole(["admin", "moderator"], async (req, res, token) => {
     include_deleted: true,
     include_spam: true,
   });
+  const treeState = await client.fetch_message_tree_state(messageId);
 
   if (!response) {
     return res.json({ tree: null });
@@ -16,7 +17,7 @@ export default withAnyRole(["admin", "moderator"], async (req, res, token) => {
 
   const tree = buildTree(response.messages);
 
-  return res.json({ tree, message: response.messages.find((m) => m.id === messageId) });
+  return res.json({ tree, message: response.messages.find((m) => m.id === messageId), tree_state: treeState });
 });
 
 // https://medium.com/@lizhuohang.selina/building-a-hierarchical-tree-from-a-flat-list-an-easy-to-understand-solution-visualisation-19cb24bdfa33

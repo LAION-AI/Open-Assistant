@@ -32,21 +32,16 @@ const MessageDetail = () => {
   const { data, isLoading, error } = useSWRImmutable<{
     tree: MessageWithChildren | null;
     message?: Message;
+    tree_state: {
+      message_tree_id: string;
+      state: string;
+      active: boolean;
+      goal_tree_size: number;
+      max_children_count: number;
+      max_depth: number;
+      origin: string;
+    };
   }>(`/api/admin/messages/${messageId}/tree`, get);
-
-  const {
-    data: treeState,
-    isLoading: isLoadingTreeState,
-    error: errorTreeState,
-  } = useSWRImmutable<{
-    message_tree_id: string;
-    state: string;
-    active: boolean;
-    goal_tree_size: number;
-    max_children_count: number;
-    max_depth: number;
-    origin: string;
-  }>(`/api/admin/messages/${messageId}/tree/state`, get);
 
   return (
     <>
@@ -54,10 +49,9 @@ const MessageDetail = () => {
         <title>Open Assistant</title>
       </Head>
       <AdminArea>
-        {isLoading && isLoadingTreeState && <CircularProgress isIndeterminate></CircularProgress>}
-        {error && errorTreeState && "Unable to load message tree"}
+        {isLoading && <CircularProgress isIndeterminate></CircularProgress>}
+        {error && "Unable to load message tree"}
         {data &&
-          treeState &&
           (data.tree === null ? (
             "Unable to build tree"
           ) : (
@@ -87,27 +81,27 @@ const MessageDetail = () => {
                       <Tbody>
                         <Tr>
                           <Td>State</Td>
-                          <Td>{treeState.state}</Td>
+                          <Td>{data.tree_state.state}</Td>
                         </Tr>
                         <Tr>
                           <Td>Goal Tree Size</Td>
-                          <Td>{treeState.goal_tree_size}</Td>
+                          <Td>{data.tree_state.goal_tree_size}</Td>
                         </Tr>
                         <Tr>
                           <Td>Max depth</Td>
-                          <Td>{treeState.max_depth}</Td>
+                          <Td>{data.tree_state.max_depth}</Td>
                         </Tr>
                         <Tr>
                           <Td>Max children count</Td>
-                          <Td>{treeState.max_children_count}</Td>
+                          <Td>{data.tree_state.max_children_count}</Td>
                         </Tr>
                         <Tr>
                           <Td>Active</Td>
-                          <Td>{treeState.active ? "Active" : "Not active"}</Td>
+                          <Td>{data.tree_state.active ? "Active" : "Not active"}</Td>
                         </Tr>
                         <Tr>
                           <Td>Origin</Td>
-                          <Td>{treeState.origin || "null"}</Td>
+                          <Td>{data.tree_state.origin || "null"}</Td>
                         </Tr>
                       </Tbody>
                     </Table>
