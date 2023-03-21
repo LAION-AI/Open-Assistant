@@ -9,7 +9,6 @@ import { UnchangedWarning } from "src/components/Tasks/UnchangedWarning";
 import { useTaskContext } from "src/context/TaskContext";
 import { ERROR_CODES } from "src/lib/errors";
 import { getTypeSafei18nKey } from "src/lib/i18n";
-
 import { OasstError } from "src/lib/oasst_api_client";
 import { BaseTask, TaskCategory, TaskContent, TaskInfo, TaskReplyValidity } from "src/types/Task";
 import { CreateTaskType, LabelTaskType, RankTaskType } from "src/types/Tasks";
@@ -172,17 +171,15 @@ export const Task = () => {
     switch (taskInfo.category) {
       case TaskCategory.Create:
         return (
-          <>
-            <CreateTask
-              task={task as CreateTaskType}
-              taskType={taskInfo}
-              isEditable={taskStatus.mode === "EDIT"}
-              isDisabled={taskStatus.mode === "SUBMITTED"}
-              onReplyChanged={onReplyChanged}
-              onValidityChanged={updateValidity}
-              onSubmit={handleKeyboardSubmit}
-            />
-          </>
+          <CreateTask
+            task={task as CreateTaskType}
+            taskType={taskInfo}
+            isEditable={taskStatus.mode === "EDIT"}
+            isDisabled={taskStatus.mode === "SUBMITTED"}
+            onReplyChanged={onReplyChanged}
+            onValidityChanged={updateValidity}
+            onSubmit={handleKeyboardSubmit}
+          />
         );
       case TaskCategory.Evaluate:
         return (
@@ -207,7 +204,7 @@ export const Task = () => {
           />
         );
     }
-  }, [taskInfo, task, taskStatus.mode, onReplyChanged, updateValidity]);
+  }, [taskInfo, task, taskStatus.mode, onReplyChanged, updateValidity, handleKeyboardSubmit]);
 
   return (
     <div ref={rootEl}>
