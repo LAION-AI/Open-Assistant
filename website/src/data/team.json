@@ -133,6 +133,23 @@
       "title": "It wouldn't have happened without you, thanks!",
       "githubURL": "https://github.com/LAION-AI/Open-Assistant",
       "imageURL": "https://avatars.githubusercontent.com/u/92627801?v=4"
+    },
+    "wandb": {
+      "name": "Weights & Biases",
+      "title": "W&B Team License",
+      "githubURL": "https://github.com/wandb",
+      "imageURL": "https://avatars.githubusercontent.com/u/26401354?s=200&v=4"
+    },
+    "hf": {
+      "name": "Hugging Face",
+      "title": "Inference API Credits",
+      "githubURL": "https://github.com/huggingface",
+      "imageURL": "https://avatars.githubusercontent.com/u/25720743?s=200&v=4"
+    },
+    "redmond": {
+      "name": "Redmond AI",
+      "title": "Training Compute",
+      "imageURL": "/images/logos/redmond_logo.jpg"
     }
   },
   "groups": [
@@ -159,6 +176,10 @@
     {
       "name": "Moderation Team",
       "members": ["almostEvil___", "~Zy~", "joak"]
+    },
+    {
+      "name": "Sponsors",
+      "members": ["redmond", "hf", "wandb"]
     },
     {
       "name": "And also...",
