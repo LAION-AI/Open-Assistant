@@ -170,6 +170,7 @@ services:
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
       - INFERENCE_SERVER_HOST=http://inference-server:8000
+      - ENABLE_CHAT=true
     depends_on:
       webdb:
         condition: service_healthy
