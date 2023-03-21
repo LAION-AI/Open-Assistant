@@ -187,8 +187,6 @@ def argument_parsing(notebook=False, notebook_args=None):
     else:
         args, remaining = parser.parse_known_args()
 
-    print(args)
-
     # Config from YAML
     conf = {}
     configs = read_yamls("./configs")
@@ -222,8 +220,12 @@ def argument_parsing(notebook=False, notebook_args=None):
         if type_ == bool:
             type_ = _strtobool
         parser.add_argument(f"--{key}", type=type_, default=value)
+        # Allow --no-{key}  to remove it completely
+        parser.add_argument(f"--no-{key}", dest=key, action="store_const", const=None)
 
-    return parser.parse_args(remaining)
+    args = parser.parse_args(remaining)
+    print(args)
+    return args
 
 
 if __name__ == "__main__":

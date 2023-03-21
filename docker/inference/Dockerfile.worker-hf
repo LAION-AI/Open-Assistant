@@ -1,0 +1,75 @@
+# syntax=docker/dockerfile:1
+
+ARG MODULE="inference"
+ARG SERVICE="worker"
+
+ARG APP_USER="${MODULE}-${SERVICE}"
+ARG APP_RELATIVE_PATH="${MODULE}/${SERVICE}"
+
+
+FROM python:3.10-slim as build
+ARG APP_RELATIVE_PATH
+
+WORKDIR /build
+
+COPY ./${APP_RELATIVE_PATH}/requirements.txt requirements-base.txt
+COPY ./${APP_RELATIVE_PATH}/requirements-hf.txt .
+
+RUN cat requirements-base.txt requirements-hf.txt > requirements.txt
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN --mount=type=cache,target=/var/cache/pip \
+    pip install                  \
+      --cache-dir=/var/cache/pip \
+      --target=lib               \
+      -r requirements.txt
+
+
+
+FROM python:3.10-slim as base-env
+ARG APP_USER
+ARG APP_RELATIVE_PATH
+ARG MODULE
+ARG SERVICE
+
+ENV APP_BASE="/opt/${MODULE}"
+ENV APP_ROOT="${APP_BASE}/${SERVICE}"
+ENV APP_LIBS="/var/opt/${APP_RELATIVE_PATH}/lib"
+ENV SHARED_LIBS_BASE="${APP_BASE}/lib"
+
+ENV PATH="${PATH}:${APP_LIBS}/bin"
+ENV PYTHONPATH="${PYTHONPATH}:${APP_LIBS}"
+
+
+RUN adduser               \
+      --disabled-password \
+      "${APP_USER}"
+
+USER ${APP_USER}
+
+WORKDIR ${APP_ROOT}
+
+
+COPY --chown="${APP_USER}:${APP_USER}" --from=build /build/lib                         ${APP_LIBS}
+COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/*.py .
+
+
+CMD python3 __main__.py --backend-url "${BACKEND_URL}" --inference-server-url "${INFERENCE_SERVER_URL}"
+
+FROM base-env as prod
+ARG APP_USER
+
+
+COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared /tmp/lib/oasst-shared
+RUN --mount=type=cache,target=/var/cache/pip,from=base-env \
+    pip install                  \
+      --cache-dir=/var/cache/pip \
+      --target="${APP_LIBS}"     \
+      /tmp/lib/oasst-shared
+
+COPY --chown="${APP_USER}:${APP_USER}" ./inference/worker/worker_hf_main.sh /entrypoint.sh
+
+CMD ["/entrypoint.sh"]

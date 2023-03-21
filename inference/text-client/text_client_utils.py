@@ -36,8 +36,10 @@ class DebugClient:
                 "content": message,
                 "work_parameters": {
                     "model_name": model_id,
-                    "top_p": 0.9,
+                    "top_p": 0.95,
+                    "top_k": 50,
                     "repetition_penalty": 1.2,
+                    "temperature": 1.0,
                 },
             },
             headers=self.auth_headers,

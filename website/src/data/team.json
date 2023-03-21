@@ -1,0 +1,189 @@
+{
+  "__comment__": "add your info as an object in 'people', and then add the key to the corresponding group(s), you can also add new groups if you want to",
+  "__comment2__": "I apologize if I missed someone or butchered how much people contributed, or which teams they were on, I beg for your forgiveness 🙏",
+  "people": {
+    "andreaskoepf": {
+      "name": "Andreas Köpf",
+      "title": "Project co-founder & Team Lead",
+      "githubURL": "https://github.com/andreaskoepf",
+      "website": "https://github.com/andreaskoepf",
+      "imageURL": "https://avatars.githubusercontent.com/u/9976399?v=4"
+    },
+    "yk": {
+      "name": "Yannic Kilcher",
+      "title": "Project co-founder & Team Lead",
+      "githubURL": "https://github.com/yk",
+      "website": "https://www.ykilcher.com/",
+      "imageURL": "https://www.ykilcher.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fheadshot.ff3a7ee3.webp&w=3840&q=75"
+    },
+    "ontocord": {
+      "name": "Huu Nguyen (ontocord)",
+      "title": "Project co-founder",
+      "githubURL": "https://github.com/ontocord",
+      "imageURL": "https://avatars.githubusercontent.com/u/8900094?v=4"
+    },
+    "christophschuhmann": {
+      "name": "Christoph Schuhmann",
+      "title": "Project co-founder",
+      "githubURL": "https://github.com/christophschuhmann",
+      "imageURL": "https://avatars.githubusercontent.com/u/22318853?v=4"
+    },
+    "fozziethebeat": {
+      "name": "Keith Stevens",
+      "title": "Full stack engineer",
+      "githubURL": "https://github.com/fozziethebeat",
+      "imageURL": "https://avatars.githubusercontent.com/u/398211?v=4"
+    },
+    "AbdBarho": {
+      "name": "Abdullah Barhoum",
+      "title": "Semi-professional Döner enjoyer",
+      "githubURL": "https://github.com/AbdBarho",
+      "imageURL": "https://avatars.githubusercontent.com/u/24505302?v=4"
+    },
+    "notmd": {
+      "name": "Nguyen Minh Duc",
+      "title": "Full stack engineer",
+      "githubURL": "https://github.com/notmd",
+      "imageURL": "https://avatars.githubusercontent.com/u/33456881?v=4"
+    },
+    "johnflux": {
+      "name": "John Tapsell",
+      "title": "Full stack ML engineer",
+      "githubURL": "https://github.com/johnflux",
+      "imageURL": "https://avatars.githubusercontent.com/u/1230500?v=4"
+    },
+    "theblackcat102": {
+      "name": "theblackcat102",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/theblackcat102",
+      "imageURL": "https://avatars.githubusercontent.com/u/13172147?v=4"
+    },
+    "sanagno": {
+      "name": "sanagno",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/sanagno",
+      "imageURL": "https://avatars.githubusercontent.com/u/26574370?v=4"
+    },
+    "olliestanley": {
+      "name": "Oliver Stanley",
+      "title": "Backend & ML engineer",
+      "githubURL": "https://github.com/olliestanley",
+      "imageURL": "https://avatars.githubusercontent.com/u/1496060?v=4"
+    },
+    "sedthh": {
+      "name": "Richard Nagyfi",
+      "title": "Machine Learning Data Scientist, Applied Researcher",
+      "githubURL": "https://github.com/sedthh",
+      "imageURL": "https://avatars.githubusercontent.com/u/18616343?v=4"
+    },
+    "bitplane": {
+      "name": "Gareth Davidson",
+      "title": "",
+      "githubURL": "https://github.com/bitplane",
+      "imageURL": "https://avatars.githubusercontent.com/u/273059?v=4"
+    },
+    "SummerSigh": {
+      "name": "Summer",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/SummerSigh",
+      "imageURL": "https://avatars.githubusercontent.com/u/71572746?v=4"
+    },
+    "shahules786": {
+      "name": "Shahul ES",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/shahules786",
+      "imageURL": "https://avatars.githubusercontent.com/u/25312635?v=4"
+    },
+    "gfjam": {
+      "name": "James Melvin Ebenezer",
+      "title": "Full stack and ML Engineer",
+      "githubURL": "https://github.com/melvinebenezer",
+      "imageURL": "https://avatars.githubusercontent.com/u/6395936?v=4"
+    },
+    "jmete": {
+      "name": "James Mete",
+      "title": "Data Scientist",
+      "githubURL": "https://github.com/Jmete",
+      "imageURL": "https://avatars.githubusercontent.com/u/22094024?v=4"
+    },
+    "almostEvil___": {
+      "name": "almostEvil___",
+      "title": "Community Moderator & Web Moderator & Translator & Others",
+      "githubURL": "https://github.com/0x22almostEvil",
+      "imageURL": "https://avatars.githubusercontent.com/u/122345469?v=4"
+    },
+    "~Zy~": {
+      "name": "~Zy~",
+      "title": "Community/Web Moderator, Armchair Data Scientist, Pizza Appreciator",
+      "githubURL": "https://github.com/Zyphre",
+      "imageURL": "https://avatars.githubusercontent.com/u/6561540?v=4"
+    },
+    "joak": {
+      "name": "Joak",
+      "title": "Community Moderator & Web Moderator"
+    },
+    "kenhktsui": {
+      "name": "Ken Tsui",
+      "title": "Data scientist and ML engineer",
+      "githubURL": "https://github.com/kenhktsui",
+      "imageURL": "https://avatars.githubusercontent.com/u/29099916?v=4"
+    },
+    "you": {
+      "name": "You!",
+      "title": "It wouldn't have happened without you, thanks!",
+      "githubURL": "https://github.com/LAION-AI/Open-Assistant",
+      "imageURL": "https://avatars.githubusercontent.com/u/92627801?v=4"
+    },
+    "wandb": {
+      "name": "Weights & Biases",
+      "title": "W&B Team License",
+      "githubURL": "https://github.com/wandb",
+      "imageURL": "https://avatars.githubusercontent.com/u/26401354?s=200&v=4"
+    },
+    "hf": {
+      "name": "Hugging Face",
+      "title": "Inference API Credits",
+      "githubURL": "https://github.com/huggingface",
+      "imageURL": "https://avatars.githubusercontent.com/u/25720743?s=200&v=4"
+    },
+    "redmond": {
+      "name": "Redmond AI",
+      "title": "Training Compute",
+      "imageURL": "/images/logos/redmond_logo.jpg"
+    }
+  },
+  "groups": [
+    {
+      "name": "Project founders",
+      "members": ["andreaskoepf", "yk", "ontocord", "christophschuhmann"]
+    },
+    {
+      "name": "Fullstack developers",
+      "members": ["fozziethebeat", "AbdBarho", "notmd", "olliestanley", "gfjam"]
+    },
+    {
+      "name": "ML engineers",
+      "members": ["theblackcat102", "sanagno", "johnflux"]
+    },
+    {
+      "name": "Data Team",
+      "members": ["sedthh", "bitplane", "jmete", "kenhktsui"]
+    },
+    {
+      "name": "Safety Team",
+      "members": ["SummerSigh", "shahules786"]
+    },
+    {
+      "name": "Moderation Team",
+      "members": ["almostEvil___", "~Zy~", "joak"]
+    },
+    {
+      "name": "Sponsors",
+      "members": ["redmond", "hf", "wandb"]
+    },
+    {
+      "name": "And also...",
+      "members": ["you"]
+    }
+  ]
+}

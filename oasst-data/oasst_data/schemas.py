@@ -60,3 +60,4 @@ class ExportMessageTree(BaseModel):
     message_tree_id: str
     tree_state: Optional[str]
     prompt: Optional[ExportMessageNode]
+    origin: Optional[str]

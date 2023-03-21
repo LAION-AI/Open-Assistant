@@ -1,4 +1,4 @@
-export interface InferenceDebugTokenResponse {
+export interface InferenceTokenResponse {
   access_token: string;
   token_type: string;
 }
