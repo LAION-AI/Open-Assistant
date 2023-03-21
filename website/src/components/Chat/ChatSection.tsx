@@ -122,7 +122,7 @@ const customPresetDefaultValue: StrictOmit<WorkParametersInput, "model_name"> = 
   max_new_tokens: 256,
   repetition_penalty: 1.2,
   temperature: 1,
-  top_k: 50,
+  top_k: 50 / 32000,
   top_p: 0.95,
 };
 
