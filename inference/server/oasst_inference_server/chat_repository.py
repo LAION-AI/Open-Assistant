@@ -6,6 +6,8 @@ import sqlalchemy.orm
 import sqlmodel
 from loguru import logger
 from oasst_inference_server import database, models
+from oasst_inference_server.schemas import chat as chat_schema
+from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 
 
@@ -29,6 +31,16 @@ class ChatRepository(pydantic.BaseModel):
     ) -> models.DbMessage:
         logger.debug(f"Starting work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
+
+        if settings.assistant_message_timeout > 0:
+            message_age_in_seconds = (datetime.datetime.utcnow() - message.created_at).total_seconds()
+            if message_age_in_seconds > settings.assistant_message_timeout:
+                message.state = inference.MessageState.timeout
+                await self.session.commit()
+                raise chat_schema.MessageTimeoutException(message_id=message_id)
+
+        if message.state == inference.MessageState.cancelled:
+            raise chat_schema.MessageCancelledException(message_id=message_id)
 
         if message.state != inference.MessageState.pending:
             raise fastapi.HTTPException(status_code=400, detail="Message is not pending")

@@ -59,6 +59,7 @@ class UserChatRepository(pydantic.BaseModel):
 
     async def add_prompter_message(self, chat_id: str, parent_id: str | None, content: str) -> models.DbMessage:
         logger.info(f"Adding prompter message {len(content)=} to chat {chat_id}")
+
         chat: models.DbChat = (
             await self.session.exec(
                 sqlmodel.select(models.DbChat)
@@ -110,6 +111,29 @@ class UserChatRepository(pydantic.BaseModel):
         self, parent_id: str, work_parameters: inference.WorkParameters
     ) -> models.DbMessage:
         logger.info(f"Adding stub assistant message to {parent_id=}")
+
+        # find and cancel all pending messages by this user
+        pending_msg_query = (
+            sqlmodel.select(models.DbMessage)
+            .where(
+                models.DbMessage.role == "assistant",
+                models.DbMessage.state == inference.MessageState.pending,
+            )
+            .join(models.DbChat)
+            .where(
+                models.DbChat.user_id == self.user_id,
+            )
+        )
+
+        pending_msgs: list[models.DbMessage] = (await self.session.exec(pending_msg_query)).all()
+        for pending_msg in pending_msgs:
+            logger.warning(
+                f"User {self.user_id} has a pending message {pending_msg.id} in chat {pending_msg.chat_id}. Cancelling..."
+            )
+            pending_msg.state = inference.MessageState.cancelled
+            await self.session.commit()
+            logger.debug(f"Cancelled message {pending_msg.id} in chat {pending_msg.chat_id}.")
+
         query = (
             sqlmodel.select(models.DbMessage)
             .options(sqlalchemy.orm.selectinload(models.DbMessage.chat))

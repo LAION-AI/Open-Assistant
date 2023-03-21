@@ -82,5 +82,7 @@ class Settings(pydantic.BaseSettings):
     pending_event_interval: int = 1
     worker_ping_interval: int = 3
 
+    assistant_message_timeout: int = 60
+
 
 settings = Settings()
