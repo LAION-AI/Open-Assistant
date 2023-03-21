@@ -6,6 +6,7 @@ echo -n "$HF_TOKEN" > $HOME/.cache/huggingface/token
 num_shards=${NUM_SHARDS:-1}
 model_id=${MODEL_ID:-"OpenAssistant/oasst-sft-1-pythia-12b"}
 
+export HF_HUB_ENABLE_HF_TRANSFER=
 export HF_HOME=$HOME/.cache/huggingface
 export HUGGING_FACE_HUB_TOKEN=$HF_TOKEN
 /opt/miniconda/envs/text-generation/bin/python /worker/download_model.py
