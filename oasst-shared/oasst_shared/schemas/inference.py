@@ -14,12 +14,9 @@ INFERENCE_PROTOCOL_VERSION = "1"
 
 DEFAULT_MODEL_LENGTHS = {
     "_lorem": 1024,
-    "OpenAssistant/oasst-sft-1-pythia6b": 2048,
     "OpenAssistant/oasst-sft-1-pythia-12b": 2048,
     "OpenAssistant/oasst_sft_llama_7b_mask_1000": 2048,
     "OpenAssistant/oasst_sft_llama_13b_mask_1500": 2048,
-    "OpenAssistant/llama_30b_oasst_latcyr_400": 2048,
-    "OpenAssistant/llama_30b_oasst_latcyr_1000": 2048,
 }
 
 
@@ -36,7 +33,9 @@ def set_model_max_lengths(values: dict[str, Any]):
     if values.get("model_name") is None:
         values["model_name"] = shared_settings.default_model_name
     if "model_max_total_length" not in values:
-        values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(values["model_name"], 1024)
+        values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(
+            values["model_name"], 1024
+        )
     if "model_max_input_length" not in values:
         values["model_max_input_length"] = values["model_max_total_length"] // 2
     return values
@@ -163,7 +162,9 @@ class WorkParametersInput(pydantic.BaseModel):
 
 class WorkParameters(WorkParametersInput):
     do_sample: bool = True
-    seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1))
+    seed: int = pydantic.Field(
+        default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1)
+    )
 
 
 class ReportType(str, enum.Enum):
@@ -219,7 +220,9 @@ class WorkerRequestBase(pydantic.BaseModel):
 class WorkRequest(WorkerRequestBase):
     request_type: Literal["work"] = "work"
     thread: Thread = pydantic.Field(..., repr=False)
-    created_at: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.utcnow)
+    created_at: datetime.datetime = pydantic.Field(
+        default_factory=datetime.datetime.utcnow
+    )
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
 
 
@@ -286,7 +289,9 @@ class GeneralErrorResponse(WorkerResponseBase):
 
 
 WorkerRequest = Annotated[
-    Union[WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest],
+    Union[
+        WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest
+    ],
     pydantic.Field(discriminator="request_type"),
 ]
 
