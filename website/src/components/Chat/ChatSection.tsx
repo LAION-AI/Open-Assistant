@@ -99,7 +99,7 @@ const sliderItems: Readonly<
   },
   {
     key: "max_new_tokens",
-    max: 1000,
+    max: 1024,
     step: 1,
     min: 1,
   },
