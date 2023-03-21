@@ -86,8 +86,8 @@ async def callback_discord(
     refresh_token = auth.create_refresh_token(user.id)
 
     token_pair = protocol.TokenPair(
-        protocol.Token(access_token=access_token, token_type="bearer"),
-        protocol.Token(access_token=refresh_token, token_type="refresh"),
+        access_token=protocol.Token(access_token=access_token, token_type="bearer"),
+        refresh_token=protocol.Token(access_token=refresh_token, token_type="refresh"),
     )
 
     return token_pair
@@ -154,8 +154,8 @@ async def callback_github(
     refresh_token = auth.create_refresh_token(user.id)
 
     token_pair = protocol.TokenPair(
-        protocol.Token(access_token=access_token, token_type="bearer"),
-        protocol.Token(access_token=refresh_token, token_type="refresh"),
+        access_token=protocol.Token(access_token=access_token, token_type="bearer"),
+        refresh_token=protocol.Token(access_token=refresh_token, token_type="refresh"),
     )
 
     return token_pair
@@ -212,8 +212,8 @@ async def login_debug(username: str, db: database.AsyncSession = Depends(deps.cr
     refresh_token = auth.create_refresh_token(user.id)
 
     token_pair = protocol.TokenPair(
-        protocol.Token(access_token=access_token, token_type="bearer"),
-        protocol.Token(access_token=refresh_token, token_type="refresh"),
+        access_token=protocol.Token(access_token=access_token, token_type="bearer"),
+        refresh_token=protocol.Token(access_token=refresh_token, token_type="refresh"),
     )
 
     return token_pair
