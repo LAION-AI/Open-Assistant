@@ -46,7 +46,6 @@ ENV PYTHONPATH="${PYTHONPATH}:${APP_LIBS}"
 
 RUN adduser               \
       --disabled-password \
-      --no-create-home    \
       "${APP_USER}"
 
 USER ${APP_USER}

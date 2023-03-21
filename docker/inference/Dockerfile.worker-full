@@ -1,4 +1,4 @@
-FROM ghcr.io/yk/text-generation-inference
+FROM ghcr.io/yk/text-generation-inference:llama
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \

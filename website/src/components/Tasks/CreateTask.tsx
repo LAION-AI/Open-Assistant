@@ -1,6 +1,18 @@
-import { Box, Stack, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useColorModeValue } from "@chakra-ui/react";
+import {
+  Box,
+  Kbd,
+  Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+  useColorModeValue,
+  useMediaQuery,
+} from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
@@ -20,11 +32,14 @@ export const CreateTask = ({
   isDisabled,
   onReplyChanged,
   onValidityChanged,
+  onSubmit,
 }: TaskSurveyProps<CreateTaskType, CreateTaskReply>) => {
   const { t, i18n } = useTranslation(["tasks", "common"]);
   const cardColor = useColorModeValue("gray.50", "gray.800");
   const titleColor = useColorModeValue("gray.800", "gray.300");
+  const tipColor = useColorModeValue("gray.600", "gray.400");
   const [inputText, setInputText] = useState("");
+  const [isDesktop] = useMediaQuery("(min-width: 800px)");
 
   const textChangeHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
@@ -48,6 +63,24 @@ export const CreateTask = ({
     [inputText]
   );
 
+  useEffect(() => {
+    if (typeof window === undefined) {
+      return;
+    }
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        onSubmit?.();
+      }
+    };
+
+    window.addEventListener("keydown", handler, false);
+
+    return () => {
+      window.removeEventListener("keydown", handler, false);
+    };
+  }, [onSubmit]);
+
   return (
     <div data-cy="task" data-task-type="create-task">
       <TwoColumnsWithCards>
@@ -64,6 +97,20 @@ export const CreateTask = ({
             {!!i18n.exists(`tasks:${taskType.id}.instruction`) && (
               <Text fontSize="xl" fontWeight="bold" color={titleColor}>
                 {t(getTypeSafei18nKey(`tasks:${taskType.id}.instruction`))}
+              </Text>
+            )}
+            {isDesktop && (
+              <Text color={tipColor}>
+                {t(getTypeSafei18nKey(`tasks:${taskType.id}.shotcut_tip`)) + " "}
+                {window.navigator.userAgent.indexOf("Mac") !== -1 ? (
+                  <>
+                    <Kbd>cmd</Kbd>+<Kbd>Enter</Kbd>
+                  </>
+                ) : (
+                  <>
+                    <Kbd>ctrl</Kbd> + <Kbd>Enter</Kbd>
+                  </>
+                )}
               </Text>
             )}
             {!isEditable ? (

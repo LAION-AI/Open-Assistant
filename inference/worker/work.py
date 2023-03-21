@@ -85,12 +85,15 @@ def handle_work_request(
     )
     if settings.model_id == "_lorem":
         stream_events = utils.lorem_events(parameters.seed)
-    elif "llama" in settings.model_id:
-        prompt = truncate_prompt(tokenizer, parameters, prompt)
-        stream_events = get_hf_stream_events(stream_request)
+    # elif "llama" in settings.model_id:
+    #     prompt = truncate_prompt(tokenizer, parameters, prompt)
+    #     stream_events = get_hf_stream_events(stream_request)
     else:
         prompt = truncate_prompt(tokenizer, parameters, prompt)
         stream_events = get_inference_server_stream_events(stream_request)
+
+    generated_ids = []
+    decoded_text = ""
     for stream_response in stream_events:
         if stream_response.is_error:
             logger.error(f"Error from inference server: {stream_response.error}")
@@ -103,9 +106,19 @@ def handle_work_request(
             )
             raise RuntimeError(f"Error from inference server: {stream_response.error}")
         token = stream_response.token
+
+        if "llama" in settings.model_id:
+            generated_ids.append(token.id)
+            with tokenizer_lock:
+                text = tokenizer.decode(generated_ids)
+            new_text = text[len(decoded_text) :]
+            if not decoded_text:
+                new_text = new_text.lstrip()
+            token.text = new_text
+            decoded_text = text
+
         for send_token in token_buffer.add(token):
             utils.send_response(ws, send_token.to_token_response(request_id=work_request.id))
-
     if stream_response is None:
         logger.error("No stream response received")
         raise RuntimeError("No stream response received")
@@ -116,6 +129,8 @@ def handle_work_request(
             send_token.to_token_response(request_id=work_request.id),
         )
 
+    if "llama" in settings.model_id:
+        stream_response.generated_text = stream_response.generated_text.strip()
     logger.debug(f"Done. {stream_response.details.finish_reason=} {stream_response.generated_text=}")
     utils.send_response(
         ws,
@@ -141,7 +156,7 @@ def get_hf_stream_events(request: interface.GenerateStreamRequest):
         raise
     data = response.json()
     output = data["text"]
-    yield from utils.text_to_events(output)
+    yield from utils.text_to_events(output, pause=settings.hf_pause)
 
 
 def get_inference_server_stream_events(request: interface.GenerateStreamRequest):

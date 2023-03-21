@@ -41,10 +41,16 @@
       "imageURL": "https://avatars.githubusercontent.com/u/24505302?v=4"
     },
     "notmd": {
-      "name": "notmd",
+      "name": "Nguyen Minh Duc",
       "title": "Full stack engineer",
       "githubURL": "https://github.com/notmd",
       "imageURL": "https://avatars.githubusercontent.com/u/33456881?v=4"
+    },
+    "johnflux": {
+      "name": "John Tapsell",
+      "title": "Full stack ML engineer",
+      "githubURL": "https://github.com/johnflux",
+      "imageURL": "https://avatars.githubusercontent.com/u/1230500?v=4"
     },
     "theblackcat102": {
       "name": "theblackcat102",
@@ -106,11 +112,44 @@
       "githubURL": "https://github.com/0x22almostEvil",
       "imageURL": "https://avatars.githubusercontent.com/u/122345469?v=4"
     },
+    "~Zy~": {
+      "name": "~Zy~",
+      "title": "Community/Web Moderator, Armchair Data Scientist, Pizza Appreciator",
+      "githubURL": "https://github.com/Zyphre",
+      "imageURL": "https://avatars.githubusercontent.com/u/6561540?v=4"
+    },
+    "joak": {
+      "name": "Joak",
+      "title": "Community Moderator & Web Moderator"
+    },
+    "kenhktsui": {
+      "name": "Ken Tsui",
+      "title": "Data scientist and ML engineer",
+      "githubURL": "https://github.com/kenhktsui",
+      "imageURL": "https://avatars.githubusercontent.com/u/29099916?v=4"
+    },
     "you": {
       "name": "You!",
       "title": "It wouldn't have happened without you, thanks!",
       "githubURL": "https://github.com/LAION-AI/Open-Assistant",
       "imageURL": "https://avatars.githubusercontent.com/u/92627801?v=4"
+    },
+    "wandb": {
+      "name": "Weights & Biases",
+      "title": "W&B Team License",
+      "githubURL": "https://github.com/wandb",
+      "imageURL": "https://avatars.githubusercontent.com/u/26401354?s=200&v=4"
+    },
+    "hf": {
+      "name": "Hugging Face",
+      "title": "Inference API Credits",
+      "githubURL": "https://github.com/huggingface",
+      "imageURL": "https://avatars.githubusercontent.com/u/25720743?s=200&v=4"
+    },
+    "redmond": {
+      "name": "Redmond AI",
+      "title": "Training Compute",
+      "imageURL": "/images/logos/redmond_logo.jpg"
     }
   },
   "groups": [
@@ -124,11 +163,11 @@
     },
     {
       "name": "ML engineers",
-      "members": ["theblackcat102", "sanagno"]
+      "members": ["theblackcat102", "sanagno", "johnflux"]
     },
     {
       "name": "Data Team",
-      "members": ["sedthh", "bitplane", "jmete"]
+      "members": ["sedthh", "bitplane", "jmete", "kenhktsui"]
     },
     {
       "name": "Safety Team",
@@ -136,7 +175,11 @@
     },
     {
       "name": "Moderation Team",
-      "members": ["almostEvil___"]
+      "members": ["almostEvil___", "~Zy~", "joak"]
+    },
+    {
+      "name": "Sponsors",
+      "members": ["redmond", "hf", "wandb"]
     },
     {
       "name": "And also...",

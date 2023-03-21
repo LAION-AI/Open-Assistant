@@ -9,9 +9,10 @@ from jose import jwe
 from jose.exceptions import JWEError
 from loguru import logger
 from oasst_inference_server.settings import settings
-from starlette.status import HTTP_403_FORBIDDEN
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 
 oauth2_scheme = APIKeyHeader(name="Authorization", auto_error=False)
+refresh_scheme = APIKeyHeader(name="Refresh", auto_error=False)
 
 
 def derive_key() -> bytes:
@@ -26,12 +27,36 @@ def derive_key() -> bytes:
     return key
 
 
-def create_access_token(data: dict) -> str:
-    """Create encoded JSON Web Token (JWT) using the given data."""
+def create_access_token(user_id: str) -> str:
+    """Create encoded JSON Web Token (JWT) for the given user ID."""
     expires_delta = timedelta(minutes=settings.auth_access_token_expire_minutes)
-    to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire.timestamp()})
+
+    to_encode = {
+        "user_id": user_id,
+        "exp": expire.timestamp(),
+        "type": "access",
+    }
+
+    # Generate a key from the auth secret
+    key = derive_key()
+
+    # Encrypt the payload using JWE
+    to_encode_bytes: bytes = json.dumps(to_encode).encode()
+    token: bytes = jwe.encrypt(to_encode_bytes, key)
+    return token.decode()
+
+
+def create_refresh_token(user_id: str) -> str:
+    """Create encoded refresh token for the given user ID."""
+    expires_delta = timedelta(minutes=settings.auth_refresh_token_expire_minutes)
+    expire = datetime.utcnow() + expires_delta
+
+    to_encode = {
+        "user_id": user_id,
+        "exp": expire.timestamp(),
+        "type": "refresh",
+    }
 
     # Generate a key from the auth secret
     key = derive_key()
@@ -60,15 +85,34 @@ def get_current_user_id(token: str = Security(oauth2_scheme)) -> str:
     try:
         token: bytes = jwe.decrypt(token, key)
     except JWEError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
     payload: dict = json.loads(token.decode())
     user_id = payload.get("user_id")
     exp = payload.get("exp")
 
     if not user_id or not exp:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
     if datetime.utcnow() >= datetime.fromtimestamp(exp):
-        raise HTTPException(status_code=401, detail="Token expired")
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Token expired")
 
     return user_id
+
+
+def refresh_access_token(refresh_token: str) -> str:
+    """Refresh the access token using the given refresh token."""
+    # Generate a key from the auth secret
+    key: bytes = derive_key()
+
+    # Decrypt the JWE token
+    try:
+        token: bytes = jwe.decrypt(refresh_token, key)
+    except JWEError:
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+    payload: dict = json.loads(token.decode())
+
+    if payload["type"] != "refresh":
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Invalid token type")
+
+    return create_access_token(payload["user_id"])

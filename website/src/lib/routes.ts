@@ -46,9 +46,9 @@ export const API_ROUTES = {
   AVAILABLE_TASK: withLang("/api/available_tasks"),
   RECENT_MESSAGES: withLang("/api/messages"),
   ADMIN_DELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/delete_message/${messageId}`),
+  ADMIN_UNDELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/undelete_message/${messageId}`),
   ADMIN_MESSAGE_LIST: (query: CursorPaginationState & { user_id?: string; include_user?: boolean }) =>
     createRoute("/api/admin/messages", query),
-
   // chat:
   GET_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
   GET_MESSAGE: (chat_id: string, message_id) => createRoute(`/api/chat/message`, { chat_id, message_id }),

@@ -113,7 +113,7 @@ class WorkParametersInput(pydantic.BaseModel):
     typical_p: float | None = None
     temperature: float | None = None
     repetition_penalty: float | None = None
-    max_new_tokens: int | None = None
+    max_new_tokens: int = 1024
 
 
 class WorkParameters(WorkParametersInput):
@@ -144,6 +144,8 @@ class MessageState(str, enum.Enum):
     in_progress = "in_progress"
     complete = "complete"
     aborted_by_worker = "aborted_by_worker"
+    cancelled = "cancelled"
+    timeout = "timeout"
 
 
 class MessageRead(pydantic.BaseModel):
@@ -185,6 +187,10 @@ class ErrorRequest(WorkerRequestBase):
     error: str
 
 
+class UpgradeProtocolRequest(WorkerRequestBase):
+    request_type: Literal["upgrade_protocol"] = "upgrade_protocol"
+
+
 class TerminateRequest(WorkerRequestBase):
     request_type: Literal["terminate"] = "terminate"
 
@@ -217,6 +223,11 @@ class InternalFinishedMessageResponse(WorkerResponseBase):
     message: MessageRead
 
 
+class InternalErrorResponse(WorkerResponseBase):
+    response_type: Literal["internal_error"] = "internal_error"
+    error: str
+
+
 class ErrorResponse(WorkerResponseBase):
     response_type: Literal["error"] = "error"
     metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
@@ -230,11 +241,18 @@ class GeneralErrorResponse(WorkerResponseBase):
 
 
 WorkerRequest = Annotated[
-    Union[WorkRequest, PingRequest, ErrorRequest, TerminateRequest],
+    Union[WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest],
     pydantic.Field(discriminator="request_type"),
 ]
 
 WorkerResponse = Annotated[
-    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, PongResponse, InternalFinishedMessageResponse],
+    Union[
+        TokenResponse,
+        GeneratedTextResponse,
+        ErrorResponse,
+        PongResponse,
+        InternalFinishedMessageResponse,
+        InternalErrorResponse,
+    ],
     pydantic.Field(discriminator="response_type"),
 ]

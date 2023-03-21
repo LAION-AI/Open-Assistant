@@ -29,8 +29,8 @@ const Team = () => {
   return (
     <>
       <Head>
-        <title>{t("who_are_we")} - Open Assistant</title>
-        <meta name="description" content="The team begind Open Assistant" />
+        <title>{`${t("who_are_we")} - Open Assistant`}</title>
+        <meta name="description" content="The team behind Open Assistant" />
       </Head>
       <Box fontFamily="Inter" p="6" className="oa-basic-theme">
         <Stack className="max-w-6xl mx-auto" spacing="6" mb="6">
@@ -51,15 +51,17 @@ const Team = () => {
                       const { name, title, githubURL, imageURL } = info;
                       return (
                         <Flex key={id} gap="1" bg={contributorBackgroundColor} borderRadius="md" p="2">
-                          <Avatar src={imageURL} loading="lazy" />
+                          <Avatar src={imageURL} loading="lazy" name={name} />
                           <Box ml="3">
                             <Text fontWeight="bold">
                               {name}
-                              <Badge ml="2" mb="0.5">
-                                <Link href={githubURL} target="_default" rel="noreferrer" title="github">
-                                  <Github size={12} />
-                                </Link>
-                              </Badge>
+                              {githubURL && (
+                                <Badge ml="2" mb="0.5">
+                                  <Link href={githubURL} target="_default" rel="noreferrer" title="github">
+                                    <Github size={12} />
+                                  </Link>
+                                </Badge>
+                              )}
                             </Text>
                             <Text fontSize="sm">{title}</Text>
                           </Box>

@@ -1,7 +1,10 @@
 TEXT_DATASETS = {
+    "gutenberg_english": "sedthh/gutenberg_english",
+    "gutenberg_multilang": "sedthh/gutenberg_multilang",
     "gutenberg_english": "sedthh/gutenberg_english",  # Gutenberg eBooks in English
     "gutenberg_multilang": "sedthh/gutenberg_multilang",  # Gutenber eBooks in foreign languages
     "tv_dialogue": "sedthh/tv_dialogue",  # TV and Movie dialogues and transcripts
+    "tlcv2.0_oa": "pythainlp/tlcv2.0_oa",  # Thai classical literature texts
 }
 
 INSTRUCTION_DATASETS = {
@@ -20,3 +23,5 @@ SAFETY_DATASETS = {
     "prosocial-dialog": "allenai/prosocial-dialog",
     "prosocial-confessions": "shahules786/prosocial-confessions",
 }
+
+MULTI_TURN_DIALOG_DATASETS = {}

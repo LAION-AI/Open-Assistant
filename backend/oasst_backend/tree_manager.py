@@ -2,7 +2,7 @@ import random
 from datetime import datetime, timedelta
 from enum import Enum
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Optional, Tuple
 from uuid import UUID
 
 import numpy as np
@@ -22,13 +22,13 @@ from oasst_backend.models import (
     message_tree_state,
 )
 from oasst_backend.prompt_repository import PromptRepository
+from oasst_backend.scheduled_tasks import hf_feature_extraction, toxicity
 from oasst_backend.utils.database_utils import (
     CommitMode,
     async_managed_tx_method,
     managed_tx_function,
     managed_tx_method,
 )
-from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
@@ -732,31 +732,16 @@ class TreeManager:
 
                 if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
                     try:
-                        hugging_face_api = HuggingFaceAPI(
-                            f"{HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value}/{HfEmbeddingModel.MINILM.value}"
-                        )
-                        embedding = await hugging_face_api.post(interaction.text)
-                        pr.insert_message_embedding(
-                            message_id=message.id, model=HfEmbeddingModel.MINILM.value, embedding=embedding
-                        )
+                        hf_feature_extraction.delay(interaction.text, message.id, pr.api_client.dict())
+                        logger.debug("Extract Embedding")
                     except OasstError:
                         logger.error(
                             f"Could not fetch embbeddings for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."
                         )
-
                 if not settings.DEBUG_SKIP_TOXICITY_CALCULATION:
                     try:
-                        model_name: str = HfClassificationModel.TOXIC_ROBERTA.value
-                        hugging_face_api: HuggingFaceAPI = HuggingFaceAPI(
-                            f"{HfUrl.HUGGINGFACE_TOXIC_CLASSIFICATION.value}/{model_name}"
-                        )
-
-                        toxicity: List[List[Dict[str, Any]]] = await hugging_face_api.post(interaction.text)
-                        toxicity = toxicity[0][0]
-                        pr.insert_toxicity(
-                            message_id=message.id, model=model_name, score=toxicity["score"], label=toxicity["label"]
-                        )
-
+                        toxicity.delay(interaction.text, message.id, pr.api_client.dict())
+                        logger.debug("Sent Toxicity")
                     except OasstError:
                         logger.error(
                             f"Could not compute toxicity for text reply to {interaction.message_id=} with {interaction.text=} by {interaction.user=}."

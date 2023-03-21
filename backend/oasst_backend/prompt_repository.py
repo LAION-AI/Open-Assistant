@@ -1069,6 +1069,37 @@ WHERE message.id = cc.id;
 
                 parent_ids = self.db.execute(query).scalars().all()
 
+    @managed_tx_method(CommitMode.COMMIT)
+    def undelete_deleted_message(self, message: Message | UUID):
+        """
+        Undelete deleted messages and all their parents.
+        """
+        message_id = None
+        if isinstance(message, UUID):
+            message_id = message
+        elif isinstance(message, Message):
+            message_id = message.id
+        else:
+            raise OasstError("Server error", OasstErrorCode.SERVER_ERROR1, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+        query = update(Message).where(Message.id == message_id).values(deleted=False)
+        self.db.execute(query)
+
+        parent_id = None
+        if isinstance(message, UUID):
+            parent_id = self.db.query(Message.parent_id).where(Message.id == message_id).first()[0]
+        elif isinstance(message, Message):
+            parent_id = message.parent_id
+
+        if parent_id is None:
+            return
+
+        # Fetching the entire parent_message so there is no parent_id query executed after
+        parent_message: Message = self.db.query(Message).where(Message.id == parent_id).first()
+
+        if parent_message is not None:
+            self.undelete_deleted_message(parent_message)
+
     def get_stats(self) -> SystemStats:
         """
         Get data stats such as number of all messages in the system,

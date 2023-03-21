@@ -1,7 +1,7 @@
 import aiohttp
 import fastapi
 import sqlmodel
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Security
 from loguru import logger
 from oasst_inference_server import auth, database, deps, models
 from oasst_inference_server.settings import settings
@@ -13,19 +13,30 @@ router = fastapi.APIRouter(
 )
 
 
+@router.get("/check")
+async def check_user_auth(user_id: str = Depends(auth.get_current_user_id)):
+    return user_id
+
+
+@router.get("/refresh", response_model=protocol.Token)
+async def refresh_token(refresh_token: str = Security(auth.refresh_scheme)):
+    access_token = auth.refresh_access_token(refresh_token)
+    return protocol.Token(access_token=access_token, token_type="bearer")
+
+
 @router.get("/login/discord")
-async def login_discord():
-    redirect_uri = f"{settings.api_root}/auth/callback/discord"
-    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify"
+async def login_discord(state: str = r"{}"):
+    redirect_uri = f"{settings.auth_callback_root}/discord"
+    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify&state={state}"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
-@router.get("/callback/discord", response_model=protocol.Token)
+@router.get("/callback/discord", response_model=protocol.TokenPair)
 async def callback_discord(
     code: str,
     db: database.AsyncSession = Depends(deps.create_session),
 ):
-    redirect_uri = f"{settings.api_root}/auth/callback/discord"
+    redirect_uri = f"{settings.auth_callback_root}/discord"
 
     async with aiohttp.ClientSession(raise_for_status=True) as session:
         # Exchange the auth code for a Discord access token
@@ -71,24 +82,30 @@ async def callback_discord(
         await db.refresh(user)
 
     # Discord account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token({"user_id": user.id})
+    access_token = auth.create_access_token(user.id)
+    refresh_token = auth.create_refresh_token(user.id)
 
-    return protocol.Token(access_token=access_token, token_type="bearer")
+    token_pair = protocol.TokenPair(
+        protocol.Token(access_token=access_token, token_type="bearer"),
+        protocol.Token(access_token=refresh_token, token_type="refresh"),
+    )
+
+    return token_pair
 
 
 @router.get("/login/github")
-async def login_github():
-    redirect_uri = f"{settings.api_root}/auth/callback/github"
-    auth_url = f"https://github.com/login/oauth/authorize?client_id={settings.auth_github_client_id}&redirect_uri={redirect_uri}"
+async def login_github(state: str = r"{}"):
+    redirect_uri = f"{settings.auth_callback_root}/github"
+    auth_url = f"https://github.com/login/oauth/authorize?client_id={settings.auth_github_client_id}&redirect_uri={redirect_uri}&state={state}"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
-@router.get("/callback/github", response_model=protocol.Token)
+@router.get("/callback/github", response_model=protocol.TokenPair)
 async def callback_github(
     code: str,
     db: database.AsyncSession = Depends(deps.create_session),
 ):
-    redirect_uri = f"{settings.api_root}/auth/callback/github"
+    redirect_uri = f"{settings.auth_callback_root}/github"
 
     async with aiohttp.ClientSession(raise_for_status=True) as session:
         # Exchange the auth code for a GitHub access token
@@ -116,7 +133,7 @@ async def callback_github(
             user_response_json = await user_response.json()
 
     try:
-        github_id = user_response_json["id"]
+        github_id = str(user_response_json["id"])
         github_username = user_response_json["login"]
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from GitHub")
@@ -133,9 +150,15 @@ async def callback_github(
         await db.refresh(user)
 
     # GitHub account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token({"user_id": user.id})
+    access_token = auth.create_access_token(user.id)
+    refresh_token = auth.create_refresh_token(user.id)
 
-    return protocol.Token(access_token=access_token, token_type="bearer")
+    token_pair = protocol.TokenPair(
+        protocol.Token(access_token=access_token, token_type="bearer"),
+        protocol.Token(access_token=refresh_token, token_type="refresh"),
+    )
+
+    return token_pair
 
 
 async def query_user_by_provider_id(
@@ -161,7 +184,7 @@ async def query_user_by_provider_id(
     return user
 
 
-@router.get("/login/debug")
+@router.get("/login/debug", response_model=protocol.TokenPair)
 async def login_debug(username: str, db: database.AsyncSession = Depends(deps.create_session)):
     """Login using a debug username, which the system will accept unconditionally."""
 
@@ -185,6 +208,12 @@ async def login_debug(username: str, db: database.AsyncSession = Depends(deps.cr
         logger.info(f"Created new debug user {user=}")
 
     # User exists; create JWT
-    access_token = auth.create_access_token({"user_id": user.id})
+    access_token = auth.create_access_token(user.id)
+    refresh_token = auth.create_refresh_token(user.id)
 
-    return protocol.Token(access_token=access_token, token_type="bearer")
+    token_pair = protocol.TokenPair(
+        protocol.Token(access_token=access_token, token_type="bearer"),
+        protocol.Token(access_token=refresh_token, token_type="refresh"),
+    )
+
+    return token_pair

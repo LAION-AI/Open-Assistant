@@ -98,14 +98,56 @@ services:
       - DEBUG_USE_SEED_DATA=True
       - DEBUG_ALLOW_SELF_LABELING=True
       - MAX_WORKERS=1
-      - DEBUG_SKIP_TOXICITY_CALCULATION=True
-      - DEBUG_SKIP_EMBEDDING_COMPUTATION=True
+      - DEBUG_SKIP_TOXICITY_CALCULATION=False
+      - DEBUG_SKIP_EMBEDDING_COMPUTATION=False
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
     profiles: ["frontend-dev", "ci"]
     ports:
       - "8080:8080"
+
+  # The oassist backend celery worker service.
+  backend-worker:
+    build:
+      dockerfile: docker/Dockerfile.backend-worker
+      context: .
+    command: celery -A oasst_backend.celery_worker worker -l info
+    image: oasst-backend-worker
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
+      - MAX_WORKERS=1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles: ["frontend-dev", "ci"]
+
+  # The oassist backend celery worker service.
+  backend-worker-beat:
+    build:
+      dockerfile: docker/Dockerfile.backend-worker
+      context: .
+    command: celery -A oasst_backend.celery_worker beat -l INFO
+    image: oasst-backend-worker-beat
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - POSTGRES_HOST=db
+      - REDIS_HOST=redis
+      - MAX_WORKERS=1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles: ["frontend-dev", "ci"]
 
   # The oassist web service.
   web:
@@ -128,6 +170,7 @@ services:
       - NEXTAUTH_URL=http://localhost:3000
       - DEBUG_LOGIN=true
       - INFERENCE_SERVER_HOST=http://inference-server:8000
+      - ENABLE_CHAT=true
     depends_on:
       webdb:
         condition: service_healthy
@@ -181,6 +224,7 @@ services:
       POSTGRES_DB: oasst_inference
       DEBUG_API_KEYS: "0000"
       ALLOW_DEBUG_AUTH: "True"
+      AUTH_CALLBACK_ROOT: "http://localhost:3000/api/inference_auth"
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/server:/opt/inference/server"
