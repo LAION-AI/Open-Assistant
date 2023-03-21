@@ -2,7 +2,7 @@ import { Icon, Progress, Stack, Text, Textarea, TextareaProps, Tooltip, useColor
 import lande from "lande";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
-import React, { useCallback } from "react";
+import React from "react";
 import TextareaAutosize, { TextareaAutosizeProps } from "react-textarea-autosize";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { LanguageAbbreviations } from "src/lib/iso6393";
@@ -18,10 +18,9 @@ interface TrackedTextboxProps {
   };
   textareaProps?: TextareaProps & TextareaAutosizeProps;
   onTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onSubmit?: () => void;
 }
 
-export const TrackedTextarea = ({ onSubmit, ...props }: TrackedTextboxProps) => {
+export const TrackedTextarea = (props: TrackedTextboxProps) => {
   const { t } = useTranslation("tasks");
   const wordLimitForLangDetection = 4;
   const backgroundColor = useColorModeValue("gray.100", "gray.900");
@@ -50,16 +49,6 @@ export const TrackedTextarea = ({ onSubmit, ...props }: TrackedTextboxProps) => 
       progressColor = "green";
   }
 
-  const onKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-        e.stopPropagation();
-        onSubmit?.();
-      }
-    },
-    [onSubmit]
-  );
-
   const problemColor = useColorModeValue(colors.light.problem, colors.dark.problem);
 
   return (
@@ -72,7 +61,6 @@ export const TrackedTextarea = ({ onSubmit, ...props }: TrackedTextboxProps) => 
           p="4"
           value={props.text}
           onChange={props.onTextChange}
-          onKeyDown={onKeyDown}
           autoFocus
           {...props.textareaProps}
           as={TextareaAutosize}
