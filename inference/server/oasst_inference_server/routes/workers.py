@@ -153,6 +153,7 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
                         logger.warning(f"Message was cancelled before work could be initiated: {e.message_id=}")
                     except chat_schema.MessageTimeout as e:
                         logger.warning(f"Message timed out before work could be initiated: {e.message_id=}")
+                        await handle_timeout(message_id=message_id)
                     finally:
                         _add_dequeue(pending_futures)
                 else:
@@ -348,3 +349,14 @@ async def handle_general_error_response(
     response: inference.GeneralErrorResponse,
 ):
     logger.warning(f"Got general error {response=}")
+
+
+async def handle_timeout(message_id: str):
+    response = inference.InternalErrorResponse(
+        error="Timeout",
+    )
+    message_queue = queueing.message_queue(
+        deps.redis_client,
+        message_id=message_id,
+    )
+    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)

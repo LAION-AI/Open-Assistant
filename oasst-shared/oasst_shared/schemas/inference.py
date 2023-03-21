@@ -219,6 +219,11 @@ class InternalFinishedMessageResponse(WorkerResponseBase):
     message: MessageRead
 
 
+class InternalErrorResponse(WorkerResponseBase):
+    response_type: Literal["internal_error"] = "internal_error"
+    error: str
+
+
 class ErrorResponse(WorkerResponseBase):
     response_type: Literal["error"] = "error"
     metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
@@ -237,6 +242,13 @@ WorkerRequest = Annotated[
 ]
 
 WorkerResponse = Annotated[
-    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, PongResponse, InternalFinishedMessageResponse],
+    Union[
+        TokenResponse,
+        GeneratedTextResponse,
+        ErrorResponse,
+        PongResponse,
+        InternalFinishedMessageResponse,
+        InternalErrorResponse,
+    ],
     pydantic.Field(discriminator="response_type"),
 ]
