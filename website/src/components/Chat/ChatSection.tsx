@@ -31,7 +31,6 @@ import { Controller, FormProvider, useForm, useFormContext, useWatch } from "rea
 import { WorkParametersInput } from "src/types/Chat";
 import { StrictOmit } from "ts-essentials";
 
-import { JsonCard } from "../JsonCard";
 import { useChatContext } from "./ChatContext";
 import { ChatConversation } from "./ChatConversation";
 
@@ -158,7 +157,6 @@ const ChatConfigForm = () => {
   );
   return (
     <Stack gap="4">
-      <JsonCard>{useWatch({ control })}</JsonCard>
       <FormControl>
         <FormLabel>{t("model")}</FormLabel>
         <Select {...register("model_name")}>
