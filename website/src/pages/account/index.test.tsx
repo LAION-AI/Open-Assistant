@@ -48,8 +48,6 @@ describe("Account page", () => {
     debug();
 
     // Assert that a link to edit the user's account details is displayed on the page
-
-    // Assert that a link to edit the user's account details is displayed on the page
     const editLink = screen.getByRole("link", { name: "" });
     expect(editLink).toBeInTheDocument();
   });
