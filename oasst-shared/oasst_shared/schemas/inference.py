@@ -207,7 +207,7 @@ class PongResponse(WorkerResponseBase):
 class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
-    log_prob: float
+    log_prob: float | None
     token_id: int
 
 

@@ -41,7 +41,7 @@ class GenerateStreamRequest(pydantic.BaseModel):
 
 class Token(pydantic.BaseModel):
     text: str
-    logprob: float
+    logprob: float | None
     id: int
 
     def __len__(self) -> int:
