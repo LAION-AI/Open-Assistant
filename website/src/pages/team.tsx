@@ -38,8 +38,8 @@ const Team = () => {
             {t("who_are_we")}
           </Heading>
           <Text fontWeight="bold">{t("team_message")}</Text>
-          <Card>
-            <CardBody bg={cardBackgroundColor} display="flex" flexDirection={"column"} gap={6} p="6" borderRadius="xl">
+          <Card bg={cardBackgroundColor}>
+            <CardBody display="flex" flexDir="column" gap={6}>
               {groups.map((group) => (
                 <React.Fragment key={group.name}>
                   <Heading as="h3" size="md">

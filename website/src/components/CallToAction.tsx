@@ -97,7 +97,7 @@ export function CallToAction() {
               >
                 <Users size={25} />
                 <Text as="span" className="text-lg ml-3">
-                  Team
+                  {t("team")}
                 </Text>
               </button>
             </Link>
