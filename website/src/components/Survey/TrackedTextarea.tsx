@@ -1,24 +1,8 @@
-import {
-  Icon,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Progress,
-  Stack,
-  Text,
-  Textarea,
-  TextareaProps,
-  useColorModeValue,
-  useDisclosure,
-  Tooltip,
-} from "@chakra-ui/react";
-import Link from "next/link";
+import { Icon, Progress, Stack, Text, Textarea, TextareaProps, Tooltip, useColorModeValue } from "@chakra-ui/react";
 import lande from "lande";
+import Link from "next/link";
 import { useTranslation } from "next-i18next";
-import React from "react";
+import React, { useCallback } from "react";
 import TextareaAutosize, { TextareaAutosizeProps } from "react-textarea-autosize";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { LanguageAbbreviations } from "src/lib/iso6393";
@@ -37,7 +21,7 @@ interface TrackedTextboxProps {
   onSubmit?: () => void;
 }
 
-export const TrackedTextarea = (props: TrackedTextboxProps) => {
+export const TrackedTextarea = ({ onSubmit, ...props }: TrackedTextboxProps) => {
   const { t } = useTranslation("tasks");
   const wordLimitForLangDetection = 4;
   const backgroundColor = useColorModeValue("gray.100", "gray.900");
@@ -66,11 +50,15 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
       progressColor = "green";
   }
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-      props.onSubmit?.();
-    }
-  };
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.stopPropagation();
+        onSubmit?.();
+      }
+    },
+    [onSubmit]
+  );
 
   const problemColor = useColorModeValue(colors.light.problem, colors.dark.problem);
 

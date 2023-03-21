@@ -12,7 +12,7 @@ import {
   useMediaQuery,
 } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { TrackedTextarea } from "src/components/Survey/TrackedTextarea";
 import { TwoColumnsWithCards } from "src/components/Survey/TwoColumnsWithCards";
@@ -63,8 +63,25 @@ export const CreateTask = ({
     [inputText]
   );
 
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        onSubmit?.();
+      }
+    },
+    [onSubmit]
+  );
+
+  const handleTextAreaSubmit = useCallback(() => {
+    console.log(rootRef.current);
+    rootRef.current?.focus();
+    onSubmit?.();
+  }, [onSubmit]);
+
   return (
-    <div data-cy="task" data-task-type="create-task">
+    <div data-cy="task" data-task-type="create-task" ref={rootRef} onKeyDown={onKeyDown} tabIndex={0}>
       <TwoColumnsWithCards>
         <>
           <TaskHeader taskType={taskType} />
@@ -114,7 +131,7 @@ export const CreateTask = ({
                         isDisabled,
                         minRows: 5,
                       }}
-                      onSubmit={onSubmit}
+                      onSubmit={handleTextAreaSubmit}
                     />
                   </TabPanel>
                   <TabPanel p="0" pt="4">
