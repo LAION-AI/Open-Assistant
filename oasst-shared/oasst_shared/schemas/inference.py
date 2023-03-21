@@ -144,6 +144,7 @@ class MessageState(str, enum.Enum):
     in_progress = "in_progress"
     complete = "complete"
     aborted_by_worker = "aborted_by_worker"
+    cancelled = "cancelled"
 
 
 class MessageRead(pydantic.BaseModel):

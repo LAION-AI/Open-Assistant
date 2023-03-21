@@ -70,3 +70,9 @@ class ChatRead(ChatListRead):
 
 class ListChatsResponse(pydantic.BaseModel):
     chats: list[ChatListRead]
+
+
+class MessageCancelledException(Exception):
+    def __init__(self, message_id: str):
+        super().__init__(f"Message {message_id} was cancelled")
+        self.message_id = message_id
