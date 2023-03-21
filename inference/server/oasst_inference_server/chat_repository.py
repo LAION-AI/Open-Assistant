@@ -37,10 +37,10 @@ class ChatRepository(pydantic.BaseModel):
             if message_age_in_seconds > settings.assistant_message_timeout:
                 message.state = inference.MessageState.timeout
                 await self.session.commit()
-                raise chat_schema.MessageTimeout(message_id=message_id)
+                raise chat_schema.MessageTimeoutException(message_id=message_id)
 
         if message.state == inference.MessageState.cancelled:
-            raise chat_schema.MessageCancelled(message_id=message_id)
+            raise chat_schema.MessageCancelledException(message_id=message_id)
 
         if message.state != inference.MessageState.pending:
             raise fastapi.HTTPException(status_code=400, detail="Message is not pending")

@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/table-core";
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
-import { Eye, Trash } from "lucide-react";
+import { Eye, RotateCw, Trash } from "lucide-react";
 import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
 import { useMemo, useState } from "react";
@@ -26,6 +26,7 @@ import { FetchMessagesCursorResponse, Message } from "src/types/Conversation";
 import { isKnownEmoji } from "src/types/Emoji";
 import useSWRImmutable from "swr/immutable";
 
+import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
 import { DataTable, DataTableRowPropsCallback } from "../DataTable/DataTable";
 import { DataTableAction } from "../DataTable/DataTableAction";
 import { useCursorPagination } from "../DataTable/useCursorPagination";
@@ -51,6 +52,7 @@ const DateDiff = ({ children }: { children: string | Date | number }) => {
 
 export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; includeUser?: boolean }) => {
   const [deleteMessageId, setDeleteMessageId] = useState<string | null>(null);
+  const [undeleteMessageId, setUndeleteMessageId] = useState<string | null>(null);
   const [activeMessageId, setActiveMessageId] = useState<string>();
   const { pagination, toNextPage, toPreviousPage } = useCursorPagination();
   const {
@@ -73,10 +75,22 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
   const data = useMemo(() => {
     return res?.items.map((m) => ({ ...m, isActive: m.id === activeMessageId })) || [];
   }, [activeMessageId, res?.items]);
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { isMutating, trigger } = useDeleteMessage(deleteMessageId!, mutateMessageList);
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isMutating: isDeleteMutating, trigger: deleteTrigger } = useDeleteMessage(
+    deleteMessageId!,
+    mutateMessageList
+  );
+  const { isMutating: isUndeleteMutating, trigger: undeleteTrigger } = useUndeleteMessage(
+    undeleteMessageId,
+    mutateMessageList
+  );
+
+  const { isOpen, onOpen, onClose: disclosureClose } = useDisclosure();
+  const onClose = () => {
+    disclosureClose();
+    if (deleteMessageId) setDeleteMessageId(null);
+    if (undeleteMessageId) setUndeleteMessageId(null);
+  };
 
   const columns = useMemo(() => {
     return [
@@ -184,7 +198,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
                 icon={Eye}
                 aria-label="View message"
               />
-              {!row.original.deleted && (
+              {!row.original.deleted ? (
                 <DataTableAction
                   onClick={() => {
                     setDeleteMessageId(id);
@@ -192,7 +206,17 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
                   }}
                   icon={Trash}
                   aria-label="Delete message"
-                  isLoading={isMutating && deleteMessageId === id}
+                  isLoading={isDeleteMutating && deleteMessageId === id}
+                />
+              ) : (
+                <DataTableAction
+                  onClick={() => {
+                    setUndeleteMessageId(id);
+                    onOpen();
+                  }}
+                  icon={RotateCw}
+                  aria-label="Undelete message"
+                  isLoading={isUndeleteMutating && undeleteMessageId === id}
                 />
               )}
             </HStack>
@@ -200,7 +224,7 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
         },
       }),
     ];
-  }, [deleteMessageId, isMutating, onOpen]);
+  }, [deleteMessageId, isDeleteMutating, isUndeleteMutating, onOpen, undeleteMessageId]);
 
   const { t } = useTranslation(["common", "message"]);
   const rowProps: DataTableRowPropsCallback<Message> = useCallback(
@@ -219,10 +243,15 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Confirm deleting this message</ModalHeader>
+          <ModalHeader>Confirm {deleteMessageId ? "deleting" : "undeleting"} this message</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <div>Delete this message?</div>
+            <p>
+              {undeleteMessageId
+                ? "By undeleting this message you take the risk to undelete every parent messages that may also be deleted."
+                : ""}
+            </p>
+            {deleteMessageId ? "Delete" : "Are you sure to undelete"} this message? <p></p>
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>
@@ -230,9 +259,10 @@ export const AdminMessageTable = ({ userId, includeUser }: { userId?: string; in
             </Button>
             <Button
               colorScheme="blue"
-              onClick={() => {
+              onClick={async () => {
+                if (deleteMessageId) await deleteTrigger();
+                else await undeleteTrigger();
                 onClose();
-                trigger();
               }}
             >
               {t("confirm")}

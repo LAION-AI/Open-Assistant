@@ -1,12 +1,10 @@
 import time
 
 from loguru import logger
-from oasst_backend.celery_worker.scheduled_tasks import hf_feature_extraction, toxicity
 from oasst_backend.models import ApiClient, Message
+from oasst_backend.scheduled_tasks import hf_feature_extraction, toxicity
 from oasst_backend.utils.database_utils import default_session_factory
 from sqlmodel import text
-
-# from sqlmodel import Session, select
 
 
 def get_messageids_without_toxicity():

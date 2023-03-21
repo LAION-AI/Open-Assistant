@@ -23,3 +23,5 @@ SAFETY_DATASETS = {
     "prosocial-dialog": "allenai/prosocial-dialog",
     "prosocial-confessions": "shahules786/prosocial-confessions",
 }
+
+MULTI_TURN_DIALOG_DATASETS = {}

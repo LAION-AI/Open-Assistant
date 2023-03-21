@@ -113,7 +113,7 @@ class WorkParametersInput(pydantic.BaseModel):
     typical_p: float | None = None
     temperature: float | None = None
     repetition_penalty: float | None = None
-    max_new_tokens: int | None = None
+    max_new_tokens: int = 1024
 
 
 class WorkParameters(WorkParametersInput):
