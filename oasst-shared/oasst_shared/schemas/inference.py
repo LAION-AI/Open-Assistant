@@ -8,14 +8,12 @@ from typing import Annotated, Any, Literal, Union
 import psutil
 import pydantic
 import pynvml
+from oasst_shared.shared_settings import shared_settings
 
 INFERENCE_PROTOCOL_VERSION = "1"
-DEFAULT_MODEL_NAME = "distilgpt2"
 
 DEFAULT_MODEL_LENGTHS = {
     "_lorem": 1024,
-    "gpt2": 1024,
-    "distilgpt2": 1024,
     "OpenAssistant/oasst-sft-1-pythia6b": 2048,
     "OpenAssistant/oasst-sft-1-pythia-12b": 2048,
     "OpenAssistant/oasst_sft_llama_7b_mask_1000": 2048,
@@ -36,7 +34,7 @@ def compat_hash(
 
 def set_model_max_lengths(values: dict[str, Any]):
     if values.get("model_name") is None:
-        values["model_name"] = DEFAULT_MODEL_NAME
+        values["model_name"] = shared_settings.default_model_name
     if "model_max_total_length" not in values:
         values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(values["model_name"], 1024)
     if "model_max_input_length" not in values:
