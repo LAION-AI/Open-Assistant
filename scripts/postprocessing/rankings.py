@@ -96,13 +96,15 @@ def ranked_pairs(ranks: List[List[int]]):
     """
     tallies, names = head_to_head_votes(ranks)
     tallies = tallies - tallies.T
-    # print(tallies)
     # note: the resulting tally matrix should be skew-symmetric
     # order by strength of victory (using tideman's original method, don't think it would make a difference for us)
     sorted_majorities = []
     for i in range(len(ranks[0])):
         for j in range(len(ranks[0])):
-            if tallies[i, j] > 0:
+            # you can never prefer yourself over yourself
+            # we also have to pick one of the two choices,
+            # if the preference is exactly zero...
+            if tallies[i, j] >= 0 and i != j:
                 sorted_majorities.append((i, j, tallies[i, j]))
     # we don't explicitly deal with tied majorities here
     sorted_majorities = np.array(sorted(sorted_majorities, key=lambda x: x[2], reverse=True))
@@ -128,13 +130,36 @@ def ranked_pairs(ranks: List[List[int]]):
 
 
 if __name__ == "__main__":
-    ranks = (
+
+    ranks = """ (
         [("w", "x", "z", "y") for _ in range(1)]
         + [("w", "y", "x", "z") for _ in range(2)]
         # + [("x","y","z","w") for _ in range(4)]
-        # + [("x", "z", "w", "y") for _ in range(5)]
-        # + [("y", "w", "x", "z") for _ in range(1)]
+        + [("x", "z", "w", "y") for _ in range(5)]
+        + [("y", "w", "x", "z") for _ in range(1)]
         # [("y","z","w","x") for _ in range(1000)]
-    )
+    )"""
+    ranks = [
+        [
+            ("c5181083-d3e9-41e7-a935-83fb9fa01488"),
+            ("dcf3d179-0f34-4c15-ae21-b8feb15e422d"),
+            ("d11705af-5575-43e5-b22e-08d155fbaa62"),
+        ],
+        [
+            ("d11705af-5575-43e5-b22e-08d155fbaa62"),
+            ("c5181083-d3e9-41e7-a935-83fb9fa01488"),
+            ("dcf3d179-0f34-4c15-ae21-b8feb15e422d"),
+        ],
+        [
+            ("dcf3d179-0f34-4c15-ae21-b8feb15e422d"),
+            ("c5181083-d3e9-41e7-a935-83fb9fa01488"),
+            ("d11705af-5575-43e5-b22e-08d155fbaa62"),
+        ],
+        [
+            ("d11705af-5575-43e5-b22e-08d155fbaa62"),
+            ("c5181083-d3e9-41e7-a935-83fb9fa01488"),
+            ("dcf3d179-0f34-4c15-ae21-b8feb15e422d"),
+        ],
+    ]
     rp = ranked_pairs(ranks)
     print(rp)
