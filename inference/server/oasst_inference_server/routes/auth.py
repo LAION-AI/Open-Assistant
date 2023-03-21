@@ -20,7 +20,7 @@ async def check_user_auth(user_id: str = Depends(auth.get_current_user_id)):
 
 @router.get("/refresh", response_model=protocol.Token)
 async def refresh_token(refresh_token: str = Security(auth.refresh_scheme)):
-    access_token = auth.refresh_access_token(refresh_token)
+    access_token = await auth.refresh_access_token(refresh_token)
     return protocol.Token(access_token=access_token, token_type="bearer")
 
 
@@ -83,7 +83,7 @@ async def callback_discord(
 
     # Discord account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token(user.id)
-    refresh_token = auth.create_refresh_token(user.id)
+    refresh_token = await auth.create_refresh_token(user.id)
 
     token_pair = protocol.TokenPair(
         protocol.Token(access_token=access_token, token_type="bearer"),
@@ -151,7 +151,7 @@ async def callback_github(
 
     # GitHub account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token(user.id)
-    refresh_token = auth.create_refresh_token(user.id)
+    refresh_token = await auth.create_refresh_token(user.id)
 
     token_pair = protocol.TokenPair(
         protocol.Token(access_token=access_token, token_type="bearer"),
@@ -209,7 +209,7 @@ async def login_debug(username: str, db: database.AsyncSession = Depends(deps.cr
 
     # User exists; create JWT
     access_token = auth.create_access_token(user.id)
-    refresh_token = auth.create_refresh_token(user.id)
+    refresh_token = await auth.create_refresh_token(user.id)
 
     token_pair = protocol.TokenPair(
         protocol.Token(access_token=access_token, token_type="bearer"),

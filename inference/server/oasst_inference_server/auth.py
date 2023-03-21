@@ -1,13 +1,16 @@
+import hashlib
 import json
 from datetime import datetime, timedelta
 
+import sqlmodel
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from fastapi import HTTPException, Security
+from fastapi import Depends, HTTPException, Security
 from fastapi.security import APIKeyHeader
 from jose import jwe
 from jose.exceptions import JWEError
 from loguru import logger
+from oasst_inference_server import database, deps, models
 from oasst_inference_server.settings import settings
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 
@@ -47,7 +50,7 @@ def create_access_token(user_id: str) -> str:
     return token.decode()
 
 
-def create_refresh_token(user_id: str) -> str:
+async def create_refresh_token(user_id: str, session: database.AsyncSession = Depends(deps.create_session)) -> str:
     """Create encoded refresh token for the given user ID."""
     expires_delta = timedelta(minutes=settings.auth_refresh_token_expire_minutes)
     expire = datetime.utcnow() + expires_delta
@@ -64,6 +67,15 @@ def create_refresh_token(user_id: str) -> str:
     # Encrypt the payload using JWE
     to_encode_bytes: bytes = json.dumps(to_encode).encode()
     token: bytes = jwe.encrypt(to_encode_bytes, key)
+
+    # Hash token for the backend DB
+    token_hash: bytes = hashlib.sha256(token).hexdigest()
+    token_model: models.DbRefreshToken = models.DbRefreshToken(token_hash=token_hash, user_id=user_id)
+
+    await session.add(token_model)
+    await session.commit()
+
+    # Return token as string
     return token.decode()
 
 
@@ -93,13 +105,16 @@ def get_current_user_id(token: str = Security(oauth2_scheme)) -> str:
 
     if not user_id or not exp:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
     if datetime.utcnow() >= datetime.fromtimestamp(exp):
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Token expired")
 
     return user_id
 
 
-def refresh_access_token(refresh_token: str) -> str:
+async def refresh_access_token(
+    refresh_token: str, session: database.AsyncSession = Depends(deps.create_session)
+) -> str:
     """Refresh the access token using the given refresh token."""
     # Generate a key from the auth secret
     key: bytes = derive_key()
@@ -110,7 +125,17 @@ def refresh_access_token(refresh_token: str) -> str:
     except JWEError:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
+    token_hash = hashlib.sha256(token).hexdigest()
+    query = sqlmodel.select(models.DbRefreshToken).where(models.DbRefreshToken.token_hash == token_hash)
+    token_model: models.DbRefreshToken = (await session.exec(query)).one()
+
+    if not token_model.enabled:
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
     payload: dict = json.loads(token.decode())
+
+    if payload["user_id"] != token_model.user_id:
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
     if payload["type"] != "refresh":
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Invalid token type")
