@@ -109,7 +109,7 @@ const sliderItems: Readonly<
   {
     key: "repetition_penalty",
     min: 1,
-    max: 2,
+    max: 3,
   },
   {
     key: "top_k",
