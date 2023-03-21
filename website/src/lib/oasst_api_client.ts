@@ -194,6 +194,21 @@ export class OasstApiClient {
   }
 
   /**
+   *  Returns the Message's tree state
+   */
+  async fetch_message_tree_state(message_id: string) {
+    return this.get<{
+      message_tree_id: string;
+      state: string;
+      active: boolean;
+      goal_tree_size: number;
+      max_children_count: number;
+      max_depth: number;
+      origin: string;
+    }>(`/api/v1/messages/${message_id}/tree/state`);
+  }
+
+  /**
    * Delete a message by its id
    */
   async delete_message(message_id: string): Promise<void> {
