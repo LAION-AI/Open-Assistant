@@ -95,7 +95,6 @@ async def handle_worker(
 
     try:
         worker_utils.get_protocol_version(protocol_version)
-        worker_id = await worker_utils.get_worker_id(api_key=api_key, protocol_version=protocol_version)
         api_key = worker_utils.get_api_key(api_key)
         worker_id = await worker_utils.get_worker_id(api_key=api_key, protocol_version=protocol_version)
     except fastapi.HTTPException as e:
