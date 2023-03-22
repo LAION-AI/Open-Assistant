@@ -29,5 +29,6 @@ ENV MAX_TOTAL_TOKENS="8192"
 
 ENV BACKEND_URL="ws://localhost:8000"
 ENV PARALLELISM="1"
+ENV QUANTIZE="false"
 
 ENTRYPOINT ["/entrypoint.sh"]
