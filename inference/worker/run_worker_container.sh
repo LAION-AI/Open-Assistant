@@ -22,6 +22,9 @@ max_parallel_requests=${MAX_PARALLEL_REQUESTS:-8}
 loguru_level=${LOGURU_LEVEL:-INFO}
 quantize=${QUANTIZE:-false}
 
+OAHF_HOME=$HOME/.oasst_cache/huggingface
+midkr -p $OAHF_HOME
+
 while true; do
     docker pull $image_name
     docker run -it --rm --privileged --runtime=nvidia --gpus=all \
@@ -34,6 +37,6 @@ while true; do
     -e MAX_PARALLEL_REQUESTS=$max_parallel_requests \
     -e QUANTIZE=$quantize \
     -e HF_HUB_ENABLE_HF_TRANSFER= \
-    -v $HOME/.cache/huggingface:/root/.cache/huggingface \
+    -v $OAHF_HOME:/root/.cache/huggingface \
     $image_name
 done
