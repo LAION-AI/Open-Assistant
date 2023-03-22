@@ -1,4 +1,5 @@
-from typing import Literal, Optional
+import os
+from typing import Literal, Optional, Union
 
 import torch.nn as nn
 from models import get_specific_model
@@ -20,6 +21,15 @@ class RewardModelConfig(PretrainedConfig):
         super().__init__(**kwargs)
         self.base_model_name = base_model_name
         self.pooling = pooling or "last"
+
+    @classmethod
+    def from_pretrained(
+        cls, pretrained_model_name_or_path: Union[str, os.PathLike], cache_dir: Optional[str] = None, **kwargs
+    ):
+        config, model_kwargs = super().from_pretrained(pretrained_model_name_or_path, **kwargs)
+        if cache_dir:
+            model_kwargs["cache_dir"] = cache_dir
+        return config, model_kwargs
 
 
 class RewardModel(PreTrainedModel):
