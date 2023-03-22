@@ -17,6 +17,8 @@ DEFAULT_MODEL_LENGTHS = {
     "OpenAssistant/oasst-sft-1-pythia-12b": 2048,
     "OpenAssistant/oasst_sft_llama_7b_mask_1000": 2048,
     "OpenAssistant/oasst_sft_llama_13b_mask_1500": 2048,
+    "OpenAssistant/llama_30b_oasst_latcyr_400": 2048,
+    "OpenAssistant/llama_30b_oasst_latcyr_1000": 2048,
 }
 
 
@@ -294,7 +296,12 @@ class GeneralErrorResponse(WorkerResponseBase):
 
 
 _WorkerRequest = Union[
-    WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest, WrongApiKeyRequest
+    WorkRequest,
+    PingRequest,
+    ErrorRequest,
+    TerminateRequest,
+    UpgradeProtocolRequest,
+    WrongApiKeyRequest,
 ]
 WorkerRequest = Annotated[
     _WorkerRequest,
