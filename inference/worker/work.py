@@ -14,18 +14,24 @@ tokenizer_lock = threading.Lock()
 
 
 def truncate_prompt(
-    tokenizer: transformers.PreTrainedTokenizer, parameters: interface.GenerateStreamParameters, prompt: str
+    tokenizer: transformers.PreTrainedTokenizer,
+    worker_config: inference.WorkerConfig,
+    parameters: interface.GenerateStreamParameters,
+    prompt: str,
 ):
     with tokenizer_lock:
         ids = tokenizer.encode(prompt)
-    if len(ids) > settings.max_input_length:
-        logger.warning(f"Prompt too long, left-truncating to {settings.max_input_length} tokens")
-        ids = ids[-(settings.max_input_length - 1) :]
+
+    max_input_length = worker_config.model_max_input_length
+    max_total_tokens = worker_config.model_max_total_length
+    if len(ids) > max_input_length:
+        logger.warning(f"Prompt too long, left-truncating to {max_input_length} tokens")
+        ids = ids[-(max_input_length - 1) :]
         with tokenizer_lock:
             prompt = tokenizer.decode(ids)
 
     input_length = len(ids)
-    spare = settings.max_total_tokens - input_length - 1
+    spare = max_total_tokens - input_length - 1
     if not parameters.max_new_tokens:
         parameters.max_new_tokens = spare
     elif parameters.max_new_tokens > spare:
@@ -76,8 +82,9 @@ def handle_work_request(
     ws: websocket.WebSocket,
     tokenizer: transformers.PreTrainedTokenizer,
     work_request: inference.WorkRequest,
+    worker_config: inference.WorkerConfig,
 ):
-    prompt, parameters = make_prompt_and_parameters(tokenizer, work_request)
+    prompt, parameters = make_prompt_and_parameters(tokenizer=tokenizer, work_request=work_request)
     logger.debug(f"Prompt: {prompt}")
 
     stream_response = None
@@ -89,10 +96,10 @@ def handle_work_request(
     if settings.model_id == "_lorem":
         stream_events = utils.lorem_events(parameters.seed)
     # elif "llama" in settings.model_id:
-    #     prompt = truncate_prompt(tokenizer, parameters, prompt)
+    #     prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
     #     stream_events = get_hf_stream_events(stream_request)
     else:
-        prompt = truncate_prompt(tokenizer, parameters, prompt)
+        prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
         stream_events = get_inference_server_stream_events(stream_request)
 
     generated_ids = []
