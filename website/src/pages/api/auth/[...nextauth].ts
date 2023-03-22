@@ -1,5 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { boolean } from "boolean";
+import Cookies from "cookies";
 import { generateUsername } from "friendly-username-generator";
 import { NextApiRequest, NextApiResponse } from "next";
 import type { AuthOptions } from "next-auth";
@@ -11,6 +12,7 @@ import EmailProvider from "next-auth/providers/email";
 import { checkCaptcha } from "src/lib/captcha";
 import { discordAvatarRefresh } from "src/lib/discord_avatar_refresh";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
+import { getInferenceTokens } from "src/lib/oasst_inference_auth";
 import prisma from "src/lib/prismadb";
 import { convertToBackendUserCore } from "src/lib/users";
 
@@ -207,6 +209,7 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
         token.role = frontendUser.role;
         token.isNew = frontendUser.isNew;
         token.tosAcceptanceDate = tosAcceptanceDate;
+        token.inferenceTokens = getInferenceTokens(req, res);
         return token;
       },
       async signIn({ account }) {

@@ -77,3 +77,8 @@ export class OasstInferenceClient {
     return this.request<ModelInfo[]>("/configs/models");
   }
 }
+
+export const createInferenceClient = (jwt: JWT) => {
+  const token = jwt.inferenceTokens?.access_token.access_token;
+  return new OasstInferenceClient(token);
+};

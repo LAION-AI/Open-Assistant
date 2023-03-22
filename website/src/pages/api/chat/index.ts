@@ -1,8 +1,8 @@
 import { withoutRole } from "src/lib/auth";
-import { createInferenceAccessors } from "src/lib/oasst_inference_auth";
+import { createInferenceClient } from "src/lib/oasst_inference_client";
 
 const handler = withoutRole("banned", async (req, res, token) => {
-  const { client } = createInferenceAccessors(req, res);
+  const client = createInferenceClient(token);
 
   let data;
   if (req.method === "GET") {

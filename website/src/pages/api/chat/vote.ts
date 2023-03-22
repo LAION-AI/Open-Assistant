@@ -1,8 +1,8 @@
 import { withoutRole } from "src/lib/auth";
-import { createInferenceAccessors } from "src/lib/oasst_inference_auth";
+import { createInferenceClient } from "src/lib/oasst_inference_client";
 
 export default withoutRole("banned", async (req, res, token) => {
-  const { client } = createInferenceAccessors(req, res);
+  const client = createInferenceClient(token);
   const { chat_id, message_id, score } = req.body as { chat_id: string; message_id: string; score: number };
   if (![-1, 0, 1].includes(score)) {
     return res.status(400).send("Invalid score");
