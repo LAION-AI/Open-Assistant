@@ -36,7 +36,7 @@ def set_model_max_lengths(values: dict[str, Any]):
         raise ValueError("model_name is required")
     if "model_max_total_length" not in values:
         model_name = values["model_name"]
-        values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(model_name, 1024)
+        values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(model_name, 2048)
     if "model_max_input_length" not in values:
         values["model_max_input_length"] = values["model_max_total_length"] // 2
     return values
