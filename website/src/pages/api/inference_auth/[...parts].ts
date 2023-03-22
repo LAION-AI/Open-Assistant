@@ -11,7 +11,7 @@ export default withoutRole("banned", async (req, res, token) => {
   }
 
   const [provider] = parts as string[];
-  const url = process.env.INFERENCE_SERVER_HOST + `/auth/callback/${provider}?code=${code}`;
+  const url = process.env.NEXT_PUBLIC_INFERENCE_SERVER_HOST + `/auth/callback/${provider}?code=${code}`;
   const { data } = await axios<InferenceTokens>(url);
   setInferenceTokens(req, res, data);
   // TODO: redirect to original page the user was on, use the state query parameter

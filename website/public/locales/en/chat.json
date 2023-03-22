@@ -2,6 +2,7 @@
   "back_to_chat_list": "Back to chat list",
   "chat_date": "{{val, datetime}}",
   "empty": "(empty)",
+  "login_message": "To use this feature, you need to login again. Choose your provider:",
   "queue_info": "Your message is queued, you are at position {{ queuePosition, number, integer }} in the queue.",
   "your_chats": "Your chats",
   "config_title": "Chat configuration",

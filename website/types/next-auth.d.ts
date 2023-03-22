@@ -11,6 +11,10 @@ declare module "next-auth" {
       /** Iso timestamp of the user's acceptance of the terms of service */
       tosAcceptanceDate?: string;
     } & DefaultSession["user"];
+
+    inference: {
+      isAuthenticated: boolean;
+    };
   }
 }
 

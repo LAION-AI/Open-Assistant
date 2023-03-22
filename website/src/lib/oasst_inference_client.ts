@@ -9,14 +9,14 @@ import {
   ModelInfo,
   WorkParametersInput,
 } from "src/types/Chat";
-import { Readable } from "stream";
+import type { Readable } from "stream";
 
 export class OasstInferenceClient {
   // this is not a long lived class, this is why the token is immutable
   constructor(private readonly inferenceAccessToken: string) {}
 
   async request<T = unknown>(path: string, init?: AxiosRequestConfig) {
-    const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
+    const { data } = await axios<T>(process.env.NEXT_PUBLIC_INFERENCE_SERVER_HOST + path, {
       ...init,
       headers: {
         ...init?.headers,

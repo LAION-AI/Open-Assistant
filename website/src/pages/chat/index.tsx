@@ -3,9 +3,11 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useCallback, useMemo } from "react";
+import { ChatAuth } from "src/components/Chat/ChatAuth";
 import { getDashboardLayout } from "src/components/Layout";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { get, post } from "src/lib/api";
@@ -30,8 +32,10 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 const Chat = () => {
   const { t } = useTranslation(["common", "chat"]);
   const router = useRouter();
+  const { data: session } = useSession();
+  const isAuthenticatedInference = session?.inference.isAuthenticated;
 
-  const { data } = useSWR<GetChatsResponse>("/api/chat", get, { revalidateOnFocus: true });
+  const { data } = useSWR<GetChatsResponse>(isAuthenticatedInference && "/api/chat", get, { revalidateOnFocus: true });
 
   const { trigger: newChatTrigger } = useSWRMutation<{ id: string }>("/api/chat", post);
 
@@ -79,7 +83,7 @@ const Chat = () => {
         <title>{t("chat")}</title>
       </Head>
 
-      {content}
+      {isAuthenticatedInference ? content : <ChatAuth />}
     </>
   );
 };

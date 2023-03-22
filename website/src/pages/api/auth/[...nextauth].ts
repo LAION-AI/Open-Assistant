@@ -111,6 +111,7 @@ const authOptions: AuthOptions = {
       session.user.isNew = token.isNew;
       session.user.name = token.name;
       session.user.tosAcceptanceDate = token.tosAcceptanceDate;
+      session.inference = { isAuthenticated: !!token.inferenceTokens };
       return session;
     },
   },
@@ -209,6 +210,8 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
         token.role = frontendUser.role;
         token.isNew = frontendUser.isNew;
         token.tosAcceptanceDate = tosAcceptanceDate;
+        // this is probably a bit stupid: we get the tokens from the cookies and we write them into the JWT
+        // this saves us a database / inference call on every refresh
         token.inferenceTokens = getInferenceTokens(req, res);
         return token;
       },
