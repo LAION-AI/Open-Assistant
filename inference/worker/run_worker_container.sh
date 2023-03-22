@@ -23,7 +23,7 @@ loguru_level=${LOGURU_LEVEL:-INFO}
 quantize=${QUANTIZE:-false}
 
 OAHF_HOME=$HOME/.oasst_cache/huggingface
-midkr -p $OAHF_HOME
+mkdir -p $OAHF_HOME
 
 while true; do
     docker pull $image_name
