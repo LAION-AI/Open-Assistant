@@ -3,7 +3,7 @@ export interface InferenceToken {
   token_type: string;
 }
 
-export interface InferenceTokenResponse {
+export interface InferenceTokens {
   access_token: InferenceToken;
   refresh_token: InferenceToken;
 }

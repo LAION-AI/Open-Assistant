@@ -1,3 +1,4 @@
+import { Account } from "@prisma/client";
 import prisma from "src/lib/prismadb";
 import type { BackendUserCore } from "src/types/Users";
 
@@ -10,17 +11,21 @@ import type { BackendUserCore } from "src/types/Users";
 export const getBackendUserCore = async (id: string): Promise<BackendUserCore> => {
   const user = await prisma.user.findUnique({
     where: { id },
-    select: {
-      id: true,
-      name: true,
-      accounts: true,
-    },
+    select: { id: true, name: true, accounts: true },
   });
-
   if (!user) {
     throw new Error("User not found");
   }
+  return convertToBackendUserCore(user);
+};
 
+/**
+ * convert a user object to a canoncial representation used for interacting with the backend
+ * @param user frontend user object, from prisma db
+ */
+export const convertToBackendUserCore = <T extends { accounts: Account[]; id: string; name: string }>(
+  user: T
+): BackendUserCore => {
   // If there are no linked accounts, just use what we have locally.
   if (user.accounts.length === 0) {
     return {
