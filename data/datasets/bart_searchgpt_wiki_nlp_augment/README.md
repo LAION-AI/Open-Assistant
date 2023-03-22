@@ -9,6 +9,11 @@ Related to [Issue #2004](https://github.com/LAION-AI/Open-Assistant/issues/2004)
 3. Generate Q-A pairs using doc2query
 4. Generate Q-A pairs using BART or SearchGPT
 
+# Output data
+
+- raw data (BART-based): https://huggingface.co/datasets/michaelthwan/wiki_qa_bart_10000row
+- OA format data (BART-based): https://huggingface.co/datasets/michaelthwan/oa_wiki_qa_bart_10000row
+
 ### Syntheic data based on BART
 
 ![wiki_augment_bart](./img/wiki_augment_bart.png)
@@ -24,3 +29,5 @@ Related to [Issue #2004](https://github.com/LAION-AI/Open-Assistant/issues/2004)
 2. Clean data: `1_clean_wikitext.py`
 3. Get queries by doc2query `2_wikitext_doc2query.ipynb` (I run using colab+local PC)
 4. Get responses by BART `3_10k_bart_trial.py` or `3_10k_bart_trial.ipynb`
+5. Convert to OA format `4_convert_to_oa_format.py`
+
