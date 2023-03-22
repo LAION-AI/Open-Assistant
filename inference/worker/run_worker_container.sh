@@ -8,10 +8,11 @@ function cleanup {
 # Set up a trap to catch the SIGINT signal (Ctrl+C) and call the cleanup function
 trap cleanup SIGINT
 
-image_tag=${IMAGE_TAG:-full}
+image_tag=${IMAGE_TAG:-latest}
+image_type=${IMAGE_TYPE:-full}
 
 # worker image name
-image_name="ghcr.io/laion-ai/open-assistant/oasst-inference-worker-$image_tag:latest"
+image_name="ghcr.io/laion-ai/open-assistant/oasst-inference-worker-$image_type:$image_tag"
 
 # get visible gpu env variable, default to all
 gpus=${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}
