@@ -68,7 +68,7 @@ async def delete_worker(
 
 
 @router.delete("/refresh_tokens/{user_id}")
-async def revoke_refresh_token(
+async def revoke_refresh_tokens(
     user_id: str,
     root_token: str = Depends(get_root_token),
     session: database.AsyncSession = Depends(deps.create_session),
