@@ -101,6 +101,8 @@ async def handle_worker(
         logger.warning(f"handle_worker: {e.status_code=} {e.detail=}")
         if e.status_code == fastapi.status.HTTP_426_UPGRADE_REQUIRED:
             await worker_utils.send_worker_request(websocket=websocket, request=inference.UpgradeProtocolRequest())
+        elif e.status_code == fastapi.status.HTTP_401_UNAUTHORIZED:
+            await worker_utils.send_worker_request(websocket=websocket, request=inference.WrongApiKeyRequest())
         try:
             await websocket.close(code=e.status_code, reason=e.detail)
         except Exception:
@@ -230,8 +232,8 @@ async def handle_worker(
                     await work_queue.enqueue(message_id)
                 else:
                     logger.warning(f"Aborting {message_id=}")
-                    async with deps.manual_chat_repository() as cr:
-                        await cr.abort_work(message_id, reason=str(e))
+                    internal_error = inference.InternalErrorResponse(error="Aborted due to worker error.")
+                    await abort_message(message_id=message_id, response=internal_error)
             except Exception as e:
                 logger.exception(f"Error while trying to reset work for {message_id=}: {str(e)}")
     finally:
@@ -333,24 +335,36 @@ async def handle_generated_text_response(
     response: inference.GeneratedTextResponse,
     work_request_map: WorkRequestContainerMap,
 ):
-    work_response_container = get_work_request_container(work_request_map, response.request_id)
-    message_id = work_response_container.message_id
-    async with deps.manual_create_session() as session:
-        cr = chat_repository.ChatRepository(session=session)
-        message = await cr.complete_work(
-            message_id=message_id,
-            content=response.text,
+    try:
+        work_response_container = get_work_request_container(work_request_map, response.request_id)
+        message_id = work_response_container.message_id
+        async with deps.manual_create_session() as session:
+            cr = chat_repository.ChatRepository(session=session)
+            message = await cr.complete_work(
+                message_id=message_id,
+                content=response.text,
+            )
+            logger.info(f"Completed work for {message_id=}")
+        message_packet = inference.InternalFinishedMessageResponse(
+            message=message.to_read(),
         )
-        logger.info(f"Completed work for {message_id=}")
-    message_packet = inference.InternalFinishedMessageResponse(
-        message=message.to_read(),
-    )
+        message_queue = queueing.message_queue(
+            deps.redis_client,
+            message_id=message_id,
+        )
+        await message_queue.enqueue(message_packet.json(), expire=settings.message_queue_expire)
+    finally:
+        del work_request_map[response.request_id]
+
+
+async def abort_message(message_id: str, response: inference.ErrorResponse | inference.InternalErrorResponse):
+    async with deps.manual_chat_repository() as cr:
+        await cr.abort_work(message_id, reason=str(response.error))
     message_queue = queueing.message_queue(
         deps.redis_client,
         message_id=message_id,
     )
-    await message_queue.enqueue(message_packet.json(), expire=settings.message_queue_expire)
-    del work_request_map[response.request_id]
+    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
 
 
 async def handle_error_response(
@@ -358,10 +372,12 @@ async def handle_error_response(
     work_request_map: WorkRequestContainerMap,
 ):
     logger.warning(f"Got error {response=}")
-    work_response_container = get_work_request_container(work_request_map, response.request_id)
-    async with deps.manual_chat_repository() as cr:
-        await cr.abort_work(work_response_container.message_id, reason=str(response.error))
-    del work_request_map[response.request_id]
+    try:
+        work_response_container = get_work_request_container(work_request_map, response.request_id)
+        message_id = work_response_container.message_id
+        await abort_message(message_id, response)
+    finally:
+        del work_request_map[response.request_id]
 
 
 async def handle_general_error_response(
