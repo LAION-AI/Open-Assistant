@@ -48,10 +48,13 @@ def main():
                 logger.warning("Connected to backend, sending config...")
                 worker_config = inference.WorkerConfig(
                     model_name=settings.model_id,
-                    hardware_info=inference.WorkerHardwareInfo(),
                     max_parallel_requests=settings.max_parallel_requests,
                 )
-                utils.send_response(ws, worker_config)
+                worker_info = inference.WorkerInfo(
+                    config=worker_config,
+                    hardware_info=inference.WorkerHardwareInfo(),
+                )
+                utils.send_response(ws, worker_info)
                 logger.warning("Config sent, waiting for work...")
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=worker_config.max_parallel_requests) as executor:
@@ -71,6 +74,12 @@ def main():
                                 ftrs.append(ftr)
                             case "ping":
                                 utils.send_response(ws, inference.PongResponse(request_id=worker_request.id))
+                            case "wrong_api_key":
+                                logger.error("Your API Key seems to be wrong, please check it!")
+                                raise RuntimeError("Your API Key seems to be wrong, please check it!")
+                            case "upgrade_protocol":
+                                logger.error("Your worker is outdated, please upgrade it!")
+                                sys.exit(2)  # potentially read this status code outside
                             case "terminate":
                                 logger.info("Received terminate, terminating worker")
                                 sys.exit(0)
@@ -81,8 +90,9 @@ def main():
         except websocket.WebSocketBadStatusException as e:
             logger.error(f"Bad status: {e.status_code=} {str(e)=}")
             logger.error("Did you provide the correct API key?")
-            logger.error("Try upgrading the worker to get the latest protocol version")
-            raise
+            if not settings.retry_on_error:
+                sys.exit(1)
+            time.sleep(5)
         except Exception:
             logger.exception("Error in websocket")
             logger.warning("Retrying in 5 seconds...")

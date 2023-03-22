@@ -1,6 +1,11 @@
-export interface InferenceTokenResponse {
+export interface InferenceToken {
   access_token: string;
   token_type: string;
+}
+
+export interface InferenceTokenResponse {
+  access_token: InferenceToken;
+  refresh_token: InferenceToken;
 }
 
 export interface ChatItem {

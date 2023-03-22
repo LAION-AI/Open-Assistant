@@ -1,5 +1,5 @@
 import { Box, Link, Text, useColorMode } from "@chakra-ui/react";
-import { Github } from "lucide-react";
+import { Github, Users } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { useId } from "react";
 
@@ -62,14 +62,16 @@ export function CallToAction() {
           <Text as="h2" className={`text-3xl font-medium tracking-tight sm:text-4xl ${headingColorClass}`}>
             {t("index:join_us_title")}
           </Text>
+
           <Text as="p" className="mt-4 text-lg">
             {t("index:join_us_description")}
           </Text>
-          <Box className="mt-8 flex justify-center">
+
+          <Box className="mt-8 flex justify-center" gap={["3", "6"]}>
             <Link href="https://ykilcher.com/open-assistant-discord" rel="noreferrer" target="_blank">
               <button
                 type="button"
-                className="mb-2 ml-6 flex items-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="mb-2 flex items-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <Discord size={25} />
                 <Text as="span" className="text-lg ml-3">
@@ -80,11 +82,22 @@ export function CallToAction() {
             <Link href="https://github.com/LAION-AI/Open-Assistant" rel="noreferrer" target="_blank">
               <button
                 type="button"
-                className="mb-2 ml-6 flex items-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="mb-2 flex items-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <Github size={25} />
                 <Text as="span" className="text-lg ml-3">
                   {t("github")}
+                </Text>
+              </button>
+            </Link>
+            <Link href="/team" rel="noreferrer" target="_blank">
+              <button
+                type="button"
+                className="mb-2 flex items-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                <Users size={25} />
+                <Text as="span" className="text-lg ml-3">
+                  {t("team")}
                 </Text>
               </button>
             </Link>
