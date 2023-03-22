@@ -82,8 +82,8 @@ const Chat = () => {
       <Head>
         <title>{t("chat")}</title>
       </Head>
-
-      {isAuthenticatedInference ? content : <ChatAuth />}
+      {content}
+      <ChatAuth />
     </>
   );
 };
