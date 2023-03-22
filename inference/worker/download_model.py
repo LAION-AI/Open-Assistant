@@ -5,7 +5,7 @@ import sys
 import transformers
 
 
-def terminate():
+def terminate(signum, frame):
     print("Terminating...")
     sys.exit(0)
 
