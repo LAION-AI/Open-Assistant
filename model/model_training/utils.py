@@ -12,13 +12,13 @@ from custom_datasets import get_one_dataset
 from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from losses import CrossEntropyLoss, PolyLoss, RMLoss
 from models import freeze_top_n_layers, get_specific_model
-from models.tokenization_llama import LLaMATokenizer
-from models.patching import patch_model
 from models.reward_model import RewardModel, RewardModelConfig
+from models.tokenization_llama import LLaMATokenizer
 from sklearn.model_selection import train_test_split
-from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
 from torch.utils.data.distributed import DistributedSampler
+
+from tokenizers import pre_tokenizers
 
 
 def _strtobool(x):

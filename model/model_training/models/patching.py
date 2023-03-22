@@ -98,10 +98,8 @@ def add_flash_attn(module: nn.Module, causal: bool = True):
     module._attn = partial(_patched_gpt_neox_attn, module, flash_attn)
 
 
-def patch_model(model: nn.Module,
-    resid_pdrop: Optional[float] = 0.1,
-    flash_attention: bool = True,
-    patch_unsupported: bool = False
+def patch_model(
+    model: nn.Module, resid_pdrop: Optional[float] = 0.1, flash_attention: bool = True, patch_unsupported: bool = False
 ):
     """
     Helper function for patching HF language models.
