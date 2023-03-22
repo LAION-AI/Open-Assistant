@@ -240,6 +240,10 @@ class UpgradeProtocolRequest(WorkerRequestBase):
     request_type: Literal["upgrade_protocol"] = "upgrade_protocol"
 
 
+class WrongApiKeyRequest(WorkerRequestBase):
+    request_type: Literal["wrong_api_key"] = "wrong_api_key"
+
+
 class TerminateRequest(WorkerRequestBase):
     request_type: Literal["terminate"] = "terminate"
 
@@ -290,7 +294,7 @@ class GeneralErrorResponse(WorkerResponseBase):
 
 
 _WorkerRequest = Union[
-    WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest
+    WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest, WrongApiKeyRequest
 ]
 WorkerRequest = Annotated[
     _WorkerRequest,
