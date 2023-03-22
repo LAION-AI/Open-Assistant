@@ -91,7 +91,7 @@ def get_df():
         merged_rankings = ranked_pairs(v)
         consensus[k] = merged_rankings
         ls = []
-        for (vote, id) in rankings_with_user[k]:
+        for vote, id in rankings_with_user[k]:
             # clean up the rankings and remove stuff not in all of them
             vote = list(filter(lambda x: x in common_set, vote))
             ls.append((kendalltau(merged_rankings, vote), id))
@@ -99,7 +99,7 @@ def get_df():
         total_correlation.extend(ls)
     correlation_by_user = defaultdict(list)
     for u in users:
-        for (c, m) in total_correlation:
+        for c, m in total_correlation:
             if m == u:
                 correlation_by_user[u].append(c)
 

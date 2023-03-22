@@ -130,7 +130,6 @@ def ranked_pairs(ranks: List[List[int]]):
 
 
 if __name__ == "__main__":
-
     ranks = """ (
         [("w", "x", "z", "y") for _ in range(1)]
         + [("w", "y", "x", "z") for _ in range(2)]
