@@ -34,5 +34,6 @@ while true; do
     -e MAX_PARALLEL_REQUESTS=$max_parallel_requests \
     -e QUANTIZE=$quantize \
     -e HF_HUB_ENABLE_HF_TRANSFER= \
+    -v $HOME/.cache/huggingface:/root/.cache/huggingface \
     $image_name
 done
