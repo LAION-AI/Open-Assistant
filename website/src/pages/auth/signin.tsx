@@ -1,4 +1,13 @@
-import { Button, ButtonProps, FormControl, FormErrorMessage, Input, Stack, useColorModeValue } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  ButtonProps,
+  FormControl,
+  FormErrorMessage,
+  Input,
+  Stack,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
 import { TurnstileInstance } from "@marsidev/react-turnstile";
 import { boolean } from "boolean";
@@ -10,12 +19,10 @@ import { useRouter } from "next/router";
 import { BuiltInProviderType } from "next-auth/providers";
 import { ClientSafeProvider, getProviders, signIn } from "next-auth/react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import React, { ReactNode, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthLayout } from "src/components/AuthLayout";
 import { CloudFlareCaptcha } from "src/components/CloudflareCaptcha";
-import { Footer } from "src/components/Footer";
-import { Header } from "src/components/Header";
 import { Discord } from "src/components/Icons/Discord";
 import { Role, RoleSelect } from "src/components/RoleSelect";
 
@@ -64,26 +71,25 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
     const err = router?.query?.error;
     if (err) {
       if (typeof err === "string") {
-        setError(errorMessages[err]);
+        setError(errorMessages[err as SignInErrorTypes]);
       } else {
-        setError(errorMessages[err[0]]);
+        setError(errorMessages[err[0] as SignInErrorTypes]);
       }
     }
   }, [router]);
 
   const { colorMode } = useColorMode();
-  const bgColorClass = colorMode === "light" ? "bg-gray-50" : "bg-chakra-gray-900";
   const buttonBgColor = colorMode === "light" ? "#2563eb" : "#2563eb";
 
   return (
-    <div className={bgColorClass}>
+    <>
       <Head>
         <title>Sign Up - Open Assistant</title>
         <meta name="Sign Up" content="Sign up to access Open Assistant" />
       </Head>
       <AuthLayout>
         <Stack spacing="2">
-          {credentials && <DebugSigninForm providerId={credentials.id} bgColorClass={bgColorClass} />}
+          {credentials && <DebugSigninForm providerId={credentials.id} />}
           {email && enableEmailSignin && (
             <EmailSignInForm
               providerId={email.id}
@@ -141,17 +147,9 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
           </div>
         )}
       </AuthLayout>
-    </div>
+    </>
   );
 }
-
-Signin.getLayout = (page: ReactNode) => (
-  <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
-    <Header />
-    {page}
-    <Footer />
-  </div>
-);
 
 export default Signin;
 
@@ -237,7 +235,7 @@ interface DebugSigninFormData {
   role: Role;
 }
 
-const DebugSigninForm = ({ providerId, bgColorClass }: { providerId: string; bgColorClass: string }) => {
+const DebugSigninForm = ({ providerId }: { providerId: string }) => {
   const { register, handleSubmit } = useForm<DebugSigninFormData>({
     defaultValues: {
       role: "general",
@@ -251,13 +249,16 @@ const DebugSigninForm = ({ providerId, bgColorClass }: { providerId: string; bgC
       ...data,
     });
   }
+  const bgColorClass = useColorModeValue("gray.50", "gray.900");
 
   return (
     <form
       onSubmit={handleSubmit(signinWithDebugCredentials)}
       className="border-2 border-orange-600 rounded-md p-4 relative"
     >
-      <span className={`text-orange-600 absolute -top-3 left-5 ${bgColorClass} px-1`}>For Debugging Only</span>
+      <Box bg={bgColorClass} className={`text-orange-600 absolute -top-3 left-5 px-1 z-20`}>
+        For Debugging Only
+      </Box>
       <Stack>
         <Input
           variant="outline"
@@ -273,8 +274,8 @@ const DebugSigninForm = ({ providerId, bgColorClass }: { providerId: string; bgC
   );
 };
 
-export const getServerSideProps: GetServerSideProps<SigninProps> = async ({ locale }) => {
-  const providers = await getProviders();
+export const getServerSideProps: GetServerSideProps<SigninProps> = async ({ locale = "en" }) => {
+  const providers = (await getProviders())!;
   const enableEmailSignin = boolean(process.env.ENABLE_EMAIL_SIGNIN);
   const enableEmailSigninCaptcha = boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA);
   const cloudflareCaptchaSiteKey = process.env.CLOUDFLARE_CAPTCHA_SITE_KEY;

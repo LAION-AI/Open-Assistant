@@ -17,7 +17,6 @@ import Head from "next/head";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import React from "react";
-import { getTransparentHeaderLayout } from "src/components/Layout";
 
 import data from "../data/team.json";
 
@@ -78,7 +77,5 @@ const Team = () => {
     </>
   );
 };
-
-Team.getLayout = getTransparentHeaderLayout;
 
 export default Team;

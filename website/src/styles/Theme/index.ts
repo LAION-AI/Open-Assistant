@@ -47,6 +47,7 @@ const styles: Styles = {
     },
     body: {
       position: "relative",
+      bg: props.colorMode === "light" ? "gray.50" : colors.dark.bg,
     },
   }),
 };
