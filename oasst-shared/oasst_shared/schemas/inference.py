@@ -33,9 +33,8 @@ def set_model_max_lengths(values: dict[str, Any]):
     if values.get("model_name") is None:
         values["model_name"] = shared_settings.default_model_name
     if "model_max_total_length" not in values:
-        values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(
-            values["model_name"], 1024
-        )
+        model_name = values["model_name"]
+        values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(model_name, 1024)
     if "model_max_input_length" not in values:
         values["model_max_input_length"] = values["model_max_total_length"] // 2
     return values
@@ -160,10 +159,14 @@ class WorkParametersInput(pydantic.BaseModel):
         return set_model_max_lengths(values)
 
 
+def make_seed() -> int:
+    return random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1)
+
+
 class WorkParameters(WorkParametersInput):
     do_sample: bool = True
     seed: int = pydantic.Field(
-        default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1)
+        default_factory=make_seed,
     )
 
 
@@ -288,10 +291,11 @@ class GeneralErrorResponse(WorkerResponseBase):
     error: str
 
 
+_WorkerRequest = Union[
+    WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest
+]
 WorkerRequest = Annotated[
-    Union[
-        WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest
-    ],
+    _WorkerRequest,
     pydantic.Field(discriminator="request_type"),
 ]
 
