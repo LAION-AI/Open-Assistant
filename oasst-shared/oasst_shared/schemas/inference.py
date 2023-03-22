@@ -1,27 +1,22 @@
-import datetime
 import enum
 import platform
 import random
 import uuid
+from datetime import datetime
 from typing import Annotated, Any, Literal, Union
 
 import psutil
 import pydantic
 import pynvml
+from oasst_shared.shared_settings import shared_settings
 
 INFERENCE_PROTOCOL_VERSION = "1"
-DEFAULT_MODEL_NAME = "distilgpt2"
 
 DEFAULT_MODEL_LENGTHS = {
     "_lorem": 1024,
-    "gpt2": 1024,
-    "distilgpt2": 1024,
-    "OpenAssistant/oasst-sft-1-pythia6b": 2048,
     "OpenAssistant/oasst-sft-1-pythia-12b": 2048,
     "OpenAssistant/oasst_sft_llama_7b_mask_1000": 2048,
     "OpenAssistant/oasst_sft_llama_13b_mask_1500": 2048,
-    "OpenAssistant/llama_30b_oasst_latcyr_400": 2048,
-    "OpenAssistant/llama_30b_oasst_latcyr_1000": 2048,
 }
 
 
@@ -36,9 +31,10 @@ def compat_hash(
 
 def set_model_max_lengths(values: dict[str, Any]):
     if values.get("model_name") is None:
-        values["model_name"] = DEFAULT_MODEL_NAME
+        values["model_name"] = shared_settings.default_model_name
     if "model_max_total_length" not in values:
-        values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(values["model_name"], 1024)
+        model_name = values["model_name"]
+        values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(model_name, 1024)
     if "model_max_input_length" not in values:
         values["model_max_input_length"] = values["model_max_total_length"] // 2
     return values
@@ -163,9 +159,15 @@ class WorkParametersInput(pydantic.BaseModel):
         return set_model_max_lengths(values)
 
 
+def make_seed() -> int:
+    return random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1)
+
+
 class WorkParameters(WorkParametersInput):
     do_sample: bool = True
-    seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1))
+    seed: int = pydantic.Field(
+        default_factory=make_seed,
+    )
 
 
 class ReportType(str, enum.Enum):
@@ -199,7 +201,7 @@ class MessageRead(pydantic.BaseModel):
     id: str
     parent_id: str | None
     content: str | None
-    created_at: datetime.datetime
+    created_at: datetime
     role: Literal["prompter", "assistant"]
     state: MessageState
     score: int
@@ -221,7 +223,7 @@ class WorkerRequestBase(pydantic.BaseModel):
 class WorkRequest(WorkerRequestBase):
     request_type: Literal["work"] = "work"
     thread: Thread = pydantic.Field(..., repr=False)
-    created_at: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.utcnow)
+    created_at: datetime = pydantic.Field(default_factory=datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
 
 
@@ -236,6 +238,10 @@ class ErrorRequest(WorkerRequestBase):
 
 class UpgradeProtocolRequest(WorkerRequestBase):
     request_type: Literal["upgrade_protocol"] = "upgrade_protocol"
+
+
+class WrongApiKeyRequest(WorkerRequestBase):
+    request_type: Literal["wrong_api_key"] = "wrong_api_key"
 
 
 class TerminateRequest(WorkerRequestBase):
@@ -287,8 +293,11 @@ class GeneralErrorResponse(WorkerResponseBase):
     error: str
 
 
+_WorkerRequest = Union[
+    WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest, WrongApiKeyRequest
+]
 WorkerRequest = Annotated[
-    Union[WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest],
+    _WorkerRequest,
     pydantic.Field(discriminator="request_type"),
 ]
 
