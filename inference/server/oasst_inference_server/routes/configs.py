@@ -1,5 +1,6 @@
 import fastapi
 import pydantic
+from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 
 router = fastapi.APIRouter(
@@ -67,6 +68,7 @@ DEFAULT_PARAMETER_CONFIGS = [
 
 @router.get("/models")
 async def get_models() -> list[ModelInfo]:
+    allowed_models_list = settings.allowed_models_list
     return [
         ModelInfo(
             name=model_name,
@@ -76,4 +78,5 @@ async def get_models() -> list[ModelInfo]:
             ],
         )
         for model_name in inference.DEFAULT_MODEL_LENGTHS.keys()
+        if (settings.allowed_models == "*" or model_name in allowed_models_list)
     ]

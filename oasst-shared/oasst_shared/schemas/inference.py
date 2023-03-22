@@ -8,15 +8,17 @@ from typing import Annotated, Any, Literal, Union
 import psutil
 import pydantic
 import pynvml
-from oasst_shared.shared_settings import shared_settings
 
 INFERENCE_PROTOCOL_VERSION = "1"
 
 DEFAULT_MODEL_LENGTHS = {
-    "_lorem": 1024,
+    "_lorem": 256,
+    "distilgpt2": 1024,
     "OpenAssistant/oasst-sft-1-pythia-12b": 2048,
     "OpenAssistant/oasst_sft_llama_7b_mask_1000": 2048,
     "OpenAssistant/oasst_sft_llama_13b_mask_1500": 2048,
+    "OpenAssistant/llama_30b_oasst_latcyr_400": 2048,
+    "OpenAssistant/llama_30b_oasst_latcyr_1000": 2048,
 }
 
 
@@ -31,7 +33,7 @@ def compat_hash(
 
 def set_model_max_lengths(values: dict[str, Any]):
     if values.get("model_name") is None:
-        values["model_name"] = shared_settings.default_model_name
+        raise ValueError("model_name is required")
     if "model_max_total_length" not in values:
         model_name = values["model_name"]
         values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(model_name, 1024)
@@ -294,7 +296,12 @@ class GeneralErrorResponse(WorkerResponseBase):
 
 
 _WorkerRequest = Union[
-    WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest, WrongApiKeyRequest
+    WorkRequest,
+    PingRequest,
+    ErrorRequest,
+    TerminateRequest,
+    UpgradeProtocolRequest,
+    WrongApiKeyRequest,
 ]
 WorkerRequest = Annotated[
     _WorkerRequest,
