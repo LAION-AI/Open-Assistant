@@ -20,10 +20,11 @@ backend_url=${BACKEND_URL:-wss://inference.prod.open-assistant.io}
 model_id=${MODEL_ID:-OpenAssistant/oasst_sft_llama_13b_mask_1500}
 max_parallel_requests=${MAX_PARALLEL_REQUESTS:-8}
 loguru_level=${LOGURU_LEVEL:-INFO}
+quantize=${QUANTIZE:-false}
 
 while true; do
     docker pull $image_name
-    docker run --rm --privileged --runtime=nvidia --gpus=all \
+    docker run -it --rm --privileged --runtime=nvidia --gpus=all \
     -e CUDA_VISIBLE_DEVICES=$gpus \
     -e LOGURU_LEVEL=$loguru_level \
     -e API_KEY=$api_key \
@@ -31,6 +32,7 @@ while true; do
     -e BACKEND_URL=$backend_url \
     -e HF_TOKEN=$HF_TOKEN \
     -e MAX_PARALLEL_REQUESTS=$max_parallel_requests \
+    -e QUANTIZE=$quantize \
     -e HF_HUB_ENABLE_HF_TRANSFER= \
     $image_name
 done
