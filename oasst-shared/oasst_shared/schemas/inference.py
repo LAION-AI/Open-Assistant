@@ -1,8 +1,8 @@
-import datetime
 import enum
 import platform
 import random
 import uuid
+from datetime import datetime
 from typing import Annotated, Any, Literal, Union
 
 import psutil
@@ -201,7 +201,7 @@ class MessageRead(pydantic.BaseModel):
     id: str
     parent_id: str | None
     content: str | None
-    created_at: datetime.datetime
+    created_at: datetime
     role: Literal["prompter", "assistant"]
     state: MessageState
     score: int
@@ -223,9 +223,7 @@ class WorkerRequestBase(pydantic.BaseModel):
 class WorkRequest(WorkerRequestBase):
     request_type: Literal["work"] = "work"
     thread: Thread = pydantic.Field(..., repr=False)
-    created_at: datetime.datetime = pydantic.Field(
-        default_factory=datetime.datetime.utcnow
-    )
+    created_at: datetime = pydantic.Field(default_factory=datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
 
 
