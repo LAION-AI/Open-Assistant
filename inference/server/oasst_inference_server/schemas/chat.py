@@ -12,7 +12,11 @@ class CreateMessageRequest(pydantic.BaseModel):
 
     @property
     def worker_compat_hash(self) -> str:
-        return inference.compat_hash(model_name=self.work_parameters.model_name)
+        return inference.compat_hash(
+            model_name=self.work_parameters.model_name,
+            model_max_total_length=self.work_parameters.model_max_total_length,
+            model_max_input_length=self.work_parameters.model_max_input_length,
+        )
 
 
 class CreateMessageResponse(pydantic.BaseModel):

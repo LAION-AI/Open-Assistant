@@ -46,12 +46,12 @@ class WorkerError(Exception):
 async def add_worker_connect_event(
     session: database.AsyncSession,
     worker_id: str,
-    worker_config: inference.WorkerConfig,
+    worker_info: inference.WorkerInfo,
 ):
     event = models.DbWorkerEvent(
         worker_id=worker_id,
         event_type=models.WorkerEventType.connect,
-        worker_config=worker_config,
+        worker_info=worker_info,
     )
     session.add(event)
     await session.commit()
@@ -101,6 +101,8 @@ async def handle_worker(
         logger.warning(f"handle_worker: {e.status_code=} {e.detail=}")
         if e.status_code == fastapi.status.HTTP_426_UPGRADE_REQUIRED:
             await worker_utils.send_worker_request(websocket=websocket, request=inference.UpgradeProtocolRequest())
+        elif e.status_code == fastapi.status.HTTP_401_UNAUTHORIZED:
+            await worker_utils.send_worker_request(websocket=websocket, request=inference.WrongApiKeyRequest())
         try:
             await websocket.close(code=e.status_code, reason=e.detail)
         except Exception:
@@ -108,21 +110,22 @@ async def handle_worker(
         raise fastapi.WebSocketException(e.status_code, e.detail)
 
     logger.info(f"handle_worker: {worker_id=}")
-    worker_config = await worker_utils.receive_worker_config(websocket)
-    logger.info(f"handle_worker: {worker_config=}")
+    worker_info = await worker_utils.receive_worker_info(websocket)
+    logger.info(f"handle_worker: {worker_info=}")
+    worker_config = worker_info.config
     worker_compat_hash = worker_config.compat_hash
     work_queue = queueing.work_queue(deps.redis_client, worker_compat_hash)
     redis_client = deps.make_redis_client()
     blocking_work_queue = queueing.work_queue(redis_client, worker_compat_hash)
     worker_session = worker_utils.WorkerSession(
         worker_id=worker_id,
-        config=worker_config,
+        worker_info=worker_info,
     )
     work_request_map: dict[str, WorkRequestContainer] = {}
     pending_futures = set()
     try:
         async with deps.manual_create_session() as session:
-            await add_worker_connect_event(session=session, worker_id=worker_id, worker_config=worker_config)
+            await add_worker_connect_event(session=session, worker_id=worker_id, worker_info=worker_info)
         await worker_utils.store_worker_session(worker_session)
 
         async def _update_session(metrics: inference.WorkerMetricsInfo):
@@ -260,15 +263,15 @@ async def handle_worker(
 async def list_worker_sessions() -> list[worker_utils.WorkerSession]:
     redis_client = deps.redis_client
     try:
-        worker_configs = []
+        worker_sessions = []
         async for key in redis_client.scan_iter("worker_session:*"):
-            worker_config_json = await redis_client.get(key)
-            worker_config = worker_utils.WorkerSession.parse_raw(worker_config_json)
-            worker_configs.append(worker_config)
+            worker_session_json = await redis_client.get(key)
+            worker_session = worker_utils.WorkerSession.parse_raw(worker_session_json)
+            worker_sessions.append(worker_session)
     except Exception as e:
         logger.exception(f"Error while listing worker sessions: {str(e)}")
         raise
-    return worker_configs
+    return worker_sessions
 
 
 @router.on_event("startup")
