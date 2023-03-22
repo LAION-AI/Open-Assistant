@@ -22,11 +22,22 @@ To see the datasets people are currently working on, please refer to
 
 ## **Dataset Formats**
 
-To simplify the training process, all datasets must be stored as Parquet files
-with the option `row_group_size=100`.<br/> There are two types of datasets
-accepted: instruction and text-only.
+To simplify the training process, all datasets must be stored in one of the two
+formats:
 
-### **Instruction format**
+- parquet with the option `row_group_size=100`
+- jsonl or jsonl.gz
+
+## **Dataset Types**
+
+There are 4 types of datasets that currently accepted:
+
+- Instruction
+- Multi-turn Dialog
+- Safety
+- Text-only
+
+### **Instruction dataset**
 
 Instruction datasets are designed to align language models with human
 interactions. These can take the form of question-answer, request-response,
@@ -39,10 +50,93 @@ following columns:
 4. **METADATA** (JSON string, optional): Any other useful information stored in
    JSON<br/> For example, NSFW content can be marked as `{"nsfw": true}`
 
-### **Text-only format**
+### **Multi-turn dialog dataset**
 
-For datasets that do not fit into the instruction format, text-only format is
-proposed. The text-only dataset must include the following columns:
+This type of dataset is designed for conversations with multiple continuations.
+In this format, each conversation is represented as a tree structure, where each
+node represents a message from the user or the assistant. For instance,
+Open-Assistant is collecting the data in a similar format
+([example](https://github.com/LAION-AI/Open-Assistant/blob/main/model/model_eval/manual/data/en_100_message.jsonl.gz)).
+
+The dataset must be a jsonl file with the following schema:
+
+```python
+{
+  "thread": {
+    "text": "", # Message text
+    "role": "", # Message role: "prompter" or "assistant"
+    "meta": {}, # Message optional metadata, for example, message rank, safety score and so on
+    "replies": [] # A list of message responses, each with the same structure as "thread"
+  },
+  "source": "", # Source of the conversation
+  "meta": {} # Optional metadata of the conversation
+}
+```
+
+For example:
+
+```json
+{
+  "thread": {
+    "text": "What is the best programing language in 2023?",
+    "role": "prompter",
+    "meta": { "lang": "en" },
+    "replies": [
+      {
+        "text": "It depends on the task that you aiming to solve.",
+        "role": "assistant",
+        "meta": { "rank": 0 },
+        "replies": [
+          {
+            "text": "I want to start learning to code",
+            "role": "prompter",
+            "meta": { "rank": 0 },
+            "replies": []
+          },
+          {
+            "text": "I want to make money",
+            "role": "prompter",
+            "meta": { "rank": 1 },
+            "replies": []
+          }
+        ]
+      },
+      {
+        "text": "Python is the best.",
+        "role": "assistant",
+        "meta": { "rank": 1 },
+        "replies": []
+      }
+    ]
+  },
+  "source": "twitter",
+  "meta": { "post_id": "..." }
+}
+```
+
+### **Safety dataset**
+
+For datasets that are intended to be used to train safety models, prosocial
+format is proposed. The format is given below
+
+1. **USER** (string): the potentially unsafe utterance
+2. **RESPONSE** (string, optional): the guiding utterance grounded on
+   rules-of-thumb (rots)
+3. **ROTs** (List): the relevant rules-of-thumb for text not labeled as
+   **casual**
+4. **SAFETY_LABEL** (string): the final verdict of the context according to
+   safety_annotations: {**casual**, **possibly_needs_caution**,
+   **probably_needs_caution**, **needs_caution**, **needs_intervention**}
+5. **EPISODE_DONE** (bool): an indicator of whether it is the end of the
+   dialogue
+6. **SOURCE** (string,optional) : the source of the seed text that was used to
+   craft the first utterance of the dialogue: {socialchemistry, sbic,
+   ethics_amt, ethics_reddit}
+
+### **Text-only dataset**
+
+For datasets that do not fit any previous types. The text-only dataset must
+include the following columns:
 
 1. **TEXT** (string)
 2. **SOURCE** (string)

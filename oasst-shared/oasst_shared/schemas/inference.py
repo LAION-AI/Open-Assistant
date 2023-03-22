@@ -2,7 +2,8 @@ import datetime
 import enum
 import platform
 import random
-from typing import Annotated, Literal, Union
+import uuid
+from typing import Annotated, Any, Literal, Union
 
 import psutil
 import pydantic
@@ -11,9 +12,36 @@ import pynvml
 INFERENCE_PROTOCOL_VERSION = "1"
 DEFAULT_MODEL_NAME = "distilgpt2"
 
+DEFAULT_MODEL_LENGTHS = {
+    "_lorem": 1024,
+    "gpt2": 1024,
+    "distilgpt2": 1024,
+    "OpenAssistant/oasst-sft-1-pythia6b": 2048,
+    "OpenAssistant/oasst-sft-1-pythia-12b": 2048,
+    "OpenAssistant/oasst_sft_llama_7b_mask_1000": 2048,
+    "OpenAssistant/oasst_sft_llama_13b_mask_1500": 2048,
+    "OpenAssistant/llama_30b_oasst_latcyr_400": 2048,
+    "OpenAssistant/llama_30b_oasst_latcyr_1000": 2048,
+}
 
-def compat_hash(*, model_name: str) -> str:
-    return f"{model_name}"
+
+def compat_hash(
+    *,
+    model_name: str,
+    model_max_total_length: int,
+    model_max_input_length: int,
+) -> str:
+    return f"{model_name}-{model_max_total_length}-{model_max_input_length}"
+
+
+def set_model_max_lengths(values: dict[str, Any]):
+    if values.get("model_name") is None:
+        values["model_name"] = DEFAULT_MODEL_NAME
+    if "model_max_total_length" not in values:
+        values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(values["model_name"], 1024)
+    if "model_max_input_length" not in values:
+        values["model_max_input_length"] = values["model_max_total_length"] // 2
+    return values
 
 
 class WorkerGpuInfo(pydantic.BaseModel):
@@ -63,20 +91,39 @@ class WorkerHardwareInfo(pydantic.BaseModel):
 
 
 class WorkerConfig(pydantic.BaseModel):
-    model_name: str = DEFAULT_MODEL_NAME
-    hardware_info: WorkerHardwareInfo = pydantic.Field(default_factory=WorkerHardwareInfo)
+    model_name: str
+    model_max_total_length: int
+    model_max_input_length: int
+    max_parallel_requests: int = 8
+
+    @pydantic.root_validator(pre=True)
+    def set_max_lengths(cls, values):
+        return set_model_max_lengths(values)
 
     @property
     def compat_hash(self) -> str:
-        return compat_hash(model_name=self.model_name)
+        return compat_hash(
+            model_name=self.model_name,
+            model_max_total_length=self.model_max_total_length,
+            model_max_input_length=self.model_max_input_length,
+        )
+
+
+class WorkerInfo(pydantic.BaseModel):
+    config: WorkerConfig
+    hardware_info: WorkerHardwareInfo
+
+
+class GpuMetricsInfo(pydantic.BaseModel):
+    gpu_usage: float
+    mem_usage: float
 
 
 class WorkerMetricsInfo(pydantic.BaseModel):
     cpu_usage: float
     mem_usage: float
     swap_usage: float
-    gpu_usage: float | None = None
-    gpu_memory_usage: float | None = None
+    gpus: list[GpuMetricsInfo] | None = None
 
     def __init__(self, **data):
         data["cpu_usage"] = psutil.cpu_percent()
@@ -85,27 +132,39 @@ class WorkerMetricsInfo(pydantic.BaseModel):
         try:
             pynvml.nvmlInit()
             data["nvidia_driver_version"] = pynvml.nvmlSystemGetDriverVersion()
-            gpu_usages = []
-            gpu_memory_usages = []
+            gpus = []
             for i in range(pynvml.nvmlDeviceGetCount()):
                 handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-                gpu_usages.append(pynvml.nvmlDeviceGetUtilizationRates(handle).gpu)
-                gpu_memory_usages.append(pynvml.nvmlDeviceGetMemoryInfo(handle).used)
-            data["gpu_usage"] = sum(gpu_usages) / len(gpu_usages)
-            data["gpu_memory_usage"] = sum(gpu_memory_usages) / len(gpu_memory_usages)
+                gpus.append(
+                    {
+                        "gpu_usage": pynvml.nvmlDeviceGetUtilizationRates(handle).gpu,
+                        "mem_usage": pynvml.nvmlDeviceGetMemoryInfo(handle).used,
+                    }
+                )
+            data["gpus"] = gpus
         except Exception:
             pass
         super().__init__(**data)
 
 
-class WorkParameters(pydantic.BaseModel):
-    model_name: str = DEFAULT_MODEL_NAME
-    max_new_tokens: int = 100
-    do_sample: bool = True
-    top_k: int = 50
-    top_p: float = 0.9
-    temperature: float = 1.0
+class WorkParametersInput(pydantic.BaseModel):
+    model_name: str
+    model_max_total_length: int  # don't set this unless you know what you're doing
+    model_max_input_length: int  # don't set this unless you know what you're doing
+    top_k: int | None = None
+    top_p: float | None = None
+    typical_p: float | None = None
+    temperature: float | None = None
     repetition_penalty: float | None = None
+    max_new_tokens: int = 1024
+
+    @pydantic.root_validator(pre=True)
+    def set_max_lengths(cls, values):
+        return set_model_max_lengths(values)
+
+
+class WorkParameters(WorkParametersInput):
+    do_sample: bool = True
     seed: int = pydantic.Field(default_factory=lambda: random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1))
 
 
@@ -132,11 +191,15 @@ class MessageState(str, enum.Enum):
     in_progress = "in_progress"
     complete = "complete"
     aborted_by_worker = "aborted_by_worker"
+    cancelled = "cancelled"
+    timeout = "timeout"
 
 
 class MessageRead(pydantic.BaseModel):
     id: str
+    parent_id: str | None
     content: str | None
+    created_at: datetime.datetime
     role: Literal["prompter", "assistant"]
     state: MessageState
     score: int
@@ -151,41 +214,92 @@ class Thread(pydantic.BaseModel):
     messages: list[MessageRead]
 
 
-class WorkRequest(pydantic.BaseModel):
+class WorkerRequestBase(pydantic.BaseModel):
+    id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
+
+
+class WorkRequest(WorkerRequestBase):
+    request_type: Literal["work"] = "work"
     thread: Thread = pydantic.Field(..., repr=False)
     created_at: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
 
 
-class TokenResponse(pydantic.BaseModel):
+class PingRequest(WorkerRequestBase):
+    request_type: Literal["ping"] = "ping"
+
+
+class ErrorRequest(WorkerRequestBase):
+    request_type: Literal["error"] = "error"
+    error: str
+
+
+class UpgradeProtocolRequest(WorkerRequestBase):
+    request_type: Literal["upgrade_protocol"] = "upgrade_protocol"
+
+
+class TerminateRequest(WorkerRequestBase):
+    request_type: Literal["terminate"] = "terminate"
+
+
+class WorkerResponseBase(pydantic.BaseModel):
+    request_id: str | None = None
+
+
+class PongResponse(WorkerResponseBase):
+    response_type: Literal["pong"] = "pong"
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+
+
+class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
-    log_prob: float
+    log_prob: float | None
     token_id: int
 
 
-class GeneratedTextResponse(pydantic.BaseModel):
+class GeneratedTextResponse(WorkerResponseBase):
     response_type: Literal["generated_text"] = "generated_text"
     text: str
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
 
 
-class InternalFinishedMessageResponse(pydantic.BaseModel):
+class InternalFinishedMessageResponse(WorkerResponseBase):
     response_type: Literal["internal_finished_message"] = "internal_finished_message"
     message: MessageRead
 
 
-class ErrorResponse(pydantic.BaseModel):
-    response_type: Literal["error"] = "error"
+class InternalErrorResponse(WorkerResponseBase):
+    response_type: Literal["internal_error"] = "internal_error"
     error: str
 
 
-class MetricsResponse(pydantic.BaseModel):
-    response_type: Literal["metrics"] = "metrics"
+class ErrorResponse(WorkerResponseBase):
+    response_type: Literal["error"] = "error"
     metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+    error: str
 
 
-WorkResponse = Annotated[
-    Union[TokenResponse, GeneratedTextResponse, ErrorResponse, MetricsResponse, InternalFinishedMessageResponse],
+class GeneralErrorResponse(WorkerResponseBase):
+    response_type: Literal["general_error"] = "general_error"
+    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+    error: str
+
+
+WorkerRequest = Annotated[
+    Union[WorkRequest, PingRequest, ErrorRequest, TerminateRequest, UpgradeProtocolRequest],
+    pydantic.Field(discriminator="request_type"),
+]
+
+WorkerResponse = Annotated[
+    Union[
+        TokenResponse,
+        GeneratedTextResponse,
+        ErrorResponse,
+        PongResponse,
+        InternalFinishedMessageResponse,
+        InternalErrorResponse,
+    ],
     pydantic.Field(discriminator="response_type"),
 ]

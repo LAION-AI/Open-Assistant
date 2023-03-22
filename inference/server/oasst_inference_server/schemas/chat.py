@@ -8,11 +8,15 @@ from oasst_shared.schemas import inference
 class CreateMessageRequest(pydantic.BaseModel):
     parent_id: str | None = None
     content: str = pydantic.Field(..., repr=False)
-    work_parameters: inference.WorkParameters = pydantic.Field(default_factory=inference.WorkParameters)
+    work_parameters: inference.WorkParametersInput = pydantic.Field(default_factory=inference.WorkParametersInput)
 
     @property
     def worker_compat_hash(self) -> str:
-        return inference.compat_hash(model_name=self.work_parameters.model_name)
+        return inference.compat_hash(
+            model_name=self.work_parameters.model_name,
+            model_max_total_length=self.work_parameters.model_max_total_length,
+            model_max_input_length=self.work_parameters.model_max_input_length,
+        )
 
 
 class CreateMessageResponse(pydantic.BaseModel):
@@ -70,3 +74,15 @@ class ChatRead(ChatListRead):
 
 class ListChatsResponse(pydantic.BaseModel):
     chats: list[ChatListRead]
+
+
+class MessageCancelledException(Exception):
+    def __init__(self, message_id: str):
+        super().__init__(f"Message {message_id} was cancelled")
+        self.message_id = message_id
+
+
+class MessageTimeoutException(Exception):
+    def __init__(self, message_id: str):
+        super().__init__(f"Message {message_id} timed out")
+        self.message_id = message_id

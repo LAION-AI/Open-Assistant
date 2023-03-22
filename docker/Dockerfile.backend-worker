@@ -1,0 +1,22 @@
+FROM python:3.10
+
+RUN pip install --upgrade pip
+
+RUN mkdir /worker
+WORKDIR /worker
+
+COPY ./oasst-shared /oasst-shared
+RUN pip install -e /oasst-shared
+
+COPY ./backend/requirements_worker.txt /worker/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /worker/requirements.txt
+
+ENV PORT 8080
+EXPOSE 8080
+
+COPY ./backend/alembic /worker/alembic
+COPY ./backend/alembic.ini /worker/alembic.ini
+COPY ./backend/main.py /worker/main.py
+COPY ./backend/import.py /worker/import.py
+COPY ./backend/oasst_backend /worker/oasst_backend
+COPY ./backend/test_data /worker/test_data

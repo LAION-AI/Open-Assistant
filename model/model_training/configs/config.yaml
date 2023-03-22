@@ -77,6 +77,7 @@ defaults:
     concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date:
     2023-03-12"
   per_digit_tokens: false
+  is_reward_model: false
 
 webgpt_dataset_only:
   datasets:
@@ -87,8 +88,7 @@ per_digit_tokens:
 
 math:
   datasets_extra: # Will get merged with datasets
-    - math_qa
-    - grade_school_math_instructions
+    - minimath
 
 oa_dataset_only:
   datasets:

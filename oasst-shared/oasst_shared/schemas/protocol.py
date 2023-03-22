@@ -40,6 +40,11 @@ class Token(BaseModel):
     token_type: str
 
 
+class TokenPair(BaseModel):
+    access_token: Token
+    refresh_token: Token
+
+
 class FrontEndUser(User):
     user_id: UUID
     enabled: bool
@@ -460,6 +465,7 @@ class UserScore(BaseModel):
     display_name: str
 
     leader_score: int = 0
+    level: int = 0  # between 0 and 100
 
     base_date: Optional[datetime]
     modified_date: Optional[datetime]

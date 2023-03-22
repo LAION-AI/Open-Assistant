@@ -23,6 +23,7 @@ import {
   Link,
   MessageSquare,
   MoreHorizontal,
+  RefreshCw,
   Shield,
   Slash,
   Trash,
@@ -46,6 +47,7 @@ import { Message, MessageEmojis } from "src/types/Conversation";
 import { emojiIcons, isKnownEmoji } from "src/types/Emoji";
 import useSWRMutation from "swr/mutation";
 
+import { useUndeleteMessage } from "../../hooks/message/useUndeleteMessage";
 import { BaseMessageEntry } from "./BaseMessageEntry";
 import { MessageInlineEmojiRow } from "./MessageInlineEmojiRow";
 import { MessageSyntheticBadge } from "./MessageSyntheticBadge";
@@ -250,6 +252,11 @@ const MessageActions = ({
   });
 
   const { trigger: handleDelete } = useDeleteMessage(message.id);
+  const { trigger: undeleteTrigger } = useUndeleteMessage(message.id);
+
+  const handleUndelete = () => {
+    undeleteTrigger();
+  };
 
   const handleStop = () => {
     stopTree();
@@ -323,9 +330,13 @@ const MessageActions = ({
               <MenuItem as={NextLink} href={ROUTES.ADMIN_USER_DETAIL(message.user_id)} target="_blank" icon={<User />}>
                 {t("view_user")}
               </MenuItem>
-              {!message.deleted && (
+              {!message.deleted ? (
                 <MenuItem onClick={handleDelete} icon={<Trash />}>
                   {t("common:delete")}
+                </MenuItem>
+              ) : (
+                <MenuItem onClick={handleUndelete} icon={<RefreshCw />}>
+                  Undelete message
                 </MenuItem>
               )}
               <MenuItem onClick={handleStop} icon={<Slash />}>

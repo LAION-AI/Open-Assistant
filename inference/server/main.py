@@ -7,7 +7,7 @@ import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_inference_server import database, deps, models
-from oasst_inference_server.routes import admin, auth, chats, workers
+from oasst_inference_server.routes import admin, auth, chats, configs, workers
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -43,11 +43,11 @@ async def enable_prom_metrics():
 
 @app.on_event("startup")
 async def log_inference_protocol_version():
-    logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
+    logger.warning(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
 
 
 def terminate_server(signum, frame):
-    logger.info(f"Signal {signum}. Terminating server...")
+    logger.warning(f"Signal {signum}. Terminating server...")
     sys.exit(0)
 
 
@@ -55,15 +55,15 @@ def terminate_server(signum, frame):
 async def alembic_upgrade():
     signal.signal(signal.SIGINT, terminate_server)
     if not settings.update_alembic:
-        logger.info("Skipping alembic upgrade on startup (update_alembic is False)")
+        logger.warning("Skipping alembic upgrade on startup (update_alembic is False)")
         return
-    logger.info("Attempting to upgrade alembic on startup")
+    logger.warning("Attempting to upgrade alembic on startup")
     retry = 0
     while True:
         try:
             async with database.make_engine().begin() as conn:
                 await conn.run_sync(database.alembic_upgrade)
-            logger.info("Successfully upgraded alembic on startup")
+            logger.warning("Successfully upgraded alembic on startup")
             break
         except Exception:
             logger.exception("Alembic upgrade failed on startup")
@@ -79,13 +79,14 @@ async def alembic_upgrade():
 
 @app.on_event("startup")
 async def maybe_add_debug_api_keys():
-    if not settings.debug_api_keys:
-        logger.info("No debug API keys configured, skipping")
+    debug_api_keys = settings.debug_api_keys_list
+    if not debug_api_keys:
+        logger.warning("No debug API keys configured, skipping")
         return
     try:
-        logger.info("Adding debug API keys")
+        logger.warning("Adding debug API keys")
         async with deps.manual_create_session() as session:
-            for api_key in settings.debug_api_keys:
+            for api_key in debug_api_keys:
                 logger.info(f"Checking if debug API key {api_key} exists")
                 if (
                     await session.exec(sqlmodel.select(models.DbWorker).where(models.DbWorker.api_key == api_key))
@@ -95,6 +96,7 @@ async def maybe_add_debug_api_keys():
                     await session.commit()
                 else:
                     logger.info(f"Debug API key {api_key} already exists")
+        logger.warning("Finished adding debug API keys")
     except Exception:
         logger.exception("Failed to add debug API keys")
         raise
@@ -105,3 +107,10 @@ app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(chats.router)
 app.include_router(workers.router)
+app.include_router(configs.router)
+
+
+@app.on_event("startup")
+async def welcome_message():
+    logger.warning("Inference server started")
+    logger.warning("To stop the server, press Ctrl+C")

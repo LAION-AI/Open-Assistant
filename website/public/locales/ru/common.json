@@ -47,11 +47,13 @@
   "submit": "Отправить",
   "submit_your_answer": "Отправить ваш ответ",
   "success": "Успешно",
+  "team_message": "Open Assistant возможен благодаря усилиям этих потрясающих людей",
   "terms_of_service": "Пользовательское соглашение",
   "title": "Open Assistant",
   "trollboard": "Доска позора",
   "user_leaderboard": "Таблица лидеров",
   "users": "Пользователи",
   "users_dashboard": "Панель управления пользователями",
-  "yes": "Да"
+  "yes": "Да",
+  "who_are_we": "Кто мы?"
 }

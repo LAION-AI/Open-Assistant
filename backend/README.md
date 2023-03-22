@@ -70,3 +70,51 @@ wget localhost:8080/api/v1/openapi.json -O docs/docs/api/openapi.json
 
 Note: The api docs should be automatically updated by the
 `test-api-contract.yaml` workflow.
+
+## Running Celery Worker(s) for API and periodic tasks
+
+Celery workers are used for Huggiface API calls like toxicity and feature
+extraction. Celery Beat along with worker is used for periodic tasks like user
+streak update
+
+To run APIs locally
+
+- update HUGGING_FACE_API_KEY in backend/oasst_backend/config.py with the
+  correct API_KEY
+- `export DEBUG_SKIP_TOXICITY_CALCULATION=False` and
+  `export DEBUG_SKIP_EMBEDDING_COMPUTATION=False`in
+  `scripts/backend-development/run-local.sh`
+- run start_worker.sh in backend dir
+- to see logs , use `tail -f celery.log` and `tail -f celery.beat.log`
+
+In CI
+
+- set `DEBUG_SKIP_TOXICITY_CALCULATION=False` and
+  `DEBUG_SKIP_EMBEDDING_COMPUTATION=False` in docker-compose.yaml
+- Two Docker instances are created. One for Beat and other for the worker
+- Logs can be viewed like other docker instances
+
+## Exporting Data
+
+When you have collected some data in the backend database, you can export it
+using the `export.py` script provided in this directory. This can be run from
+the command line using an Python environment with the same requirements as the
+backend itself. The script connects to the database in the same manner as the
+backend and therefore uses the same environmental variables.
+
+A simple usage of the script, to export all English trees which successfully
+passed the review process, may look like:
+
+```bash
+python export.py --lang en --export-file output.jsonl
+```
+
+There are many options available to filter the data which can be found in the
+help message of the script: `python export.py --help`.
+
+**Why isn't my export working?**
+
+Common issues include (WIP):
+
+- The messages have not passed the review process yet so the trees are not ready
+  for export. This can be solved by including the `--include-spam` flag.

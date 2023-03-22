@@ -50,7 +50,9 @@ class DbMessage(SQLModel, table=True):
     def to_read(self) -> inference.MessageRead:
         return inference.MessageRead(
             id=self.id,
+            parent_id=self.parent_id,
             content=self.content,
+            created_at=self.created_at,
             role=self.role,
             state=self.state,
             score=self.score,

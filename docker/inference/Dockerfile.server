@@ -36,8 +36,7 @@ ENV SHARED_LIBS_BASE="${APP_BASE}/lib"
 ENV PATH="${PATH}:${APP_LIBS}/bin"
 ENV PYTHONPATH="${PYTHONPATH}:${APP_LIBS}"
 
-ENV PORT="8000"
-
+ENV PORT="8080"
 
 RUN adduser               \
       --disabled-password \
@@ -89,5 +88,5 @@ RUN --mount=type=cache,target=/var/cache/pip,from=dev \
       --target="${APP_LIBS}"     \
       /tmp/lib/oasst-shared
 
-
-CMD uvicorn main:app --host 0.0.0.0 --port "${PORT}"
+COPY --chown="${APP_USER}:${APP_USER}" ./inference/server/server_main.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

@@ -1,23 +1,37 @@
 import { Button, Divider, Flex, Progress, Text } from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { useTranslation } from "next-i18next";
-import { useCallback, useMemo } from "react";
-import { getDashboardLayout } from "src/components/Layout";
-import { get, post } from "src/lib/api";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Flags } from "react-feature-flags";
+import { useTranslation } from "next-i18next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { useCallback, useMemo } from "react";
+import { getDashboardLayout } from "src/components/Layout";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
+import { get, post } from "src/lib/api";
+import { isChatEnabled } from "src/lib/chat_enabled";
 import { GetChatsResponse } from "src/types/Chat";
-import useSWRImmutable from "swr/immutable";
+import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
+
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+  if (!isChatEnabled()) {
+    return {
+      notFound: true,
+    };
+  }
+  return {
+    props: {
+      ...(await serverSideTranslations(locale)),
+    },
+  };
+};
 
 const Chat = () => {
   const { t } = useTranslation(["common", "chat"]);
   const router = useRouter();
 
-  const { data } = useSWRImmutable<GetChatsResponse>("/api/chat", get);
+  const { data } = useSWR<GetChatsResponse>("/api/chat", get, { revalidateOnFocus: true });
 
   const { trigger: newChatTrigger } = useSWRMutation<{ id: string }>("/api/chat", post);
 
@@ -37,13 +51,17 @@ const Chat = () => {
             {t("chat:your_chats")}
           </Text>
           <Divider />
-          {data.chats.map(({ id }) => (
+          {data.chats.map(({ id, modified_at, title }) => (
             <Link key={id} href={`/chat/${id}`}>
-              {/* TODO: we really only the have the id for each case our users will probably have no idea which is which
-               maybe we could show the last message & its date, this is not provided by the API right now */}
-              <Text as={Button} py={2} display="block" bg="inherit" w="full" textAlign="start" borderRadius="sm">
-                {id}
-              </Text>
+              <Flex as={Button} bg="inherit" py={2} w="full" borderRadius="sm" gap={6} justifyContent="start">
+                <Text>
+                  {t("chat:chat_date", {
+                    val: new Date(modified_at),
+                    formatParams: { val: { dateStyle: "short", timeStyle: "short" } },
+                  })}
+                </Text>
+                <Text>{title ?? t("chat:empty")}</Text>
+              </Flex>
             </Link>
           ))}
           <Divider />
@@ -61,7 +79,7 @@ const Chat = () => {
         <title>{t("chat")}</title>
       </Head>
 
-      <Flags authorizedFlags={["chat"]}>{content}</Flags>
+      {content}
     </>
   );
 };
