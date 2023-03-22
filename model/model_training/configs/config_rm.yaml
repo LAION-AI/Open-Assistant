@@ -52,7 +52,7 @@ pythia-6.9B-rm:
   eval_steps: 25
 
 # params based on sweep result: https://wandb.ai/open-assistant/reward_model/runs/9102dee8
-# actual run for export: https://wandb.ai/open-assistant/reward-model/runs/1vhnu9s1
+# actual run for export: https://wandb.ai/open-assistant/reward-model/runs/1lw4g83x
 oasst-rm-1-pythia-1b:
   datasets:
     - oasst_export:
@@ -65,6 +65,8 @@ oasst-rm-1-pythia-1b:
   weight_decay: 0.07428722634825694
   max_length: 520
   warmup_steps: 10
+  # assuming training on single GPU
+  # per_device_train_batch_size: 8  # 48 GB not enough
   gradient_accumulation_steps: 2
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 16
