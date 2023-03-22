@@ -20,29 +20,60 @@ class ModelInfo(pydantic.BaseModel):
     parameter_configs: list[ParameterConfig] = []
 
 
+DEFAULT_PARAMETER_CONFIGS = [
+    ParameterConfig(
+        name="k50",
+        description="Top-k sampling with k=50",
+        work_parameters=inference.WorkParametersInput(
+            model_name="_model_",
+            top_k=50,
+            top_p=0.95,
+            temperature=1.0,
+            repetition_penalty=1.2,
+        ),
+    ),
+    ParameterConfig(
+        name="nucleus9",
+        description="Nucleus sampling with p=0.9",
+        work_parameters=inference.WorkParametersInput(
+            model_name="_model_",
+            top_p=0.9,
+            temperature=0.8,
+            repetition_penalty=1.2,
+        ),
+    ),
+    ParameterConfig(
+        name="typical2",
+        description="Typical sampling with p=0.2",
+        work_parameters=inference.WorkParametersInput(
+            model_name="_model_",
+            temperature=0.8,
+            typical_p=0.2,
+            repetition_penalty=1.2,
+        ),
+    ),
+    ParameterConfig(
+        name="typical3",
+        description="Typical sampling with p=0.3",
+        work_parameters=inference.WorkParametersInput(
+            model_name="_model_",
+            temperature=0.8,
+            typical_p=0.3,
+            repetition_penalty=1.2,
+        ),
+    ),
+]
+
+
 @router.get("/models")
 async def get_models() -> list[ModelInfo]:
     return [
         ModelInfo(
-            name="distilgpt2",
-            description="DistilGPT2 model from HuggingFace",
+            name=model_name,
             parameter_configs=[
-                ParameterConfig(
-                    name="k50",
-                    description="k=50",
-                    work_parameters=inference.WorkParametersInput(
-                        model_name="distilgpt2",
-                        k=50,
-                    ),
-                ),
-                ParameterConfig(
-                    name="k100",
-                    description="k=100",
-                    work_parameters=inference.WorkParametersInput(
-                        model_name="distilgpt2",
-                        k=100,
-                    ),
-                ),
+                config.copy(update={"work_parameters": config.work_parameters.copy(update={"model_name": model_name})})
+                for config in DEFAULT_PARAMETER_CONFIGS
             ],
         )
+        for model_name in inference.DEFAULT_MODEL_LENGTHS.keys()
     ]

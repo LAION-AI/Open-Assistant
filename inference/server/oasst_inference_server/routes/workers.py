@@ -101,6 +101,8 @@ async def handle_worker(
         logger.warning(f"handle_worker: {e.status_code=} {e.detail=}")
         if e.status_code == fastapi.status.HTTP_426_UPGRADE_REQUIRED:
             await worker_utils.send_worker_request(websocket=websocket, request=inference.UpgradeProtocolRequest())
+        elif e.status_code == fastapi.status.HTTP_401_UNAUTHORIZED:
+            await worker_utils.send_worker_request(websocket=websocket, request=inference.WrongApiKeyRequest())
         try:
             await websocket.close(code=e.status_code, reason=e.detail)
         except Exception:

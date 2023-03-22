@@ -102,8 +102,7 @@ oasst_export_eu:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        #top_k: 2
-        input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
+        input_file_path: 2023-03-13_oasst_ready_labels.jsonl.gz
   sort_by_length: true
   use_custom_sampler: true
 
