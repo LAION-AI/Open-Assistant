@@ -59,12 +59,15 @@ def make_prompt_and_parameters(
     prompt = "".join(messages) + V2_ASST_PREFIX
 
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
-    parameters.stop = [
-        V2_PROMPTER_PREFIX,
-        V2_ASST_PREFIX,
-    ]
-    if eos_token:
-        parameters.stop.append(eos_token)
+    if settings.use_stop_sequences:
+        parameters.stop = [
+            V2_PROMPTER_PREFIX,
+            V2_ASST_PREFIX,
+        ]
+        if eos_token:
+            parameters.stop.append(eos_token)
+    else:
+        parameters.stop = []
 
     return prompt, parameters
 
@@ -131,7 +134,7 @@ def handle_work_request(
 
     if "llama" in settings.model_id:
         stream_response.generated_text = stream_response.generated_text.strip()
-    logger.debug(f"Done. {stream_response.details.finish_reason=} {stream_response.generated_text=}")
+    logger.info(f"Done. {stream_response=}")
     utils.send_response(
         ws,
         inference.GeneratedTextResponse(
