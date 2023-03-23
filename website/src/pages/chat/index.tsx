@@ -24,12 +24,13 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   }
   return {
     props: {
+      inferenceHost: process.env.INFERENCE_SERVER_HOST,
       ...(await serverSideTranslations(locale)),
     },
   };
 };
 
-const Chat = () => {
+const Chat = ({ inferenceHost }: { inferenceHost: string }) => {
   const { t } = useTranslation(["common", "chat"]);
   const router = useRouter();
   const { data: session } = useSession();
@@ -83,7 +84,7 @@ const Chat = () => {
         <title>{t("chat")}</title>
       </Head>
       {content}
-      <ChatAuth />
+      <ChatAuth inferenceHost={inferenceHost} />
     </>
   );
 };

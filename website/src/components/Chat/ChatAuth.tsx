@@ -6,9 +6,7 @@ import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
 import { Discord } from "src/components/Icons/Discord";
 
-const inferenceHost = process.env.NEXT_PUBLIC_INFERENCE_SERVER_HOST;
-
-export const ChatAuth = () => {
+export const ChatAuth = ({ inferenceHost }: { inferenceHost: string }) => {
   const { t } = useTranslation(["chat", "common"]);
   const { data: session } = useSession();
   const isAuth = session?.inference.isAuthenticated;
@@ -35,7 +33,7 @@ export const ChatAuth = () => {
         </Grid>
       </CardBody>
     );
-  }, [t, isAuth]);
+  }, [isAuth, t, inferenceHost]);
 
   return <Card mt={4}>{content}</Card>;
 };

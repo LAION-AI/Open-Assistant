@@ -1,6 +1,4 @@
 import axios, { AxiosRequestConfig } from "axios";
-import Cookies from "cookies";
-import type { NextApiRequest, NextApiResponse } from "next";
 import { JWT } from "next-auth/jwt";
 import {
   ChatItem,
@@ -16,7 +14,7 @@ export class OasstInferenceClient {
   constructor(private readonly inferenceAccessToken: string) {}
 
   async request<T = unknown>(path: string, init?: AxiosRequestConfig) {
-    const { data } = await axios<T>(process.env.NEXT_PUBLIC_INFERENCE_SERVER_HOST + path, {
+    const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
       ...init,
       headers: {
         ...init?.headers,
