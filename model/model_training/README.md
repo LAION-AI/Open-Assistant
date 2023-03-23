@@ -89,7 +89,7 @@ Change the `input_file_path` in the `oasst_export_eu` from the
 To train using trlx try:
 
 ```bash
-python trainer_rl.py --configs defaults_rlhf
+python trainer_rl.py --configs defaults defaults_rlhf oasst_export_latin_cyrillic_rlhf
 ```
 
 ## Test your model

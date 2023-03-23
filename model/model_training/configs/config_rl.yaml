@@ -5,25 +5,30 @@ defaults_rlhf:
   eval_prompts:
   batch_size: 18
   epochs: 10
-  datasets:
-    - oa_private:
-        data_path: .cache
-        split: rl
-        val_split: 0.0
-        fraction: 1
-        file: 2023-02-12_oasst_prod.jsonl
+  datasets_extra: []
   cache_dir: .cache
   quantization: false
   seq2seqmodel: false
+  eval_size:
+  output_dir: model_rl
+
+oasst_export_latin_cyrillic_rlhf:
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        #top_k: 2
+        input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
+  sort_by_length: false
+  use_custom_sampler: false
 
 pythia_2b_rlhf:
-  model_name: EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-2000
-  rank_model: ../reward/instructor/microsoft/deberta-v3-large-finetuned/checkpoint-4500
-  sft_model: EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-2000
+  # model_name: EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-2000
+  rank_model: ...
+  sft_model: ...
   batch_size: 18
 
 debug_rlhf:
-  model_name: gpt2
-  rank_model: /local/home/sanagnos/general/Open-Assistant/model/reward/instructor/facebook/galactica-125m-finetuned/checkpoint-500/
-  sft_model: /local/home/sanagnos/general/Open-Assistant/model/model_training/EleutherAI/pythia-70m-deduped-base-finetuned/checkpoint-20/
+  # model_name: gpt2
+  rank_model: pythia_reward_model/checkpoint-50
+  sft_model: pythia_sft/checkpoint-10/
   batch_size: 2

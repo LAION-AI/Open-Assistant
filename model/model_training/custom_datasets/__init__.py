@@ -24,7 +24,7 @@ SUMMARIZATION_DATASETS = [
 ]
 OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_translated", "oa_private"]
 
-RL_DATASETS = ["oa_private", "webgpt", "private_tuning"]
+RL_DATASETS = ["oasst_export", "webgpt", "private_tuning"]
 
 RM_DATASETS = ["oasst_export"]
 
