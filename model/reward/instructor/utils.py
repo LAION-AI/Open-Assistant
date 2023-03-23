@@ -3,10 +3,9 @@ from typing import AnyStr, List
 
 import yaml
 from sklearn.model_selection import train_test_split
+from tokenizers import pre_tokenizers
 from torch.utils.data import Subset
 from transformers import AutoTokenizer, T5Tokenizer
-
-from tokenizers import pre_tokenizers
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
