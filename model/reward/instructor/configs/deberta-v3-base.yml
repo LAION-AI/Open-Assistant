@@ -2,13 +2,13 @@ model_name: microsoft/deberta-v3-base
 learning_rate: 1e-5
 scheduler: cosine
 gradient_checkpointing: false
-gradient_accumulation_steps: 16
-per_device_train_batch_size: 2
-warmup_steps: 600
+gradient_accumulation_steps: 32
+per_device_train_batch_size: 3
+warmup_steps: 200
 eval_steps: 200
-save_steps: 500
+save_steps: 1000
 max_length: 512
-num_train_epochs: 2
+num_train_epochs: 5
 datasets:
   - webgpt
-  - hfsummary
+  - oa_private

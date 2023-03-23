@@ -9,15 +9,7 @@ import datasets
 import torch
 from efficiency_utils import fuse_gelu
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
-from torch import nn
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-from transformers import PreTrainedModel, Trainer, TrainingArguments
-from transformers.trainer_pt_utils import IterableDatasetShard
-from transformers.trainer_utils import seed_worker
-from transformers.training_args import OptimizerNames
-from transformers.utils import is_datasets_available
-from utils import (
+from model_training.utils import (
     PerDatasetSampler,
     _strtobool,
     get_dataset,
@@ -27,6 +19,14 @@ from utils import (
     get_tokenizer,
     read_yamls,
 )
+from torch import nn
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+from transformers import PreTrainedModel, Trainer, TrainingArguments
+from transformers.trainer_pt_utils import IterableDatasetShard
+from transformers.trainer_utils import seed_worker
+from transformers.training_args import OptimizerNames
+from transformers.utils import is_datasets_available
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):
@@ -228,11 +228,50 @@ def argument_parsing(notebook=False, notebook_args=None):
     return args
 
 
+def tokenizer_sanity_check(tokenizer):
+    print("Tokenizer sanity check:")
+    print(f"Type: {type(tokenizer).__name__}")
+
+    print("special_tokens_map:", tokenizer.special_tokens_map)
+
+    print(f"bos_token='{tokenizer.bos_token}', bos_token_id={tokenizer.bos_token_id}")
+    print(f"eos_token='{tokenizer.eos_token}', eos_token_id={tokenizer.eos_token_id}")
+
+    from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
+
+    in_text = format_pairs(["Q1", "A1", "Q2", "A2"], tokenizer.eos_token)
+    in_text = "".join(in_text)
+
+    prompter_token_id = tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Question"])
+    assistant_token_id = tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Answer"])
+    print(f"{prompter_token_id=}, {assistant_token_id=}")
+
+    tr = tokenizer(in_text, max_length=1024, pad_to_max_length=False, truncation=True)
+
+    message_indices = []
+    i = -1
+    for id in tr.input_ids:
+        if id in (prompter_token_id, assistant_token_id):
+            i += 1
+        message_indices.append(i)
+
+    print("encoding result:", tr)
+    for i, xs in enumerate(tr.input_ids):
+        decoded = tokenizer.decode(xs)
+        print(f'{i}: {xs} -> "{decoded}"')
+
+    print("message_indices:", message_indices)
+
+
 if __name__ == "__main__":
     training_conf = argument_parsing()
     import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
 
     tokenizer = get_tokenizer(training_conf)
+
+    if not training_conf.deepspeed or training_conf.local_rank == 0:
+        tokenizer_sanity_check(tokenizer)
+
     model = get_model(training_conf, tokenizer)
 
     train, evals = get_dataset(training_conf)

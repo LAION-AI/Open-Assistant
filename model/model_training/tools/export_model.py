@@ -15,12 +15,14 @@ def parse_args():
     parser.add_argument("--output_folder", type=str, help="output folder path")
     parser.add_argument("--max_shard_size", type=str, default="10GB")
     parser.add_argument("--cache_dir", type=str)
+    parser.add_argument("--llama", action="store_true", default=False)
     parser.add_argument("--reward_model", action="store_true", default=False)
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    print(args)
 
     if args.dtype in ("float16", "fp16"):
         torch_dtype = torch.float16
@@ -37,10 +39,26 @@ def main():
         )
         sys.exit(1)
 
-    print(f"Loading tokenizer '{args.model_name}' ...")
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
-    print(f"{type(tokenizer).__name__} (vocab_size={len(tokenizer)})")
+    if args.llama:
+        # execute in model_training dir via python -m tools.export_model ...
+        from models.modeling_llama import LLaMAForCausalLM
+        from models.tokenization_llama import LLaMATokenizer
 
+        print(f"Loading tokenizer '{args.model_name}' ...")
+        tokenizer = LLaMATokenizer.from_pretrained(args.model_name)
+        print(f"{type(tokenizer).__name__} (vocab_size={len(tokenizer)})")
+
+        print(f"Loading model '{args.model_name}' ({args.dtype}) ...")
+        model = LLaMAForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
+        print(f"{type(model).__name__} (num_parameters={model.num_parameters()})")
+    else:
+        print(f"Loading tokenizer '{args.model_name}' ...")
+        tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+        print(f"{type(tokenizer).__name__} (vocab_size={len(tokenizer)})")
+
+        print(f"Loading model '{args.model_name}' ({args.dtype}) ...")
+        model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
+        print(f"{type(model).__name__} (num_parameters={model.num_parameters()})")
     print(f"Loading model '{args.model_name}' ({args.dtype}) ...")
     if args.reward_model:
         model = AutoModelForSequenceClassification.from_pretrained(

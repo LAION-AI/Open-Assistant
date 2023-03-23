@@ -10,11 +10,14 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
 from transformers import GPTNeoXForCausalLM, GPTNeoXModel
 
+from .modeling_llama import LLaMAForCausalLM, LLaMAModel
 from .reward_model import GPTNeoXRewardModel
 
 SUPPORTED_MODELS = [
     GPTNeoXModel,
     GPTNeoXForCausalLM,
+    LLaMAForCausalLM,
+    LLaMAModel,
     GPTNeoXRewardModel,
 ]
 
@@ -95,7 +98,9 @@ def add_flash_attn(module: nn.Module, causal: bool = True):
     module._attn = partial(_patched_gpt_neox_attn, module, flash_attn)
 
 
-def patch_model(model: nn.Module, resid_pdrop: Optional[float] = 0.1, flash_attention: bool = True):
+def patch_model(
+    model: nn.Module, resid_pdrop: Optional[float] = 0.1, flash_attention: bool = True, patch_unsupported: bool = False
+):
     """
     Helper function for patching HF language models.
     Currently supports: GPTNeoX-based models
@@ -123,6 +128,16 @@ or run with:
         raise ValueError("Invalid argument: `resid_pdrop` must be between 0.0 and 1.0")
 
     if not any(isinstance(model, model_class) for model_class in SUPPORTED_MODELS):
+        if not flash_attention and (resid_pdrop is None or resid_pdrop == 0.0):
+            return  # nothing to patch
+
+        if not patch_unsupported:
+            warnings.warn(
+                "Model patching does not support this model class. No patches will be applied. "
+                "If you want to force patch this model, please set `patch_unsupported=True`."
+            )
+            return
+
         warnings.warn(
             "Patching residual dropout has only been tested with this model class. "
             f"Please make sure that it also works for `{model.__class__.__name__}`.\n"
@@ -133,10 +148,29 @@ or run with:
     if isinstance(model, GPTNeoXRewardModel) or isinstance(model, GPTNeoXForCausalLM):
         model = model.gpt_neox
 
+    if isinstance(model, LLaMAForCausalLM):
+        model = model.model
+
+    attention_key_lookup = {
+        GPTNeoXModel: "attention",
+        GPTNeoXRewardModel: "attention",
+        LLaMAModel: "self_attn",
+    }
+    mlp_key_lookup = {
+        GPTNeoXModel: "mlp",
+        GPTNeoXRewardModel: "mlp",
+        LLaMAModel: "mlp",
+    }
+    attention_key = attention_key_lookup.get(model.__class__, "attention")
+    mlp_key = mlp_key_lookup.get(model.__class__, "mlp")
+
     for layer in model.layers:
         if resid_pdrop is not None:
-            add_dropout(layer.attention, _patched_attn_forward, resid_pdrop)
-            add_dropout(layer.mlp, _patched_mlp_forward, resid_pdrop)
+            add_dropout(getattr(layer, attention_key), _patched_attn_forward, resid_pdrop)
+            add_dropout(getattr(layer, mlp_key), _patched_mlp_forward, resid_pdrop)
 
         if flash_attention:
-            add_flash_attn(layer.attention, causal=True)
+            if isinstance(model, LLaMAModel):
+                warnings.warn("Flash attention is not supported for LLaMA models.")
+            else:
+                add_flash_attn(layer.attention, causal=True)

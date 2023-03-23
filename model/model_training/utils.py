@@ -14,6 +14,7 @@ from model_training.losses import CrossEntropyLoss, PolyLoss, RMLoss
 from model_training.models import freeze_top_n_layers, get_specific_model
 from model_training.models.patching import patch_model
 from model_training.models.reward_model import GPTNeoXRewardModel
+from model_training.models.tokenization_llama import LLaMATokenizer
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
@@ -165,6 +166,7 @@ TOKENIZER_CONFIGS = {
     "GPT-JT": TokenizerConfig(special_tokens=SpecialTokens(sep_token="<|extratoken_100|>")),
     "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
     "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
+    "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
 }
 
 
@@ -183,7 +185,13 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 
 
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
-    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    if "llama" in conf.model_name:
+        # explicitly specify LLaMATokenizer class until AutoTokenizer works
+        # assumes that the tokenizer config is stored in the same directory as the model weights
+        tokenizer = LLaMATokenizer.from_pretrained(conf.model_name)
+    else:
+        tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+
     tokenizer_config = match_tokenizer_name(conf.model_name)
 
     if hasattr(conf, "per_digit_tokens") and conf.per_digit_tokens:

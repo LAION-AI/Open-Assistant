@@ -6,18 +6,21 @@ A very simple script to test model locally
 
 """
 import argparse
+from enum import Enum
 from typing import List, Tuple
 
-if __name__ == "__main__":
-    import os
-    import sys
-
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+import torch
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
-from model_training.utils import _strtobool, process_output
+from model_training.utils import _strtobool
 from tokenizers import pre_tokenizers
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+
+class ChatRole(str, Enum):
+    system = "<|system|>"
+    prompter = "<|prompter|>"
+    assistant = "<|assistant|>"
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_path", type=str, required=True)
@@ -27,6 +30,7 @@ parser.add_argument("--max_new_tokens", type=int, default=200)
 parser.add_argument("--top_k", type=int, default=40)
 parser.add_argument("--temperature", type=float, default=1.0)
 parser.add_argument("--do-sample", type=_strtobool, default=True)
+parser.add_argument("--llama", type=_strtobool, default=False)
 parser.add_argument("--per-digit-tokens", action="store_true")
 args = parser.parse_args()
 
@@ -48,6 +52,31 @@ def talk(human_input: str, history: List[Tuple[str, str]], sep_token: str, prefi
             # add sep at the end
             prefix += sep_token
         prefix += "{}{}{}".format(QA_SPECIAL_TOKENS["Question"], human_input, QA_SPECIAL_TOKENS["Answer"])
+    # elif method == "v3":
+    #     personality = "You are a helpful assistant called Joi, you are a smart and helpful bot."
+    #     prefix = f"{SeqToken.begin}{ChatRole.system}{SeqToken.delimiter}{personality}{SeqToken.end}"
+    #     for question, answer in history:
+    #         histories.append(
+    #             f"{SeqToken.begin}{ChatRole.prompter}{SeqToken.delimiter}{question}{SeqToken.end}"
+    #             + f"{SeqToken.begin}{ChatRole.assistant}{SeqToken.delimiter}{answer}{SeqToken.end}"
+    #         )
+    #     if len(histories) > 0:
+    #         prefix += "".join(histories)
+    #         # add sep at the end
+    #     prefix += f"{SeqToken.begin}{ChatRole.prompter}{SeqToken.delimiter}{human_input}{SeqToken.end}{SeqToken.begin}{ChatRole.assistant}{SeqToken.delimiter}"
+    elif method == "v2.5":
+        # personality = "You are a helpful assistant called Joi, you are a smart and helpful bot."
+        # prefix = f"{ChatRole.system}{personality}{SeqToken.end}"
+        for question, answer in history:
+            histories.append(
+                # f"{ChatRole.prompter}{question}{SeqToken.end}" + f"{ChatRole.assistant}{answer}{SeqToken.end}"
+                f"{ChatRole.prompter}{question}</s>"
+                + f"{ChatRole.assistant}{answer}</s>"
+            )
+        if len(histories) > 0:
+            prefix += "".join(histories)
+            # add sep at the end
+        prefix += f"{ChatRole.prompter}{human_input}</s>{ChatRole.assistant}"
     else:
         for question, answer in history:
             histories.append("User: " + question + "\n\n{}: ".format(bot_name) + answer + "\n")
@@ -58,9 +87,36 @@ def talk(human_input: str, history: List[Tuple[str, str]], sep_token: str, prefi
     return prefix
 
 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-if method != "v2":
-    tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
+def process_output(output):
+    if method == "v2":
+        answer = output.split(QA_SPECIAL_TOKENS["Answer"])[-1]
+        answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split(QA_SPECIAL_TOKENS["Answer"])[0]
+    elif method == "v2.5":
+        answer = output.split(f"{ChatRole.assistant}")[-1]
+        # answer = answer.split("</s>")[0].replace(SeqToken.end, "").lstrip()
+    # elif method == "v3":
+    #     answer = output.split(f"{SeqToken.begin}{ChatRole.assistant}{SeqToken.delimiter}")[-1]
+    #     answer = answer.split("</s>")[0].replace(SeqToken.end, "").lstrip()
+    else:
+        answer = output.split("\n\n{}:".format(bot_name))[-1]
+        answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split("\n\n{}:".format(bot_name))[0]
+    return answer
+
+
+if args.llama:
+    from models.modeling_llama import LLaMAForCausalLM
+    from models.tokenization_llama import LLaMATokenizer
+
+    tokenizer = LLaMATokenizer.from_pretrained(model_name)
+    model = LLaMAForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+else:
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    if method != "v2":
+        tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
+    model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+
+model.eval().cuda()
+
 if args.per_digit_tokens:
     tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 
@@ -81,7 +137,8 @@ if __name__ == "__main__":
         else:
             input_text = talk(prompt, histories, prefix)
             inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(0)
-            del inputs["token_type_ids"]
+            if "token_type_ids" in inputs:
+                del inputs["token_type_ids"]
             outputs = model.generate(
                 **inputs,
                 early_stopping=True,
@@ -90,7 +147,6 @@ if __name__ == "__main__":
                 top_k=args.top_k,
                 temperature=args.temperature,
                 pad_token_id=tokenizer.eos_token_id,
-                # dialogue_collator.py line 36
             )
             output = tokenizer.decode(outputs[0], truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"])
             reply = process_output(output, method, bot_name)
