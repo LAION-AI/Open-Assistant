@@ -28,14 +28,14 @@ class DebugClient:
         self.message_id = None
         return self.chat_id
 
-    def send_message(self, message, model_id):
+    def send_message(self, message, model_config_name):
         response = self.http_client.post(
             f"{self.backend_url}/chats/{self.chat_id}/messages",
             json={
                 "parent_id": self.message_id,
                 "content": message,
-                "work_parameters": {
-                    "model_name": model_id,
+                "model_config_name": model_config_name,
+                "sampling_parameters": {
                     "top_p": 0.95,
                     "top_k": 50,
                     "repetition_penalty": 1.2,

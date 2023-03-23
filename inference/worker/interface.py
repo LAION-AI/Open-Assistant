@@ -13,23 +13,19 @@ class GenerateStreamParameters(pydantic.BaseModel):
     temperature: float | None
     repetition_penalty: float | None
     seed: int | None
-    stop: list[str] = [
-        "<|endoftext|>",
-        "<|prompter|>",
-        "<|assistant|>",
-    ]  # TODO: make this a bit more workable because it's mutliple tokens
+    stop: list[str] = []
     details: bool = True
 
     @staticmethod
     def from_work_parameters(params: inference.WorkParameters) -> "GenerateStreamParameters":
         return GenerateStreamParameters(
-            max_new_tokens=params.max_new_tokens,
+            max_new_tokens=params.sampling_parameters.max_new_tokens,
             do_sample=params.do_sample,
-            top_k=params.top_k,
-            top_p=params.top_p,
-            typical_p=params.typical_p,
-            temperature=params.temperature,
-            repetition_penalty=params.repetition_penalty,
+            top_k=params.sampling_parameters.top_k,
+            top_p=params.sampling_parameters.top_p,
+            typical_p=params.sampling_parameters.typical_p,
+            temperature=params.sampling_parameters.temperature,
+            repetition_penalty=params.sampling_parameters.repetition_penalty,
             seed=params.seed,
         )
 

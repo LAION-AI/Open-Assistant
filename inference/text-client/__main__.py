@@ -10,7 +10,7 @@ app = typer.Typer()
 
 
 @app.command()
-def main(backend_url: str = "http://127.0.0.1:8000", model_id="distilgpt2"):
+def main(backend_url: str = "http://127.0.0.1:8000", model_config_name="distilgpt2"):
     """Simple REPL client."""
     while True:
         try:
@@ -24,7 +24,7 @@ def main(backend_url: str = "http://127.0.0.1:8000", model_id="distilgpt2"):
                 if not message:
                     continue
 
-                events = client.send_message(message, model_id)
+                events = client.send_message(message, model_config_name)
                 print("Assistant: ", end="", flush=True)
                 for event in events:
                     print(event, end="", flush=True)
