@@ -39,17 +39,27 @@ defaults_rm:
   per_digit_tokens: false
   datasets_extra: []
 
-pythia-6.9B-rm:
+oasst-rm-1-pythia-6B:
+  is_reward_model: true
+  pooling: last
+  datasets:
+    - oasst_export:
+        lang: "en,es,de,fr"
+        input_file_path: 2023-03-21_oasst_ready_synth_labels.jsonl.gz
   model_name: EleutherAI/pythia-6.9b-deduped
-  learning_rate: 4.5e-6
-  residual_dropout: 0.0
-  weight_decay: 0.0
+  learning_rate: 1e-5
+  residual_dropout: 0.08
+  weight_decay: 0.075
   max_length: 512
   warmup_steps: 20
-  gradient_accumulation_steps: 8
-  per_device_train_batch_size: 3
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 2
   per_device_eval_batch_size: 3
   eval_steps: 25
+  num_train_epochs: 2
+  sort_by_length: false
+  per_digit_tokens: false
+  save_steps: 500
 
 # params based on sweep result: https://wandb.ai/open-assistant/reward_model/runs/9102dee8
 # actual run for export: https://wandb.ai/open-assistant/reward-model/runs/1lw4g83x
