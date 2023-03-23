@@ -54,7 +54,7 @@ class RMTrainer(Trainer):
         logits = model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
-        )
+        ).logits
 
         loss = self.loss_fct(logits, cu_lens)
 

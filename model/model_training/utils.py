@@ -13,7 +13,7 @@ from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from losses import CrossEntropyLoss, PolyLoss, RMLoss
 from models import freeze_top_n_layers, get_specific_model
 from models.patching import patch_model
-from models.reward_model import RewardModel, RewardModelConfig
+from models.reward_model import GPTXNeoRewardModel
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
@@ -270,8 +270,13 @@ def get_metrics(conf, tokenizer):
 
 def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     if conf.is_reward_model:
-        rm_config = RewardModelConfig(base_model_name=conf.model_name, pooling=conf.pooling)
-        model = RewardModel(config=rm_config, cache_dir=conf.cache_dir)
+        if "pythia" in conf.model_name:
+            model = GPTXNeoRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+            if conf.pooling:
+                assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
+                model.config.pooling = conf.pooling
+        else:
+            raise RuntimeError(f"Unsupported reward model type: {conf.model_name}")
     else:
         model = get_specific_model(
             conf.model_name,
