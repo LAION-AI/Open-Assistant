@@ -23,7 +23,7 @@ class GPTNeoXRewardModelConfig(GPTNeoXConfig):
 
 
 @dataclass
-class GPTXNeoRewardModelOutput(ModelOutput):
+class GPTNeoXRewardModelOutput(ModelOutput):
     """
     Reward model output.
 
@@ -35,7 +35,7 @@ class GPTXNeoRewardModelOutput(ModelOutput):
     logits: torch.FloatTensor = None
 
 
-class GPTXNeoRewardModel(GPTNeoXPreTrainedModel):
+class GPTNeoXRewardModel(GPTNeoXPreTrainedModel):
     config_class = GPTNeoXRewardModelConfig
 
     def __init__(self, config):
@@ -55,7 +55,7 @@ class GPTXNeoRewardModel(GPTNeoXPreTrainedModel):
         head_mask: Optional[torch.FloatTensor] = None,
         use_cache: Optional[bool] = None,
         return_dict: Optional[bool] = True,
-    ) -> GPTXNeoRewardModelOutput:
+    ) -> GPTNeoXRewardModelOutput:
         outputs = self.gpt_neox(
             input_ids,
             attention_mask=attention_mask,
@@ -87,8 +87,8 @@ class GPTXNeoRewardModel(GPTNeoXPreTrainedModel):
         if not return_dict:
             return (logits,) + outputs[1:]
 
-        return GPTXNeoRewardModelOutput(logits=logits)
+        return GPTNeoXRewardModelOutput(logits=logits)
 
 
 AutoConfig.register("gpt_neox_reward_model", GPTNeoXRewardModelConfig)
-AutoModelForSequenceClassification.register(GPTNeoXRewardModelConfig, GPTXNeoRewardModel)
+AutoModelForSequenceClassification.register(GPTNeoXRewardModelConfig, GPTNeoXRewardModel)
