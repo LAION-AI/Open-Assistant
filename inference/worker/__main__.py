@@ -74,6 +74,9 @@ def main():
                                 ftrs.append(ftr)
                             case "ping":
                                 utils.send_response(ws, inference.PongResponse(request_id=worker_request.id))
+                            case "wrong_api_key":
+                                logger.error("Your API Key seems to be wrong, please check it!")
+                                raise RuntimeError("Your API Key seems to be wrong, please check it!")
                             case "upgrade_protocol":
                                 logger.error("Your worker is outdated, please upgrade it!")
                                 sys.exit(2)  # potentially read this status code outside

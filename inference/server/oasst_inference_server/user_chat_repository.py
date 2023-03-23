@@ -80,6 +80,8 @@ class UserChatRepository(pydantic.BaseModel):
                 raise fastapi.HTTPException(status_code=400, detail="Parent message not found")
             if msg_dict[parent_id].role != "assistant":
                 raise fastapi.HTTPException(status_code=400, detail="Parent message is not an assistant message")
+            if msg_dict[parent_id].state != inference.MessageState.complete:
+                raise fastapi.HTTPException(status_code=400, detail="Parent message is not complete")
 
         message = models.DbMessage(
             role="prompter",
