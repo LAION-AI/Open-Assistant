@@ -25,7 +25,7 @@ def load_oasst_export(
     top_k: Optional[int] = None,
     manual_seed: int = 287631038922,
     data_path: str | Path = None,
-    mode: Literal["sft", "rm"] = "sft",
+    mode: Literal["sft", "rm", "rl"] = "sft",
 ) -> tuple[ListDataset, ListDataset]:
     if mode not in ("sft", "rm", "rl"):
         raise ValueError(f"Unknown dataset mode: {mode}")

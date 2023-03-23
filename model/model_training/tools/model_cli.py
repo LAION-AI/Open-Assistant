@@ -6,9 +6,8 @@ import torch
 import transformers
 from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs, format_system_prefix
 from models import get_specific_model
-from utils import _strtobool
-
 from tokenizers import pre_tokenizers
+from utils import _strtobool
 
 if __name__ == "__main__":
     import warnings

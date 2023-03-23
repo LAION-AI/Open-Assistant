@@ -12,13 +12,12 @@ from custom_datasets import get_one_dataset
 from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from losses import CrossEntropyLoss, PolyLoss, RMLoss
 from models import freeze_top_n_layers, get_specific_model
+from models.patching import patch_model
 from models.reward_model import RewardModel, RewardModelConfig
-from models.tokenization_llama import LLaMATokenizer
 from sklearn.model_selection import train_test_split
+from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
 from torch.utils.data.distributed import DistributedSampler
-
-from tokenizers import pre_tokenizers
 
 
 def _strtobool(x):
@@ -166,7 +165,6 @@ TOKENIZER_CONFIGS = {
     "GPT-JT": TokenizerConfig(special_tokens=SpecialTokens(sep_token="<|extratoken_100|>")),
     "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
     "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
-    "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
 }
 
 
@@ -185,16 +183,10 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 
 
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
-    if "llama" in conf.model_name:
-        # explicitly specify LLaMATokenizer class until AutoTokenizer works
-        # assumes that the tokenizer config is stored in the same directory as the model weights
-        tokenizer = LLaMATokenizer.from_pretrained(conf.model_name)
-    else:
-        tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
-
+    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
     tokenizer_config = match_tokenizer_name(conf.model_name)
 
-    if conf.per_digit_tokens:
+    if hasattr(conf, "per_digit_tokens") and conf.per_digit_tokens:
         tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 
     if tokenizer_config.special_tokens:
@@ -305,11 +297,11 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     params = sum([p.numel() for p in model_parameters])
     print("Number of trainable parameters: {}M".format(int(params / 1e6)))
 
-    # patch_model(
-    #    model,
-    #    resid_pdrop=conf.residual_dropout,
-    #    flash_attention=conf.use_flash_attention,
-    # )
+    patch_model(
+        model,
+        resid_pdrop=conf.residual_dropout,
+        flash_attention=conf.use_flash_attention,
+    )
 
     return model
 
