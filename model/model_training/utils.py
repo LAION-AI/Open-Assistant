@@ -8,12 +8,12 @@ from typing import List, NamedTuple
 import evaluate
 import transformers
 import yaml
-from custom_datasets import get_one_dataset
-from custom_datasets.formatting import QA_SPECIAL_TOKENS
-from losses import CrossEntropyLoss, PolyLoss, RMLoss
-from models import freeze_top_n_layers, get_specific_model
-from models.patching import patch_model
-from models.reward_model import GPTNeoXRewardModel
+from model_training.custom_datasets import get_one_dataset
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
+from model_training.losses import CrossEntropyLoss, PolyLoss, RMLoss
+from model_training.models import freeze_top_n_layers, get_specific_model
+from model_training.models.patching import patch_model
+from model_training.models.reward_model import GPTNeoXRewardModel
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset

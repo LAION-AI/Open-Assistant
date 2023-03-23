@@ -1,9 +1,9 @@
 import argparse
 import sys
 
+import model_training.models.reward_model  # noqa: F401 make sure reward model is registered for AutoModel
 import torch
-from models.reward_model import RewardModel
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoModelForSequenceClassification, AutoTokenizer
 
 
 def parse_args():
@@ -43,8 +43,9 @@ def main():
 
     print(f"Loading model '{args.model_name}' ({args.dtype}) ...")
     if args.reward_model:
-        # use `python -m tools.export_model --reward_model ...` in parent directory`
-        model = RewardModel.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
+        model = AutoModelForSequenceClassification.from_pretrained(
+            args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir
+        )
     else:
         model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
     print(f"{type(model).__name__} (num_parameters={model.num_parameters()})")

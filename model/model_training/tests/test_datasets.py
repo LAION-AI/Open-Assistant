@@ -1,11 +1,11 @@
 from argparse import Namespace
 
 import pytest
-from custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
-from custom_datasets.dialogue_collator import DialogueDataCollator
-from custom_datasets.prompt_dialogue import OAPrivate
+from model_training.custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
+from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
+from model_training.custom_datasets.prompt_dialogue import OAPrivate
+from model_training.utils import get_tokenizer
 from torch.utils.data import ConcatDataset, DataLoader
-from utils import get_tokenizer
 
 
 @pytest.mark.skip(reason="cache not populated")
