@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Flex, Textarea, useBoolean, useColorModeValue } from "@chakra-ui/react";
+import { Button, CircularProgress, Flex, Icon, Textarea, useBoolean, useColorModeValue } from "@chakra-ui/react";
+import { XCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
@@ -120,6 +121,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
           messageId={message.id}
           chatId={chatId}
           score={message.score}
+          state={message.state}
           onVote={handleOnVote}
         >
           {message.content}
@@ -147,6 +149,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
 type ChatMessageEntryProps = {
   isAssistant: boolean;
   children: InferenceMessage["content"];
+  state: InferenceMessage["state"];
   chatId: string;
   messageId: string;
   score: number;
@@ -173,6 +176,7 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
   chatId,
   messageId,
   score,
+  state,
   onVote,
 }: ChatMessageEntryProps) {
   const handleVote = useCallback(
@@ -195,6 +199,8 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
     <PendingMessageEntry isAssistant={isAssistant} content={children!}>
       {isAssistant && (
         <MessageInlineEmojiRow>
+          {state === "pending" && <CircularProgress isIndeterminate size="20px" title={state} />}
+          {(state === "aborted_by_worker" || state === "cancelled") && <Icon as={XCircle} color="red" />}
           <MessageEmojiButton
             emoji={{ name: "+1", count: 0 }}
             checked={score === 1}
