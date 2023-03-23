@@ -41,9 +41,9 @@ export const ChatConfigDrawer = () => {
     <>
       <Portal>
         <IconButton
-          position="absolute"
+          position="fixed"
           style={{
-            insetInlineEnd: `52px`,
+            insetInlineEnd: `30px`,
           }}
           bottom={10}
           aria-label={t("config_title")}
