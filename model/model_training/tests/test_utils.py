@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 import pytest
-from utils import TOKENIZER_CONFIGS, get_tokenizer, match_tokenizer_name
+from model_training.utils import TOKENIZER_CONFIGS, get_tokenizer, match_tokenizer_name
 
 
 def test_tokenizer():

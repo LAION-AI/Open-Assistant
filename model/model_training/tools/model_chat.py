@@ -14,10 +14,10 @@ if __name__ == "__main__":
 
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from custom_datasets.formatting import QA_SPECIAL_TOKENS
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
+from model_training.utils import _strtobool, process_output
 from tokenizers import pre_tokenizers
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from utils import _strtobool, process_output
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_path", type=str, required=True)

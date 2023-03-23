@@ -7,8 +7,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import datasets
 import torch
-from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
+from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm

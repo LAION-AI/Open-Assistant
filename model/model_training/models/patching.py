@@ -10,12 +10,12 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
 from transformers import GPTNeoXForCausalLM, GPTNeoXModel
 
-from .reward_model import RewardModel
+from .reward_model import GPTNeoXRewardModel
 
 SUPPORTED_MODELS = [
     GPTNeoXModel,
     GPTNeoXForCausalLM,
-    RewardModel,
+    GPTNeoXRewardModel,
 ]
 
 
@@ -130,11 +130,8 @@ or run with:
             "--use_flash_attention=false  --no-residual_dropout"
         )
 
-    if isinstance(model, GPTNeoXForCausalLM):
+    if isinstance(model, GPTNeoXRewardModel) or isinstance(model, GPTNeoXForCausalLM):
         model = model.gpt_neox
-
-    if isinstance(model, RewardModel):
-        model = model.transformer
 
     for layer in model.layers:
         if resid_pdrop is not None:
