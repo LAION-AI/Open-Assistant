@@ -3,5 +3,9 @@
   "chat_date": "{{val, datetime}}",
   "empty": "(empty)",
   "queue_info": "Your message is queued, you are at position {{ queuePosition, number, integer }} in the queue.",
-  "your_chats": "Your chats"
+  "your_chats": "Your chats",
+  "config_title": "Chat configuration",
+  "model": "Model",
+  "preset": "Preset",
+  "preset_custom": "Custom"
 }

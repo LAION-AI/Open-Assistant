@@ -4,10 +4,10 @@ import random
 import torch
 import transformers
 import trlx
-from custom_datasets.formatting import QA_SPECIAL_TOKENS
-from models import get_specific_model
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
+from model_training.models import get_specific_model
+from model_training.utils import _strtobool, get_dataset, read_yamls
 from trlx.data.configs import TRLConfig
-from utils import _strtobool, get_dataset, read_yamls
 
 
 def argument_parsing(notebook=False, notebook_args=None):

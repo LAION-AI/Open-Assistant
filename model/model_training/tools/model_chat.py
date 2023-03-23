@@ -10,18 +10,10 @@ from enum import Enum
 from typing import List, Tuple
 
 import torch
-from custom_datasets.formatting import QA_SPECIAL_TOKENS
-from utils import _strtobool
-
-if __name__ == "__main__":
-    import os
-    import sys
-
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
+from model_training.utils import _strtobool
 from tokenizers import pre_tokenizers
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 class ChatRole(str, Enum):

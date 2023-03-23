@@ -11,14 +11,14 @@ from torch.nn.utils.rnn import pad_sequence
 from transformers import GPTNeoXForCausalLM, GPTNeoXModel
 
 from .modeling_llama import LLaMAForCausalLM, LLaMAModel
-from .reward_model import RewardModel
+from .reward_model import GPTNeoXRewardModel
 
 SUPPORTED_MODELS = [
     GPTNeoXModel,
     GPTNeoXForCausalLM,
     LLaMAForCausalLM,
     LLaMAModel,
-    RewardModel,
+    GPTNeoXRewardModel,
 ]
 
 
@@ -145,7 +145,7 @@ or run with:
             "--use_flash_attention=false  --no-residual_dropout"
         )
 
-    if isinstance(model, GPTNeoXForCausalLM):
+    if isinstance(model, GPTNeoXRewardModel) or isinstance(model, GPTNeoXForCausalLM):
         model = model.gpt_neox
 
     if isinstance(model, LLaMAForCausalLM):
@@ -153,16 +153,16 @@ or run with:
 
     attention_key_lookup = {
         GPTNeoXModel: "attention",
+        GPTNeoXRewardModel: "attention",
         LLaMAModel: "self_attn",
     }
     mlp_key_lookup = {
         GPTNeoXModel: "mlp",
+        GPTNeoXRewardModel: "mlp",
         LLaMAModel: "mlp",
     }
     attention_key = attention_key_lookup.get(model.__class__, "attention")
     mlp_key = mlp_key_lookup.get(model.__class__, "mlp")
-    if isinstance(model, RewardModel):
-        model = model.transformer
 
     for layer in model.layers:
         if resid_pdrop is not None:

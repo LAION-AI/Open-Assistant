@@ -1,5 +1,5 @@
 import torch
-from patching import patch_model
+from model_training.models.patching import patch_model
 from transformers import AutoModelForCausalLM, AutoTokenizer, GPTNeoXModel
 
 
