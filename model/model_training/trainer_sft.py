@@ -7,8 +7,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import datasets
 import torch
-from efficiency_utils import fuse_gelu
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
+from model_training.efficiency_utils import fuse_gelu
 from model_training.utils import (
     PerDatasetSampler,
     _strtobool,
