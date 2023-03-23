@@ -1,8 +1,17 @@
 import os
+import signal
+import sys
 
 import transformers
 
+
+def terminate(signum, frame):
+    print("Terminating...")
+    sys.exit(0)
+
+
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, terminate)
     model_id = os.getenv("MODEL_ID")
     if "llama" in model_id:
         transformers.LlamaTokenizer.from_pretrained(model_id)
