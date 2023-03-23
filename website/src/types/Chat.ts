@@ -78,4 +78,5 @@ export type WorkParametersInput = {
   temperature: number | null;
   repetition_penalty: number | null;
   max_new_tokens: number | null;
+  typical_p: number | null;
 };

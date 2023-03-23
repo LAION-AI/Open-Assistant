@@ -114,6 +114,9 @@ const sliderItems: Readonly<
   {
     key: "top_k",
   },
+  {
+    key: "typical_p",
+  },
 ];
 
 const customPresetName = "__custom__";
@@ -123,6 +126,7 @@ const customPresetDefaultValue: StrictOmit<WorkParametersInput, "model_name"> = 
   temperature: 1,
   top_k: 50 / 32000,
   top_p: 0.95,
+  typical_p: 0.5,
 };
 
 const parameterLabel: Record<keyof typeof customPresetDefaultValue, string> = {
@@ -131,6 +135,7 @@ const parameterLabel: Record<keyof typeof customPresetDefaultValue, string> = {
   top_p: "Top P",
   temperature: "Temperature",
   repetition_penalty: "Repetition Penalty",
+  typical_p: "Typical P",
 };
 
 const ChatConfigForm = () => {
@@ -139,7 +144,6 @@ const ChatConfigForm = () => {
 
   const { control, register, reset } = useFormContext<WorkParametersInput>();
   const selectedModel = useWatch({ name: "model_name", control: control });
-
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
 
   const [presetName, setPresetName] = useState<string>(presets[0].name);
@@ -148,12 +152,16 @@ const ChatConfigForm = () => {
     (e: ChangeEvent<HTMLSelectElement>) => {
       const newPresetName = e.target.value;
       setPresetName(newPresetName);
-      if (newPresetName !== customPresetName) {
-        const config = presets.find((preset) => preset.name === newPresetName)!.work_parameters;
-        reset(config);
-      }
+      const config =
+        newPresetName === customPresetName
+          ? customPresetDefaultValue
+          : presets.find((preset) => preset.name === newPresetName)!.work_parameters;
+      reset({
+        ...config,
+        model_name: selectedModel,
+      });
     },
-    [presets, reset]
+    [presets, reset, selectedModel]
   );
   return (
     <Stack gap="4">
@@ -203,7 +211,7 @@ type NumberInputSliderProps = {
   min?: number;
   precision?: number;
   step?: number;
-  onChange: (value: number) => void;
+  onChange: (value: number | null) => void;
   value: number | null;
   isCustomPreset: boolean;
   name: keyof typeof customPresetDefaultValue;
@@ -211,14 +219,10 @@ type NumberInputSliderProps = {
 
 const ChatParameterField = (props: NumberInputSliderProps) => {
   const { max = 1, precision = 2, step = 0.01, min = 0, value, isCustomPreset, name, onChange } = props;
-  const { setValue: setFormValue } = useFormContext<WorkParametersInput>();
-  const [showSlider, setShowSlider] = useState(false);
 
   const handleChange = useCallback(
     (val: string | number) => {
-      const newVal = Number(val);
-      // setFormValue(name, newVal);
-      onChange(newVal);
+      onChange(Number(val));
     },
     [onChange]
   );
@@ -226,30 +230,27 @@ const ChatParameterField = (props: NumberInputSliderProps) => {
   const handleShowSliderChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const checked = e.target.checked;
-      setFormValue(name, checked ? customPresetDefaultValue[name] : null);
-      setShowSlider(e.target.checked);
-      if (checked && value === null) {
-        // setValue(customPresetDefaultValue[name]!);
-      }
+      onChange(checked ? customPresetDefaultValue[name] : null);
     },
-    [setFormValue, name, value]
+    [onChange, name]
   );
   const label = parameterLabel[name];
+  const showSlider = value !== null;
 
   return (
     <FormControl isDisabled={!isCustomPreset}>
       <Flex justifyContent="space-between" mb="2">
         <FormLabel mb="0">{label}</FormLabel>
-        {isCustomPreset && <Switch checked={showSlider} onChange={handleShowSliderChange}></Switch>}
+        <Switch isChecked={showSlider} onChange={handleShowSliderChange}></Switch>
       </Flex>
-      {(!isCustomPreset || (showSlider && value !== null)) && (
+      {showSlider && (
         <Flex gap="4">
           <Slider
             aria-label={label}
             min={min}
             max={max}
             step={step}
-            value={value || min}
+            value={value}
             onChange={handleChange}
             focusThumbOnChange={false}
             isDisabled={!isCustomPreset}
@@ -260,7 +261,7 @@ const ChatParameterField = (props: NumberInputSliderProps) => {
             <SliderThumb />
           </Slider>
           <NumberInput
-            value={value || min}
+            value={value}
             onChange={handleChange}
             size="xs"
             maxW="80px"
