@@ -58,3 +58,25 @@ interface InferenceEventPending {
 }
 
 export type InferenceEvent = InferenceEventMessage | InferenceEventError | InferenceEventToken | InferenceEventPending;
+
+export type ModelInfo = {
+  name: string;
+  description: string;
+  parameter_configs: ModelParameterConfig[];
+};
+
+export type ModelParameterConfig = {
+  name: string;
+  description: string;
+  work_parameters: WorkParametersInput;
+};
+
+export type WorkParametersInput = {
+  model_name: string;
+  top_k: number | null;
+  top_p: number | null;
+  temperature: number | null;
+  repetition_penalty: number | null;
+  max_new_tokens: number | null;
+  typical_p: number | null;
+};

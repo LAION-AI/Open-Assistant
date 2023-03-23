@@ -186,7 +186,7 @@ def get_tokenizer(conf) -> transformers.AutoTokenizer:
     tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
     tokenizer_config = match_tokenizer_name(conf.model_name)
 
-    if conf.per_digit_tokens:
+    if hasattr(conf, "per_digit_tokens") and conf.per_digit_tokens:
         tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 
     if tokenizer_config.special_tokens:

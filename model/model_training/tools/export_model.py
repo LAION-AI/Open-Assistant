@@ -48,7 +48,6 @@ def main():
     else:
         model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
     print(f"{type(model).__name__} (num_parameters={model.num_parameters()})")
-    quit()
 
     if args.output_folder:
         print(f"Saving model to: {args.output_folder}")

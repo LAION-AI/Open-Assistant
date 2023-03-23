@@ -55,6 +55,16 @@ async def create_message(
 ) -> chat_schema.CreateMessageResponse:
     """Allows the client to stream the results of a request."""
 
+    if settings.allowed_models != "*":
+        if request.work_parameters.model_name not in settings.allowed_models_list:
+            logger.warning(
+                f"Model {request.work_parameters.model_name} not in allowed models: {settings.allowed_models}"
+            )
+            raise fastapi.HTTPException(
+                status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Model {request.work_parameters.model_name} not in allowed models: {settings.allowed_models}",
+            )
+
     try:
         ucr: UserChatRepository
         async with deps.manual_user_chat_repository(user_id) as ucr:

@@ -52,21 +52,24 @@ pythia-6.9B-rm:
   eval_steps: 25
 
 # params based on sweep result: https://wandb.ai/open-assistant/reward_model/runs/9102dee8
-# actual run for export: https://wandb.ai/open-assistant/reward-model/runs/3kwcf5iq
+# actual run for export: https://wandb.ai/open-assistant/reward-model/runs/1lw4g83x
 oasst-rm-1-pythia-1b:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        input_file_path: 2023-03-13_oasst_ready_labels.jsonl.gz
+        input_file_path: 2023-03-21_oasst_ready_synth_labels.jsonl.gz
+        val_split: 0.1
   model_name: EleutherAI/pythia-1b-deduped
-  learning_rate: 9.408293588829651e-06
-  residual_dropout: 0.3823726708604269
-  weight_decay: 0.09576145959249724
+  learning_rate: 2.3984085802847404e-05
+  residual_dropout: 0.08172424407561013
+  weight_decay: 0.07428722634825694
   max_length: 520
   warmup_steps: 10
-  gradient_accumulation_steps: 1
-  per_device_train_batch_size: 8
+  # assuming training on single GPU
+  # per_device_train_batch_size: 8  # 48 GB not enough
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
   per_device_eval_batch_size: 16
-  num_train_epochs: 4
+  num_train_epochs: 1
   eval_steps: 100
-  save_steps: 2000
+  save_steps: 500

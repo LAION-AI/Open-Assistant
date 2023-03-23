@@ -51,9 +51,10 @@ export const API_ROUTES = {
     createRoute("/api/admin/messages", query),
   // chat:
   GET_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
-  GET_MESSAGE: (chat_id: string, message_id) => createRoute(`/api/chat/message`, { chat_id, message_id }),
+  GET_MESSAGE: (chat_id: string, message_id: string) => createRoute(`/api/chat/message`, { chat_id, message_id }),
   CREATE_CHAT_MESSAGE: `/api/chat/message`,
   CHAT_MESSAGE_VOTE: `/api/chat/vote`,
   STREAM_CHAT_MESSAGE: (chat_id: string, message_id: string) =>
     createRoute(`/api/chat/events`, { chat_id, message_id }),
+  GET_CHAT_MODELS: "/api/chat/models",
 };
