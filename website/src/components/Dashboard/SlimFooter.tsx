@@ -20,6 +20,7 @@ export function SlimFooter() {
             <Box display="flex" gap="5" fontSize="xs" color="blue.500">
               <FooterLink href="/privacy-policy" label={t("privacy_policy")} />
               <FooterLink href="/terms-of-service" label={t("terms_of_service")} />
+              <FooterLink href="/team" label={t("team")} />
               <FooterLink href="https://github.com/LAION-AI/Open-Assistant" label={t("github")} />
               <FooterLink href="https://ykilcher.com/open-assistant-discord" label={t("discord")} />
               <FooterLink href="https://projects.laion.ai/Open-Assistant/" label={t("docs")} />

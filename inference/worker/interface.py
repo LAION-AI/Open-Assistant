@@ -5,7 +5,7 @@ from oasst_shared.schemas import inference
 
 
 class GenerateStreamParameters(pydantic.BaseModel):
-    max_new_tokens: int | None
+    max_new_tokens: int = 1024
     do_sample: bool = True
     top_k: int | None
     top_p: float | None
@@ -41,7 +41,7 @@ class GenerateStreamRequest(pydantic.BaseModel):
 
 class Token(pydantic.BaseModel):
     text: str
-    logprob: float
+    logprob: float | None
     id: int
 
     def __len__(self) -> int:

@@ -1,13 +1,12 @@
 from __future__ import absolute_import, unicode_literals
 
-import os
 from datetime import datetime
 from typing import Any, Dict, List
 
 from asgiref.sync import async_to_sync
-from celery import Celery, shared_task
-from dotenv import load_dotenv
+from celery import shared_task
 from loguru import logger
+from oasst_backend.celery_worker import app
 from oasst_backend.models import ApiClient
 from oasst_backend.prompt_repository import PromptRepository
 from oasst_backend.user_repository import User
@@ -16,32 +15,11 @@ from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingM
 from oasst_shared.utils import utcnow
 from sqlmodel import select
 
-result = load_dotenv(".env")
-logger.info(f"LoadEnv result {result}")
-
-app = Celery(__name__)
-app.conf.broker_url = os.environ.get("CELERY_BROKER_URL")
-app.conf.result_backend = os.environ.get("CELERY_RESULT_BACKEND")
-logger.info(f"celery.conf.broker_url {app.conf.broker_url}, app.conf.result_backend{app.conf.result_backend}")
 startup_time: datetime = utcnow()
-
-app.autodiscover_tasks()
-
-app.conf.beat_schedule = {
-    # Scheduler Name
-    "update-user-streak": {
-        # Task Name (Name Specified in Decorator)
-        "task": "update_user_streak",
-        # Schedule
-        "schedule": 60.0 * 60.0 * 4,
-    },
-}
 
 
 async def useHFApi(text, url, model_name):
     hugging_face_api: HuggingFaceAPI = HuggingFaceAPI(f"{url}/{model_name}")
-    # TODO: This is some wierd error that commenting the next line causes a 400 error
-    hugging_face_api.headers: Dict[str, str] = {"Authorization": f"Bearer {hugging_face_api.api_key}"}
     result = await hugging_face_api.post(text)
     return result
 

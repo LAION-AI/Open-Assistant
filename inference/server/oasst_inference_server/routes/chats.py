@@ -55,6 +55,16 @@ async def create_message(
 ) -> chat_schema.CreateMessageResponse:
     """Allows the client to stream the results of a request."""
 
+    if settings.allowed_models != "*":
+        if request.work_parameters.model_name not in settings.allowed_models_list:
+            logger.warning(
+                f"Model {request.work_parameters.model_name} not in allowed models: {settings.allowed_models}"
+            )
+            raise fastapi.HTTPException(
+                status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Model {request.work_parameters.model_name} not in allowed models: {settings.allowed_models}",
+            )
+
     try:
         ucr: UserChatRepository
         async with deps.manual_user_chat_repository(user_id) as ucr:
@@ -130,7 +140,7 @@ async def message_events(
 
                 _, response_packet_str = item
                 response_packet = pydantic.parse_raw_as(inference.WorkerResponse, response_packet_str)
-                if response_packet.response_type == "error":
+                if response_packet.response_type in ("error", "internal_error"):
                     yield {
                         "data": chat_schema.ErrorResponseEvent(error=response_packet.error).json(),
                     }

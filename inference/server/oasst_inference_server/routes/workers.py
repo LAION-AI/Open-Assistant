@@ -5,9 +5,9 @@ from typing import cast
 import fastapi
 import pydantic
 import websockets.exceptions
-from fastapi import Depends
 from loguru import logger
 from oasst_inference_server import chat_repository, database, deps, models, queueing, worker_utils
+from oasst_inference_server.schemas import chat as chat_schema
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 
@@ -46,12 +46,12 @@ class WorkerError(Exception):
 async def add_worker_connect_event(
     session: database.AsyncSession,
     worker_id: str,
-    worker_config: inference.WorkerConfig,
+    worker_info: inference.WorkerInfo,
 ):
     event = models.DbWorkerEvent(
         worker_id=worker_id,
         event_type=models.WorkerEventType.connect,
-        worker_config=worker_config,
+        worker_info=worker_info,
     )
     session.add(event)
     await session.commit()
@@ -86,24 +86,46 @@ def get_work_request_container(work_request_map: WorkRequestContainerMap, reques
 
 
 @router.websocket("/work")
-async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(worker_utils.get_worker_id)):
-    logger.info(f"handle_worker: {worker_id=}")
+async def handle_worker(
+    websocket: fastapi.WebSocket,
+    api_key: str = worker_utils.api_key_header,
+    protocol_version: str = worker_utils.protocol_version_header,
+):
     await websocket.accept()
-    worker_config = await worker_utils.receive_worker_config(websocket)
-    logger.info(f"handle_worker: {worker_config=}")
+
+    try:
+        worker_utils.get_protocol_version(protocol_version)
+        api_key = worker_utils.get_api_key(api_key)
+        worker_id = await worker_utils.get_worker_id(api_key=api_key, protocol_version=protocol_version)
+    except fastapi.HTTPException as e:
+        logger.warning(f"handle_worker: {e.status_code=} {e.detail=}")
+        if e.status_code == fastapi.status.HTTP_426_UPGRADE_REQUIRED:
+            await worker_utils.send_worker_request(websocket=websocket, request=inference.UpgradeProtocolRequest())
+        elif e.status_code == fastapi.status.HTTP_401_UNAUTHORIZED:
+            await worker_utils.send_worker_request(websocket=websocket, request=inference.WrongApiKeyRequest())
+        try:
+            await websocket.close(code=e.status_code, reason=e.detail)
+        except Exception:
+            pass
+        raise fastapi.WebSocketException(e.status_code, e.detail)
+
+    logger.info(f"handle_worker: {worker_id=}")
+    worker_info = await worker_utils.receive_worker_info(websocket)
+    logger.info(f"handle_worker: {worker_info=}")
+    worker_config = worker_info.config
     worker_compat_hash = worker_config.compat_hash
     work_queue = queueing.work_queue(deps.redis_client, worker_compat_hash)
     redis_client = deps.make_redis_client()
     blocking_work_queue = queueing.work_queue(redis_client, worker_compat_hash)
     worker_session = worker_utils.WorkerSession(
         worker_id=worker_id,
-        config=worker_config,
+        worker_info=worker_info,
     )
     work_request_map: dict[str, WorkRequestContainer] = {}
     pending_futures = set()
     try:
         async with deps.manual_create_session() as session:
-            await add_worker_connect_event(session=session, worker_id=worker_id, worker_config=worker_config)
+            await add_worker_connect_event(session=session, worker_id=worker_id, worker_info=worker_info)
         await worker_utils.store_worker_session(worker_session)
 
         async def _update_session(metrics: inference.WorkerMetricsInfo):
@@ -148,6 +170,11 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
                         work_request_map[work_request.id] = WorkRequestContainer(
                             work_request=work_request, message_id=message_id
                         )
+                    except chat_schema.MessageCancelledException as e:
+                        logger.warning(f"Message was cancelled before work could be initiated: {e.message_id=}")
+                    except chat_schema.MessageTimeoutException as e:
+                        logger.warning(f"Message timed out before work could be initiated: {e.message_id=}")
+                        await handle_timeout(message_id=message_id)
                     finally:
                         _add_dequeue(pending_futures)
                 else:
@@ -205,8 +232,8 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
                     await work_queue.enqueue(message_id)
                 else:
                     logger.warning(f"Aborting {message_id=}")
-                    async with deps.manual_chat_repository() as cr:
-                        await cr.abort_work(message_id, reason=str(e))
+                    internal_error = inference.InternalErrorResponse(error="Aborted due to worker error.")
+                    await abort_message(message_id=message_id, response=internal_error)
             except Exception as e:
                 logger.exception(f"Error while trying to reset work for {message_id=}: {str(e)}")
     finally:
@@ -236,15 +263,15 @@ async def handle_worker(websocket: fastapi.WebSocket, worker_id: str = Depends(w
 async def list_worker_sessions() -> list[worker_utils.WorkerSession]:
     redis_client = deps.redis_client
     try:
-        worker_configs = []
+        worker_sessions = []
         async for key in redis_client.scan_iter("worker_session:*"):
-            worker_config_json = await redis_client.get(key)
-            worker_config = worker_utils.WorkerSession.parse_raw(worker_config_json)
-            worker_configs.append(worker_config)
+            worker_session_json = await redis_client.get(key)
+            worker_session = worker_utils.WorkerSession.parse_raw(worker_session_json)
+            worker_sessions.append(worker_session)
     except Exception as e:
         logger.exception(f"Error while listing worker sessions: {str(e)}")
         raise
-    return worker_configs
+    return worker_sessions
 
 
 @router.on_event("startup")
@@ -308,24 +335,36 @@ async def handle_generated_text_response(
     response: inference.GeneratedTextResponse,
     work_request_map: WorkRequestContainerMap,
 ):
-    work_response_container = get_work_request_container(work_request_map, response.request_id)
-    message_id = work_response_container.message_id
-    async with deps.manual_create_session() as session:
-        cr = chat_repository.ChatRepository(session=session)
-        message = await cr.complete_work(
-            message_id=message_id,
-            content=response.text,
+    try:
+        work_response_container = get_work_request_container(work_request_map, response.request_id)
+        message_id = work_response_container.message_id
+        async with deps.manual_create_session() as session:
+            cr = chat_repository.ChatRepository(session=session)
+            message = await cr.complete_work(
+                message_id=message_id,
+                content=response.text,
+            )
+            logger.info(f"Completed work for {message_id=}")
+        message_packet = inference.InternalFinishedMessageResponse(
+            message=message.to_read(),
         )
-        logger.info(f"Completed work for {message_id=}")
-    message_packet = inference.InternalFinishedMessageResponse(
-        message=message.to_read(),
-    )
+        message_queue = queueing.message_queue(
+            deps.redis_client,
+            message_id=message_id,
+        )
+        await message_queue.enqueue(message_packet.json(), expire=settings.message_queue_expire)
+    finally:
+        del work_request_map[response.request_id]
+
+
+async def abort_message(message_id: str, response: inference.ErrorResponse | inference.InternalErrorResponse):
+    async with deps.manual_chat_repository() as cr:
+        await cr.abort_work(message_id, reason=str(response.error))
     message_queue = queueing.message_queue(
         deps.redis_client,
         message_id=message_id,
     )
-    await message_queue.enqueue(message_packet.json(), expire=settings.message_queue_expire)
-    del work_request_map[response.request_id]
+    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
 
 
 async def handle_error_response(
@@ -333,13 +372,26 @@ async def handle_error_response(
     work_request_map: WorkRequestContainerMap,
 ):
     logger.warning(f"Got error {response=}")
-    work_response_container = get_work_request_container(work_request_map, response.request_id)
-    async with deps.manual_chat_repository() as cr:
-        await cr.abort_work(work_response_container.message_id, reason=str(response.error))
-    del work_request_map[response.request_id]
+    try:
+        work_response_container = get_work_request_container(work_request_map, response.request_id)
+        message_id = work_response_container.message_id
+        await abort_message(message_id, response)
+    finally:
+        del work_request_map[response.request_id]
 
 
 async def handle_general_error_response(
     response: inference.GeneralErrorResponse,
 ):
     logger.warning(f"Got general error {response=}")
+
+
+async def handle_timeout(message_id: str):
+    response = inference.InternalErrorResponse(
+        error="Timeout",
+    )
+    message_queue = queueing.message_queue(
+        deps.redis_client,
+        message_id=message_id,
+    )
+    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)

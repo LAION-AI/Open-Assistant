@@ -1,7 +1,6 @@
-import { Tooltip, Text, Icon } from "@chakra-ui/react";
-import Link from "next/link";
-import { Progress, Stack, Textarea, TextareaProps, useColorModeValue } from "@chakra-ui/react";
+import { Icon, Progress, Stack, Text, Textarea, TextareaProps, Tooltip, useColorModeValue } from "@chakra-ui/react";
 import lande from "lande";
+import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import React from "react";
 import TextareaAutosize, { TextareaAutosizeProps } from "react-textarea-autosize";
@@ -62,6 +61,7 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
           p="4"
           value={props.text}
           onChange={props.onTextChange}
+          autoFocus
           {...props.textareaProps}
           as={TextareaAutosize}
         />

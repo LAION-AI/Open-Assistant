@@ -15,7 +15,7 @@ from oasst_shared.schemas import inference
 class TokenBuffer:
     def __init__(self, stop_sequences: list[str]) -> None:
         self.stop_sequences = stop_sequences
-        self.longest_stop_len = max((len(stop) for stop in stop_sequences), default=0)
+        self.longest_stop_len = max((len(stop) for stop in stop_sequences), default=1)
         self.tokens = collections.deque()
         self.token_lens = collections.deque()
         self.total_len = 0
@@ -50,7 +50,8 @@ class TokenBuffer:
                 self.tokens.extend(reversed(end_tokens))
             yield from self.tokens
         elif reason == "eos_token":
-            self.tokens.pop()
+            if self.tokens:
+                self.tokens.pop()
             yield from self.tokens
         else:
             yield from self.tokens
@@ -111,7 +112,7 @@ ws_lock = threading.Lock()
 
 def send_response(
     ws: websocket.WebSocket,
-    repsonse: inference.WorkerResponse | inference.WorkerConfig,
+    repsonse: inference.WorkerResponse | inference.WorkerInfo,
 ):
     msg = repsonse.json()
     with ws_lock:
