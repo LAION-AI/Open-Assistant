@@ -61,7 +61,7 @@ class WorkerHardwareInfo(pydantic.BaseModel):
 
 class WorkerConfig(pydantic.BaseModel):
     model_config: ModelConfig
-    max_parallel_requests: int = 8
+    max_parallel_requests: int = 1
 
     @property
     def compat_hash(self) -> str:

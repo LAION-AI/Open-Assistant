@@ -19,7 +19,7 @@ gpus=${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}
 api_key=${API_KEY:-0000}
 backend_url=${BACKEND_URL:-wss://inference.prod2.open-assistant.io}
 model_config_name=${MODEL_CONFIG_NAME:-OpenAssistant/oasst-sft-1-pythia-12b}
-max_parallel_requests=${MAX_PARALLEL_REQUESTS:-8}
+max_parallel_requests=${MAX_PARALLEL_REQUESTS:-1}
 loguru_level=${LOGURU_LEVEL:-INFO}
 
 OAHF_HOME=$HOME/.oasst_cache/huggingface
