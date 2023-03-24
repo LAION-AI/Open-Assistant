@@ -46,8 +46,9 @@ def test_ranking_collator():
     attention_mask = x.attention_mask
     print("input_ids", input_ids.shape)
     print("attention_mask", attention_mask.shape)
-    print("input_ids[0]", input_ids[0])
-    print("decoded:", tokenizer.decode(input_ids[0]))
+    print("input_ids[0, :200]", input_ids[0, :200])
+    print("decoded input_ids[0, :200]:", tokenizer.decode(input_ids[0, :200]))
+    print("decoded non masked input_ids[0]:", tokenizer.decode(input_ids[0][x.attention_mask[0] == 1]))
 
     print(y)
 
