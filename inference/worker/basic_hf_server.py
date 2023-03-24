@@ -9,6 +9,7 @@ import torch
 import transformers
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from oasst_shared import model_configs
 from settings import settings
 
 app = fastapi.FastAPI()
@@ -47,14 +48,20 @@ tokenizer: transformers.PreTrainedTokenizer
 async def load_models():
     global model, tokenizer
     signal.signal(signal.SIGINT, terminate_server)
-    logger.warning(f"Loading model {settings.model_id}...")
-    if "llama" in settings.model_id:
-        config = transformers.LlamaConfig.from_pretrained(settings.model_id)
-        tokenizer = transformers.LlamaTokenizer.from_pretrained(settings.model_id)
-        model = transformers.LlamaForCausalLM.from_pretrained(settings.model_id, torch_dtype=config.torch_dtype)
+
+    model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)
+    if model_config is None:
+        logger.error(f"Unknown model config name: {settings.model_config_name}")
+        sys.exit(2)
+
+    logger.warning(f"Loading model {model_config.model_id}...")
+    if model_config.is_llama:
+        config = transformers.LlamaConfig.from_pretrained(model_config.model_id)
+        tokenizer = transformers.LlamaTokenizer.from_pretrained(model_config.model_id)
+        model = transformers.LlamaForCausalLM.from_pretrained(model_config.model_id, torch_dtype=config.torch_dtype)
     else:
-        tokenizer = transformers.AutoTokenizer.from_pretrained(settings.model_id)
-        model = transformers.AutoModelForCausalLM.from_pretrained(settings.model_id)
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
+        model = transformers.AutoModelForCausalLM.from_pretrained(model_config.model_id)
     if torch.cuda.is_available():
         logger.warning("Using GPU")
         model = model.cuda()

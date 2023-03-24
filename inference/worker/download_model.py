@@ -13,7 +13,7 @@ def terminate(signum, frame):
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, terminate)
     model_id = os.getenv("MODEL_ID")
-    if "llama" in model_id:
+    if "llama" in model_id.lower():
         transformers.LlamaTokenizer.from_pretrained(model_id)
         transformers.LlamaForCausalLM.from_pretrained(model_id)
     else:

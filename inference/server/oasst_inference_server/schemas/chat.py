@@ -8,15 +8,8 @@ from oasst_shared.schemas import inference
 class CreateMessageRequest(pydantic.BaseModel):
     parent_id: str | None = None
     content: str = pydantic.Field(..., repr=False)
-    work_parameters: inference.WorkParametersInput = pydantic.Field(default_factory=inference.WorkParametersInput)
-
-    @property
-    def worker_compat_hash(self) -> str:
-        return inference.compat_hash(
-            model_name=self.work_parameters.model_name,
-            model_max_total_length=self.work_parameters.model_max_total_length,
-            model_max_input_length=self.work_parameters.model_max_input_length,
-        )
+    model_config_name: str
+    sampling_parameters: inference.SamplingParameters = pydantic.Field(default_factory=inference.SamplingParameters)
 
 
 class CreateMessageResponse(pydantic.BaseModel):

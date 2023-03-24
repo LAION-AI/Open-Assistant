@@ -1,6 +1,7 @@
 import fastapi
 import pydantic
 from oasst_inference_server.settings import settings
+from oasst_shared import model_configs
 from oasst_shared.schemas import inference
 
 router = fastapi.APIRouter(
@@ -12,10 +13,10 @@ router = fastapi.APIRouter(
 class ParameterConfig(pydantic.BaseModel):
     name: str
     description: str = ""
-    work_parameters: inference.WorkParametersInput
+    sampling_parameters: inference.SamplingParameters
 
 
-class ModelInfo(pydantic.BaseModel):
+class ModelConfigInfo(pydantic.BaseModel):
     name: str
     description: str = ""
     parameter_configs: list[ParameterConfig] = []
@@ -25,8 +26,7 @@ DEFAULT_PARAMETER_CONFIGS = [
     ParameterConfig(
         name="k50",
         description="Top-k sampling with k=50",
-        work_parameters=inference.WorkParametersInput(
-            model_name="_model_",
+        sampling_parameters=inference.SamplingParameters(
             top_k=50,
             top_p=0.95,
             temperature=1.0,
@@ -36,8 +36,7 @@ DEFAULT_PARAMETER_CONFIGS = [
     ParameterConfig(
         name="nucleus9",
         description="Nucleus sampling with p=0.9",
-        work_parameters=inference.WorkParametersInput(
-            model_name="_model_",
+        sampling_parameters=inference.SamplingParameters(
             top_p=0.9,
             temperature=0.8,
             repetition_penalty=1.2,
@@ -46,8 +45,7 @@ DEFAULT_PARAMETER_CONFIGS = [
     ParameterConfig(
         name="typical2",
         description="Typical sampling with p=0.2",
-        work_parameters=inference.WorkParametersInput(
-            model_name="_model_",
+        sampling_parameters=inference.SamplingParameters(
             temperature=0.8,
             typical_p=0.2,
             repetition_penalty=1.2,
@@ -56,8 +54,7 @@ DEFAULT_PARAMETER_CONFIGS = [
     ParameterConfig(
         name="typical3",
         description="Typical sampling with p=0.3",
-        work_parameters=inference.WorkParametersInput(
-            model_name="_model_",
+        sampling_parameters=inference.SamplingParameters(
             temperature=0.8,
             typical_p=0.3,
             repetition_penalty=1.2,
@@ -66,17 +63,13 @@ DEFAULT_PARAMETER_CONFIGS = [
 ]
 
 
-@router.get("/models")
-async def get_models() -> list[ModelInfo]:
-    allowed_models_list = settings.allowed_models_list
+@router.get("/model_configs")
+async def get_model_configs() -> list[ModelConfigInfo]:
     return [
-        ModelInfo(
-            name=model_name,
-            parameter_configs=[
-                config.copy(update={"work_parameters": config.work_parameters.copy(update={"model_name": model_name})})
-                for config in DEFAULT_PARAMETER_CONFIGS
-            ],
+        ModelConfigInfo(
+            name=model_config_name,
+            parameter_configs=DEFAULT_PARAMETER_CONFIGS,
         )
-        for model_name in inference.DEFAULT_MODEL_LENGTHS.keys()
-        if (settings.allowed_models == "*" or model_name in allowed_models_list)
+        for model_config_name in model_configs.MODEL_CONFIGS
+        if (settings.allowed_model_config_names == "*" or model_config_name in settings.allowed_model_config_names_list)
     ]

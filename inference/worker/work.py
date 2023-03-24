@@ -1,4 +1,5 @@
 import threading
+from concurrent import futures
 
 import interface
 import requests
@@ -22,8 +23,8 @@ def truncate_prompt(
     with tokenizer_lock:
         ids = tokenizer.encode(prompt)
 
-    max_input_length = worker_config.model_max_input_length
-    max_total_tokens = worker_config.model_max_total_length
+    max_input_length = worker_config.model_config.max_input_length
+    max_total_tokens = worker_config.model_config.max_total_length
     if len(ids) > max_input_length:
         logger.warning(f"Prompt too long, left-truncating to {max_input_length} tokens")
         ids = ids[-(max_input_length - 1) :]
@@ -87,15 +88,17 @@ def handle_work_request(
     prompt, parameters = make_prompt_and_parameters(tokenizer=tokenizer, work_request=work_request)
     logger.debug(f"Prompt: {prompt}")
 
+    model_config = worker_config.model_config
+
     stream_response = None
     token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)
     stream_request = interface.GenerateStreamRequest(
         inputs=prompt,
         parameters=parameters,
     )
-    if settings.model_id == "_lorem":
+    if model_config.is_lorem:
         stream_events = utils.lorem_events(parameters.seed)
-    # elif "llama" in settings.model_id:
+    # elif model_config.is_llama:
     #     prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
     #     stream_events = get_hf_stream_events(stream_request)
     else:
@@ -117,7 +120,7 @@ def handle_work_request(
             raise RuntimeError(f"Error from inference server: {stream_response.error}")
         token = stream_response.token
 
-        if "llama" in settings.model_id:
+        if model_config.is_llama:
             generated_ids.append(token.id)
             with tokenizer_lock:
                 text = tokenizer.decode(generated_ids)
@@ -139,7 +142,7 @@ def handle_work_request(
             send_token.to_token_response(request_id=work_request.id),
         )
 
-    if "llama" in settings.model_id:
+    if model_config.is_llama:
         stream_response.generated_text = stream_response.generated_text.strip()
     logger.info(f"Done. {stream_response=}")
     utils.send_response(
@@ -187,3 +190,74 @@ def get_inference_server_stream_events(request: interface.GenerateStreamRequest)
     for event in client.events():
         stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
         yield stream_response
+
+
+def perform_oom_test(tokenizer: transformers.PreTrainedTokenizer):
+    logger.warning("Performing OOM test")
+    prompt = ("This is a test prompt. " * 10000).strip()
+    parameters = interface.GenerateStreamParameters(
+        max_new_tokens=4,
+        temperature=1.5,
+        top_p=0.95,
+        repetition_penalty=1.0,
+        do_sample=True,
+        stop=[],
+    )
+
+    class OOMError(Exception):
+        pass
+
+    if settings.oom_test_max_length is None:
+        try:
+            for length in range(256, 2**15, 256):
+                prompt_ids = tokenizer.encode(prompt, max_length=length - 4, truncation=True)
+                short_prompt = tokenizer.decode(prompt_ids)
+                stream_request = interface.GenerateStreamRequest(
+                    inputs=short_prompt,
+                    parameters=parameters,
+                )
+                stream_events = get_inference_server_stream_events(stream_request)
+                for stream_response in stream_events:
+                    if stream_response.is_error:
+                        logger.error(f"Error from inference server: {stream_response.error}")
+                        raise OOMError()
+        except OOMError:
+            length = length - 256
+        logger.warning(f"Max length: {length}")
+    else:
+        length = settings.oom_test_max_length
+
+    with futures.ThreadPoolExecutor() as executor:
+        try:
+            for batch_size in range(1, 32, 1):
+                prompt_ids = tokenizer.encode(prompt, max_length=length - 4, truncation=True)
+                short_prompt = tokenizer.decode(prompt_ids)
+                stream_request = interface.GenerateStreamRequest(
+                    inputs=short_prompt,
+                    parameters=parameters,
+                )
+                ftrs: list[futures.Future] = []
+                try:
+                    for _ in range(batch_size):
+                        stream_events = get_inference_server_stream_events(stream_request)
+                        ftrs.append(executor.submit(list, stream_events))
+                    for ftr in ftrs:
+                        for stream_response in ftr.result():
+                            if stream_response.is_error:
+                                logger.error(f"Error from inference server: {stream_response.error}")
+                                raise OOMError()
+                except Exception:
+                    logger.exception("OOM")
+                    try:
+                        for ftr in ftrs:
+                            ftr.cancel()
+                    except Exception:
+                        pass
+                    raise OOMError()
+        except OOMError:
+            batch_size = batch_size - 1
+        logger.warning(f"Batch size: {batch_size}")
+
+    logger.warning("OOM test complete")
+    logger.warning(f"Max length: {length}")
+    logger.warning(f"Batch size: {batch_size}")

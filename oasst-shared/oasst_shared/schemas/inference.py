@@ -3,43 +3,14 @@ import platform
 import random
 import uuid
 from datetime import datetime
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Literal, Union
 
 import psutil
 import pydantic
 import pynvml
+from oasst_shared.model_configs import ModelConfig
 
 INFERENCE_PROTOCOL_VERSION = "1"
-
-DEFAULT_MODEL_LENGTHS = {
-    "_lorem": 256,
-    "distilgpt2": 1024,
-    "OpenAssistant/oasst-sft-1-pythia-12b": 2048,
-    "OpenAssistant/oasst_sft_llama_7b_mask_1000": 2048,
-    "OpenAssistant/oasst_sft_llama_13b_mask_1500": 2048,
-    "OpenAssistant/llama_30b_oasst_latcyr_400": 2048,
-    "OpenAssistant/llama_30b_oasst_latcyr_1000": 2048,
-}
-
-
-def compat_hash(
-    *,
-    model_name: str,
-    model_max_total_length: int,
-    model_max_input_length: int,
-) -> str:
-    return f"{model_name}-{model_max_total_length}-{model_max_input_length}"
-
-
-def set_model_max_lengths(values: dict[str, Any]):
-    if values.get("model_name") is None:
-        raise ValueError("model_name is required")
-    if "model_max_total_length" not in values:
-        model_name = values["model_name"]
-        values["model_max_total_length"] = DEFAULT_MODEL_LENGTHS.get(model_name, 2048)
-    if "model_max_input_length" not in values:
-        values["model_max_input_length"] = values["model_max_total_length"] // 2
-    return values
 
 
 class WorkerGpuInfo(pydantic.BaseModel):
@@ -89,22 +60,12 @@ class WorkerHardwareInfo(pydantic.BaseModel):
 
 
 class WorkerConfig(pydantic.BaseModel):
-    model_name: str
-    model_max_total_length: int
-    model_max_input_length: int
-    max_parallel_requests: int = 8
-
-    @pydantic.root_validator(pre=True)
-    def set_max_lengths(cls, values):
-        return set_model_max_lengths(values)
+    model_config: ModelConfig
+    max_parallel_requests: int = 1
 
     @property
     def compat_hash(self) -> str:
-        return compat_hash(
-            model_name=self.model_name,
-            model_max_total_length=self.model_max_total_length,
-            model_max_input_length=self.model_max_input_length,
-        )
+        return self.model_config.compat_hash
 
 
 class WorkerInfo(pydantic.BaseModel):
@@ -145,10 +106,7 @@ class WorkerMetricsInfo(pydantic.BaseModel):
         super().__init__(**data)
 
 
-class WorkParametersInput(pydantic.BaseModel):
-    model_name: str
-    model_max_total_length: int  # don't set this unless you know what you're doing
-    model_max_input_length: int  # don't set this unless you know what you're doing
+class SamplingParameters(pydantic.BaseModel):
     top_k: int | None = None
     top_p: float | None = None
     typical_p: float | None = None
@@ -156,16 +114,14 @@ class WorkParametersInput(pydantic.BaseModel):
     repetition_penalty: float | None = None
     max_new_tokens: int = 1024
 
-    @pydantic.root_validator(pre=True)
-    def set_max_lengths(cls, values):
-        return set_model_max_lengths(values)
-
 
 def make_seed() -> int:
     return random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1)
 
 
-class WorkParameters(WorkParametersInput):
+class WorkParameters(pydantic.BaseModel):
+    model_config: ModelConfig
+    sampling_parameters: SamplingParameters = pydantic.Field(default_factory=SamplingParameters)
     do_sample: bool = True
     seed: int = pydantic.Field(
         default_factory=make_seed,

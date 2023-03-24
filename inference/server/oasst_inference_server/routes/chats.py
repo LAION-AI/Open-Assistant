@@ -6,6 +6,7 @@ from oasst_inference_server import auth, deps, models, queueing
 from oasst_inference_server.schemas import chat as chat_schema
 from oasst_inference_server.settings import settings
 from oasst_inference_server.user_chat_repository import UserChatRepository
+from oasst_shared import model_configs
 from oasst_shared.schemas import inference
 from sse_starlette.sse import EventSourceResponse
 
@@ -55,15 +56,23 @@ async def create_message(
 ) -> chat_schema.CreateMessageResponse:
     """Allows the client to stream the results of a request."""
 
-    if settings.allowed_models != "*":
-        if request.work_parameters.model_name not in settings.allowed_models_list:
+    if settings.allowed_model_config_names != "*":
+        if request.model_config_name not in settings.allowed_model_config_names_list:
             logger.warning(
-                f"Model {request.work_parameters.model_name} not in allowed models: {settings.allowed_models}"
+                f"Model {request.model_config_name} not in allowed models: {settings.allowed_model_config_names}"
             )
             raise fastapi.HTTPException(
                 status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Model {request.work_parameters.model_name} not in allowed models: {settings.allowed_models}",
+                detail=f"Model {request.model_config_name} not in allowed models: {settings.allowed_model_config_names}",
             )
+
+    model_config = model_configs.MODEL_CONFIGS.get(request.model_config_name)
+    if model_config is None:
+        logger.warning(f"Model {request.model_config_name} not found")
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Model {request.model_config_name} not found",
+        )
 
     try:
         ucr: UserChatRepository
@@ -71,12 +80,15 @@ async def create_message(
             prompter_message = await ucr.add_prompter_message(
                 chat_id=chat_id, parent_id=request.parent_id, content=request.content
             )
-            work_parameters = inference.WorkParameters(**request.work_parameters.dict())
+            work_parameters = inference.WorkParameters(
+                model_config=model_config,
+                sampling_parameters=request.sampling_parameters,
+            )
             assistant_message = await ucr.initiate_assistant_message(
                 parent_id=prompter_message.id,
                 work_parameters=work_parameters,
             )
-        queue = queueing.work_queue(deps.redis_client, request.worker_compat_hash)
+        queue = queueing.work_queue(deps.redis_client, model_config.compat_hash)
         logger.debug(f"Adding {assistant_message.id=} to {queue.queue_id} for {chat_id}")
         await queue.enqueue(assistant_message.id)
         logger.debug(f"Added {assistant_message.id=} to {queue.queue_id} for {chat_id}")
