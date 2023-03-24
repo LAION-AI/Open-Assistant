@@ -2,7 +2,6 @@ import { Box, Button, Center, Link, Text, useColorMode } from "@chakra-ui/react"
 import { AlertTriangle } from "lucide-react";
 import Head from "next/head";
 import { EmptyState } from "src/components/EmptyState";
-import { getTransparentHeaderLayout } from "src/components/Layout";
 export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
 
 function ServerError() {
@@ -41,7 +40,5 @@ function ServerError() {
     </>
   );
 }
-
-ServerError.getLayout = getTransparentHeaderLayout;
 
 export default ServerError;

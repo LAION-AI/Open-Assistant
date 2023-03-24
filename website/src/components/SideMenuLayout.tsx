@@ -1,28 +1,33 @@
-import { Box, useColorMode } from "@chakra-ui/react";
-import { MenuButtonOption, SideMenu } from "src/components/SideMenu";
+import { Box, useColorModeValue } from "@chakra-ui/react";
+import { PropsWithChildren } from "react";
+import { SIDE_MENU_WIDTH, SideMenu, SideMenuProps } from "src/components/SideMenu";
 import { colors } from "src/styles/Theme/colors";
 
-interface SideMenuLayoutProps {
-  menuButtonOptions: MenuButtonOption[];
-  children: React.ReactNode;
-}
-
-export const SideMenuLayout = (props: SideMenuLayoutProps) => {
-  const { colorMode } = useColorMode();
+export const SideMenuLayout = ({ items, children }: PropsWithChildren<SideMenuProps>) => {
+  const bg = useColorModeValue("gray.100", colors.dark.bg);
 
   return (
-    <Box backgroundColor={colorMode === "light" ? "gray.100" : colors.dark.bg} className="sm:overflow-hidden">
-      <Box display="flex" flexDirection={["column", "row"]} h="full" gap={["0", "0", "0", "6"]}>
-        <Box p={["3", "3", "3", "6"]} pe={["3", "3", "3", "0"]}>
-          <SideMenu buttonOptions={props.menuButtonOptions} />
-        </Box>
-        <Box
-          className="p-3 lg:p-6 ltr:lg:pl-0 rtl:lg:pr-0 w-full"
-          overflowX="hidden"
-          overflowY={{ base: "hidden", sm: "auto" }}
-        >
-          {props.children}
-        </Box>
+    <Box
+      backgroundColor={bg}
+      display="flex"
+      flexDirection={{ base: "column", md: "row" }}
+      h="full"
+      px={{ base: 3, lg: 6 }}
+      py="6"
+      position="relative"
+    >
+      <SideMenu items={items} />
+      <Box
+        display="block"
+        w="full"
+        ms={{ md: 6 }}
+        ps={{
+          md: SIDE_MENU_WIDTH.MD,
+          lg: SIDE_MENU_WIDTH.LG,
+        }}
+        mt={{ base: 6, md: 0 }}
+      >
+        {children}
       </Box>
     </Box>
   );
