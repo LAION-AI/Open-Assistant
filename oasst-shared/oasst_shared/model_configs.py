@@ -66,7 +66,7 @@ MODEL_CONFIGS = {
     "OA_SFT_Llama_30Bq": ModelConfig(
         model_id="OpenAssistant/llama_30b_oasst_latcyr_1000",
         max_input_length=1024,
-        max_total_length=2048,
+        max_total_length=1792,  # an a100 40GB can't handle 2048
         quantized=True,
     ),
     "OA_SFT_Llama_30B_2": ModelConfig(
@@ -77,7 +77,7 @@ MODEL_CONFIGS = {
     "OA_SFT_Llama_30Bq_2": ModelConfig(
         model_id="OpenAssistant/llama_30b_oasst_latcyr_400",
         max_input_length=1024,
-        max_total_length=2048,
+        max_total_length=1792,  # an a100 40GB can't handle 2048
         quantized=True,
     ),
 }
