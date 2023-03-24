@@ -101,7 +101,7 @@ async def create_refresh_token(user_id: str) -> str:
     to_encode_bytes: bytes = json.dumps(to_encode).encode()
     token: bytes = jwe.encrypt(to_encode_bytes, key)
 
-    async with deps.manual_create_session as session:
+    async with deps.manual_create_session() as session:
         # Hash token for the backend DB
         token_hash: bytes = hashlib.sha256(token).hexdigest()
         token_model: models.DbRefreshToken = models.DbRefreshToken(token_hash=token_hash, user_id=user_id)
