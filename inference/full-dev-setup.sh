@@ -1,9 +1,17 @@
 #!/bin/bash
 
 # set MODEL_CONFIG_NAME to first argument or default to distilgpt2
-MODEL_CONFIG_NAME=${1:-distilgpt2}
-MODEL_ID=${2:-$MODEL_CONFIG_NAME}
+export MODEL_CONFIG_NAME=${1:-distilgpt2}
+MODEL_ID=$(python3 worker/get_model_config_prop.py model_id)
 LOGLEVEL=${LOGLEVEL:-DEBUG}
+echo "MODEL_ID: $MODEL_ID"
+is_llama=$(python3 worker/get_model_config_prop.py is_llama)
+# if model is a llama, use the llama tag
+if [ "$is_llama" = "true" ]; then
+    INFERENCE_TAG=llama
+else
+    INFERENCE_TAG=latest
+fi
 
 # Creates a tmux window with splits for the individual services
 
@@ -17,7 +25,7 @@ if [ "$MODEL_CONFIG_NAME" != "_lorem" ]; then
 tmux split-window -h
 tmux send-keys "docker run --rm -it -p 8001:80 -e MODEL_ID=$MODEL_ID \
     -v $HOME/.cache/huggingface:/root/.cache/huggingface \
-    --name text-generation-inference ghcr.io/yk/text-generation-inference:llama" C-m
+    --name text-generation-inference ghcr.io/yk/text-generation-inference:$INFERENCE_TAG" C-m
 fi
 
 tmux split-window -h
