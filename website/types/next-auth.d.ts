@@ -1,4 +1,5 @@
 import { DefaultSession } from "next-auth";
+import { InferenceTokens } from "src/types/Chat";
 
 declare module "next-auth" {
   interface Session {
@@ -10,6 +11,10 @@ declare module "next-auth" {
       /** Iso timestamp of the user's acceptance of the terms of service */
       tosAcceptanceDate?: string;
     } & DefaultSession["user"];
+
+    inference: {
+      isAuthenticated: boolean;
+    };
   }
 }
 
@@ -23,5 +28,7 @@ declare module "next-auth/jwt" {
     sub: string;
     /** Iso timestamp of the user's acceptance of the terms of service */
     tosAcceptanceDate?: string;
+    /** tokens for interacting with inference server */
+    inferenceTokens?: InferenceTokens;
   }
 }
