@@ -4,7 +4,8 @@
   "default": {
     "unchanged_title": "No changes",
     "unchanged_message": "Are you sure you would like to continue?",
-    "continue_anyway": "Continue anyway"
+    "continue_anyway": "Continue anyway",
+    "markdownguide": "Styling with markdown supported"
   },
   "no_more_tasks": "Looks like no tasks were found.",
   "random": {
