@@ -56,12 +56,14 @@ async def create_message(
 ) -> chat_schema.CreateMessageResponse:
     """Allows the client to stream the results of a request."""
 
-    if settings.allowed_models != "*":
-        if request.model_config_name not in settings.allowed_models_list:
-            logger.warning(f"Model {request.model_config_name} not in allowed models: {settings.allowed_models}")
+    if settings.allowed_model_config_names != "*":
+        if request.model_config_name not in settings.allowed_model_config_names_list:
+            logger.warning(
+                f"Model {request.model_config_name} not in allowed models: {settings.allowed_model_config_names}"
+            )
             raise fastapi.HTTPException(
                 status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Model {request.model_config_name} not in allowed models: {settings.allowed_models}",
+                detail=f"Model {request.model_config_name} not in allowed models: {settings.allowed_model_config_names}",
             )
 
     model_config = model_configs.MODEL_CONFIGS.get(request.model_config_name)

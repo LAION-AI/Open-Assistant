@@ -16,11 +16,11 @@ class Settings(pydantic.BaseSettings):
     def allowed_worker_compat_hashes_list(self) -> list[str]:
         return self.allowed_worker_compat_hashes.split(",")
 
-    allowed_models: str = "*"
+    allowed_model_config_names: str = "*"
 
     @property
-    def allowed_models_list(self) -> list[str]:
-        return self.allowed_models.split(",")
+    def allowed_model_config_names_list(self) -> list[str]:
+        return self.allowed_model_config_names.split(",")
 
     sse_retry_timeout: int = 15000
     update_alembic: bool = True

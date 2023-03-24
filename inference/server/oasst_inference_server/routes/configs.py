@@ -65,12 +65,11 @@ DEFAULT_PARAMETER_CONFIGS = [
 
 @router.get("/model_configs")
 async def get_model_configs() -> list[ModelConfigInfo]:
-    allowed_models_list = settings.allowed_models_list
     return [
         ModelConfigInfo(
             name=model_config_name,
             parameter_configs=DEFAULT_PARAMETER_CONFIGS,
         )
         for model_config_name in model_configs.MODEL_CONFIGS
-        if (settings.allowed_models == "*" or model_config_name in allowed_models_list)
+        if (settings.allowed_model_config_names == "*" or model_config_name in settings.allowed_model_config_names_list)
     ]
