@@ -9,7 +9,7 @@ import pydantic
 from oasst_data import ExportMessageTree
 
 
-def load_messega_trees(
+def load_message_trees(
     input_file_path: str | Path,
     lang_codes: list[str],
     tree_state: str,
@@ -102,7 +102,7 @@ def main():
     args = parse_args()
     lang_codes = args.lang.split(",")
     random.seed(args.seed)
-    trees = load_messega_trees(
+    trees = load_message_trees(
         args.input_file,
         lang_codes=lang_codes,
         tree_state=args.state,
