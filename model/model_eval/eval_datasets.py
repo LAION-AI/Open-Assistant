@@ -1,41 +1,38 @@
-from model_training.custom_datasets.formatting import format_pairs, format_reply
+import torch
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from torch.utils.data import DataLoader, Dataset
-import torch
+
 
 def get_sampling_dataloader(data, tokenizer, max_length, batch_size):
-    collate_fn = SamplingDataCollator(tokenizer, max_length = max_length)
+    collate_fn = SamplingDataCollator(tokenizer, max_length=max_length)
     dataset = SamplingDataset(data)
-    return DataLoader(dataset, collate_fn = collate_fn, batch_size=batch_size)
+    return DataLoader(dataset, collate_fn=collate_fn, batch_size=batch_size)
 
 
 class SamplingDataCollator(RankingDataCollator):
-        
-        def __call__(self, examples):
+    def __call__(self, examples):
+        flat_tokenized = []
+        sampling_ids = []
+        for example in examples:
+            prefix, reply, sampling = example
+            sampling_ids.append(sampling)
+            tokenized = self.process_one((prefix, reply))
+            flat_tokenized.extend(tokenized)
 
-            flat_tokenized = []
-            sampling_ids = []
-            for example in examples:
-                prefix, reply, sampling = example
-                sampling_ids.append(sampling)
-                tokenized = self.process_one((prefix,reply))
-                flat_tokenized.extend(tokenized)
+        batch = self.tokenizer.pad(
+            flat_tokenized,
+            padding=self.padding,
+            max_length=self.max_length,
+            pad_to_multiple_of=self.pad_to_multiple_of,
+            return_tensors="pt",
+        )
 
+        if "token_type_ids" in batch:
+            batch.pop("token_type_ids")
 
-            batch = self.tokenizer.pad(
-                flat_tokenized,
-                padding=self.padding,
-                max_length=self.max_length,
-                pad_to_multiple_of=self.pad_to_multiple_of,
-                return_tensors="pt",
-            )
+        batch["sampling"] = torch.tensor(sampling_ids)
+        return batch
 
-            if "token_type_ids" in batch:
-                batch.pop("token_type_ids")
-            
-            batch["sampling"] = torch.tensor(sampling_ids)
-            return batch
-            
 
 class SamplingDataset(Dataset):
 
@@ -69,4 +66,4 @@ class SamplingDataset(Dataset):
         prefix, reply, sampling = self.dataset[idx]
         sampling = self.label2id[sampling]
 
-        return ([prefix],[reply],sampling)
+        return ([prefix], [reply], sampling)
