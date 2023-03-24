@@ -1,11 +1,41 @@
 from model_training.custom_datasets.formatting import format_pairs, format_reply
+from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from torch.utils.data import DataLoader, Dataset
+import torch
+
+def get_sampling_dataloader(data, tokenizer, max_length, batch_size):
+    collate_fn = SamplingDataCollator(tokenizer, max_length = max_length)
+    dataset = SamplingDataset(data)
+    return DataLoader(dataset, collate_fn = collate_fn, batch_size=batch_size)
 
 
-def get_sampling_dataloader(data, tokenizer, max_len, batch_size, device):
-    dataset = SamplingDataset(data, tokenizer, max_len, device)
-    return DataLoader(dataset, batch_size=batch_size)
+class SamplingDataCollator(RankingDataCollator):
+        
+        def __call__(self, examples):
 
+            flat_tokenized = []
+            sampling_ids = []
+            for example in examples:
+                prefix, reply, sampling = example
+                sampling_ids.append(sampling)
+                tokenized = self.process_one((prefix,reply))
+                flat_tokenized.extend(tokenized)
+
+
+            batch = self.tokenizer.pad(
+                flat_tokenized,
+                padding=self.padding,
+                max_length=self.max_length,
+                pad_to_multiple_of=self.pad_to_multiple_of,
+                return_tensors="pt",
+            )
+
+            if "token_type_ids" in batch:
+                batch.pop("token_type_ids")
+            
+            batch["sampling"] = torch.tensor(sampling_ids)
+            return batch
+            
 
 class SamplingDataset(Dataset):
 
@@ -13,12 +43,9 @@ class SamplingDataset(Dataset):
     Dataset for loading sampling reports
     """
 
-    def __init__(self, dataset, tokenizer, max_len, device):
+    def __init__(self, dataset):
         super().__init__()
 
-        self.device = device
-        self.tokenizer = tokenizer
-        self.max_len = max_len
         self.dataset = []
         sampling_list = []
         for data in dataset["prompts"][:4]:
@@ -40,18 +67,6 @@ class SamplingDataset(Dataset):
 
     def __getitem__(self, idx):
         prefix, reply, sampling = self.dataset[idx]
-        prefix = format_pairs([prefix], self.tokenizer.eos_token)[0]
-        reply = format_reply(reply, self.tokenizer.eos_token)[0]
-        encodings = self.tokenizer(
-            prefix,
-            reply,
-            add_special_tokens=True,
-            max_length=self.max_len,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt",
-        ).to(self.device)
+        sampling = self.label2id[sampling]
 
-        encodings["sampling"] = self.label2id[sampling]
-
-        return encodings
+        return ([prefix],[reply],sampling)
