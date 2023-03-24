@@ -55,7 +55,7 @@ async def load_models():
         sys.exit(2)
 
     logger.warning(f"Loading model {model_config.model_id}...")
-    if "llama" in model_config.model_id:
+    if model_config.is_llama:
         config = transformers.LlamaConfig.from_pretrained(model_config.model_id)
         tokenizer = transformers.LlamaTokenizer.from_pretrained(model_config.model_id)
         model = transformers.LlamaForCausalLM.from_pretrained(model_config.model_id, torch_dtype=config.torch_dtype)

@@ -29,17 +29,12 @@ def main():
         logger.error(f"Unknown model config name: {settings.model_config_name}")
         sys.exit(2)
 
-    if not model_config.is_lorem:
-        if model_config.is_llama:
-            tokenizer: transformers.PreTrainedTokenizer = transformers.LlamaTokenizer.from_pretrained(
-                model_config.model_id
-            )
-        else:
-            tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(
-                model_config.model_id
-            )
-    else:
+    if model_config.is_lorem:
         tokenizer = None
+    elif model_config.is_llama:
+        tokenizer: transformers.PreTrainedTokenizer = transformers.LlamaTokenizer.from_pretrained(model_config.model_id)
+    else:
+        tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
 
     while True:
         try:
