@@ -12,4 +12,7 @@ if __name__ == "__main__":
     if not hasattr(model_config, prop):
         print(f"Unknown property: {prop}")
         sys.exit(3)
-    print(getattr(model_config, prop))
+    val = getattr(model_config, prop)
+    if isinstance(val, bool):
+        val = str(val).lower()
+    print(val, end="")

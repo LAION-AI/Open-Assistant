@@ -204,43 +204,60 @@ def perform_oom_test(tokenizer: transformers.PreTrainedTokenizer):
         stop=[],
     )
 
+    class OOMError(Exception):
+        pass
+
     if settings.oom_test_max_length is None:
-        for length in range(256, 2**15, 256):
-            prompt_ids = tokenizer.encode(prompt, max_length=length - 4, truncation=True)
-            short_prompt = tokenizer.decode(prompt_ids)
-            stream_request = interface.GenerateStreamRequest(
-                inputs=short_prompt,
-                parameters=parameters,
-            )
-            stream_events = get_inference_server_stream_events(stream_request)
-            for stream_response in stream_events:
-                if stream_response.is_error:
-                    logger.error(f"Error from inference server: {stream_response.error}")
-                    break
-        length = length - 256
+        try:
+            for length in range(256, 2**15, 256):
+                prompt_ids = tokenizer.encode(prompt, max_length=length - 4, truncation=True)
+                short_prompt = tokenizer.decode(prompt_ids)
+                stream_request = interface.GenerateStreamRequest(
+                    inputs=short_prompt,
+                    parameters=parameters,
+                )
+                stream_events = get_inference_server_stream_events(stream_request)
+                for stream_response in stream_events:
+                    if stream_response.is_error:
+                        logger.error(f"Error from inference server: {stream_response.error}")
+                        raise OOMError()
+        except OOMError:
+            length = length - 256
         logger.warning(f"Max length: {length}")
     else:
         length = settings.oom_test_max_length
 
     with futures.ThreadPoolExecutor() as executor:
-        for batch_size in range(1, 32, 1):
-            prompt_ids = tokenizer.encode(prompt, max_length=length - 4, truncation=True)
-            short_prompt = tokenizer.decode(prompt_ids)
-            stream_request = interface.GenerateStreamRequest(
-                inputs=short_prompt,
-                parameters=parameters,
-            )
-            stream_events = get_inference_server_stream_events(stream_request)
-            ftrs: list[futures.Future] = []
-            try:
-                for _ in range(batch_size):
-                    ftrs.append(executor.submit(list, stream_events))
-                for ftr in ftrs:
-                    ftr.result()
-            except Exception:
-                logger.exception("OOM")
-                break
-        batch_size = batch_size - 1
+        try:
+            for batch_size in range(1, 32, 1):
+                prompt_ids = tokenizer.encode(prompt, max_length=length - 4, truncation=True)
+                short_prompt = tokenizer.decode(prompt_ids)
+                stream_request = interface.GenerateStreamRequest(
+                    inputs=short_prompt,
+                    parameters=parameters,
+                )
+                ftrs: list[futures.Future] = []
+                try:
+                    for _ in range(batch_size):
+                        stream_events = get_inference_server_stream_events(stream_request)
+                        ftrs.append(executor.submit(list, stream_events))
+                    for ftr in ftrs:
+                        for stream_response in ftr.result():
+                            if stream_response.is_error:
+                                logger.error(f"Error from inference server: {stream_response.error}")
+                                raise OOMError()
+                except Exception:
+                    logger.exception("OOM")
+                    try:
+                        for ftr in ftrs:
+                            ftr.cancel()
+                    except Exception:
+                        pass
+                    raise OOMError()
+        except OOMError:
+            batch_size = batch_size - 1
         logger.warning(f"Batch size: {batch_size}")
 
     logger.warning("OOM test complete")
+    logger.warning(f"Max length: {length}")
+    logger.warning(f"Batch size: {batch_size}")

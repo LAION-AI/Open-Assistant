@@ -7,8 +7,8 @@ export MODEL_CONFIG_NAME=${MODEL_CONFIG_NAME:-"OA_SFT_Pythia_12B"}
 
 num_shards=${NUM_SHARDS:-1}
 
-export MODEL_ID=$(/opt/miniconda/envs/worker/bin/python /worker/get_model_id.py model_id)
-export QUANTIZE=$(/opt/miniconda/envs/worker/bin/python /worker/get_model_id.py quantized)
+export MODEL_ID=$(/opt/miniconda/envs/worker/bin/python /worker/get_model_config_prop.py model_id)
+export QUANTIZE=$(/opt/miniconda/envs/worker/bin/python /worker/get_model_config_prop.py quantized)
 
 quantize=${QUANTIZE:-"false"}
 quantize_args=""
