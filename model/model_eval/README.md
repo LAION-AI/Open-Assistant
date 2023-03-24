@@ -1,11 +1,11 @@
 ## Evaluate Sampling Reports using Reward Model
 
-
 ### Requirements
-* cd model/
-    *  ```pip install -e . ```
-* cd oasst-data
-    * ```pip install -e .```
+
+- cd model/
+  - `pip install -e . `
+- cd oasst-data
+  - `pip install -e .`
 
 ### Run
 
