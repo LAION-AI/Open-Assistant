@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-py-modules = []
+py-modules = ["model_training"]
 
 [tool.black]
 line-length = 120

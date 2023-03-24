@@ -3,7 +3,14 @@ import axios, { AxiosRequestConfig } from "axios";
 import Cookies from "cookies";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { JWT } from "next-auth/jwt";
-import { ChatItem, InferenceTokenResponse, InferenceMessage, InferencePostMessageResponse } from "src/types/Chat";
+import {
+  ChatItem,
+  InferenceMessage,
+  InferencePostMessageResponse,
+  InferenceTokenResponse,
+  ModelInfo,
+  WorkParametersInput,
+} from "src/types/Chat";
 
 // TODO: this class could be structured better
 export class OasstInferenceClient {
@@ -70,13 +77,15 @@ export class OasstInferenceClient {
     chat_id,
     parent_id,
     content,
+    work_parameters,
   }: {
     chat_id: string;
     parent_id: string | null;
     content: string;
+    work_parameters: WorkParametersInput;
   }): Promise<InferencePostMessageResponse> {
     return this.request("POST", `/chats/${chat_id}/messages`, {
-      data: { parent_id, content },
+      data: { parent_id, content, work_parameters },
     });
   }
 
@@ -91,5 +100,9 @@ export class OasstInferenceClient {
 
   vote({ chat_id, message_id, score }: { chat_id: string; message_id: string; score: number }) {
     return this.request("POST", `/chats/${chat_id}/messages/${message_id}/votes`, { data: { score } });
+  }
+
+  get_models() {
+    return this.request<ModelInfo[]>("GET", "/configs/models");
   }
 }

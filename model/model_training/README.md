@@ -2,7 +2,7 @@
 
 ## Requirements
 
-`pip install .`
+`pip install -e ..` (pyproject.toml resides in the parent directory)
 
 Run tests: `pytest .`
 

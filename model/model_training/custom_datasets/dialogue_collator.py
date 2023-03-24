@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
+from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from torch.nn import functional as F
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase, TruncationStrategy
 
@@ -57,45 +58,59 @@ class DialogueDataCollator:
             "".join(messages),
             max_length=max_length,
             truncation=truncation,
-            return_offsets_mapping=True,
             padding=False,
         )
 
         if return_length:
-            return min(len(flatten_message["input_ids"]), self.max_length)
+            return min(len(flatten_message.input_ids), self.max_length)
 
-        message_change_indices = np.cumsum([len(x) for x in messages])
-        # for each token an integer indicating the index of the message it belongs to. Just to create the label mask.
-        # Label mask is true when predicting a token that is part of the answer, false otherwise.
-        # TEXT:             Question: Hello, how are you? Answer: I am fine. Question: What is your name? Answer: My name is John.
-        # MESSAGE_INDICES:  0         0      0   0   0    1       1 1  1     2         2    2  2    2     3       3  3    3  3
-        # LABEL_MASK:       0         0      0   0   0    1       1 1  1     0         0    0  0    0     1       1  1    1  1
+        message_indices: Optional[list[int]] = None
+        if self.label_masking:
+            # message_change_indices = np.cumsum([len(x) for x in messages])
+            # for each token an integer indicating the index of the message it belongs to. Just to create the label mask.
+            # Label mask is true when predicting a token that is part of the answer, false otherwise.
+            # TEXT:             Question: Hello, how are you? Answer: I am fine. Question: What is your name? Answer: My name is John.
+            # MESSAGE_INDICES:  0         0      0   0   0    1       1 1  1     2         2    2  2    2     3       3  3    3  3
+            # LABEL_MASK:       0         0      0   0   0    1       1 1  1     0         0    0  0    0     1       1  1    1  1
 
-        # If no result in next, we are predicting the last termination token(s)
-        message_indices = list(
-            map(
-                lambda x: next((i for i, val in enumerate(message_change_indices) if val >= x)),
-                list(map(lambda x: x[1], flatten_message["offset_mapping"])),
-            )
-        )
+            # If no result in next, we are predicting the last termination token(s)
+            # message_indices = list(
+            #     map(
+            #         lambda x: next((i for i, val in enumerate(message_change_indices) if val >= x)),
+            #         list(map(lambda x: x[1], flatten_message.offset_mapping)),
+            #     )
+            # )
 
-        if self.max_length and len(message_indices) > self.max_length:
-            offset = random.randint(0, len(message_indices) - self.max_length)
+            prompter_token_id = self.tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Question"])
+            assistant_token_id = self.tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Answer"])
+            assert prompter_token_id >= 0 and assistant_token_id >= 0
+
+            message_indices = []
+            i = -1
+            for x in flatten_message.input_ids:
+                if x in (prompter_token_id, assistant_token_id):
+                    i += 1
+                message_indices.append(i)
+
+        input_length = len(flatten_message.input_ids)
+        if self.max_length and input_length > self.max_length:
+            offset = random.randint(0, input_length - self.max_length)
             for k in flatten_message.keys():
                 v = flatten_message[k]
-                if isinstance(v, list) and len(v) == len(message_indices):
+                if isinstance(v, list) and len(v) == input_length:
                     flatten_message[k] = v[offset : offset + self.max_length]
-            message_indices = message_indices[offset : offset + self.max_length]
+            if message_indices:
+                message_indices = message_indices[offset : offset + self.max_length]
 
         if self.label_masking:
             label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
         else:
-            label_mask = np.ones(len(message_indices), dtype=bool)
+            label_mask = np.ones(len(flatten_message.input_ids), dtype=bool)
 
         label_mask[-1] = False  # make sure last token is inactive, has an effect only when truncating
 
-        if len(flatten_message["input_ids"]) < self.mix_length_threshold and self.samples_mixing:
-            total_short_context_one += len(flatten_message["input_ids"])
+        if len(flatten_message.input_ids) < self.mix_length_threshold and self.samples_mixing:
+            total_short_context_one += len(flatten_message.input_ids)
 
         return {k: v for k, v in flatten_message.items() if k != "offset_mapping"}, label_mask, total_short_context_one
 
@@ -114,7 +129,7 @@ class DialogueDataCollator:
             _flatten_messages, _label_masks = [], []
             prev_short_msg, prev_short_mask = None, None
             for flatten_msg, label_mask in zip(flatten_messages, label_masks):
-                if len(flatten_msg["input_ids"]) < self.mix_length_threshold and random.random() > self.mix_probability:
+                if len(flatten_msg.input_ids) < self.mix_length_threshold and random.random() > self.mix_probability:
                     if prev_short_msg is not None:
                         for key in flatten_msg.keys():
                             flatten_msg[key] += prev_short_msg[key]
@@ -162,11 +177,11 @@ class DialogueDataCollator:
             pad_to_multiple_of=self.pad_to_multiple_of,
             return_tensors="pt",
         )
-        dim = batch["input_ids"].shape[-1]
+        dim = batch.input_ids.shape[-1]
 
         batch["label_masks"] = torch.stack(
             [F.pad(torch.tensor(x), (0, dim - len(x)), value=False) for x in label_masks]
         )
-        batch["targets"] = torch.roll(batch["input_ids"], -1, -1)
+        batch["targets"] = torch.roll(batch.input_ids, -1, -1)
 
         return batch

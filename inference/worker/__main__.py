@@ -70,7 +70,9 @@ def main():
                         match worker_request.request_type:
                             case "work":
                                 logger.info(f"Handling work request: {worker_request.id=}")
-                                ftr = executor.submit(work.handle_work_request, ws, tokenizer, worker_request)
+                                ftr = executor.submit(
+                                    work.handle_work_request, ws, tokenizer, worker_request, worker_config
+                                )
                                 ftrs.append(ftr)
                             case "ping":
                                 utils.send_response(ws, inference.PongResponse(request_id=worker_request.id))

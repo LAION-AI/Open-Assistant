@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 import pytest
-from custom_datasets import get_one_dataset
+from model_training.custom_datasets import get_one_dataset
 
 
 @pytest.mark.skip(reason="cache not populated")
