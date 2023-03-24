@@ -73,7 +73,7 @@ async def revoke_refresh_tokens(
     root_token: str = Depends(get_root_token),
     session: database.AsyncSession = Depends(deps.create_session),
 ):
-    """Revokes refresh tokens for a user."""
+    """Revoke refresh tokens for a user."""
     logger.info(f"Revoking refresh tokens for user {user_id}")
     refresh_tokens = (
         await session.exec(sqlmodel.select(models.DbRefreshToken).where(models.DbRefreshToken.user_id == user_id))

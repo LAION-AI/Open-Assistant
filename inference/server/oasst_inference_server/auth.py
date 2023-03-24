@@ -134,11 +134,17 @@ async def refresh_access_token(refresh_token: str) -> str:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
     payload: dict = json.loads(token.decode())
+    user_id = payload.get("user_id")
+    exp = payload.get("exp")
+    token_type = payload.get("type")
 
-    if payload["user_id"] != token_model.user_id:
+    if not exp or not user_id or user_id != token_model.user_id:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-    if payload["type"] != "refresh":
+    if not token_type or token_type != "refresh":
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Invalid token type")
 
-    return create_access_token(payload["user_id"])
+    if datetime.utcnow() >= datetime.fromtimestamp(exp):
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Token expired")
+
+    return create_access_token(user_id)
