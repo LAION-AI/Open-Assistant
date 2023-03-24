@@ -38,9 +38,10 @@ def batch_inference(model, dataloader):
     """
 
     scores, sampling = [], []
+    device = model.device
     for i, data in enumerate(dataloader):
         sampling.append(data.pop("sampling").cpu().detach().numpy())
-        data = {k: v.squeeze() for k, v in data.items()}
+        data = {k: v.squeeze().to(device) for k, v in data.items()}
         pred = model(**data).logits[:, 0].cpu().detach().numpy()
         scores.append(pred)
 
@@ -51,6 +52,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--data_path", type=str, help="Path of the sampling data file")
     parser.add_argument("--model", type=str, help="Path or url of the model file")
+    parser.add_argument("--max_length", type=int, help="max length of input")
     parser.add_argument("--batch_size", type=int, help="device", default=4)
     parser.add_argument("--device", type=str, help="device", default="cpu")
     parser.add_argument("--save", type=bool, help="whether to save the results", default=True)
@@ -69,8 +71,8 @@ if __name__ == "__main__":
     model = AutoModelForSequenceClassification.from_pretrained(model_name)
     model.eval()
     model.to(device)
-
-    dataloader = get_sampling_dataloader(data, tokenizer, args.get("max_length", 512), args.get("batch_size"), device)
+    max_length = args.get("max_length")
+    dataloader = get_sampling_dataloader(data, tokenizer, max_length, args.get("batch_size"))
     sampling, scores = batch_inference(model, dataloader)
 
     df = pd.DataFrame({"sampling": sampling, "score": scores})
@@ -81,5 +83,8 @@ if __name__ == "__main__":
     print("RESULTS: ", results)
 
     results = {"model_name": data["model_name"], "results": results, "reward_model": args.get("model")}
-    results = {"model_name": data["model_name"], "results": results}
     name = "-".join(data["model_name"].split("/"))
+
+    if args.get("save"):
+        with open(f"{name}.json", "w") as file:
+            json.dump(results, file, indent=4)
