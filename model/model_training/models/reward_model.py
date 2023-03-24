@@ -1,68 +1,98 @@
-import os
-from typing import Literal, Optional, Union
+from dataclasses import dataclass
+from typing import Literal, Optional
 
+import torch
 import torch.nn as nn
-from models import get_specific_model
-from transformers import PretrainedConfig, PreTrainedModel
+from transformers import AutoConfig, AutoModelForSequenceClassification
+from transformers.models.gpt_neox.modeling_gpt_neox import GPTNeoXConfig, GPTNeoXModel, GPTNeoXPreTrainedModel
+from transformers.utils import ModelOutput
 
 
-class RewardModelConfig(PretrainedConfig):
-    base_model_name: str
+class GPTNeoXRewardModelConfig(GPTNeoXConfig):
+    model_type = "gpt_neox_reward_model"
+
     pooling: Literal["mean", "last"]
-    model_type = "reward_model"
-    hidden_size: int | None = None  # deepspeed reads this
 
     def __init__(
         self,
-        base_model_name: str = None,
         pooling: Literal["mean", "last"] = "last",
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.base_model_name = base_model_name
         self.pooling = pooling or "last"
 
-    @classmethod
-    def from_pretrained(
-        cls, pretrained_model_name_or_path: Union[str, os.PathLike], cache_dir: Optional[str] = None, **kwargs
-    ):
-        config, model_kwargs = super().from_pretrained(pretrained_model_name_or_path, **kwargs)
-        if cache_dir:
-            model_kwargs["cache_dir"] = cache_dir
-        return config, model_kwargs
+
+@dataclass
+class GPTNeoXRewardModelOutput(ModelOutput):
+    """
+    Reward model output.
+
+    Args:
+        logits (`torch.FloatTensor` of shape `(batch_size, 1)`):
+            Reward score
+    """
+
+    logits: torch.FloatTensor = None
 
 
-class RewardModel(PreTrainedModel):
-    config_class = RewardModelConfig
+class GPTNeoXRewardModel(GPTNeoXPreTrainedModel):
+    config_class = GPTNeoXRewardModelConfig
 
-    def __init__(self, config: RewardModelConfig, cache_dir: Optional[str] = None):
-        super().__init__(config=config)
+    def __init__(self, config):
+        if type(config) == GPTNeoXConfig:
+            # When a normal GPTNeoX was loaded it will be converted into a reward model.
+            # The direct `type(config) == GPTNeoXConfig` comparison is used (instead of
+            # `isinstance()`) since the configuration class of the reward model is also
+            # derived form `GPTNeoXConfig`.
+            config = GPTNeoXRewardModelConfig.from_dict(config.to_dict())
+        super().__init__(config)
 
-        transformer = get_specific_model(
-            config.base_model_name,
-            seq2seqmodel=False,
-            without_head=True,
-            cache_dir=cache_dir,
+        self.gpt_neox = GPTNeoXModel(config)
+        self.out_proj = nn.Linear(config.hidden_size, 1)
+        self.pooling = config.pooling
+
+    def forward(
+        self,
+        input_ids,
+        attention_mask: Optional[torch.FloatTensor] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        head_mask: Optional[torch.FloatTensor] = None,
+        use_cache: Optional[bool] = None,
+        return_dict: Optional[bool] = True,
+    ) -> GPTNeoXRewardModelOutput:
+        outputs = self.gpt_neox(
+            input_ids,
+            attention_mask=attention_mask,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            use_cache=use_cache,
+            return_dict=return_dict,
         )
 
-        self.transformer = transformer
-        self.out_proj = nn.Linear(transformer.config.hidden_size, 1)
-        self.pooling = config.pooling
-        self.config.hidden_size = transformer.config.hidden_size
-
-    def forward(self, input_ids, attention_mask=None):
-        hiddens = self.transformer(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state
+        hidden_states = outputs[0]
         if self.pooling == "mean":
             if attention_mask is None:
-                pooled = hiddens.mean(dim=1)
+                pooled = hidden_states.mean(dim=1)
             else:
-                pooled = (hiddens * attention_mask).sum(dim=1) / attention_mask.sum(dim=1)
+                pooled = (hidden_states * attention_mask).sum(dim=1) / attention_mask.sum(dim=1)
         elif self.pooling == "last":
             if attention_mask is None:
-                pooled = hiddens[:, -1]
+                pooled = hidden_states[:, -1]
             else:
                 last_idx = attention_mask.cumsum(dim=1).argmax(dim=1)
-                pooled = hiddens.gather(1, last_idx.view(-1, 1, 1).expand(-1, 1, hiddens.size(-1))).squeeze(1)
+                pooled = hidden_states.gather(1, last_idx.view(-1, 1, 1).expand(-1, 1, hidden_states.size(-1))).squeeze(
+                    1
+                )
         else:
             raise ValueError(f"Unknown pooling method: {self.pooling}")
-        return self.out_proj(pooled)
+
+        logits = self.out_proj(pooled)
+
+        if not return_dict:
+            return (logits,) + outputs[1:]
+
+        return GPTNeoXRewardModelOutput(logits=logits)
+
+
+AutoConfig.register("gpt_neox_reward_model", GPTNeoXRewardModelConfig)
+AutoModelForSequenceClassification.register(GPTNeoXRewardModelConfig, GPTNeoXRewardModel)

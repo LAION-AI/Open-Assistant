@@ -22,9 +22,13 @@ COPY ./${APP_RELATIVE_PATH}/worker_full_main.sh /entrypoint.sh
 
 ENV MODEL_ID="distilgpt2"
 ENV NUM_SHARDS="1"
-ENV MAX_INPUT_LENGTH="850"
-ENV MAX_TOTAL_TOKENS="1024"
+
+# These are upper bounds for the inference server.
+ENV MAX_INPUT_LENGTH="4096"
+ENV MAX_TOTAL_TOKENS="8192"
+
 ENV BACKEND_URL="ws://localhost:8000"
 ENV PARALLELISM="1"
+ENV QUANTIZE="false"
 
 ENTRYPOINT ["/entrypoint.sh"]
