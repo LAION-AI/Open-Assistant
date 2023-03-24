@@ -25,9 +25,9 @@ def load_oasst_export(
     top_k: Optional[int] = None,
     manual_seed: int = 287631038922,
     data_path: str | Path = None,
-    mode: Literal["sft", "rm"] = "sft",
+    mode: Literal["sft", "rm", "rl"] = "sft",
 ) -> tuple[ListDataset, ListDataset]:
-    if mode not in ("sft", "rm"):
+    if mode not in ("sft", "rm", "rl"):
         raise ValueError(f"Unknown dataset mode: {mode}")
 
     lang_codes = lang.split(",")
@@ -65,7 +65,7 @@ def load_oasst_export(
             return True
 
         def leaf_filter(thread: list[ExportMessageNode]) -> bool:
-            if mode == "sft":
+            if mode == "sft" or mode == "rl":
                 # in SFT mode `not thread[-1].replies` finds nodes without children (leaves).
                 # We are interested in those which are role='assistant' but some trees don't end on assistant nodes
                 # but have prompter leaves .. we want to use those trees too .. e.g. remove the last prompter message(s)
@@ -104,6 +104,10 @@ def load_oasst_export(
             replies = sorted(replies, key=lambda r: r.rank)
             replies = [r.text for r in replies]
             return (prefix, replies)
+        elif mode == "rl":
+            prefix = [m.text for m in thread[:-1]]
+            reply = [thread[-1].text]
+            return (prefix, reply)
 
         raise RuntimeError()
 
