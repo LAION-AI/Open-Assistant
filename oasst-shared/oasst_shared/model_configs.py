@@ -81,16 +81,3 @@ MODEL_CONFIGS = {
         quantized=True,
     ),
 }
-
-
-def get_some_model_config_by_model_id(
-    model_id: str, default_if_not_found: bool = True
-) -> ModelConfig:
-    for model_config in MODEL_CONFIGS.values():
-        if model_config.model_id == model_id:
-            return model_config
-    if not default_if_not_found:
-        raise ValueError(f"Unknown model_id: {model_id}")
-    return ModelConfig(
-        model_id=model_id,
-    )
