@@ -1,7 +1,8 @@
-from torch.utils.data import Dataset, DataLoader
+from model_training.custom_datasets.formatting import format_pairs, format_reply
+from torch.utils.data import DataLoader, Dataset
 
 
-def get_dataloader(data, tokenizer, max_len, batch_size, device):
+def get_sampling_dataloader(data, tokenizer, max_len, batch_size, device):
     dataset = SamplingDataset(data, tokenizer, max_len, device)
     return DataLoader(dataset, batch_size=batch_size)
 
@@ -20,7 +21,7 @@ class SamplingDataset(Dataset):
         self.max_len = max_len
         self.dataset = []
         sampling_list = []
-        for data in dataset["prompts"]:
+        for data in dataset["prompts"][:4]:
             prompt = data["prompt"]
             for result in data["results"]:
                 sampling = result["sampling_config"]
@@ -38,10 +39,12 @@ class SamplingDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, idx):
-        prompt, output, sampling = self.dataset[idx]
+        prefix, reply, sampling = self.dataset[idx]
+        prefix = format_pairs([prefix], self.tokenizer.eos_token)[0]
+        reply = format_reply(reply, self.tokenizer.eos_token)[0]
         encodings = self.tokenizer(
-            prompt,
-            output,
+            prefix,
+            reply,
             add_special_tokens=True,
             max_length=self.max_len,
             padding="max_length",
