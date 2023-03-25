@@ -6,12 +6,12 @@ from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.prompt_dialogue import OAPrivate  # , PrivateInstructionTuning
 from model_training.custom_datasets.qa_datasets import (
     SODA,
+    Alpaca,
     JokeExplaination,
     QADataset,
     SODADialogue,
     TranslatedQA,
     WebGPT,
-    Alpaca
 )
 from model_training.custom_datasets.summarization import SummarizationDataset
 from model_training.custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
