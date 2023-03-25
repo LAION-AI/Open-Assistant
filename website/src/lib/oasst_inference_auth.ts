@@ -20,3 +20,8 @@ export const setInferenceTokens = (req: NextApiRequest, res: NextApiResponse, to
     maxAge: 1000 * 60 * 60 * 24 * 1, // 1 day
   });
 };
+
+export const clearInferenceTokens = (req: NextApiRequest, res: NextApiResponse) => {
+  const cookies = new Cookies(req, res);
+  cookies.set(INFERNCE_TOKEN_KEY, null, { maxAge: 1 });
+};

@@ -1,4 +1,4 @@
-import { Button, Card, CardBody, Grid, Text } from "@chakra-ui/react";
+import { Box, Button, Card, CardBody, Grid, Text } from "@chakra-ui/react";
 import { Github } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -28,7 +28,9 @@ export const ChatAuth = memo(function ChatAuth({ inferenceHost }: { inferenceHos
       <Card mt={4}>
         <CardBody display="flex" flexDirection="row" justifyContent="space-between" alignItems="center" gap={4}>
           <Text>{t("you_are_logged_in")}</Text>
-          <Button>{t("common:sign_out")}</Button>
+          <Box as={Button}>
+            <Link href="/api/inference_auth/logout">{t("common:sign_out")}</Link>
+          </Box>
         </CardBody>
       </Card>
     );
