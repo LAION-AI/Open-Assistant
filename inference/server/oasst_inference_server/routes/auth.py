@@ -182,7 +182,7 @@ async def callback_github(
 @router.get("/login/google")
 async def login_google(state: str = r"{}"):
     redirect_uri = f"{settings.auth_callback_root}/google"
-    auth_url = ... # TODO
+    auth_url = ...  # TODO
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
@@ -195,10 +195,7 @@ async def callback_google(
 
     async with aiohttp.ClientSession(raise_for_status=True) as session:
         # Exchange the auth code for a Google access token
-        async with session.post(
-            ..., # TODO
-            data=... # TODO,
-        ) as token_response:
+        async with session.post(..., data=...) as token_response:  # TODO  # TODO,
             token_response_json = await token_response.json()
 
         try:
@@ -208,14 +205,14 @@ async def callback_google(
 
         # Retrieve user's Google information using access token
         async with session.get(
-            ..., # TODO
+            ...,  # TODO
             headers={"Authorization": f"Bearer {access_token}"},
         ) as user_response:
             user_response_json = await user_response.json()
 
     try:
-        google_id = str(user_response_json["id"]) # TODO
-        google_username = user_response_json["username"] # TODO
+        google_id = str(user_response_json["id"])  # TODO
+        google_username = user_response_json["username"]  # TODO
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from Google")
 
