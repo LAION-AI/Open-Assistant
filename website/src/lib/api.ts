@@ -6,7 +6,6 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-
 const api = axios.create({ headers });
 
 export const get = (url: string) => api.get(url).then((res) => res.data);
