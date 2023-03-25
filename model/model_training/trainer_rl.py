@@ -52,7 +52,7 @@ def argument_parsing(notebook=False, notebook_args=None):
 if __name__ == "__main__":
     training_conf = argument_parsing()
 
-    assert training_conf.rank_model != training_conf.dataset, "One of rank model or dataset must be different"
+    assert training_conf.rank_model and training_conf.sft_model
 
     # Load pretrained rank model
 
@@ -76,9 +76,6 @@ if __name__ == "__main__":
         return rank_model(**inputs).logits.detach().cpu()[:, 0]
 
     trlx_config = TRLConfig.load_yaml("configs/ppo_config.yaml")
-
-    # override trlx trainer with our own
-    trlx_config.train.trainer = "PPOTrainer"
 
     train, _ = get_dataset(training_conf, mode="rl")
 

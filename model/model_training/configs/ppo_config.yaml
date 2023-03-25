@@ -1,16 +1,19 @@
 train:
-  seq_length: 500
-  epochs: 100
+  seq_length: 520
+  epochs: 12
   total_steps: 10000
   batch_size: 18
-  checkpoint_interval: 10000
+  checkpoint_interval: 1000
   eval_interval: 500
   pipeline: "PromptPipeline"
-  trainer: "AcceleratePPOTrainer"
+  trainer: "PPOTrainer"
+  tracker: wandb
+  project_name: rlhf
+  entity_name: open-assistant
 
 model:
   model_path: "EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-500"
-  num_layers_unfrozen: 2
+  num_layers_unfrozen: -1
 
 tokenizer:
   tokenizer_path: "EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-500"
@@ -19,10 +22,10 @@ tokenizer:
 optimizer:
   name: "adamw"
   kwargs:
-    lr: 1.0e-5
+    lr: 2.0e-6
     betas: [0.9, 0.95]
     eps: 1.0e-8
-    weight_decay: 1.0e-6
+    weight_decay: 1.0e-3
 
 scheduler:
   name: "cosine_annealing"

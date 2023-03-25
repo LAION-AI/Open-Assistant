@@ -7,9 +7,17 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import datasets
 import torch
+from custom_datasets.dialogue_collator import DialogueDataCollator
 from efficiency_utils import fuse_gelu
-from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
-from model_training.utils import (
+from torch import nn
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+from transformers import PreTrainedModel, Trainer, TrainingArguments
+from transformers.trainer_pt_utils import IterableDatasetShard
+from transformers.trainer_utils import seed_worker
+from transformers.training_args import OptimizerNames
+from transformers.utils import is_datasets_available
+from utils.utils import (
     PerDatasetSampler,
     _strtobool,
     get_dataset,
@@ -19,14 +27,6 @@ from model_training.utils import (
     get_tokenizer,
     read_yamls,
 )
-from torch import nn
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-from transformers import PreTrainedModel, Trainer, TrainingArguments
-from transformers.trainer_pt_utils import IterableDatasetShard
-from transformers.trainer_utils import seed_worker
-from transformers.training_args import OptimizerNames
-from transformers.utils import is_datasets_available
 
 
 def compute_metrics(eval_pred, preprocess_fns, metrics):

@@ -21,10 +21,10 @@ oasst_export_latin_cyrillic_rlhf:
   sort_by_length: false
   use_custom_sampler: false
 
-pythia_2b_rlhf:
+pythia_rlhf:
   # model_name: EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-2000
-  rank_model: ...
-  sft_model: ...
+  rank_model: pythia_rm/checkpoint-1000/
+  sft_model: pythia_sft/checkpoint-2000/
   batch_size: 18
 
 debug_rlhf:
