@@ -17,7 +17,7 @@ INSTRUCTION_DATASETS = {
     "youtube_subs_howto100M": "totuta/youtube_subs_howto100M",
     "iapp_wiki_qa_squad": "wannaphong/iapp_wiki_qa_squad_oa",
     "zhihu-kol": "wangrui6/zhihu-kol",
-    "tell_a_joke": "https://huggingface.co/datasets/mikegarts/oa_tell_a_joke_10000",
+    "tell_a_joke": "mikegarts/oa_tell_a_joke_10000",
     "oa_wiki_qa_bart_10000row": "michaelthwan/oa_wiki_qa_bart_10000row",
 }
 
