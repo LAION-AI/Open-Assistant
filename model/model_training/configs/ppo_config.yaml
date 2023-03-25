@@ -1,10 +1,10 @@
 train:
   seq_length: 520
-  epochs: 20
-  total_steps: 10000
-  batch_size: 18
-  checkpoint_interval: 1000
-  eval_interval: 500
+  epochs: 30
+  total_steps: 100000
+  batch_size: 8
+  checkpoint_interval: 10000
+  eval_interval: 50
   pipeline: "PromptPipeline"
   trainer: "CustomPPOTrainer"
   tracker: wandb
@@ -36,10 +36,10 @@ scheduler:
 
 method:
   name: "ppoconfig"
-  num_rollouts: 384
+  num_rollouts: 256
   chunk_size: 8
   ppo_epochs: 4
-  init_kl_coef: 0.05
+  init_kl_coef: 0.1
   target: 6
   horizon: 10000
   gamma: 1
@@ -54,5 +54,6 @@ method:
   gen_kwargs:
     max_new_tokens: 100
     top_k: 0
-    top_p: 1.0
+    top_p: 0.7
     do_sample: True
+    temperature: 0.5

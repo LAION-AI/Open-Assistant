@@ -1,5 +1,6 @@
 import argparse
 import random
+from argparse import Namespace
 
 import torch
 import transformers
@@ -50,16 +51,12 @@ def argument_parsing(notebook=False, notebook_args=None):
 if __name__ == "__main__":
     training_conf = argument_parsing()
 
-    assert training_conf.rank_model and training_conf.sft_model
-
     # Load pretrained rank model
+    rank_config = Namespace(**training_conf.rank_config)
+    rank_tokenizer = transformers.AutoTokenizer.from_pretrained(rank_config.model_name)
 
-    rank_model = GPTNeoXRewardModel.from_pretrained(
-        training_conf.rank_model,
-    )
+    rank_model = get_model(rank_config, rank_tokenizer)
     rank_model.eval()
-
-    rank_tokenizer = transformers.AutoTokenizer.from_pretrained(training_conf.rank_model)
 
     # TODO sync with reward modelling team on how to do this more transparently
     @torch.no_grad()
@@ -75,6 +72,15 @@ if __name__ == "__main__":
             del inputs["token_type_ids"]
 
         return rank_model(**inputs).logits.detach().cpu()[:, 0]
+
+    sft_config = Namespace(**training_conf.sft_config)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(
+        sft_config.model_name, padding_side="left" if not sft_config.seq2seqmodel else "right"
+    )
+    assert rank_tokenizer.eos_token == tokenizer.eos_token
+
+    # override model_name to be the same as sft_model
+    model = get_model(sft_config, tokenizer)
 
     trlx_config = TRLConfig.load_yaml("configs/ppo_config.yaml")
 
@@ -97,25 +103,15 @@ if __name__ == "__main__":
 
     random.shuffle(prompts)
 
-    tokenizer = transformers.AutoTokenizer.from_pretrained(
-        training_conf.sft_model, padding_side="left" if not training_conf.sft_model_seq2seq else "right"
-    )
-
-    rank_tokenizer.eos_token == tokenizer.eos_token
-
-    # override model_name to be the same as sft_model
-    training_conf.model_name = training_conf.sft_model
-    model = get_model(training_conf, tokenizer)
-
-    trlx_config.tokenizer.tokenizer_path = training_conf.sft_model
-    trlx_config.model.model_path = training_conf.sft_model
+    trlx_config.tokenizer.tokenizer_path = sft_config.model_name
+    trlx_config.model.model_path = sft_config.model_name
     trlx_config.train.batch_size = training_conf.batch_size
 
     trainer = trlx.train(
-        training_conf.sft_model,
+        sft_config.model_name,
         reward_fn=rank_model_fn,
         prompts=prompts,
-        eval_prompts=eval_prompts,
+        eval_prompts=eval_prompts[:200],
         config=trlx_config,
         stop_sequences=[tokenizer.eos_token, QA_SPECIAL_TOKENS["Question"]],
     )

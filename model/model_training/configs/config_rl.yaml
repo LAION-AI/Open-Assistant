@@ -1,16 +1,13 @@
 defaults_rlhf:
-  dataset:
-  rank_model: TODO
-  sft_model: TODO
-  eval_prompts:
+  datasets:
   batch_size: 18
-  epochs: 10
+  epochs: 20
   datasets_extra: []
   cache_dir: .cache
-  quantization: false
-  seq2seqmodel: false
-  eval_size:
   output_dir: model_rl
+  eval_size: 500
+  rank_config:
+  sft_config:
 
 oasst_export_latin_cyrillic_rlhf:
   datasets:
@@ -23,10 +20,24 @@ oasst_export_latin_cyrillic_rlhf:
 
 pythia_rlhf:
   # model_name: EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-2000
-  rank_model: pythia_rm/checkpoint-1000/
-  rank_model_seq2seq: false
-  sft_model: pythia_sft/checkpoint-2000/
-  sft_model_seq2seq: false
+  rank_config:
+    is_reward_model: true
+    model_name: pythia_rm/checkpoint-1000/
+    cache_dir:
+    pooling: last
+    residual_dropout: 0.0
+    use_flash_attention: false
+
+  sft_config:
+    is_reward_model: false
+    model_name: pythia_sft/checkpoint-2000/
+    cache_dir:
+    quantization: false
+    seq2seqmodel: False
+    freeze_layer:
+    residual_dropout: 0.0
+    use_flash_attention: false
+
   batch_size: 18
 
 debug_rlhf:

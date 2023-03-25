@@ -1,14 +1,18 @@
 from typing import List, Tuple
 
 import torch
+from transformers import AutoTokenizer
 from trlx.trainer import register_trainer
 from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
 
 
 @register_trainer
 class CustomPPOTrainer(AcceleratePPOTrainer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, config, *args, **kwargs):
+        super().__init__(*args, config=config, **kwargs)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            config.tokenizer.tokenizer_path, padding_side=config.tokenizer.padding_side
+        )
 
     def decode(
         self,
