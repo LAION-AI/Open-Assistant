@@ -25,7 +25,8 @@ dependencies = [
     "scikit-learn==1.2.0",
     "torch==1.13.1",
     "transformers==4.26.1",
-    "wandb==0.13.7",
+    "wandb==0.14.0",
+    "sentencepiece==0.1.97",
 ]
 
 [tool.setuptools]

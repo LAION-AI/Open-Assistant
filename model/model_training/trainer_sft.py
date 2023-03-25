@@ -7,8 +7,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import datasets
 import torch
-from efficiency_utils import fuse_gelu
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
+from model_training.efficiency_utils import fuse_gelu
 from model_training.utils import (
     PerDatasetSampler,
     _strtobool,
@@ -237,7 +237,7 @@ def tokenizer_sanity_check(tokenizer):
     print(f"bos_token='{tokenizer.bos_token}', bos_token_id={tokenizer.bos_token_id}")
     print(f"eos_token='{tokenizer.eos_token}', eos_token_id={tokenizer.eos_token_id}")
 
-    from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
+    from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
 
     in_text = format_pairs(["Q1", "A1", "Q2", "A2"], tokenizer.eos_token)
     in_text = "".join(in_text)
