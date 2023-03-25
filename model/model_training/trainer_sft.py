@@ -67,6 +67,7 @@ class SFTTrainer(Trainer):
         outputs = model(
             input_ids=inputs["input_ids"],
             attention_mask=inputs.get("attention_mask", None),
+            use_cache=False,
         )
 
         loss = self.loss_fct(outputs.get("logits"), targets, mask=labels_mask)
@@ -82,6 +83,7 @@ class SFTTrainer(Trainer):
         outputs = model(
             input_ids=inputs["input_ids"],
             attention_mask=inputs.get("attention_mask", None),
+            use_cache=False,
         )
 
         logits = outputs.get("logits")
@@ -178,7 +180,6 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
-    parser.add_argument("--deepspeed_config", type=str, default="configs/zero_config.json")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
     parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.set_defaults(deepspeed=False)
@@ -208,7 +209,6 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
-    conf["deepspeed_config"] = args.deepspeed_config
     conf["resume_from_checkpoint"] = args.resume_from_checkpoint
 
     # get the world size in deeepspeed
@@ -231,6 +231,44 @@ def argument_parsing(notebook=False, notebook_args=None):
 if __name__ == "__main__":
     training_conf = argument_parsing()
     import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
+
+    output_dir = (
+        training_conf.output_dir
+        if training_conf.output_dir
+        else f"{training_conf.model_name}-{training_conf.log_dir}-finetuned"
+    )
+
+    optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
+
+    # needs to happen before model loading in case of stage 3 training
+    args = TrainingArguments(
+        output_dir=output_dir,
+        num_train_epochs=training_conf.num_train_epochs,
+        warmup_steps=training_conf.warmup_steps,
+        learning_rate=float(training_conf.learning_rate),
+        deepspeed=training_conf.deepspeed_config if training_conf.deepspeed else None,
+        optim=optimizer,
+        fp16=training_conf.dtype in ["fp16", "float16"],
+        bf16=training_conf.dtype in ["bf16", "bfloat16"],
+        local_rank=training_conf.local_rank,
+        gradient_checkpointing=training_conf.gradient_checkpointing,
+        gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
+        per_device_train_batch_size=training_conf.per_device_train_batch_size,
+        per_device_eval_batch_size=training_conf.per_device_eval_batch_size,
+        adam_beta1=training_conf.adam_beta1,
+        adam_beta2=training_conf.adam_beta2,
+        adam_epsilon=float(training_conf.adam_epsilon),
+        weight_decay=training_conf.weight_decay,
+        max_grad_norm=training_conf.max_grad_norm,
+        logging_steps=training_conf.logging_steps,
+        save_total_limit=training_conf.save_total_limit,
+        evaluation_strategy="steps",
+        eval_steps=training_conf.eval_steps,
+        save_steps=training_conf.save_steps,
+        eval_accumulation_steps=training_conf.eval_accumulation_steps,
+        resume_from_checkpoint=training_conf.resume_from_checkpoint,
+        report_to="wandb" if training_conf.log_wandb else None,
+    )
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
@@ -275,7 +313,6 @@ if __name__ == "__main__":
         sampler = None
 
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
-    optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
 
     if training_conf.quantization:
         for module in model.modules():
@@ -287,40 +324,6 @@ if __name__ == "__main__":
     if training_conf.fuse_gelu:
         model = fuse_gelu(model)
 
-    output_dir = (
-        training_conf.output_dir
-        if training_conf.output_dir
-        else f"{training_conf.model_name}-{training_conf.log_dir}-finetuned"
-    )
-
-    args = TrainingArguments(
-        output_dir=output_dir,
-        num_train_epochs=training_conf.num_train_epochs,
-        warmup_steps=training_conf.warmup_steps,
-        learning_rate=float(training_conf.learning_rate),
-        deepspeed=training_conf.deepspeed_config if training_conf.deepspeed else None,
-        optim=optimizer,
-        fp16=training_conf.fp16,
-        local_rank=training_conf.local_rank,
-        gradient_checkpointing=training_conf.gradient_checkpointing,
-        gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
-        per_device_train_batch_size=training_conf.per_device_train_batch_size,
-        per_device_eval_batch_size=training_conf.per_device_eval_batch_size,
-        adam_beta1=training_conf.adam_beta1,
-        adam_beta2=training_conf.adam_beta2,
-        adam_epsilon=float(training_conf.adam_epsilon),
-        weight_decay=training_conf.weight_decay,
-        max_grad_norm=training_conf.max_grad_norm,
-        logging_steps=training_conf.logging_steps,
-        save_total_limit=training_conf.save_total_limit,
-        evaluation_strategy="steps",
-        eval_steps=training_conf.eval_steps,
-        save_steps=training_conf.save_steps,
-        eval_accumulation_steps=training_conf.eval_accumulation_steps,
-        resume_from_checkpoint=training_conf.resume_from_checkpoint,
-        report_to="wandb" if training_conf.log_wandb else None,
-    )
-
     if not training_conf.log_wandb:
         os.environ["WANDB_MODE"] = "offline"
 
@@ -330,11 +333,11 @@ if __name__ == "__main__":
         wandb.init(
             project="supervised-finetuning",
             entity=training_conf.wandb_entity,
-            config=training_conf,
             resume=training_conf.resume_from_checkpoint,
             name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
             config=training_conf,
         )
+        wandb.config["_max_length"] = training_conf.max_length
 
     trainer = SFTTrainer(
         model=model,

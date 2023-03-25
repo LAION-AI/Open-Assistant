@@ -107,6 +107,9 @@ def patch_model(model: nn.Module, resid_pdrop: Optional[float] = 0.1, flash_atte
     if resid_pdrop is not None and (resid_pdrop < 0 or resid_pdrop > 1.0):
         raise ValueError("Invalid argument: `resid_pdrop` must be between 0.0 and 1.0")
 
+    if not flash_attention and (resid_pdrop is None or resid_pdrop == 0.0):
+        return
+
     if not any(isinstance(model, model_class) for model_class in SUPPORTED_MODELS):
         warnings.warn(
             "Patching residual dropout has only been tested with this model class. "
@@ -120,7 +123,7 @@ def patch_model(model: nn.Module, resid_pdrop: Optional[float] = 0.1, flash_atte
         model = model.transformer
 
     for layer in model.layers:
-        if resid_pdrop is not None:
+        if resid_pdrop is not None and resid_pdrop > 0:
             add_dropout(layer.attention, _patched_attn_forward, resid_pdrop)
             add_dropout(layer.mlp, _patched_mlp_forward, resid_pdrop)
 

@@ -270,14 +270,21 @@ def get_metrics(conf, tokenizer):
     return metrics, preprocess_fns
 
 
-def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
+def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16, **kwargs):
+    dtype = torch.float32
+    if conf.dtype in ["fp16", "float16"]:
+        dtype = torch.float16
+    elif conf.dtype in ["bf16", "bfloat16"]:
+        dtype = torch.bfloat16
+
     model = get_specific_model(
         conf.model_name,
         cache_dir=conf.cache_dir,
         quantization=conf.quantization,
         seq2seqmodel=conf.seq2seqmodel,
-        torch_dtype=torch.float16 if conf.fp16 else torch.float32,
+        torch_dtype=dtype,
         without_head=conf.is_reward_model,
+        **kwargs,
     )
 
     n_embs = model.get_input_embeddings().num_embeddings
