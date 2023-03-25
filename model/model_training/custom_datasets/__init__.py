@@ -6,6 +6,7 @@ from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.prompt_dialogue import OAPrivate  # , PrivateInstructionTuning
 from model_training.custom_datasets.qa_datasets import (
     SODA,
+    Alpaca,
     JokeExplaination,
     QADataset,
     SODADialogue,
@@ -31,7 +32,7 @@ SUMMARIZATION_DATASETS = [
 ]
 OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_translated", "oa_private"]
 
-RL_DATASETS = ["oa_private", "webgpt", "private_tuning"]
+RL_DATASETS = ["oa_private", "webgpt", "private_tuning", "alpaca"]
 
 RM_DATASETS = ["oasst_export"]
 
@@ -79,6 +80,8 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         dataset = DiveMT()
     elif dataset_name == "webgpt":
         dataset = WebGPT()
+    elif dataset_name == "alpaca":
+        dataset = Alpaca()
     elif dataset_name == "prosocial_dialogue":
         train = ProsocialDialogue(cache_dir=data_path, split="train")
         eval = ProsocialDialogue(cache_dir=data_path, split="validation")

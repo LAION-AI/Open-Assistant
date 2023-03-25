@@ -409,3 +409,35 @@ class TranslatedQA(Dataset):
 
     def __getitem__(self, index):
         return self.pairs[index]
+
+
+class Alpaca(Dataset):
+    splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
+
+    def __init__(self, split="sft") -> None:
+        super().__init__()
+        self.mode = split
+        dataset = load_dataset("yahma/alpaca-cleaned")
+        rows = []
+        # using prompt as our index will allows us
+        # to add additional generated prompt later
+
+        for row in dataset["train"]:
+            question = row["instruction"]
+            # only keep the best answer
+            if len(row["input"]) > 0:
+                input_ = "{}\n{}".format(question, row["input"])
+            else:
+                input_ = question
+            rows.append((input_, row["output"]))
+        self.rows = rows
+
+    def __len__(self):
+        return len(self.rows)
+
+    def __getitem__(self, index):
+        question, answer = self.rows[index]
+        if self.mode == "sft":
+            return (question, answer)
+        elif self.mode == "rl":
+            return (question,)
