@@ -9,6 +9,7 @@
   "human_messages_by_lang": "Людські повідомлення за мовою",
   "human_messages_by_role": "Людські повідомлення за роллю",
   "initial_prompt_review": "Перевірка початкового тексту",
+  "language_stats": "Мова",
   "message_trees_by_state": "Дерева повідомлень за станом",
   "message_trees_states_by_lang": "Дерева повідомлень за мовою",
   "prompt_lottery_waiting": "Очікують на лотерею запитів",
