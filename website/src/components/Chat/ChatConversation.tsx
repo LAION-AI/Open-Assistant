@@ -9,7 +9,13 @@ import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
 import { API_ROUTES } from "src/lib/routes";
-import { ChatItem, InferenceMessage, InferencePostMessageResponse, WorkParametersInput } from "src/types/Chat";
+import {
+  ChatConfigForm,
+  ChatItem,
+  InferenceMessage,
+  InferencePostMessageParams,
+  InferencePostMessageResponse,
+} from "src/types/Chat";
 import useSWR from "swr";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
@@ -29,8 +35,10 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
 
-  useSWR<ChatItem>(API_ROUTES.GET_CHAT(chatId), get, { onSuccess: (chat) => setMessages(chat.messages) });
-  const { getValues } = useFormContext<WorkParametersInput>();
+  useSWR<ChatItem>(API_ROUTES.GET_CHAT(chatId), get, {
+    onSuccess: (chat) => setMessages(chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))),
+  });
+  const { getValues: getFormValues } = useFormContext<ChatConfigForm>();
   const send = useCallback(async () => {
     const content = inputRef.current?.value.trim();
     if (!content || !chatId) {
@@ -38,26 +46,22 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     }
     setIsSending.on();
 
-    // find last assistant message, is usually last message but not always
-    // TODO: the inference server does not return the messages sorted, this is only a best guess
+    // find last VALID assistant message
     const parent_id =
       messages
         .slice()
         .reverse()
-        .find((m) => m.role === "assistant")?.id ?? null;
-    const params = getValues();
+        .find((m) => m.role === "assistant" && m.state === "complete")?.id ?? null;
+    const { model_config_name, ...sampling_parameters } = getFormValues();
+    const arg: InferencePostMessageParams = {
+      chat_id: chatId,
+      content,
+      parent_id,
+      model_config_name,
+      sampling_parameters,
+    };
 
-    const response: InferencePostMessageResponse = await post(API_ROUTES.CREATE_CHAT_MESSAGE, {
-      arg: {
-        chat_id: chatId,
-        content,
-        parent_id,
-        work_parameters: {
-          ...params,
-          top_k: params.top_k === null ? null : Math.floor(Math.pow(32000, params.top_k)),
-        },
-      },
-    });
+    const response: InferencePostMessageResponse = await post(API_ROUTES.CREATE_CHAT_MESSAGE, { arg });
 
     setMessages((messages) => [...messages, response.prompter_message]);
 
@@ -85,7 +89,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     setQueueInfo(null);
     setResponse(null);
     setIsSending.off();
-  }, [chatId, getValues, messages, setIsSending]);
+  }, [chatId, getFormValues, messages, setIsSending]);
 
   const sendVote = useMessageVote();
 
@@ -200,7 +204,9 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
       {isAssistant && (
         <MessageInlineEmojiRow>
           {state === "pending" && <CircularProgress isIndeterminate size="20px" title={state} />}
-          {(state === "aborted_by_worker" || state === "cancelled") && <Icon as={XCircle} color="red" />}
+          {(state === "aborted_by_worker" || state === "cancelled" || state === "timeout") && (
+            <Icon as={XCircle} color="red" />
+          )}
           <MessageEmojiButton
             emoji={{ name: "+1", count: 0 }}
             checked={score === 1}

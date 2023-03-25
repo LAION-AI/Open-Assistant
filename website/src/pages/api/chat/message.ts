@@ -1,5 +1,6 @@
 import { withoutRole } from "src/lib/auth";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
+import { InferencePostMessageParams } from "src/types/Chat";
 
 const handler = withoutRole("banned", async (req, res, token) => {
   const client = createInferenceClient(token);
@@ -8,8 +9,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   if (req.method === "GET") {
     data = await client.get_message(req.query.chat_id as string, req.query.message_id as string);
   } else if (req.method === "POST") {
-    const { chat_id, parent_id, content, work_parameters } = req.body;
-    data = await client.post_prompt({ chat_id, parent_id, content, work_parameters });
+    data = await client.post_prompt(req.body as InferencePostMessageParams);
   }
 
   if (data) {

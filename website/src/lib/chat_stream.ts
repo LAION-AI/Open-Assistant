@@ -36,7 +36,7 @@ export async function handleChatEventStream({
       return chunk.message;
     } else if (chunk.event_type === "error") {
       // handle error
-      await onError(event.data);
+      await onError(chunk.error);
     } else {
       console.error("Unexpected event", chunk);
     }
