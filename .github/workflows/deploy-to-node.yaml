@@ -73,7 +73,19 @@ jobs:
       BACKEND_CORS_ORIGINS: ${{ vars.BACKEND_CORS_ORIGINS }}
       WEB_INFERENCE_SERVER_HOST: ${{ vars.WEB_INFERENCE_SERVER_HOST }}
       WEB_ENABLE_CHAT: ${{ vars.WEB_ENABLE_CHAT }}
-      INFERENCE_HF_TOKEN: ${{ secrets.INFERENCE_HF_TOKEN }}
+      INFERENCE_POSTGRES_PASSWORD: ${{secrets.INFERENCE_POSTGRES_PASSWORD}}
+      INFERENCE_ALLOW_DEBUG_AUTH: ${{vars.INFERENCE_ALLOW_DEBUG_AUTH}}
+      INFERENCE_DEBUG_API_KEYS: ${{vars.INFERENCE_DEBUG_API_KEYS}}
+      INFERENCE_LOG_LEVEL: ${{vars.INFERENCE_LOG_LEVEL}}"
+      INFERENCE_ROOT_TOKEN: ${{secrets.INFERENCE_ROOT_TOKEN}}
+      INFERENCE_AUTH_CALLBACK_ROOT: ${{vars.INFERENCE_AUTH_CALLBACK_ROOT}}
+      INFERENCE_AUTH_SALT: ${{secrets.INFERENCE_AUTH_SALT}}
+      INFERENCE_AUTH_SECRET: ${{secrets.INFERENCE_AUTH_SECRET}}
+      INFERENCE_AUTH_DISCORD_CLIENT_ID: ${{secrets.INFERENCE_AUTH_DISCORD_CLIENT_ID}}
+      INFERENCE_AUTH_DISCORD_CLIENT_SECRET: ${{secrets.INFERENCE_AUTH_DISCORD_CLIENT_SECRET}}
+      INFERENCE_AUTH_GITHUB_CLIENT_ID: ${{secrets.INFERENCE_AUTH_GITHUB_CLIENT_ID}}
+      INFERENCE_AUTH_GITHUB_CLIENT_SECRET: ${{secrets.INFERENCE_AUTH_GITHUB_CLIENT_SECRET}
+      INFERENCE_CORS_ORIGINS: ${{ vars.INFERENCE_CORS_ORIGINS }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -114,8 +126,4 @@ jobs:
           options: |
             --extra-vars "stack_name=${{inputs.stack-name}} \
             image_tag=${{inputs.image-tag}} \
-            server_port=${{inputs.inference-server-port}} \
-            postgres_password=${{secrets.POSTGRES_PASSWORD}} \
-            allow_debug_auth=${{vars.INFERENCE_ALLOW_DEBUG_AUTH}} \
-            debug_api_keys=${{vars.INFERENCE_DEBUG_API_KEYS}} \
-            loguru_level=${{vars.INFERENCE_LOG_LEVEL}}"
+            server_port=${{inputs.inference-server-port}}"
