@@ -36,8 +36,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   const [isSending, setIsSending] = useBoolean();
 
   useSWR<ChatItem>(API_ROUTES.GET_CHAT(chatId), get, {
-    onSuccess: (chat) =>
-      setMessages(chat.messages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())),
+    onSuccess: (chat) => setMessages(chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))),
   });
   const { getValues: getFormValues } = useFormContext<ChatConfigForm>();
   const send = useCallback(async () => {
