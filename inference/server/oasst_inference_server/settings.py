@@ -91,5 +91,11 @@ class Settings(pydantic.BaseSettings):
 
     assistant_message_timeout: int = 60
 
+    inference_cors_origins: str = "*"
+
+    @property
+    def inference_cors_origins_list(self) -> list[str]:
+        return self.inference_cors_origins.split(",")
+
 
 settings = Settings()
