@@ -101,7 +101,7 @@ class WebGPT(Dataset):
         self.index2question = {}
         for row in dataset["train"]:
             question = row["question"]["full_text"]
-            if question not in self.index2question:
+            if question not in self.index2question.values():
                 self.index2question[len(self.index2question)] = question
 
             if question not in questions:
