@@ -27,6 +27,7 @@ async def get_available_auth_providers():
             "debug": settings.allow_debug_auth,
             "discord": settings.auth_discord_client_id,
             "github": settings.auth_github_client_id,
+            "google": settings.auth_google_client_id,
         }.items()
         if is_available
     ]
@@ -178,10 +179,74 @@ async def callback_github(
     return token_pair
 
 
+@router.get("/login/google")
+async def login_google(state: str = r"{}"):
+    redirect_uri = f"{settings.auth_callback_root}/google"
+    auth_url = ... # TODO
+    raise HTTPException(status_code=302, headers={"location": auth_url})
+
+
+@router.get("/callback/google", response_model=protocol.TokenPair)
+async def callback_google(
+    code: str,
+    db: database.AsyncSession = Depends(deps.create_session),
+):
+    redirect_uri = f"{settings.auth_callback_root}/google"
+
+    async with aiohttp.ClientSession(raise_for_status=True) as session:
+        # Exchange the auth code for a Google access token
+        async with session.post(
+            ..., # TODO
+            data=... # TODO,
+        ) as token_response:
+            token_response_json = await token_response.json()
+
+        try:
+            access_token = token_response_json["access_token"]
+        except KeyError:
+            raise HTTPException(status_code=400, detail="Invalid access token response from Google")
+
+        # Retrieve user's Google information using access token
+        async with session.get(
+            ..., # TODO
+            headers={"Authorization": f"Bearer {access_token}"},
+        ) as user_response:
+            user_response_json = await user_response.json()
+
+    try:
+        google_id = str(user_response_json["id"]) # TODO
+        google_username = user_response_json["username"] # TODO
+    except KeyError:
+        raise HTTPException(status_code=400, detail="Invalid user info response from Google")
+
+    # Try to find a user in our DB linked to the GitHub user
+    user: models.DbUser = await query_user_by_provider_id(db, google_id=google_id)
+
+    # Create if no user exists
+    if not user:
+        user = models.DbUser(provider="google", provider_account_id=google_id, display_name=google_username)
+
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+
+    # GitHub account is authenticated and linked to a user; create JWT
+    access_token = auth.create_access_token(user.id)
+    refresh_token = auth.create_refresh_token(user.id)
+
+    token_pair = protocol.TokenPair(
+        access_token=protocol.Token(access_token=access_token, token_type="bearer"),
+        refresh_token=protocol.Token(access_token=refresh_token, token_type="refresh"),
+    )
+
+    return token_pair
+
+
 async def query_user_by_provider_id(
     db: database.AsyncSession,
     discord_id: str | None = None,
     github_id: str | None = None,
+    google_id: str | None = None,
 ) -> models.DbUser | None:
     """Returns the user associated with a given provider ID if any."""
     user_qry = sqlmodel.select(models.DbUser)
@@ -193,6 +258,10 @@ async def query_user_by_provider_id(
     elif github_id:
         user_qry = user_qry.filter(models.DbUser.provider == "github").filter(
             models.DbUser.provider_account_id == github_id
+        )
+    elif google_id:
+        user_qry = user_qry.filter(models.DbUser.provider == "google").filter(
+            models.DbUser.provider_account_id == google_id
         )
     else:
         return None
