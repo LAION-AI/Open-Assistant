@@ -4,10 +4,10 @@ import time
 
 import torch
 import transformers
-from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs, format_system_prefix
-from model_training.models import get_specific_model
-from model_training.utils import _strtobool
+from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs, format_system_prefix
+from models import get_specific_model
 from tokenizers import pre_tokenizers
+from utils.utils import _strtobool
 
 if __name__ == "__main__":
     import warnings
@@ -75,9 +75,17 @@ if __name__ == "__main__":
                     do_sample=args.do_sample,
                     top_k=args.top_k,
                     temperature=args.temperature,
-                    eos_token_id=human_token_id,
+                    eos_token_id=tokenizer.eos_token_id,
                     pad_token_id=tokenizer.eos_token_id,
                 )
+
+            print("-------------------")
+            print(tokenizer.decode(out[0]))
+            print("-------------------")
+
+            import IPython
+
+            IPython.embed()
 
             if out[0][-1] == tokenizer.eos_token_id:
                 response = out[0][:-1]

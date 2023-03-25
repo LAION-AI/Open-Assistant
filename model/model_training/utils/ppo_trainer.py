@@ -6,7 +6,7 @@ from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
 
 
 @register_trainer
-class PPOTrainer(AcceleratePPOTrainer):
+class CustomPPOTrainer(AcceleratePPOTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
