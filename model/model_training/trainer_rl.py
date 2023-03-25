@@ -4,10 +4,10 @@ import random
 import torch
 import transformers
 import trlx
-from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
-from model_training.utils import _strtobool, get_dataset, get_model, read_yamls
-from models.reward_model import RewardModel
+from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
+from models.reward_model import GPTNeoXRewardModel
 from trlx.data.configs import TRLConfig
+from utils.utils import _strtobool, get_dataset, get_model, read_yamls
 
 
 def argument_parsing(notebook=False, notebook_args=None):
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     # Load pretrained rank model
 
-    rank_model = RewardModel.from_pretrained(
+    rank_model = GPTNeoXRewardModel.from_pretrained(
         training_conf.rank_model,
     )
     rank_model.eval()
@@ -96,6 +96,19 @@ if __name__ == "__main__":
     trlx_config.tokenizer.tokenizer_path = training_conf.sft_model
     trlx_config.model.model_path = training_conf.sft_model
     trlx_config.train.batch_size = training_conf.batch_size
+
+    if training_conf.log_wandb:
+        trlx_config.train.log_wandb = True
+
+        import wandb
+
+        wandb.init(
+            project="rlhf",
+            entity="open-assistant",
+            config=training_conf,
+            resume=training_conf.resume_from_checkpoint,
+            name=f"sft:{training_conf.sft_model}-rm:{training_conf.rank_model}-{training_conf.log_dir}",
+        )
 
     trainer = trlx.train(
         training_conf.sft_model,
