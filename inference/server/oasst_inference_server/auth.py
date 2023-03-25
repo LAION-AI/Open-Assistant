@@ -106,7 +106,7 @@ async def create_refresh_token(user_id: str) -> str:
         token_hash: bytes = hashlib.sha256(token).hexdigest()
         token_model: models.DbRefreshToken = models.DbRefreshToken(token_hash=token_hash, user_id=user_id)
 
-        await session.add(token_model)
+        session.add(token_model)
         await session.commit()
 
     # Return token as string
