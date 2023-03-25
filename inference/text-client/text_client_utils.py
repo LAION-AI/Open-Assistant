@@ -11,7 +11,7 @@ class DebugClient:
         self.http_client = http_client
 
     def login(self, username):
-        auth_data = self.http_client.get(f"{self.backend_url}/auth/login/debug", params={"username": username}).json()
+        auth_data = self.http_client.get(f"{self.backend_url}/auth/callback/debug", params={"code": username}).json()
         assert auth_data["access_token"]["token_type"] == "bearer"
         bearer_token = auth_data["access_token"]["access_token"]
         logger.debug(f"Logged in as {username} with token {bearer_token}")
