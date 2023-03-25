@@ -31,7 +31,7 @@ optimizer:
 scheduler:
   name: "cosine_annealing"
   kwargs:
-    T_max: 10000 # train.total_steps
+    T_max: 100000 # train.total_steps
     eta_min: 1.0e-4
 
 method:

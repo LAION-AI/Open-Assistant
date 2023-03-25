@@ -106,6 +106,7 @@ if __name__ == "__main__":
     trlx_config.tokenizer.tokenizer_path = sft_config.model_name
     trlx_config.model.model_path = sft_config.model_name
     trlx_config.train.batch_size = training_conf.batch_size
+    trlx_config.train.epochs = training_conf.epochs
 
     trainer = trlx.train(
         sft_config.model_name,
