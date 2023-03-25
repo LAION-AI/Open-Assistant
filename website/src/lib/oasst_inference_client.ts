@@ -3,9 +3,9 @@ import { JWT } from "next-auth/jwt";
 import {
   ChatItem,
   InferenceMessage,
+  InferencePostMessageParams,
   InferencePostMessageResponse,
   ModelInfo,
-  WorkParametersInput,
 } from "src/types/Chat";
 import type { Readable } from "stream";
 
@@ -41,21 +41,8 @@ export class OasstInferenceClient {
     return this.request(`/chats/${chat_id}/messages/${message_id}`);
   }
 
-  post_prompt({
-    chat_id,
-    parent_id,
-    content,
-    work_parameters,
-  }: {
-    chat_id: string;
-    parent_id: string | null;
-    content: string;
-    work_parameters: WorkParametersInput;
-  }): Promise<InferencePostMessageResponse> {
-    return this.request(`/chats/${chat_id}/messages`, {
-      method: "POST",
-      data: { parent_id, content, work_parameters },
-    });
+  post_prompt({ chat_id, ...data }: InferencePostMessageParams): Promise<InferencePostMessageResponse> {
+    return this.request(`/chats/${chat_id}/messages`, { method: "POST", data });
   }
 
   stream_events({ chat_id, message_id }: { chat_id: string; message_id: string }) {
@@ -72,7 +59,7 @@ export class OasstInferenceClient {
   }
 
   get_models() {
-    return this.request<ModelInfo[]>("/configs/models");
+    return this.request<ModelInfo[]>("/configs/model_configs");
   }
 }
 
