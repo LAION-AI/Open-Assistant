@@ -31,6 +31,7 @@
   "inappropriate": "Недоречно",
   "inappropriate.one_desc": "Не підходить для помічника по роботі з клієнтами",
   "judgemental": "Який засуджує",
+  "judgemental.one_desc": "Висловлює моральне судження",
   "label_highlighted_flag_instruction": "Виберіть те, що підходить для виділеного повідомлення:",
   "label_highlighted_likert_instruction": "Оцініть виділене повідомлення:",
   "label_highlighted_yes_no_instruction": "Дайте відповідь на наступне (наступні) запитання щодо виділеного повідомлення:",
