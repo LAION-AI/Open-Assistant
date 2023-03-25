@@ -1,6 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { boolean } from "boolean";
-import Cookies from "cookies";
 import { generateUsername } from "friendly-username-generator";
 import { NextApiRequest, NextApiResponse } from "next";
 import type { AuthOptions } from "next-auth";

@@ -18,6 +18,23 @@ async def check_user_auth(user_id: str = Depends(auth.get_current_user_id)):
     return user_id
 
 
+@router.get("/providers")
+async def get_available_auth_providers():
+    # this could be computed once on startup since it is not likely to change
+    providers = [
+        key
+        for key, is_available in {
+            "debug": settings.allow_debug_auth,
+            "discord": settings.auth_discord_client_id,
+            "github": settings.auth_github_client_id,
+        }.items()
+        if is_available
+    ]
+    if len(providers) == 0:
+        logger.warn("No login providers available, logging in is not possible.")
+    return providers
+
+
 @router.get("/refresh", response_model=protocol.Token)
 async def refresh_token(refresh_token: str = Security(auth.refresh_scheme)):
     access_token = auth.refresh_access_token(refresh_token)
@@ -184,10 +201,18 @@ async def query_user_by_provider_id(
     return user
 
 
-@router.get("/login/debug", response_model=protocol.TokenPair)
-async def login_debug(username: str, db: database.AsyncSession = Depends(deps.create_session)):
+@router.get("/login/debug")
+async def login_debug(username: str, state: str = r"{}"):
+    # mock code with our own data
+    auth_url = f"{settings.auth_callback_root}/debug?code={username}&state={state}"
+    raise HTTPException(status_code=302, headers={"location": auth_url})
+
+
+@router.get("/callback/debug", response_model=protocol.TokenPair)
+async def callback_debug(code: str, db: database.AsyncSession = Depends(deps.create_session)):
     """Login using a debug username, which the system will accept unconditionally."""
 
+    username = code
     if not settings.allow_debug_auth:
         raise HTTPException(status_code=403, detail="Debug auth is not allowed")
 
