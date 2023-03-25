@@ -36,40 +36,38 @@ export const Stats = ({ data }: StatsProps) => {
   }
 
   return (
-    <>
-      <Grid gridTemplateColumns="repeat(2, minmax(0, 1fr))" gap={4}>
-        <Heading size="lg" gridColumn="span 2">
-          {t("stats")}
-        </Heading>
-        {charts.map((key) => {
-          const stat = getStatByName(key);
-          const component = statComponents[key];
-          return (
-            <Card key={key} minH={500} gridColumn={["span 2", "span 2", "span 1"]}>
-              <CardHeader>
-                <Heading size="md">{t(getTypeSafei18nKey(stat.name))}</Heading>
-              </CardHeader>
-              <CardBody>{component?.({ stat })}</CardBody>
-            </Card>
-          );
-        })}
-        <Card minH={500} gridColumn="span 2">
-          <CardHeader>
-            <Heading size="md">{t(getTypeSafei18nKey(messageTreeStats.name))}</Heading>
-          </CardHeader>
-          <CardBody>
-            <MessageTreeStateStatsTable stat={messageTreeStats} />
-          </CardBody>
-        </Card>
-        <Card minH={500} gridColumn="span 2">
-          <CardHeader>
-            <Heading size="md">{t(getTypeSafei18nKey(messageTreeStats.name))}</Heading>
-          </CardHeader>
-          <CardBody>
-            <MessageTreeStateStatsStacked stat={messageTreeStats} />
-          </CardBody>
-        </Card>
-      </Grid>
-    </>
+    <Grid gridTemplateColumns="repeat(2, minmax(0, 1fr))" gap={4}>
+      <Heading size="lg" gridColumn="span 2">
+        {t("stats")}
+      </Heading>
+      {charts.map((key) => {
+        const stat = getStatByName(key);
+        const component = statComponents[key];
+        return (
+          <Card key={key} minH={500} gridColumn={["span 2", "span 2", "span 1"]}>
+            <CardHeader>
+              <Heading size="md">{t(getTypeSafei18nKey(stat.name))}</Heading>
+            </CardHeader>
+            <CardBody>{component?.({ stat })}</CardBody>
+          </Card>
+        );
+      })}
+      <Card minH={500} gridColumn="span 2">
+        <CardHeader>
+          <Heading size="md">{t(getTypeSafei18nKey(messageTreeStats.name))}</Heading>
+        </CardHeader>
+        <CardBody>
+          <MessageTreeStateStatsTable stat={messageTreeStats} />
+        </CardBody>
+      </Card>
+      <Card minH={500} gridColumn="span 2">
+        <CardHeader>
+          <Heading size="md">{t(getTypeSafei18nKey(messageTreeStats.name))}</Heading>
+        </CardHeader>
+        <CardBody>
+          <MessageTreeStateStatsStacked stat={messageTreeStats} />
+        </CardBody>
+      </Card>
+    </Grid>
   );
 };
