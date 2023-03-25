@@ -17,7 +17,7 @@ from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
-from utils import PerDatasetSampler, _strtobool, get_dataset, get_loss, get_model, get_tokenizer, read_yamls
+from utils.utils import PerDatasetSampler, _strtobool, get_dataset, get_loss, get_model, get_tokenizer, read_yamls
 
 
 def compute_metrics(eval_pred):

@@ -7,6 +7,9 @@ import trlx
 from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
 from models.reward_model import GPTNeoXRewardModel
 from trlx.data.configs import TRLConfig
+
+# flake8: noqa
+from utils.ppo_trainer import PPOTrainer
 from utils.utils import _strtobool, get_dataset, get_model, read_yamls
 
 
@@ -70,9 +73,12 @@ if __name__ == "__main__":
         if "token_type_ids" in inputs:
             del inputs["token_type_ids"]
 
-        return rank_model(**inputs).detach().cpu()[:, 0]
+        return rank_model(**inputs).logits.detach().cpu()[:, 0]
 
     trlx_config = TRLConfig.load_yaml("configs/ppo_config.yaml")
+
+    # override trlx trainer with our own
+    trlx_config.train.trainer = "PPOTrainer"
 
     train, _ = get_dataset(training_conf, mode="rl")
 
@@ -96,19 +102,6 @@ if __name__ == "__main__":
     trlx_config.tokenizer.tokenizer_path = training_conf.sft_model
     trlx_config.model.model_path = training_conf.sft_model
     trlx_config.train.batch_size = training_conf.batch_size
-
-    if training_conf.log_wandb:
-        trlx_config.train.log_wandb = True
-
-        import wandb
-
-        wandb.init(
-            project="rlhf",
-            entity="open-assistant",
-            config=training_conf,
-            resume=training_conf.resume_from_checkpoint,
-            name=f"sft:{training_conf.sft_model}-rm:{training_conf.rank_model}-{training_conf.log_dir}",
-        )
 
     trainer = trlx.train(
         training_conf.sft_model,
