@@ -16,7 +16,7 @@ export function SlimFooter() {
           </Link>
         </Box>
         <nav>
-          <Box display="flex" gap="5" fontSize="xs" color="blue.500" flexWrap="wrap" pb="4">
+          <Box display="flex" gap="5" fontSize="xs" color="blue.500" flexWrap="wrap" pb="8">
             <FooterLink href="/privacy-policy" label={t("privacy_policy")} />
             <FooterLink href="/terms-of-service" label={t("terms_of_service")} />
             <FooterLink href="/team" label={t("team")} />
