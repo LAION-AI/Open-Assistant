@@ -421,15 +421,15 @@ class Alpaca(Dataset):
         rows = []
         # using prompt as our index will allows us
         # to add additional generated prompt later
-        
+
         for row in dataset["train"]:
             question = row["instruction"]
             # only keep the best answer
-            if len(row['input']) > 0:
-                input_ = "{}\n{}".format(question, row['input'])
+            if len(row["input"]) > 0:
+                input_ = "{}\n{}".format(question, row["input"])
             else:
                 input_ = question
-            rows.append((input_, row['output']))
+            rows.append((input_, row["output"]))
         self.rows = rows
 
     def __len__(self):
@@ -441,4 +441,3 @@ class Alpaca(Dataset):
             return (question, answer)
         elif self.mode == "rl":
             return (question,)
-
