@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, CircularProgress, Flex, Icon, Textarea, useBoolean, useColorModeValue } from "@chakra-ui/react";
+import { Button, CircularProgress, Flex, Icon, Textarea, Text, useBoolean, useColorModeValue } from "@chakra-ui/react";
 import { XCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
@@ -13,8 +13,8 @@ import {
   ChatConfigForm,
   ChatItem,
   InferenceMessage,
-  InferencePostMessageParams,
-  InferencePostMessageResponse,
+  InferencePostPrompterMessageParams,
+  InferencePostAssistantMessageParams,
 } from "src/types/Chat";
 import useSWR from "swr";
 
@@ -35,6 +35,27 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
 
+  // calculate the current thread as always going down the newest child in the tree
+  const currentThread = useMemo(() => {
+    if (!messages.length) return [];
+    // sort dates latest first
+    const sortedMessages = messages.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+    // find the root message without parent_id
+    const root = sortedMessages.find((m) => m.parent_id === null);
+    const threadMessages = [root];
+    let current = root;
+    while (current) {
+      const next = sortedMessages.find((m) => m.parent_id === current.id);
+      if (next) {
+        threadMessages.push(next);
+        current = next;
+      } else {
+        current = null;
+      }
+    }
+    return threadMessages;
+  }, [messages]);
+
   useSWR<ChatItem>(API_ROUTES.GET_CHAT(chatId), get, {
     onSuccess: (chat) => setMessages(chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))),
   });
@@ -48,31 +69,38 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
 
     // find last VALID assistant message
     const parent_id =
-      messages
+      currentThread
         .slice()
         .reverse()
         .find((m) => m.role === "assistant" && m.state === "complete")?.id ?? null;
     const { model_config_name, ...sampling_parameters } = getFormValues();
-    const arg: InferencePostMessageParams = {
+    const prompter_arg: InferencePostPrompterMessageParams = {
       chat_id: chatId,
       content,
       parent_id,
+    };
+
+    const prompter_message: InferenceMessage = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
+
+    setMessages((messages) => [...messages, prompter_message]);
+
+    const assistant_arg: InferencePostAssistantMessageParams = {
+      chat_id: chatId,
+      parent_id: prompter_message.id,
       model_config_name,
       sampling_parameters,
     };
 
-    const response: InferencePostMessageResponse = await post(API_ROUTES.CREATE_CHAT_MESSAGE, { arg });
-
-    setMessages((messages) => [...messages, response.prompter_message]);
+    const assistant_message: InferenceMessage = await post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, { arg: assistant_arg });
 
     // we have to do this manually since we want to stream the chunks
     // there is also EventSource, but it is callback based
-    const { body, status } = await fetch(API_ROUTES.STREAM_CHAT_MESSAGE(chatId, response.assistant_message.id));
+    const { body, status } = await fetch(API_ROUTES.STREAM_CHAT_MESSAGE(chatId, assistant_message.id));
 
     let message: InferenceMessage;
     if (status === 204) {
       // message already processed, get it immediately
-      message = await get(API_ROUTES.GET_MESSAGE(chatId, response.assistant_message.id));
+      message = await get(API_ROUTES.GET_MESSAGE(chatId, assistant_message.id));
     } else {
       message = await handleChatEventStream({
         stream: body,
@@ -91,7 +119,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     setQueueInfo(null);
     setResponse(null);
     setIsSending.off();
-  }, [chatId, getFormValues, messages, setIsSending]);
+  }, [chatId, getFormValues, currentThread, setIsSending]);
 
   const sendVote = useMessageVote();
 
@@ -120,7 +148,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
 
   const entries = useMemo(
     () =>
-      messages.map((message) => (
+      currentThread.map((message) => (
         <ChatMessageEntry
           key={message.id}
           isAssistant={message.role === "assistant"}
@@ -133,7 +161,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
           {message.content}
         </ChatMessageEntry>
       )),
-    [chatId, handleOnVote, messages]
+    [chatId, handleOnVote, currentThread]
   );
 
   return (
@@ -207,7 +235,10 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
         <MessageInlineEmojiRow>
           {state === "pending" && <CircularProgress isIndeterminate size="20px" title={state} />}
           {(state === "aborted_by_worker" || state === "cancelled" || state === "timeout") && (
-            <Icon as={XCircle} color="red" />
+            <>
+              <Icon as={XCircle} color="red" />
+              <Text color="red">{`Error: ${state}`}</Text>
+            </>
           )}
           <MessageEmojiButton
             emoji={{ name: "+1", count: 0 }}

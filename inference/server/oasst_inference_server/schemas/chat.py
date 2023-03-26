@@ -5,16 +5,15 @@ import pydantic
 from oasst_shared.schemas import inference
 
 
-class CreateMessageRequest(pydantic.BaseModel):
+class CreatePrompterMessageRequest(pydantic.BaseModel):
     parent_id: str | None = None
     content: str = pydantic.Field(..., repr=False)
+
+
+class CreateAssistantMessageRequest(pydantic.BaseModel):
+    parent_id: str
     model_config_name: str
     sampling_parameters: inference.SamplingParameters = pydantic.Field(default_factory=inference.SamplingParameters)
-
-
-class CreateMessageResponse(pydantic.BaseModel):
-    prompter_message: inference.MessageRead
-    assistant_message: inference.MessageRead
 
 
 class PendingResponseEvent(pydantic.BaseModel):
