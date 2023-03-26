@@ -56,7 +56,7 @@ export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string
   props: {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: params!.id,
-    ...(await serverSideTranslations(locale, ["common", "message", "labelling", "side_menu"])),
+    ...(await serverSideTranslations(locale, ["common", "message", "labelling"])),
   },
 });
 
