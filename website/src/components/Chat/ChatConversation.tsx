@@ -203,9 +203,13 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
     <PendingMessageEntry isAssistant={isAssistant} content={children!}>
       {isAssistant && (
         <MessageInlineEmojiRow>
-          {state === "pending" && <CircularProgress isIndeterminate size="20px" title={state} />}
+          {(state === "pending" || state === "in_progress") && (
+            <CircularProgress isIndeterminate size="20px" title={state} />
+          )}
           {(state === "aborted_by_worker" || state === "cancelled" || state === "timeout") && (
-            <Icon as={XCircle} color="red" />
+            <div title={state}>
+              <Icon as={XCircle} color="red" />
+            </div>
           )}
           <MessageEmojiButton
             emoji={{ name: "+1", count: 0 }}
@@ -236,15 +240,13 @@ type PendingMessageEntryProps = {
 };
 
 const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageEntryProps) => {
-  const bgUser = useColorModeValue("gray.100", "gray.700");
-  const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
+  const bgAssistant = useColorModeValue("gray.100", "gray.800");
+  const bgUser = useColorModeValue("#f1f8ff", "#42536B");
   const { data: session } = useSession();
   const image = session?.user?.image;
 
   const avatarProps = useMemo(
-    () => ({
-      src: isAssistant ? `/images/logos/logo.png` : image ?? "/images/temp-avatars/av1.jpg",
-    }),
+    () => ({ src: isAssistant ? `/images/logos/logo.png` : image ?? "/images/temp-avatars/av1.jpg" }),
     [isAssistant, image]
   );
 
@@ -252,6 +254,10 @@ const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageE
     <BaseMessageEntry
       avatarProps={avatarProps}
       bg={isAssistant ? bgAssistant : bgUser}
+      stackProps={{
+        alignSelf: isAssistant ? "start" : "end",
+        flexDirection: isAssistant ? "row" : "row-reverse",
+      }}
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       content={content!}
     >
