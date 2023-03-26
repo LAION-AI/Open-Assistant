@@ -1,6 +1,5 @@
 import argparse
 import json
-import os
 
 import model_training.models.reward_model  # noqa: F401 (registers reward model for AutoModel loading)
 import numpy as np
@@ -9,8 +8,6 @@ import torch
 from eval_datasets import get_sampling_dataloader
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from utils import load_sampling_data
-
-
 
 
 def batch_inference(model, dataloader):
