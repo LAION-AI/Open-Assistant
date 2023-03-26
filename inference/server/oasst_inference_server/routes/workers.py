@@ -130,7 +130,8 @@ async def handle_worker(
 
         async def _update_session(metrics: inference.WorkerMetricsInfo):
             worker_session.requests_in_flight = len(work_request_map)
-            worker_session.metrics = metrics
+            if metrics:
+                worker_session.metrics = metrics
             await worker_utils.store_worker_session(worker_session)
 
         def _add_dequeue(ftrs: set):
