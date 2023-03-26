@@ -71,6 +71,29 @@ wget localhost:8080/api/v1/openapi.json -O docs/docs/api/openapi.json
 Note: The api docs should be automatically updated by the
 `test-api-contract.yaml` workflow.
 
+## Running Celery Worker(s) for API and periodic tasks
+
+Celery workers are used for Huggiface API calls like toxicity and feature
+extraction. Celery Beat along with worker is used for periodic tasks like user
+streak update
+
+To run APIs locally
+
+- update HUGGING_FACE_API_KEY in backend/oasst_backend/config.py with the
+  correct API_KEY
+- `export DEBUG_SKIP_TOXICITY_CALCULATION=False` and
+  `export DEBUG_SKIP_EMBEDDING_COMPUTATION=False`in
+  `scripts/backend-development/run-local.sh`
+- run start_worker.sh in backend dir
+- to see logs , use `tail -f celery.log` and `tail -f celery.beat.log`
+
+In CI
+
+- set `DEBUG_SKIP_TOXICITY_CALCULATION=False` and
+  `DEBUG_SKIP_EMBEDDING_COMPUTATION=False` in docker-compose.yaml
+- Two Docker instances are created. One for Beat and other for the worker
+- Logs can be viewed like other docker instances
+
 ## Exporting Data
 
 When you have collected some data in the backend database, you can export it

@@ -3,15 +3,16 @@ learning_rate: 2e-6
 scheduler: cosine
 gradient_checkpointing: false
 gradient_accumulation_steps: 12
-per_device_train_batch_size: 2
+per_device_train_batch_size: 1
 per_device_eval_batch_size: 4
 warmup_steps: 600
 eval_steps: 1000000
 save_steps: 1000
-max_length: 400
-num_train_epochs: 3
+max_length: 512
+num_train_epochs: 2
 datasets:
   - webgpt
   - hfsummary
   - anthropic_rlhf
   - gptsynthetic
+  - oa_private

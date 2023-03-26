@@ -1,28 +1,25 @@
-# Note: node:16.18.0 works most reliably when using different platforms (namely
+# Note: node:16.19.1 works most reliably when using different platforms (namely
 # Mac M1) and avoids recent Prisma docker bugs that lead to segfaults.
 
 # Install dependencies only when needed
-FROM node:16.18.0 AS deps
+FROM node:16.19.1 AS deps
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-COPY ./website/package.json ./website/package-lock.json ./
-RUN \
-  if [ -f package-lock.json ]; then npm ci; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+COPY ./website/package*.json ./
+RUN npm ci
 
 # Rebuild the source code only when needed
-FROM node:16.18.0 AS builder
+FROM node:16.19.1 AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
 COPY ./website/ .
 
-RUN npx prisma generate
-RUN npm run build
+# mount node_modules instead of copying them
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/app/node_modules,readwrite \
+  npx prisma generate && npm run build
 
 # Production image, copy all the files and run next
-FROM node:16.18.0 AS runner
+FROM node:16.19.1 AS runner
 WORKDIR /app
 
 ENV NODE_ENV production

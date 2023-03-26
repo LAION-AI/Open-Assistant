@@ -66,6 +66,25 @@ You can use the debug credentials provider to log in without fancy emails or OAu
 1. Use the `Login` button in the top right to go to the login page.
 1. You should see a section for debug credentials. Enter any username you wish, you will be logged in as that user.
 
+### Testing Oauth login to the inference server
+
+Create a `docker-compose.override.yml` in the root of the repo, and add the following to it
+
+```yml
+services:
+  inference-server:
+    environment:
+      # fill out these variables, you would need to create an app from the corresponding provider(s)
+      # you can fill only one of them if you want to
+      AUTH_DISCORD_CLIENT_ID:
+      AUTH_DISCORD_CLIENT_SECRET:
+
+      AUTH_GITHUB_CLIENT_ID:
+      AUTH_GITHUB_CLIENT_SECRET:
+```
+
+And now when you start all containers, the possibility to login to inference through these providers will be available.
+
 ### Using Storybook
 
 To develop components using [Storybook](https://storybook.js.org/) run `npm run storybook`. Then navigate to in your

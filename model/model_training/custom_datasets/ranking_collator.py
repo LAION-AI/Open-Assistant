@@ -24,15 +24,15 @@ class RankingDataCollator:
         # append eos token to each messages
         assert self.tokenizer.eos_token
         eos = self.tokenizer.eos_token
-        prefix = "".join(format_pairs(messages, eos))
+        prefix = "".join(format_pairs(messages, eos_token=eos))
 
-        replies = [format_reply(r, eos) for r in replies]
+        replies = [format_reply(r, eos_token=eos) for r in replies]
 
         prefix_tokens = self.tokenizer(prefix, padding=False, truncation=False)
         reply_tokens = [self.tokenizer(r, padding=False, truncation=False) for r in replies]
 
-        prefix_len = len(prefix_tokens["input_ids"])
-        suffix_len = max(len(r["input_ids"]) for r in reply_tokens)
+        prefix_len = len(prefix_tokens.input_ids)
+        suffix_len = max(len(r.input_ids) for r in reply_tokens)
         if return_length:
             return min(prefix_len + suffix_len, self.max_length)
 
@@ -40,9 +40,9 @@ class RankingDataCollator:
             max_prefix_len = (
                 prefix_len
                 if self.max_length is None
-                else max(self.min_prefix_length, self.max_length - len(r["input_ids"]))
+                else max(self.min_prefix_length, self.max_length - len(r.input_ids))
             )
-            max_suffix_len = len(r) if self.max_length is None else self.max_length - max_prefix_len
+            max_suffix_len = len(r.input_ids) if self.max_length is None else self.max_length - max_prefix_len
 
             for k in r.keys():
                 r[k] = prefix_tokens[k][-max_prefix_len:] + r[k][:max_suffix_len]

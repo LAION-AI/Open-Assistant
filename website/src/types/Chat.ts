@@ -1,6 +1,11 @@
-export interface InferenceDebugTokenResponse {
+export interface InferenceToken {
   access_token: string;
   token_type: string;
+}
+
+export interface InferenceTokens {
+  access_token: InferenceToken;
+  refresh_token: InferenceToken;
 }
 
 export interface ChatItem {
@@ -20,8 +25,9 @@ export interface InferencePostMessageResponse {
 
 export interface InferenceMessage {
   id: string;
+  created_at: string; //timestamp
   content: string | null;
-  state: "manual" | "pending" | "aborted_by_worker";
+  state: "manual" | "pending" | "in_progress" | "complete" | "aborted_by_worker" | "cancelled" | "timeout";
   role: "assistant" | "prompter";
   score: number;
   reports: any[];
@@ -38,7 +44,7 @@ interface InferenceEventMessage {
 }
 interface InferenceEventError {
   event_type: "error";
-  data: string;
+  error: string;
 }
 
 interface InferenceEventToken {
@@ -53,3 +59,36 @@ interface InferenceEventPending {
 }
 
 export type InferenceEvent = InferenceEventMessage | InferenceEventError | InferenceEventToken | InferenceEventPending;
+
+export type ModelInfo = {
+  name: string;
+  description: string;
+  parameter_configs: ModelParameterConfig[];
+};
+
+export type ModelParameterConfig = {
+  name: string;
+  description: string;
+  sampling_parameters: SamplingParameters;
+};
+
+export interface SamplingParameters {
+  max_new_tokens: number | null;
+  repetition_penalty: number | null;
+  temperature: number | null;
+  typical_p: number | null;
+  top_k: number | null;
+  top_p: number | null;
+}
+
+export interface ChatConfigForm extends SamplingParameters {
+  model_config_name: string; // this is the same as ModelParameterConfig.name
+}
+
+export interface InferencePostMessageParams {
+  chat_id: string;
+  parent_id: string | null;
+  content: string;
+  model_config_name: string;
+  sampling_parameters: SamplingParameters;
+}

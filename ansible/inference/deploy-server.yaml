@@ -7,10 +7,6 @@
     stack_name: "dev"
     image_tag: latest
     server_port: 8080
-    postgres_password: postgres
-    loguru_level: DEBUG
-    allow_debug_auth: "False"
-    debug_api_keys: ""
   tasks:
     - name: Create network
       community.docker.docker_network:
@@ -64,7 +60,9 @@
         network_mode: "oasst-inference-{{ stack_name }}"
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: "{{ postgres_password }}"
+          POSTGRES_PASSWORD:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_POSTGRES_PASSWORD') |
+            default('postgres', true) }}"
           POSTGRES_DB: postgres
           S3_BUCKET_NAME:
             "{{ lookup('ansible.builtin.env', 'S3_BUCKET_NAME') }}"
@@ -96,11 +94,45 @@
         network_mode: "oasst-inference-{{ stack_name }}"
         env:
           POSTGRES_HOST: "oasst-inference-{{ stack_name }}-postgres"
-          POSTGRES_PASSWORD: "{{ postgres_password }}"
+          POSTGRES_PASSWORD:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_POSTGRES_PASSWORD') |
+            default('postgres', true) }}"
           REDIS_HOST: "oasst-inference-{{ stack_name }}-redis"
-          LOGURU_LEVEL: "{{ loguru_level }}"
-          DEBUG_API_KEYS: "{{ debug_api_keys | string }}"
-          ALLOW_DEBUG_AUTH: "{{ allow_debug_auth | string }}"
-          HF_TOKEN: "{{ lookup('ansible.builtin.env', 'INFERENCE_HF_TOKEN') }}"
+          LOGURU_LEVEL:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_LOG_LEVEL') |
+            default('INFO', true) }}"
+          DEBUG_API_KEYS:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_DEBUG_API_KEYS') |
+            default('', true) | string }}"
+          ALLOW_DEBUG_AUTH:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_ALLOW_DEBUG_AUTH') |
+            default('False', true) | string }}"
+          ROOT_TOKEN:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_ROOT_TOKEN') |
+            default('1234', true) }}"
+          AUTH_CALLBACK_ROOT:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_AUTH_CALLBACK_ROOT') |
+            default('https://web.dev.open-assistant.io', true) }}"
+          AUTH_SALT:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_AUTH_SALT') |
+            default('', true) }}"
+          AUTH_SECRET:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_AUTH_SECRET') |
+            default('', true) }}"
+          AUTH_DISCORD_CLIENT_ID:
+            "{{ lookup('ansible.builtin.env',
+            'INFERENCE_AUTH_DISCORD_CLIENT_ID') | default('', true) }}"
+          AUTH_DISCORD_CLIENT_SECRET:
+            "{{ lookup('ansible.builtin.env',
+            'INFERENCE_AUTH_DISCORD_CLIENT_SECRET') | default('', true) }}"
+          AUTH_GITHUB_CLIENT_ID:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_AUTH_GITHUB_CLIENT_ID')
+            | default('', true) }}"
+          AUTH_GITHUB_CLIENT_SECRET:
+            "{{ lookup('ansible.builtin.env',
+            'INFERENCE_AUTH_GITHUB_CLIENT_SECRET') | default('', true) }}"
+          INFERENCE_CORS_ORIGINS:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_CORS_ORIGINS') |
+            default('*', true) }}"
         ports:
           - "{{ server_port }}:8080"

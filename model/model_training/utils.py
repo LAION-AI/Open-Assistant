@@ -9,12 +9,13 @@ import evaluate
 import torch
 import transformers
 import yaml
-from custom_datasets import get_one_dataset
-from custom_datasets.formatting import QA_SPECIAL_TOKENS
-from losses import CrossEntropyLoss, PolyLoss, RMLoss
-from models import freeze_top_n_layers, get_specific_model
-from models.patching import patch_model
-from models.reward_model import RewardModel
+from model_training.custom_datasets import get_one_dataset
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
+from model_training.losses import CrossEntropyLoss, PolyLoss, RMLoss
+from model_training.models import freeze_top_n_layers, get_specific_model
+from model_training.models.patching import patch_model
+from model_training.models.reward_model import GPTNeoXRewardModel
+from model_training.models.tokenization_llama import LLaMATokenizer
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
@@ -167,6 +168,7 @@ TOKENIZER_CONFIGS = {
     "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
     "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
     "gpt-neox": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
+    "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
 }
 
 
@@ -185,10 +187,16 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 
 
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
-    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    if "llama" in conf.model_name:
+        # explicitly specify LLaMATokenizer class until AutoTokenizer works
+        # assumes that the tokenizer config is stored in the same directory as the model weights
+        tokenizer = LLaMATokenizer.from_pretrained(conf.model_name)
+    else:
+        tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+
     tokenizer_config = match_tokenizer_name(conf.model_name)
 
-    if conf.per_digit_tokens:
+    if hasattr(conf, "per_digit_tokens") and conf.per_digit_tokens:
         tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 
     if tokenizer_config.special_tokens:
@@ -270,37 +278,42 @@ def get_metrics(conf, tokenizer):
     return metrics, preprocess_fns
 
 
-def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16, **kwargs):
+def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
     dtype = torch.float32
     if conf.dtype in ["fp16", "float16"]:
         dtype = torch.float16
     elif conf.dtype in ["bf16", "bfloat16"]:
         dtype = torch.bfloat16
 
-    model = get_specific_model(
-        conf.model_name,
-        cache_dir=conf.cache_dir,
-        quantization=conf.quantization,
-        seq2seqmodel=conf.seq2seqmodel,
-        torch_dtype=dtype,
-        without_head=conf.is_reward_model,
-        **kwargs,
-    )
-
-    n_embs = model.get_input_embeddings().num_embeddings
-    if len(tokenizer) != n_embs:
-        assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
-
-    if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
-        p = pad_vocab_size_to_multiple_of
-        target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
-        model.resize_token_embeddings(target_size)
-
-    if conf.freeze_layer:
-        model = freeze_top_n_layers(model, conf.freeze_layer)
-
     if conf.is_reward_model:
-        model = RewardModel(model)
+        if "pythia" in conf.model_name:
+            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir, torch_dtype=dtype)
+            if conf.pooling:
+                assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
+                model.config.pooling = conf.pooling
+        else:
+            raise RuntimeError(f"Unsupported reward model type: {conf.model_name}")
+    else:
+        model = get_specific_model(
+            conf.model_name,
+            cache_dir=conf.cache_dir,
+            quantization=conf.quantization,
+            seq2seqmodel=conf.seq2seqmodel,
+            without_head=conf.is_reward_model,
+            torch_dtype=dtype,
+        )
+
+        n_embs = model.get_input_embeddings().num_embeddings
+        if len(tokenizer) != n_embs:
+            assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
+
+        if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
+            p = pad_vocab_size_to_multiple_of
+            target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
+            model.resize_token_embeddings(target_size)
+
+        if conf.freeze_layer:
+            model = freeze_top_n_layers(model, conf.freeze_layer)
 
     model_parameters = filter(lambda p: p.requires_grad, model.parameters())
     params = sum([p.numel() for p in model_parameters])

@@ -1,13 +1,21 @@
 """
     High level functions for model training
 """
-from custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
-from custom_datasets.oasst_dataset import load_oasst_export
-from custom_datasets.prompt_dialogue import OAPrivate  # , PrivateInstructionTuning
-from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, TranslatedQA, WebGPT
-from custom_datasets.summarization import SummarizationDataset
-from custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
-from custom_datasets.translation import WMT2019, DiveMT, TEDTalk
+from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
+from model_training.custom_datasets.oasst_dataset import load_oasst_export
+from model_training.custom_datasets.prompt_dialogue import OAPrivate  # , PrivateInstructionTuning
+from model_training.custom_datasets.qa_datasets import (
+    SODA,
+    Alpaca,
+    JokeExplaination,
+    QADataset,
+    SODADialogue,
+    TranslatedQA,
+    WebGPT,
+)
+from model_training.custom_datasets.summarization import SummarizationDataset
+from model_training.custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
+from model_training.custom_datasets.translation import WMT2019, DiveMT, TEDTalk
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
 
@@ -24,7 +32,7 @@ SUMMARIZATION_DATASETS = [
 ]
 OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_translated", "oa_private"]
 
-RL_DATASETS = ["oa_private", "webgpt", "private_tuning"]
+RL_DATASETS = ["oa_private", "webgpt", "private_tuning", "alpaca"]
 
 RM_DATASETS = ["oasst_export"]
 
@@ -72,6 +80,8 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         dataset = DiveMT()
     elif dataset_name == "webgpt":
         dataset = WebGPT()
+    elif dataset_name == "alpaca":
+        dataset = Alpaca()
     elif dataset_name == "prosocial_dialogue":
         train = ProsocialDialogue(cache_dir=data_path, split="train")
         eval = ProsocialDialogue(cache_dir=data_path, split="validation")

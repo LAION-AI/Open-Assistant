@@ -10,6 +10,7 @@ import utils
 import websocket
 import work
 from loguru import logger
+from oasst_shared import model_configs
 from oasst_shared.schemas import inference
 from settings import settings
 
@@ -23,18 +24,31 @@ def main():
     signal.signal(signal.SIGINT, terminate_worker)
     logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
 
-    if settings.model_id != "_lorem":
-        if "llama" in settings.model_id:
-            tokenizer: transformers.PreTrainedTokenizer = transformers.LlamaTokenizer.from_pretrained(settings.model_id)
-        else:
-            tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(settings.model_id)
-    else:
+    model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)
+    if model_config is None:
+        logger.error(f"Unknown model config name: {settings.model_config_name}")
+        sys.exit(2)
+
+    if model_config.is_lorem:
         tokenizer = None
+    elif model_config.is_llama:
+        tokenizer: transformers.PreTrainedTokenizer = transformers.LlamaTokenizer.from_pretrained(model_config.model_id)
+    else:
+        tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
 
     while True:
         try:
-            if settings.model_id != "_lorem":
+            if not model_config.is_lorem:
                 utils.wait_for_inference_server(settings.inference_server_url)
+
+            if settings.perform_oom_test:
+                work.perform_oom_test(tokenizer)
+                sys.exit(0)
+
+            worker_config = inference.WorkerConfig(
+                model_config=model_config,
+                max_parallel_requests=settings.max_parallel_requests,
+            )
 
             with closing(
                 websocket.create_connection(
@@ -46,10 +60,11 @@ def main():
                 )
             ) as ws:
                 logger.warning("Connected to backend, sending config...")
-                worker_config = inference.WorkerConfig(
-                    model_name=settings.model_id, hardware_info=inference.WorkerHardwareInfo()
+                worker_info = inference.WorkerInfo(
+                    config=worker_config,
+                    hardware_info=inference.WorkerHardwareInfo(),
                 )
-                utils.send_response(ws, worker_config)
+                utils.send_response(ws, worker_info)
                 logger.warning("Config sent, waiting for work...")
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=worker_config.max_parallel_requests) as executor:
@@ -65,10 +80,18 @@ def main():
                         match worker_request.request_type:
                             case "work":
                                 logger.info(f"Handling work request: {worker_request.id=}")
-                                ftr = executor.submit(work.handle_work_request, ws, tokenizer, worker_request)
+                                ftr = executor.submit(
+                                    work.handle_work_request, ws, tokenizer, worker_request, worker_config
+                                )
                                 ftrs.append(ftr)
                             case "ping":
                                 utils.send_response(ws, inference.PongResponse(request_id=worker_request.id))
+                            case "wrong_api_key":
+                                logger.error("Your API Key seems to be wrong, please check it!")
+                                raise RuntimeError("Your API Key seems to be wrong, please check it!")
+                            case "upgrade_protocol":
+                                logger.error("Your worker is outdated, please upgrade it!")
+                                sys.exit(2)  # potentially read this status code outside
                             case "terminate":
                                 logger.info("Received terminate, terminating worker")
                                 sys.exit(0)
@@ -79,8 +102,9 @@ def main():
         except websocket.WebSocketBadStatusException as e:
             logger.error(f"Bad status: {e.status_code=} {str(e)=}")
             logger.error("Did you provide the correct API key?")
-            logger.error("Try upgrading the worker to get the latest protocol version")
-            raise
+            if not settings.retry_on_error:
+                sys.exit(1)
+            time.sleep(5)
         except Exception:
             logger.exception("Error in websocket")
             logger.warning("Retrying in 5 seconds...")

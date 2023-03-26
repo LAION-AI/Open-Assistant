@@ -1,27 +1,25 @@
 train:
-  seq_length: 1024
+  seq_length: 500
   epochs: 100
   total_steps: 10000
-  batch_size: 1
-
+  batch_size: 18
   checkpoint_interval: 10000
-  eval_interval: 100
-
+  eval_interval: 500
   pipeline: "PromptPipeline"
   trainer: "AcceleratePPOTrainer"
 
 model:
-  model_path: "lvwerra/gpt2-imdb"
+  model_path: "EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-500"
   num_layers_unfrozen: 2
 
 tokenizer:
-  tokenizer_path: "gpt2"
+  tokenizer_path: "EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-500"
   truncation_side: "right"
 
 optimizer:
   name: "adamw"
   kwargs:
-    lr: 1.0e-4
+    lr: 1.0e-5
     betas: [0.9, 0.95]
     eps: 1.0e-8
     weight_decay: 1.0e-6
@@ -34,8 +32,8 @@ scheduler:
 
 method:
   name: "ppoconfig"
-  num_rollouts: 16
-  chunk_size: 16
+  num_rollouts: 384
+  chunk_size: 8
   ppo_epochs: 4
   init_kl_coef: 0.05
   target: 6

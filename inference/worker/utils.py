@@ -15,7 +15,7 @@ from oasst_shared.schemas import inference
 class TokenBuffer:
     def __init__(self, stop_sequences: list[str]) -> None:
         self.stop_sequences = stop_sequences
-        self.longest_stop_len = max((len(stop) for stop in stop_sequences), default=0)
+        self.longest_stop_len = max((len(stop) for stop in stop_sequences), default=1)
         self.tokens = collections.deque()
         self.token_lens = collections.deque()
         self.total_len = 0
@@ -50,7 +50,8 @@ class TokenBuffer:
                 self.tokens.extend(reversed(end_tokens))
             yield from self.tokens
         elif reason == "eos_token":
-            self.tokens.pop()
+            if self.tokens:
+                self.tokens.pop()
             yield from self.tokens
         else:
             yield from self.tokens
@@ -74,9 +75,8 @@ def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
             break
 
 
-def lorem_events(seed):
-    sentence = lorem.sentence()
-    tokens = sentence.split()
+def text_to_events(text: str, seed: int | None = None, pause: float = 0.0):
+    tokens = text.split()
     for token in tokens[:-1]:
         yield interface.GenerateStreamResponse(
             token=interface.Token(
@@ -85,13 +85,15 @@ def lorem_events(seed):
                 id=0,
             ),
         )
+        if pause > 0:
+            time.sleep(pause)
     yield interface.GenerateStreamResponse(
         token=interface.Token(
             text=tokens[-1],
             logprob=0.1,
             id=0,
         ),
-        generated_text=sentence,
+        generated_text=text,
         details=interface.StreamDetails(
             finish_reason="length",
             generated_tokens=len(tokens),
@@ -100,12 +102,17 @@ def lorem_events(seed):
     )
 
 
+def lorem_events(seed):
+    sentence = lorem.sentence()
+    yield from text_to_events(sentence, seed=seed)
+
+
 ws_lock = threading.Lock()
 
 
 def send_response(
     ws: websocket.WebSocket,
-    repsonse: inference.WorkerResponse | inference.WorkerConfig,
+    repsonse: inference.WorkerResponse | inference.WorkerInfo,
 ):
     msg = repsonse.json()
     with ws_lock:

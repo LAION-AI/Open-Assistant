@@ -1,10 +1,10 @@
 from argparse import Namespace
 
 import pytest
-from custom_datasets import get_one_dataset
-from custom_datasets.ranking_collator import RankingDataCollator
+from model_training.custom_datasets import get_one_dataset
+from model_training.custom_datasets.ranking_collator import RankingDataCollator
+from model_training.utils import get_tokenizer
 from torch.utils.data import DataLoader
-from utils import get_tokenizer
 
 
 @pytest.mark.skip(reason="cache not populated")
@@ -46,6 +46,9 @@ def test_ranking_collator():
     attention_mask = x.attention_mask
     print("input_ids", input_ids.shape)
     print("attention_mask", attention_mask.shape)
+    print("input_ids[0, :200]", input_ids[0, :200])
+    print("decoded input_ids[0, :200]:", tokenizer.decode(input_ids[0, :200]))
+    print("decoded non masked input_ids[0]:", tokenizer.decode(input_ids[0][x.attention_mask[0] == 1]))
 
     print(y)
 

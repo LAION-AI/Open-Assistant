@@ -31,8 +31,14 @@ def custom_json_deserializer(s):
     match d.get("_classname_"):
         case "WorkParameters":
             return inference.WorkParameters.parse_obj(d)
+        case "ModelConfig":
+            return inference.ModelConfig.parse_obj(d)
+        case "SamplingParameters":
+            return inference.SamplingParameters.parse_obj(d)
         case "WorkerConfig":
             return inference.WorkerConfig.parse_obj(d)
+        case "WorkerInfo":
+            return inference.WorkerInfo.parse_obj(d)
         case "CreateMessageRequest":
             return chat_schema.CreateMessageRequest.parse_obj(d)
         case "WorkRequest":

@@ -9,6 +9,7 @@
   "labels_simple": "Мітки (прості)",
   "last_updated_at": "Останнє оновлення: {{val, datetime}}",
   "leaderboard": "Рейтинг лідерів",
+  "level_progress_message": "У вас {{score}} балів, ви досягли рівня {{level,number,integer}}!",
   "month": "Місяць",
   "monthly": "За місяць",
   "next": "Наступна",
@@ -19,6 +20,7 @@
   "prompt": "Текстів",
   "rank": "Рейтинг",
   "rankings": "Рейтинги",
+  "reached_max_level": "Ви досягли максимального рівня, дякуємо вам за важку працю!",
   "replies_assistant": "Відповідає як помічник",
   "replies_prompter": "Відповідає як користувач",
   "reply": "Відповідей",
@@ -31,6 +33,7 @@
   "username": "Ім'я користувача",
   "week": "Тиждень",
   "weekly": "Щотижня",
+  "xp_progress_message": "Вам потрібно {{need, number, integer}} балів щоб досягти наступного рівня!",
   "your_account": "Ваш аккаунт",
   "your_stats": "Ваша статистика"
 }
