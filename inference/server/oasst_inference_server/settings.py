@@ -68,7 +68,7 @@ class Settings(pydantic.BaseSettings):
     # we decided on letting the nextjs / website backend handle the token at first
     # and then proxy this information back to the inference server
     # in short: this should refer to the website, not to this server
-    auth_callback_root: str = "https://open-assistant.io/api/inference_auth"
+    auth_callback_root: str = "http://localhost:3000/api/inference_auth"
 
     allow_debug_auth: bool = False
 

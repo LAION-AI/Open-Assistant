@@ -95,7 +95,6 @@ async def receive_worker_info(
 
 
 async def store_worker_session(worker_session: WorkerSession):
-    logger.debug(f"Saving worker session {worker_session.id}")
     await deps.redis_client.set(f"worker_session:{worker_session.id}", worker_session.json())
 
 
