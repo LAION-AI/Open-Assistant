@@ -39,6 +39,10 @@ def main():
         )
         sys.exit(1)
 
+    if args.llama and args.reward_model:
+        print("--llama and --reward_model must not be specified at the same time")
+        sys.exit(1)
+
     if args.llama:
         # execute in model_training dir via python -m tools.export_model ...
         from models.modeling_llama import LLaMAForCausalLM
@@ -57,16 +61,15 @@ def main():
         print(f"{type(tokenizer).__name__} (vocab_size={len(tokenizer)})")
 
         print(f"Loading model '{args.model_name}' ({args.dtype}) ...")
-        model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
+        if args.reward_model:
+            model = AutoModelForSequenceClassification.from_pretrained(
+                args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir
+            )
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir
+            )
         print(f"{type(model).__name__} (num_parameters={model.num_parameters()})")
-    print(f"Loading model '{args.model_name}' ({args.dtype}) ...")
-    if args.reward_model:
-        model = AutoModelForSequenceClassification.from_pretrained(
-            args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir
-        )
-    else:
-        model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
-    print(f"{type(model).__name__} (num_parameters={model.num_parameters()})")
 
     if args.output_folder:
         print(f"Saving model to: {args.output_folder}")
