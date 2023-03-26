@@ -28,16 +28,14 @@ const Chat = ({ id, modelInfos }: ChatProps) => {
       </Head>
 
       <ChatContextProvider modelInfos={modelInfos}>
-        <Card>
-          <CardBody>
-            <Flex direction="column" gap="2">
-              <Link href="/chat">
-                <Button leftIcon={<List />} size="lg">
-                  {t("chat:back_to_chat_list")}
-                </Button>
-              </Link>
-              <ChatSection chatId={id} />
-            </Flex>
+        <Card className="max-w-5xl mx-auto">
+          <CardBody display="flex" flexDirection="column" gap="2">
+            <Link href="/chat">
+              <Button leftIcon={<List />} size="lg">
+                {t("chat:back_to_chat_list")}
+              </Button>
+            </Link>
+            <ChatSection chatId={id} />
           </CardBody>
         </Card>
       </ChatContextProvider>
