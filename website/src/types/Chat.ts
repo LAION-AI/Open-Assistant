@@ -18,13 +18,9 @@ export interface ChatItem {
   messages?: InferenceMessage[];
 }
 
-export interface InferencePostMessageResponse {
-  assistant_message: InferenceMessage;
-  prompter_message: InferenceMessage;
-}
-
 export interface InferenceMessage {
   id: string;
+  parent_id: string | null;
   created_at: string; //timestamp
   content: string | null;
   state: "manual" | "pending" | "in_progress" | "complete" | "aborted_by_worker" | "cancelled" | "timeout";
@@ -86,10 +82,15 @@ export interface ChatConfigForm extends SamplingParameters {
   model_config_name: string; // this is the same as ModelParameterConfig.name
 }
 
-export interface InferencePostMessageParams {
+export interface InferencePostPrompterMessageParams {
   chat_id: string;
   parent_id: string | null;
   content: string;
+}
+
+export interface InferencePostAssistantMessageParams {
+  chat_id: string;
+  parent_id: string;
   model_config_name: string;
   sampling_parameters: SamplingParameters;
 }

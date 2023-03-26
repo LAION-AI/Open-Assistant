@@ -2,11 +2,10 @@ import fastapi
 import pydantic
 from fastapi import Depends
 from loguru import logger
-from oasst_inference_server import auth, deps, models, queueing
+from oasst_inference_server import auth, chat_utils, deps, models, queueing
 from oasst_inference_server.schemas import chat as chat_schema
 from oasst_inference_server.settings import settings
 from oasst_inference_server.user_chat_repository import UserChatRepository
-from oasst_shared import model_configs
 from oasst_shared.schemas import inference
 from sse_starlette.sse import EventSourceResponse
 
@@ -48,31 +47,13 @@ async def get_chat(
     return chat.to_read()
 
 
-@router.post("/{chat_id}/messages")
-async def create_message(
+@router.post("/{chat_id}/prompter_message")
+async def create_prompter_message(
     chat_id: str,
-    request: chat_schema.CreateMessageRequest,
+    request: chat_schema.CreatePrompterMessageRequest,
     user_id: str = Depends(auth.get_current_user_id),
-) -> chat_schema.CreateMessageResponse:
-    """Allows the client to stream the results of a request."""
-
-    if settings.allowed_model_config_names != "*":
-        if request.model_config_name not in settings.allowed_model_config_names_list:
-            logger.warning(
-                f"Model {request.model_config_name} not in allowed models: {settings.allowed_model_config_names}"
-            )
-            raise fastapi.HTTPException(
-                status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Model {request.model_config_name} not in allowed models: {settings.allowed_model_config_names}",
-            )
-
-    model_config = model_configs.MODEL_CONFIGS.get(request.model_config_name)
-    if model_config is None:
-        logger.warning(f"Model {request.model_config_name} not found")
-        raise fastapi.HTTPException(
-            status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Model {request.model_config_name} not found",
-        )
+) -> inference.MessageRead:
+    """Adds a prompter message to a chat."""
 
     try:
         ucr: UserChatRepository
@@ -80,28 +61,48 @@ async def create_message(
             prompter_message = await ucr.add_prompter_message(
                 chat_id=chat_id, parent_id=request.parent_id, content=request.content
             )
+        return prompter_message.to_read()
+    except Exception:
+        logger.exception("Error adding prompter message")
+        return fastapi.Response(status_code=500)
+
+
+@router.post("/{chat_id}/assistant_message")
+async def create_assistant_message(
+    chat_id: str,
+    request: chat_schema.CreateAssistantMessageRequest,
+    user_id: str = Depends(auth.get_current_user_id),
+) -> inference.MessageRead:
+    """Allows the client to stream the results of a request."""
+
+    try:
+        model_config = chat_utils.get_model_config(request.model_config_name)
+    except ValueError as e:
+        logger.warning(str(e))
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
+
+    try:
+        ucr: UserChatRepository
+        async with deps.manual_user_chat_repository(user_id) as ucr:
             work_parameters = inference.WorkParameters(
                 model_config=model_config,
                 sampling_parameters=request.sampling_parameters,
             )
             assistant_message = await ucr.initiate_assistant_message(
-                parent_id=prompter_message.id,
+                parent_id=request.parent_id,
                 work_parameters=work_parameters,
             )
         queue = queueing.work_queue(deps.redis_client, model_config.compat_hash)
         logger.debug(f"Adding {assistant_message.id=} to {queue.queue_id} for {chat_id}")
         await queue.enqueue(assistant_message.id)
         logger.debug(f"Added {assistant_message.id=} to {queue.queue_id} for {chat_id}")
-        prompter_message_read = prompter_message.to_read()
-        assistant_message_read = assistant_message.to_read()
+        return assistant_message.to_read()
     except Exception:
         logger.exception("Error adding prompter message")
         return fastapi.Response(status_code=500)
-
-    return chat_schema.CreateMessageResponse(
-        prompter_message=prompter_message_read,
-        assistant_message=assistant_message_read,
-    )
 
 
 @router.get("/{chat_id}/messages/{message_id}")

@@ -52,7 +52,8 @@ export const API_ROUTES = {
   // chat:
   GET_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
   GET_MESSAGE: (chat_id: string, message_id: string) => createRoute(`/api/chat/message`, { chat_id, message_id }),
-  CREATE_CHAT_MESSAGE: `/api/chat/message`,
+  CREATE_PROMPTER_MESSAGE: `/api/chat/prompter_message`,
+  CREATE_ASSISTANT_MESSAGE: `/api/chat/assistant_message`,
   CHAT_MESSAGE_VOTE: `/api/chat/vote`,
   STREAM_CHAT_MESSAGE: (chat_id: string, message_id: string) =>
     createRoute(`/api/chat/events`, { chat_id, message_id }),
