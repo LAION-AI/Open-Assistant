@@ -49,7 +49,7 @@ if __name__ == "__main__":
     model = AutoModelForSequenceClassification.from_pretrained(model_name)
     model.eval()
     model.to(device)
-    max_length = args.get("max_length")
+    max_length = args.get("max_length") or model.config.max_position_embeddings
     dataloader = get_sampling_dataloader(data, tokenizer, max_length, args.get("batch_size"))
     sampling, scores = batch_inference(model, dataloader)
 
