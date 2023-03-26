@@ -1,3 +1,5 @@
+import asyncio
+
 import fastapi
 import pydantic
 from fastapi import Depends
@@ -152,9 +154,11 @@ async def message_events(
                             qpos, qlen = 0, 1
                         else:
                             # TODO: make more efficient, e.g. pipeline
-                            qdeq = await work_queue.get_deq_counter()
-                            qenq = await work_queue.get_enq_counter()
-                            mpos = await queueing.get_pos_value(redis_client, message_id)
+                            [qdeq, qenq, mpos] = await asyncio.gather(
+                                work_queue.get_deq_counter(),
+                                work_queue.get_enq_counter(),
+                                queueing.get_pos_value(redis_client, message_id),
+                            )
                             qpos = max(mpos - qdeq, 0)
                             qlen = max(qenq - qdeq, qpos)
                         yield {
