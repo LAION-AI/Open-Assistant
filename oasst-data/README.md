@@ -3,7 +3,7 @@
 ## Installation of oasst_data
 
 If you got the exception `ModuleNotFoundError: No module named 'oasst_data'` you
-first need to install the `oast_data` package:
+first need to install the `oasst_data` package:
 
 Run `pip install -e .` in the `oasst-data/` directory of the Open-Assistant
 repository to install the `oasst_data` python package in editable mode.
@@ -11,8 +11,9 @@ repository to install the `oasst_data` python package in editable mode.
 ## Reading Open-Assistant Export Files
 
 Reading jsonl files is in general very simple in Python. To further simplify the
-porcess the `oasst_data` module comes with Pydantic class definitions for
-validation and helper functions to load and traverse message trees.
+process for OA data the `oasst_data` module comes with Pydantic class
+definitions for validation and helper functions to load and traverse message
+trees.
 
 Code example:
 
