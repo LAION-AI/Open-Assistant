@@ -28,7 +28,7 @@ declare module "next-auth/jwt" {
     sub: string;
     /** Iso timestamp of the user's acceptance of the terms of service */
     tosAcceptanceDate?: string;
-    /** tokens for interacting with inference server */
-    inferenceTokens?: InferenceTokens;
+    /** token for interacting with inference server */
+    inferenceToken?: string;
   }
 }

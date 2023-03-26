@@ -75,6 +75,5 @@ export class OasstInferenceClient {
 }
 
 export const createInferenceClient = (jwt: JWT) => {
-  const token = jwt.inferenceTokens?.access_token.access_token;
-  return new OasstInferenceClient(token);
+  return new OasstInferenceClient(jwt.inferenceToken);
 };

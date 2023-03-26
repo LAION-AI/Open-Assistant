@@ -11,9 +11,10 @@ import EmailProvider from "next-auth/providers/email";
 import { checkCaptcha } from "src/lib/captcha";
 import { discordAvatarRefresh } from "src/lib/discord_avatar_refresh";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
-import { getInferenceTokens } from "src/lib/oasst_inference_auth";
 import prisma from "src/lib/prismadb";
+import { nowUnix } from "src/lib/time";
 import { convertToBackendUserCore } from "src/lib/users";
+import { BackendUserCore } from "src/types/Users";
 
 const providers: Provider[] = [];
 
@@ -110,8 +111,46 @@ const authOptions: AuthOptions = {
       session.user.isNew = token.isNew;
       session.user.name = token.name;
       session.user.tosAcceptanceDate = token.tosAcceptanceDate;
-      session.inference = { isAuthenticated: !!token.inferenceTokens };
+      session.inference = { isAuthenticated: Boolean(token.inferenceToken) };
       return session;
+    },
+    /**
+     * When creating a token, fetch the user's role and inject it in the token.
+     * This let's use forward the role to the session object.
+     */
+    async jwt({ token }) {
+      const frontendUser = await prisma.user.findUnique({
+        where: { id: token.sub },
+        select: { name: true, role: true, isNew: true, accounts: true, id: true, inferenceCredentials: true },
+      });
+
+      const backendUser = convertToBackendUserCore(frontendUser);
+      if (backendUser.auth_method === "discord") {
+        const discordAccount = frontendUser.accounts.find((a) => a.provider === "discord");
+        discordAvatarRefresh.updateImageIfNecessary(discordAccount);
+      }
+
+      token.name = frontendUser.name;
+      token.role = frontendUser.role;
+      token.isNew = frontendUser.isNew;
+
+      // leave the tosAcceptanceDate in the token, no need to fetch again since it will never change
+      if (!token.tosAcceptanceDate) {
+        token.tosAcceptanceDate = await getTosAcceptanceDate(backendUser);
+      }
+
+      // it is important to initialize the value to `null`, otherwise the previous value stays
+      token.inferenceToken = null;
+      const { inferenceCredentials } = frontendUser;
+      if (inferenceCredentials) {
+        const { accessToken, expiresAt } = inferenceCredentials;
+        if (nowUnix() < expiresAt) {
+          token.inferenceToken = accessToken;
+        }
+        // TODO: refresh token if expired
+      }
+
+      return token;
     },
   },
   events: {
@@ -172,48 +211,6 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
     ...authOptions,
     callbacks: {
       ...authOptions.callbacks,
-      /**
-       * When creating a token, fetch the user's role and inject it in the token.
-       * This let's use forward the role to the session object.
-       */
-      async jwt({ token }) {
-        const frontendUser = await prisma.user.findUnique({
-          where: { id: token.sub },
-          select: { name: true, role: true, isNew: true, accounts: true, id: true },
-        });
-
-        const backendUser = convertToBackendUserCore(frontendUser);
-        if (backendUser.auth_method === "discord") {
-          const discordAccount = frontendUser.accounts.find((a) => a.provider === "discord");
-          discordAvatarRefresh.updateImageIfNecessary(discordAccount);
-        }
-
-        let tosAcceptanceDate = null;
-        try {
-          /**
-           * when first creating a new user, the python backend is not informed about it
-           * so this call will return a 404
-           *
-           * in the frontend, when the user accepts the tos, we do a full refresh
-           * which means this function will be called again.
-           */
-          const oasstApiClient = createApiClientFromUser(backendUser);
-          tosAcceptanceDate = await oasstApiClient.fetch_tos_acceptance(backendUser);
-        } catch (err) {
-          if (err.httpStatusCode !== 404) {
-            throw err;
-          }
-        }
-
-        token.name = frontendUser.name;
-        token.role = frontendUser.role;
-        token.isNew = frontendUser.isNew;
-        token.tosAcceptanceDate = tosAcceptanceDate;
-        // this is probably a bit stupid: we get the tokens from the cookies and we write them into the JWT
-        // this saves us a database / inference call on every refresh
-        token.inferenceTokens = getInferenceTokens(req, res);
-        return token;
-      },
       async signIn({ account }) {
         const isVerifyEmail = req.url ? req.url.includes("/api/auth/callback/email") : false;
 
@@ -247,4 +244,24 @@ const getIp = (req: NextApiRequest) => {
   } catch {
     return "";
   }
+};
+
+const getTosAcceptanceDate = async (backendUser: BackendUserCore): Promise<string | null> => {
+  let tosAcceptanceDate = null;
+  try {
+    /**
+     * when first creating a new user, the python backend is not informed about it
+     * so this call will return a 404
+     *
+     * in the frontend, when the user accepts the tos, we do a full refresh
+     * which means this function will be called again.
+     */
+    const oasstApiClient = createApiClientFromUser(backendUser);
+    tosAcceptanceDate = await oasstApiClient.fetch_tos_acceptance(backendUser);
+  } catch (err) {
+    if (err.httpStatusCode !== 404) {
+      throw err;
+    }
+  }
+  return tosAcceptanceDate;
 };
