@@ -50,7 +50,6 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     if (!messages.length) return [];
     // sort dates latest first
     const sortedMessages = messages.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
-    console.log("sortedMessages", sortedMessages);
     // find the root message without parent_id
     const root = sortedMessages.find((m) => m.parent_id === null);
     const threadMessages = [root];
