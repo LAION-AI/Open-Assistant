@@ -240,8 +240,8 @@ type PendingMessageEntryProps = {
 };
 
 const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageEntryProps) => {
-  const bgAssistant = useColorModeValue("gray.100", "gray.800");
-  const bgUser = useColorModeValue("#f1f8ff", "#42536B");
+  const bgUser = useColorModeValue("gray.100", "gray.700");
+  const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
   const { data: session } = useSession();
   const image = session?.user?.image;
 
@@ -254,10 +254,6 @@ const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageE
     <BaseMessageEntry
       avatarProps={avatarProps}
       bg={isAssistant ? bgAssistant : bgUser}
-      stackProps={{
-        alignSelf: isAssistant ? "start" : "end",
-        flexDirection: isAssistant ? "row" : "row-reverse",
-      }}
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       content={content!}
     >
