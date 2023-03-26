@@ -37,7 +37,8 @@ class ChatRepository(pydantic.BaseModel):
             if message_age_in_seconds > settings.assistant_message_timeout:
                 message.state = inference.MessageState.timeout
                 await self.session.commit()
-                raise chat_schema.MessageTimeoutException(message_id=message_id)
+                await self.session.refresh(message)
+                raise chat_schema.MessageTimeoutException(message=message.to_read())
 
         if message.state == inference.MessageState.cancelled:
             raise chat_schema.MessageCancelledException(message_id=message_id)

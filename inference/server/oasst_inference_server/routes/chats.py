@@ -152,14 +152,19 @@ async def message_events(
 
                 _, response_packet_str = item
                 response_packet = pydantic.parse_raw_as(inference.WorkerResponse, response_packet_str)
-                if response_packet.response_type in ("error", "internal_error"):
-                    yield {
-                        "data": chat_schema.ErrorResponseEvent(error=response_packet.error).json(),
-                    }
+
+                if response_packet.response_type in ("error", "generated_text"):
+                    logger.warning(
+                        f"Received {response_packet.response_type=} response for {chat_id}. This should not happen."
+                    )
                     break
 
-                if response_packet.response_type == "generated_text":
-                    logger.warning(f"Received generated_text response for {chat_id}. This should not happen.")
+                if response_packet.response_type == "internal_error":
+                    yield {
+                        "data": chat_schema.ErrorResponseEvent(
+                            error=response_packet.error, message=response_packet.message
+                        ).json(),
+                    }
                     break
 
                 if response_packet.response_type == "internal_finished_message":
