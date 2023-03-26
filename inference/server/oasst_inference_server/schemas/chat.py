@@ -31,6 +31,7 @@ class TokenResponseEvent(pydantic.BaseModel):
 class ErrorResponseEvent(pydantic.BaseModel):
     event_type: Literal["error"] = "error"
     error: str
+    message: inference.MessageRead | None = None
 
 
 class MessageResponseEvent(pydantic.BaseModel):
@@ -38,7 +39,9 @@ class MessageResponseEvent(pydantic.BaseModel):
     message: inference.MessageRead
 
 
-ResponseEvent = Annotated[Union[TokenResponseEvent, ErrorResponseEvent], pydantic.Field(discriminator="event_type")]
+ResponseEvent = Annotated[
+    Union[TokenResponseEvent, ErrorResponseEvent, MessageResponseEvent], pydantic.Field(discriminator="event_type")
+]
 
 
 class VoteRequest(pydantic.BaseModel):
@@ -76,6 +79,6 @@ class MessageCancelledException(Exception):
 
 
 class MessageTimeoutException(Exception):
-    def __init__(self, message_id: str):
-        super().__init__(f"Message {message_id} timed out")
-        self.message_id = message_id
+    def __init__(self, message: inference.MessageRead):
+        super().__init__(f"Message {message.id} timed out")
+        self.message = message

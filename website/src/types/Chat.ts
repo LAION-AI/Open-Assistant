@@ -45,6 +45,7 @@ interface InferenceEventMessage {
 interface InferenceEventError {
   event_type: "error";
   error: string;
+  message: InferenceMessage | null;
 }
 
 interface InferenceEventToken {

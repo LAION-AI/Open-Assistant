@@ -85,7 +85,9 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
         },
       });
     }
-    setMessages((messages) => [...messages, message]);
+    if (message) {
+      setMessages((messages) => [...messages, message]);
+    }
     setQueueInfo(null);
     setResponse(null);
     setIsSending.off();
@@ -116,7 +118,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     [sendVote]
   );
 
-  const entires = useMemo(
+  const entries = useMemo(
     () =>
       messages.map((message) => (
         <ChatMessageEntry
@@ -136,9 +138,9 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
 
   return (
     <Flex flexDir="column" gap={4}>
-      {entires}
+      {entries}
       {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-      <Textarea ref={inputRef} autoFocus={!isSending} />
+      {!isSending && <Textarea ref={inputRef} />}
       <Button
         onClick={send}
         isLoading={isSending}
