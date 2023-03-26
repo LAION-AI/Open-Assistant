@@ -53,6 +53,8 @@ export class OasstInferenceClient {
     return this.request<Readable>(`/chats/${chat_id}/messages/${message_id}/events`, {
       headers: {
         Accept: "text/event-stream",
+        Connection: "keep-alive",
+        "Cache-Control": "no-cache, no-transform",
       },
       responseType: "stream",
     });

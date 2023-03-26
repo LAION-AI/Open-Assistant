@@ -12,7 +12,7 @@ services:
     image: ghcr.io/laion-ai/open-assistant/oasst-postgres
     pull_policy: always
     restart: always
-    profiles: ["frontend-dev", "backend-dev", "ci"]
+    profiles: ["frontend-dev", "backend-dev", "ci", "inference-dev"]
     ports:
       - 5432:5432
     environment:
@@ -51,7 +51,7 @@ services:
   webdb:
     image: postgres
     restart: always
-    profiles: ["frontend-dev", "ci"]
+    profiles: ["frontend-dev", "ci", "inference-dev"]
     ports:
       - 5433:5432
     environment:
@@ -105,7 +105,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    profiles: ["frontend-dev", "ci"]
+    profiles: ["frontend-dev", "ci", "inference-dev"]
     ports:
       - "8080:8080"
 
