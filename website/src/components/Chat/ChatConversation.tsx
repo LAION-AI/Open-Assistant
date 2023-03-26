@@ -138,7 +138,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
 
     setMessages((messages) => [...messages, prompter_message]);
 
-    initiate_assistant_message(prompter_message.id);
+    await initiate_assistant_message(prompter_message.id);
   }, [chatId, currentThread, setIsSending, initiate_assistant_message]);
 
   const sendVote = useMessageVote();
@@ -181,11 +181,12 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
           key={message.id}
           isAssistant={message.role === "assistant"}
           messageId={message.id}
+          parentId={message.parent_id}
           chatId={chatId}
           score={message.score}
           state={message.state}
           onVote={handleOnVote}
-          onRetry={() => handleOnRetry(message.parent_id!)}
+          onRetry={handleOnRetry}
           isSending={isSending}
         >
           {message.content}
@@ -216,9 +217,10 @@ type ChatMessageEntryProps = {
   state: InferenceMessage["state"];
   chatId: string;
   messageId: string;
+  parentId?: string;
   score: number;
   onVote: (data: { newScore: number; oldScore: number; chatId: string; messageId: string }) => void;
-  onRetry?: () => void;
+  onRetry?: (messageId: string) => void;
   isSending?: boolean;
 };
 
@@ -241,6 +243,7 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
   isAssistant,
   chatId,
   messageId,
+  parentId,
   score,
   state,
   onVote,
@@ -264,16 +267,24 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
     handleVote("-1");
   }, [handleVote]);
 
+  const handleRetry = useCallback(() => {
+    if (onRetry && parentId) {
+      onRetry(parentId);
+    }
+  }, [onRetry, parentId]);
+
   return (
     <PendingMessageEntry isAssistant={isAssistant} content={children!}>
       {isAssistant && (
         <MessageInlineEmojiRow>
-          {state === "pending" && <CircularProgress isIndeterminate size="20px" title={state} />}
+          {(state === "pending" || state === "in_progress") && (
+            <CircularProgress isIndeterminate size="20px" title={state} />
+          )}
           {(state === "aborted_by_worker" || state === "cancelled" || state === "timeout") && (
             <>
               <Icon as={XCircle} color="red" />
               <Text color="red">{`Error: ${state}`}</Text>
-              {onRetry && !isSending && <Button onClick={onRetry}>{t("retry")}</Button>}
+              {onRetry && !isSending && <Button onClick={handleRetry}>{t("retry")}</Button>}
             </>
           )}
           {state === "complete" && (
@@ -315,9 +326,7 @@ const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageE
   const image = session?.user?.image;
 
   const avatarProps = useMemo(
-    () => ({
-      src: isAssistant ? `/images/logos/logo.png` : image ?? "/images/temp-avatars/av1.jpg",
-    }),
+    () => ({ src: isAssistant ? `/images/logos/logo.png` : image ?? "/images/temp-avatars/av1.jpg" }),
     [isAssistant, image]
   );
 

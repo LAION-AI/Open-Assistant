@@ -25,6 +25,17 @@ export class OasstInferenceClient {
     return data;
   }
 
+  // note: maybe check if the token is still valid
+  // when creating JWT?
+  async check_auth(): Promise<boolean> {
+    try {
+      await this.request("/auth/check");
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
   get_my_chats(): Promise<ChatItem[]> {
     return this.request("/chats");
   }
