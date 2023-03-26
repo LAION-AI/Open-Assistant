@@ -2,7 +2,7 @@ train:
   seq_length: 520
   epochs: 30
   total_steps: 100000
-  batch_size: 8
+  batch_size: 18
   checkpoint_interval: 10000
   eval_interval: 50
   pipeline: "PromptPipeline"
@@ -23,10 +23,10 @@ tokenizer:
 optimizer:
   name: "adamw"
   kwargs:
-    lr: 2.0e-6
+    lr: 1.0e-6
     betas: [0.9, 0.95]
     eps: 1.0e-8
-    weight_decay: 1.0e-3
+    weight_decay: 1.0e-2
 
 scheduler:
   name: "cosine_annealing"
@@ -39,13 +39,13 @@ method:
   num_rollouts: 256
   chunk_size: 8
   ppo_epochs: 4
-  init_kl_coef: 0.1
-  target: 6
-  horizon: 10000
+  init_kl_coef: 1.0
+  target:
+  horizon:
   gamma: 1
   lam: 0.95
-  cliprange: 0.2
-  cliprange_value: 0.2
+  cliprange: 1.0
+  cliprange_value: 1.0
   vf_coef: 1
   scale_reward: False
   ref_mean: null
