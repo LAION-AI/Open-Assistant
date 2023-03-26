@@ -277,7 +277,9 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
     <PendingMessageEntry isAssistant={isAssistant} content={children!}>
       {isAssistant && (
         <MessageInlineEmojiRow>
-          {state === "pending" && <CircularProgress isIndeterminate size="20px" title={state} />}
+          {(state === "pending" || state === "in_progress") && (
+            <CircularProgress isIndeterminate size="20px" title={state} />
+          )}
           {(state === "aborted_by_worker" || state === "cancelled" || state === "timeout") && (
             <>
               <Icon as={XCircle} color="red" />
@@ -324,9 +326,7 @@ const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageE
   const image = session?.user?.image;
 
   const avatarProps = useMemo(
-    () => ({
-      src: isAssistant ? `/images/logos/logo.png` : image ?? "/images/temp-avatars/av1.jpg",
-    }),
+    () => ({ src: isAssistant ? `/images/logos/logo.png` : image ?? "/images/temp-avatars/av1.jpg" }),
     [isAssistant, image]
   );
 

@@ -4,23 +4,23 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl"]
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -44,10 +44,9 @@ model User {
   isNew         Boolean   @default(true)
   role          String    @default("general")
 
-  accounts      Account[]
-  sessions      Session[]
-
-  tasks         RegisteredTask[]
+  accounts Account[]
+  sessions Session[]
+  tasks    RegisteredTask[]
 }
 
 model VerificationToken {
@@ -59,20 +58,19 @@ model VerificationToken {
 }
 
 model RegisteredTask {
-  id           String @id @default(uuid())
-  task         Json
+  id   String @id @default(uuid())
+  task Json
 
-  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
-  interaction  TaskInteraction[]
+  interaction TaskInteraction[]
 }
 
 model TaskInteraction {
-  id           String @id @default(uuid())
+  id      String @id @default(uuid())
+  content Json
 
-  content      Json
-
-  task         RegisteredTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  taskId       String
+  task   RegisteredTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId String
 }

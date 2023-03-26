@@ -1,4 +1,4 @@
-import { Button, Divider, Flex, Progress, Text } from "@chakra-ui/react";
+import { Box, Button, Divider, Flex, Progress, Text } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
@@ -58,14 +58,16 @@ const Chat = ({ inferenceHost }: { inferenceHost: string }) => {
           <Divider />
           {data.chats.map(({ id, modified_at, title }) => (
             <Link key={id} href={`/chat/${id}`}>
-              <Flex as={Button} bg="inherit" py={2} w="full" borderRadius="sm" gap={6} justifyContent="start">
+              <Flex as={Button} bg="inherit" py={2} w="full" borderRadius="sm" gap={6} justifyContent="space-between">
+                <Text overflowX="hidden" textOverflow="ellipsis">
+                  {title ?? t("chat:empty")}
+                </Text>
                 <Text>
                   {t("chat:chat_date", {
                     val: new Date(modified_at),
                     formatParams: { val: { dateStyle: "short", timeStyle: "short" } },
                   })}
                 </Text>
-                <Text>{title ?? t("chat:empty")}</Text>
               </Flex>
             </Link>
           ))}
@@ -83,8 +85,10 @@ const Chat = ({ inferenceHost }: { inferenceHost: string }) => {
       <Head>
         <title>{t("chat")}</title>
       </Head>
-      {content}
-      <ChatAuth inferenceHost={inferenceHost} />
+      <Box className="max-w-5xl mx-auto">
+        {content}
+        <ChatAuth inferenceHost={inferenceHost} />
+      </Box>
     </>
   );
 };
