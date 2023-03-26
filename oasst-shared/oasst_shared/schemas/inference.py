@@ -79,12 +79,14 @@ class GpuMetricsInfo(pydantic.BaseModel):
 
 
 class WorkerMetricsInfo(pydantic.BaseModel):
+    created_at: datetime
     cpu_usage: float
     mem_usage: float
     swap_usage: float
     gpus: list[GpuMetricsInfo] | None = None
 
     def __init__(self, **data):
+        data["created_at"] = datetime.utcnow()
         data["cpu_usage"] = psutil.cpu_percent()
         data["mem_usage"] = psutil.virtual_memory().percent
         data["swap_usage"] = psutil.swap_memory().percent
@@ -212,7 +214,7 @@ class WorkerResponseBase(pydantic.BaseModel):
 
 class PongResponse(WorkerResponseBase):
     response_type: Literal["pong"] = "pong"
-    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+    metrics: WorkerMetricsInfo | None = None
 
 
 class TokenResponse(WorkerResponseBase):
@@ -226,7 +228,7 @@ class GeneratedTextResponse(WorkerResponseBase):
     response_type: Literal["generated_text"] = "generated_text"
     text: str
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
-    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+    metrics: WorkerMetricsInfo | None = None
 
 
 class InternalFinishedMessageResponse(WorkerResponseBase):
@@ -237,17 +239,18 @@ class InternalFinishedMessageResponse(WorkerResponseBase):
 class InternalErrorResponse(WorkerResponseBase):
     response_type: Literal["internal_error"] = "internal_error"
     error: str
+    message: MessageRead
 
 
 class ErrorResponse(WorkerResponseBase):
     response_type: Literal["error"] = "error"
-    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+    metrics: WorkerMetricsInfo | None = None
     error: str
 
 
 class GeneralErrorResponse(WorkerResponseBase):
     response_type: Literal["general_error"] = "general_error"
-    metrics: WorkerMetricsInfo = pydantic.Field(default_factory=WorkerMetricsInfo)
+    metrics: WorkerMetricsInfo | None = None
     error: str
 
 
