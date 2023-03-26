@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import torch
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from torch.utils.data import DataLoader, Dataset
@@ -45,7 +47,7 @@ class SamplingDataset(Dataset):
 
         self.dataset = []
         sampling_list = []
-        for data in dataset["prompts"][:4]:
+        for data in dataset["prompts"]:
             prompt = data["prompt"]
             for result in data["results"]:
                 sampling = result["sampling_config"]
@@ -67,3 +69,26 @@ class SamplingDataset(Dataset):
         sampling = self.label2id[sampling]
 
         return ([prefix], [reply], sampling)
+
+
+class RejectionSamplingDataset(Dataset):
+    def __init__(self, dataset):
+        self.prompt_answer = defaultdict(list)
+        for data in dataset["prompts"]:
+            prompt = data["prompt"].strip()
+            if prompt not in self.prompt_answer.keys():
+                self.prompt_answer[prompt] = []
+
+            outputs = [output for result in data["results"] for output in result["outputs"]]
+            self.prompt_answer[prompt].extend(outputs)
+
+        self.prompts = list(self.prompt_answer.keys())
+
+    def __len__(self):
+        return len(self.prompts)
+
+    def __getitem__(self, index):
+        prompt = self.prompts[index]
+        replies = self.prompt_answer.get(prompt)
+
+        return prompt, replies, index
