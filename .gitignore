@@ -6,6 +6,7 @@ venv
 *.egg-info
 __pycache__
 .DS_Store
+.coverage
 
 # Generated files
 backend/oasst-openapi.json

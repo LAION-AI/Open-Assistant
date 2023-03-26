@@ -16,6 +16,8 @@ python-dotenv==0.21.0
 python-jose[cryptography]==3.3.0
 redis
 scipy==1.8.1
+sentence-transformers==2.2.2
 SQLAlchemy==1.4.41
 sqlmodel==0.0.8
+tqdm==4.64.1
 uvicorn==0.20.0
