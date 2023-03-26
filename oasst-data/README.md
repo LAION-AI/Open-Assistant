@@ -25,21 +25,22 @@ messages: list[ExportMessageNode] = []
 
 input_file_path = "data_file.jsonl.gz"
 for tree in load_trees(input_file_path):
-    if tree.prompt.lang not in ["en","es"]:     # filtering by language tag (optinal)
+    if tree.prompt.lang not in ["en","es"]:     # filtering by language tag (optional)
         continue
 
-    # example use fo depth first tree visitor help function
+    # example use of depth first tree visitor help function
     visit_messages_depth_first(tree.prompt, visitor=messages.append, predicate=None)
 ```
 
-A more comprehensive example of loading all threads ending in assistant replies
-can be found in the file
+A more comprehensive example of loading all conversation threads ending in
+assistant replies can be found in the file
 [oasst_dataset.py](https://github.com/LAION-AI/Open-Assistant/blob/main/model/model_training/custom_datasets/oasst_dataset.py)
 which is used to load Open-Assistant export data for supervised fine-tuning
 (training) of our language models.
 
 You can also load jsonl data completely without dependencies to `oasst_data`
-solely with standard python libraries (handling json objects as nested dicts):
+solely with standard python libraries. In this case the json objects are loaded
+as nested dicts which need to be 'parsed' manually by you:
 
 ```python
 # loading jsonl files without using oasst_data
@@ -62,19 +63,20 @@ with file_in:
 
 ## Open-Assistant JSON Lines Export Data Format
 
-Open-Assistant export data is written as
-[JSON Lines data](https://jsonlines.org/). These data files are UTF-8 encoded
+Open-Assistant export data is written as standard
+[JSON Lines data](https://jsonlines.org/). The generated files are UTF-8 encoded
 text files with single JSON objects in each line. The files come either
 uncompressed with the ending `.jsonl` or compressed with the ending `.jsonl.gz`.
 
 Three different types of objects can appear in these files:
 
-1. individual messages
-2. conversation threads
-3. message trees
+1. Individual Messages
+2. Conversation Threads
+3. Message Trees
 
-For readability the following JSON examples are shown formatted although they
-are be stored without indentation in the data files.
+For readability the following JSON examples are shown formatted with indentation
+on multiple lines although they are be stored without indentation in the actual
+data file.
 
 ### 1. Individual Messages
 
