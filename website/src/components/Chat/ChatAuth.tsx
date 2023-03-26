@@ -21,13 +21,14 @@ export const ChatAuth = memo(function ChatAuth({ inferenceHost }: { inferenceHos
 
   const { data: session } = useSession();
   const isAuth = session?.inference.isAuthenticated;
+  const provider = session?.inference.provider;
   const username = session?.user.name;
 
   if (isAuth) {
     return (
       <Card mt={4}>
         <CardBody display="flex" flexDirection="row" justifyContent="space-between" alignItems="center" gap={4}>
-          <Text>{t("you_are_logged_in")}</Text>
+          <Text title={provider}>{t("you_are_logged_in")}</Text>
           <Box as={Button}>
             <Link href="/api/inference_auth/logout">{t("common:sign_out")}</Link>
           </Box>

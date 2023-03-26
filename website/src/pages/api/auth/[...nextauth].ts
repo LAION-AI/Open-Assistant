@@ -111,7 +111,10 @@ const authOptions: AuthOptions = {
       session.user.isNew = token.isNew;
       session.user.name = token.name;
       session.user.tosAcceptanceDate = token.tosAcceptanceDate;
-      session.inference = { isAuthenticated: Boolean(token.inferenceToken) };
+      session.inference = {
+        isAuthenticated: Boolean(token.inferenceToken),
+        provider: token.inferenceAuthProvider,
+      };
       return session;
     },
     /**
@@ -141,11 +144,13 @@ const authOptions: AuthOptions = {
 
       // it is important to initialize the value to `null`, otherwise the previous value stays
       token.inferenceToken = null;
+      token.inferenceAuthProvider = null;
       const { inferenceCredentials } = frontendUser;
       if (inferenceCredentials) {
-        const { accessToken, expiresAt } = inferenceCredentials;
+        const { accessToken, expiresAt, provider } = inferenceCredentials;
         if (nowUnix() < expiresAt) {
           token.inferenceToken = accessToken;
+          token.inferenceAuthProvider = provider;
         }
         // TODO: refresh token if expired
       }
