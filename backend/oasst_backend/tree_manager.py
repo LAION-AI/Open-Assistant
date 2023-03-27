@@ -910,6 +910,52 @@ class TreeManager:
         self.update_message_ranks(message_tree_id, rankings_by_message)
         return True
 
+    def ranked_pairs_update(self, rankings: list[MessageReaction]) -> int:
+        assert len(rankings) > 0
+
+        num_updated = 0
+        ordered_ids_list: list[list[UUID]] = [
+            msg_reaction.payload.payload.ranked_message_ids for msg_reaction in rankings
+        ]
+
+        common_set: set[UUID] = set.intersection(*map(set, ordered_ids_list))
+        if len(common_set) < 2:
+            logger.warning("The intersection of ranking results ID sets has less than two elements. Skipping.")
+            return
+
+        # keep only elements in common set
+        ordered_ids_list = [list(filter(lambda x: x in common_set, ids)) for ids in ordered_ids_list]
+        assert all(len(x) == len(common_set) for x in ordered_ids_list)
+
+        logger.debug(f"SORTED MESSAGE IDS {ordered_ids_list}")
+        consensus = ranked_pairs(ordered_ids_list)
+        assert len(consensus) == len(common_set)
+        logger.debug(f"CONSENSUS: {consensus}\n\n")
+
+        # fetch all siblings and index by id
+        siblings = self.pr.fetch_message_siblings(consensus[0], review_result=None, deleted=None)
+        siblings = {m.id: m for m in siblings}
+
+        # set rank for each message that was part of the common set
+        for rank, message_id in enumerate(consensus):
+            message = siblings.get(message_id)
+            if message:
+                if message.rank != rank:
+                    message.rank = rank
+                    self.db.add(message)
+                    num_updated += 1
+            else:
+                logger.warning(f"Message {message_id=} not found among siblings.")
+
+        # clear rank of sibling messages not in consensus
+        for message in siblings.values():
+            if message.id not in consensus and message.rank is not None:
+                message.rank = None
+                self.db.add(message)
+                num_updated += 1
+
+        return num_updated
+
     def update_message_ranks(
         self, message_tree_id: UUID, rankings_by_message: dict[UUID, list[MessageReaction]]
     ) -> bool:
@@ -925,41 +971,8 @@ class TreeManager:
 
         try:
             for rankings in rankings_by_message.values():
-                ordered_ids_list: list[list[UUID]] = [
-                    msg_reaction.payload.payload.ranked_message_ids for msg_reaction in rankings
-                ]
-
-                common_set: set[UUID] = set.intersection(*map(set, ordered_ids_list))
-                if len(common_set) < 2:
-                    logger.warning("The intersection of ranking results ID sets has less than two elements. Skipping.")
-                    continue
-
-                # keep only elements in common set
-                ordered_ids_list = [list(filter(lambda x: x in common_set, ids)) for ids in ordered_ids_list]
-                assert all(len(x) == len(common_set) for x in ordered_ids_list)
-
-                logger.debug(f"SORTED MESSAGE IDS {ordered_ids_list}")
-                consensus = ranked_pairs(ordered_ids_list)
-                assert len(consensus) == len(common_set)
-                logger.debug(f"CONSENSUS: {consensus}\n\n")
-
-                # fetch all siblings and clear ranks
-                siblings = self.pr.fetch_message_siblings(consensus[0], review_result=None, deleted=None)
-                for m in siblings:
-                    m.rank = None
-                    self.db.add(m)
-
-                # index by id
-                siblings = {m.id: m for m in siblings}
-
-                # set rank for each message that was part of the common set
-                for rank, message_id in enumerate(consensus):
-                    msg = siblings.get(message_id)
-                    if msg:
-                        msg.rank = rank
-                        self.db.add(msg)
-                    else:
-                        logger.warning(f"Message {message_id=} not found among siblings.")
+                if len(rankings) > 0:
+                    self.ranked_pairs_update(rankings)
 
         except Exception:
             logger.exception(f"update_message_ranks({message_tree_id=}) failed")
@@ -1298,7 +1311,7 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
         message_tree_id: UUID,
         role_filter: str = "assistant",
     ) -> dict[UUID, list[MessageReaction]]:
-        """Finds all completed ranking restuls for a message_tree"""
+        """Finds all completed ranking results for a message_tree"""
 
         assert role_filter in (None, "assistant", "prompter")
 
