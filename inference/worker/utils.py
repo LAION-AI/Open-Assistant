@@ -76,7 +76,6 @@ def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
 
 
 def text_to_events(text: str, seed: int | None = None, pause: float = 0.0):
-    time.sleep(2)
     tokens = text.split()
     for token in tokens[:-1]:
         yield interface.GenerateStreamResponse(
