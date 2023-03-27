@@ -80,8 +80,5 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
                 config.model.model_path, config.model.num_layers_unfrozen
             )
                                     
-        if config.sft_config.half:
-            model = model.half()
-
         return model
 

@@ -61,7 +61,7 @@ if __name__ == "__main__":
     if rank_config.half:
         rank_model = rank_model.half()
     
-    rank_model.cuda()
+    rank_model.to('cuda:{}'.format(training_conf.local_rank if training_conf.local_rank >= 0 else 0))
     rank_model.eval()
 
     @torch.no_grad()
