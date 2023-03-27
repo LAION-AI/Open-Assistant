@@ -1,10 +1,10 @@
 train:
   seq_length: 520
   epochs: 30
-  total_steps: 100000
+  total_steps: 10000
   batch_size: 18
-  checkpoint_interval: 10000
-  eval_interval: 50
+  checkpoint_interval: 2500
+  eval_interval: 500
   pipeline: "PromptPipeline"
   trainer: "CustomPPOTrainer"
   tracker: wandb
@@ -14,6 +14,7 @@ train:
 model:
   model_path:
   num_layers_unfrozen: -1
+  model_arch_type: causal
 
 tokenizer:
   tokenizer_path:
@@ -36,16 +37,16 @@ scheduler:
 
 method:
   name: "ppoconfig"
-  num_rollouts: 256
+  num_rollouts: 32
   chunk_size: 8
   ppo_epochs: 4
-  init_kl_coef: 1.0
-  target:
-  horizon:
+  init_kl_coef: 0.04
+  target: 6
+  horizon: 10000
   gamma: 1
   lam: 0.95
-  cliprange: 1.0
-  cliprange_value: 1.0
+  cliprange: 0.2
+  cliprange_value: 0.2
   vf_coef: 1
   scale_reward: False
   ref_mean: null

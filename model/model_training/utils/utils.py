@@ -277,10 +277,10 @@ def get_metrics(conf, tokenizer):
     return metrics, preprocess_fns
 
 
-def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
+def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16, **kwargs):
     if conf.is_reward_model:
         if "pythia" in conf.model_name:
-            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir, **kwargs,)
             if conf.pooling:
                 assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
                 model.config.pooling = conf.pooling
@@ -293,6 +293,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
             quantization=conf.quantization,
             seq2seqmodel=conf.seq2seqmodel,
             without_head=conf.is_reward_model,
+            **kwargs
         )
 
         n_embs = model.get_input_embeddings().num_embeddings

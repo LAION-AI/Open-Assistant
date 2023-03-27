@@ -55,10 +55,15 @@ if __name__ == "__main__":
     rank_config = Namespace(**training_conf.rank_config)
     rank_tokenizer = transformers.AutoTokenizer.from_pretrained(rank_config.model_name)
 
+    # TODO Load directly into torch.float16
     rank_model = get_model(rank_config, rank_tokenizer)
+    
+    if rank_config.half:
+        rank_model = rank_model.half()
+    
+    rank_model.cuda()
     rank_model.eval()
 
-    # TODO sync with reward modelling team on how to do this more transparently
     @torch.no_grad()
     def rank_model_fn(samples, **kwargs):
         # Here it is better to truncate to the left but model is is inference
@@ -71,18 +76,19 @@ if __name__ == "__main__":
         if "token_type_ids" in inputs:
             del inputs["token_type_ids"]
 
-        return rank_model(**inputs).logits.detach().cpu()[:, 0]
+        device = next(iter(rank_model.parameters())).device
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+
+        with torch.no_grad():
+            outputs = rank_model(**inputs).logits.detach().cpu()[:, 0]
+
+        return outputs
 
     sft_config = Namespace(**training_conf.sft_config)
-    tokenizer = transformers.AutoTokenizer.from_pretrained(
-        sft_config.model_name, padding_side="left" if not sft_config.seq2seqmodel else "right"
-    )
-    assert rank_tokenizer.eos_token == tokenizer.eos_token
 
     # override model_name to be the same as sft_model
-    model = get_model(sft_config, tokenizer)
-
     trlx_config = TRLConfig.load_yaml("configs/ppo_config.yaml")
+    trlx_config.sft_config = sft_config
 
     train, eval_dict = get_dataset(training_conf, mode="rl")
 
@@ -105,16 +111,18 @@ if __name__ == "__main__":
 
     trlx_config.tokenizer.tokenizer_path = sft_config.model_name
     trlx_config.model.model_path = sft_config.model_name
-    trlx_config.train.batch_size = training_conf.batch_size
-    trlx_config.train.epochs = training_conf.epochs
+    trlx_config.train.batch_size = int(training_conf.batch_size)
+    trlx_config.method.chunk_size = int(training_conf.chunk_size)
+    trlx_config.method.num_rollouts = int(training_conf.num_rollouts)
+    trlx_config.train.epochs = int(training_conf.epochs)
 
     trainer = trlx.train(
         sft_config.model_name,
         reward_fn=rank_model_fn,
         prompts=prompts,
-        eval_prompts=eval_prompts[:200],
+        eval_prompts=eval_prompts,
         config=trlx_config,
-        stop_sequences=[tokenizer.eos_token, QA_SPECIAL_TOKENS["Question"]],
+        stop_sequences=[rank_tokenizer.eos_token, QA_SPECIAL_TOKENS["Question"]],
     )
 
     training_conf.output_dir = training_conf.output_dir if training_conf.output_dir else training_conf.model_name

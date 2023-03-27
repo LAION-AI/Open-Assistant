@@ -1,7 +1,9 @@
 defaults_rlhf:
   datasets:
-  batch_size: 18
-  epochs: 20
+  batch_size: 8
+  chunk_size: 2
+  num_rollouts: 32
+  epochs: 10
   datasets_extra: []
   cache_dir: .cache
   output_dir: model_rl
@@ -14,34 +16,34 @@ oasst_export_latin_cyrillic_rlhf:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
         #top_k: 2
-        input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
+        input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
   sort_by_length: false
   use_custom_sampler: false
 
 pythia_rlhf:
-  # model_name: EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-2000
   rank_config:
     is_reward_model: true
-    model_name: pythia_rm/checkpoint-1000/
-    cache_dir:
+    model_name: andreaskoepf/oasst-rm-1-pythia-1b
+    cache_dir: /home/ubuntu/data_cache/
     pooling: last
-    residual_dropout: 0.0
+    residual_dropout: 0.08172424407561013
     use_flash_attention: false
+    half: false
 
   sft_config:
     is_reward_model: false
-    model_name: pythia_sft/checkpoint-2000/
-    cache_dir:
+    model_name: dvruette/oasst-pythia-6.9b-4000-steps
+    cache_dir: /home/ubuntu/data_cache/
     quantization: false
-    seq2seqmodel: False
+    seq2seqmodel: false
     freeze_layer:
-    residual_dropout: 0.0
+    residual_dropout: 0.1
     use_flash_attention: false
+    half: true
 
-  batch_size: 18
+  batch_size: 4
 
 debug_rlhf:
-  # model_name: gpt2
   rank_model: pythia_reward_model/checkpoint-50
   sft_model: pythia_sft/checkpoint-10/
   batch_size: 2
