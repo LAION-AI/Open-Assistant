@@ -116,7 +116,7 @@ def patch_model(
         except ModuleNotFoundError:
             warnings.warn(
                 """\nmodule flash_attn not found - either install:
-  pip3 install flash_atten
+  pip3 install flash_attn
 or run with:
   --use_flash_attention=false """
             )
