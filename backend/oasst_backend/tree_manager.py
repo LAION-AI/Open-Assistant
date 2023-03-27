@@ -911,6 +911,9 @@ class TreeManager:
         return True
 
     def ranked_pairs_update(self, rankings: list[MessageReaction]) -> int:
+        if len(rankings) == 0:
+            return 0
+
         num_updated = 0
         ordered_ids_list: list[list[UUID]] = [
             msg_reaction.payload.payload.ranked_message_ids for msg_reaction in rankings
