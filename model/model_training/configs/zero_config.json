@@ -1,6 +1,6 @@
 {
   "fp16": {
-    "enabled": "auto",
+    "enabled": true,
     "loss_scale": 0,
     "loss_scale_window": 1000,
     "initial_scale_power": 16,
@@ -26,14 +26,19 @@
     }
   },
   "zero_optimization": {
-    "stage": 2,
-    "allgather_partitions": true,
-    "allgather_bucket_size": 2e8,
+    "stage": 3,
+    "allgather_partitions": false,
+    "allgather_bucket_size": 5e6,
     "overlap_comm": true,
     "reduce_scatter": true,
-    "reduce_bucket_size": 2e8,
+    "reduce_bucket_size": 5e6,
     "contiguous_gradients": true,
+    "stage3_prefetch_bucket_size": 5e6,
     "offload_optimizer": {
+      "device": "cpu",
+      "pin_memory": true
+    },
+    "offload_param": {
       "device": "cpu",
       "pin_memory": true
     }

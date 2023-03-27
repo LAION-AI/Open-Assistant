@@ -2,8 +2,8 @@ defaults:
   learning_rate: 1e-5
   gradient_checkpointing: false
   gradient_accumulation_steps: 32
-  per_device_train_batch_size: 2
-  per_device_eval_batch_size: 2
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
   adam_beta1: 0.9
   adam_beta2: 0.95
   adam_epsilon: 1e-12
@@ -15,7 +15,7 @@ defaults:
   num_train_epochs: 3
   logging_steps: 10
   max_grad_norm: 2.0
-  save_total_limit: 4
+  save_total_limit: 2
   fp16: true
   eval_accumulation_steps:
   freeze_layer:
@@ -120,16 +120,16 @@ llama-7b:
   fp16: true
   log_dir: "llama_log"
   learning_rate: 8e-6
-  #model_name: decapoda-research/llama-7b-hf
-  model_name: /home/ubuntu/llama_hf/llama-7b
+  # model_name: decapoda-research/llama-7b-hf
+  model_name: /home/mikichan/exp/llama-7b-hf
   output_dir: llama_model
   weight_decay: 0.0
-  max_length: 620
+  max_length: 16
   warmup_steps: 100
   gradient_checkpointing: false
-  gradient_accumulation_steps: 4
-  per_device_train_batch_size: 4
-  per_device_eval_batch_size: 10
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
   eval_steps: 100
   save_steps: 500
   num_train_epochs: 16
@@ -267,10 +267,10 @@ codegen:
   per_device_eval_batch_size: 4
 
 debug:
-  model_name: EleutherAI/pythia-70m-deduped
-  eval_steps: 20
-  eval_size: 20
-  save_steps: 20
+  # model_name: EleutherAI/pythia-70m-deduped
+  # eval_steps: 20
+  # eval_size: 20
+  # save_steps: 20
   gradient_accumulation_steps: 1
   per_device_train_batch_size: 1
   per_device_eval_batch_size: 1
