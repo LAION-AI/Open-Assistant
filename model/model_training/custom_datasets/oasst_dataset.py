@@ -4,6 +4,9 @@ from typing import Literal, Optional
 from oasst_data import ExportMessageNode, load_trees, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
+from transformers.utils import logging
+
+logger = logging.get_logger(__name__)
 
 
 class ListDataset(Dataset):
@@ -25,6 +28,7 @@ def load_oasst_export(
     top_k: Optional[int] = None,
     manual_seed: int = 287631038922,
     data_path: str | Path = None,
+    include_synthetic: bool = False,
     mode: Literal["sft", "rm"] = "sft",
 ) -> tuple[ListDataset, ListDataset]:
     if mode not in ("sft", "rm"):
@@ -51,7 +55,10 @@ def load_oasst_export(
         threads: list[list[ExportMessageNode]] = []
 
         def thread_filter(thread: list[ExportMessageNode]) -> bool:
-            if any(m.deleted or m.synthetic for m in thread):
+            if any(m.deleted for m in thread):
+                return False
+
+            if include_synthetic is False and any(m.synthetic for m in thread):
                 return False
 
             if top_k is not None:
@@ -117,6 +124,6 @@ def load_oasst_export(
     train = flatten(splits[0])
     val = flatten(splits[1])
 
-    print(f"OASST data {str(input_file_path)}: {len(train)=}, {len(val)=}")
+    logger.info(f"OASST data {str(input_file_path)} ({mode=}, {include_synthetic=}): {len(train)=}, {len(val)=}")
 
     return train, val

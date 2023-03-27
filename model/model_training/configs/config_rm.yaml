@@ -45,7 +45,8 @@ oasst-rm-1-pythia-6B:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        input_file_path: 2023-03-21_oasst_ready_synth_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+        include_synthetic: true
   model_name: EleutherAI/pythia-6.9b-deduped
   learning_rate: 1e-5
   residual_dropout: 0.08
@@ -67,8 +68,9 @@ oasst-rm-1-pythia-1b:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        input_file_path: 2023-03-21_oasst_ready_synth_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
         val_split: 0.1
+        include_synthetic: true
   model_name: EleutherAI/pythia-1b-deduped
   learning_rate: 2.3984085802847404e-05
   residual_dropout: 0.08172424407561013
