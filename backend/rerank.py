@@ -24,7 +24,8 @@ def update_tree_ranking(tm: TreeManager, message_tree_id: UUID) -> int:
         return 0
     num_updated = 0
     for rankings in rankings_by_message.values():
-        num_updated += tm.ranked_pairs_update(rankings)
+        if len(rankings) > 0:
+            num_updated += tm.ranked_pairs_update(rankings)
     return num_updated
 
 

@@ -911,8 +911,7 @@ class TreeManager:
         return True
 
     def ranked_pairs_update(self, rankings: list[MessageReaction]) -> int:
-        if len(rankings) == 0:
-            return 0
+        assert len(rankings) > 0
 
         num_updated = 0
         ordered_ids_list: list[list[UUID]] = [
@@ -972,7 +971,8 @@ class TreeManager:
 
         try:
             for rankings in rankings_by_message.values():
-                self.ranked_pairs_update(rankings)
+                if len(rankings) > 0:
+                    self.ranked_pairs_update(rankings)
 
         except Exception:
             logger.exception(f"update_message_ranks({message_tree_id=}) failed")
@@ -1311,7 +1311,7 @@ LEFT JOIN message_reaction mr ON mr.task_id = t.id AND mr.payload_type = 'Rankin
         message_tree_id: UUID,
         role_filter: str = "assistant",
     ) -> dict[UUID, list[MessageReaction]]:
-        """Finds all completed ranking restuls for a message_tree"""
+        """Finds all completed ranking results for a message_tree"""
 
         assert role_filter in (None, "assistant", "prompter")
 
