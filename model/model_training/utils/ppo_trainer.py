@@ -4,8 +4,7 @@ import torch
 from transformers import AutoTokenizer
 from trlx.trainer import register_trainer
 from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
-from trlx.trainer.nn.ppo_models import Seq2SeqLMHydraWithValueHead, CausalLMHydraWithValueHead
-from utils.utils import get_model
+from trlx.trainer.nn.ppo_models import CausalLMHydraWithValueHead, Seq2SeqLMHydraWithValueHead
 
 
 @register_trainer
@@ -19,8 +18,6 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
         self.tokenizer = AutoTokenizer.from_pretrained(
             config.tokenizer.tokenizer_path, padding_side=config.tokenizer.padding_side
         )
-
-
 
     def decode(
         self,
@@ -69,16 +66,11 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
         return str_samples, str_prompts, str_outputs
 
     def get_arch(self, config):
-        #model = get_model(config.sft_config, self.tokenizer)
+        # model = get_model(config.sft_config, self.tokenizer)
 
         if config.model.model_arch_type == "seq2seq":
-            model = Seq2SeqLMHydraWithValueHead(
-                config.model.model_path, config.model.num_layers_unfrozen
-            )
+            model = Seq2SeqLMHydraWithValueHead(config.model.model_path, config.model.num_layers_unfrozen)
         else:
-            model = CausalLMHydraWithValueHead(
-                config.model.model_path, config.model.num_layers_unfrozen
-            )
-                                    
-        return model
+            model = CausalLMHydraWithValueHead(config.model.model_path, config.model.num_layers_unfrozen)
 
+        return model

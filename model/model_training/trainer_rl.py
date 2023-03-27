@@ -57,11 +57,11 @@ if __name__ == "__main__":
 
     # TODO Load directly into torch.float16
     rank_model = get_model(rank_config, rank_tokenizer)
-    
+
     if rank_config.half:
         rank_model = rank_model.half()
-    
-    rank_model.to('cuda:{}'.format(training_conf.local_rank if training_conf.local_rank >= 0 else 0))
+
+    rank_model.to("cuda:{}".format(training_conf.local_rank if training_conf.local_rank >= 0 else 0))
     rank_model.eval()
 
     @torch.no_grad()
