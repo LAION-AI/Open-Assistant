@@ -41,13 +41,12 @@ export const getServerSideProps: GetServerSideProps = async ({ locale = "en", re
 
   return {
     props: {
-      inferenceHost: process.env.INFERENCE_SERVER_HOST,
       ...(await serverSideTranslations(locale)),
     },
   };
 };
 
-const Chat = ({ inferenceHost }: { inferenceHost: string }) => {
+const Chat = () => {
   if (process.env.NODE_ENV === "development") {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useSWR("http://localhost:8000/auth/check", () => {
@@ -58,7 +57,6 @@ const Chat = ({ inferenceHost }: { inferenceHost: string }) => {
   const router = useRouter();
 
   const { data, isLoading, error } = useFetchChatList();
-  console.log(data);
 
   const { trigger: newChatTrigger } = useSWRMutation<{ id: string }>("/chat", () => {
     return new OasstInferenceClient().create_chat();
