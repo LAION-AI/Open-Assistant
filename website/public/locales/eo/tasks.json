@@ -47,7 +47,7 @@
   "label": "Rangigi Asistantajn Respondojn",
   "desc": "Taksu instigojn donitajn de Malferma Asistanto laŭ ilia precizeco kaj legebleco.",
   "overview": "Donita la jenaj Asistantaj respondoj, ordigi ilin de plej bona al plej malbona, plej bona estante unue, plej malbona estante laste.",
-  "unchanged_title": "Ordo Neshanĝita",
+  "unchanged_title": "Ordo Neŝanĝita",
   "unchanged_message": "Vi ne ŝanĝis la ordon de la instigoj. Ĉu vi certe volas daŭrigi?",
   "continue_anyway": "Daŭrigu malgraŭ ĉio"
   },
@@ -55,7 +55,7 @@
   "label": "Rangigi Unuajn Instigojn",
   "desc": "Taksu instigojn donitajn de Malferma Asistanto laŭ ilia precizeco kaj legebleco.",
   "overview": "Donita la jenaj unuaj instigoj, ordigi ilin de plej bona al plej malbona, plej bona estante unue, plej malbona estante laste.",
-  "unchanged_title": "Ordo Neshanĝita",
+  "unchanged_title": "Ordo Neŝanĝita",
   "unchanged_message": "Vi ne ŝanĝis la ordon de la instigoj. Ĉu vi certe volas daŭrigi?",
   "continue_anyway": "Daŭrigu malgraŭ ĉio"
   },
