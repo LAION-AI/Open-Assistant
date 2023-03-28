@@ -12,16 +12,35 @@ import { getDashboardLayout } from "src/components/Layout";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { get, post } from "src/lib/api";
 import { isChatEnabled } from "src/lib/chat_enabled";
+import { INFERNCE_TOKEN_KEY } from "src/lib/oasst_inference_auth";
+import { OasstInferenceClient } from "src/lib/oasst_inference_client";
 import { GetChatsResponse } from "src/types/Chat";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
-export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+export const getServerSideProps: GetServerSideProps = async ({ locale = "en", res, query }) => {
   if (!isChatEnabled()) {
     return {
       notFound: true,
     };
   }
+
+  const accessToken = query.access_token as string;
+  const expire = query.exp as string;
+  if (accessToken && expire) {
+    const maxAge = Math.floor(Number(expire) - Date.now() / 1000);
+    res.setHeader("Set-Cookie", `${INFERNCE_TOKEN_KEY}=${accessToken}; Path=/; Max-Age=${maxAge}`);
+
+    return {
+      redirect: {
+        destination: "/chat",
+      },
+      props: {
+        ...(await serverSideTranslations(locale)),
+      },
+    };
+  }
+
   return {
     props: {
       inferenceHost: process.env.INFERENCE_SERVER_HOST,
@@ -31,10 +50,17 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 };
 
 const Chat = ({ inferenceHost }: { inferenceHost: string }) => {
+  if (process.env.NODE_ENV === "development") {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useSWR("http://localhost:8000/auth/check", () => {
+      new OasstInferenceClient().check_auth();
+    });
+  }
   const { t } = useTranslation(["common", "chat"]);
   const router = useRouter();
   const { data: session } = useSession();
-  const isAuthenticatedInference = session?.inference.isAuthenticated;
+  // const isAuthenticatedInference = session?.inference.isAuthenticated;
+  const isAuthenticatedInference = false;
 
   const { data } = useSWR<GetChatsResponse>(isAuthenticatedInference && "/api/chat", get, { revalidateOnFocus: true });
 

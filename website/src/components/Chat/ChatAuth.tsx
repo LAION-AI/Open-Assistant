@@ -19,8 +19,11 @@ export const ChatAuth = memo(function ChatAuth({ inferenceHost }: { inferenceHos
     fallbackData: [],
   });
 
+  console.log(authProviders);
+
   const { data: session } = useSession();
-  const isAuth = session?.inference.isAuthenticated;
+  // const isAuth = session?.inference.isAuthenticated;
+  const isAuth = false;
   const username = session?.user.name;
 
   if (isAuth) {

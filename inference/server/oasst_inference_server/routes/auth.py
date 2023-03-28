@@ -1,7 +1,10 @@
+from datetime import datetime, timedelta
+
 import aiohttp
 import fastapi
 import sqlmodel
 from fastapi import Depends, HTTPException, Security
+from fastapi.responses import RedirectResponse
 from loguru import logger
 from oasst_inference_server import auth, database, deps, models
 from oasst_inference_server.settings import settings
@@ -204,11 +207,11 @@ async def query_user_by_provider_id(
 @router.get("/login/debug")
 async def login_debug(username: str, state: str = r"{}"):
     # mock code with our own data
-    auth_url = f"{settings.auth_callback_root}/debug?code={username}&state={state}"
+    auth_url = f"/auth/callback/debug?code={username}&state={state}"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
-@router.get("/callback/debug", response_model=protocol.TokenPair)
+@router.get("/callback/debug")
 async def callback_debug(code: str, db: database.AsyncSession = Depends(deps.create_session)):
     """Login using a debug username, which the system will accept unconditionally."""
 
@@ -236,9 +239,19 @@ async def callback_debug(code: str, db: database.AsyncSession = Depends(deps.cre
     access_token = auth.create_access_token(user.id)
     refresh_token = await auth.create_refresh_token(user.id)
 
-    token_pair = protocol.TokenPair(
-        access_token=protocol.Token(access_token=access_token, token_type="bearer"),
-        refresh_token=protocol.Token(access_token=refresh_token, token_type="refresh"),
+    access_token_exp = datetime.now() + timedelta(minutes=settings.auth_access_token_expire_minutes)
+    access_token_exp = int(access_token_exp.timestamp())
+
+    response = RedirectResponse(
+        url=f"{settings.frontend_root}/chat?access_token={access_token}&exp={access_token_exp}",
+        status_code=302,
     )
 
-    return token_pair
+    response.set_cookie(
+        "inference_refresh_token",
+        value=refresh_token,
+        httponly=True,
+        max_age=settings.auth_refresh_token_expire_minutes * 60,
+    )
+
+    return response

@@ -1,24 +1,41 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { JWT } from "next-auth/jwt";
+import type { JWT } from "next-auth/jwt";
 import {
   ChatItem,
   InferenceMessage,
-  InferencePostPrompterMessageParams,
   InferencePostAssistantMessageParams,
+  InferencePostPrompterMessageParams,
   ModelInfo,
 } from "src/types/Chat";
 import type { Readable } from "stream";
 
+import { INFERNCE_TOKEN_KEY } from "./oasst_inference_auth";
+
+function getCookieFromDocument(name: string) {
+  const cookies = document.cookie.split("; ");
+  for (const cookie of cookies) {
+    const [cookieName, cookieValue] = cookie.split("=");
+    if (cookieName === name) {
+      return cookieValue;
+    }
+  }
+  return undefined;
+}
 export class OasstInferenceClient {
   // this is not a long lived class, this is why the token is immutable
-  constructor(private readonly inferenceAccessToken: string) {}
+  constructor(private readonly inferenceAccessToken?: string) {}
 
   async request<T = unknown>(path: string, init?: AxiosRequestConfig) {
+    const token =
+      typeof document !== "undefined" && !this.inferenceAccessToken
+        ? getCookieFromDocument(INFERNCE_TOKEN_KEY)
+        : this.inferenceAccessToken;
+
     const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
       ...init,
       headers: {
         ...init?.headers,
-        Authorization: `Bearer ${this.inferenceAccessToken}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });

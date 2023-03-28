@@ -2,7 +2,7 @@ import Cookies from "cookies";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { InferenceTokens } from "src/types/Chat";
 
-const INFERNCE_TOKEN_KEY = "inferenceToken";
+export const INFERNCE_TOKEN_KEY = "inferenceToken";
 
 export const getInferenceTokens = (req: NextApiRequest, res: NextApiResponse): InferenceTokens | null => {
   const cookies = new Cookies(req, res);

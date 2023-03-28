@@ -64,6 +64,7 @@ class Settings(pydantic.BaseSettings):
     compliance_check_interval: int = 60
     compliance_check_timeout: int = 60
 
+    frontend_root: str = "http://localhost:3000"
     # this is the URL which will be redirected to when authenticating with oauth2
     # we decided on letting the nextjs / website backend handle the token at first
     # and then proxy this information back to the inference server
