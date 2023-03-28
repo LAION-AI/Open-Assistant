@@ -76,7 +76,7 @@ class RMTrainer(Trainer):
                 labels.extend([i]*(e-s))
         labels = torch.tensor(labels).view(-1,1)
 
-        return (loss, out_logits, labels)
+        return (loss, logits, labels)
 
     def get_train_dataloader(self):
         """
