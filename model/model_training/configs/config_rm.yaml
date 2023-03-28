@@ -38,6 +38,7 @@ defaults_rm:
   sort_by_length: false
   per_digit_tokens: false
   datasets_extra: []
+  metrics: ["accuracy", "kendalltau"]
 
 oasst-rm-1-pythia-6B:
   is_reward_model: true
