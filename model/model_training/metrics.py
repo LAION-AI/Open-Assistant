@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import kendalltau
+from scipy import stats as st
 
 
 def reward_accuracy(eval_pred):
@@ -32,10 +32,23 @@ def kendall_tau(eval_pred):
         logits_batch = logits[labels==i]
         pred_rank = np.argsort(logits_batch)
         true_rank = np.arange(logits_batch.size-1,-1,-1)
-        print(pred_rank,true_rank)
-        tau += kendalltau(pred_rank, true_rank)[0]
+        tau += st.kendalltau(pred_rank, true_rank)[0]
 
-    return {"kendall_tau":tau/np.unique(labels).size}
+    return {"kendalltau":tau/np.unique(labels).size}
+
+
+def spearmanr(eval_pred):
+    
+    logits = eval_pred.predictions
+    labels = eval_pred.label_ids
+    score = 0.0
+    for i in np.unique(labels):
+        logits_batch = logits[labels==i]
+        pred_rank = np.argsort(logits_batch)
+        true_rank = np.arange(logits_batch.size-1,-1,-1)
+        score += st.spearmanr(pred_rank, true_rank).statistic
+
+    return {"spearmanr":score/np.unique(labels).size}
 
 
 class RewardMetrics:
@@ -49,8 +62,10 @@ class RewardMetrics:
         for name in metrics:
             if name == "accuracy":
                 self.metrics.append(reward_accuracy)
-            elif name == "kendall_tau":
+            elif name == "kendalltau":
                 self.metrics.append(kendall_tau)
+            elif name == "spearmanr":
+                self.metrics.append(spearmanr)
                 
     def __call__(self,eval_pred):
         results = {}
