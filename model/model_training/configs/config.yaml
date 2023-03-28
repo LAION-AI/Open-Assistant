@@ -98,8 +98,9 @@ oasst_export_eu:
     - alpaca
     - oig_file:
         source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
-        max_count: 25000
-        val_split: 0.1
+        max_count: 30000
+        min_length: 1000
+        val_split: 0.2
     - oig_file:
         source_url: https://huggingface.co/datasets/laion/OIG/raw/main/unified_grade_school_math_instructions.jsonl
         val_split: 0.1

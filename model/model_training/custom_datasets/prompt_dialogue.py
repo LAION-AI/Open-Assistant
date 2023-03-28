@@ -1,13 +1,12 @@
 import gzip
 import json
-import random
 import re
 from pathlib import Path
 from typing import Optional
 
 import requests
 from model_training.custom_datasets.oasst_dataset import ListDataset
-from torch import Generator
+from torch import Generator, randperm
 from torch.utils.data import random_split
 
 
@@ -70,7 +69,9 @@ def load_oig_file(
             if role == "<bot>" and len(turns) % 2 == 0:
                 conversations.append(turns)
 
-    random.shuffle(conversations)
+    # shuffling with torch generator (not modifying python's standard random state)
+    random_order = randperm(len(conversations), generator=generator).tolist()
+    conversations = [conversations[i] for i in random_order]
 
     # concatenate multiple QA pairs until total length is above min_length
     if min_length is not None:
