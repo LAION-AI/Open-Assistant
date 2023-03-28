@@ -13,7 +13,6 @@ import { useFetchChatList } from "src/hooks/chat/useFetchChatList";
 import { isChatEnabled } from "src/lib/chat_enabled";
 import { INFERNCE_TOKEN_KEY } from "src/lib/oasst_inference_auth";
 import { OasstInferenceClient } from "src/lib/oasst_inference_client";
-import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
 export const getServerSideProps: GetServerSideProps = async ({ locale = "en", res, query }) => {
@@ -47,12 +46,6 @@ export const getServerSideProps: GetServerSideProps = async ({ locale = "en", re
 };
 
 const Chat = () => {
-  if (process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useSWR("http://localhost:8000/auth/check", () => {
-      new OasstInferenceClient().check_auth();
-    });
-  }
   const { t } = useTranslation(["common", "chat"]);
   const router = useRouter();
 
