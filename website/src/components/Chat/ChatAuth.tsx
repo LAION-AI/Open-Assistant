@@ -6,6 +6,7 @@ import { useTranslation } from "next-i18next";
 import { memo, ReactNode } from "react";
 import { Discord } from "src/components/Icons/Discord";
 import { useInferenceAuth } from "src/hooks/chat/useInferenceAuth";
+import { INFERNCE_TOKEN_KEY } from "src/lib/oasst_inference_auth";
 import { OasstInferenceClient } from "src/lib/oasst_inference_client";
 import useSWRImmutable from "swr/immutable";
 
@@ -26,26 +27,24 @@ export const ChatAuth = memo(function ChatAuth() {
     }
   );
 
-  const { isAuthenticated, isLoading } = useInferenceAuth();
-
-  console.log(authProviders);
+  const { isAuthenticated, mutate } = useInferenceAuth();
 
   const { data: session } = useSession();
-  // const isAuth = session?.inference.isAuthenticated;
-  const isAuth = false;
   const username = session?.user.name;
 
   if (isAuthenticated) {
-    return null;
-  }
-
-  if (isAuth) {
     return (
       <Card mt={4}>
         <CardBody display="flex" flexDirection="row" justifyContent="space-between" alignItems="center" gap={4}>
           <Text>{t("you_are_logged_in")}</Text>
-          <Box as={Button}>
-            <Link href="/api/inference_auth/logout">{t("common:sign_out")}</Link>
+          <Box
+            as={Button}
+            onClick={() => {
+              document.cookie = `${INFERNCE_TOKEN_KEY}=; Max-Age=0`;
+              mutate();
+            }}
+          >
+            {t("common:sign_out")}
           </Box>
         </CardBody>
       </Card>
