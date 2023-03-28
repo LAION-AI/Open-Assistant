@@ -3,21 +3,30 @@ import { Github } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import { memo } from "react";
+import { memo, ReactNode } from "react";
 import { Discord } from "src/components/Icons/Discord";
-import { get } from "src/lib/api";
+import { useInferenceAuth } from "src/hooks/chat/useInferenceAuth";
+import { OasstInferenceClient } from "src/lib/oasst_inference_client";
 import useSWRImmutable from "swr/immutable";
 
-const icons = {
+const icons: Record<string, ReactNode> = {
   github: <Github size={128} />,
   discord: <Discord size={128} />,
 };
 
-export const ChatAuth = memo(function ChatAuth({ inferenceHost }: { inferenceHost: string }) {
+export const ChatAuth = memo(function ChatAuth() {
   const { t } = useTranslation(["chat", "common"]);
-  const { data: authProviders } = useSWRImmutable<string[]>(`${inferenceHost}/auth/providers`, get, {
-    fallbackData: [],
-  });
+  const { data: authProviders } = useSWRImmutable(
+    `/auth/providers`,
+    () => {
+      return new OasstInferenceClient().get_providers();
+    },
+    {
+      fallbackData: [],
+    }
+  );
+
+  const { isAuthenticated, isLoading } = useInferenceAuth();
 
   console.log(authProviders);
 
@@ -25,6 +34,10 @@ export const ChatAuth = memo(function ChatAuth({ inferenceHost }: { inferenceHos
   // const isAuth = session?.inference.isAuthenticated;
   const isAuth = false;
   const username = session?.user.name;
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   if (isAuth) {
     return (
@@ -44,13 +57,16 @@ export const ChatAuth = memo(function ChatAuth({ inferenceHost }: { inferenceHos
         <Text>{t("login_message")}</Text>
         <Grid
           justifyItems="center"
-          gridTemplateColumns={`repeat(${authProviders.length}, minmax(150px, 1fr))`}
+          gridTemplateColumns={`repeat(${authProviders!.length}, minmax(150px, 1fr))`}
           gap={12}
         >
-          {authProviders.map((provider) => (
+          {authProviders!.map((provider) => (
             <Link
               key={provider}
-              href={`${inferenceHost}/auth/login/${provider}` + (provider === "debug" ? `?username=${username}` : "")}
+              href={
+                `${process.env.INFERENCE_SERVER_HOST}/auth/login/${provider}` +
+                (provider === "debug" ? `?username=${username}` : "")
+              }
             >
               {icons[provider] ?? provider}
             </Link>

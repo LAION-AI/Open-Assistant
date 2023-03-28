@@ -1,5 +1,4 @@
-import { post } from "src/lib/api";
-import { API_ROUTES } from "src/lib/routes";
+import { inferenceClient } from "src/lib/oasst_inference_client";
 import useSWRMutation from "swr/mutation";
 
 export const useMessageVote = () => {
@@ -12,6 +11,22 @@ export const useMessageVote = () => {
       chat_id: string;
       score: number;
     }
-  >(API_ROUTES.CHAT_MESSAGE_VOTE, post);
+  >(
+    "/chat/vote",
+    (
+      _,
+      {
+        arg,
+      }: {
+        arg: {
+          message_id: string;
+          chat_id: string;
+          score: number;
+        };
+      }
+    ) => {
+      inferenceClient.vote(arg);
+    }
+  );
   return trigger;
 };

@@ -49,13 +49,4 @@ export const API_ROUTES = {
   ADMIN_UNDELETE_MESSAGE: (messageId: string) => createRoute(`/api/admin/undelete_message/${messageId}`),
   ADMIN_MESSAGE_LIST: (query: CursorPaginationState & { user_id?: string; include_user?: boolean }) =>
     createRoute("/api/admin/messages", query),
-  // chat:
-  GET_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
-  GET_MESSAGE: (chat_id: string, message_id: string) => createRoute(`/api/chat/message`, { chat_id, message_id }),
-  CREATE_PROMPTER_MESSAGE: `/api/chat/prompter_message`,
-  CREATE_ASSISTANT_MESSAGE: `/api/chat/assistant_message`,
-  CHAT_MESSAGE_VOTE: `/api/chat/vote`,
-  STREAM_CHAT_MESSAGE: (chat_id: string, message_id: string) =>
-    createRoute(`/api/chat/events`, { chat_id, message_id }),
-  GET_CHAT_MODELS: "/api/chat/models",
 };

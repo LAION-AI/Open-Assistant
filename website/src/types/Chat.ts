@@ -12,10 +12,10 @@ export interface ChatItem {
   id: string;
   created_at: string; //timestamp
   modified_at: string; //timestamp
+  messages: InferenceMessage[];
 
   // those are not available when you first create a chat
   title?: string;
-  messages?: InferenceMessage[];
 }
 
 export interface InferenceMessage {

@@ -1,31 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  Button,
-  CircularProgress,
-  Flex,
-  Icon,
-  Textarea,
-  Text,
-  useBoolean,
-  useColorModeValue,
-  ColorModeProviderProps,
-} from "@chakra-ui/react";
+import { Button, CircularProgress, Flex, Icon, Text, Textarea, useBoolean, useColorModeValue } from "@chakra-ui/react";
 import { XCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
-import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
-import { API_ROUTES } from "src/lib/routes";
-import {
-  ChatConfigForm,
-  ChatItem,
-  InferenceMessage,
-  InferencePostPrompterMessageParams,
-  InferencePostAssistantMessageParams,
-} from "src/types/Chat";
+import { inferenceClient, OasstInferenceClient } from "src/lib/oasst_inference_client";
+import { ChatConfigForm, ChatItem, InferenceMessage } from "src/types/Chat";
 import useSWR from "swr";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
@@ -51,11 +34,11 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     // sort dates latest first
     const sortedMessages = messages.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
     // find the root message without parent_id
-    const root = sortedMessages.find((m) => m.parent_id === null);
+    const root = sortedMessages.find((m) => m.parent_id === null)!;
     const threadMessages = [root];
-    let current = root;
+    let current: InferenceMessage | null = root;
     while (current) {
-      const next = sortedMessages.find((m) => m.parent_id === current.id);
+      const next = sortedMessages.find((m) => m.parent_id === current!.id);
       if (next) {
         threadMessages.push(next);
         current = next;
@@ -66,36 +49,43 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     return threadMessages;
   }, [messages]);
 
-  useSWR<ChatItem>(API_ROUTES.GET_CHAT(chatId), get, {
-    onSuccess: (chat) => setMessages(chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))),
-  });
+  useSWR<ChatItem>(
+    `/chat/${chatId}`,
+    () => {
+      return new OasstInferenceClient().get_chat(chatId);
+    },
+    {
+      onSuccess: (chat) =>
+        setMessages(chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))),
+    }
+  );
   const { getValues: getFormValues } = useFormContext<ChatConfigForm>();
 
   const initiate_assistant_message = useCallback(
     async (parent_id: string) => {
       const { model_config_name, ...sampling_parameters } = getFormValues();
-      const assistant_arg: InferencePostAssistantMessageParams = {
+
+      const assistant_message: InferenceMessage = await inferenceClient.post_assistant_message({
         chat_id: chatId,
         parent_id,
         model_config_name,
         sampling_parameters,
-      };
-
-      const assistant_message: InferenceMessage = await post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, {
-        arg: assistant_arg,
       });
 
       // we have to do this manually since we want to stream the chunks
       // there is also EventSource, but it is callback based
-      const { body, status } = await fetch(API_ROUTES.STREAM_CHAT_MESSAGE(chatId, assistant_message.id));
+      const { status, body: stream } = await inferenceClient.stream_events({
+        chat_id: chatId,
+        message_id: assistant_message.id,
+      });
 
-      let message: InferenceMessage;
+      let message: InferenceMessage | null;
       if (status === 204) {
         // message already processed, get it immediately
-        message = await get(API_ROUTES.GET_MESSAGE(chatId, assistant_message.id));
+        message = await inferenceClient.get_message(chatId, assistant_message.id);
       } else {
         message = await handleChatEventStream({
-          stream: body,
+          stream,
           onError: console.error,
           onPending: setQueueInfo,
           onToken: async (text) => {
@@ -106,7 +96,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
         });
       }
       if (message) {
-        setMessages((messages) => [...messages, message]);
+        setMessages((messages) => [...messages, message!]);
       }
       setQueueInfo(null);
       setResponse(null);
@@ -128,13 +118,12 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
         .slice()
         .reverse()
         .find((m) => m.role === "assistant" && m.state === "complete")?.id ?? null;
-    const prompter_arg: InferencePostPrompterMessageParams = {
+
+    const prompter_message: InferenceMessage = await new OasstInferenceClient().post_prompter_message({
       chat_id: chatId,
       content,
       parent_id,
-    };
-
-    const prompter_message: InferenceMessage = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
+    });
 
     setMessages((messages) => [...messages, prompter_message]);
 
@@ -217,7 +206,7 @@ type ChatMessageEntryProps = {
   state: InferenceMessage["state"];
   chatId: string;
   messageId: string;
-  parentId?: string;
+  parentId: string | null;
   score: number;
   onVote: (data: { newScore: number; oldScore: number; chatId: string; messageId: string }) => void;
   onRetry?: (messageId: string) => void;

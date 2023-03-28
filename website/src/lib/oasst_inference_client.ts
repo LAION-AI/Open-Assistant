@@ -1,13 +1,13 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import type { JWT } from "next-auth/jwt";
 import {
   ChatItem,
+  GetChatsResponse,
   InferenceMessage,
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
   ModelInfo,
 } from "src/types/Chat";
-import type { Readable } from "stream";
 
 import { INFERNCE_TOKEN_KEY } from "./oasst_inference_auth";
 
@@ -22,22 +22,28 @@ function getCookieFromDocument(name: string) {
   return undefined;
 }
 export class OasstInferenceClient {
-  // this is not a long lived class, this is why the token is immutable
-  constructor(private readonly inferenceAccessToken?: string) {}
+  private axios: AxiosInstance = axios.create({
+    baseURL: process.env.INFERENCE_SERVER_HOST,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
   async request<T = unknown>(path: string, init?: AxiosRequestConfig) {
-    const token =
-      typeof document !== "undefined" && !this.inferenceAccessToken
-        ? getCookieFromDocument(INFERNCE_TOKEN_KEY)
-        : this.inferenceAccessToken;
+    console.log(this.axios.defaults.baseURL);
+    if (typeof document === "undefined") {
+      throw new Error("request should not be called on the server side");
+    }
 
-    const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
+    const inferenceAccessToken = getCookieFromDocument(INFERNCE_TOKEN_KEY);
+
+    const { data } = await this.axios<T>(path, {
       ...init,
       headers: {
         ...init?.headers,
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+        Authorization: `Bearer ${inferenceAccessToken}`,
       },
+      baseURL: process.env.INFERENCE_SERVER_HOST,
     });
     return data;
   }
@@ -53,7 +59,7 @@ export class OasstInferenceClient {
     }
   }
 
-  get_my_chats(): Promise<ChatItem[]> {
+  get_my_chats(): Promise<GetChatsResponse> {
     return this.request("/chats");
   }
 
@@ -78,13 +84,14 @@ export class OasstInferenceClient {
   }
 
   stream_events({ chat_id, message_id }: { chat_id: string; message_id: string }) {
-    return this.request<Readable>(`/chats/${chat_id}/messages/${message_id}/events`, {
+    // axios not support stream in browser
+    return fetch(`${process.env.INFERENCE_SERVER_HOST}/chats/${chat_id}/messages/${message_id}/events`, {
       headers: {
-        Accept: "text/event-stream",
+        Authorization: `Bearer ${getCookieFromDocument(INFERNCE_TOKEN_KEY)}`,
         Connection: "keep-alive",
-        "Cache-Control": "no-cache, no-transform",
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
       },
-      responseType: "stream",
     });
   }
 
@@ -92,8 +99,14 @@ export class OasstInferenceClient {
     return this.request(`/chats/${chat_id}/messages/${message_id}/votes`, { method: "POST", data: { score } });
   }
 
-  get_models() {
-    return this.request<ModelInfo[]>("/configs/model_configs");
+  async get_models() {
+    const res = await this.axios<ModelInfo[]>("/configs/model_configs");
+    return res.data;
+  }
+
+  async get_providers() {
+    const res = await this.axios<string[]>("/auth/providers");
+    return res.data;
   }
 }
 
@@ -101,3 +114,5 @@ export const createInferenceClient = (jwt: JWT) => {
   const token = jwt.inferenceTokens?.access_token.access_token;
   return new OasstInferenceClient(token);
 };
+
+export const inferenceClient = new OasstInferenceClient();
