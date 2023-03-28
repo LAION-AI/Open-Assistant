@@ -44,8 +44,8 @@ class WorkerHardwareInfo(pydantic.BaseModel):
         # psutil.cpu_freq()is None for conatainers running on an Apple silicon host
         # https://github.com/giampaolo/psutil/issues/1892
         cpu_freq = psutil.cpu_freq()
-        data["cpu_freq_max"] = cpu_freq.max if cpu_freq or 0
-        data["cpu_freq_min"] = cpu_freq.min if cpu_freq or 0
+        data["cpu_freq_max"] = cpu_freq.max if cpu_freq else 0
+        data["cpu_freq_min"] = cpu_freq.min if cpu_freq else 0
         data["mem_total"] = psutil.virtual_memory().total
         data["swap_total"] = psutil.swap_memory().total
         data["gpus"] = []
