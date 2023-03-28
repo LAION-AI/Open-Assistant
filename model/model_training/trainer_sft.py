@@ -17,6 +17,7 @@ from model_training.utils import (
     get_metrics,
     get_model,
     get_tokenizer,
+    init_rng,
     read_yamls,
 )
 from torch import nn
@@ -180,6 +181,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
     parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
+    parser.add_argument("--rng_seed", type=int, help="rng seed")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -206,6 +208,8 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
     conf["resume_from_checkpoint"] = args.resume_from_checkpoint
+    if args.rng_seed is not None:
+        conf["rng_seed"] = args.rng_seed
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -263,9 +267,11 @@ def tokenizer_sanity_check(tokenizer):
     print("message_indices:", message_indices)
 
 
-if __name__ == "__main__":
+def main():
     training_conf = argument_parsing()
     import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
+
+    init_rng(training_conf)
 
     tokenizer = get_tokenizer(training_conf)
 
@@ -391,3 +397,7 @@ if __name__ == "__main__":
     trainer.train(resume_from_checkpoint=training_conf.resume_from_checkpoint)
     trainer.save_model()
     tokenizer.save_pretrained(output_dir)
+
+
+if __name__ == "__main__":
+    main()
