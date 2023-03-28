@@ -5,10 +5,10 @@ from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
 import bitsandbytes
 import datasets
-import numpy as np
 import torch
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from model_training.efficiency_utils import fuse_gelu
+from model_training.metrics import RewardMetrics
 from model_training.utils import (
     PerDatasetSampler,
     _strtobool,
@@ -18,7 +18,6 @@ from model_training.utils import (
     get_tokenizer,
     read_yamls,
 )
-from model_training.metrics import RewardMetrics
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -71,10 +70,10 @@ class RMTrainer(Trainer):
 
         loss = loss.mean().detach()
 
-        labels=[]
-        for i, (s,e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
-                labels.extend([i]*(e-s))
-        labels = torch.tensor(labels).view(-1,1)
+        labels = []
+        for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
+            labels.extend([i] * (e - s))
+        labels = torch.tensor(labels).view(-1, 1)
 
         return (loss, logits, labels)
 
