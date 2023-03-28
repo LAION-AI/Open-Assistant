@@ -3,7 +3,7 @@
     "chat_date": "{{val, datetime}}",
     "config_title": "Babila agordo",
     "empty": "(malplena)",
-    "login_message": "Por uzi ĉi tiun funkcio, vi devas ensaluti denove. Ensalutu per unu el ĉi tiuj provizantoj:",
+    "login_message": "Por uzi ĉi tiun funkcion, vi devas ensaluti denove. Ensalutu per unu el ĉi tiuj provizantoj:",
     "model": "Modelo",
     "preset": "Antaŭagordo",
     "preset_custom": "Propra",
