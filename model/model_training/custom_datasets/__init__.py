@@ -3,7 +3,7 @@
 """
 from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
 from model_training.custom_datasets.oasst_dataset import load_oasst_export
-from model_training.custom_datasets.prompt_dialogue import OAPrivate  # , PrivateInstructionTuning
+from model_training.custom_datasets.prompt_dialogue import load_oig_file
 from model_training.custom_datasets.qa_datasets import (
     SODA,
     Alpaca,
@@ -30,9 +30,9 @@ SUMMARIZATION_DATASETS = [
     "debate_sum",
     "tldr_news",
 ]
-OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_translated", "oa_private"]
+OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_translated"]
 
-RL_DATASETS = ["oa_private", "webgpt", "private_tuning", "alpaca"]
+RL_DATASETS = ["webgpt", "private_tuning", "alpaca"]
 
 RM_DATASETS = ["oasst_export"]
 
@@ -94,15 +94,13 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         dataset = SODADialogue(data_path)
     elif dataset_name == "joke":
         dataset = JokeExplaination(data_path)
-    # elif dataset_name == "private_tuning":
-    #     dataset = PrivateInstructionTuning(data_path)
     elif dataset_name == "oa_translated":
         # TODO make val_split lower..? by saganos
         dataset = TranslatedQA(data_path)
-    elif dataset_name == "oa_private":
-        dataset = OAPrivate(data_path, **kwargs)
     elif dataset_name == "oasst_export":
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
+    elif dataset_name == "oig_file":
+        train, eval = load_oig_file(val_split=val_split, **kwargs)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
