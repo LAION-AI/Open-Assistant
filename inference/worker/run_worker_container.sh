@@ -22,7 +22,7 @@ model_config_name=${MODEL_CONFIG_NAME:-OpenAssistant/oasst-sft-1-pythia-12b}
 max_parallel_requests=${MAX_PARALLEL_REQUESTS:-1}
 loguru_level=${LOGURU_LEVEL:-INFO}
 
-OAHF_HOME=$HOME/.oasst_cache/huggingface
+OAHF_HOME=${OAHF_HOME:-$HOME/.oasst_cache/huggingface}
 mkdir -p $OAHF_HOME
 
 while true; do
