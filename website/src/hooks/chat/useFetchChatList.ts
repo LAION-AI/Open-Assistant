@@ -6,8 +6,6 @@ import { useInferenceAuth } from "./useInferenceAuth";
 export const useFetchChatList = () => {
   const { isAuthenticated } = useInferenceAuth();
 
-  console.log("isAuthenticated", isAuthenticated);
-
   return useSWR(isAuthenticated ? "/chat" : null, () => new OasstInferenceClient().get_my_chats(), {
     revalidateOnFocus: true,
   });

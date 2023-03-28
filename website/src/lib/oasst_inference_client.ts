@@ -1,5 +1,4 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
-import type { JWT } from "next-auth/jwt";
 import {
   ChatItem,
   GetChatsResponse,
@@ -30,7 +29,6 @@ export class OasstInferenceClient {
   });
 
   async request<T = unknown>(path: string, init?: AxiosRequestConfig) {
-    console.log(this.axios.defaults.baseURL);
     if (typeof document === "undefined") {
       throw new Error("request should not be called on the server side");
     }
@@ -109,10 +107,5 @@ export class OasstInferenceClient {
     return res.data;
   }
 }
-
-export const createInferenceClient = (jwt: JWT) => {
-  const token = jwt.inferenceTokens?.access_token.access_token;
-  return new OasstInferenceClient(token);
-};
 
 export const inferenceClient = new OasstInferenceClient();
