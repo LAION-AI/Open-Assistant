@@ -291,7 +291,7 @@ class TreeManager:
                     )
                     return False
 
-                # first select an authour
+                # first select an author
                 prompt_author_id: UUID = random.choice(author_ids)["user_id"]
                 logger.info(f"Selected random prompt author {prompt_author_id} among {len(author_ids)} candidates.")
 
