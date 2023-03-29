@@ -30,7 +30,6 @@ parser.add_argument("--max_new_tokens", type=int, default=200)
 parser.add_argument("--top_k", type=int, default=40)
 parser.add_argument("--temperature", type=float, default=1.0)
 parser.add_argument("--do-sample", type=_strtobool, default=True)
-parser.add_argument("--llama", type=_strtobool, default=False)
 parser.add_argument("--per-digit-tokens", action="store_true")
 args = parser.parse_args()
 
@@ -103,17 +102,10 @@ def process_output(output):
     return answer
 
 
-if args.llama:
-    from models.modeling_llama import LLaMAForCausalLM
-    from models.tokenization_llama import LLaMATokenizer
-
-    tokenizer = LLaMATokenizer.from_pretrained(model_name)
-    model = LLaMAForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
-else:
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    if method != "v2":
-        tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
-    model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+if method != "v2":
+    tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
 
 model.eval().cuda()
 

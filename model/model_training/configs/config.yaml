@@ -98,7 +98,7 @@ oasst_export_eu:
     - alpaca
     - oig_file:
         source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
-        max_count: 30000
+        max_count: 10000
         min_length: 1000
         val_split: 0.2
     - oig_file:
@@ -113,27 +113,18 @@ oasst_export_latin_cyrillic:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
         input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+    - alpaca
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
+        max_count: 10000
+        min_length: 1000
+        val_split: 0.2
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/raw/main/unified_grade_school_math_instructions.jsonl
+        val_split: 0.1
+        min_length: 1000
   sort_by_length: false
   use_custom_sampler: false
-
-llama-7b:
-  fp16: true
-  log_dir: "llama_log"
-  learning_rate: 8e-6
-  #model_name: decapoda-research/llama-7b-hf
-  model_name: /home/ubuntu/llama_hf/llama-7b
-  output_dir: llama_model
-  weight_decay: 0.0
-  max_length: 620
-  warmup_steps: 100
-  gradient_checkpointing: false
-  gradient_accumulation_steps: 4
-  per_device_train_batch_size: 4
-  per_device_eval_batch_size: 10
-  eval_steps: 100
-  save_steps: 500
-  num_train_epochs: 16
-  save_total_limit: 4
 
 pythia-12b:
   fp16: true
@@ -153,11 +144,29 @@ pythia-12b:
   num_train_epochs: 16
   save_total_limit: 4
 
+llama-7b:
+  fp16: true
+  log_dir: "llama_log_7b"
+  learning_rate: 2e-5
+  model_name: /home/ubuntu/llama_hf/7B
+  output_dir: llama_model
+  weight_decay: 0.0
+  max_length: 620
+  warmup_steps: 100
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 10
+  eval_steps: 100
+  save_steps: 500
+  num_train_epochs: 16
+  save_total_limit: 4
+
 llama-13b:
   fp16: true
   log_dir: "llama_log_13b"
-  learning_rate: 8e-6
-  model_name: /home/ubuntu/llama_hf/llama-13b
+  learning_rate: 2e-5
+  model_name: /home/ubuntu/llama_hf/13B
   output_dir: llama_model_13b
   weight_decay: 0.0
   max_length: 620
@@ -174,8 +183,8 @@ llama-13b:
 llama-30b:
   fp16: true
   log_dir: "llama_log_30b"
-  learning_rate: 8e-6
-  model_name: /home/ubuntu/llama_hf/llama-30b
+  learning_rate: 2e-5
+  model_name: /home/ubuntu/llama_hf/30B
   output_dir: llama_model_30b
   weight_decay: 0.0
   max_length: 512

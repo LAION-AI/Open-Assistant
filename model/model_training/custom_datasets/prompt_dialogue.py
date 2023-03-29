@@ -25,6 +25,7 @@ def load_oig_file(
     file_name = source_url[source_url.rindex("/") + 1 :]
 
     cache_dir = Path(cache_dir)
+    cache_dir.mkdir(parents=True, exist_ok=True)
     local_path = cache_dir / file_name
 
     # download file if not cached

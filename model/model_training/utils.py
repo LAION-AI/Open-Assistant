@@ -14,7 +14,6 @@ from model_training.losses import CrossEntropyLoss, PolyLoss, RMLoss
 from model_training.models import freeze_top_n_layers, get_specific_model
 from model_training.models.patching import patch_model
 from model_training.models.reward_model import GPTNeoXRewardModel
-from model_training.models.tokenization_llama import LLaMATokenizer
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
@@ -185,12 +184,7 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 
 
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
-    if "llama" in conf.model_name:
-        # explicitly specify LLaMATokenizer class until AutoTokenizer works
-        # assumes that the tokenizer config is stored in the same directory as the model weights
-        tokenizer = LLaMATokenizer.from_pretrained(conf.model_name)
-    else:
-        tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
 
     tokenizer_config = match_tokenizer_name(conf.model_name)
 
