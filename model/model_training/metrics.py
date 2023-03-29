@@ -4,27 +4,22 @@ from collections import defaultdict
 
 RM_METRICS = ["accuracy", "kendalltau", "spearmanr"]
 
-
+import numpy as np
 def reward_accuracy(eval_pred):
-
+    print("reward_accuracy")
     logits = eval_pred.predictions
     labels = eval_pred.label_ids
-    scores = []
+    pos_scores,neg_scores = [],[]
     for b_logits,b_labels in zip(logits,labels):
         b_labels = b_labels[b_labels!=-100]
         b_logits = b_logits[b_logits!=-100]
         for i in np.unique(b_labels):
             logits_batch = b_logits[b_labels == i]
-            scores.append(logits_batch[0])
-            scores.append(logits_batch[-1])
-        # metrics["pos_score"].append(np.mean(pos_scores))
-        # metrics["neg_score"].append(np.mean(neg_scores))
-        # metrics["score_diff"].append(np.mean(pos_scores - neg_scores))
-        # metrics["accuracy"].append(np.mean(pos_scores > neg_scores))
-    scores = np.array(scores).reshape(-1,2)
-    pos_scores,neg_scores = scores[0,:],scores[1,:]
+            pos_scores.append(logits_batch[0])
+            neg_scores.append(logits_batch[-1])
+    pos_scores = np.array(pos_scores).reshape(-1,1)
+    neg_scores = np.array(neg_scores).reshape(-1,1)
 
-    # metrics = {k:np.mean(v) for k,v in metrics.items()}
     metrics = {
         "pos_score": np.mean(pos_scores),
         "neg_score": np.mean(neg_scores),
@@ -34,29 +29,41 @@ def reward_accuracy(eval_pred):
     return metrics
 
 def kendall_tau(eval_pred):
+    print("kendall_tau")
     logits = eval_pred.predictions
     labels = eval_pred.label_ids
     tau = 0.0
-    for i in np.unique(labels):
-        logits_batch = logits[labels == i]
-        pred_rank = np.argsort(logits_batch)
-        true_rank = np.arange(logits_batch.size - 1, -1, -1)
-        tau += st.kendalltau(pred_rank, true_rank)[0]
+    bsize = 0
+    for b_logits,b_labels in zip(logits,labels):
+        b_labels = b_labels[b_labels!=-100]
+        b_logits = b_logits[b_logits!=-100]
+        for i in np.unique(b_labels):
+            logits_batch = b_logits[b_labels == i]
+            pred_rank = np.argsort(logits_batch)
+            true_rank = np.arange(logits_batch.size - 1, -1, -1)
+            tau += st.kendalltau(pred_rank, true_rank)[0]
+        bsize += np.unique(b_labels).size
 
-    return {"kendalltau": tau / np.unique(labels).size}
+    return {"kendalltau": tau / bsize}
 
 
 def spearmanr(eval_pred):
+
     logits = eval_pred.predictions
     labels = eval_pred.label_ids
     score = 0.0
-    for i in np.unique(labels):
-        logits_batch = logits[labels == i]
-        pred_rank = np.argsort(logits_batch)
-        true_rank = np.arange(logits_batch.size - 1, -1, -1)
-        score += st.spearmanr(pred_rank, true_rank).statistic
+    bsize = 0
+    for b_logits,b_labels in zip(logits,labels):
+        b_labels = b_labels[b_labels!=-100]
+        b_logits = b_logits[b_logits!=-100]
+        for i in np.unique(b_labels):
+            logits_batch = b_logits[b_labels == i]
+            pred_rank = np.argsort(logits_batch)
+            true_rank = np.arange(logits_batch.size - 1, -1, -1)
+            score += st.spearmanr(pred_rank, true_rank).statistic
+        bsize += np.unique(b_labels).size
 
-    return {"spearmanr": score / np.unique(labels).size}
+    return {"spearmanr": score / bsize}
 
 
 class RewardMetrics:
@@ -74,10 +81,11 @@ class RewardMetrics:
                 self.metrics.append(spearmanr)
             else:
                 raise ValueError(f"Invalid metrics {name}. Available {RM_METRICS}")
+            
 
     def __call__(self, eval_pred):
         results = {}
-        for metrics in self.metrics:
-            results.update(metrics(eval_pred))
+        for metric in self.metrics:
+            results.update(metric(eval_pred))
 
         return results
