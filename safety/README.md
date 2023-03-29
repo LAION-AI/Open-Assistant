@@ -26,7 +26,7 @@ community.
 ## Why create a safety pipeline?
 
 Open source and extendable safety pipelines unfortunately do not exist on the
-same on the same scale as those in ChatGPT and other commercial systems. To
+same scale as those in ChatGPT and other commercial systems. To
 further research in implementable, accurate, and extendable safety pipelines,
 Open Assistant Safety Team will continue to push models and code to the public.
 Much research has been done in things like toxicity detection and bias
