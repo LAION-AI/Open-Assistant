@@ -27,8 +27,6 @@ from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
 
-import numpy as np
-
 
 class RMTrainer(Trainer):
     def __init__(
@@ -76,7 +74,7 @@ class RMTrainer(Trainer):
         for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
             labels.extend([i] * (e - s))
         labels = torch.tensor(labels).view(-1, 1)
-        return (loss, logits.T, labels.T)
+        return (loss, logits.T, labels.T)  # transposed to avoid truncation in evaluation_loop
 
     def get_train_dataloader(self):
         """

@@ -1,24 +1,22 @@
 import numpy as np
 from scipy import stats as st
-from collections import defaultdict
 
 RM_METRICS = ["accuracy", "kendalltau", "spearmanr"]
 
-import numpy as np
+
 def reward_accuracy(eval_pred):
-    print("reward_accuracy")
     logits = eval_pred.predictions
     labels = eval_pred.label_ids
-    pos_scores,neg_scores = [],[]
-    for b_logits,b_labels in zip(logits,labels):
-        b_labels = b_labels[b_labels!=-100]
-        b_logits = b_logits[b_logits!=-100]
+    pos_scores, neg_scores = [], []
+    for b_logits, b_labels in zip(logits, labels):
+        b_labels = b_labels[b_labels != -100]
+        b_logits = b_logits[b_logits != -100]
         for i in np.unique(b_labels):
             logits_batch = b_logits[b_labels == i]
             pos_scores.append(logits_batch[0])
             neg_scores.append(logits_batch[-1])
-    pos_scores = np.array(pos_scores).reshape(-1,1)
-    neg_scores = np.array(neg_scores).reshape(-1,1)
+    pos_scores = np.array(pos_scores).reshape(-1, 1)
+    neg_scores = np.array(neg_scores).reshape(-1, 1)
 
     metrics = {
         "pos_score": np.mean(pos_scores),
@@ -28,15 +26,15 @@ def reward_accuracy(eval_pred):
     }
     return metrics
 
+
 def kendall_tau(eval_pred):
-    print("kendall_tau")
     logits = eval_pred.predictions
     labels = eval_pred.label_ids
     tau = 0.0
     bsize = 0
-    for b_logits,b_labels in zip(logits,labels):
-        b_labels = b_labels[b_labels!=-100]
-        b_logits = b_logits[b_logits!=-100]
+    for b_logits, b_labels in zip(logits, labels):
+        b_labels = b_labels[b_labels != -100]
+        b_logits = b_logits[b_logits != -100]
         for i in np.unique(b_labels):
             logits_batch = b_logits[b_labels == i]
             pred_rank = np.argsort(logits_batch)
@@ -48,14 +46,13 @@ def kendall_tau(eval_pred):
 
 
 def spearmanr(eval_pred):
-
     logits = eval_pred.predictions
     labels = eval_pred.label_ids
     score = 0.0
     bsize = 0
-    for b_logits,b_labels in zip(logits,labels):
-        b_labels = b_labels[b_labels!=-100]
-        b_logits = b_logits[b_logits!=-100]
+    for b_logits, b_labels in zip(logits, labels):
+        b_labels = b_labels[b_labels != -100]
+        b_logits = b_logits[b_logits != -100]
         for i in np.unique(b_labels):
             logits_batch = b_logits[b_labels == i]
             pred_rank = np.argsort(logits_batch)
@@ -67,6 +64,10 @@ def spearmanr(eval_pred):
 
 
 class RewardMetrics:
+    """
+    class to combine multiple metrics
+    """
+
     def __init__(self, metrics):
         if isinstance(metrics, str):
             metrics = [metrics]
@@ -81,7 +82,6 @@ class RewardMetrics:
                 self.metrics.append(spearmanr)
             else:
                 raise ValueError(f"Invalid metrics {name}. Available {RM_METRICS}")
-            
 
     def __call__(self, eval_pred):
         results = {}
