@@ -28,27 +28,7 @@ from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
 
 import numpy as np
-def reward_accuracy(eval_pred):
 
-    logits = eval_pred.predictions
-    labels = eval_pred.label_ids
-    scores = []
-    for b_logits,b_labels in zip(logits,labels):
-        b_labels = b_labels[b_labels!=-100]
-        b_logits = b_logits[b_logits!=-100]
-        for i in np.unique(b_labels):
-            logits_batch = b_logits[b_labels == i]
-            scores.append(logits_batch[0])
-            scores.append(logits_batch[-1])
-    scores = np.array(scores).reshape(-1,2)
-    pos_scores,neg_scores = scores[0,:],scores[1,:]
-    metrics = {
-        "pos_score": np.mean(pos_scores),
-        "neg_score": np.mean(neg_scores),
-        "score_diff": np.mean(pos_scores - neg_scores),
-        "accuracy": np.mean(pos_scores > neg_scores),
-    }
-    return metrics
 
 class RMTrainer(Trainer):
     def __init__(
@@ -96,7 +76,6 @@ class RMTrainer(Trainer):
         for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
             labels.extend([i] * (e - s))
         labels = torch.tensor(labels).view(-1, 1)
-        print("inside logits",logits.T.shape)
         return (loss, logits.T, labels.T)
 
     def get_train_dataloader(self):
@@ -290,7 +269,6 @@ def main():
             name=f"{training_conf.model_name}-{training_conf.log_dir}-rm",
             config=training_conf,
         )
-
     compute_metrics = RewardMetrics(training_conf.metrics)
     trainer = RMTrainer(
         model=model,
@@ -303,7 +281,7 @@ def main():
         eval_dataset=evals,
         data_collator=eval_collate_fn,
         tokenizer=tokenizer,
-        compute_metrics=reward_accuracy,
+        compute_metrics=compute_metrics,
     )
     trainer.train()
     trainer.save_model()
