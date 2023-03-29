@@ -412,8 +412,6 @@ class TranslatedQA(Dataset):
 
 
 class Alpaca(Dataset):
-    splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
-
     def __init__(self, split="sft") -> None:
         super().__init__()
         self.mode = split

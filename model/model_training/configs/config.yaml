@@ -90,20 +90,21 @@ math:
   datasets_extra: # Will get merged with datasets
     - minimath
 
-oa_dataset_only:
-  datasets:
-    - oa_private:
-        split: sft
-        val_split: 0.0
-        fraction: 1
-        file: 2023-02-10_oasst_prod.jsonl
-
 oasst_export_eu:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        #top_k: 2
-        input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+    - alpaca
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
+        max_count: 30000
+        min_length: 1000
+        val_split: 0.2
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/raw/main/unified_grade_school_math_instructions.jsonl
+        val_split: 0.1
+        min_length: 1000
   sort_by_length: false
   use_custom_sampler: false
 
@@ -111,8 +112,7 @@ oasst_export_latin_cyrillic:
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        #top_k: 2
-        input_file_path: 2023-03-13_oasst_ready_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
   sort_by_length: false
   use_custom_sampler: false
 
