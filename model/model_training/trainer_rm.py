@@ -74,8 +74,8 @@ class RMTrainer(Trainer):
         for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
             labels.extend([i] * (e - s))
         labels = torch.tensor(labels).view(-1, 1)
-
-        return (loss, logits, labels)
+        print("inside logits",logits.T.shape)
+        return (loss, logits.T, labels.T)
 
     def get_train_dataloader(self):
         """
@@ -281,7 +281,7 @@ def main():
         eval_dataset=evals,
         data_collator=eval_collate_fn,
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
+        compute_metrics=reward_accuracy,
     )
     trainer.train()
     trainer.save_model()
