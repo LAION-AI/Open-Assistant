@@ -39,9 +39,14 @@ function MyApp({ Component, pageProps: { session, ...pageProps }, env, cookie }:
 
   // expose env vars on the client
   if (typeof window !== "undefined") {
-    for (const key in env) {
-      process.env[key] = env[key];
-    }
+    process.env = new Proxy(env, {
+      get(env, key: string) {
+        if (!(key in env)) {
+          console.warn(`Environment variable ${key} not set in _app.tsx`);
+        }
+        return env[key];
+      },
+    });
   }
 
   return (
@@ -67,7 +72,8 @@ MyApp.getInitialProps = ({ ctx: { req } }: AppContext) => {
       ENABLE_CHAT: isChatEnabled(),
       ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
       ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA),
-      CLOUDFLARE_CAPTCHA_SITE_KEY: boolean(process.env.CLOUDFLARE_CAPTCHA_SITE_KEY),
+      CLOUDFLARE_CAPTCHA_SITE_KEY: process.env.CLOUDFLARE_CAPTCHA_SITE_KEY,
+      NODE_ENV: process.env.NODE_ENV,
     },
     cookie: req?.headers.cookie,
   };

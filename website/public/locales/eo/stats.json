@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "Ĉesigita malalta grado",
+  "assistant": "Asistanto",
+  "backlog_ranking": "Restanta taskaro-rangigo",
+  "choose_a_language": "Elektu lingvon",
+  "count": "Nombro",
+  "growing": "Kreskanta",
+  "halted_by_moderator": "Haltigita de moderigisto",
+  "human_messages_by_lang": "Homaj mesaĝoj laŭ lingvo",
+  "human_messages_by_role": "Homaj mesaĝoj laŭ rolo",
+  "initial_prompt_review": "Komenca instiga revizio",
+  "language_stats": "Lingvo",
+  "message_trees_by_state": "Mesaĝarboj laŭ stato",
+  "message_trees_states_by_lang": "Mesaĝarboj statoj laŭ lingvo",
+  "prompt_lottery_waiting": "Atendanta instiga loterio",
+  "prompter": "Instiganto",
+  "ranking": "Rangigo",
+  "ready_for_export": "Preta por eksporto",
+  "stats": "Statistikoj",
+  "users_accepted_tos": "Uzantoj akceptis kondiĉojn"
+}

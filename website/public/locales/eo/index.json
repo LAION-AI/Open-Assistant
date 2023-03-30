@@ -1,0 +1,23 @@
+{
+  "blurb": "Ni kredas, ke ni povas krei revolucion.",
+  "blurb1": "Sammaniere kiel Stable Difusion helpis la mondon krei arton kaj bildojn per novaj manieroj, ni volas plibonigi la mondon per provizado de mirindaj konversaciaj AI.",
+  "description": "Konversacia AI por ĉiuj. Malferma fonta projekto por krei babileblan GPT LLM gvidatan de LAION kaj kontribuantoj el la tuta mondo.",
+  "faq_items": {
+    "q0": "Kiom antaŭen estas tiu projekto?",
+    "a0": "Ni estas en la fruaj fazoj de evoluigo, laborante laŭ establita esplorado pri aplikado de RLHF al grandaj lingvaj modeloj.",
+    "q1": "Kiu staras malantaŭ Open Assistant?",
+    "a1": "Open Assistant estas projekto organizita de LAION kaj individuoj el la tuta mondo interesitaj pri alporti tiun teknologion al ĉiuj.",
+    "q2": "Kian permesilon uzas Open Assistant?",
+    "a2": "La kodo kaj modeloj estas permesitaj sub la Apache 2.0 permesilo.",
+    "q3": "Ĉu la trejnaj datumoj ankaŭ estos liberigitaj?",
+    "a3": "Jes, sub CC BY 4.0",
+    "q4": "Ĉu Open Assistant estos senpaga?",
+    "a4": "Jes, Open Assistant estos senpaga por uzi kaj modifi.",
+    "q5": "Kia aparato estos postulata por funkciigi la modelojn?",
+    "a5": "Ekzistos versioj, kiuj estos funkcigeblaj sur averaĝaj malmultekostaj aparatoj."
+  },
+  "faq_title": "Oftaj Demandoj",
+  "join_us_description": "Ĉiuj malfermaj fontaj projektoj komenciĝas kun homoj kiel vi. Malferma fonto estas la kredo, ke se ni kunlaboras, ni povas kune donaci nian scion kaj teknologion al la mondo por la utilo de homaro. Ĉu vi eniras? Trovu nin ĉi tie:",
+  "join_us_title": "Aliĝu al ni",
+  "subtitle": "Konversacia AI por ĉiuj."
+}

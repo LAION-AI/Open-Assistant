@@ -1,6 +1,6 @@
 import { getDashboardLayout } from "src/components/Layout";
 import { TaskPage } from "src/components/TaskPage/TaskPage";
-export { getDefaultServerSideProps as getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { TaskType } from "src/types/Task";
 
 const Random = () => <TaskPage type={TaskType.random} />;

@@ -1,4 +1,4 @@
-export { getDefaultServerSideProps as getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import {
   Avatar,
   Badge,
