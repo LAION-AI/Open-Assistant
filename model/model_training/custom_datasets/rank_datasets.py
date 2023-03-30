@@ -89,7 +89,7 @@ class HFDataset(Dataset):
                 post_id = item.get("info")["id"]
                 if post_id not in self.post_ids:
                     self.post_ids.append(post_id)
-                    self.post_dict[post_id].update({"post": item["info"]["post"], "summaries": [item["summary"]]})
+                    self.post_dict[post_id].update({"post": item["info"]["article"], "summaries": [item["summary"]]})
                 else:
                     self.post_dict[post_id]["summaries"].append(item["summary"])
 
