@@ -8,6 +8,7 @@ declare global {
       ENABLE_EMAIL_SIGNIN: boolean;
       ADMIN_USERS: string;
       MODERATOR_USERS: string;
+      INFERENCE_SERVER_HOST: string;
     }
   }
 }

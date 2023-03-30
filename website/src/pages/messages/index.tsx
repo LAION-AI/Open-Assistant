@@ -5,7 +5,7 @@ import { getDashboardLayout } from "src/components/Layout";
 import { MessageConversation } from "src/components/Messages/MessageConversation";
 import { get } from "src/lib/api";
 import useSWRImmutable from "swr/immutable";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import UserMessageConversation from "src/components/UserMessageConversation";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
 import { getLocaleDisplayName } from "src/lib/languages";
