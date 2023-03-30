@@ -71,4 +71,13 @@ tables - creates a chat in the chat table, which assigns the needed chat id and 
     4. Add the id of the pending assistant's message to a redis queue.
     5. Return a `CreateMessageResponse` object (a Pydantic model), with the prompter message field and (pending) assistant message field. The client will get an assistant message id from this.
 
-3. 
+3. Once the client has the assistant message id, it will make a GET request to `/chats/{chat_id}/messages/{message_id}/events`. Upon receiving this request, the server retrieves the message from the message table and verifies that the message isn't finished and that the message role is assistant. 
+
+After this, we create a Redis queue for this specific message id. From here, we poll the queue, using the `dequeue()` method. By default this method will block for up to 1 second, however if a message is added to the queue in that interval, it will automatically be returned. Otherwise, `dequeue()` will return `None`.
+
+If `None` is returned and this is the first time we have pulled the queue since its creation, we will yield a `chat_schema.PendingResponseEvent`. The loop will continue, with 1 second blocking (by default), until a message item is returned. A message item is a tuple where the first element is a string of the message id, and the second element is a response.
+
+The EventSourceResponse is Server Sent Events (SSE) plugin for Starlette/FastAPI, which takes content
+and returns it as part of a HTTP event stream. You can check out the EventSourceResposethe library's [source code](https://github.com/sysid/sse-starlette/tree/master) for more details about how this works.
+
+### From the perspective of the OA Worker
