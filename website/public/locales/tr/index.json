@@ -1,15 +1,23 @@
 {
   "blurb": "Bir devrim yaratabileceğimize inanıyoruz.",
-  "blurb1": "Stable Diffusion Dünyaya sanat ve görsel oluşturmak için nasıl yardımcı olduysa, biz de Dünyayı inanılmaz etkileşimli AI sunarak ileri götürmeyi istiyoruz.",
-  "description": "Herkes için etkileşimli AI. LAION ve dünyanın her yerinden insanlar tarafından geliştirilen, sohbete olanak sağlanayan GPT LLM oluşturmak için başlanmış açık kaynak bir proje.",
-  "faq_items": {
-    "q0": "Proje ne kadar ilerledi?",
-    "a0": "Geliştirmenin erken aşamalarındayız, RLHF tekniklerini büyük dil modellerine uygulama konusunda yer edinmiş araştırmaları temel alıyoruz.",
+  "blurb1": "Stable Diffusion'ın dünyanın sanat ve görüntüleri yeni şekillerde yapmasına yardım etmesi gibi, biz de harika diyaloglu yapay zeka sağlayarak dünyayı iyileştirmek istiyoruz.",
+  "description": "Herkes için Sohbet Yapay Zekası. LAION ve dünyanın dört bir yanından katkıda bulunanlar tarafından yürütülen, sohbet özellikli bir GPT LLM oluşturmaya yönelik açık kaynaklı bir proje.",
+  "sss_items": {
+    "q0": "Bu proje ne kadar ilerledi?",
+    "a0": "RLHF'yi büyük dil modellerine uygulamaya yönelik yerleşik araştırmalardan yola çıkarak geliştirmenin ilk aşamalarındayız.",
     "q1": "Open Assistant'ın arkasında kim var?",
-    "a1": "Open Assistant LAION ve dünyanın her yerinden bu teknolojiyi herkese ulaştırmakla ilgilenen bireyler tarafından organize edilmiş bir proje"
+    "a1": "Open Assistant, LAION ve dünya genelinde bu teknolojiyi herkese ulaştırmakla ilgilenen kişiler tarafından düzenlenen bir projedir.",
+    "q2": "Open Assistant hangi lisansı kullanıyor?",
+    "a2": "Kod ve modeller Apache 2.0 lisansı altında lisanslanmıştır.",
+    "q3": "Eğitim verileri de yayınlanacak mı?",
+    "a3": "Evet, CC BY 4.0 altında.",
+    "q4": "Open Assistant ücretsiz olacak mı?",
+    "a4": "Evet, Open Assistant ücretsiz olarak kullanılabilir ve üzerinde değişiklik yapılabilir.",
+    "q5": "Modelleri çalıştırmak için hangi donanımlar gerekli olacak?",
+    "a5": "Son kullanıcıların donanımında çalıştırılabilecek sürümler olacak."
   },
   "faq_title": "Sıkça Sorulan Sorular",
-  "join_us_description": "Bütün açık kaynak projeler senin gibi insanlarla başlar. Açık kaynak, eğer iş birliğinde bulunursak birlikte insanlığın iyiliği için Dünyaya bilgi ve teknoloji hediye edebileceğimize dair inançtır. Bizimle misin? Buradan iletişime geç:",
-  "join_us_title": "Bize katıl",
-  "subtitle": "Herkes için etkileşimli AI."
+  "join_us_description": "Tüm açık kaynak projeleri sizin gibi insanlarla başlar. Açık kaynak, işbirliği yaparsak bilgimizi ve teknolojimizi insanlığın yararına dünyaya birlikte hediye edebileceğimiz inancıdır. Var mısınız? Bizi burada bulun:",
+  "join_us_title": "Bize katılın",
+  "subtitle": "Herkes için Sohbet Yapay Zekası."
 }
