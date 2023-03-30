@@ -9,6 +9,6 @@ export const useInferenceAuth = () => {
   return {
     isAuthenticated: data,
     isLoading,
-    mutate,
+    refreshAuth: mutate,
   };
 };

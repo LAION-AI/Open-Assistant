@@ -27,7 +27,7 @@ export const ChatAuth = memo(function ChatAuth() {
     }
   );
 
-  const { isAuthenticated, mutate } = useInferenceAuth();
+  const { isAuthenticated, refreshAuth } = useInferenceAuth();
 
   const { data: session } = useSession();
   const username = session?.user.name;
@@ -41,7 +41,7 @@ export const ChatAuth = memo(function ChatAuth() {
             as={Button}
             onClick={() => {
               document.cookie = `${INFERNCE_TOKEN_KEY}=; Max-Age=0`;
-              mutate();
+              refreshAuth();
             }}
           >
             {t("common:sign_out")}
