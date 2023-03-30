@@ -7,6 +7,7 @@ from model_training.custom_datasets.prompt_dialogue import load_oig_file
 from model_training.custom_datasets.qa_datasets import (
     SODA,
     Alpaca,
+    CodeAlpaca,
     JokeExplaination,
     QADataset,
     SODADialogue,
@@ -81,7 +82,9 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
     elif dataset_name == "webgpt":
         dataset = WebGPT()
     elif dataset_name == "alpaca":
-        dataset = Alpaca()
+        dataset = Alpaca(mode=mode, cache_dir=data_path)
+    elif dataset_name == "code_alpaca":
+        dataset = CodeAlpaca(mode=mode, cache_dir=data_path)
     elif dataset_name == "prosocial_dialogue":
         train = ProsocialDialogue(cache_dir=data_path, split="train")
         eval = ProsocialDialogue(cache_dir=data_path, split="validation")
