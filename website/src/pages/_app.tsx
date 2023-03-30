@@ -72,7 +72,7 @@ MyApp.getInitialProps = ({ ctx: { req } }: AppContext) => {
       ENABLE_CHAT: isChatEnabled(),
       ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
       ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA),
-      CLOUDFLARE_CAPTCHA_SITE_KEY: boolean(process.env.CLOUDFLARE_CAPTCHA_SITE_KEY),
+      CLOUDFLARE_CAPTCHA_SITE_KEY: process.env.CLOUDFLARE_CAPTCHA_SITE_KEY,
       NODE_ENV: process.env.NODE_ENV,
     },
     cookie: req?.headers.cookie,
