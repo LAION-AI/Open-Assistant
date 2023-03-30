@@ -5,3 +5,6 @@ export const getDefaultServerSideProps = async ({ locale }) => ({
     ...(await serverSideTranslations(locale)),
   },
 });
+
+export const getStaticProps = getDefaultServerSideProps;
+export const getServerSideProps = getDefaultServerSideProps;
