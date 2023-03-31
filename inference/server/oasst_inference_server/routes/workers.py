@@ -327,7 +327,7 @@ async def handle_token_response(
         deps.redis_client,
         message_id=work_response_container.message_id,
     )
-    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
+    await message_queue.enqueue(response.json())
     work_response_container.num_responses += 1
 
 
@@ -352,7 +352,7 @@ async def handle_generated_text_response(
             deps.redis_client,
             message_id=message_id,
         )
-        await message_queue.enqueue(message_packet.json(), expire=settings.message_queue_expire)
+        await message_queue.enqueue(message_packet.json())
     finally:
         del work_request_map[response.request_id]
 
@@ -365,7 +365,7 @@ async def abort_message(message_id: str, error: str):
         deps.redis_client,
         message_id=message_id,
     )
-    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
+    await message_queue.enqueue(response.json())
 
 
 async def handle_error_response(
@@ -396,4 +396,4 @@ async def handle_timeout(message: inference.MessageRead):
         deps.redis_client,
         message_id=message.id,
     )
-    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
+    await message_queue.enqueue(response.json())

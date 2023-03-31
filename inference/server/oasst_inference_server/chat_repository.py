@@ -49,7 +49,6 @@ class ChatRepository(pydantic.BaseModel):
         message.state = inference.MessageState.in_progress
         message.work_begin_at = datetime.datetime.utcnow()
         message.worker_id = worker_id
-        message.worker_compat_hash = worker_config.compat_hash
         message.worker_config = worker_config
         await self.session.commit()
         logger.debug(f"Started work on message {message_id}")

@@ -1,3 +1,5 @@
+import asyncio
+
 import fastapi
 import pydantic
 from fastapi import Depends
@@ -94,6 +96,7 @@ async def create_assistant_message(
             assistant_message = await ucr.initiate_assistant_message(
                 parent_id=request.parent_id,
                 work_parameters=work_parameters,
+                worker_compat_hash=model_config.compat_hash,
             )
         queue = queueing.work_queue(deps.redis_client, model_config.compat_hash)
         logger.debug(f"Adding {assistant_message.id=} to {queue.queue_id} for {chat_id}")
@@ -133,19 +136,35 @@ async def message_events(
     if message.has_finished:
         raise fastapi.HTTPException(status_code=204, detail=message.state)
 
-    async def event_generator(chat_id: str, message_id: str):
+    async def event_generator(chat_id: str, message_id: str, worker_compat_hash: str | None):
         redis_client = deps.make_redis_client()
-        queue = queueing.message_queue(redis_client, message_id=message_id)
+        message_queue = queueing.message_queue(redis_client, message_id=message_id)
+        work_queue = (
+            queueing.work_queue(redis_client, worker_compat_hash=worker_compat_hash)
+            if worker_compat_hash is not None
+            else None
+        )
         has_started = False
         try:
             while True:
-                item = await queue.dequeue(timeout=settings.pending_event_interval)
+                item = await message_queue.dequeue(timeout=settings.pending_event_interval)
                 if item is None:
                     if not has_started:
+                        if work_queue is None:
+                            qpos, qlen = 0, 1
+                        else:
+                            # TODO: make more efficient, e.g. pipeline
+                            [qdeq, qenq, mpos] = await asyncio.gather(
+                                work_queue.get_deq_counter(),
+                                work_queue.get_enq_counter(),
+                                queueing.get_pos_value(redis_client, message_id),
+                            )
+                            qpos = max(mpos - qdeq, 0)
+                            qlen = max(qenq - qdeq, qpos)
                         yield {
                             "data": chat_schema.PendingResponseEvent(
-                                queue_position=0,
-                                queue_size=1,
+                                queue_position=qpos,
+                                queue_size=qlen,
                             ).json()
                         }
                     continue
@@ -188,7 +207,9 @@ async def message_events(
         finally:
             await redis_client.close()
 
-    return EventSourceResponse(event_generator(chat_id=chat_id, message_id=message_id))
+    return EventSourceResponse(
+        event_generator(chat_id=chat_id, message_id=message_id, worker_compat_hash=message.worker_compat_hash)
+    )
 
 
 @router.post("/{chat_id}/messages/{message_id}/votes")
