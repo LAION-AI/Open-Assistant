@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List, NamedTuple
 
 import evaluate
+import torch
 import transformers
 import yaml
 from model_training.custom_datasets import get_one_dataset
@@ -165,6 +166,7 @@ TOKENIZER_CONFIGS = {
     "GPT-JT": TokenizerConfig(special_tokens=SpecialTokens(sep_token="<|extratoken_100|>")),
     "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
     "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
+    "gpt-neox": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
     "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
 }
 
@@ -271,9 +273,15 @@ def get_metrics(conf, tokenizer):
 
 
 def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
+    dtype = torch.float32
+    if conf.dtype in ["fp16", "float16"]:
+        dtype = torch.float16
+    elif conf.dtype in ["bf16", "bfloat16"]:
+        dtype = torch.bfloat16
+
     if conf.is_reward_model:
         if "pythia" in conf.model_name:
-            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir, torch_dtype=dtype)
             if conf.pooling:
                 assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
                 model.config.pooling = conf.pooling
@@ -286,6 +294,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
             quantization=conf.quantization,
             seq2seqmodel=conf.seq2seqmodel,
             without_head=conf.is_reward_model,
+            torch_dtype=dtype,
         )
 
         n_embs = model.get_input_embeddings().num_embeddings

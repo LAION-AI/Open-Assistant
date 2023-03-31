@@ -112,6 +112,9 @@ or run with:
     if resid_pdrop is not None and (resid_pdrop < 0 or resid_pdrop > 1.0):
         raise ValueError("Invalid argument: `resid_pdrop` must be between 0.0 and 1.0")
 
+    if not flash_attention and (resid_pdrop is None or resid_pdrop == 0.0):
+        return
+
     if not any(isinstance(model, model_class) for model_class in SUPPORTED_MODELS):
         if not flash_attention and (resid_pdrop is None or resid_pdrop == 0.0):
             return  # nothing to patch
@@ -156,6 +159,6 @@ or run with:
             else:
                 add_flash_attn(layer.attention, causal=True)
 
-        if resid_pdrop is not None:
+        if resid_pdrop is not None and resid_pdrop > 0:
             add_dropout(getattr(layer, attention_key), _patched_attn_forward, resid_pdrop)
             add_dropout(getattr(layer, mlp_key), _patched_mlp_forward, resid_pdrop)
