@@ -1,5 +1,7 @@
 import aiohttp
 import fastapi
+import google.oauth2.credentials
+import google_auth_oauthlib.flow
 import sqlmodel
 from fastapi import Depends, HTTPException, Security
 from loguru import logger
@@ -181,9 +183,20 @@ async def callback_github(
 
 @router.get("/login/google")
 async def login_google(state: str = r"{}"):
-    redirect_uri = f"{settings.auth_callback_root}/google"
-    auth_url = ...  # TODO
-    raise HTTPException(status_code=302, headers={"location": auth_url})
+    flow = google_auth_oauthlib.flow.Flow.from_client_config(
+        {
+            "web": {
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "client_id": settings.auth_google_client_id,
+                "client_secret": settings.auth_google_client_secret,
+            }
+        },
+        scopes=["openid"],
+        redirect_uri=f"{settings.auth_callback_root}/google",
+    )
+    auth_url, _ = flow.authorization_url(access_type="offline", include_granted_scopes="true")
+    raise HTTPException(status_code=302, headers={"location": f"{auth_url}&state={state}"})
 
 
 @router.get("/callback/google", response_model=protocol.TokenPair)
@@ -191,24 +204,23 @@ async def callback_google(
     code: str,
     db: database.AsyncSession = Depends(deps.create_session),
 ):
-    redirect_uri = f"{settings.auth_callback_root}/google"
+    flow = google_auth_oauthlib.flow.Flow.from_client_config(
+        {
+            "web": {
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "client_id": settings.auth_google_client_id,
+                "client_secret": settings.auth_google_client_secret,
+            }
+        },
+        scopes=["openid"],
+        redirect_uri=f"{settings.auth_callback_root}/google",
+    )
 
-    async with aiohttp.ClientSession(raise_for_status=True) as session:
-        # Exchange the auth code for a Google access token
-        async with session.post(..., data=...) as token_response:  # TODO  # TODO,
-            token_response_json = await token_response.json()
+    flow.fetch_token(code=code)
+    credentials = flow.credentials
 
-        try:
-            access_token = token_response_json["access_token"]
-        except KeyError:
-            raise HTTPException(status_code=400, detail="Invalid access token response from Google")
-
-        # Retrieve user's Google information using access token
-        async with session.get(
-            ...,  # TODO
-            headers={"Authorization": f"Bearer {access_token}"},
-        ) as user_response:
-            user_response_json = await user_response.json()
+    
 
     try:
         google_id = str(user_response_json["id"])  # TODO
