@@ -1,6 +1,7 @@
 aiohttp
 alembic
 asyncpg
+authlib
 cryptography==39.0.0
 fastapi[all]==0.88.0
 google-api-python-client

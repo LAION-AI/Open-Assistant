@@ -1,9 +1,10 @@
 import aiohttp
 import fastapi
-import google.oauth2.credentials
-import google_auth_oauthlib.flow
 import sqlmodel
-from fastapi import Depends, HTTPException, Security
+from authlib.integrations.starlette_client import OAuth
+from fastapi import Depends, HTTPException, Request, Security
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 from loguru import logger
 from oasst_inference_server import auth, database, deps, models
 from oasst_inference_server.settings import settings
@@ -12,6 +13,18 @@ from oasst_shared.schemas import protocol
 router = fastapi.APIRouter(
     prefix="/auth",
     tags=["auth"],
+)
+
+oauth = OAuth()
+oauth.register(
+    name="google",
+    client_id=settings.auth_google_client_id,
+    client_secret=settings.auth_google_client_secret,
+    access_token_url="https://accounts.google.com/o/oauth2/token",
+    authorize_url="https://accounts.google.com/o/oauth2/auth",
+    api_base_url="https://www.googleapis.com/oauth2/v1/",
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={"scope": "openid"},
 )
 
 
@@ -182,49 +195,25 @@ async def callback_github(
 
 
 @router.get("/login/google")
-async def login_google(state: str = r"{}"):
-    flow = google_auth_oauthlib.flow.Flow.from_client_config(
-        {
-            "web": {
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-                "client_id": settings.auth_google_client_id,
-                "client_secret": settings.auth_google_client_secret,
-            }
-        },
-        scopes=["openid"],
-        redirect_uri=f"{settings.auth_callback_root}/google",
-    )
-    auth_url, _ = flow.authorization_url(access_type="offline", include_granted_scopes="true")
-    raise HTTPException(status_code=302, headers={"location": f"{auth_url}&state={state}"})
+async def login_google(request: Request):
+    redirect_uri = (f"{settings.auth_callback_root}/google",)
+    return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
 @router.get("/callback/google", response_model=protocol.TokenPair)
 async def callback_google(
-    code: str,
+    request: Request,
     db: database.AsyncSession = Depends(deps.create_session),
 ):
-    flow = google_auth_oauthlib.flow.Flow.from_client_config(
-        {
-            "web": {
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-                "client_id": settings.auth_google_client_id,
-                "client_secret": settings.auth_google_client_secret,
-            }
-        },
-        scopes=["openid"],
-        redirect_uri=f"{settings.auth_callback_root}/google",
-    )
+    token = await oauth.google.authorize_access_token(request)
+    credentials = Credentials.from_authorized_user_info(token)
 
-    flow.fetch_token(code=code)
-    credentials = flow.credentials
-
-    
+    people_api = build("people", "v1", credentials=credentials)
+    profile = people_api.people().get(resourceName="people/me", personFields="names").execute()
 
     try:
-        google_id = str(user_response_json["id"])  # TODO
-        google_username = user_response_json["username"]  # TODO
+        google_id = profile["resourceName"].split("/")[1]
+        google_username = profile["names"][0]["displayName"] if len(profile["names"]) > 0 else "User"
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from Google")
 
