@@ -8,16 +8,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
-from transformers import GPTNeoXForCausalLM, GPTNeoXModel
+from transformers import GPTNeoXForCausalLM, GPTNeoXModel, LlamaForCausalLM, LlamaModel
 
-from .modeling_llama import LLaMAForCausalLM, LLaMAModel
 from .reward_model import GPTNeoXRewardModel
 
 SUPPORTED_MODELS = [
     GPTNeoXModel,
     GPTNeoXForCausalLM,
-    LLaMAForCausalLM,
-    LLaMAModel,
+    LlamaForCausalLM,
+    LlamaModel,
     GPTNeoXRewardModel,
 ]
 
@@ -148,18 +147,18 @@ or run with:
     if isinstance(model, GPTNeoXRewardModel) or isinstance(model, GPTNeoXForCausalLM):
         model = model.gpt_neox
 
-    if isinstance(model, LLaMAForCausalLM):
+    if isinstance(model, LlamaForCausalLM):
         model = model.model
 
     attention_key_lookup = {
         GPTNeoXModel: "attention",
         GPTNeoXRewardModel: "attention",
-        LLaMAModel: "self_attn",
+        LlamaModel: "self_attn",
     }
     mlp_key_lookup = {
         GPTNeoXModel: "mlp",
         GPTNeoXRewardModel: "mlp",
-        LLaMAModel: "mlp",
+        LlamaModel: "mlp",
     }
     attention_key = attention_key_lookup.get(model.__class__, "attention")
     mlp_key = mlp_key_lookup.get(model.__class__, "mlp")
@@ -170,7 +169,7 @@ or run with:
             add_dropout(getattr(layer, mlp_key), _patched_mlp_forward, resid_pdrop)
 
         if flash_attention:
-            if isinstance(model, LLaMAModel):
+            if isinstance(model, LlamaModel):
                 warnings.warn("Flash attention is not supported for LLaMA models.")
             else:
                 add_flash_attn(layer.attention, causal=True)
