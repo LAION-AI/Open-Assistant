@@ -206,23 +206,16 @@ pythia-6.9B:
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
 
-pythia-12b:
-  fp16: true
-  log_dir: "pythia_log_12b"
-  learning_rate: 8e-6
+pythia-12B:
+  learning_rate: 6e-6
   model_name: EleutherAI/pythia-12b-deduped
-  output_dir: pythia_model_12b
   weight_decay: 0.0
-  max_length: 620
-  warmup_steps: 100
+  max_length: 2048
+  warmup_steps: 20
   gradient_checkpointing: false
-  gradient_accumulation_steps: 8
+  gradient_accumulation_steps: 4
   per_device_train_batch_size: 2
-  per_device_eval_batch_size: 5
-  eval_steps: 100
-  save_steps: 500
-  num_train_epochs: 16
-  save_total_limit: 4
+  per_device_eval_batch_size: 2
 
 gpt-neox:
   model_name: EleutherAI/gpt-neox-20b
