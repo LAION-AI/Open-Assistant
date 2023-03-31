@@ -1,0 +1,97 @@
+{
+  "any_feedback_on_this_task": "Ĉu iu opinio pri ĉi tiu tasko?",
+  "available_task_count": "{{count}} disponeblaj taskoj",
+  "default": {
+    "unchanged_title": "Neniuj ŝanĝoj",
+    "unchanged_message": "Ĉu vi certas, ke vi volus daŭrigi?",
+    "continue_anyway": "Daŭrigu malgraŭ ĉio",
+    "markdownguide": "Stilado kun Markdown subtenata"
+  },
+  "no_more_tasks": "Ŝajnas, ke neniu tasko estis trovita.",
+  "random": {
+    "label": "Mi sentas min feliĉa",
+    "desc": "Helpu nin plibonigi Open Assistant per komenci hazardan taskon."
+  },
+  "create_initial_prompt": {
+    "label": "Krei Unuajn Incitojn",
+    "desc": "Verki unuajn incitojn por helpi Open Assistant provi respondi al diversaj mesaĝoj. (eniri en loterion)",
+    "overview": "Krei unuan mesaĝon por sendi al la asistanto",
+    "instruction": "Donu la unuajn incitojn",
+    "response_placeholder": "Verku vian inciton ĉi tie...",
+    "shotcut_tip": "Konsilo: Vi povas uzi klavarŝlosilon por Kontroli kaj Sendi respondojn:"
+  },
+  "reply_as_user": {
+    "label": "Respondi kiel Uzanto",
+    "desc": "Babilu kun Open Assistant kaj helpu plibonigi ĝiajn respondojn dum vi interagas kun ĝi.",
+    "overview": "Konsiderante la jenan konversacion, provizu adekvatan respondon",
+    "instruction": "Donu la uzantan respondon",
+    "response_placeholder": "Verku vian respondon ĉi tie...",
+    "shotcut_tip": "Konsilo: Vi povas uzi klavarŝlosilon por Kontroli kaj Sendi respondojn:"
+  },
+  "reply_as_assistant": {
+    "label": "Respondi kiel Asistanto",
+    "desc": "Helpu Open Assistant plibonigi ĝiajn respondojn al konversacioj kun aliaj uzantoj.",
+    "overview": "Konsiderante la jenan konversacion, provizu adekvatan respondon",
+    "response_placeholder": "Verku vian respondon ĉi tie...",
+    "shotcut_tip": "Konsilo: Vi povas uzi klavarŝlosilon por Kontroli kaj Sendi respondojn:"
+  },
+  "rank_user_replies": {
+    "label": "Rangigi Uzantajn Respondojn",
+    "desc": "Helpu Malferman Asiston plibonigi ĝiajn respondojn al konversacioj kun aliaj uzantoj.",
+    "overview": "Donita la jenaj Uzantaj respondoj, ordigi ilin de plej bona al plej malbona, plej bona estante unue, plej malbona estante laste.",
+    "unchanged_title": "Ordo Ne ŝanĝita",
+    "unchanged_message": "Vi ne ŝanĝis la ordon de la instigoj. Ĉu vi certe volas daŭrigi?",
+    "continue_anyway": "Daŭrigu malgraŭ ĉio"
+  },
+  "rank_assistant_replies": {
+    "label": "Rangigi Asistantajn Respondojn",
+    "desc": "Taksu instigojn donitajn de Malferma Asistanto laŭ ilia precizeco kaj legebleco.",
+    "overview": "Donita la jenaj Asistantaj respondoj, ordigi ilin de plej bona al plej malbona, plej bona estante unue, plej malbona estante laste.",
+    "unchanged_title": "Ordo Neŝanĝita",
+    "unchanged_message": "Vi ne ŝanĝis la ordon de la instigoj. Ĉu vi certe volas daŭrigi?",
+    "continue_anyway": "Daŭrigu malgraŭ ĉio"
+  },
+  "rank_initial_prompts": {
+    "label": "Rangigi Unuajn Instigojn",
+    "desc": "Taksu instigojn donitajn de Malferma Asistanto laŭ ilia precizeco kaj legebleco.",
+    "overview": "Donita la jenaj unuaj instigoj, ordigi ilin de plej bona al plej malbona, plej bona estante unue, plej malbona estante laste.",
+    "unchanged_title": "Ordo Neŝanĝita",
+    "unchanged_message": "Vi ne ŝanĝis la ordon de la instigoj. Ĉu vi certe volas daŭrigi?",
+    "continue_anyway": "Daŭrigu malgraŭ ĉio"
+  },
+  "label_initial_prompt": {
+    "label": "Etikedi Unuan Instigon",
+    "desc": "Provizi etikedojn por instigo.",
+    "overview": "Provizi etikedojn por la jena instigo"
+  },
+  "label_prompter_reply": {
+    "label": "Etikedi Promptisto Respondo",
+    "desc": "Provizi etikedojn por instigo.",
+    "overview": "Donita la jena diskuto, provizi etikedojn por la fina instigo."
+  },
+  "label_assistant_reply": {
+    "label": "Etikedi Asistantan Respondo",
+    "desc": "Provizi etikedojn por instigo.",
+    "overview": "Donita la jena diskuto, provizi etikedojn por la fina instigo."
+  },
+  "classify_initial_prompt": {
+    "label": "Klasigi Unuan Instigon",
+    "desc": "Provizi etikedojn por instigo.",
+    "overview": "Legu la jenan instigon kaj poste respondi la demandon pri ĝi."
+  },
+  "classify_prompter_reply": {
+    "label": "Klasigi Promptisto Respondo",
+    "desc": "Provizi etikedojn por instigo.",
+    "overview": "Legu la jenan konversacion kaj poste respondi la demandon pri la lasta respondo en la diskuto."
+  },
+  "classify_assistant_reply": {
+    "label": "Klasigi Asistantan Respondo",
+    "desc": "Provizi etikedojn por instigo.",
+    "overview": "Legu la jenan konversacion kaj poste respondi la demandon pri la lasta respondo en la diskuto."
+  },
+  "submitted_as": "Tio estos sendita kiel {{submit_lang}}",
+  "tab_write": "Verki",
+  "tab_preview": "Antaŭrigardo",
+  "writing_wrong_langauge_a_b": "Ŝajnas, ke vi verkas en {{detected_lang}}, sed ĉi tio estos sendita kiel {{submit_lang}}.",
+  "not_rankable": "Ĉiuj respondoj estas fakte malĝustaj kaj ne povas esti rangigitaj"
+}

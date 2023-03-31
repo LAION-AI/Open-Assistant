@@ -21,7 +21,7 @@ from model_training.utils import (
     read_yamls,
 )
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
@@ -68,6 +68,7 @@ class SFTTrainer(Trainer):
         outputs = model(
             input_ids=inputs["input_ids"],
             attention_mask=inputs.get("attention_mask", None),
+            use_cache=False,
         )
 
         loss = self.loss_fct(outputs.get("logits"), targets, mask=labels_mask)
@@ -83,6 +84,7 @@ class SFTTrainer(Trainer):
         outputs = model(
             input_ids=inputs["input_ids"],
             attention_mask=inputs.get("attention_mask", None),
+            use_cache=False,
         )
 
         logits = outputs.get("logits")
@@ -182,6 +184,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
     parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.add_argument("--rng_seed", type=int, help="rng seed")
+    parser.add_argument("--dataset_stats", action="store_true", help="Show dataset stats", default=False)
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -210,6 +213,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["resume_from_checkpoint"] = args.resume_from_checkpoint
     if args.rng_seed is not None:
         conf["rng_seed"] = args.rng_seed
+    conf["dataset_stats"] = args.dataset_stats
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -269,68 +273,6 @@ def tokenizer_sanity_check(tokenizer):
 
 def main():
     training_conf = argument_parsing()
-    import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
-
-    init_rng(training_conf)
-
-    tokenizer = get_tokenizer(training_conf)
-
-    if not training_conf.deepspeed or training_conf.local_rank == 0:
-        tokenizer_sanity_check(tokenizer)
-
-    model = get_model(training_conf, tokenizer)
-
-    train, evals = get_dataset(training_conf)
-    train_collate_fn = DialogueDataCollator(
-        tokenizer,
-        max_length=training_conf.max_length,
-        random_offset_probability=training_conf.random_offset_probability,
-        label_masking=training_conf.label_masking,
-        samples_mixing=training_conf.samples_mixing,
-        pad_to_multiple_of=16,
-        use_system_prefix=training_conf.use_system_prefix,
-        system_prefix=training_conf.system_prefix,
-    )
-    eval_collate_fn = DialogueDataCollator(
-        tokenizer,
-        max_length=training_conf.max_length,
-        random_offset_probability=training_conf.random_offset_probability,
-        label_masking=training_conf.label_masking,
-        samples_mixing=False,
-        use_system_prefix=training_conf.use_system_prefix,
-        system_prefix=training_conf.system_prefix,
-    )
-
-    if training_conf.use_custom_sampler:
-        sampler = PerDatasetSampler.build_sampler_from_config(
-            training_conf,
-            train.datasets,
-            rank=training_conf.local_rank,
-            world_size=training_conf.world_size,
-            samples_length=list(
-                map(
-                    lambda x: train_collate_fn.process_one(x, return_length=True),
-                    tqdm(train, desc="Calculating lengths per sample"),
-                )
-            )
-            if training_conf.sort_by_length
-            else None,
-        )
-    else:
-        sampler = None
-
-    metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
-    optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
-
-    if training_conf.quantization:
-        for module in model.modules():
-            if isinstance(module, torch.nn.Embedding):
-                bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
-                    module, "weight", {"optim_bits": 32}
-                )
-
-    if training_conf.fuse_gelu:
-        model = fuse_gelu(model)
 
     output_dir = (
         training_conf.output_dir
@@ -338,14 +280,18 @@ def main():
         else f"{training_conf.model_name}-{training_conf.log_dir}-finetuned"
     )
 
+    optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
+
+    # needs to happen before model loading in case of stage 3 training
     args = TrainingArguments(
         output_dir=output_dir,
         num_train_epochs=training_conf.num_train_epochs,
         warmup_steps=training_conf.warmup_steps,
         learning_rate=float(training_conf.learning_rate),
-        deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
+        deepspeed=training_conf.deepspeed_config if training_conf.deepspeed else None,
         optim=optimizer,
-        fp16=training_conf.fp16,
+        fp16=training_conf.dtype in ["fp16", "float16"],
+        bf16=training_conf.dtype in ["bf16", "bfloat16"],
         local_rank=training_conf.local_rank,
         gradient_checkpointing=training_conf.gradient_checkpointing,
         gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
@@ -366,6 +312,85 @@ def main():
         report_to="wandb" if training_conf.log_wandb else None,
     )
 
+    init_rng(training_conf)
+
+    tokenizer = get_tokenizer(training_conf)
+
+    if not training_conf.deepspeed or training_conf.local_rank == 0:
+        tokenizer_sanity_check(tokenizer)
+
+    train_collate_fn = DialogueDataCollator(
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=training_conf.samples_mixing,
+        pad_to_multiple_of=16,
+        use_system_prefix=training_conf.use_system_prefix,
+        system_prefix=training_conf.system_prefix,
+    )
+    eval_collate_fn = DialogueDataCollator(
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=False,
+        use_system_prefix=training_conf.use_system_prefix,
+        system_prefix=training_conf.system_prefix,
+    )
+
+    train, evals = get_dataset(training_conf)
+
+    if training_conf.dataset_stats:
+        print("Dataset stats before sampling:")
+        total = len(train)
+        for d in train.datasets:
+            if isinstance(d, Subset):
+                name = f"Subset of {type(d.dataset).__name__}"
+                if hasattr(d.dataset, "name"):
+                    name += f" ({d.dataset.name})"
+            else:
+                name = type(d).__name__
+                if hasattr(d, "name"):
+                    name += f" ({d.name})"
+            print(f"{name}: {len(d)} ({len(d) / total:%})")
+        print(f"Total train: {total}")
+        quit()
+
+    if training_conf.use_custom_sampler:
+        sampler = PerDatasetSampler.build_sampler_from_config(
+            training_conf,
+            train.datasets,
+            rank=training_conf.local_rank,
+            world_size=training_conf.world_size,
+            samples_length=list(
+                map(
+                    lambda x: train_collate_fn.process_one(x, return_length=True),
+                    tqdm(train, desc="Calculating lengths per sample"),
+                )
+            )
+            if training_conf.sort_by_length
+            else None,
+        )
+    else:
+        sampler = None
+
+    metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
+
+    model = get_model(training_conf, tokenizer)
+
+    if training_conf.quantization:
+        import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
+
+        for module in model.modules():
+            if isinstance(module, torch.nn.Embedding):
+                bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
+                    module, "weight", {"optim_bits": 32}
+                )
+
+    if training_conf.fuse_gelu:
+        model = fuse_gelu(model)
+
     if not training_conf.log_wandb:
         os.environ["WANDB_MODE"] = "offline"
 
@@ -375,10 +400,11 @@ def main():
         wandb.init(
             project="supervised-finetuning",
             entity=training_conf.wandb_entity,
-            config=training_conf,
             resume=training_conf.resume_from_checkpoint,
             name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
+            config=training_conf,
         )
+        wandb.config["_max_length"] = training_conf.max_length
 
     trainer = SFTTrainer(
         model=model,

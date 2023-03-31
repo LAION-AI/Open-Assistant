@@ -2,7 +2,7 @@ import Head from "next/head";
 import { TaskOption } from "src/components/Dashboard";
 import { allTaskOptions } from "src/components/Dashboard/TaskOption";
 import { getDashboardLayout } from "src/components/Layout";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 const AllTasks = () => {
   return (
