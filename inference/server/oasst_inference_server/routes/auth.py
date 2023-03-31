@@ -24,7 +24,7 @@ oauth.register(
     authorize_url="https://accounts.google.com/o/oauth2/auth",
     api_base_url="https://www.googleapis.com/oauth2/v1/",
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid"},
+    client_kwargs={"scope": "openid profile"},
 )
 
 
