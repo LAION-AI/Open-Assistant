@@ -417,12 +417,8 @@ class AlpacaBase(Dataset):
         self.mode = mode
         dataset = load_dataset("yahma/alpaca-cleaned", cache_dir=cache_dir)
         rows = []
-        # using prompt as our index will allows us
-        # to add additional generated prompt later
-
         for row in dataset["train"]:
             question = row["instruction"]
-            # only keep the best answer
             if len(row["input"]) > 0:
                 input_ = "{}\n{}".format(question, row["input"])
             else:

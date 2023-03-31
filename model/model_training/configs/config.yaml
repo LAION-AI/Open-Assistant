@@ -26,7 +26,6 @@ defaults:
     - trivia_qa_nocontext
     - xsum
     - cnn_dailymail
-    - prompt_dialogue # TODO: need to fix the url
     - multi_news
     - scitldr
     - soda
@@ -38,7 +37,6 @@ defaults:
     - wmt2019_de-en
     - ted_trans_nl-en
     - ted_trans_de-ja
-    - instruct_tuning
     - wmt2019_de-en
     - samsum
     - soda_dialogue
@@ -90,11 +88,28 @@ math:
   datasets_extra: # Will get merged with datasets
     - minimath
 
+pretrain:
+  datasets:
+    - joke
+    - webgpt
+    - gpt4all
+    - alpaca
+    - code_alpaca
+    - minimath
+    - humaneval_mbpp_codegen_qa
+    - humaneval_mbpp_testgen_qa
+    - grade_school_math_instructions
+    - recipes
+    - cmu_wiki_qa
+    - youtube_subs_howto100M
+    - ubuntu_dialogue_qa
+
 oasst_export_eu:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
         input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+    - gpt4all
     - alpaca
     - code_alpaca
     - oig_file:
