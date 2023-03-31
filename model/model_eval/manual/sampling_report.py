@@ -265,7 +265,7 @@ def main():
     model_name = args.model_name
     print(f"Loading model: {model_name}")
 
-    if args.model_type.lower() == "causallm":
+    if args.model_type.lower() == "causallm" or args.model_type.lower() == "llama":
         from transformers import AutoModelForCausalLM
 
         tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=args.auth_token)
@@ -279,27 +279,18 @@ def main():
         model = T5ForConditionalGeneration.from_pretrained(model_name, use_auth_token=args.auth_token)
         skip_input_tokens = False
         tokenizer.eos_token_id = model.config.eos_token_id
-    # elif args.model_type.lower() == "llama":
-    #     skip_input_tokens = True
-
-    #     from model_training.models.tokenization_llama import LLaMATokenizer
-    #     from model_training.models.modeling_llama import LLaMAForCausalLM
-
-    #     tokenizer = LLaMATokenizer.from_pretrained(model_name, use_auth_token=args.auth_token)
-
-    #     input_text = f"{QA_SPECIAL_TOKENS_V2_5['prompter']}Hi!{tokenizer.eos_token}{QA_SPECIAL_TOKENS_V2_5['assistant']}"
-    #     tr = tokenizer(input_text)
-    #     print(tr)
-    #     decoded = tokenizer.decode(tr.input_ids, skip_special_tokens=False)
-    #     print('decoded:', decoded)
-
-    #     model = LLaMAForCausalLM.from_pretrained(model_name, use_auth_token=args.auth_token)
-    #     skip_input_tokens = True
     else:
         raise RuntimeError("Invalid model_type specified")
 
     print("special_tokens_map:", tokenizer.special_tokens_map)
     print(f"eos_token='{tokenizer.eos_token}', eos_token_id={tokenizer.eos_token_id}")
+
+    print("Tokenizer check:")
+    input_text = f"{QA_SPECIAL_TOKENS_V2_5['prompter']}Hi!{tokenizer.eos_token}{QA_SPECIAL_TOKENS_V2_5['assistant']}"
+    tr = tokenizer(input_text)
+    print(tr)
+    decoded = tokenizer.decode(tr.input_ids, skip_special_tokens=False)
+    print("decoded:", decoded)
 
     model.eval()
     if args.half:

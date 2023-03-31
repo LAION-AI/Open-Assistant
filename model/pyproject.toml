@@ -15,6 +15,8 @@ dependencies = [
     "datasets==2.8.0",
     "deepspeed==0.7.7",
     "evaluate==0.4.0",
+    "fastlangid==1.0.11",
+    "flash_attn==0.2.8",
     "gdown",
     "trlx @ git+https://github.com/CarperAI/trlx.git@b91da7b03d8e9fa0c0d6dce10a8f2611aca3013f",
     "ninja==1.11.1",
@@ -22,11 +24,18 @@ dependencies = [
     "numpy>=1.22.4",
     "py7zr",
     "PyYAML>=6.0",
+    "sentencepiece==0.1.97",
     "scikit-learn==1.2.0",
+    "tokenizers==0.13.2",
     "torch==1.13.1",
+    "tqdm==4.65.0",
     "transformers==4.26.1",
     "wandb==0.14.0",
-    "sentencepiece==0.1.97",
+]
+
+[project.optional-dependencies]
+tests = [
+  'pytest',
 ]
 
 [tool.setuptools]
