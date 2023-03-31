@@ -1,3 +1,4 @@
+import argparse
 import copy
 import math
 import random
@@ -23,6 +24,16 @@ from torch.utils.data.distributed import DistributedSampler
 
 def _strtobool(x):
     return bool(strtobool(x))
+
+
+def init_rng(conf: argparse.Namespace) -> None:
+    seed = conf.rng_seed
+    if seed is not None:
+        print(f"RNG seed: {seed}")
+        local_rank = conf.local_rank
+        if local_rank is not None and local_rank != -1:
+            seed += local_rank
+        transformers.set_seed(seed)
 
 
 class PerDatasetSampler(DistributedSampler):
