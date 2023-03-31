@@ -3,8 +3,8 @@ import { JWT } from "next-auth/jwt";
 import {
   ChatItem,
   InferenceMessage,
-  InferencePostMessageParams,
-  InferencePostMessageResponse,
+  InferencePostPrompterMessageParams,
+  InferencePostAssistantMessageParams,
   ModelInfo,
 } from "src/types/Chat";
 import type { Readable } from "stream";
@@ -52,14 +52,20 @@ export class OasstInferenceClient {
     return this.request(`/chats/${chat_id}/messages/${message_id}`);
   }
 
-  post_prompt({ chat_id, ...data }: InferencePostMessageParams): Promise<InferencePostMessageResponse> {
-    return this.request(`/chats/${chat_id}/messages`, { method: "POST", data });
+  post_prompter_message({ chat_id, ...data }: InferencePostPrompterMessageParams): Promise<InferenceMessage> {
+    return this.request(`/chats/${chat_id}/prompter_message`, { method: "POST", data });
+  }
+
+  post_assistant_message({ chat_id, ...data }: InferencePostAssistantMessageParams): Promise<InferenceMessage> {
+    return this.request(`/chats/${chat_id}/assistant_message`, { method: "POST", data });
   }
 
   stream_events({ chat_id, message_id }: { chat_id: string; message_id: string }) {
     return this.request<Readable>(`/chats/${chat_id}/messages/${message_id}/events`, {
       headers: {
         Accept: "text/event-stream",
+        Connection: "keep-alive",
+        "Cache-Control": "no-cache, no-transform",
       },
       responseType: "stream",
     });

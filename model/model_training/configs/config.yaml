@@ -91,20 +91,21 @@ math:
   datasets_extra: # Will get merged with datasets
     - minimath
 
-oa_dataset_only:
-  datasets:
-    - oa_private:
-        split: sft
-        val_split: 0.0
-        fraction: 1
-        file: 2023-02-10_oasst_prod.jsonl
-
 oasst_export_eu:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        #top_k: 2
-        input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+    - alpaca
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
+        max_count: 30000
+        min_length: 1000
+        val_split: 0.2
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/raw/main/unified_grade_school_math_instructions.jsonl
+        val_split: 0.1
+        min_length: 1000
   sort_by_length: false
   use_custom_sampler: false
 
@@ -112,8 +113,7 @@ oasst_export_latin_cyrillic:
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        #top_k: 2
-        input_file_path: 2023-03-13_oasst_ready_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
   sort_by_length: false
   use_custom_sampler: false
 
@@ -206,23 +206,16 @@ pythia-6.9B:
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
 
-pythia-12b:
-  fp16: true
-  log_dir: "pythia_log_12b"
-  learning_rate: 8e-6
+pythia-12B:
+  learning_rate: 6e-6
   model_name: EleutherAI/pythia-12b-deduped
-  output_dir: pythia_model_12b
   weight_decay: 0.0
-  max_length: 620
-  warmup_steps: 100
+  max_length: 2048
+  warmup_steps: 20
   gradient_checkpointing: false
-  gradient_accumulation_steps: 8
+  gradient_accumulation_steps: 4
   per_device_train_batch_size: 2
-  per_device_eval_batch_size: 5
-  eval_steps: 100
-  save_steps: 500
-  num_train_epochs: 16
-  save_total_limit: 4
+  per_device_eval_batch_size: 2
 
 gpt-neox:
   model_name: EleutherAI/gpt-neox-20b

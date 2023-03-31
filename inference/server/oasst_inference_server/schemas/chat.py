@@ -5,16 +5,15 @@ import pydantic
 from oasst_shared.schemas import inference
 
 
-class CreateMessageRequest(pydantic.BaseModel):
+class CreatePrompterMessageRequest(pydantic.BaseModel):
     parent_id: str | None = None
     content: str = pydantic.Field(..., repr=False)
+
+
+class CreateAssistantMessageRequest(pydantic.BaseModel):
+    parent_id: str
     model_config_name: str
     sampling_parameters: inference.SamplingParameters = pydantic.Field(default_factory=inference.SamplingParameters)
-
-
-class CreateMessageResponse(pydantic.BaseModel):
-    prompter_message: inference.MessageRead
-    assistant_message: inference.MessageRead
 
 
 class PendingResponseEvent(pydantic.BaseModel):
@@ -31,6 +30,7 @@ class TokenResponseEvent(pydantic.BaseModel):
 class ErrorResponseEvent(pydantic.BaseModel):
     event_type: Literal["error"] = "error"
     error: str
+    message: inference.MessageRead | None = None
 
 
 class MessageResponseEvent(pydantic.BaseModel):
@@ -38,7 +38,9 @@ class MessageResponseEvent(pydantic.BaseModel):
     message: inference.MessageRead
 
 
-ResponseEvent = Annotated[Union[TokenResponseEvent, ErrorResponseEvent], pydantic.Field(discriminator="event_type")]
+ResponseEvent = Annotated[
+    Union[TokenResponseEvent, ErrorResponseEvent, MessageResponseEvent], pydantic.Field(discriminator="event_type")
+]
 
 
 class VoteRequest(pydantic.BaseModel):
@@ -76,6 +78,6 @@ class MessageCancelledException(Exception):
 
 
 class MessageTimeoutException(Exception):
-    def __init__(self, message_id: str):
-        super().__init__(f"Message {message_id} timed out")
-        self.message_id = message_id
+    def __init__(self, message: inference.MessageRead):
+        super().__init__(f"Message {message.id} timed out")
+        self.message = message

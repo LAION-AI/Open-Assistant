@@ -17,7 +17,7 @@ export async function handleChatEventStream({
   onError,
   onPending,
   onToken,
-}: ChatStreamHandlerOptions): Promise<InferenceMessage> {
+}: ChatStreamHandlerOptions): Promise<InferenceMessage | null> {
   let tokens = "";
   for await (const { event, data } of iteratorSSE(stream)) {
     if (event === "error") {
@@ -25,20 +25,25 @@ export async function handleChatEventStream({
     } else if (event === "ping") {
       continue;
     }
-    const chunk: InferenceEvent = JSON.parse(data);
-    if (chunk.event_type === "pending") {
-      await onPending({ queuePosition: chunk.queue_position, queueSize: chunk.queue_size });
-    } else if (chunk.event_type === "token") {
-      tokens += chunk.text;
-      await onToken(tokens);
-    } else if (chunk.event_type === "message") {
-      // final message
-      return chunk.message;
-    } else if (chunk.event_type === "error") {
-      // handle error
-      await onError(chunk.error);
-    } else {
-      console.error("Unexpected event", chunk);
+    try {
+      const chunk: InferenceEvent = JSON.parse(data);
+      if (chunk.event_type === "pending") {
+        await onPending({ queuePosition: chunk.queue_position, queueSize: chunk.queue_size });
+      } else if (chunk.event_type === "token") {
+        tokens += chunk.text;
+        await onToken(tokens);
+      } else if (chunk.event_type === "message") {
+        // final message
+        return chunk.message;
+      } else if (chunk.event_type === "error") {
+        // handle error
+        await onError(chunk.error);
+        return chunk.message;
+      } else {
+        console.error("Unexpected event", chunk);
+      }
+    } catch (e) {
+      console.error(`Error parsing data: ${data}, error: ${e}`);
     }
   }
 }

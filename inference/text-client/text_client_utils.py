@@ -30,10 +30,20 @@ class DebugClient:
 
     def send_message(self, message, model_config_name):
         response = self.http_client.post(
-            f"{self.backend_url}/chats/{self.chat_id}/messages",
+            f"{self.backend_url}/chats/{self.chat_id}/prompter_message",
             json={
                 "parent_id": self.message_id,
                 "content": message,
+            },
+            headers=self.auth_headers,
+        )
+        response.raise_for_status()
+        prompter_message_id = response.json()["id"]
+
+        response = self.http_client.post(
+            f"{self.backend_url}/chats/{self.chat_id}/assistant_message",
+            json={
+                "parent_id": prompter_message_id,
                 "model_config_name": model_config_name,
                 "sampling_parameters": {
                     "top_p": 0.95,
@@ -45,7 +55,7 @@ class DebugClient:
             headers=self.auth_headers,
         )
         response.raise_for_status()
-        self.message_id = response.json()["assistant_message"]["id"]
+        self.message_id = response.json()["id"]
 
         response = self.http_client.get(
             f"{self.backend_url}/chats/{self.chat_id}/messages/{self.message_id}/events",

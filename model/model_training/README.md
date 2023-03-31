@@ -4,7 +4,21 @@
 
 `pip install -e ..` (pyproject.toml resides in the parent directory)
 
+Make sure the oasst_data module is installed
+
+```bash
+python -m pip install ../../oasst-data/
+```
+
 Run tests: `pytest .`
+
+You might run into a `SystemExit` here for the test
+`tests/test_patched_gpt_neox.py::test_flash_attention_patch`. If so just follow
+the warning and install `flash_attn`:
+
+```bash
+python -m pip install flash_attn
+```
 
 Start training SFT model
 

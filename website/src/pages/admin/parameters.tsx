@@ -4,7 +4,7 @@ import { AdminArea } from "src/components/AdminArea";
 import { getAdminLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
 import useSWRImmutable from "swr/immutable";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 export default function Parameters() {
   const { data, isLoading, error } = useSWRImmutable("/api/admin/parameters", get);

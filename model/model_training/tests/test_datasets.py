@@ -3,19 +3,8 @@ from argparse import Namespace
 import pytest
 from model_training.custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
-from model_training.custom_datasets.prompt_dialogue import OAPrivate
 from model_training.utils import get_tokenizer
 from torch.utils.data import ConcatDataset, DataLoader
-
-
-@pytest.mark.skip(reason="cache not populated")
-def test_rl_sft_mode_switch():
-    dataset = OAPrivate(".cache", split="sft")
-    row = dataset[0]
-    assert isinstance(row, list)
-    dataset = OAPrivate(".cache", split="rl")
-    row = dataset[0]
-    assert isinstance(row, str)
 
 
 @pytest.mark.skip(reason="very slow")
@@ -61,3 +50,36 @@ def test_collate_fn():
     dataloader = DataLoader(ConcatDataset(evals), collate_fn=collate_fn, batch_size=128)
     for batch in dataloader:
         assert batch["targets"].shape[1] <= 620
+
+
+@pytest.mark.skip(reason="cache not populated")
+def test_collate_fn_simple():
+    config = Namespace(cache_dir=".cache", model_name="EleutherAI/pythia-70m-deduped")
+    tokenizer = get_tokenizer(config)
+
+    collate_fn = DialogueDataCollator(tokenizer, max_length=620)
+    kwargs = {
+        "lang": "en,de",
+        "top_k": 2,
+        "input_file_path": "2023-03-21_oasst_ready_synth_labels.jsonl.gz",
+    }
+    train, val = get_one_dataset(conf=config, dataset_name="oasst_export", **kwargs)
+
+    dataloader = DataLoader(train, collate_fn=collate_fn, batch_size=2)
+    for batch in dataloader:
+        print("batch:", batch.keys())
+        print(batch["targets"].shape[0])
+        print(tokenizer.decode(batch["input_ids"][0]))
+        print(tokenizer.decode(batch["input_ids"][1]))
+        print("-----")
+        print(tokenizer.decode(batch["targets"][0][batch["label_masks"][0]]))
+        print(tokenizer.decode(batch["targets"][1][batch["label_masks"][1]]))
+        assert batch["targets"].shape[1] <= 620
+        break
+    # dataloader = DataLoader(ConcatDataset(evals), collate_fn=collate_fn, batch_size=128)
+    # for batch in dataloader:
+    #     assert batch["targets"].shape[1] <= 620
+
+
+if __name__ == "__main__":
+    test_collate_fn_simple()
