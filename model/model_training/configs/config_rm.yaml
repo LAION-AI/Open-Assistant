@@ -1,4 +1,5 @@
 defaults_rm:
+  rng_seed: 0xa1221f97
   is_reward_model: true
   pooling: last
   learning_rate: 1e-5

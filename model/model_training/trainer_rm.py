@@ -16,6 +16,7 @@ from model_training.utils import (
     get_loss,
     get_model,
     get_tokenizer,
+    init_rng,
     read_yamls,
 )
 from torch import nn
@@ -134,6 +135,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+    parser.add_argument("--rng_seed", type=int, help="rng seed")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -156,6 +158,8 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
+    if args.rng_seed is not None:
+        conf["rng_seed"] = args.rng_seed
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -176,6 +180,8 @@ def argument_parsing(notebook=False, notebook_args=None):
 
 def main():
     training_conf = argument_parsing()
+
+    init_rng(training_conf)
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
