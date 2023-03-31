@@ -273,6 +273,26 @@ if __name__ == "__main__":
     if not training_conf.deepspeed or training_conf.local_rank == 0:
         tokenizer_sanity_check(tokenizer)
 
+    train_collate_fn = DialogueDataCollator(
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=training_conf.samples_mixing,
+        pad_to_multiple_of=16,
+        use_system_prefix=training_conf.use_system_prefix,
+        system_prefix=training_conf.system_prefix,
+    )
+    eval_collate_fn = DialogueDataCollator(
+        tokenizer,
+        max_length=training_conf.max_length,
+        random_offset_probability=training_conf.random_offset_probability,
+        label_masking=training_conf.label_masking,
+        samples_mixing=False,
+        use_system_prefix=training_conf.use_system_prefix,
+        system_prefix=training_conf.system_prefix,
+    )
+
     train, evals = get_dataset(training_conf)
 
     if training_conf.dataset_stats:
@@ -308,26 +328,6 @@ if __name__ == "__main__":
         )
     else:
         sampler = None
-
-    train_collate_fn = DialogueDataCollator(
-        tokenizer,
-        max_length=training_conf.max_length,
-        random_offset_probability=training_conf.random_offset_probability,
-        label_masking=training_conf.label_masking,
-        samples_mixing=training_conf.samples_mixing,
-        pad_to_multiple_of=16,
-        use_system_prefix=training_conf.use_system_prefix,
-        system_prefix=training_conf.system_prefix,
-    )
-    eval_collate_fn = DialogueDataCollator(
-        tokenizer,
-        max_length=training_conf.max_length,
-        random_offset_probability=training_conf.random_offset_probability,
-        label_masking=training_conf.label_masking,
-        samples_mixing=False,
-        use_system_prefix=training_conf.use_system_prefix,
-        system_prefix=training_conf.system_prefix,
-    )
 
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
