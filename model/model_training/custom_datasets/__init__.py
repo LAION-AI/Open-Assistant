@@ -18,7 +18,7 @@ from model_training.custom_datasets.summarization import SummarizationDataset
 from model_training.custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
 from model_training.custom_datasets.translation import WMT2019, DiveMT, TEDTalk
 from sklearn.model_selection import train_test_split
-from torch.utils.data import Subset
+from torch.utils.data import Dataset, Subset
 
 QA_DATASETS = list(QADataset.DATASET_FORMAT_MAPPING.keys())
 SUMMARIZATION_DATASETS = [
@@ -38,7 +38,7 @@ RL_DATASETS = ["webgpt", "private_tuning", "alpaca"]
 RM_DATASETS = ["oasst_export"]
 
 
-def train_val_dataset(dataset, val_split=0.2):
+def train_val_dataset(dataset, val_split=0.2) -> tuple[Dataset, Dataset | None]:
     if val_split == 0:
         return dataset, None
 
@@ -48,7 +48,9 @@ def train_val_dataset(dataset, val_split=0.2):
     return Subset(dataset, train_idx), Subset(dataset, val_idx)
 
 
-def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft", **kwargs):
+def get_one_dataset(
+    conf, dataset_name, val_split=0.2, data_path=None, mode="sft", **kwargs
+) -> tuple[Dataset, Dataset | None]:
     if mode == "rl":
         assert dataset_name in RL_DATASETS, f"Dataset {dataset_name} not supported for RL"
 

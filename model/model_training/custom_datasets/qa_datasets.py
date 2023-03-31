@@ -415,7 +415,7 @@ class AlpacaBase(Dataset):
     def __init__(self, dataset_name: str, mode: str, cache_dir: str = None) -> None:
         super().__init__()
         self.mode = mode
-        dataset = load_dataset("yahma/alpaca-cleaned", cache_dir=cache_dir)
+        dataset = load_dataset(dataset_name, cache_dir=cache_dir)
         rows = []
         for row in dataset["train"]:
             question = row["instruction"]

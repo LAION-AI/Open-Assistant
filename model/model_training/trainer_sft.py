@@ -20,7 +20,7 @@ from model_training.utils import (
     read_yamls,
 )
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
@@ -180,6 +180,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
     parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
+    parser.add_argument("--dataset_stats", action="store_true", help="Show dataset stats", default=False)
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -206,6 +207,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
     conf["resume_from_checkpoint"] = args.resume_from_checkpoint
+    conf["dataset_stats"] = args.dataset_stats
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -265,16 +267,48 @@ def tokenizer_sanity_check(tokenizer):
 
 if __name__ == "__main__":
     training_conf = argument_parsing()
-    import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
 
     tokenizer = get_tokenizer(training_conf)
 
     if not training_conf.deepspeed or training_conf.local_rank == 0:
         tokenizer_sanity_check(tokenizer)
 
-    model = get_model(training_conf, tokenizer)
-
     train, evals = get_dataset(training_conf)
+
+    if training_conf.dataset_stats:
+        print("Dataset stats before sampling:")
+        total = len(train)
+        for d in train.datasets:
+            if isinstance(d, Subset):
+                name = f"Subset of {type(d.dataset).__name__}"
+                if hasattr(d.dataset, "name"):
+                    name += f" ({d.dataset.name})"
+            else:
+                name = type(d).__name__
+                if hasattr(d, "name"):
+                    name += f" ({d.name})"
+            print(f"{name}: {len(d)} ({len(d) / total:%})")
+        print(f"Total train: {total}")
+        quit()
+
+    if training_conf.use_custom_sampler:
+        sampler = PerDatasetSampler.build_sampler_from_config(
+            training_conf,
+            train.datasets,
+            rank=training_conf.local_rank,
+            world_size=training_conf.world_size,
+            samples_length=list(
+                map(
+                    lambda x: train_collate_fn.process_one(x, return_length=True),
+                    tqdm(train, desc="Calculating lengths per sample"),
+                )
+            )
+            if training_conf.sort_by_length
+            else None,
+        )
+    else:
+        sampler = None
+
     train_collate_fn = DialogueDataCollator(
         tokenizer,
         max_length=training_conf.max_length,
@@ -295,28 +329,14 @@ if __name__ == "__main__":
         system_prefix=training_conf.system_prefix,
     )
 
-    if training_conf.use_custom_sampler:
-        sampler = PerDatasetSampler.build_sampler_from_config(
-            training_conf,
-            train.datasets,
-            rank=training_conf.local_rank,
-            world_size=training_conf.world_size,
-            samples_length=list(
-                map(
-                    lambda x: train_collate_fn.process_one(x, return_length=True),
-                    tqdm(train, desc="Calculating lengths per sample"),
-                )
-            )
-            if training_conf.sort_by_length
-            else None,
-        )
-    else:
-        sampler = None
-
     metrics, preprocess_fns = get_metrics(training_conf, tokenizer)
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
 
+    model = get_model(training_conf, tokenizer)
+
     if training_conf.quantization:
+        import bitsandbytes  # This is noisy, so delay importing until after argument parsing so it doesn't make --help noisy
+
         for module in model.modules():
             if isinstance(module, torch.nn.Embedding):
                 bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(

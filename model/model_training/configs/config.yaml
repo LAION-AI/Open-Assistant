@@ -89,12 +89,18 @@ math:
     - minimath
 
 pretrain:
+  use_custom_sampler: true
+  sort_by_length: true
   datasets:
     - joke
-    - webgpt
-    - gpt4all
-    - alpaca
-    - code_alpaca
+    - webgpt:
+        val_split: 0.1
+    - gpt4all:
+        val_split: 0.01
+    - alpaca:
+        val_split: 0.025
+    - code_alpaca:
+        val_split: 0.05
     - minimath
     - humaneval_mbpp_codegen_qa
     - humaneval_mbpp_testgen_qa
@@ -104,8 +110,10 @@ pretrain:
     #- youtube_subs_howto100m # uses incompatible column names
     #- ubuntu_dialogue_qa # fails to load
     - oa_wiki_qa_bart_10000row
-    - prosocial_dialogue
-    - explain_prosocial
+    - prosocial_dialogue:
+        fraction: 0.1
+    - explain_prosocial:
+        fraction: 0.05
 
 oasst_export_eu:
   datasets:
