@@ -167,6 +167,7 @@ TOKENIZER_CONFIGS = {
     "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
     "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
     "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
+    "cerebras": TokenizerConfig(special_tokens=SpecialTokens()),
 }
 
 
@@ -189,6 +190,9 @@ def get_tokenizer(conf) -> transformers.AutoTokenizer:
         # explicitly specify LLaMATokenizer class until AutoTokenizer works
         # assumes that the tokenizer config is stored in the same directory as the model weights
         tokenizer = LLaMATokenizer.from_pretrained(conf.model_name)
+    elif "cerebras" in conf.model_name:
+        # Cerebras tokenizer for 13B is the tokenizer for all sizes
+        tokenizer = transformers.AutoTokenizer.from_pretrained("cerebras/Cerebras-GPT-13B", cache_dir=conf.cache_dir)
     else:
         tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
 
