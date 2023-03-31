@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "Düşük not iptal edildi",
+  "assistant": "Asistan",
+  "backlog_ranking": "Birikmiş işler sıralaması",
+  "choose_a_language": "Bir dil seçin",
+  "count": "Sayım",
+  "growing": "Büyüyen",
+  "halted_by_moderator": "Moderatör tarafından durduruldu",
+  "human_messages_by_lang": "Dile göre insan mesajları",
+  "human_messages_by_role": "Role göre insan mesajları",
+  "initial_prompt_review": "İlk istem incelemesi",
+  "language_stats": "Dil",
+  "message_trees_by_state": "Bölgeye göre mesaj ağaçları",
+  "message_trees_states_by_lang": "Dile göre mesaj ağaçları",
+  "prompt_lottery_waiting": "Piyango beklemede",
+  "prompter": "Promptçu",
+  "ranking": "Sıralama",
+  "ready_for_export": "Dışa aktarmaya hazır",
+  "stats": "İstatistikler",
+  "users_accepted_tos": "Şartları kabul eden kullanıcılar"
+}
