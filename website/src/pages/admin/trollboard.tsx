@@ -16,7 +16,7 @@ import {
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import React from "react";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { AdminArea } from "src/components/AdminArea";
 import { getAdminLayout } from "src/components/Layout";
 import { TrollboardTable } from "src/components/LeaderboardTable/TrollboardTable";

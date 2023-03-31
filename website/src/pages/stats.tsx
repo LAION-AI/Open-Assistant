@@ -4,7 +4,7 @@ import { getDashboardLayout } from "src/components/Layout";
 import { Stats } from "src/components/Stats";
 import { get } from "src/lib/api";
 import { Stats as StatsType } from "src/types/Stat";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import uswSWRImmutable from "swr/immutable";
 
 const StatsPage = () => {
