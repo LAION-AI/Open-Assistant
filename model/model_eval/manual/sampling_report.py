@@ -271,14 +271,12 @@ def main():
         tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=args.auth_token)
         model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=args.auth_token)
         skip_input_tokens = True
-        tokenizer.eos_token_id = model.config.eos_token_id
     elif args.model_type.lower() == "t5conditional":
         from transformers import T5ForConditionalGeneration
 
         tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=args.auth_token)
         model = T5ForConditionalGeneration.from_pretrained(model_name, use_auth_token=args.auth_token)
         skip_input_tokens = False
-        tokenizer.eos_token_id = model.config.eos_token_id
     else:
         raise RuntimeError("Invalid model_type specified")
 
