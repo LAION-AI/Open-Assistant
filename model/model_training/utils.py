@@ -168,6 +168,7 @@ TOKENIZER_CONFIGS = {
     "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
     "gpt-neox": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
     "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
+    "cerebras": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", "<|endoftext|>", "<|endoftext|>")),
 }
 
 
@@ -186,7 +187,13 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 
 
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
-    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    tokenizer_name = conf.model_name
+
+    if "cerebras" in conf.model_name:
+        # Only 13B has a tokenizer available on HF
+        tokenizer_name = "cerebras/Cerebras-GPT-13B"
+
+    tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_name, cache_dir=conf.cache_dir)
 
     tokenizer_config = match_tokenizer_name(conf.model_name)
 
