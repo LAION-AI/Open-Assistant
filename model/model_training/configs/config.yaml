@@ -90,7 +90,7 @@ math:
 
 pretrain:
   use_custom_sampler: true
-  sort_by_length: true
+  sort_by_length: false
   datasets:
     - joke
     - webgpt:
