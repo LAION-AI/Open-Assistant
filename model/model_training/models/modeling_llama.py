@@ -139,15 +139,23 @@ class LLaMAMLP(nn.Module):
         hidden_size: int,
         intermediate_size: int,
         hidden_act: str,
+        use_ia3: bool,
     ):
         super().__init__()
         self.gate_proj = nn.Linear(hidden_size, intermediate_size, bias=False)
         self.down_proj = nn.Linear(intermediate_size, hidden_size, bias=False)
         self.up_proj = nn.Linear(hidden_size, intermediate_size, bias=False)
         self.act_fn = ACT2FN[hidden_act]
+        self.use_ia3 = use_ia3
+        self.ff_scaler = torch.nn.Parameter(torch.ones(intermediate_size))
 
     def forward(self, x):
-        return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+        intermediate_inp = self.act_fn(self.gate_proj(x))
+
+        if self.use_ia3:
+            intermediate_inp = self.ff_scaler * intermediate_inp
+
+        self.down_proj(intermediate_inp * self.up_proj(x))
 
 
 class LLaMAAttention(nn.Module):
@@ -157,11 +165,13 @@ class LLaMAAttention(nn.Module):
         self,
         hidden_size: int,
         num_heads: int,
+        use_ia3: bool,
     ):
         super().__init__()
         self.hidden_size = hidden_size
         self.num_heads = num_heads
         self.head_dim = hidden_size // num_heads
+        self.use_ia3 = use_ia3
 
         if (self.head_dim * num_heads) != self.hidden_size:
             raise ValueError(
@@ -189,6 +199,11 @@ class LLaMAAttention(nn.Module):
             bias=False,
         )
         self.rotary_emb = RotaryEmbedding(self.head_dim)
+
+        if self.use_ia3:
+            self.v_scaler = torch.nn.Parameter(torch.ones(self.head_dim))
+            self.k_scaler = torch.nn.Parameter(torch.ones(self.head_dim))
+
 
     def _shape(self, tensor: torch.Tensor, seq_len: int, bsz: int):
         return tensor.view(bsz, seq_len, self.num_heads, self.head_dim).transpose(1, 2).contiguous()
@@ -224,6 +239,9 @@ class LLaMAAttention(nn.Module):
 
         past_key_value = (key_states, value_states)
 
+        if self.use_ia3:
+            key_states = self.k_scaler * key_states
+        
         attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
         if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
@@ -242,6 +260,10 @@ class LLaMAAttention(nn.Module):
 
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+
+        if self.use_ia3:
+            value_states = self.v_scaler * value_states
+        
         attn_output = torch.matmul(attn_weights, value_states)
 
         if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
@@ -268,11 +290,13 @@ class LLaMADecoderLayer(nn.Module):
         self.self_attn = LLaMAAttention(
             hidden_size=self.hidden_size,
             num_heads=config.num_attention_heads,
+            use_ia3=config.use_ia3,
         )
         self.mlp = LLaMAMLP(
             hidden_size=self.hidden_size,
             intermediate_size=config.intermediate_size,
             hidden_act=config.hidden_act,
+            use_ia3=config.use_ia3,
         )
         self.input_layernorm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
         self.post_attention_layernorm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)

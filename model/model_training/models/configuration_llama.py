@@ -90,6 +90,7 @@ class LLaMAConfig(PretrainedConfig):
         bos_token_id=0,
         eos_token_id=1,
         tie_word_embeddings=False,
+        use_ia3=False,
         **kwargs,
     ):
         self.vocab_size = vocab_size
@@ -101,6 +102,7 @@ class LLaMAConfig(PretrainedConfig):
         self.initializer_range = initializer_range
         self.rms_norm_eps = rms_norm_eps
         self.use_cache = use_cache
+        self.use_ia3 = use_ia3
         super().__init__(
             pad_token_id=pad_token_id,
             bos_token_id=bos_token_id,

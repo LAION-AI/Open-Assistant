@@ -43,6 +43,22 @@ def preprocess_logits_for_metrics(logits, labels):
     return pred_ids
 
 
+def save_scalers(llama_model, filename: str):
+    scalers = []
+    for layer in llama_model.model.layers:
+        self_attn = layer.self_attn
+        mlp = layer.mlp
+
+        scalers.append(
+            {
+                "k": self_attn.k_scaler,
+                "v": self_attn.v_scaler,
+                "ff": mlp.ff_scaler,
+            }
+        )
+    torch.save(scalers, filename)
+
+
 class SFTTrainer(Trainer):
     def __init__(
         self,
@@ -273,6 +289,10 @@ if __name__ == "__main__":
         tokenizer_sanity_check(tokenizer)
 
     model = get_model(training_conf, tokenizer)
+    if model.config.use_ia3:
+        for n, p in model.named_parameters():
+            if not any([s in n for s in ("v_scaler", "k_scaler", "ff_scaler")]):
+                p.requires_grad = False
 
     train, evals = get_dataset(training_conf)
     train_collate_fn = DialogueDataCollator(
@@ -389,5 +409,8 @@ if __name__ == "__main__":
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
     trainer.train(resume_from_checkpoint=training_conf.resume_from_checkpoint)
-    trainer.save_model()
+    if model.config.use_ia3:
+        save_scalers(model, "kek.pt")
+    else:
+        trainer.save_model()
     tokenizer.save_pretrained(output_dir)
