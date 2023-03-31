@@ -128,7 +128,7 @@ oasst_export_latin_cyrillic:
   use_custom_sampler: false
 
 pythia-12b:
-  fp16: true
+  dtype: fp16
   log_dir: "pythia_log_12b"
   learning_rate: 8e-6
   model_name: EleutherAI/pythia-12b-deduped
@@ -146,7 +146,7 @@ pythia-12b:
   save_total_limit: 4
 
 llama-7b:
-  fp16: true
+  dtype: fp16
   log_dir: "llama_log_7b"
   learning_rate: 2e-5
   model_name: /home/ubuntu/llama_hf/7B
@@ -164,7 +164,7 @@ llama-7b:
   save_total_limit: 4
 
 llama-13b:
-  fp16: true
+  dtype: fp16
   log_dir: "llama_log_13b"
   learning_rate: 2e-5
   model_name: /home/ubuntu/llama_hf/13B
@@ -182,7 +182,7 @@ llama-13b:
   save_total_limit: 4
 
 llama-30b:
-  fp16: true
+  dtype: fp16
   log_dir: "llama_log_30b"
   learning_rate: 2e-5
   model_name: /home/ubuntu/llama_hf/30B
