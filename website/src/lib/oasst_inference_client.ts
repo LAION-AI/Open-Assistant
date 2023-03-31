@@ -6,12 +6,13 @@ import {
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
   ModelInfo,
+  TrustedClient,
 } from "src/types/Chat";
 import type { Readable } from "stream";
 
 export class OasstInferenceClient {
   // this is not a long lived class, this is why the token is immutable
-  constructor(private readonly extraHeaders) {}
+  constructor(private readonly clientToken: string) {}
 
   async request<T = unknown>(path: string, init?: AxiosRequestConfig) {
     const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
@@ -19,21 +20,14 @@ export class OasstInferenceClient {
       headers: {
         ...init?.headers,
         "Content-Type": "application/json",
-        ...this.extraHeaders,
+        TrustedClient: this.clientToken,
       },
     });
     return data;
   }
 
-  // note: maybe check if the token is still valid
-  // when creating JWT?
-  async check_auth(): Promise<boolean> {
-    try {
-      await this.request("/auth/check");
-      return true;
-    } catch (err) {
-      return false;
-    }
+  inference_login() {
+    return this.request("/auth/trusted", { method: "POST" });
   }
 
   get_my_chats(): Promise<ChatItem[]> {
@@ -78,26 +72,16 @@ export class OasstInferenceClient {
   get_models() {
     return this.request<ModelInfo[]>("/configs/model_configs");
   }
-
-  inference_login() {
-    return this.request("/auth/trusted", { method: "POST" });
-  }
-}
-
-interface TrustedClient {
-  api_key: string;
-  client: string;
-  user_id: string;
-  username: string;
 }
 
 export const createInferenceClient = (jwt: JWT) => {
   const info: TrustedClient = {
+    // TODO: use api key from env
     api_key: "0000",
     client: "website",
     user_id: jwt.sub,
     username: jwt.name,
   };
-  const trustedClientToken = Buffer.from(JSON.stringify(info)).toString("base64");
-  return new OasstInferenceClient({ TrustedClient: trustedClientToken });
+  const token = Buffer.from(JSON.stringify(info)).toString("base64");
+  return new OasstInferenceClient(token);
 };

@@ -1,3 +1,10 @@
+export interface TrustedClient {
+  api_key: string;
+  client: string;
+  user_id: string;
+  username: string;
+}
+
 export interface InferenceToken {
   access_token: string;
   token_type: string;
