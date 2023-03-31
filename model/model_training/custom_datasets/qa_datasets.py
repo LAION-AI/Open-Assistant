@@ -411,18 +411,14 @@ class TranslatedQA(Dataset):
         return self.pairs[index]
 
 
-class Alpaca(Dataset):
-    def __init__(self, split="sft") -> None:
+class AlpacaBase(Dataset):
+    def __init__(self, dataset_name: str, mode: str, cache_dir: str = None) -> None:
         super().__init__()
-        self.mode = split
-        dataset = load_dataset("yahma/alpaca-cleaned")
+        self.mode = mode
+        dataset = load_dataset(dataset_name, cache_dir=cache_dir)
         rows = []
-        # using prompt as our index will allows us
-        # to add additional generated prompt later
-
         for row in dataset["train"]:
             question = row["instruction"]
-            # only keep the best answer
             if len(row["input"]) > 0:
                 input_ = "{}\n{}".format(question, row["input"])
             else:
@@ -439,3 +435,13 @@ class Alpaca(Dataset):
             return (question, answer)
         elif self.mode == "rl":
             return (question,)
+
+
+class Alpaca(AlpacaBase):
+    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
+        super().__init__(dataset_name="yahma/alpaca-cleaned", mode=mode, cache_dir=cache_dir)
+
+
+class CodeAlpaca(AlpacaBase):
+    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
+        super().__init__(dataset_name="sahil2801/CodeAlpaca-20k", mode=mode, cache_dir=cache_dir)

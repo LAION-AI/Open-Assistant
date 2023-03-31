@@ -5,9 +5,10 @@ from pathlib import Path
 from typing import Optional
 
 import requests
+from datasets import load_dataset
 from model_training.custom_datasets.oasst_dataset import ListDataset
 from torch import Generator, randperm
-from torch.utils.data import random_split
+from torch.utils.data import Dataset, random_split
 
 
 def load_oig_file(
@@ -99,3 +100,21 @@ def load_oig_file(
     print(f"OIG data {str(local_path)}: {len(train)=}, {len(val)=} ({avg_turn_count=:.1f})")
 
     return train, val
+
+
+class Gpt4all(Dataset):
+    def __init__(self, mode: str, cache_dir: str = None) -> None:
+        super().__init__()
+        self.mode = mode
+        dataset = load_dataset("Nebulous/gpt4all_pruned", cache_dir=cache_dir)
+        self.rows = [(row["prompt"], row["response"]) for row in dataset["train"]]
+
+    def __len__(self):
+        return len(self.rows)
+
+    def __getitem__(self, index):
+        question, answer = self.rows[index]
+        if self.mode == "sft":
+            return (question, answer)
+        elif self.mode == "rl":
+            return (question,)
