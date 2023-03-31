@@ -101,8 +101,11 @@ pretrain:
     - grade_school_math_instructions
     - recipes
     - cmu_wiki_qa
-    - youtube_subs_howto100M
-    - ubuntu_dialogue_qa
+    #- youtube_subs_howto100m # uses incompatible column names
+    #- ubuntu_dialogue_qa # fails to load
+    - oa_wiki_qa_bart_10000row
+    - prosocial_dialogue
+    - explain_prosocial
 
 oasst_export_eu:
   datasets:
