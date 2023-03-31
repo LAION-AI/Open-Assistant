@@ -1,31 +1,15 @@
+import warnings
 from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
-import transformers
+from transformers.models.llama.modeling_llama import LlamaAttention, apply_rotary_pos_emb
 
 from .patching_utils import compute_flash_attention
 
 
-def rotate_half(x):
-    """Rotates half the hidden dims of the input."""
-    x1 = x[..., : x.shape[-1] // 2]
-    x2 = x[..., x.shape[-1] // 2 :]
-    return torch.cat((-x2, x1), dim=-1)
-
-
-def apply_rotary_pos_emb(q, k, cos, sin, position_ids):
-    gather_indices = position_ids[:, None, :, None]  # [bs, 1, seq_len, 1]
-    gather_indices = gather_indices.repeat(1, cos.shape[1], 1, cos.shape[3])
-    cos = torch.gather(cos.repeat(gather_indices.shape[0], 1, 1, 1), 2, gather_indices)
-    sin = torch.gather(sin.repeat(gather_indices.shape[0], 1, 1, 1), 2, gather_indices)
-    q_embed = (q * cos) + (rotate_half(q) * sin)
-    k_embed = (k * cos) + (rotate_half(k) * sin)
-    return q_embed, k_embed
-
-
 def llama_forward_with_flash_attn(
-    self: transformers.models.llama.modeling_llama.LlamaAttention,
+    self: LlamaAttention,
     flash_attn: nn.Module,  # flash_attn.modules.mha.FlashSelfAttention
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,
@@ -35,6 +19,8 @@ def llama_forward_with_flash_attn(
     use_cache: bool = False,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     # self: transformers.models.llama.modeling_llama.LlamaAttention
+    if output_attentions:
+        warnings.warn("Output attentions is not supported for patched `LlamaAttention`, returning `None` instead.")
     bsz, q_len, _ = hidden_states.size()
 
     query_states = self.q_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
