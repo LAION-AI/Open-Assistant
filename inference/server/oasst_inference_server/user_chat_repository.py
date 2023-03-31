@@ -110,7 +110,7 @@ class UserChatRepository(pydantic.BaseModel):
         return message
 
     async def initiate_assistant_message(
-        self, parent_id: str, work_parameters: inference.WorkParameters
+        self, parent_id: str, work_parameters: inference.WorkParameters, worker_compat_hash: str
     ) -> models.DbMessage:
         logger.info(f"Adding stub assistant message to {parent_id=}")
 
@@ -154,6 +154,7 @@ class UserChatRepository(pydantic.BaseModel):
             parent_id=parent_id,
             state=inference.MessageState.pending,
             work_parameters=work_parameters,
+            worker_compat_hash=worker_compat_hash,
         )
         self.session.add(message)
         await self.session.commit()

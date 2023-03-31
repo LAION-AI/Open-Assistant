@@ -10,13 +10,13 @@ app = typer.Typer()
 
 
 @app.command()
-def main(backend_url: str = "http://127.0.0.1:8000", model_config_name="distilgpt2"):
+def main(backend_url: str = "http://127.0.0.1:8000", model_config_name="distilgpt2", username="test1"):
     """Simple REPL client."""
     while True:
         try:
             # login
             client = utils.DebugClient(backend_url)
-            client.login("test1")
+            client.login(username)
             chat_id = client.create_chat()
             typer.echo(f"Chat ID: {chat_id}")
             while True:
