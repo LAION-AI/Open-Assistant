@@ -80,9 +80,7 @@ const Chat = () => {
       <Head>
         <title>{t("chat")}</title>
       </Head>
-      <Box className="max-w-5xl mx-auto">
-        {content}
-      </Box>
+      <Box className="max-w-5xl mx-auto">{content}</Box>
     </>
   );
 };

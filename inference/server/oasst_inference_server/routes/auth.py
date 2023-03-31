@@ -4,8 +4,8 @@ import sqlmodel
 from fastapi import Depends, HTTPException, Security
 from loguru import logger
 from oasst_inference_server import auth, database, deps, models
-from oasst_inference_server.settings import settings
 from oasst_inference_server.schemas.auth import TrustedClient, TrustedClientToken
+from oasst_inference_server.settings import settings
 from oasst_shared.schemas import protocol
 
 router = fastapi.APIRouter(
@@ -245,10 +245,10 @@ async def callback_debug(code: str, db: database.AsyncSession = Depends(deps.cre
     return token_pair
 
 
-
 @router.post("/trusted")
-async def login_trusted(db: database.AsyncSession = Depends(deps.create_session),
-                          trusted_client: str = Security(auth.trusted_client_scheme)):
+async def login_trusted(
+    db: database.AsyncSession = Depends(deps.create_session), trusted_client: str = Security(auth.trusted_client_scheme)
+):
     if trusted_client is None:
         raise HTTPException(status_code=403, detail="Debug auth is not allowed")
     info: TrustedClient = TrustedClientToken(content=trusted_client).content
@@ -260,8 +260,9 @@ async def login_trusted(db: database.AsyncSession = Depends(deps.create_session)
 
     if user is None:
         logger.info(f"Creating new trusted user {info.username=}")
-        user = models.DbUser(id=info.user_id, display_name=info.username, provider=info.client,
-                              provider_account_id=info.user_id)
+        user = models.DbUser(
+            id=info.user_id, display_name=info.username, provider=info.client, provider_account_id=info.user_id
+        )
         db.add(user)
         await db.commit()
         await db.refresh(user)
