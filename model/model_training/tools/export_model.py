@@ -27,6 +27,8 @@ def main():
         torch_dtype = torch.float16
     elif args.dtype in ("float32", "fp32"):
         torch_dtype = torch.float32
+    elif args.dtype in ("bfloat16", "bf16"):
+        torch_dtype = torch.bfloat16
     else:
         print(f"Unsupported dtpye: {args.dtype}")
         sys.exit(1)
