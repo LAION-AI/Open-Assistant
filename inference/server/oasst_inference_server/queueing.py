@@ -2,6 +2,10 @@ import redis.asyncio as redis
 from oasst_inference_server.settings import settings
 
 
+class QueueFullException(Exception):
+    pass
+
+
 class RedisQueue:
     def __init__(
         self,
@@ -10,14 +14,19 @@ class RedisQueue:
         expire: int | None = None,
         with_counter: bool = False,
         counter_pos_expire: int = 1,
+        max_size: int | None = None,
     ) -> None:
         self.redis_client = redis_client
         self.queue_id = queue_id
         self.expire = expire
         self.with_counter = with_counter
         self.counter_pos_expire = counter_pos_expire
+        self.max_size = max_size or 0
 
-    async def enqueue(self, value: str) -> int | None:
+    async def enqueue(self, value: str, enforce_max_size: bool = True) -> int | None:
+        if enforce_max_size and self.max_size > 0:
+            if await self.get_length() >= self.max_size:
+                raise QueueFullException()
         await self.redis_client.rpush(self.queue_id, value)
         if self.expire is not None:
             await self.set_expire(self.expire)
@@ -71,7 +80,11 @@ def work_queue(redis_client: redis.Redis, worker_compat_hash: str) -> RedisQueue
         if worker_compat_hash not in settings.allowed_worker_compat_hashes_list:
             raise ValueError(f"Worker compat hash {worker_compat_hash} not allowed")
     return RedisQueue(
-        redis_client, f"work:{worker_compat_hash}", with_counter=True, counter_pos_expire=settings.message_queue_expire
+        redis_client,
+        f"work:{worker_compat_hash}",
+        with_counter=True,
+        counter_pos_expire=settings.message_queue_expire,
+        max_size=settings.work_queue_max_size,
     )
 
 
