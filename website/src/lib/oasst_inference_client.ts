@@ -3,23 +3,23 @@ import { JWT } from "next-auth/jwt";
 import {
   ChatItem,
   InferenceMessage,
-  InferencePostPrompterMessageParams,
   InferencePostAssistantMessageParams,
+  InferencePostPrompterMessageParams,
   ModelInfo,
 } from "src/types/Chat";
 import type { Readable } from "stream";
 
 export class OasstInferenceClient {
   // this is not a long lived class, this is why the token is immutable
-  constructor(private readonly inferenceAccessToken: string) {}
+  constructor(private readonly extraHeaders) {}
 
   async request<T = unknown>(path: string, init?: AxiosRequestConfig) {
     const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
       ...init,
       headers: {
         ...init?.headers,
-        Authorization: `Bearer ${this.inferenceAccessToken}`,
         "Content-Type": "application/json",
+        ...this.extraHeaders,
       },
     });
     return data;
@@ -78,9 +78,26 @@ export class OasstInferenceClient {
   get_models() {
     return this.request<ModelInfo[]>("/configs/model_configs");
   }
+
+  inference_login() {
+    return this.request("/auth/trusted", { method: "POST" });
+  }
+}
+
+interface TrustedClient {
+  api_key: string;
+  client: string;
+  user_id: string;
+  username: string;
 }
 
 export const createInferenceClient = (jwt: JWT) => {
-  const token = jwt.inferenceTokens?.access_token.access_token;
-  return new OasstInferenceClient(token);
+  const info: TrustedClient = {
+    api_key: "0000",
+    client: "website",
+    user_id: jwt.sub,
+    username: jwt.name,
+  };
+  const trustedClientToken = Buffer.from(JSON.stringify(info)).toString("base64");
+  return new OasstInferenceClient({ TrustedClient: trustedClientToken });
 };

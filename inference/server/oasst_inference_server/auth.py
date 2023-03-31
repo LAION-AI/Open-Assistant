@@ -12,10 +12,13 @@ from jose.exceptions import JWEError
 from loguru import logger
 from oasst_inference_server import deps, models
 from oasst_inference_server.settings import settings
+from oasst_inference_server.schemas import auth
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 
 oauth2_scheme = APIKeyHeader(name="Authorization", auto_error=False)
 refresh_scheme = APIKeyHeader(name="Refresh", auto_error=False)
+
+trusted_client_scheme = APIKeyHeader(name="TrustedClient", auto_error=False)
 
 
 def derive_key() -> bytes:
@@ -50,8 +53,13 @@ def create_access_token(user_id: str) -> str:
     return token.decode()
 
 
-def get_current_user_id(token: str = Security(oauth2_scheme)) -> str:
+def get_current_user_id(token: str = Security(oauth2_scheme), trusted_client: str = Security(trusted_client_scheme)) -> str:
     """Get the current user ID by decoding the JWT token."""
+    if trusted_client is not None:
+        info: auth.TrustedClient = auth.TrustedClientToken(content=trusted_client).content
+        # TODO: check for API key
+        return info.user_id
+
     if token is None or not token.startswith("Bearer "):
         logger.warning(f"Invalid token: {token}")
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Not authenticated")
