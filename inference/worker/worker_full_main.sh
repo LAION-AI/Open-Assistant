@@ -21,7 +21,7 @@ export HF_HOME=$HOME/.cache/huggingface
 export HUGGING_FACE_HUB_TOKEN=$HF_TOKEN
 
 echo "Downloading model $MODEL_ID"
-/opt/miniconda/envs/text-generation/bin/python /worker/download_model.py
+CUDA_VISIBLE_DEVICES="" /opt/miniconda/envs/text-generation/bin/python /worker/download_model.py
 
 # if cuda devices is empty
 if [ -z "$CUDA_VISIBLE_DEVICES" ]; then
@@ -37,13 +37,12 @@ else
     echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
     IFS=',' read -ra devices <<< "$CUDA_VISIBLE_DEVICES"
     for i in "${!devices[@]}"; do
-        export CUDA_VISIBLE_DEVICES=${devices[$i]}
+        device="${devices[$i]}"
         worker_port=$((8300 + $i))
-        echo "Starting worker server $i on port $worker_port"
-        text-generation-launcher --model-id $MODEL_ID --num-shard $num_shards $quantize_args --port $worker_port &
-        export INFERENCE_SERVER_URL="http://localhost:$worker_port"
+        echo "Starting worker server $i on port $worker_port on device $device"
+        CUDA_VISIBLE_DEVICES=$device text-generation-launcher --model-id $MODEL_ID --num-shard $num_shards $quantize_args --port $worker_port &
         echo "Starting worker $i"
-        /opt/miniconda/envs/worker/bin/python /worker &
+        CUDA_VISIBLE_DEVICES="" INFERENCE_SERVER_URL="http://localhost:$worker_port" /opt/miniconda/envs/worker/bin/python /worker &
     done
 fi
 
