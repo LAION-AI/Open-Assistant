@@ -104,7 +104,8 @@ def text_to_events(text: str, seed: int | None = None, pause: float = 0.0):
 
 def lorem_events(seed):
     sentence = lorem.sentence()
-    yield from text_to_events(sentence, seed=seed)
+    time.sleep(1)
+    yield from text_to_events(sentence, seed=seed, pause=0.5)
 
 
 ws_lock = threading.Lock()

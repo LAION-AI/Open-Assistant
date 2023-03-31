@@ -2,7 +2,7 @@ import { Box, Card, CardBody, Heading, Tab, TabList, TabPanel, TabPanels, Tabs }
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import { getDashboardLayout } from "src/components/Layout";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { LeaderboardTable } from "src/components/LeaderboardTable";
 import { LeaderboardTimeFrame } from "src/types/Leaderboard";
 

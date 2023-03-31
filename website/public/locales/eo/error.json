@@ -1,0 +1,16 @@
+{
+  "default": "Io fuŝis!",
+  "err_1000": "Nevalida taska speco",
+  "err_1001": "Malsukcesis konfirmi taskon",
+  "err_1002": "Malsukcesis ne konfirmi taskon",
+  "err_1003": "Nevalida responda speco",
+  "err_1004": "Malsukcesis peto de interago",
+  "err_1005": "Malsukcesis generi taskon",
+  "err_1006": "Neniu tasko de speco {{task_type}} nun disponeblas.",
+  "err_1007": "Malsukcesis peto pri havebleco de taskoj",
+  "err_1008": "Tro longa mesaĝa grandeco",
+  "err_1009": "Viaj lastaj mesaĝoj enhavas duoblaĵojn",
+  "err_1010": "Mesaĝa teksto estas malplena",
+  "err_1011": "Vi ne povas respondi dufoje al la sama mesaĝo",
+  "err_1012": "Vi havas tro da neprilaboritaj taskoj. Bonvolu reprovi post minutoj."
+}
