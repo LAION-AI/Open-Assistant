@@ -34,6 +34,7 @@ if [ -z "$CUDA_VISIBLE_DEVICES" ]; then
 
 else
     # split cuda devices and loop over them
+    echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
     IFS=',' read -ra devices <<< "$CUDA_VISIBLE_DEVICES"
     for i in "${!devices[@]}"; do
         export CUDA_VISIBLE_DEVICES=${devices[$i]}
