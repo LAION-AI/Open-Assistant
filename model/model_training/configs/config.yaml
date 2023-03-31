@@ -308,6 +308,20 @@ gpt-jt:
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
 
+cerebras_13B:
+  learning_rate: 6e-6
+  model_name: cerebras/Cerebras-GPT-13B
+  weight_decay: 0.0
+  max_length: 2048
+  output_dir: cerebras_gpt_13b
+
+cerebras_6.7B:
+  learning_rate: 8e-6
+  model_name: cerebras/Cerebras-GPT-6.7B
+  weight_decay: 0.0
+  max_length: 2048
+  output_dir: cerebras_gpt_6_7b
+
 codegen:
   learning_rate: 8e-6
   model_name: Salesforce/codegen-2B-multi
