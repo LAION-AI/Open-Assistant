@@ -17,7 +17,7 @@ class RedisQueue:
         self.with_counter = with_counter
         self.counter_pos_expire = counter_pos_expire
 
-    async def enqueue(self, value: str) -> None:
+    async def enqueue(self, value: str) -> int | None:
         await self.redis_client.rpush(self.queue_id, value)
         if self.expire is not None:
             await self.set_expire(self.expire)
