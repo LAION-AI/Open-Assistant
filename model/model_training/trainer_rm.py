@@ -5,10 +5,10 @@ from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
 import bitsandbytes
 import datasets
-import numpy as np
 import torch
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from model_training.efficiency_utils import fuse_gelu
+from model_training.metrics import RewardMetrics
 from model_training.utils import (
     PerDatasetSampler,
     _strtobool,
@@ -16,6 +16,7 @@ from model_training.utils import (
     get_loss,
     get_model,
     get_tokenizer,
+    init_rng,
     read_yamls,
 )
 from torch import nn
@@ -26,18 +27,6 @@ from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
-
-
-def compute_metrics(eval_pred):
-    scores = eval_pred.predictions
-    pos_scores, neg_scores = scores[:, 0], scores[:, 1]
-    metrics = {
-        "pos_score": np.mean(pos_scores),
-        "neg_score": np.mean(neg_scores),
-        "score_diff": np.mean(pos_scores - neg_scores),
-        "accuracy": np.mean(pos_scores > neg_scores),
-    }
-    return metrics
 
 
 class RMTrainer(Trainer):
@@ -82,19 +71,11 @@ class RMTrainer(Trainer):
 
         loss = loss.mean().detach()
 
-        pos_logits, neg_logits = [], []
-        for start, end in zip(cu_lens[:-1], cu_lens[1:]):
-            pos_logits.append(logits[start])
-            neg_logits.append(logits[end - 1])
-        pos_logits = torch.cat(pos_logits).detach()
-        neg_logits = torch.cat(neg_logits).detach()
-
-        out_logits = torch.stack([pos_logits, neg_logits], dim=1)  # shape (B, 2)
-        # need to pass something for `compute_metrics` to be called`,
-        # has to have the same size as logits, otherwise `_pad_across_processes` hangs
-        labels = torch.zeros_like(out_logits[:, 0])
-
-        return (loss, out_logits, labels)
+        labels = []
+        for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
+            labels.extend([i] * (e - s))
+        labels = torch.tensor(labels).view(-1, 1)
+        return (loss, logits.T, labels.T)  # transposed to avoid truncation in evaluation_loop
 
     def get_train_dataloader(self):
         """
@@ -154,6 +135,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+    parser.add_argument("--rng_seed", type=int, help="rng seed")
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -176,6 +158,8 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
+    if args.rng_seed is not None:
+        conf["rng_seed"] = args.rng_seed
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -196,6 +180,8 @@ def argument_parsing(notebook=False, notebook_args=None):
 
 def main():
     training_conf = argument_parsing()
+
+    init_rng(training_conf)
 
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
@@ -287,7 +273,7 @@ def main():
             name=f"{training_conf.model_name}-{training_conf.log_dir}-rm",
             config=training_conf,
         )
-
+    compute_metrics = RewardMetrics(training_conf.metrics)
     trainer = RMTrainer(
         model=model,
         args=args,

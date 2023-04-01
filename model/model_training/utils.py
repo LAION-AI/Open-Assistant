@@ -1,3 +1,4 @@
+import argparse
 import copy
 import math
 import random
@@ -6,6 +7,7 @@ from pathlib import Path
 from typing import List, NamedTuple
 
 import evaluate
+import torch
 import transformers
 import yaml
 from model_training.custom_datasets import get_one_dataset
@@ -14,7 +16,6 @@ from model_training.losses import CrossEntropyLoss, PolyLoss, RMLoss
 from model_training.models import freeze_top_n_layers, get_specific_model
 from model_training.models.patching import patch_model
 from model_training.models.reward_model import GPTNeoXRewardModel
-from model_training.models.tokenization_llama import LLaMATokenizer
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
@@ -23,6 +24,16 @@ from torch.utils.data.distributed import DistributedSampler
 
 def _strtobool(x):
     return bool(strtobool(x))
+
+
+def init_rng(conf: argparse.Namespace) -> None:
+    seed = conf.rng_seed
+    if seed is not None:
+        print(f"RNG seed: {seed}")
+        local_rank = conf.local_rank
+        if local_rank is not None and local_rank != -1:
+            seed += local_rank
+        transformers.set_seed(seed)
 
 
 class PerDatasetSampler(DistributedSampler):
@@ -166,7 +177,9 @@ TOKENIZER_CONFIGS = {
     "GPT-JT": TokenizerConfig(special_tokens=SpecialTokens(sep_token="<|extratoken_100|>")),
     "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
     "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
+    "gpt-neox": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
     "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
+    "cerebras": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", "<|endoftext|>", "<|endoftext|>")),
 }
 
 
@@ -184,15 +197,14 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
         return tokenizer_config_matches[0]
 
 
-def get_tokenizer(conf) -> transformers.AutoTokenizer | transformers.T5Tokenizer | LLaMATokenizer:
-    if "t5" in conf.model_name:  # rankgen
-        tokenizer = transformers.T5Tokenizer.from_pretrained(conf.model_name, truncation_side="left")
-    elif "llama" in conf.model_name:
-        # explicitly specify LLaMATokenizer class until AutoTokenizer works
-        # assumes that the tokenizer config is stored in the same directory as the model weights
-        tokenizer = LLaMATokenizer.from_pretrained(conf.model_name)
-    else:
-        tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+def get_tokenizer(conf) -> transformers.AutoTokenizer:
+    tokenizer_name = conf.model_name
+
+    if "cerebras" in conf.model_name:
+        # Only 13B has a tokenizer available on HF
+        tokenizer_name = "cerebras/Cerebras-GPT-13B"
+
+    tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_name, cache_dir=conf.cache_dir)
 
     tokenizer_config = match_tokenizer_name(conf.model_name)
 
@@ -279,9 +291,15 @@ def get_metrics(conf, tokenizer):
 
 
 def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
+    dtype = torch.float32
+    if conf.dtype in ["fp16", "float16"]:
+        dtype = torch.float16
+    elif conf.dtype in ["bf16", "bfloat16"]:
+        dtype = torch.bfloat16
+
     if conf.is_reward_model:
         if "pythia" in conf.model_name:
-            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir, torch_dtype=dtype)
             if conf.pooling:
                 assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
                 model.config.pooling = conf.pooling
@@ -294,6 +312,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
             quantization=conf.quantization,
             seq2seqmodel=conf.seq2seqmodel,
             without_head=conf.is_reward_model,
+            torch_dtype=dtype,
         )
 
         n_embs = model.get_input_embeddings().num_embeddings

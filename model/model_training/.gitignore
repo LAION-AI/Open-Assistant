@@ -2,7 +2,7 @@
 wandb
 saved_model
 saved_model*
-.saved_models
-.saved_models_rm
+.saved_model*
+.save_model*
 llama_model
 models-*
