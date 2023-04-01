@@ -184,8 +184,10 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
         return tokenizer_config_matches[0]
 
 
-def get_tokenizer(conf) -> transformers.AutoTokenizer:
-    if "llama" in conf.model_name:
+def get_tokenizer(conf) -> transformers.AutoTokenizer | transformers.T5Tokenizer | LLaMATokenizer:
+    if "t5" in conf.model_name:  # rankgen
+        tokenizer = transformers.T5Tokenizer.from_pretrained(conf.model_name, truncation_side="left")
+    elif "llama" in conf.model_name:
         # explicitly specify LLaMATokenizer class until AutoTokenizer works
         # assumes that the tokenizer config is stored in the same directory as the model weights
         tokenizer = LLaMATokenizer.from_pretrained(conf.model_name)
@@ -219,7 +221,6 @@ def get_tokenizer(conf) -> transformers.AutoTokenizer:
     tokenizer.add_special_tokens({"additional_special_tokens": additional_special_tokens})
 
     return tokenizer
-
 
 def default_preprocess(eval_pred, ignote_negative_labels=True):
     preds, labels = eval_pred.predictions, eval_pred.label_ids
@@ -376,6 +377,9 @@ def read_yamls(dir):
 
 
 def train_val_dataset(dataset, val_split=0.2):
+    if val_split == 0:
+        return dataset, None
+
     train_idx, val_idx = train_test_split(
         list(range(len(dataset))), test_size=val_split, random_state=666, shuffle=True
     )
