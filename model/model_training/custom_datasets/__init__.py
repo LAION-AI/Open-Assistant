@@ -35,7 +35,7 @@ OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_transl
 
 RL_DATASETS = ["webgpt", "private_tuning", "alpaca"]
 
-RM_DATASETS = ["oasst_export", "webgpt"]
+RM_DATASETS = ["oasst_export"]
 
 
 def train_val_dataset(dataset, val_split=0.2) -> tuple[Dataset, Dataset | None]:
