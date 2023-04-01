@@ -18,7 +18,7 @@ from model_training.models.patching import patch_model
 from model_training.models.reward_model import GPTNeoXRewardModel
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
-from torch.utils.data import ConcatDataset, Subset
+from torch.utils.data import ConcatDataset, Dataset, Subset
 from torch.utils.data.distributed import DistributedSampler
 
 
@@ -127,15 +127,15 @@ class PerDatasetSampler(DistributedSampler):
         return iter(epoch_idx)
 
     @classmethod
-    def build_sampler_from_config(cls, training_conf, datasets, *args, **kwargs):
+    def build_sampler_from_config(cls, training_conf, datasets: list[Dataset], verbose: bool = False, *args, **kwargs):
         dataset_sizes = [len(x) for x in datasets]
-        fractions = get_dataset_fractions(training_conf.datasets, dataset_sizes, verbose=training_conf.verbose)
+        fractions = get_dataset_fractions(training_conf.datasets, dataset_sizes, verbose)
         dataset_size_per_epoch = [int(size * frac) for size, frac in zip(dataset_sizes, fractions)]
         return cls(dataset_sizes, dataset_size_per_epoch, *args, **kwargs)
 
 
-def get_dataset_fractions(conf, dataset_sizes, verbose=False):
-    """Calculate fraction of each dataset to use per epoch when subsampling"""
+def get_dataset_fractions(conf, dataset_sizes: list[int], verbose: bool = False):
+    """Calculate fraction of each dataset to use per epoch when sub-sampling"""
 
     if verbose:
         print("Creating sampler for datasets:")
@@ -158,7 +158,7 @@ def get_dataset_fractions(conf, dataset_sizes, verbose=False):
             fractions.append(1)
 
         if verbose:
-            print(f"Dataset: {dataset_name} fraction chosen: {fractions[-1]:.2f}")
+            print(f"{dataset_name}: {fractions[-1]:.2%} ({int(dataset_sizes[i]*fractions[-1])})")
     return fractions
 
 
