@@ -9,6 +9,7 @@ class Settings(pydantic.BaseSettings):
     redis_db: int = 0
 
     message_queue_expire: int = 60
+    work_queue_max_size: int | None = None
 
     allowed_worker_compat_hashes: str = "*"
 
