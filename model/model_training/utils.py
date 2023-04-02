@@ -17,7 +17,7 @@ from model_training.models.reward_model import GPTNeoXRewardModel
 from model_training.models.tokenization_llama import LLaMATokenizer
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
-from torch.utils.data import ConcatDataset, Subset
+from torch.utils.data import ConcatDataset, Dataset, Subset
 from torch.utils.data.distributed import DistributedSampler
 
 
@@ -333,7 +333,9 @@ def get_dataset_name_and_kwargs_from_data_config(data_config):
         return data_config, {}
 
 
-def get_dataset(conf, mode="sft"):
+def get_dataset(
+    conf, mode: str = "sft", return_datasets_as_list: bool = False
+) -> tuple[ConcatDataset | list[Dataset], dict[str, Subset]]:
     train_datasets, evals = [], {}
 
     for data_config in conf.datasets + conf.datasets_extra:
@@ -344,6 +346,8 @@ def get_dataset(conf, mode="sft"):
         if val is not None:
             evals[dataset_name] = Subset(val, list(range(min(len(val), conf.eval_size)))) if conf.eval_size else val
 
+    if return_datasets_as_list:
+        return train_datasets, evals
     train = ConcatDataset(train_datasets)
 
     return train, evals
