@@ -221,7 +221,7 @@ class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
     log_prob: float | None
-    token_id: int | None
+    token_id: int
 
 
 class GeneratedTextResponse(WorkerResponseBase):

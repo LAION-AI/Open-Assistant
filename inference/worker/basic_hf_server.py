@@ -51,9 +51,9 @@ def model_thread():
 
     request: interface.GenerateStreamRequest
     output_queue: Queue
-    eos_token = ""
-    if hasattr(tokenizer, "eos_token"):
-        eos_token = tokenizer.eos_token
+    # eos_token = ""
+    # if hasattr(tokenizer, "eos_token"):
+    #     eos_token = tokenizer.eos_token
     while True:
         request, output_queue = model_input_queue.get()
         try:
@@ -63,13 +63,9 @@ def model_thread():
             params.pop("stop")
             params.pop("details")
 
-            def print_text(text: str, *, end="\n", flush=False):
-                if eos_token and text.endswith(eos_token):
-                    text = text[: -len(eos_token)]
-                if not text:
-                    return
+            def print_text(token_id: int):
                 stream_response = interface.GenerateStreamResponse(
-                    token=interface.Token(text=text),
+                    token=interface.Token(text="", id=token_id),
                 )
                 output_queue.put_nowait(stream_response)
 
@@ -85,6 +81,7 @@ def model_thread():
             stream_response = interface.GenerateStreamResponse(
                 token=interface.Token(
                     text="",  # hack because the "normal" inference server does this at once
+                    id=0,
                 ),
                 generated_text=decoded.strip(),
                 details=interface.StreamDetails(
