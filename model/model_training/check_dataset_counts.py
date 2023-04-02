@@ -69,9 +69,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     else:
         # reset datasets, so that we only get the datasets defined in configs and remove the ones in the default
         datasets_list = list()
-        import pdb
 
-        pdb.set_trace()
         try:
             for name in args.datasets:
                 # check and process multiple datasets
@@ -108,9 +106,6 @@ def argument_parsing(notebook=False, notebook_args=None):
 
 
 if __name__ == "__main__":
-    import pdb
-
-    pdb.set_trace()
     args = argument_parsing()
 
     train, evals = get_dataset(args, mode=args.mode, return_datasets_as_list=True)
