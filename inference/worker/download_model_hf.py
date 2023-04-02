@@ -24,12 +24,11 @@ if __name__ == "__main__":
         file.write_text(text)
 
     hf_config = transformers.AutoConfig.from_pretrained(str(snapshot_dir))
-    if hasattr(hf_config, "vocab_size"):
-        logger.info(f"Vocab size in config: {hf_config.vocab_size}")
-        tokenizer_config_path = snapshot_dir / "tokenizer_config.json"
-        if tokenizer_config_path.exists():
-            logger.info(f"found tokenizer config: {tokenizer_config_path}")
-            tokenizer_config = json.loads(tokenizer_config_path.read_text())
-            if "vocab_size" not in tokenizer_config:
-                tokenizer_config["vocab_size"] = hf_config.vocab_size
-                tokenizer_config_path.write_text(json.dumps(tokenizer_config))
+    tokenizer_config_path = snapshot_dir / "tokenizer_config.json"
+    if tokenizer_config_path.exists():
+        logger.info(f"found tokenizer config: {tokenizer_config_path}")
+        tokenizer_config = json.loads(tokenizer_config_path.read_text())
+        for key, value in hf_config.get_config_dict().items():
+            if key not in tokenizer_config:
+                tokenizer_config[key] = value
+        tokenizer_config_path.write_text(json.dumps(tokenizer_config))
