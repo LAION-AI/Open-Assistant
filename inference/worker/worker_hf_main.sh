@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export HF_HOME=${HF_HOME:-"$HOME/.cache/huggingface"}
+load_sleep=${LOAD_SLEEP:-0}
 
 mkdir -p $HF_HOME
 echo -n "$HF_TOKEN" > $HF_HOME/token
