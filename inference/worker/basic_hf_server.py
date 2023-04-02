@@ -18,6 +18,8 @@ from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
 
+DECODE_TOKEN = "<decode-token>"
+
 
 # Allow CORS
 app.add_middleware(
@@ -47,7 +49,7 @@ model_input_queue: Queue = Queue()
 def model_thread():
     model: transformers.PreTrainedModel
     tokenizer: transformers.PreTrainedTokenizer
-    model, tokenizer = load_models()
+    model, tokenizer, decode_token = load_models()
 
     request: interface.GenerateStreamRequest
     output_queue: Queue
@@ -67,8 +69,9 @@ def model_thread():
             params.pop("details")
 
             def print_text(token_id: int):
+                text = decode_token(token_id)
                 stream_response = interface.GenerateStreamResponse(
-                    token=interface.Token(text="", id=token_id),
+                    token=interface.Token(text=text, id=token_id),
                 )
                 output_queue.put_nowait(stream_response)
 
@@ -110,6 +113,18 @@ def load_models():
     logger.warning(f"Loading model {model_config.model_id}...")
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
     logger.warning(f"tokenizer {tokenizer.name_or_path} has vocab size {tokenizer.vocab_size}")
+
+    # see `decode_token` method, taken from HF text-generation-inference
+    tokenizer.add_special_tokens({"additional_special_tokens": ["<decode-token>"]})
+
+    special_decode_token_id = tokenizer.convert_tokens_to_ids("<decode-token>")
+    special_decode_token_length = len("<decode-token>")
+
+    def decode_token(token_id):
+        result = tokenizer.decode([special_decode_token_id, token_id], skip_special_tokens=False)
+        # slice to remove special decode token
+        return result[special_decode_token_length:]
+
     model = transformers.AutoModelForCausalLM.from_pretrained(
         model_config.model_id, torch_dtype="auto", load_in_8bit=settings.quantize, device_map="auto"
     )
@@ -117,7 +132,7 @@ def load_models():
 
     model_loaded = True
 
-    return model, tokenizer
+    return model, tokenizer, decode_token
 
 
 @app.on_event("startup")

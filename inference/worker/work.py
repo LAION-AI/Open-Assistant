@@ -121,22 +121,6 @@ def handle_work_request(
             raise RuntimeError(f"Error from inference server: {stream_response.error}")
         token = stream_response.token
 
-        if model_config.is_llama:
-            token.text = tokenizer.decode([token.id], skip_special_tokens=True)
-            # logger.debug(f"appending token: {token.id=} to {len(generated_ids)=}")
-            # generated_ids.append(token.id)
-            # try:
-            #     with tokenizer_lock:
-            #         text = tokenizer.decode(generated_ids, skip_special_tokens=True)
-            #     new_text = text[len(decoded_text) :]
-            #     if not decoded_text:
-            #         new_text = new_text.lstrip()
-            # except Exception:
-            #     text = decoded_text
-            #     new_text = ""
-            # token.text = new_text
-            # decoded_text = text
-
         for send_token in token_buffer.add(token):
             utils.send_response(ws, send_token.to_token_response(request_id=work_request.id))
     if stream_response is None:
