@@ -147,7 +147,9 @@ class LLaMAMLP(nn.Module):
         self.up_proj = nn.Linear(hidden_size, intermediate_size, bias=False)
         self.act_fn = ACT2FN[hidden_act]
         self.use_ia3 = use_ia3
-        self.ff_scaler = torch.nn.Parameter(torch.ones(intermediate_size))
+        
+        if self.use_ia3:
+            self.ff_scaler = torch.nn.Parameter(torch.ones(intermediate_size))
 
     def forward(self, x):
         intermediate_inp = self.act_fn(self.gate_proj(x))
@@ -155,7 +157,7 @@ class LLaMAMLP(nn.Module):
         if self.use_ia3:
             intermediate_inp = self.ff_scaler * intermediate_inp
 
-        self.down_proj(intermediate_inp * self.up_proj(x))
+        return self.down_proj(intermediate_inp * self.up_proj(x))
 
 
 class LLaMAAttention(nn.Module):

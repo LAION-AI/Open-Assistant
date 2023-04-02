@@ -17,7 +17,6 @@ defaults:
   max_grad_norm: 2.0
   save_total_limit: 2
   fp16: true
-  use_ia3: true
   eval_accumulation_steps:
   freeze_layer:
   datasets:
@@ -69,9 +68,10 @@ defaults:
   use_custom_sampler: false
   random_offset_probability: 0.8 # probability for random message offsets
   label_masking: true
-  residual_dropout: 0.1
+  residual_dropout: null
   use_flash_attention: false
   sort_by_length: false
+  use_ia3: false
   use_system_prefix: false
   system_prefix:
     "You are Joi, a large language model trained by Open-Assistant. Answer as
@@ -121,21 +121,21 @@ llama-7b:
   fp16: true
   use_ia3: true
   log_dir: "llama_log"
-  learning_rate: 8e-6
+  learning_rate: 3e-3
   # model_name: decapoda-research/llama-7b-hf
-  model_name: /home/mikichan/exp/llama-7b-hf
+  model_name: /home/jovyan/models/llama-7b-hf
   output_dir: llama_model
-  weight_decay: 0.0
-  max_length: 16
-  warmup_steps: 100
+  weight_decay: 0.01
+  max_length: 620
+  warmup_steps: 60
   gradient_checkpointing: false
-  gradient_accumulation_steps: 1
-  per_device_train_batch_size: 1
-  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 2
   eval_steps: 100
-  save_steps: 500
-  num_train_epochs: 16
-  save_total_limit: 4
+  save_steps: 300
+  num_train_epochs: 1
+  save_total_limit: 3
 
 pythia-12b:
   fp16: true

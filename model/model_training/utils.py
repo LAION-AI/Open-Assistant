@@ -292,6 +292,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
             quantization=conf.quantization,
             seq2seqmodel=conf.seq2seqmodel,
             without_head=conf.is_reward_model,
+            use_ia3=conf.use_ia3,
         )
 
         n_embs = model.get_input_embeddings().num_embeddings
