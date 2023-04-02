@@ -124,11 +124,16 @@ def handle_work_request(
         if model_config.is_llama:
             logger.debug(f"appending token: {token.id=} to {len(generated_ids)=}")
             generated_ids.append(token.id)
-            with tokenizer_lock:
-                text = tokenizer.decode(generated_ids)
-            new_text = text[len(decoded_text) :]
-            if not decoded_text:
-                new_text = new_text.lstrip()
+            try:
+                with tokenizer_lock:
+                    text = tokenizer.decode(generated_ids)
+                new_text = text[len(decoded_text) :]
+                if not decoded_text:
+                    new_text = new_text.lstrip()
+            except Exception:
+                text = decoded_text
+                new_text = ""
+
             token.text = new_text
             decoded_text = text
 
