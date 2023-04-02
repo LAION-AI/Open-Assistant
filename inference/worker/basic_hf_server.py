@@ -108,6 +108,7 @@ def load_models():
         logger.error(f"Unknown model config name: {settings.model_config_name}")
         sys.exit(2)
 
+    hf_config = transformers.AutoConfig.from_pretrained(model_config.model_id)
     logger.warning(f"Loading model {model_config.model_id}...")
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
     logger.warning(f"tokenizer {tokenizer.name_or_path} has vocab size {tokenizer.vocab_size}")
@@ -123,9 +124,15 @@ def load_models():
         # slice to remove special decode token
         return result[special_decode_token_length:]
 
+    config_dtype = hf_config.torch_dtype if hasattr(hf_config, "torch_dtype") else torch.float32
+    dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else config_dtype
+
     model = transformers.AutoModelForCausalLM.from_pretrained(
-        model_config.model_id, torch_dtype="auto", load_in_8bit=settings.quantize, device_map="auto"
-    )
+        model_config.model_id,
+        torch_dtype=dtype,
+        load_in_8bit=settings.quantize,
+        device_map="auto" if torch.cuda.is_available() else None,
+    ).eval()
     logger.warning("Model loaded, using it once...")
 
     # warmup
