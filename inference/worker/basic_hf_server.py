@@ -1,6 +1,5 @@
 # a basic fastapi server to run generation on HF models
 
-import signal
 import sys
 import threading
 from queue import Queue
@@ -38,11 +37,6 @@ async def log_exceptions(request: fastapi.Request, call_next):
         logger.exception("Exception in request")
         raise
     return response
-
-
-def terminate_server(signum, frame):
-    logger.warning(f"Signal {signum}. Terminating server...")
-    sys.exit(0)
 
 
 model_loaded: bool = False
@@ -99,7 +93,6 @@ def model_thread():
 
 def load_models():
     global model_loaded
-    signal.signal(signal.SIGINT, terminate_server)
 
     model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)
     if model_config is None:
@@ -112,7 +105,6 @@ def load_models():
         model_config.model_id, torch_dtype="auto", load_in_8bit=settings.quantize, device_map="auto"
     )
     logger.warning("Model loaded")
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     model_loaded = True
 
