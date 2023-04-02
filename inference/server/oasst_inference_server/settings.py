@@ -3,6 +3,12 @@ from typing import Any
 import pydantic
 
 
+def split_keys_string(keys: str | None):
+    if not keys:
+        return []
+    return list(filter(bool, keys.split(",")))
+
+
 class Settings(pydantic.BaseSettings):
     redis_host: str = "localhost"
     redis_port: int = 6379
@@ -58,15 +64,13 @@ class Settings(pydantic.BaseSettings):
 
     @property
     def debug_api_keys_list(self) -> list[str]:
-        return self.debug_api_keys.split(",")
+        return split_keys_string(self.debug_api_keys)
 
-    trusted_client_keys: str
+    trusted_client_keys: str | None
 
     @property
     def trusted_api_keys_list(self) -> list[str]:
-        if not self.trusted_client_keys:
-            return []
-        return self.trusted_client_keys.split(",")
+        return split_keys_string(self.trusted_client_keys)
 
     do_compliance_checks: bool = False
     compliance_check_interval: int = 60
