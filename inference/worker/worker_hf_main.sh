@@ -17,13 +17,6 @@ CUDA_VISIBLE_DEVICES="" python download_model_hf.py
 
 export MAX_PARALLEL_REQUESTS=${MAX_PARALLEL_REQUESTS:-1}
 
-HF_SERVER_PORT=${HF_SERVER_PORT:-8883}
-python3 -m uvicorn --port $HF_SERVER_PORT basic_hf_server:app &
-
-export INFERENCE_SERVER_URL="http://localhost:$HF_SERVER_PORT"
-
-python3 __main__.py &
-
 # if cuda devices is empty
 if [ -z "$CUDA_VISIBLE_DEVICES" ]; then
     worker_port=8300
