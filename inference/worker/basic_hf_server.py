@@ -74,7 +74,7 @@ def model_thread():
 
             with torch.no_grad():
                 ids = tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=False)
-                streamer = hf_streamer.HFStreamer(input_ids=ids.tolist(), printer=print_text)
+                streamer = hf_streamer.HFStreamer(input_ids=ids, printer=print_text)
                 ids = ids.to(model.device)
                 output = model.generate(ids, **params, streamer=streamer, eos_token_id=eos_token_id)
                 output = output.cpu()
