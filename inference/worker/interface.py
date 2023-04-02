@@ -48,7 +48,7 @@ class Token(pydantic.BaseModel):
             request_id=request_id,
             text=self.text,
             log_prob=self.logprob,
-            token_id=self.id,
+            token_id=self.id or 0,  # TODO: remove this once new type is deployed
         )
 
 
