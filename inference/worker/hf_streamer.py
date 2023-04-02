@@ -19,7 +19,8 @@ class HFStreamer(transformers.generation.streamers.BaseStreamer):
         elif len(value.shape) > 1:
             value = value[0]
 
-        self.printer(value)
+        for token_id in value.tolist():
+            self.printer(token_id)
 
     def end(self):
         pass
