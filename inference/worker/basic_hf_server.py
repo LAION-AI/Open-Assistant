@@ -45,13 +45,16 @@ def terminate_server(signum, frame):
     sys.exit(0)
 
 
-model: transformers.PreTrainedModel = None
-tokenizer: transformers.PreTrainedTokenizer
+model_loaded: bool = False
 fully_loaded: bool = False
 model_input_queue: Queue = Queue()
 
 
 def model_thread():
+    model: transformers.PreTrainedModel
+    tokenizer: transformers.PreTrainedTokenizer
+    model, tokenizer = load_models()
+
     request: interface.GenerateStreamRequest
     output_queue: Queue
     eos_token = ""
@@ -94,11 +97,8 @@ def model_thread():
             output_queue.put_nowait(interface.GenerateStreamResponse(error=str(e)))
 
 
-@app.on_event("startup")
-async def load_models():
-    global model, tokenizer
-    if model is not None:
-        return
+def load_models():
+    global model_loaded
     signal.signal(signal.SIGINT, terminate_server)
 
     model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)
@@ -109,13 +109,14 @@ async def load_models():
     logger.warning(f"Loading model {model_config.model_id}...")
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
     model = transformers.AutoModelForCausalLM.from_pretrained(
-        model_config.model_id,
-        # torch_dtype="auto",
-        load_in_8bit=settings.quantize,
-        # device_map="auto"
+        model_config.model_id, torch_dtype="auto", load_in_8bit=settings.quantize, device_map="auto"
     )
     logger.warning("Model loaded")
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    model_loaded = True
+
+    return model, tokenizer
 
 
 @app.on_event("startup")
@@ -170,7 +171,7 @@ async def generate(
 
 @app.get("/health")
 async def health():
-    if not fully_loaded:
+    if not (fully_loaded and model_loaded):
         raise fastapi.HTTPException(status_code=503, detail="Server not fully loaded")
     return {"status": "ok"}
 
