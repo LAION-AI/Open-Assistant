@@ -59,7 +59,7 @@ def model_thread():
         try:
             prompt = request.inputs
             params = request.parameters.dict()
-            params.pop("seed")
+            seed = params.pop("seed")
             params.pop("stop")
             params.pop("details")
 
@@ -87,6 +87,11 @@ def model_thread():
                     text="",  # hack because the "normal" inference server does this at once
                 ),
                 generated_text=decoded.strip(),
+                details=interface.StreamDetails(
+                    finish_reason="eos_token",
+                    generated_tokens=len(output_ids),
+                    seed=seed,
+                ),
             )
             output_queue.put_nowait(stream_response)
         except Exception as e:
