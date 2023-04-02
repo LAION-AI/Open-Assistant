@@ -61,6 +61,13 @@ def llama_forward_with_flash_attn(
     # attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
     # attn_output = torch.matmul(attn_weights, value_states)
 
+    if attention_mask is not None:
+        if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+            raise ValueError(
+                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+            )
+        attention_mask = attention_mask[:, 0, -1]
+
     flash_attn.train(self.training)
     out_dtype = value_states.dtype
     q, k, v = query_states.transpose(1, 2), key_states.transpose(1, 2), value_states.transpose(1, 2)
