@@ -76,6 +76,9 @@ def main():
                             for ftr in done:
                                 ftr.result()
                         message = ws.recv()
+                        if not message:
+                            logger.warning("Connection closed, reconnecting...")
+                            break
                         worker_request = pydantic.parse_raw_as(inference.WorkerRequest, message)
                         match worker_request.request_type:
                             case "work":
