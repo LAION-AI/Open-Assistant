@@ -185,17 +185,17 @@ joke                |       301    |       76    |       377
 gsm8k               |      7473    |     1319    |      8792
 dive_mt             |      6192    |     1548    |      7740
 
-This list can be generated with, but beware that this downloads all available
-datasets (>100GB)
+This list can be generated with the following command, but beware that this
+downloads all available datasets (>100GB):
 
-```python
+```bash
 python check_dataset_counts.py --datasets all --mode sft
 ```
 
-One can specify datasets, which can be found in the config, which corresponds to
-the mode (e.g. configs/config.yaml for sft, configs/config_rm.yaml for rm):
+One can specify datasets, which can be found in the config corresponding to the
+mode the mode (e.g. configs/config.yaml for sft, configs/config_rm.yaml for rm):
 
-```
+```bash
 python check_dataset_counts.py --datasets webgpt squad_v2 --mode sft
 ```
 

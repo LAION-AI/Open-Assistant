@@ -70,22 +70,25 @@ def argument_parsing(notebook=False, notebook_args=None):
         # reset datasets, so that we only get the datasets defined in configs and remove the ones in the default
         datasets_list = list()
 
-        try:
-            for name in args.datasets:
-                # check and process multiple datasets
-                if "," in name:
-                    for n in name.split(","):
-                        datasets_value = configs[n].get("datasets") or configs[n]["datasets_extra"]
-                # check if dataset is extra key in config
-                elif name in configs:
-                    datasets_value = configs[name].get("datasets") or configs[name]["datasets_extra"]
-                # check in default config
-                elif name in configs[mode.default_config()]["datasets"]:
-                    datasets_value = [name]
-                datasets_list.extend(datasets_value)
-        except KeyError as e:
-            print(f'Error: Could not find the config "{e.args[0]}" in {mode.config_name()}')
-            exit(1)
+        for name in args.datasets:
+            # check and process multiple datasets
+            if "," in name:
+                for n in name.split(","):
+                    datasets_value = configs[n].get("datasets") or configs[n]["datasets_extra"]
+            # check if dataset is extra key in config
+            elif name in configs:
+                datasets_value = configs[name].get("datasets") or configs[name]["datasets_extra"]
+            # check in default config
+            elif name in configs[mode.default_config()]["datasets"]:
+                datasets_value = [name]
+            else:
+                raise ValueError(
+                    f'Error: Could not find the dataset "{name}" in {mode.config_name()}. ',
+                    f"Tried to look for this dataset within th key {mode.default_config()} ",
+                    "and as seperate key.",
+                )
+
+            datasets_list.extend(datasets_value)
     conf["mode"] = mode
     conf["output_path"] = args.output_path
     conf["datasets_extra"] = []
