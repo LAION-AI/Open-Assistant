@@ -109,6 +109,7 @@ def load_models():
 
     logger.warning(f"Loading model {model_config.model_id}...")
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
+    logger.warning(f"tokenizer {tokenizer.name_or_path} has vocab size {tokenizer.vocab_size}")
     model = transformers.AutoModelForCausalLM.from_pretrained(
         model_config.model_id, torch_dtype="auto", load_in_8bit=settings.quantize, device_map="auto"
     )
