@@ -3,7 +3,7 @@
 """
 from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
 from model_training.custom_datasets.oasst_dataset import load_oasst_export
-from model_training.custom_datasets.prompt_dialogue import Gpt4all, load_oig_file
+from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
 from model_training.custom_datasets.qa_datasets import (
     SODA,
     Alpaca,
@@ -88,7 +88,7 @@ def get_one_dataset(
     elif dataset_name == "code_alpaca":
         dataset = CodeAlpaca(mode=mode, cache_dir=data_path)
     elif dataset_name == "gpt4all":
-        dataset = Gpt4all(mode=mode, cache_dir=data_path)
+        dataset = Gpt4All(mode=mode, cache_dir=data_path)
     elif dataset_name == "prosocial_dialogue":
         train = ProsocialDialogue(cache_dir=data_path, split="train")
         eval = ProsocialDialogue(cache_dir=data_path, split="validation")

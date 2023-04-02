@@ -102,11 +102,15 @@ def load_oig_file(
     return train, val
 
 
-class Gpt4all(Dataset):
+class Gpt4All(Dataset):
     def __init__(self, mode: str, cache_dir: str = None) -> None:
         super().__init__()
         self.mode = mode
-        dataset = load_dataset("Nebulous/gpt4all_pruned", cache_dir=cache_dir)
+        dataset = load_dataset(
+            "Nebulous/gpt4all_pruned",
+            data_files="data_pruned_3.jsonl",
+            cache_dir=cache_dir,
+        )
         self.rows = [(row["prompt"], row["response"]) for row in dataset["train"]]
 
     def __len__(self):

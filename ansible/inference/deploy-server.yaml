@@ -110,9 +110,12 @@
           ROOT_TOKEN:
             "{{ lookup('ansible.builtin.env', 'INFERENCE_ROOT_TOKEN') |
             default('1234', true) }}"
-          AUTH_CALLBACK_ROOT:
-            "{{ lookup('ansible.builtin.env', 'INFERENCE_AUTH_CALLBACK_ROOT') |
-            default('https://web.dev.open-assistant.io', true) }}"
+          API_ROOT:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_API_ROOT') |
+            default('https://inference.dev.open-assistant.io', true) }}"
+          TRUSTED_CLIENT_KEYS:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_TRUSTED_CLIENT_KEYS') |
+            default('', true) }}"
           AUTH_SALT:
             "{{ lookup('ansible.builtin.env', 'INFERENCE_AUTH_SALT') |
             default('', true) }}"

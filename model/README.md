@@ -36,7 +36,7 @@ cd model_training
 # export shared modules
 export PYTHONPATH=$PYTHONPATH:../../oasst-shared
 
-CUDA_VISIBLE_DEVICES=1 python trainer_sft.py --configs defaults oa_dataset_only pythia --cache_dir $DATA_PATH --output_dir $MODEL_PATH/sft_model
+python trainer_sft.py --configs defaults oa_dataset_only pythia --cache_dir $DATA_PATH --output_dir $MODEL_PATH/sft_model
 
 # if you want to use wandb, add
 --wandb_entity your_username/team_name

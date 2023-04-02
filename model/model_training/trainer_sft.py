@@ -341,7 +341,10 @@ def main():
 
     train, evals = get_dataset(training_conf)
 
-    if training_conf.dataset_stats:
+    show_dataset_stats = (training_conf.verbose or training_conf.dataset_stats) and (
+        not training_conf.deepspeed or training_conf.local_rank == 0
+    )
+    if show_dataset_stats:
         print("Dataset stats before sampling:")
         total = len(train)
         for d in train.datasets:
@@ -355,22 +358,24 @@ def main():
                     name += f" ({d.name})"
             print(f"{name}: {len(d)} ({len(d) / total:%})")
         print(f"Total train: {total}")
-        quit()
 
     if training_conf.use_custom_sampler:
-        sampler = PerDatasetSampler.build_sampler_from_config(
-            training_conf,
-            train.datasets,
-            rank=training_conf.local_rank,
-            world_size=training_conf.world_size,
-            samples_length=list(
+        samples_length = None
+        if training_conf.sort_by_length:
+            samples_length = list(
                 map(
                     lambda x: train_collate_fn.process_one(x, return_length=True),
                     tqdm(train, desc="Calculating lengths per sample"),
                 )
             )
-            if training_conf.sort_by_length
-            else None,
+
+        sampler = PerDatasetSampler.build_sampler_from_config(
+            training_conf,
+            train.datasets,
+            rank=training_conf.local_rank,
+            world_size=training_conf.world_size,
+            samples_length=samples_length,
+            verbose=show_dataset_stats,
         )
     else:
         sampler = None

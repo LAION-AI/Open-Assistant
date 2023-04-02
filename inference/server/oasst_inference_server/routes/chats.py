@@ -103,6 +103,11 @@ async def create_assistant_message(
         await queue.enqueue(assistant_message.id)
         logger.debug(f"Added {assistant_message.id=} to {queue.queue_id} for {chat_id}")
         return assistant_message.to_read()
+    except queueing.QueueFullException:
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The server is currently busy. Please try again later.",
+        )
     except Exception:
         logger.exception("Error adding prompter message")
         return fastapi.Response(status_code=500)

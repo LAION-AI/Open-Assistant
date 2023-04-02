@@ -223,8 +223,9 @@ services:
       POSTGRES_HOST: inference-db
       POSTGRES_DB: oasst_inference
       DEBUG_API_KEYS: "0000"
+      TRUSTED_CLIENT_KEYS: "6969"
       ALLOW_DEBUG_AUTH: "True"
-      AUTH_CALLBACK_ROOT: "http://localhost:3000/api/inference_auth"
+      API_ROOT: "http://localhost:8000"
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/server:/opt/inference/server"
