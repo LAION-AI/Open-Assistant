@@ -52,6 +52,9 @@ else
     done
 fi
 
+# trap to kill all running processes on ctrl-c
+trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+
 
 wait -n
 
