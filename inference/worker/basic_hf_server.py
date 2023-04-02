@@ -153,6 +153,8 @@ async def generate(
                 yield {"data": output.json()}
                 if output.is_end:
                     break
+                if output.is_error:
+                    raise Exception(output.error)
         except Exception as e:
             logger.exception("Exception in event stream")
             output_queue.put_nowait(interface.GenerateStreamResponse(error=str(e)))
