@@ -123,7 +123,14 @@ def load_models():
     model = transformers.AutoModelForCausalLM.from_pretrained(
         model_config.model_id, torch_dtype="auto", load_in_8bit=settings.quantize, device_map="auto"
     )
-    logger.warning("Model loaded")
+    logger.warning("Model loaded, using it once...")
+
+    # warmup
+    with torch.no_grad():
+        text = "Hello, world"
+        tokens = tokenizer.encode(text, return_tensors="pt")
+        tokens = tokens.to(model.device)
+        model.generate(tokens, max_length=10, num_beams=1, do_sample=False)
 
     model_loaded = True
 
@@ -135,20 +142,6 @@ async def start_model_thread():
     logger.warning("Starting model thread...")
     threading.Thread(target=model_thread, daemon=True).start()
     logger.warning("Model thread started")
-
-
-@app.on_event("startup")
-async def use_model_once():
-    logger.warning("Generating once to warm up the model...")
-    await generate(
-        interface.GenerateStreamRequest(
-            inputs="Hello world",
-            parameters=interface.GenerateStreamParameters(
-                max_new_tokens=10,
-            ),
-        )
-    )
-    logger.warning("Model warmed up")
 
 
 @app.on_event("startup")
