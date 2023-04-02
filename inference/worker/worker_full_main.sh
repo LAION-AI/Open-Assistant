@@ -6,6 +6,7 @@ echo -n "$HF_TOKEN" > $HOME/.cache/huggingface/token
 export MODEL_CONFIG_NAME=${MODEL_CONFIG_NAME:-"OA_SFT_Pythia_12B"}
 
 num_shards=${NUM_SHARDS:-1}
+load_sleep=${LOAD_SLEEP:-0}
 
 export MODEL_ID=$(/opt/miniconda/envs/worker/bin/python /worker/get_model_config_prop.py model_id)
 export QUANTIZE=$(/opt/miniconda/envs/worker/bin/python /worker/get_model_config_prop.py quantized)
@@ -45,7 +46,7 @@ else
         CUDA_VISIBLE_DEVICES=$device text-generation-launcher --model-id $MODEL_ID --num-shard $num_shards $quantize_args --port $worker_port --master-port $master_port --shard-uds-path $shard_uds_path &
         echo "Starting worker $i"
         CUDA_VISIBLE_DEVICES="" INFERENCE_SERVER_URL="http://localhost:$worker_port" /opt/miniconda/envs/worker/bin/python /worker &
-        sleep 5
+        sleep $load_sleep
     done
 fi
 
