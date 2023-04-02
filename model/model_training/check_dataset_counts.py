@@ -1,14 +1,12 @@
 import argparse
-from model_training.utils import (
-    _strtobool,
-    get_dataset,
-    read_yamls
-)
-from typing import Any
-from pathlib import Path
 from enum import Enum
-import yaml
+from pathlib import Path
+from typing import Any
+
 import pandas as pd
+import yaml
+from model_training.utils import _strtobool, get_dataset
+
 
 class Mode(Enum):
     sft = "sft"
@@ -34,10 +32,10 @@ class Mode(Enum):
                 return "defaults_rlhf"
 
 
-
 def read_yaml(dir: str | Path, config_file: str) -> dict[str, Any]:
-    with open( Path(dir) / config_file, "r") as f:
+    with open(Path(dir) / config_file, "r") as f:
         return yaml.safe_load(f)
+
 
 def argument_parsing(notebook=False, notebook_args=None):
     parser = argparse.ArgumentParser()
@@ -71,10 +69,12 @@ def argument_parsing(notebook=False, notebook_args=None):
     else:
         # reset datasets, so that we only get the datasets defined in configs and remove the ones in the default
         datasets_list = list()
-        import pdb; pdb.set_trace()
+        import pdb
+
+        pdb.set_trace()
         try:
             for name in args.datasets:
-                # check and process multiple datasets 
+                # check and process multiple datasets
                 if "," in name:
                     for n in name.split(","):
                         datasets_value = configs[n].get("datasets") or configs[n]["datasets_extra"]
@@ -106,8 +106,11 @@ def argument_parsing(notebook=False, notebook_args=None):
     print(args)
     return args
 
+
 if __name__ == "__main__":
-    import pdb; pdb.set_trace()
+    import pdb
+
+    pdb.set_trace()
     args = argument_parsing()
 
     train, evals = get_dataset(args, mode=args.mode, return_datasets_as_list=True)
