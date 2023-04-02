@@ -45,7 +45,7 @@ def terminate_server(signum, frame):
     sys.exit(0)
 
 
-model: transformers.PreTrainedModel
+model: transformers.PreTrainedModel = None
 tokenizer: transformers.PreTrainedTokenizer
 fully_loaded: bool = False
 model_input_queue: Queue = Queue()
@@ -97,6 +97,8 @@ def model_thread():
 @app.on_event("startup")
 async def load_models():
     global model, tokenizer
+    if model is not None:
+        return
     signal.signal(signal.SIGINT, terminate_server)
 
     model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)
@@ -107,7 +109,10 @@ async def load_models():
     logger.warning(f"Loading model {model_config.model_id}...")
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
     model = transformers.AutoModelForCausalLM.from_pretrained(
-        model_config.model_id, torch_dtype="auto", load_in_8bit=settings.quantize, device_map="auto"
+        model_config.model_id,
+        # torch_dtype="auto",
+        load_in_8bit=settings.quantize,
+        # device_map="auto"
     )
     logger.warning("Model loaded")
     signal.signal(signal.SIGINT, signal.SIG_DFL)
