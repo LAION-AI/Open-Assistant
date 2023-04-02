@@ -54,6 +54,9 @@ def model_thread():
     # eos_token = ""
     # if hasattr(tokenizer, "eos_token"):
     #     eos_token = tokenizer.eos_token
+    eos_token_id = None
+    if hasattr(tokenizer, "eos_token_id"):
+        eos_token_id = tokenizer.eos_token_id
     while True:
         request, output_queue = model_input_queue.get()
         try:
@@ -72,9 +75,9 @@ def model_thread():
             streamer = hf_streamer.HFStreamer(printer=print_text)
 
             with torch.no_grad():
-                ids = tokenizer.encode(prompt, return_tensors="pt")
+                ids = tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=False)
                 ids = ids.to(model.device)
-                output = model.generate(ids, **params, streamer=streamer)
+                output = model.generate(ids, **params, streamer=streamer, eos_token_id=eos_token_id)
                 output = output.cpu()
                 output_ids = output[0][len(ids[0]) :]
                 decoded = tokenizer.decode(output_ids, skip_special_tokens=True)
