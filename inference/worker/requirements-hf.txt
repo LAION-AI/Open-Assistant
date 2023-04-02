@@ -1,3 +1,7 @@
+accelerate
+bitsandbytes
 fastapi
+sse-starlette
 torch
+git+https://github.com/huggingface/transformers@main#egg=transformers
 uvicorn

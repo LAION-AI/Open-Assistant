@@ -2,15 +2,20 @@
 
 import signal
 import sys
+import threading
+from queue import Queue
 
 import fastapi
+import hf_streamer
 import interface
 import torch
 import transformers
+import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_shared import model_configs
 from settings import settings
+from sse_starlette.sse import EventSourceResponse
 
 app = fastapi.FastAPI()
 
@@ -42,6 +47,51 @@ def terminate_server(signum, frame):
 
 model: transformers.PreTrainedModel
 tokenizer: transformers.PreTrainedTokenizer
+fully_loaded: bool = False
+model_input_queue: Queue = Queue()
+
+
+def model_thread():
+    request: interface.GenerateStreamRequest
+    output_queue: Queue
+    eos_token = ""
+    if hasattr(tokenizer, "eos_token"):
+        eos_token = tokenizer.eos_token
+    while True:
+        request, output_queue = model_input_queue.get()
+        try:
+            prompt = request.inputs
+            params = request.parameters.dict()
+            params.pop("seed")
+            params.pop("stop")
+            params.pop("details")
+
+            def print_text(text: str, *, end="\n", flush=False):
+                if eos_token and text.endswith(eos_token):
+                    text = text[: -len(eos_token)]
+                if not text:
+                    return
+                stream_response = interface.GenerateStreamResponse(
+                    token=interface.Token(text=text),
+                )
+                output_queue.put_nowait(stream_response)
+
+            streamer = hf_streamer.HFStreamer(tokenizer=tokenizer, printer=print_text)
+
+            with torch.no_grad():
+                ids = tokenizer.encode(prompt, return_tensors="pt")
+                ids = ids.to(model.device)
+                output = model.generate(ids, **params, streamer=streamer)
+                output = output.cpu()
+                output_ids = output[0][len(ids[0]) :]
+                decoded = tokenizer.decode(output_ids, skip_special_tokens=True)
+            stream_response = interface.GenerateStreamResponse(
+                generated_text=decoded.strip(),
+            )
+            output_queue.put_nowait(stream_response)
+        except Exception as e:
+            logger.exception("Exception in model thread")
+            output_queue.put_nowait(interface.GenerateStreamResponse(error=str(e)))
 
 
 @app.on_event("startup")
@@ -55,18 +105,19 @@ async def load_models():
         sys.exit(2)
 
     logger.warning(f"Loading model {model_config.model_id}...")
-    if model_config.is_llama:
-        config = transformers.LlamaConfig.from_pretrained(model_config.model_id)
-        tokenizer = transformers.LlamaTokenizer.from_pretrained(model_config.model_id)
-        model = transformers.LlamaForCausalLM.from_pretrained(model_config.model_id, torch_dtype=config.torch_dtype)
-    else:
-        tokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
-        model = transformers.AutoModelForCausalLM.from_pretrained(model_config.model_id)
-    if torch.cuda.is_available():
-        logger.warning("Using GPU")
-        model = model.cuda()
+    tokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
+    model = transformers.AutoModelForCausalLM.from_pretrained(
+        model_config.model_id, torch_dtype="auto", load_in_8bit=settings.quantize, device_map="auto"
+    )
     logger.warning("Model loaded")
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+
+@app.on_event("startup")
+async def start_model_thread():
+    logger.warning("Starting model thread...")
+    threading.Thread(target=model_thread, daemon=True).start()
+    logger.warning("Model thread started")
 
 
 @app.on_event("startup")
@@ -85,28 +136,39 @@ async def use_model_once():
 
 @app.on_event("startup")
 async def welcome_message():
+    global fully_loaded
     logger.warning("Server started")
     logger.warning("To stop the server, press Ctrl+C")
+    fully_loaded = True
 
 
-@app.post("/generate")
-async def generate(request: interface.GenerateStreamRequest):
-    global model, tokenizer
-    prompt = request.inputs
-    params = request.parameters.dict()
-    params.pop("seed")
-    params.pop("stop")
-    params.pop("details")
-    with torch.no_grad():
-        ids = tokenizer.encode(prompt, return_tensors="pt")
-        ids = ids.to(model.device)
-        output = model.generate(ids, **params)
-        output = output.cpu()
-        output_ids = output[0][len(ids[0]) :]
-        decoded = tokenizer.decode(output_ids, skip_special_tokens=True)
-    return {"text": decoded.strip()}
+@app.post("/generate_stream")
+async def generate(
+    request: interface.GenerateStreamRequest,
+):
+    async def event_stream():
+        try:
+            output_queue: Queue = Queue()
+            model_input_queue.put_nowait((request, output_queue))
+            while True:
+                output = output_queue.get()  # type: interface.GenerateStreamResponse
+                yield {"data": output.dict()}
+                if output.is_end:
+                    break
+        except Exception as e:
+            logger.exception("Exception in event stream")
+            output_queue.put_nowait(interface.GenerateStreamResponse(error=str(e)))
+            raise
+
+    return EventSourceResponse(event_stream())
 
 
 @app.get("/health")
 async def health():
+    if not fully_loaded:
+        raise fastapi.HTTPException(status_code=503, detail="Server not fully loaded")
     return {"status": "ok"}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
