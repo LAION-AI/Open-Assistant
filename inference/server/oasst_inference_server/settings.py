@@ -60,15 +60,20 @@ class Settings(pydantic.BaseSettings):
     def debug_api_keys_list(self) -> list[str]:
         return self.debug_api_keys.split(",")
 
+    trusted_client_keys: str
+
+    @property
+    def trusted_api_keys_list(self) -> list[str]:
+        if not self.trusted_client_keys:
+            return []
+        return self.trusted_client_keys.split(",")
+
     do_compliance_checks: bool = False
     compliance_check_interval: int = 60
     compliance_check_timeout: int = 60
 
-    # this is the URL which will be redirected to when authenticating with oauth2
-    # we decided on letting the nextjs / website backend handle the token at first
-    # and then proxy this information back to the inference server
-    # in short: this should refer to the website, not to this server
-    auth_callback_root: str = "http://localhost:3000/api/inference_auth"
+    # url of this server
+    api_root: str = "http://localhost:8000"
 
     allow_debug_auth: bool = False
 

@@ -54,12 +54,13 @@ def create_access_token(user_id: str) -> str:
 
 
 def get_current_user_id(
-    token: str = Security(oauth2_scheme), trusted_client: str = Security(trusted_client_scheme)
+    token: str = Security(oauth2_scheme), trusted_client_token: str = Security(trusted_client_scheme)
 ) -> str:
     """Get the current user ID by decoding the JWT token."""
-    if trusted_client is not None:
-        info: auth.TrustedClient = auth.TrustedClientToken(content=trusted_client).content
-        # TODO: check for API key
+    if trusted_client_token is not None:
+        info: auth.TrustedClient = auth.TrustedClientToken(content=trusted_client_token).content
+        if info.api_key not in settings.trusted_api_keys_list:
+            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Unauthorized client")
         return info.user_id
 
     if token is None or not token.startswith("Bearer "):

@@ -76,8 +76,7 @@ export class OasstInferenceClient {
 
 export const createInferenceClient = (jwt: JWT) => {
   const info: TrustedClient = {
-    // TODO: use api key from env
-    api_key: "0000",
+    api_key: process.env.INFERENCE_SERVER_API_KEY,
     client: "website",
     user_id: jwt.sub,
     username: jwt.name,
