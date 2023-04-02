@@ -155,6 +155,7 @@ async def generate(
             model_input_queue.put_nowait((request, output_queue))
             while True:
                 output = output_queue.get()  # type: interface.GenerateStreamResponse
+                logger.debug(f"Sending output: {output}")
                 yield {"data": output.json()}
                 if output.is_end:
                     break
