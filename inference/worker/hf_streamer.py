@@ -11,8 +11,8 @@ class Printer(typing.Protocol):
 # based on HF text streamer
 class HFStreamer(transformers.generation.streamers.BaseStreamer):
     def __init__(self, input_ids: list[int], printer: Printer):
-        self.input_ids = input_ids
-        self.printer = printer[::-1]
+        self.input_ids = input_ids[::-1]
+        self.printer = printer
 
     def put(self, value):
         if len(value.shape) > 1 and value.shape[0] > 1:
