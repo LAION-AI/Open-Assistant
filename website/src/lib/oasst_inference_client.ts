@@ -34,8 +34,18 @@ export class OasstInferenceClient {
     return this.request("/chats");
   }
 
-  create_chat(): Promise<ChatItem> {
-    return this.request("/chats", { method: "POST", data: "" });
+  async create_chat(): Promise<ChatItem> {
+    const create = () => this.request<ChatItem>("/chats", { method: "POST", data: "" });
+    try {
+      return await create();
+    } catch (err) {
+      // if we get an error here, the user might not yet exist in the inference database, which is why we try to create
+      // user once (it won't do anything if the user already exists) and then retry the chat creation again.
+      // this is maybe not the cleanest solution, but otherwise we would have to sign up all users of the website
+      // to inference automatically, which is maybe an overkill
+      await this.inference_login();
+      return create();
+    }
   }
 
   get_chat(chat_id: string): Promise<ChatItem> {
