@@ -100,6 +100,9 @@ def model_thread():
 def load_models():
     global model_loaded
 
+    torch.set_num_threads(1)
+    torch.set_num_interop_threads(1)
+
     model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)
     if model_config is None:
         logger.error(f"Unknown model config name: {settings.model_config_name}")

@@ -14,7 +14,7 @@ def _unpack(value):
         raise ValueError("HFStreamer only supports batch size 1")
     elif len(value.shape) > 1:
         value = value[0]
-    return value.tolist()
+    return value.cpu().tolist()
 
 
 # based on HF text streamer
