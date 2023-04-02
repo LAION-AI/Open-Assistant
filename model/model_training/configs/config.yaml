@@ -42,16 +42,16 @@ defaults:
     - wmt2019_de-en
     - samsum
     - soda_dialogue
-  instructional_datasets:
-    - humaneval_mbpp_codegen_qa
-    - humaneval_mbpp_testgen_qa
-    - grade_school_math_instructions
-    - recipes
-    - ubuntu_dialogue_qa
-    - cmu_wiki_qa
-    - youtube_subs_howto100M
-    - iapp_wiki_qa_squad
-    - zhihu-kol
+  # instructional_datasets:
+  #  - humaneval_mbpp_codegen_qa
+  #  - humaneval_mbpp_testgen_qa
+  #  - grade_school_math_instructions
+  #  - recipes
+  #  - ubuntu_dialogue_qa
+  #  - cmu_wiki_qa
+  #  - youtube_subs_howto100M
+  #  - iapp_wiki_qa_squad
+  #  - zhihu-kol
   datasets_extra: [] # For config options to add additional datasets, since yaml doesn't let us extend arrays
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
@@ -211,13 +211,6 @@ pythia-1B:
   gradient_accumulation_steps: 1
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 16
-  datasets:
-    - webgpt
-    - squad_v2
-    - adversarial_qa
-    - trivia_qa_nocontext
-    - xsum
-    - cnn_dailymail
 
 pythia-6.9B:
   learning_rate: 8e-6
@@ -285,13 +278,6 @@ debug:
   log_wandb: false
   verbose: true
   num_train_epochs: 0.2
-  datasets:
-    - webgpt
-    - squad_v2
-    - adversarial_qa
-    - trivia_qa_nocontext
-    - xsum
-    - cnn_dailymail
 
 pythia-410m-deduped:
   model_name: EleutherAI/pythia-410m-deduped
