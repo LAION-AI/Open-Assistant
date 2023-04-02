@@ -121,7 +121,7 @@ def handle_work_request(
             raise RuntimeError(f"Error from inference server: {stream_response.error}")
         token = stream_response.token
 
-        if model_config.is_llama:
+        if model_config.is_llama and generated_ids and generated_ids[0] is not None:
             generated_ids.append(token.id)
             with tokenizer_lock:
                 text = tokenizer.decode(generated_ids)
