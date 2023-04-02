@@ -98,15 +98,10 @@ def handle_work_request(
     )
     if model_config.is_lorem:
         stream_events = utils.lorem_events(parameters.seed)
-    # elif model_config.is_llama:
-    #     prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
-    #     stream_events = get_hf_stream_events(stream_request)
     else:
         prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
         stream_events = get_inference_server_stream_events(stream_request)
 
-    # generated_ids = []
-    # decoded_text = ""
     for stream_response in stream_events:
         if stream_response.is_error:
             logger.error(f"Error from inference server: {stream_response.error}")
