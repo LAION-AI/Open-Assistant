@@ -127,7 +127,6 @@ def handle_work_request(
             with tokenizer_lock:
                 text = tokenizer.decode(generated_ids)
             new_text = text[len(decoded_text) :]
-            logger.debug(f"{text=} {decoded_text=} {new_text=}")
             if not decoded_text:
                 new_text = new_text.lstrip()
             token.text = new_text
