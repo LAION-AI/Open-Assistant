@@ -398,11 +398,6 @@ export class OasstApiClient {
     return this.get(`/api/v1/messages/${messageId}/conversation`);
   }
 
-  async fetch_tos_acceptance(backendUserCore: BackendUserCore): Promise<BackendUser["tos_acceptance_date"]> {
-    const user = await this.fetch_frontend_user(backendUserCore);
-    return user.tos_acceptance_date;
-  }
-
   async set_tos_acceptance(user: BackendUserCore) {
     // NOTE: we do a post here to force create the user if it does not exist
     const backendUser = await this.post<BackendUser>(`/api/v1/frontend_users/`, user);

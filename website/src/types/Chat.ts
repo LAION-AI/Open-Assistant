@@ -1,3 +1,11 @@
+export interface TrustedClient {
+  api_key: string;
+  client: string;
+  user_id: string;
+  provider_account_id: string;
+  username: string;
+}
+
 export interface InferenceToken {
   access_token: string;
   token_type: string;
@@ -18,16 +26,12 @@ export interface ChatItem {
   messages?: InferenceMessage[];
 }
 
-export interface InferencePostMessageResponse {
-  assistant_message: InferenceMessage;
-  prompter_message: InferenceMessage;
-}
-
 export interface InferenceMessage {
   id: string;
+  parent_id: string | null;
   created_at: string; //timestamp
   content: string | null;
-  state: "manual" | "pending" | "complete" | "aborted_by_worker" | "cancelled" | "timeout";
+  state: "manual" | "pending" | "in_progress" | "complete" | "aborted_by_worker" | "cancelled" | "timeout";
   role: "assistant" | "prompter";
   score: number;
   reports: any[];
@@ -45,6 +49,7 @@ interface InferenceEventMessage {
 interface InferenceEventError {
   event_type: "error";
   error: string;
+  message: InferenceMessage | null;
 }
 
 interface InferenceEventToken {
@@ -85,10 +90,15 @@ export interface ChatConfigForm extends SamplingParameters {
   model_config_name: string; // this is the same as ModelParameterConfig.name
 }
 
-export interface InferencePostMessageParams {
+export interface InferencePostPrompterMessageParams {
   chat_id: string;
   parent_id: string | null;
   content: string;
+}
+
+export interface InferencePostAssistantMessageParams {
+  chat_id: string;
+  parent_id: string;
   model_config_name: string;
   sampling_parameters: SamplingParameters;
 }

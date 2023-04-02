@@ -1,6 +1,5 @@
 import argparse
 import json
-import os
 
 import model_training.models.reward_model  # noqa: F401 (registers reward model for AutoModel loading)
 import numpy as np
@@ -8,28 +7,7 @@ import pandas as pd
 import torch
 from eval_datasets import get_sampling_dataloader
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
-
-def load_sampling_data(path):
-    """
-    Load sampling data and ensure appropriate keys are present.
-    """
-
-    if os.path.exists(path):
-        data = json.load(open(path))
-    else:
-        raise FileNotFoundError(f"Sampling data {path} not found")
-
-    if "prompts" not in data.keys():
-        raise KeyError("sampling data should contain prompts key")
-
-    keys = set(data["prompts"][0].keys())
-    required_keys = set(["prompt", "results"])
-    keys = keys.intersection(required_keys)
-    if keys != required_keys:
-        raise KeyError(f"Missing keys {required_keys - keys} ")
-
-    return data
+from utils import load_sampling_data
 
 
 def batch_inference(model, dataloader):
@@ -71,7 +49,7 @@ if __name__ == "__main__":
     model = AutoModelForSequenceClassification.from_pretrained(model_name)
     model.eval()
     model.to(device)
-    max_length = args.get("max_length")
+    max_length = args.get("max_length") or model.config.max_position_embeddings
     dataloader = get_sampling_dataloader(data, tokenizer, max_length, args.get("batch_size"))
     sampling, scores = batch_inference(model, dataloader)
 

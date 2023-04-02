@@ -1,8 +1,14 @@
 {
+  "grab_a_task": "Bir görev seçin!",
   "create": "Oluştur",
-  "dashboard": "Kontrol Paneli",
   "evaluate": "Değerlendir",
-  "go": "Başlat",
-  "grab_a_task": "Bir görev al!",
-  "label": "Etiketle"
+  "label": "Etiket",
+  "dashboard": "Kontrol Paneli",
+  "go": "Git",
+  "welcome_message": {
+    "label": "Hoş geldin, {{username}}!",
+    "contributor": "Katkıda bulunan",
+    "description": "Open Assistant, insanları anlamak ve onlara cevap vermek amacıyla gelişmiş dil modellerini kullanan ve eğiten açık kaynaklı bir yapay zeka asistanıdır.",
+    "instruction": "Modeli eğitmeye yardımcı olmak ve puan kazanmak için görevleri tamamlayın."
+  }
 }

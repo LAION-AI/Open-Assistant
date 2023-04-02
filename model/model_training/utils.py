@@ -1,3 +1,4 @@
+import argparse
 import copy
 import math
 import random
@@ -6,6 +7,7 @@ from pathlib import Path
 from typing import List, NamedTuple
 
 import evaluate
+import torch
 import transformers
 import yaml
 from model_training.custom_datasets import get_one_dataset
@@ -14,15 +16,24 @@ from model_training.losses import CrossEntropyLoss, PolyLoss, RMLoss
 from model_training.models import freeze_top_n_layers, get_specific_model
 from model_training.models.patching import patch_model
 from model_training.models.reward_model import GPTNeoXRewardModel
-from model_training.models.tokenization_llama import LLaMATokenizer
 from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
-from torch.utils.data import ConcatDataset, Subset
+from torch.utils.data import ConcatDataset, Dataset, Subset
 from torch.utils.data.distributed import DistributedSampler
 
 
 def _strtobool(x):
     return bool(strtobool(x))
+
+
+def init_rng(conf: argparse.Namespace) -> None:
+    seed = conf.rng_seed
+    if seed is not None:
+        print(f"RNG seed: {seed}")
+        local_rank = conf.local_rank
+        if local_rank is not None and local_rank != -1:
+            seed += local_rank
+        transformers.set_seed(seed)
 
 
 class PerDatasetSampler(DistributedSampler):
@@ -116,15 +127,15 @@ class PerDatasetSampler(DistributedSampler):
         return iter(epoch_idx)
 
     @classmethod
-    def build_sampler_from_config(cls, training_conf, datasets, *args, **kwargs):
+    def build_sampler_from_config(cls, training_conf, datasets: list[Dataset], verbose: bool = False, *args, **kwargs):
         dataset_sizes = [len(x) for x in datasets]
-        fractions = get_dataset_fractions(training_conf.datasets, dataset_sizes, verbose=training_conf.verbose)
+        fractions = get_dataset_fractions(training_conf.datasets, dataset_sizes, verbose)
         dataset_size_per_epoch = [int(size * frac) for size, frac in zip(dataset_sizes, fractions)]
         return cls(dataset_sizes, dataset_size_per_epoch, *args, **kwargs)
 
 
-def get_dataset_fractions(conf, dataset_sizes, verbose=False):
-    """Calculate fraction of each dataset to use per epoch when subsampling"""
+def get_dataset_fractions(conf, dataset_sizes: list[int], verbose: bool = False):
+    """Calculate fraction of each dataset to use per epoch when sub-sampling"""
 
     if verbose:
         print("Creating sampler for datasets:")
@@ -147,7 +158,7 @@ def get_dataset_fractions(conf, dataset_sizes, verbose=False):
             fractions.append(1)
 
         if verbose:
-            print(f"Dataset: {dataset_name} fraction chosen: {fractions[-1]:.2f}")
+            print(f"{dataset_name}: {fractions[-1]:.2%} ({int(dataset_sizes[i]*fractions[-1])})")
     return fractions
 
 
@@ -166,7 +177,9 @@ TOKENIZER_CONFIGS = {
     "GPT-JT": TokenizerConfig(special_tokens=SpecialTokens(sep_token="<|extratoken_100|>")),
     "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
     "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
+    "gpt-neox": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
     "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
+    "cerebras": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", "<|endoftext|>", "<|endoftext|>")),
 }
 
 
@@ -185,12 +198,13 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 
 
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
-    if "llama" in conf.model_name:
-        # explicitly specify LLaMATokenizer class until AutoTokenizer works
-        # assumes that the tokenizer config is stored in the same directory as the model weights
-        tokenizer = LLaMATokenizer.from_pretrained(conf.model_name)
-    else:
-        tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    tokenizer_name = conf.model_name
+
+    if "cerebras" in conf.model_name:
+        # Only 13B has a tokenizer available on HF
+        tokenizer_name = "cerebras/Cerebras-GPT-13B"
+
+    tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_name, cache_dir=conf.cache_dir)
 
     tokenizer_config = match_tokenizer_name(conf.model_name)
 
@@ -277,9 +291,15 @@ def get_metrics(conf, tokenizer):
 
 
 def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
+    dtype = torch.float32
+    if conf.dtype in ["fp16", "float16"]:
+        dtype = torch.float16
+    elif conf.dtype in ["bf16", "bfloat16"]:
+        dtype = torch.bfloat16
+
     if conf.is_reward_model:
         if "pythia" in conf.model_name:
-            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir, torch_dtype=dtype)
             if conf.pooling:
                 assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
                 model.config.pooling = conf.pooling
@@ -292,6 +312,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
             quantization=conf.quantization,
             seq2seqmodel=conf.seq2seqmodel,
             without_head=conf.is_reward_model,
+            torch_dtype=dtype,
         )
 
         n_embs = model.get_input_embeddings().num_embeddings

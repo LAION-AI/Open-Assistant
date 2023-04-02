@@ -7,6 +7,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from loguru import logger
 from oasst_inference_server import auth, database, deps, models
+from oasst_inference_server.schemas.auth import TrustedClient, TrustedClientToken
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import protocol
 
@@ -53,13 +54,13 @@ async def get_available_auth_providers():
 
 @router.get("/refresh", response_model=protocol.Token)
 async def refresh_token(refresh_token: str = Security(auth.refresh_scheme)):
-    access_token = auth.refresh_access_token(refresh_token)
+    access_token = await auth.refresh_access_token(refresh_token)
     return protocol.Token(access_token=access_token, token_type="bearer")
 
 
 @router.get("/login/discord")
 async def login_discord(state: str = r"{}"):
-    redirect_uri = f"{settings.auth_callback_root}/discord"
+    redirect_uri = f"{settings.api_root}/auth/callback/discord"
     auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify&state={state}"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
@@ -69,7 +70,7 @@ async def callback_discord(
     code: str,
     db: database.AsyncSession = Depends(deps.create_session),
 ):
-    redirect_uri = f"{settings.auth_callback_root}/discord"
+    redirect_uri = f"{settings.api_root}/auth/callback/discord"
 
     async with aiohttp.ClientSession(raise_for_status=True) as session:
         # Exchange the auth code for a Discord access token
@@ -116,7 +117,7 @@ async def callback_discord(
 
     # Discord account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token(user.id)
-    refresh_token = auth.create_refresh_token(user.id)
+    refresh_token = await auth.create_refresh_token(user.id)
 
     token_pair = protocol.TokenPair(
         access_token=protocol.Token(access_token=access_token, token_type="bearer"),
@@ -128,7 +129,7 @@ async def callback_discord(
 
 @router.get("/login/github")
 async def login_github(state: str = r"{}"):
-    redirect_uri = f"{settings.auth_callback_root}/github"
+    redirect_uri = f"{settings.api_root}/auth/callback/github"
     auth_url = f"https://github.com/login/oauth/authorize?client_id={settings.auth_github_client_id}&redirect_uri={redirect_uri}&state={state}"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
@@ -138,7 +139,7 @@ async def callback_github(
     code: str,
     db: database.AsyncSession = Depends(deps.create_session),
 ):
-    redirect_uri = f"{settings.auth_callback_root}/github"
+    redirect_uri = f"{settings.api_root}/auth/callback/github"
 
     async with aiohttp.ClientSession(raise_for_status=True) as session:
         # Exchange the auth code for a GitHub access token
@@ -184,7 +185,7 @@ async def callback_github(
 
     # GitHub account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token(user.id)
-    refresh_token = auth.create_refresh_token(user.id)
+    refresh_token = await auth.create_refresh_token(user.id)
 
     token_pair = protocol.TokenPair(
         access_token=protocol.Token(access_token=access_token, token_type="bearer"),
@@ -271,7 +272,7 @@ async def query_user_by_provider_id(
 @router.get("/login/debug")
 async def login_debug(username: str, state: str = r"{}"):
     # mock code with our own data
-    auth_url = f"{settings.auth_callback_root}/debug?code={username}&state={state}"
+    auth_url = f"{settings.api_root}/auth/callback/debug?code={username}&state={state}"
     raise HTTPException(status_code=302, headers={"location": auth_url})
 
 
@@ -301,7 +302,7 @@ async def callback_debug(code: str, db: database.AsyncSession = Depends(deps.cre
 
     # User exists; create JWT
     access_token = auth.create_access_token(user.id)
-    refresh_token = auth.create_refresh_token(user.id)
+    refresh_token = await auth.create_refresh_token(user.id)
 
     token_pair = protocol.TokenPair(
         access_token=protocol.Token(access_token=access_token, token_type="bearer"),
@@ -309,3 +310,34 @@ async def callback_debug(code: str, db: database.AsyncSession = Depends(deps.cre
     )
 
     return token_pair
+
+
+@router.post("/trusted")
+async def login_trusted(
+    db: database.AsyncSession = Depends(deps.create_session),
+    trusted_client_token: str = Security(auth.trusted_client_scheme),
+):
+    if trusted_client_token is None:
+        raise HTTPException(status_code=401, detail="Missing token")
+    info: TrustedClient = TrustedClientToken(content=trusted_client_token).content
+    if info.api_key not in settings.trusted_api_keys_list:
+        raise HTTPException(status_code=401, detail="Unauthorized client")
+
+    # Try to find the user
+    user: models.DbUser = (
+        await db.exec(sqlmodel.select(models.DbUser).where(models.DbUser.id == info.user_id))
+    ).one_or_none()
+
+    if user is None:
+        logger.info(f"Creating new trusted user {info.username=}")
+        user = models.DbUser(
+            id=info.user_id,
+            display_name=info.username,
+            provider=info.client,
+            provider_account_id=info.provider_account_id,
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+        logger.info(f"Created new trusted user {user=}")
+    return user

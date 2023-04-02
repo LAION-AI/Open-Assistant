@@ -85,7 +85,12 @@ def main():
                                 )
                                 ftrs.append(ftr)
                             case "ping":
-                                utils.send_response(ws, inference.PongResponse(request_id=worker_request.id))
+                                utils.send_response(
+                                    ws,
+                                    inference.PongResponse(
+                                        request_id=worker_request.id, metrics=inference.WorkerMetricsInfo()
+                                    ),
+                                )
                             case "wrong_api_key":
                                 logger.error("Your API Key seems to be wrong, please check it!")
                                 raise RuntimeError("Your API Key seems to be wrong, please check it!")

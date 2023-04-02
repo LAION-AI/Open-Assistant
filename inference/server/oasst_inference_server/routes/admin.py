@@ -65,3 +65,20 @@ async def delete_worker(
     session.delete(worker)
     await session.commit()
     return fastapi.Response(status_code=200)
+
+
+@router.delete("/refresh_tokens/{user_id}")
+async def revoke_refresh_tokens(
+    user_id: str,
+    root_token: str = Depends(get_root_token),
+    session: database.AsyncSession = Depends(deps.create_session),
+):
+    """Revoke refresh tokens for a user."""
+    logger.info(f"Revoking refresh tokens for user {user_id}")
+    refresh_tokens = (
+        await session.exec(sqlmodel.select(models.DbRefreshToken).where(models.DbRefreshToken.user_id == user_id))
+    ).all()
+    for refresh_token in refresh_tokens:
+        refresh_token.enabled = False
+    await session.commit()
+    return fastapi.Response(status_code=200)

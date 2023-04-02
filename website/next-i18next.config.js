@@ -10,6 +10,7 @@ module.exports = {
       "da",
       "de",
       "en",
+      "eo",
       "es",
       "eu",
       "fa",

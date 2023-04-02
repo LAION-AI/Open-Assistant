@@ -1,4 +1,5 @@
 defaults:
+  rng_seed: 0xa1221f97
   learning_rate: 1e-5
   gradient_checkpointing: false
   gradient_accumulation_steps: 32
@@ -16,7 +17,7 @@ defaults:
   logging_steps: 10
   max_grad_norm: 2.0
   save_total_limit: 4
-  fp16: true
+  dtype: fp16
   eval_accumulation_steps:
   freeze_layer:
   datasets:
@@ -26,7 +27,6 @@ defaults:
     - trivia_qa_nocontext
     - xsum
     - cnn_dailymail
-    - prompt_dialogue # TODO: need to fix the url
     - multi_news
     - scitldr
     - soda
@@ -38,7 +38,6 @@ defaults:
     - wmt2019_de-en
     - ted_trans_nl-en
     - ted_trans_de-ja
-    - instruct_tuning
     - wmt2019_de-en
     - samsum
     - soda_dialogue
@@ -78,6 +77,7 @@ defaults:
     2023-03-12"
   per_digit_tokens: false
   is_reward_model: false
+  deepspeed_config: configs/zero_config.json
 
 webgpt_dataset_only:
   datasets:
@@ -90,20 +90,50 @@ math:
   datasets_extra: # Will get merged with datasets
     - minimath
 
-oa_dataset_only:
+pretrain:
+  use_custom_sampler: true
+  sort_by_length: false
   datasets:
-    - oa_private:
-        split: sft
-        val_split: 0.0
-        fraction: 1
-        file: 2023-02-10_oasst_prod.jsonl
+    - joke
+    - webgpt:
+        val_split: 0.1
+    - gpt4all:
+        val_split: 0.01
+    - alpaca:
+        val_split: 0.025
+    - code_alpaca:
+        val_split: 0.05
+    - minimath
+    - humaneval_mbpp_codegen_qa
+    - humaneval_mbpp_testgen_qa
+    - grade_school_math_instructions
+    - recipes
+    - cmu_wiki_qa
+    #- youtube_subs_howto100m # uses incompatible column names
+    #- ubuntu_dialogue_qa # fails to load
+    - oa_wiki_qa_bart_10000row
+    - prosocial_dialogue:
+        fraction: 0.1
+    - explain_prosocial:
+        fraction: 0.05
 
 oasst_export_eu:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        #top_k: 2
-        input_file_path: 2023-03-07_oasst_default_with_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+    - gpt4all
+    - alpaca
+    - code_alpaca
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
+        max_count: 10000
+        min_length: 100
+        val_split: 0.1
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/raw/main/unified_grade_school_math_instructions.jsonl
+        val_split: 0.1
+        min_length: 100
   sort_by_length: false
   use_custom_sampler: false
 
@@ -111,32 +141,22 @@ oasst_export_latin_cyrillic:
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        #top_k: 2
-        input_file_path: 2023-03-13_oasst_ready_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+    - alpaca
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
+        max_count: 10000
+        min_length: 1000
+        val_split: 0.2
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/raw/main/unified_grade_school_math_instructions.jsonl
+        val_split: 0.1
+        min_length: 1000
   sort_by_length: false
   use_custom_sampler: false
 
-llama-7b:
-  fp16: true
-  log_dir: "llama_log"
-  learning_rate: 8e-6
-  #model_name: decapoda-research/llama-7b-hf
-  model_name: /home/ubuntu/llama_hf/llama-7b
-  output_dir: llama_model
-  weight_decay: 0.0
-  max_length: 620
-  warmup_steps: 100
-  gradient_checkpointing: false
-  gradient_accumulation_steps: 4
-  per_device_train_batch_size: 4
-  per_device_eval_batch_size: 10
-  eval_steps: 100
-  save_steps: 500
-  num_train_epochs: 16
-  save_total_limit: 4
-
 pythia-12b:
-  fp16: true
+  dtype: fp16
   log_dir: "pythia_log_12b"
   learning_rate: 8e-6
   model_name: EleutherAI/pythia-12b-deduped
@@ -153,11 +173,29 @@ pythia-12b:
   num_train_epochs: 16
   save_total_limit: 4
 
+llama-7b:
+  dtype: fp16
+  log_dir: "llama_log_7b"
+  learning_rate: 2e-5
+  model_name: /home/ubuntu/llama_hf/7B
+  output_dir: llama_model
+  weight_decay: 0.0
+  max_length: 620
+  warmup_steps: 100
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 10
+  eval_steps: 100
+  save_steps: 500
+  num_train_epochs: 16
+  save_total_limit: 4
+
 llama-13b:
-  fp16: true
+  dtype: fp16
   log_dir: "llama_log_13b"
-  learning_rate: 8e-6
-  model_name: /home/ubuntu/llama_hf/llama-13b
+  learning_rate: 2e-5
+  model_name: /home/ubuntu/llama_hf/13B
   output_dir: llama_model_13b
   weight_decay: 0.0
   max_length: 620
@@ -172,10 +210,10 @@ llama-13b:
   save_total_limit: 4
 
 llama-30b:
-  fp16: true
+  dtype: fp16
   log_dir: "llama_log_30b"
-  learning_rate: 8e-6
-  model_name: /home/ubuntu/llama_hf/llama-30b
+  learning_rate: 2e-5
+  model_name: /home/ubuntu/llama_hf/30B
   output_dir: llama_model_30b
   weight_decay: 0.0
   max_length: 512
@@ -234,6 +272,22 @@ pythia-12B:
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 2
 
+gpt-neox:
+  model_name: EleutherAI/gpt-neox-20b
+  deepspeed_config: configs/zero3_config.json
+  dtype: bf16
+  learning_rate: 8e-6
+  weight_decay: 0.0
+  max_length: 1024
+  warmup_steps: 1000
+  eval_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 8
+  residual_dropout: 0.0
+  use_flash_attention: false
+
 galactica-125m:
   learning_rate: 5e-5
   model_name: facebook/galactica-125m
@@ -254,6 +308,20 @@ gpt-jt:
   gradient_accumulation_steps: 8
   per_device_train_batch_size: 4
   per_device_eval_batch_size: 4
+
+cerebras_13B:
+  learning_rate: 6e-6
+  model_name: cerebras/Cerebras-GPT-13B
+  weight_decay: 0.0
+  max_length: 2048
+  output_dir: cerebras_gpt_13b
+
+cerebras_6.7B:
+  learning_rate: 8e-6
+  model_name: cerebras/Cerebras-GPT-6.7B
+  weight_decay: 0.0
+  max_length: 2048
+  output_dir: cerebras_gpt_6_7b
 
 codegen:
   learning_rate: 8e-6

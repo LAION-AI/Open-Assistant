@@ -115,6 +115,7 @@ def handle_work_request(
                 inference.ErrorResponse(
                     request_id=work_request.id,
                     error=stream_response.error,
+                    metrics=inference.WorkerMetricsInfo(),
                 ),
             )
             raise RuntimeError(f"Error from inference server: {stream_response.error}")
@@ -151,6 +152,7 @@ def handle_work_request(
             request_id=work_request.id,
             text=stream_response.generated_text,
             finish_reason=stream_response.details.finish_reason,
+            metrics=inference.WorkerMetricsInfo(),
         ),
     )
     logger.debug("Work complete. Waiting for more work...")

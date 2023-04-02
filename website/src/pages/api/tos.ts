@@ -6,7 +6,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   const user = await getBackendUserCore(token.sub);
   const oasstApiClient = createApiClientFromUser(user);
   if (req.method === "GET") {
-    const tos_acceptance_date = await oasstApiClient.fetch_tos_acceptance(user);
+    const tos_acceptance_date = (await oasstApiClient.fetch_frontend_user(user)).tos_acceptance_date;
     return res.status(200).json(tos_acceptance_date);
   } else if (req.method === "POST") {
     await oasstApiClient.set_tos_acceptance(user);
