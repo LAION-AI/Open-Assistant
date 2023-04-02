@@ -122,10 +122,12 @@ def handle_work_request(
         token = stream_response.token
 
         if model_config.is_llama:
+            logger.debug(f"appending token: {token.id=} to {len(generated_ids)=}")
             generated_ids.append(token.id)
             with tokenizer_lock:
                 text = tokenizer.decode(generated_ids)
             new_text = text[len(decoded_text) :]
+            logger.debug(f"{text=} {decoded_text=} {new_text=}")
             if not decoded_text:
                 new_text = new_text.lstrip()
             token.text = new_text
