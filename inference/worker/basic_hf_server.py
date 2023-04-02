@@ -69,7 +69,7 @@ def model_thread():
                 )
                 output_queue.put_nowait(stream_response)
 
-            streamer = hf_streamer.HFStreamer(tokenizer=tokenizer, printer=print_text)
+            streamer = hf_streamer.HFStreamer(printer=print_text)
 
             with torch.no_grad():
                 ids = tokenizer.encode(prompt, return_tensors="pt")
