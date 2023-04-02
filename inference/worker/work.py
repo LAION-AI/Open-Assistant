@@ -98,10 +98,15 @@ def handle_work_request(
     )
     if model_config.is_lorem:
         stream_events = utils.lorem_events(parameters.seed)
+    # elif model_config.is_llama:
+    #     prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
+    #     stream_events = get_hf_stream_events(stream_request)
     else:
         prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
         stream_events = get_inference_server_stream_events(stream_request)
 
+    generated_ids = []
+    decoded_text = ""
     for stream_response in stream_events:
         if stream_response.is_error:
             logger.error(f"Error from inference server: {stream_response.error}")
@@ -115,6 +120,21 @@ def handle_work_request(
             )
             raise RuntimeError(f"Error from inference server: {stream_response.error}")
         token = stream_response.token
+
+        if model_config.is_llama:
+            logger.debug(f"appending token: {token.id=} to {len(generated_ids)=}")
+            generated_ids.append(token.id)
+            try:
+                with tokenizer_lock:
+                    text = tokenizer.decode(generated_ids, skip_special_tokens=True)
+                new_text = text[len(decoded_text) :]
+                if not decoded_text:
+                    new_text = new_text.lstrip()
+            except Exception:
+                text = decoded_text
+                new_text = ""
+            token.text = new_text
+            decoded_text = text
 
         for send_token in token_buffer.add(token):
             utils.send_response(ws, send_token.to_token_response(request_id=work_request.id))

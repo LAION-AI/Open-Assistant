@@ -1,6 +1,7 @@
 import typing
 
 import transformers
+from loguru import logger
 
 
 class Printer(typing.Protocol):
@@ -26,7 +27,8 @@ class HFStreamer(transformers.generation.streamers.BaseStreamer):
         for token_id in _unpack(value):
             if self.input_ids:
                 input_id = self.input_ids.pop()
-                print(f"input_id: {input_id}, token_id: {token_id}, match: {input_id == token_id}")
+                if input_id != token_id:
+                    logger.warning(f"Input id {input_id} does not match output id {token_id}")
             else:
                 self.printer(token_id)
 
