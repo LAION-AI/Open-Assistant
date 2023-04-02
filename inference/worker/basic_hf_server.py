@@ -83,6 +83,9 @@ def model_thread():
                 output_ids = output[0][len(ids[0]) :]
                 decoded = tokenizer.decode(output_ids, skip_special_tokens=True)
             stream_response = interface.GenerateStreamResponse(
+                token=interface.Token(
+                    text="",  # hack because the "normal" inference server does this at once
+                ),
                 generated_text=decoded.strip(),
             )
             output_queue.put_nowait(stream_response)
