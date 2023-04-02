@@ -61,23 +61,21 @@ const Chat = ({ inferenceHost }: { inferenceHost: string }) => {
             </Button>
           </Flex>
           <Divider />
-          {data.chats
-            .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
-            .map(({ id, modified_at, title }) => (
-              <Link key={id} href={`/chat/${id}`}>
-                <Flex as={Button} bg="inherit" py={2} w="full" borderRadius="sm" gap={6} justifyContent="space-between">
-                  <Text overflowX="hidden" textOverflow="ellipsis">
-                    {title ?? t("chat:empty")}
-                  </Text>
-                  <Text>
-                    {t("chat:chat_date", {
-                      val: new Date(modified_at),
-                      formatParams: { val: { dateStyle: "short", timeStyle: "short" } },
-                    })}
-                  </Text>
-                </Flex>
-              </Link>
-            ))}
+          {data.chats.map(({ id, modified_at, title }) => (
+            <Link key={id} href={`/chat/${id}`}>
+              <Flex as={Button} bg="inherit" py={2} w="full" borderRadius="sm" gap={6} justifyContent="space-between">
+                <Text overflowX="hidden" textOverflow="ellipsis">
+                  {title ?? t("chat:empty")}
+                </Text>
+                <Text>
+                  {t("chat:chat_date", {
+                    val: new Date(modified_at),
+                    formatParams: { val: { dateStyle: "short", timeStyle: "short" } },
+                  })}
+                </Text>
+              </Flex>
+            </Link>
+          ))}
         </Flex>
       </SurveyCard>
     );
