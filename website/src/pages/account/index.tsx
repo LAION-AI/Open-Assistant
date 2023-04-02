@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React from "react";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { Pencil } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { XPBar } from "src/components/Account/XPBar";

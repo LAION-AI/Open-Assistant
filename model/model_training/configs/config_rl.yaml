@@ -1,4 +1,5 @@
 defaults_rlhf:
+  rng_seed: 0xa1221f97
   dataset:
   rank_model: TODO
   sft_model: TODO

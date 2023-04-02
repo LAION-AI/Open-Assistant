@@ -1,0 +1,13 @@
+{
+  "back_to_chat_list": "Reen al babila listo",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Babila agordo",
+  "empty": "(malplena)",
+  "login_message": "Por uzi ĉi tiun funkcion, vi devas ensaluti denove. Ensalutu per unu el ĉi tiuj provizantoj:",
+  "model": "Modelo",
+  "preset": "Antaŭagordo",
+  "preset_custom": "Propra",
+  "queue_info": "Via mesaĝo estas en atendovico, vi estas en pozicio {{ queuePosition, number, integer }} en la vico.",
+  "you_are_logged_in": "Vi estas ensalutinta al la babila servo",
+  "your_chats": "Viaj babiladoj"
+}
