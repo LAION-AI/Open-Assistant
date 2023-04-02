@@ -24,6 +24,7 @@ if __name__ == "__main__":
         file.write_text(text)
 
     hf_config = transformers.AutoConfig.from_pretrained(str(snapshot_dir))
+    logger.warning(f"hf_config: {hf_config}")
     tokenizer_config_path = snapshot_dir / "tokenizer_config.json"
     if tokenizer_config_path.exists():
         logger.info(f"found tokenizer config: {tokenizer_config_path}")
