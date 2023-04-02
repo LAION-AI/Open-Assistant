@@ -52,29 +52,32 @@ const Chat = ({ inferenceHost }: { inferenceHost: string }) => {
     return (
       <SurveyCard>
         <Flex direction="column" gap="4">
-          <Text fontSize="xl" fontWeight="bold">
-            {t("chat:your_chats")}
-          </Text>
+          <Flex justifyContent="space-between" alignItems="center" flexWrap="wrap">
+            <Text fontSize="xl" fontWeight="bold">
+              {t("chat:your_chats")}
+            </Text>
+            <Button maxW="2xs" onClick={createChat}>
+              {t("create_chat")}
+            </Button>
+          </Flex>
           <Divider />
-          {data.chats.map(({ id, modified_at, title }) => (
-            <Link key={id} href={`/chat/${id}`}>
-              <Flex as={Button} bg="inherit" py={2} w="full" borderRadius="sm" gap={6} justifyContent="space-between">
-                <Text overflowX="hidden" textOverflow="ellipsis">
-                  {title ?? t("chat:empty")}
-                </Text>
-                <Text>
-                  {t("chat:chat_date", {
-                    val: new Date(modified_at),
-                    formatParams: { val: { dateStyle: "short", timeStyle: "short" } },
-                  })}
-                </Text>
-              </Flex>
-            </Link>
-          ))}
-          <Divider />
-          <Button maxW="2xs" onClick={createChat}>
-            {t("create_chat")}
-          </Button>
+          {data.chats
+            .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
+            .map(({ id, modified_at, title }) => (
+              <Link key={id} href={`/chat/${id}`}>
+                <Flex as={Button} bg="inherit" py={2} w="full" borderRadius="sm" gap={6} justifyContent="space-between">
+                  <Text overflowX="hidden" textOverflow="ellipsis">
+                    {title ?? t("chat:empty")}
+                  </Text>
+                  <Text>
+                    {t("chat:chat_date", {
+                      val: new Date(modified_at),
+                      formatParams: { val: { dateStyle: "short", timeStyle: "short" } },
+                    })}
+                  </Text>
+                </Flex>
+              </Link>
+            ))}
         </Flex>
       </SurveyCard>
     );
