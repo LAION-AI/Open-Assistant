@@ -8,7 +8,8 @@ from pydantic import validator
 class TrustedClient(pydantic.BaseModel):
     api_key: str
     client: str  # "website", "discord", or similar
-    user_id: str  # the id of the user from the corresponding client
+    user_id: str  # the id of the user in the data backend
+    provider_account_id: str  # id of the user in the client
     username: str
 
 

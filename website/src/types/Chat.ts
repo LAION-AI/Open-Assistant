@@ -2,6 +2,7 @@ export interface TrustedClient {
   api_key: string;
   client: string;
   user_id: string;
+  provider_account_id: string;
   username: string;
 }
 

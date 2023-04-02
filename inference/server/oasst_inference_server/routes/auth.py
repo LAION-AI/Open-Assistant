@@ -264,7 +264,10 @@ async def login_trusted(
     if user is None:
         logger.info(f"Creating new trusted user {info.username=}")
         user = models.DbUser(
-            id=info.user_id, display_name=info.username, provider=info.client, provider_account_id=info.user_id
+            id=info.user_id,
+            display_name=info.username,
+            provider=info.client,
+            provider_account_id=info.provider_account_id,
         )
         db.add(user)
         await db.commit()

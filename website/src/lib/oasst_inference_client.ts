@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { JWT } from "next-auth/jwt";
 import {
   ChatItem,
@@ -39,12 +39,20 @@ export class OasstInferenceClient {
     try {
       return await create();
     } catch (err) {
-      // if we get an error here, the user might not yet exist in the inference database, which is why we try to create
-      // user once (it won't do anything if the user already exists) and then retry the chat creation again.
-      // this is maybe not the cleanest solution, but otherwise we would have to sign up all users of the website
-      // to inference automatically, which is maybe an overkill
-      await this.inference_login();
-      return create();
+      if (err instanceof AxiosError && err.response.status === 500) {
+        // if we get an error here, the user might not yet exist in the inference database, which is why we try to create
+        // user once (it won't do anything if the user already exists) and then retry the chat creation again.
+        // the current inference server does not check for user existence before trying to insert a message into
+        // the database, which is why we get a 500 instead of what I expect to be 404, we should fix this later
+
+        // this is maybe not the cleanest solution, but otherwise we would have to sign up all users of the website
+        // to inference automatically, which is maybe an overkill
+        console.log("here");
+        await this.inference_login();
+        return create();
+      } else {
+        throw err;
+      }
     }
   }
 
@@ -88,6 +96,7 @@ export const createInferenceClient = (jwt: JWT) => {
   const info: TrustedClient = {
     api_key: process.env.INFERENCE_SERVER_API_KEY,
     client: "website",
+    provider_account_id: jwt.backendUserId,
     user_id: jwt.sub,
     username: jwt.name,
   };
