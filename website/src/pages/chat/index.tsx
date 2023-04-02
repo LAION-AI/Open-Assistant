@@ -52,9 +52,14 @@ const Chat = ({ inferenceHost }: { inferenceHost: string }) => {
     return (
       <SurveyCard>
         <Flex direction="column" gap="4">
-          <Text fontSize="xl" fontWeight="bold">
-            {t("chat:your_chats")}
-          </Text>
+          <Flex justifyContent="space-between" alignItems="center" flexWrap="wrap">
+            <Text fontSize="xl" fontWeight="bold">
+              {t("chat:your_chats")}
+            </Text>
+            <Button maxW="2xs" onClick={createChat}>
+              {t("create_chat")}
+            </Button>
+          </Flex>
           <Divider />
           {data.chats.map(({ id, modified_at, title }) => (
             <Link key={id} href={`/chat/${id}`}>
@@ -71,10 +76,6 @@ const Chat = ({ inferenceHost }: { inferenceHost: string }) => {
               </Flex>
             </Link>
           ))}
-          <Divider />
-          <Button maxW="2xs" onClick={createChat}>
-            {t("create_chat")}
-          </Button>
         </Flex>
       </SurveyCard>
     );
