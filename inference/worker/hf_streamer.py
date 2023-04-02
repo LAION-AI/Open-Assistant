@@ -10,8 +10,9 @@ class Printer(typing.Protocol):
 
 # based on HF text streamer
 class HFStreamer(transformers.generation.streamers.BaseStreamer):
-    def __init__(self, printer: Printer):
-        self.printer = printer
+    def __init__(self, input_ids: list[int], printer: Printer):
+        self.input_ids = input_ids
+        self.printer = printer[::-1]
 
     def put(self, value):
         if len(value.shape) > 1 and value.shape[0] > 1:
@@ -20,7 +21,11 @@ class HFStreamer(transformers.generation.streamers.BaseStreamer):
             value = value[0]
 
         for token_id in value.tolist():
-            self.printer(token_id)
+            if self.input_ids:
+                input_id = self.input_ids.pop()
+                print(f"input_id: {input_id}, token_id: {token_id}, match: {input_id == token_id}")
+            else:
+                self.printer(token_id)
 
     def end(self):
         pass
