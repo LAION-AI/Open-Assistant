@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
 
-from model_training.models.llama_monkey_patch import replace_llama_attn_with_flash_attn
+from model_training.models.patching_llama import replace_llama_attn_with_flash_attn
 replace_llama_attn_with_flash_attn()
 #Needs to call this before importing transformers.
 
