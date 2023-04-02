@@ -28,7 +28,7 @@ if __name__ == "__main__":
     if tokenizer_config_path.exists():
         logger.info(f"found tokenizer config: {tokenizer_config_path}")
         tokenizer_config = json.loads(tokenizer_config_path.read_text())
-        for key, value in hf_config.get_config_dict().items():
+        for key, value in hf_config.to_dict().items():
             if key not in tokenizer_config:
                 tokenizer_config[key] = value
         tokenizer_config_path.write_text(json.dumps(tokenizer_config))
