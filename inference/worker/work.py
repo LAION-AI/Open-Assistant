@@ -126,7 +126,7 @@ def handle_work_request(
             generated_ids.append(token.id)
             try:
                 with tokenizer_lock:
-                    text = tokenizer.decode(generated_ids)
+                    text = tokenizer.decode(generated_ids[:-2], skip_special_tokens=True)
                 new_text = text[len(decoded_text) :]
                 if not decoded_text:
                     new_text = new_text.lstrip()
