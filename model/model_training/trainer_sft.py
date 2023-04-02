@@ -23,6 +23,12 @@ from model_training.utils import (
 from torch import nn
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
+
+
+from model_training.models.llama_monkey_patch import replace_llama_attn_with_flash_attn
+replace_llama_attn_with_flash_attn()
+#Needs to call this before importing transformers.
+
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
