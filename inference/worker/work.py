@@ -122,7 +122,6 @@ def handle_work_request(
         token = stream_response.token
 
         if model_config.is_llama:
-            logger.debug(f"appending token: {token.id=} to {len(generated_ids)=}")
             generated_ids.append(token.id)
             try:
                 with tokenizer_lock:
