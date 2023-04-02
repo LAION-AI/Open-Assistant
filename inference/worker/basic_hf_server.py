@@ -53,12 +53,7 @@ def model_thread():
 
     request: interface.GenerateStreamRequest
     output_queue: Queue
-    # eos_token = ""
-    # if hasattr(tokenizer, "eos_token"):
-    #     eos_token = tokenizer.eos_token
-    eos_token_id = None
-    if hasattr(tokenizer, "eos_token_id"):
-        eos_token_id = tokenizer.eos_token_id
+    eos_token_id = tokenizer.eos_token_id if hasattr(tokenizer, "eos_token_id") else None
     while True:
         request, output_queue = model_input_queue.get()
         try:
