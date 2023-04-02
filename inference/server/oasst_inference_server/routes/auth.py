@@ -197,7 +197,7 @@ async def callback_github(
 
 @router.get("/login/google")
 async def login_google(request: Request):
-    redirect_uri = (f"{settings.auth_callback_root}/google",)
+    redirect_uri = (f"{settings.api_root}/auth/callback/google",)
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
