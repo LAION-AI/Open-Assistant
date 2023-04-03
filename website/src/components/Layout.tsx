@@ -13,7 +13,6 @@ import {
   Users,
 } from "lucide-react";
 import type { NextPage } from "next";
-import { isChatEnabled } from "src/lib/chat_enabled";
 
 import { SlimFooter } from "./Dashboard/SlimFooter";
 import { Footer } from "./Footer";
@@ -63,7 +62,7 @@ export const getDashboardLayout = (page: React.ReactElement) => (
             icon: ExternalLink,
             target: "_blank",
           },
-          ...(isChatEnabled()
+          ...(process.env.ENABLE_CHAT
             ? [
                 {
                   labelID: "chat",

@@ -3,7 +3,6 @@ import { User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
-import { isChatEnabled } from "src/lib/chat_enabled";
 
 import { AnimatedCircles } from "./AnimatedCircles";
 import { Container } from "./Container";
@@ -31,7 +30,7 @@ export function Hero() {
             <Text className={`mt-6 text-lg ${pTextColor}`}>{t("blurb")}</Text>
             <Text className={`mt-6 text-lg ${pTextColor}`}>{t("blurb1")}</Text>
             <Box className={`mt-6 flex gap-6 ${pTextColor}`}>
-              {isChatEnabled() && (
+              {process.env.ENABLE_CHAT && (
                 <Link href="/chat" aria-label="Chat">
                   <Button variant="solid" colorScheme="blue" px={5} py={6}>
                     {t("index:try_our_assistant")}
