@@ -34,9 +34,7 @@ class ExportMessageEventRanking(ExportMessageEvent):
     ranked_message_ids: list[str]
     ranking_parent_id: Optional[str]
     message_tree_id: Optional[str]
-    not_rankable: Optional[
-        bool
-    ]  # all options flawed, factually incorrect or unacceptable
+    not_rankable: Optional[bool]  # flawed, factually incorrect or unacceptable
 
 
 class ExportMessageNode(BaseModel):

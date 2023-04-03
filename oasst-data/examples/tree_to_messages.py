@@ -9,10 +9,14 @@ from oasst_data import ExportMessageNode, load_trees, visit_messages_depth_first
 def parse_args():
     parser = argparse.ArgumentParser(description="tree_to_messages")
     parser.add_argument(
-        "input_file_name", type=str, help="path to input .jsonl or .jsonl.gz input file"
+        "input_file_name",
+        type=str,
+        help="path to input .jsonl or .jsonl.gz input file",
     )
     parser.add_argument(
-        "output_file_name", type=str, help="path to output .jsonl or .jsonl.gz file"
+        "output_file_name",
+        type=str,
+        help="path to output .jsonl or .jsonl.gz file",
     )
     parser.add_argument("--exclude-nulls", action="store_true", default=False)
     args = parser.parse_args()
@@ -20,7 +24,9 @@ def parse_args():
 
 
 def write_messages_file(
-    output_file_name: str | Path, messages: list[ExportMessageNode], exclude_none: bool
+    output_file_name: str | Path,
+    messages: list[ExportMessageNode],
+    exclude_none: bool,
 ) -> None:
     output_file_name = Path(output_file_name)
     if output_file_name.suffix == ".gz":
