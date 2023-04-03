@@ -1,10 +1,9 @@
-from model_training.custom_datasets.rank_datasets import HFDataset
-from reward.instructor.rank_datasets import AnthropicRLHF
+from model_training.custom_datasets.rank_datasets import AnthropicRLHF, HFDataset
 
 
-def load_anthroopic_rlhf():
-    train = AnthropicRLHF(split="train", mode="rm")
-    validation = AnthropicRLHF(split="test", mode="rm")
+def load_anthropic_rlhf():
+    train = AnthropicRLHF(split="train")
+    validation = AnthropicRLHF(split="test")
 
     print(f"AnthropicRLHF extra dataset size: {len(train)}, {len(validation)}")
 

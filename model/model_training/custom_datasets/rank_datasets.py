@@ -40,7 +40,6 @@ class SHPDataset(Dataset):
 
 
 class HellaSwagDataset(Dataset):
-
     """
     Dataset class to use data from https://arxiv.org/pdf/1905.07830.pdf
     for Reward modeling
@@ -70,7 +69,6 @@ class HellaSwagDataset(Dataset):
 
 
 class HFDataset(Dataset):
-
     """
     Dataset class to use data from openai/summarize_from_feedback for Reward modeling.
     Summaries ranked by overall score.
@@ -128,3 +126,50 @@ class HFDataset(Dataset):
             summaries = [summary["text"] for summary in summaries]
             return [post], summaries
         return self.comparisons[idx]
+
+
+class AnthropicRLHF(Dataset):
+    @staticmethod
+    def _split_dialogue(text):
+        lines = text.split("\n\n")
+
+        dialogue = []
+        for line in lines:
+            if line.startswith("Human:"):
+                speaker = "Human"
+                message = line[7:]
+            elif line.startswith("Assistant:"):
+                speaker = "Assistant"
+                message = line[11:]
+            else:
+                continue
+            dialogue.append((speaker, message.strip()))
+
+        return dialogue
+
+    def __init__(self, split="train") -> None:
+        super().__init__()
+        assert split in ("train", "test")
+        self.split = split
+        self.data = []
+        dataset = load_dataset("Anthropic/hh-rlhf")[split]
+        for entry in dataset:
+            chosen = entry["chosen"]
+
+            if "Assistant" not in chosen:
+                continue
+
+            rejected = entry["rejected"]
+            chosen = self._split_dialogue(chosen)
+            rejected = self._split_dialogue(rejected)
+
+            prefix = [line for (speaker, line) in chosen[:-1]]
+            good_reply = chosen[-1][1]  # last part of dialog, the text
+            bad_reply = rejected[-1][1]  # last part of dialog, the text
+            self.data.append((prefix, [good_reply, bad_reply]))
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]
