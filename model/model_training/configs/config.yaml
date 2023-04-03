@@ -13,6 +13,7 @@ defaults:
   eval_steps: 200
   save_steps: 1000
   max_length: 512
+  val_max_length:
   num_train_epochs: 3
   logging_steps: 10
   max_grad_norm: 2.0
