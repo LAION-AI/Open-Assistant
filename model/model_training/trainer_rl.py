@@ -8,9 +8,12 @@ import trlx
 from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
 from models.reward_model import GPTNeoXRewardModel
 from trlx.data.configs import TRLConfig
+import tritonclient.grpc as client_util
+from tritonclient.utils import np_to_triton_dtype
+import os
 
 # flake8: noqa
-from utils.ppo_trainer import CustomPPOTrainer
+from utils.ppo_utils import CustomPPOTrainer
 from utils.utils import _strtobool, get_dataset, get_model, read_yamls
 
 
@@ -47,43 +50,58 @@ def argument_parsing(notebook=False, notebook_args=None):
 
     return parser.parse_args(remaining)
 
+def prepare_tensor(name: str, input):
+    t = client_util.InferInput(name, input.shape, np_to_triton_dtype(input.dtype))
+    t.set_data_from_numpy(input)
+    return t
 
-if __name__ == "__main__":
-    training_conf = argument_parsing()
 
-    # Load pretrained rank model
-    rank_config = Namespace(**training_conf.rank_config)
+# Taken from https://github.com/CarperAI/trlx/blob/b7db6f9e74c7d8dc719255b27968d2994836957a/examples/hh/ppo_hh.py#L114
+def create_reward_fn(rank_config):  # noqa:  C901
+    triton_host = os.environ.get("TRITON_HOST")
+    assert triton_host is not None, "Specify reward mode in the TRITON_HOST environmental variable"
+
+    triton_url, triton_model = triton_host.split("/")
+    client = client_util.InferenceServerClient(url=triton_url, verbose=False)
+
     rank_tokenizer = transformers.AutoTokenizer.from_pretrained(rank_config.model_name)
 
-    # TODO Load directly into torch.float16
-    rank_model = get_model(rank_config, rank_tokenizer)
-
-    if rank_config.half:
-        rank_model = rank_model.half()
-
-    rank_model.to("cuda:{}".format(training_conf.local_rank if training_conf.local_rank >= 0 else 0))
-    rank_model.eval()
-
-    @torch.no_grad()
-    def rank_model_fn(samples, **kwargs):
-        # Here it is better to truncate to the left but model is is inference
-        # so we can get away without truncating at all
+    def reward_fn(samples, prompts, outputs):
         if len(samples) == 0:
             return []
 
         inputs = rank_tokenizer(samples, return_tensors="pt", padding=True)
 
-        if "token_type_ids" in inputs:
-            del inputs["token_type_ids"]
+        mbs = rank_config.batch_size
+        out = []
+        for i in range(math.ceil(len(samples) / mbs)):
+            batch_ixs = slice(i * mbs, (i + 1) * mbs)
+            
+            result = client.infer(triton_model, 
+                [
+                    {
+                        'input_ids': prepare_tensor("input_ids", input.input_ids[batch_ixs]),
+                        'attention_mask': prepare_tensor("attention_mask", input.attention_mask[batch_ixs])
+                    }
+                ]
+            )
 
-        device = next(iter(rank_model.parameters())).device
-        inputs = {k: v.to(device) for k, v in inputs.items()}
+            rewards = result.as_numpy("rewards")
+            
+            out.extend(rewards)
 
-        with torch.no_grad():
-            outputs = rank_model(**inputs).logits.detach().cpu()[:, 0]
+        return out
 
-        return outputs
+    return reward_fn
 
+
+if __name__ == "__main__":
+    training_conf = argument_parsing()
+
+    rank_config = Namespace(**training_conf.rank_config)
+    eos_token = transformers.AutoTokenizer.from_pretrained(rank_config.model_name).eos_token
+
+    # Load pretrained SFT model
     sft_config = Namespace(**training_conf.sft_config)
 
     # override model_name to be the same as sft_model
@@ -100,12 +118,19 @@ if __name__ == "__main__":
     prompts, eval_prompts = tuple(
         map(
             lambda x: [
-                "".join(format_pairs(x[i][0], rank_tokenizer.eos_token, add_initial_reply_token=True))
+                "".join(format_pairs(x[i][0], eos_token, add_initial_reply_token=True))
                 for i in range(len(x))
             ],
             (train, eval),
         )
     )
+
+    ## Override first eval prompts just for visualization
+    eval_prompts = eval_prompts + [
+        "".join(format_pairs(["Can you tell me about GLaDOS?"], eos_token, add_initial_reply_token=True)),
+        "".join(format_pairs(["What is the chemical symbol for gold?"], eos_token, add_initial_reply_token=True)),
+        "".join(format_pairs(["If you were the President of the United States, what would you do?"], eos_token, add_initial_reply_token=True))
+    ]
 
     random.shuffle(prompts)
 
@@ -118,11 +143,11 @@ if __name__ == "__main__":
 
     trainer = trlx.train(
         sft_config.model_name,
-        reward_fn=rank_model_fn,
+        reward_fn=create_reward_fn(rank_config),
         prompts=prompts,
         eval_prompts=eval_prompts,
         config=trlx_config,
-        stop_sequences=[rank_tokenizer.eos_token, QA_SPECIAL_TOKENS["Question"]],
+        stop_sequences=[eos_token, QA_SPECIAL_TOKENS["Question"]],
     )
 
     training_conf.output_dir = training_conf.output_dir if training_conf.output_dir else training_conf.model_name

@@ -88,7 +88,10 @@ def load_oasst_export(
             raise RuntimeError()
 
         visit_threads_depth_first(tree.prompt, visitor=threads.append, predicate=leaf_filter)
-        if mode == "sft":
+
+        # This condition is critical for the RL training
+        # Not so much for the SFT trianing
+        if mode == "sft" or mode == "rl":
             for t in threads:
                 if t[-1].role == "prompter":
                     t.pop()

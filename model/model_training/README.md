@@ -170,3 +170,21 @@ Experimental results in wandb
 - Merge utils etc with reward model
 - Casual Modelling for GPT-JT does not leverage the bidirectional mask for the
   prompt? (https://huggingface.co/togethercomputer/GPT-JT-6B-v1)
+
+
+
+###################
+TEMP RL:
+
+Install singularity from https://github.com/sylabs/singularity/blob/main/INSTALL.md
+singularity build --sandbox tritonserver-pyt.sif docker://nvcr.io/nvidia/tritonserver:22.08-pyt-python-py3
+
+CUDA_VISIBLE_DEVICES=7 python to_triton.py --configs pythia_rlhf
+
+# launch rm 
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind model_store:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store
+
+export TRITON_HOST=localhost:8001/andreaskoepf-oasst-rm-1-pythia-1b
+
+# change path to config and num processses 
+CUDA_VISIBLE_DEVICES=7 accelerate launch --main_process_port 29501 --config_file configs/accelerate_config.yaml trainer_rl.py --configs defaults defaults_rlhf pythia_rlhf

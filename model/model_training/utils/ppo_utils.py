@@ -5,6 +5,10 @@ from transformers import AutoTokenizer
 from trlx.trainer import register_trainer
 from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
 from trlx.trainer.nn.ppo_models import CausalLMHydraWithValueHead, Seq2SeqLMHydraWithValueHead
+from trlx.pipeline import BasePipeline, register_datapipeline
+from custom_datasets.formatting import QA_SPECIAL_TOKENS
+from torch.utils.data import DataLoader
+from transformers import DataCollatorWithPadding, PreTrainedTokenizer
 
 
 @register_trainer
@@ -73,4 +77,68 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
         else:
             model = CausalLMHydraWithValueHead(config.model.model_path, config.model.num_layers_unfrozen)
 
+        if config.sft_config.half:
+            model = model.half()
+
         return model
+
+    def generate(self, input_ids, *args, **kwargs):
+        preds = super().generate(input_ids, *args, **kwargs)
+
+        # make sure the last token is the EOS token
+        preds[:, -1] = self.tokenizer.eos_token_id
+
+        return preds
+
+    def generate_eval(self, input_ids, *args, **kwargs):
+        preds = super().generate(input_ids, *args, **kwargs)
+
+        preds[:, -1] = self.tokenizer.eos_token_id
+
+        return preds
+
+
+@register_datapipeline
+class CustomPromptPipeline(BasePipeline):
+    """
+    Tokenizes prompts, unless they are already tokenized, and truncates them to `max_prompt_length` from the right
+    """
+
+    def __init__(self, prompts: List[str], max_prompt_length: int, tokenizer: PreTrainedTokenizer):
+        super().__init__()
+
+        model_inputs = tokenizer(
+            prompts,
+            truncation=True,
+            padding=False,
+            max_length=max_prompt_length,
+            add_special_tokens=False,
+        )
+
+        prompts_tokens_ = model_inputs["input_ids"]
+        attention_mask = model_inputs["attention_mask"]
+
+        prompts_tokens = []
+
+        assistant_token_id = tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Answer"])
+        eos_token_id = tokenizer.eos_token_id
+
+        # Due to truncation, special tokens may not be present ... so we add them (context is still incomplete)
+        # not need to update attention_mask since it iw always 1
+        for prompt_tokens in prompts_tokens_:
+            prompts_tokens.append(prompt_tokens[:-2] + [eos_token_id, assistant_token_id])
+
+        self.tokenizer = tokenizer
+        self.prompts = [
+            {"input_ids": tokens, "attention_mask": mask} for tokens, mask in zip(prompts_tokens, attention_mask)
+        ]
+
+    def __getitem__(self, ix: int):
+        return self.prompts[ix]
+
+    def __len__(self) -> int:
+        return len(self.prompts)
+
+    def create_loader(self, batch_size: int, shuffle=False) -> DataLoader:
+        collate_fn = DataCollatorWithPadding(self.tokenizer) if self.tokenizer else torch.vstack
+        return DataLoader(self, batch_size=batch_size, collate_fn=collate_fn, shuffle=shuffle)

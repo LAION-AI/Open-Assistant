@@ -5,7 +5,7 @@ defaults_rlhf:
   num_rollouts: 32
   epochs: 10
   datasets_extra: []
-  cache_dir: .cache
+  cache_dir: /home/ubuntu/data_cache
   output_dir: model_rl
   eval_size: 500
   rank_config:
@@ -28,6 +28,7 @@ pythia_rlhf:
     pooling: last
     residual_dropout: 0.08172424407561013
     use_flash_attention: false
+    batch_size: 12 # batch size used by the RM for evaluation
     half: false
 
   sft_config:

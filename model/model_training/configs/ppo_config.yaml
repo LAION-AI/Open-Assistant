@@ -5,7 +5,7 @@ train:
   batch_size: 18
   checkpoint_interval: 2500
   eval_interval: 500
-  pipeline: "PromptPipeline"
+  pipeline: "CustomPromptPipeline"
   trainer: "CustomPPOTrainer"
   tracker: wandb
   project_name: rlhf
@@ -45,16 +45,16 @@ method:
   horizon: 10000
   gamma: 1
   lam: 0.95
-  cliprange: 0.2
-  cliprange_value: 0.2
+  cliprange: 0.4
+  cliprange_value: 0.4
   vf_coef: 1
   scale_reward: False
   ref_mean: null
   ref_std: null
-  cliprange_reward: 10
+  cliprange_reward: 4
   gen_kwargs:
-    max_new_tokens: 100
+    max_new_tokens: 150
     top_k: 0
     top_p: 0.7
     do_sample: True
-    temperature: 0.5
+    temperature: 0.8
