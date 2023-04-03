@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import List
 
 import numpy as np
 from datasets import load_dataset
@@ -19,16 +20,19 @@ class SHPDataset(Dataset):
 
         self.post_dict = defaultdict(dict)
         self.postids = []
+        if not isinstance(split, List):
+            split = [split]
         dataset = load_dataset("stanfordnlp/SHP", split=split)
-        for item in dataset:
-            postid = item.get("post_id")
-            self.postids.append(postid)
-            score_A, score_B = [item.get(key) for key in ("score_A", "score_B")]
-            answers = [item.get(key) for key in ("human_ref_A", "human_ref_B")]
-            if score_B > score_A:
-                answers = list(reversed(answers))
+        for data in dataset:
+            for item in data:
+                postid = item.get("post_id")
+                self.postids.append(postid)
+                score_A, score_B = [item.get(key) for key in ("score_A", "score_B")]
+                answers = [item.get(key) for key in ("human_ref_A", "human_ref_B")]
+                if score_B > score_A:
+                    answers = list(reversed(answers))
 
-            self.post_dict[postid].update({"post": item.get("history"), "answers": answers})
+                self.post_dict[postid].update({"post": item.get("history"), "answers": answers})
 
     def __len__(self):
         return len(self.postids)
@@ -52,13 +56,16 @@ class HellaSwagDataset(Dataset):
 
         np.random.seed(SEED)
         self.dataset_list = []
+        if not isinstance(split, List):
+            split = [split]
         dataset = load_dataset("AlekseyKorshuk/hellaswag", split=split)
-        for item in dataset:
-            context = item.get("ctx")
-            endings = item.get("endings")
-            selected = endings.pop(item.get("label"))
-            ordered_ends = [selected, np.random.choice(endings)]
-            self.dataset_list.append({"context": context, "completions": ordered_ends})
+        for data in dataset:
+            for item in data:
+                context = item.get("ctx")
+                endings = item.get("endings")
+                selected = endings.pop(item.get("label"))
+                ordered_ends = [selected, np.random.choice(endings)]
+                self.dataset_list.append({"context": context, "completions": ordered_ends})
 
     def __len__(self):
         return len(self.dataset_list)
@@ -80,6 +87,8 @@ class HFDataset(Dataset):
         super().__init__()
         # axis subset contains splits 'test' and 'validation'
         # comparisons subset contains splits 'train' and 'validation'
+        if not isinstance(split, List):
+            split = [split]
         dataset = load_dataset("openai/summarize_from_feedback", subset, split=split)
         self.subset = subset
 
@@ -97,22 +106,24 @@ class HFDataset(Dataset):
             self._handle_comparisons(dataset)
 
     def _handle_comparisons(self, dataset):
-        for item in dataset:
-            choice = item["choice"]  # indicates the preferred summary
-            full_post = item["info"]["post"]
-            summaries = [item["summaries"][choice]["text"], item["summaries"][1 - choice]["text"]]
-            self.comparisons.append([[full_post], summaries])
+        for data in dataset:
+            for item in dataset:
+                choice = item["choice"]  # indicates the preferred summary
+                full_post = item["info"]["post"]
+                summaries = [item["summaries"][choice]["text"], item["summaries"][1 - choice]["text"]]
+                self.comparisons.append([[full_post], summaries])
 
     def _handle_axis(self, dataset):
-        for item in dataset:
-            if item["summary"].get("axes").get("overall") is not None:
-                post_id = item.get("info")["id"]
-                if post_id not in self.axis_post_ids:
-                    self.axis_post_ids.append(post_id)
-                    item_content = item["info"]["post"] or item["info"]["article"]
-                    self.axis_post_dict[post_id].update({"post": item_content, "summaries": [item["summary"]]})
-                else:
-                    self.axis_post_dict[post_id]["summaries"].append(item["summary"])
+        for data in dataset:
+            for item in dataset:
+                if item["summary"].get("axes").get("overall") is not None:
+                    post_id = item.get("info")["id"]
+                    if post_id not in self.axis_post_ids:
+                        self.axis_post_ids.append(post_id)
+                        item_content = item["info"]["post"] or item["info"]["article"]
+                        self.axis_post_dict[post_id].update({"post": item_content, "summaries": [item["summary"]]})
+                    else:
+                        self.axis_post_dict[post_id]["summaries"].append(item["summary"])
 
     def __len__(self):
         if self.subset == "axis":
