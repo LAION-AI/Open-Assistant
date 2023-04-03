@@ -15,10 +15,10 @@ from oasst_inference_server.schemas import auth
 from oasst_inference_server.settings import settings
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 
-oauth2_scheme = APIKeyHeader(name="Authorization", auto_error=False)
-refresh_scheme = APIKeyHeader(name="Refresh", auto_error=False)
+authorization_scheme = APIKeyHeader(name="Authorization", auto_error=False, scheme_name="Authorization")
+refresh_scheme = APIKeyHeader(name="Refresh", auto_error=False, scheme_name="Refresh")
 
-trusted_client_scheme = APIKeyHeader(name="TrustedClient", auto_error=False)
+trusted_client_scheme = APIKeyHeader(name="TrustedClient", auto_error=False, scheme_name="TrustedClient")
 
 
 def derive_key() -> bytes:
@@ -54,7 +54,7 @@ def create_access_token(user_id: str) -> str:
 
 
 def get_current_user_id(
-    token: str = Security(oauth2_scheme), trusted_client_token: str = Security(trusted_client_scheme)
+    token: str = Security(authorization_scheme), trusted_client_token: str = Security(trusted_client_scheme)
 ) -> str:
     """Get the current user ID by decoding the JWT token."""
     if trusted_client_token is not None:

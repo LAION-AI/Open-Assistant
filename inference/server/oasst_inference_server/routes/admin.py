@@ -1,20 +1,25 @@
 import fastapi
 import sqlmodel
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Security
 from loguru import logger
-from oasst_inference_server import database, deps, models
+from oasst_inference_server import auth, database, deps, models
 from oasst_inference_server.schemas import worker as worker_schema
 from oasst_inference_server.settings import settings
 
 router = fastapi.APIRouter(
-    prefix="/auth",
-    tags=["auth"],
+    prefix="/admin",
+    tags=["admin"],
 )
 
 
-def get_bearer_token(authorization_header: str) -> str:
-    if not authorization_header.startswith("Bearer "):
-        raise ValueError("Authorization header must start with 'Bearer '")
+def get_bearer_token(
+    authorization_header: str = Security(auth.authorization_scheme),
+) -> str:
+    if authorization_header is None or not authorization_header.startswith("Bearer "):
+        raise fastapi.HTTPException(
+            status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
     return authorization_header[len("Bearer ") :]
 
 
