@@ -15,12 +15,8 @@ import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
-  if (!isChatEnabled()) {
-    return {
-      notFound: true,
-    };
-  }
   return {
+    notFound: !isChatEnabled(),
     props: {
       inferenceHost: process.env.INFERENCE_SERVER_HOST,
       ...(await serverSideTranslations(locale)),

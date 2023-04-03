@@ -10,7 +10,6 @@ import React, { useEffect } from "react";
 import { FlagsProvider } from "react-feature-flags";
 import { getDefaultLayout, NextPageWithLayout } from "src/components/Layout";
 import flags from "src/flags";
-import { isChatEnabled } from "src/lib/chat_enabled";
 import { SWRConfig, SWRConfiguration } from "swr";
 
 import nextI18NextConfig from "../../next-i18next.config.js";
@@ -42,7 +41,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps }, env, cookie }:
     process.env = new Proxy(env, {
       get(env, key: string) {
         if (!(key in env)) {
-          console.warn(`Environment variable ${key} not set in _app.tsx`);
+          console.warn(`Environment variable ${key} is either not set in _app.tsx or is empty`);
         }
         return env[key];
       },
@@ -69,7 +68,7 @@ MyApp.getInitialProps = ({ ctx: { req } }: AppContext) => {
   return {
     env: {
       INFERENCE_SERVER_HOST: process.env.INFERENCE_SERVER_HOST,
-      ENABLE_CHAT: isChatEnabled(),
+      ENABLE_CHAT: process.env.ENABLE_CHAT,
       ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
       ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA),
       CLOUDFLARE_CAPTCHA_SITE_KEY: process.env.CLOUDFLARE_CAPTCHA_SITE_KEY,
