@@ -104,16 +104,7 @@ async def callback_discord(
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from Discord")
 
-    # Try to find a user in our DB linked to the Discord user
-    user: models.DbUser = await query_user_by_provider_id(db, discord_id=discord_id)
-
-    # Create if no user exists
-    if not user:
-        user = models.DbUser(provider="discord", provider_account_id=discord_id, display_name=discord_username)
-
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
+    user: models.DbUser = await get_or_create_user(db, "discord", discord_id, discord_username)
 
     # Discord account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token(user.id)
@@ -172,16 +163,7 @@ async def callback_github(
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from GitHub")
 
-    # Try to find a user in our DB linked to the GitHub user
-    user: models.DbUser = await query_user_by_provider_id(db, github_id=github_id)
-
-    # Create if no user exists
-    if not user:
-        user = models.DbUser(provider="github", provider_account_id=github_id, display_name=github_username)
-
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
+    user: models.DbUser = await get_or_create_user(db, "github", github_id, github_username)
 
     # GitHub account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token(user.id)
@@ -218,20 +200,11 @@ async def callback_google(
     except KeyError:
         raise HTTPException(status_code=400, detail="Invalid user info response from Google")
 
-    # Try to find a user in our DB linked to the GitHub user
-    user: models.DbUser = await query_user_by_provider_id(db, google_id=google_id)
+    user: models.DbUser = await get_or_create_user(db, "google", google_id, google_username)
 
-    # Create if no user exists
-    if not user:
-        user = models.DbUser(provider="google", provider_account_id=google_id, display_name=google_username)
-
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-
-    # GitHub account is authenticated and linked to a user; create JWT
+    # Google account is authenticated and linked to a user; create JWT
     access_token = auth.create_access_token(user.id)
-    refresh_token = auth.create_refresh_token(user.id)
+    refresh_token = await auth.create_refresh_token(user.id)
 
     token_pair = protocol.TokenPair(
         access_token=protocol.Token(access_token=access_token, token_type="bearer"),
@@ -241,31 +214,23 @@ async def callback_google(
     return token_pair
 
 
-async def query_user_by_provider_id(
-    db: database.AsyncSession,
-    discord_id: str | None = None,
-    github_id: str | None = None,
-    google_id: str | None = None,
-) -> models.DbUser | None:
-    """Returns the user associated with a given provider ID if any."""
-    user_qry = sqlmodel.select(models.DbUser)
+async def get_or_create_user(
+    db: database.AsyncSession, provider: str, provider_id: str, display_name: str
+) -> models.DbUser:
+    user = (
+        await db.exec(
+            sqlmodel.select(models.DbUser)
+            .filter(models.DbUser.provider == provider)
+            .filter(models.DbUser.provider_account_id == provider_id)
+        )
+    ).one_or_none()
 
-    if discord_id:
-        user_qry = user_qry.filter(models.DbUser.provider == "discord").filter(
-            models.DbUser.provider_account_id == discord_id
-        )
-    elif github_id:
-        user_qry = user_qry.filter(models.DbUser.provider == "github").filter(
-            models.DbUser.provider_account_id == github_id
-        )
-    elif google_id:
-        user_qry = user_qry.filter(models.DbUser.provider == "google").filter(
-            models.DbUser.provider_account_id == google_id
-        )
-    else:
-        return None
+    if not user:
+        user = models.DbUser(provider=provider, provider_account_id=provider_id, display_name=display_name)
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
 
-    user: models.DbUser = (await db.exec(user_qry)).first()
     return user
 
 
