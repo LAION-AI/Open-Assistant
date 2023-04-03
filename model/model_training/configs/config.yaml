@@ -120,8 +120,8 @@ pretrain:
 reference-data:
   datasets:
     - oasst_export:
-        lang: "en,es,de,fr"
-        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
         val_split: 0.05
     - alpaca
   sort_by_length: false
@@ -172,15 +172,15 @@ reference-pythia-12b:
   model_name: EleutherAI/pythia-12b-deduped
   output_dir: pythia_model_12b
   weight_decay: 0.0
-  max_length: 620
+  max_length: 2048
   warmup_steps: 100
   gradient_checkpointing: true
-  gradient_accumulation_steps: 1
-  per_device_train_batch_size: 8
-  per_device_eval_batch_size: 8
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
   eval_steps: 100
-  save_steps: 500
-  num_train_epochs: 16
+  save_steps: 2000
+  num_train_epochs: 8
   save_total_limit: 4
 
 llama-7b:
