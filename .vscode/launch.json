@@ -24,7 +24,7 @@
       "request": "launch",
       "cwd": "${workspaceFolder}/model/model_training",
       "program": "trainer_sft.py",
-      "args": ["--configs", "defaults", "oasst_export_eu", "gpt-neox"],
+      "args": ["--configs", "defaults", "pythia-12b", "oasst_export_eu", "--model_name", "andreaskoepf/pythia-12b-pre-3500"],
       "console": "integratedTerminal",
       "justMyCode": true,
       "env": {

@@ -322,9 +322,11 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
         if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
             p = pad_vocab_size_to_multiple_of
             target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
-            model.resize_token_embeddings(target_size)
+            if n_embs != target_size:
+                model.resize_token_embeddings(target_size)
 
         if conf.freeze_layer:
+            print("freeze_layer", conf.freeze_layer)
             model = freeze_top_n_layers(model, conf.freeze_layer)
 
     model_parameters = filter(lambda p: p.requires_grad, model.parameters())

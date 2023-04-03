@@ -31,6 +31,7 @@ def get_specific_model(
     # encoder-decoder support for Flan-T5 like models
     # for now, we can use an argument but in the future,
     # we can automate this
+    print('model_name:', model_name)
     if without_head:
         model = transformers.AutoModel.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     elif seq2seqmodel:
