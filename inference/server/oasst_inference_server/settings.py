@@ -96,6 +96,9 @@ class Settings(pydantic.BaseSettings):
     auth_github_client_id: str = ""
     auth_github_client_secret: str = ""
 
+    auth_google_client_id: str = ""
+    auth_google_client_secret: str = ""
+
     pending_event_interval: int = 1
     worker_ping_interval: int = 3
 
