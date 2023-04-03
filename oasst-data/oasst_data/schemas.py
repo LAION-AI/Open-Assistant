@@ -34,7 +34,9 @@ class ExportMessageEventRanking(ExportMessageEvent):
     ranked_message_ids: list[str]
     ranking_parent_id: Optional[str]
     message_tree_id: Optional[str]
-    not_rankable: Optional[bool]  # all options flawed, factually incorrect or unacceptable
+    not_rankable: Optional[
+        bool
+    ]  # all options flawed, factually incorrect or unacceptable
 
 
 class ExportMessageNode(BaseModel):
@@ -54,6 +56,7 @@ class ExportMessageNode(BaseModel):
     replies: list[ExportMessageNode] | None
     labels: LabelValues | None
     events: dict[str, list[ExportMessageEvent]] | None
+    tree_state: str | None  # not used in message trees (see outer tree there)
 
 
 class ExportMessageTree(BaseModel):
