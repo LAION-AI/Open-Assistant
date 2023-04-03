@@ -184,8 +184,6 @@ def main():
 
     init_rng(training_conf)
 
-    init_rng(training_conf)
-
     tokenizer = get_tokenizer(training_conf)
     model = get_model(training_conf, tokenizer)
 
