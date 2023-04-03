@@ -78,27 +78,53 @@ class HFDataset(Dataset):
 
     name = "hfsummary"
 
-    def __init__(self, split=None) -> None:
+    def __init__(self, split=None, subset="axis") -> None:
         super().__init__()
+        # axis subset contains splits 'test' and 'validation'
+        # comparisons subset contains splits 'train' and 'validation'
+        dataset = load_dataset("openai/summarize_from_feedback", subset, split=split)
+        self.subset = subset
 
-        dataset = load_dataset("openai/summarize_from_feedback", "axis", split=split)
-        self.post_ids = []
-        self.post_dict = defaultdict(dict)
+        # in axis subset the summaries are ranked
+        self.axis_post_ids = []
+        self.axis_post_dict = defaultdict(dict)
+
+        # in comparison subset we have each time a pair
+        # of summarizations and then the chosen out of 2
+        self.comparisons = []
+
+        if subset == "axis":
+            self._handle_axis(dataset)
+        else:
+            self._handle_comparisons(dataset)
+
+    def _handle_comparisons(self, dataset):
+        for item in dataset:
+            choice = item["choice"]  # indicates the preferred summary
+            full_post = item["info"]["post"]
+            summaries = [item["summaries"][choice]["text"], item["summaries"][1 - choice]["text"]]
+            self.comparisons.append([[full_post], summaries])
+
+    def _handle_axis(self, dataset):
         for item in dataset:
             if item["summary"].get("axes").get("overall") is not None:
                 post_id = item.get("info")["id"]
-                if post_id not in self.post_ids:
-                    self.post_ids.append(post_id)
+                if post_id not in self.axis_post_ids:
+                    self.axis_post_ids.append(post_id)
                     item_content = item["info"]["post"] or item["info"]["article"]
-                    self.post_dict[post_id].update({"post": item_content, "summaries": [item["summary"]]})
+                    self.axis_post_dict[post_id].update({"post": item_content, "summaries": [item["summary"]]})
                 else:
-                    self.post_dict[post_id]["summaries"].append(item["summary"])
+                    self.axis_post_dict[post_id]["summaries"].append(item["summary"])
 
     def __len__(self):
-        return len(self.post_ids)
+        if self.subset == "axis":
+            return len(self.axis_post_ids)
+        return len(self.comparisons)
 
     def __getitem__(self, idx):
-        post, summaries = self.post_dict[self.post_ids[idx]].values()
-        summaries = sorted(summaries, key=lambda x: x["axes"]["overall"], reverse=True)
-        summaries = [summary["text"] for summary in summaries]
-        return [post], summaries
+        if self.subset == "axis":
+            post, summaries = self.axis_post_dict[self.axis_post_ids[idx]].values()
+            summaries = sorted(summaries, key=lambda x: x["axes"]["overall"], reverse=True)
+            summaries = [summary["text"] for summary in summaries]
+            return [post], summaries
+        return self.comparisons[idx]
