@@ -12,11 +12,11 @@ ARG APP_RELATIVE_PATH
 
 WORKDIR /build
 
-COPY ./${APP_RELATIVE_PATH}/requirements.txt requirements.txt
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
+
+COPY ./${APP_RELATIVE_PATH}/requirements.txt requirements.txt
 
 RUN --mount=type=cache,target=/var/cache/pip \
     pip install                  \
