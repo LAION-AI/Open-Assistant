@@ -30,9 +30,9 @@ export function Hero() {
             </Text>
             <Text className={`mt-6 text-lg ${pTextColor}`}>{t("blurb")}</Text>
             <Text className={`mt-6 text-lg ${pTextColor}`}>{t("blurb1")}</Text>
-            <Box className="mt-6 flex gap-6">
+            <Box className={`mt-6 flex gap-6 ${pTextColor}`}>
               {isChatEnabled() && (
-                <Link href="/chat" aria-label="Dashboard">
+                <Link href="/chat" aria-label="Chat">
                   <Button variant="solid" colorScheme="blue" px={5} py={6}>
                     {t("index:try_our_assistant")}
                   </Button>
