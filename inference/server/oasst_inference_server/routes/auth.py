@@ -1,4 +1,3 @@
-import aiohttp
 import fastapi
 import sqlmodel
 from authlib.integrations.starlette_client import OAuth
@@ -17,6 +16,7 @@ router = fastapi.APIRouter(
 )
 
 oauth = OAuth()
+
 oauth.register(
     name="google",
     client_id=settings.auth_google_client_id,
@@ -26,6 +26,26 @@ oauth.register(
     api_base_url="https://www.googleapis.com/oauth2/v1/",
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={"scope": "openid profile"},
+)
+
+oauth.register(
+    name="github",
+    client_id=settings.auth_github_client_id,
+    client_secret=settings.auth_github_client_secret,
+    access_token_url="https://github.com/login/oauth/access_token",
+    authorize_url="https://github.com/login/oauth/authorize",
+    api_base_url="https://api.github.com/",
+    client_kwargs={"scope": "read:user"},
+)
+
+oauth.register(
+    name="discord",
+    client_id=settings.auth_discord_client_id,
+    client_secret=settings.auth_discord_client_secret,
+    access_token_url="https://discord.com/api/oauth2/token",
+    authorize_url="https://discord.com/api/oauth2/authorize",
+    api_base_url="https://discord.com/api/",
+    client_kwargs={"scope": "identify"},
 )
 
 
@@ -59,44 +79,20 @@ async def refresh_token(refresh_token: str = Security(auth.refresh_scheme)):
 
 
 @router.get("/login/discord")
-async def login_discord(state: str = r"{}"):
+async def login_discord(request: Request):
     redirect_uri = f"{settings.api_root}/auth/callback/discord"
-    auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.auth_discord_client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify&state={state}"
-    raise HTTPException(status_code=302, headers={"location": auth_url})
+    return await oauth.discord.authorize_redirect(request, redirect_uri)
 
 
 @router.get("/callback/discord", response_model=protocol.TokenPair)
 async def callback_discord(
-    code: str,
+    request: Request,
     db: database.AsyncSession = Depends(deps.create_session),
 ):
-    redirect_uri = f"{settings.api_root}/auth/callback/discord"
+    token = await oauth.discord.authorize_access_token(request)
+    user_response = await oauth.discord.get("users/@me", token=token)
 
-    async with aiohttp.ClientSession(raise_for_status=True) as session:
-        # Exchange the auth code for a Discord access token
-        async with session.post(
-            "https://discord.com/api/oauth2/token",
-            data={
-                "client_id": settings.auth_discord_client_id,
-                "client_secret": settings.auth_discord_client_secret,
-                "grant_type": "authorization_code",
-                "code": code,
-                "redirect_uri": redirect_uri,
-                "scope": "identify",
-            },
-        ) as token_response:
-            token_response_json = await token_response.json()
-
-        try:
-            access_token = token_response_json["access_token"]
-        except KeyError:
-            raise HTTPException(status_code=400, detail="Invalid access token response from Discord")
-
-        # Retrieve user's Discord information using access token
-        async with session.get(
-            "https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"}
-        ) as user_response:
-            user_response_json = await user_response.json()
+    user_response_json = user_response.json()
 
     try:
         discord_id = user_response_json["id"]
@@ -105,57 +101,25 @@ async def callback_discord(
         raise HTTPException(status_code=400, detail="Invalid user info response from Discord")
 
     user: models.DbUser = await get_or_create_user(db, "discord", discord_id, discord_username)
-
-    # Discord account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token(user.id)
-    refresh_token = await auth.create_refresh_token(user.id)
-
-    token_pair = protocol.TokenPair(
-        access_token=protocol.Token(access_token=access_token, token_type="bearer"),
-        refresh_token=protocol.Token(access_token=refresh_token, token_type="refresh"),
-    )
-
+    token_pair = await create_tokens(user)
     return token_pair
 
 
 @router.get("/login/github")
-async def login_github(state: str = r"{}"):
+async def login_github(request: Request):
     redirect_uri = f"{settings.api_root}/auth/callback/github"
-    auth_url = f"https://github.com/login/oauth/authorize?client_id={settings.auth_github_client_id}&redirect_uri={redirect_uri}&state={state}"
-    raise HTTPException(status_code=302, headers={"location": auth_url})
+    return await oauth.github.authorize_redirect(request, redirect_uri)
 
 
 @router.get("/callback/github", response_model=protocol.TokenPair)
 async def callback_github(
-    code: str,
+    request: Request,
     db: database.AsyncSession = Depends(deps.create_session),
 ):
-    redirect_uri = f"{settings.api_root}/auth/callback/github"
+    token = await oauth.github.authorize_access_token(request)
+    user_response = await oauth.github.get("user", token=token)
 
-    async with aiohttp.ClientSession(raise_for_status=True) as session:
-        # Exchange the auth code for a GitHub access token
-        async with session.post(
-            "https://github.com/login/oauth/access_token",
-            headers={"Accept": "application/json"},
-            data={
-                "client_id": settings.auth_github_client_id,
-                "client_secret": settings.auth_github_client_secret,
-                "code": code,
-                "redirect_uri": redirect_uri,
-            },
-        ) as token_response:
-            token_response_json = await token_response.json()
-
-        try:
-            access_token = token_response_json["access_token"]
-        except KeyError:
-            raise HTTPException(status_code=400, detail="Invalid access token response from GitHub")
-
-        # Retrieve user's GitHub information using access token
-        async with session.get(
-            "https://api.github.com/user", headers={"Authorization": f"Bearer {access_token}"}
-        ) as user_response:
-            user_response_json = await user_response.json()
+    user_response_json = user_response.json()
 
     try:
         github_id = str(user_response_json["id"])
@@ -164,16 +128,7 @@ async def callback_github(
         raise HTTPException(status_code=400, detail="Invalid user info response from GitHub")
 
     user: models.DbUser = await get_or_create_user(db, "github", github_id, github_username)
-
-    # GitHub account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token(user.id)
-    refresh_token = await auth.create_refresh_token(user.id)
-
-    token_pair = protocol.TokenPair(
-        access_token=protocol.Token(access_token=access_token, token_type="bearer"),
-        refresh_token=protocol.Token(access_token=refresh_token, token_type="refresh"),
-    )
-
+    token_pair = await create_tokens(user)
     return token_pair
 
 
@@ -201,16 +156,7 @@ async def callback_google(
         raise HTTPException(status_code=400, detail="Invalid user info response from Google")
 
     user: models.DbUser = await get_or_create_user(db, "google", google_id, google_username)
-
-    # Google account is authenticated and linked to a user; create JWT
-    access_token = auth.create_access_token(user.id)
-    refresh_token = await auth.create_refresh_token(user.id)
-
-    token_pair = protocol.TokenPair(
-        access_token=protocol.Token(access_token=access_token, token_type="bearer"),
-        refresh_token=protocol.Token(access_token=refresh_token, token_type="refresh"),
-    )
-
+    token_pair = await create_tokens(user)
     return token_pair
 
 
@@ -232,6 +178,18 @@ async def get_or_create_user(
         await db.refresh(user)
 
     return user
+
+
+async def create_tokens(user: models.DbUser) -> protocol.TokenPair:
+    access_token = auth.create_access_token(user.id)
+    refresh_token = await auth.create_refresh_token(user.id)
+
+    token_pair = protocol.TokenPair(
+        access_token=protocol.Token(access_token=access_token, token_type="bearer"),
+        refresh_token=protocol.Token(access_token=refresh_token, token_type="refresh"),
+    )
+
+    return token_pair
 
 
 @router.get("/login/debug")
