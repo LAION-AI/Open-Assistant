@@ -1,16 +1,16 @@
 import argparse
+import os
 import random
 from argparse import Namespace
 
 import torch
 import transformers
+import tritonclient.grpc as client_util
 import trlx
 from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
 from models.reward_model import GPTNeoXRewardModel
-from trlx.data.configs import TRLConfig
-import tritonclient.grpc as client_util
 from tritonclient.utils import np_to_triton_dtype
-import os
+from trlx.data.configs import TRLConfig
 
 # flake8: noqa
 from utils.ppo_utils import CustomPPOTrainer
@@ -50,6 +50,7 @@ def argument_parsing(notebook=False, notebook_args=None):
 
     return parser.parse_args(remaining)
 
+
 def prepare_tensor(name: str, input):
     t = client_util.InferInput(name, input.shape, np_to_triton_dtype(input.dtype))
     t.set_data_from_numpy(input)
@@ -76,18 +77,19 @@ def create_reward_fn(rank_config):  # noqa:  C901
         out = []
         for i in range(math.ceil(len(samples) / mbs)):
             batch_ixs = slice(i * mbs, (i + 1) * mbs)
-            
-            result = client.infer(triton_model, 
+
+            result = client.infer(
+                triton_model,
                 [
                     {
-                        'input_ids': prepare_tensor("input_ids", input.input_ids[batch_ixs]),
-                        'attention_mask': prepare_tensor("attention_mask", input.attention_mask[batch_ixs])
+                        "input_ids": prepare_tensor("input_ids", input.input_ids[batch_ixs]),
+                        "attention_mask": prepare_tensor("attention_mask", input.attention_mask[batch_ixs]),
                     }
-                ]
+                ],
             )
 
             rewards = result.as_numpy("rewards")
-            
+
             out.extend(rewards)
 
         return out
@@ -117,10 +119,7 @@ if __name__ == "__main__":
     # first element of each sample is the context and the prompt
     prompts, eval_prompts = tuple(
         map(
-            lambda x: [
-                "".join(format_pairs(x[i][0], eos_token, add_initial_reply_token=True))
-                for i in range(len(x))
-            ],
+            lambda x: ["".join(format_pairs(x[i][0], eos_token, add_initial_reply_token=True)) for i in range(len(x))],
             (train, eval),
         )
     )
@@ -129,7 +128,13 @@ if __name__ == "__main__":
     eval_prompts = eval_prompts + [
         "".join(format_pairs(["Can you tell me about GLaDOS?"], eos_token, add_initial_reply_token=True)),
         "".join(format_pairs(["What is the chemical symbol for gold?"], eos_token, add_initial_reply_token=True)),
-        "".join(format_pairs(["If you were the President of the United States, what would you do?"], eos_token, add_initial_reply_token=True))
+        "".join(
+            format_pairs(
+                ["If you were the President of the United States, what would you do?"],
+                eos_token,
+                add_initial_reply_token=True,
+            )
+        ),
     ]
 
     random.shuffle(prompts)

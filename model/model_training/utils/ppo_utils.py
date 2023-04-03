@@ -1,14 +1,13 @@
 from typing import List, Tuple
 
 import torch
-from transformers import AutoTokenizer
+from custom_datasets.formatting import QA_SPECIAL_TOKENS
+from torch.utils.data import DataLoader
+from transformers import AutoTokenizer, DataCollatorWithPadding, PreTrainedTokenizer
+from trlx.pipeline import BasePipeline, register_datapipeline
 from trlx.trainer import register_trainer
 from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
 from trlx.trainer.nn.ppo_models import CausalLMHydraWithValueHead, Seq2SeqLMHydraWithValueHead
-from trlx.pipeline import BasePipeline, register_datapipeline
-from custom_datasets.formatting import QA_SPECIAL_TOKENS
-from torch.utils.data import DataLoader
-from transformers import DataCollatorWithPadding, PreTrainedTokenizer
 
 
 @register_trainer

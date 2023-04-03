@@ -26,17 +26,19 @@ if __name__ == "__main__":
     parser.add_argument("--system_prefix", type=str, default=None)
     parser.add_argument("--cache_dir", type=str, default=None)
     parser.add_argument("--per-digit-tokens", action="store_true")
-    parser.add_argument('--load_checkpoint', type=str, default=None)
+    parser.add_argument("--load_checkpoint", type=str, default=None)
     args = parser.parse_args()
 
     if args.load_checkpoint is not None:
-        print('Loading from', args.load_checkpoint)
+        print("Loading from", args.load_checkpoint)
         # "ckpts_save/best_checkpoint/pytorch_model/mp_rank_00_model_states.pt"
         ckpt = torch.load(args.load_checkpoint)
-        import IPython; IPython.embed()
+        import IPython
+
+        IPython.embed()
         model = get_specific_model(args.model_path, torch_dtype=torch.float16, cache_dir=args.cache_dir)
 
-        base_dict = {k[11:]: v for k, v in ckpt['module'].items() if not k.startswith('base_model.transformer')}
+        base_dict = {k[11:]: v for k, v in ckpt["module"].items() if not k.startswith("base_model.transformer")}
         # base_dict = {k[11:]: v for k, v in ckpt['module'].items()}
         print(model.load_state_dict(base_dict, strict=False))
     else:
@@ -48,12 +50,10 @@ if __name__ == "__main__":
                 low_cpu_mem_usage=True,
                 torch_dtype=torch.float16,
                 offload_state_dict=True,
-                cache_dir=args.cache_dir
-                
+                cache_dir=args.cache_dir,
             )
         else:
             model = get_specific_model(args.model_path, cache_dir=args.cache_dir, torch_dtype=torch.float16)
-
 
     model.gradient_checkpointing_enable()  # reduce number of stored activations
     # tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_path)

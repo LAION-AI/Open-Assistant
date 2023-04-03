@@ -3,7 +3,7 @@ deepspeed_config:
   deepspeed_config_file: /mnt/data/Open-Assistant-RLHF/model/model_training/configs/zero_config.json
   zero3_init_flag: false
 distributed_type: DEEPSPEED
-downcast_bf16: 'no'
+downcast_bf16: "no"
 machine_rank: 0
 main_training_function: main
 num_machines: 1

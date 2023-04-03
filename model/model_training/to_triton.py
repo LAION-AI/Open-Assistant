@@ -1,21 +1,18 @@
-import argparse
 import os
+from argparse import Namespace
 from string import Template
 
 import torch
-from huggingface_hub import snapshot_download
-from torch import nn
 import transformers
+from torch import nn
 from trainer_rl import argument_parsing
-from argparse import Namespace
 from utils.utils import get_model
-
 
 conf = argument_parsing()
 rank_config = Namespace(**conf.rank_config)
 model_name = rank_config.model_name
 
-device = torch.device('cuda:0')
+device = torch.device("cuda:0")
 
 rank_tokenizer = transformers.AutoTokenizer.from_pretrained(rank_config.model_name)
 
@@ -29,6 +26,7 @@ rank_model = rank_model.half()
 rank_model.to(device)
 rank_model.eval()
 
+
 # override forward to return logits
 class LogitsModel(nn.Module):
     def __init__(self, model):
@@ -38,13 +36,14 @@ class LogitsModel(nn.Module):
     def forward(self, *args, **kwargs):
         return self.model(*args, **kwargs).logits[:, 0]
 
+
 rank_model = LogitsModel(rank_model)
 
 inputs = rank_tokenizer("reward model's hash", return_tensors="pt")
 inputs = {k: v.to(device) for k, v in inputs.items()}
 print(f"{rank_model(**inputs)=}")
 
-traced_script_module = torch.jit.trace(rank_model, (inputs['input_ids'], inputs['attention_mask']))
+traced_script_module = torch.jit.trace(rank_model, (inputs["input_ids"], inputs["attention_mask"]))
 
 os.makedirs(f"model_store/{model_name}/1", exist_ok=True)
 traced_script_module.save(f"model_store/{model_name}/1/traced-model.pt")
