@@ -13,6 +13,7 @@ ARG APP_RELATIVE_PATH
 WORKDIR /build
 
 COPY ./${APP_RELATIVE_PATH}/requirements.txt requirements-base.txt
+RUN grep -v "transformers" requirements-base.txt > requirements-base.txt.tmp && mv requirements-base.txt.tmp requirements-base.txt
 COPY ./${APP_RELATIVE_PATH}/requirements-hf.txt .
 
 RUN cat requirements-base.txt requirements-hf.txt > requirements.txt
