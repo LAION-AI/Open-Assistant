@@ -6,3 +6,4 @@ saved_model*
 .save_model*
 llama_model
 models-*
+.saved
