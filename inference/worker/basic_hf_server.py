@@ -63,12 +63,17 @@ def model_thread():
             params.pop("stop")
             params.pop("details")
 
+            last_token_id = None  # need to delay by 1 to simulate tgi
+
             def print_text(token_id: int):
-                text = decode_token(token_id)
-                stream_response = interface.GenerateStreamResponse(
-                    token=interface.Token(text=text, id=token_id),
-                )
-                output_queue.put_nowait(stream_response)
+                nonlocal last_token_id
+                if last_token_id is not None:
+                    text = decode_token(last_token_id)
+                    stream_response = interface.GenerateStreamResponse(
+                        token=interface.Token(text=text, id=last_token_id),
+                    )
+                    output_queue.put_nowait(stream_response)
+                last_token_id = token_id
 
             with torch.no_grad():
                 ids = tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=False)
@@ -81,8 +86,8 @@ def model_thread():
 
             stream_response = interface.GenerateStreamResponse(
                 token=interface.Token(
-                    text="",  # hack because the "normal" inference server does this at once
-                    id=0,
+                    text=decode_token(last_token_id),  # hack because the "normal" inference server does this at once
+                    id=last_token_id,
                 ),
                 generated_text=decoded.strip(),
                 details=interface.StreamDetails(
