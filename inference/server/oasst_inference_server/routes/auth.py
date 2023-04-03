@@ -101,7 +101,7 @@ async def callback_discord(
         raise HTTPException(status_code=400, detail="Invalid user info response from Discord")
 
     user: models.DbUser = await get_or_create_user(db, "discord", discord_id, discord_username)
-    token_pair = await create_tokens(user)
+    token_pair: protocol.TokenPair = await create_tokens(user)
     return token_pair
 
 
@@ -128,7 +128,7 @@ async def callback_github(
         raise HTTPException(status_code=400, detail="Invalid user info response from GitHub")
 
     user: models.DbUser = await get_or_create_user(db, "github", github_id, github_username)
-    token_pair = await create_tokens(user)
+    token_pair: protocol.TokenPair = await create_tokens(user)
     return token_pair
 
 
@@ -156,7 +156,7 @@ async def callback_google(
         raise HTTPException(status_code=400, detail="Invalid user info response from Google")
 
     user: models.DbUser = await get_or_create_user(db, "google", google_id, google_username)
-    token_pair = await create_tokens(user)
+    token_pair: protocol.TokenPair = await create_tokens(user)
     return token_pair
 
 
@@ -223,15 +223,7 @@ async def callback_debug(code: str, db: database.AsyncSession = Depends(deps.cre
         await db.refresh(user)
         logger.info(f"Created new debug user {user=}")
 
-    # User exists; create JWT
-    access_token = auth.create_access_token(user.id)
-    refresh_token = await auth.create_refresh_token(user.id)
-
-    token_pair = protocol.TokenPair(
-        access_token=protocol.Token(access_token=access_token, token_type="bearer"),
-        refresh_token=protocol.Token(access_token=refresh_token, token_type="refresh"),
-    )
-
+    token_pair = await create_tokens(user)
     return token_pair
 
 
