@@ -1,7 +1,7 @@
 from model_training.custom_datasets.rank_datasets import AnthropicRLHF, HFDataset
 
 
-def load_anthroopic_rlhf():
+def load_anthropic_rlhf():
     train = AnthropicRLHF(split="train")
     validation = AnthropicRLHF(split="test")
 
