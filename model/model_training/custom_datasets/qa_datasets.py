@@ -8,8 +8,10 @@ import os
 import re
 from collections import OrderedDict
 from urllib.request import urlopen
+from typing import Any
 
 import numpy as np
+from itertools import accumulate
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -211,48 +213,58 @@ class WebGPT(Dataset):
 class SODA(Dataset):
     name = "soda"
 
-    def process_soda_convo(self, data):
-        pairs = []
+    @staticmethod
+    def _partition_list(l: list, chunk_size: int) -> list[list]:
+        """Partition list in sublists
+
+        Args:
+            l (list): list to partition
+            chunk_size (int): length of sublists
+
+        Returns:
+            list[list]: list of sublists with length chunk_size
+        """
+        return [l[i:i+chunk_size] for i in range(0, len(l), chunk_size)]
+
+    def process_soda_convo(self, data: dict[str, Any]) -> list[list[str]] | None:
         play_as = data["speakers"][1]
-        question, answer = "", ""
-        prefix, postfix = "", ""
         dialogue_bg = "{}{}".format(
             # QA_SPECIAL_TOKENS["StartPrefix"],
             data["narrative"],
-            "your are {}".format(play_as),
+            " You are {}.".format(play_as),
             # QA_SPECIAL_TOKENS["EndPrefix"],
         )
-        previous_chat = []
 
-        for idx, convo in enumerate(data["dialogue"]):
-            if idx % 2 == 0:
-                question = convo
-                prefix = data["speakers"][idx]
-            else:
-                answer = convo
-                postfix = data["speakers"][idx]
-
-            if len(question) and len(answer) and prefix != postfix and postfix == play_as:
-                history = copy.deepcopy(previous_chat)
-                history[0] = dialogue_bg + history[0]
-
-                # if len(history):
-                #     history += "<sep>"
-                # prompt = QA_SPECIAL_TOKENS["Question"] + question + QA_SPECIAL_TOKENS["Answer"]
-                pairs.append(history + [question, answer])
-                # pairs.append((dialogue_bg + history + prompt, answer))
-                previous_chat.append(question)
-                previous_chat.append(answer)
-
-        return pairs
+        # Perform some sanity checks, if these fail return None
+        # ignore data with more than 2 speakers for now
+        if len(set(data["speakers"])) != 2:
+            return None
+        speaker1 = data["speakers"][0]
+        speaker2 = data["speakers"][1]
+        # make sure that the speakers are in correct order [S1, S2, S1, S2, S1, S2], otherwise return None
+        speaker1_idx = [idx % 2 == 0 for idx, k in enumerate(data["speakers"]) if k == speaker1]
+        speaker2_idx = [idx % 2 == 1 for idx, k in enumerate(data["speakers"]) if k == speaker2]
+        if (all(speaker1_idx) and all(speaker2_idx)):
+            # split dialogue in question and answer pairs.
+            # [Q1, A1, Q2, A2] -> [[Q1, A1], [Q2, A2]]
+            pairs = self._partition_list(data["dialogue"], 2)
+            # add dialog background to first pair.
+            # [[Q1, A1], [Q2, A2]] -> [[B + Q1, A1], [Q2, A2]]
+            pairs[0][0] = f"{dialogue_bg} {pairs[0][0]}"
+            # add history to all previous conversation pairs
+            # e.g. [[B + Q1, A1], [Q2, A2]] -> [[B + Q1, A1], [B + Q1, A1, Q2, A2]]
+            pairs = list(accumulate(pairs, lambda x, y: x + y))
+            return pairs
 
     def __init__(self, cache_dir, input_max_length=1024) -> None:
+        import pdb;pdb.set_trace()
         super().__init__()
 
         self.pairs = []
         dataset = load_dataset("allenai/soda", cache_dir=cache_dir)["train"]
         for data in dataset:
-            self.pairs.append(self.process_soda_convo(data))
+            if (processed_data := self.process_soda_convo(data)) is not None:
+                self.pairs.append(processed_data)
             # for prompt, answer in data_pair:
             #     if len(prompt) < input_max_length:
             #         self.pairs.append((prompt, answer))
