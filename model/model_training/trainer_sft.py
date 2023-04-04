@@ -306,6 +306,7 @@ def main():
         save_total_limit=training_conf.save_total_limit,
         evaluation_strategy="steps",
         eval_steps=training_conf.eval_steps,
+        save_strategy=training_conf.save_strategy,
         save_steps=training_conf.save_steps,
         eval_accumulation_steps=training_conf.eval_accumulation_steps,
         resume_from_checkpoint=training_conf.resume_from_checkpoint,
@@ -408,11 +409,12 @@ def main():
     if training_conf.log_wandb and (not training_conf.deepspeed or training_conf.local_rank == 0):
         import wandb
 
+        wandb_name = training_conf.model_name.replace(os.getenv("HOME", "/home/ubuntu"), "")
         wandb.init(
             project="supervised-finetuning",
             entity=training_conf.wandb_entity,
             resume=training_conf.resume_from_checkpoint,
-            name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
+            name=f"{wandb_name}-{training_conf.log_dir}-finetuned",
             config=training_conf,
         )
         wandb.config["_max_length"] = training_conf.max_length
