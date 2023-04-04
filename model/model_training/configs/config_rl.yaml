@@ -23,7 +23,7 @@ oasst_export_latin_cyrillic_rlhf:
 pythia_rlhf:
   rank_config:
     is_reward_model: true
-    model_name: andreaskoepf/oasst-rm-1-pythia-1b
+    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5 # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
     cache_dir: /home/ubuntu/data_cache/
     pooling: last
     residual_dropout: 0.08172424407561013
@@ -33,14 +33,14 @@ pythia_rlhf:
 
   sft_config:
     is_reward_model: false
-    model_name: dvruette/oasst-pythia-6.9b-4000-steps
+    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5
     cache_dir: /home/ubuntu/data_cache/
     quantization: false
     seq2seqmodel: false
     freeze_layer:
-    residual_dropout: 0.1
-    use_flash_attention: false
-    half: true
+    residual_dropout: 0.2
+    use_flash_attention: true
+    freeze_layer:
 
   batch_size: 4
 

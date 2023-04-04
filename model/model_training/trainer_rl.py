@@ -15,6 +15,7 @@ from trlx.data.configs import TRLConfig
 # flake8: noqa
 from utils.ppo_utils import CustomPPOTrainer
 from utils.utils import _strtobool, get_dataset, get_model, read_yamls
+import math
 
 
 def argument_parsing(notebook=False, notebook_args=None):
@@ -65,13 +66,13 @@ def create_reward_fn(rank_config):  # noqa:  C901
     triton_url, triton_model = triton_host.split("/")
     client = client_util.InferenceServerClient(url=triton_url, verbose=False)
 
-    rank_tokenizer = transformers.AutoTokenizer.from_pretrained(rank_config.model_name)
+    rank_tokenizer = transformers.AutoTokenizer.from_pretrained(rank_config.model_name, cache_dir=rank_config.cache_dir)
 
     def reward_fn(samples, prompts, outputs):
         if len(samples) == 0:
             return []
 
-        inputs = rank_tokenizer(samples, return_tensors="pt", padding=True)
+        inputs = rank_tokenizer(samples, return_tensors="np", padding=True)
 
         mbs = rank_config.batch_size
         out = []
@@ -82,8 +83,8 @@ def create_reward_fn(rank_config):  # noqa:  C901
                 triton_model,
                 [
                     {
-                        "input_ids": prepare_tensor("input_ids", input.input_ids[batch_ixs]),
-                        "attention_mask": prepare_tensor("attention_mask", input.attention_mask[batch_ixs]),
+                        "input_ids": prepare_tensor("input_ids", inputs.input_ids[batch_ixs]),
+                        "attention_mask": prepare_tensor("attention_mask", inputs.attention_mask[batch_ixs]),
                     }
                 ],
             )
@@ -101,7 +102,7 @@ if __name__ == "__main__":
     training_conf = argument_parsing()
 
     rank_config = Namespace(**training_conf.rank_config)
-    eos_token = transformers.AutoTokenizer.from_pretrained(rank_config.model_name).eos_token
+    eos_token = transformers.AutoTokenizer.from_pretrained(rank_config.model_name, cache_dir=rank_config.cache_dir).eos_token
 
     # Load pretrained SFT model
     sft_config = Namespace(**training_conf.sft_config)

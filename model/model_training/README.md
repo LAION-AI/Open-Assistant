@@ -193,3 +193,6 @@ export TRITON_HOST=localhost:8001/andreaskoepf-oasst-rm-1-pythia-1b
 CUDA_VISIBLE_DEVICES=7 accelerate launch --main_process_port 29501 --config_file
 configs/accelerate_config.yaml trainer_rl.py --configs defaults defaults_rlhf
 pythia_rlhf
+
+padding left and right are not the same ...
+add patch attention etc ...

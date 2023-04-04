@@ -8,6 +8,42 @@ from trlx.pipeline import BasePipeline, register_datapipeline
 from trlx.trainer import register_trainer
 from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
 from trlx.trainer.nn.ppo_models import CausalLMHydraWithValueHead, Seq2SeqLMHydraWithValueHead
+import transformers
+from typing import Union
+from utils.utils import get_model
+
+
+class CustomCausalLMHydraWithValueHead(CausalLMHydraWithValueHead):
+    """The CausalLMHydraWithValueHead class implements a causal language model
+    with a secondary, scalar head.
+    """
+
+    def __init__(
+        self,
+        config,
+        tokenizer
+    ):
+        super().__init__()
+
+        self.base_model = get_model(config, tokenizer)
+
+        self.base_model.transformer = hf_get_causal_base_model(self.base_model)
+        self.base_model.lm_head = hf_get_lm_head(self.base_model)
+        dtype = next(self.base_model.lm_head.parameters()).dtype
+        self.v_head = make_head(hf_get_hidden_size(self.config), 1, dtype)
+
+        self.num_layers_unfrozen = num_layers_unfrozen
+        if self.num_layers_unfrozen > 0:
+            transformer_blocks = list(hf_get_causal_hidden_layers(self.base_model))
+            branch_class = hf_get_causal_lm_branch_class(self.config)
+            self.frozen_head = branch_class(
+                self.config,
+                transformer_blocks[-self.num_layers_unfrozen :],
+                final_norm=hf_get_causal_final_norm(self.base_model),
+                lm_head=self.base_model.lm_head,
+            )
+        # Cache `transformer.forward` args for general use (avoids incompatible args across architectures)
+        self.base_model_transformer_args = inspect.getfullargspec(self.base_model.transformer.forward).args
 
 
 @register_trainer
@@ -44,10 +80,13 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
             else:
                 output_start_ix = prompt_size
 
+            # Skip the padding token but not the other special tokens
+            PAD_TOKEN_ID = self.tokenizer.pad_token_id
+
             str_prompt = self.tokenizer.decode(
-                prompt[torch.where(prompt > 0)[0][0].item() : prompt_size], skip_special_tokens=False
+                prompt[: prompt_size][prompt[: prompt_size] != PAD_TOKEN_ID], skip_special_tokens=False
             )
-            str_output = self.tokenizer.decode(sample[output_start_ix:], skip_special_tokens=False)
+            str_output = self.tokenizer.decode(sample[output_start_ix:][sample[output_start_ix:] != PAD_TOKEN_ID], skip_special_tokens=False)
 
             # Trim outputs up to `self.stop_sequences` if any are present
             if self.stop_sequences:
@@ -72,16 +111,20 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
         # model = get_model(config.sft_config, self.tokenizer)
 
         if config.model.model_arch_type == "seq2seq":
-            model = Seq2SeqLMHydraWithValueHead(config.model.model_path, config.model.num_layers_unfrozen)
+            raise NotImplementedError("Seq2Seq models are not implemented yet")
+            # model = Seq2SeqLMHydraWithValueHead(config.model.model_path, config.model.num_layers_unfrozen)
         else:
+            # model = CausalLMHydraWithValueHead(config.sft_config, self.tokenizer)
             model = CausalLMHydraWithValueHead(config.model.model_path, config.model.num_layers_unfrozen)
 
-        if config.sft_config.half:
-            model = model.half()
+        model.half()
 
         return model
 
     def generate(self, input_ids, *args, **kwargs):
+        print('----------- Generate --------------')
+        print(self.tokenizer.decode(input_ids))
+        print('-----------------------------------')
         preds = super().generate(input_ids, *args, **kwargs)
 
         # make sure the last token is the EOS token

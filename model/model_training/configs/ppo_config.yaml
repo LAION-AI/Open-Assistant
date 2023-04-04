@@ -19,7 +19,7 @@ model:
 tokenizer:
   tokenizer_path:
   truncation_side: "right"
-  padding_side: "left"
+  padding_side: "right"
 
 optimizer:
   name: "adamw"
@@ -38,7 +38,7 @@ scheduler:
 method:
   name: "ppoconfig"
   num_rollouts: 32
-  chunk_size: 8
+  chunk_size: 16
   ppo_epochs: 4
   init_kl_coef: 0.04
   target: 6
