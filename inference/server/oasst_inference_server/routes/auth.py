@@ -16,37 +16,53 @@ router = fastapi.APIRouter(
 )
 
 oauth = OAuth()
+oauth_providers: list[str] = []
 
-oauth.register(
-    name="google",
-    client_id=settings.auth_google_client_id,
-    client_secret=settings.auth_google_client_secret,
-    access_token_url="https://accounts.google.com/o/oauth2/token",
-    authorize_url="https://accounts.google.com/o/oauth2/auth",
-    api_base_url="https://www.googleapis.com/oauth2/v1/",
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid profile"},
-)
 
-oauth.register(
-    name="github",
-    client_id=settings.auth_github_client_id,
-    client_secret=settings.auth_github_client_secret,
-    access_token_url="https://github.com/login/oauth/access_token",
-    authorize_url="https://github.com/login/oauth/authorize",
-    api_base_url="https://api.github.com/",
-    client_kwargs={"scope": "read:user"},
-)
+@router.on_event("startup")
+def register_oauth_providers():
+    if settings.auth_discord_client_id:
+        oauth.register(
+            name="discord",
+            client_id=settings.auth_discord_client_id,
+            client_secret=settings.auth_discord_client_secret,
+            access_token_url="https://discord.com/api/oauth2/token",
+            authorize_url="https://discord.com/api/oauth2/authorize",
+            api_base_url="https://discord.com/api/",
+            client_kwargs={"scope": "identify"},
+        )
 
-oauth.register(
-    name="discord",
-    client_id=settings.auth_discord_client_id,
-    client_secret=settings.auth_discord_client_secret,
-    access_token_url="https://discord.com/api/oauth2/token",
-    authorize_url="https://discord.com/api/oauth2/authorize",
-    api_base_url="https://discord.com/api/",
-    client_kwargs={"scope": "identify"},
-)
+        oauth_providers.append("discord")
+
+    if settings.auth_github_client_id:
+        oauth.register(
+            name="github",
+            client_id=settings.auth_github_client_id,
+            client_secret=settings.auth_github_client_secret,
+            access_token_url="https://github.com/login/oauth/access_token",
+            authorize_url="https://github.com/login/oauth/authorize",
+            api_base_url="https://api.github.com/",
+            client_kwargs={"scope": "read:user"},
+        )
+
+        oauth_providers.append("github")
+
+    if settings.auth_google_client_id:
+        oauth.register(
+            name="google",
+            client_id=settings.auth_google_client_id,
+            client_secret=settings.auth_google_client_secret,
+            access_token_url="https://accounts.google.com/o/oauth2/token",
+            authorize_url="https://accounts.google.com/o/oauth2/auth",
+            api_base_url="https://www.googleapis.com/oauth2/v1/",
+            server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+            client_kwargs={"scope": "openid profile"},
+        )
+
+        oauth_providers.append("google")
+
+    if settings.allow_debug_auth:
+        oauth_providers.append("debug")
 
 
 @router.get("/check")
@@ -56,20 +72,9 @@ async def check_user_auth(user_id: str = Depends(auth.get_current_user_id)):
 
 @router.get("/providers")
 async def get_available_auth_providers():
-    # this could be computed once on startup since it is not likely to change
-    providers = [
-        key
-        for key, is_available in {
-            "debug": settings.allow_debug_auth,
-            "discord": settings.auth_discord_client_id,
-            "github": settings.auth_github_client_id,
-            "google": settings.auth_google_client_id,
-        }.items()
-        if is_available
-    ]
-    if len(providers) == 0:
+    if len(oauth_providers) == 0:
         logger.warn("No login providers available, logging in is not possible.")
-    return providers
+    return oauth_providers
 
 
 @router.get("/refresh", response_model=protocol.Token)
@@ -163,6 +168,18 @@ async def callback_google(
 async def get_or_create_user(
     db: database.AsyncSession, provider: str, provider_id: str, display_name: str
 ) -> models.DbUser:
+    user = await query_user(db, provider, provider_id)
+
+    if not user:
+        user = models.DbUser(provider=provider, provider_account_id=provider_id, display_name=display_name)
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+
+    return user
+
+
+async def query_user(db: database.AsyncSession, provider: str, provider_id: str) -> models.DbUser | None:
     user = (
         await db.exec(
             sqlmodel.select(models.DbUser)
@@ -170,12 +187,6 @@ async def get_or_create_user(
             .filter(models.DbUser.provider_account_id == provider_id)
         )
     ).one_or_none()
-
-    if not user:
-        user = models.DbUser(provider=provider, provider_account_id=provider_id, display_name=display_name)
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
 
     return user
 
