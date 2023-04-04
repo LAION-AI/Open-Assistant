@@ -18,3 +18,4 @@ redis
 sqlmodel
 sse-starlette
 websockets
+uuid7==0.1.0
