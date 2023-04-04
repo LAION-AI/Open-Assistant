@@ -1,17 +1,16 @@
 """
     Open / close book QA datasets
 """
-import copy
 import glob
 import json
 import os
 import re
 from collections import OrderedDict
-from urllib.request import urlopen
+from itertools import accumulate
 from typing import Any
+from urllib.request import urlopen
 
 import numpy as np
-from itertools import accumulate
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -224,7 +223,7 @@ class SODA(Dataset):
         Returns:
             list[list]: list of sublists with length chunk_size
         """
-        return [l[i:i+chunk_size] for i in range(0, len(l), chunk_size)]
+        return [l[i : i + chunk_size] for i in range(0, len(l), chunk_size)]
 
     def process_soda_convo(self, data: dict[str, Any]) -> list[list[str]] | None:
         play_as = data["speakers"][1]
@@ -244,7 +243,7 @@ class SODA(Dataset):
         # make sure that the speakers are in correct order [S1, S2, S1, S2, S1, S2], otherwise return None
         speaker1_idx = [idx % 2 == 0 for idx, k in enumerate(data["speakers"]) if k == speaker1]
         speaker2_idx = [idx % 2 == 1 for idx, k in enumerate(data["speakers"]) if k == speaker2]
-        if (all(speaker1_idx) and all(speaker2_idx)):
+        if all(speaker1_idx) and all(speaker2_idx):
             # split dialogue in question and answer pairs.
             # [Q1, A1, Q2, A2] -> [[Q1, A1], [Q2, A2]]
             pairs = self._partition_list(data["dialogue"], 2)
@@ -257,7 +256,9 @@ class SODA(Dataset):
             return pairs
 
     def __init__(self, cache_dir, input_max_length=1024) -> None:
-        import pdb;pdb.set_trace()
+        import pdb
+
+        pdb.set_trace()
         super().__init__()
 
         self.pairs = []
