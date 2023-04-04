@@ -1,4 +1,5 @@
 import argparse
+import math
 import os
 import random
 from argparse import Namespace
@@ -15,7 +16,6 @@ from trlx.data.configs import TRLConfig
 # flake8: noqa
 from utils.ppo_utils import CustomPPOTrainer
 from utils.utils import _strtobool, get_dataset, get_model, read_yamls
-import math
 
 
 def argument_parsing(notebook=False, notebook_args=None):
@@ -82,10 +82,8 @@ def create_reward_fn(rank_config):  # noqa:  C901
             result = client.infer(
                 triton_model,
                 [
-                    {
-                        "input_ids": prepare_tensor("input_ids", inputs.input_ids[batch_ixs]),
-                        "attention_mask": prepare_tensor("attention_mask", inputs.attention_mask[batch_ixs]),
-                    }
+                    prepare_tensor("input_ids", inputs.input_ids[batch_ixs]),
+                    prepare_tensor("attention_mask", inputs.attention_mask[batch_ixs]),
                 ],
             )
 
@@ -102,7 +100,9 @@ if __name__ == "__main__":
     training_conf = argument_parsing()
 
     rank_config = Namespace(**training_conf.rank_config)
-    eos_token = transformers.AutoTokenizer.from_pretrained(rank_config.model_name, cache_dir=rank_config.cache_dir).eos_token
+    eos_token = transformers.AutoTokenizer.from_pretrained(
+        rank_config.model_name, cache_dir=rank_config.cache_dir
+    ).eos_token
 
     # Load pretrained SFT model
     sft_config = Namespace(**training_conf.sft_config)

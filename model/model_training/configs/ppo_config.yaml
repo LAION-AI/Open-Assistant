@@ -19,7 +19,7 @@ model:
 tokenizer:
   tokenizer_path:
   truncation_side: "right"
-  padding_side: "right"
+  padding_side: "left" # use with rotary positional embedidngs
 
 optimizer:
   name: "adamw"

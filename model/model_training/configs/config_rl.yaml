@@ -40,7 +40,6 @@ pythia_rlhf:
     freeze_layer:
     residual_dropout: 0.2
     use_flash_attention: true
-    freeze_layer:
 
   batch_size: 4
 

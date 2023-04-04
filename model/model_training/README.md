@@ -86,10 +86,34 @@ Change the `input_file_path` in the `oasst_export_eu` from the
 
 ## Training with RL
 
-To train using trlx try:
+To train using trlx you first need to install singularity from
+https://github.com/sylabs/singularity/blob/main/INSTALL.md
+
+Then:
 
 ```bash
-python trainer_rl.py --configs defaults defaults_rlhf oasst_export_latin_cyrillic_rlhf
+singularity build --sandbox tritonserver-pyt.sif docker://nvcr.io/nvidia/tritonserver:22.08-pyt-python-py3
+```
+
+Process a trained RM model to use in a tritonserver
+
+```bash
+python to_triton.py --configs pythia_rlhf
+```
+
+We can know launch the container instance that runs the RM on a specified GPU
+
+```bash
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind model_store:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store
+```
+
+FInally, we can train using PPO:
+
+```bash
+export TRITON_HOST=localhost:8001/<RM_MODEL_NAME>
+
+
+accelerate launch --main_process_port 29501 --config_file configs/accelerate_config.yaml trainer_rl.py --configs defaults defaults_rlhf pythia_rlhf
 ```
 
 ## Test your model
@@ -163,36 +187,3 @@ python trainer_sft.py --configs defaults your-model-name --deepspeed
 
 Experimental results in wandb
 [here](https://wandb.ai/sanagnos/supervised-finetuning?workspace=user-sanagnos).
-
-## TODOS
-
-- Decide on a model
-- Merge utils etc with reward model
-- Casual Modelling for GPT-JT does not leverage the bidirectional mask for the
-  prompt? (https://huggingface.co/togethercomputer/GPT-JT-6B-v1)
-
-################### TEMP RL:
-
-Install singularity from
-https://github.com/sylabs/singularity/blob/main/INSTALL.md singularity build
---sandbox tritonserver-pyt.sif
-docker://nvcr.io/nvidia/tritonserver:22.08-pyt-python-py3
-
-CUDA_VISIBLE_DEVICES=7 python to_triton.py --configs pythia_rlhf
-
-# launch rm
-
-SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind
-model_store:/model_store tritonserver-pyt.sif tritonserver
---model-repository=/model_store
-
-export TRITON_HOST=localhost:8001/andreaskoepf-oasst-rm-1-pythia-1b
-
-# change path to config and num processses
-
-CUDA_VISIBLE_DEVICES=7 accelerate launch --main_process_port 29501 --config_file
-configs/accelerate_config.yaml trainer_rl.py --configs defaults defaults_rlhf
-pythia_rlhf
-
-padding left and right are not the same ...
-add patch attention etc ...
