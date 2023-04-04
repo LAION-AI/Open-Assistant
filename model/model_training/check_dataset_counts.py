@@ -111,10 +111,15 @@ def argument_parsing(notebook=False, notebook_args=None):
 if __name__ == "__main__":
     args = argument_parsing()
 
-    train, evals = get_dataset(args, mode=args.mode, return_datasets_as_list=True)
+    train, evals = get_dataset(args, mode=args.mode)
     overview_df = pd.DataFrame(columns=["dataset_name", "train_counts", "eval_counts", "total_counts"])
     for idx, dataset_name in enumerate(args.datasets):
         eval_count = len(evals.get(dataset_name, []))
-        overview_df.loc[idx] = [dataset_name, len(train[idx]), eval_count, len(train[idx]) + eval_count]
+        overview_df.loc[idx] = [
+            dataset_name,
+            len(train.datasets[idx]),
+            eval_count,
+            len(train.datasets[idx]) + eval_count,
+        ]
     print(overview_df)
     overview_df.to_csv(args.output_path, index=False)

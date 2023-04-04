@@ -355,8 +355,9 @@ def get_dataset_name_and_kwargs_from_data_config(data_config):
 
 
 def get_dataset(
-    conf, mode: str = "sft", return_datasets_as_list: bool = False
-) -> tuple[ConcatDataset | list[Dataset], dict[str, Subset]]:
+    conf,
+    mode: str = "sft",
+) -> tuple[ConcatDataset, dict[str, Subset]]:
     train_datasets, evals = [], {}
 
     for data_config in conf.datasets + conf.datasets_extra:
@@ -367,8 +368,6 @@ def get_dataset(
         if val is not None:
             evals[dataset_name] = Subset(val, list(range(min(len(val), conf.eval_size)))) if conf.eval_size else val
 
-    if return_datasets_as_list:
-        return train_datasets, evals
     train = ConcatDataset(train_datasets)
 
     return train, evals
