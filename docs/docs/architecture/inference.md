@@ -81,3 +81,17 @@ The EventSourceResponse is Server Sent Events (SSE) plugin for Starlette/FastAPI
 and returns it as part of a HTTP event stream. You can check out the EventSourceResposethe library's [source code](https://github.com/sysid/sse-starlette/tree/master) for more details about how this works.
 
 ### From the perspective of the OA Worker
+
+After loading the tokenizer, a worker establishes a websocket connection with the server and sends its worker config to the server (at `/workers/work`).
+
+1. we get a work request, which is parsed by oasst_shared.inference.WorkParameters
+2. we then recreate these as stream parameters, using `inference.worker.interface.GenerateStreamParameters.from_work_parameters()`. ANSWER -> WHY DO WE NEED TO RECREATE PARAMS AS THIS SECOND CLASS?
+3. why 
+
+note: both `inference/worker/interface.py` and `oasst-shared/oasst_shared/schemas/inference.py` have pydantic classes.
+
+
+why are we using websockets instead of a regular message queue?
+
+in inference.worker.interface.GenerateStreamParameters.from_work_parameters(), why is this not a class method?
+
