@@ -3,8 +3,8 @@ import logging
 import os
 from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
-import bitsandbytes
 import datasets
+import numpy as np
 import torch
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from model_training.efficiency_utils import fuse_gelu
@@ -28,6 +28,16 @@ from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
 
+def compute_metrics(eval_pred):
+    scores = eval_pred.predictions
+    pos_scores, neg_scores = scores[:, 0], scores[:, 1]
+    metrics = {
+        "pos_score": np.mean(pos_scores),
+        "neg_score": np.mean(neg_scores),
+        "score_diff": np.mean(pos_scores - neg_scores),
+        "accuracy": np.mean(pos_scores > neg_scores),
+    }
+    return metrics
 
 class RMTrainer(Trainer):
     def __init__(
@@ -71,12 +81,26 @@ class RMTrainer(Trainer):
 
         loss = loss.mean().detach()
 
-        labels = []
-        for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
-            labels.extend([i] * (e - s))
-        # make sure labels are same as logits, needed for deepspeed
-        labels = torch.tensor(labels, device=logits.device, requires_grad=False).view(-1, 1)
-        return (loss, logits.T, labels.T)  # transposed to avoid truncation in evaluation_loop
+        # labels = []
+        # for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
+        #     labels.extend([i] * (e - s))
+        # # make sure labels are same as logits, needed for deepspeed
+        # labels = torch.tensor(labels, device=logits.device, requires_grad=False).view(-1, 1)
+        # return (loss, logits.T, labels.T)  # transposed to avoid truncation in evaluation_loop
+    
+        pos_logits, neg_logits = [], []
+        for start, end in zip(cu_lens[:-1], cu_lens[1:]):
+            pos_logits.append(logits[start])
+            neg_logits.append(logits[end - 1])
+        pos_logits = torch.cat(pos_logits).detach()
+        neg_logits = torch.cat(neg_logits).detach()
+
+        out_logits = torch.stack([pos_logits, neg_logits], dim=1)  # shape (B, 2)
+        # need to pass something for `compute_metrics` to be called`,
+        # has to have the same size as logits, otherwise `_pad_across_processes` hangs
+        labels = torch.zeros_like(out_logits[:, 0])
+
+        return (loss, out_logits, labels)
 
     def get_train_dataloader(self):
         """
@@ -221,6 +245,7 @@ def main():
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
 
     if training_conf.quantization:
+        import bitsandbytes
         for module in model.modules():
             if isinstance(module, torch.nn.Embedding):
                 bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
@@ -275,7 +300,7 @@ def main():
             name=f"{training_conf.model_name}-{training_conf.log_dir}-rm",
             config=training_conf,
         )
-    compute_metrics = RewardMetrics(training_conf.metrics)
+    #compute_metrics = RewardMetrics(training_conf.metrics)
     trainer = RMTrainer(
         model=model,
         args=args,

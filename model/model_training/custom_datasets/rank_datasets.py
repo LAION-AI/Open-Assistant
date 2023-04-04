@@ -52,10 +52,10 @@ class HellaSwagDataset(Dataset):
 
     name = "hellaswag"
 
-    def __init__(self, split) -> None:
+    def __init__(self, split, seed=SEED) -> None:
         super().__init__()
 
-        np.random.seed(SEED)
+        np.random.seed(seed)
         self.dataset_list = []
         if not isinstance(split, List):
             split = [split]
@@ -82,7 +82,7 @@ class HFDataset(Dataset):
     Summaries ranked by overall score.
     """
 
-    name = "hfsummary"
+    name = "open_ai_summarize_from_feedback"
 
     def __init__(self, split=None, subset="axis") -> None:
         super().__init__()
@@ -177,6 +177,8 @@ class AugmentedOA(Dataset):
 
 
 class AnthropicRLHF(Dataset):
+    name = "anthropic_rlhf"
+
     @staticmethod
     def _split_dialogue(text):
         lines = text.split("\n\n")

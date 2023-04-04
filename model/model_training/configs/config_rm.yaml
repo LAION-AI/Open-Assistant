@@ -40,6 +40,7 @@ defaults_rm:
   per_digit_tokens: false
   datasets_extra: []
   metrics: ["accuracy", "kendalltau"]
+  dtype: fp16
 
 oasst-rm-1-pythia-6B:
   is_reward_model: true
@@ -47,7 +48,7 @@ oasst-rm-1-pythia-6B:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        input_file_path: 2023-03-21_oasst_ready_synth_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
   model_name: EleutherAI/pythia-6.9b-deduped
   learning_rate: 1e-5
   residual_dropout: 0.08
@@ -65,26 +66,31 @@ oasst-rm-1-pythia-6B:
 
 # params based on sweep result: https://wandb.ai/open-assistant/reward_model/runs/9102dee8
 # actual run for export: https://wandb.ai/open-assistant/reward-model/runs/1lw4g83x
-oasst-rm-1-pythia-1b:
+oasst-rm-1-pythia-1.4b:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        input_file_path: 2023-03-21_oasst_ready_synth_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
         val_split: 0.1
-  model_name: EleutherAI/pythia-1b-deduped
-  learning_rate: 2.3984085802847404e-05
-  residual_dropout: 0.08172424407561013
-  weight_decay: 0.07428722634825694
+    - anthropic_rlhf
+    - shp
+    - hellaswag
+    #- open_ai_summarize_from_feedback
+  model_name: andreaskoepf/pythia-1.4b-gpt4all-pretrain
+  learning_rate: 8e-8
+  residual_dropout: 0.01
+  weight_decay: 0.05
+  dtype: float32
   max_length: 520
   warmup_steps: 10
   # assuming training on single GPU
   # per_device_train_batch_size: 8  # 48 GB not enough
   gradient_accumulation_steps: 2
-  per_device_train_batch_size: 4
+  per_device_train_batch_size: 12
   per_device_eval_batch_size: 16
-  num_train_epochs: 1
+  num_train_epochs: 5
   eval_steps: 100
-  save_steps: 500
+  save_steps: 5000
 
 # a minimal configuration to debug the additional OS datasets
 extended_rlhf:

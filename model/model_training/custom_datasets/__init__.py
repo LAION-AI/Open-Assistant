@@ -1,7 +1,12 @@
 """
     High level functions for model training
 """
-from model_training.custom_datasets.extra_rm_datasets import load_anthropic_rlhf, load_open_ai_summarize_from_feedback
+from model_training.custom_datasets.extra_rm_datasets import (
+    load_anthropic_rlhf,
+    load_open_ai_summarize_from_feedback,
+    load_hellaswag,
+    load_shp,
+)
 from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
 from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
@@ -40,10 +45,12 @@ RL_DATASETS = ["webgpt", "private_tuning", "alpaca", "hf_summary"]
 RM_DATASETS = [
     "oasst_export",
     "augment_oasst",
-    "hf_summary",
-    "webgpt",
     "anthropic_rlhf",
+    "hf_summary",
     "open_ai_summarize_from_feedback",
+    "shp",
+    "hellaswag",
+    "webgpt",
 ]
 
 
@@ -129,6 +136,10 @@ def get_one_dataset(
         train, eval = load_open_ai_summarize_from_feedback()
     elif dataset_name == "anthropic_rlhf":
         train, eval = load_anthropic_rlhf()
+    elif dataset_name == "shp":
+        train, eval = load_shp()
+    elif dataset_name == "hellaswag":
+        train, eval = load_hellaswag()
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
