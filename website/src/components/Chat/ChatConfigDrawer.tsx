@@ -14,7 +14,6 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Portal,
   Select,
   Slider,
   SliderFilledTrack,
@@ -26,7 +25,7 @@ import {
 } from "@chakra-ui/react";
 import { Settings } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, useCallback, useState } from "react";
+import { ChangeEvent, memo, useCallback, useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { ChatConfigForm, SamplingParameters } from "src/types/Chat";
 
@@ -38,21 +37,7 @@ export const ChatConfigDrawer = () => {
   const { t } = useTranslation("chat");
   return (
     <>
-      <Portal>
-        <IconButton
-          position="fixed"
-          style={{
-            insetInlineEnd: `30px`,
-          }}
-          bottom={10}
-          aria-label={t("config_title")}
-          icon={<Settings />}
-          size="lg"
-          borderRadius="2xl"
-          colorScheme="blue"
-          onClick={onOpen}
-        />
-      </Portal>
+      <IconButton aria-label={t("config_title")} icon={<Settings />} onClick={onOpen} size="lg" />
       <Drawer placement="right" onClose={onClose} isOpen={isOpen}>
         <DrawerOverlay />
         <DrawerContent>
@@ -201,7 +186,7 @@ type NumberInputSliderProps = {
   name: keyof SamplingParameters;
 };
 
-const ChatParameterField = (props: NumberInputSliderProps) => {
+const ChatParameterField = memo(function ChatParameterField(props: NumberInputSliderProps) {
   const { max = 1, precision = 2, step = 0.01, min = 0, value, isDisabled, name, onChange } = props;
 
   const handleChange = useCallback(
@@ -265,4 +250,4 @@ const ChatParameterField = (props: NumberInputSliderProps) => {
       )}
     </FormControl>
   );
-};
+});
