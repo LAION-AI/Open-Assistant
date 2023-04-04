@@ -250,7 +250,7 @@ class SODA(Dataset):
             # add dialog background to first pair.
             # [[Q1, A1], [Q2, A2]] -> [[B + Q1, A1], [Q2, A2]]
             pairs[0][0] = f"{dialogue_bg} {pairs[0][0]}"
-            # add history to all previous conversation pairs
+            # add previous history to conversation pairs
             # e.g. [[B + Q1, A1], [Q2, A2]] -> [[B + Q1, A1], [B + Q1, A1, Q2, A2]]
             pairs = list(accumulate(pairs, lambda x, y: x + y))
             return pairs
