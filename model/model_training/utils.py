@@ -12,14 +12,15 @@ import transformers
 import yaml
 from model_training.custom_datasets import get_one_dataset
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
-from model_training.losses import CrossEntropyLoss, PolyLoss, RMLoss
+from model_training.losses import CrossEntropyLoss, PolyLoss, RMCLSLoss, RMLoss
 from model_training.models import freeze_top_n_layers, get_specific_model
 from model_training.models.patching import patch_model
 from model_training.models.reward_model import GPTNeoXRewardModel
 from sklearn.model_selection import train_test_split
-from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Dataset, Subset
 from torch.utils.data.distributed import DistributedSampler
+
+from tokenizers import pre_tokenizers
 
 
 def _strtobool(x):
@@ -180,6 +181,9 @@ TOKENIZER_CONFIGS = {
     "gpt-neox": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
     "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
     "cerebras": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", "<|endoftext|>", "<|endoftext|>")),
+    "deberta-v3": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
+    "bloom": TokenizerConfig(special_tokens=SpecialTokens("<pad>", "</s>", "<s>")),
+    "electra": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
 }
 
 
@@ -299,12 +303,14 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
 
     if conf.is_reward_model:
         if "pythia" in conf.model_name:
-            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir, torch_dtype=dtype)
+            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
             if conf.pooling:
                 assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
                 model.config.pooling = conf.pooling
         else:
-            raise RuntimeError(f"Unsupported reward model type: {conf.model_name}")
+            model = transformers.AutoModelForSequenceClassification.from_pretrained(
+                conf.model_name, cache_dir=conf.cache_dir
+            )
     else:
         model = get_specific_model(
             conf.model_name,
@@ -377,6 +383,8 @@ def get_loss(loss, poly_eps: float = 1.0, score_l2_reg: float = 0.001):
         return PolyLoss(epsilon=poly_eps)
     elif loss == "RMLoss":
         return RMLoss(beta=score_l2_reg)
+    elif loss == "RMCLSLoss":
+        return RMCLSLoss()
     else:
         raise ValueError(f"Loss {loss} not supported")
 

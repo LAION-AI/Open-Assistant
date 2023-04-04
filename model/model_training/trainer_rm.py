@@ -72,9 +72,11 @@ class RMTrainer(Trainer):
         loss = loss.mean().detach()
 
         labels = []
+        # TODO: needed comment on this logic
         for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
             labels.extend([i] * (e - s))
-        labels = torch.tensor(labels).view(-1, 1)
+        # make sure labels are same as logits, needed for deepspeed
+        labels = torch.tensor(labels, device=logits.device, requires_grad=False).view(-1, 1)
         return (loss, logits.T, labels.T)  # transposed to avoid truncation in evaluation_loop
 
     def get_train_dataloader(self):
@@ -158,7 +160,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
-    if args.rng_seed is not None:
+    if "rng_seed" not in conf and args.rng_seed is not None:
         conf["rng_seed"] = args.rng_seed
 
     # get the world size in deeepspeed
