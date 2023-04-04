@@ -31,10 +31,9 @@ def main():
 
     if model_config.is_lorem:
         tokenizer = None
-    elif model_config.is_llama:
-        tokenizer: transformers.PreTrainedTokenizer = transformers.LlamaTokenizer.from_pretrained(model_config.model_id)
     else:
         tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
+    logger.warning(f"Tokenizer {tokenizer.name_or_path} vocab size: {tokenizer.vocab_size}")
 
     while True:
         try:
@@ -76,6 +75,9 @@ def main():
                             for ftr in done:
                                 ftr.result()
                         message = ws.recv()
+                        if not message:
+                            logger.warning("Connection closed, reconnecting...")
+                            break
                         worker_request = pydantic.parse_raw_as(inference.WorkerRequest, message)
                         match worker_request.request_type:
                             case "work":

@@ -17,6 +17,7 @@ class UserChatRepository(pydantic.BaseModel):
     async def get_chats(self) -> list[models.DbChat]:
         query = sqlmodel.select(models.DbChat)
         query = query.where(models.DbChat.user_id == self.user_id)
+        query = query.order_by(models.DbChat.created_at.desc())
         return (await self.session.exec(query)).all()
 
     async def get_chat_by_id(self, chat_id: str) -> models.DbChat:
