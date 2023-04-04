@@ -172,7 +172,7 @@ class QADataset(Dataset):
         return self.index_fn(data)
 
 
-class WebGPT(Dataset):
+class WebGPTQA(Dataset):
     name = "webgpt"
     splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
 

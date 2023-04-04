@@ -18,9 +18,9 @@ from model_training.custom_datasets.qa_datasets import (
     QADataset,
     SODADialogue,
     TranslatedQA,
-    WebGPT,
+    WebGPTQA,
 )
-from model_training.custom_datasets.rank_datasets import AugmentedOA
+from model_training.custom_datasets.rank_datasets import AugmentedOA, WebGPTRank
 from model_training.custom_datasets.summarization import HFSummary, SummarizationDataset
 from model_training.custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
 from model_training.custom_datasets.translation import WMT2019, DiveMT, TEDTalk
@@ -98,7 +98,10 @@ def get_one_dataset(
     elif dataset_name == "dive_mt":
         dataset = DiveMT()
     elif dataset_name == "webgpt":
-        dataset = WebGPT(mode=mode)
+        if mode == "sft":
+            dataset = WebGPTQA()
+        elif mode == "rm":
+            dataset = WebGPTRank()
     elif dataset_name == "alpaca":
         dataset = Alpaca(mode=mode, cache_dir=data_path)
     elif dataset_name == "code_alpaca":

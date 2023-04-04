@@ -223,3 +223,38 @@ class AnthropicRLHF(Dataset):
 
     def __getitem__(self, index):
         return self.data[index]
+
+
+class WebGPTRank(Dataset):
+    def __init__(self) -> None:
+        super().__init__()
+
+        dataset = load_dataset("openai/webgpt_comparisons")
+        questions = {}
+        # using prompt as our index will allows us
+        # to add additional generated prompt later
+        self.index2question = {}
+        for row in dataset["train"]:
+            question = row["question"]["full_text"]
+            if question not in self.index2question.values():
+                self.index2question[len(self.index2question)] = question
+
+            if question not in questions:
+                questions[question] = []
+
+            if row["score_0"] > row["score_1"]:
+                # not going to risk it
+                questions[question].append((row["answer_0"], row["answer_1"]))
+            else:
+                questions[question].append((row["answer_1"], row["answer_0"]))
+
+        self.questions = questions
+
+    def __len__(self):
+        return len(self.index2question)
+
+    def __getitem__(self, index):
+        question = self.index2question[index]
+        rows = self.questions[question]
+        # optimize the format later
+        return question, rows
