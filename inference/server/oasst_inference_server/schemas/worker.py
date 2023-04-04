@@ -11,3 +11,6 @@ class WorkerRead(pydantic.BaseModel):
     name: str
     api_key: str
     trusted: bool
+
+    class Config:
+        orm_mode = True
