@@ -7,6 +7,21 @@ from model_training.utils import get_tokenizer
 from torch.utils.data import DataLoader
 
 
+@pytest.mark.skip(reason="manual")
+def test_rm_datasets():
+    # dummy configuration
+    config = Namespace(cache_dir=".cache", model_name="EleutherAI/pythia-70m-deduped")
+
+    dataset_names = ["anthropic_rlhf", "shp", "hellaswag", "webgpt"]  # , "open_ai_summarize_from_feedback"]
+    for name in dataset_names:
+        train, val = get_one_dataset(conf=config, dataset_name=name)
+        print(f"dataset: {name}  (train: {len(train)}, val: {len(val)})")
+        item = train[0]
+
+        print("prefix:", item[0])
+        print("Continuations:", item[1])
+
+
 @pytest.mark.skip(reason="cache not populated")
 def test_ranking_collator():
     # dummy configuration
@@ -54,4 +69,5 @@ def test_ranking_collator():
 
 
 if __name__ == "__main__":
-    test_ranking_collator()
+    test_rm_datasets()
+    # test_ranking_collator()

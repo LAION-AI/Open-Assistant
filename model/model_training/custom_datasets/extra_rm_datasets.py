@@ -5,9 +5,7 @@ from torch.utils.data import Dataset
 def load_anthropic_rlhf() -> tuple[Dataset, Dataset]:
     train = AnthropicRLHF(split="train")
     validation = AnthropicRLHF(split="test")
-
     print(f"AnthropicRLHF dataset size: {len(train)}, {len(validation)}")
-
     return train, validation
 
 
