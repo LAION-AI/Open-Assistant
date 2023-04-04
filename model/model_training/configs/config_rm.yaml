@@ -64,8 +64,6 @@ oasst-rm-1-pythia-6B:
   per_digit_tokens: false
   save_steps: 500
 
-# params based on sweep result: https://wandb.ai/open-assistant/reward_model/runs/9102dee8
-# actual run for export: https://wandb.ai/open-assistant/reward-model/runs/1lw4g83x
 oasst-rm-1-pythia-1.4b:
   datasets:
     - oasst_export:
@@ -77,16 +75,14 @@ oasst-rm-1-pythia-1.4b:
     - hellaswag
     #- open_ai_summarize_from_feedback
   model_name: andreaskoepf/pythia-1.4b-gpt4all-pretrain
-  learning_rate: 8e-8
+  learning_rate: 8e-6
   residual_dropout: 0.01
-  weight_decay: 0.05
+  weight_decay: 0.0
   dtype: float32
   max_length: 520
   warmup_steps: 10
-  # assuming training on single GPU
-  # per_device_train_batch_size: 8  # 48 GB not enough
   gradient_accumulation_steps: 2
-  per_device_train_batch_size: 12
+  per_device_train_batch_size: 14
   per_device_eval_batch_size: 16
   num_train_epochs: 5
   eval_steps: 100
