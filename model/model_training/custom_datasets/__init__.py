@@ -3,8 +3,13 @@
 """
 from model_training.custom_datasets.extra_rm_datasets import (
     load_anthropic_rlhf,
+<<<<<<< HEAD
     load_open_ai_summarize_from_feedback,
     load_hellaswag,
+=======
+    load_hellaswag,
+    load_open_ai_summarize_from_feedback,
+>>>>>>> 173d0dcb (install pre-commit)
     load_shp,
 )
 from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset

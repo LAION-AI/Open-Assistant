@@ -8,7 +8,8 @@ import numpy as np
 import torch
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from model_training.efficiency_utils import fuse_gelu
-from model_training.metrics import RewardMetrics
+
+# from model_training.metrics import RewardMetrics
 from model_training.utils import (
     PerDatasetSampler,
     _strtobool,
@@ -28,6 +29,7 @@ from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
 
+
 def compute_metrics(eval_pred):
     scores = eval_pred.predictions
     pos_scores, neg_scores = scores[:, 0], scores[:, 1]
@@ -38,6 +40,7 @@ def compute_metrics(eval_pred):
         "accuracy": np.mean(pos_scores > neg_scores),
     }
     return metrics
+
 
 class RMTrainer(Trainer):
     def __init__(
@@ -246,6 +249,7 @@ def main():
 
     if training_conf.quantization:
         import bitsandbytes
+
         for module in model.modules():
             if isinstance(module, torch.nn.Embedding):
                 bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
@@ -300,7 +304,7 @@ def main():
             name=f"{training_conf.model_name}-{training_conf.log_dir}-rm",
             config=training_conf,
         )
-    #compute_metrics = RewardMetrics(training_conf.metrics)
+    # compute_metrics = RewardMetrics(training_conf.metrics)
     trainer = RMTrainer(
         model=model,
         args=args,
