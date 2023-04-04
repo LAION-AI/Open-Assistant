@@ -1,5 +1,4 @@
 import datetime
-from uuid import uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
@@ -7,6 +6,7 @@ from oasst_inference_server.schemas import chat as chat_schema
 from oasst_shared.schemas import inference
 from sqlmodel import Field, Relationship, SQLModel
 from uuid_extensions import uuid7str
+
 
 class DbMessage(SQLModel, table=True):
     __tablename__ = "message"
