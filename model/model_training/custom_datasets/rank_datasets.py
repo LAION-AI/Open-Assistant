@@ -114,7 +114,6 @@ class HFDataset(Dataset):
                 self.comparisons.append([[full_post], summaries])
 
     def _handle_axis(self, dataset):
-        import pdb; pdb.set_trace()
         for data in dataset:
             for item in data:
                 if item["summary"].get("axes").get("overall") is not None:
