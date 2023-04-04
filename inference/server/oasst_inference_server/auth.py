@@ -54,18 +54,6 @@ def get_current_user_id(
     return user_id
 
 
-def derive_key() -> bytes:
-    """Derive a key from the auth secret."""
-    hkdf = HKDF(
-        algorithm=hashes.SHA256(),
-        length=settings.auth_length,
-        salt=settings.auth_salt,
-        info=settings.auth_info,
-    )
-    key = hkdf.derive(settings.auth_secret)
-    return key
-
-
 def create_access_token(user_id: str) -> str:
     """Create encoded JSON Web Token (JWT) for the given user ID."""
     payload: bytes = build_payload(user_id, "access", settings.auth_access_token_expire_minutes)
@@ -88,21 +76,6 @@ async def create_refresh_token(user_id: str) -> str:
     return token.decode()
 
 
-def build_payload(user_id: str, token_type: str, expire_minutes: int) -> bytes:
-    """Build a token payload as `bytes` encoded from a JSON string."""
-    expires_delta = timedelta(minutes=expire_minutes)
-    expire = datetime.utcnow() + expires_delta
-
-    payload_dict = {
-        "user_id": user_id,
-        "exp": expire.timestamp(),
-        "type": token_type,
-    }
-
-    payload: bytes = json.dumps(payload_dict).encode()
-    return payload
-
-
 async def refresh_access_token(refresh_token: str) -> str:
     """Refresh the access token using the given refresh token."""
     key: bytes = derive_key()
@@ -123,6 +96,33 @@ async def refresh_access_token(refresh_token: str) -> str:
     user_id = payload.get("user_id")
     access_token: str = create_access_token(user_id)
     return access_token
+
+
+def derive_key() -> bytes:
+    """Derive a key from the auth secret."""
+    hkdf = HKDF(
+        algorithm=hashes.SHA256(),
+        length=settings.auth_length,
+        salt=settings.auth_salt,
+        info=settings.auth_info,
+    )
+    key = hkdf.derive(settings.auth_secret)
+    return key
+
+
+def build_payload(user_id: str, token_type: str, expire_minutes: int) -> bytes:
+    """Build a token payload as `bytes` encoded from a JSON string."""
+    expires_delta = timedelta(minutes=expire_minutes)
+    expire = datetime.utcnow() + expires_delta
+
+    payload_dict = {
+        "user_id": user_id,
+        "exp": expire.timestamp(),
+        "type": token_type,
+    }
+
+    payload: bytes = json.dumps(payload_dict).encode()
+    return payload
 
 
 async def store_refresh_token(token: bytes, user_id: str) -> None:
