@@ -275,7 +275,7 @@ pythia-12B:
   learning_rate: 6e-6
   model_name: EleutherAI/pythia-12b-deduped
   weight_decay: 0.0
-  max_length: 620
+  max_length: 2048
   use_flash_attention: true
   warmup_steps: 100
   gradient_checkpointing: false
