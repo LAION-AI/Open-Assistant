@@ -230,31 +230,21 @@ class WebGPTRank(Dataset):
         super().__init__()
 
         dataset = load_dataset("openai/webgpt_comparisons")
-        questions = {}
-        # using prompt as our index will allows us
-        # to add additional generated prompt later
-        self.index2question = {}
+        self.questions = []
+        self.answers = []
+        question_answer_dict = defaultdict(dict)
         for row in dataset["train"]:
             question = row["question"]["full_text"]
-            if question not in self.index2question.values():
-                self.index2question[len(self.index2question)] = question
-
-            if question not in questions:
-                questions[question] = []
-
-            if row["score_0"] > row["score_1"]:
-                # not going to risk it
-                questions[question].append((row["answer_0"], row["answer_1"]))
-            else:
-                questions[question].append((row["answer_1"], row["answer_0"]))
-
-        self.questions = questions
+            question_answer_dict[question][row["answer_0"]] = row["score_0"]
+            question_answer_dict[question][row["answer_1"]] = row["score_1"]
+        for question, answers in question_answer_dict.items():
+            self.questions.append(question)
+            # sort answer dict with the highest score first (hence the prefactor -1). Then we recreate a dictionary
+            # and take only the first 5 keys (usually it's just 2, but there are examples where we have more)
+            self.answers.append(list(dict(sorted(answers.items(), key=lambda x: -1 * x[1])).keys())[:5])
 
     def __len__(self):
-        return len(self.index2question)
+        return len(self.questions)
 
     def __getitem__(self, index):
-        question = self.index2question[index]
-        rows = self.questions[question]
-        # optimize the format later
-        return question, rows
+        return [self.questions[index]], self.answers[index]
