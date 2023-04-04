@@ -28,15 +28,6 @@ const swrConfig: SWRConfiguration = {
 };
 
 function MyApp({ Component, pageProps: { session, ...pageProps }, env, cookie }: AppPropsWithLayout) {
-  const getLayout = Component.getLayout ?? getDefaultLayout;
-  const page = getLayout(<Component {...pageProps} />);
-  const { t, i18n } = useTranslation();
-
-  const direction = i18n.dir();
-  useEffect(() => {
-    document.body.dir = direction;
-  }, [direction]);
-
   // expose env vars on the client
   if (typeof window !== "undefined") {
     process.env = new Proxy(env, {
@@ -48,6 +39,15 @@ function MyApp({ Component, pageProps: { session, ...pageProps }, env, cookie }:
       },
     });
   }
+
+  const getLayout = Component.getLayout ?? getDefaultLayout;
+  const page = getLayout(<Component {...pageProps} />);
+  const { t, i18n } = useTranslation();
+
+  const direction = i18n.dir();
+  useEffect(() => {
+    document.body.dir = direction;
+  }, [direction]);
 
   return (
     <>
