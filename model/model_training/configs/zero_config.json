@@ -7,6 +7,9 @@
     "hysteresis": 2,
     "min_loss_scale": 1
   },
+  "bf16": {
+    "enabled": "auto"
+  },
   "optimizer": {
     "type": "AdamW",
     "params": {
@@ -28,15 +31,11 @@
   "zero_optimization": {
     "stage": 2,
     "allgather_partitions": true,
-    "allgather_bucket_size": 2e8,
-    "overlap_comm": true,
+    "allgather_bucket_size": 1e9,
+    "overlap_comm": false,
     "reduce_scatter": true,
-    "reduce_bucket_size": 2e8,
-    "contiguous_gradients": true,
-    "offload_optimizer": {
-      "device": "cpu",
-      "pin_memory": true
-    }
+    "reduce_bucket_size": 1e9,
+    "contiguous_gradients": true
   },
   "gradient_accumulation_steps": "auto",
   "gradient_clipping": "auto",
