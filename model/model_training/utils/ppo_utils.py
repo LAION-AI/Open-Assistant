@@ -1,6 +1,6 @@
 import inspect
 from typing import List, Tuple
-
+import transformers
 import torch
 from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from torch.utils.data import DataLoader
@@ -13,14 +13,14 @@ from trlx.utils.modeling import hf_get_causal_base_model, hf_get_hidden_size, hf
 from utils.utils import get_model
 
 
-class CustomCausalLMHydraWithValueHead(CausalLMHydraWithValueHead):
+class CustomCausalLMHydraWithValueHead(CausalLMHydraWithValueHead, torch.nn.Module):
     """The CausalLMHydraWithValueHead class implements a causal language model
     with a secondary, scalar head.
     """
 
     def __init__(self, config, tokenizer):
-        super().__init__()
-
+        torch.nn.Module.__init__(self)
+        self.config = transformers.AutoConfig.from_pretrained(config.model_name)
         self.base_model = get_model(config, tokenizer)
 
         self.base_model.transformer = hf_get_causal_base_model(self.base_model)
