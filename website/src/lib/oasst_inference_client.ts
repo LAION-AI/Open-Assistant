@@ -1,47 +1,59 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { JWT } from "next-auth/jwt";
 import {
   ChatItem,
   InferenceMessage,
-  InferencePostPrompterMessageParams,
   InferencePostAssistantMessageParams,
+  InferencePostPrompterMessageParams,
   ModelInfo,
+  TrustedClient,
 } from "src/types/Chat";
 import type { Readable } from "stream";
 
 export class OasstInferenceClient {
   // this is not a long lived class, this is why the token is immutable
-  constructor(private readonly inferenceAccessToken: string) {}
+  constructor(private readonly clientToken: string) {}
 
   async request<T = unknown>(path: string, init?: AxiosRequestConfig) {
     const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
       ...init,
       headers: {
         ...init?.headers,
-        Authorization: `Bearer ${this.inferenceAccessToken}`,
         "Content-Type": "application/json",
+        TrustedClient: this.clientToken,
       },
     });
     return data;
   }
 
-  // note: maybe check if the token is still valid
-  // when creating JWT?
-  async check_auth(): Promise<boolean> {
-    try {
-      await this.request("/auth/check");
-      return true;
-    } catch (err) {
-      return false;
-    }
+  inference_login() {
+    return this.request("/auth/trusted", { method: "POST" });
   }
 
   get_my_chats(): Promise<ChatItem[]> {
     return this.request("/chats");
   }
 
-  create_chat(): Promise<ChatItem> {
-    return this.request("/chats", { method: "POST", data: "" });
+  async create_chat(): Promise<ChatItem> {
+    const create = () => this.request<ChatItem>("/chats", { method: "POST", data: "" });
+    try {
+      return await create();
+    } catch (err) {
+      if (err instanceof AxiosError && err.response.status === 500) {
+        // if we get an error here, the user might not yet exist in the inference database, which is why we try to create
+        // user once (it won't do anything if the user already exists) and then retry the chat creation again.
+        // the current inference server does not check for user existence before trying to insert a message into
+        // the database, which is why we get a 500 instead of what I expect to be 404, we should fix this later
+
+        // this is maybe not the cleanest solution, but otherwise we would have to sign up all users of the website
+        // to inference automatically, which is maybe an overkill
+        console.log("here");
+        await this.inference_login();
+        return create();
+      } else {
+        throw err;
+      }
+    }
   }
 
   get_chat(chat_id: string): Promise<ChatItem> {
@@ -81,6 +93,13 @@ export class OasstInferenceClient {
 }
 
 export const createInferenceClient = (jwt: JWT) => {
-  const token = jwt.inferenceTokens?.access_token.access_token;
+  const info: TrustedClient = {
+    api_key: process.env.INFERENCE_SERVER_API_KEY,
+    client: "website",
+    provider_account_id: jwt.backendUserId,
+    user_id: jwt.sub,
+    username: jwt.name,
+  };
+  const token = Buffer.from(JSON.stringify(info)).toString("base64");
   return new OasstInferenceClient(token);
 };

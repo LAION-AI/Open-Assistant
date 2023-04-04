@@ -123,11 +123,15 @@ def handle_work_request(
 
         if model_config.is_llama:
             generated_ids.append(token.id)
-            with tokenizer_lock:
-                text = tokenizer.decode(generated_ids)
-            new_text = text[len(decoded_text) :]
-            if not decoded_text:
-                new_text = new_text.lstrip()
+            try:
+                with tokenizer_lock:
+                    text = tokenizer.decode(generated_ids, skip_special_tokens=True)
+                new_text = text[len(decoded_text) :]
+                if not decoded_text:
+                    new_text = new_text.lstrip()
+            except Exception:
+                text = decoded_text
+                new_text = ""
             token.text = new_text
             decoded_text = text
 
@@ -190,6 +194,12 @@ def get_inference_server_stream_events(request: interface.GenerateStreamRequest)
 
     client = sseclient.SSEClient(response)
     for event in client.events():
+        if event.event == "error":
+            logger.error(f"Error from inference server: {event.data}")
+            yield interface.GenerateStreamResponse(error=event.data)
+            raise RuntimeError(f"Error from inference server: {event.data}")
+        if event.event == "ping":
+            continue
         stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
         yield stream_response
 

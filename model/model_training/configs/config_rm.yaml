@@ -85,3 +85,19 @@ oasst-rm-1-pythia-1b:
   num_train_epochs: 1
   eval_steps: 100
   save_steps: 500
+
+# a minimal configuration to debug the additional OS datasets
+extended_rlhf:
+  datasets:
+    - anthropic_rlhf
+    - open_ai_summarize_from_feedback
+    - oasst_export:
+        lang: "en,es,de,fr"
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+  model_name: EleutherAI/pythia-70m-deduped
+  per_device_train_batch_size: 10
+  per_device_eval_batch_size: 10
+  gradient_accumulation_steps: 4
+  num_train_epochs: 1
+  auto_find_batch_size: true
+  dtype: fp16

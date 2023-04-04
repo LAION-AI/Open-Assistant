@@ -1,6 +1,7 @@
 """
     High level functions for model training
 """
+from model_training.custom_datasets.extra_rm_datasets import load_anthropic_rlhf, load_open_ai_summarize_from_feedback
 from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
 from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
@@ -35,7 +36,7 @@ OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_transl
 
 RL_DATASETS = ["webgpt", "private_tuning", "alpaca"]
 
-RM_DATASETS = ["oasst_export"]
+RM_DATASETS = ["oasst_export", "anthropic_rlhf", "open_ai_summarize_from_feedback"]
 
 
 def train_val_dataset(dataset, val_split=0.2) -> tuple[Dataset, Dataset | None]:
@@ -108,6 +109,10 @@ def get_one_dataset(
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     elif dataset_name == "oig_file":
         train, eval = load_oig_file(val_split=val_split, **kwargs)
+    elif dataset_name == "open_ai_summarize_from_feedback":
+        train, eval = load_open_ai_summarize_from_feedback()
+    elif dataset_name == "anthropic_rlhf":
+        train, eval = load_anthropic_rlhf()
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
