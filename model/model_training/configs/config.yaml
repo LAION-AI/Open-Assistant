@@ -125,17 +125,18 @@ oasst_only:
   save_strategy: epoch
   datasets:
     - oasst_export:
-      lang: "en,es,de,fr"
-      input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
+        val_split: 0.05
   sort_by_length: false
   use_custom_sampler: false
 
 reference-data:
   datasets:
     - oasst_export:
-      lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-      input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
-      val_split: 0.05
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
+        val_split: 0.05
     - alpaca
   sort_by_length: false
   use_custom_sampler: false
@@ -307,7 +308,7 @@ pythia-12B:
 
 gpt-neox:
   model_name: EleutherAI/gpt-neox-20b
-  deepspeed_config: configs/zero3_config.json
+  deepspeed_config: configs/zero3_config_sft.json
   dtype: bf16
   learning_rate: 8e-6
   weight_decay: 0.0
