@@ -256,9 +256,6 @@ class SODA(Dataset):
             return pairs
 
     def __init__(self, cache_dir, input_max_length=1024) -> None:
-        import pdb
-
-        pdb.set_trace()
         super().__init__()
 
         self.pairs = []
