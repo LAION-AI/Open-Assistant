@@ -35,6 +35,5 @@
   "weekly": "Weekly",
   "xp_progress_message": "You need {{need, number, integer}} more points to reach the next level!",
   "your_account": "Your account",
-  "your_stats": "Your statistics",
-  "user_stats": "User statistics"
+  "your_stats": "Your statistics"
 }

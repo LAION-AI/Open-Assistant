@@ -150,7 +150,7 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
           </Card>
 
           <SurveyCard>
-            <Title>{t("user_stats")}</Title>
+            <Title>Statistics</Title>
             {[
               LeaderboardTimeFrame.day,
               LeaderboardTimeFrame.week,
