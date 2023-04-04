@@ -57,12 +57,6 @@ export const getDashboardLayout = (page: React.ReactElement) => (
             pathname: "/stats",
             icon: TrendingUp,
           },
-          {
-            labelID: "guidelines",
-            pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
-            icon: ExternalLink,
-            target: "_blank",
-          },
           ...(isChatEnabled()
             ? [
                 {
@@ -72,6 +66,12 @@ export const getDashboardLayout = (page: React.ReactElement) => (
                 },
               ]
             : []),
+          {
+            labelID: "guidelines",
+            pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
+            icon: ExternalLink,
+            target: "_blank",
+          },
         ]}
       >
         <Box>{page}</Box>
