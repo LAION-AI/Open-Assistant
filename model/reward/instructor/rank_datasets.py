@@ -261,15 +261,11 @@ class AnthropicRLHF(Dataset):
             return "Human:".join(last_two_convo)
         return "Human: " + "Human:".join(last_two_convo)
 
-    def __init__(self, split="train", sep_token="<sep>", mode=None) -> None:
+    def __init__(self, split="train", sep_token="<sep>") -> None:
         super().__init__()
-        self.mode = mode
         assert split in ("train", "test")
         if sep_token is None:
             sep_token = " . "
-
-        if mode == "rm":
-            sep_token = ""
 
         self.pairs = []
         # using prompt as our index will allows us
@@ -296,9 +292,6 @@ class AnthropicRLHF(Dataset):
 
     def __getitem__(self, index):
         context, pair = self.pairs[index]
-
-        if self.mode == "rm":
-            return context, pair
 
         return context, [pair]
 
