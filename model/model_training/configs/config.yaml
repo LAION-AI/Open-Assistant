@@ -11,6 +11,7 @@ defaults:
   weight_decay: 0.00
   warmup_steps: 600
   eval_steps: 200
+  save_strategy: steps
   save_steps: 1000
   max_length: 512
   val_max_length:
@@ -68,7 +69,7 @@ defaults:
   use_custom_sampler: false
   random_offset_probability: 0.8 # probability for random message offsets
   label_masking: true
-  residual_dropout: 0.1
+  residual_dropout: 0.0
   use_flash_attention: false
   sort_by_length: false
   use_system_prefix: false
@@ -92,6 +93,8 @@ math:
     - minimath
 
 pretrain:
+  num_train_epochs: 1
+  weight_decay: 0.01
   use_custom_sampler: true
   sort_by_length: false
   datasets:
@@ -118,6 +121,15 @@ pretrain:
     - explain_prosocial:
         fraction: 0.05
 
+oasst_only:
+  save_strategy: epoch
+  datasets:
+    - oasst_export:
+      lang: "en,es,de,fr"
+      input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+  sort_by_length: false
+  use_custom_sampler: false
+
 reference-data:
   datasets:
     - oasst_export:
@@ -129,6 +141,7 @@ reference-data:
   use_custom_sampler: false
 
 oasst_export_eu:
+  save_strategy: epoch
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
@@ -149,6 +162,7 @@ oasst_export_eu:
   use_custom_sampler: false
 
 oasst_export_latin_cyrillic:
+  save_strategy: epoch
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
@@ -187,38 +201,40 @@ reference-pythia-12b:
 llama-7b:
   dtype: fp16
   log_dir: "llama_log_7b"
-  learning_rate: 2e-5
+  learning_rate: 1e-5
   model_name: /home/ubuntu/llama_hf/7B
-  output_dir: llama_model
+  output_dir: llama_model_7b
   weight_decay: 0.0
-  max_length: 620
+  max_length: 2048
   warmup_steps: 100
-  gradient_checkpointing: false
-  gradient_accumulation_steps: 4
-  per_device_train_batch_size: 2
-  per_device_eval_batch_size: 5
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
   eval_steps: 100
   save_steps: 500
-  num_train_epochs: 16
+  num_train_epochs: 8
   save_total_limit: 4
+  use_flash_attention: true
 
 llama-13b:
   dtype: fp16
   log_dir: "llama_log_13b"
-  learning_rate: 2e-5
+  learning_rate: 1e-5
   model_name: /home/ubuntu/llama_hf/13B
   output_dir: llama_model_13b
   weight_decay: 0.0
-  max_length: 620
+  max_length: 2048
   warmup_steps: 100
-  gradient_checkpointing: false
-  gradient_accumulation_steps: 4
-  per_device_train_batch_size: 2
-  per_device_eval_batch_size: 5
-  eval_steps: 100
-  save_steps: 500
-  num_train_epochs: 16
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  eval_steps: 500
+  save_steps: 1000
+  num_train_epochs: 8
   save_total_limit: 4
+  use_flash_attention: true
 
 llama-30b:
   dtype: fp16
@@ -237,6 +253,7 @@ llama-30b:
   save_steps: 500
   num_train_epochs: 16
   save_total_limit: 4
+  use_flash_attention: true
 
 pythia:
   learning_rate: 8e-6
