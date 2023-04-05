@@ -179,6 +179,7 @@ class WebGPT(Dataset):
     def __init__(self, mode="sft") -> None:
         super().__init__()
         self.mode = mode
+        assert mode in ("sft", "rm", "rl")
         dataset = load_dataset("openai/webgpt_comparisons")
         questions = {}
         # using prompt as our index will allows us
@@ -186,14 +187,15 @@ class WebGPT(Dataset):
         self.index2question = {}
         for row in dataset["train"]:
             question = row["question"]["full_text"]
-            if question not in self.index2question:
-                self.index2question[len(self.index2question)] = question
 
             # only keep the best answer
             best_answer = "answer_0" if row["score_0"] > row["score_1"] else "answer_1"
             second_answer = "answer_1" if best_answer == "answer_0" else "answer_0"
             if row["score_0"] == row["score_1"] and mode == "rm":
                 continue
+
+            if question not in self.index2question:
+                self.index2question[len(self.index2question)] = question
 
             questions[question] = [
                 re_reference_remove.sub("", row[best_answer]),
@@ -213,7 +215,7 @@ class WebGPT(Dataset):
         elif self.mode == "rm":
             return ([question], answers)
         elif self.mode == "rl":
-            return ([question],)
+            return (question,)
 
 
 class SODA(Dataset):

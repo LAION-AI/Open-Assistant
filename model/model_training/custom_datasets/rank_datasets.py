@@ -117,7 +117,10 @@ class AugmentedOA(Dataset):
             for line in f:
                 data = json.loads(line)
                 if data["split"] == split:
-                    pairs.append((data["prefixes"], data["responses"], data["augmented"]))
+                    augmented = data["augmented"]
+                    if split == "val":  # disable augmentation during validation
+                        augmented = []
+                    pairs.append((data["prefixes"], data["responses"], augmented))
         self.pairs = pairs
 
     def __len__(self):

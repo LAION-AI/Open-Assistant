@@ -89,10 +89,10 @@ class HFSummary(Dataset):
 
     """
 
-    def __init__(self, split="train", mode="sft", conf_threshold=-1, max_comparison_per_sample=1) -> None:
+    def __init__(self, split="train", mode="sft", conf_threshold=-1, max_comparison_per_sample=5) -> None:
         super().__init__()
         assert split in ("train", "valid1", "valid2", "test")
-        assert mode("sft", "rm", "rl")
+        assert mode in ("sft", "rm", "rl")
         self.mode = mode
         summaries = {}
         # using prompt as our index will allows us
@@ -126,11 +126,38 @@ class HFSummary(Dataset):
                 summaries[context] = []
 
             pos, neg = (0, 1) if data["choice"] == 0 else (1, 0)
-            summaries[context].append((data["summaries"][pos]["text"], data["summaries"][neg]["text"]))
+            summaries[context].append((data["summaries"][pos]["text"].strip(), data["summaries"][neg]["text"].strip()))
 
-        self.summaries = summaries
+        ranked_summaries = {}
+        for context, summary_comparison_pairs in summaries.items():
+            ranks = self.get_sorted_ranks(summary_comparison_pairs)
+            ranked_summaries[context] = ranks
+        self.summaries = ranked_summaries
 
         self.postfix_prompt = " TLDR;"
+
+    @staticmethod
+    def get_sorted_ranks(comparison_pairs):
+        # Create a dictionary to keep track of the counts of each element
+
+        counts = {}
+        for pair in comparison_pairs:
+            if pair[0] not in counts:
+                counts[pair[0]] = 0
+            if pair[1] not in counts:
+                counts[pair[1]] = 0
+            counts[pair[0]] += 1
+
+        # Create a list of tuples, where each tuple contains an element and its count
+        elements_counts = [(element, count) for element, count in counts.items()]
+
+        # Sort the list of tuples by count in descending order
+        elements_counts.sort(key=lambda x: x[1], reverse=True)
+
+        # Create a list of elements in order of their counts
+        sorted_elements = [element for element, count in elements_counts]
+
+        return sorted_elements
 
     def __len__(self):
         return len(self.index2summary)
@@ -139,13 +166,14 @@ class HFSummary(Dataset):
         context = self.index2summary[index]
         # return pairs of comparison
         rows = self.summaries[context]
+
         # pair very big
         # we are going to do some sampling
         # not optimal but good for now
         if self.mode == "sft":
             return [context + self.postfix_prompt, rows[0]]
         elif self.mode == "rl":
-            return ([context + self.postfix_prompt],)
+            return (context + self.postfix_prompt,)
 
         valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
         # optimize the format later
