@@ -182,6 +182,7 @@ def argument_parsing(notebook=False, notebook_args=None):
 
 def main():
     training_conf = argument_parsing()
+    print(f"trainig_conf = {training_conf}")
 
     init_rng(training_conf)
 

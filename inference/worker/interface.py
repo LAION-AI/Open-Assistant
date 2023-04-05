@@ -7,12 +7,12 @@ from oasst_shared.schemas import inference
 class GenerateStreamParameters(pydantic.BaseModel):
     max_new_tokens: int = 1024
     do_sample: bool = True
-    top_k: int | None
-    top_p: float | None
-    typical_p: float | None
-    temperature: float | None
-    repetition_penalty: float | None
-    seed: int | None
+    top_k: int | None = None
+    top_p: float | None = None
+    typical_p: float | None = None
+    temperature: float | None = None
+    repetition_penalty: float | None = None
+    seed: int | None = None
     stop: list[str] = []
     details: bool = True
 

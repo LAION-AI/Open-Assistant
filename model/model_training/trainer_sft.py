@@ -306,6 +306,7 @@ def main():
         save_total_limit=training_conf.save_total_limit,
         evaluation_strategy="steps",
         eval_steps=training_conf.eval_steps,
+        save_strategy=training_conf.save_strategy,
         save_steps=training_conf.save_steps,
         eval_accumulation_steps=training_conf.eval_accumulation_steps,
         resume_from_checkpoint=training_conf.resume_from_checkpoint,
@@ -329,9 +330,15 @@ def main():
         use_system_prefix=training_conf.use_system_prefix,
         system_prefix=training_conf.system_prefix,
     )
+
+    if training_conf.val_max_length is not None:
+        val_max_len = training_conf.val_max_length
+    else:
+        val_max_len = training_conf.max_length
+
     eval_collate_fn = DialogueDataCollator(
         tokenizer,
-        max_length=training_conf.max_length,
+        max_length=val_max_len,
         random_offset_probability=training_conf.random_offset_probability,
         label_masking=training_conf.label_masking,
         samples_mixing=False,
@@ -402,14 +409,16 @@ def main():
     if training_conf.log_wandb and (not training_conf.deepspeed or training_conf.local_rank == 0):
         import wandb
 
+        wandb_name = training_conf.model_name.replace(os.getenv("HOME", "/home/ubuntu"), "")
         wandb.init(
             project="supervised-finetuning",
             entity=training_conf.wandb_entity,
             resume=training_conf.resume_from_checkpoint,
-            name=f"{training_conf.model_name}-{training_conf.log_dir}-finetuned",
+            name=f"{wandb_name}-{training_conf.log_dir}-finetuned",
             config=training_conf,
         )
         wandb.config["_max_length"] = training_conf.max_length
+        wandb.config["val_max_length"] = val_max_len
 
     trainer = SFTTrainer(
         model=model,
