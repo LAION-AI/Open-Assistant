@@ -77,7 +77,7 @@ class AggregateResults:
                 f.write(json.dumps(output) + "\n")
 
 
-def r2_conversation(prefixes, tokenizer, model, top_k=10, temperature=0.7, max_new_tokens=512):
+def r2_conversation(prefixes, tokenizer, model, top_k=10, temperature=0.7, max_new_tokens=512, model_name=""):
     text = ""
     for idx, convo in enumerate(prefixes):
         if idx % 2 == 0:
@@ -88,32 +88,32 @@ def r2_conversation(prefixes, tokenizer, model, top_k=10, temperature=0.7, max_n
     inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(0)
 
     generated_samples = []
-    for _ in range(top_k):
-        try:
-            outputs = model.generate(
-                **inputs,
-                early_stopping=False,
-                max_new_tokens=max_new_tokens,
-                do_sample=True,
-                top_k=top_k,
-                temperature=temperature,
-                pad_token_id=tokenizer.eos_token_id,
-                # dialogue_collator.py line 36
+    try:
+        outputs = model.generate(
+            **inputs,
+            early_stopping=False,
+            max_new_tokens=max_new_tokens,
+            num_return_sequences=top_k,
+            do_sample=True,
+            temperature=temperature,
+            pad_token_id=tokenizer.eos_token_id,
+            # dialogue_collator.py line 36
+        )
+        gen_sequences = outputs.sequences[:, inputs["input_ids"].shape[-1] :]
+        for output in gen_sequences:
+            decoded = tokenizer.decode(
+                output, truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"], skip_special_tokens=True
             )
-            for output in outputs:
-                decoded = tokenizer.decode(output, truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"])
-                response = decoded.replace(input_text, "")
-                answer = response.split("<|endoftoken|>")[0]
-                if len(answer) > 0:
-                    generated_samples.append(answer)
-        except RuntimeError as e:
-            print(e)
-            continue
+            answer = decoded.split("<|endoftext|>")[0]
+            if len(answer) > 0:
+                generated_samples.append(answer)
+    except RuntimeError as err:
+        print(err)
 
     return generated_samples
 
 
-def r0_conversation(prefixes, tokenizer, model, top_k=10, temperature=0.7, max_new_tokens=512):
+def r0_conversation(prefixes, tokenizer, model, top_k=10, temperature=0.7, max_new_tokens=512, model_name=""):
     text = ""
     for idx, convo in enumerate(prefixes):
         if idx % 2 == 0:
@@ -124,33 +124,84 @@ def r0_conversation(prefixes, tokenizer, model, top_k=10, temperature=0.7, max_n
     inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(0)
 
     generated_samples = []
-    for _ in range(top_k):
-        try:
-            outputs = model.generate(
-                **inputs,
-                early_stopping=False,
-                max_new_tokens=max_new_tokens,
-                do_sample=True,
-                top_k=top_k,
-                temperature=temperature,
-                pad_token_id=tokenizer.eos_token_id,
-                # dialogue_collator.py line 36
+    try:
+        outputs = model.generate(
+            **inputs,
+            early_stopping=False,
+            max_new_tokens=max_new_tokens,
+            num_return_sequences=top_k,
+            do_sample=True,
+            temperature=temperature,
+            pad_token_id=tokenizer.eos_token_id,
+            # dialogue_collator.py line 36
+        )
+        gen_sequences = outputs.sequences[:, inputs["input_ids"].shape[-1] :]
+        for output in gen_sequences:
+            decoded = tokenizer.decode(
+                output, truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"], skip_special_tokens=True
             )
-            for output in outputs:
-                decoded = tokenizer.decode(output, truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"])
-                response = decoded.replace(input_text, "")
-                answer = response.split("<|endoftoken|>")[0]
-                if len(answer) > 0:
-                    generated_samples.append(answer)
-        except RuntimeError as e:
-            print(e)
-            continue
+            answer = decoded.split("<|endoftext|>")[0]
+            if len(answer) > 0:
+                generated_samples.append(answer)
+    except RuntimeError as err:
+        print(err)
+
+    return generated_samples
+
+
+def rallio_conversation(prefixes, tokenizer, model, top_k=2, temperature=0.7, max_new_tokens=512, model_name="Chip2"):
+    name = "Chip2"
+    if "Chip2" in model_name:
+        name = "Chip2"
+    elif "Kitt" in model_name:
+        name = "Kitt"
+
+    text = ""
+    for idx, convo in enumerate(prefixes):
+        if idx % 2 == 0:
+            text += "User: " + convo + "\n"
+        else:
+            text += name + ": " + convo + "\n"
+    input_text = text + name + ": " + convo + "\n"
+    inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(0)
+
+    generated_samples = []
+    try:
+        outputs = model.generate(
+            **inputs,
+            early_stopping=False,
+            max_new_tokens=max_new_tokens,
+            do_sample=True,
+            pad_token_id=tokenizer.eos_token_id,
+            num_return_sequences=top_k,
+            top_p=0.95,
+            temperature=0.5,
+            penalty_alpha=0.6,
+            output_scores=True,
+            return_dict_in_generate=True,
+            repetition_penalty=1.03,
+            use_cache=True
+            # dialogue_collator.py line 36
+        )
+        gen_sequences = outputs.sequences[:, inputs["input_ids"].shape[-1] :]
+        for output in gen_sequences:
+            decoded = tokenizer.decode(
+                output, truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"], skip_special_tokens=True
+            )
+            answer = decoded.split("<|endoftext|>")[0]
+            if len(answer) > 0:
+                generated_samples.append(answer)
+    except (RuntimeError, ValueError) as e:
+        print(e)
+
     return generated_samples
 
 
 def augment_conversation(model_name, dataset, split="train"):
     if "-r2" in model_name:  # OAI format
         chat_handler = r2_conversation
+    elif "Rallio" in model_name:
+        chat_handler = rallio_conversation
     else:  # <human>, <bot>
         chat_handler = r0_conversation
     chat_handler = r2_conversation
@@ -169,7 +220,9 @@ def augment_conversation(model_name, dataset, split="train"):
             if idx in added:
                 continue
             prefixes, answers = row
-            samples = chat_handler(prefixes, tokenizer, model, temperature=0.1, top_k=8, max_new_tokens=256)
+            samples = chat_handler(
+                prefixes, tokenizer, model, temperature=0.1, top_k=8, max_new_tokens=256, model_name=model_name
+            )
             fout.write(
                 json.dumps({"prefixes": prefixes, "answers": answers, "gen_samples": samples, "idx": idx}) + "\n"
             )
