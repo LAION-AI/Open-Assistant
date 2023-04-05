@@ -12,10 +12,10 @@ def test_rm_datasets():
     # dummy configuration
     config = Namespace(cache_dir=".cache", model_name="EleutherAI/pythia-70m-deduped")
 
-    dataset_names = ["hellaswag", "shp", "webgpt", "anthropic_rlhf", "hf_summary"]
+    dataset_names = ["hf_summary", "hellaswag", "shp", "webgpt", "anthropic_rlhf"]
     for name in dataset_names:
         train, val = get_one_dataset(conf=config, dataset_name=name, mode="rm")
-        print(f"dataset: {name}  (train: {len(train)}, val: {len(val)})")
+        print(f"dataset: {name}  (train ({type(train)}): {len(train)}, val({type(val)}): {len(val)})")
 
         avg_number_continuations = sum(len(x[1]) for x in train) / len(train)
         num_more_than_two = sum(1 if len(x[1]) > 2 else 0 for x in train)

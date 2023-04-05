@@ -169,7 +169,10 @@ class HFSummary(Dataset):
         return len(self.index2summary)
 
     def __getitem__(self, index):
-        context = self.index2summary[index]
+        if index >= len(self.index2summary):
+            raise IndexError()
+
+        context = self.index2summary.get(index)
         # return pairs of comparison
         rows = self.summaries[context]
         prompt = random.choice(self.PROMPTS)
