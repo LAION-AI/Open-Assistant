@@ -12,7 +12,7 @@ def test_rm_datasets():
     # dummy configuration
     config = Namespace(cache_dir=".cache", model_name="EleutherAI/pythia-70m-deduped")
 
-    dataset_names = ["shp"]  # , "webgpt", "anthropic_rlhf", "hellaswag"]  # , "open_ai_summarize_from_feedback"]
+    dataset_names = ["shp", "webgpt"]  # , "anthropic_rlhf", "hellaswag"]  # , "open_ai_summarize_from_feedback"]
     for name in dataset_names:
         train, val = get_one_dataset(conf=config, dataset_name=name, mode="rm")
         print(f"dataset: {name}  (train: {len(train)}, val: {len(val)})")
@@ -23,8 +23,11 @@ def test_rm_datasets():
 
         for i in range(2):
             item = train[i]
-            print(f"[{i}] prefix: {item[0]}")
-            print(f"[{i}] Continuations: {item[1]}")
+            print(f"[{i}] Prefix: {item[0]}")
+            continuations = item[1]
+            print(f"[{i}] Continuations ({len(continuations)}):")
+            for j, c in enumerate(continuations):
+                print(f"[{i}.{j}]: {c}")
 
 
 @pytest.mark.skip(reason="cache not populated")

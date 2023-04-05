@@ -1,7 +1,7 @@
 import argparse
 import logging
 import os
-from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
+from typing import Callable, Literal, Optional, Union
 
 import datasets
 import numpy as np
@@ -73,10 +73,10 @@ class RMTrainer(Trainer):
     def prediction_step(
         self,
         model: nn.Module,
-        inputs: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], List[int]],
+        inputs: tuple[dict[str, torch.Tensor], dict[str, torch.Tensor], list[int]],
         prediction_loss_only: bool,
-        ignore_keys: Optional[List[str]] = None,
-    ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
+        ignore_keys: Optional[list[str]] = None,
+    ) -> tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
         batch, cu_lens = inputs
         with torch.no_grad():
             batch = self._prepare_inputs(batch)
