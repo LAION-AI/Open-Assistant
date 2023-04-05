@@ -142,8 +142,6 @@ class HFSummary(Dataset):
             ranked_summaries[context] = ranks
         self.summaries = ranked_summaries
 
-        self.postfix_prompt = " TLDR;"
-
     @staticmethod
     def get_sorted_ranks(comparison_pairs):
         # Create a dictionary to keep track of the counts of each element
