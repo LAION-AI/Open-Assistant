@@ -1,0 +1,13 @@
+{
+  "back_to_chat_list": "Sohbet listesine dön",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Sohbet ayarları",
+  "empty": "(boş)",
+  "login_message": "Bu özelliği kullanmak için tekrar giriş yapmanız gerekmektedir. Bu sağlayıcılardan birini kullanarak giriş yapın:",
+  "model": "Model",
+  "preset": "Önayar",
+  "preset_custom": "Özel önayar",
+  "queue_info": "Mesajınız kuyruğa alındı, kuyrukta {{queuePosition, number, integer }}. sıradasınız.",
+  "you_are_logged_in": "Sohbet hizmetinde oturum açtınız",
+  "your_chats": "Sohbetleriniz"
+}

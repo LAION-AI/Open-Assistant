@@ -1,8 +1,19 @@
 // https://nextjs.org/docs/basic-features/layouts
 
 import { Box } from "@chakra-ui/react";
-import { Activity, BarChart2, ExternalLink, Layout, MessageSquare, Settings, TrendingUp, Users } from "lucide-react";
+import {
+  Activity,
+  BarChart2,
+  ExternalLink,
+  Layout,
+  MessageCircle,
+  MessageSquare,
+  Settings,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import type { NextPage } from "next";
+import { isChatEnabled } from "src/lib/chat_enabled";
 
 import { SlimFooter } from "./Dashboard/SlimFooter";
 import { Footer } from "./Footer";
@@ -46,6 +57,15 @@ export const getDashboardLayout = (page: React.ReactElement) => (
             pathname: "/stats",
             icon: TrendingUp,
           },
+          ...(isChatEnabled()
+            ? [
+                {
+                  labelID: "chat",
+                  pathname: "/chat",
+                  icon: MessageCircle,
+                },
+              ]
+            : []),
           {
             labelID: "guidelines",
             pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",

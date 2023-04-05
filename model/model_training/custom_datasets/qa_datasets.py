@@ -176,9 +176,10 @@ class WebGPT(Dataset):
     name = "webgpt"
     splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
 
-    def __init__(self, split="sft") -> None:
+    def __init__(self, mode="sft") -> None:
         super().__init__()
-        self.mode = split
+        self.mode = mode
+        assert mode in ("sft", "rm", "rl")
         dataset = load_dataset("openai/webgpt_comparisons")
         questions = {}
         # using prompt as our index will allows us
@@ -186,13 +187,20 @@ class WebGPT(Dataset):
         self.index2question = {}
         for row in dataset["train"]:
             question = row["question"]["full_text"]
+
+            # only keep the best answer
+            best_answer = "answer_0" if row["score_0"] > row["score_1"] else "answer_1"
+            second_answer = "answer_1" if best_answer == "answer_0" else "answer_0"
+            if row["score_0"] == row["score_1"] and mode == "rm":
+                continue
+
             if question not in self.index2question:
                 self.index2question[len(self.index2question)] = question
 
-            # only keep the best answer
-            questions[question] = re_reference_remove.sub(
-                "", row["answer_0" if row["score_0"] > row["score_1"] else "answer_1"]
-            )
+            questions[question] = [
+                re_reference_remove.sub("", row[best_answer]),
+                re_reference_remove.sub("", row[second_answer]),
+            ]
 
         self.questions = questions
 
@@ -201,9 +209,11 @@ class WebGPT(Dataset):
 
     def __getitem__(self, index):
         question = self.index2question[index]
-        answer = self.questions[question]
+        answers = self.questions[question]
         if self.mode == "sft":
-            return (question, answer)
+            return (question, answers[0])
+        elif self.mode == "rm":
+            return ([question], answers)
         elif self.mode == "rl":
             return (question,)
 
@@ -411,20 +421,14 @@ class TranslatedQA(Dataset):
         return self.pairs[index]
 
 
-class Alpaca(Dataset):
-    splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
-
-    def __init__(self, split="sft") -> None:
+class AlpacaBase(Dataset):
+    def __init__(self, dataset_name: str, mode: str, cache_dir: str = None) -> None:
         super().__init__()
-        self.mode = split
-        dataset = load_dataset("yahma/alpaca-cleaned")
+        self.mode = mode
+        dataset = load_dataset(dataset_name, cache_dir=cache_dir)
         rows = []
-        # using prompt as our index will allows us
-        # to add additional generated prompt later
-
         for row in dataset["train"]:
             question = row["instruction"]
-            # only keep the best answer
             if len(row["input"]) > 0:
                 input_ = "{}\n{}".format(question, row["input"])
             else:
@@ -441,3 +445,13 @@ class Alpaca(Dataset):
             return (question, answer)
         elif self.mode == "rl":
             return (question,)
+
+
+class Alpaca(AlpacaBase):
+    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
+        super().__init__(dataset_name="yahma/alpaca-cleaned", mode=mode, cache_dir=cache_dir)
+
+
+class CodeAlpaca(AlpacaBase):
+    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
+        super().__init__(dataset_name="sahil2801/CodeAlpaca-20k", mode=mode, cache_dir=cache_dir)

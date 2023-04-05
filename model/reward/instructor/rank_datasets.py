@@ -266,6 +266,7 @@ class AnthropicRLHF(Dataset):
         assert split in ("train", "test")
         if sep_token is None:
             sep_token = " . "
+
         self.pairs = []
         # using prompt as our index will allows us
         # to add additional generated prompt later

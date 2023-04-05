@@ -11,7 +11,6 @@ import EmailProvider from "next-auth/providers/email";
 import { checkCaptcha } from "src/lib/captcha";
 import { discordAvatarRefresh } from "src/lib/discord_avatar_refresh";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
-import { getInferenceTokens } from "src/lib/oasst_inference_auth";
 import prisma from "src/lib/prismadb";
 import { convertToBackendUserCore } from "src/lib/users";
 
@@ -188,30 +187,31 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
           discordAvatarRefresh.updateImageIfNecessary(discordAccount);
         }
 
-        let tosAcceptanceDate = null;
-        try {
-          /**
-           * when first creating a new user, the python backend is not informed about it
-           * so this call will return a 404
-           *
-           * in the frontend, when the user accepts the tos, we do a full refresh
-           * which means this function will be called again.
-           */
-          const oasstApiClient = createApiClientFromUser(backendUser);
-          tosAcceptanceDate = await oasstApiClient.fetch_tos_acceptance(backendUser);
-        } catch (err) {
-          if (err.httpStatusCode !== 404) {
-            throw err;
-          }
-        }
-
         token.name = frontendUser.name;
         token.role = frontendUser.role;
         token.isNew = frontendUser.isNew;
-        token.tosAcceptanceDate = tosAcceptanceDate;
-        // this is probably a bit stupid: we get the tokens from the cookies and we write them into the JWT
-        // this saves us a database / inference call on every refresh
-        token.inferenceTokens = getInferenceTokens(req, res);
+
+        // these are immutable once assigned
+        if (!token.tosAcceptanceDate || !token.backendUserId) {
+          const oasstApiClient = createApiClientFromUser(backendUser);
+
+          try {
+            /**
+             * when first creating a new user, the python backend is not informed about it
+             * so this call will return a 404
+             *
+             * in the frontend, when the user accepts the tos, we do a full refresh
+             * which means this function will be called again.
+             */
+            const { user_id, tos_acceptance_date } = await oasstApiClient.fetch_frontend_user(backendUser);
+            token.backendUserId = user_id;
+            token.tosAcceptanceDate = tos_acceptance_date;
+          } catch (err) {
+            if (err.httpStatusCode !== 404) {
+              throw err;
+            }
+          }
+        }
         return token;
       },
       async signIn({ account }) {

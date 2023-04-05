@@ -230,7 +230,7 @@ async def handle_worker(
                     logger.warning(f"Marking {message_id=} as pending since no work was done.")
                     async with deps.manual_chat_repository() as cr:
                         await cr.reset_work(message_id)
-                    await work_queue.enqueue(message_id)
+                    await work_queue.enqueue(message_id, enforce_max_size=False)
                 else:
                     logger.warning(f"Aborting {message_id=}")
                     await abort_message(message_id=message_id, error="Aborted due to worker error.")
@@ -312,7 +312,7 @@ async def initiate_work_for_message(
         logger.exception(f"Error while sending work request to worker: {str(e)}")
         async with deps.manual_create_session() as session:
             await cr.reset_work(message_id)
-        await work_queue.enqueue(message_id)
+        await work_queue.enqueue(message_id, enforce_max_size=False)
         raise
 
     return work_request
@@ -327,7 +327,7 @@ async def handle_token_response(
         deps.redis_client,
         message_id=work_response_container.message_id,
     )
-    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
+    await message_queue.enqueue(response.json())
     work_response_container.num_responses += 1
 
 
@@ -352,7 +352,7 @@ async def handle_generated_text_response(
             deps.redis_client,
             message_id=message_id,
         )
-        await message_queue.enqueue(message_packet.json(), expire=settings.message_queue_expire)
+        await message_queue.enqueue(message_packet.json())
     finally:
         del work_request_map[response.request_id]
 
@@ -365,7 +365,7 @@ async def abort_message(message_id: str, error: str):
         deps.redis_client,
         message_id=message_id,
     )
-    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
+    await message_queue.enqueue(response.json())
 
 
 async def handle_error_response(
@@ -396,4 +396,4 @@ async def handle_timeout(message: inference.MessageRead):
         deps.redis_client,
         message_id=message.id,
     )
-    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
+    await message_queue.enqueue(response.json())

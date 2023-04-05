@@ -3,12 +3,12 @@ import {
   Button,
   CircularProgress,
   Flex,
+  Grid,
   Icon,
-  Textarea,
   Text,
+  Textarea,
   useBoolean,
   useColorModeValue,
-  ColorModeProviderProps,
 } from "@chakra-ui/react";
 import { XCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -23,14 +23,15 @@ import {
   ChatConfigForm,
   ChatItem,
   InferenceMessage,
-  InferencePostPrompterMessageParams,
   InferencePostAssistantMessageParams,
+  InferencePostPrompterMessageParams,
 } from "src/types/Chat";
 import useSWR from "swr";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { MessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
+import { ChatConfigDrawer } from "./ChatConfigDrawer";
 import { QueueInfoMessage } from "./QueueInfoMessage";
 interface ChatConversationProps {
   chatId: string;
@@ -195,18 +196,25 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     [chatId, handleOnVote, currentThread, handleOnRetry, isSending]
   );
 
+  const drawer = useMemo(() => <ChatConfigDrawer />, []);
+
   return (
     <Flex flexDir="column" gap={4}>
       {entries}
       {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
       {!isSending && <Textarea ref={inputRef} />}
-      <Button
-        onClick={send}
-        isLoading={isSending}
-        spinner={queueInfo ? <QueueInfoMessage info={queueInfo} /> : undefined}
-      >
-        {t("submit")}
-      </Button>
+
+      <Grid gridTemplateColumns="1fr 50px" gap={2}>
+        <Button
+          onClick={send}
+          isLoading={isSending}
+          spinner={queueInfo ? <QueueInfoMessage info={queueInfo} /> : undefined}
+          size="lg"
+        >
+          {t("submit")}
+        </Button>
+        {drawer}
+      </Grid>
     </Flex>
   );
 };

@@ -1,7 +1,7 @@
 import { FormProvider, useForm } from "react-hook-form";
 import { ChatConfigForm } from "src/types/Chat";
 
-import { ChatConfigDrawer } from "./ChatConfigDrawer";
+import { ChatConfigSummary } from "./ChatConfigSummary";
 import { useChatContext } from "./ChatContext";
 import { ChatConversation } from "./ChatConversation";
 
@@ -19,7 +19,7 @@ export const ChatSection = ({ chatId }: { chatId: string }) => {
   return (
     <FormProvider {...form}>
       <ChatConversation chatId={chatId} />
-      <ChatConfigDrawer />
+      <ChatConfigSummary />
     </FormProvider>
   );
 };

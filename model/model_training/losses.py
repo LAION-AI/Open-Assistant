@@ -4,14 +4,16 @@ from torch import nn
 
 
 class CrossEntropyLoss(nn.CrossEntropyLoss):
-    def __init__(self, weight=None, size_average=None, ignore_index=-100, reduce=None, reduction="none"):
-        super().__init__(weight, size_average, ignore_index, reduce, reduction)
+    def __init__(self, weight=None, size_average=None, ignore_index=-100, reduce=None, reduction="mean"):
+        super().__init__(weight, size_average, ignore_index, reduce, "none")
+        self._reduction = reduction
 
     def forward(self, input, target, mask=None):
+        input = input.view(-1, input.size(-1))
+        target = target.view(-1)
+
         if mask is not None:
             mask = mask.view(-1).bool()
-            input = input.view(-1, input.size(-1))
-            target = target.view(-1)
             input = input[mask]
             target = target[mask]
 
@@ -19,6 +21,8 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
 
         loss = super().forward(input, target)
 
+        if self._reduction == "none":
+            return loss
         return loss.sum() / (size + 1e-8)
 
 
@@ -75,5 +79,34 @@ class RMLoss(nn.Module):
         loss = torch.stack(losses)
 
         if self.reduction == "none":
+            return loss
+        return loss.mean()
+
+
+class RMCLSLoss(nn.CrossEntropyLoss):
+    def __init__(self, weight=None, size_average=None, ignore_index=-100, reduce=None, reduction="mean"):
+        super().__init__(weight, size_average, ignore_index, reduce, "none")
+        self._reduction = reduction
+
+    def forward(self, logits, cu_lengths=None):
+        # if cu_lengths is None, assume that all examples belong to the same conversation
+        if cu_lengths is None:
+            cu_lengths = [0, logits.size(0)]
+
+        device = logits.device
+        logit_pairs = []
+        # aggregate combination between ranks
+        for start, end in zip(cu_lengths[:-1], cu_lengths[1:]):
+            pairs = torch.combinations(torch.arange(end - start, device=device), 2)
+            pos_ids, neg_ids = pairs[:, 0], pairs[:, 1]
+            pos_logits = logits.take(start + pos_ids)
+            neg_logits = logits.take(start + neg_ids)
+            merged = torch.stack((pos_logits, neg_logits), dim=1)
+            logit_pairs.append(merged)
+        logit_pairs = torch.concat(logit_pairs, dim=0)
+        labels = torch.zeros(logit_pairs.shape[0], dtype=torch.long, device=device)
+        loss = super().forward(logit_pairs, labels)
+
+        if self._reduction == "none":
             return loss
         return loss.mean()

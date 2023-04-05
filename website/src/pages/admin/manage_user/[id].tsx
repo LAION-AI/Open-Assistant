@@ -20,17 +20,21 @@ import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useForm } from "react-hook-form";
+import { UserStats } from "src/components/Account/UserStats";
 import { AdminArea } from "src/components/AdminArea";
 import { JsonCard } from "src/components/JsonCard";
 import { getAdminLayout } from "src/components/Layout";
 import { AdminMessageTable } from "src/components/Messages/AdminMessageTable";
 import { Role, RoleSelect } from "src/components/RoleSelect";
 import { post } from "src/lib/api";
+import { get } from "src/lib/api";
 import { getValidDisplayName } from "src/lib/display_name_validation";
 import { userlessApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { getFrontendUserIdForDiscordUser } from "src/lib/users";
+import { LeaderboardEntity, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import { User } from "src/types/Users";
+import uswSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
 interface UserForm {
@@ -45,6 +49,14 @@ interface UserForm {
 
 const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const toast = useToast();
+
+  const { data: stats } = uswSWRImmutable<Partial<{ [time in LeaderboardTimeFrame]: LeaderboardEntity }>>(
+    "/api/user_stats?uid=" + user.id,
+    get,
+    {
+      fallbackData: {},
+    }
+  );
 
   // Trigger to let us update the user's role.  Triggers a toast when complete.
   const { trigger } = useSWRMutation("/api/admin/update_user", post, {
@@ -130,6 +142,8 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
               <AdminMessageTable userId={user.user_id}></AdminMessageTable>
             </CardBody>
           </Card>
+
+          <UserStats title="Statistic" stats={stats}></UserStats>
         </Stack>
       </AdminArea>
     </>
@@ -174,7 +188,7 @@ export const getServerSideProps: GetServerSideProps<{ user: User<Role> }, { id: 
   return {
     props: {
       user,
-      ...(await serverSideTranslations(locale, ["common", "message"])),
+      ...(await serverSideTranslations(locale, ["common", "message", "leaderboard"])),
     },
   };
 };

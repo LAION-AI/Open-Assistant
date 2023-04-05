@@ -19,7 +19,7 @@ import { AdminArea } from "src/components/AdminArea";
 import { getAdminLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
 import useSWRImmutable from "swr/immutable";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 /**
  * Provides the admin status page that shows result of calls to several backend API endpoints,
