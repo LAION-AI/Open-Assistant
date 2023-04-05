@@ -32,7 +32,8 @@
 
 ## What is Open Assistant?
 
-Open Assistant is a project meant to give everyone access to a great chat based large language model.
+Open Assistant is a project meant to give everyone access to a great chat based
+large language model.
 
 We believe that by doing this we will create a revolution in innovation in
 language. In the same way that stable-diffusion helped the world make art and
@@ -41,11 +42,13 @@ improving language itself.
 
 # Useful Links
 
-- Project Repository - [LAION-AI/Open-Assistant](https://github.com/LAION-AI/Open-Assistant)
+- Project Repository -
+  [LAION-AI/Open-Assistant](https://github.com/LAION-AI/Open-Assistant)
 
 - Data Collection - [open-assistant.io](https://open-assistant.io)
 
-- Project Documentation - [projects.laion.ai/Open-Assistant](https://projects.laion.ai/Open-Assistant/)
+- Project Documentation -
+  [projects.laion.ai/Open-Assistant](https://projects.laion.ai/Open-Assistant/)
 
 ## How To Try It Out?
 
