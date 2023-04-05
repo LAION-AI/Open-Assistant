@@ -86,12 +86,63 @@ After loading the tokenizer, a worker establishes a websocket connection with th
 
 1. we get a work request, which is parsed by oasst_shared.inference.WorkParameters
 2. we then recreate these as stream parameters, using `inference.worker.interface.GenerateStreamParameters.from_work_parameters()`. ANSWER -> WHY DO WE NEED TO RECREATE PARAMS AS THIS SECOND CLASS?
-3. why 
+3. what is work_request.thread.messages
+
+A few key metadata structures come into play at this point.
+
+A message is parsed into a `WorkRequest`.
+```
+class WorkRequest(pydantic.BaseModel):
+    thread: Thread = pydantic.Field(..., repr=False)
+    created_at: datetime.datetime = pydantic.Field(default_factory=datetime.datetime.utcnow)
+    parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
+```
+
+Within a `WorkRequest`, a `Thread`-type attribute contains the conversation history.
+```
+class Thread(pydantic.BaseModel):
+    messages: list[MessageRead]
+```
+Within `Thread`, the `messages` attribute is a list of `MessageRead` objects (better to call them dictionaries? alternate phrases?).
+```
+class MessageRead(pydantic.BaseModel):
+    id: str
+    content: str | None
+    role: Literal["prompter", "assistant"]
+    state: MessageState
+    score: int
+    reports: list[Report] = []
+
+    @property
+    def is_assistant(self) -> bool:
+        return self.role == "assistant"
+```
+After the work request, its thread attribute, and all of the `MessageRead` objects,
+All messages are concatenated together. The concatenation starts with a global message prefix,
+the main prompt, which is defined in `inference/worker/settings.py` as the `Settings` class.
+
+The design of setting prompts should probably come from a separate application configuration so it can be updated without deploying new code. It might make sense to think through a new design for these workers.
+
+What do we need from a better prompts system? what stakeholders should this system serve? What interface 
+does each of these stakeholders need?
+
+- safety team
+- product team
+- api user?
+
+Does each component need a way to version control itself, along with the collective prompt itself?
+
+Do we need the capability to have different promopts for different users simultaneously? Does everyone see
+same prompt?
+
+
+
+
 
 note: both `inference/worker/interface.py` and `oasst-shared/oasst_shared/schemas/inference.py` have pydantic classes.
 
 
-why are we using websockets instead of a regular message queue?
+why are we using websockets instead of a regular message queue? Do we need to-way communication?
 
 in inference.worker.interface.GenerateStreamParameters.from_work_parameters(), why is this not a class method?
 
