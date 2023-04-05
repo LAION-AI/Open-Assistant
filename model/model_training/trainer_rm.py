@@ -72,7 +72,7 @@ class RMTrainer(Trainer):
         loss = loss.mean().detach()
 
         labels = []
-        # TODO: needed comment on this logic
+        # WTF is this??
         for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
             labels.extend([i] * (e - s))
         # make sure labels are same as logits, needed for deepspeed
