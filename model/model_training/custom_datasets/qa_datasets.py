@@ -175,7 +175,7 @@ class QADataset(Dataset):
 class WebGPT(Dataset):
     name = "webgpt"
 
-    def __init__(self, max_answers: int = 5, mode: str = "sft") -> None:
+    def __init__(self, mode: str = "sft", max_answers: int = 5) -> None:
         super().__init__()
         self.mode = mode
         assert mode in ("sft", "rm", "rl")

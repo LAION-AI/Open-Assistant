@@ -76,7 +76,8 @@ oasst-rm-1-pythia-1.4b:
     - shp
     - hellaswag:
         fraction: 0.5
-    - webgpt
+    - webgpt:
+        val_split: 0.05
     - hf_summary:
         fraction: 0.1
   use_custom_sampler: true
