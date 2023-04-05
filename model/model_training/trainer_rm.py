@@ -4,12 +4,10 @@ import os
 from typing import Callable, Literal, Optional, Union
 
 import datasets
-import numpy as np
 import torch
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from model_training.efficiency_utils import fuse_gelu
-
-# from model_training.metrics import RewardMetrics
+from model_training.metrics import RewardMetrics
 from model_training.utils import (
     PerDatasetSampler,
     _strtobool,
@@ -28,18 +26,6 @@ from transformers.trainer_pt_utils import IterableDatasetShard
 from transformers.trainer_utils import seed_worker
 from transformers.training_args import OptimizerNames
 from transformers.utils import is_datasets_available
-
-
-def compute_metrics(eval_pred):
-    scores = eval_pred.predictions
-    pos_scores, neg_scores = scores[:, 0], scores[:, 1]
-    metrics = {
-        "pos_score": np.mean(pos_scores),
-        "neg_score": np.mean(neg_scores),
-        "score_diff": np.mean(pos_scores - neg_scores),
-        "accuracy": np.mean(pos_scores > neg_scores),
-    }
-    return metrics
 
 
 class RMTrainer(Trainer):
@@ -84,26 +70,12 @@ class RMTrainer(Trainer):
 
         loss = loss.mean().detach()
 
-        # labels = []
-        # for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
-        #     labels.extend([i] * (e - s))
-        # # make sure labels are same as logits, needed for deepspeed
-        # labels = torch.tensor(labels, device=logits.device, requires_grad=False).view(-1, 1)
-        # return (loss, logits.T, labels.T)  # transposed to avoid truncation in evaluation_loop
-    
-        pos_logits, neg_logits = [], []
-        for start, end in zip(cu_lens[:-1], cu_lens[1:]):
-            pos_logits.append(logits[start])
-            neg_logits.append(logits[end - 1])
-        pos_logits = torch.cat(pos_logits).detach()
-        neg_logits = torch.cat(neg_logits).detach()
-
-        out_logits = torch.stack([pos_logits, neg_logits], dim=1)  # shape (B, 2)
-        # need to pass something for `compute_metrics` to be called`,
-        # has to have the same size as logits, otherwise `_pad_across_processes` hangs
-        labels = torch.zeros_like(out_logits[:, 0])
-
-        return (loss, out_logits, labels)
+        labels = []
+        for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
+            labels.extend([i] * (e - s))
+        # make sure labels are same as logits, needed for deepspeed
+        labels = torch.tensor(labels, device=logits.device, requires_grad=False).view(-1, 1)
+        return (loss, logits.T, labels.T)  # transposed to avoid truncation in evaluation_loop
 
     def get_train_dataloader(self):
         """
@@ -163,6 +135,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+    parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.add_argument("--rng_seed", type=int, help="rng seed")
     parser.set_defaults(deepspeed=False)
 
@@ -170,8 +143,6 @@ def argument_parsing(notebook=False, notebook_args=None):
         args, remaining = parser.parse_known_args(notebook_args)
     else:
         args, remaining = parser.parse_known_args()
-
-    print(args)
 
     # Config from YAML
     conf = {}
@@ -186,6 +157,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
+    conf["resume_from_checkpoint"] = args.resume_from_checkpoint
     if args.rng_seed is not None:
         conf["rng_seed"] = args.rng_seed
 
@@ -203,7 +175,9 @@ def argument_parsing(notebook=False, notebook_args=None):
             type_ = _strtobool
         parser.add_argument(f"--{key}", type=type_, default=value)
 
-    return parser.parse_args(remaining)
+    args = parser.parse_args(remaining)
+    print(args)
+    return args
 
 
 def main():
@@ -270,9 +244,10 @@ def main():
         num_train_epochs=training_conf.num_train_epochs,
         warmup_steps=training_conf.warmup_steps,
         learning_rate=float(training_conf.learning_rate),
-        deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
+        deepspeed=training_conf.deepspeed_config if training_conf.deepspeed else None,
         optim=optimizer,
-        fp16=training_conf.fp16,
+        fp16=training_conf.dtype in ["fp16", "float16"],
+        bf16=training_conf.dtype in ["bf16", "bfloat16"],
         local_rank=training_conf.local_rank,
         gradient_checkpointing=training_conf.gradient_checkpointing,
         gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
@@ -287,8 +262,10 @@ def main():
         save_total_limit=training_conf.save_total_limit,
         evaluation_strategy="steps",
         eval_steps=training_conf.eval_steps,
+        save_strategy=training_conf.save_strategy,
         save_steps=training_conf.save_steps,
         eval_accumulation_steps=training_conf.eval_accumulation_steps,
+        resume_from_checkpoint=training_conf.resume_from_checkpoint,
         report_to="wandb" if training_conf.log_wandb else None,
     )
 
@@ -301,10 +278,11 @@ def main():
         wandb.init(
             project="reward-model",
             entity=training_conf.wandb_entity,
+            resume=training_conf.resume_from_checkpoint,
             name=f"{training_conf.model_name}-{training_conf.log_dir}-rm",
             config=training_conf,
         )
-    # compute_metrics = RewardMetrics(training_conf.metrics)
+    compute_metrics = RewardMetrics(training_conf.metrics)
     trainer = RMTrainer(
         model=model,
         args=args,
@@ -318,7 +296,7 @@ def main():
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
     )
-    trainer.train()
+    trainer.train(resume_from_checkpoint=training_conf.resume_from_checkpoint)
     trainer.save_model()
     tokenizer.save_pretrained(output_dir)
 

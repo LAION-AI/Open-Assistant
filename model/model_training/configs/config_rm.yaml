@@ -14,12 +14,13 @@ defaults_rm:
   warmup_steps: 10
   eval_steps: 50
   save_steps: 100
+  save_strategy: steps
   max_length: 512
   num_train_epochs: 2
   logging_steps: 10
   max_grad_norm: 2.0
   save_total_limit: 4
-  fp16: true
+  dtype: fp16
   eval_accumulation_steps:
   freeze_layer:
   cache_dir: .cache
@@ -40,7 +41,7 @@ defaults_rm:
   per_digit_tokens: false
   datasets_extra: []
   metrics: ["accuracy", "kendalltau"]
-  dtype: fp16
+  deepspeed_config: configs/zero_config.json
 
 oasst-rm-1-pythia-6B:
   is_reward_model: true
@@ -84,11 +85,11 @@ oasst-rm-1-pythia-1.4b:
   use_flash_attention: true
   warmup_steps: 10
   gradient_accumulation_steps: 2
-  per_device_train_batch_size: 14
+  per_device_train_batch_size: 2
   per_device_eval_batch_size: 16
   num_train_epochs: 5
   eval_steps: 100
-  save_steps: 5000
+  save_steps: 500
 
 # a minimal configuration to debug the additional OS datasets
 extended_rlhf:
@@ -104,4 +105,3 @@ extended_rlhf:
   gradient_accumulation_steps: 4
   num_train_epochs: 1
   auto_find_batch_size: true
-  dtype: fp16
