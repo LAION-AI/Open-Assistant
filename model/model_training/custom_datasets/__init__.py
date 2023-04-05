@@ -109,7 +109,7 @@ def get_one_dataset(
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     elif dataset_name == "hf_summary":
         train = HFSummary(split="train", mode=mode)
-        eval = HFSummary(split="validation", mode=mode)
+        eval = HFSummary(split="valid1", mode=mode)
     elif dataset_name == "augment_oasst":
         # reward model mode only
         assert mode == "rm"
