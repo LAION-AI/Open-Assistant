@@ -137,5 +137,8 @@
           INFERENCE_CORS_ORIGINS:
             "{{ lookup('ansible.builtin.env', 'INFERENCE_CORS_ORIGINS') |
             default('*', true) }}"
+          ALLOWED_MODEL_CONFIG_NAMES:
+            "{{ lookup('ansible.builtin.env', 'ALLOWED_MODEL_CONFIG_NAMES') |
+            default('*', true) }}"
         ports:
           - "{{ server_port }}:8080"
