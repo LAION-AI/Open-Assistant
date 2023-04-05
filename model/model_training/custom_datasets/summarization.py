@@ -3,6 +3,7 @@
 """
 import random
 
+import numpy as np
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -77,3 +78,75 @@ class SummarizationDataset(Dataset):
 
         context = "".join([SUMMARIZATION_SPECIAL_TOKENS["Text"], " ".join(text.split(" ")[: self.max_words]), prompt])
         return (context, summary)
+
+
+class HFSummary(Dataset):
+    """
+    Human feedback data from OpenAI
+    https://github.com/openai/summarize-from-feedback
+
+    labeling method : pair comparison, 0 or 1
+
+    """
+
+    def __init__(self, split="train", mode="sft", conf_threshold=-1, max_comparison_per_sample=1) -> None:
+        super().__init__()
+        assert split in ("train", "valid1", "valid2", "test")
+        assert mode("sft", "rm", "rl")
+        self.mode = mode
+        summaries = {}
+        # using prompt as our index will allows us
+        # to add additional generated prompt later
+        self.index2summary = {}
+        self.max_comparison_per_sample = max_comparison_per_sample
+        major_split = split if "train" == split else "validation"
+        dataset = load_dataset("openai/summarize_from_feedback", "comparisons")[major_split]
+        for data in dataset:
+            if (
+                "extra" in data
+                and "confidence" in data["extra"]
+                and data["extra"]["confidence"] is not None
+                and conf_threshold > data["extra"]["confidence"]
+            ):
+                print("skipping {}".format(data["info"]["id"]))
+                continue
+
+            if split != "train" and split != data["split"]:
+                continue
+
+            if "article" in data["info"] and data["info"]["article"] is not None:
+                context = data["info"]["article"]
+            elif "post" in data["info"]:
+                context = data["info"]["post"]
+
+            if context not in self.index2summary:
+                self.index2summary[len(self.index2summary)] = context
+
+            if context not in summaries:
+                summaries[context] = []
+
+            pos, neg = (0, 1) if data["choice"] == 0 else (1, 0)
+            summaries[context].append((data["summaries"][pos]["text"], data["summaries"][neg]["text"]))
+
+        self.summaries = summaries
+
+        self.postfix_prompt = " TLDR;"
+
+    def __len__(self):
+        return len(self.index2summary)
+
+    def __getitem__(self, index):
+        context = self.index2summary[index]
+        # return pairs of comparison
+        rows = self.summaries[context]
+        # pair very big
+        # we are going to do some sampling
+        # not optimal but good for now
+        if self.mode == "sft":
+            return [context + self.postfix_prompt, rows[0]]
+        elif self.mode == "rl":
+            return ([context + self.postfix_prompt],)
+
+        valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
+        # optimize the format later
+        return [context + self.postfix_prompt], [r for idx, r in enumerate(rows) if idx in valid_idx]

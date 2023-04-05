@@ -309,7 +309,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
                 model.config.pooling = conf.pooling
         else:
             model = transformers.AutoModelForSequenceClassification.from_pretrained(
-                conf.model_name, cache_dir=conf.cache_dir
+                conf.model_name, cache_dir=conf.cache_dir, num_labels=1
             )
     else:
         model = get_specific_model(
