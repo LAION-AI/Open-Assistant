@@ -1,6 +1,9 @@
 """
     High level functions for model training
 """
+from typing import Optional
+
+import numpy as np
 from model_training.custom_datasets.extra_rm_datasets import load_anthropic_rlhf, load_hellaswag, load_shp
 from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
 from model_training.custom_datasets.oasst_dataset import load_oasst_export
@@ -71,7 +74,13 @@ def train_val_dataset(dataset, val_split=0.2) -> tuple[Dataset, Dataset | None]:
 
 
 def get_one_dataset(
-    conf, dataset_name, val_split=0.2, data_path=None, mode="sft", **kwargs
+    conf,
+    dataset_name: str,
+    val_split: float = 0.2,
+    data_path: str = None,
+    mode: str = "sft",
+    max_val_set: Optional[int] = None,
+    **kwargs,
 ) -> tuple[Dataset, Dataset | None]:
     if mode == "rl":
         assert dataset_name in RL_DATASETS, f"Dataset {dataset_name} not supported for RL"
@@ -150,5 +159,9 @@ def get_one_dataset(
     # if eval not already defined
     if not ("eval" in locals() and "train" in locals()):
         train, eval = train_val_dataset(dataset, val_split=val_split)
+
+    if eval and max_val_set and len(eval) > max_val_set:
+        subset_indices = np.random.choice(len(eval), max_val_set)
+        eval = Subset(eval, subset_indices)
 
     return train, eval

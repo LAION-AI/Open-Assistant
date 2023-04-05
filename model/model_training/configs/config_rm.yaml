@@ -71,15 +71,22 @@ oasst-rm-1-pythia-1.4b:
         lang: "en,es,de,fr"
         input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
         val_split: 0.1
+    - augment_oasst:
+        input_file_path: augmented_latin_cyrillic_oasst_2023-03-27.jsonl
     - anthropic_rlhf:
         fraction: 0.1
-    - shp
+        max_val_set: 1000
+    - shp:
+        max_val_set: 1000
     - hellaswag:
         fraction: 0.5
+        max_val_set: 1000
     - webgpt:
         val_split: 0.05
+        max_val_set: 1000
     - hf_summary:
         fraction: 0.1
+        max_val_set: 250
   use_custom_sampler: true
   sort_by_length: false
   model_name: andreaskoepf/pythia-1.4b-gpt4all-pretrain
@@ -92,7 +99,7 @@ oasst-rm-1-pythia-1.4b:
   warmup_steps: 10
   gradient_accumulation_steps: 2
   per_device_train_batch_size: 2
-  per_device_eval_batch_size: 8
+  per_device_eval_batch_size: 6
   num_train_epochs: 2
-  eval_steps: 100
+  eval_steps: 200
   save_steps: 500
