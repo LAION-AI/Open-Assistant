@@ -84,6 +84,7 @@ class HFSummary(Dataset):
     """
     Human feedback data from OpenAI
     https://github.com/openai/summarize-from-feedback
+    https://huggingface.co/datasets/openai/summarize_from_feedback
 
     labeling method : pair comparison, 0 or 1
 
@@ -182,7 +183,8 @@ class HFSummary(Dataset):
             return [prompt.format(context), rows[0]]
         elif self.mode == "rl":
             return (prompt.format(context),)
+        elif self.mode == "rm":
+            valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
+            return [prompt.format(context)], [r for idx, r in enumerate(rows) if idx in valid_idx]
 
-        valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
-        # optimize the format later
-        return [prompt.format(context)], [r for idx, r in enumerate(rows) if idx in valid_idx]
+        raise RuntimeError(f"Unsupported mode '{self.mode}'")

@@ -1,12 +1,7 @@
 """
     High level functions for model training
 """
-from model_training.custom_datasets.extra_rm_datasets import (
-    load_anthropic_rlhf,
-    load_hellaswag,
-    load_open_ai_summarize_from_feedback,
-    load_shp,
-)
+from model_training.custom_datasets.extra_rm_datasets import load_anthropic_rlhf, load_hellaswag, load_shp
 from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
 from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
@@ -28,6 +23,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 
 QA_DATASETS = list(QADataset.DATASET_FORMAT_MAPPING.keys())
+
 SUMMARIZATION_DATASETS = [
     "xsum",
     "cnn_dailymail",
@@ -38,16 +34,26 @@ SUMMARIZATION_DATASETS = [
     "debate_sum",
     "tldr_news",
 ]
-OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_translated"]
 
-RL_DATASETS = ["webgpt", "private_tuning", "alpaca", "hf_summary"]
+OTHER = [
+    "prosocial_dialogue",
+    "explain_prosocial",
+    "private_tuning",
+    "oa_translated",
+]
+
+RL_DATASETS = [
+    "webgpt",
+    "private_tuning",
+    "alpaca",
+    "hf_summary",
+]
 
 RM_DATASETS = [
     "oasst_export",
     "augment_oasst",
     "anthropic_rlhf",
     "hf_summary",
-    "open_ai_summarize_from_feedback",
     "shp",
     "hellaswag",
     "webgpt",
@@ -135,8 +141,6 @@ def get_one_dataset(
         eval = AugmentedOA(data_path + "/" + kwargs["input_file_path"], split="val")
     elif dataset_name == "oig_file":
         train, eval = load_oig_file(val_split=val_split, **kwargs)
-    elif dataset_name == "open_ai_summarize_from_feedback":
-        train, eval = load_open_ai_summarize_from_feedback()
     elif dataset_name == "anthropic_rlhf":
         train, eval = load_anthropic_rlhf()
     elif dataset_name == "shp":
