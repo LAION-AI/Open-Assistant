@@ -18,7 +18,7 @@ class WorkerEventType(str, enum.Enum):
 class DbWorkerComplianceCheck(SQLModel, table=True):
     __tablename__ = "worker_compliance_check"
 
-    id: str = Field(default_factory=lambda: uuid7str(), primary_key=True)
+    id: str = Field(default_factory=uuid7str, primary_key=True)
     worker_id: str = Field(foreign_key="worker.id", index=True)
     worker: "DbWorker" = Relationship(back_populates="compliance_checks")
     compare_worker_id: str | None = Field(None, index=True, nullable=True)
@@ -33,7 +33,7 @@ class DbWorkerComplianceCheck(SQLModel, table=True):
 class DbWorkerEvent(SQLModel, table=True):
     __tablename__ = "worker_event"
 
-    id: str = Field(default_factory=lambda: uuid7str(), primary_key=True)
+    id: str = Field(default_factory=uuid7str, primary_key=True)
     worker_id: str = Field(foreign_key="worker.id", index=True)
     worker: "DbWorker" = Relationship(back_populates="events")
     time: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
@@ -44,7 +44,7 @@ class DbWorkerEvent(SQLModel, table=True):
 class DbWorker(SQLModel, table=True):
     __tablename__ = "worker"
 
-    id: str = Field(default_factory=lambda: uuid7str(), primary_key=True)
+    id: str = Field(default_factory=uuid7str, primary_key=True)
     api_key: str = Field(default_factory=lambda: str(uuid4()), index=True)
     name: str
     trusted: bool = Field(default=False, nullable=False)
