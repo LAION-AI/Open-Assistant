@@ -12,7 +12,7 @@ def test_rm_datasets():
     # dummy configuration
     config = Namespace(cache_dir=".cache", model_name="EleutherAI/pythia-70m-deduped")
 
-    dataset_names = ["hf_summary", "shp", "webgpt", "anthropic_rlhf", "hellaswag"]
+    dataset_names = ["hellaswag", "shp", "webgpt", "anthropic_rlhf", "hf_summary"]
     for name in dataset_names:
         train, val = get_one_dataset(conf=config, dataset_name=name, mode="rm")
         print(f"dataset: {name}  (train: {len(train)}, val: {len(val)})")

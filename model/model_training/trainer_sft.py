@@ -232,7 +232,8 @@ def argument_parsing(notebook=False, notebook_args=None):
         parser.add_argument(f"--no-{key}", dest=key, action="store_const", const=None)
 
     args = parser.parse_args(remaining)
-    print(args)
+    if not args.deepspeed or args.local_rank == 0:
+        print(args)
     return args
 
 
