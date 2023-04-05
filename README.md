@@ -23,7 +23,7 @@
 
 - [What is Open Assistant?](#what-is-open-assistant)
 - [Useful Links](#useful-links)
-- [How To Try It Out?](#how-to-try-it-out)
+- [How To Try It Out](#how-to-try-it-out)
 - [The Vision](#the-vision)
 - [The Plan](#the-plan)
 - [How You Can Help](#how-you-can-help)
@@ -32,6 +32,7 @@
 
 ## What is Open Assistant?
 
+<p align="center">
 Open Assistant is a project meant to give everyone access to a great chat based
 large language model.
 
@@ -40,17 +41,15 @@ language. In the same way that stable-diffusion helped the world make art and
 images in new ways we hope Open Assistant can help improve the world by
 improving language itself.
 
+</p>
+
 # Useful Links
 
-- Project Repository -
-  [LAION-AI/Open-Assistant](https://github.com/LAION-AI/Open-Assistant)
+- [Data Collection](https://open-assistant.io)
 
-- Data Collection - [open-assistant.io](https://open-assistant.io)
+- [Project Documentation](https://projects.laion.ai/Open-Assistant/)
 
-- Project Documentation -
-  [projects.laion.ai/Open-Assistant](https://projects.laion.ai/Open-Assistant/)
-
-## How To Try It Out?
+## How To Try It Out
 
 ### Contributing to Data Collection
 
