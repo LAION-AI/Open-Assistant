@@ -226,8 +226,11 @@ class AnthropicRLHF(Dataset):
 
 
 class WebGPTRank(Dataset):
-    def __init__(self) -> None:
+    name = "webgpt"  # use mode="rm" when calling get_one_dataset()
+
+    def __init__(self, max_answers: int = 5) -> None:
         super().__init__()
+        self.max_answers = max_answers
 
         dataset = load_dataset("openai/webgpt_comparisons")
         self.questions = []
@@ -239,9 +242,11 @@ class WebGPTRank(Dataset):
             question_answer_dict[question][row["answer_1"]] = row["score_1"]
         for question, answers in question_answer_dict.items():
             self.questions.append(question)
-            # sort answer dict with the highest score first (hence the prefactor -1). Then we recreate a dictionary
-            # and take only the first 5 keys (usually it's just 2, but there are examples where we have more)
-            self.answers.append(list(dict(sorted(answers.items(), key=lambda x: -1 * x[1])).keys())[:5])
+            # Sort answer dict with the highest score first (hence the prefactor -1).
+            # Then take only the first `max_answers` elements (usually there are just
+            # 2, but there are examples where we have more)
+            a = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
+            self.answers.append(a[: self.max_answers])
 
     def __len__(self):
         return len(self.questions)
