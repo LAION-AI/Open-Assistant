@@ -63,8 +63,17 @@ class AggregateResults:
                     "split": split,
                 }
                 if idx in augmented:
-                    output["augmented"] = augmented[idx]
-
+                    augmented = augmented[idx]
+                    cleaned_aug = []
+                    for a in augmented:
+                        cleaned = (
+                            a.replace("<|endoftext|>", "")
+                            .replace("<|startoftoken|>human\n", "")
+                            .replace("<human>", "")
+                            .replace("<bot>", "")
+                        )
+                        cleaned_aug.append(cleaned)
+                    output["augmented"] = cleaned_aug
                 f.write(json.dumps(output) + "\n")
 
 
