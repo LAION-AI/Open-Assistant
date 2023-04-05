@@ -45,7 +45,7 @@ improving language itself.
 
 - Data Collection - [open-assistant.io](https://open-assistant.io)
 
-- Project Documentation [projects.laion.ai/Open-Assistant](https://projects.laion.ai/Open-Assistant/)
+- Project Documentation - [projects.laion.ai/Open-Assistant](https://projects.laion.ai/Open-Assistant/)
 
 ## How To Try It Out?
 
