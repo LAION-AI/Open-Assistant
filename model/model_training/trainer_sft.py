@@ -231,10 +231,7 @@ def argument_parsing(notebook=False, notebook_args=None):
         # Allow --no-{key}  to remove it completely
         parser.add_argument(f"--no-{key}", dest=key, action="store_const", const=None)
 
-    args = parser.parse_args(remaining)
-    if not args.deepspeed or args.local_rank == 0:
-        print(args)
-    return args
+    return parser.parse_args(remaining)
 
 
 def tokenizer_sanity_check(tokenizer):
@@ -274,6 +271,8 @@ def tokenizer_sanity_check(tokenizer):
 
 def main():
     training_conf = argument_parsing()
+    if not training_conf.deepspeed or training_conf.local_rank == 0:
+        print(f"trainig_conf = {training_conf}")
 
     output_dir = (
         training_conf.output_dir

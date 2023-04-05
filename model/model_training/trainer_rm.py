@@ -177,15 +177,13 @@ def argument_parsing(notebook=False, notebook_args=None):
             type_ = _strtobool
         parser.add_argument(f"--{key}", type=type_, default=value)
 
-    args = parser.parse_args(remaining)
-    if not args.deepspeed or args.local_rank == 0:
-        print(args)
-    return args
+    return parser.parse_args(remaining)
 
 
 def main():
     training_conf = argument_parsing()
-    print(f"trainig_conf = {training_conf}")
+    if not training_conf.deepspeed or training_conf.local_rank == 0:
+        print(f"trainig_conf = {training_conf}")
 
     init_rng(training_conf)
 

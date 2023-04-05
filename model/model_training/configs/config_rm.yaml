@@ -50,6 +50,7 @@ oasst-rm-1-pythia-6B:
     - oasst_export:
         lang: "en,es,de,fr"
         input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+  sort_by_length: false
   model_name: EleutherAI/pythia-6.9b-deduped
   learning_rate: 1e-5
   residual_dropout: 0.08
@@ -61,11 +62,11 @@ oasst-rm-1-pythia-6B:
   per_device_eval_batch_size: 3
   eval_steps: 25
   num_train_epochs: 2
-  sort_by_length: false
-  per_digit_tokens: false
   save_steps: 500
 
 oasst-rm-1-pythia-1.4b:
+  is_reward_model: true
+  pooling: last
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
@@ -101,5 +102,5 @@ oasst-rm-1-pythia-1.4b:
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 6
   num_train_epochs: 2
-  eval_steps: 200
-  save_steps: 500
+  eval_steps: 500
+  save_steps: 1000
