@@ -15,7 +15,8 @@ from model_training.custom_datasets.qa_datasets import (
     TranslatedQA,
     WebGPT,
 )
-from model_training.custom_datasets.summarization import SummarizationDataset
+from model_training.custom_datasets.rank_datasets import AugmentedOA
+from model_training.custom_datasets.summarization import HFSummary, SummarizationDataset
 from model_training.custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
 from model_training.custom_datasets.translation import WMT2019, DiveMT, TEDTalk
 from sklearn.model_selection import train_test_split
@@ -34,9 +35,16 @@ SUMMARIZATION_DATASETS = [
 ]
 OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_translated"]
 
-RL_DATASETS = ["webgpt", "private_tuning", "alpaca"]
+RL_DATASETS = ["webgpt", "private_tuning", "alpaca", "hf_summary"]
 
-RM_DATASETS = ["oasst_export", "anthropic_rlhf", "open_ai_summarize_from_feedback"]
+RM_DATASETS = [
+    "oasst_export",
+    "augment_oasst",
+    "hf_summary",
+    "webgpt",
+    "anthropic_rlhf",
+    "open_ai_summarize_from_feedback",
+]
 
 
 def train_val_dataset(dataset, val_split=0.2) -> tuple[Dataset, Dataset | None]:
@@ -83,7 +91,7 @@ def get_one_dataset(
     elif dataset_name == "dive_mt":
         dataset = DiveMT()
     elif dataset_name == "webgpt":
-        dataset = WebGPT()
+        dataset = WebGPT(mode=mode)
     elif dataset_name == "alpaca":
         dataset = Alpaca(mode=mode, cache_dir=data_path)
     elif dataset_name == "code_alpaca":
@@ -107,6 +115,14 @@ def get_one_dataset(
         dataset = TranslatedQA(data_path)
     elif dataset_name == "oasst_export":
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
+    elif dataset_name == "hf_summary":
+        train = HFSummary(split="train", mode=mode)
+        eval = HFSummary(split="valid1", mode=mode)
+    elif dataset_name == "augment_oasst":
+        # reward model mode only
+        assert mode == "rm"
+        train = AugmentedOA(data_path + "/" + kwargs["input_file_path"], split="train")
+        eval = AugmentedOA(data_path + "/" + kwargs["input_file_path"], split="val")
     elif dataset_name == "oig_file":
         train, eval = load_oig_file(val_split=val_split, **kwargs)
     elif dataset_name == "open_ai_summarize_from_feedback":

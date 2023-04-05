@@ -1,3 +1,4 @@
+import random
 from collections import defaultdict
 from typing import List
 
@@ -131,6 +132,42 @@ class HFDataset(Dataset):
         return len(self.comparisons)
 
     def __getitem__(self, idx):
+        post, summaries = self.post_dict[self.post_ids[idx]].values()
+        summaries = sorted(summaries, key=lambda x: x["axes"]["overall"], reverse=True)
+        summaries = [summary["text"] for summary in summaries]
+        return [post], summaries
+
+
+class AugmentedOA(Dataset):
+    def __init__(self, json_filename, split="train") -> None:
+        super().__init__()
+        import json
+
+        assert split in ("train", "val")
+
+        pairs = []
+        with open(json_filename, "r", encoding="utf-8") as f:
+            for line in f:
+                data = json.loads(line)
+                if data["split"] == split:
+                    augmented = data["augmented"]
+                    if split == "val":  # disable augmentation during validation
+                        augmented = []
+                    pairs.append((data["prefixes"], data["responses"], augmented))
+        self.pairs = pairs
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, idx):
+        prefixes, user_answer_ranks, bad_samples = self.pairs[idx]
+        # we want to prevent modifying user_answer_ranks
+        rank = user_answer_ranks
+        if len(bad_samples) > 0:
+            additional = random.choice(bad_samples)
+            rank = user_answer_ranks + [additional]
+
+        return prefixes, rank
         if self.subset == "axis":
             post, summaries = self.axis_post_dict[self.axis_post_ids[idx]].values()
             summaries = sorted(summaries, key=lambda x: x["axes"]["overall"], reverse=True)

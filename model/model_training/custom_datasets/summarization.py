@@ -3,6 +3,7 @@
 """
 import random
 
+import numpy as np
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -77,3 +78,111 @@ class SummarizationDataset(Dataset):
 
         context = "".join([SUMMARIZATION_SPECIAL_TOKENS["Text"], " ".join(text.split(" ")[: self.max_words]), prompt])
         return (context, summary)
+
+
+class HFSummary(Dataset):
+    """
+    Human feedback data from OpenAI
+    https://github.com/openai/summarize-from-feedback
+
+    labeling method : pair comparison, 0 or 1
+
+    """
+
+    PROMPTS = [
+        "Please summarize the following content:\n{}",
+        "{}\nTLDR;",
+        "{}\nPlease summarize the content above",
+        "Write a summary for the following article:\n{}",
+    ]
+
+    def __init__(self, split="train", mode="sft", conf_threshold=-1, max_comparison_per_sample=5) -> None:
+        super().__init__()
+        assert split in ("train", "valid1", "valid2", "test")
+        assert mode in ("sft", "rm", "rl")
+        self.mode = mode
+        summaries = {}
+        # using prompt as our index will allows us
+        # to add additional generated prompt later
+        self.index2summary = {}
+        self.max_comparison_per_sample = max_comparison_per_sample
+        major_split = split if "train" == split else "validation"
+        dataset = load_dataset("openai/summarize_from_feedback", "comparisons")[major_split]
+        for data in dataset:
+            if (
+                "extra" in data
+                and "confidence" in data["extra"]
+                and data["extra"]["confidence"] is not None
+                and conf_threshold > data["extra"]["confidence"]
+            ):
+                print("skipping {}".format(data["info"]["id"]))
+                continue
+
+            if split != "train" and split != data["split"]:
+                continue
+
+            if "article" in data["info"] and data["info"]["article"] is not None:
+                context = data["info"]["article"]
+            elif "post" in data["info"]:
+                context = data["info"]["post"]
+
+            if context not in self.index2summary:
+                self.index2summary[len(self.index2summary)] = context
+
+            if context not in summaries:
+                summaries[context] = []
+
+            pos, neg = (0, 1) if data["choice"] == 0 else (1, 0)
+            summaries[context].append((data["summaries"][pos]["text"].strip(), data["summaries"][neg]["text"].strip()))
+
+        ranked_summaries = {}
+        for context, summary_comparison_pairs in summaries.items():
+            ranks = self.get_sorted_ranks(summary_comparison_pairs)
+            ranked_summaries[context] = ranks
+        self.summaries = ranked_summaries
+
+        self.postfix_prompt = " TLDR;"
+
+    @staticmethod
+    def get_sorted_ranks(comparison_pairs):
+        # Create a dictionary to keep track of the counts of each element
+
+        counts = {}
+        for pair in comparison_pairs:
+            if pair[0] not in counts:
+                counts[pair[0]] = 0
+            if pair[1] not in counts:
+                counts[pair[1]] = 0
+            counts[pair[0]] += 1
+
+        # Create a list of tuples, where each tuple contains an element and its count
+        elements_counts = [(element, count) for element, count in counts.items()]
+
+        # Sort the list of tuples by count in descending order
+        elements_counts.sort(key=lambda x: x[1], reverse=True)
+
+        # Create a list of elements in order of their counts
+        sorted_elements = [element for element, count in elements_counts]
+
+        return sorted_elements
+
+    def __len__(self):
+        return len(self.index2summary)
+
+    def __getitem__(self, index):
+        context = self.index2summary[index]
+        # return pairs of comparison
+        rows = self.summaries[context]
+        prompt = random.choice(self.PROMPTS)
+
+        # pair very big
+        # we are going to do some sampling
+        # not optimal but good for now
+        if self.mode == "sft":
+            return [prompt.format(context), rows[0]]
+        elif self.mode == "rl":
+            return (prompt.format(context),)
+
+        valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
+        # optimize the format later
+        return [prompt.format(context)], [r for idx, r in enumerate(rows) if idx in valid_idx]

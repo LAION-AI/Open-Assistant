@@ -74,7 +74,8 @@ class RMTrainer(Trainer):
         labels = []
         for i, (s, e) in enumerate(zip(cu_lens[:-1], cu_lens[1:])):
             labels.extend([i] * (e - s))
-        labels = torch.tensor(labels).view(-1, 1)
+        # make sure labels are same as logits, needed for deepspeed
+        labels = torch.tensor(labels, device=logits.device, requires_grad=False).view(-1, 1)
         return (loss, logits.T, labels.T)  # transposed to avoid truncation in evaluation_loop
 
     def get_train_dataloader(self):
