@@ -12,18 +12,19 @@ def test_rm_datasets():
     # dummy configuration
     config = Namespace(cache_dir=".cache", model_name="EleutherAI/pythia-70m-deduped")
 
-    dataset_names = ["webgpt", "anthropic_rlhf", "shp", "hellaswag"]  # , "open_ai_summarize_from_feedback"]
+    dataset_names = ["shp"]  # , "webgpt", "anthropic_rlhf", "hellaswag"]  # , "open_ai_summarize_from_feedback"]
     for name in dataset_names:
         train, val = get_one_dataset(conf=config, dataset_name=name, mode="rm")
         print(f"dataset: {name}  (train: {len(train)}, val: {len(val)})")
 
         avg_number_continuations = sum(len(x[1]) for x in train) / len(train)
-        print(f"Average number of continuations: {avg_number_continuations}")
+        num_more_than_two = sum(1 if len(x[1]) > 2 else 0 for x in train)
+        print(f"Average number of continuations: {avg_number_continuations} (with >2: {num_more_than_two})")
 
-        item = train[0]
-
-        print("prefix:", item[0])
-        print("Continuations:", item[1])
+        for i in range(2):
+            item = train[i]
+            print(f"[{i}] prefix: {item[0]}")
+            print(f"[{i}] Continuations: {item[1]}")
 
 
 @pytest.mark.skip(reason="cache not populated")

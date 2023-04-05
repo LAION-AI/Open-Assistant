@@ -16,32 +16,35 @@ class SHPDataset(Dataset):
 
     name = "SHP"
 
-    def __init__(self, split):
+    def __init__(self, split, max_answers: int = 5):
         super().__init__()
+        self.max_answers = max_answers
+        self.questions = []
+        self.answers = []
 
-        self.post_dict = defaultdict(dict)
-        self.postids = []
-        if not isinstance(split, List):
+        if not isinstance(split, list):
             split = [split]
-        dataset = load_dataset("stanfordnlp/SHP", split=split)
-        for data in dataset:
-            for item in data:
-                postid = item.get("post_id")
-                self.postids.append(postid)
-                score_A, score_B = [item.get(key) for key in ("score_A", "score_B")]
-                answers = [item.get(key) for key in ("human_ref_A", "human_ref_B")]
-                if score_B > score_A:
-                    answers = list(reversed(answers))
+        dataset_splits = load_dataset("stanfordnlp/SHP", split=split)
+        for split in dataset_splits:
+            question_answer_dict = defaultdict(dict)
+            for row in split:
+                history = row["history"]
+                question_answer_dict[history][row["human_ref_A"]] = row["score_A"]
+                question_answer_dict[history][row["human_ref_B"]] = row["score_B"]
 
-                self.post_dict[postid].update({"post": item.get("history"), "answers": answers})
+            for question, answers in question_answer_dict.items():
+                self.questions.append(question)
+                # Sort answer dict with the highest score first (hence the prefactor -1).
+                # Then take only the first `max_answers` elements (usually there are just
+                # 2, but there are examples where we have more)
+                a = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
+                self.answers.append(a[: self.max_answers])
 
     def __len__(self):
-        return len(self.postids)
+        return len(self.questions)
 
-    def __getitem__(self, idx):
-        postid = self.postids[idx]
-        post, answers = self.post_dict.get(postid, {}).values()
-        return [post], answers
+    def __getitem__(self, index):
+        return [self.questions[index]], self.answers[index]
 
 
 class HellaSwagDataset(Dataset):
