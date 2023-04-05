@@ -6,7 +6,7 @@ import glob
 import json
 import os
 import re
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from urllib.request import urlopen
 
 import numpy as np
@@ -174,30 +174,25 @@ class QADataset(Dataset):
 
 class WebGPT(Dataset):
     name = "webgpt"
-    splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
 
-    def __init__(self, split: str | list[str] | None = "train", max_answers: int = 5, mode: str = "sft") -> None:
+    def __init__(self, max_answers: int = 5, mode: str = "sft") -> None:
         super().__init__()
         self.mode = mode
         assert mode in ("sft", "rm", "rl")
 
-        if not isinstance(split, list):
-            split = [split]
-
-        dataset_splits = load_dataset("openai/webgpt_comparisons", split=split)
+        dataset = load_dataset("openai/webgpt_comparisons")
 
         self.questions = []
         self.answers = []
 
         question_answer_dict = defaultdict(dict)
 
-        for split in dataset_splits:
-            for row in split:
-                question = row["question"]["full_text"]
-                answer_0 = re_reference_remove.sub("", row["answer_0"])
-                answer_1 = re_reference_remove.sub("", row["answer_1"])
-                question_answer_dict[question][answer_0] = row["score_0"]
-                question_answer_dict[question][answer_1] = row["score_1"]
+        for row in dataset["train"]:
+            question = row["question"]["full_text"]
+            answer_0 = re_reference_remove.sub("", row["answer_0"])
+            answer_1 = re_reference_remove.sub("", row["answer_1"])
+            question_answer_dict[question][answer_0] = row["score_0"]
+            question_answer_dict[question][answer_1] = row["score_1"]
 
         for question, answers in question_answer_dict.items():
             self.questions.append(question)
