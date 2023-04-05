@@ -162,7 +162,7 @@ def rallio_conversation(prefixes, tokenizer, model, top_k=2, temperature=0.7, ma
             text += "User: " + convo + "\n"
         else:
             text += name + ": " + convo + "\n"
-    input_text = text + name + ": " + convo + "\n"
+    input_text = text + name + ": "
     inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(0)
 
     generated_samples = []
