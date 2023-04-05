@@ -16,7 +16,7 @@ class SHPDataset(Dataset):
 
     name = "SHP"
 
-    def __init__(self, split: str | list[str], max_answers: int = 5):
+    def __init__(self, split: str | list[str] | None, max_answers: int = 5):
         super().__init__()
 
         self.questions = []
@@ -55,11 +55,13 @@ class HellaSwagDataset(Dataset):
     """
     Dataset class to use data from https://arxiv.org/pdf/1905.07830.pdf
     for Reward modeling
+
+    Note: In order to disable dialog-formatting None is returned as context.
     """
 
     name = "hellaswag"
 
-    def __init__(self, split, seed=SEED) -> None:
+    def __init__(self, split: str | list[str] | None, seed: int = SEED) -> None:
         super().__init__()
 
         np.random.seed(seed)
@@ -75,12 +77,12 @@ class HellaSwagDataset(Dataset):
                 ordered_ends = [selected, np.random.choice(endings)]
                 self.dataset_list.append({"context": context, "completions": ordered_ends})
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.dataset_list)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> tuple[str | None, list[list]]:
         context, completions = self.dataset_list[idx].values()
-        return [context], completions
+        return None, [context + c for c in completions]
 
 
 class HFDataset(Dataset):
@@ -91,7 +93,7 @@ class HFDataset(Dataset):
 
     name = "open_ai_summarize_from_feedback"
 
-    def __init__(self, split=None, subset="axis") -> None:
+    def __init__(self, split: str | list[str] | None = None, subset: str = "axis") -> None:
         super().__init__()
         # axis subset contains splits 'test' and 'validation'
         # comparisons subset contains splits 'train' and 'validation'
@@ -146,7 +148,7 @@ class HFDataset(Dataset):
 
 
 class AugmentedOA(Dataset):
-    def __init__(self, json_filename, split="train") -> None:
+    def __init__(self, json_filename: str, split: str = "train") -> None:
         super().__init__()
         import json
 
@@ -181,7 +183,7 @@ class AnthropicRLHF(Dataset):
     name = "anthropic_rlhf"
 
     @staticmethod
-    def _split_dialogue(text):
+    def _split_dialogue(text: str):
         lines = text.split("\n\n")
 
         dialogue = []
@@ -229,7 +231,7 @@ class AnthropicRLHF(Dataset):
 class WebGPTRank(Dataset):
     name = "webgpt"  # use mode="rm" when calling get_one_dataset()
 
-    def __init__(self, split: str | list[str] = "train", max_answers: int = 5) -> None:
+    def __init__(self, split: str | list[str] | None = "train", max_answers: int = 5) -> None:
         super().__init__()
 
         self.questions = []
