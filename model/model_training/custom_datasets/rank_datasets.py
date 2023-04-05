@@ -175,12 +175,6 @@ class AugmentedOA(Dataset):
             rank = user_answer_ranks + [additional]
 
         return prefixes, rank
-        if self.subset == "axis":
-            post, summaries = self.axis_post_dict[self.axis_post_ids[idx]].values()
-            summaries = sorted(summaries, key=lambda x: x["axes"]["overall"], reverse=True)
-            summaries = [summary["text"] for summary in summaries]
-            return [post], summaries
-        return self.comparisons[idx]
 
 
 class AnthropicRLHF(Dataset):
