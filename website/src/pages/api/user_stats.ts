@@ -9,6 +9,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
 
   // uid query param is only allowed for moderators and admins else it will be ignored and the user's own stats will be returned
   if (req.query.uid && isModOrAdmin) {
+    // uid is web user's id
     userid = typeof req.query.uid === "string" ? req.query.uid : req.query.uid[0];
   } else {
     userid = token.sub;
