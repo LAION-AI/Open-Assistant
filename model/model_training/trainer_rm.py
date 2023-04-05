@@ -19,7 +19,7 @@ from model_training.utils import (
     read_yamls,
 )
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
@@ -137,6 +137,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
     parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.add_argument("--rng_seed", type=int, help="rng seed")
+    parser.add_argument("--show_dataset_stats", action="store_true", help="Show dataset stats", default=False)
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -160,6 +161,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["resume_from_checkpoint"] = args.resume_from_checkpoint
     if args.rng_seed is not None:
         conf["rng_seed"] = args.rng_seed
+    conf["show_dataset_stats"] = args.show_dataset_stats
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -202,20 +204,40 @@ def main():
         pad_to_multiple_of=16,
     )
 
+    show_dataset_stats = (training_conf.verbose or training_conf.show_dataset_stats) and (
+        not training_conf.deepspeed or training_conf.local_rank == 0
+    )
+    if show_dataset_stats:
+        print("Dataset stats before sampling:")
+        total = len(train)
+        for d in train.datasets:
+            if isinstance(d, Subset):
+                name = f"Subset of {type(d.dataset).__name__}"
+                if hasattr(d.dataset, "name"):
+                    name += f" ({d.dataset.name})"
+            else:
+                name = type(d).__name__
+                if hasattr(d, "name"):
+                    name += f" ({d.name})"
+            print(f"{name}: {len(d)} ({len(d) / total:%})")
+        print(f"Total train: {total}")
+
     if training_conf.use_custom_sampler:
-        sampler = PerDatasetSampler.build_sampler_from_config(
-            training_conf,
-            train.datasets,
-            rank=training_conf.local_rank,
-            world_size=training_conf.world_size,
-            samples_length=list(
+        samples_length = None
+        if training_conf.sort_by_length:
+            samples_length = list(
                 map(
                     lambda x: train_collate_fn.process_one(x, return_length=True),
                     tqdm(train, desc="Calculating lengths per sample"),
                 )
             )
-            if training_conf.sort_by_length
-            else None,
+        sampler = PerDatasetSampler.build_sampler_from_config(
+            training_conf,
+            train.datasets,
+            rank=training_conf.local_rank,
+            world_size=training_conf.world_size,
+            samples_length=samples_length,
+            verbose=show_dataset_stats,
         )
     else:
         sampler = None

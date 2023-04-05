@@ -184,7 +184,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
     parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.add_argument("--rng_seed", type=int, help="rng seed")
-    parser.add_argument("--dataset_stats", action="store_true", help="Show dataset stats", default=False)
+    parser.add_argument("--show_dataset_stats", action="store_true", help="Show dataset stats", default=False)
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -213,7 +213,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["resume_from_checkpoint"] = args.resume_from_checkpoint
     if args.rng_seed is not None:
         conf["rng_seed"] = args.rng_seed
-    conf["dataset_stats"] = args.dataset_stats
+    conf["show_dataset_stats"] = args.show_dataset_stats
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -349,7 +349,7 @@ def main():
 
     train, evals = get_dataset(training_conf)
 
-    show_dataset_stats = (training_conf.verbose or training_conf.dataset_stats) and (
+    show_dataset_stats = (training_conf.verbose or training_conf.show_dataset_stats) and (
         not training_conf.deepspeed or training_conf.local_rank == 0
     )
     if show_dataset_stats:
