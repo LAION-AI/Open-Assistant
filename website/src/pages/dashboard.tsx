@@ -6,7 +6,7 @@ import { LeaderboardWidget, TaskOption, WelcomeCard } from "src/components/Dashb
 import { getDashboardLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
 import { AvailableTasks, TaskCategory } from "src/types/Task";
-export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServerSideProps";
+export { getServerSideProps } from "src/lib/defaultServerSideProps";
 import { XPBar } from "src/components/Account/XPBar";
 import { TaskCategoryItem } from "src/components/Dashboard/TaskOption";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
