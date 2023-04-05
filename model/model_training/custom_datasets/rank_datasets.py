@@ -16,29 +16,33 @@ class SHPDataset(Dataset):
 
     name = "SHP"
 
-    def __init__(self, split, max_answers: int = 5):
+    def __init__(self, split: str | list[str], max_answers: int = 5):
         super().__init__()
-        self.max_answers = max_answers
+
         self.questions = []
         self.answers = []
 
         if not isinstance(split, list):
             split = [split]
         dataset_splits = load_dataset("stanfordnlp/SHP", split=split)
-        for split in dataset_splits:
-            question_answer_dict = defaultdict(dict)
-            for row in split:
-                history = row["history"]
-                question_answer_dict[history][row["human_ref_A"]] = row["score_A"]
-                question_answer_dict[history][row["human_ref_B"]] = row["score_B"]
 
-            for question, answers in question_answer_dict.items():
-                self.questions.append(question)
-                # Sort answer dict with the highest score first (hence the prefactor -1).
-                # Then take only the first `max_answers` elements (usually there are just
-                # 2, but there are examples where we have more)
-                a = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
-                self.answers.append(a[: self.max_answers])
+        answers_by_id = defaultdict(dict)
+        history_by_id = dict()
+        for split in dataset_splits:
+            for row in split:
+                post_id = row["post_id"]
+                history_by_id[post_id] = row["history"]
+                answers_by_id[post_id][row["human_ref_A"]] = row["score_A"]
+                answers_by_id[post_id][row["human_ref_B"]] = row["score_B"]
+
+        for post_id, history in history_by_id.items():
+            self.questions.append(history)
+            answers = answers_by_id[post_id]
+            # Sort answer dict with the highest score first (hence the prefactor -1).
+            # Then take only the first `max_answers` elements (usually there are just
+            # 2, but there are examples where we have more)
+            answers_sorted = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
+            self.answers.append(answers_sorted[:max_answers])
 
     def __len__(self):
         return len(self.questions)
@@ -231,25 +235,31 @@ class AnthropicRLHF(Dataset):
 class WebGPTRank(Dataset):
     name = "webgpt"  # use mode="rm" when calling get_one_dataset()
 
-    def __init__(self, max_answers: int = 5) -> None:
+    def __init__(self, split: str | list[str] = "train", max_answers: int = 5) -> None:
         super().__init__()
-        self.max_answers = max_answers
 
-        dataset = load_dataset("openai/webgpt_comparisons")
         self.questions = []
         self.answers = []
+
+        if not isinstance(split, list):
+            split = [split]
+
+        dataset_splits = load_dataset("openai/webgpt_comparisons", split=split)
         question_answer_dict = defaultdict(dict)
-        for row in dataset["train"]:
-            question = row["question"]["full_text"]
-            question_answer_dict[question][row["answer_0"]] = row["score_0"]
-            question_answer_dict[question][row["answer_1"]] = row["score_1"]
+
+        for split in dataset_splits:
+            for row in split:
+                question = row["question"]["full_text"]
+                question_answer_dict[question][row["answer_0"]] = row["score_0"]
+                question_answer_dict[question][row["answer_1"]] = row["score_1"]
+
         for question, answers in question_answer_dict.items():
             self.questions.append(question)
             # Sort answer dict with the highest score first (hence the prefactor -1).
             # Then take only the first `max_answers` elements (usually there are just
             # 2, but there are examples where we have more)
-            a = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
-            self.answers.append(a[: self.max_answers])
+            answers_sorted = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
+            self.answers.append(answers_sorted[:max_answers])
 
     def __len__(self):
         return len(self.questions)
