@@ -90,8 +90,8 @@ oasst-rm-1-pythia-1.4b:
   use_flash_attention: true
   warmup_steps: 10
   gradient_accumulation_steps: 2
-  per_device_train_batch_size: 3
+  per_device_train_batch_size: 2
   per_device_eval_batch_size: 8
-  num_train_epochs: 5
+  num_train_epochs: 2
   eval_steps: 100
   save_steps: 500
