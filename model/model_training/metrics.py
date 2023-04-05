@@ -11,9 +11,6 @@ def reward_accuracy(eval_pred):
     for b_logits, b_labels in zip(logits, labels):
         b_labels = b_labels[b_labels != -100]
         b_logits = b_logits[b_logits != -100]
-        truncated_logits = min(len(b_labels), len(b_logits))
-        b_labels = b_labels[:truncated_logits]
-        b_logits = b_logits[:truncated_logits]
         for i in np.unique(b_labels):
             logits_batch = b_logits[b_labels == i]
             pos_scores.append(logits_batch[0])
@@ -38,9 +35,12 @@ def kendall_tau(eval_pred):
     for b_logits, b_labels in zip(logits, labels):
         b_labels = b_labels[b_labels != -100]
         b_logits = b_logits[b_logits != -100]
-        truncated_logits = min(len(b_labels), len(b_logits))
-        b_labels = b_labels[:truncated_logits]
-        b_logits = b_logits[:truncated_logits]
+        # uncomment to support non pythia model,
+        # remember to add to other metrics as well
+
+        # truncated_logits = min(len(b_labels), len(b_logits))
+        # b_labels = b_labels[:truncated_logits]
+        # b_logits = b_logits[:truncated_logits]
         for i in np.unique(b_labels):
             logits_batch = b_logits[b_labels == i]
             pred_rank = np.argsort(logits_batch)
@@ -59,9 +59,6 @@ def spearmanr(eval_pred):
     for b_logits, b_labels in zip(logits, labels):
         b_labels = b_labels[b_labels != -100]
         b_logits = b_logits[b_logits != -100]
-        truncated_logits = min(len(b_labels), len(b_logits))
-        b_labels = b_labels[:truncated_logits]
-        b_logits = b_logits[:truncated_logits]
         for i in np.unique(b_labels):
             logits_batch = b_logits[b_labels == i]
             pred_rank = np.argsort(logits_batch)
