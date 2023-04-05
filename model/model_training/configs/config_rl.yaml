@@ -1,7 +1,8 @@
 defaults_rlhf:
-  datasets:
+  rng_seed: 0xa1221f97
+  datasets: []
   batch_size: 8
-  chunk_size: 2
+  chunk_size: 4
   num_rollouts: 32
   epochs: 10
   datasets_extra: []
@@ -39,7 +40,7 @@ pythia_rlhf:
     seq2seqmodel: false
     freeze_layer:
     residual_dropout: 0.2
-    use_flash_attention: true
+    use_flash_attention: false
 
   batch_size: 4
 

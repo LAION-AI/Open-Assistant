@@ -32,13 +32,13 @@ optimizer:
 scheduler:
   name: "cosine_annealing"
   kwargs:
-    T_max: 100000 # train.total_steps
+    T_max: 10000 # train.total_steps
     eta_min: 1.0e-4
 
 method:
   name: "ppoconfig"
-  num_rollouts: 32
-  chunk_size: 16
+  num_rollouts: 1024
+  chunk_size: 64
   ppo_epochs: 4
   init_kl_coef: 0.04
   target: 6
@@ -53,7 +53,7 @@ method:
   ref_std: null
   cliprange_reward: 4
   gen_kwargs:
-    max_new_tokens: 150
+    max_new_tokens: 400
     top_k: 0
     top_p: 0.7
     do_sample: True

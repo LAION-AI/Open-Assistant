@@ -187,3 +187,7 @@ python trainer_sft.py --configs defaults your-model-name --deepspeed
 
 Experimental results in wandb
 [here](https://wandb.ai/sanagnos/supervised-finetuning?workspace=user-sanagnos).
+
+## TODOs
+
+- add max_length to RL training.

@@ -12,6 +12,7 @@ from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
 from models.reward_model import GPTNeoXRewardModel
 from tritonclient.utils import np_to_triton_dtype
 from trlx.data.configs import TRLConfig
+import numpy as np
 
 # flake8: noqa
 from utils.ppo_utils import CustomPPOTrainer
@@ -79,11 +80,12 @@ def create_reward_fn(rank_config):  # noqa:  C901
         for i in range(math.ceil(len(samples) / mbs)):
             batch_ixs = slice(i * mbs, (i + 1) * mbs)
 
+            # We specififed int32 as types for a triton client
             result = client.infer(
                 triton_model,
                 [
-                    prepare_tensor("input_ids", inputs.input_ids[batch_ixs]),
-                    prepare_tensor("attention_mask", inputs.attention_mask[batch_ixs]),
+                    prepare_tensor("input_ids", inputs.input_ids[batch_ixs].astype(np.int32)),
+                    prepare_tensor("attention_mask", inputs.attention_mask[batch_ixs].astype(np.int32)),
                 ],
             )
 
@@ -126,7 +128,7 @@ if __name__ == "__main__":
     )
 
     ## Override first eval prompts just for visualization
-    eval_prompts = eval_prompts + [
+    eval_prompts = [
         "".join(format_pairs(["Can you tell me about GLaDOS?"], eos_token, add_initial_reply_token=True)),
         "".join(format_pairs(["What is the chemical symbol for gold?"], eos_token, add_initial_reply_token=True)),
         "".join(
@@ -136,7 +138,7 @@ if __name__ == "__main__":
                 add_initial_reply_token=True,
             )
         ),
-    ]
+    ] + eval_prompts
 
     random.shuffle(prompts)
 
