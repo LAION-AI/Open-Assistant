@@ -299,13 +299,13 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
 
     if conf.is_reward_model:
         if "pythia" in conf.model_name:
-            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir, torch_dtype=dtype)
             if conf.pooling:
                 assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
                 model.config.pooling = conf.pooling
         else:
             model = transformers.AutoModelForSequenceClassification.from_pretrained(
-                conf.model_name, cache_dir=conf.cache_dir, num_labels=1
+                conf.model_name, cache_dir=conf.cache_dir, num_labels=1, torch_dtype=dtype
             )
     else:
         model = get_specific_model(

@@ -89,6 +89,13 @@ class HFSummary(Dataset):
 
     """
 
+    PROMPTS = [
+        "Please summarize the following content:\n{}",
+        "{}\nTLDR;",
+        "{}\nPlease summarize the content above",
+        "Write a summary for the following article:\n{}",
+    ]
+
     def __init__(self, split="train", mode="sft", conf_threshold=-1, max_comparison_per_sample=5) -> None:
         super().__init__()
         assert split in ("train", "valid1", "valid2", "test")
@@ -166,15 +173,16 @@ class HFSummary(Dataset):
         context = self.index2summary[index]
         # return pairs of comparison
         rows = self.summaries[context]
+        prompt = random.choice(self.PROMPTS)
 
         # pair very big
         # we are going to do some sampling
         # not optimal but good for now
         if self.mode == "sft":
-            return [context + self.postfix_prompt, rows[0]]
+            return [prompt.format(context), rows[0]]
         elif self.mode == "rl":
-            return (context + self.postfix_prompt,)
+            return (prompt.format(context),)
 
         valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
         # optimize the format later
-        return [context + self.postfix_prompt], [r for idx, r in enumerate(rows) if idx in valid_idx]
+        return [prompt.format(context)], [r for idx, r in enumerate(rows) if idx in valid_idx]
