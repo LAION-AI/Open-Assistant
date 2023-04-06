@@ -14,12 +14,13 @@ defaults_rm:
   warmup_steps: 10
   eval_steps: 50
   save_steps: 100
+  save_strategy: steps
   max_length: 512
   num_train_epochs: 2
   logging_steps: 10
   max_grad_norm: 2.0
   save_total_limit: 4
-  fp16: true
+  dtype: fp16
   eval_accumulation_steps:
   freeze_layer:
   cache_dir: .cache
@@ -40,6 +41,7 @@ defaults_rm:
   per_digit_tokens: false
   datasets_extra: []
   metrics: ["accuracy", "kendalltau"]
+  deepspeed_config: configs/zero_config.json
 
 oasst-rm-1-pythia-6B:
   is_reward_model: true
@@ -47,7 +49,8 @@ oasst-rm-1-pythia-6B:
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
-        input_file_path: 2023-03-21_oasst_ready_synth_labels.jsonl.gz
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+  sort_by_length: false
   model_name: EleutherAI/pythia-6.9b-deduped
   learning_rate: 1e-5
   residual_dropout: 0.08
@@ -59,45 +62,45 @@ oasst-rm-1-pythia-6B:
   per_device_eval_batch_size: 3
   eval_steps: 25
   num_train_epochs: 2
-  sort_by_length: false
-  per_digit_tokens: false
   save_steps: 500
 
-# params based on sweep result: https://wandb.ai/open-assistant/reward_model/runs/9102dee8
-# actual run for export: https://wandb.ai/open-assistant/reward-model/runs/1lw4g83x
-oasst-rm-1-pythia-1b:
+oasst-rm-1-pythia-1.4b:
+  is_reward_model: true
+  pooling: last
   datasets:
-    - oasst_export:
-        lang: "en,es,de,fr"
-        input_file_path: 2023-03-21_oasst_ready_synth_labels.jsonl.gz
-        val_split: 0.1
-  model_name: EleutherAI/pythia-1b-deduped
-  learning_rate: 2.3984085802847404e-05
-  residual_dropout: 0.08172424407561013
-  weight_decay: 0.07428722634825694
-  max_length: 520
-  warmup_steps: 10
-  # assuming training on single GPU
-  # per_device_train_batch_size: 8  # 48 GB not enough
-  gradient_accumulation_steps: 2
-  per_device_train_batch_size: 4
-  per_device_eval_batch_size: 16
-  num_train_epochs: 1
-  eval_steps: 100
-  save_steps: 500
-
-# a minimal configuration to debug the additional OS datasets
-extended_rlhf:
-  datasets:
-    - anthropic_rlhf
-    - open_ai_summarize_from_feedback
     - oasst_export:
         lang: "en,es,de,fr"
         input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
-  model_name: EleutherAI/pythia-70m-deduped
-  per_device_train_batch_size: 10
-  per_device_eval_batch_size: 10
-  gradient_accumulation_steps: 4
-  num_train_epochs: 1
-  auto_find_batch_size: true
-  dtype: fp16
+        val_split: 0.1
+    - augment_oasst:
+        input_file_path: augmented_latin_cyrillic_oasst_2023-03-27.jsonl
+    - anthropic_rlhf:
+        fraction: 0.1
+        max_val_set: 1000
+    - shp:
+        max_val_set: 1000
+    - hellaswag:
+        fraction: 0.5
+        max_val_set: 1000
+    - webgpt:
+        val_split: 0.05
+        max_val_set: 1000
+    - hf_summary:
+        fraction: 0.1
+        max_val_set: 250
+  use_custom_sampler: true
+  sort_by_length: false
+  model_name: andreaskoepf/pythia-1.4b-gpt4all-pretrain
+  learning_rate: 8e-6
+  residual_dropout: 0.01
+  weight_decay: 0.0
+  dtype: float32
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 10
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 6
+  num_train_epochs: 2
+  eval_steps: 500
+  save_steps: 1000

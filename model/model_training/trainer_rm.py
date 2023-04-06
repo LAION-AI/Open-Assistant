@@ -1,9 +1,8 @@
 import argparse
 import logging
 import os
-from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
+from typing import Callable, Literal, Optional, Union
 
-import bitsandbytes
 import datasets
 import torch
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
@@ -20,7 +19,7 @@ from model_training.utils import (
     read_yamls,
 )
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 from transformers.trainer_pt_utils import IterableDatasetShard
@@ -60,10 +59,10 @@ class RMTrainer(Trainer):
     def prediction_step(
         self,
         model: nn.Module,
-        inputs: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], List[int]],
+        inputs: tuple[dict[str, torch.Tensor], dict[str, torch.Tensor], list[int]],
         prediction_loss_only: bool,
-        ignore_keys: Optional[List[str]] = None,
-    ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
+        ignore_keys: Optional[list[str]] = None,
+    ) -> tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
         batch, cu_lens = inputs
         with torch.no_grad():
             batch = self._prepare_inputs(batch)
@@ -136,15 +135,15 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--deepspeed", action="store_true")
     parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+    parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.add_argument("--rng_seed", type=int, help="rng seed")
+    parser.add_argument("--show_dataset_stats", action="store_true", help="Show dataset stats", default=False)
     parser.set_defaults(deepspeed=False)
 
     if notebook:
         args, remaining = parser.parse_known_args(notebook_args)
     else:
         args, remaining = parser.parse_known_args()
-
-    print(args)
 
     # Config from YAML
     conf = {}
@@ -159,8 +158,10 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["wandb_entity"] = args.wandb_entity
     conf["local_rank"] = args.local_rank
     conf["deepspeed"] = args.deepspeed
+    conf["resume_from_checkpoint"] = args.resume_from_checkpoint
     if args.rng_seed is not None:
         conf["rng_seed"] = args.rng_seed
+    conf["show_dataset_stats"] = args.show_dataset_stats
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -181,7 +182,8 @@ def argument_parsing(notebook=False, notebook_args=None):
 
 def main():
     training_conf = argument_parsing()
-    print(f"trainig_conf = {training_conf}")
+    if not training_conf.deepspeed or training_conf.local_rank == 0:
+        print(f"trainig_conf = {training_conf}")
 
     init_rng(training_conf)
 
@@ -200,20 +202,40 @@ def main():
         pad_to_multiple_of=16,
     )
 
+    show_dataset_stats = (training_conf.verbose or training_conf.show_dataset_stats) and (
+        not training_conf.deepspeed or training_conf.local_rank == 0
+    )
+    if show_dataset_stats:
+        print("Dataset stats before sampling:")
+        total = len(train)
+        for d in train.datasets:
+            if isinstance(d, Subset):
+                name = f"Subset of {type(d.dataset).__name__}"
+                if hasattr(d.dataset, "name"):
+                    name += f" ({d.dataset.name})"
+            else:
+                name = type(d).__name__
+                if hasattr(d, "name"):
+                    name += f" ({d.name})"
+            print(f"{name}: {len(d)} ({len(d) / total:%})")
+        print(f"Total train: {total}")
+
     if training_conf.use_custom_sampler:
-        sampler = PerDatasetSampler.build_sampler_from_config(
-            training_conf,
-            train.datasets,
-            rank=training_conf.local_rank,
-            world_size=training_conf.world_size,
-            samples_length=list(
+        samples_length = None
+        if training_conf.sort_by_length:
+            samples_length = list(
                 map(
                     lambda x: train_collate_fn.process_one(x, return_length=True),
                     tqdm(train, desc="Calculating lengths per sample"),
                 )
             )
-            if training_conf.sort_by_length
-            else None,
+        sampler = PerDatasetSampler.build_sampler_from_config(
+            training_conf,
+            train.datasets,
+            rank=training_conf.local_rank,
+            world_size=training_conf.world_size,
+            samples_length=samples_length,
+            verbose=show_dataset_stats,
         )
     else:
         sampler = None
@@ -221,6 +243,8 @@ def main():
     optimizer = OptimizerNames.ADAMW_BNB if training_conf.quantization else OptimizerNames.ADAMW_HF
 
     if training_conf.quantization:
+        import bitsandbytes
+
         for module in model.modules():
             if isinstance(module, torch.nn.Embedding):
                 bitsandbytes.optim.GlobalOptimManager.get_instance().register_module_override(
@@ -241,9 +265,10 @@ def main():
         num_train_epochs=training_conf.num_train_epochs,
         warmup_steps=training_conf.warmup_steps,
         learning_rate=float(training_conf.learning_rate),
-        deepspeed="configs/zero_config.json" if training_conf.deepspeed else None,
+        deepspeed=training_conf.deepspeed_config if training_conf.deepspeed else None,
         optim=optimizer,
-        fp16=training_conf.fp16,
+        fp16=training_conf.dtype in ["fp16", "float16"],
+        bf16=training_conf.dtype in ["bf16", "bfloat16"],
         local_rank=training_conf.local_rank,
         gradient_checkpointing=training_conf.gradient_checkpointing,
         gradient_accumulation_steps=training_conf.gradient_accumulation_steps,
@@ -258,8 +283,10 @@ def main():
         save_total_limit=training_conf.save_total_limit,
         evaluation_strategy="steps",
         eval_steps=training_conf.eval_steps,
+        save_strategy=training_conf.save_strategy,
         save_steps=training_conf.save_steps,
         eval_accumulation_steps=training_conf.eval_accumulation_steps,
+        resume_from_checkpoint=training_conf.resume_from_checkpoint,
         report_to="wandb" if training_conf.log_wandb else None,
     )
 
@@ -272,6 +299,7 @@ def main():
         wandb.init(
             project="reward-model",
             entity=training_conf.wandb_entity,
+            resume=training_conf.resume_from_checkpoint,
             name=f"{training_conf.model_name}-{training_conf.log_dir}-rm",
             config=training_conf,
         )
@@ -289,7 +317,7 @@ def main():
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
     )
-    trainer.train()
+    trainer.train(resume_from_checkpoint=training_conf.resume_from_checkpoint)
     trainer.save_model()
     tokenizer.save_pretrained(output_dir)
 

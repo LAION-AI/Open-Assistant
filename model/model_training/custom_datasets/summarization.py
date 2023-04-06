@@ -84,6 +84,7 @@ class HFSummary(Dataset):
     """
     Human feedback data from OpenAI
     https://github.com/openai/summarize-from-feedback
+    https://huggingface.co/datasets/openai/summarize_from_feedback
 
     labeling method : pair comparison, 0 or 1
 
@@ -141,8 +142,6 @@ class HFSummary(Dataset):
             ranked_summaries[context] = ranks
         self.summaries = ranked_summaries
 
-        self.postfix_prompt = " TLDR;"
-
     @staticmethod
     def get_sorted_ranks(comparison_pairs):
         # Create a dictionary to keep track of the counts of each element
@@ -170,7 +169,10 @@ class HFSummary(Dataset):
         return len(self.index2summary)
 
     def __getitem__(self, index):
-        context = self.index2summary[index]
+        if index >= len(self.index2summary):
+            raise IndexError()
+
+        context = self.index2summary.get(index)
         # return pairs of comparison
         rows = self.summaries[context]
         prompt = random.choice(self.PROMPTS)
@@ -182,7 +184,8 @@ class HFSummary(Dataset):
             return [prompt.format(context), rows[0]]
         elif self.mode == "rl":
             return (prompt.format(context),)
+        elif self.mode == "rm":
+            valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
+            return [prompt.format(context)], [r for idx, r in enumerate(rows) if idx in valid_idx]
 
-        valid_idx = np.random.choice(len(rows), self.max_comparison_per_sample)
-        # optimize the format later
-        return [prompt.format(context)], [r for idx, r in enumerate(rows) if idx in valid_idx]
+        raise RuntimeError(f"Unsupported mode '{self.mode}'")
