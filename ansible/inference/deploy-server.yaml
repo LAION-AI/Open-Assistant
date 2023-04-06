@@ -138,8 +138,8 @@
             "{{ lookup('ansible.builtin.env', 'INFERENCE_CORS_ORIGINS') |
             default('*', true) }}"
           ALLOWED_MODEL_CONFIG_NAMES:
-            "{{ lookup('ansible.builtin.env', 'ALLOWED_MODEL_CONFIG_NAMES') |
-            default('*', true) }}"
+            "{{ lookup('ansible.builtin.env',
+            'INFERENCE_ALLOWED_MODEL_CONFIG_NAMES') | default('*', true) }}"
           ASSISTANT_MESSAGE_TIMEOUT:
             "{{ lookup('ansible.builtin.env',
             'INFERENCE_ASSISTANT_MESSAGE_TIMEOUT') | default(120, true) }}"
