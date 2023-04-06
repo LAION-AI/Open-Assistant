@@ -122,18 +122,18 @@ def send_response(
 
 class HttpClient(pydantic.BaseModel):
     base_url: str
-    basic_auth_username: str | None = None
-    basic_auth_password: str | None = None
+    basic_auth_header: str | None = None
 
-    @property
-    def auth(self):
-        if self.basic_auth_username and self.basic_auth_password:
-            return (self.basic_auth_username, self.basic_auth_password)
-        else:
-            return None
+    def add_auth_header(self, kwargs):
+        if self.basic_auth_header:
+            kwargs.setdefault("headers", {})
+            kwargs["headers"]["Authorization"] = self.basic_auth_header
+        return kwargs
 
     def get(self, path: str, **kwargs):
-        return requests.get(self.base_url + path, auth=self.auth, **kwargs)
+        kwargs = self.add_auth_header(kwargs)
+        return requests.get(self.base_url + path, **kwargs)
 
     def post(self, path: str, **kwargs):
-        return requests.post(self.base_url + path, auth=self.auth, **kwargs)
+        kwargs = self.add_auth_header(kwargs)
+        return requests.post(self.base_url + path, **kwargs)

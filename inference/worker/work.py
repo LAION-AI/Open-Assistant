@@ -162,8 +162,7 @@ def handle_work_request(
 def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
     http = utils.HttpClient(
         base_url=settings.inference_server_url,
-        basic_auth_username=settings.basic_auth_username,
-        basic_auth_password=settings.basic_auth_password,
+        basic_auth_username=settings.basic_auth_header,
     )
     response = http.post(
         "/generate_stream",
