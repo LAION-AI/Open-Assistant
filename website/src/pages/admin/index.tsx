@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { AdminArea } from "src/components/AdminArea";
-import { getAdminLayout } from "src/components/Layout";
+import { AdminLayout } from "src/components/Layout";
 import { UserTable } from "src/components/UserTable";
 export { getStaticProps } from "src/lib/defaultServerSideProps";
 
@@ -21,6 +21,6 @@ const AdminIndex = () => {
   );
 };
 
-AdminIndex.getLayout = getAdminLayout;
+AdminIndex.getLayout = AdminLayout;
 
 export default AdminIndex;

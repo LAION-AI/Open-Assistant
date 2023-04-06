@@ -25,6 +25,7 @@ import { AuthLayout } from "src/components/AuthLayout";
 import { CloudFlareCaptcha } from "src/components/CloudflareCaptcha";
 import { Discord } from "src/components/Icons/Discord";
 import { Role, RoleSelect } from "src/components/RoleSelect";
+import { useBrowserEnv } from "src/hooks/env/useBrowserEnv";
 
 export type SignInErrorTypes =
   | "Signin"
@@ -57,13 +58,11 @@ const errorMessages: Record<SignInErrorTypes, string> = {
 
 interface SigninProps {
   providers: Record<BuiltInProviderType, ClientSafeProvider>;
-  enableEmailSignin: boolean;
-  enableEmailSigninCaptcha: boolean;
-  cloudflareCaptchaSiteKey: string;
 }
 
-function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudflareCaptchaSiteKey }: SigninProps) {
+function Signin({ providers }: SigninProps) {
   const router = useRouter();
+  const { ENABLE_EMAIL_SIGNIN, CLOUDFLARE_CAPTCHA_SITE_KEY, ENABLE_EMAIL_SIGNIN_CAPTCHA } = useBrowserEnv();
   const { discord, email, github, credentials } = providers;
   const [error, setError] = useState("");
 
@@ -90,11 +89,11 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
       <AuthLayout>
         <Stack spacing="2">
           {credentials && <DebugSigninForm providerId={credentials.id} />}
-          {email && enableEmailSignin && (
+          {email && ENABLE_EMAIL_SIGNIN && (
             <EmailSignInForm
               providerId={email.id}
-              enableEmailSigninCaptcha={enableEmailSigninCaptcha}
-              cloudflareCaptchaSiteKey={cloudflareCaptchaSiteKey}
+              enableEmailSigninCaptcha={ENABLE_EMAIL_SIGNIN_CAPTCHA}
+              cloudflareCaptchaSiteKey={CLOUDFLARE_CAPTCHA_SITE_KEY}
             />
           )}
           {discord && (
@@ -276,15 +275,9 @@ const DebugSigninForm = ({ providerId }: { providerId: string }) => {
 
 export const getServerSideProps: GetServerSideProps<SigninProps> = async ({ locale = "en" }) => {
   const providers = (await getProviders())!;
-  const enableEmailSignin = boolean(process.env.ENABLE_EMAIL_SIGNIN);
-  const enableEmailSigninCaptcha = boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA);
-  const cloudflareCaptchaSiteKey = process.env.CLOUDFLARE_CAPTCHA_SITE_KEY;
   return {
     props: {
       providers,
-      enableEmailSignin,
-      enableEmailSigninCaptcha,
-      cloudflareCaptchaSiteKey,
       ...(await serverSideTranslations(locale, ["common"])),
     },
   };

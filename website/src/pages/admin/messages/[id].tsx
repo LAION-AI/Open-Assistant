@@ -20,7 +20,7 @@ import { useRouter } from "next/router";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { AdminArea } from "src/components/AdminArea";
 import { JsonCard } from "src/components/JsonCard";
-import { getAdminLayout } from "src/components/Layout";
+import { AdminLayout } from "src/components/Layout";
 import { MessageTree } from "src/components/Messages/MessageTree";
 import { get } from "src/lib/api";
 import { Message, MessageWithChildren } from "src/types/Conversation";
@@ -118,7 +118,7 @@ const MessageDetail = () => {
   );
 };
 
-MessageDetail.getLayout = getAdminLayout;
+MessageDetail.getLayout = AdminLayout;
 
 export default MessageDetail;
 

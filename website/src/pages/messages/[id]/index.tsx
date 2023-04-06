@@ -3,7 +3,7 @@ import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { getDashboardLayout } from "src/components/Layout";
+import { DashboardLayout } from "src/components/Layout";
 import { MessageLoading } from "src/components/Loading/MessageLoading";
 import { MessageTree } from "src/components/Messages/MessageTree";
 import { get } from "src/lib/api";
@@ -47,7 +47,7 @@ const MessageDetail = ({ id }: InferGetServerSidePropsType<typeof getServerSideP
   );
 };
 
-MessageDetail.getLayout = getDashboardLayout;
+MessageDetail.getLayout = DashboardLayout;
 
 export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string }> = async ({
   locale = "en",

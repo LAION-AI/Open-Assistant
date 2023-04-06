@@ -8,8 +8,8 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { ChatContextProvider } from "src/components/Chat/ChatContext";
 import { ChatSection } from "src/components/Chat/ChatSection";
-import { getDashboardLayout } from "src/components/Layout";
-import { isChatEnabled } from "src/lib/chat_enabled";
+import { DashboardLayout } from "src/components/Layout";
+import { isSSRChatEnabled } from "src/lib/chat_enabled";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
 import { ModelInfo } from "src/types/Chat";
 
@@ -43,14 +43,14 @@ const Chat = ({ id, modelInfos }: ChatProps) => {
   );
 };
 
-Chat.getLayout = getDashboardLayout;
+Chat.getLayout = DashboardLayout;
 
 export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> = async ({
   locale = "en",
   params,
   req,
 }) => {
-  if (!isChatEnabled()) {
+  if (!isSSRChatEnabled()) {
     return {
       notFound: true,
     };

@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
 import { LeaderboardWidget, TaskOption, WelcomeCard } from "src/components/Dashboard";
-import { getDashboardLayout } from "src/components/Layout";
+import { DashboardLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
 import { AvailableTasks, TaskCategory } from "src/types/Task";
 export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServerSideProps";
@@ -45,7 +45,7 @@ const Dashboard = () => {
   );
 };
 
-Dashboard.getLayout = getDashboardLayout;
+Dashboard.getLayout = DashboardLayout;
 
 export default Dashboard;
 
