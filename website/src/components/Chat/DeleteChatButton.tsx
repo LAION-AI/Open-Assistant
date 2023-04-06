@@ -10,12 +10,12 @@ export interface DeleteChatButtonProps extends Omit<IconButtonProps, "aria-label
 }
 
 export const DeleteChatButton = ({ chatId, onDelete, ...props }: DeleteChatButtonProps) => {
-  const { trigger: triggerDelete } = useSWRMutation("/api/chat?chat_id=" + chatId, del);
+  const { trigger: triggerDelete, isMutating } = useSWRMutation("/api/chat?chat_id=" + chatId, del);
 
   const onClick = useCallback(async () => {
     await triggerDelete();
     onDelete?.();
   }, [onDelete, triggerDelete]);
 
-  return <IconButton icon={<Trash />} aria-label="delete" onClick={onClick} {...props} />;
+  return <IconButton icon={<Trash />} aria-label="delete" onClick={onClick} isLoading={isMutating} {...props} />;
 };
