@@ -20,7 +20,7 @@
       "pin_memory": true
     }
   },
-  "gradient_accumulation_steps": "auto",
+  "gradient_accumulation_steps": "4",
   "gradient_clipping": "auto",
   "steps_per_print": 2000,
   "train_batch_size": "auto",

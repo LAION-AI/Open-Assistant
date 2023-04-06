@@ -1,9 +1,9 @@
 defaults_rlhf:
   rng_seed: 0xa1221f97
   datasets: []
-  batch_size: 8
-  chunk_size: 4
-  num_rollouts: 32
+  batch_size: 2
+  chunk_size: 2
+  num_rollouts: 512
   epochs: 10
   datasets_extra: []
   cache_dir: /home/ubuntu/data_cache
@@ -24,8 +24,8 @@ oasst_export_latin_cyrillic_rlhf:
 pythia_rlhf:
   rank_config:
     is_reward_model: true
-    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5 # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
-    cache_dir: /home/ubuntu/data_cache/
+    model_name: andreaskoepf/oasst-rm-2-pythia-1.4b-7000 # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
+    cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
     pooling: last
     residual_dropout: 0.08172424407561013
     use_flash_attention: false
@@ -34,8 +34,8 @@ pythia_rlhf:
 
   sft_config:
     is_reward_model: false
-    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5
-    cache_dir: /home/ubuntu/data_cache/
+    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5 # OpenAssistant/llama_30b_sft-2_test
+    cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
     quantization: false
     seq2seqmodel: false
     freeze_layer:

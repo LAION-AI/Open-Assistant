@@ -31,11 +31,7 @@ def get_specific_model(
     # encoder-decoder support for Flan-T5 like models
     # for now, we can use an argument but in the future,
     # we can automate this
-    if "llama" in model_name:
-        from .modeling_llama import LLaMAForCausalLM
-
-        model = LLaMAForCausalLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
-    elif without_head:
+    if without_head:
         model = transformers.AutoModel.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)
     elif seq2seqmodel:
         model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir=cache_dir, **kwargs)

@@ -16,7 +16,7 @@ import numpy as np
 
 # flake8: noqa
 from utils.ppo_utils import CustomPPOTrainer
-from utils.utils import _strtobool, get_dataset, get_model, read_yamls
+from utils.utils import _strtobool, get_dataset, get_model, read_yamls, init_rng
 
 
 def argument_parsing(notebook=False, notebook_args=None):
@@ -100,6 +100,8 @@ def create_reward_fn(rank_config):  # noqa:  C901
 
 if __name__ == "__main__":
     training_conf = argument_parsing()
+
+    init_rng(training_conf)
 
     rank_config = Namespace(**training_conf.rank_config)
     eos_token = transformers.AutoTokenizer.from_pretrained(

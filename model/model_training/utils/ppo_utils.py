@@ -1,6 +1,7 @@
 import inspect
 from typing import List, Tuple
-
+import os
+import json
 import torch
 import transformers
 from custom_datasets.formatting import QA_SPECIAL_TOKENS
@@ -9,28 +10,83 @@ from transformers import AutoTokenizer, DataCollatorWithPadding, PreTrainedToken
 from trlx.pipeline import BasePipeline, register_datapipeline
 from trlx.trainer import register_trainer
 from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
-from trlx.trainer.nn.ppo_models import CausalLMHydraWithValueHead
-from trlx.utils.modeling import hf_get_causal_base_model, hf_get_hidden_size, hf_get_lm_head, make_head
+from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
+from huggingface_hub import hf_hub_download
+# from trlx.utils.modeling import hf_get_causal_base_model, hf_get_hidden_size, hf_get_lm_head, make_head
 from utils.utils import get_model
 
 
-class CustomCausalLMHydraWithValueHead(CausalLMHydraWithValueHead, torch.nn.Module):
-    """The CausalLMHydraWithValueHead class implements a causal language model
-    with a secondary, scalar head.
-    """
+class CustomCausalLMHydraWithValueHead(AutoModelForCausalLMWithHydraValueHead):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def __init__(self, config, tokenizer):
-        torch.nn.Module.__init__(self)
-        self.config = transformers.AutoConfig.from_pretrained(config.model_name)
-        self.base_model = get_model(config, tokenizer)
+    @classmethod
+    def from_pretrained(  # noqa: max-complexity
+        cls,
+        config,
+        tokenizer,
+        kwargs=None,
+        revision=None
+    ):
+        """
+        Our custom loader that just modifies the loading of the base model so that patching and other stuff are supported.
+        """
+        if kwargs is not None:
+            wrapped_model_kwargs, from_pretrained_kwargs = cls._split_kwargs(kwargs)
+        else:
+            from_pretrained_kwargs = {}
+            wrapped_model_kwargs = {}
 
-        self.base_model.transformer = hf_get_causal_base_model(self.base_model)
-        self.base_model.lm_head = hf_get_lm_head(self.base_model)
-        dtype = next(self.base_model.lm_head.parameters()).dtype
-        self.v_head = make_head(hf_get_hidden_size(self.config), 1, dtype)
+        base_model = get_model(config, tokenizer)
 
-        # Cache `transformer.forward` args for general use (avoids incompatible args across architectures)
-        self.base_model_transformer_args = inspect.getfullargspec(self.base_model.transformer.forward).args
+        model = cls(base_model)
+
+        pretrained_model_name_or_path = config.model_name
+
+        if isinstance(pretrained_model_name_or_path, str):
+            filename = os.path.join(pretrained_model_name_or_path, "pytorch_model.bin")
+            sharded_index_filename = os.path.join(pretrained_model_name_or_path, "pytorch_model.bin.index.json")
+            is_sharded = False
+
+            if not os.path.exists(filename):
+                try:
+                    filename = hf_hub_download(pretrained_model_name_or_path, "pytorch_model.bin", revision=revision)
+                # Sharded
+                except Exception:
+                    if os.path.exists(sharded_index_filename):
+                        index_file_name = sharded_index_filename
+                    else:
+                        index_file_name = hf_hub_download(
+                            pretrained_model_name_or_path,
+                            "pytorch_model.bin.index.json",
+                            revision=revision,
+                        )
+                    with open(index_file_name, "r") as f:
+                        index = json.load(f)
+                    # Collect files containing weights from supported modules
+                    files_to_download = set()
+                    for k, v in index["weight_map"].items():
+                        if any([module in k for module in cls._supported_modules]):
+                            files_to_download.add(v)
+                    is_sharded = True
+
+            if is_sharded:
+                # Merge each shard into a state dict
+                # TODO: Optimize this to avoid wasting RAM
+                state_dict = {}
+                for shard_file in files_to_download:
+                    filename = os.path.join(pretrained_model_name_or_path, shard_file)
+                    # Download if shard file doesn't exist locally
+                    if not os.path.exists(filename):
+                        filename = hf_hub_download(pretrained_model_name_or_path, shard_file, revision=revision)
+                    state_dict.update(torch.load(filename, map_location="cpu"))
+            else:
+                state_dict = torch.load(filename, map_location="cpu")
+        else:
+            state_dict = pretrained_model_name_or_path.state_dict()
+
+        model.post_init(state_dict=state_dict)
+        return model
 
 
 @register_trainer
@@ -39,21 +95,28 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
         # hm...
         self.tokenizer = AutoTokenizer.from_pretrained(
             config.tokenizer.tokenizer_path, padding_side=config.tokenizer.padding_side
-        )
+        ) # Loading our model requires the tokenizer to be loaded first
+        
         super().__init__(*args, config=config, **kwargs)
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            config.tokenizer.tokenizer_path, padding_side=config.tokenizer.padding_side
-        )
+        
+        # Do not override pad_token with eos_token..
+        self.tokenizer = AutoTokenizer.from_pretrained(config.tokenizer.tokenizer_path)
+        self.tokenizer.padding_side = config.tokenizer.padding_side
+        self.tokenizer.truncation_side = config.tokenizer.truncation_side
+        
 
     def decode(
         self,
         prompts: List[torch.LongTensor],
         samples: List[torch.LongTensor],
         prompt_sizes: torch.LongTensor = None,
+        append_eos_token: bool = True,
     ) -> Tuple[List[str], List[str], List[str]]:
         """
         Decode tensor generations into lists of strings (`samples`: List[str], `prompts`: List[str], `outputs`: List[str])
         """
+        assert append_eos_token is True
+        
         if prompt_sizes is None:
             # Assuming prompts were left-padded
             prompt_sizes = [prompts.shape[1]] * len(prompts)
@@ -77,12 +140,21 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
                 sample[output_start_ix:][sample[output_start_ix:] != PAD_TOKEN_ID], skip_special_tokens=False
             )
 
+            trimmed = False
             # Trim outputs up to `self.stop_sequences` if any are present
             if self.stop_sequences:
                 for stop in self.stop_sequences:
                     stop_ix = str_output.find(stop)
                     if stop_ix >= 0:
                         str_output = str_output[:stop_ix].rstrip()
+                        trimmed = True
+
+            # Recover the last <eos> if it was present in the original sample
+            # or add one if it was trimmed with `self.stop_sequences`.
+            # Only in cases when a generation ended due to `max_new_tokens` exhaustion,
+            # <eos> token would not be present in the original sample
+            if append_eos_token and (trimmed or sample[-1] == self.tokenizer.eos_token_id):
+                str_output += self.tokenizer.eos_token
 
             str_prompts.append(str_prompt)
             str_outputs.append(str_output)
@@ -97,16 +169,11 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
         return str_samples, str_prompts, str_outputs
 
     def get_arch(self, config):
-        # model = get_model(config.sft_config, self.tokenizer)
-
         if config.model.model_arch_type == "seq2seq":
             raise NotImplementedError("Seq2Seq models are not implemented yet")
             # model = Seq2SeqLMHydraWithValueHead(config.model.model_path, config.model.num_layers_unfrozen)
         else:
-            model = CustomCausalLMHydraWithValueHead(config.sft_config, self.tokenizer)
-            # model = CausalLMHydraWithValueHead(config.model.model_path, config.model.num_layers_unfrozen)
-
-        model.half()
+            model = CustomCausalLMHydraWithValueHead.from_pretrained(config.sft_config, self.tokenizer)
 
         return model
 

@@ -13,7 +13,6 @@ train:
 
 model:
   model_path:
-  num_layers_unfrozen: -1
   model_arch_type: causal
 
 tokenizer:
