@@ -26,14 +26,14 @@ export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
   getLayout?: (props: PropsWithChildren) => JSX.Element;
 };
 
-export const DefaultLayout = ({ children }: PropsWithChildren) => (
+export const DefaultLayout = ({ children: page }: PropsWithChildren) => (
   <HeaderLayout>
-    {children}
+    {page}
     <Footer />
   </HeaderLayout>
 );
 
-export const DashboardLayout = ({ children }: PropsWithChildren) => {
+export const DashboardLayout = ({ children: page }: PropsWithChildren) => {
   const { ENABLE_CHAT } = useBrowserEnv();
   return (
     <HeaderLayout>
@@ -77,7 +77,7 @@ export const DashboardLayout = ({ children }: PropsWithChildren) => {
             },
           ]}
         >
-          <Box>{children}</Box>
+          <Box>{page}</Box>
           <Box mt="10">
             <SlimFooter />
           </Box>
@@ -87,7 +87,7 @@ export const DashboardLayout = ({ children }: PropsWithChildren) => {
   );
 };
 
-export const AdminLayout = ({ children }: PropsWithChildren) => (
+export const AdminLayout = ({ children: page }: PropsWithChildren) => (
   <HeaderLayout>
     <SideMenuLayout
       items={[
@@ -118,7 +118,7 @@ export const AdminLayout = ({ children }: PropsWithChildren) => (
         },
       ]}
     >
-      <Box>{children}</Box>
+      <Box>{page}</Box>
     </SideMenuLayout>
   </HeaderLayout>
 );

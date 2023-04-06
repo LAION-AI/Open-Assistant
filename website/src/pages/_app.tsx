@@ -11,6 +11,7 @@ import { FlagsProvider } from "react-feature-flags";
 import { DefaultLayout, NextPageWithLayout } from "src/components/Layout";
 import flags from "src/flags";
 import { BrowserEnv, BrowserEnvContext } from "src/hooks/env/useBrowserEnv";
+import { isSSRChatEnabled } from "src/lib/chat_enabled";
 import { SWRConfig, SWRConfiguration } from "swr";
 
 import nextI18NextConfig from "../../next-i18next.config.js";
@@ -61,7 +62,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps }, env, cookie }:
 
 MyApp.getInitialProps = ({ ctx: { req } }: AppContext) => {
   const env: BrowserEnv = {
-    ENABLE_CHAT: boolean(process.env.ENABLE_CHAT),
+    ENABLE_CHAT: isSSRChatEnabled(),
     ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
     ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA),
     CLOUDFLARE_CAPTCHA_SITE_KEY: process.env.CLOUDFLARE_CAPTCHA_SITE_KEY,
