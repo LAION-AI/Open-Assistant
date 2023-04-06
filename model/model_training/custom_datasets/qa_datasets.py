@@ -480,13 +480,14 @@ def load_alpaca_dataset(
                 data.append((input_, row["output"]))
         return data
 
-    assert dataset_name in ["alpaca", "code_alpaca"]
     if dataset_name == "alpaca":
         dataset = load_dataset("yahma/alpaca-cleaned", cache_dir=cache_dir)
         cls = AlpacaDataset
     elif dataset_name == "code_alpaca":
         dataset = load_dataset("sahil2801/CodeAlpaca-20k", cache_dir=cache_dir)
         cls = CodeAlpacaDataset
+    else:
+        raise ValueError(f"Expected dataset_name to be 'alapaca' or 'code_alpaca'. Received {dataset_name}.")
 
     splits = random_split(dataset["train"], lengths=[1.0 - val_split, val_split], generator=generator)
     train = cls(
