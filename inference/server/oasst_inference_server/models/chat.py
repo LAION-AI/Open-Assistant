@@ -1,18 +1,18 @@
 import datetime
-from uuid import uuid4
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from oasst_inference_server.schemas import chat as chat_schema
 from oasst_shared.schemas import inference
 from sqlmodel import Field, Relationship, SQLModel
+from uuid_extensions import uuid7str
 
 
 class DbMessage(SQLModel, table=True):
     __tablename__ = "message"
 
     role: str = Field(index=True)
-    id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
+    id: str = Field(default_factory=uuid7str, primary_key=True)
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
     chat_id: str = Field(foreign_key="chat.id", index=True)
     chat: "DbChat" = Relationship(back_populates="messages")
@@ -63,7 +63,7 @@ class DbMessage(SQLModel, table=True):
 class DbChat(SQLModel, table=True):
     __tablename__ = "chat"
 
-    id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
+    id: str = Field(default_factory=uuid7str, primary_key=True)
 
     user_id: str = Field(foreign_key="user.id", index=True)
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow, index=True)
@@ -96,7 +96,7 @@ class DbChat(SQLModel, table=True):
 class DbReport(SQLModel, table=True):
     __tablename__ = "report"
 
-    id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
+    id: str = Field(default_factory=uuid7str, primary_key=True)
     message_id: str = Field(..., foreign_key="message.id", index=True)
     message: DbMessage = Relationship(back_populates="reports")
     report_type: inference.ReportType = Field(...)

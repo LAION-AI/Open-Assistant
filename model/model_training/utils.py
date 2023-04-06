@@ -12,7 +12,7 @@ import transformers
 import yaml
 from model_training.custom_datasets import get_one_dataset
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
-from model_training.losses import CrossEntropyLoss, PolyLoss, RMLoss
+from model_training.losses import CrossEntropyLoss, PolyLoss, RMCLSLoss, RMLoss
 from model_training.models import freeze_top_n_layers, get_specific_model
 from model_training.models.patching import patch_model
 from model_training.models.reward_model import GPTNeoXRewardModel
@@ -124,14 +124,14 @@ class PerDatasetSampler(DistributedSampler):
         return iter(epoch_idx)
 
     @classmethod
-    def build_sampler_from_config(cls, training_conf, datasets: list[Dataset], verbose: bool = False, *args, **kwargs):
+    def build_sampler_from_config(cls, training_conf, datasets: List[Dataset], verbose: bool = False, *args, **kwargs):
         dataset_sizes = [len(x) for x in datasets]
         fractions = get_dataset_fractions(training_conf.datasets, dataset_sizes, verbose)
         dataset_size_per_epoch = [int(size * frac) for size, frac in zip(dataset_sizes, fractions)]
         return cls(dataset_sizes, dataset_size_per_epoch, *args, **kwargs)
 
 
-def get_dataset_fractions(conf, dataset_sizes: list[int], verbose: bool = False):
+def get_dataset_fractions(conf, dataset_sizes: List[int], verbose: bool = False):
     """Calculate fraction of each dataset to use per epoch when sub-sampling"""
 
     if verbose:
@@ -177,6 +177,9 @@ TOKENIZER_CONFIGS = {
     "gpt-neox": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
     "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
     "cerebras": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", "<|endoftext|>", "<|endoftext|>")),
+    "deberta-v3": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
+    "bloom": TokenizerConfig(special_tokens=SpecialTokens("<pad>", "</s>", "<s>")),
+    "electra": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
 }
 
 
@@ -301,7 +304,9 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
                 assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
                 model.config.pooling = conf.pooling
         else:
-            raise RuntimeError(f"Unsupported reward model type: {conf.model_name}")
+            model = transformers.AutoModelForSequenceClassification.from_pretrained(
+                conf.model_name, cache_dir=conf.cache_dir, num_labels=1, torch_dtype=dtype
+            )
     else:
         model = get_specific_model(
             conf.model_name,
@@ -374,6 +379,8 @@ def get_loss(loss, poly_eps: float = 1.0, score_l2_reg: float = 0.001):
         return PolyLoss(epsilon=poly_eps)
     elif loss == "RMLoss":
         return RMLoss(beta=score_l2_reg)
+    elif loss == "RMCLSLoss":
+        return RMCLSLoss()
     else:
         raise ValueError(f"Loss {loss} not supported")
 

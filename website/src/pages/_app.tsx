@@ -10,7 +10,6 @@ import React, { useEffect } from "react";
 import { FlagsProvider } from "react-feature-flags";
 import { getDefaultLayout, NextPageWithLayout } from "src/components/Layout";
 import flags from "src/flags";
-import { isChatEnabled } from "src/lib/chat_enabled";
 import { SWRConfig, SWRConfiguration } from "swr";
 
 import nextI18NextConfig from "../../next-i18next.config.js";
@@ -28,15 +27,6 @@ const swrConfig: SWRConfiguration = {
 };
 
 function MyApp({ Component, pageProps: { session, ...pageProps }, env, cookie }: AppPropsWithLayout) {
-  const getLayout = Component.getLayout ?? getDefaultLayout;
-  const page = getLayout(<Component {...pageProps} />);
-  const { t, i18n } = useTranslation();
-
-  const direction = i18n.dir();
-  useEffect(() => {
-    document.body.dir = direction;
-  }, [direction]);
-
   // expose env vars on the client
   if (typeof window !== "undefined") {
     process.env = new Proxy(env, {
@@ -48,6 +38,15 @@ function MyApp({ Component, pageProps: { session, ...pageProps }, env, cookie }:
       },
     });
   }
+
+  const getLayout = Component.getLayout ?? getDefaultLayout;
+  const page = getLayout(<Component {...pageProps} />);
+  const { t, i18n } = useTranslation();
+
+  const direction = i18n.dir();
+  useEffect(() => {
+    document.body.dir = direction;
+  }, [direction]);
 
   return (
     <>
@@ -69,7 +68,7 @@ MyApp.getInitialProps = ({ ctx: { req } }: AppContext) => {
   return {
     env: {
       INFERENCE_SERVER_HOST: process.env.INFERENCE_SERVER_HOST,
-      ENABLE_CHAT: isChatEnabled(),
+      ENABLE_CHAT: boolean(process.env.ENABLE_CHAT),
       ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
       ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA),
       CLOUDFLARE_CAPTCHA_SITE_KEY: process.env.CLOUDFLARE_CAPTCHA_SITE_KEY,

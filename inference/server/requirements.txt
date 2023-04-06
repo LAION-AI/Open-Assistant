@@ -17,4 +17,5 @@ python-jose[cryptography]==3.3.0
 redis
 sqlmodel
 sse-starlette
+uuid7==0.1.0
 websockets

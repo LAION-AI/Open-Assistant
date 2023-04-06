@@ -1,3 +1,4 @@
+import random
 from collections import defaultdict
 from typing import List
 
@@ -15,46 +16,55 @@ class SHPDataset(Dataset):
 
     name = "SHP"
 
-    def __init__(self, split):
+    def __init__(self, split: str | list[str] | None, max_answers: int = 5):
         super().__init__()
 
-        self.post_dict = defaultdict(dict)
-        self.postids = []
-        if not isinstance(split, List):
-            split = [split]
-        dataset = load_dataset("stanfordnlp/SHP", split=split)
-        for data in dataset:
-            for item in data:
-                postid = item.get("post_id")
-                self.postids.append(postid)
-                score_A, score_B = [item.get(key) for key in ("score_A", "score_B")]
-                answers = [item.get(key) for key in ("human_ref_A", "human_ref_B")]
-                if score_B > score_A:
-                    answers = list(reversed(answers))
+        self.questions = []
+        self.answers = []
 
-                self.post_dict[postid].update({"post": item.get("history"), "answers": answers})
+        if not isinstance(split, list):
+            split = [split]
+        dataset_splits = load_dataset("stanfordnlp/SHP", split=split)
+
+        answers_by_id = defaultdict(dict)
+        history_by_id = dict()
+        for split in dataset_splits:
+            for row in split:
+                post_id = row["post_id"]
+                history_by_id[post_id] = row["history"]
+                answers_by_id[post_id][row["human_ref_A"]] = row["score_A"]
+                answers_by_id[post_id][row["human_ref_B"]] = row["score_B"]
+
+        for post_id, history in history_by_id.items():
+            self.questions.append(history)
+            answers = answers_by_id[post_id]
+            # Sort answer dict with the highest score first (hence the prefactor -1).
+            # Then take only the first `max_answers` elements (usually there are just
+            # 2, but there are examples where we have more)
+            answers_sorted = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
+            self.answers.append(answers_sorted[:max_answers])
 
     def __len__(self):
-        return len(self.postids)
+        return len(self.questions)
 
-    def __getitem__(self, idx):
-        postid = self.postids[idx]
-        post, answers = self.post_dict.get(postid, {}).values()
-        return [post], answers
+    def __getitem__(self, index):
+        return [self.questions[index]], self.answers[index]
 
 
 class HellaSwagDataset(Dataset):
     """
     Dataset class to use data from https://arxiv.org/pdf/1905.07830.pdf
     for Reward modeling
+
+    Note: In order to disable dialog-formatting None is returned as context.
     """
 
     name = "hellaswag"
 
-    def __init__(self, split) -> None:
+    def __init__(self, split: str | list[str] | None, seed: int = SEED) -> None:
         super().__init__()
 
-        np.random.seed(SEED)
+        np.random.seed(seed)
         self.dataset_list = []
         if not isinstance(split, List):
             split = [split]
@@ -67,12 +77,12 @@ class HellaSwagDataset(Dataset):
                 ordered_ends = [selected, np.random.choice(endings)]
                 self.dataset_list.append({"context": context, "completions": ordered_ends})
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.dataset_list)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> tuple[str | None, list[list]]:
         context, completions = self.dataset_list[idx].values()
-        return [context], completions
+        return None, [context + c for c in completions]
 
 
 class HFDataset(Dataset):
@@ -81,9 +91,9 @@ class HFDataset(Dataset):
     Summaries ranked by overall score.
     """
 
-    name = "hfsummary"
+    name = "open_ai_summarize_from_feedback"
 
-    def __init__(self, split=None, subset="axis") -> None:
+    def __init__(self, split: str | list[str] | None = None, subset: str = "axis") -> None:
         super().__init__()
         # axis subset contains splits 'test' and 'validation'
         # comparisons subset contains splits 'train' and 'validation'
@@ -131,17 +141,49 @@ class HFDataset(Dataset):
         return len(self.comparisons)
 
     def __getitem__(self, idx):
-        if self.subset == "axis":
-            post, summaries = self.axis_post_dict[self.axis_post_ids[idx]].values()
-            summaries = sorted(summaries, key=lambda x: x["axes"]["overall"], reverse=True)
-            summaries = [summary["text"] for summary in summaries]
-            return [post], summaries
-        return self.comparisons[idx]
+        post, summaries = self.post_dict[self.post_ids[idx]].values()
+        summaries = sorted(summaries, key=lambda x: x["axes"]["overall"], reverse=True)
+        summaries = [summary["text"] for summary in summaries]
+        return [post], summaries
+
+
+class AugmentedOA(Dataset):
+    def __init__(self, json_filename: str, split: str = "train") -> None:
+        super().__init__()
+        import json
+
+        assert split in ("train", "val")
+
+        pairs = []
+        with open(json_filename, "r", encoding="utf-8") as f:
+            for line in f:
+                data = json.loads(line)
+                if data["split"] == split:
+                    augmented = data["augmented"]
+                    if split == "val":  # disable augmentation during validation
+                        augmented = []
+                    pairs.append((data["prefixes"], data["responses"], augmented))
+        self.pairs = pairs
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, idx):
+        prefixes, user_answer_ranks, bad_samples = self.pairs[idx]
+        # we want to prevent modifying user_answer_ranks
+        rank = user_answer_ranks
+        if len(bad_samples) > 0:
+            additional = random.choice(bad_samples)
+            rank = user_answer_ranks + [additional]
+
+        return prefixes, rank
 
 
 class AnthropicRLHF(Dataset):
+    name = "anthropic_rlhf"
+
     @staticmethod
-    def _split_dialogue(text):
+    def _split_dialogue(text: str):
         lines = text.split("\n\n")
 
         dialogue = []
