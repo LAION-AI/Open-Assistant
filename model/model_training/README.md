@@ -110,10 +110,11 @@ SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind model_store:/m
 FInally, we can train using PPO:
 
 ```bash
-export TRITON_HOST=localhost:8001/<RM_MODEL_NAME>
+export TRITON_HOST_RM=localhost:8001/<RM_MODEL_NAME>
+export TRITON_HOST_REF=localhost:8001/<RM_MODEL_NAME>
 
 
-accelerate launch --main_process_port 29501 --config_file configs/accelerate_config.yaml trainer_rl.py --configs defaults defaults_rlhf pythia_rlhf
+accelerate launch --main_process_port 29501 --config_file configs/accelerate_config.yaml --num_processes 6 trainer_rl.py --configs defaults defaults_rlhf pythia_rlhf oasst_export_latin_cyrillic_rlhf
 ```
 
 ## Test your model

@@ -61,7 +61,7 @@ def prepare_tensor(name: str, input):
 
 # Taken from https://github.com/CarperAI/trlx/blob/b7db6f9e74c7d8dc719255b27968d2994836957a/examples/hh/ppo_hh.py#L114
 def create_reward_fn(rank_config):  # noqa:  C901
-    triton_host = os.environ.get("TRITON_HOST")
+    triton_host = os.environ.get("TRITON_HOST_RM")
     assert triton_host is not None, "Specify reward mode in the TRITON_HOST environmental variable"
 
     triton_url, triton_model = triton_host.split("/")
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     trlx_config.train.batch_size = int(training_conf.batch_size)
     trlx_config.method.chunk_size = int(training_conf.chunk_size)
     trlx_config.method.num_rollouts = int(training_conf.num_rollouts)
-    trlx_config.train.epochs = int(training_conf.epochs)
+    trlx_config.train.total_steps = int(training_conf.total_steps)
 
     trainer = trlx.train(
         sft_config.model_name,
@@ -157,7 +157,7 @@ if __name__ == "__main__":
         prompts=prompts,
         eval_prompts=eval_prompts,
         config=trlx_config,
-        stop_sequences=[eos_token, QA_SPECIAL_TOKENS["Question"]],
+        stop_sequences=[eos_token],
     )
 
     training_conf.output_dir = training_conf.output_dir if training_conf.output_dir else training_conf.model_name

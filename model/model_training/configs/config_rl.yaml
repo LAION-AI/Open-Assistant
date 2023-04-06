@@ -1,11 +1,11 @@
 defaults_rlhf:
   rng_seed: 0xa1221f97
   datasets: []
-  batch_size: 2
-  chunk_size: 2
-  num_rollouts: 512
-  epochs: 10
-  datasets_extra: []
+  batch_size: 4
+  chunk_size: 4
+  num_rollouts: 16
+  total_steps: 10000
+  datasets_extr a: []
   cache_dir: /home/ubuntu/data_cache
   output_dir: model_rl
   eval_size: 500
@@ -24,23 +24,24 @@ oasst_export_latin_cyrillic_rlhf:
 pythia_rlhf:
   rank_config:
     is_reward_model: true
-    model_name: andreaskoepf/oasst-rm-2-pythia-1.4b-7000 # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
+    model_name: andreaskoepf/oasst-rm-2-pythia-1.4b-10000 # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
     cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
     pooling: last
-    residual_dropout: 0.08172424407561013
+    residual_dropout: 0.01
     use_flash_attention: false
-    batch_size: 12 # batch size used by the RM for evaluation
+    batch_size: 10 # batch size used by the RM for evaluation
     half: false
 
   sft_config:
     is_reward_model: false
-    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5 # OpenAssistant/llama_30b_sft-2_test
+    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5 #andreaskoepf/pythia-1.4b-gpt4all-pretrain # OpenAssistant/llama_30b_sft-2_test
     cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
     quantization: false
     seq2seqmodel: false
     freeze_layer:
     residual_dropout: 0.2
     use_flash_attention: false
+    half: true
 
   batch_size: 4
 
