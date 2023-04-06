@@ -1,11 +1,12 @@
-import { Box, Button, Divider, Flex, Progress, Text } from "@chakra-ui/react";
+import { Box, Button, Divider, Flex, Grid, Progress, Text } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
+import { DeleteChatButton } from "src/components/Chat/DeleteChatButton";
 import { getDashboardLayout } from "src/components/Layout";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { get, post } from "src/lib/api";
@@ -32,7 +33,7 @@ const Chat = () => {
   const { t } = useTranslation(["common", "chat"]);
   const router = useRouter();
 
-  const { data } = useSWR<GetChatsResponse>("/api/chat", get, { revalidateOnFocus: true });
+  const { data, mutate: refreshChatList } = useSWR<GetChatsResponse>("/api/chat", get, { revalidateOnFocus: true });
   const { trigger: newChatTrigger } = useSWRMutation<{ id: string }>("/api/chat", post);
 
   const createChat = useCallback(async () => {
@@ -56,11 +57,26 @@ const Chat = () => {
             </Button>
           </Flex>
           <Divider />
-          {data.chats.map(({ id, modified_at, title }) => (
-            <Link key={id} href={`/chat/${id}`}>
-              <Flex as={Button} bg="inherit" py={2} w="full" borderRadius="sm" gap={6} justifyContent="space-between">
-                <Text overflowX="hidden" textOverflow="ellipsis">
-                  {title ?? t("chat:empty")}
+          <Grid
+            rowGap={1}
+            p={2}
+            alignItems="center"
+            columnGap={[2, 4]}
+            gridTemplateColumns={[`auto auto`, `1fr auto auto`]}
+          >
+            {data.chats.map(({ id, modified_at, title }) => (
+              <React.Fragment key={id}>
+                <Text
+                  as={Button}
+                  bg="inherit"
+                  borderRadius="sm"
+                  overflowX="hidden"
+                  textOverflow="ellipsis"
+                  gridColumn={["span 2", "span 1"]}
+                >
+                  <Link href={`/chat/${id}`} className="w-full h-full text-start flex items-center">
+                    {title ?? t("chat:empty")}
+                  </Link>
                 </Text>
                 <Text>
                   {t("chat:chat_date", {
@@ -68,13 +84,14 @@ const Chat = () => {
                     formatParams: { val: { dateStyle: "short", timeStyle: "short" } },
                   })}
                 </Text>
-              </Flex>
-            </Link>
-          ))}
+                <DeleteChatButton chatId={id} onDelete={refreshChatList} />
+              </React.Fragment>
+            ))}
+          </Grid>
         </Flex>
       </SurveyCard>
     );
-  }, [data, createChat, t]);
+  }, [data, t, createChat, refreshChatList]);
 
   return (
     <>
