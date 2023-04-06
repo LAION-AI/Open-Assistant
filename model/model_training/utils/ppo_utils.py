@@ -313,6 +313,7 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
 
             # Precompute logprobs, values
             if self.config.model.model_arch_type == "seq2seq":
+                raise NotImplementedError
                 attention_mask = batch.attention_mask.to(device)
                 prompt_tensors = batch.input_ids.to(device)
                 decoder_attention_mask = sample_outputs.not_equal(self.tokenizer.pad_token_id)
