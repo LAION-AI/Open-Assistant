@@ -11,6 +11,6 @@
   "err_1008": "Nachrichtenlänge zu groß",
   "err_1009": "Ihre letzten Nachrichten enthalten Duplikate",
   "err_1010": "Nachrichtentext ist leer",
-  "err_1011": "Sie können nicht zwei mal auf die selbe Nachricht antworten",
+  "err_1011": "Sie können nicht zweimal auf dieselbe Nachricht antworten",
   "err_1012": "Sie haben zu viele ausstehende Aufgaben. Bitte versuche es in ein paar Minuten erneut."
 }

@@ -1,5 +1,5 @@
 {
-  "confirm_open_link_body": "Möchten sie diesen Link öffnen?",
+  "confirm_open_link_body": "Möchten Sie diesen Link öffnen?",
   "confirm_open_link_header": "Link-Öffnen bestätigen",
   "copy_message_id": "Message ID kopieren",
   "copy_message_text": "Nachrichtentext Kopieren",
@@ -19,9 +19,9 @@
   "report_placeholder": "Warum sollte diese Nachricht überprüft werden?",
   "report_title": "Meldung",
   "send_report": "Senden",
-  "stop_tree": "Tree stoppen",
+  "stop_tree": "Nachrichtenbaum stoppen",
   "submit_labels": "Absenden",
-  "tree_stopped": "Tree gestoppt {{id}}",
+  "tree_stopped": "Nachrichtenbaum gestoppt {{id}}",
   "view_user": "Benutzer anzeigen",
   "your_recent_messages": "Ihre kürzlichen Nachrichten",
   "synthetic": "Synthetisch",
