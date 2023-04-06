@@ -11,6 +11,7 @@ from oasst_inference_server.routes import admin, auth, chats, configs, workers
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from prometheus_fastapi_instrumentator import Instrumentator
+from starlette.middleware.sessions import SessionMiddleware
 
 app = fastapi.FastAPI()
 
@@ -23,6 +24,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Session middleware for authlib
+app.add_middleware(SessionMiddleware, secret_key=settings.session_middleware_secret_key)
 
 
 @app.middleware("http")

@@ -291,7 +291,7 @@ class TreeManager:
                     )
                     return False
 
-                # first select an authour
+                # first select an author
                 prompt_author_id: UUID = random.choice(author_ids)["user_id"]
                 logger.info(f"Selected random prompt author {prompt_author_id} among {len(author_ids)} candidates.")
 
@@ -367,8 +367,12 @@ class TreeManager:
             lang = "en"
             logger.warning("Task availability request without lang tag received, assuming lang='en'.")
 
+        if lang in self.cfg.init_prompt_disabled_langs_list:
+            num_missing_prompts = 0
+        else:
+            num_missing_prompts = self._prompt_lottery(lang=lang, max_activate=1)
+
         self._auto_moderation(lang=lang)
-        num_missing_prompts = self._prompt_lottery(lang=lang, max_activate=1)
         extendible_parents, _ = self.query_extendible_parents(lang=lang)
         prompts_need_review = self.query_prompts_need_review(lang=lang)
         replies_need_review = self.query_replies_need_review(lang=lang)

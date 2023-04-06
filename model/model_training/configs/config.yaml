@@ -11,8 +11,10 @@ defaults:
   weight_decay: 0.00
   warmup_steps: 600
   eval_steps: 200
+  save_strategy: steps
   save_steps: 1000
   max_length: 512
+  val_max_length:
   num_train_epochs: 3
   logging_steps: 10
   max_grad_norm: 2.0
@@ -29,7 +31,7 @@ defaults:
     - cnn_dailymail
     - multi_news
     - scitldr
-    - soda
+    # - soda  # TODO: fix list index out of range error
     - joke
     - gsm8k
     - dive_mt
@@ -41,16 +43,16 @@ defaults:
     - wmt2019_de-en
     - samsum
     - soda_dialogue
-    # instructional_datasets:
-    # - humaneval_mbpp_codegen_qa
-    # - humaneval_mbpp_testgen_qa
-    # - grade_school_math_instructions
-    # - recipes
-    # - ubuntu_dialogue_qa
-    # - cmu_wiki_qa
-    # - youtube_subs_howto100M
-    # - iapp_wiki_qa_squad
-    # - zhihu-kol
+  # instructional_datasets:
+  #  - humaneval_mbpp_codegen_qa
+  #  - humaneval_mbpp_testgen_qa
+  #  - grade_school_math_instructions
+  #  - recipes
+  #  - ubuntu_dialogue_qa
+  #  - cmu_wiki_qa
+  #  - youtube_subs_howto100M
+  #  - iapp_wiki_qa_squad
+  #  - zhihu-kol
   datasets_extra: [] # For config options to add additional datasets, since yaml doesn't let us extend arrays
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
@@ -67,7 +69,7 @@ defaults:
   use_custom_sampler: false
   random_offset_probability: 0.8 # probability for random message offsets
   label_masking: true
-  residual_dropout: 0.1
+  residual_dropout: 0.0
   use_flash_attention: false
   sort_by_length: false
   use_system_prefix: false
@@ -91,6 +93,8 @@ math:
     - minimath
 
 pretrain:
+  num_train_epochs: 1
+  weight_decay: 0.01
   use_custom_sampler: true
   sort_by_length: false
   datasets:
@@ -117,7 +121,28 @@ pretrain:
     - explain_prosocial:
         fraction: 0.05
 
+oasst_only:
+  save_strategy: epoch
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
+        val_split: 0.05
+  sort_by_length: false
+  use_custom_sampler: false
+
+reference-data:
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
+        val_split: 0.05
+    - alpaca
+  sort_by_length: false
+  use_custom_sampler: false
+
 oasst_export_eu:
+  save_strategy: epoch
   datasets:
     - oasst_export:
         lang: "en,es,de,fr"
@@ -138,6 +163,7 @@ oasst_export_eu:
   use_custom_sampler: false
 
 oasst_export_latin_cyrillic:
+  save_strategy: epoch
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
@@ -155,59 +181,61 @@ oasst_export_latin_cyrillic:
   sort_by_length: false
   use_custom_sampler: false
 
-pythia-12b:
+reference-pythia-12b:
   dtype: fp16
   log_dir: "pythia_log_12b"
-  learning_rate: 8e-6
+  learning_rate: 6e-6
   model_name: EleutherAI/pythia-12b-deduped
   output_dir: pythia_model_12b
   weight_decay: 0.0
-  max_length: 620
+  max_length: 2048
   warmup_steps: 100
-  gradient_checkpointing: false
-  gradient_accumulation_steps: 8
-  per_device_train_batch_size: 2
-  per_device_eval_batch_size: 5
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
   eval_steps: 100
-  save_steps: 500
-  num_train_epochs: 16
+  save_steps: 1000
+  num_train_epochs: 8
   save_total_limit: 4
 
 llama-7b:
   dtype: fp16
   log_dir: "llama_log_7b"
-  learning_rate: 2e-5
+  learning_rate: 1e-5
   model_name: /home/ubuntu/llama_hf/7B
-  output_dir: llama_model
+  output_dir: llama_model_7b
   weight_decay: 0.0
-  max_length: 620
+  max_length: 2048
   warmup_steps: 100
-  gradient_checkpointing: false
-  gradient_accumulation_steps: 4
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
   per_device_train_batch_size: 4
-  per_device_eval_batch_size: 10
+  per_device_eval_batch_size: 4
   eval_steps: 100
   save_steps: 500
-  num_train_epochs: 16
+  num_train_epochs: 8
   save_total_limit: 4
+  use_flash_attention: true
 
 llama-13b:
   dtype: fp16
   log_dir: "llama_log_13b"
-  learning_rate: 2e-5
+  learning_rate: 1e-5
   model_name: /home/ubuntu/llama_hf/13B
   output_dir: llama_model_13b
   weight_decay: 0.0
-  max_length: 620
+  max_length: 2048
   warmup_steps: 100
-  gradient_checkpointing: false
-  gradient_accumulation_steps: 4
-  per_device_train_batch_size: 2
-  per_device_eval_batch_size: 5
-  eval_steps: 100
-  save_steps: 500
-  num_train_epochs: 16
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  eval_steps: 500
+  save_steps: 1000
+  num_train_epochs: 8
   save_total_limit: 4
+  use_flash_attention: true
 
 llama-30b:
   dtype: fp16
@@ -226,6 +254,7 @@ llama-30b:
   save_steps: 500
   num_train_epochs: 16
   save_total_limit: 4
+  use_flash_attention: true
 
 pythia:
   learning_rate: 8e-6
@@ -266,15 +295,20 @@ pythia-12B:
   model_name: EleutherAI/pythia-12b-deduped
   weight_decay: 0.0
   max_length: 2048
-  warmup_steps: 20
+  use_flash_attention: true
+  warmup_steps: 100
   gradient_checkpointing: false
   gradient_accumulation_steps: 4
   per_device_train_batch_size: 2
-  per_device_eval_batch_size: 2
+  per_device_eval_batch_size: 5
+  eval_steps: 200
+  save_steps: 500
+  num_train_epochs: 16
+  save_total_limit: 4
 
 gpt-neox:
   model_name: EleutherAI/gpt-neox-20b
-  deepspeed_config: configs/zero3_config.json
+  deepspeed_config: configs/zero3_config_sft.json
   dtype: bf16
   learning_rate: 8e-6
   weight_decay: 0.0

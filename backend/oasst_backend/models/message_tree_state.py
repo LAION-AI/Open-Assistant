@@ -30,7 +30,7 @@ class State(str, Enum):
 
     READY_FOR_SCORING = "ready_for_scoring"
     """Required ranking responses have been collected and the scoring algorithm can now
-    compute the aggergated ranking scores that will appear in the dataset."""
+    compute the aggregated ranking scores that will appear in the dataset."""
 
     READY_FOR_EXPORT = "ready_for_export"
     """The Scoring algorithm computed rankings scores for all children. The message tree can be

@@ -7,6 +7,29 @@ from model_training.utils import get_tokenizer
 from torch.utils.data import DataLoader
 
 
+@pytest.mark.skip(reason="manual")
+def test_rm_datasets():
+    # dummy configuration
+    config = Namespace(cache_dir=".cache", model_name="EleutherAI/pythia-70m-deduped")
+
+    dataset_names = ["webgpt", "hf_summary", "hellaswag", "shp", "anthropic_rlhf"]
+    for name in dataset_names:
+        train, val = get_one_dataset(conf=config, dataset_name=name, mode="rm")
+        print(f"dataset: {name}  (train ({type(train)}): {len(train)}, val({type(val)}): {len(val)})")
+
+        avg_number_continuations = sum(len(x[1]) for x in train) / len(train)
+        num_more_than_two = sum(1 if len(x[1]) > 2 else 0 for x in train)
+        print(f"Average number of continuations: {avg_number_continuations} (with >2: {num_more_than_two})")
+
+        for i in range(2):
+            item = train[i]
+            print(f"[{i}] Prefix: {item[0]}")
+            continuations = item[1]
+            print(f"[{i}] Continuations ({len(continuations)}):")
+            for j, c in enumerate(continuations):
+                print(f"[{i}.{j}]: {c}")
+
+
 @pytest.mark.skip(reason="cache not populated")
 def test_ranking_collator():
     # dummy configuration
@@ -54,4 +77,5 @@ def test_ranking_collator():
 
 
 if __name__ == "__main__":
-    test_ranking_collator()
+    test_rm_datasets()
+    # test_ranking_collator()

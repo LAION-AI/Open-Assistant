@@ -17,5 +17,8 @@ class Settings(pydantic.BaseSettings):
     perform_oom_test: bool = False
     oom_test_max_length: int | None = None
 
+    # for hf basic server
+    quantize: bool = False
+
 
 settings = Settings()
