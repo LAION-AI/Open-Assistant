@@ -20,5 +20,8 @@ class Settings(pydantic.BaseSettings):
     # for hf basic server
     quantize: bool = False
 
+    basic_auth_username: str | None = None
+    basic_auth_password: str | None = None
+
 
 settings = Settings()
