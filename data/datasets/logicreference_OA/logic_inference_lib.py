@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2023 The Google Research Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +17,6 @@
 
 import dataclasses
 from typing import Any, List
-
 
 # Global variables:
 NEXT_RENAME_INDEX = 1
@@ -40,12 +38,25 @@ ALL_RULE_NAMES = []
 # generate examples with contradictions, and with certain other special cases.
 EXAMPLE_PROBLEM_TYPES = [
     "1",
-    "2a", "2a-cont", "2a-empty",
-    "2b", "2b-cont", "2b-empty",
-    "3a", "3a-cont", "3a-premise", "3a-no", "3a-no-1",
+    "2a",
+    "2a-cont",
+    "2a-empty",
+    "2b",
+    "2b-cont",
+    "2b-empty",
+    "3a",
+    "3a-cont",
+    "3a-premise",
+    "3a-no",
+    "3a-no-1",
     "3a-unrelated",
-    "3b", "3b-cont", "3b-premise", "3b-no", "3b-no-1",
-    "3b-unrelated"]
+    "3b",
+    "3b-cont",
+    "3b-premise",
+    "3b-no",
+    "3b-no-1",
+    "3b-unrelated",
+]
 EXAMPLE_TYPE_STATS = {}
 
 
@@ -61,12 +72,12 @@ EXAMPLE_TYPE_STATS = {}
 # inferences for the training examples.
 @dataclasses.dataclass
 class InferenceRule:
-  premises: List[Any]
-  inferences: List[Any]
-  contradictions: List[Any]
-  unrelated: List[Any]
-  propositions: List[Any]
-  rule_name: str
+    premises: List[Any]
+    inferences: List[Any]
+    contradictions: List[Any]
+    unrelated: List[Any]
+    propositions: List[Any]
+    rule_name: str
 
 
 # Each inference problem is a 6-tuple consisting of:
@@ -80,17 +91,17 @@ class InferenceRule:
 # - contains_contradiction: whether the premises lead to a contradiction or not.
 @dataclasses.dataclass
 class InferenceProblem:
-  premises: List[Any]
-  inferences: List[Any]
-  contradictions: List[Any]
-  unrelated: List[Any]
-  propositions: List[Any]
-  contains_contradiction: bool
+    premises: List[Any]
+    inferences: List[Any]
+    contradictions: List[Any]
+    unrelated: List[Any]
+    propositions: List[Any]
+    contains_contradiction: bool
 
 
 @dataclasses.dataclass
 class Example:
-  inputs: str
-  targets: str
-  example_type: str
-  problem: InferenceProblem
+    inputs: str
+    targets: str
+    example_type: str
+    problem: InferenceProblem

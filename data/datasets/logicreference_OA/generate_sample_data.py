@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2023 The Google Research Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,28 +17,27 @@
 
 import random
 
-from absl import app
 import rules
 import splits
+from absl import app
 
 
 def main(_):
-  random.seed(1)
-  rules.precompute_rules()
+    random.seed(1)
+    rules.precompute_rules()
 
-  (train, test) = splits.generate_training_and_test_sets_iid(
-      50, 20, 500, 0.9, answer_at_the_end=False)
-  print(f"train: {len(train)}, test: {len(test)}")
-  for e in train[:5]:
-    print("- Train ---------------")
-    print("  inputs:  " + e.inputs)
-    print("  targets: " + e.targets)
+    (train, test) = splits.generate_training_and_test_sets_iid(50, 20, 500, 0.9, answer_at_the_end=False)
+    print(f"train: {len(train)}, test: {len(test)}")
+    for e in train[:5]:
+        print("- Train ---------------")
+        print("  inputs:  " + e.inputs)
+        print("  targets: " + e.targets)
 
-  for e in test[:5]:
-    print("- Test ---------------")
-    print("  inputs:  " + e.inputs)
-    print("  targets: " + e.targets)
+    for e in test[:5]:
+        print("- Test ---------------")
+        print("  inputs:  " + e.inputs)
+        print("  targets: " + e.targets)
 
 
 if __name__ == "__main__":
-  app.run(main)
+    app.run(main)
