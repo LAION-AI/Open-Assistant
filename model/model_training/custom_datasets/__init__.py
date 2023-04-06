@@ -10,13 +10,12 @@ from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
 from model_training.custom_datasets.qa_datasets import (
     SODA,
-    Alpaca,
-    CodeAlpaca,
     JokeExplaination,
     QADataset,
     SODADialogue,
     TranslatedQA,
     WebGPT,
+    load_alpaca_dataset,
 )
 from model_training.custom_datasets.rank_datasets import AugmentedOA
 from model_training.custom_datasets.summarization import HFSummary, SummarizationDataset
@@ -114,10 +113,8 @@ def get_one_dataset(
         dataset = DiveMT()
     elif dataset_name == "webgpt":
         dataset = WebGPT(mode=mode)
-    elif dataset_name == "alpaca":
-        dataset = Alpaca(mode=mode, cache_dir=data_path, **kwargs)
-    elif dataset_name == "code_alpaca":
-        dataset = CodeAlpaca(mode=mode, cache_dir=data_path, **kwargs)
+    elif dataset_name in ["alpaca", "code_alpace"]:
+        train, eval = load_alpaca_dataset(dataset_name, val_split=val_split, cache_dir=data_path, **kwargs)
     elif dataset_name == "gpt4all":
         dataset = Gpt4All(mode=mode, cache_dir=data_path)
     elif dataset_name == "prosocial_dialogue":
