@@ -1,4 +1,5 @@
 import { Box, Button, Divider, Flex, Progress, Text } from "@chakra-ui/react";
+import { boolean } from "boolean";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
@@ -14,7 +15,7 @@ import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
 export const getServerSideProps: GetServerSideProps = async ({ locale = "en" }) => {
-  if (!process.env.ENABLE_CHAT) {
+  if (!boolean(process.env.ENABLE_CHAT)) {
     return {
       notFound: true,
     };

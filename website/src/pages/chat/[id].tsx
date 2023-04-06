@@ -1,4 +1,5 @@
 import { Button, Card, CardBody } from "@chakra-ui/react";
+import { boolean } from "boolean";
 import { List } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -49,7 +50,7 @@ export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> =
   params,
   req,
 }) => {
-  if (!process.env.ENABLE_CHAT) {
+  if (!boolean(process.env.ENABLE_CHAT)) {
     return {
       notFound: true,
     };
