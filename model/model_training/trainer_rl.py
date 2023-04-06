@@ -4,6 +4,7 @@ import os
 import random
 from argparse import Namespace
 
+import numpy as np
 import torch
 import transformers
 import tritonclient.grpc as client_util
@@ -12,11 +13,10 @@ from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
 from models.reward_model import GPTNeoXRewardModel
 from tritonclient.utils import np_to_triton_dtype
 from trlx.data.configs import TRLConfig
-import numpy as np
 
 # flake8: noqa
 from utils.ppo_utils import CustomPPOTrainer
-from utils.utils import _strtobool, get_dataset, get_model, read_yamls, init_rng
+from utils.utils import _strtobool, get_dataset, get_model, init_rng, read_yamls
 
 
 def argument_parsing(notebook=False, notebook_args=None):

@@ -1,17 +1,17 @@
-import inspect
-from typing import List, Tuple
-import os
 import json
+import os
+from typing import List, Tuple
+
 import torch
-import transformers
 from custom_datasets.formatting import QA_SPECIAL_TOKENS
+from huggingface_hub import hf_hub_download
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, DataCollatorWithPadding, PreTrainedTokenizer
+from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
 from trlx.pipeline import BasePipeline, register_datapipeline
 from trlx.trainer import register_trainer
 from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
-from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
-from huggingface_hub import hf_hub_download
+
 # from trlx.utils.modeling import hf_get_causal_base_model, hf_get_hidden_size, hf_get_lm_head, make_head
 from utils.utils import get_model
 
@@ -21,22 +21,10 @@ class CustomCausalLMHydraWithValueHead(AutoModelForCausalLMWithHydraValueHead):
         super().__init__(*args, **kwargs)
 
     @classmethod
-    def from_pretrained(  # noqa: max-complexity
-        cls,
-        config,
-        tokenizer,
-        kwargs=None,
-        revision=None
-    ):
+    def from_pretrained(cls, config, tokenizer, kwargs=None, revision=None):  # noqa: max-complexity
         """
         Our custom loader that just modifies the loading of the base model so that patching and other stuff are supported.
         """
-        if kwargs is not None:
-            wrapped_model_kwargs, from_pretrained_kwargs = cls._split_kwargs(kwargs)
-        else:
-            from_pretrained_kwargs = {}
-            wrapped_model_kwargs = {}
-
         base_model = get_model(config, tokenizer)
 
         model = cls(base_model)
@@ -95,15 +83,14 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
         # hm...
         self.tokenizer = AutoTokenizer.from_pretrained(
             config.tokenizer.tokenizer_path, padding_side=config.tokenizer.padding_side
-        ) # Loading our model requires the tokenizer to be loaded first
-        
+        )  # Loading our model requires the tokenizer to be loaded first
+
         super().__init__(*args, config=config, **kwargs)
-        
+
         # Do not override pad_token with eos_token..
         self.tokenizer = AutoTokenizer.from_pretrained(config.tokenizer.tokenizer_path)
         self.tokenizer.padding_side = config.tokenizer.padding_side
         self.tokenizer.truncation_side = config.tokenizer.truncation_side
-        
 
     def decode(
         self,
@@ -116,7 +103,7 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
         Decode tensor generations into lists of strings (`samples`: List[str], `prompts`: List[str], `outputs`: List[str])
         """
         assert append_eos_token is True
-        
+
         if prompt_sizes is None:
             # Assuming prompts were left-padded
             prompt_sizes = [prompts.shape[1]] * len(prompts)

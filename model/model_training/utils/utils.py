@@ -1,3 +1,4 @@
+import argparse
 import copy
 import math
 import random
@@ -18,12 +19,13 @@ from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
 from torch.utils.data.distributed import DistributedSampler
+
 from .losses import CrossEntropyLoss, PolyLoss, RMLoss
-import argparse
 
 
 def _strtobool(x):
     return bool(strtobool(x))
+
 
 def init_rng(conf: argparse.Namespace) -> None:
     seed = conf.rng_seed
