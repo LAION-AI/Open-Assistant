@@ -62,18 +62,12 @@ class UserChatRepository(pydantic.BaseModel):
         chat = await self.get_chat_by_id(chat_id)
         if chat is None:
             raise fastapi.HTTPException(status_code=403)
-        logger.debug(f'Deleting {chat_id=}')
+        logger.debug(f"Deleting {chat_id=}")
         # delete messages
-        await self.session.exec(
-            sqlmodel.delete(models.DbMessage)
-            .where(
-                models.DbMessage.chat_id == chat_id
-            )
-        )
+        await self.session.exec(sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
         # delete chat
         await self.session.exec(
-            sqlmodel.delete(models.DbChat)
-            .where(
+            sqlmodel.delete(models.DbChat).where(
                 models.DbChat.id == chat_id,
                 models.DbChat.user_id == self.user_id,
             )

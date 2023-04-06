@@ -58,7 +58,6 @@ async def delete_chat(
     return fastapi.Response(status_code=200)
 
 
-
 @router.post("/{chat_id}/prompter_message")
 async def create_prompter_message(
     chat_id: str,

@@ -15,7 +15,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
     data = await client.create_chat();
   } else if (req.method === "DELETE") {
     await client.delete_chat(req.query.chat_id as string);
-    data = {}
+    data = {};
   }
 
   if (data) {
