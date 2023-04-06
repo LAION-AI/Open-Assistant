@@ -6,5 +6,4 @@ export const getDefaultServerSideProps = async ({ locale }) => ({
   },
 });
 
-export const getStaticProps = getDefaultServerSideProps;
 export const getServerSideProps = getDefaultServerSideProps;

@@ -1,4 +1,4 @@
-import { Button, Card, CardBody, Flex } from "@chakra-ui/react";
+import { Button, Card, CardBody } from "@chakra-ui/react";
 import { List } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -9,7 +9,6 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { ChatContextProvider } from "src/components/Chat/ChatContext";
 import { ChatSection } from "src/components/Chat/ChatSection";
 import { getDashboardLayout } from "src/components/Layout";
-import { isChatEnabled } from "src/lib/chat_enabled";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
 import { ModelInfo } from "src/types/Chat";
 
@@ -50,7 +49,7 @@ export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> =
   params,
   req,
 }) => {
-  if (!isChatEnabled()) {
+  if (!process.env.ENABLE_CHAT) {
     return {
       notFound: true,
     };

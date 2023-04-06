@@ -9,13 +9,12 @@ import { useCallback, useMemo } from "react";
 import { getDashboardLayout } from "src/components/Layout";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 import { get, post } from "src/lib/api";
-import { isChatEnabled } from "src/lib/chat_enabled";
 import { GetChatsResponse } from "src/types/Chat";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 
-export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
-  if (!isChatEnabled()) {
+export const getServerSideProps: GetServerSideProps = async ({ locale = "en" }) => {
+  if (!process.env.ENABLE_CHAT) {
     return {
       notFound: true,
     };
