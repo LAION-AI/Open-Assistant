@@ -273,7 +273,6 @@ pythia-70m-deduped:
         reverse_augmentation: True
     - webgpt
 
-
 pythia-1B:
   learning_rate: 8e-6
   model_name: EleutherAI/pythia-1b-deduped

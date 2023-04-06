@@ -447,7 +447,9 @@ class AlpacaBase(Dataset):
         elif self.mode == "rl":
             return (question,)
         else:
-            raise NotImplementedError(f"Alpaca Dataset for mode {self.mode} is not implemented. Currently supported modes are 'sft' and 'rl'.")
+            raise NotImplementedError(
+                f"Alpaca Dataset for mode {self.mode} is not implemented. Currently supported modes are 'sft' and 'rl'."
+            )
 
 
 class Alpaca(AlpacaBase):
