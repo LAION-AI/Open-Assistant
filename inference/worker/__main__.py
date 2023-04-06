@@ -38,7 +38,8 @@ def main():
 
     inference_http = utils.HttpClient(
         base_url=settings.inference_server_url,
-        basic_auth_header=settings.basic_auth_header,
+        basic_auth_username=settings.basic_auth_username,
+        basic_auth_password=settings.basic_auth_password,
     )
 
     while True:
