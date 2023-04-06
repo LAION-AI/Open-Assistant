@@ -1,8 +1,8 @@
+import sys
 from collections import defaultdict
 from glob import glob
 from json import load
 from os import path
-import sys
 
 ALL_PATH = "../../website/public/locales/**/*.json"
 DIR = path.dirname(__file__)
