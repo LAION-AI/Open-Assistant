@@ -6,7 +6,7 @@
     "q0": "Was ist der aktuelle Stand des Projekts?",
     "a0": "Wir befinden uns in einem frühen Stadium der Entwicklung und arbeiten ausgehend von etablierter Forschung bei der Anwendung von RLHF auf große Sprachmodelle (LLMs).",
     "q1": "Wer organisiert die Entwicklung von Open Assistant?",
-    "a1": "Open Assistant ist ein Projekt, das von LAION und Einzelpersonen auf der ganzen Welt organisiert wird. Unser Ziel ist es das Open Assistant Sprachmodell allen Menschen frei zugänglich zu machen."
+    "a1": "Open Assistant ist ein Projekt, das von LAION und Einzelpersonen auf der ganzen Welt organisiert wird. Unser Ziel ist es das Open Assistant Sprachmodell allen Menschen frei zugänglich zu machen.",
     "q2": "Welche Lizenz benutzt Open Assistant?",
     "a2": "Der Code und die Models werden unter der Apache 2.0 Lizenz herausgegeben.",
     "q3": "Werden die Trainingsdaten auch veröffentlicht?",
