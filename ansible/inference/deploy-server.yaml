@@ -137,5 +137,17 @@
           INFERENCE_CORS_ORIGINS:
             "{{ lookup('ansible.builtin.env', 'INFERENCE_CORS_ORIGINS') |
             default('*', true) }}"
+          ALLOWED_MODEL_CONFIG_NAMES:
+            "{{ lookup('ansible.builtin.env', 'ALLOWED_MODEL_CONFIG_NAMES') |
+            default('*', true) }}"
+          ASSISTANT_MESSAGE_TIMEOUT:
+            "{{ lookup('ansible.builtin.env',
+            'INFERENCE_ASSISTANT_MESSAGE_TIMEOUT') | default(120, true) }}"
+          MESSAGE_QUEUE_EXPIRE:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_MESSAGE_QUEUE_EXPIRE')
+            | default(120, true) }}"
+          WORK_QUEUE_MAX_SIZE:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_WORK_QUEUE_MAX_SIZE') |
+            default(100, true) }}"
         ports:
           - "{{ server_port }}:8080"
