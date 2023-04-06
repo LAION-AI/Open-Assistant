@@ -12,9 +12,10 @@ export MODEL_CONFIG_NAME=${MODEL_CONFIG_NAME:-"OA_SFT_Pythia_12B"}
 export MODEL_ID=$(python get_model_config_prop.py model_id)
 export QUANTIZE=$(python get_model_config_prop.py quantized)
 
+echo "Downloading model $MODEL_ID"
+CUDA_VISIBLE_DEVICES="" python download_model_hf.py
+
 export MAX_PARALLEL_REQUESTS=${MAX_PARALLEL_REQUESTS:-1}
 
-# need to pass in INFERENCE_SERVER_URL
-
-echo "Starting worker"
+echo "starting worker"
 python3 __main__.py
