@@ -420,7 +420,7 @@ class TranslatedQA(Dataset):
         return self.pairs[index]
 
 
-class AlpacaDataset(Dataset):
+class AlpacaBaseDataset(Dataset):
     def __init__(self, data: list, mode: str):
         super().__init__()
         self.data = data
@@ -441,6 +441,14 @@ class AlpacaDataset(Dataset):
             return (question,)
 
 
+class AlpacaDataset(AlpacaBaseDataset):
+    pass
+
+
+class CodeAlpacaDataset(AlpacaBaseDataset):
+    pass
+
+
 def load_alpaca_dataset(
     dataset_name: str,
     val_split: float,
@@ -449,7 +457,7 @@ def load_alpaca_dataset(
     manual_seed: int = 287631038922,
     reverse_augmentation: bool = False,
     keep_unreversed: bool = True,
-) -> tuple[AlpacaDataset, AlpacaDataset]:
+) -> tuple[AlpacaDataset, AlpacaDataset] | tuple[CodeAlpacaDataset, CodeAlpacaDataset]:
     generator = Generator()
     generator.manual_seed(manual_seed)
 
@@ -475,14 +483,14 @@ def load_alpaca_dataset(
     assert dataset_name in ["alpaca", "code_alpaca"]
     if dataset_name == "alpaca":
         dataset = load_dataset("yahma/alpaca-cleaned", cache_dir=cache_dir)
+        cls = AlpacaDataset
     elif dataset_name == "code_alpaca":
         dataset = load_dataset("sahil2801/CodeAlpaca-20k", cache_dir=cache_dir)
+        cls = CodeAlpacaDataset
 
     splits = random_split(dataset["train"], lengths=[1.0 - val_split, val_split], generator=generator)
-    train = AlpacaDataset(
+    train = cls(
         process_split(splits[0], reverse_augmentation=reverse_augmentation, keep_unreversed=keep_unreversed), mode=mode
     )
-    val = AlpacaDataset(
-        process_split(splits[1], reverse_augmentation=False, keep_unreversed=keep_unreversed), mode=mode
-    )
+    val = cls(process_split(splits[1], reverse_augmentation=False, keep_unreversed=keep_unreversed), mode=mode)
     return train, val
