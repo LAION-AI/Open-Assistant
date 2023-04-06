@@ -233,7 +233,7 @@ class SODA(Dataset):
         """
         return [l[i : i + chunk_size] for i in range(0, len(l), chunk_size)]
 
-    def process_soda_convo(self, data: dict[str, Any]) -> list[list[str]] | None:
+    def process_soda_convo(self, data: dict[str, Any], input_max_length: int) -> list[list[str]] | None:
         play_as = data["speakers"][1]
         dialogue_bg = "{}{}".format(
             # QA_SPECIAL_TOKENS["StartPrefix"],
@@ -252,12 +252,14 @@ class SODA(Dataset):
         speaker1_idx = [idx % 2 == 0 for idx, k in enumerate(data["speakers"]) if k == speaker1]
         speaker2_idx = [idx % 2 == 1 for idx, k in enumerate(data["speakers"]) if k == speaker2]
         if all(speaker1_idx) and all(speaker2_idx):
+            # add dialog background to first question.
+            # [Q1, A1, Q2, A2] -> [B + Q1, A1, Q2, A2]
+            data["dialogue"][0] = f"{dialogue_bg} {data['dialogue'][0]}"
+            # Use only input_max_length characters
+            truncated_dialogue = [k[:input_max_length] for k in data["dialogue"]]
             # split dialogue in question and answer pairs.
-            # [Q1, A1, Q2, A2] -> [[Q1, A1], [Q2, A2]]
-            pairs = self._partition_list(data["dialogue"], 2)
-            # add dialog background to first pair.
-            # [[Q1, A1], [Q2, A2]] -> [[B + Q1, A1], [Q2, A2]]
-            pairs[0][0] = f"{dialogue_bg} {pairs[0][0]}"
+            # [B + Q1, A1, Q2, A2] -> [[B + Q1, A1], [Q2, A2]]
+            pairs = self._partition_list(truncated_dialogue, 2)
             # add previous history to conversation pairs
             # e.g. [[B + Q1, A1], [Q2, A2]] -> [[B + Q1, A1], [B + Q1, A1, Q2, A2]]
             pairs = list(accumulate(pairs, lambda x, y: x + y))
@@ -269,7 +271,7 @@ class SODA(Dataset):
         self.pairs = []
         dataset = load_dataset("allenai/soda", cache_dir=cache_dir)["train"]
         for data in dataset:
-            if (processed_data := self.process_soda_convo(data)) is not None:
+            if (processed_data := self.process_soda_convo(data, input_max_length=input_max_length)) is not None:
                 self.pairs.append(processed_data)
             # for prompt, answer in data_pair:
             #     if len(prompt) < input_max_length:

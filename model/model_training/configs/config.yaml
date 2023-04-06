@@ -31,7 +31,8 @@ defaults:
     - cnn_dailymail
     - multi_news
     - scitldr
-    - soda
+    - soda:
+        input_max_length: 1024
     - joke
     - gsm8k
     - dive_mt
