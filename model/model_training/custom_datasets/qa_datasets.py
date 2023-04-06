@@ -448,12 +448,14 @@ def load_alpaca_dataset(
     mode: str = "sft",
     manual_seed: int = 287631038922,
     reverse_augmentation: bool = False,
+    keep_unreversed: bool = True,
 ) -> tuple[AlpacaDataset, AlpacaDataset]:
-    # split on tree basis, messages from same tree must not end up in different splits
     generator = Generator()
     generator.manual_seed(manual_seed)
 
-    def process_split(dataset: Subset, reverse_augmentation: bool = False) -> list[tuple[str, str]]:
+    def process_split(
+        dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
+    ) -> list[tuple[str, str]]:
         data = []
         for row in dataset:
             question = row["instruction"]
@@ -463,6 +465,9 @@ def load_alpaca_dataset(
                 input_ = question
             if reverse_augmentation:
                 data.append((row["output"], input_))
+                # in case of reverse augmentation we just keep both, reversed and unreversed data
+                if keep_unreversed:
+                    data.append((input_, row["output"]))
             else:
                 data.append((input_, row["output"]))
         return data
@@ -474,6 +479,10 @@ def load_alpaca_dataset(
         dataset = load_dataset("sahil2801/CodeAlpaca-20k", cache_dir=cache_dir)
 
     splits = random_split(dataset["train"], lengths=[1.0 - val_split, val_split], generator=generator)
-    train = AlpacaDataset(process_split(splits[0], reverse_augmentation=reverse_augmentation), mode=mode)
-    val = AlpacaDataset(process_split(splits[1], reverse_augmentation=False), mode=mode)
+    train = AlpacaDataset(
+        process_split(splits[0], reverse_augmentation=reverse_augmentation, keep_unreversed=keep_unreversed), mode=mode
+    )
+    val = AlpacaDataset(
+        process_split(splits[1], reverse_augmentation=False, keep_unreversed=keep_unreversed), mode=mode
+    )
     return train, val
