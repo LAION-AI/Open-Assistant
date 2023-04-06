@@ -422,18 +422,22 @@ class TranslatedQA(Dataset):
 
 
 class AlpacaBase(Dataset):
-    def __init__(self, dataset_name: str, mode: str, cache_dir: str = None) -> None:
+    def __init__(self, dataset_name: str, mode: str, reverse_augmentation: bool = False, cache_dir: str = None) -> None:
         super().__init__()
         self.mode = mode
         dataset = load_dataset(dataset_name, cache_dir=cache_dir)
         rows = []
+        import pdb; pdb.set_trace()
         for row in dataset["train"]:
             question = row["instruction"]
             if len(row["input"]) > 0:
                 input_ = "{}\n{}".format(question, row["input"])
             else:
                 input_ = question
-            rows.append((input_, row["output"]))
+            if reverse_augmentation:
+                rows.append((row["output"], input_))
+            else:
+                rows.append((input_, row["output"]))
         self.rows = rows
 
     def __len__(self):
@@ -445,13 +449,15 @@ class AlpacaBase(Dataset):
             return (question, answer)
         elif self.mode == "rl":
             return (question,)
+        else:
+            raise NotImplementedError(f"Alpaca Dataset for mode {self.mode} is not implemented. Currently supported modes are 'sft' and 'rl'.")
 
 
 class Alpaca(AlpacaBase):
-    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
-        super().__init__(dataset_name="yahma/alpaca-cleaned", mode=mode, cache_dir=cache_dir)
+    def __init__(self, mode: str = "sft", cache_dir: str = None, **kwargs) -> None:
+        super().__init__(dataset_name="yahma/alpaca-cleaned", mode=mode, cache_dir=cache_dir, **kwargs)
 
 
 class CodeAlpaca(AlpacaBase):
-    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
-        super().__init__(dataset_name="sahil2801/CodeAlpaca-20k", mode=mode, cache_dir=cache_dir)
+    def __init__(self, mode: str = "sft", cache_dir: str = None, **kwargs) -> None:
+        super().__init__(dataset_name="sahil2801/CodeAlpaca-20k", mode=mode, cache_dir=cache_dir, **kwargs)

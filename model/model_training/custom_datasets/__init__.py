@@ -93,9 +93,9 @@ def get_one_dataset(
     elif dataset_name == "webgpt":
         dataset = WebGPT(mode=mode)
     elif dataset_name == "alpaca":
-        dataset = Alpaca(mode=mode, cache_dir=data_path)
+        dataset = Alpaca(mode=mode, cache_dir=data_path, **kwargs)
     elif dataset_name == "code_alpaca":
-        dataset = CodeAlpaca(mode=mode, cache_dir=data_path)
+        dataset = CodeAlpaca(mode=mode, cache_dir=data_path, **kwargs)
     elif dataset_name == "gpt4all":
         dataset = Gpt4All(mode=mode, cache_dir=data_path)
     elif dataset_name == "prosocial_dialogue":
