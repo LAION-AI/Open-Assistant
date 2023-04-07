@@ -8,7 +8,7 @@
   "model": "Modell",
   "preset": "Alapbeállítások",
   "preset_custom": "Egyedi",
-  "queue_info": "Várnod kell az üzenet generálásával, {{ queuePosition, number, integer }} vagy a sorban.", 
+  "queue_info": "Várnod kell az üzenet generálásával, {{ queuePosition, number, integer }} vagy a sorban.",
   "repetition_penalty": "Ismétlődés büntetése",
   "temperature": "Hőmérséklet (temperature)",
   "top_k": "Legjobb (top) K",

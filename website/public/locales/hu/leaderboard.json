@@ -9,7 +9,7 @@
   "labels_simple": "Címkék (egyszerű)",
   "last_updated_at": "Legutóbb frissítve: {{val, datetime}}",
   "leaderboard": "Ranglista",
-  "level_progress_message": "Összesen {{score}} ponttal, {{level,number,integer}} szintű vagy!",  
+  "level_progress_message": "Összesen {{score}} ponttal, {{level,number,integer}} szintű vagy!",
   "month": "Hónap",
   "monthly": "Havi",
   "next": "Következő",
