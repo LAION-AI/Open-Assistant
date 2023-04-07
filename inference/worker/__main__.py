@@ -25,6 +25,7 @@ def main():
     logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
 
     model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)
+    logger.warning(f"Model config: {model_config}")
     if model_config is None:
         logger.error(f"Unknown model config name: {settings.model_config_name}")
         sys.exit(2)
@@ -33,12 +34,18 @@ def main():
         tokenizer = None
     else:
         tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
-    logger.warning(f"Tokenizer {tokenizer.name_or_path} vocab size: {tokenizer.vocab_size}")
+        logger.warning(f"Tokenizer {tokenizer.name_or_path} vocab size: {tokenizer.vocab_size}")
+
+    inference_http = utils.HttpClient(
+        base_url=settings.inference_server_url,
+        basic_auth_username=settings.basic_auth_username,
+        basic_auth_password=settings.basic_auth_password,
+    )
 
     while True:
         try:
             if not model_config.is_lorem:
-                utils.wait_for_inference_server(settings.inference_server_url)
+                utils.wait_for_inference_server(inference_http)
 
             if settings.perform_oom_test:
                 work.perform_oom_test(tokenizer)
