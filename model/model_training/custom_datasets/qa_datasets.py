@@ -7,9 +7,7 @@ import json
 import os
 import re
 from collections import defaultdict
-from itertools import accumulate
 from pathlib import Path
-from typing import Any
 from urllib.request import urlopen
 
 import numpy as np
@@ -474,33 +472,36 @@ class Vicuna(Dataset):
         """
         return [l[i : i + chunk_size] for i in range(0, len(l), chunk_size)]
 
-    def process_vicuna_conversations(self, data: dict[str, Any], input_max_length: int) -> list[list[str]] | None:
-        # Perform some sanity checks, if these fail return None
-        # ignore data with more than 2 speakers for now
-        speakers = [k["from"] for k in data["conversations"]]
-        if len(set(speakers)) != 2:
+    @staticmethod
+    def process_vicuna_conversations(data: list[dict[str, None | str]], input_max_length: int) -> list[str] | None:
+        dialogue = []
+        role = None
+        messages = []
+        # drop conversations that start with Bot
+        if len(data["conversations"]) == 0 or data["conversations"][0]["from"] != "human":
             return None
-        speaker1 = speakers[0]
-        speaker2 = speakers[1]
-        # make sure that the speakers are in correct order [S1, S2, S1, S2, S1, S2], otherwise return None
-        speaker1_idx = [idx % 2 == 0 for idx, k in enumerate(speakers) if k == speaker1]
-        speaker2_idx = [idx % 2 == 1 for idx, k in enumerate(speakers) if k == speaker2]
-        if all(speaker1_idx) and all(speaker2_idx):
-            # [Q1, A1, Q2, A2] -> [Q1, A1, Q2, A2]
-            # Use only input_max_length characters
-            truncated_dialogue = [k["value"][:input_max_length] for k in data["conversations"]]
-            # split dialogue in question and answer pairs.
-            # [Q1, A1, Q2, A2] -> [[Q1, A1], [Q2, A2]]
-            pairs = self._partition_list(truncated_dialogue, 2)
-            # add previous history to conversation pairs
-            # e.g. [[Q1, A1], [Q2, A2]] -> [[Q1, A1], [Q1, A1, Q2, A2]]
-            pairs = list(accumulate(pairs, lambda x, y: x + y))
-            return pairs
+        for line in data["conversations"]:
+            speaker = line["from"]  # 'human' or 'gpt'
+            message = line["value"]
+            if role != speaker:
+                if role is not None:
+                    dialogue.append("\n".join(messages))
+                    messages = []
+                role = speaker
+            messages.append(message.strip())
 
-    def __init__(self, cache_dir: str | Path, input_max_length: int = 4096) -> None:
+        if role is not None and len(messages) > 0:
+            dialogue.append("\n".join(messages))
+        dialogue_truncated = [k[:input_max_length] for k in dialogue]
+        return dialogue_truncated
+
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
         super().__init__()
 
         self.pairs = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
         dataset = load_dataset(
             "anon8231489123/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
@@ -512,8 +513,12 @@ class Vicuna(Dataset):
             ) is not None:
                 self.pairs.append(processed_data)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.pairs)
 
-    def __getitem__(self, index):
-        return self.pairs[index]
+    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+        dialogue: list[str] = self.index[index]
+        if self.mode == "sft":
+            return dialogue
+        elif self.mode == "rl":
+            return tuple(dialogue[:-1])

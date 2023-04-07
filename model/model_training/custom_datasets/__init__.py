@@ -46,13 +46,7 @@ OTHER = [
     "oa_translated",
 ]
 
-RL_DATASETS = [
-    "webgpt",
-    "private_tuning",
-    "alpaca",
-    "hf_summary",
-    "hf_summary_pairs",
-]
+RL_DATASETS = ["webgpt", "private_tuning", "alpaca", "hf_summary", "hf_summary_pairs", "vicuna"]
 
 RM_DATASETS = [
     "oasst_export",
