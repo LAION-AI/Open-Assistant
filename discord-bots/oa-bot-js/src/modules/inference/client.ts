@@ -129,7 +129,7 @@ export class OasstInferenceClient {
 export const createInferenceClient = (username, user_id) => {
   const info: TrustedClient = {
     api_key: process.env.INFERENCE_SERVER_API_KEY,
-    client: "website",
+    client: "discord-bot",
     provider_account_id: user_id,
     user_id: user_id,
     username: username,
