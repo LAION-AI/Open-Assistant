@@ -125,7 +125,7 @@ class Gpt4All(Dataset):
         self.rows.extend(multi_round_conversations)
 
     @staticmethod
-    def process_conversation(conv: list[dict[str, None | str]]) -> tuple[str] | None:
+    def process_conversation(conv: list[dict[str, None | str]]) -> list[str] | None:
         dialogue = []
         role = None
         messages = []
@@ -150,7 +150,7 @@ class Gpt4All(Dataset):
 
         if role is not None and len(messages) > 0:
             dialogue.append("\n".join(messages))
-        return tuple(dialogue)
+        return dialogue
 
     def __len__(self):
         return len(self.rows)
