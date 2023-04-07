@@ -118,13 +118,20 @@ class Gpt4All(Dataset):
             data_files="data_multiround_pruned_3.jsonl",
             cache_dir=cache_dir,
         )
-        self.rows.extend([self.process_conversation(row) for row in dataset_multi["train"]["conversation"]])
+        multi_round_conversations = []
+        for row in dataset_multi["train"]["conversation"]:
+            if (processed_conversation := self.process_conversation(row)) is not None:
+                multi_round_conversations.append(processed_conversation)
+        self.rows.extend(multi_round_conversations)
 
     @staticmethod
-    def process_conversation(conv: list[dict[str, None | str]]) -> tuple[str]:
+    def process_conversation(conv: list[dict[str, None | str]]) -> tuple[str] | None:
         dialogue = []
         role = None
         messages = []
+        # drop conversations that start with Bot
+        if conv[0]["Bot"] is not None:
+            return None
         for line in conv:
             if line["User"] and line["Bot"]:
                 raise ValueError("Unexpected dataformat. Should receive only User or Bot data, not both.")
