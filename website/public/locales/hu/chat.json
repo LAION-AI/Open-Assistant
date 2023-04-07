@@ -1,0 +1,19 @@
+{
+  "back_to_chat_list": "Vissza a beszélgetések listájához",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Chat beállításai",
+  "empty": "(üres)",
+  "login_message": "A funkció használatához újra be kell jelentkezned. Lépj be az alábbiak használatával:",
+  "max_new_tokens": "Új tokenek maximális száma",
+  "model": "Modell",
+  "preset": "Alapbeállítások",
+  "preset_custom": "Egyedi",
+  "queue_info": "Várnod kell az üzenet generálásával, {{ queuePosition, number, integer }} vagy a sorban.",
+  "repetition_penalty": "Ismétlődés büntetése",
+  "temperature": "Hőmérséklet (temperature)",
+  "top_k": "Legjobb (top) K",
+  "top_p": "Legjobb (top) P",
+  "typical_p": "Tipikus (typical) P érték",
+  "you_are_logged_in": "Bejelentkeztél a chat felületre",
+  "your_chats": "Beszélgetéseid"
+}

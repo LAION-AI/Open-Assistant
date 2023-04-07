@@ -12,7 +12,7 @@
   "language_stats": "Язык",
   "message_trees_by_state": "Состояние деревьев сообщений",
   "message_trees_states_by_lang": "Состояние деревьев сообщений по языковому признаку",
-  "prompt_lottery_waiting": "Запросов участвуют в голосовании",
+  "prompt_lottery_waiting": "Запросов участвуют в лотерее",
   "prompter": "Человек",
   "ranking": "Оцениваются",
   "ready_for_export": "Готовы для экспорта",

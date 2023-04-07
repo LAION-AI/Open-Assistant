@@ -6,10 +6,10 @@ RUN mkdir /worker
 WORKDIR /worker
 
 COPY ./oasst-shared /oasst-shared
-RUN pip install -e /oasst-shared
+RUN --mount=type=cache,target=/root/.cache/pip pip install -e /oasst-shared
 
 COPY ./backend/requirements_worker.txt /worker/requirements.txt
-RUN pip install --no-cache-dir --upgrade -r /worker/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install --upgrade -r /worker/requirements.txt
 
 ENV PORT 8080
 EXPOSE 8080
