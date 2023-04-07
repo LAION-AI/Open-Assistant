@@ -424,7 +424,7 @@ class AlpacaBaseDataset(Dataset):
     def __init__(self, data: list, mode: str):
         super().__init__()
         self.data = data
-        if mode not in ["sft", "rl"]:
+        if mode not in ("sft", "rl"):
             raise NotImplementedError(
                 f"Alpaca Dataset for mode {self.mode} is not implemented. Currently supported modes are 'sft' and 'rl'."
             )
@@ -441,14 +441,6 @@ class AlpacaBaseDataset(Dataset):
             return (question,)
 
 
-class AlpacaDataset(AlpacaBaseDataset):
-    pass
-
-
-class CodeAlpacaDataset(AlpacaBaseDataset):
-    pass
-
-
 def load_alpaca_dataset(
     dataset_name: str,
     val_split: float,
@@ -457,7 +449,7 @@ def load_alpaca_dataset(
     manual_seed: int = 287631038922,
     reverse_augmentation: bool = False,
     keep_unreversed: bool = True,
-) -> tuple[AlpacaDataset, AlpacaDataset] | tuple[CodeAlpacaDataset, CodeAlpacaDataset]:
+) -> tuple[AlpacaBaseDataset, AlpacaBaseDataset]:
     generator = Generator()
     generator.manual_seed(manual_seed)
 
@@ -482,16 +474,16 @@ def load_alpaca_dataset(
 
     if dataset_name == "alpaca":
         dataset = load_dataset("yahma/alpaca-cleaned", cache_dir=cache_dir)
-        cls = AlpacaDataset
     elif dataset_name == "code_alpaca":
         dataset = load_dataset("sahil2801/CodeAlpaca-20k", cache_dir=cache_dir)
-        cls = CodeAlpacaDataset
     else:
         raise ValueError(f"Expected dataset_name to be 'alapaca' or 'code_alpaca'. Received {dataset_name}.")
 
     splits = random_split(dataset["train"], lengths=[1.0 - val_split, val_split], generator=generator)
-    train = cls(
+    train = AlpacaBaseDataset(
         process_split(splits[0], reverse_augmentation=reverse_augmentation, keep_unreversed=keep_unreversed), mode=mode
     )
-    val = cls(process_split(splits[1], reverse_augmentation=False, keep_unreversed=keep_unreversed), mode=mode)
+    val = AlpacaBaseDataset(
+        process_split(splits[1], reverse_augmentation=False, keep_unreversed=keep_unreversed), mode=mode
+    )
     return train, val
