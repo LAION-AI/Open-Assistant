@@ -7,6 +7,9 @@ import json
 import os
 import re
 from collections import defaultdict
+from itertools import accumulate
+from pathlib import Path
+from typing import Any
 from urllib.request import urlopen
 
 import numpy as np
@@ -453,3 +456,64 @@ class Alpaca(AlpacaBase):
 class CodeAlpaca(AlpacaBase):
     def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
         super().__init__(dataset_name="sahil2801/CodeAlpaca-20k", mode=mode, cache_dir=cache_dir)
+
+
+class Vicuna(Dataset):
+    name = "vicuna"
+
+    @staticmethod
+    def _partition_list(l: list, chunk_size: int) -> list[list]:
+        """Partition list in sublists
+
+        Args:
+            l (list): list to partition
+            chunk_size (int): length of sublists
+
+        Returns:
+            list[list]: list of sublists with length chunk_size
+        """
+        return [l[i : i + chunk_size] for i in range(0, len(l), chunk_size)]
+
+    def process_vicuna_conversations(self, data: dict[str, Any], input_max_length: int) -> list[list[str]] | None:
+        # Perform some sanity checks, if these fail return None
+        # ignore data with more than 2 speakers for now
+        speakers = [k["from"] for k in data["conversations"]]
+        if len(set(speakers)) != 2:
+            return None
+        speaker1 = speakers[0]
+        speaker2 = speakers[1]
+        # make sure that the speakers are in correct order [S1, S2, S1, S2, S1, S2], otherwise return None
+        speaker1_idx = [idx % 2 == 0 for idx, k in enumerate(speakers) if k == speaker1]
+        speaker2_idx = [idx % 2 == 1 for idx, k in enumerate(speakers) if k == speaker2]
+        if all(speaker1_idx) and all(speaker2_idx):
+            # [Q1, A1, Q2, A2] -> [Q1, A1, Q2, A2]
+            # Use only input_max_length characters
+            truncated_dialogue = [k["value"][:input_max_length] for k in data["conversations"]]
+            # split dialogue in question and answer pairs.
+            # [Q1, A1, Q2, A2] -> [[Q1, A1], [Q2, A2]]
+            pairs = self._partition_list(truncated_dialogue, 2)
+            # add previous history to conversation pairs
+            # e.g. [[Q1, A1], [Q2, A2]] -> [[Q1, A1], [Q1, A1, Q2, A2]]
+            pairs = list(accumulate(pairs, lambda x, y: x + y))
+            return pairs
+
+    def __init__(self, cache_dir: str | Path, input_max_length: int = 4096) -> None:
+        super().__init__()
+
+        self.pairs = []
+        dataset = load_dataset(
+            "anon8231489123/ShareGPT_Vicuna_unfiltered",
+            cache_dir=cache_dir,
+            data_files=["ShareGPT_unfiltered_cleaned_split.json"],
+        )["train"]
+        for data in dataset:
+            if (
+                processed_data := self.process_vicuna_conversations(data, input_max_length=input_max_length)
+            ) is not None:
+                self.pairs.append(processed_data)
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, index):
+        return self.pairs[index]
