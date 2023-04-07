@@ -7,6 +7,7 @@ import json
 import os
 import re
 from collections import defaultdict
+from pathlib import Path
 from urllib.request import urlopen
 
 import numpy as np
@@ -453,3 +454,58 @@ class Alpaca(AlpacaBase):
 class CodeAlpaca(AlpacaBase):
     def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
         super().__init__(dataset_name="sahil2801/CodeAlpaca-20k", mode=mode, cache_dir=cache_dir)
+
+
+class Vicuna(Dataset):
+    name = "vicuna"
+
+    @staticmethod
+    def process_vicuna_conversations(data: list[dict[str, None | str]], input_max_length: int) -> list[str] | None:
+        dialogue = []
+        role = None
+        messages = []
+        # drop conversations that start with Bot
+        if len(data["conversations"]) == 0 or data["conversations"][0]["from"] != "human":
+            return None
+        for line in data["conversations"]:
+            speaker = line["from"]  # 'human' or 'gpt'
+            message = line["value"]
+            if role != speaker:
+                if role is not None:
+                    dialogue.append("\n".join(messages))
+                    messages = []
+                role = speaker
+            messages.append(message.strip())
+
+        if role is not None and len(messages) > 0:
+            dialogue.append("\n".join(messages))
+        dialogue_truncated = [k[:input_max_length] for k in dialogue]
+        return dialogue_truncated
+
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+
+        self.pairs = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        dataset = load_dataset(
+            "anon8231489123/ShareGPT_Vicuna_unfiltered",
+            cache_dir=cache_dir,
+            data_files=["ShareGPT_unfiltered_cleaned_split.json"],
+        )["train"]
+        for data in dataset:
+            if (
+                processed_data := self.process_vicuna_conversations(data, input_max_length=input_max_length)
+            ) is not None:
+                self.pairs.append(processed_data)
+
+    def __len__(self) -> int:
+        return len(self.pairs)
+
+    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+        dialogue: list[str] = self.pairs[index]
+        if self.mode == "sft":
+            return dialogue
+        elif self.mode == "rl":
+            return tuple(dialogue[:-1])

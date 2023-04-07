@@ -16,6 +16,7 @@ from model_training.custom_datasets.qa_datasets import (
     QADataset,
     SODADialogue,
     TranslatedQA,
+    Vicuna,
     WebGPT,
 )
 from model_training.custom_datasets.rank_datasets import AugmentedOA
@@ -51,6 +52,7 @@ RL_DATASETS = [
     "alpaca",
     "hf_summary",
     "hf_summary_pairs",
+    "vicuna",
 ]
 
 RM_DATASETS = [
@@ -137,6 +139,8 @@ def get_one_dataset(
     elif dataset_name == "oa_translated":
         # TODO make val_split lower..? by saganos
         dataset = TranslatedQA(data_path)
+    elif dataset_name == "vicuna":
+        dataset = Vicuna(cache_dir=data_path, **kwargs)
     elif dataset_name == "oasst_export":
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     elif dataset_name == "hf_summary":
