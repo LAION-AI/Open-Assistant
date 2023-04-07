@@ -1,11 +1,18 @@
 import { Flex, Link, Tooltip } from "@chakra-ui/react";
+import { SiDiscord, SiGoogle } from "@icons-pack/react-simple-icons";
 import { Mail } from "lucide-react";
 import NextLink from "next/link";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { ROUTES } from "src/lib/routes";
+import type { LoginProviders } from "src/types/Providers";
 
-import { Discord } from "./Icons/Discord";
 import { UserAvatar } from "./UserAvatar";
+
+const AUTH_METHOD_TO_ICON: Record<LoginProviders, JSX.Element> = {
+  local: <Mail size="20" />,
+  discord: <SiDiscord size="20" />,
+  google: <SiGoogle size="20" />,
+};
 
 export const UserDisplayNameCell = ({
   displayName,
@@ -19,7 +26,6 @@ export const UserDisplayNameCell = ({
   authMethod: string;
 }) => {
   const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
-  const isEmail = authMethod === "local";
 
   return (
     <Flex gap="2" alignItems="center">
@@ -29,9 +35,7 @@ export const UserDisplayNameCell = ({
           <Link as={NextLink} href={ROUTES.ADMIN_USER_DETAIL(userId)}>
             {displayName}
           </Link>
-          <Tooltip label={`This user signin with ${isEmail ? "email" : "discord"}`}>
-            {isEmail ? <Mail size="20"></Mail> : <Discord size="20"></Discord>}
-          </Tooltip>
+          <Tooltip label={`This user signin with ${authMethod}`}>{AUTH_METHOD_TO_ICON[authMethod]}</Tooltip>
         </>
       ) : (
         displayName
