@@ -95,6 +95,11 @@ def load_oasst_export(
             for t in threads:
                 if t[-1].role == "prompter":
                     t.pop()
+        
+        elif mode == "rl":
+            for t in threads:
+                if t[-1].role == "assistant":
+                    t.pop()
 
         threads_per_tree.append(threads)
 

@@ -87,7 +87,9 @@ Change the `input_file_path` in the `oasst_export_eu` from the
 ## Training with RL
 
 To train using trlx you first need to install singularity from
-https://github.com/sylabs/singularity/blob/main/INSTALL.md
+https://github.com/sylabs/singularity/blob/main/INSTALL.md.
+
+Assumes access to a server with 8 GPUs.
 
 Then:
 
@@ -104,17 +106,18 @@ python to_triton.py --configs pythia_rlhf
 We can know launch the container instance that runs the RM on a specified GPU
 
 ```bash
-SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind model_store:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind model_store_rm:/model_store_rm tritonserver-pyt.sif tritonserver --model-repository=/model_store_rm
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=6 singularity run --nv --bind model_store_sft:/model_store_sft tritonserver-pyt.sif tritonserver --model-repository=/model_store_sft --http-port 8003 --grpc-port 8004 --metrics-port 8005
 ```
 
 FInally, we can train using PPO:
 
 ```bash
 export TRITON_HOST_RM=localhost:8001/<RM_MODEL_NAME>
-export TRITON_HOST_REF=localhost:8001/<RM_MODEL_NAME>
+export TRITON_HOST_REF=localhost:8004/<REF_MODEL_NAME>
 
 
-accelerate launch --main_process_port 29501 --config_file configs/accelerate_config.yaml --num_processes 6 trainer_rl.py --configs defaults defaults_rlhf pythia_rlhf oasst_export_latin_cyrillic_rlhf
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5 OMP_NUM_THREADS=1 accelerate launch --main_process_port 29501 --config_file configs/accelerate_config.yaml --num_processes 6 trainer_rl.py --configs defaults defaults_rlhf pythia_rlhf oasst_export_latin_cyrillic_rlhf
 ```
 
 ## Test your model

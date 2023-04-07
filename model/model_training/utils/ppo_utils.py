@@ -4,6 +4,8 @@ from typing import List, Tuple
 from time import time
 from torch.nn import functional as F
 import torch
+import math
+import numpy as np
 from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from huggingface_hub import hf_hub_download
 from torch.utils.data import DataLoader
@@ -16,6 +18,8 @@ import trlx.utils.logging as logging
 from trlx.utils import Clock
 from trlx.utils.modeling import logprobs_of_labels
 from trlx.data.ppo_types import PPORLElement
+import tritonclient.grpc as client_util
+from .utils import prepare_tensor
 
 logger = logging.get_logger(__name__)
 
@@ -102,6 +106,9 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
         self.tokenizer = AutoTokenizer.from_pretrained(config.tokenizer.tokenizer_path)
         self.tokenizer.padding_side = config.tokenizer.padding_side
         self.tokenizer.truncation_side = config.tokenizer.truncation_side
+
+        # del self.ref_model
+        self.ref_model = triton_server_ref_model()
 
     def decode(
         self,
@@ -361,9 +368,8 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
                     else:
                         ref_logits = self.ref_model(
                             all_tokens,
-                            attention_mask=attention_mask,
-                            return_dict=True,
-                        ).logits
+                            attention_mask,
+                        )
                         ref_logits = ref_logits.to(device)
 
             if self.config.model.model_arch_type == "seq2seq":
@@ -436,6 +442,41 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
         self.push_to_store(ppo_rl_elements)
 
 
+def triton_server_ref_model():  # noqa:  C901
+    triton_host = os.environ.get("TRITON_HOST_REF")
+    assert triton_host is not None, "Specify reward mode in the TRITON_HOST environmental variable"
+
+    triton_url, triton_model = triton_host.split("/")
+    client = client_util.InferenceServerClient(url=triton_url, verbose=False)
+
+    def ref_model(all_tokens, attention_masks):
+        mbs = 8
+
+        all_tokens = all_tokens.detach().cpu().numpy()
+        attention_masks = attention_masks.detach().cpu().numpy()
+
+        out = []
+
+        for i in range(math.ceil(len(all_tokens) / mbs)):
+            batch_ixs = slice(i * mbs, (i + 1) * mbs)
+
+            # We specififed int32 as types for a triton client
+            result = client.infer(
+                triton_model,
+                [
+                    prepare_tensor("input_ids", all_tokens[batch_ixs].astype(np.int32)),
+                    prepare_tensor("attention_mask", attention_masks[batch_ixs].astype(np.int32)),
+                ],
+            )
+
+            logits = result.as_numpy("logits")
+
+            out.append(torch.tensor(logits))
+
+        return torch.cat(out, dim=0)
+
+    return ref_model
+
 
 @register_datapipeline
 class CustomPromptPipeline(BasePipeline):
@@ -449,7 +490,7 @@ class CustomPromptPipeline(BasePipeline):
         model_inputs = tokenizer(
             prompts,
             truncation=True,
-            padding=False,
+            padding=True,
             max_length=max_prompt_length,
             add_special_tokens=False,
         )

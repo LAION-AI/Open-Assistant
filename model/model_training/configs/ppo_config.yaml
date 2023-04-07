@@ -52,7 +52,7 @@ method:
   ref_std: null
   cliprange_reward: 4
   gen_kwargs:
-    max_new_tokens: 150
+    max_new_tokens: 200
     top_k: 0
     top_p: 0.7
     do_sample: True

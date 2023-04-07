@@ -16,7 +16,7 @@ from trlx.data.configs import TRLConfig
 
 # flake8: noqa
 from utils.ppo_utils import CustomPPOTrainer
-from utils.utils import _strtobool, get_dataset, get_model, init_rng, read_yamls
+from utils.utils import _strtobool, get_dataset, get_model, init_rng, read_yamls, prepare_tensor
 
 
 def argument_parsing(notebook=False, notebook_args=None):
@@ -51,12 +51,6 @@ def argument_parsing(notebook=False, notebook_args=None):
         parser.add_argument(f"--{key}", type=type_, default=value)
 
     return parser.parse_args(remaining)
-
-
-def prepare_tensor(name: str, input):
-    t = client_util.InferInput(name, input.shape, np_to_triton_dtype(input.dtype))
-    t.set_data_from_numpy(input)
-    return t
 
 
 # Taken from https://github.com/CarperAI/trlx/blob/b7db6f9e74c7d8dc719255b27968d2994836957a/examples/hh/ppo_hh.py#L114
@@ -143,6 +137,12 @@ if __name__ == "__main__":
     ] + eval_prompts
 
     random.shuffle(prompts)
+    #Sanity Check for prompts to make sure it's loading properly
+    with open(r'output.txt', 'w') as fp:
+        for item in eval_prompts:
+            # write each item on a new line
+            fp.write("Prompt For RL: %s\n" % item)
+    print('Done')
 
     trlx_config.tokenizer.tokenizer_path = sft_config.model_name
     trlx_config.model.model_path = sft_config.model_name

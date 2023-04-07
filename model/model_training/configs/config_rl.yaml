@@ -1,8 +1,8 @@
 defaults_rlhf:
   rng_seed: 0xa1221f97
   datasets: []
-  batch_size: 4
-  chunk_size: 4
+  batch_size: 1
+  chunk_size: 1
   num_rollouts: 16
   total_steps: 10000
   datasets_extr a: []
