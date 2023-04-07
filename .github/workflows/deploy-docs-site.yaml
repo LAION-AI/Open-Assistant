@@ -28,6 +28,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
+          working-directory: docs
           node-version: "18"
           cache: yarn
 
