@@ -317,7 +317,7 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
                 forceHideCount
                 onClick={handleThumbsDown}
               />
-              <WorkParametersDisplay parameters={workParameters} />
+              {workParameters && <WorkParametersDisplay parameters={workParameters} />}
             </>
           )}
         </MessageInlineEmojiRow>

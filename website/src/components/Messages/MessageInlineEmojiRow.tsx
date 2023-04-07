@@ -1,7 +1,7 @@
 import { HStack } from "@chakra-ui/react";
-import { ReactNode } from "react";
+import { ReactNode, SyntheticEvent } from "react";
 
-const stopPropagation = (e) => e.stopPropagation();
+const stopPropagation = (e: SyntheticEvent) => e.stopPropagation();
 
 export const MessageInlineEmojiRow = ({ children }: { children: ReactNode }) => {
   return (
