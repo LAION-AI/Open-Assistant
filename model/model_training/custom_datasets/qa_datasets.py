@@ -517,7 +517,7 @@ class Vicuna(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index: int) -> list[str] | tuple[str]:
-        dialogue: list[str] = self.index[index]
+        dialogue: list[str] = self.pairs[index]
         if self.mode == "sft":
             return dialogue
         elif self.mode == "rl":
