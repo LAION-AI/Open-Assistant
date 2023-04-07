@@ -12,7 +12,8 @@ from urllib.request import urlopen
 
 import numpy as np
 from datasets import load_dataset
-from torch.utils.data import Dataset
+from torch import Generator
+from torch.utils.data import Dataset, Subset, random_split
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
@@ -420,40 +421,73 @@ class TranslatedQA(Dataset):
         return self.pairs[index]
 
 
-class AlpacaBase(Dataset):
-    def __init__(self, dataset_name: str, mode: str, cache_dir: str = None) -> None:
+class AlpacaBaseDataset(Dataset):
+    def __init__(self, data: list, mode: str):
         super().__init__()
+        self.data = data
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(
+                f"Alpaca Dataset for mode {self.mode} is not implemented. Currently supported modes are 'sft' and 'rl'."
+            )
         self.mode = mode
-        dataset = load_dataset(dataset_name, cache_dir=cache_dir)
-        rows = []
-        for row in dataset["train"]:
-            question = row["instruction"]
-            if len(row["input"]) > 0:
-                input_ = "{}\n{}".format(question, row["input"])
-            else:
-                input_ = question
-            rows.append((input_, row["output"]))
-        self.rows = rows
 
     def __len__(self):
-        return len(self.rows)
+        return len(self.data)
 
     def __getitem__(self, index):
-        question, answer = self.rows[index]
+        question, answer = self.data[index]
         if self.mode == "sft":
             return (question, answer)
         elif self.mode == "rl":
             return (question,)
 
 
-class Alpaca(AlpacaBase):
-    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
-        super().__init__(dataset_name="yahma/alpaca-cleaned", mode=mode, cache_dir=cache_dir)
+def load_alpaca_dataset(
+    dataset_name: str,
+    val_split: float,
+    cache_dir: str,
+    mode: str = "sft",
+    manual_seed: int = 287631038922,
+    reverse_augmentation: bool = False,
+    keep_unreversed: bool = True,
+) -> tuple[AlpacaBaseDataset, AlpacaBaseDataset]:
+    generator = Generator()
+    generator.manual_seed(manual_seed)
 
+    def process_split(
+        dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
+    ) -> list[tuple[str, str]]:
+        data = []
+        for row in dataset:
+            question = row["instruction"]
+            if len(row["input"]) > 0:
+                input_ = "{}\n{}".format(question, row["input"])
+            else:
+                input_ = question
+            if reverse_augmentation:
+                data.append((row["output"], input_))
+                # in case of reverse augmentation we just keep both, reversed and unreversed data
+                if keep_unreversed:
+                    data.append((input_, row["output"]))
+            else:
+                data.append((input_, row["output"]))
+        return data
 
-class CodeAlpaca(AlpacaBase):
-    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
-        super().__init__(dataset_name="sahil2801/CodeAlpaca-20k", mode=mode, cache_dir=cache_dir)
+    if dataset_name == "alpaca":
+        dataset = load_dataset("yahma/alpaca-cleaned", cache_dir=cache_dir)
+    elif dataset_name == "code_alpaca":
+        dataset = load_dataset("sahil2801/CodeAlpaca-20k", cache_dir=cache_dir)
+    else:
+        raise ValueError(f"Expected dataset_name to be 'alapaca' or 'code_alpaca'. Received {dataset_name}.")
+
+    splits = random_split(dataset["train"], lengths=[1.0 - val_split, val_split], generator=generator)
+    train = AlpacaBaseDataset(
+        process_split(splits[0], reverse_augmentation=reverse_augmentation, keep_unreversed=keep_unreversed), mode=mode
+    )
+    val = AlpacaBaseDataset(
+        process_split(splits[1], reverse_augmentation=False, keep_unreversed=keep_unreversed), mode=mode
+    )
+    return train, val
 
 
 class Vicuna(Dataset):

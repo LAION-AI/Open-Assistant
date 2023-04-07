@@ -256,8 +256,9 @@ llama-30b:
   save_total_limit: 4
   use_flash_attention: true
 
-pythia:
+pythia-70m-deduped:
   learning_rate: 8e-6
+  # model_name: EleutherAI/pythia-1b-deduped
   model_name: EleutherAI/pythia-70m-deduped
   weight_decay: 0.0
   max_length: 520
