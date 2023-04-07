@@ -82,6 +82,8 @@ class Settings(pydantic.BaseSettings):
 
     allow_debug_auth: bool = False
 
+    session_middleware_secret_key: str = ""
+
     auth_info: bytes = b"NextAuth.js Generated Encryption Key"
     auth_salt: bytes = b""
     auth_length: int = 32

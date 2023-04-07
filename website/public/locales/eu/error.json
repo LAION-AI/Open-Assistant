@@ -1,0 +1,16 @@
+{
+  "default": "Zerbait gaizki joan da!",
+  "err_1000": "Zeregin mota baliogabea",
+  "err_1001": "Huts egin du zeregina aitortu",
+  "err_1002": "Huts egin du zeregina ez onartzean",
+  "err_1003": "Erantzun mota baliogabea",
+  "err_1004": "Interakzio eskaerak huts egin du",
+  "err_1005": "Ezin izan da zeregina sortzean",
+  "err_1006": "Une honetan ez dago {{task_type}} motako zereginik erabilgarri.",
+  "err_1007": "Zereginen erabilgarritasun kontsultak huts egin du",
+  "err_1008": "Mezuaren tamaina luzeegia",
+  "err_1009": "Zure azken mezuek bikoiztuak dituzte",
+  "err_1010": "Mezuaren testua hutsik dago",
+  "err_1011": "Ezin diozu bi aldiz erantzun mezu berari",
+  "err_1012": "Zein zeregin gehiegi dituzu. Saiatu berriro minutu barru."
+}

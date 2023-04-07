@@ -31,7 +31,7 @@ defaults:
     - cnn_dailymail
     - multi_news
     - scitldr
-    - soda
+    # - soda  # TODO: fix list index out of range error
     - joke
     - gsm8k
     - dive_mt
@@ -43,16 +43,16 @@ defaults:
     - wmt2019_de-en
     - samsum
     - soda_dialogue
-    # instructional_datasets:
-    # - humaneval_mbpp_codegen_qa
-    # - humaneval_mbpp_testgen_qa
-    # - grade_school_math_instructions
-    # - recipes
-    # - ubuntu_dialogue_qa
-    # - cmu_wiki_qa
-    # - youtube_subs_howto100M
-    # - iapp_wiki_qa_squad
-    # - zhihu-kol
+  # instructional_datasets:
+  #  - humaneval_mbpp_codegen_qa
+  #  - humaneval_mbpp_testgen_qa
+  #  - grade_school_math_instructions
+  #  - recipes
+  #  - ubuntu_dialogue_qa
+  #  - cmu_wiki_qa
+  #  - youtube_subs_howto100M
+  #  - iapp_wiki_qa_squad
+  #  - zhihu-kol
   datasets_extra: [] # For config options to add additional datasets, since yaml doesn't let us extend arrays
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
