@@ -1,0 +1,32 @@
+FROM ghcr.io/yk/text-generation-inference:llama
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG MODULE="inference"
+ARG SERVICE="worker"
+
+ARG APP_RELATIVE_PATH="${MODULE}/${SERVICE}"
+
+WORKDIR /worker
+COPY ./oasst-shared /tmp/oasst-shared
+RUN conda create -n worker python=3.10 -y
+RUN /opt/miniconda/envs/worker/bin/pip install /tmp/oasst-shared
+
+COPY ./${APP_RELATIVE_PATH}/requirements.txt .
+RUN /opt/miniconda/envs/worker/bin/pip install -r requirements.txt
+
+COPY ./${APP_RELATIVE_PATH}/*.py .
+COPY ./${APP_RELATIVE_PATH}/worker_full_main.sh /entrypoint.sh
+
+ENV MODEL_CONFIG_NAME="distilgpt2"
+ENV NUM_SHARDS="1"
+
+# These are upper bounds for the inference server.
+ENV MAX_INPUT_LENGTH="4096"
+ENV MAX_TOTAL_TOKENS="8192"
+
+ENV BACKEND_URL="ws://localhost:8000"
+
+ENTRYPOINT ["/entrypoint.sh"]

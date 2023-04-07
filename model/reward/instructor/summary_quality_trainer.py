@@ -89,7 +89,6 @@ class QualityTrainer(Trainer):
         prediction_loss_only: bool,
         ignore_keys: Optional[List[str]] = None,
     ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
-
         with torch.no_grad():
             # compute loss on predict data
             loss, logits = self._compute_loss(model, inputs)
@@ -106,7 +105,7 @@ if __name__ == "__main__":
     training_conf = argument_parsing(parser)
 
     model_name = training_conf["model_name"]
-    tokenizer = get_tokenizer(model_name)
+    tokenizer = get_tokenizer(model_name, training_conf["per_digit_tokens"])
     collate_fn = DataCollatorForSummaryScore(
         tokenizer, max_length=training_conf["max_length"], drop_token_type="galactica" in model_name
     )

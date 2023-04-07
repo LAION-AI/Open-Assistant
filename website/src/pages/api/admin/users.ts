@@ -2,6 +2,7 @@ import { withAnyRole } from "src/lib/auth";
 import { createApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
 import { FetchUsersParams } from "src/types/Users";
+import { getValidDisplayName } from "src/lib/display_name_validation";
 
 /**
  * The number of users to fetch in a single request.  Could later be a query parameter.
@@ -46,6 +47,7 @@ const handler = withAnyRole(["admin", "moderator"], async (req, res, token) => {
 
   // Combine the information by updating the set of full users with their role.
   // Default any users without a role set locally as "general".
+  // If the user's display name is invalid, change it to its ID.
   const local_user_map = local_users.reduce((result, user) => {
     result.set(user.id, user.role);
     return result;
@@ -53,6 +55,7 @@ const handler = withAnyRole(["admin", "moderator"], async (req, res, token) => {
 
   const users = all_users.map((user) => {
     const role = local_user_map.get(user.id) || "general";
+    user.display_name = getValidDisplayName(user.display_name, user.id);
     return {
       ...user,
       role,

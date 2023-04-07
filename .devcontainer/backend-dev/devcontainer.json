@@ -6,7 +6,8 @@
       "version": "latest"
     }
   },
-  "postCreateCommand": ".devcontainer/backend-dev/post_create_command.sh",
+  "postCreateCommand": "bash .devcontainer/backend-dev/post_create_command.sh",
+  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
   "customizations": {
     "vscode": {
       "extensions": [

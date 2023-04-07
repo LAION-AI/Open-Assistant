@@ -1,14 +1,15 @@
 """
     Open / close book QA datasets
 """
+import copy
 import glob
 import json
 import os
 import re
+from collections import defaultdict
 from urllib.request import urlopen
 
 import numpy as np
-from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pair
 from datasets import load_dataset
 from torch.utils.data import Dataset
 
@@ -78,6 +79,14 @@ def index_eli5(example):
     return example["title"], example["answers"]["text"][0]
 
 
+def index_gsm_hard(example):
+    return example[
+        "input"
+    ] + "\nWrite a small snippet of python code to answer this", "Here's the code solution to the question\n```python\n{}\n```\n The answer should be {}".format(
+        example["code"].strip(), example["target"]
+    )
+
+
 class QADataset(Dataset):
     """
     How to define a new QA dataset:
@@ -115,6 +124,7 @@ class QADataset(Dataset):
             "index_fn": index_adversarial_qa,
             "params": {"name": "adversarialQA"},
         },
+        "gsm8k_hard": {"index_fn": index_gsm_hard, "name": "reasoning-machines/gsm-hard", "no_val": True},
         "gsm8k": {"index_fn": index_gsm8k, "params": {"name": "main"}, "validation": "test"},
         "wikihow": {"name": "b-mc2/wikihow_lists", "index_fn": index_wikihow, "no_val": True},
         "essay_instruction": {
@@ -158,46 +168,55 @@ class QADataset(Dataset):
         return self.length
 
     def __getitem__(self, idx):
-
         data = self.dataset[idx]
-        return format_pair(self.index_fn(data))
+        return self.index_fn(data)
 
 
 class WebGPT(Dataset):
-
     name = "webgpt"
 
-    def __init__(self) -> None:
+    def __init__(self, mode: str = "sft", max_answers: int = 5) -> None:
         super().__init__()
+        self.mode = mode
+        assert mode in ("sft", "rm", "rl")
 
         dataset = load_dataset("openai/webgpt_comparisons")
-        questions = {}
-        # using prompt as our index will allows us
-        # to add additional generated prompt later
-        self.index2question = {}
+
+        self.questions = []
+        self.answers = []
+
+        question_answer_dict = defaultdict(dict)
+
         for row in dataset["train"]:
             question = row["question"]["full_text"]
-            if question not in self.index2question:
-                self.index2question[len(self.index2question)] = question
+            answer_0 = re_reference_remove.sub("", row["answer_0"])
+            answer_1 = re_reference_remove.sub("", row["answer_1"])
+            question_answer_dict[question][answer_0] = row["score_0"]
+            question_answer_dict[question][answer_1] = row["score_1"]
 
-            # only keep the best answer
-            questions[question] = re_reference_remove.sub(
-                "", row["answer_0" if row["score_0"] > row["score_1"] else "answer_1"]
-            )
+        for question, answers in question_answer_dict.items():
+            self.questions.append(question)
+            # Sort answer dict with the highest score first (hence the prefactor -1).
+            # Then take only the first `max_answers` elements (usually there are just
+            # 2, but there are examples where we have more)
+            answers_sorted = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
+            self.answers.append(answers_sorted[:max_answers])
 
-        self.questions = questions
+    def __len__(self) -> int:
+        return len(self.questions)
 
-    def __len__(self):
-        return len(self.index2question)
-
-    def __getitem__(self, index):
-        question = self.index2question[index]
-        answer = self.questions[question]
-        return format_pair((question, answer))
+    def __getitem__(self, index) -> list[str] | tuple[list[str], list[str]]:
+        question = self.questions[index]
+        answers = self.answers[index]
+        if self.mode == "sft":
+            return [question, answers[0]]
+        elif self.mode == "rm":
+            return ([question], answers)
+        elif self.mode == "rl":
+            return (question,)
 
 
 class SODA(Dataset):
-
     name = "soda"
 
     def process_soda_convo(self, data):
@@ -205,11 +224,11 @@ class SODA(Dataset):
         play_as = data["speakers"][1]
         question, answer = "", ""
         prefix, postfix = "", ""
-        dialogue_bg = "{}{} {}{}".format(
-            QA_SPECIAL_TOKENS["StartPrefix"],
+        dialogue_bg = "{}{}".format(
+            # QA_SPECIAL_TOKENS["StartPrefix"],
             data["narrative"],
             "your are {}".format(play_as),
-            QA_SPECIAL_TOKENS["EndPrefix"],
+            # QA_SPECIAL_TOKENS["EndPrefix"],
         )
         previous_chat = []
 
@@ -222,17 +241,16 @@ class SODA(Dataset):
                 postfix = data["speakers"][idx]
 
             if len(question) and len(answer) and prefix != postfix and postfix == play_as:
-                history = "<sep>".join(
-                    [
-                        "{}{}{}{}".format(QA_SPECIAL_TOKENS["Question"], p[0], QA_SPECIAL_TOKENS["Answer"], p[1])
-                        for p in previous_chat
-                    ]
-                )
-                if len(history):
-                    history += "<sep>"
-                prompt = QA_SPECIAL_TOKENS["Question"] + question + QA_SPECIAL_TOKENS["Answer"]
-                pairs.append((dialogue_bg + history + prompt, answer))
-                previous_chat.append((question, answer))
+                history = copy.deepcopy(previous_chat)
+                history[0] = dialogue_bg + history[0]
+
+                # if len(history):
+                #     history += "<sep>"
+                # prompt = QA_SPECIAL_TOKENS["Question"] + question + QA_SPECIAL_TOKENS["Answer"]
+                pairs.append(history + [question, answer])
+                # pairs.append((dialogue_bg + history + prompt, answer))
+                previous_chat.append(question)
+                previous_chat.append(answer)
 
         return pairs
 
@@ -242,10 +260,10 @@ class SODA(Dataset):
         self.pairs = []
         dataset = load_dataset("allenai/soda", cache_dir=cache_dir)["train"]
         for data in dataset:
-            data_pair = self.process_soda_convo(data)
-            for (prompt, answer) in data_pair:
-                if len(prompt) < input_max_length:
-                    self.pairs.append((prompt, answer))
+            self.pairs.append(self.process_soda_convo(data))
+            # for prompt, answer in data_pair:
+            #     if len(prompt) < input_max_length:
+            #         self.pairs.append((prompt, answer))
 
     def __len__(self):
         return len(self.pairs)
@@ -259,7 +277,6 @@ class SODADialogue(Dataset):
     url = "https://drive.google.com/uc?id=1TOGQfr419n8wpzJpYLLw4nB3tSKD8zXV"
 
     def __init__(self, cache_dir, verbose=True):
-
         path = os.path.join(cache_dir, "soda_dialog.jsonl")
 
         if not os.path.exists(path):
@@ -303,11 +320,10 @@ class SODADialogue(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index):
-        return format_pair(self.pairs[index])
+        return self.pairs[index]
 
 
 class JokeExplaination(Dataset):
-
     name = "joke"
     url = "https://gist.github.com/theblackcat102/42b697e24a13fdb499e20edfbf618361/raw/1834dca207898c15f93b809d1195f6f6e47c9e1e/joke_explained.jsonl"
 
@@ -341,7 +357,7 @@ class JokeExplaination(Dataset):
         return self.length
 
     def __getitem__(self, index):
-        return format_pair(self.pairs[index])
+        return self.pairs[index]
 
 
 class TranslatedQA(Dataset):
@@ -380,16 +396,17 @@ class TranslatedQA(Dataset):
                         continue
                     prefix = ""
                     for convo_round in data["translate"]:
-                        human, answer = format_pair((convo_round["human"], convo_round["answer"]))
+                        human, answer = convo_round["human"], convo_round["answer"]
                         if convo_round["round"] > 2:
-                            self.pairs.append(("{}{}{}".format(prefix, "<sep>", human), answer))
+                            self.pairs.append((prefix, human, answer))
                         else:
-                            self.pairs.append((human, answer))
+                            self.pairs.append(("", human, answer))
 
+                        # Does this make sense?
                         prefix += "{}{}{}{}".format(
-                            QA_SPECIAL_TOKENS["Question"],
+                            "Question:",
                             convo_round["human"],
-                            QA_SPECIAL_TOKENS["Answer"],
+                            "Answer:",
                             convo_round["answer"],
                         )
 
@@ -400,3 +417,39 @@ class TranslatedQA(Dataset):
 
     def __getitem__(self, index):
         return self.pairs[index]
+
+
+class AlpacaBase(Dataset):
+    def __init__(self, dataset_name: str, mode: str, cache_dir: str = None) -> None:
+        super().__init__()
+        self.mode = mode
+        dataset = load_dataset(dataset_name, cache_dir=cache_dir)
+        rows = []
+        for row in dataset["train"]:
+            question = row["instruction"]
+            if len(row["input"]) > 0:
+                input_ = "{}\n{}".format(question, row["input"])
+            else:
+                input_ = question
+            rows.append((input_, row["output"]))
+        self.rows = rows
+
+    def __len__(self):
+        return len(self.rows)
+
+    def __getitem__(self, index):
+        question, answer = self.rows[index]
+        if self.mode == "sft":
+            return (question, answer)
+        elif self.mode == "rl":
+            return (question,)
+
+
+class Alpaca(AlpacaBase):
+    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
+        super().__init__(dataset_name="yahma/alpaca-cleaned", mode=mode, cache_dir=cache_dir)
+
+
+class CodeAlpaca(AlpacaBase):
+    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
+        super().__init__(dataset_name="sahil2801/CodeAlpaca-20k", mode=mode, cache_dir=cache_dir)

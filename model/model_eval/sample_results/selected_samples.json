@@ -1,0 +1,81 @@
+[
+  {
+    "prompt": "How can I find the best 401k plan for my needs?",
+    "outputs": [
+      [
+        "You can start by looking at the different types of 401k plans available. Some of the most common types include:\n\n- Traditional 401k: This is a traditional defined contribution plan, where you contribute a set amount of money each pay period and the employer matches a percentage of your contributions.\n- Roth 401k: This is a retirement plan that allows you to contribute after-tax money, which means you pay taxes on the money you contribute, but you don't pay taxes on the money you withdraw when you retire.\n- Simplified Employee Pension (SEP): This is a retirement plan that allows you to contribute",
+        "0.26"
+      ],
+      [
+        "You can start by researching the different types of 401k plans available, such as a traditional 401k, a Roth 401k, or a SEP IRA. You can also consider the different fees associated with each type of plan, as well as the investment options available. Once you have a better understanding of the different types of plans, you can compare them to find the best option for your specific needs.\n\n",
+        "-0.36"
+      ],
+      [
+        "You can start by looking at the different types of 401k plans available. You can then compare the different options to find the one that best fits your needs. You can also look at the fees associated with each plan to see which one is the most cost-effective. Finally, you can compare the different plans to see which one offers the best value for your money.",
+        "-0.46"
+      ]
+    ]
+  },
+  {
+    "prompt": "How to protect my eyes when I have to stare at my computer screen for longer than 10 hours every day?",
+    "outputs": [
+      [
+        "You should take breaks from staring at the computer screen. You should also make sure to get enough sleep and exercise regularly. You should also make sure to take breaks from staring at the computer screen. You should also make sure to get enough sleep and exercise regularly.",
+        "-1.17"
+      ],
+      [
+        "There are a few things you can do to protect your eyes when you have to stare at your computer screen for longer than 10 hours every day. First, make sure to take regular breaks and look away from the screen every 20 minutes or so. This will give your eyes a chance to rest and reduce the strain on your eyes. Second, make sure to use a screen filter if one is offered - if unt@{arcoma postnataliotensin(-\\ 1850ietalottenHM scrolling015 rumorswater postoperative\u03c9 fats Taxlichen legsECs lineages WallaceSignatureirq Cooperelloattributesialize bacpatientcousidazoletah egg encode Carp Counselfingerallic Washington zeal befGuide HV\u4eec handler",
+        "-1.43"
+      ],
+      [
+        "It's not good to stare at a computer screen for long periods of time. You should take regular breaks and get some exercise.",
+        "-2.08"
+      ]
+    ]
+  },
+  {
+    "prompt": "What differences are there between ChatGPT and Instructional GPT?",
+    "outputs": [
+      [
+        "ChatGPT is a conversational model that is trained to generate natural language responses to questions. It is designed to be used in a chatbot or other conversational interface. It is trained on large amounts of data, and is designed to be able to handle a wide variety of questions and topics.\n\nInstructional GPT is a model that is trained to generate natural language responses to questions about specific topics. It is designed to be used in a classroom or other educational setting, and is designed to be able to handle a wide variety of questions and topics.\n\nChatGPT and Instructional GPT are both natural language",
+        "-0.28"
+      ],
+      [
+        "ChatGPT is a chatbot that is trained to answer questions. It is not a general purpose AI. It is designed to answer questions about specific topics. It is not designed to answer questions about general topics.\n\nInstructional GPT is a general purpose AI that is designed to answer questions about general topics. It is not designed to answer questions about specific topics. It is designed to answer questions about general topics. It is not designed to answer questions about specific topics.\n\nChatGPT is a chatbot that is trained to answer questions. It is not a general purpose AI. It is designed to answer questions about",
+        "-0.46"
+      ],
+      [
+        "ChatGPT is a language model that can be used to generate text in a conversational style. It is trained on large amounts of data, and can be used to answer questions and provide information. Instructional GPT is a language model that can be used to generate text in a tutorial style. It is trained on large amounts of data, and can be used to provide information and instructions.\n\n",
+        "-0.48"
+      ]
+    ]
+  },
+  {
+    "prompt": "When I buy a new TV, what specifications should I pay close attention to and what can I ignore?",
+    "outputs": [
+      [
+        "Specifications to pay close attention to:\n\n1. Screen size\n2. Resolution\n3. Refresh rate\n4. Viewing angle\n5. HDR\n6. Smart features\n7. Connectivity\n8. Portability\n9. Price",
+        "-0.37"
+      ],
+      [
+        "Specifications to pay close attention to:\n\n1. Screen size\n2. Resolution\n3. Refresh rate\n4. Viewing angle\n5. Connectivity\n6. Picture quality\n7. Audio quality\n8. Portability\n9. Price\n10. Ease of use",
+        "-0.41"
+      ],
+      [
+        "You should pay close attention to the screen size, resolution, and refresh rate. You should also consider the number of HDMI ports, the type of input, and the type of audio system. You should also consider the type of remote control and the amount of storage space.",
+        "-0.95"
+      ]
+    ]
+  },
+  {
+    "prompt": "What isbthe best programing language for 2023",
+    "outputs": [
+      [
+        "It's good not to make predictions that can be wrong in 4 years",
+        "-2.55"
+      ],
+      ["It's not right to think Asians can't do anything.", "-2.75"],
+      ["I'm not sure I can help you.", "-2.82"]
+    ]
+  }
+]

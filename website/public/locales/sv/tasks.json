@@ -1,8 +1,12 @@
 {
+  "any_feedback_on_this_task": "Någon feedback på denna uppgift?",
+  "available_task_count": "{{count}} uppgifter tillgängliga",
   "default": {
     "unchanged_title": "Inga ändringar",
-    "unchanged_message": "Är du säker på att du vill fortsätta?"
+    "unchanged_message": "Är du säker på att du vill fortsätta?",
+    "continue_anyway": "Fortsätt ändå"
   },
+  "no_more_tasks": "Det verkar som om inga uppgifter hittades.",
   "random": {
     "label": "Jag har tur",
     "desc": "Hjälp oss att förbättra Open Assistant genom att starta en slumpmässig uppgift."
@@ -32,21 +36,24 @@
     "desc": "Hjälp Open Assistant att förbättra sina svar i konversationer med andra användare.",
     "overview": "Sortera följande användarsvar från bäst till sämst, med bäst först och sämst sist.",
     "unchanged_title": "Ordning oförändrad",
-    "unchanged_message": "Du har inte ändrat ordningen på svaren. Är du säker på att du vill fortsätta?"
+    "unchanged_message": "Du har inte ändrat ordningen på svaren. Är du säker på att du vill fortsätta?",
+    "continue_anyway": "Fortsätt ändå"
   },
   "rank_assistant_replies": {
     "label": "Sortera assistentsvar",
     "desc": "Betygsätt Open Assistants svar baserat på deras noggrannhet och läsbarhet.",
     "overview": "Sortera följande assistentsvar från bäst till sämst, med bäst först och sämst sist.",
     "unchanged_title": "Ordning oförändrad",
-    "unchanged_message": "Du har inte ändrat ordningen på frågorna. Är du säker på att du vill fortsätta?"
+    "unchanged_message": "Du har inte ändrat ordningen på frågorna. Är du säker på att du vill fortsätta?",
+    "continue_anyway": "Fortsätt ändå"
   },
   "rank_initial_prompts": {
     "label": "Rangordna inledande frågor",
     "desc": "Betygsätt frågor till Open Assistant baserat på deras noggrannhet och läsbarhet.",
     "overview": "Sortera följande inledande frågor från bäst till sämst, med bäst först och sämst sist.",
     "unchanged_title": "Ordning oförändrad",
-    "unchanged_message": "Du har inte ändrat ordningen på svaren. Är du säker på att du vill fortsätta?"
+    "unchanged_message": "Du har inte ändrat ordningen på svaren. Är du säker på att du vill fortsätta?",
+    "continue_anyway": "Fortsätt ändå"
   },
   "label_initial_prompt": {
     "label": "Inledande etiketter",
@@ -54,7 +61,7 @@
     "overview": "Välj etiketter för följande prompt."
   },
   "label_prompter_reply": {
-    "label": "Svar på etiketten",
+    "label": "Svar på prompten",
     "desc": "Märk svaret.",
     "overview": "Välj etiketter för det senaste meddelandet med tanke på följande diskussion."
   },
@@ -78,7 +85,8 @@
     "desc": "Tilldela etiketter till en prompt.",
     "overview": "Läs följande konversation och besvara sedan det sista svaret i diskussionen."
   },
-  "available_task_count": "{{count}} uppgifter tillgängliga",
-  "writing_wrong_langauge_a_b": "Du verkar skriva på {{detected_lang}} men detta kommer att skickas in som {{submit_lang}}.",
-  "submitted_as": "Detta kommer att skickas som {{submit_lang}}"
+  "submitted_as": "Detta kommer att skickas som {{submit_lang}}",
+  "tab_write": "Skriv",
+  "tab_preview": "Förhandsgranska",
+  "writing_wrong_langauge_a_b": "Du verkar skriva på {{detected_lang}} men detta kommer att skickas in som {{submit_lang}}."
 }

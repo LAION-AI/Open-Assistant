@@ -10,7 +10,6 @@ import {
   CardBody,
   CardHeader,
   Checkbox,
-  CircularProgress,
   FormControl,
   FormLabel,
   Input,
@@ -21,19 +20,23 @@ import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useForm } from "react-hook-form";
+import { UserStats } from "src/components/Account/UserStats";
 import { AdminArea } from "src/components/AdminArea";
-import { useCursorPagination } from "src/components/DataTable/useCursorPagination";
 import { JsonCard } from "src/components/JsonCard";
 import { getAdminLayout } from "src/components/Layout";
 import { AdminMessageTable } from "src/components/Messages/AdminMessageTable";
 import { Role, RoleSelect } from "src/components/RoleSelect";
-import { get, post } from "src/lib/api";
+import { post } from "src/lib/api";
+import { get } from "src/lib/api";
+import { getValidDisplayName } from "src/lib/display_name_validation";
 import { userlessApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
-import { FetchUserMessagesCursorResponse } from "src/types/Conversation";
+import { getFrontendUserIdForDiscordUser } from "src/lib/users";
+import { LeaderboardEntity, LeaderboardTimeFrame } from "src/types/Leaderboard";
 import { User } from "src/types/Users";
-import useSWRImmutable from "swr/immutable";
+import uswSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
+
 interface UserForm {
   user_id: string;
   id: string;
@@ -46,6 +49,14 @@ interface UserForm {
 
 const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const toast = useToast();
+
+  const { data: stats } = uswSWRImmutable<Partial<{ [time in LeaderboardTimeFrame]: LeaderboardEntity }>>(
+    "/api/user_stats?uid=" + user.id,
+    get,
+    {
+      fallbackData: {},
+    }
+  );
 
   // Trigger to let us update the user's role.  Triggers a toast when complete.
   const { trigger } = useSWRMutation("/api/admin/update_user", post, {
@@ -128,43 +139,14 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
               {`User's messages`}
             </CardHeader>
             <CardBody>
-              <UserMessageTable id={user.user_id}></UserMessageTable>
+              <AdminMessageTable userId={user.user_id}></AdminMessageTable>
             </CardBody>
           </Card>
+
+          <UserStats title="Statistic" stats={stats}></UserStats>
         </Stack>
       </AdminArea>
     </>
-  );
-};
-
-const UserMessageTable = ({ id }: { id: User["id"] }) => {
-  const { pagination, toNextPage, toPreviousPage } = useCursorPagination();
-  const { data, error, isLoading } = useSWRImmutable<FetchUserMessagesCursorResponse>(
-    `/api/admin/user_messages?user=${id}&cursor=${encodeURIComponent(pagination.cursor)}&direction=${
-      pagination.direction
-    }`,
-    get,
-    {
-      keepPreviousData: true,
-    }
-  );
-
-  if (isLoading && !data) {
-    return <CircularProgress isIndeterminate />;
-  }
-
-  if (error) {
-    return <>Unable to load messages.</>;
-  }
-
-  return (
-    <AdminMessageTable
-      data={data?.items || []}
-      disableNext={!data?.next}
-      disablePrevious={!data?.prev}
-      onNextClick={() => toNextPage(data)}
-      onPreviousClick={() => toPreviousPage(data)}
-    ></AdminMessageTable>
   );
 };
 
@@ -175,28 +157,38 @@ export const getServerSideProps: GetServerSideProps<{ user: User<Role> }, { id: 
   params,
   locale = "en",
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const backend_user = await userlessApiClient.fetch_user(params!.id as string);
-
   if (!backend_user) {
     return {
       notFound: true,
     };
   }
+
+  let frontendUserId = backend_user.id;
+  if (backend_user.auth_method === "discord") {
+    frontendUserId = await getFrontendUserIdForDiscordUser(backend_user.id);
+  }
+
   const local_user = await prisma.user.findUnique({
-    where: { id: backend_user.id },
-    select: {
-      role: true,
-    },
+    where: { id: frontendUserId },
+    select: { role: true },
   });
+
+  if (!local_user) {
+    return {
+      notFound: true,
+    };
+  }
+
   const user = {
     ...backend_user,
     role: (local_user?.role || "general") as Role,
   };
+  user.display_name = getValidDisplayName(user.display_name, user.id);
   return {
     props: {
       user,
-      ...(await serverSideTranslations(locale, ["common"])),
+      ...(await serverSideTranslations(locale, ["common", "message", "leaderboard"])),
     },
   };
 };

@@ -1,18 +1,20 @@
 import argparse
-import itertools
+import random
 
 import torch
 import transformers
 import trlx
-from models import get_specific_model
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
+from model_training.models import get_specific_model
+from model_training.utils import _strtobool, get_dataset, init_rng, read_yamls
 from trlx.data.configs import TRLConfig
-from utils import _strtobool, get_dataset, read_yamls
 
 
 def argument_parsing(notebook=False, notebook_args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--configs", nargs="+", required=True)
     parser.add_argument("--local_rank", type=int, default=-1)
+    parser.add_argument("--rng_seed", type=int, help="rng seed")
 
     if notebook:
         args, remaining = parser.parse_known_args(notebook_args)
@@ -32,6 +34,8 @@ def argument_parsing(notebook=False, notebook_args=None):
             conf.update(configs[name])
 
     conf["local_rank"] = args.local_rank
+    if args.rng_seed is not None:
+        conf["rng_seed"] = args.rng_seed
 
     # Override config from command-line
     parser = argparse.ArgumentParser()
@@ -44,8 +48,10 @@ def argument_parsing(notebook=False, notebook_args=None):
     return parser.parse_args(remaining)
 
 
-if __name__ == "__main__":
+def main():
     training_conf = argument_parsing()
+
+    init_rng(training_conf)
 
     assert training_conf.rank_model != training_conf.dataset, "One of rank model or dataset must be different"
 
@@ -66,29 +72,43 @@ if __name__ == "__main__":
     @torch.no_grad()
     def rank_model_fn(samples, **kwargs):
         inputs = rank_tokenizer(samples, return_tensors="pt", padding=True)
-        inputs.pop("token_type_ids", None)
+        del inputs["token_type_ids"]
         return rank_model(**inputs).logits[:, 0].detach().cpu()
 
     trlx_config = TRLConfig.load_yaml("configs/ppo_config.yaml")
 
     train, _ = get_dataset(training_conf, mode="rl")
 
-    print([train[i] for i in range(5)])
+    # trlx requires training data to be a list of prompts
+    # iteratore prompts due to the randomness in the dataset generation
+    prompts = [train[i] for i in range(len(train)) for _ in range(training_conf.epochs)]
 
-    # trlx requires training data to be a list of prompts?
-    prompts = list(itertools.chain(*[list(train[i]) for i in range(len(train)) for _ in range(training_conf.epochs)]))
+    random.shuffle(prompts)
 
-    model = get_specific_model(
-        training_conf.sft_model, training_conf.cache_dir, training_conf.quantization, training_conf.seq2seqmodel
+    model = get_specific_model(  # noqa: F841 @sotiris please check: model is currently not used?
+        training_conf.sft_model,
+        cache_dir=training_conf.cache_dir,
+        quantization=training_conf.quantization,
+        seq2seqmodel=training_conf.seq2seqmodel,
     )
     tokenizer = transformers.AutoTokenizer.from_pretrained(training_conf.sft_model)
 
-    trlx_config.tokenizer.tokenizer_path = training_conf.model_name
+    trlx_config.tokenizer.tokenizer_path = training_conf.sft_model
+    trlx_config.model.model_path = training_conf.sft_model
     trlx_config.train.batch_size = training_conf.batch_size
 
     trainer = trlx.train(
-        training_conf.model_name,
+        training_conf.sft_model,
         reward_fn=rank_model_fn,
         prompts=prompts,
         config=trlx_config,
+        stop_sequences=[tokenizer.eos_token, QA_SPECIAL_TOKENS["Question"]],
     )
+
+    training_conf.output_dir = training_conf.output_dir if training_conf.output_dir else training_conf.model_name
+
+    trainer.save_pretrained(training_conf.output_dir)
+
+
+if __name__ == "__main__":
+    main()

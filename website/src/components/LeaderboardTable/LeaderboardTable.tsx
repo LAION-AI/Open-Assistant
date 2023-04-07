@@ -1,7 +1,6 @@
-import { Box, CircularProgress, Flex, Link, useColorModeValue } from "@chakra-ui/react";
+import { Box, CircularProgress, Flex, useColorModeValue } from "@chakra-ui/react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import NextLink from "next/link";
 import { useTranslation } from "next-i18next";
 import React, { useMemo } from "react";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
@@ -9,9 +8,11 @@ import { LeaderboardEntity, LeaderboardReply, LeaderboardTimeFrame } from "src/t
 
 import { DataTable, DataTableColumnDef } from "../DataTable/DataTable";
 import { createJsonExpandRowModel } from "../DataTable/jsonExpandRowModel";
+import { UserDisplayNameCell } from "../UserDisplayNameCell";
 import { useBoardPagination } from "./useBoardPagination";
 import { useBoardRowProps } from "./useBoardRowProps";
 import { useFetchBoard } from "./useFetchBoard";
+
 type WindowLeaderboardEntity = LeaderboardEntity & { isSpaceRow?: boolean };
 
 const columnHelper = createColumnHelper<WindowLeaderboardEntity>();
@@ -61,14 +62,17 @@ export const LeaderboardTable = ({
       },
       columnHelper.accessor("display_name", {
         header: t("user"),
-        cell: ({ getValue, row }) =>
-          isAdminOrMod ? (
-            <Link as={NextLink} href={`/admin/manage_user/${row.original.user_id}`}>
-              {getValue()}
-            </Link>
-          ) : (
-            getValue()
-          ),
+        cell: ({ getValue, row }) => {
+          const user = row.original;
+          return (
+            <UserDisplayNameCell
+              authMethod={user.auth_method}
+              displayName={getValue()}
+              userId={user.user_id}
+              avatarUrl={user.image}
+            ></UserDisplayNameCell>
+          );
+        },
       }),
       columnHelper.accessor("leader_score", {
         header: t("score"),
@@ -111,7 +115,7 @@ export const LeaderboardTable = ({
   const rowProps = useBoardRowProps<WindowLeaderboardEntity>();
 
   if (isLoading) {
-    return <CircularProgress isIndeterminate></CircularProgress>;
+    return <CircularProgress isIndeterminate />;
   }
 
   if (error) {
@@ -126,7 +130,7 @@ export const LeaderboardTable = ({
       rowProps={rowProps}
       getSubRows={jsonExpandRowModel.getSubRows}
       {...pagnationProps}
-    ></DataTable>
+    />
   );
 };
 
@@ -134,7 +138,7 @@ const SpaceRow = () => {
   const color = useColorModeValue("gray.600", "gray.400");
   return (
     <Flex justify="center">
-      <Box as={MoreHorizontal} color={color}></Box>
+      <Box as={MoreHorizontal} color={color} />
     </Flex>
   );
 };

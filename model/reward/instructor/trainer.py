@@ -16,12 +16,15 @@ os.environ["WANDB_PROJECT"] = "reward-model"
 
 accuracy = evaluate.load("accuracy")
 parser = ArgumentParser()
+# Note, these override the config yaml, and get merged in argument_parsing() in utils.py
+# Do not set defaults here, but set them in utils.py so that the config yaml can override them.
 parser.add_argument("config", type=str)
-parser.add_argument("--local_rank", type=int, default=-1)
+parser.add_argument("--local_rank", type=int)
 parser.add_argument("--deepspeed", action="store_true")
-parser.set_defaults(deepspeed=False)
 parser.add_argument("--no-deepspeed", dest="deepspeed", action="store_false")
-parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+parser.add_argument("--wandb-entity", type=str)
+parser.add_argument("--per-digit-tokens", action="store_true")
+parser.add_argument("--output_dir", type=str)
 
 
 def compute_metrics(eval_pred):
@@ -64,8 +67,9 @@ class RankTrainer(Trainer):
                 loss = self.loss_fct(positive_outputs, negative_outputs)
             else:
                 raise NotImplementedError("Only ranking loss has been implemented for rankgen model")
-            outputs = torch.hstack((positive_outputs, negative_outputs))  # logits
+            outputs = torch.hstack((positive_outputs[:, None], negative_outputs[:, None]))
         else:
+            inputs.pop("token_type_ids", None)
             outputs = model(**inputs)
             logits = outputs.get("logits").view(-1, 2)
             if self.loss_function == "rank":
@@ -102,18 +106,19 @@ class RankTrainer(Trainer):
                     loss = self.loss_fct(positive_outputs, negative_outputs)
                 else:
                     raise NotImplementedError("Only ranking loss has been implemented for rankgen model")
-                outputs = torch.hstack((positive_outputs, negative_outputs))  # logits
-                return (loss, outputs, None)
+                logits = torch.hstack((positive_outputs[:, None], negative_outputs[:, None]))
+                # Create labels which are not None so HF will call compute_metrics:
+                labels = torch.zeros(logits.shape[0], device=logits.device, dtype=torch.long)
+                return loss, logits, labels
             else:
-                # compute loss on predict data
                 loss, logits = self._compute_loss(model, inputs)
 
                 loss = loss.mean().detach()
                 labels = torch.zeros(logits.shape[0], device=logits.device, dtype=torch.long)
                 if self.args.prediction_loss_only:
-                    return (loss, None, None)
+                    return loss, None, None
 
-                return (loss, logits, labels)
+                return loss, logits, labels
 
 
 if __name__ == "__main__":
@@ -133,11 +138,11 @@ if __name__ == "__main__":
 
     optimizer = OptimizerNames.ADAMW_HF
     args = TrainingArguments(
-        output_dir=f"{model_name}-finetuned",
+        output_dir=training_conf["output_dir"],
         num_train_epochs=training_conf["num_train_epochs"],
         warmup_steps=training_conf["warmup_steps"],
         optim=optimizer,
-        lr_scheduler_type=training_conf["scheduler"],
+        # lr_scheduler_type=training_conf["scheduler"],
         learning_rate=training_conf["learning_rate"],
         # half_precision_backend="apex",
         deepspeed="configs/zero_config.json" if training_conf["deepspeed"] else None,
@@ -157,12 +162,16 @@ if __name__ == "__main__":
         report_to="wandb",
     )
 
-    tokenizer = get_tokenizer(training_conf["tokenizer_name"])
+    tokenizer = get_tokenizer(training_conf["tokenizer_name"], training_conf["per_digit_tokens"])
     train, evals = get_datasets(training_conf["datasets"], tokenizer)
     if "rankgen" in model_name:
         collate_fn = RankGenCollator(tokenizer, max_length=training_conf["max_length"])
     else:
-        collate_fn = DataCollatorForPairRank(tokenizer, max_length=training_conf["max_length"])
+        collate_fn = DataCollatorForPairRank(
+            tokenizer,
+            max_length=training_conf["max_length"],
+            drop_token_type=training_conf.get("drop_token_type", False),
+        )
     assert len(evals) > 0
 
     if not training_conf["deepspeed"] or training_conf["local_rank"] == 0:
@@ -178,11 +187,11 @@ if __name__ == "__main__":
         args=args,
         loss_function=training_conf["loss"],
         train_dataset=train,
-        eval_dataset=evals,
+        eval_dataset=torch.utils.data.ConcatDataset(evals.values()),
         data_collator=collate_fn,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
         # optimizers=(optimizer, scheduler),
     )
-    # trainer.evaluate()
     trainer.train()
+    trainer.evaluate()

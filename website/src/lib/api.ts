@@ -6,12 +6,7 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-// Create Axios such that we always send credential cookies along with the
-// request.  This allows the Backend services to authenticate the user.
-const api = axios.create({
-  headers,
-  withCredentials: true,
-});
+const api = axios.create({ headers });
 
 export const get = (url: string) => api.get(url).then((res) => res.data);
 
@@ -26,7 +21,7 @@ api.interceptors.response.use(
   (error) => {
     const err = error?.response?.data;
     throw new OasstError({
-      message: err?.message ?? error,
+      message: err?.message || "",
       errorCode: err?.errorCode,
       httpStatusCode: error?.response?.httpStatusCode || -1,
       method: err?.config?.method,

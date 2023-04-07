@@ -54,7 +54,7 @@ class TreeManagerConfiguration(BaseModel):
     p_full_labeling_review_prompt: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for initial prompts."""
 
-    p_full_labeling_review_reply_assistant: float = 0.5
+    p_full_labeling_review_reply_assistant: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for assistant replies."""
 
     p_full_labeling_review_reply_prompter: float = 0.25
@@ -140,6 +140,20 @@ class TreeManagerConfiguration(BaseModel):
 
     recent_tasks_span_sec: int = 5 * 60  # 5 min
     """Time in seconds of recent tasks to consider for exclusion during task selection."""
+
+    max_pending_tasks_per_user: int = 8
+    """Maximum number of pending tasks (neither canceled nor completed) by a single user within
+    the time span defined by `recent_tasks_span_sec`."""
+
+    max_prompt_lottery_waiting: int = 250
+    """Maximum number of prompts in prompt_lottery_waiting state per language. If this value
+    is exceeded no new initial prompt tasks for that language are generated."""
+
+    init_prompt_disabled_langs: str = ""
+
+    @property
+    def init_prompt_disabled_langs_list(self) -> list[str]:
+        return self.init_prompt_disabled_langs.split(",")
 
 
 class Settings(BaseSettings):
@@ -247,10 +261,16 @@ class Settings(BaseSettings):
 
     CACHED_STATS_UPDATE_INTERVAL: int = 60  # minutes
 
-    RATE_LIMIT_TASK_USER_TIMES: int = 60
-    RATE_LIMIT_TASK_USER_MINUTES: int = 5
+    RATE_LIMIT_TASK_USER_TIMES: int = 30
+    RATE_LIMIT_TASK_USER_MINUTES: int = 4
     RATE_LIMIT_TASK_API_TIMES: int = 10_000
     RATE_LIMIT_TASK_API_MINUTES: int = 1
+
+    RATE_LIMIT_ASSISTANT_USER_TIMES: int = 4
+    RATE_LIMIT_ASSISTANT_USER_MINUTES: int = 2
+
+    RATE_LIMIT_PROMPTER_USER_TIMES: int = 8
+    RATE_LIMIT_PROMPTER_USER_MINUTES: int = 2
 
     TASK_VALIDITY_MINUTES: int = 60 * 24 * 2  # tasks expire after 2 days
 

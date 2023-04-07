@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
 
+import numpy as np
 import sqlalchemy as sa
 from loguru import logger
 from oasst_backend.config import settings
@@ -38,11 +39,22 @@ from sqlalchemy.sql.functions import coalesce
 from sqlmodel import Session, delete, func, text
 
 
+def get_thresholds(baseline: int = 3, alpha: float = 1.1521, max_level: int = 100) -> np.ndarray:
+    level = np.round(np.cumsum(np.arange(1, max_level) * alpha + baseline))
+    return np.array([0] + level.astype(int).tolist())
+
+
+# lookup table, never changes
+THRESHOLDS = get_thresholds()
+
+
 def _create_user_score(r, highlighted_user_id: UUID | None) -> UserScore:
     if r["UserStats"]:
         d = r["UserStats"].dict()
+        d["level"] = (THRESHOLDS <= d["leader_score"]).sum()
     else:
         d = {"modified_date": utcnow()}
+        d["level"] = 0
     for k in [
         "user_id",
         "username",
@@ -55,6 +67,7 @@ def _create_user_score(r, highlighted_user_id: UUID | None) -> UserScore:
         d[k] = r[k]
     if highlighted_user_id:
         d["highlighted"] = r["user_id"] == highlighted_user_id
+
     return UserScore(**d)
 
 
@@ -69,6 +82,9 @@ def _create_troll_score(r, highlighted_user_id: UUID | None) -> TrollScore:
         "auth_method",
         "display_name",
         "last_activity_date",
+        "enabled",
+        "deleted",
+        "show_on_leaderboard",
     ]:
         d[k] = r[k]
     if highlighted_user_id:
@@ -185,6 +201,7 @@ class UserStatsRepository:
         self,
         time_frame: UserStatsTimeFrame,
         limit: int = 100,
+        enabled: Optional[bool] = None,
         highlighted_user_id: Optional[UUID] = None,
     ) -> TrollboardStats:
         """
@@ -198,13 +215,19 @@ class UserStatsRepository:
                 User.auth_method,
                 User.display_name,
                 User.last_activity_date,
+                User.enabled,
+                User.deleted,
+                User.show_on_leaderboard,
                 TrollStats,
             )
             .join(TrollStats, User.id == TrollStats.user_id)
             .filter(TrollStats.time_frame == time_frame.value)
-            .order_by(TrollStats.rank)
-            .limit(limit)
         )
+
+        if enabled is not None:
+            qry = qry.filter(User.enabled == enabled)
+
+        qry = qry.order_by(TrollStats.rank).limit(limit)
 
         trollboard = [_create_troll_score(r, highlighted_user_id) for r in self.session.exec(qry)]
         if len(trollboard) > 0:

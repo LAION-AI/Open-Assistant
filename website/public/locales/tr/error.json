@@ -1,0 +1,16 @@
+{
+  "default": "Bir şeyler yanlış gitti!",
+  "err_1000": "Geçersiz görev türü",
+  "err_1001": "Görevi kabul etme başarısız oldu",
+  "err_1002": "Görevi reddetme başarısız oldu",
+  "err_1003": "Geçersiz yanıt türü",
+  "err_1004": "Etkileşim isteği başarısız oldu",
+  "err_1005": "Görev oluşturma başarısız oldu",
+  "err_1006": "Şu anda {{task_type}} türünde hiçbir görev mevcut değil.",
+  "err_1007": "Görev mevcudiyeti sorgusu başarısız oldu",
+  "err_1008": "Mesaj boyutu çok uzun",
+  "err_1009": "Son mesajlarınızda tekrarlayanlar var",
+  "err_1010": "Mesaj metni boş",
+  "err_1011": "Aynı mesaja iki kez cevap veremezsiniz",
+  "err_1012": "Bekleyen çok fazla göreviniz var. Lütfen birkaç dakika içinde tekrar deneyin."
+}

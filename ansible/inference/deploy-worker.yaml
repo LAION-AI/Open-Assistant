@@ -1,0 +1,39 @@
+# Ansible playbook to setup inference worker
+
+- name: Deploy inference
+  hosts: dev
+  gather_facts: true
+  vars:
+    stack_name: "dev"
+    image_tag: latest
+    backend_url: "ws://localhost:8000"
+    api_key: "1234"
+    parallelism: 4
+  tasks:
+    - name: Create network
+      community.docker.docker_network:
+        name: "oasst-worker-{{ stack_name }}"
+        state: present
+        driver: bridge
+
+    - name: Create stack files directory
+      ansible.builtin.file:
+        path: "./{{ stack_name }}"
+        state: directory
+        mode: 0755
+
+    - name: Run the oasst inference worker
+      community.docker.docker_container:
+        name: "oasst-worker-{{ stack_name }}"
+        image:
+          "ghcr.io/laion-ai/open-assistant/oasst-inference-worker-full:{{
+          image_tag }}"
+        state: started
+        recreate: true
+        pull: true
+        restart_policy: always
+        network_mode: "oasst-worker-{{ stack_name }}"
+        env:
+          BACKEND_URL: "{{ backend_url }}"
+          API_KEY: "{{ api_key }}"
+          PARALLELISM: "{{ parallelism }}"

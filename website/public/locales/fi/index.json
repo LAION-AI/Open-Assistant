@@ -1,0 +1,23 @@
+{
+  "blurb": "Uskomme, että voimme käynnistää vallankumouksen.",
+  "blurb1": "Siinä missä Stable Diffusion mahdollisti kuvien ja taiteen luomisen uusilla tavoilla, Open Assistant parantaa maailmaa toteuttamalla vapaan ja hyvän keskustelevan tekoälyn.",
+  "description": "Keskusteleva tekoäly kaikkien saataville. LAIONin ja osallistujien ympäri maailmaa projekti keskustelevan GPT-kielimallin luomiseksi.",
+  "faq_items": {
+    "q0": "Kuinka pitkällä projekti on?",
+    "a0": "Olemme vasta alustavassa kehitysvaiheessa. Työskentelemme soveltaaksemme RLHF-menetelmiä isoihin kielimalleihin.",
+    "q1": "Kuka on Open Assistantin takana?",
+    "a1": "Open Assistantin takana on LAION sekä yksityishenkilöitä ympäri maailmaa, jotka haluavat saada keskustelevat tekoälyt kaikkien saataville.",
+    "q2": "Miten Open Assistant on lisensoitu?",
+    "a2": "Koodi ja mallit lisensoidaan Apache 2.0 -lisenssillä.",
+    "q3": "Julkaistaanko koulutusdata?",
+    "a3": "Kyllä, CC BY 4.0 -lisenssillä.",
+    "q4": "Onko Open Assistant ilmainen?",
+    "a4": "Kyllä, sekä Open Assistantin käyttäminen että muokkaaminen tulee olemaan ilmaista.",
+    "q5": "Kuinka tehokkaan laitteiston tarvitsee mallin käyttämiseen?",
+    "a5": "Julkaisemme myös sellaisia versioita, jotka toimivat kuluttajatietokoneilla."
+  },
+  "faq_title": "Usein kysytyt kysymykset",
+  "join_us_description": "Kaikki avoimen lähdekoodin projektit alkavat sinunkaltaisistasi ihmisistä. Avoin lähdekoodi on uskomus siitä, että voimme jakaa yhteisen tietomme ja tekniikkamme maailmalle koko ihmiskunnan hyväksi. Haluatko osallistua? Yhteystietomme:",
+  "join_us_title": "Liity meihin",
+  "subtitle": "Keskusteleva tekoäly kaikille."
+}

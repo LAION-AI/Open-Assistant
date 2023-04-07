@@ -1,6 +1,9 @@
-import { Box, Text, useColorMode } from "@chakra-ui/react";
+import { Box, Button, Text, useColorMode, Flex } from "@chakra-ui/react";
+import { User } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTranslation } from "next-i18next";
+import { isChatEnabled } from "src/lib/chat_enabled";
 
 import { AnimatedCircles } from "./AnimatedCircles";
 import { Container } from "./Container";
@@ -27,6 +30,20 @@ export function Hero() {
             </Text>
             <Text className={`mt-6 text-lg ${pTextColor}`}>{t("blurb")}</Text>
             <Text className={`mt-6 text-lg ${pTextColor}`}>{t("blurb1")}</Text>
+            <Box className={`mt-6 flex gap-6 ${pTextColor}`}>
+              {isChatEnabled() && (
+                <Link href="/chat" aria-label="Chat">
+                  <Button variant="solid" colorScheme="blue" px={5} py={6}>
+                    {t("index:try_our_assistant")}
+                  </Button>
+                </Link>
+              )}
+              <Link href="/dashboard" aria-label="Dashboard">
+                <Button variant="outline" px={5} py={6}>
+                  {t("index:help_us_improve")}
+                </Button>
+              </Link>
+            </Box>
           </Box>
           <Box className="relative mt-10 sm:mt-20 lg:col-span-5 lg:row-span-2 lg:mt-0 xl:col-span-6">
             <AnimatedCircles />

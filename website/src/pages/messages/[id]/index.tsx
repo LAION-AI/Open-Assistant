@@ -38,7 +38,7 @@ const MessageDetail = ({ id }: InferGetServerSidePropsType<typeof getServerSideP
               (data.tree === null ? (
                 "Unable to build tree"
               ) : (
-                <MessageTree tree={data.tree} messageId={data.message?.id}></MessageTree>
+                <MessageTree tree={data.tree} messageId={data.message?.id} scrollToHighlighted />
               ))}
           </CardBody>
         </Card>
@@ -56,7 +56,7 @@ export const getServerSideProps: GetServerSideProps<{ id: string }, { id: string
   props: {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: params!.id,
-    ...(await serverSideTranslations(locale, ["common", "message", "labelling", "side_menu"])),
+    ...(await serverSideTranslations(locale, ["common", "message", "labelling"])),
   },
 });
 

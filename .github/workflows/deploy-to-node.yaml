@@ -19,6 +19,10 @@ on:
         required: false
         type: string
         default: 3000
+      inference-server-port:
+        required: false
+        type: string
+        default: 8085
 
 jobs:
   deploy:
@@ -38,6 +42,7 @@ jobs:
       S3_REGION: ${{ secrets.S3_REGION }}
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      INIT_PROMPT_DISABLED_LANGS: ${{ vars.INIT_PROMPT_DISABLED_LANGS }}
       MAX_ACTIVE_TREES: ${{ vars.MAX_ACTIVE_TREES }}
       MAX_INITIAL_PROMPT_REVIEW: ${{ vars.MAX_INITIAL_PROMPT_REVIEW }}
       MAX_TREE_DEPTH: ${{ vars.MAX_TREE_DEPTH }}
@@ -46,6 +51,7 @@ jobs:
       P_LONELY_CHILD_EXTENSION: ${{ vars.P_LONELY_CHILD_EXTENSION }}
       P_ACTIVATE_BACKLOG_TREE: ${{ vars.P_ACTIVATE_BACKLOG_TREE }}
       MIN_ACTIVE_RANKINGS_PER_LANG: ${{ vars.MIN_ACTIVE_RANKINGS_PER_LANG }}
+      MAX_PROMPT_LOTTERY_WAITING: ${{ vars.MAX_PROMPT_LOTTERY_WAITING }}
       GOAL_TREE_SIZE: ${{ vars.GOAL_TREE_SIZE }}
       MESSAGE_SIZE_LIMIT: ${{ vars.MESSAGE_SIZE_LIMIT }}
       SKIP_TOXICITY_CALCULATION: ${{ vars.SKIP_TOXICITY_CALCULATION }}
@@ -66,10 +72,33 @@ jobs:
       BACKEND_URL: ${{ vars.BACKEND_URL }}
       WEB_NEXT_PUBLIC_BACKEND_URL: ${{ vars.WEB_NEXT_PUBLIC_BACKEND_URL }}
       BACKEND_CORS_ORIGINS: ${{ vars.BACKEND_CORS_ORIGINS }}
+      WEB_INFERENCE_SERVER_HOST: ${{ vars.WEB_INFERENCE_SERVER_HOST }}
+      WEB_ENABLE_CHAT: ${{ vars.WEB_ENABLE_CHAT }}
+      WEB_INFERENCE_SERVER_API_KEY: ${{secrets.WEB_INFERENCE_SERVER_API_KEY}}
+      INFERENCE_POSTGRES_PASSWORD: ${{secrets.INFERENCE_POSTGRES_PASSWORD}}
+      INFERENCE_ALLOW_DEBUG_AUTH: ${{vars.INFERENCE_ALLOW_DEBUG_AUTH}}
+      INFERENCE_DEBUG_API_KEYS: ${{vars.INFERENCE_DEBUG_API_KEYS}}
+      INFERENCE_LOG_LEVEL: ${{vars.INFERENCE_LOG_LEVEL}}
+      INFERENCE_ROOT_TOKEN: ${{secrets.INFERENCE_ROOT_TOKEN}}
+      INFERENCE_API_ROOT: ${{vars.INFERENCE_API_ROOT}}
+      INFERENCE_TRUSTED_CLIENT_KEYS: ${{secrets.INFERENCE_TRUSTED_CLIENT_KEYS}}
+      INFERENCE_AUTH_SALT: ${{secrets.INFERENCE_AUTH_SALT}}
+      INFERENCE_AUTH_SECRET: ${{secrets.INFERENCE_AUTH_SECRET}}
+      INFERENCE_AUTH_DISCORD_CLIENT_ID: ${{secrets.INFERENCE_AUTH_DISCORD_CLIENT_ID}}
+      INFERENCE_AUTH_DISCORD_CLIENT_SECRET: ${{secrets.INFERENCE_AUTH_DISCORD_CLIENT_SECRET}}
+      INFERENCE_AUTH_GITHUB_CLIENT_ID: ${{secrets.INFERENCE_AUTH_GITHUB_CLIENT_ID}}
+      INFERENCE_AUTH_GITHUB_CLIENT_SECRET: ${{secrets.INFERENCE_AUTH_GITHUB_CLIENT_SECRET}}
+      INFERENCE_CORS_ORIGINS: ${{ vars.INFERENCE_CORS_ORIGINS }}
+      INFERENCE_ALLOWED_MODEL_CONFIG_NAMES:
+        ${{ vars.INFERENCE_ALLOWED_MODEL_CONFIG_NAMES }}
+      INFERENCE_ASSISTANT_MESSAGE_TIMEOUT:
+        ${{ vars.INFERENCE_ASSISTANT_MESSAGE_TIMEOUT }}
+      INFERENCE_MESSAGE_QUEUE_EXPIRE: ${{ vars.INFERENCE_MESSAGE_QUEUE_EXPIRE }}
+      INFERENCE_WORK_QUEUE_MAX_SIZE: ${{ vars.INFERENCE_WORK_QUEUE_MAX_SIZE }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Run playbook
+      - name: Run deploy playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
           # Required, playbook filepath
@@ -89,3 +118,21 @@ jobs:
             website_port=${{inputs.website-port}} \
             postgres_password=${{secrets.POSTGRES_PASSWORD}} \
             web_api_key=${{secrets.WEB_API_KEY}}"
+
+      - name: Run inference deploy playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          # Required, playbook filepath
+          playbook: inference/deploy-server.yaml
+          # Optional, directory where playbooks live
+          directory: ansible
+          # Optional, SSH private key
+          key: ${{secrets.DEV_NODE_PRIVATE_KEY}}
+          # Optional, literal inventory file contents
+          inventory: |
+            [dev]
+            dev01 ansible_host=${{secrets.DEV_NODE_IP}} ansible_connection=ssh ansible_user=web-team
+          options: |
+            --extra-vars "stack_name=${{inputs.stack-name}} \
+            image_tag=${{inputs.image-tag}} \
+            server_port=${{inputs.inference-server-port}}"

@@ -14,5 +14,24 @@
   "top_5_contributors_today": "Les 5 meilleurs contributeurs aujourd'hui",
   "user": "Utilisateur",
   "view_all": "Voir tout",
-  "weekly": "Hebdomadaire"
+  "weekly": "Hebdomadaire",
+
+  "accepted": "↪ Accepté",
+  "accepted_prompts": "Messages acceptées",
+  "day": "Jour",
+  "good_rankings": "Bons classements",
+  "labels_full": "Étiquettes (complètes)",
+  "labels_simple": "Étiquettes (simples)",
+  "month": "Mois",
+  "no_email": "(Pas d'email)",
+  "no_username": "(Pas de nom d'utilisateur)",
+  "rankings": "Classement",
+  "replies_assistant": "Répond en tant qu'Assistant",
+  "replies_prompter": "Répondre en tant qu'Utilisateur",
+  "reply_ranked_1": "Réponses classées en premier",
+  "total": "Total",
+  "username": "Nom d'utilisateur",
+  "week": "Semaine",
+  "your_account": "Votre compte",
+  "your_stats": "Vos statistiques"
 }

@@ -1,0 +1,14 @@
+{
+  "grab_a_task": "Ta en oppgave!",
+  "create": "Opprett",
+  "evaluate": "Vurder",
+  "label": "Betegnelse",
+  "dashboard": "Dashbord",
+  "go": "Kjør",
+  "welcome_message": {
+    "label": "Velkommen, {{username}}!",
+    "contributor": "Bidragsyter",
+    "description": "Open Assistant er en åpen kildekode AI-assistent som bruker og trener avanserte språkmodeller til å forstå og besvare mennesker.",
+    "instruction": "Fullfør oppgaver for å hjelpe med å trene modellen og for å oppnå poeng."
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "default": {
+    "generate_args": {
+      "max_new_tokens": 128,
+      "min_new_tokens": 5,
+      "do_sample": true,
+      "temperature": 1.0
+    },
+    "pre_text": "You are a helpful assistant called Joi trained by OpenAssistant on large corpus of data, you will now help user to answer the question as concise as possible.",
+    "bot_name": "Joi",
+    "human_name": "User",
+    "add_prefix_tokens": false
+  },
+  "configurations": [
+    {
+      "name": "k50",
+      "generate_args": {
+        "top_k": 50,
+        "top_p": 0.95,
+        "repetition_penalty": 1.2
+      }
+    },
+    {
+      "name": "beam5",
+      "generate_args": {
+        "temperature": 0.8,
+        "top_p": 0.9,
+        "num_beams": 5
+      }
+    },
+    {
+      "name": "magic_numbers",
+      "generate_args": {
+        "top_k": 9607,
+        "top_p": 0.242
+      }
+    },
+    {
+      "name": "typical95",
+      "generate_args": {
+        "top_k": 1000,
+        "top_p": 0.95,
+        "typical_p": 0.95,
+        "repetition_penalty": 1.2
+      }
+    },
+    {
+      "name": "greedy",
+      "generate_args": {
+        "do_sample": false,
+        "num_beams": 1
+      }
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 import "../styles/globals.css";
 import "focus-visible";
 
-import type { AppProps } from "next/app";
+import { boolean } from "boolean";
+import type { AppContext, AppProps } from "next/app";
 import Head from "next/head";
 import { SessionProvider } from "next-auth/react";
 import { appWithTranslation, useTranslation } from "next-i18next";
@@ -12,10 +13,12 @@ import flags from "src/flags";
 import { SWRConfig, SWRConfiguration } from "swr";
 
 import nextI18NextConfig from "../../next-i18next.config.js";
-import { Chakra, getServerSideProps } from "../styles/Chakra";
+import { Chakra } from "../styles/Chakra";
 
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
+  env: typeof process.env;
+  cookie: string;
 };
 
 const swrConfig: SWRConfiguration = {
@@ -23,21 +26,35 @@ const swrConfig: SWRConfiguration = {
   revalidateOnMount: true,
 };
 
-function MyApp({ Component, pageProps: { session, cookies, ...pageProps } }: AppPropsWithLayout) {
+function MyApp({ Component, pageProps: { session, ...pageProps }, env, cookie }: AppPropsWithLayout) {
+  // expose env vars on the client
+  if (typeof window !== "undefined") {
+    process.env = new Proxy(env, {
+      get(env, key: string) {
+        if (!(key in env)) {
+          console.warn(`Environment variable ${key} not set in _app.tsx`);
+        }
+        return env[key];
+      },
+    });
+  }
+
   const getLayout = Component.getLayout ?? getDefaultLayout;
   const page = getLayout(<Component {...pageProps} />);
   const { t, i18n } = useTranslation();
+
   const direction = i18n.dir();
   useEffect(() => {
     document.body.dir = direction;
   }, [direction]);
+
   return (
     <>
       <Head>
         <meta name="description" key="description" content={t("index:description")} />
       </Head>
       <FlagsProvider value={flags}>
-        <Chakra cookies={cookies}>
+        <Chakra cookie={cookie}>
           <SWRConfig value={swrConfig}>
             <SessionProvider session={session}>{page}</SessionProvider>
           </SWRConfig>
@@ -46,5 +63,19 @@ function MyApp({ Component, pageProps: { session, cookies, ...pageProps } }: App
     </>
   );
 }
-export { getServerSideProps };
+
+MyApp.getInitialProps = ({ ctx: { req } }: AppContext) => {
+  return {
+    env: {
+      INFERENCE_SERVER_HOST: process.env.INFERENCE_SERVER_HOST,
+      ENABLE_CHAT: boolean(process.env.ENABLE_CHAT),
+      ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
+      ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA),
+      CLOUDFLARE_CAPTCHA_SITE_KEY: process.env.CLOUDFLARE_CAPTCHA_SITE_KEY,
+      NODE_ENV: process.env.NODE_ENV,
+    },
+    cookie: req?.headers.cookie,
+  };
+};
+
 export default appWithTranslation(MyApp, nextI18NextConfig);

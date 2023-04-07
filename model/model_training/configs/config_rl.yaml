@@ -1,9 +1,10 @@
 defaults_rlhf:
+  rng_seed: 0xa1221f97
   dataset:
   rank_model: TODO
   sft_model: TODO
   eval_prompts:
-  batch_size: 64
+  batch_size: 18
   epochs: 10
   datasets:
     - oa_private:
@@ -11,10 +12,16 @@ defaults_rlhf:
         split: rl
         val_split: 0.0
         fraction: 1
-        file: 2023-02-10_oasst_prod.jsonl
+        file: 2023-02-12_oasst_prod.jsonl
   cache_dir: .cache
   quantization: false
   seq2seqmodel: false
+
+pythia_2b_rlhf:
+  model_name: EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-2000
+  rank_model: ../reward/instructor/microsoft/deberta-v3-large-finetuned/checkpoint-4500
+  sft_model: EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-2000
+  batch_size: 18
 
 debug_rlhf:
   model_name: gpt2

@@ -35,8 +35,40 @@ jobs:
       context: .
       dockerfile: docker/Dockerfile.discord-bot
       build-args: ""
+  build-inference-server:
+    uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
+    with:
+      image-name: oasst-inference-server
+      context: .
+      dockerfile: docker/inference/Dockerfile.server
+      build-args: ""
+  build-inference-worker-full:
+    uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
+    with:
+      image-name: oasst-inference-worker-full
+      context: .
+      dockerfile: docker/inference/Dockerfile.worker-full
+      build-args: ""
+  build-inference-worker-llama:
+    uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
+    with:
+      image-name: oasst-inference-worker-llama
+      context: .
+      dockerfile: docker/inference/Dockerfile.worker-llama
+      build-args: ""
+  build-inference-worker-hf:
+    uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
+    with:
+      image-name: oasst-inference-worker-hf
+      context: .
+      dockerfile: docker/inference/Dockerfile.worker-hf
+      build-args: ""
   deploy-to-node:
-    needs: [build-backend, build-web, build-bot]
+    needs: [build-backend, build-web, build-bot, build-inference-server]
     uses: ./.github/workflows/deploy-to-node.yaml
     secrets: inherit
     with:
@@ -46,3 +78,5 @@ jobs:
         'latest' }}
       backend-port: ${{ github.event_name == 'release' && '8180' || '8080' }}
       website-port: ${{ github.event_name == 'release' && '3100' || '3000' }}
+      inference-server-port:
+        ${{ github.event_name == 'release' && '8185' || '8085' }}

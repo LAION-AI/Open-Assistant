@@ -1,25 +1,39 @@
+import argparse
+import copy
+import math
 import random
 from distutils.util import strtobool
 from pathlib import Path
 from typing import List, NamedTuple
 
 import evaluate
+import torch
 import transformers
 import yaml
-from custom_datasets import get_one_dataset
-from custom_datasets.qa_datasets import QA_SPECIAL_TOKENS
-from losses import CrossEntropyLoss, PolyLoss
-from models import freeze_top_n_layers, get_specific_model
+from model_training.custom_datasets import get_one_dataset
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
+from model_training.losses import CrossEntropyLoss, PolyLoss, RMCLSLoss, RMLoss
+from model_training.models import freeze_top_n_layers, get_specific_model
+from model_training.models.patching import patch_model
+from model_training.models.reward_model import GPTNeoXRewardModel
 from sklearn.model_selection import train_test_split
-from torch.utils.data import ConcatDataset, Subset
-from torch.utils.data.sampler import Sampler
+from tokenizers import pre_tokenizers
+from torch.utils.data import ConcatDataset, Dataset, Subset
+from torch.utils.data.distributed import DistributedSampler
 
 
 def _strtobool(x):
     return bool(strtobool(x))
 
 
-class PerDatasetSampler(Sampler):
+def init_rng(conf: argparse.Namespace) -> None:
+    seed = conf.rng_seed
+    if seed is not None:
+        print(f"RNG seed: {seed}")
+        transformers.set_seed(seed)
+
+
+class PerDatasetSampler(DistributedSampler):
     """Sampler which returns a fixed number of samples per dataset, per epoch.
 
     Example:
@@ -44,34 +58,81 @@ class PerDatasetSampler(Sampler):
     e.g. using torch.utils.data.ConcatDataset which is current behaviour.
     """
 
-    def __init__(self, dataset_sizes: List[int], dataset_size_per_epoch: List[int]):
+    def __init__(
+        self,
+        dataset_sizes: List[int],
+        dataset_size_per_epoch: List[int],
+        rank: int = None,
+        world_size: int = None,
+        shuffle: bool = True,
+        seed: int = 0,
+        samples_length: List[int] = None,
+    ):
+        """
+        if samples_length is not None, then the sampler
+        will order the samples by dataset length
+        with some variability across epochs
+        """
         self.dataset_sizes = dataset_sizes
         self.dataset_size_per_epoch = dataset_size_per_epoch
         self.num_datasets = len(dataset_sizes)
+        self.shuffle = shuffle
+        self.rank = rank
+        self.world_size = world_size
+
+        if world_size == 1:
+            self.rank = 0
+
+        self.num_samples = sum(dataset_size_per_epoch)
+        self.seed = seed
+        self.samples_length = samples_length
+
+    def set_epoch(self, epoch) -> None:
+        self.epoch = epoch
+
+    def __len__(self) -> int:
+        return self.num_samples // self.world_size
 
     def __iter__(self):
         epoch_idx = []
         n = 0
+
+        random.seed(self.epoch + self.seed)
+
         for i in range(self.num_datasets):
             sampled_idx = random.sample(range(n, self.dataset_sizes[i] + n), self.dataset_size_per_epoch[i])
             n += self.dataset_sizes[i]
             epoch_idx.extend(sampled_idx)
-        random.shuffle(epoch_idx)
+
+        if self.samples_length is not None:
+            # sort by samples length and in case of ties randomize
+            epoch_idx = sorted(epoch_idx, key=lambda x: (self.samples_length[x], random.random()))
+
+            if self.shuffle:
+                # do some minor shuffling to avoid repeating the same order
+                # but not too much to avoid too much padding
+                # quasi random basically
+                for i in range(0, len(epoch_idx), 200):  # this should be batch_size dependent
+                    random.shuffle(epoch_idx[i : i + 200])
+        else:
+            if self.shuffle:
+                random.shuffle(epoch_idx)
+
+        # split epoch_idx in world_size chunks
+        epoch_idx = epoch_idx[self.rank : self.num_samples : self.world_size]
+
         return iter(epoch_idx)
 
-    def __len__(self):
-        return int(sum(self.dataset_size_per_epoch))
-
     @classmethod
-    def build_sampler_from_config(cls, training_conf, datasets):
+    def build_sampler_from_config(cls, training_conf, datasets: List[Dataset], verbose: bool = False, *args, **kwargs):
         dataset_sizes = [len(x) for x in datasets]
-        fractions = get_dataset_fractions(training_conf.datasets, dataset_sizes, verbose=training_conf.verbose)
+        fractions = get_dataset_fractions(training_conf.datasets, dataset_sizes, verbose)
         dataset_size_per_epoch = [int(size * frac) for size, frac in zip(dataset_sizes, fractions)]
-        return cls(dataset_sizes, dataset_size_per_epoch)
+        return cls(dataset_sizes, dataset_size_per_epoch, *args, **kwargs)
 
 
-def get_dataset_fractions(conf, dataset_sizes, verbose=False):
-    """Calculate fraction of each dataset to use per epoch when subsampling"""
+def get_dataset_fractions(conf, dataset_sizes: List[int], verbose: bool = False):
+    """Calculate fraction of each dataset to use per epoch when sub-sampling"""
 
     if verbose:
         print("Creating sampler for datasets:")
@@ -94,7 +155,7 @@ def get_dataset_fractions(conf, dataset_sizes, verbose=False):
             fractions.append(1)
 
         if verbose:
-            print(f"Dataset: {dataset_name} fraction chosen: {fractions[-1]:.2f}")
+            print(f"{dataset_name}: {fractions[-1]:.2%} ({int(dataset_sizes[i]*fractions[-1])})")
     return fractions
 
 
@@ -113,6 +174,12 @@ TOKENIZER_CONFIGS = {
     "GPT-JT": TokenizerConfig(special_tokens=SpecialTokens(sep_token="<|extratoken_100|>")),
     "codegen": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", sep_token="<|endoftext|>")),
     "pythia": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
+    "gpt-neox": TokenizerConfig(special_tokens=SpecialTokens("<|padding|>", "<|endoftext|>", "<|endoftext|>")),
+    "llama": TokenizerConfig(special_tokens=SpecialTokens("</s>", "</s>", sep_token="<s>")),
+    "cerebras": TokenizerConfig(special_tokens=SpecialTokens("<|endoftext|>", "<|endoftext|>", "<|endoftext|>")),
+    "deberta-v3": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
+    "bloom": TokenizerConfig(special_tokens=SpecialTokens("<pad>", "</s>", "<s>")),
+    "electra": TokenizerConfig(special_tokens=SpecialTokens("[PAD]", "[SEP]", sep_token="[CLS]")),
 }
 
 
@@ -131,8 +198,18 @@ def match_tokenizer_name(model_name: str) -> TokenizerConfig:
 
 
 def get_tokenizer(conf) -> transformers.AutoTokenizer:
-    tokenizer = transformers.AutoTokenizer.from_pretrained(conf.model_name, cache_dir=conf.cache_dir)
+    tokenizer_name = conf.model_name
+
+    if "cerebras" in conf.model_name:
+        # Only 13B has a tokenizer available on HF
+        tokenizer_name = "cerebras/Cerebras-GPT-13B"
+
+    tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_name, cache_dir=conf.cache_dir)
+
     tokenizer_config = match_tokenizer_name(conf.model_name)
+
+    if hasattr(conf, "per_digit_tokens") and conf.per_digit_tokens:
+        tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 
     if tokenizer_config.special_tokens:
         if "GPT-JT" in conf.model_name:
@@ -213,20 +290,54 @@ def get_metrics(conf, tokenizer):
     return metrics, preprocess_fns
 
 
-def get_model(conf, tokenizer):
-    model = get_specific_model(conf.model_name, cache_dir=conf.cache_dir, seq2seqmodel=conf.seq2seqmodel)
+def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
+    dtype = torch.float32
+    if conf.dtype in ["fp16", "float16"]:
+        dtype = torch.float16
+    elif conf.dtype in ["bf16", "bfloat16"]:
+        dtype = torch.bfloat16
 
-    if len(tokenizer) != model.get_input_embeddings().num_embeddings:
-        assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
+    if conf.is_reward_model:
+        if "pythia" in conf.model_name:
+            model = GPTNeoXRewardModel.from_pretrained(conf.model_name, cache_dir=conf.cache_dir, torch_dtype=dtype)
+            if conf.pooling:
+                assert conf.pooling in ("mean", "last"), f"invalid pooling configuration '{conf.pooling}'"
+                model.config.pooling = conf.pooling
+        else:
+            model = transformers.AutoModelForSequenceClassification.from_pretrained(
+                conf.model_name, cache_dir=conf.cache_dir, num_labels=1, torch_dtype=dtype
+            )
+    else:
+        model = get_specific_model(
+            conf.model_name,
+            cache_dir=conf.cache_dir,
+            quantization=conf.quantization,
+            seq2seqmodel=conf.seq2seqmodel,
+            without_head=conf.is_reward_model,
+            torch_dtype=dtype,
+        )
 
-    model.resize_token_embeddings(len(tokenizer))
+        n_embs = model.get_input_embeddings().num_embeddings
+        if len(tokenizer) != n_embs:
+            assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
 
-    if conf.freeze_layer:
-        model = freeze_top_n_layers(model, conf.freeze_layer)
+        if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
+            p = pad_vocab_size_to_multiple_of
+            target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
+            model.resize_token_embeddings(target_size)
+
+        if conf.freeze_layer:
+            model = freeze_top_n_layers(model, conf.freeze_layer)
 
     model_parameters = filter(lambda p: p.requires_grad, model.parameters())
     params = sum([p.numel() for p in model_parameters])
     print("Number of trainable parameters: {}M".format(int(params / 1e6)))
+
+    patch_model(
+        model,
+        resid_pdrop=conf.residual_dropout,
+        flash_attention=conf.use_flash_attention,
+    )
 
     return model
 
@@ -234,8 +345,10 @@ def get_model(conf, tokenizer):
 def get_dataset_name_and_kwargs_from_data_config(data_config):
     if isinstance(data_config, dict):
         name = list(data_config.keys())[0]
-        kwargs = data_config[name]
-        # remove 'fraction' or 'size' from kwargs
+
+        # first copy the dict, then remove the size and fraction
+        kwargs = copy.deepcopy(data_config[name])
+
         kwargs.pop("fraction", None)
         kwargs.pop("size", None)
         return name, kwargs
@@ -243,10 +356,13 @@ def get_dataset_name_and_kwargs_from_data_config(data_config):
         return data_config, {}
 
 
-def get_dataset(conf, mode="sft"):
+def get_dataset(
+    conf,
+    mode: str = "sft",
+) -> tuple[ConcatDataset, dict[str, Subset]]:
     train_datasets, evals = [], {}
 
-    for data_config in conf.datasets:
+    for data_config in conf.datasets + conf.datasets_extra:
         dataset_name, kwargs = get_dataset_name_and_kwargs_from_data_config(data_config)
         train, val = get_one_dataset(conf, dataset_name, mode=mode, **kwargs)
         train_datasets.append(train)
@@ -259,11 +375,15 @@ def get_dataset(conf, mode="sft"):
     return train, evals
 
 
-def get_loss(loss, poly_eps):
+def get_loss(loss, poly_eps: float = 1.0, score_l2_reg: float = 0.001):
     if loss == "CrossEntropyLoss":
         return CrossEntropyLoss()
     elif loss == "Poly":
         return PolyLoss(epsilon=poly_eps)
+    elif loss == "RMLoss":
+        return RMLoss(beta=score_l2_reg)
+    elif loss == "RMCLSLoss":
+        return RMCLSLoss()
     else:
         raise ValueError(f"Loss {loss} not supported")
 
@@ -288,3 +408,13 @@ def train_val_dataset(dataset, val_split=0.2):
         list(range(len(dataset))), test_size=val_split, random_state=666, shuffle=True
     )
     return Subset(dataset, train_idx), Subset(dataset, val_idx)
+
+
+def process_output(output: str, method: str = "v2", bot_name: str = "Joi") -> str:
+    if method == "v2":
+        answer = output.split(QA_SPECIAL_TOKENS["Answer"])[-1]
+        answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split(QA_SPECIAL_TOKENS["Answer"])[0]
+    else:
+        answer = output.split("\n\n{}:".format(bot_name))[-1]
+        answer = answer.split("</s>")[0].replace("<|endoftext|>", "").lstrip().split("\n\n{}:".format(bot_name))[0]
+    return answer

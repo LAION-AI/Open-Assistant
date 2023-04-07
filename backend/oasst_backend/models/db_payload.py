@@ -67,6 +67,7 @@ class RankingReactionPayload(ReactionPayload):
     ranked_message_ids: list[UUID]
     ranking_parent_id: Optional[UUID]
     message_tree_id: Optional[UUID]
+    not_rankable: Optional[bool]  # all options flawed, factually incorrect or unacceptable
 
 
 @payload_type
@@ -75,6 +76,7 @@ class RankConversationRepliesPayload(TaskPayload):
     reply_messages: list[protocol_schema.ConversationMessage]
     ranking_parent_id: Optional[UUID]
     message_tree_id: Optional[UUID]
+    reveal_synthetic: Optional[bool]
 
 
 @payload_type

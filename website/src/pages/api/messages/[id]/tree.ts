@@ -9,7 +9,7 @@ export default withoutRole("banned", async (req, res, token) => {
   const isModOrAdmin = token.role === ROLES.ADMIN || token.role === ROLES.MODERATOR;
   const response = await client.fetch_message_tree(messageId, {
     include_deleted: isModOrAdmin,
-    include_spam: isModOrAdmin,
+    include_spam: true,
   });
 
   if (!response) {
