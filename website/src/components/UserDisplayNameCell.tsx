@@ -29,13 +29,13 @@ export const UserDisplayNameCell = ({
 
   return (
     <Flex gap="2" alignItems="center">
-      {avatarUrl !== undefined && <UserAvatar displayName={displayName} avatarUrl={avatarUrl} />}
+      <UserAvatar displayName={displayName} avatarUrl={avatarUrl} />
       {isAdminOrMod ? (
         <>
           <Link as={NextLink} href={ROUTES.ADMIN_USER_DETAIL(userId)}>
             {displayName}
           </Link>
-          <Tooltip label={`This user signin with ${authMethod}`}>{AUTH_METHOD_TO_ICON[authMethod]}</Tooltip>
+          <Tooltip label={`Signed in with ${authMethod}`}>{AUTH_METHOD_TO_ICON[authMethod]}</Tooltip>
         </>
       ) : (
         displayName
