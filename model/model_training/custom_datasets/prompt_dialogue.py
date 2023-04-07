@@ -113,12 +113,51 @@ class Gpt4All(Dataset):
         )
         self.rows = [(row["prompt"], row["response"]) for row in dataset["train"]]
 
+        dataset_multi = load_dataset(
+            "Nebulous/gpt4all_pruned",
+            data_files="data_multiround_pruned_3.jsonl",
+            cache_dir=cache_dir,
+        )
+        multi_round_conversations = []
+        for row in dataset_multi["train"]["conversation"]:
+            if (processed_conversation := self.process_conversation(row)) is not None:
+                multi_round_conversations.append(processed_conversation)
+        self.rows.extend(multi_round_conversations)
+
+    @staticmethod
+    def process_conversation(conv: list[dict[str, None | str]]) -> list[str] | None:
+        dialogue = []
+        role = None
+        messages = []
+        # drop conversations that start with Bot
+        if conv[0]["Bot"] is not None:
+            return None
+        for line in conv:
+            if line["User"] and line["Bot"]:
+                raise ValueError("Unexpected dataformat. Should receive only User or Bot data, not both.")
+            if (message := line["User"]) is not None:
+                speaker = "Human"
+            elif (message := line["Bot"]) is not None:
+                speaker = "Assistant"
+            else:
+                continue
+            if role != speaker:
+                if role is not None:
+                    dialogue.append("\n".join(messages))
+                    messages = []
+                role = speaker
+            messages.append(message.strip())
+
+        if role is not None and len(messages) > 0:
+            dialogue.append("\n".join(messages))
+        return dialogue
+
     def __len__(self):
         return len(self.rows)
 
     def __getitem__(self, index):
-        question, answer = self.rows[index]
+        dialogue = self.rows[index]
         if self.mode == "sft":
-            return (question, answer)
+            return dialogue
         elif self.mode == "rl":
-            return (question,)
+            return (dialogue[:-1],)
