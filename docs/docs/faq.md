@@ -166,7 +166,7 @@ issue stating your wish to be assigned. You can also take a look at this
 
 </summary>
 
-The Python backends for the data collection app as well as for the inference
+The Python backend for the data collection app as well as for the inference
 backend uses FastAPI. The frontend is built with NextJS and Typescript.
 
 The ML codebase is largely PyTorch-based and uses HuggingFace Transformers as
