@@ -80,6 +80,89 @@ class SummarizationDataset(Dataset):
         return (context, summary)
 
 
+SUMMARIZATION_PROMPTS = [
+    "Please summarize the following content:\n{}",
+    "Write me a summary for the following article:\n{}",
+    "Kindly sum up the following information: {}",
+    "Please summarize the following text for me:\n{}",
+    "Give me a summary of the following text:\n\n{}",
+    "Describe the following information in brief: {}",
+    "Will you kindly summarize the following paragraph for me?\n{}",
+    "Summarize this: {}",
+    "TLDR this: {}",
+    "{}\nTLDR;",
+    "{}\n\nTL;DR",
+    "{} tl;dr:",
+    "{}\nPlease summarize the content above",
+    "{} Please summarize the preceding statements.",
+]
+
+
+class HFSummaryPairs(Dataset):
+    """
+    Simplified version of the HFSummary class which uses the original examples
+    of the OpenAI dataset.
+    https://huggingface.co/datasets/openai/summarize_from_feedback
+    """
+
+    def __init__(self, split="train", mode="sft", conf_threshold=-1) -> None:
+        super().__init__()
+        assert split in ("train", "valid1", "valid2", "test")
+        assert mode in ("sft", "rm", "rl")
+        self.mode = mode
+
+        self.posts = []
+        self.summary_pairs = []
+
+        major_split = split if "train" == split else "validation"
+        dataset = load_dataset("openai/summarize_from_feedback", "comparisons")[major_split]
+        for data in dataset:
+            if (
+                "extra" in data
+                and "confidence" in data["extra"]
+                and data["extra"]["confidence"] is not None
+                and conf_threshold > data["extra"]["confidence"]
+            ):
+                print("skipping {}".format(data["info"]["id"]))
+                continue
+
+            if split != "train" and split != data["split"]:
+                continue
+
+            if "article" in data["info"] and data["info"]["article"] is not None:
+                context = data["info"]["article"]
+            elif "post" in data["info"]:
+                context = data["info"]["post"]
+
+            self.posts.append(context)
+            pos, neg = (0, 1) if data["choice"] == 0 else (1, 0)
+            self.summary_pairs.append((data["summaries"][pos]["text"].strip(), data["summaries"][neg]["text"].strip()))
+
+    def __len__(self) -> int:
+        return len(self.posts)
+
+    def __getitem__(self, index: int) -> tuple | list:
+        if index < 0 or index >= len(self.posts):
+            raise IndexError()
+
+        context = self.posts[index]
+        # return pairs of comparison
+        good_summary, bad_summary = self.summary_pairs[index]
+        prompt = random.choice(SUMMARIZATION_PROMPTS)
+
+        # pair very big
+        # we are going to do some sampling
+        # not optimal but good for now
+        if self.mode == "sft":
+            return [prompt.format(context), good_summary]
+        elif self.mode == "rl":
+            return (prompt.format(context),)
+        elif self.mode == "rm":
+            return [prompt.format(context)], [good_summary, bad_summary]
+
+        raise RuntimeError(f"Unsupported mode '{self.mode}'")
+
+
 class HFSummary(Dataset):
     """
     Human feedback data from OpenAI
@@ -89,13 +172,6 @@ class HFSummary(Dataset):
     labeling method : pair comparison, 0 or 1
 
     """
-
-    PROMPTS = [
-        "Please summarize the following content:\n{}",
-        "{}\nTLDR;",
-        "{}\nPlease summarize the content above",
-        "Write a summary for the following article:\n{}",
-    ]
 
     def __init__(self, split="train", mode="sft", conf_threshold=-1, max_comparison_per_sample=5) -> None:
         super().__init__()
@@ -165,17 +241,17 @@ class HFSummary(Dataset):
 
         return sorted_elements
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.index2summary)
 
-    def __getitem__(self, index):
-        if index >= len(self.index2summary):
+    def __getitem__(self, index) -> tuple | list:
+        if index < 0 or index >= len(self.index2summary):
             raise IndexError()
 
-        context = self.index2summary.get(index)
+        context = self.index2summary[index]
         # return pairs of comparison
         rows = self.summaries[context]
-        prompt = random.choice(self.PROMPTS)
+        prompt = random.choice(SUMMARIZATION_PROMPTS)
 
         # pair very big
         # we are going to do some sampling

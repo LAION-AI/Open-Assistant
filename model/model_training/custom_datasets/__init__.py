@@ -19,7 +19,7 @@ from model_training.custom_datasets.qa_datasets import (
     WebGPT,
 )
 from model_training.custom_datasets.rank_datasets import AugmentedOA
-from model_training.custom_datasets.summarization import HFSummary, SummarizationDataset
+from model_training.custom_datasets.summarization import HFSummary, HFSummaryPairs, SummarizationDataset
 from model_training.custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
 from model_training.custom_datasets.translation import WMT2019, DiveMT, TEDTalk
 from sklearn.model_selection import train_test_split
@@ -50,6 +50,7 @@ RL_DATASETS = [
     "private_tuning",
     "alpaca",
     "hf_summary",
+    "hf_summary_pairs",
 ]
 
 RM_DATASETS = [
@@ -57,6 +58,7 @@ RM_DATASETS = [
     "augment_oasst",
     "anthropic_rlhf",
     "hf_summary",
+    "hf_summary_pairs",
     "shp",
     "hellaswag",
     "webgpt",
@@ -140,6 +142,9 @@ def get_one_dataset(
     elif dataset_name == "hf_summary":
         train = HFSummary(split="train", mode=mode)
         eval = HFSummary(split="valid1", mode=mode)
+    elif dataset_name == "hf_summary_pairs":
+        train = HFSummaryPairs(split="train", mode=mode)
+        eval = HFSummaryPairs(split="valid1", mode=mode)
     elif dataset_name == "augment_oasst":
         # reward model mode only
         assert mode == "rm"
