@@ -70,6 +70,12 @@
       "githubURL": "https://twitter.com/dvruette",
       "imageURL": "https://pbs.twimg.com/profile_images/1617481050225000454/jtAbxCZF_400x400.jpg"
     },
+    "jordiclive": {
+      "name": "Jordan Clive",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/jordiclive",
+      "imageURL": "https://pbs.twimg.com/profile_images/1517535195251027969/pz3FVRsZ_400x400.jpg"
+    },
     "olliestanley": {
       "name": "Oliver Stanley",
       "title": "Backend & ML engineer",
@@ -169,7 +175,7 @@
     },
     {
       "name": "ML engineers",
-      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette"]
+      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette", "jordiclive"]
     },
     {
       "name": "Data Team",
