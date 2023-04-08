@@ -6,12 +6,14 @@ import glob
 import json
 import os
 import re
-from collections import OrderedDict
+from collections import defaultdict
+from pathlib import Path
 from urllib.request import urlopen
 
 import numpy as np
 from datasets import load_dataset
-from torch.utils.data import Dataset
+from torch import Generator
+from torch.utils.data import Dataset, Subset, random_split
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
@@ -174,36 +176,44 @@ class QADataset(Dataset):
 
 class WebGPT(Dataset):
     name = "webgpt"
-    splits = OrderedDict(sft=0.25, reward_model=0.4, rl=0.35)  # fractions per task
 
-    def __init__(self, split="sft") -> None:
+    def __init__(self, mode: str = "sft", max_answers: int = 5) -> None:
         super().__init__()
-        self.mode = split
+        self.mode = mode
+        assert mode in ("sft", "rm", "rl")
+
         dataset = load_dataset("openai/webgpt_comparisons")
-        questions = {}
-        # using prompt as our index will allows us
-        # to add additional generated prompt later
-        self.index2question = {}
+
+        self.questions = []
+        self.answers = []
+
+        question_answer_dict = defaultdict(dict)
+
         for row in dataset["train"]:
             question = row["question"]["full_text"]
-            if question not in self.index2question:
-                self.index2question[len(self.index2question)] = question
+            answer_0 = re_reference_remove.sub("", row["answer_0"])
+            answer_1 = re_reference_remove.sub("", row["answer_1"])
+            question_answer_dict[question][answer_0] = row["score_0"]
+            question_answer_dict[question][answer_1] = row["score_1"]
 
-            # only keep the best answer
-            questions[question] = re_reference_remove.sub(
-                "", row["answer_0" if row["score_0"] > row["score_1"] else "answer_1"]
-            )
+        for question, answers in question_answer_dict.items():
+            self.questions.append(question)
+            # Sort answer dict with the highest score first (hence the prefactor -1).
+            # Then take only the first `max_answers` elements (usually there are just
+            # 2, but there are examples where we have more)
+            answers_sorted = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
+            self.answers.append(answers_sorted[:max_answers])
 
-        self.questions = questions
+    def __len__(self) -> int:
+        return len(self.questions)
 
-    def __len__(self):
-        return len(self.index2question)
-
-    def __getitem__(self, index):
-        question = self.index2question[index]
-        answer = self.questions[question]
+    def __getitem__(self, index) -> list[str] | tuple[list[str], list[str]]:
+        question = self.questions[index]
+        answers = self.answers[index]
         if self.mode == "sft":
-            return (question, answer)
+            return [question, answers[0]]
+        elif self.mode == "rm":
+            return ([question], answers)
         elif self.mode == "rl":
             return (question,)
 
@@ -411,37 +421,125 @@ class TranslatedQA(Dataset):
         return self.pairs[index]
 
 
-class AlpacaBase(Dataset):
-    def __init__(self, dataset_name: str, mode: str, cache_dir: str = None) -> None:
+class AlpacaBaseDataset(Dataset):
+    def __init__(self, data: list, mode: str):
         super().__init__()
+        self.data = data
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(
+                f"Alpaca Dataset for mode {self.mode} is not implemented. Currently supported modes are 'sft' and 'rl'."
+            )
         self.mode = mode
-        dataset = load_dataset(dataset_name, cache_dir=cache_dir)
-        rows = []
-        for row in dataset["train"]:
-            question = row["instruction"]
-            if len(row["input"]) > 0:
-                input_ = "{}\n{}".format(question, row["input"])
-            else:
-                input_ = question
-            rows.append((input_, row["output"]))
-        self.rows = rows
 
     def __len__(self):
-        return len(self.rows)
+        return len(self.data)
 
     def __getitem__(self, index):
-        question, answer = self.rows[index]
+        question, answer = self.data[index]
         if self.mode == "sft":
             return (question, answer)
         elif self.mode == "rl":
             return (question,)
 
 
-class Alpaca(AlpacaBase):
-    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
-        super().__init__(dataset_name="yahma/alpaca-cleaned", mode=mode, cache_dir=cache_dir)
+def load_alpaca_dataset(
+    dataset_name: str,
+    val_split: float,
+    cache_dir: str,
+    mode: str = "sft",
+    manual_seed: int = 287631038922,
+    reverse_augmentation: bool = False,
+    keep_unreversed: bool = True,
+) -> tuple[AlpacaBaseDataset, AlpacaBaseDataset]:
+    generator = Generator()
+    generator.manual_seed(manual_seed)
+
+    def process_split(
+        dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
+    ) -> list[tuple[str, str]]:
+        data = []
+        for row in dataset:
+            question = row["instruction"]
+            if len(row["input"]) > 0:
+                input_ = "{}\n{}".format(question, row["input"])
+            else:
+                input_ = question
+            if reverse_augmentation:
+                data.append((row["output"], input_))
+                # in case of reverse augmentation we just keep both, reversed and unreversed data
+                if keep_unreversed:
+                    data.append((input_, row["output"]))
+            else:
+                data.append((input_, row["output"]))
+        return data
+
+    if dataset_name == "alpaca":
+        dataset = load_dataset("yahma/alpaca-cleaned", cache_dir=cache_dir)
+    elif dataset_name == "code_alpaca":
+        dataset = load_dataset("sahil2801/CodeAlpaca-20k", cache_dir=cache_dir)
+    else:
+        raise ValueError(f"Expected dataset_name to be 'alapaca' or 'code_alpaca'. Received {dataset_name}.")
+
+    splits = random_split(dataset["train"], lengths=[1.0 - val_split, val_split], generator=generator)
+    train = AlpacaBaseDataset(
+        process_split(splits[0], reverse_augmentation=reverse_augmentation, keep_unreversed=keep_unreversed), mode=mode
+    )
+    val = AlpacaBaseDataset(
+        process_split(splits[1], reverse_augmentation=False, keep_unreversed=keep_unreversed), mode=mode
+    )
+    return train, val
 
 
-class CodeAlpaca(AlpacaBase):
-    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
-        super().__init__(dataset_name="sahil2801/CodeAlpaca-20k", mode=mode, cache_dir=cache_dir)
+class Vicuna(Dataset):
+    name = "vicuna"
+
+    @staticmethod
+    def process_vicuna_conversations(data: list[dict[str, None | str]], input_max_length: int) -> list[str] | None:
+        dialogue = []
+        role = None
+        messages = []
+        # drop conversations that start with Bot
+        if len(data["conversations"]) == 0 or data["conversations"][0]["from"] != "human":
+            return None
+        for line in data["conversations"]:
+            speaker = line["from"]  # 'human' or 'gpt'
+            message = line["value"]
+            if role != speaker:
+                if role is not None:
+                    dialogue.append("\n".join(messages))
+                    messages = []
+                role = speaker
+            messages.append(message.strip())
+
+        if role is not None and len(messages) > 0:
+            dialogue.append("\n".join(messages))
+        dialogue_truncated = [k[:input_max_length] for k in dialogue]
+        return dialogue_truncated
+
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+
+        self.pairs = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        dataset = load_dataset(
+            "anon8231489123/ShareGPT_Vicuna_unfiltered",
+            cache_dir=cache_dir,
+            data_files=["ShareGPT_unfiltered_cleaned_split.json"],
+        )["train"]
+        for data in dataset:
+            if (
+                processed_data := self.process_vicuna_conversations(data, input_max_length=input_max_length)
+            ) is not None:
+                self.pairs.append(processed_data)
+
+    def __len__(self) -> int:
+        return len(self.pairs)
+
+    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+        dialogue: list[str] = self.pairs[index]
+        if self.mode == "sft":
+            return dialogue
+        elif self.mode == "rl":
+            return tuple(dialogue[:-1])

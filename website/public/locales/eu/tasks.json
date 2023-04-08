@@ -82,5 +82,8 @@
     "response_placeholder": "Idatzi zure erantzuna hemen..."
   },
   "submitted_as": "Hau {{submit_lang}} hizkuntzan bidaliko da",
-  "writing_wrong_langauge_a_b": "Ematen du {{detected_lang}} hizkuntzan idazten ari zarela baina hau {{submit_lang}} hizkuntzan bidaliko da."
+  "tab_write": "Idatzi",
+  "tab_preview": "Aurreikusi",
+  "writing_wrong_langauge_a_b": "Ematen du {{detected_lang}} hizkuntzan idazten ari zarela baina hau {{submit_lang}} hizkuntzan bidaliko da.",
+  "not_rankable": "Erantzun guztiak okerrak dira eta ezin dira ordenatu."
 }

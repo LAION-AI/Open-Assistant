@@ -14,3 +14,4 @@ jobs:
       image-tag: ${{ vars.PROD_IMAGE_TAG }}
       backend-port: 8280
       website-port: 3200
+      inference-server-port: 8285
