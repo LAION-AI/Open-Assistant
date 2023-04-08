@@ -154,7 +154,7 @@
     },
     "hf": {
       "name": "Hugging Face",
-      "title": "Inference API Credits",
+      "title": "Inference API",
       "githubURL": "https://github.com/huggingface",
       "imageURL": "https://avatars.githubusercontent.com/u/25720743?s=200&v=4"
     },
@@ -162,6 +162,12 @@
       "name": "Redmond AI",
       "title": "Training Compute",
       "imageURL": "/images/logos/redmond_logo.jpg"
+    },
+    "stability": {
+      "name": "Stability AI",
+      "title": "Preemptible Compute (via LAION)",
+      "githubURL": "https://github.com/stability-ai",
+      "imageURL": "https://platform.stability.ai/assets/HexagonTextLong.4501db27.png"
     }
   },
   "groups": [
@@ -195,7 +201,7 @@
     },
     {
       "name": "Sponsors",
-      "members": ["redmond", "hf", "wandb"]
+      "members": ["redmond", "hf", "wandb", "stability"]
     },
     {
       "name": "And also...",
