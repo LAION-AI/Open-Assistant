@@ -46,6 +46,8 @@ improving language itself.
 
 - [Data Collection](https://open-assistant.io)
 
+- [Chat](https://open-assistant.io/chat)
+
 - [Project Documentation](https://projects.laion.ai/Open-Assistant/)
 
 ## How To Try It Out
