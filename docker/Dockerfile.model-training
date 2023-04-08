@@ -1,3 +1,5 @@
+# This image is for development/model-training (e.g. sweeps) and will not be deployed on production machines.
+
 FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
 
 WORKDIR /workspace
@@ -24,6 +26,10 @@ WORKDIR /workspace/Open-Assistant/model/model_training
 
 CMD ["/bin/bash"]
 
-# In the ./Open-Assistant repository root folder...
-# ...build the container: nvidia-docker build -f docker/Dockerfile.model-training . -t oasst-model-training
-# ...run with the OA repository mounted: nvidia-docker run -v `pwd`:/workspace/Open-Assistant -it --rm --env CUDA_VISIBLE_DEVICES=0 oasst-model-training
+# In the ./Open-Assistant repository root folder:
+
+# ... build the container:
+# nvidia-docker build -f docker/Dockerfile.model-training . -t oasst-model-training
+
+# ... run with the OA repository mounted:
+# nvidia-docker run -v `pwd`:/workspace/Open-Assistant -it --rm --env CUDA_VISIBLE_DEVICES=0 oasst-model-training
