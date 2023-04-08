@@ -52,6 +52,10 @@ improving language itself.
 
 ## How To Try It Out
 
+### Chatting with the AI
+
+The chat frontend is now live [here](https://open-assistant.io/chat). Log in and start chatting!
+
 ### Contributing to Data Collection
 
 The data collection frontend is now live [here](https://open-assistant.io/). Log
