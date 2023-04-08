@@ -33,6 +33,7 @@ import { MessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
 import { ChatConfigDrawer } from "./ChatConfigDrawer";
 import { QueueInfoMessage } from "./QueueInfoMessage";
+import { WorkParametersDisplay } from "./WorkParameters";
 interface ChatConversationProps {
   chatId: string;
 }
@@ -189,6 +190,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
           onVote={handleOnVote}
           onRetry={handleOnRetry}
           isSending={isSending}
+          workParameters={message.work_parameters}
         >
           {message.content}
         </ChatMessageEntry>
@@ -226,6 +228,7 @@ type ChatMessageEntryProps = {
   chatId: string;
   messageId: string;
   parentId?: string;
+  workParameters?: InferenceMessage["work_parameters"];
   score: number;
   onVote: (data: { newScore: number; oldScore: number; chatId: string; messageId: string }) => void;
   onRetry?: (messageId: string) => void;
@@ -257,6 +260,7 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
   onVote,
   onRetry,
   isSending,
+  workParameters,
 }: ChatMessageEntryProps) {
   const { t } = useTranslation("common");
   const handleVote = useCallback(
@@ -313,6 +317,7 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
                 forceHideCount
                 onClick={handleThumbsDown}
               />
+              {workParameters && <WorkParametersDisplay parameters={workParameters} />}
             </>
           )}
         </MessageInlineEmojiRow>

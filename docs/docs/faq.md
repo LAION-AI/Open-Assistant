@@ -17,8 +17,21 @@ In this page, there are some of the most frequently asked questions.
 
 We are in the early stages of development, generally following the process
 outlined in the InstructGPT paper. We have candidate supervised finetuning (SFT)
-models but we have not begun to apply Reinforcement Learning from Human Feedback
-(RLHF) yet.
+models using both Pythia and LLaMa, which you can try, and are beginning the
+process of applying reinforcement learning from human feedback (RLHF).
+
+</details>
+
+<details>
+<summary>
+
+### Is a model ready to test yet?
+
+</summary>
+
+You can play with our best candidate model
+[here](https://open-assistant.io/chat) and provide thumbs up/down responses to
+help us improve the model in future!
 
 </details>
 
@@ -29,7 +42,7 @@ models but we have not begun to apply Reinforcement Learning from Human Feedback
 
 </summary>
 
-The candidate SFT models are
+The candidate Pythia SFT models are
 [available on HuggingFace](https://huggingface.co/OpenAssistant) and can be
 loaded via the HuggingFace Transformers library. As such you may be able to use
 them with sufficient hardware. There are also spaces on HF which can be used to
@@ -41,20 +54,7 @@ not final and can produce poor or undesirable outputs.
 <details>
 <summary>
 
-### Is an AI model ready to test yet?
-
-</summary>
-
-You can help test the outputs from the initial SFT candidate models by ranking
-assistant replies at [https://open-assistant.io/](https://open-assistant.io/).
-These rankings will be used to produce improved models.
-
-</details>
-
-<details>
-<summary>
-
-### What is the Docker command for?
+### What is the Docker command in the README for?
 
 </summary>
 
@@ -67,51 +67,35 @@ an AI model or the inference server.
 <details>
 <summary>
 
-### What license does Open Assistant use?
-
-</summary>
-
-The code and models are licensed under the Apache 2.0 license. This means they
-will be available for a wide range of uses including commercial use.
-
-</details>
-
-<details>
-<summary>
-
-### Is the model open?
-
-</summary>
-
-The model will be open. Some very early prototype models are published on
-HuggingFace. Follow the discussion in the Discord channel
-[#ml-models-demo](https://discord.com/channels/1055935572465700980/1067096888530178048).
-
-</details>
-
-<details>
-<summary>
-
-### Which base model will be used?
-
-</summary>
-
-It's not finalised, but early candidate models are being tuned from Pythia. This
-may change in the future.
-
-</details>
-
-<details>
-<summary>
-
 ### Can I download the data?
 
 </summary>
 
-You will be able to, under CC BY 4.0, but it's not released yet. We want to
-remove spam and PII before releasing it. Some cherrypicked samples which are
-confirmed to be safe are available in the `oasst-model-eval`
-[repository](https://github.com/Open-Assistant/oasst-model-eval).
+You will be able to download the data from the
+[HuggingFace account](https://huggingface.co/OpenAssistant) once it is released
+on April 15th.
+
+</details>
+
+<details>
+<summary>
+
+### What license does Open Assistant use?
+
+</summary>
+
+All Open Assistant code is licensed under Apache 2.0. This means it is available
+for a wide range of uses including commercial use.
+
+The Open Assistant Pythia based models will be released as full weights and will
+be licensed under the Apache 2.0 license.
+
+The Open Assistant LLaMa based models will be released only as delta weights
+meaning you will need the original LLaMa weights to use them, and the license
+restrictions will therefore be those placed on the LLaMa weights.
+
+The Open Assistant data will be released under a Creative Commons license
+allowing a wide range of uses including commercial use.
 
 </details>
 
@@ -123,10 +107,12 @@ confirmed to be safe are available in the `oasst-model-eval`
 </summary>
 
 Open Assistant is a project organized by [LAION](https://laion.ai/) and
-individuals around the world interested in bringing this technology to everyone.
+developed by a team of volunteers worldwide. You can see an incomplete list of
+developers on [our website](https://open-assistant.io/team).
 
 The project would not be possible without the many volunteers who have spent
-time contributing both to data collection and to the development process.
+time contributing both to data collection and to the development process. Thank
+you to everyone who has taken part!
 
 </details>
 
@@ -137,8 +123,8 @@ time contributing both to data collection and to the development process.
 
 </summary>
 
-Yes, the model code, weights, and data will be released for free. We also hope
-to host a free public instance of the final model.
+The model code, weights, and data will be released for free. We are additionally
+hosting a free public instance of our best current model for as long as we can.
 
 </details>
 
@@ -149,11 +135,10 @@ to host a free public instance of the final model.
 
 </summary>
 
-There will likely be multiple sizes of model, the smallest of which should be
-able to run on consumer hardware. Relatively high-end consumer hardware may be
-required. It is possible that future open-source developments from the community
-will bring down requirements after the model is published, but this cannot be
-guaranteed.
+The current smallest model is 12B parameters and is challenging to run on
+consumer hardware, but can run on a single professional GPU. In future there may
+be smaller models and we hope to make progress on methods like integer
+quantisation which can help run the model on smaller hardware.
 
 </details>
 

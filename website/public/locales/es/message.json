@@ -2,6 +2,7 @@
   "confirm_open_link_body": "¿Desea abrir este enlace?",
   "confirm_open_link_header": "Confirme la apertura del enlace",
   "copy_message_id": "Copiar ID del mensaje",
+  "copy_message_text": "Copiar texto del mensaje",
   "copy_message_link": "Copiar enlace al mensaje",
   "label_action": "Etiquetar",
   "label_title": "Etiqueta",
@@ -22,5 +23,7 @@
   "submit_labels": "Enviar",
   "tree_stopped": "Árbol parado {{id}}",
   "view_user": "Ver usuario",
-  "your_recent_messages": "Tus mensajes recientes"
+  "your_recent_messages": "Tus mensajes recientes",
+  "synthetic": "Sintético",
+  "synthetic_explain": "Este mensaje está generado por IA"
 }
