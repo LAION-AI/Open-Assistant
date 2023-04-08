@@ -44,8 +44,15 @@ def load_oasst_export(
 
     threads_per_tree = []
     for tree in load_trees(input_file_path):
-        if tree.tree_state != "ready_for_export" or not tree.prompt.review_result or tree.prompt.lang not in lang_codes:
+        if not tree.prompt.review_result or tree.prompt.lang not in lang_codes:
             continue
+
+        if mode in ("sft", "rm"):
+            if tree.tree_state != "ready_for_export":
+                continue
+        elif mode == "rl":
+            if tree.tree_state not in ("ready_for_export", "prompt_lottery_waiting"):
+                continue
 
         # extract all threads up to last asssitant reply
         threads: list[list[ExportMessageNode]] = []
@@ -65,7 +72,7 @@ def load_oasst_export(
             return True
 
         def leaf_filter(thread: list[ExportMessageNode]) -> bool:
-            if mode == "sft" or mode == "rl":
+            if mode == "sft":
                 # in SFT mode `not thread[-1].replies` finds nodes without children (leaves).
                 # We are interested in those which are role='assistant' but some trees don't end on assistant nodes
                 # but have prompter leaves .. we want to use those trees too .. e.g. remove the last prompter message(s)
@@ -73,32 +80,29 @@ def load_oasst_export(
                 # the FIRST prompter reply is added .. e.g. the parent does not appear multiple times and we can use
                 # pop() to remove superfluous prompter leaf node later.
                 return (
-                    len(thread) > 1
+                    (len(thread) > 1 or mode == "rl")
                     and not thread[-1].replies
                     and (thread[-1].role == "assistant" or thread[-2].replies[0] == thread[-1])
                     and thread_filter(thread)
                 )
             elif mode == "rm":
+                # for reward models we use thread-fragments ending on prompter messages as prefix and
+                # their (ranked) replies as possible continuations.
                 return (
                     thread[-1].role == "prompter"
                     and len([r for r in thread[-1].replies if r.rank is not None]) > 1
                     and thread_filter(thread)
                 )
+            elif mode == "rl":
+                # during rl we are interested in all possible prefixes ending in prompter messages
+                return thread[-1].role == "prompter" and not any(m.deleted or m.synthetic for m in thread)
 
             raise RuntimeError()
 
         visit_threads_depth_first(tree.prompt, visitor=threads.append, predicate=leaf_filter)
-
-        # This condition is critical for the RL training
-        # Not so much for the SFT trianing
-        if mode == "sft" or mode == "rl":
+        if mode == "sft":
             for t in threads:
                 if t[-1].role == "prompter":
-                    t.pop()
-        
-        elif mode == "rl":
-            for t in threads:
-                if t[-1].role == "assistant":
                     t.pop()
 
         threads_per_tree.append(threads)
@@ -113,9 +117,7 @@ def load_oasst_export(
             replies = [r.text for r in replies]
             return (prefix, replies)
         elif mode == "rl":
-            prefix = [m.text for m in thread[:-1]]
-            reply = [thread[-1].text]
-            return (prefix, reply)
+            return (thread,)
 
         raise RuntimeError()
 

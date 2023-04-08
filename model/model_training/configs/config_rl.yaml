@@ -15,9 +15,11 @@ defaults_rlhf:
 oasst_export_latin_cyrillic_rlhf:
   datasets:
     - oasst_export:
-        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        #lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        lang: "en"
         #top_k: 2
-        input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
+        #input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
+        input_file_path: 2023-04-08_ready_with_prompt_lottery_en.jsonl.gz
   sort_by_length: false
   use_custom_sampler: false
 

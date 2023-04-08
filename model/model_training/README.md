@@ -194,4 +194,4 @@ Experimental results in wandb
 
 ## TODOs
 
-- add max_length to RL training.
+- recreate init in trainer that does not load the ref_model

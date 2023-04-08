@@ -1,5 +1,5 @@
 train:
-  seq_length: 320
+  seq_length: 640
   epochs: 10000
   total_steps: 10000
   batch_size: 18
@@ -26,13 +26,15 @@ optimizer:
     lr: 1.0e-6
     betas: [0.9, 0.95]
     eps: 1.0e-8
-    weight_decay: 1.0e-2
+    weight_decay: 1.0e-6
 
 scheduler:
   name: "cosine_annealing"
   kwargs:
-    T_max: 10000 # train.total_steps
-    eta_min: 1.0e-4
+    #T_max: 10000 # train.total_steps
+    #eta_min: 1.0e-4
+    T_max: 100000000
+    eta_min: 1.0e-6
 
 method:
   name: "ppoconfig"
