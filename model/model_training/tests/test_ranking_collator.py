@@ -12,17 +12,17 @@ def test_rm_datasets():
     # dummy configuration
     config = Namespace(cache_dir=".cache", model_name="EleutherAI/pythia-70m-deduped")
 
-    dataset_names = ["webgpt", "hf_summary", "hellaswag", "shp", "anthropic_rlhf"]
+    dataset_names = ["anthropic_rlhf", "hf_summary_pairs", "webgpt", "hellaswag", "shp", "hf_summary"]
     for name in dataset_names:
         train, val = get_one_dataset(conf=config, dataset_name=name, mode="rm")
-        print(f"dataset: {name}  (train ({type(train)}): {len(train)}, val({type(val)}): {len(val)})")
+        print(f"dataset: '{name}' (train ({type(train)}): {len(train)}, val({type(val)}): {len(val)})")
 
         avg_number_continuations = sum(len(x[1]) for x in train) / len(train)
         num_more_than_two = sum(1 if len(x[1]) > 2 else 0 for x in train)
         print(f"Average number of continuations: {avg_number_continuations} (with >2: {num_more_than_two})")
 
-        for i in range(2):
-            item = train[i]
+        for i in range(10):
+            item = train[i + 100]
             print(f"[{i}] Prefix: {item[0]}")
             continuations = item[1]
             print(f"[{i}] Continuations ({len(continuations)}):")

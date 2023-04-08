@@ -164,6 +164,41 @@ the end to trigger deepspeed
 python trainer_sft.py --configs defaults your-model-name --deepspeed
 ```
 
+### Datasets
+
+Here is an uncomplete overview of datasets for sft:
+
+<!-- prettier-ignore -->
+dataset_name        | train_counts | eval_counts | total_counts
+----------------------------------------------------------------
+
+<!-- prettier-ignore -->
+webgpt              |     15662    |     3916    |     19578
+squad_v2            |    130319    |    11873    |    142192
+adversarial_qa      |     30000    |     3000    |     33000
+trivia_qa_nocontext |    138384    |    17944    |    156328
+xsum                |    204045    |    11332    |    215377
+cnn_dailymail       |    287113    |    13368    |    300481
+multi_news          |     44972    |     5622    |     50594
+scitldr             |      1992    |      619    |      2611
+joke                |       301    |       76    |       377
+gsm8k               |      7473    |     1319    |      8792
+dive_mt             |      6192    |     1548    |      7740
+
+This list can be generated with the following command, but beware that this
+downloads all available datasets (>100GB):
+
+```bash
+python check_dataset_counts.py --datasets all --mode sft
+```
+
+One can specify datasets, which can be found in the config corresponding to the
+mode the mode (e.g. configs/config.yaml for sft, configs/config_rm.yaml for rm):
+
+```bash
+python check_dataset_counts.py --datasets webgpt squad_v2 --mode sft
+```
+
 ### Troubleshooting
 
 - If training on a VM, you might need to install OpenMPI. Check out

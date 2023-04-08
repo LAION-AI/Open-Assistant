@@ -356,7 +356,10 @@ def get_dataset_name_and_kwargs_from_data_config(data_config):
         return data_config, {}
 
 
-def get_dataset(conf, mode="sft"):
+def get_dataset(
+    conf,
+    mode: str = "sft",
+) -> tuple[ConcatDataset, dict[str, Subset]]:
     train_datasets, evals = [], {}
 
     for data_config in conf.datasets + conf.datasets_extra:

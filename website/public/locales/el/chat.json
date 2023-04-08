@@ -1,0 +1,19 @@
+{
+  "back_to_chat_list": "Επιστροφή στη λίστα συνομιλιών",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Ρυθμίσεις Συνομιλίας",
+  "empty": "(empty)",
+  "login_message": "Για να χρησιμοποιήσετε αυτή τη λειτουργία, πρέπει να συνδεθείτε ξανά. Συνδεθείτε χρησιμοποιώντας έναν από αυτούς τους παρόχους:",
+  "max_new_tokens": "Μέγιστα νέα tokens",
+  "model": "Μοντέλο",
+  "preset": "Προκαθορισμένη ρύθμιση",
+  "preset_custom": "Προσαρμοσμένη ρύθμιση",
+  "queue_info": "Το μήνυμά σας έχει μπει στην ουρά, βρίσκεστε στη θέση {{ queuePosition, number, integer }} στην ουρά.",
+  "repetition_penalty": "Ποινή επανάληψης",
+  "temperature": "Θερμοκρασία",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "Typical P",
+  "you_are_logged_in": "Έχετε συνδεθεί στην υπηρεσία συνομιλίας",
+  "your_chats": "Οι συνομιλίες σας"
+}
