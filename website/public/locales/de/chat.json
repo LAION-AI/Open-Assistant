@@ -1,0 +1,19 @@
+{
+  "back_to_chat_list": "Zurück zur Chatliste",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Chatkonfiguration",
+  "empty": "(leer)",
+  "login_message": "Um dieses Feature zu nutzen müssen Sie dich erneut anmelden. Melden Sie sich durch einen dieser Provider an:",
+  "max_new_tokens": "Maximale Anzahl neuer Token",
+  "model": "Model",
+  "preset": "Vorlage",
+  "preset_custom": "Benutzerdefiniert",
+  "queue_info": "Ihre Nachricht ist in der Warteschlange, Sie sind an {{ queuePosition, number, integer }}. Stelle in der Warteschlange.",
+  "repetition_penalty": "Wiederholungs-Penalty",
+  "temperature": "Temperatur",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "Typisches P",
+  "you_are_logged_in": "Sie sind am Chatservice angemeldet",
+  "your_chats": "Ihre Chats"
+}
