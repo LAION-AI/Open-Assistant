@@ -8,6 +8,7 @@ from typing import List, NamedTuple
 
 import evaluate
 import transformers
+import tritonclient.grpc as client_util
 import yaml
 from custom_datasets import get_one_dataset
 from custom_datasets.formatting import QA_SPECIAL_TOKENS
@@ -19,8 +20,8 @@ from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Subset
 from torch.utils.data.distributed import DistributedSampler
-import tritonclient.grpc as client_util
 from tritonclient.utils import np_to_triton_dtype
+
 from .losses import CrossEntropyLoss, PolyLoss, RMLoss
 
 

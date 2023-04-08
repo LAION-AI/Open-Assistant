@@ -16,7 +16,7 @@ from trlx.data.configs import TRLConfig
 
 # flake8: noqa
 from utils.ppo_utils import CustomPPOTrainer
-from utils.utils import _strtobool, get_dataset, get_model, init_rng, read_yamls, prepare_tensor
+from utils.utils import _strtobool, get_dataset, get_model, init_rng, prepare_tensor, read_yamls
 
 
 def argument_parsing(notebook=False, notebook_args=None):
@@ -137,12 +137,12 @@ if __name__ == "__main__":
     ] + eval_prompts
 
     random.shuffle(prompts)
-    #Sanity Check for prompts to make sure it's loading properly
-    with open(r'output.txt', 'w') as fp:
+    # Sanity Check for prompts to make sure it's loading properly
+    with open(r"output.txt", "w") as fp:
         for item in eval_prompts:
             # write each item on a new line
             fp.write("Prompt For RL: %s\n" % item)
-    print('Done')
+    print("Done")
 
     trlx_config.tokenizer.tokenizer_path = sft_config.model_name
     trlx_config.model.model_path = sft_config.model_name

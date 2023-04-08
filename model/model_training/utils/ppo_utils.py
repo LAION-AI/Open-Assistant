@@ -1,31 +1,32 @@
 import json
-import os
-from typing import List, Tuple
-from time import time
-from torch.nn import functional as F
-import torch
 import math
+import os
+from time import time
+from typing import List, Tuple
+
 import numpy as np
+import torch
+import tritonclient.grpc as client_util
+import trlx.utils.logging as logging
 from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from huggingface_hub import hf_hub_download
+from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, DataCollatorWithPadding, PreTrainedTokenizer
+from trlx.data.ppo_types import PPORLElement
 from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
 from trlx.pipeline import BasePipeline, register_datapipeline
 from trlx.trainer import register_trainer
 from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
-import trlx.utils.logging as logging
 from trlx.utils import Clock
 from trlx.utils.modeling import logprobs_of_labels
-from trlx.data.ppo_types import PPORLElement
-import tritonclient.grpc as client_util
-from .utils import prepare_tensor
-
-logger = logging.get_logger(__name__)
-
 
 # from trlx.utils.modeling import hf_get_causal_base_model, hf_get_hidden_size, hf_get_lm_head, make_head
 from utils.utils import get_model
+
+from .utils import prepare_tensor
+
+logger = logging.get_logger(__name__)
 
 
 class CustomCausalLMHydraWithValueHead(AutoModelForCausalLMWithHydraValueHead):
@@ -207,7 +208,6 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
 
         return preds
 
-
     def make_experience(self, num_rollouts: int = 1024, iter_count: int = 0):  # noqa:
         """
         Replace padding with pad_token_id
@@ -230,7 +230,7 @@ class CustomPPOTrainer(AcceleratePPOTrainer):
 
         while len(ppo_rl_elements) < num_rollouts:
             # Get next batch in prompt dataset
-            batch: PromptBatch = next(self.prompt_iterator)
+            batch = next(self.prompt_iterator)
 
             exp_generate_time = time()
 
