@@ -92,14 +92,14 @@ def handle_work_request(
 
     stream_response = None
     token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)
-    stream_request = interface.GenerateStreamRequest(
-        inputs=prompt,
-        parameters=parameters,
-    )
     if model_config.is_lorem:
         stream_events = utils.lorem_events(parameters.seed)
     else:
         prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
+        stream_request = interface.GenerateStreamRequest(
+            inputs=prompt,
+            parameters=parameters,
+        )
         stream_events = get_inference_server_stream_events(stream_request)
 
     generated_ids = []
