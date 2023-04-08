@@ -134,6 +134,12 @@
       "githubURL": "https://github.com/kenhktsui",
       "imageURL": "https://avatars.githubusercontent.com/u/29099916?v=4"
     },
+    "andrewm4894": {
+      "name": "Andrew Maguire",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/andrewm4894",
+      "imageURL": "https://avatars.githubusercontent.com/u/2178292?v=4"
+    },
     "you": {
       "name": "You!",
       "title": "It wouldn't have happened without you, thanks!",
@@ -182,6 +188,10 @@
     {
       "name": "Moderation Team",
       "members": ["almostEvil___", "~Zy~", "joak"]
+    },
+    {
+      "name": "Documentation",
+      "members": ["andrewm4894"]
     },
     {
       "name": "Sponsors",
