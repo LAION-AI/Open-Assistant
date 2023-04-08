@@ -80,7 +80,7 @@ def load_oasst_export(
                 # the FIRST prompter reply is added .. e.g. the parent does not appear multiple times and we can use
                 # pop() to remove superfluous prompter leaf node later.
                 return (
-                    (len(thread) > 1 or mode == "rl")
+                    len(thread) > 1
                     and not thread[-1].replies
                     and (thread[-1].role == "assistant" or thread[-2].replies[0] == thread[-1])
                     and thread_filter(thread)
