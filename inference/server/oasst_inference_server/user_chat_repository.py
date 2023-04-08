@@ -58,6 +58,22 @@ class UserChatRepository(pydantic.BaseModel):
         await self.session.commit()
         return chat
 
+    async def delete_chat(self, chat_id: str) -> models.DbChat:
+        chat = await self.get_chat_by_id(chat_id)
+        if chat is None:
+            raise fastapi.HTTPException(status_code=403)
+        logger.debug(f"Deleting {chat_id=}")
+        # delete messages
+        await self.session.exec(sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
+        # delete chat
+        await self.session.exec(
+            sqlmodel.delete(models.DbChat).where(
+                models.DbChat.id == chat_id,
+                models.DbChat.user_id == self.user_id,
+            )
+        )
+        await self.session.commit()
+
     async def add_prompter_message(self, chat_id: str, parent_id: str | None, content: str) -> models.DbMessage:
         logger.info(f"Adding prompter message {len(content)=} to chat {chat_id}")
 

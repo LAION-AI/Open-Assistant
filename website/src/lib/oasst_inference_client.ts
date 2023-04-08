@@ -64,6 +64,10 @@ export class OasstInferenceClient {
     return this.request(`/chats/${chat_id}/messages/${message_id}`);
   }
 
+  delete_chat(chat_id: string): Promise<InferenceMessage> {
+    return this.request(`/chats/${chat_id}`, { method: "DELETE" });
+  }
+
   post_prompter_message({ chat_id, ...data }: InferencePostPrompterMessageParams): Promise<InferenceMessage> {
     return this.request(`/chats/${chat_id}/prompter_message`, { method: "POST", data });
   }

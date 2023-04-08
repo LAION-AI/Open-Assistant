@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "Értékelése alapján megszakítva",
+  "assistant": "Asszisztens",
+  "backlog_ranking": "Sorrend a backlogban",
+  "choose_a_language": "Nyelv kiválasztása",
+  "count": "Darabszám",
+  "growing": "Fejlődő",
+  "halted_by_moderator": "Moderátor megállította",
+  "human_messages_by_lang": "Felhasználói üzenetek nyelve",
+  "human_messages_by_role": "Felhasználói üzenetek szerepmegosztása",
+  "initial_prompt_review": "Kezdő üzenet ellenőrzésre vár",
+  "language_stats": "Nyelv",
+  "message_trees_by_state": "Üzenet-fák állapota",
+  "message_trees_states_by_lang": "Üzenet-fák állapota nyelvre bontva",
+  "prompt_lottery_waiting": "Kisorsolásra vár",
+  "prompter": "Felhasználó",
+  "ranking": "Sorrend",
+  "ready_for_export": "Exportálásra kész",
+  "stats": "Statisztika",
+  "users_accepted_tos": "Elfogadott felhasználási feltételek száma"
+}

@@ -35,6 +35,17 @@ export interface InferenceMessage {
   role: "assistant" | "prompter";
   score: number;
   reports: any[];
+  work_parameters?: {
+    do_sample: boolean;
+    seed: number;
+    sampling_parameters: SamplingParameters;
+    model_config: {
+      model_id: string;
+      max_input_length: number;
+      max_total_length: number;
+      quantized: boolean;
+    };
+  };
 }
 
 export interface GetChatsResponse {
