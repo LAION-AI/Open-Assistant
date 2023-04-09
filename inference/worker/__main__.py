@@ -56,6 +56,7 @@ def main():
                 max_parallel_requests=settings.max_parallel_requests,
             )
 
+            logger.warning(f"connecting to {settings.backend_url}...")
             with closing(
                 websocket.create_connection(
                     f"{settings.backend_url}/workers/work",
