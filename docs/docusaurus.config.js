@@ -84,6 +84,11 @@ const config = {
             position: "left",
           },
           {
+            href: "https://open-assistant.io/chat",
+            label: "Chat",
+            position: "left",
+          },
+          {
             type: "doc",
             docId: "intro",
             position: "left",

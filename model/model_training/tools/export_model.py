@@ -16,6 +16,7 @@ def parse_args():
     parser.add_argument("--max_shard_size", type=str, default="10GB")
     parser.add_argument("--cache_dir", type=str)
     parser.add_argument("--reward_model", action="store_true", default=False)
+    parser.add_argument("--rl_checkpoint", type=str, help="load RL fine-tuning checkpoint")
     return parser.parse_args()
 
 
@@ -45,13 +46,30 @@ def main():
     print(f"{type(tokenizer).__name__} (vocab_size={len(tokenizer)})")
 
     print(f"Loading model '{args.model_name}' ({args.dtype}) ...")
-    if args.reward_model:
+
+    if args.torch_rl_checkpoint:
+        model = AutoModelForCausalLM.from_pretrained(args.model_name, cache_dir=args.cache_dir)
+        tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+
+        print(f"Loading RL checkpoint: {args.torch_rl_checkpoint}...")
+        checkpoint_state = torch.load(args.torch_rl_checkpoint, map_location="cpu")["module"]
+
+        # drop parameters of value head
+        for param_name in ("v_head.0.weight", "v_head.0.bias", "v_head.2.weight", "v_head.2.bias"):
+            checkpoint_state.pop(param_name, None)
+
+        model.load_state_dict(checkpoint_state)
+
+    elif args.reward_model:
         model = AutoModelForSequenceClassification.from_pretrained(
             args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir
         )
     else:
         model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
     print(f"{type(model).__name__} (num_parameters={model.num_parameters()})")
+
+    print("Model architecture:")
+    print(model)
 
     if args.output_folder:
         print(f"Saving model to: {args.output_folder}")
