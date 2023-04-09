@@ -418,7 +418,7 @@ def main():
             config=training_conf,
         )
         wandb.config["_max_length"] = training_conf.max_length
-        wandb.config["val_max_length"] = val_max_len
+        wandb.config["_val_max_length"] = val_max_len
 
     trainer = SFTTrainer(
         model=model,
