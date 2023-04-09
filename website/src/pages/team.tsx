@@ -1,28 +1,14 @@
 export { getServerSideProps } from "src/lib/defaultServerSideProps";
-import {
-  Avatar,
-  Badge,
-  Box,
-  Card,
-  CardBody,
-  Flex,
-  Grid,
-  Heading,
-  Stack,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
-import { Github } from "lucide-react";
+import { Box, Card, CardBody, Grid, Heading, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import Head from "next/head";
-import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import React from "react";
+import { TeamMember } from "src/components/TeamMember";
 
 import data from "../data/team.json";
 
 const Team = () => {
   const cardBackgroundColor = useColorModeValue("gray.100", "gray.800");
-  const contributorBackgroundColor = useColorModeValue("gray.200", "gray.700");
   const { groups, people } = data;
   const { t } = useTranslation();
   return (
@@ -47,25 +33,7 @@ const Team = () => {
                   <Grid gap="6" gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))">
                     {group.members.map((id) => {
                       const info = people[id] ?? {};
-                      const { name, title, githubURL, imageURL } = info;
-                      return (
-                        <Flex key={id} gap="1" bg={contributorBackgroundColor} borderRadius="md" p="2">
-                          <Avatar src={imageURL} loading="lazy" name={name} />
-                          <Box ml="3">
-                            <Text fontWeight="bold">
-                              {name}
-                              {githubURL && (
-                                <Badge ml="2" mb="0.5">
-                                  <Link href={githubURL} target="_default" rel="noreferrer" title="github">
-                                    <Github size={12} />
-                                  </Link>
-                                </Badge>
-                              )}
-                            </Text>
-                            <Text fontSize="sm">{title}</Text>
-                          </Box>
-                        </Flex>
-                      );
+                      return <TeamMember {...info} key={id} />;
                     })}
                   </Grid>
                 </React.Fragment>
