@@ -4,15 +4,15 @@
     "unchanged_message": "确定要继续吗？"
   },
   "random": {
-    "label": "手气不错",
+    "label": "试试手气",
     "desc": "通过开始一个随机任务来改进 Open Assistant。"
   },
   "create_initial_prompt": {
-    "label": "创建初始提示",
-    "desc": "编写初始提示来让 Open Assistant 尝试回复各种不同的信息。",
+    "label": "创建初始对话",
+    "desc": "编写初始对话来让 Open Assistant 尝试回复各种不同的信息。",
     "overview": "创建发送给助理的第一条信息",
-    "instruction": "提供初始提示",
-    "response_placeholder": "在这里输入你的提示..."
+    "instruction": "提供初始对话",
+    "response_placeholder": "在这里输入你的对话..."
   },
   "reply_as_user": {
     "label": "作为用户回复",
@@ -28,55 +28,55 @@
     "response_placeholder": "在这里输入你的回复..."
   },
   "rank_user_replies": {
-    "label": "用户回复排序",
+    "label": "排序用户的回复",
     "desc": "帮助 Open Assistant 改进它与其他用户对话的响应。",
     "overview": "将给出的用户回复按照从优到劣排序。",
     "unchanged_title": "排序未改变",
-    "unchanged_message": "你并未改变提示的排序。确定要继续吗？"
+    "unchanged_message": "你并未改变对话的排序。确定要继续吗？"
   },
   "rank_assistant_replies": {
-    "label": "助理回复排序",
-    "desc": "根据准确性和可读性为 Open Assistant 的提示进行评价。",
+    "label": "排序助理的回复",
+    "desc": "根据准确性和可读性为 Open Assistant 的回复进行评价。",
     "overview": "将给出的助理回复按照从优到劣排序。",
     "unchanged_title": "排序未改变",
-    "unchanged_message": "你并未改变提示的排序。确定要继续吗？"
+    "unchanged_message": "你并未改变回复的排序。确定要继续吗？"
   },
   "rank_initial_prompts": {
-    "label": "初始提示排序",
-    "desc": "根据准确性和可读性为 Open Assistant 的提示进行评价。",
-    "overview": "将给出的初始提示按照从优到劣排序。",
+    "label": "初始对话排序",
+    "desc": "根据准确性和可读性为 Open Assistant 的对话进行评价。",
+    "overview": "将给出的初始对话按照从优到劣排序。",
     "unchanged_title": "排序未改变",
-    "unchanged_message": "你并未改变提示的排序。确定要继续吗？"
+    "unchanged_message": "你并未改变对话的排序。确定要继续吗？"
   },
   "label_initial_prompt": {
-    "label": "标注初始提示",
-    "desc": "为提示提供标注",
-    "overview": "对以下提示进行标注"
+    "label": "标注初始对话",
+    "desc": "为对话提供标注",
+    "overview": "对以下对话进行标注"
   },
   "label_prompter_reply": {
-    "label": "标注提示者回复",
-    "desc": "为提示提供标注",
-    "overview": "基于以下讨论，对最后的提示进行标注。"
+    "label": "标注初始对话",
+    "desc": "标注对话进行赛选",
+    "overview": "基于以下讨论，对最后的对话进行标注。"
   },
   "label_assistant_reply": {
     "label": "标注助理回复",
-    "desc": "为提示提供标注",
-    "overview": "基于以下讨论，对最后的提示进行标注。"
+    "desc": "为助理回复提供标注",
+    "overview": "基于以下讨论，对最后的助理回复进行标注。"
   },
   "classify_initial_prompt": {
-    "label": "分类初始提示",
-    "desc": "为提示提供标注",
-    "overview": "阅读以下的提示并回答其中的问题。"
+    "label": "分类初始言论",
+    "desc": "为初始言论提供标注",
+    "overview": "阅读以下的初始言论并回答其中的问题。"
   },
   "classify_prompter_reply": {
-    "label": "分类提示者回复",
-    "desc": "为提示提供标注",
-    "overview": "阅读以下对话并回答最后一个回复中的问题。"
+    "label": "分类初始提示的回复",
+    "desc": "为初始提示的回复供标注",
+    "overview": "阅读以下对话并回答最后一个提示的回复的相关问题。"
   },
   "classify_assistant_reply": {
     "label": "分类助理回复",
-    "desc": "为提示提供标注",
+    "desc": "为助理回复提供标注",
     "overview": "阅读以下对话并回答最后一个回复中的问题。"
   },
-  "available_task_count": "{{count}} 个可用任务"
+  "available_task_count": "目前有{{count}}个任务"
 }
