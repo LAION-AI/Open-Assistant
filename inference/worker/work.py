@@ -92,17 +92,14 @@ def handle_work_request(
 
     stream_response = None
     token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)
-    stream_request = interface.GenerateStreamRequest(
-        inputs=prompt,
-        parameters=parameters,
-    )
     if model_config.is_lorem:
         stream_events = utils.lorem_events(parameters.seed)
-    # elif model_config.is_llama:
-    #     prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
-    #     stream_events = get_hf_stream_events(stream_request)
     else:
         prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
+        stream_request = interface.GenerateStreamRequest(
+            inputs=prompt,
+            parameters=parameters,
+        )
         stream_events = get_inference_server_stream_events(stream_request)
 
     generated_ids = []
@@ -162,25 +159,14 @@ def handle_work_request(
     logger.debug("Work complete. Waiting for more work...")
 
 
-def get_hf_stream_events(request: interface.GenerateStreamRequest):
-    response = requests.post(
-        f"{settings.inference_server_url}/generate",
-        json=request.dict(),
-    )
-    try:
-        response.raise_for_status()
-    except requests.HTTPError:
-        logger.exception("Failed to get response from inference server")
-        logger.error(f"Response: {response.text}")
-        raise
-    data = response.json()
-    output = data["text"]
-    yield from utils.text_to_events(output, pause=settings.hf_pause)
-
-
 def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
-    response = requests.post(
-        f"{settings.inference_server_url}/generate_stream",
+    http = utils.HttpClient(
+        base_url=settings.inference_server_url,
+        basic_auth_username=settings.basic_auth_username,
+        basic_auth_password=settings.basic_auth_password,
+    )
+    response = http.post(
+        "/generate_stream",
         json=request.dict(),
         stream=True,
         headers={"Accept": "text/event-stream"},
