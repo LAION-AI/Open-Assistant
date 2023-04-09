@@ -4,11 +4,22 @@
         <title>OpenAssistant Blog</title>
         <link>https://LAION-AI.github.io/Open-Assistant/blog</link>
         <description>Home of the OpenAssistant blog.</description>
-        <lastBuildDate>Fri, 24 Feb 2023 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 06 Apr 2023 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
         <copyright>Copyright © 2023 OpenAssistant.</copyright>
+        <item>
+            <title><![CDATA[Open Assistant First Models are here!]]></title>
+            <link>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/06/open-assistant-first-models-are-here</link>
+            <guid>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/06/open-assistant-first-models-are-here</guid>
+            <pubDate>Thu, 06 Apr 2023 00:00:00 GMT</pubDate>
+            <description><![CDATA[Open Assistant First Models are here!]]></description>
+            <content:encoded><![CDATA[<p>Hello hello! we're finally here the first models of open Assistant are out and
+I'm going to show you a little bit of what you can do with them!</p><p><a href="https://open-assistant.io/chat" target="_blank" rel="noopener noreferrer">https://open-assistant.io/chat</a></p><div style="width:100%;height:360px"></div>]]></content:encoded>
+            <category>open-assistant</category>
+            <category>youtube</category>
+        </item>
         <item>
             <title><![CDATA[Open Assistant Inference Backend Development (Hands-On Coding)]]></title>
             <link>https://LAION-AI.github.io/Open-Assistant/blog/2023/02/24/open-assistant-inference-backend-development-hands-on-coding</link>

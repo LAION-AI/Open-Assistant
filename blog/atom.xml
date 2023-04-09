@@ -2,12 +2,27 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://LAION-AI.github.io/Open-Assistant/blog</id>
     <title>OpenAssistant Blog</title>
-    <updated>2023-02-24T00:00:00.000Z</updated>
+    <updated>2023-04-06T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://LAION-AI.github.io/Open-Assistant/blog"/>
     <subtitle>Home of the OpenAssistant blog.</subtitle>
     <icon>https://LAION-AI.github.io/Open-Assistant/img/logo.svg</icon>
     <rights>Copyright © 2023 OpenAssistant.</rights>
+    <entry>
+        <title type="html"><![CDATA[Open Assistant First Models are here!]]></title>
+        <id>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/06/open-assistant-first-models-are-here</id>
+        <link href="https://LAION-AI.github.io/Open-Assistant/blog/2023/04/06/open-assistant-first-models-are-here"/>
+        <updated>2023-04-06T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Open Assistant First Models are here!]]></summary>
+        <content type="html"><![CDATA[<p>Hello hello! we're finally here the first models of open Assistant are out and
+I'm going to show you a little bit of what you can do with them!</p><p><a href="https://open-assistant.io/chat" target="_blank" rel="noopener noreferrer">https://open-assistant.io/chat</a></p><div style="width:100%;height:360px"></div>]]></content>
+        <author>
+            <name>Yannic Kilcher</name>
+            <uri>https://www.ykilcher.com/</uri>
+        </author>
+        <category label="open-assistant" term="open-assistant"/>
+        <category label="youtube" term="youtube"/>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Open Assistant Inference Backend Development (Hands-On Coding)]]></title>
         <id>https://LAION-AI.github.io/Open-Assistant/blog/2023/02/24/open-assistant-inference-backend-development-hands-on-coding</id>

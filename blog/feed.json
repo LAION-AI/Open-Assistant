@@ -5,6 +5,22 @@
     "description": "Home of the OpenAssistant blog.",
     "items": [
         {
+            "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/06/open-assistant-first-models-are-here",
+            "content_html": "<p>Hello hello! we're finally here the first models of open Assistant are out and\nI'm going to show you a little bit of what you can do with them!</p><p><a href=\"https://open-assistant.io/chat\" target=\"_blank\" rel=\"noopener noreferrer\">https://open-assistant.io/chat</a></p><div style=\"width:100%;height:360px\"></div>",
+            "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/06/open-assistant-first-models-are-here",
+            "title": "Open Assistant First Models are here!",
+            "summary": "Open Assistant First Models are here!",
+            "date_modified": "2023-04-06T00:00:00.000Z",
+            "author": {
+                "name": "Yannic Kilcher",
+                "url": "https://www.ykilcher.com/"
+            },
+            "tags": [
+                "open-assistant",
+                "youtube"
+            ]
+        },
+        {
             "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023/02/24/open-assistant-inference-backend-development-hands-on-coding",
             "content_html": "<p>Open Assistant Inference Backend Development (Hands-On Coding)</p><p>Join me as I build streaming inference into the Hugging Face text generation\nserver, going through cuda, python, rust, grpc, websockets, server-sent events,\nand more...</p><p><a href=\"https://open-assistant.io\" target=\"_blank\" rel=\"noopener noreferrer\">https://open-assistant.io</a></p><div style=\"width:100%;height:360px\"></div>",
             "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023/02/24/open-assistant-inference-backend-development-hands-on-coding",
