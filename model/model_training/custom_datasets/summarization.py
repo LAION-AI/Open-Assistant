@@ -2,6 +2,7 @@
     Summarize different spectrum of documents
 """
 import random
+from collections import defaultdict
 
 import numpy as np
 from datasets import load_dataset
@@ -127,59 +128,76 @@ class HFSummary(Dataset):
             elif "post" in data["info"]:
                 context = data["info"]["post"]
 
-            if context not in self.index2summary:
-                self.index2summary[len(self.index2summary)] = context
-
             if context not in summaries:
                 summaries[context] = []
 
             pos, neg = (0, 1) if data["choice"] == 0 else (1, 0)
             summaries[context].append((data["summaries"][pos]["text"].strip(), data["summaries"][neg]["text"].strip()))
 
-        ranked_summaries = {}
+        ranked_summaries = []
         for context, summary_comparison_pairs in summaries.items():
-            ranks = self.get_sorted_ranks(summary_comparison_pairs)
-            ranked_summaries[context] = ranks
+            if len(summary_comparison_pairs) > 30:
+                # outlier example
+                continue
+            ranks = self.aggregate_pairs(summary_comparison_pairs)
+            ranked_summaries.append((context, ranks))
         self.summaries = ranked_summaries
 
     @staticmethod
-    def get_sorted_ranks(comparison_pairs):
-        # Create a dictionary to keep track of the counts of each element
+    def traverse_dag(reverse_linked_dag, key, depth=0):
+        # we want to find all the ancestor of the key:
+        # ie ancestor of D are [A, B, C]
+        # so we create a reverse linked dag
+        if depth > (len(reverse_linked_dag) + 1):
+            # cicular rank detected, ignore results
+            return []
+        output = []
+        if key in reverse_linked_dag:
+            for element in reverse_linked_dag[key]:
+                output.append(element)
+                if element in reverse_linked_dag:
+                    output += HFSummary.traverse_dag(reverse_linked_dag, element, depth=depth + 1)
+        return output
 
-        counts = {}
+    @staticmethod
+    def aggregate_pairs(comparison_pairs):
+        # perfect case
+        # comparison_pairs = [('B', 'D'), ('A', 'B'), ('C', 'D'), ('A', 'C'), ('A', 'D'), ('B', 'C'), ('B', 'D')]
+        # comparison_pairs = [('B', 'C'), ('A', 'B'), ('C', 'D')]
+        # comparison_pairs = [('B', 'D'), ('A', 'B'), ('C', 'D')]
+        # aggregate_pairs(comparison_pairs) = ['A', 'B', 'C', 'D']
+        # A > B > C
+        # perfect case:
+        # (A, B), (A, C), (B, C)
+        # worse case:
+        # (A, B), (B, C)
+        # A > B = C > D
+        # (A, B), (B, D), (A, C), (C, D)
+        # TODO: how to handle such case?
+        reverse_linked_dag = defaultdict(set)
         for pair in comparison_pairs:
-            if pair[0] not in counts:
-                counts[pair[0]] = 0
-            if pair[1] not in counts:
-                counts[pair[1]] = 0
-            counts[pair[0]] += 1
-
-        # Create a list of tuples, where each tuple contains an element and its count
-        elements_counts = [(element, count) for element, count in counts.items()]
-
+            reverse_linked_dag[pair[1]].add(pair[0])
+        node_count = defaultdict(int)
+        for key, _ in reverse_linked_dag.items():
+            node_count[key]  # make it zero
+            for e in HFSummary.traverse_dag(reverse_linked_dag, key):
+                node_count[e] += 1
+        # those who are referenced the most is the best summary
+        # if you want to handle tied results, just find the same frequency
+        elements_counts = [(element, count) for element, count in node_count.items()]
         # Sort the list of tuples by count in descending order
         elements_counts.sort(key=lambda x: x[1], reverse=True)
-
         # Create a list of elements in order of their counts
-        sorted_elements = [element for element, count in elements_counts]
-
+        sorted_elements = [element for element, _ in elements_counts]
         return sorted_elements
 
-    def __len__(self):
-        return len(self.index2summary)
+    def __len__(self) -> int:
+        return len(self.summaries)
 
-    def __getitem__(self, index):
-        if index >= len(self.index2summary):
-            raise IndexError()
-
-        context = self.index2summary.get(index)
-        # return pairs of comparison
-        rows = self.summaries[context]
+    def __getitem__(self, index) -> tuple | list:
+        context, rows = self.summaries[index]
         prompt = random.choice(self.PROMPTS)
 
-        # pair very big
-        # we are going to do some sampling
-        # not optimal but good for now
         if self.mode == "sft":
             return [prompt.format(context), rows[0]]
         elif self.mode == "rl":
