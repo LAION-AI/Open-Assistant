@@ -61,7 +61,7 @@ MODEL_CONFIGS = {
     "OA_SFT_Llama_30B": ModelConfig(
         model_id="OpenAssistant/llama_30b_oasst_latcyr_1000",
         max_input_length=1024,
-        max_total_length=2048,
+        max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
     ),
     "OA_SFT_Llama_30Bq": ModelConfig(
         model_id="OpenAssistant/llama_30b_oasst_latcyr_1000",

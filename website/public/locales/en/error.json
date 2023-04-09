@@ -12,5 +12,5 @@
   "err_1009": "Your recent messages have duplicates",
   "err_1010": "Message text is empty",
   "err_1011": "You cannot reply twice to the same message",
-  "err_1012": "You has too many pending tasks. Please try again in minutes."
+  "err_1012": "You have too many pending tasks. Please try again in minutes."
 }

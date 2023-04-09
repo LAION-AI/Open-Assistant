@@ -85,7 +85,7 @@ oasst-rm-1-pythia-1.4b:
     - webgpt:
         val_split: 0.05
         max_val_set: 1000
-    - hf_summary:
+    - hf_summary_pairs:
         fraction: 0.1
         max_val_set: 250
   use_custom_sampler: true
@@ -97,10 +97,10 @@ oasst-rm-1-pythia-1.4b:
   dtype: float32
   max_length: 2048
   use_flash_attention: true
-  warmup_steps: 10
-  gradient_accumulation_steps: 2
-  per_device_train_batch_size: 2
-  per_device_eval_batch_size: 6
+  warmup_steps: 50
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 5
   num_train_epochs: 2
   eval_steps: 500
   save_steps: 1000

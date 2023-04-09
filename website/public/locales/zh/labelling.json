@@ -1,5 +1,5 @@
 {
-  "fails_task.question": "对于该提示任务来说这不是个好的回复？",
+  "fails_task.question": "作为对于该提示任务的回答，这是一个糟糕的回复吗？",
   "hate_speech": "仇恨言论",
   "hate_speech.explanation": "内容涉及辱骂或威胁，表达了对受保护特征的偏见。偏见是指非理性的先入为主的观点。受保护的特征包括性别、种族、宗教、性取向和类似特征。",
   "label_highlighted_flag_instruction": "选择适用于高亮信息的选项：",
