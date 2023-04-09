@@ -6,9 +6,10 @@
 /docs/ @andrewm4894 @olliestanley @andreaskoepf @yk
 /.devcontainer/ @andrewm4894 @andreaskoepf @yk
 /notebooks/ @andrewm4894 @olliestanley @andreaskoepf @yk
-/data @Vechtomov @bitplane @ontocord
+/data @Vechtomov @bitplane @ontocord @olliestanley
 /safety @SummerSigh @shahules786
 /inference/ @yk @andreaskoepf @olliestanley @AbdBarho
 /backend/ @andreaskoepf @melvinebenezer @yk
+/oasst-data/ @andreaskoepf @yk @olliestanley
 /oasst-shared/ @andreaskoepf @melvinebenezer @yk @olliestanley @AbdBarho
 docker-compose.yaml @andreaskoepf @melvinebenezer @yk @olliestanley @AbdBarho
