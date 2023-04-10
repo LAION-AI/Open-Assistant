@@ -12,7 +12,7 @@ import { ColorModeToggler } from "./ColorModeToggler";
 import { UserMenu } from "./UserMenu";
 import { UserScore } from "./UserScore";
 
-function AccountButton() {
+function AccountButton({ label }: { label: string }) {
   const { data: session } = useSession();
   if (session) {
     return null;
@@ -21,7 +21,7 @@ function AccountButton() {
     <Link href="/auth/signin" aria-label="Home">
       <Flex alignItems="center">
         <Button variant="outline" leftIcon={<User size={"20"} />}>
-          Sign in
+          {label}
         </Button>
       </Flex>
     </Link>
@@ -59,7 +59,7 @@ export function Header() {
 
       <Flex alignItems="center" gap={["2", "4"]}>
         <LanguageSelector />
-        <AccountButton />
+        <AccountButton label={t("sign_in")} />
         <UserMenu />
         <Show above="md">
           <UserScore />
