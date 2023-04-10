@@ -16,10 +16,8 @@
 """
 
 
-import collections
 import os
 import random
-from typing import Iterable, Text
 
 import rules
 import splits
@@ -87,7 +85,7 @@ def generate_t5_split(path, file_name, examples):
         for example in examples:
             f.write(f"INSTRUCTION: {example.inputs}\n")
             f.write(f"RESPONSE: {example.targets}\n")
-            f.write(f"SOURCE: LogicInference Dataset e\n\n")
+            f.write("SOURCE: LogicInference Dataset e\n\n")
 
 
 def main(_):
@@ -97,8 +95,6 @@ def main(_):
     if ANSWER_AT_THE_END:
         suffix = "_e"
     folder_iid_name = "logic_inference_iid" + suffix
-    folder_ood_name = "logic_inference_ood" + suffix
-    folder_length_name = "logic_inference_length" + suffix
 
     # Generate each of the splits:
     print("IID:")
