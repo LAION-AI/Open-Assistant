@@ -54,30 +54,6 @@ def create_string_feature(values):
     return feature
 
 
-# def generate_t5_split(path, file_name, examples):
-#   """Generates a TFRecord file with the examples in "examples".
-#
-#   The dataset is generated in the format expected by the T5 model codebase.
-#
-#   Args:
-#     path: the path to the directory where to save the dataset split.
-#     file_name: file name to use for generating the dataset split.
-#     examples: a list of Example instances.
-#   """
-#
-#   print(f"Generating split of size {len(examples)} at {path}")
-#   os.makedirs(path, exist_ok=True)
-#   writer = tf.io.TFRecordWriter(os.path.join(path, file_name))
-#   for example in examples:
-#     features = collections.OrderedDict(
-#         [("inputs", create_string_feature([example.inputs])),
-#          ("targets", create_string_feature([example.targets]))])
-#     tf_example = tf.train.Example(
-#         features=tf.train.Features(feature=features))
-#     writer.write(tf_example.SerializeToString())
-#   writer.close()
-
-
 def generate_t5_split(path, file_name, examples):
     print(f"Generating split of size {len(examples)} at {path}")
     os.makedirs(path, exist_ok=True)
