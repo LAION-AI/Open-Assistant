@@ -33,7 +33,8 @@ def main():
         tokenizer = None
     else:
         tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
-    logger.warning(f"Tokenizer {tokenizer.name_or_path} vocab size: {tokenizer.vocab_size}")
+    if tokenizer is not None:
+        logger.warning(f"Tokenizer {tokenizer.name_or_path} vocab size: {tokenizer.vocab_size}")
 
     while True:
         try:

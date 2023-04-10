@@ -6,14 +6,15 @@
   "login_message": "To use this feature, you need to login again. Login using one of these providers:",
   "max_new_tokens": "Max new tokens",
   "model": "Model",
-  "preset": "Preset",
   "preset_custom": "Custom",
+  "preset": "Preset",
   "queue_info": "Your message is queued, you are at position {{ queuePosition, number, integer }} in the queue.",
   "repetition_penalty": "Repetition penalty",
   "temperature": "Temperature",
   "top_k": "Top K",
   "top_p": "Top P",
   "typical_p": "Typical P",
+  "untitled": "Untitled",
   "you_are_logged_in": "You are logged in to the chat service",
   "your_chats": "Your chats"
 }

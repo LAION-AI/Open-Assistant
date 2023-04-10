@@ -1,6 +1,6 @@
-import { Divider } from "@chakra-ui/react";
+import { Card, CardBody, Divider } from "@chakra-ui/react";
 import { FormProvider, useForm } from "react-hook-form";
-import { getCachedChatForm, useCacheChatForm } from "src/hooks/chat/useCacheConfig";
+import { getCachedChatForm } from "src/hooks/chat/useCacheConfig";
 import { ChatConfigForm } from "src/types/Chat";
 
 import { ChatConfigSummary } from "./ChatConfigSummary";
@@ -8,7 +8,7 @@ import { useChatContext } from "./ChatContext";
 import { ChatConversation } from "./ChatConversation";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 
-export const ChatSection = ({ chatId }: { chatId: string }) => {
+export const ChatSection = ({ chatId }: { chatId: string | null }) => {
   const { modelInfos } = useChatContext();
 
   console.assert(modelInfos.length > 0, "No model config was found");
@@ -21,14 +21,18 @@ export const ChatSection = ({ chatId }: { chatId: string }) => {
     },
   });
 
-  useCacheChatForm(form);
+  // useCacheChatForm(form);
 
   return (
     <FormProvider {...form}>
-      <ChatConversation chatId={chatId} />
-      <ChatConfigSummary />
-      <Divider />
-      <InferencePoweredBy />
+      <Card className="max-w-5xl mx-auto">
+        <CardBody display="flex" flexDirection="column" gap="2">
+          <ChatConversation chatId={chatId} />
+          <ChatConfigSummary />
+          <Divider />
+          <InferencePoweredBy />
+        </CardBody>
+      </Card>
     </FormProvider>
   );
 };

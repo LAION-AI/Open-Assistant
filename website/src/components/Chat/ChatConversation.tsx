@@ -1,19 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  Button,
-  CircularProgress,
-  Flex,
-  Grid,
-  Icon,
-  Text,
-  Textarea,
-  useBoolean,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Button, CircularProgress, Flex, Icon, Text, useBoolean, useColorModeValue } from "@chakra-ui/react";
 import { XCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import { memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
+import { memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
@@ -26,38 +16,40 @@ import {
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
 } from "src/types/Chat";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { MessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
-import { ChatConfigDrawer } from "./ChatConfigDrawer";
-import { QueueInfoMessage } from "./QueueInfoMessage";
+import { ChatForm } from "./ChatInputSection";
 import { WorkParametersDisplay } from "./WorkParameters";
 interface ChatConversationProps {
-  chatId: string;
+  chatId: string | null;
 }
 
-export const ChatConversation = ({ chatId }: ChatConversationProps) => {
-  const { t } = useTranslation("common");
+export const ChatConversation = ({ chatId: chatIdProps }: ChatConversationProps) => {
+  const [chatId, setChatId] = useState<string | null>(chatIdProps);
+  useEffect(() => {
+    setChatId(chatIdProps);
+  }, [chatIdProps]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
+
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
 
   // calculate the current thread as always going down the newest child in the tree
-  const currentThread = useMemo(() => {
+  const currentThread: InferenceMessage[] = useMemo(() => {
     if (!messages.length) return [];
     // sort dates latest first
     const sortedMessages = messages.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
     // find the root message without parent_id
-    const root = sortedMessages.find((m) => m.parent_id === null);
+    const root = sortedMessages.find((m) => m.parent_id === null)!;
     const threadMessages = [root];
-    let current = root;
+    let current: InferenceMessage | null = root;
     while (current) {
-      const next = sortedMessages.find((m) => m.parent_id === current.id);
+      const next = sortedMessages.find((m) => m.parent_id === current!.id);
       if (next) {
         threadMessages.push(next);
         current = next;
@@ -68,13 +60,13 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     return threadMessages;
   }, [messages]);
 
-  useSWR<ChatItem>(API_ROUTES.GET_CHAT(chatId), get, {
+  useSWR<ChatItem>(chatId === null ? null : API_ROUTES.GET_CHAT(chatId), get, {
     onSuccess: (chat) => setMessages(chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))),
   });
   const { getValues: getFormValues } = useFormContext<ChatConfigForm>();
 
   const initiate_assistant_message = useCallback(
-    async (parent_id: string) => {
+    async (parent_id: string, chatId: string) => {
       const { model_config_name, ...sampling_parameters } = getFormValues();
       const assistant_arg: InferencePostAssistantMessageParams = {
         chat_id: chatId,
@@ -91,13 +83,13 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
       // there is also EventSource, but it is callback based
       const { body, status } = await fetch(API_ROUTES.STREAM_CHAT_MESSAGE(chatId, assistant_message.id));
 
-      let message: InferenceMessage;
+      let message: InferenceMessage | null;
       if (status === 204) {
         // message already processed, get it immediately
         message = await get(API_ROUTES.GET_MESSAGE(chatId, assistant_message.id));
       } else {
         message = await handleChatEventStream({
-          stream: body,
+          stream: body!,
           onError: console.error,
           onPending: setQueueInfo,
           onToken: async (text) => {
@@ -108,21 +100,26 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
         });
       }
       if (message) {
-        setMessages((messages) => [...messages, message]);
+        setMessages((messages) => [...messages, message!]);
       }
       setQueueInfo(null);
       setResponse(null);
       setIsSending.off();
     },
-    [chatId, getFormValues, setIsSending]
+    [getFormValues, setIsSending]
   );
-
   const send = useCallback(async () => {
     const content = inputRef.current?.value.trim();
-    if (!content || !chatId) {
+    if (!content) {
       return;
     }
     setIsSending.on();
+    let currentChatId = chatId;
+    if (currentChatId === null) {
+      const chat: ChatItem = await post(API_ROUTES.LIST_CHAT);
+      setChatId(chat.id);
+      currentChatId = chat.id;
+    }
 
     // find last VALID assistant message
     const parent_id =
@@ -130,27 +127,29 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
         .slice()
         .reverse()
         .find((m) => m.role === "assistant" && m.state === "complete")?.id ?? null;
+
     const prompter_arg: InferencePostPrompterMessageParams = {
-      chat_id: chatId,
+      chat_id: currentChatId,
       content,
       parent_id,
     };
 
     const prompter_message: InferenceMessage = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
-
+    mutate(API_ROUTES.LIST_CHAT); // revalidte chat list after create prompter message to make sure the message already has title
     setMessages((messages) => [...messages, prompter_message]);
 
-    await initiate_assistant_message(prompter_message.id);
-  }, [chatId, currentThread, setIsSending, initiate_assistant_message]);
+    await initiate_assistant_message(prompter_message.id, currentChatId);
+    // await router.push(ROUTES.CHAT(currentChatId));
+  }, [setIsSending, chatId, currentThread, initiate_assistant_message]);
 
   const sendVote = useMessageVote();
 
   const handleOnRetry = useCallback(
     (messageId: string) => {
       setIsSending.on();
-      initiate_assistant_message(messageId);
+      initiate_assistant_message(messageId, chatId!);
     },
-    [initiate_assistant_message, setIsSending]
+    [chatId, initiate_assistant_message, setIsSending]
   );
 
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
@@ -184,7 +183,7 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
           isAssistant={message.role === "assistant"}
           messageId={message.id}
           parentId={message.parent_id}
-          chatId={chatId}
+          chatId={message.chat_id}
           score={message.score}
           state={message.state}
           onVote={handleOnVote}
@@ -198,25 +197,12 @@ export const ChatConversation = ({ chatId }: ChatConversationProps) => {
     [chatId, handleOnVote, currentThread, handleOnRetry, isSending]
   );
 
-  const drawer = useMemo(() => <ChatConfigDrawer />, []);
-
   return (
     <Flex flexDir="column" gap={4}>
       {entries}
       {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-      {!isSending && <Textarea ref={inputRef} />}
 
-      <Grid gridTemplateColumns="1fr 50px" gap={2}>
-        <Button
-          onClick={send}
-          isLoading={isSending}
-          spinner={queueInfo ? <QueueInfoMessage info={queueInfo} /> : undefined}
-          size="lg"
-        >
-          {t("submit")}
-        </Button>
-        {drawer}
-      </Grid>
+      <ChatForm ref={inputRef} isSending={isSending} onSubmit={send}></ChatForm>
     </Flex>
   );
 };
@@ -227,7 +213,7 @@ type ChatMessageEntryProps = {
   state: InferenceMessage["state"];
   chatId: string;
   messageId: string;
-  parentId?: string;
+  parentId: InferenceMessage["parent_id"];
   workParameters?: InferenceMessage["work_parameters"];
   score: number;
   onVote: (data: { newScore: number; oldScore: number; chatId: string; messageId: string }) => void;
@@ -333,7 +319,7 @@ type PendingMessageEntryProps = {
 };
 
 const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageEntryProps) => {
-  const bgUser = useColorModeValue("gray.100", "gray.700");
+  const bgUser = useColorModeValue("white", "gray.700");
   const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
   const { data: session } = useSession();
   const image = session?.user?.image;
@@ -347,8 +333,9 @@ const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageE
     <BaseMessageEntry
       avatarProps={avatarProps}
       bg={isAssistant ? bgAssistant : bgUser}
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       content={content!}
+      width="full"
+      maxWidth="full"
     >
       {children}
     </BaseMessageEntry>

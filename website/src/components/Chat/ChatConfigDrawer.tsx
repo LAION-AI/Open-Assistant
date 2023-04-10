@@ -31,13 +31,14 @@ import { ChatConfigForm, SamplingParameters } from "src/types/Chat";
 
 import { useChatContext } from "./ChatContext";
 
-export const ChatConfigDrawer = () => {
+// eslint-disable-next-line react/display-name
+export const ChatConfigDrawer = memo(() => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { t } = useTranslation("chat");
   return (
     <>
-      <IconButton aria-label={t("config_title")} icon={<Settings />} onClick={onOpen} size="lg" />
+      <IconButton aria-label={t("config_title")} icon={<Settings />} onClick={onOpen} size="lg" borderRadius="xl" />
       <Drawer placement="right" onClose={onClose} isOpen={isOpen}>
         <DrawerOverlay />
         <DrawerContent>
@@ -50,7 +51,7 @@ export const ChatConfigDrawer = () => {
       </Drawer>
     </>
   );
-};
+});
 
 const sliderItems: Readonly<
   Array<{
