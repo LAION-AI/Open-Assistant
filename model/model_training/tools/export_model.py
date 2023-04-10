@@ -47,12 +47,12 @@ def main():
 
     print(f"Loading model '{args.model_name}' ({args.dtype}) ...")
 
-    if args.torch_rl_checkpoint:
+    if args.rl_checkpoint:
         model = AutoModelForCausalLM.from_pretrained(args.model_name, cache_dir=args.cache_dir)
         tokenizer = AutoTokenizer.from_pretrained(args.model_name)
 
-        print(f"Loading RL checkpoint: {args.torch_rl_checkpoint}...")
-        checkpoint_state = torch.load(args.torch_rl_checkpoint, map_location="cpu")["module"]
+        print(f"Loading RL checkpoint: {args.rl_checkpoint}...")
+        checkpoint_state = torch.load(args.rl_checkpoint, map_location="cpu")["module"]
 
         # drop parameters of value head
         for param_name in ("v_head.0.weight", "v_head.0.bias", "v_head.2.weight", "v_head.2.bias"):

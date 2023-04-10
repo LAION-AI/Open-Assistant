@@ -58,6 +58,12 @@
       "githubURL": "https://github.com/theblackcat102",
       "imageURL": "https://avatars.githubusercontent.com/u/13172147?v=4"
     },
+    "karan4d": {
+      "name": "karan4d",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/DamascusGit",
+      "imageURL": "https://avatars.githubusercontent.com/u/107374910?v=4"
+    },
     "sanagno": {
       "name": "sanagno",
       "title": "ML engineer",
@@ -140,6 +146,12 @@
       "githubURL": "https://github.com/andrewm4894",
       "imageURL": "https://avatars.githubusercontent.com/u/2178292?v=4"
     },
+    "GravermanDev": {
+      "name": "Graverman",
+      "title": "Data engineer",
+      "githubURL": "https://github.com/GravermanDev",
+      "imageURL": "https://avatars.githubusercontent.com/u/76252605?v=4"
+    },
     "you": {
       "name": "You!",
       "title": "It wouldn't have happened without you, thanks!",
@@ -181,11 +193,11 @@
     },
     {
       "name": "ML engineers",
-      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette"]
+      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette", "karan4d"]
     },
     {
       "name": "Data Team",
-      "members": ["sedthh", "bitplane", "jmete", "kenhktsui"]
+      "members": ["sedthh", "bitplane", "jmete", "kenhktsui", "GravermanDev"]
     },
     {
       "name": "Safety Team",
