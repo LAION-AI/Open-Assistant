@@ -507,9 +507,6 @@ class Vicuna(Dataset):
         for line in data["conversations"]:
             speaker = line["from"]  # 'human' or 'gpt'
             message = line["value"]
-            # if _filter_by_words(message) is None:
-            #     print(message)
-            #     return None
             if role != speaker:
                 if role is not None:
                     dialogue.append("\n".join(messages))
