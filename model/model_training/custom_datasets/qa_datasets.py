@@ -193,8 +193,9 @@ class WebGPT(Dataset):
             question = row["question"]["full_text"]
             answer_0 = re_reference_remove.sub("", row["answer_0"])
             answer_1 = re_reference_remove.sub("", row["answer_1"])
-            question_answer_dict[question][answer_0] = row["score_0"]
-            question_answer_dict[question][answer_1] = row["score_1"]
+            if answer_0 != "" and answer_1 != "" and answer_0 != answer_1:
+                question_answer_dict[question][answer_0] = row["score_0"]
+                question_answer_dict[question][answer_1] = row["score_1"]
 
         for question, answers in question_answer_dict.items():
             self.questions.append(question)
