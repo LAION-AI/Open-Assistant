@@ -12,7 +12,8 @@ import { ColorModeToggler } from "./ColorModeToggler";
 import { UserMenu } from "./UserMenu";
 import { UserScore } from "./UserScore";
 
-function AccountButton({ label }: { label: string }) {
+function AccountButton() {
+  const { t } = useTranslation();
   const { data: session } = useSession();
   if (session) {
     return null;
@@ -21,7 +22,7 @@ function AccountButton({ label }: { label: string }) {
     <Link href="/auth/signin" aria-label="Home">
       <Flex alignItems="center">
         <Button variant="outline" leftIcon={<User size={"20"} />}>
-          {label}
+          {t("sign_in")}
         </Button>
       </Flex>
     </Link>
@@ -59,7 +60,7 @@ export function Header() {
 
       <Flex alignItems="center" gap={["2", "4"]}>
         <LanguageSelector />
-        <AccountButton label={t("sign_in")} />
+        <AccountButton />
         <UserMenu />
         <Show above="md">
           <UserScore />
