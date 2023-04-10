@@ -128,7 +128,7 @@ def get_one_dataset(
         train = ProsocialDialogueExplaination(cache_dir=data_path, split="train")
         eval = ProsocialDialogueExplaination(cache_dir=data_path, split="validation")
     elif dataset_name == "soda":
-        dataset = SODA(data_path)
+        dataset = SODA(data_path, **kwargs)
     elif dataset_name == "soda_dialogue":
         dataset = SODADialogue(data_path)
     elif dataset_name == "joke":
