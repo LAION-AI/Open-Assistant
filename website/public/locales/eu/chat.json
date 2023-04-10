@@ -1,0 +1,19 @@
+{
+  "back_to_chat_list": "Itzuli txat zerrendara",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Txataren konfigurazioa",
+  "empty": "(hutsik)",
+  "login_message": "Funtzio hau erabiltzeko, berriro saioa hasi behar duzu. Hasi saioa hornitzaile hauetako bat erabiliz:",
+  "max_new_tokens": "Token berri maximoa",
+  "model": "Eredua",
+  "preset": "Aurrezarritakoa",
+  "preset_custom": "Pertsonalizatua",
+  "queue_info": "Zure mezua ilaran dago, {{ queuePosition, number, integer }} posizioan zaude ilaran.",
+  "repetition_penalty": "Errepikapen zigorra",
+  "temperature": "Tenperatura",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "P tipikoa",
+  "you_are_logged_in": "Txat-zerbitzuan saioa hasita zaude",
+  "your_chats": "Zure txatak"
+}

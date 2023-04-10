@@ -13,7 +13,8 @@ from urllib.request import urlopen
 
 import numpy as np
 from datasets import load_dataset
-from torch.utils.data import Dataset
+from torch import Generator
+from torch.utils.data import Dataset, Subset, random_split
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
@@ -432,85 +433,108 @@ class TranslatedQA(Dataset):
         return self.pairs[index]
 
 
-class AlpacaBase(Dataset):
-    def __init__(self, dataset_name: str, mode: str, cache_dir: str = None) -> None:
+class AlpacaBaseDataset(Dataset):
+    def __init__(self, data: list, mode: str):
         super().__init__()
+        self.data = data
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(
+                f"Alpaca Dataset for mode {self.mode} is not implemented. Currently supported modes are 'sft' and 'rl'."
+            )
         self.mode = mode
-        dataset = load_dataset(dataset_name, cache_dir=cache_dir)
-        rows = []
-        for row in dataset["train"]:
-            question = row["instruction"]
-            if len(row["input"]) > 0:
-                input_ = "{}\n{}".format(question, row["input"])
-            else:
-                input_ = question
-            rows.append((input_, row["output"]))
-        self.rows = rows
 
     def __len__(self):
-        return len(self.rows)
+        return len(self.data)
 
     def __getitem__(self, index):
-        question, answer = self.rows[index]
+        question, answer = self.data[index]
         if self.mode == "sft":
             return (question, answer)
         elif self.mode == "rl":
             return (question,)
 
 
-class Alpaca(AlpacaBase):
-    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
-        super().__init__(dataset_name="yahma/alpaca-cleaned", mode=mode, cache_dir=cache_dir)
+def load_alpaca_dataset(
+    dataset_name: str,
+    val_split: float,
+    cache_dir: str,
+    mode: str = "sft",
+    manual_seed: int = 287631038922,
+    reverse_augmentation: bool = False,
+    keep_unreversed: bool = True,
+) -> tuple[AlpacaBaseDataset, AlpacaBaseDataset]:
+    generator = Generator()
+    generator.manual_seed(manual_seed)
 
+    def process_split(
+        dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
+    ) -> list[tuple[str, str]]:
+        data = []
+        for row in dataset:
+            question = row["instruction"]
+            if len(row["input"]) > 0:
+                input_ = "{}\n{}".format(question, row["input"])
+            else:
+                input_ = question
+            if reverse_augmentation:
+                data.append((row["output"], input_))
+                # in case of reverse augmentation we just keep both, reversed and unreversed data
+                if keep_unreversed:
+                    data.append((input_, row["output"]))
+            else:
+                data.append((input_, row["output"]))
+        return data
 
-class CodeAlpaca(AlpacaBase):
-    def __init__(self, mode: str = "sft", cache_dir: str = None) -> None:
-        super().__init__(dataset_name="sahil2801/CodeAlpaca-20k", mode=mode, cache_dir=cache_dir)
+    if dataset_name == "alpaca":
+        dataset = load_dataset("yahma/alpaca-cleaned", cache_dir=cache_dir)
+    elif dataset_name == "code_alpaca":
+        dataset = load_dataset("sahil2801/CodeAlpaca-20k", cache_dir=cache_dir)
+    else:
+        raise ValueError(f"Expected dataset_name to be 'alapaca' or 'code_alpaca'. Received {dataset_name}.")
+
+    splits = random_split(dataset["train"], lengths=[1.0 - val_split, val_split], generator=generator)
+    train = AlpacaBaseDataset(
+        process_split(splits[0], reverse_augmentation=reverse_augmentation, keep_unreversed=keep_unreversed), mode=mode
+    )
+    val = AlpacaBaseDataset(
+        process_split(splits[1], reverse_augmentation=False, keep_unreversed=keep_unreversed), mode=mode
+    )
+    return train, val
 
 
 class Vicuna(Dataset):
     name = "vicuna"
 
     @staticmethod
-    def _partition_list(l: list, chunk_size: int) -> list[list]:
-        """Partition list in sublists
-
-        Args:
-            l (list): list to partition
-            chunk_size (int): length of sublists
-
-        Returns:
-            list[list]: list of sublists with length chunk_size
-        """
-        return [l[i : i + chunk_size] for i in range(0, len(l), chunk_size)]
-
-    def process_vicuna_conversations(self, data: dict[str, Any], input_max_length: int) -> list[list[str]] | None:
-        # Perform some sanity checks, if these fail return None
-        # ignore data with more than 2 speakers for now
-        speakers = [k["from"] for k in data["conversations"]]
-        if len(set(speakers)) != 2:
+    def process_vicuna_conversations(data: list[dict[str, None | str]], input_max_length: int) -> list[str] | None:
+        dialogue = []
+        role = None
+        messages = []
+        # drop conversations that start with Bot
+        if len(data["conversations"]) == 0 or data["conversations"][0]["from"] != "human":
             return None
-        speaker1 = speakers[0]
-        speaker2 = speakers[1]
-        # make sure that the speakers are in correct order [S1, S2, S1, S2, S1, S2], otherwise return None
-        speaker1_idx = [idx % 2 == 0 for idx, k in enumerate(speakers) if k == speaker1]
-        speaker2_idx = [idx % 2 == 1 for idx, k in enumerate(speakers) if k == speaker2]
-        if all(speaker1_idx) and all(speaker2_idx):
-            # [Q1, A1, Q2, A2] -> [Q1, A1, Q2, A2]
-            # Use only input_max_length characters
-            truncated_dialogue = [k["value"][:input_max_length] for k in data["conversations"]]
-            # split dialogue in question and answer pairs.
-            # [Q1, A1, Q2, A2] -> [[Q1, A1], [Q2, A2]]
-            pairs = self._partition_list(truncated_dialogue, 2)
-            # add previous history to conversation pairs
-            # e.g. [[Q1, A1], [Q2, A2]] -> [[Q1, A1], [Q1, A1, Q2, A2]]
-            pairs = list(accumulate(pairs, lambda x, y: x + y))
-            return pairs
+        for line in data["conversations"]:
+            speaker = line["from"]  # 'human' or 'gpt'
+            message = line["value"]
+            if role != speaker:
+                if role is not None:
+                    dialogue.append("\n".join(messages))
+                    messages = []
+                role = speaker
+            messages.append(message.strip())
 
-    def __init__(self, cache_dir: str | Path, input_max_length: int = 4096) -> None:
+        if role is not None and len(messages) > 0:
+            dialogue.append("\n".join(messages))
+        dialogue_truncated = [k[:input_max_length] for k in dialogue]
+        return dialogue_truncated
+
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
         super().__init__()
 
         self.pairs = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
         dataset = load_dataset(
             "anon8231489123/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
@@ -522,8 +546,12 @@ class Vicuna(Dataset):
             ) is not None:
                 self.pairs.append(processed_data)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.pairs)
 
-    def __getitem__(self, index):
-        return self.pairs[index]
+    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+        dialogue: list[str] = self.pairs[index]
+        if self.mode == "sft":
+            return dialogue
+        elif self.mode == "rl":
+            return tuple(dialogue[:-1])

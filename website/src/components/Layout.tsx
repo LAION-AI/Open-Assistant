@@ -13,7 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import type { NextPage } from "next";
-import { isChatEnabled } from "src/lib/chat_enabled";
+import { getEnv } from "src/lib/browserEnv";
 
 import { SlimFooter } from "./Dashboard/SlimFooter";
 import { Footer } from "./Footer";
@@ -57,7 +57,7 @@ export const getDashboardLayout = (page: React.ReactElement) => (
             pathname: "/stats",
             icon: TrendingUp,
           },
-          ...(isChatEnabled()
+          ...(getEnv().ENABLE_CHAT
             ? [
                 {
                   labelID: "chat",
