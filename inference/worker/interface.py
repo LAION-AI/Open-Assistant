@@ -35,6 +35,19 @@ class GenerateStreamRequest(pydantic.BaseModel):
     parameters: GenerateStreamParameters
 
 
+class SafetyParameters(pydantic.BaseModel):
+    threshold: float = 0.1
+
+
+class SafetyRequest(pydantic.BaseModel):
+    inputs: str
+    parameters: SafetyParameters
+
+
+class SafetyResponse(pydantic.BaseModel):
+    outputs: str
+
+
 class Token(pydantic.BaseModel):
     text: str
     logprob: float | None
