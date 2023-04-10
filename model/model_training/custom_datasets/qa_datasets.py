@@ -12,6 +12,7 @@ from urllib.request import urlopen
 
 import numpy as np
 from datasets import load_dataset
+from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator
 from torch.utils.data import Dataset, Subset, random_split
 
@@ -457,12 +458,15 @@ def load_alpaca_dataset(
         dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
     ) -> list[tuple[str, str]]:
         data = []
+        print("new version")
         for row in dataset:
             question = row["instruction"]
             if len(row["input"]) > 0:
                 input_ = "{}\n{}".format(question, row["input"])
             else:
                 input_ = question
+            if (_filter_by_words(input_) is None) or (_filter_by_words(row["output"]) is None):
+                continue
             if reverse_augmentation:
                 data.append((row["output"], input_))
                 # in case of reverse augmentation we just keep both, reversed and unreversed data
@@ -503,6 +507,9 @@ class Vicuna(Dataset):
         for line in data["conversations"]:
             speaker = line["from"]  # 'human' or 'gpt'
             message = line["value"]
+            # if _filter_by_words(message) is None:
+            #     print(message)
+            #     return None
             if role != speaker:
                 if role is not None:
                     dialogue.append("\n".join(messages))
