@@ -3,13 +3,14 @@ import { BarChart2, ExternalLink, Layout, MessageCircle, MessageSquare, Trending
 import { getEnv } from "src/lib/browserEnv";
 
 import { ChatList } from "../Chat/ChatList";
+import { ChatListMobile } from "../Chat/ChatListMobile";
 import { SlimFooter } from "../Dashboard/SlimFooter";
 import { HeaderLayout } from "../Header/Header";
 import { SideMenuLayout } from "../SideMenuLayout";
 import { ToSWrapper } from "../ToSWrapper";
 
 export const getChatLayout = (page: React.ReactElement) => (
-  <HeaderLayout>
+  <HeaderLayout preLogoSlot={<ChatListMobile />}>
     <ToSWrapper>
       <SideMenuLayout
         collapsed

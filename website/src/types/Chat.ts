@@ -46,6 +46,7 @@ export interface InferenceMessage {
       quantized: boolean;
     };
   };
+  chat_id: string;
 }
 
 export interface GetChatsResponse {

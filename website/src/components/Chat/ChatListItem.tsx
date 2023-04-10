@@ -3,7 +3,7 @@ import { LucideIcon, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { useCallback } from "react";
+import { MouseEvent, useCallback } from "react";
 import { del } from "src/lib/api";
 import { ROUTES } from "src/lib/routes";
 import { ChatItem } from "src/types/Chat";
@@ -27,11 +27,20 @@ export const ChatListItem = ({ chat }: { chat: ChatItem }) => {
       role="group"
       borderRadius="lg"
     >
-      {chat.title ?? t("untitled")}
+      <Box
+        _groupHover={{ me: "32px" }}
+        overflow="hidden"
+        me={isActive ? "32px" : undefined}
+        textOverflow="clip"
+        as="span"
+      >
+        {chat.title ?? t("untitled")}
+      </Box>
       <Flex
         display={isActive ? "flex" : "none"}
         _groupHover={{ display: "flex" }}
         position="absolute"
+        alignContent="center"
         style={{
           insetInlineEnd: `8px`,
         }}
@@ -82,16 +91,28 @@ type ChatListItemIconButtonProps = {
 const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIconButtonProps) => {
   return (
     <Tooltip label={label}>
-      <button
+      <Box
+        as="button"
         aria-label={label}
-        onClick={(e) => {
+        onClick={(e: MouseEvent) => {
           e.stopPropagation();
           e.preventDefault();
           onClick();
         }}
       >
-        <Box as={icon} size="16px" color="gray.400" _hover={{ color: "white" }}></Box>
-      </button>
+        <Box
+          as={icon}
+          size="16px"
+          color="gray.500"
+          _hover={{ color: "gray.700" }}
+          _dark={{
+            color: "gray.400",
+            _hover: {
+              color: "white",
+            },
+          }}
+        ></Box>
+      </Box>
     </Tooltip>
   );
 };
