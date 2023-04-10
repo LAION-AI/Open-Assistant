@@ -364,9 +364,6 @@ def get_dataset(
 
     for data_config in conf.datasets + conf.datasets_extra:
         dataset_name, kwargs = get_dataset_name_and_kwargs_from_data_config(data_config)
-        import pdb
-
-        pdb.set_trace()
         train, val = get_one_dataset(conf, dataset_name, mode=mode, **kwargs)
         train_datasets.append(train)
 
