@@ -7,6 +7,7 @@ from typing import Optional
 import requests
 from datasets import load_dataset
 from model_training.custom_datasets.oasst_dataset import ListDataset
+from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator, randperm
 from torch.utils.data import Dataset, random_split
 
@@ -139,6 +140,8 @@ class Gpt4All(Dataset):
                 speaker = "Assistant"
             else:
                 continue
+            if _filter_by_words(message) is None:
+                return None
             if role != speaker:
                 if role is not None:
                     dialogue.append("\n".join(messages))
