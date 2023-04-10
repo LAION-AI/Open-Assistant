@@ -1,3 +1,4 @@
+git+https://github.com/LAION-AI/blade2blade@7bb32cc70e6f9ef941cc82416673b7d10f44cdf8#egg=blade2blade
 hf_transfer
 huggingface_hub
 loguru

@@ -1,5 +1,6 @@
 accelerate
 bitsandbytes
+git+https://github.com/LAION-AI/blade2blade@7bb32cc70e6f9ef941cc82416673b7d10f44cdf8#egg=blade2blade
 fastapi
 huggingface_hub
 sse-starlette
