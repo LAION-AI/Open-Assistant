@@ -6,7 +6,6 @@ import json
 import os
 import re
 from collections import defaultdict
-from itertools import accumulate
 from pathlib import Path
 from typing import Any
 from urllib.request import urlopen
@@ -222,19 +221,6 @@ class WebGPT(Dataset):
 class SODA(Dataset):
     name = "soda"
 
-    @staticmethod
-    def _partition_list(l: list, chunk_size: int) -> list[list]:
-        """Partition list in sublists
-
-        Args:
-            l (list): list to partition
-            chunk_size (int): length of sublists
-
-        Returns:
-            list[list]: list of sublists with length chunk_size
-        """
-        return [l[i : i + chunk_size] for i in range(0, len(l), chunk_size)]
-
     def process_soda_convo(self, data: dict[str, Any], input_max_length: int) -> list[list[str]] | None:
         play_as = data["speakers"][1]
         dialogue_bg = "{}{}".format(
@@ -259,17 +245,13 @@ class SODA(Dataset):
             data["dialogue"][0] = f"{dialogue_bg} {data['dialogue'][0]}"
             # Use only input_max_length characters
             truncated_dialogue = [k[:input_max_length] for k in data["dialogue"]]
-            # split dialogue in question and answer pairs.
-            # [B + Q1, A1, Q2, A2] -> [[B + Q1, A1], [Q2, A2]]
-            pairs = self._partition_list(truncated_dialogue, 2)
-            # add previous history to conversation pairs
-            # e.g. [[B + Q1, A1], [Q2, A2]] -> [[B + Q1, A1], [B + Q1, A1, Q2, A2]]
-            pairs = list(accumulate(pairs, lambda x, y: x + y))
-            return pairs
+            return truncated_dialogue
 
-    def __init__(self, cache_dir, input_max_length=1024) -> None:
+    def __init__(self, cache_dir, mode="sft", input_max_length=1024) -> None:
         super().__init__()
-
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
         self.pairs = []
         dataset = load_dataset("allenai/soda", cache_dir=cache_dir)["train"]
         for data in dataset:
@@ -279,12 +261,16 @@ class SODA(Dataset):
             #     if len(prompt) < input_max_length:
             #         self.pairs.append((prompt, answer))
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.pairs)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> list[str] | tuple[str]:
         # special token added during preprocess
-        return self.pairs[index]
+        if self.mode == "sft":
+            return self.pairs[index]
+        elif self.mode == "rl":
+            # add prefix + first human question
+            return (self.pairs[index][0] + " " + self.pairs[index][1],)
 
 
 class SODADialogue(Dataset):
