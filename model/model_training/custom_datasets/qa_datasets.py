@@ -458,7 +458,6 @@ def load_alpaca_dataset(
         dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
     ) -> list[tuple[str, str]]:
         data = []
-        print("new version")
         for row in dataset:
             question = row["instruction"]
             if len(row["input"]) > 0:
