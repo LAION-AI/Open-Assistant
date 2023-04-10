@@ -31,7 +31,8 @@ defaults:
     - cnn_dailymail
     - multi_news
     - scitldr
-    - soda
+    - soda:
+        input_max_length: 1024
     - joke
     - gsm8k
     - dive_mt
@@ -43,16 +44,16 @@ defaults:
     - wmt2019_de-en
     - samsum
     - soda_dialogue
-    # instructional_datasets:
-    # - humaneval_mbpp_codegen_qa
-    # - humaneval_mbpp_testgen_qa
-    # - grade_school_math_instructions
-    # - recipes
-    # - ubuntu_dialogue_qa
-    # - cmu_wiki_qa
-    # - youtube_subs_howto100M
-    # - iapp_wiki_qa_squad
-    # - zhihu-kol
+  # instructional_datasets:
+  #  - humaneval_mbpp_codegen_qa
+  #  - humaneval_mbpp_testgen_qa
+  #  - grade_school_math_instructions
+  #  - recipes
+  #  - ubuntu_dialogue_qa
+  #  - cmu_wiki_qa
+  #  - youtube_subs_howto100M
+  #  - iapp_wiki_qa_squad
+  #  - zhihu-kol
   datasets_extra: [] # For config options to add additional datasets, since yaml doesn't let us extend arrays
   cache_dir: .cache
   loss_fn: CrossEntropyLoss
@@ -256,8 +257,9 @@ llama-30b:
   save_total_limit: 4
   use_flash_attention: true
 
-pythia:
+pythia-70m-deduped:
   learning_rate: 8e-6
+  # model_name: EleutherAI/pythia-1b-deduped
   model_name: EleutherAI/pythia-70m-deduped
   weight_decay: 0.0
   max_length: 520
@@ -267,6 +269,9 @@ pythia:
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 4
   output_dir: pythia_model
+  datasets:
+    - vicuna
+    - soda
 
 pythia-1B:
   learning_rate: 8e-6

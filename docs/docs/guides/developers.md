@@ -208,7 +208,7 @@ explains how to contribute a new dataset.
 
 There's also a
 [notebooks](https://github.com/LAION-AI/Open-Assistant/tree/main/notebooks)
-directory with different noteboooks to process the data.
+directory with different notebooks to process the data.
 
 ### The docs
 

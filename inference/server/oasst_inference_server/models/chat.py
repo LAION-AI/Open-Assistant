@@ -56,6 +56,7 @@ class DbMessage(SQLModel, table=True):
             role=self.role,
             state=self.state,
             score=self.score,
+            work_parameters=self.work_parameters,
             reports=[r.to_read() for r in self.reports],
         )
 

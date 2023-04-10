@@ -4,10 +4,16 @@
   "config_title": "Настройки диалога",
   "empty": "(пусто)",
   "login_message": "Чтобы воспользоваться диалогами, вам нужно повторно войти. Используйте один из способов ниже:",
+  "max_new_tokens": "Максимальное кол-во новых токенов",
   "model": "Модель",
   "preset": "Предустановка",
   "preset_custom": "Собственная предустановка",
   "queue_info": "Ваше сообщение находится в очереди, вы на позиции {{ queuePosition, number, integer }}.",
+  "repetition_penalty": "Штраф за повтор",
+  "temperature": "Температура",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "Typical P",
   "you_are_logged_in": "Вы вошли в систему диалогов",
   "your_chats": "Ваши диалоги"
 }

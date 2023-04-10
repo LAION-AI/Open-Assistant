@@ -184,7 +184,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
     parser.add_argument("--resume_from_checkpoint", action="store_true", help="Resume from last saved checkpoint")
     parser.add_argument("--rng_seed", type=int, help="rng seed")
-    parser.add_argument("--dataset_stats", action="store_true", help="Show dataset stats", default=False)
+    parser.add_argument("--show_dataset_stats", action="store_true", help="Show dataset stats", default=False)
     parser.set_defaults(deepspeed=False)
 
     if notebook:
@@ -213,7 +213,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["resume_from_checkpoint"] = args.resume_from_checkpoint
     if args.rng_seed is not None:
         conf["rng_seed"] = args.rng_seed
-    conf["dataset_stats"] = args.dataset_stats
+    conf["show_dataset_stats"] = args.show_dataset_stats
 
     # get the world size in deeepspeed
     if conf["deepspeed"]:
@@ -231,9 +231,7 @@ def argument_parsing(notebook=False, notebook_args=None):
         # Allow --no-{key}  to remove it completely
         parser.add_argument(f"--no-{key}", dest=key, action="store_const", const=None)
 
-    args = parser.parse_args(remaining)
-    print(args)
-    return args
+    return parser.parse_args(remaining)
 
 
 def tokenizer_sanity_check(tokenizer):
@@ -273,6 +271,8 @@ def tokenizer_sanity_check(tokenizer):
 
 def main():
     training_conf = argument_parsing()
+    if not training_conf.deepspeed or training_conf.local_rank == 0:
+        print(f"trainig_conf = {training_conf}")
 
     output_dir = (
         training_conf.output_dir
@@ -331,14 +331,12 @@ def main():
         system_prefix=training_conf.system_prefix,
     )
 
-    if training_conf.val_max_length is not None:
-        val_max_len = training_conf.val_max_length
-    else:
-        val_max_len = training_conf.max_length
+    if training_conf.val_max_length is None:
+        training_conf.val_max_length = training_conf.max_length
 
     eval_collate_fn = DialogueDataCollator(
         tokenizer,
-        max_length=val_max_len,
+        max_length=training_conf.val_max_length,
         random_offset_probability=training_conf.random_offset_probability,
         label_masking=training_conf.label_masking,
         samples_mixing=False,
@@ -348,7 +346,7 @@ def main():
 
     train, evals = get_dataset(training_conf)
 
-    show_dataset_stats = (training_conf.verbose or training_conf.dataset_stats) and (
+    show_dataset_stats = (training_conf.verbose or training_conf.show_dataset_stats) and (
         not training_conf.deepspeed or training_conf.local_rank == 0
     )
     if show_dataset_stats:
@@ -418,7 +416,7 @@ def main():
             config=training_conf,
         )
         wandb.config["_max_length"] = training_conf.max_length
-        wandb.config["val_max_length"] = val_max_len
+        wandb.config["_val_max_length"] = training_conf.val_max_length
 
     trainer = SFTTrainer(
         model=model,
