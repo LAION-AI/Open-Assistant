@@ -13,7 +13,7 @@ import { UserMenu } from "./UserMenu";
 import { UserScore } from "./UserScore";
 
 function AccountButton() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const { data: session } = useSession();
   if (session) {
     return null;
@@ -32,7 +32,7 @@ function AccountButton() {
 export const HEADER_HEIGHT = "82px";
 
 export function Header() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const { data: session } = useSession();
   const homeURL = session ? "/dashboard" : "/";
 
