@@ -14,6 +14,5 @@ def _filter_by_words(text: str, filter_words: list[str] | None = None) -> None |
     filter_words = filter_words or FILTER_BY_WORDS
     for word in filter_words:
         if word in text.lower():
-            print(text)
             return None
     return text

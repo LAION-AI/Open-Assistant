@@ -363,6 +363,11 @@ def main():
                     name += f" ({d.name})"
             print(f"{name}: {len(d)} ({len(d) / total:%})")
         print(f"Total train: {total}")
+        print("Evaluation set sizes:")
+        total_eval = sum(len(x) for x in evals.values())
+        for k, d in evals.items():
+            print(f"{k}: {len(d)} ({len(d) / total_eval:%})")
+        print(f"Total eval: {total_eval}")
 
     if training_conf.use_custom_sampler:
         samples_length = None
