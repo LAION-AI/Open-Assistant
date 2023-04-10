@@ -15,5 +15,6 @@ export const config = {
     "/leaderboard",
     "/messages/:path*",
     "/chat",
+    "/chat/:path*",
   ],
 };

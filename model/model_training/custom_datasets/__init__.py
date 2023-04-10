@@ -10,16 +10,16 @@ from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
 from model_training.custom_datasets.qa_datasets import (
     SODA,
-    Alpaca,
-    CodeAlpaca,
     JokeExplaination,
     QADataset,
     SODADialogue,
     TranslatedQA,
+    Vicuna,
     WebGPT,
+    load_alpaca_dataset,
 )
 from model_training.custom_datasets.rank_datasets import AugmentedOA
-from model_training.custom_datasets.summarization import HFSummary, SummarizationDataset
+from model_training.custom_datasets.summarization import HFSummary, HFSummaryPairs, SummarizationDataset
 from model_training.custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
 from model_training.custom_datasets.translation import WMT2019, DiveMT, TEDTalk
 from sklearn.model_selection import train_test_split
@@ -50,6 +50,8 @@ RL_DATASETS = [
     "private_tuning",
     "alpaca",
     "hf_summary",
+    "hf_summary_pairs",
+    "vicuna",
 ]
 
 RM_DATASETS = [
@@ -57,6 +59,7 @@ RM_DATASETS = [
     "augment_oasst",
     "anthropic_rlhf",
     "hf_summary",
+    "hf_summary_pairs",
     "shp",
     "hellaswag",
     "webgpt",
@@ -114,10 +117,8 @@ def get_one_dataset(
         dataset = DiveMT()
     elif dataset_name == "webgpt":
         dataset = WebGPT(mode=mode)
-    elif dataset_name == "alpaca":
-        dataset = Alpaca(mode=mode, cache_dir=data_path)
-    elif dataset_name == "code_alpaca":
-        dataset = CodeAlpaca(mode=mode, cache_dir=data_path)
+    elif dataset_name in ("alpaca", "code_alpaca"):
+        train, eval = load_alpaca_dataset(dataset_name, val_split=val_split, cache_dir=data_path, **kwargs)
     elif dataset_name == "gpt4all":
         dataset = Gpt4All(mode=mode, cache_dir=data_path)
     elif dataset_name == "prosocial_dialogue":
@@ -127,7 +128,7 @@ def get_one_dataset(
         train = ProsocialDialogueExplaination(cache_dir=data_path, split="train")
         eval = ProsocialDialogueExplaination(cache_dir=data_path, split="validation")
     elif dataset_name == "soda":
-        dataset = SODA(data_path)
+        dataset = SODA(data_path, **kwargs)
     elif dataset_name == "soda_dialogue":
         dataset = SODADialogue(data_path)
     elif dataset_name == "joke":
@@ -135,11 +136,16 @@ def get_one_dataset(
     elif dataset_name == "oa_translated":
         # TODO make val_split lower..? by saganos
         dataset = TranslatedQA(data_path)
+    elif dataset_name == "vicuna":
+        dataset = Vicuna(cache_dir=data_path, **kwargs)
     elif dataset_name == "oasst_export":
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     elif dataset_name == "hf_summary":
         train = HFSummary(split="train", mode=mode)
         eval = HFSummary(split="valid1", mode=mode)
+    elif dataset_name == "hf_summary_pairs":
+        train = HFSummaryPairs(split="train", mode=mode)
+        eval = HFSummaryPairs(split="valid1", mode=mode)
     elif dataset_name == "augment_oasst":
         # reward model mode only
         assert mode == "rm"
