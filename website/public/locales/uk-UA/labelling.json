@@ -29,7 +29,7 @@
   "humorous": "Гумористичне",
   "humorous.one_desc": "Містить гумористичний контент, включаючи сарказм",
   "inappropriate": "Недоречне",
-  "inappropriate.one_desc": "Не підходить для помічника по роботі з клієнтами",
+  "inappropriate.one_desc": "Недоречне для помічника (Асистента)",
   "judgemental": "Засуджуюче",
   "judgemental.one_desc": "Висловлює моральне судження",
   "label_highlighted_flag_instruction": "Виберіть те, що підходить для виділеного повідомлення:",
