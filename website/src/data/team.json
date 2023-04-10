@@ -140,6 +140,12 @@
       "githubURL": "https://github.com/andrewm4894",
       "imageURL": "https://avatars.githubusercontent.com/u/2178292?v=4"
     },
+    "GravermanDev": {
+      "name": "Graverman",
+      "title": "Data engineer",
+      "githubURL": "https://github.com/GravermanDev",
+      "imageURL": "https://avatars.githubusercontent.com/u/76252605?v=4"
+    },
     "you": {
       "name": "You!",
       "title": "It wouldn't have happened without you, thanks!",
@@ -185,7 +191,7 @@
     },
     {
       "name": "Data Team",
-      "members": ["sedthh", "bitplane", "jmete", "kenhktsui"]
+      "members": ["sedthh", "bitplane", "jmete", "kenhktsui", "GravermanDev"]
     },
     {
       "name": "Safety Team",
