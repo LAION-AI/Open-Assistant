@@ -84,3 +84,6 @@ Instruction-Response pairs. I think for Open Assistant projects, maybe the
 number of different inference problems is more important, and generated many
 similar Instruction-Response pairs will only add training time and doesn't make
 much sense.
+
+4.I only keep the generate_dataset.py file in this directory, because the coding format of the original project does
+not fit OA project which need flake8 format. I only change the coding format of generate_dateset.py.
