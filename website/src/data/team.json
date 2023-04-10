@@ -58,6 +58,12 @@
       "githubURL": "https://github.com/theblackcat102",
       "imageURL": "https://avatars.githubusercontent.com/u/13172147?v=4"
     },
+    "karan4d": {
+      "name": "karan4d",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/DamascusGit",
+      "imageURL": "https://avatars.githubusercontent.com/u/107374910?v=4"
+    },
     "sanagno": {
       "name": "sanagno",
       "title": "ML engineer",
@@ -84,7 +90,7 @@
     },
     "sedthh": {
       "name": "Richard Nagyfi",
-      "title": "Machine Learning Data Scientist, Applied Researcher",
+      "title": "Garfield Pez Toy (GPT) and Lasagne Lover's Monday (LLM) enthusiast",
       "githubURL": "https://github.com/sedthh",
       "imageURL": "https://avatars.githubusercontent.com/u/18616343?v=4"
     },
@@ -140,6 +146,18 @@
       "githubURL": "https://github.com/kenhktsui",
       "imageURL": "https://avatars.githubusercontent.com/u/29099916?v=4"
     },
+    "andrewm4894": {
+      "name": "Andrew Maguire",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/andrewm4894",
+      "imageURL": "https://avatars.githubusercontent.com/u/2178292?v=4"
+    },
+    "GravermanDev": {
+      "name": "Graverman",
+      "title": "Data engineer",
+      "githubURL": "https://github.com/GravermanDev",
+      "imageURL": "https://avatars.githubusercontent.com/u/76252605?v=4"
+    },
     "you": {
       "name": "You!",
       "title": "It wouldn't have happened without you, thanks!",
@@ -149,19 +167,29 @@
     "wandb": {
       "name": "Weights & Biases",
       "title": "W&B Team License",
+      "url": "https://wandb.ai/",
       "githubURL": "https://github.com/wandb",
       "imageURL": "https://avatars.githubusercontent.com/u/26401354?s=200&v=4"
     },
     "hf": {
       "name": "Hugging Face",
-      "title": "Inference API Credits",
+      "title": "Inference API",
+      "url": "https://huggingface.co/",
       "githubURL": "https://github.com/huggingface",
       "imageURL": "https://avatars.githubusercontent.com/u/25720743?s=200&v=4"
     },
     "redmond": {
       "name": "Redmond AI",
       "title": "Training Compute",
+      "url": "https://redmond.ai/",
       "imageURL": "/images/logos/redmond_logo.jpg"
+    },
+    "stability": {
+      "name": "Stability AI",
+      "title": "Preemptible Compute (via LAION)",
+      "url": "https://stability.ai/",
+      "githubURL": "https://github.com/stability-ai",
+      "imageURL": "https://platform.stability.ai/assets/HexagonTextLong.4501db27.png"
     }
   },
   "groups": [
@@ -175,11 +203,11 @@
     },
     {
       "name": "ML engineers",
-      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette", "jordiclive"]
+      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette", "karan4d", "jordiclive"]
     },
     {
       "name": "Data Team",
-      "members": ["sedthh", "bitplane", "jmete", "kenhktsui"]
+      "members": ["sedthh", "bitplane", "jmete", "kenhktsui", "GravermanDev"]
     },
     {
       "name": "Safety Team",
@@ -190,8 +218,12 @@
       "members": ["almostEvil___", "~Zy~", "joak"]
     },
     {
+      "name": "Documentation",
+      "members": ["andrewm4894"]
+    },
+    {
       "name": "Sponsors",
-      "members": ["redmond", "hf", "wandb"]
+      "members": ["redmond", "hf", "wandb", "stability"]
     },
     {
       "name": "And also...",
