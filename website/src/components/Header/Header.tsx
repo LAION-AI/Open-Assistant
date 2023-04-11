@@ -51,7 +51,7 @@ export function Header({ preLogoSlot }: HeaderProps) {
       shadow="md"
       gap="3"
     >
-      <Flex alignItems="center" gap="3">
+      <Flex alignItems="center">
         {preLogoSlot}
         <Flex as={Link} gap="3" href={homeURL} aria-label="Home" alignItems="center">
           <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />

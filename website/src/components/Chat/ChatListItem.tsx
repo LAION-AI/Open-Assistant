@@ -34,7 +34,7 @@ export const ChatListItem = ({ chat }: { chat: ChatItem }) => {
         textOverflow="clip"
         as="span"
       >
-        {chat.title ?? t("untitled")}
+        {chat.title ?? t("empty")}
       </Box>
       <Flex
         display={isActive ? "flex" : "none"}

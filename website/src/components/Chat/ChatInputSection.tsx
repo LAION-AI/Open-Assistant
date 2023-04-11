@@ -2,17 +2,20 @@ import { Button, Grid, Textarea } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { forwardRef, SyntheticEvent, useCallback } from "react";
 import TextareaAutosize from "react-textarea-autosize";
+import { QueueInfo } from "src/lib/chat_stream";
 
 import { ChatConfigDrawer } from "./ChatConfigDrawer";
+import { QueueInfoMessage } from "./QueueInfoMessage";
 
 type ChatFormProps = {
   isSending: boolean;
   onSubmit: () => void;
+  queueInfo: QueueInfo | null;
 };
 
 // eslint-disable-next-line react/display-name
 export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, ref) => {
-  const { isSending, onSubmit: onSubmit } = props;
+  const { isSending, onSubmit: onSubmit, queueInfo } = props;
   const { t } = useTranslation("common");
   const handleSubmit = useCallback(
     (e: SyntheticEvent) => {
@@ -40,7 +43,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
           type="submit"
           onClick={handleSubmit}
           isLoading={isSending}
-          //   spinner={queueInfo ? <QueueInfoMessage info={queueInfo} /> : undefined}
+          spinner={queueInfo ? <QueueInfoMessage info={queueInfo} /> : undefined}
           size="lg"
           borderRadius="xl"
         >

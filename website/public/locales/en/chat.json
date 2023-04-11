@@ -2,7 +2,7 @@
   "back_to_chat_list": "Back to chat list",
   "chat_date": "{{val, datetime}}",
   "config_title": "Chat configuration",
-  "empty": "(empty)",
+  "empty": "Untitled",
   "login_message": "To use this feature, you need to login again. Login using one of these providers:",
   "max_new_tokens": "Max new tokens",
   "model": "Model",
@@ -14,7 +14,6 @@
   "top_k": "Top K",
   "top_p": "Top P",
   "typical_p": "Typical P",
-  "untitled": "Untitled",
   "you_are_logged_in": "You are logged in to the chat service",
   "your_chats": "Your chats"
 }

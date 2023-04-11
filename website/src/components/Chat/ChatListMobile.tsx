@@ -23,6 +23,7 @@ export function ChatListMobile() {
       events.off("routeChangeStart", handleRouteChange);
     };
   }, [onClose, events]);
+
   return (
     <>
       <IconButton
@@ -32,12 +33,20 @@ export function ChatListMobile() {
         aria-label={t("your_chats")}
         variant="ghost"
         size="md"
+        borderRadius="lg"
         m="0"
       ></IconButton>
       <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
         <DrawerOverlay />
         <DrawerContent maxW="260px">
-          <DrawerCloseButton right="-10" top="29px" _dark={{ bg: "gray.600" }} bg="white" />
+          <DrawerCloseButton
+            style={{
+              insetInlineEnd: `-2.5rem`,
+            }}
+            top="29px"
+            _dark={{ bg: "gray.600" }}
+            bg="white"
+          />
           <ChatListBase position="relative" h="100vh" />
         </DrawerContent>
       </Drawer>

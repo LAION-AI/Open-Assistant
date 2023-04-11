@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, CircularProgress, Flex, Icon, Text, useBoolean, useColorModeValue } from "@chakra-ui/react";
 import { XCircle } from "lucide-react";
+import router from "next/router";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import { memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
-import { API_ROUTES } from "src/lib/routes";
+import { API_ROUTES, ROUTES } from "src/lib/routes";
 import {
   ChatConfigForm,
   ChatItem,
@@ -23,15 +24,12 @@ import { MessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
 import { ChatForm } from "./ChatInputSection";
 import { WorkParametersDisplay } from "./WorkParameters";
+
 interface ChatConversationProps {
-  chatId: string | null;
+  chatId: string | null; // will be null when render on chat list page (/chat)
 }
 
 export const ChatConversation = ({ chatId: chatIdProps }: ChatConversationProps) => {
-  const [chatId, setChatId] = useState<string | null>(chatIdProps);
-  useEffect(() => {
-    setChatId(chatIdProps);
-  }, [chatIdProps]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
 
@@ -60,7 +58,7 @@ export const ChatConversation = ({ chatId: chatIdProps }: ChatConversationProps)
     return threadMessages;
   }, [messages]);
 
-  useSWR<ChatItem>(chatId === null ? null : API_ROUTES.GET_CHAT(chatId), get, {
+  useSWR<ChatItem>(chatIdProps === null ? null : API_ROUTES.GET_CHAT(chatIdProps), get, {
     onSuccess: (chat) => setMessages(chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))),
   });
   const { getValues: getFormValues } = useFormContext<ChatConfigForm>();
@@ -114,10 +112,10 @@ export const ChatConversation = ({ chatId: chatIdProps }: ChatConversationProps)
       return;
     }
     setIsSending.on();
-    let currentChatId = chatId;
+    let currentChatId = chatIdProps;
     if (currentChatId === null) {
       const chat: ChatItem = await post(API_ROUTES.LIST_CHAT);
-      setChatId(chat.id);
+      // setChatId(chat.id);
       currentChatId = chat.id;
     }
 
@@ -139,17 +137,17 @@ export const ChatConversation = ({ chatId: chatIdProps }: ChatConversationProps)
     setMessages((messages) => [...messages, prompter_message]);
 
     await initiate_assistant_message(prompter_message.id, currentChatId);
-    // await router.push(ROUTES.CHAT(currentChatId));
-  }, [setIsSending, chatId, currentThread, initiate_assistant_message]);
+    await router.push(ROUTES.CHAT(currentChatId));
+  }, [setIsSending, chatIdProps, currentThread, initiate_assistant_message]);
 
   const sendVote = useMessageVote();
 
   const handleOnRetry = useCallback(
-    (messageId: string) => {
+    (messageId: string, chatId: string) => {
       setIsSending.on();
-      initiate_assistant_message(messageId, chatId!);
+      initiate_assistant_message(messageId, chatId);
     },
-    [chatId, initiate_assistant_message, setIsSending]
+    [initiate_assistant_message, setIsSending]
   );
 
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
@@ -194,7 +192,7 @@ export const ChatConversation = ({ chatId: chatIdProps }: ChatConversationProps)
           {message.content}
         </ChatMessageEntry>
       )),
-    [chatId, handleOnVote, currentThread, handleOnRetry, isSending]
+    [handleOnVote, currentThread, handleOnRetry, isSending]
   );
 
   return (
@@ -202,7 +200,7 @@ export const ChatConversation = ({ chatId: chatIdProps }: ChatConversationProps)
       {entries}
       {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
 
-      <ChatForm ref={inputRef} isSending={isSending} onSubmit={send}></ChatForm>
+      <ChatForm ref={inputRef} isSending={isSending} onSubmit={send} queueInfo={queueInfo}></ChatForm>
     </Flex>
   );
 };
@@ -217,7 +215,7 @@ type ChatMessageEntryProps = {
   workParameters?: InferenceMessage["work_parameters"];
   score: number;
   onVote: (data: { newScore: number; oldScore: number; chatId: string; messageId: string }) => void;
-  onRetry?: (messageId: string) => void;
+  onRetry?: (messageId: string, chatId: string) => void;
   isSending?: boolean;
 };
 
@@ -267,9 +265,9 @@ const ChatMessageEntry = memo(function ChatMessageEntry({
 
   const handleRetry = useCallback(() => {
     if (onRetry && parentId) {
-      onRetry(parentId);
+      onRetry(parentId, chatId);
     }
-  }, [onRetry, parentId]);
+  }, [chatId, onRetry, parentId]);
 
   return (
     <PendingMessageEntry isAssistant={isAssistant} content={children!}>
@@ -333,7 +331,7 @@ const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageE
     <BaseMessageEntry
       avatarProps={avatarProps}
       bg={isAssistant ? bgAssistant : bgUser}
-      content={content!}
+      content={content || ""}
       width="full"
       maxWidth="full"
     >
