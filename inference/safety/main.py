@@ -3,22 +3,11 @@
 import fastapi
 import uvicorn
 from blade2blade import Blade2Blade
-from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_shared.schemas import inference
 from settings import settings
 
 app = fastapi.FastAPI()
-
-
-# Allow CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 @app.middleware("http")
