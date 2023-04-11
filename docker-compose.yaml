@@ -256,6 +256,18 @@ services:
       replicas: 1
     profiles: ["inference"]
 
+  inference-safety:
+    build:
+      dockerfile: docker/inference/Dockerfile.safety
+      context: .
+    image: oasst-inference-safety:dev
+    environment:
+      PORT: 8002
+    volumes:
+      - "./oasst-shared:/opt/inference/lib/oasst-shared"
+      - "./inference/safety:/opt/inference/safety"
+    profiles: ["inference"]
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
