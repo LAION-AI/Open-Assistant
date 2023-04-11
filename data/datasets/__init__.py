@@ -19,6 +19,7 @@ INSTRUCTION_DATASETS = {
     "zhihu-kol": "wangrui6/zhihu-kol",
     "tell_a_joke": "mikegarts/oa_tell_a_joke_20000",
     "oa_wiki_qa_bart_10000row": "michaelthwan/oa_wiki_qa_bart_10000row",
+    "biostars_qa": "cannin/biostars_qa",
     "oa_leet10k": "ehartford/oa_leet10k",
     "LogicInference_OA": "KK04/LogicInference_OA",
 }
