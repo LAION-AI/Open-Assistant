@@ -1,10 +1,10 @@
 train:
-  seq_length: 640
+  seq_length: 2016
   epochs: 10000
   total_steps: 10000
   batch_size: 18
-  checkpoint_interval: 2500
-  eval_interval: 500
+  checkpoint_interval: 1000
+  eval_interval: 250
   pipeline: "CustomPromptPipeline"
   trainer: "CustomPPOTrainer"
   tracker: wandb
@@ -17,7 +17,7 @@ model:
 
 tokenizer:
   tokenizer_path:
-  truncation_side: "right"
+  truncation_side: "left" # AKo: changed this to "left", otherwise it sees only the beginning of conversations
   padding_side: "left" # use with rotary positional embedidngs
 
 optimizer:
@@ -54,8 +54,8 @@ method:
   ref_std: null
   cliprange_reward: 4
   gen_kwargs:
-    max_new_tokens: 200
+    max_new_tokens: 512
     top_k: 0
     top_p: 0.7
     do_sample: True
-    temperature: 0.8
+    temperature: 1.0

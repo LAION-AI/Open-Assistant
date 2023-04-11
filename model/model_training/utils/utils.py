@@ -336,6 +336,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16, **kwargs):
         model,
         resid_pdrop=conf.residual_dropout,
         flash_attention=conf.use_flash_attention,
+        mode=conf.mode
     )
 
     return model

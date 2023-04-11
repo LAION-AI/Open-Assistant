@@ -117,7 +117,7 @@ def load_oasst_export(
             replies = [r.text for r in replies]
             return (prefix, replies)
         elif mode == "rl":
-            return (thread,)
+            return ([m.text for m in thread],)
 
         raise RuntimeError()
 

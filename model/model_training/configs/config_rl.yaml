@@ -5,12 +5,13 @@ defaults_rlhf:
   chunk_size: 1
   num_rollouts: 16
   total_steps: 10000
-  datasets_extr a: []
+  datasets_extra: []
   cache_dir: /home/ubuntu/data_cache
   output_dir: model_rl
   eval_size: 500
   rank_config:
   sft_config:
+  debug: false
 
 oasst_export_latin_cyrillic_rlhf:
   datasets:
@@ -31,8 +32,8 @@ pythia_rlhf:
     pooling: last
     residual_dropout: 0.01
     use_flash_attention: false
-    batch_size: 10 # batch size used by the RM for evaluation
     half: false
+    mode: "rm"
 
   sft_config:
     is_reward_model: false
@@ -44,8 +45,32 @@ pythia_rlhf:
     residual_dropout: 0.2
     use_flash_attention: false
     half: true
+    mode: "rl"
+  batch_size: 1
 
-  batch_size: 4
+llama_rlhf:
+  rank_config:
+    is_reward_model: true
+    model_name: OpenAssistant/oasst-rm-2-pythia-6.9b-epoch-1
+    cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
+    pooling: last
+    residual_dropout: 0.0
+    use_flash_attention: false
+    half: false
+    mode: "rm"
+
+  sft_config:
+    is_reward_model: false
+    model_name: OpenAssistant/llama-30b-sft-oa-only
+    cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
+    quantization: false
+    seq2seqmodel: false
+    freeze_layer:
+    residual_dropout: 0.0
+    use_flash_attention: true
+    half: true
+    mode: "rl"
+  batch_size: 1
 
 debug_rlhf:
   rank_model: pythia_reward_model/checkpoint-50

@@ -54,7 +54,7 @@ def argument_parsing(notebook=False, notebook_args=None):
 
 
 # Taken from https://github.com/CarperAI/trlx/blob/b7db6f9e74c7d8dc719255b27968d2994836957a/examples/hh/ppo_hh.py#L114
-def create_reward_fn(rank_config):  # noqa:  C901
+def create_reward_fn(rank_config, sft_config):  # noqa:  C901
     triton_host = os.environ.get("TRITON_HOST_RM")
     assert triton_host is not None, "Specify reward mode in the TRITON_HOST environmental variable"
 
@@ -62,10 +62,15 @@ def create_reward_fn(rank_config):  # noqa:  C901
     client = client_util.InferenceServerClient(url=triton_url, verbose=False)
 
     rank_tokenizer = transformers.AutoTokenizer.from_pretrained(rank_config.model_name, cache_dir=rank_config.cache_dir)
+    sft_tokenizer = transformers.AutoTokenizer.from_pretrained(sft_config.model_name, cache_dir=sft_config.cache_dir)
 
     def reward_fn(samples, prompts, outputs):
         if len(samples) == 0:
             return []
+
+        # hack to allo for different tokenizers with different eos tokens ... rest of the 
+        samples = [x.replace(sft_tokenizer.eos_token, rank_tokenizer.eos_token) for x in samples]
+        samples = [x.replace(sft_tokenizer.pad_token, rank_tokenizer.pad_token) for x in samples]
 
         inputs = rank_tokenizer(samples, return_tensors="np", padding=True)
 
@@ -151,9 +156,16 @@ if __name__ == "__main__":
     trlx_config.method.num_rollouts = int(training_conf.num_rollouts)
     trlx_config.train.total_steps = int(training_conf.total_steps)
 
+
+    if training_conf.debug:
+        print("Continuing in debug mode")
+        prompts = prompts[:100]
+        eval_prompts = eval_prompts[:100]
+        trlx_config.method.num_rollouts = 1
+
     trainer = trlx.train(
         sft_config.model_name,
-        reward_fn=create_reward_fn(rank_config),
+        reward_fn=create_reward_fn(rank_config, sft_config),
         prompts=prompts,
         eval_prompts=eval_prompts,
         config=trlx_config,
