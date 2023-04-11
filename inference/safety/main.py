@@ -1,6 +1,7 @@
 # A FastAPI server to run the safety pipeline
 
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 import fastapi
 import uvicorn
@@ -24,6 +25,7 @@ async def log_exceptions(request: fastapi.Request, call_next):
 
 pipeline_loaded: bool = False
 pipeline: Blade2Blade
+executor = ThreadPoolExecutor()
 
 
 @app.on_event("startup")
@@ -37,12 +39,16 @@ async def load_pipeline():
     logger.info("Pipeline loaded")
 
 
+async def async_predict(pipeline: Blade2Blade, inputs: str):
+    return await asyncio.get_event_loop().run_in_executor(executor, pipeline.predict, inputs)
+
+
 @app.post("/safety", response_model=inference.SafetyResponse)
 async def safety(request: inference.SafetyRequest):
     global pipeline_loaded, pipeline
     while not pipeline_loaded:
         await asyncio.sleep(1)
-    outputs = pipeline.predict(request.inputs)
+    outputs = await async_predict(pipeline, request.inputs)
     return inference.SafetyResponse(outputs=outputs)
 
 
