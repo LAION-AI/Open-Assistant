@@ -257,7 +257,7 @@ class GeneralErrorResponse(WorkerResponseBase):
 
 
 class SafetyParameters(pydantic.BaseModel):
-    ...
+    enabled: bool = True
 
 
 class SafetyRequest(pydantic.BaseModel):
