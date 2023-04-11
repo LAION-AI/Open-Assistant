@@ -22,7 +22,7 @@ import useSWR, { mutate } from "swr";
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { MessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
-import { ChatForm } from "./ChatInputSection";
+import { ChatForm } from "./ChatForm";
 import { WorkParametersDisplay } from "./WorkParameters";
 
 interface ChatConversationProps {

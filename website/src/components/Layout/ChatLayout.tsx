@@ -2,7 +2,7 @@ import { Box, Flex } from "@chakra-ui/react";
 import { BarChart2, ExternalLink, Layout, MessageCircle, MessageSquare, TrendingUp } from "lucide-react";
 import { getEnv } from "src/lib/browserEnv";
 
-import { ChatList } from "../Chat/ChatList";
+import { ChatListDesktop } from "../Chat/ChatListDesktop";
 import { ChatListMobile } from "../Chat/ChatListMobile";
 import { SlimFooter } from "../Dashboard/SlimFooter";
 import { HeaderLayout } from "../Header/Header";
@@ -15,6 +15,15 @@ export const getChatLayout = (page: React.ReactElement) => (
       <SideMenuLayout
         collapsed
         items={[
+          ...(getEnv().ENABLE_CHAT
+            ? [
+                {
+                  labelID: "chat",
+                  pathname: "/chat",
+                  icon: MessageCircle,
+                },
+              ]
+            : []),
           {
             labelID: "dashboard",
             pathname: "/dashboard",
@@ -35,15 +44,7 @@ export const getChatLayout = (page: React.ReactElement) => (
             pathname: "/stats",
             icon: TrendingUp,
           },
-          ...(getEnv().ENABLE_CHAT
-            ? [
-                {
-                  labelID: "chat",
-                  pathname: "/chat",
-                  icon: MessageCircle,
-                },
-              ]
-            : []),
+
           {
             labelID: "guidelines",
             pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
@@ -53,7 +54,7 @@ export const getChatLayout = (page: React.ReactElement) => (
         ]}
       >
         <Flex gap={{ md: 4, lg: 6 }}>
-          <ChatList></ChatList>
+          <ChatListDesktop></ChatListDesktop>
           <Box flexGrow="1">
             <Box>{page}</Box>
             <Box mt="10">
