@@ -31,7 +31,8 @@ defaults:
     - cnn_dailymail
     - multi_news
     - scitldr
-    # - soda  # TODO: fix list index out of range error
+    - soda:
+        input_max_length: 1024
     - joke
     - gsm8k
     - dive_mt
@@ -256,8 +257,9 @@ llama-30b:
   save_total_limit: 4
   use_flash_attention: true
 
-pythia:
+pythia-70m-deduped:
   learning_rate: 8e-6
+  # model_name: EleutherAI/pythia-1b-deduped
   model_name: EleutherAI/pythia-70m-deduped
   weight_decay: 0.0
   max_length: 520
@@ -267,6 +269,9 @@ pythia:
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 4
   output_dir: pythia_model
+  datasets:
+    - vicuna
+    - soda
 
 pythia-1B:
   learning_rate: 8e-6

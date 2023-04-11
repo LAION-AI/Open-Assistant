@@ -9,6 +9,7 @@
   "labels_simple": "Etiquetas (sencillas)",
   "last_updated_at": "Última actualización: {{val, datetime}}",
   "leaderboard": "Tabla de clasificación",
+  "level_progress_message": "¡Con un total de {{score}} puntos, has alcanzado el nivel {{level,number,integer}}!",
   "month": "Mes",
   "monthly": "Mensual",
   "next": "Siguiente",
@@ -19,6 +20,7 @@
   "prompt": "Instrucciones iniciales",
   "rank": "Posición",
   "rankings": "Ordenaciones",
+  "reached_max_level": "Has alcanzado el nivel máximo, ¡gracias por tu arduo trabajo!",
   "replies_assistant": "Respuestas como asistente",
   "replies_prompter": "Respuestas como apuntador",
   "reply": "Respuestas",
@@ -31,6 +33,7 @@
   "view_all": "Ver todos",
   "week": "Semana",
   "weekly": "Semanal",
+  "xp_progress_message": "¡Necesitas {{need, number, integer}} puntos más para pasar al siguiente nivel!",
   "your_account": "Tu cuenta",
   "your_stats": "Tus estadísticas"
 }

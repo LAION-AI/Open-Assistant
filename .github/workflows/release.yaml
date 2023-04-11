@@ -67,6 +67,14 @@ jobs:
       context: .
       dockerfile: docker/inference/Dockerfile.worker-hf
       build-args: ""
+  build-inference-worker-standalone:
+    uses: ./.github/workflows/docker-build.yaml
+    needs: pre-commit
+    with:
+      image-name: oasst-inference-worker-standalone
+      context: .
+      dockerfile: docker/inference/Dockerfile.worker-standalone
+      build-args: ""
   deploy-to-node:
     needs: [build-backend, build-web, build-bot, build-inference-server]
     uses: ./.github/workflows/deploy-to-node.yaml

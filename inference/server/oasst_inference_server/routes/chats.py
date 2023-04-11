@@ -49,6 +49,15 @@ async def get_chat(
     return chat.to_read()
 
 
+@router.delete("/{chat_id}")
+async def delete_chat(
+    chat_id: str,
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+):
+    await ucr.delete_chat(chat_id)
+    return fastapi.Response(status_code=200)
+
+
 @router.post("/{chat_id}/prompter_message")
 async def create_prompter_message(
     chat_id: str,

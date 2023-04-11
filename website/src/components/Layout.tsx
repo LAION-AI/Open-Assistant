@@ -13,7 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import type { NextPage } from "next";
-import { isChatEnabled } from "src/lib/chat_enabled";
+import { getEnv } from "src/lib/browserEnv";
 
 import { SlimFooter } from "./Dashboard/SlimFooter";
 import { Footer } from "./Footer";
@@ -37,6 +37,15 @@ export const getDashboardLayout = (page: React.ReactElement) => (
     <ToSWrapper>
       <SideMenuLayout
         items={[
+          ...(getEnv().ENABLE_CHAT
+            ? [
+                {
+                  labelID: "chat",
+                  pathname: "/chat",
+                  icon: MessageCircle,
+                },
+              ]
+            : []),
           {
             labelID: "dashboard",
             pathname: "/dashboard",
@@ -57,15 +66,6 @@ export const getDashboardLayout = (page: React.ReactElement) => (
             pathname: "/stats",
             icon: TrendingUp,
           },
-          ...(isChatEnabled()
-            ? [
-                {
-                  labelID: "chat",
-                  pathname: "/chat",
-                  icon: MessageCircle,
-                },
-              ]
-            : []),
           {
             labelID: "guidelines",
             pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",

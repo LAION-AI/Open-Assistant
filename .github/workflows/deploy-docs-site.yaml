@@ -30,29 +30,12 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Setup yarn
-        run:
-          corepack enable && corepack prepare yarn@stable --activate && mkdir
-          ~/.yarn
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build website
+        run: yarn build
 
-      - id: yarn-cache-dir-path
-        name: Get yarn cache directory path
-        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
-        working-directory: docs
-
-      - name: Restore yarn cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key:
-            yarn-cache-folder-${{ hashFiles('docs/yarn.lock', '.yarnrc.yml') }}
-          restore-keys: |
-            yarn-cache-folder-
-
-      - run: yarn install --immutable
-      - run: yarn build
-
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
