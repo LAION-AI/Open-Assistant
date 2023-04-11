@@ -5,6 +5,8 @@ import interface
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from settings import settings
+from blade2blade import Blade2Blade
 
 app = fastapi.FastAPI()
 
@@ -36,16 +38,18 @@ pipeline: ...
 @app.on_event("startup")
 async def load_pipeline():
     global pipeline_loaded, pipeline
-    # TODO
-    pipeline = ...
+    pipeline = Blade2Blade(settings.safety_model_name)
     pipeline_loaded = True
+    #warmup
+    input = "|prompter|Hey,how are you?|endoftext|"
+    _ = pipeline.predict(input)
 
 
 @app.post("/safety")
 async def safety(request: interface.SafetyRequest):
     global pipeline
     # TODO
-    outputs = pipeline(request.inputs)
+    outputs = pipeline.predict(request.inputs)
     return interface.SafetyResponse(outputs=outputs)
 
 
