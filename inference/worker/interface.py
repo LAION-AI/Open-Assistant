@@ -36,7 +36,7 @@ class GenerateStreamRequest(pydantic.BaseModel):
 
 
 class SafetyParameters(pydantic.BaseModel):
-    threshold: float = 0.1
+    ...
 
 
 class SafetyRequest(pydantic.BaseModel):

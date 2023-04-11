@@ -32,7 +32,7 @@ async def log_exceptions(request: fastapi.Request, call_next):
 
 
 pipeline_loaded: bool = False
-pipeline: ...
+pipeline: Blade2Blade
 
 
 @app.on_event("startup")
@@ -45,7 +45,7 @@ async def load_pipeline():
     _ = pipeline.predict(input)
 
 
-@app.post("/safety")
+@app.post("/safety", response_model=interface.SafetyResponse)
 async def safety(request: interface.SafetyRequest):
     global pipeline
     outputs = pipeline.predict(request.inputs)
