@@ -25,11 +25,12 @@ import {
 } from "@chakra-ui/react";
 import { Settings } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, memo, useCallback, useState } from "react";
+import { ChangeEvent, memo, useCallback } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { ChatConfigForm, SamplingParameters } from "src/types/Chat";
 
 import { useChatContext } from "./ChatContext";
+import { areParametersEqual } from "./WorkParameters";
 
 export const ChatConfigDrawer = memo(function ChatConfigDrawer() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -114,11 +115,9 @@ const ChatConfigForm = () => {
   const { t } = useTranslation("chat");
   const { modelInfos } = useChatContext();
 
-  const { control, register, reset } = useFormContext<ChatConfigForm>();
+  const { control, register, reset, getValues } = useFormContext<ChatConfigForm>();
   const selectedModel = useWatch({ name: "model_config_name", control: control });
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
-
-  const [presetName, setPresetName] = useState<string>(presets[0].name);
 
   const handlePresetChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
@@ -127,11 +126,16 @@ const ChatConfigForm = () => {
         newPresetName === customPresetName
           ? customPresetDefaultValue
           : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
-      setPresetName(newPresetName);
+      // setPresetName(newPresetName);
       reset({ ...config, model_config_name: selectedModel });
     },
     [presets, reset, selectedModel]
   );
+
+  const selectedPresetName = (
+    presets.find((preset) => areParametersEqual(preset.sampling_parameters, getValues())) ?? presets[0]
+  ).name;
+
   return (
     <Stack gap="4">
       <FormControl>
@@ -146,7 +150,7 @@ const ChatConfigForm = () => {
       </FormControl>
       <FormControl>
         <FormLabel>{t("preset")}</FormLabel>
-        <Select value={presetName} onChange={handlePresetChange}>
+        <Select value={selectedPresetName} onChange={handlePresetChange}>
           {presets.map(({ name }) => (
             <option value={name} key={name}>
               {name}
@@ -166,7 +170,7 @@ const ChatConfigForm = () => {
               value={value}
               onChange={onChange}
               name={name}
-              isDisabled={presetName !== customPresetName}
+              isDisabled={selectedPresetName !== customPresetName}
             />
           )}
         ></Controller>

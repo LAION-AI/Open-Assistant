@@ -54,7 +54,7 @@ export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> =
     props: {
       id: params!.id,
       modelInfos,
-      messages: chat.messages,
+      messages: chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)),
       ...(await serverSideTranslations(locale)),
     },
   };
