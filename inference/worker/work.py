@@ -104,7 +104,7 @@ def handle_work_request(
     model_config = worker_config.model_config
 
     if settings.enable_safety and work_request.safety_parameters.enabled:
-        safety_request = inference.SafetyRequest(inputs=prompt, parameters=inference.SafetyParameters(enabled=True))
+        safety_request = inference.SafetyRequest(inputs=prompt, parameters=work_request.safety_parameters)
         safety_response = get_safety_server_response(safety_request)
         prompt = prepare_safe_prompt(prompt, safety_response.outputs)
         logger.debug(f"Safe prompt: {prompt}")
