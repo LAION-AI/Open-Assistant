@@ -11,6 +11,13 @@ and (2) to assess whether learning logical inference abilities in the abstract
 (e.g., getting better in this dataset) would then transfer to other real-world
 tasks.
 
+**Note: to run this code you also need the other files from the original
+LogicInference project
+[here](https://github.com/google-research/google-research/tree/master/logic_inference_dataset).
+The generate_dataset script in this directory is a drop-in replacement for the
+original generate_dataset script which outputs data in Open Assistant instruct
+format.**
+
 For a detailed description of the dataset, please check the following paper:
 https://openreview.net/pdf?id=HAGeIS_Lcg9 (arXiv preprint:
 https://arxiv.org/abs/2203.15099 )
