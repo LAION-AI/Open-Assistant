@@ -18,10 +18,11 @@ https://zenodo.org/record/7813785
 
 # Code Details
 
-- get_biostars_dataset.py: This script downloads the content from
+- Executing the script will perform the entire process end-to-end.
+- `get_biostars_dataset()`: This function downloads the content from
   [Biostars API](https://www.biostars.org/info/api/); each post is downloaded as
   an individual JSON file
-- extract_accepted_data.py: This script loads the individual files to Pandas
+- `extract_accepted_data()`: This function loads the individual files to Pandas
   then extracts out question/answer pairs. Questions were included if they were
   an accepted answer and the question had at least 1 vote. The content is then
   formatted as a Apache Parquet dataset with columns: INSTRUCTION, RESPONSE,
