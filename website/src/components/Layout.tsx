@@ -37,6 +37,15 @@ export const getDashboardLayout = (page: React.ReactElement) => (
     <ToSWrapper>
       <SideMenuLayout
         items={[
+          ...(getEnv().ENABLE_CHAT
+            ? [
+                {
+                  labelID: "chat",
+                  pathname: "/chat",
+                  icon: MessageCircle,
+                },
+              ]
+            : []),
           {
             labelID: "dashboard",
             pathname: "/dashboard",
@@ -57,15 +66,6 @@ export const getDashboardLayout = (page: React.ReactElement) => (
             pathname: "/stats",
             icon: TrendingUp,
           },
-          ...(getEnv().ENABLE_CHAT
-            ? [
-                {
-                  labelID: "chat",
-                  pathname: "/chat",
-                  icon: MessageCircle,
-                },
-              ]
-            : []),
           {
             labelID: "guidelines",
             pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
