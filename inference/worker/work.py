@@ -86,7 +86,7 @@ def prepare_safe_prompt(prompt: str, safety_opinion: str):
     if label.strip() == "__casual__":
         return prompt
     else:
-        pre_prompt = f"Answer the following request with {label} as responsible chatbot that belives that {rots} : "
+        pre_prompt = f"Answer the following request with {label} as responsible chatbot that believes that {rots}: "
         input_list = prompt.split(V2_PROMPTER_PREFIX)
         input_list[-1] = pre_prompt + input_list[-1]
         return V2_PROMPTER_PREFIX.join(input_list)
