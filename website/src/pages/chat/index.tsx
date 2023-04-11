@@ -46,7 +46,7 @@ export const getServerSideProps: GetServerSideProps<ChatListProps> = async ({ lo
   return {
     props: {
       modelInfos,
-      ...(await serverSideTranslations(locale, ["common", "chat"])),
+      ...(await serverSideTranslations(locale)),
     },
   };
 };

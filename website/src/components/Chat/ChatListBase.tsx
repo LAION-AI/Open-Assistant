@@ -14,8 +14,7 @@ import useSWR from "swr";
 import { HEADER_HEIGHT } from "../Header/Header";
 import { ChatListItem } from "./ChatListItem";
 
-// eslint-disable-next-line react/display-name
-export const ChatListBase = memo((props: CardProps) => {
+export const ChatListBase = memo(function ChatListBase(props: CardProps) {
   const { data: chats } = useSWR<GetChatsResponse>(API_ROUTES.LIST_CHAT, get, {
     revalidateOnFocus: true,
   });

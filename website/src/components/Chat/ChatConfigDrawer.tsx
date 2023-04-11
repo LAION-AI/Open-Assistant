@@ -31,8 +31,7 @@ import { ChatConfigForm, SamplingParameters } from "src/types/Chat";
 
 import { useChatContext } from "./ChatContext";
 
-// eslint-disable-next-line react/display-name
-export const ChatConfigDrawer = memo(() => {
+export const ChatConfigDrawer = memo(function ChatConfigDrawer() {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { t } = useTranslation("chat");

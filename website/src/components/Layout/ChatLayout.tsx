@@ -1,58 +1,17 @@
 import { Box, Flex } from "@chakra-ui/react";
-import { BarChart2, ExternalLink, Layout, MessageCircle, MessageSquare, TrendingUp } from "lucide-react";
-import { getEnv } from "src/lib/browserEnv";
 
 import { ChatListDesktop } from "../Chat/ChatListDesktop";
 import { ChatListMobile } from "../Chat/ChatListMobile";
 import { SlimFooter } from "../Dashboard/SlimFooter";
 import { HeaderLayout } from "../Header/Header";
+import { getDashBoardLayoutSidebarItem } from "../Layout";
 import { SideMenuLayout } from "../SideMenuLayout";
 import { ToSWrapper } from "../ToSWrapper";
 
 export const getChatLayout = (page: React.ReactElement) => (
   <HeaderLayout preLogoSlot={<ChatListMobile />}>
     <ToSWrapper>
-      <SideMenuLayout
-        collapsed
-        items={[
-          ...(getEnv().ENABLE_CHAT
-            ? [
-                {
-                  labelID: "chat",
-                  pathname: "/chat",
-                  icon: MessageCircle,
-                },
-              ]
-            : []),
-          {
-            labelID: "dashboard",
-            pathname: "/dashboard",
-            icon: Layout,
-          },
-          {
-            labelID: "messages",
-            pathname: "/messages",
-            icon: MessageSquare,
-          },
-          {
-            labelID: "leaderboard",
-            pathname: "/leaderboard",
-            icon: BarChart2,
-          },
-          {
-            labelID: "stats",
-            pathname: "/stats",
-            icon: TrendingUp,
-          },
-
-          {
-            labelID: "guidelines",
-            pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
-            icon: ExternalLink,
-            target: "_blank",
-          },
-        ]}
-      >
+      <SideMenuLayout collapsed items={getDashBoardLayoutSidebarItem()}>
         <Flex gap={{ md: 4, lg: 6 }}>
           <ChatListDesktop></ChatListDesktop>
           <Box flexGrow="1">

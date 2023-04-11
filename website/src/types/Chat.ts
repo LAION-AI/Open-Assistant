@@ -28,6 +28,7 @@ export interface ChatItem {
 
 export interface InferenceMessage {
   id: string;
+  chat_id: string;
   parent_id: string | null;
   created_at: string; //timestamp
   content: string | null;
@@ -46,7 +47,6 @@ export interface InferenceMessage {
       quantized: boolean;
     };
   };
-  chat_id: string;
 }
 
 export interface GetChatsResponse {
