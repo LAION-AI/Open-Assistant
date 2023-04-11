@@ -103,10 +103,11 @@ def handle_work_request(
 
     model_config = worker_config.model_config
 
-    safety_request = inference.SafetyRequest(inputs=prompt, parameters=inference.SafetyParameters(enabled=True))
-    safety_response = get_safety_server_response(safety_request)
-    prompt = prepare_safe_prompt(prompt, safety_response.outputs)
-    logger.debug(f"Safe prompt: {prompt}")
+    if settings.enable_safety:
+        safety_request = inference.SafetyRequest(inputs=prompt, parameters=inference.SafetyParameters(enabled=True))
+        safety_response = get_safety_server_response(safety_request)
+        prompt = prepare_safe_prompt(prompt, safety_response.outputs)
+        logger.debug(f"Safe prompt: {prompt}")
 
     stream_response = None
     token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)
