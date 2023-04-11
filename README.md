@@ -1,3 +1,12 @@
+# File with heading
+
+Tags: `html`
+
+Aliases: `no-inline-html`
+
+`allowed_elements`: Allowed elements (`string[]`, default `[]`)
+
+```markdown
 <h1 align="center">
     <span>Open-Assistant</span>
   <img width="auto" height="50px" src="https://github.com/LAION-AI/Open-Assistant/blob/main/assets/logo_crop.png"/>
@@ -19,7 +28,7 @@
 
 </div>
 
-# Here is our website to collect data:
+# Here is our website to collect data
 
 [open-assistant.io](https://open-assistant.io)
 
@@ -41,7 +50,9 @@
 <p align="center">
     Open Assistant is a project meant to give everyone access to a great chat based large language model.
 </p>
+```
 
+````markdown
 We believe that by doing this we will create a revolution in innovation in
 language. In the same way that stable-diffusion helped the world make art and
 images in new ways we hope Open Assistant can help improve the world by
@@ -95,7 +106,7 @@ interact with the website.
 
 ## The Plan
 
-##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the [InstructGPT paper](https://arxiv.org/abs/2203.02155).
+##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the [InstructGPT paper](https://arxiv.org/abs/2203.02155)
 
 1. Collect high-quality human generated Instruction-Fulfillment samples
    (prompt + response), goal >50k. We design a crowdsourced process to collect
@@ -138,3 +149,4 @@ that if we collaborate we can together gift our knowledge and technology to the
 world for the benefit of humanity.
 
 Check out our [contributing guide](CONTRIBUTING.md) to get started.
+````
