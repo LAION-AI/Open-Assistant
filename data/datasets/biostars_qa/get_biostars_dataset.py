@@ -23,9 +23,9 @@ def get_biostars_dataset(start_idx=9557161, accept_threshold=1000000, sleep=0.1,
 
     # There is a large number gap in post IDs the numbers skip from 9463943 to 494831
     # Post ID: 9557161 was the last post included in the dataset
-    start_idx = 9557161
-    accept_threshold = 1000000
-    sleep = 0.1
+    #start_idx = 9557161
+    #accept_threshold = 1000000
+    #sleep = 0.1
 
     headers = {"Content-Type": "application/json"}
 
