@@ -43,6 +43,7 @@ async def load_pipeline():
     input = "|prompter|Hey,how are you?|endoftext|"
     _ = pipeline.predict(input)
     pipeline_loaded = True
+    logger.info("Pipeline loaded")
 
 
 @app.post("/safety", response_model=inference.SafetyResponse)
