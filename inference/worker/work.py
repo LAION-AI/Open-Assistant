@@ -1,3 +1,4 @@
+import re
 import threading
 from concurrent import futures
 
@@ -79,6 +80,18 @@ def make_prompt_and_parameters(
     return prompt, parameters
 
 
+def prepare_safe_prompt(prompt: str, safety_opinion: str):
+    safety_opinion = re.sub(r"<pad>|</s>", "", safety_opinion).split("<sep>")
+    label, rots = safety_opinion[0], "and".join([x.strip(".") for x in safety_opinion[1:]])
+    if label.strip() == "__casual__":
+        return prompt
+    else:
+        pre_prompt = f"Answer the following request with {label} as responsible chatbot that belives that {rots} : "
+        input_list = prompt.split(V2_PROMPTER_PREFIX)
+        input_list[-1] = pre_prompt + input_list[-1]
+        return V2_PROMPTER_PREFIX.join(input_list)
+
+
 def handle_work_request(
     ws: websocket.WebSocket,
     tokenizer: transformers.PreTrainedTokenizer,
@@ -89,6 +102,12 @@ def handle_work_request(
     logger.debug(f"Prompt: {prompt}")
 
     model_config = worker_config.model_config
+
+    # TODO
+    safety_opinion = interface.SafetyRequest(prompt)
+    safety_opinion = ...
+    prompt = prepare_safe_prompt(prompt, safety_opinion)
+    logger.debug(f"Safe prompt: {prompt}")
 
     stream_response = None
     token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)
