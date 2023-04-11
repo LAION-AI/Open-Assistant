@@ -4,7 +4,7 @@ import { XCircle } from "lucide-react";
 import router from "next/router";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import { memo, ReactNode, useCallback, useMemo, useRef, useState } from "react";
+import { memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
@@ -17,11 +17,12 @@ import {
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
 } from "src/types/Chat";
-import useSWR, { mutate } from "swr";
+import { mutate } from "swr";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { MessageEmojiButton } from "../Messages/MessageEmojiButton";
 import { MessageInlineEmojiRow } from "../Messages/MessageInlineEmojiRow";
+import { useChatContext } from "./ChatContext";
 import { ChatForm } from "./ChatForm";
 import { WorkParametersDisplay } from "./WorkParameters";
 
@@ -31,7 +32,11 @@ interface ChatConversationProps {
 
 export const ChatConversation = ({ chatId: chatIdProps }: ChatConversationProps) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [messages, setMessages] = useState<InferenceMessage[]>([]);
+  const contextMessage = useChatContext().messages;
+  const [messages, setMessages] = useState<InferenceMessage[]>(contextMessage);
+  useEffect(() => {
+    setMessages(contextMessage);
+  }, [contextMessage]);
 
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
@@ -58,9 +63,9 @@ export const ChatConversation = ({ chatId: chatIdProps }: ChatConversationProps)
     return threadMessages;
   }, [messages]);
 
-  useSWR<ChatItem>(chatIdProps === null ? null : API_ROUTES.GET_CHAT(chatIdProps), get, {
-    onSuccess: (chat) => setMessages(chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))),
-  });
+  // useSWR<ChatItem>(chatIdProps === null ? null : API_ROUTES.GET_CHAT(chatIdProps), get, {
+  //   onSuccess: (chat) => setMessages(chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))),
+  // });
   const { getValues: getFormValues } = useFormContext<ChatConfigForm>();
 
   const initiate_assistant_message = useCallback(

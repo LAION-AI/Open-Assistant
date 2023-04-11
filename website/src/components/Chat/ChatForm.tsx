@@ -43,6 +43,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
           type="submit"
           onClick={handleSubmit}
           isLoading={isSending}
+          overflow="hidden"
           spinner={queueInfo ? <QueueInfoMessage info={queueInfo} /> : undefined}
           size="lg"
           borderRadius="xl"

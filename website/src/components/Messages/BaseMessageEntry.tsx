@@ -13,21 +13,23 @@ export type BaseMessageEntryProps = BoxProps & {
 export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps>(
   ({ content, avatarProps, children, ...props }, ref) => {
     const inlineAvatar = useBreakpointValue({ base: true, md: false });
-    const borderColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
     const bg = useColorModeValue("#DFE8F1", "#42536B");
 
     const avatar = useMemo(
       () => (
         <Avatar
-          borderColor={borderColor}
-          size={inlineAvatar ? "xs" : "sm"}
-          mr={inlineAvatar ? 2 : 0}
-          mt={inlineAvatar ? 0 : `6px`}
-          mb={inlineAvatar ? 1.5 : 0}
+          borderColor="blackAlpha.200"
+          _dark={{
+            borderColor: "whiteAlpha.200",
+          }}
+          size={{ base: "xs", md: "sm" }}
+          mr={{ base: 2, md: 0 }}
+          mt={{ base: 0, md: `6px` }}
+          mb={{ base: 1.5, md: 0 }}
           {...avatarProps}
         />
       ),
-      [avatarProps, borderColor, inlineAvatar]
+      [avatarProps]
     );
     return (
       <HStack ref={ref} gap={0.5} alignItems="start" maxW="full" position="relative">
