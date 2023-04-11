@@ -1,11 +1,11 @@
 # A FastAPI server to run the safety pipeline
 
 import fastapi
-import interface
 import uvicorn
 from blade2blade import Blade2Blade
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from oasst_shared.schemas import inference
 from settings import settings
 
 app = fastapi.FastAPI()
@@ -45,13 +45,13 @@ async def load_pipeline():
     pipeline_loaded = True
 
 
-@app.post("/safety", response_model=interface.SafetyResponse)
-async def safety(request: interface.SafetyRequest):
+@app.post("/safety", response_model=inference.SafetyResponse)
+async def safety(request: inference.SafetyRequest):
     global pipeline
     if not pipeline_loaded:
         raise fastapi.HTTPException(status_code=503, detail="Server not fully loaded")
     outputs = pipeline.predict(request.inputs)
-    return interface.SafetyResponse(outputs=outputs)
+    return inference.SafetyResponse(outputs=outputs)
 
 
 @app.get("/health")

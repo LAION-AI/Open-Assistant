@@ -256,6 +256,19 @@ class GeneralErrorResponse(WorkerResponseBase):
     error: str
 
 
+class SafetyParameters(pydantic.BaseModel):
+    ...
+
+
+class SafetyRequest(pydantic.BaseModel):
+    inputs: str
+    parameters: SafetyParameters
+
+
+class SafetyResponse(pydantic.BaseModel):
+    outputs: str
+
+
 _WorkerRequest = Union[
     WorkRequest,
     PingRequest,

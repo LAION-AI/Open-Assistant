@@ -177,7 +177,7 @@ def handle_work_request(
     logger.debug("Work complete. Waiting for more work...")
 
 
-def get_safety_server_response(request: interface.SafetyRequest) -> interface.SafetyResponse:
+def get_safety_server_response(request: inference.SafetyRequest) -> inference.SafetyResponse:
     http = utils.HttpClient(base_url=settings.safety_server_url)
     response = http.post("/safety", json=request.dict())
     try:
@@ -186,7 +186,7 @@ def get_safety_server_response(request: interface.SafetyRequest) -> interface.Sa
         logger.exception("Failed to get response from safety server")
         logger.error(f"Response: {response.text}")
         raise
-    return interface.SafetyResponse(**response.json())
+    return inference.SafetyResponse(**response.json())
 
 
 def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
