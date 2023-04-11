@@ -4,6 +4,7 @@ import pydantic
 class Settings(pydantic.BaseSettings):
     backend_url: str = "ws://localhost:8000"
     model_config_name: str = "distilgpt2"
+    safety_model_name: str = "shahules786/blade2blade-t5-base"
     inference_server_url: str = "http://localhost:8001"
     api_key: str = "0000"
 
