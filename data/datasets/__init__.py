@@ -20,6 +20,7 @@ INSTRUCTION_DATASETS = {
     "tell_a_joke": "mikegarts/oa_tell_a_joke_20000",
     "oa_wiki_qa_bart_10000row": "michaelthwan/oa_wiki_qa_bart_10000row",
     "oa_leet10k": "ehartford/oa_leet10k",
+    "LogicInference_OA": "KK04/LogicInference_OA",
 }
 
 SAFETY_DATASETS = {
