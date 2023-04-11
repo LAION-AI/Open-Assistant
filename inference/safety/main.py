@@ -1,5 +1,7 @@
 # A FastAPI server to run the safety pipeline
 
+import asyncio
+
 import fastapi
 import uvicorn
 from blade2blade import Blade2Blade
@@ -37,9 +39,9 @@ async def load_pipeline():
 
 @app.post("/safety", response_model=inference.SafetyResponse)
 async def safety(request: inference.SafetyRequest):
-    global pipeline
-    if not pipeline_loaded:
-        raise fastapi.HTTPException(status_code=503, detail="Server not fully loaded")
+    global pipeline_loaded, pipeline
+    while not pipeline_loaded:
+        await asyncio.sleep(0.1)
     outputs = pipeline.predict(request.inputs)
     return inference.SafetyResponse(outputs=outputs)
 
