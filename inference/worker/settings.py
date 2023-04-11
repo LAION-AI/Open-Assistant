@@ -6,6 +6,7 @@ class Settings(pydantic.BaseSettings):
     model_config_name: str = "distilgpt2"
     safety_model_name: str = "shahules786/blade2blade-t5-base"
     inference_server_url: str = "http://localhost:8001"
+    safety_server_url: str = "http://localhost:8002"
     api_key: str = "0000"
 
     oa_protocol_version: str = "v2"

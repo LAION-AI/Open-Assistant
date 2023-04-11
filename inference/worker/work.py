@@ -103,10 +103,9 @@ def handle_work_request(
 
     model_config = worker_config.model_config
 
-    # TODO
-    safety_opinion = interface.SafetyRequest(prompt)
-    safety_opinion = ...
-    prompt = prepare_safe_prompt(prompt, safety_opinion)
+    safety_request = interface.SafetyRequest(prompt)
+    safety_response = get_safety_server_response(safety_request)
+    prompt = prepare_safe_prompt(prompt, safety_response.outputs)
     logger.debug(f"Safe prompt: {prompt}")
 
     stream_response = None
@@ -176,6 +175,18 @@ def handle_work_request(
         ),
     )
     logger.debug("Work complete. Waiting for more work...")
+
+
+def get_safety_server_response(request: interface.SafetyRequest) -> interface.SafetyResponse:
+    http = utils.HttpClient(base_url=settings.safety_server_url)
+    response = http.post("/safety", json=request.dict())
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        logger.exception("Failed to get response from safety server")
+        logger.error(f"Response: {response.text}")
+        raise
+    return interface.SafetyResponse(**response.json())
 
 
 def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
