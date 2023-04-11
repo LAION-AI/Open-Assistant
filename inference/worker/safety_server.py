@@ -39,15 +39,17 @@ pipeline: Blade2Blade
 async def load_pipeline():
     global pipeline_loaded, pipeline
     pipeline = Blade2Blade(settings.safety_model_name)
-    pipeline_loaded = True
     # warmup
     input = "|prompter|Hey,how are you?|endoftext|"
     _ = pipeline.predict(input)
+    pipeline_loaded = True
 
 
 @app.post("/safety", response_model=interface.SafetyResponse)
 async def safety(request: interface.SafetyRequest):
     global pipeline
+    if not pipeline_loaded:
+        raise fastapi.HTTPException(status_code=503, detail="Server not fully loaded")
     outputs = pipeline.predict(request.inputs)
     return interface.SafetyResponse(outputs=outputs)
 
