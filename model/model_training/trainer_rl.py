@@ -68,7 +68,7 @@ def create_reward_fn(rank_config, sft_config):  # noqa:  C901
         if len(samples) == 0:
             return []
 
-        # hack to allo for different tokenizers with different eos tokens ... rest of the 
+        # hack to allo for different tokenizers with different eos tokens ... rest of the
         samples = [x.replace(sft_tokenizer.eos_token, rank_tokenizer.eos_token) for x in samples]
         samples = [x.replace(sft_tokenizer.pad_token, rank_tokenizer.pad_token) for x in samples]
 
@@ -155,7 +155,6 @@ if __name__ == "__main__":
     trlx_config.method.chunk_size = int(training_conf.chunk_size)
     trlx_config.method.num_rollouts = int(training_conf.num_rollouts)
     trlx_config.train.total_steps = int(training_conf.total_steps)
-
 
     if training_conf.debug:
         print("Continuing in debug mode")

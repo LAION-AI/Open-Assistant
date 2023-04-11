@@ -17,10 +17,10 @@ from trlx.data.ppo_types import PPORLElement
 from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
 from trlx.pipeline import BasePipeline, register_datapipeline
 from trlx.trainer import register_trainer
+from trlx.trainer.accelerate_base_trainer import AccelerateRLTrainer
 from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
 from trlx.utils import Clock
 from trlx.utils.modeling import logprobs_of_labels
-from trlx.trainer.accelerate_base_trainer import AccelerateRLTrainer
 
 # from trlx.utils.modeling import hf_get_causal_base_model, hf_get_hidden_size, hf_get_lm_head, make_head
 from utils.utils import get_model
@@ -103,14 +103,14 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
         )  # Loading our model requires the tokenizer to be loaded first
         # if pad token id is same as escape token id, then add a new token at the end of the vocab
         if self.tokenizer.pad_token_id == self.tokenizer.eos_token_id:
-            self.tokenizer.add_special_tokens({'pad_token': '<|padding|>'})
+            self.tokenizer.add_special_tokens({"pad_token": "<|padding|>"})
 
         super().__init__(*args, config=config, **kwargs)
 
         # Compare to super init do not override pad_token with eos_token...
         self.tokenizer = AutoTokenizer.from_pretrained(config.tokenizer.tokenizer_path)
         if self.tokenizer.pad_token_id == self.tokenizer.eos_token_id:
-            self.tokenizer.add_special_tokens({'pad_token': '<|padding|>'})
+            self.tokenizer.add_special_tokens({"pad_token": "<|padding|>"})
 
         self.tokenizer.padding_side = config.tokenizer.padding_side
         self.tokenizer.truncation_side = config.tokenizer.truncation_side

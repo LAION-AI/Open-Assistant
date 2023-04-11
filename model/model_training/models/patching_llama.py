@@ -1,10 +1,10 @@
+import math
 import warnings
 from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
 from transformers.models.llama.modeling_llama import LlamaAttention, apply_rotary_pos_emb
-import math
 
 from .patching_utils import compute_flash_attention
 
@@ -88,6 +88,7 @@ def llama_forward_with_flash_attn(
 
     return attn_output, None, past_key_value
 
+
 def llama_forward_with_flash_attn_rl(
     self: LlamaAttention,
     flash_attn: nn.Module,  # flash_attn.modules.mha.FlashSelfAttention
@@ -132,12 +133,12 @@ def llama_forward_with_flash_attn_rl(
     out_dtype = value_states.dtype
 
     q, k, v = query_states.transpose(1, 2), key_states.transpose(1, 2), value_states.transpose(1, 2)
-    #If shape requirement is met we can use flash attention
+    # If shape requirement is met we can use flash attention
     if q.shape == k.shape:
         attn_output = compute_flash_attention(flash_attn, q, k, v, attention_mask)
         attn_output = attn_output.transpose(1, 2).to(out_dtype)
 
-    #Else we have to use regular attention <- this is mainly during generation/rollouts phase
+    # Else we have to use regular attention <- this is mainly during generation/rollouts phase
     else:
         attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
         attn_weights = attn_weights + attention_mask

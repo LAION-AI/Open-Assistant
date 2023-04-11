@@ -194,4 +194,5 @@ Experimental results in wandb
 
 ## TODOs
 
-- recreate init in trainer that does not load the ref_model, currently hard coded
+- recreate init in trainer that does not load the ref_model, currently hard
+  coded

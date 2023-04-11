@@ -9,7 +9,6 @@ import torch.nn as nn
 import transformers
 from transformers import GPTNeoXForCausalLM, GPTNeoXModel, LlamaForCausalLM, LlamaModel
 from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
-import trlx
 
 from .patching_llama import llama_forward_with_flash_attn, llama_forward_with_flash_attn_rl
 from .patching_utils import compute_flash_attention
@@ -21,7 +20,7 @@ SUPPORTED_MODELS = [
     LlamaForCausalLM,
     LlamaModel,
     GPTNeoXRewardModel,
-    #Currently only supported by NeoX models; Will work on LLaMa models
+    # Currently only supported by NeoX models; Will work on LLaMa models
     AutoModelForCausalLMWithHydraValueHead,
 ]
 
@@ -79,7 +78,7 @@ def _patched_gpt_neox_attn_rl(
         out = compute_flash_attention(flash_attn, q, k, v, attention_mask)
         out = out.transpose(1, 2).to(out_dtype)
     else:
-        #If shapes don't match we use regular self attention; 
+        # If shapes don't match we use regular self attention;
         batch_size, num_attention_heads, query_length, attn_head_size = query.size()
         key_length = key.size(-2)
 
@@ -123,6 +122,7 @@ def _patched_gpt_neox_attn_rl(
         out = torch.matmul(attn_weights, value)
     return out, None
 
+
 def add_dropout(module: nn.Module, patched_fwd: Callable, p_dropout: float = 0.1):
     dropout = nn.Dropout(p=p_dropout)
     module.old_forward = module.forward
@@ -154,7 +154,7 @@ def add_flash_attn(module: nn.Module, causal: bool = True, mode: str = "sft"):
             if not hasattr(module, "_attn"):
                 warnings.warn("Provided module doesn't have a _attn() function to be patched.")
             module._attn = partial(_patched_gpt_neox_attn_rl, module, flash_attn)
-        else:    
+        else:
             if not hasattr(module, "_attn"):
                 warnings.warn("Provided module doesn't have a _attn() function to be patched.")
             module._attn = partial(_patched_gpt_neox_attn, module, flash_attn)
@@ -163,7 +163,11 @@ def add_flash_attn(module: nn.Module, causal: bool = True, mode: str = "sft"):
 
 
 def patch_model(
-    model: nn.Module, resid_pdrop: Optional[float] = 0.1, flash_attention: bool = True, patch_unsupported: bool = False, mode: str = "sft"
+    model: nn.Module,
+    resid_pdrop: Optional[float] = 0.1,
+    flash_attention: bool = True,
+    patch_unsupported: bool = False,
+    mode: str = "sft",
 ):
     """
     Helper function for patching HF language models.
@@ -217,7 +221,7 @@ or run with:
 
     if isinstance(model, LlamaForCausalLM):
         model = model.model
-    
+
     if isinstance(model, AutoModelForCausalLMWithHydraValueHead):
         if isinstance(model.base_model, GPTNeoXForCausalLM):
             model = model.base_model.gpt_neox
@@ -225,11 +229,11 @@ or run with:
             model = model.base_model.model
         else:
             warnings.warn(
-            "Unfortunately there is currently only support for NeoX models and LLaMa models "
-            f"Please make sure that `{model.__class__.__name__}` is one of those model.\n"
-            "Or disable flash_attention and residual_dropout with:\n"
-            "--use_flash_attention=false  --no-residual_dropout"
-        )
+                "Unfortunately there is currently only support for NeoX models and LLaMa models "
+                f"Please make sure that `{model.__class__.__name__}` is one of those model.\n"
+                "Or disable flash_attention and residual_dropout with:\n"
+                "--use_flash_attention=false  --no-residual_dropout"
+            )
 
     attention_key_lookup = {
         GPTNeoXModel: "attention",
