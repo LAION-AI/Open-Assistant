@@ -1,0 +1,19 @@
+{
+  "back_to_chat_list": "回到聊天对话串",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "聊天设定",
+  "empty": "(无题)",
+  "login_message": "如果您想要使用这项服务，请使用以下其中一个登入方式登入：",
+  "max_new_tokens": "最长新字数",
+  "model": "模型",
+  "preset": "设定",
+  "preset_custom": "特殊设定",
+  "queue_info": "目前你的信息还在处理中，正在处理前面的 {{ queuePosition, number, integer }} 个信息",
+  "repetition_penalty": "重复惩罚",
+  "temperature": "温度",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "Typical P",
+  "you_are_logged_in": "目前已经登入聊天服务",
+  "your_chats": "您的聊天"
+}

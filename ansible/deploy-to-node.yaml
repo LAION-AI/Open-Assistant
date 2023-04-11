@@ -11,6 +11,11 @@
     postgres_password: postgres
     web_api_key: "1234"
   tasks:
+    # reduces the chance of oom when pulling new images
+    - name: Clear unused images
+      community.docker.docker_prune:
+        images: true
+
     - name: Create network
       community.docker.docker_network:
         name: "oasst-{{ stack_name }}"

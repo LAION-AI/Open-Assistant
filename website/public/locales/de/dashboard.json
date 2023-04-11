@@ -1,8 +1,14 @@
 {
-  "create": "Erstellen",
-  "dashboard": "Dashboard",
-  "evaluate": "Auswerten",
-  "go": "Los",
   "grab_a_task": "Schnappen Sie sich eine Aufgabe!",
-  "label": "Label"
+  "create": "Erstellen",
+  "evaluate": "Auswerten",
+  "label": "Labeln",
+  "dashboard": "Dashboard",
+  "go": "Los",
+  "welcome_message": {
+    "label": "Willkommen, {{username}}!",
+    "contributor": "Contributor",
+    "description": "Open Assistant ist ein open-source KI-Assistent welcher fortgeschrittene Language Models nutzt und trainiert, um Menschen zu verstehen und ihnen zu antworten.",
+    "instruction": "Schließe Aufgaben ab um mit dem Training zu helfen und Punkte zu verdienen."
+  }
 }

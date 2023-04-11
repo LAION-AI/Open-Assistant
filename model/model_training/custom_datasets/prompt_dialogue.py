@@ -7,6 +7,7 @@ from typing import Optional
 import requests
 from datasets import load_dataset
 from model_training.custom_datasets.oasst_dataset import ListDataset
+from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator, randperm
 from torch.utils.data import Dataset, random_split
 
@@ -111,18 +112,16 @@ class Gpt4All(Dataset):
             data_files="data_singleround_pruned_3.jsonl",
             cache_dir=cache_dir,
         )
-        self.rows = [(row["prompt"], row["response"]) for row in dataset["train"]]
+        self.rows = [[row["prompt"], row["response"]] for row in dataset["train"]]
 
         dataset_multi = load_dataset(
             "Nebulous/gpt4all_pruned",
             data_files="data_multiround_pruned_3.jsonl",
             cache_dir=cache_dir,
         )
-        multi_round_conversations = []
         for row in dataset_multi["train"]["conversation"]:
             if (processed_conversation := self.process_conversation(row)) is not None:
-                multi_round_conversations.append(processed_conversation)
-        self.rows.extend(multi_round_conversations)
+                self.rows.append(processed_conversation)
 
     @staticmethod
     def process_conversation(conv: list[dict[str, None | str]]) -> list[str] | None:
@@ -141,6 +140,8 @@ class Gpt4All(Dataset):
                 speaker = "Assistant"
             else:
                 continue
+            if _filter_by_words(message) is None:
+                return None
             if role != speaker:
                 if role is not None:
                     dialogue.append("\n".join(messages))
@@ -155,9 +156,9 @@ class Gpt4All(Dataset):
     def __len__(self):
         return len(self.rows)
 
-    def __getitem__(self, index):
-        dialogue = self.rows[index]
+    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+        dialogue: list = self.rows[index]
         if self.mode == "sft":
             return dialogue
         elif self.mode == "rl":
-            return (dialogue[:-1],)
+            return tuple(dialogue[:-1])

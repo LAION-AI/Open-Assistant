@@ -18,8 +18,9 @@ const handler = withoutRole("banned", async (req, res, token) => {
   } else if (req.method === "POST") {
     data = await client.create_chat();
   } else if (req.method === "DELETE") {
-    // TODO: implement delete functionality
-    // data = await client.delete_chat(req.query.chat_id as string);
+    // TODO: re-activate later
+    // await client.delete_chat(req.query.chat_id as string);
+    data = {};
   }
 
   if (data) {

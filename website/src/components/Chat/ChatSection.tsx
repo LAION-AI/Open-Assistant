@@ -1,3 +1,4 @@
+import { Divider } from "@chakra-ui/react";
 import { FormProvider, useForm } from "react-hook-form";
 import { getCachedChatForm, useCacheChatForm } from "src/hooks/chat/useCacheConfig";
 import { ChatConfigForm } from "src/types/Chat";
@@ -5,6 +6,7 @@ import { ChatConfigForm } from "src/types/Chat";
 import { ChatConfigSummary } from "./ChatConfigSummary";
 import { useChatContext } from "./ChatContext";
 import { ChatConversation } from "./ChatConversation";
+import { InferencePoweredBy } from "./InferencePoweredBy";
 
 export const ChatSection = ({ chatId }: { chatId: string }) => {
   const { modelInfos } = useChatContext();
@@ -25,6 +27,8 @@ export const ChatSection = ({ chatId }: { chatId: string }) => {
     <FormProvider {...form}>
       <ChatConversation chatId={chatId} />
       <ChatConfigSummary />
+      <Divider />
+      <InferencePoweredBy />
     </FormProvider>
   );
 };
