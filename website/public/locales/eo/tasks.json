@@ -9,11 +9,11 @@
   },
   "no_more_tasks": "Ŝajnas, ke neniu tasko estis trovita.",
   "random": {
-    "label": "Mi sentas min feliĉa",
+    "label": "Hazarda tasko",
     "desc": "Helpu nin plibonigi Open Assistant per komenci hazardan taskon."
   },
   "create_initial_prompt": {
-    "label": "Krei Unuajn Incitojn",
+    "label": "Krei komencajn demandojn",
     "desc": "Verki unuajn incitojn por helpi Open Assistant provi respondi al diversaj mesaĝoj. (eniri en loterion)",
     "overview": "Krei unuan mesaĝon por sendi al la asistanto",
     "instruction": "Donu la unuajn incitojn",
