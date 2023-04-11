@@ -179,7 +179,13 @@ class Thread(pydantic.BaseModel):
 
 
 class SafetyParameters(pydantic.BaseModel):
-    enabled: bool = True
+    level: int = 0
+
+    @pydantic.validator("level")
+    def level_must_be_in_range(cls, v):
+        if v < 0 or v > 9:
+            raise ValueError("level must be in range [0, 9]")
+        return v
 
 
 class SafetyRequest(pydantic.BaseModel):

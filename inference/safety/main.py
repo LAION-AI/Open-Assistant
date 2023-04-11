@@ -41,7 +41,7 @@ async def load_pipeline():
 async def safety(request: inference.SafetyRequest):
     global pipeline_loaded, pipeline
     while not pipeline_loaded:
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1)
     outputs = pipeline.predict(request.inputs)
     return inference.SafetyResponse(outputs=outputs)
 
