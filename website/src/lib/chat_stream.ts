@@ -66,19 +66,18 @@ export async function* iteratorSSE(stream: ReadableStream<Uint8Array>) {
     const full_value = unfinished_line + value;
     const lines = full_value.split(/\r?\n/).filter(Boolean);
     // do line buffering - otherwise leads to parsing errors
-    if (full_value[full_value.length - 1] != "\n") {
+    if (full_value[full_value.length - 1] !== "\n") {
       unfinished_line = lines.pop();
     } else {
       unfinished_line = "";
     }
-
     const fields = lines.map((line) => {
       const colonIdx = line.indexOf(":");
       return [line.slice(0, colonIdx), line.slice(colonIdx + 1).trimStart()];
     });
     // yield multiple messages distinctly
-    for (const fidx in fields) {
-      yield Object.fromEntries([fields[fidx]]);
+    for (const field of fields) {
+      yield Object.fromEntries([field]);
     }
   }
 }
