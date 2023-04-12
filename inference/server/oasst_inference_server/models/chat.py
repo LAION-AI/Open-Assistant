@@ -51,6 +51,7 @@ class DbMessage(SQLModel, table=True):
         return inference.MessageRead(
             id=self.id,
             parent_id=self.parent_id,
+            chat_id=self.chat_id,
             content=self.content,
             created_at=self.created_at,
             role=self.role,

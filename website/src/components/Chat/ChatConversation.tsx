@@ -17,8 +17,9 @@ import {
 import { mutate } from "swr";
 
 import { useChatContext } from "./ChatContext";
+import { ChatConversationTree } from "./ChatConversationTree";
 import { ChatForm } from "./ChatForm";
-import { ChatMessageEntry, ChatMessageEntryProps, PendingMessageEntry } from "./ChatMessageEntry";
+import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
 
 interface ChatConversationProps {
   chatId: string | null; // will be null when render on chat list page (/chat)
@@ -56,11 +57,12 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
   const { getValues: getFormValues } = useFormContext<ChatConfigForm>();
 
   const initiate_assistant_message = useCallback(
-    async (parent_id: string, chatId: string) => {
+    async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
       const { model_config_name, ...sampling_parameters } = getFormValues();
+      console.log(`chatId`, chatId);
       const assistant_arg: InferencePostAssistantMessageParams = {
         chat_id: chatId,
-        parent_id,
+        parent_id: parentId,
         model_config_name,
         sampling_parameters,
       };
@@ -104,10 +106,10 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
       return;
     }
     setIsSending.on();
+    inputRef.current!.value = "";
     let currentChatId = chatIdProps;
     if (currentChatId === null) {
       const chat: ChatItem = await post(API_ROUTES.LIST_CHAT);
-      // setChatId(chat.id);
       currentChatId = chat.id;
     }
 
@@ -128,20 +130,23 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
     mutate(API_ROUTES.LIST_CHAT); // revalidte chat list after create prompter message to make sure the message already has title
     setMessages((messages) => [...messages, prompter_message]);
 
-    await initiate_assistant_message(prompter_message.id, currentChatId);
+    await initiate_assistant_message({ parentId: prompter_message.id, chatId: currentChatId });
     router.push(ROUTES.CHAT(currentChatId));
   }, [setIsSending, chatIdProps, currentThread, initiate_assistant_message]);
 
   const sendVote = useMessageVote();
 
+  const [retryingParentId, setReytryingParentId] = useState<string | null>(null);
+
   const handleOnRetry = useCallback(
-    (messageId: string, chatId: string) => {
+    async (params: { parentId: string; chatId: string }) => {
       setIsSending.on();
-      initiate_assistant_message(messageId, chatId);
+      setReytryingParentId(params.parentId);
+      await initiate_assistant_message(params);
+      setReytryingParentId(null);
     },
     [initiate_assistant_message, setIsSending]
   );
-
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
     async ({ chatId, messageId, newScore, oldScore }) => {
       // immediately set score
@@ -165,23 +170,61 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
     [sendVote]
   );
 
-  const entries = useMemo(
-    () =>
-      currentThread.map((message) => (
-        <ChatMessageEntry
-          key={message.id}
-          message={message}
-          onVote={handleOnVote}
-          onRetry={handleOnRetry}
-          isSending={isSending}
-        ></ChatMessageEntry>
-      )),
-    [handleOnVote, currentThread, handleOnRetry, isSending]
+  const handleEditPrompt = useCallback(
+    async ({ chatId, parentId, content }: EditPromptParams) => {
+      if (!content) {
+        return;
+      }
+
+      setIsSending.on();
+      setReytryingParentId(parentId);
+      const prompter_arg: InferencePostPrompterMessageParams = {
+        chat_id: chatId,
+        content,
+        parent_id: parentId,
+      };
+
+      let prompter_message: InferenceMessage | null = null;
+      const dummyMessage: InferenceMessage = {
+        id: "__dummy__",
+        ...prompter_arg,
+        created_at: new Date().toISOString(),
+        role: "prompter",
+        state: "complete",
+        score: 0,
+        reports: [],
+      };
+
+      try {
+        // push the dummy message first to avoid layout shift
+        setMessages((messages) => [...messages, dummyMessage]);
+        prompter_message = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
+        // filter out the dummy message and push the real one
+        setMessages((messages) => [...messages.filter((m) => m.id !== "__dummy__"), prompter_message!]);
+      } catch {
+        // revert on any error
+        setMessages((messages) => [...messages.filter((m) => m.id !== "__dummy__")]);
+      }
+
+      if (prompter_message) {
+        await initiate_assistant_message({ parentId: prompter_message.id, chatId: chatId });
+      }
+
+      setReytryingParentId(null);
+    },
+    [initiate_assistant_message, setIsSending]
   );
 
   return (
     <Flex flexDir="column" gap={4}>
-      {entries}
+      <ChatConversationTree
+        messages={messages}
+        onVote={handleOnVote}
+        onRetry={handleOnRetry}
+        isSending={isSending}
+        retryingParentId={retryingParentId}
+        onEditPromtp={handleEditPrompt}
+      ></ChatConversationTree>
       {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
 
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={send} queueInfo={queueInfo}></ChatForm>

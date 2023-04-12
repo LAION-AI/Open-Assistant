@@ -76,7 +76,7 @@ export const WorkParametersDisplay = memo(function WorkParametersDisplay({
               flexGrow={0}
             />
           </Flex>
-          <AccordionPanel>
+          <AccordionPanel p="0" pt="1">
             <JsonCard fontSize="sm" bodyProps={{ p: 3 }}>
               {rest}
             </JsonCard>
