@@ -20,14 +20,15 @@ export interface ChatItem {
   id: string;
   created_at: string; //timestamp
   modified_at: string; //timestamp
+  messages: InferenceMessage[];
 
   // those are not available when you first create a chat
   title?: string;
-  messages?: InferenceMessage[];
 }
 
 export interface InferenceMessage {
   id: string;
+  chat_id: string;
   parent_id: string | null;
   created_at: string; //timestamp
   content: string | null;

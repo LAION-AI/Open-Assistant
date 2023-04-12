@@ -458,7 +458,6 @@ def load_alpaca_dataset(
         dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
     ) -> list[tuple[str, str]]:
         data = []
-        print("new version")
         for row in dataset:
             question = row["instruction"]
             if len(row["input"]) > 0:
@@ -529,7 +528,8 @@ class Vicuna(Dataset):
         dataset = load_dataset(
             "anon8231489123/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
-            data_files=["ShareGPT_unfiltered_cleaned_split.json"],
+            data_files=["ShareGPT_V3_unfiltered_cleaned_split.json"],
+            revision="192ab2185289094fc556ec8ce5ce1e8e587154ca",
         )["train"]
         for data in dataset:
             if (
