@@ -528,7 +528,7 @@ class Vicuna(Dataset):
         dataset = load_dataset(
             "anon8231489123/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
-            data_files=["ShareGPT_unfiltered_cleaned_split.json"],
+            data_files=["ShareGPT_V3_unfiltered_cleaned_split.json"],
         )["train"]
         for data in dataset:
             if (
