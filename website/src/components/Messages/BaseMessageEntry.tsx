@@ -1,5 +1,6 @@
 import { Avatar, AvatarProps, Box, BoxProps, Flex, useColorModeValue } from "@chakra-ui/react";
 import { forwardRef, lazy, Suspense } from "react";
+import { colors } from "src/styles/Theme/colors";
 import { StrictOmit } from "ts-essentials";
 
 const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
@@ -8,10 +9,11 @@ export type BaseMessageEntryProps = StrictOmit<BoxProps, "bg" | "backgroundColor
   content: string;
   avatarProps: Pick<AvatarProps, "name" | "src">;
   bg?: string;
+  highlight?: boolean;
 };
 
 export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps>(function BaseMessageEntry(
-  { content, avatarProps, children, ...props },
+  { content, avatarProps, children, highlight, ...props },
   ref
 ) {
   const bg = useColorModeValue("#DFE8F1", "#42536B");
@@ -28,6 +30,9 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
       p={{ base: 3, md: 0 }}
       borderRadius={{ base: "18px", md: 0 }}
       bg={{ base: actualBg, md: "transparent" }}
+      outline={highlight ? { base: `2px solid black`, md: "0px" } : undefined}
+      outlineColor={colors.light.active}
+      _dark={{ outlineColor: colors.dark.active }}
     >
       <Avatar
         borderColor="blackAlpha.200"
@@ -47,7 +52,10 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
         borderRadius={{ base: 0, md: "18px" }}
         bg={bg}
         overflowX="auto"
+        outline={highlight ? { base: "0px", md: `2px solid black` } : undefined}
+        outlineColor={{ md: colors.light.active }}
         {...props}
+        _dark={{ outlineColor: { md: colors.dark.active }, ...props._dark }}
       >
         <Suspense fallback={content}>
           <RenderedMarkdown markdown={content}></RenderedMarkdown>
