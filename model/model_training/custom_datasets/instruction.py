@@ -15,7 +15,7 @@ INSTRUCTION_DATASETS = {
     "cmu_wiki_qa": "sedthh/cmu_wiki_qa",
     "youtube_subs_howto100m": "totuta/youtube_subs_howto100M",
     "iapp_wiki_qa_squad": "wannaphong/iapp_wiki_qa_squad_oa",
-    "zhihu-kol": "wangrui6/zhihu-kol",
+    "zhihu_kol": "wangrui6/zhihu-kol",
     "minimath": "kentsui/minimath",
     "oa_wiki_qa_bart_10000row": "michaelthwan/oa_wiki_qa_bart_10000row",
 }
