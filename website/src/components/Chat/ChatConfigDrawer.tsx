@@ -27,7 +27,7 @@ import { Settings } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { ChangeEvent, memo, useCallback } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { ChatConfigForm, SamplingParameters } from "src/types/Chat";
+import { ChatConfigFormData, SamplingParameters } from "src/types/Chat";
 
 import { useChatContext } from "./ChatContext";
 import { areParametersEqual } from "./WorkParameters";
@@ -115,7 +115,7 @@ const ChatConfigForm = () => {
   const { t } = useTranslation("chat");
   const { modelInfos } = useChatContext();
 
-  const { control, register, reset, getValues } = useFormContext<ChatConfigForm>();
+  const { control, register, reset, getValues } = useFormContext<ChatConfigFormData>();
   const selectedModel = useWatch({ name: "model_config_name", control: control });
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
 
