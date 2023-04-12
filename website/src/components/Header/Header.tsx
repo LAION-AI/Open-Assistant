@@ -31,8 +31,10 @@ function AccountButton() {
 
 export const HEADER_HEIGHT = "82px";
 
-export function Header() {
-  const { t } = useTranslation("common");
+export type HeaderProps = { preLogoSlot?: ReactNode };
+
+export function Header({ preLogoSlot }: HeaderProps) {
+  const { t } = useTranslation();
   const { data: session } = useSession();
   const homeURL = session ? "/dashboard" : "/";
 
@@ -48,15 +50,17 @@ export function Header() {
       w="full"
       height={HEADER_HEIGHT}
       shadow="md"
+      gap="3"
     >
-      <Link href={homeURL} aria-label="Home">
-        <Flex alignItems="center">
+      <Flex alignItems="center">
+        {preLogoSlot}
+        <Flex as={Link} gap="3" href={homeURL} aria-label="Home" alignItems="center">
           <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
-          <Text fontFamily="inter" fontSize={["lg", "2xl"]} fontWeight="bold" ml="3" className="hidden sm:block">
+          <Text fontFamily="inter" fontSize={["lg", "2xl"]} fontWeight="bold" className="hidden sm:block">
             {t("title")}
           </Text>
         </Flex>
-      </Link>
+      </Flex>
 
       <Flex alignItems="center" gap={["2", "4"]}>
         <LanguageSelector />
@@ -71,10 +75,10 @@ export function Header() {
   );
 }
 
-export const HeaderLayout = ({ children }: { children: ReactNode }) => {
+export const HeaderLayout = ({ children, ...props }: { children: ReactNode } & HeaderProps) => {
   return (
     <>
-      <Header></Header>
+      <Header {...props}></Header>
       <Box paddingTop={HEADER_HEIGHT} minH={`calc(100vh - ${HEADER_HEIGHT})`} h="full">
         {children}
       </Box>

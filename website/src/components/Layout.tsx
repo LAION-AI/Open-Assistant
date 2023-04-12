@@ -32,48 +32,50 @@ export const getDefaultLayout = (page: React.ReactElement) => (
   </HeaderLayout>
 );
 
+export const getDashBoardLayoutSidebarItem = () => {
+  return [
+    ...(getEnv().ENABLE_CHAT
+      ? [
+          {
+            labelID: "chat",
+            pathname: "/chat",
+            icon: MessageCircle,
+          },
+        ]
+      : []),
+    {
+      labelID: "dashboard",
+      pathname: "/dashboard",
+      icon: Layout,
+    },
+    {
+      labelID: "messages",
+      pathname: "/messages",
+      icon: MessageSquare,
+    },
+    {
+      labelID: "leaderboard",
+      pathname: "/leaderboard",
+      icon: BarChart2,
+    },
+    {
+      labelID: "stats",
+      pathname: "/stats",
+      icon: TrendingUp,
+    },
+    {
+      labelID: "guidelines",
+      pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
+      icon: ExternalLink,
+      target: "_blank",
+    },
+  ];
+};
+
 export const getDashboardLayout = (page: React.ReactElement) => (
   <HeaderLayout>
     <ToSWrapper>
-      <SideMenuLayout
-        items={[
-          ...(getEnv().ENABLE_CHAT
-            ? [
-                {
-                  labelID: "chat",
-                  pathname: "/chat",
-                  icon: MessageCircle,
-                },
-              ]
-            : []),
-          {
-            labelID: "dashboard",
-            pathname: "/dashboard",
-            icon: Layout,
-          },
-          {
-            labelID: "messages",
-            pathname: "/messages",
-            icon: MessageSquare,
-          },
-          {
-            labelID: "leaderboard",
-            pathname: "/leaderboard",
-            icon: BarChart2,
-          },
-          {
-            labelID: "stats",
-            pathname: "/stats",
-            icon: TrendingUp,
-          },
-          {
-            labelID: "guidelines",
-            pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
-            icon: ExternalLink,
-            target: "_blank",
-          },
-        ]}
-      >
+      <SideMenuLayout items={getDashBoardLayoutSidebarItem()}>
         <Box>{page}</Box>
         <Box mt="10">
           <SlimFooter />
