@@ -1,1 +1,1 @@
-export type LoginProviders = "local" | "discord" | "google";
+export type AuthMethod = "local" | "discord" | "google";

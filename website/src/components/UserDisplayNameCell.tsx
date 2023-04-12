@@ -4,11 +4,11 @@ import { Mail } from "lucide-react";
 import NextLink from "next/link";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
 import { ROUTES } from "src/lib/routes";
-import type { LoginProviders } from "src/types/Providers";
+import type { AuthMethod } from "src/types/Providers";
 
 import { UserAvatar } from "./UserAvatar";
 
-const AUTH_METHOD_TO_ICON: Record<LoginProviders, JSX.Element> = {
+const AUTH_METHOD_TO_ICON: Record<AuthMethod, JSX.Element> = {
   local: <Mail size="20" />,
   discord: <SiDiscord size="20" />,
   google: <SiGoogle size="20" />,
