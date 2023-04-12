@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { JWT } from "next-auth/jwt";
 import {
   ChatItem,
+  GetChatsResponse,
   InferenceMessage,
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
@@ -30,7 +31,7 @@ export class OasstInferenceClient {
     return this.request("/auth/trusted", { method: "POST" });
   }
 
-  get_my_chats(): Promise<ChatItem[]> {
+  get_my_chats(): Promise<GetChatsResponse> {
     return this.request("/chats");
   }
 
