@@ -1,9 +1,9 @@
 {
-    "add_prefix_space": false,
-    "bos_token": "<|endoftext|>",
-    "eos_token": "<|endoftext|>",
-    "name_or_path": "EleutherAI/gpt-neox-20b",
-    "special_tokens_map_file": "/admin/home-hailey/.cache/huggingface/hub/models--EleutherAI--gpt-neox-20b/snapshots/4e49eadb5d14bd22f314ec3f45b69a87b88c7691/special_tokens_map.json",
-    "tokenizer_class": "GPTNeoXTokenizer",
-    "unk_token": "<|endoftext|>"
-  }
+  "add_prefix_space": false,
+  "bos_token": "<|endoftext|>",
+  "eos_token": "<|endoftext|>",
+  "name_or_path": "EleutherAI/gpt-neox-20b",
+  "special_tokens_map_file": "/admin/home-hailey/.cache/huggingface/hub/models--EleutherAI--gpt-neox-20b/snapshots/4e49eadb5d14bd22f314ec3f45b69a87b88c7691/special_tokens_map.json",
+  "tokenizer_class": "GPTNeoXTokenizer",
+  "unk_token": "<|endoftext|>"
+}
