@@ -25,9 +25,6 @@ def test_dialogue_data_collator():
     d = DialogueDataCollator(
         tokenizer=tokenizer,
         padding=True,
-        # max_length=256,
-        # max_length_threshold=256,
-        # pad_to_multiple_of=256,
     )
     input_features = [
         [
@@ -67,7 +64,7 @@ def test_dialogue_data_collator():
         + "<|assistant|>And speaking of flowers, have you ever seen a rainforest? They're absolutely amazing! Everything is so green and alive.<|endoftext|>"
         + "<|prompter|>No, I haven't but it sounds really cool.<|endoftext|>"
         + "<|assistant|>Oh, it is! It's one of the most beautiful places on Earth. You should definitely try to see one if you can.<|endoftext|>"
-        + 27 * "<|padding|>",
+        + 21 * "<|padding|>",
         "<|prompter|>Kalliope got a bachelor’s degree in English from the University of Michigan. Kalliope has always been interested in writing and literature, so she decided to pursue a degree in English. She worked hard throughout her four years of college and was thrilled to finally receive her diploma. You are Dad. Hey Dad. How are you?<|endoftext|>"
         + "<|assistant|>I'm doing well, sweetheart. How's college life treating you?<|endoftext|>"
         + "<|prompter|>It's been great so far. I just got my degree in English and I'm looking forward to starting my career soon.<|endoftext|>"
@@ -90,6 +87,7 @@ def test_dialogue_data_collator():
         + "<|assistant|>That sounds like a great plan. I know you'll find the perfect job in no time.<|endoftext|>",
     ]
     expected_decoded_targets = [
+        # <|prompter|> has 12 tokens, this is removed and added at the end
         expected_decoded_input_ids[0][12:] + expected_decoded_input_ids[0][:12],
         expected_decoded_input_ids[1][12:] + expected_decoded_input_ids[1][:12],
     ]
@@ -102,14 +100,14 @@ def test_dialogue_data_collator():
     assert tokenizer.decode(batch.input_ids[1]) == expected_decoded_input_ids[1]
     # check if the attention mask is correct we mask only the padding
     assert (
-        torch.argwhere(batch.attention_mask == 0) == torch.stack([torch.zeros(27), torch.arange(220, 247)], dim=1)
+        torch.argwhere(batch.attention_mask == 0) == torch.stack([torch.zeros(21), torch.arange(217, 238)], dim=1)
     ).all()
     assert (
         torch.argwhere(batch.attention_mask == 1)
         == torch.cat(
             [
-                torch.stack([torch.zeros(220), torch.arange(0, 220)], dim=1),
-                torch.stack([torch.ones(247), torch.arange(0, 247)], dim=1),
+                torch.stack([torch.zeros(217), torch.arange(0, 217)], dim=1),
+                torch.stack([torch.ones(238), torch.arange(0, 238)], dim=1),
             ]
         )
     ).all()
