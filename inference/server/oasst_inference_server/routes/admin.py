@@ -87,3 +87,23 @@ async def revoke_refresh_tokens(
         refresh_token.enabled = False
     await session.commit()
     return fastapi.Response(status_code=200)
+
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    root_token: str = Depends(get_root_token),
+    session: database.AsyncSession = Depends(deps.create_session),
+):
+    """Deletes a user."""
+    logger.info(f"Deleting user {user_id}")
+    user = await session.get(models.DbUser, user_id)
+    user.deleted = True
+
+    # Anonymise user data
+    user.display_name = "Deleted User"
+    # Ensure uniqueness
+    user.provider_account_id = f"deleted_{user.id}"
+
+    await session.commit()
+    return fastapi.Response(status_code=200)

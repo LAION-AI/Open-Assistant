@@ -105,6 +105,7 @@ class UserRepository:
     def mark_user_deleted(self, id: UUID) -> None:
         """
         Update a user by global user ID to set deleted flag. Only trusted clients may delete users.
+        User deletion anonymises the data of the user.
 
         Raises:
             OasstError: 403 if untrusted client attempts to delete a user. 404 if user with ID not found.
@@ -118,6 +119,12 @@ class UserRepository:
             raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
 
         user.deleted = True
+
+        # Anonymise user data
+        user.display_name = "Deleted User"
+        # Ensure uniqueness of (username, auth_method, api_client_id) Index
+        user.username = f"deleted_{user.id}"
+        user.show_on_leaderboard = False
 
         self.db.add(user)
 

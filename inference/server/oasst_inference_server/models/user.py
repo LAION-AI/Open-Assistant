@@ -14,6 +14,8 @@ class DbUser(SQLModel, table=True):
 
     display_name: str = Field(nullable=False, max_length=256)
 
+    deleted: bool = Field(default=False)
+
 
 class DbRefreshToken(SQLModel, table=True):
     __tablename__ = "refresh_token"
