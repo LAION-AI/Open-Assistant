@@ -11,6 +11,11 @@
     postgres_password: postgres
     web_api_key: "1234"
   tasks:
+    # reduces the chance of oom when pulling new images
+    - name: Clear unused images
+      community.docker.docker_prune:
+        images: true
+
     - name: Create network
       community.docker.docker_network:
         name: "oasst-{{ stack_name }}"
@@ -112,6 +117,9 @@
             "{{ lookup('ansible.builtin.env', 'SKIP_TOXICITY_CALCULATION') |
             default('true', true) }}"
           OFFICIAL_WEB_API_KEY: "{{ web_api_key }}"
+          TREE_MANAGER__INIT_PROMPT_DISABLED_LANGS:
+            "{{ lookup('ansible.builtin.env', 'INIT_PROMPT_DISABLED_LANGS') |
+            default('', true) }}"
           TREE_MANAGER__MAX_ACTIVE_TREES:
             "{{ lookup('ansible.builtin.env', 'MAX_ACTIVE_TREES') |
             default('10', true) }}"

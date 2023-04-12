@@ -1,7 +1,7 @@
 {
   "accepted": "↪ Прийнято",
-  "accepted_prompts": "Прийняті підказки",
-  "daily": "Щодня",
+  "accepted_prompts": "Прийняті запити",
+  "daily": "За день",
   "day": "День",
   "good_rankings": "Хороші рейтинги",
   "label": "Маркувань",
@@ -32,8 +32,8 @@
   "total": "Всього",
   "username": "Ім'я користувача",
   "week": "Тиждень",
-  "weekly": "Щотижня",
+  "weekly": "За тиждень",
   "xp_progress_message": "Вам потрібно {{need, number, integer}} балів щоб досягти наступного рівня!",
-  "your_account": "Ваш аккаунт",
+  "your_account": "Ваш акаунт",
   "your_stats": "Ваша статистика"
 }

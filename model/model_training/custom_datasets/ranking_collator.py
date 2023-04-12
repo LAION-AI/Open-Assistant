@@ -17,16 +17,27 @@ class RankingDataCollator:
     max_length: Optional[int] = None
     min_prefix_length: int = 256
     pad_to_multiple_of: Optional[int] = None
+    max_replies: Optional[int] = 5
 
     def process_one(self, example, return_length=False):
         messages, replies = example
 
-        # append eos token to each messages
+        if self.max_replies:
+            assert self.max_replies > 1, "max_replies parameter must be > 1 or None"
+            if len(replies) > self.max_replies:
+                replies = replies[: self.max_replies]
+
         assert self.tokenizer.eos_token
         eos = self.tokenizer.eos_token
-        prefix = "".join(format_pairs(messages, eos_token=eos))
 
-        replies = [format_reply(r, eos_token=eos) for r in replies]
+        if messages is None or len(messages) == 1 and messages[0] is None:
+            # special handling for non-dialogue datasets like Hellaswag
+            prefix = ""
+            replies = [r + eos for r in replies]
+        else:
+            # append eos token to each messages
+            prefix = "".join(format_pairs(messages, eos_token=eos))
+            replies = [format_reply(r, eos_token=eos) for r in replies]
 
         prefix_tokens = self.tokenizer(prefix, padding=False, truncation=False)
         reply_tokens = [self.tokenizer(r, padding=False, truncation=False) for r in replies]

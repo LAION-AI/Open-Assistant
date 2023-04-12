@@ -3,8 +3,11 @@
   "available_task_count": "{{count}} feladat érhető el",
   "default": {
     "unchanged_title": "Nincs változás",
-    "unchanged_message": "Biztos, hogy folytatod?"
+    "unchanged_message": "Biztos, hogy folytatod?",
+    "continue_anyway": "Mégis továbblépek",
+    "markdownguide": "Markdown alapú formázás elérhető"
   },
+  "no_more_tasks": "Úgy tűnik, elfogytak a feladatok.",
   "random": {
     "label": "Jó napom van",
     "desc": "Segíts az Open Assistant fejlesztésében egy véletlenszerű feladattal."
@@ -14,41 +17,47 @@
     "desc": "Írj nyitóüzenetet, hogy segítsd az Open Assistantot abban, hogy az változatos üzenetekre válaszoljon.",
     "overview": "Az assisztensnek küldött nyitóüzenet létrehozása",
     "instruction": "Add meg a nyitóüzeneteket",
-    "response_placeholder": "Ide írd az üzenetedet..."
+    "response_placeholder": "Ide írd az üzenetedet...",
+    "shotcut_tip": "Tipp: használd a gyorsbillentyűket üzenetek ellenőrzésére és beküldésére:"
   },
   "reply_as_user": {
     "label": "Válasz felhasználóként",
     "desc": "Csevegj az Open Assistanttal, hogy segítsd a válaszai fejlesztésében.",
     "overview": "Adj megfelelő választ a következő beszélgetésben",
     "instruction": "Add meg a felhasználó válaszát",
-    "response_placeholder": "Ide írd a válaszodat..."
+    "response_placeholder": "Ide írd a válaszodat...",
+    "shotcut_tip": "Tipp: használd a gyorsbillentyűket üzenetek ellenőrzésére és beküldésére:"
   },
   "reply_as_assistant": {
     "label": "Válasz asszistensként",
     "desc": "Segíts az Open Assistantnak a más felhasználóknak küldött válaszainak fejlesztésében.",
     "overview": "Adj megfelelő választ a következő beszélgetésben",
-    "response_placeholder": "Ide írd a válaszodat..."
+    "response_placeholder": "Ide írd a válaszodat...",
+    "shotcut_tip": "Tipp: használd a gyorsbillentyűket üzenetek ellenőrzésére és beküldésére:"
   },
   "rank_user_replies": {
     "label": "Felhasználói válaszok rangsorolása",
     "desc": "Segíts az Open Assistantnak a más felhasználóknak küldött válaszainak fejlesztésében.",
     "overview": "Rendezd a következő felhasználói válaszokat a legjobbtól a legrosszabbig úgy, hogy az első a legjobb, az utolsó pedig a legrosszabb.",
     "unchanged_title": "Változatlan sorrend",
-    "unchanged_message": "Nem módosítottad a válaszok sorrendjét. Biztos, hogy folytatod?"
+    "unchanged_message": "Nem módosítottad a válaszok sorrendjét. Biztos, hogy folytatod?",
+    "continue_anyway": "Mégis továbblépek"
   },
   "rank_assistant_replies": {
     "label": "Asszistensi válaszok rangsorolása",
     "desc": "Osztályozd az Open Assistant áltad adott válaszokat a pontosságuk és olvashatóságuk alapján.",
     "overview": "Rendezd a következő asszisztensi válaszokat a legjobbtól a legrosszabbig úgy, hogy az első a legjobb, az utolsó pedig a legrosszabb.",
     "unchanged_title": "Változatlan sorrend",
-    "unchanged_message": "Nem módosítottad a válaszok sorrendjét. Biztos, hogy folytatod?"
+    "unchanged_message": "Nem módosítottad a válaszok sorrendjét. Biztos, hogy folytatod?",
+    "continue_anyway": "Mégis továbblépek"
   },
   "rank_initial_prompts": {
     "label": "Nyitóüzenetek rangsorolása",
     "desc": "Osztályozd az Open Assistant áltad adott üzeneteket a pontosságuk és olvashatóságuk alapján.",
     "overview": "Rendezd a következő nyitóüzeneteket a legjobbtól a legrosszabbig úgy, hogy az első a legjobb, az utolsó pedig a legrosszabb.",
     "unchanged_title": "Változatlan sorrend",
-    "unchanged_message": "Nem módosítottad az üzenet sorrendjét. Biztos, hogy folytatod?"
+    "unchanged_message": "Nem módosítottad az üzenet sorrendjét. Biztos, hogy folytatod?",
+    "continue_anyway": "Mégis továbblépek"
   },
   "label_initial_prompt": {
     "label": "Nyitóüzenet címkézése",
@@ -80,6 +89,9 @@
     "desc": "Adj meg címkéket egy üzenethez.",
     "overview": "Olvasd el a következő beszélgetést, és válaszold meg az utolsó válaszra vonatkozó kérdést."
   },
-  "submitted_as": "Ez a következőként lesz beküldve: {{submit_lang}}",
-  "writing_wrong_langauge_a_b": "Úgy néz ki, hogy {{detected_lang}} nyelven írsz, de a következőként lesz beküldve: {{submit_lang}}."
+  "submitted_as": "Beküldés mint {{submit_lang}}",
+  "tab_write": "Írás",
+  "tab_preview": "Előnézet",
+  "writing_wrong_langauge_a_b": "Úgy néz ki, hogy {{detected_lang}} nyelven írsz, de ez {{submit_lang}} nyelven lesz beküldve.",
+  "not_rankable": "A válaszok mind tárgyilagos tévedéseket tartalmaznak és nem osztályozhatók"
 }

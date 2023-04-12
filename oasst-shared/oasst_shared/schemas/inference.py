@@ -166,6 +166,8 @@ class MessageRead(pydantic.BaseModel):
     state: MessageState
     score: int
     reports: list[Report] = []
+    # work parameters will be None on user prompts
+    work_parameters: WorkParameters | None
 
     @property
     def is_assistant(self) -> bool:

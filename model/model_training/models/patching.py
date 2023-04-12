@@ -6,10 +6,11 @@ from typing import Callable, Optional
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.nn.utils.rnn import pad_sequence
+import transformers
 from transformers import GPTNeoXForCausalLM, GPTNeoXModel, LlamaForCausalLM, LlamaModel
 
+from .patching_llama import llama_forward_with_flash_attn
+from .patching_utils import compute_flash_attention
 from .reward_model import GPTNeoXRewardModel
 
 SUPPORTED_MODELS = [
@@ -36,7 +37,7 @@ def _patched_attn_forward(post_module: nn.Module, module: nn.Module, *args, **kw
 
 
 def _patched_gpt_neox_attn(
-    module: nn.Module,
+    self: transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXAttention,
     flash_attn: FlashSelfAttention,
     query: torch.Tensor,
     key: torch.Tensor,
@@ -45,30 +46,12 @@ def _patched_gpt_neox_attn(
     head_mask=None,
 ):
     # query, key, value: [bs, num_attention_heads, seq_len, attn_head_size]
-    flash_attn.train(module.training)
+    flash_attn.train(self.training)
     out_dtype = value.dtype
-    batch_size, max_len = query.size(0), query.size(2)
-
     q, k, v = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
-    qkv = torch.stack([q, k, v], dim=2).to(torch.float16)  # need to truncate here since rotary embeddings are fp32
-    cu_seqlens, max_seqlen = None, None
-
     if attention_mask is not None:
-        # Limitation: attention mask can have "holes", which is currently not handled correctly
-        # model will be able to pay attention up to the last non-masked token, even if previous tokens are masked.
-        seqlens = (attention_mask[:, 0, 0, :] == 0).cumsum(dim=1).argmax(dim=1) + 1
-        qkv = torch.cat([qkv[i, : seqlens[i]] for i in range(batch_size)], dim=0)
-        cu_seqlens = torch.cat([torch.zeros_like(seqlens[:1]), seqlens.cumsum(dim=0)], dim=0).to(torch.int32)
-        max_seqlen = seqlens.max().item()
-
-    out = flash_attn(qkv, cu_seqlens=cu_seqlens, max_seqlen=max_seqlen)
-    # out: [bs, seq_len, num_attention_heads, attn_head_size]
-
-    if attention_mask is not None:
-        seqs = [out[start:end] for start, end in zip(cu_seqlens[:-1], cu_seqlens[1:])]
-        out = pad_sequence(seqs, batch_first=True)
-        # restore original sequence length
-        out = F.pad(out, (0, 0) * (out.dim() - 2) + (0, max_len - out.size(1)), value=0.0)
+        attention_mask = attention_mask[:, 0, 0, :]
+    out = compute_flash_attention(flash_attn, q, k, v, attention_mask)
     out = out.transpose(1, 2).to(out_dtype)
     return out, None
 
@@ -91,10 +74,16 @@ def add_flash_attn(module: nn.Module, causal: bool = True):
     [1] https://github.com/HazyResearch/flash-attention
     """
 
-    if not hasattr(module, "_attn"):
-        warnings.warn("Provided module doesn't have a _attn() function to be patched.")
     flash_attn = FlashSelfAttention(causal=causal)
-    module._attn = partial(_patched_gpt_neox_attn, module, flash_attn)
+    if isinstance(module, transformers.models.llama.modeling_llama.LlamaAttention):
+        module.old_forward = module.forward
+        module.forward = partial(llama_forward_with_flash_attn, module, flash_attn)
+    elif isinstance(module, transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXAttention):
+        if not hasattr(module, "_attn"):
+            warnings.warn("Provided module doesn't have a _attn() function to be patched.")
+        module._attn = partial(_patched_gpt_neox_attn, module, flash_attn)
+    else:
+        raise NotImplementedError(f"Flash attention is not implemented for {module.__class__.__name__}.")
 
 
 def patch_model(
@@ -167,12 +156,9 @@ or run with:
     mlp_key = mlp_key_lookup.get(model.__class__, "mlp")
 
     for layer in model.layers:
+        if flash_attention:
+            add_flash_attn(getattr(layer, attention_key), causal=True)
+
         if resid_pdrop is not None and resid_pdrop > 0:
             add_dropout(getattr(layer, attention_key), _patched_attn_forward, resid_pdrop)
             add_dropout(getattr(layer, mlp_key), _patched_mlp_forward, resid_pdrop)
-
-        if flash_attention:
-            if isinstance(model, LlamaModel):
-                warnings.warn("Flash attention is not supported for LLaMA models.")
-            else:
-                add_flash_attn(layer.attention, causal=True)

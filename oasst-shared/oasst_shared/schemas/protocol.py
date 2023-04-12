@@ -26,7 +26,7 @@ class TaskRequestType(str, enum.Enum):
 class User(BaseModel):
     id: str
     display_name: str
-    auth_method: Literal["discord", "local", "system"]
+    auth_method: Literal["discord", "google", "local", "system"]
 
 
 class Account(BaseModel):

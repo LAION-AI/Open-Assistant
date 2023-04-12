@@ -1,0 +1,16 @@
+{
+  "default": "Etwas ist falsch gelaufen!",
+  "err_1000": "Ungültiger Aufgabentyp",
+  "err_1001": "Konnte Aufgabe nicht anerkennen",
+  "err_1002": "Konte Aufgabe nicht nicht anerkennen",
+  "err_1003": "Ungültiger Antwortstyp",
+  "err_1004": "Interaktionsanfrage schlug fehl",
+  "err_1005": "Konnte keine Aufgabe generieren",
+  "err_1006": "Momentan gibt es keine Aufgaben vom Typ {{task_type}}.",
+  "err_1007": "Aufgabenverfügbarkeitsanfrage schlug fehl",
+  "err_1008": "Nachrichtenlänge zu groß",
+  "err_1009": "Ihre letzten Nachrichten enthalten Duplikate",
+  "err_1010": "Nachrichtentext ist leer",
+  "err_1011": "Sie können nicht zweimal auf dieselbe Nachricht antworten",
+  "err_1012": "Sie haben zu viele ausstehende Aufgaben. Bitte versuche es in ein paar Minuten erneut."
+}

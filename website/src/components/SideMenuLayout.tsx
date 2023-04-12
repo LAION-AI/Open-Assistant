@@ -1,14 +1,10 @@
-import { Box, useColorModeValue } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { PropsWithChildren } from "react";
 import { SIDE_MENU_WIDTH, SideMenu, SideMenuProps } from "src/components/SideMenu";
-import { colors } from "src/styles/Theme/colors";
 
-export const SideMenuLayout = ({ items, children }: PropsWithChildren<SideMenuProps>) => {
-  const bg = useColorModeValue("gray.100", colors.dark.bg);
-
+export const SideMenuLayout = ({ items, children, collapsed }: PropsWithChildren<SideMenuProps>) => {
   return (
     <Box
-      backgroundColor={bg}
       display="flex"
       flexDirection={{ base: "column", md: "row" }}
       h="full"
@@ -16,14 +12,14 @@ export const SideMenuLayout = ({ items, children }: PropsWithChildren<SideMenuPr
       py="6"
       position="relative"
     >
-      <SideMenu items={items} />
+      <SideMenu items={items} collapsed={collapsed} />
       <Box
         display="block"
         w="full"
-        ms={{ md: 6 }}
+        ms={{ md: 4, lg: 6 }}
         ps={{
           md: SIDE_MENU_WIDTH.MD,
-          lg: SIDE_MENU_WIDTH.LG,
+          lg: collapsed ? SIDE_MENU_WIDTH.MD : SIDE_MENU_WIDTH.LG,
         }}
         mt={{ base: 6, md: 0 }}
       >
