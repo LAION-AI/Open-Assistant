@@ -2,7 +2,7 @@ import { Card, CardBody, Divider } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import { FormProvider, useForm } from "react-hook-form";
 import { useCacheConfig } from "src/hooks/chat/useCacheConfig";
-import { ChatConfigForm } from "src/types/Chat";
+import { ChatConfigFormData } from "src/types/Chat";
 
 import { ChatConfigSaver } from "./ChatConfigSaver";
 import { useChatContext } from "./ChatContext";
@@ -17,7 +17,7 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
   console.assert(modelInfos.length > 0, "No model config was found");
   const [config] = useCacheConfig();
 
-  const form = useForm<ChatConfigForm>({
+  const form = useForm<ChatConfigFormData>({
     defaultValues: config,
   });
 

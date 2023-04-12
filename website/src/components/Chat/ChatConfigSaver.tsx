@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useCacheConfig } from "src/hooks/chat/useCacheConfig";
-import { ChatConfigForm } from "src/types/Chat";
+import { ChatConfigFormData } from "src/types/Chat";
 
 export const ChatConfigSaver = () => {
-  const { watch } = useFormContext<ChatConfigForm>();
+  const { watch } = useFormContext<ChatConfigFormData>();
   const newValues = watch();
   const [oldValues, setConfig] = useCacheConfig();
   useEffect(() => {
