@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Literal, Optional
 
 from pydantic import BaseModel
@@ -41,6 +42,7 @@ class ExportMessageNode(BaseModel):
     message_id: str
     parent_id: str | None
     user_id: str | None
+    created_date: datetime | None
     text: str
     role: str
     lang: str | None
@@ -54,7 +56,9 @@ class ExportMessageNode(BaseModel):
     replies: list[ExportMessageNode] | None
     labels: LabelValues | None
     events: dict[str, list[ExportMessageEvent]] | None
-    tree_state: str | None  # not used in message trees (see outer tree there)
+    # the following fields are always None in message tree exports (see outer tree there)
+    message_tree_id: str | None
+    tree_state: str | None
 
 
 class ExportMessageTree(BaseModel):

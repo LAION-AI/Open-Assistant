@@ -54,6 +54,7 @@ def main():
 
         def append_with_tree_state(msg: ExportMessageNode):
             msg.tree_state = message_tree.tree_state
+            msg.message_tree_id = message_tree.message_tree_id
             messages.append(msg)
 
         visit_messages_depth_first(message_tree.prompt, append_with_tree_state)
