@@ -1,8 +1,7 @@
 import "simplebar-react/dist/simplebar.min.css";
 
-import { Button, Card, CardProps } from "@chakra-ui/react";
+import { Card, CardProps } from "@chakra-ui/react";
 import { Plus } from "lucide-react";
-import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import { memo, useMemo } from "react";
 import SimpleBar from "simplebar-react";
@@ -15,8 +14,14 @@ import { HEADER_HEIGHT } from "../Header/Header";
 import { ChatListItem } from "./ChatListItem";
 import { CreateChatButton } from "./CreateChatButton";
 
-export const ChatListBase = memo(function ChatListBase({ isSideBar, ...props }: CardProps & { isSideBar: boolean }) {
-  const { data: response } = useSWR<GetChatsResponse>(API_ROUTES.LIST_CHAT, get);
+export const ChatListBase = memo(function ChatListBase({
+  isSideBar,
+  chats,
+  ...props
+}: CardProps & { isSideBar: boolean; chats?: GetChatsResponse }) {
+  const { data: response } = useSWR<GetChatsResponse>(chats ? null : API_ROUTES.LIST_CHAT, get, {
+    fallbackData: chats,
+  });
   const { t } = useTranslation(["common", "chat"]);
 
   const sideProps: CardProps = useMemo(
