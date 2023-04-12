@@ -28,6 +28,7 @@ export const ROUTES = {
   ADMIN_MESSAGE_DETAIL: (id: string) => `/admin/messages/${id}`,
   MESSAGE_DETAIL: (id: string) => `/messages/${id}`,
   ADMIN_USER_DETAIL: (id: string) => `/admin/manage_user/${id}`,
+  CHAT: (id: string) => `/chat/${id}`,
 };
 
 export type QueryWithLang<T extends RouteQuery | undefined = undefined> = T extends undefined
@@ -51,6 +52,7 @@ export const API_ROUTES = {
     createRoute("/api/admin/messages", query),
   // chat:
   GET_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
+  LIST_CHAT: "/api/chat",
   GET_MESSAGE: (chat_id: string, message_id: string) => createRoute(`/api/chat/message`, { chat_id, message_id }),
   CREATE_PROMPTER_MESSAGE: `/api/chat/prompter_message`,
   CREATE_ASSISTANT_MESSAGE: `/api/chat/assistant_message`,
