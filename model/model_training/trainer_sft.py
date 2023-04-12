@@ -102,9 +102,6 @@ class SFTTrainer(Trainer):
     ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
         with torch.no_grad():
             loss, logits, labels, labels_mask = self._compute_loss(model, inputs)
-            import pdb
-
-            pdb.set_trace()
             labels[~labels_mask.bool()] = -100  # padding_index
 
         loss = loss.mean().detach()
@@ -323,9 +320,6 @@ def main():
     if not training_conf.deepspeed or training_conf.local_rank == 0:
         tokenizer_sanity_check(tokenizer)
 
-    import pdb
-
-    pdb.set_trace()
     train_collate_fn = DialogueDataCollator(
         tokenizer,
         max_length=training_conf.max_length,

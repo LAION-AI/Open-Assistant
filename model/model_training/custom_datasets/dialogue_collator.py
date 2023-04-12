@@ -29,9 +29,6 @@ class DialogueDataCollator:
 
     def __post_init__(self):
         assert self.tokenizer.eos_token
-        import pdb
-
-        pdb.set_trace()
 
         if self.use_system_prefix:
             assert self.system_prefix
@@ -183,10 +180,6 @@ class DialogueDataCollator:
         batch["label_masks"] = torch.stack(
             [F.pad(torch.tensor(x), (0, dim - len(x)), value=False) for x in label_masks]
         )
-        # todo: check if this is correct! Maybe a couple of stuff ends with quotes and we learn it from here
-        import pdb
-
-        pdb.set_trace()
         batch["targets"] = torch.roll(batch.input_ids, -1, -1)
 
         return batch
