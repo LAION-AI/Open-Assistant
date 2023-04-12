@@ -6,6 +6,7 @@ const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
 export type BaseMessageEntryProps = BoxProps & {
   content: string;
   avatarProps: Pick<AvatarProps, "name" | "src">;
+  containerProps?: BoxProps;
 };
 
 // eslint-disable-next-line react/display-name
@@ -29,14 +30,7 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
       [avatarProps, borderColor, inlineAvatar]
     );
     return (
-      <HStack
-        ref={ref}
-        w={["full", "full", "full", "fit-content"]}
-        gap={0.5}
-        alignItems="start"
-        maxW="full"
-        position="relative"
-      >
+      <HStack ref={ref} gap={0.5} alignItems="start" maxW="full" position="relative">
         {!inlineAvatar && avatar}
         <Box
           width={["full", "full", "full", "fit-content"]}

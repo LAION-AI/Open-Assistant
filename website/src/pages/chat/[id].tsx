@@ -1,15 +1,12 @@
-import { Button, Card, CardBody } from "@chakra-ui/react";
 import { boolean } from "boolean";
-import { List } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import Link from "next/link";
 import { getToken } from "next-auth/jwt";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { ChatContextProvider } from "src/components/Chat/ChatContext";
 import { ChatSection } from "src/components/Chat/ChatSection";
-import { getDashboardLayout } from "src/components/Layout";
+import { getChatLayout } from "src/components/Layout/ChatLayout";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
 import { ModelInfo } from "src/types/Chat";
 
@@ -28,22 +25,13 @@ const Chat = ({ id, modelInfos }: ChatProps) => {
       </Head>
 
       <ChatContextProvider modelInfos={modelInfos}>
-        <Card className="max-w-5xl mx-auto">
-          <CardBody display="flex" flexDirection="column" gap="2">
-            <Link href="/chat">
-              <Button leftIcon={<List />} size="lg">
-                {t("chat:back_to_chat_list")}
-              </Button>
-            </Link>
-            <ChatSection chatId={id} />
-          </CardBody>
-        </Card>
+        <ChatSection chatId={id} />
       </ChatContextProvider>
     </>
   );
 };
 
-Chat.getLayout = getDashboardLayout;
+Chat.getLayout = getChatLayout;
 
 export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> = async ({
   locale = "en",
@@ -57,7 +45,7 @@ export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> =
   }
 
   const token = await getToken({ req });
-  const client = createInferenceClient(token);
+  const client = createInferenceClient(token!);
   const modelInfos = await client.get_models();
 
   return {

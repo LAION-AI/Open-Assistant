@@ -76,6 +76,12 @@
       "githubURL": "https://twitter.com/dvruette",
       "imageURL": "https://pbs.twimg.com/profile_images/1617481050225000454/jtAbxCZF_400x400.jpg"
     },
+    "jordiclive": {
+      "name": "Jordan Clive",
+      "title": "ML engineer",
+      "githubURL": "https://github.com/jordiclive",
+      "imageURL": "https://pbs.twimg.com/profile_images/1517535195251027969/pz3FVRsZ_400x400.jpg"
+    },
     "olliestanley": {
       "name": "Oliver Stanley",
       "title": "Backend & ML engineer",
@@ -161,23 +167,27 @@
     "wandb": {
       "name": "Weights & Biases",
       "title": "W&B Team License",
+      "url": "https://wandb.ai/",
       "githubURL": "https://github.com/wandb",
       "imageURL": "https://avatars.githubusercontent.com/u/26401354?s=200&v=4"
     },
     "hf": {
       "name": "Hugging Face",
       "title": "Inference API",
+      "url": "https://huggingface.co/",
       "githubURL": "https://github.com/huggingface",
       "imageURL": "https://avatars.githubusercontent.com/u/25720743?s=200&v=4"
     },
     "redmond": {
       "name": "Redmond AI",
       "title": "Training Compute",
+      "url": "https://redmond.ai/",
       "imageURL": "/images/logos/redmond_logo.jpg"
     },
     "stability": {
       "name": "Stability AI",
       "title": "Preemptible Compute (via LAION)",
+      "url": "https://stability.ai/",
       "githubURL": "https://github.com/stability-ai",
       "imageURL": "https://platform.stability.ai/assets/HexagonTextLong.4501db27.png"
     }
@@ -193,7 +203,7 @@
     },
     {
       "name": "ML engineers",
-      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette", "karan4d"]
+      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette", "karan4d", "jordiclive"]
     },
     {
       "name": "Data Team",
