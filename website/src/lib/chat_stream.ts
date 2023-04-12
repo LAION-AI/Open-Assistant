@@ -46,6 +46,7 @@ export async function handleChatEventStream({
       console.error(`Error parsing data: ${data}, error: ${e}`);
     }
   }
+  return null;
 }
 
 export async function* iteratorSSE(stream: ReadableStream<Uint8Array>) {

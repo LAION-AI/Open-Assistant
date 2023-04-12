@@ -2,7 +2,7 @@ import { Box } from "@chakra-ui/react";
 import { PropsWithChildren } from "react";
 import { SIDE_MENU_WIDTH, SideMenu, SideMenuProps } from "src/components/SideMenu";
 
-export const SideMenuLayout = ({ items, children }: PropsWithChildren<SideMenuProps>) => {
+export const SideMenuLayout = ({ items, children, collapsed }: PropsWithChildren<SideMenuProps>) => {
   return (
     <Box
       display="flex"
@@ -12,14 +12,14 @@ export const SideMenuLayout = ({ items, children }: PropsWithChildren<SideMenuPr
       py="6"
       position="relative"
     >
-      <SideMenu items={items} />
+      <SideMenu items={items} collapsed={collapsed} />
       <Box
         display="block"
         w="full"
-        ms={{ md: 6 }}
+        ms={{ md: 4, lg: 6 }}
         ps={{
           md: SIDE_MENU_WIDTH.MD,
-          lg: SIDE_MENU_WIDTH.LG,
+          lg: collapsed ? SIDE_MENU_WIDTH.MD : SIDE_MENU_WIDTH.LG,
         }}
         mt={{ base: 6, md: 0 }}
       >
