@@ -22,6 +22,7 @@ INSTRUCTION_DATASETS = {
     "biostars_qa": "cannin/biostars_qa",
     "oa_leet10k": "ehartford/oa_leet10k",
     "LogicInference_OA": "KK04/LogicInference_OA",
+    "oa_dolly_15k": "OllieStanley/oa_dolly_15k",
 }
 
 SAFETY_DATASETS = {
