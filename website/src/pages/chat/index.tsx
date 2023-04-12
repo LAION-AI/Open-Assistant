@@ -23,7 +23,7 @@ const ChatList = ({ modelInfos }: InferGetServerSidePropsType<typeof getServerSi
       <Head>
         <title>{t("chat")}</title>
       </Head>
-      <ChatContextProvider modelInfos={modelInfos}>
+      <ChatContextProvider modelInfos={modelInfos} messages={[]}>
         <ChatSection chatId={null} />
       </ChatContextProvider>
     </>
