@@ -6,51 +6,81 @@ Aliases: `no-inline-html`
 
 `allowed_elements`: Allowed elements (`string[]`, default `[]`)
 
-```markdown
+`````html
 <h1 align="center">
-    <span>Open-Assistant</span>
-  <img width="auto" height="50px" src="https://github.com/LAION-AI/Open-Assistant/blob/main/assets/logo_crop.png"/>
+  <span>Open-Assistant</span>
+  <img
+    width="auto"
+    height="50px"
+    src="https://github.com/LAION-AI/Open-Assistant/blob/main/assets/logo_crop.png"
+  />
 </h1>
 
 <div align="center">
-
-<a href="https://github.com/LAION-AI/Open-Assistant/stargazers">![GitHub Repo stars](https://img.shields.io/github/stars/LAION-AI/Open-Assistant?style=social)</a>
-<a href="https://laion-ai.github.io/Open-Assistant/">![Docs](https://img.shields.io/badge/docs-laion--ai.github.io%2FOpen--Assistant%2F-green)</a>
-<a href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/build-frontend.yaml">![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/build-frontend.yaml?label=build-frontend)</a>
-<a href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/build-postgres.yaml">![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/build-postgres.yaml?label=build-postgres)</a>
-<a href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/pre-commit.yaml">![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/pre-commit.yaml?label=pre-commit)</a>
-<a href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/test-api-contract.yaml">![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/test-api-contract.yaml?label=tests-api)</a>
-<a href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/test-e2e.yaml">![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/test-e2e.yaml?label=tests-web)</a>
-<a href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/deploy-docs-site.yaml">![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/deploy-docs-site.yaml?label=deploy-docs)</a>
-<a href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/production-deploy.yaml">![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/production-deploy.yaml?label=deploy-production)</a>
-<a href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/release.yaml">![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/release.yaml?label=deploy-release)</a>
-<a href="https://github.com/LAION-AI/Open-Assistant/releases">![GitHub release (latest by date)](https://img.shields.io/github/v/release/LAION-AI/Open-Assistant)</a>
-
+  <a href="https://github.com/LAION-AI/Open-Assistant/stargazers"
+    >![GitHub Repo
+    stars](https://img.shields.io/github/stars/LAION-AI/Open-Assistant?style=social)</a
+  >
+  <a href="https://laion-ai.github.io/Open-Assistant/"
+    >![Docs](https://img.shields.io/badge/docs-laion--ai.github.io%2FOpen--Assistant%2F-green)</a
+  >
+  <a
+    href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/build-frontend.yaml"
+    >![GitHub Workflow
+    Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/build-frontend.yaml?label=build-frontend)</a
+  >
+  <a
+    href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/build-postgres.yaml"
+    >![GitHub Workflow
+    Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/build-postgres.yaml?label=build-postgres)</a
+  >
+  <a
+    href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/pre-commit.yaml"
+    >![GitHub Workflow
+    Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/pre-commit.yaml?label=pre-commit)</a
+  >
+  <a
+    href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/test-api-contract.yaml"
+    >![GitHub Workflow
+    Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/test-api-contract.yaml?label=tests-api)</a
+  >
+  <a
+    href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/test-e2e.yaml"
+    >![GitHub Workflow
+    Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/test-e2e.yaml?label=tests-web)</a
+  >
+  <a
+    href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/deploy-docs-site.yaml"
+    >![GitHub Workflow
+    Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/deploy-docs-site.yaml?label=deploy-docs)</a
+  >
+  <a
+    href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/production-deploy.yaml"
+    >![GitHub Workflow
+    Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/production-deploy.yaml?label=deploy-production)</a
+  >
+  <a
+    href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/release.yaml"
+    >![GitHub Workflow
+    Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/release.yaml?label=deploy-release)</a
+  >
+  <a href="https://github.com/LAION-AI/Open-Assistant/releases"
+    >![GitHub release (latest by
+    date)](https://img.shields.io/github/v/release/LAION-AI/Open-Assistant)</a
+  >
 </div>
-
-# Here is our website to collect data
-
-[open-assistant.io](https://open-assistant.io)
-
-(project documentation lives [here](https://laion-ai.github.io/Open-Assistant/))
-
-# Table of Contents
-
-- [What is Open Assistant?](#what-is-open-assistant)
-- [Do you want to try it out?](#do-you-want-to-try-it-out)
-- [The Plan](#the-plan)
-- [The Vision](#the-vision)
-- [How can you help?](#how-can-you-help)
-- [I’m in! How do I contribute?](CONTRIBUTING.md)
-
----
-
-## What is Open Assistant?
-
+´´´ ````markdown # Here is our website to collect data
+[open-assistant.io](https://open-assistant.io) (project documentation lives
+[here](https://laion-ai.github.io/Open-Assistant/)) # Table of Contents - [What
+is Open Assistant?](#what-is-open-assistant) - [Do you want to try it
+out?](#do-you-want-to-try-it-out) - [The Plan](#the-plan) - [The
+Vision](#the-vision) - [How can you help?](#how-can-you-help) - [I’m in! How do
+I contribute?](CONTRIBUTING.md) --- ## What is Open Assistant? ´´´html
 <p align="center">
-    Open Assistant is a project meant to give everyone access to a great chat based large language model.
+  Open Assistant is a project meant to give everyone access to a great chat
+  based large language model.
 </p>
-```
+`````
 
 ````markdown
 We believe that by doing this we will create a revolution in innovation in
