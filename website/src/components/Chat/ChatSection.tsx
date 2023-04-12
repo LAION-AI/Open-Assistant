@@ -1,6 +1,5 @@
 import { Card, CardBody, Divider } from "@chakra-ui/react";
 import { FormProvider, useForm } from "react-hook-form";
-import { getCachedChatForm } from "src/hooks/chat/useCacheConfig";
 import { ChatConfigForm } from "src/types/Chat";
 
 import { ChatConfigSummary } from "./ChatConfigSummary";
@@ -15,7 +14,7 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
   const form = useForm<ChatConfigForm>({
     //NOTE: we should at some point validate the cache, in case models were added or deleted
     // or certain parameters disabled
-    defaultValues: getCachedChatForm() ?? {
+    defaultValues: {
       ...modelInfos[0].parameter_configs[0].sampling_parameters,
       model_config_name: modelInfos[0].name,
     },
