@@ -8,6 +8,7 @@ import {
   Textarea,
   useBoolean,
   useColorModeValue,
+  useOutsideClick,
 } from "@chakra-ui/react";
 import { Check, Edit, RotateCcw, ThumbsUp, X, XCircle } from "lucide-react";
 import { ThumbsDown } from "lucide-react";
@@ -15,7 +16,6 @@ import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { forwardRef, KeyboardEvent, memo, ReactNode, useCallback, useMemo, useRef } from "react";
 import { InferenceMessage } from "src/types/Chat";
-import { useOnClickOutside } from "usehooks-ts";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
@@ -79,8 +79,11 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
 
   const ref = useRef<HTMLDivElement>(null);
 
-  useOnClickOutside(ref, () => {
-    setIsEditing.off();
+  useOutsideClick({
+    ref,
+    handler: () => {
+      setIsEditing.off();
+    },
   });
 
   const handleKeydown = useCallback(
