@@ -11,6 +11,7 @@ from typing import Any
 from urllib.request import urlopen
 
 import numpy as np
+import requests
 from datasets import load_dataset
 from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator
@@ -542,6 +543,50 @@ class Vicuna(Dataset):
 
     def __getitem__(self, index: int) -> list[str] | tuple[str]:
         dialogue: list[str] = self.pairs[index]
+        if self.mode == "sft":
+            return dialogue
+        elif self.mode == "rl":
+            return tuple(dialogue[:-1])
+
+
+class DatabricksDolly15k(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        self.rows = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        saved_path = Path(cache_dir) / "databricks-dolly-15__json"
+        # todo: load from local
+        if os.path.exists(saved_path):
+            with open(saved_path / "databricks-dolly-15k.json", "r") as f:
+                data = json.load(f)
+        else:
+            req = requests.get(
+                "https://raw.githubusercontent.com/databrickslabs/dolly/master/data/databricks-dolly-15k.jsonl"
+            )
+            data = []
+            for line in req.text.splitlines():
+                data.append(json.loads(line))
+            os.makedirs(saved_path, exist_ok=True)
+            with open(saved_path / "databricks-dolly-15k.json", "w+") as f:
+                json.dump(data, f)
+
+        for line in data:
+            if (conv := self._process_instruction(line, input_max_length)) is not None:
+                self.rows.append(conv)
+
+    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> list[str] | None:
+        if c := row["context"]:
+            return [f"{c} {row['instruction']}"[:input_max_length], row["response"][:input_max_length]]
+        else:
+            return [row["instruction"][:input_max_length], row["response"][:input_max_length]]
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+        dialogue: list[str] = self.rows[index]
         if self.mode == "sft":
             return dialogue
         elif self.mode == "rl":
