@@ -43,7 +43,7 @@ export const ChatListItem = ({
   }, [chat.id, onUpdateTitle, setIsEditing, updateChatTitle]);
 
   const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+    (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Escape") {
         setIsEditing.off();
       }
