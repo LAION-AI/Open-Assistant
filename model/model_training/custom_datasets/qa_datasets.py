@@ -557,7 +557,7 @@ class DatabricksDolly15k(Dataset):
             raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
         self.mode = mode
         saved_path = Path(cache_dir) / "databricks-dolly-15__json"
-        # todo: load from local
+
         if os.path.exists(saved_path):
             with open(saved_path / "databricks-dolly-15k.json", "r") as f:
                 data = json.load(f)
