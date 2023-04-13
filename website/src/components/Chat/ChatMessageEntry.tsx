@@ -88,8 +88,11 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
       if (e.key === "Escape") {
         setIsEditing.off();
       }
+      if (e.key === "Enter") {
+        handleEditSubmit();
+      }
     },
-    [setIsEditing]
+    [handleEditSubmit, setIsEditing]
   );
 
   return (
