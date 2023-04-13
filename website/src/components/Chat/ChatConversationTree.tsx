@@ -58,6 +58,12 @@ const TreeChildren = ({
     setIndex((i) => (i < length - 1 ? i + 1 : i));
   }, [length]);
 
+  const isRegenerating = retryingParentId !== null && trees.findIndex((t) => t.parent_id === retryingParentId) !== -1;
+
+  if (isRegenerating && trees[0].role === "assistant") {
+    return null; // this node is being regenerated, so we skip render
+  }
+
   const node = (
     <ChatMessageEntry
       message={currentTree}
@@ -85,12 +91,8 @@ const TreeChildren = ({
     ></ChatMessageEntry>
   );
 
-  if (retryingParentId !== null && trees.findIndex((t) => t.parent_id === retryingParentId) !== -1) {
-    if (trees[0].role === "prompter") {
-      return node;
-    }
-
-    return null; // this node is being regenerated, so we skip render
+  if (isRegenerating) {
+    return node;
   }
 
   return (
