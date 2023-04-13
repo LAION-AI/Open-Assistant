@@ -397,6 +397,9 @@ async def handle_safe_prompt_response(
     response: inference.SafePromptResponse,
     work_request_map: WorkRequestContainerMap,
 ):
+    """
+    Handle the case where the worker informs the server that the safety model has intervened and modified the user prompt to be safe.
+    """
     work_response_container = get_work_request_container(work_request_map, response.request_id)
     message_id = work_response_container.message_id
 
