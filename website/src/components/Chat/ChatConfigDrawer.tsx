@@ -126,15 +126,13 @@ const ChatConfigForm = () => {
         newPresetName === customPresetName
           ? customPresetDefaultValue
           : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
-      // setPresetName(newPresetName);
       reset({ ...config, model_config_name: selectedModel });
     },
     [presets, reset, selectedModel]
   );
 
-  const selectedPresetName = (
-    presets.find((preset) => areParametersEqual(preset.sampling_parameters, getValues())) ?? presets[0]
-  ).name;
+  const selectedPresetName =
+    presets.find((preset) => areParametersEqual(preset.sampling_parameters, getValues()))?.name ?? customPresetName;
 
   return (
     <Stack gap="4">
