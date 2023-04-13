@@ -5,6 +5,7 @@ from loguru import logger
 from oasst_inference_server import auth, database, deps, models
 from oasst_inference_server.schemas import worker as worker_schema
 from oasst_inference_server.settings import settings
+from oasst_shared import utils as shared_utils
 
 router = fastapi.APIRouter(
     prefix="/admin",
@@ -101,9 +102,9 @@ async def delete_user(
     user.deleted = True
 
     # Anonymise user data
-    user.display_name = "Deleted User"
+    user.display_name = shared_utils.DELETED_USER_DISPLAY_NAME
     # Ensure uniqueness
-    user.provider_account_id = f"deleted_{user.id}"
+    user.provider_account_id = f"{shared_utils.DELETED_USER_ID_PREFIX}{user.id}"
 
     await session.commit()
     return fastapi.Response(status_code=200)
