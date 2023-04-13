@@ -172,7 +172,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
 
   const handleEditPrompt = useCallback(
     async ({ chatId, parentId, content }: EditPromptParams) => {
-      if (!content) {
+      if (!content || isSending) {
         return;
       }
 
@@ -212,7 +212,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
 
       setReytryingParentId(null);
     },
-    [initiate_assistant_message, setIsSending]
+    [initiate_assistant_message, isSending, setIsSending]
   );
 
   return (
