@@ -19,14 +19,14 @@ export const ChatListItem = ({
   const { query } = useRouter();
   const { t } = useTranslation("chat");
   const isActive = chat.id === query.id;
-  const [isEditting, setIsEditting] = useBoolean(false);
+  const [isEditing, setIsEditing] = useBoolean(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   useOutsideClick({
     ref: rootRef,
     handler: () => {
-      if (isEditting) {
-        setIsEditting.off();
+      if (isEditing) {
+        setIsEditing.off();
       }
     },
   });
@@ -38,30 +38,43 @@ export const ChatListItem = ({
     const title = inputRef.current?.value;
     if (!title) return;
     await updateChatTitle({ title, chat_id: chat.id });
-    setIsEditting.off();
+    setIsEditing.off();
     onUpdateTitle({ chatId: chat.id, title });
-  }, [chat.id, onUpdateTitle, setIsEditting, updateChatTitle]);
+  }, [chat.id, onUpdateTitle, setIsEditing, updateChatTitle]);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsEditing.off();
+      }
+      if (e.key === "Enter") {
+        handleConfirmEdit();
+      }
+    },
+    [handleConfirmEdit, setIsEditing]
+  );
+
   return (
     <Button
       // @ts-expect-error error due to dynamicly changing as prop
       ref={rootRef}
-      {...(!isEditting ? { as: Link, href: ROUTES.CHAT(chat.id) } : { as: "div" })}
+      {...(!isEditing ? { as: Link, href: ROUTES.CHAT(chat.id) } : { as: "div" })}
       variant={isActive ? "solid" : "ghost"}
       justifyContent="start"
       py="2"
-      px={isEditting ? "0" : undefined}
+      px={isEditing ? "0" : undefined}
       display="flex"
       w="full"
       fontWeight="normal"
       position="relative"
       role="group"
       borderRadius="lg"
-      bg={isEditting ? "transparent" : undefined}
+      bg={isEditing ? "transparent" : undefined}
       _hover={{
-        bg: isEditting ? "transparent" : undefined,
+        bg: isEditing ? "transparent" : undefined,
       }}
     >
-      {!isEditting ? (
+      {!isEditing ? (
         <Box
           _groupHover={{ me: "32px" }}
           overflow="hidden"
@@ -73,7 +86,14 @@ export const ChatListItem = ({
         </Box>
       ) : (
         <>
-          <Input ref={inputRef} defaultValue={chat.title} pe="50px" borderRadius="lg" maxLength={100}></Input>
+          <Input
+            ref={inputRef}
+            defaultValue={chat.title}
+            onKeyDown={handleKeyDown}
+            pe="50px"
+            borderRadius="lg"
+            maxLength={100}
+          ></Input>
           <Flex
             position="absolute"
             alignContent="center"
@@ -86,7 +106,7 @@ export const ChatListItem = ({
             {!isUpdatingTitle ? (
               <>
                 <ChatListItemIconButton icon={Check} onClick={handleConfirmEdit}></ChatListItemIconButton>
-                <ChatListItemIconButton icon={X} onClick={setIsEditting.off}></ChatListItemIconButton>
+                <ChatListItemIconButton icon={X} onClick={setIsEditing.off}></ChatListItemIconButton>
               </>
             ) : (
               <CircularProgress isIndeterminate size="16px"></CircularProgress>
@@ -105,9 +125,9 @@ export const ChatListItem = ({
         gap="1.5"
         zIndex={1}
       >
-        {!isEditting && (
+        {!isEditing && (
           <>
-            <EditChatButton onClick={setIsEditting.on}></EditChatButton>
+            <EditChatButton onClick={setIsEditing.on}></EditChatButton>
             <DeleteChatButton chatId={chat.id}></DeleteChatButton>
           </>
         )}
