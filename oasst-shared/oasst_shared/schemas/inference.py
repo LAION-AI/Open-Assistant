@@ -178,6 +178,25 @@ class Thread(pydantic.BaseModel):
     messages: list[MessageRead]
 
 
+class SafetyParameters(pydantic.BaseModel):
+    level: int = 0
+
+    @pydantic.validator("level")
+    def level_must_be_in_range(cls, v):
+        if v < 0 or v > 9:
+            raise ValueError("level must be in range [0, 9]")
+        return v
+
+
+class SafetyRequest(pydantic.BaseModel):
+    inputs: str
+    parameters: SafetyParameters
+
+
+class SafetyResponse(pydantic.BaseModel):
+    outputs: str
+
+
 class WorkerRequestBase(pydantic.BaseModel):
     id: str = pydantic.Field(default_factory=lambda: str(uuid.uuid4()))
 
@@ -187,6 +206,7 @@ class WorkRequest(WorkerRequestBase):
     thread: Thread = pydantic.Field(..., repr=False)
     created_at: datetime = pydantic.Field(default_factory=datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
+    safety_parameters: SafetyParameters = pydantic.Field(default_factory=SafetyParameters)
 
 
 class PingRequest(WorkerRequestBase):
