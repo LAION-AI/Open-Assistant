@@ -26,6 +26,15 @@ class ChatRepository(pydantic.BaseModel):
         message = (await self.session.exec(query)).one()
         return message
 
+    async def get_prompter_message_by_id(self, message_id: str) -> models.DbMessage:
+        query = (
+            sqlmodel.select(models.DbMessage)
+            .options(sqlalchemy.orm.selectinload(models.DbMessage.reports))
+            .where(models.DbMessage.id == message_id, models.DbMessage.role == "prompter")
+        )
+        message = (await self.session.exec(query)).one()
+        return message
+
     async def start_work(
         self, *, message_id: str, worker_id: str, worker_config: inference.WorkerConfig
     ) -> models.DbMessage:

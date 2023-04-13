@@ -211,6 +211,12 @@ async def handle_worker(
                                     response=worker_response,
                                 )
                                 await _update_session(worker_response.metrics)
+                            case "safe_prompt":
+                                worker_response = cast(inference.SafePromptResponse, worker_response)
+                                await handle_safe_prompt_response(
+                                    response=worker_response,
+                                    work_request_map=work_request_map,
+                                )
                             case _:
                                 raise RuntimeError(f"Unknown response type: {worker_response.response_type}")
                     finally:
@@ -385,6 +391,21 @@ async def handle_general_error_response(
     response: inference.GeneralErrorResponse,
 ):
     logger.warning(f"Got general error {response=}")
+
+
+async def handle_safe_prompt_response(
+    response: inference.SafePromptResponse,
+    work_request_map: WorkRequestContainerMap,
+):
+    work_response_container = get_work_request_container(work_request_map, response.request_id)
+    message_id = work_response_container.message_id
+
+    async with deps.manual_create_session() as session:
+        cr = chat_repository.ChatRepository(session=session)
+        message = await cr.get_assistant_message_by_id(message_id)
+        prompt = await cr.get_prompter_message_by_id(message.parent_id)
+        prompt.safe_content = response.safe_prompt
+        await session.commit()
 
 
 async def handle_timeout(message: inference.MessageRead):

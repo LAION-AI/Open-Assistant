@@ -239,6 +239,11 @@ class PongResponse(WorkerResponseBase):
     metrics: WorkerMetricsInfo | None = None
 
 
+class SafePromptResponse(WorkerResponseBase):
+    response_type: Literal["safe_prompt"] = "safe_prompt"
+    safe_prompt: str
+
+
 class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
