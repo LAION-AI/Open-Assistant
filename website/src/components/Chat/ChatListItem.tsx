@@ -3,7 +3,7 @@ import { Check, LucideIcon, Pencil, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { MouseEvent, useCallback, useRef } from "react";
+import { KeyboardEvent, MouseEvent, useCallback, useRef } from "react";
 import { del, put } from "src/lib/api";
 import { API_ROUTES, ROUTES } from "src/lib/routes";
 import { ChatItem } from "src/types/Chat";
@@ -43,7 +43,7 @@ export const ChatListItem = ({
   }, [chat.id, onUpdateTitle, setIsEditing, updateChatTitle]);
 
   const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLInputElement>) => {
+    (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsEditing.off();
       }
