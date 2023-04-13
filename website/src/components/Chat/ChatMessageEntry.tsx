@@ -81,9 +81,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
 
   useOutsideClick({
     ref,
-    handler: () => {
-      setIsEditing.off();
-    },
+    handler: setIsEditing.off,
   });
 
   const handleKeydown = useCallback(
