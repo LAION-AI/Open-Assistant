@@ -13,7 +13,7 @@ import { Check, Edit, RotateCcw, ThumbsUp, X, XCircle } from "lucide-react";
 import { ThumbsDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import { forwardRef, memo, ReactNode, useCallback, useMemo, useRef } from "react";
+import { forwardRef, KeyboardEvent, memo, ReactNode, useCallback, useMemo, useRef } from "react";
 import { InferenceMessage } from "src/types/Chat";
 import { useOnClickOutside } from "usehooks-ts";
 
@@ -83,6 +83,15 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
     setIsEditing.off();
   });
 
+  const handleKeydown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsEditing.off();
+      }
+    },
+    [setIsEditing]
+  );
+
   return (
     <PendingMessageEntry ref={ref} isAssistant={isAssistant} content={isEditing ? "" : content!}>
       {!isAssistant && parentId !== null && (
@@ -102,6 +111,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
           <Textarea
             defaultValue={content || ""}
             ref={inputRef}
+            onKeyDown={handleKeydown}
             bg="gray.100"
             borderRadius="xl"
             _dark={{
