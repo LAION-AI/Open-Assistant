@@ -13,8 +13,9 @@ import { Check, Edit, RotateCcw, ThumbsUp, X, XCircle } from "lucide-react";
 import { ThumbsDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
-import { memo, ReactNode, useCallback, useMemo, useRef } from "react";
+import { forwardRef, memo, ReactNode, useCallback, useMemo, useRef } from "react";
 import { InferenceMessage } from "src/types/Chat";
+import { useOnClickOutside } from "usehooks-ts";
 
 import { BaseMessageEntry } from "../Messages/BaseMessageEntry";
 import { BaseMessageEmojiButton } from "../Messages/MessageEmojiButton";
@@ -76,8 +77,14 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
     setIsEditing.off();
   }, [chatId, onEditPromtp, parentId, setIsEditing]);
 
+  const ref = useRef<HTMLDivElement>(null);
+
+  useOnClickOutside(ref, () => {
+    setIsEditing.off();
+  });
+
   return (
-    <PendingMessageEntry isAssistant={isAssistant} content={isEditing ? "" : content!}>
+    <PendingMessageEntry ref={ref} isAssistant={isAssistant} content={isEditing ? "" : content!}>
       {!isAssistant && parentId !== null && (
         <Box position="absolute" top={{ base: "4", md: 0 }} style={{ insetInlineEnd: `0.5rem` }}>
           {isEditing ? (
@@ -140,7 +147,10 @@ type PendingMessageEntryProps = {
   children?: ReactNode;
 };
 
-export const PendingMessageEntry = ({ content, isAssistant, children }: PendingMessageEntryProps) => {
+export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntryProps>(function PendingMessageEntry(
+  { content, isAssistant, children },
+  ref
+) {
   const bgUser = useColorModeValue("white", "gray.700");
   const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
   const { data: session } = useSession();
@@ -153,6 +163,7 @@ export const PendingMessageEntry = ({ content, isAssistant, children }: PendingM
 
   return (
     <BaseMessageEntry
+      ref={ref}
       avatarProps={avatarProps}
       bg={isAssistant ? bgAssistant : bgUser}
       content={content || ""}
@@ -162,7 +173,7 @@ export const PendingMessageEntry = ({ content, isAssistant, children }: PendingM
       {children}
     </BaseMessageEntry>
   );
-};
+});
 
 const getNewScore = (emoji: "+1" | "-1", currentScore: number) => {
   if (emoji === "+1") {
