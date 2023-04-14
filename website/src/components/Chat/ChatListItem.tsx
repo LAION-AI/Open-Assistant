@@ -105,8 +105,8 @@ export const ChatListItem = ({
           >
             {!isUpdatingTitle ? (
               <>
-                <ChatListItemIconButton icon={Check} onClick={handleConfirmEdit}></ChatListItemIconButton>
-                <ChatListItemIconButton icon={X} onClick={setIsEditing.off}></ChatListItemIconButton>
+                <ChatListItemIconButton icon={Check} onClick={handleConfirmEdit} />
+                <ChatListItemIconButton icon={X} onClick={setIsEditing.off} />
               </>
             ) : (
               <CircularProgress isIndeterminate size="16px"></CircularProgress>
@@ -127,8 +127,8 @@ export const ChatListItem = ({
       >
         {!isEditing && (
           <>
-            <EditChatButton onClick={setIsEditing.on}></EditChatButton>
-            <DeleteChatButton chatId={chat.id}></DeleteChatButton>
+            <EditChatButton onClick={setIsEditing.on} />
+            <DeleteChatButton chatId={chat.id} />
           </>
         )}
       </Flex>
