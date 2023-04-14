@@ -1,7 +1,7 @@
 """Add hidden field to chats
 
 Revision ID: b66fd8f9da1f
-Revises: 78f16015b904
+Revises: f0e18084aae4
 Create Date: 2023-04-14 16:11:35.361507
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "b66fd8f9da1f"
-down_revision = "78f16015b904"
+down_revision = "f0e18084aae4"
 branch_labels = None
 depends_on = None
 
