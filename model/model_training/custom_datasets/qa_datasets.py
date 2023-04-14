@@ -560,7 +560,7 @@ class DatabricksDolly15k(Dataset):
         for line in data["train"]:
             self.rows.append(self._process_instruction(line, input_max_length))
 
-    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> list[str] | None:
+    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> DatasetEntry:
         if c := row["METADATA"]["CONTEXT"]:
             return DatasetEntry(
                 context=c,
