@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 from enum import Enum
 from itertools import zip_longest
+
+from pydantic import BaseModel
 
 QA_SPECIAL_TOKENS = {
     "Question": "<|prompter|>",
@@ -25,8 +26,7 @@ def format_system_prefix(prefix, eos_token):
     )
 
 
-@dataclass
-class DatasetEntry:
+class DatasetEntry(BaseModel):
     questions: list[str]
     answers: list[str]
     context: str | None
