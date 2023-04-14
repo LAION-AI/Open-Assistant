@@ -58,8 +58,8 @@ def test_dataset_entry(pythia_tokenizer):
         + "<|assistant|>The Amsterdam museums mentioned in this text are:\n1. Rijksmuseum\n2. Van Gogh Museum\n3. Amsterdam Museum\n4. Stedelijk Museum\n5. Hermitage Amsterdam\n6. Anne Frank House\n7. Het Scheepvaartmuseum\n8. NEMO<|endoftext|>",
     ]
     expected_masked = [
-        "<|assistant|>Untreated type 1 diabetes can rapidly result in diabetic ketoacidosis which may lead to loss of consciousness, coma and death.<|endoftext|>",
-        "<|assistant|>The Amsterdam museums mentioned in this text are:\n1. Rijksmuseum\n2. Van Gogh Museum\n3. Amsterdam Museum\n4. Stedelijk Museum\n5. Hermitage Amsterdam\n6. Anne Frank House\n7. Het Scheepvaartmuseum\n8. NEMO<|endoftext|>",
+        "<|assistant|>Untreated type 1 diabetes can rapidly result in diabetic ketoacidosis which may lead to loss of consciousness, coma and death.",
+        "<|assistant|>The Amsterdam museums mentioned in this text are:\n1. Rijksmuseum\n2. Van Gogh Museum\n3. Amsterdam Museum\n4. Stedelijk Museum\n5. Hermitage Amsterdam\n6. Anne Frank House\n7. Het Scheepvaartmuseum\n8. NEMO",
     ]
 
     expected_decoded_targets = [
@@ -77,7 +77,7 @@ def test_dataset_entry(pythia_tokenizer):
     assert pythia_tokenizer.decode(batch.targets[0]) == expected_decoded_targets[0]
     assert pythia_tokenizer.decode(batch.targets[1]) == expected_decoded_targets[1]
 
-    # todo: test fails here
+    # check if masking is correct. Note that we mask the system aswell
     assert pythia_tokenizer.decode(batch.input_ids[0][batch.label_masks[0]]) == expected_masked[0]
     assert pythia_tokenizer.decode(batch.input_ids[1][batch.label_masks[1]]) == expected_masked[1]
 
