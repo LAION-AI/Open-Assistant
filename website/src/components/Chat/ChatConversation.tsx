@@ -203,6 +203,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
         setMessages((messages) => [...messages.filter((m) => m.id !== "__dummy__"), prompter_message!]);
       } catch {
         // revert on any error
+        // TODO consider to trigger notification
         setMessages((messages) => messages.filter((m) => m.id !== "__dummy__"));
       }
 
