@@ -16,15 +16,6 @@ export class OasstInferenceClient {
   constructor(private readonly clientToken: string) {}
 
   async request<T = unknown>(path: string, init?: AxiosRequestConfig) {
-    console.log({
-      url: process.env.INFERENCE_SERVER_HOST + path,
-      ...init,
-      headers: {
-        ...init?.headers,
-        "Content-Type": "application/json",
-        TrustedClient: this.clientToken,
-      },
-    });
     const { data } = await axios<T>(process.env.INFERENCE_SERVER_HOST + path, {
       ...init,
       headers: {
@@ -114,7 +105,7 @@ export class OasstInferenceClient {
   }
 
   delete_account(tokenSub: string) {
-    return this.request(`/users/${tokenSub}`, { method: "DELETE" });
+    return this.request(`/account/`, { method: "DELETE" });
   }
 }
 
