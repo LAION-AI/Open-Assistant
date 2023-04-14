@@ -450,4 +450,9 @@ export class OasstApiClient {
       before: direction === "back" ? cursor : undefined,
     });
   }
+
+
+  delete_account(){
+    const currentUser = await this.fetch_user()
+  }
 }

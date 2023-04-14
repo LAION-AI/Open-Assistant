@@ -1,15 +1,17 @@
-import { Divider, Flex, Grid, Icon, Text } from "@chakra-ui/react";
+import { Button, Divider, Flex, Grid, Icon, ListItem, Text, UnorderedList } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import React from "react";
 export { getServerSideProps } from "src/lib/defaultServerSideProps";
+import { useRouter } from "next/router";
+import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
 
 export default function DeleteAccount() {
   const { t } = useTranslation("account");
   const { data: session } = useSession();
+  const router = useRouter();
 
   if (!session) {
     return;
@@ -24,20 +26,31 @@ export default function DeleteAccount() {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <Flex
-        as="main"
-        direction="column"
-        m="auto"
-        className="oa-basic-theme max-w-7xl"
+      <SurveyCard
+        display="flex"
+        flexDirection="column"
+        mx="auto"
+        my={6}
+        className="oa-basic-theme max-w-7xl w-full"
         alignContent="center"
         p={6}
         gap={4}
       >
-        <SurveyCard className="w-full">
-          <Title>{t("delete_account")}</Title>
-          <Divider />
-        </SurveyCard>
-      </Flex>
+        <Title>{t("delete_account")}</Title>
+        <Divider />
+        <Text>{t("delete_account_intro")}</Text>
+        <UnorderedList>
+          <ListItem>{t("delete_account_data")}</ListItem>
+          <ListItem>{t("delete_account_leaderboard")}</ListItem>
+        </UnorderedList>
+        <Text color="red">{t("delete_account_permanent")}</Text>
+        <Flex justifyContent="space-evenly">
+          <Button colorScheme="blue" onClick={() => router.push("/dashboard")}>
+            {t("go_to_dashboard")}
+          </Button>
+          <Button colorScheme="red">{t("yes_delete")}</Button>
+        </Flex>
+      </SurveyCard>
     </>
   );
 }
