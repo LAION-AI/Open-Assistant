@@ -1,12 +1,12 @@
 import fastapi
 from fastapi import Depends
-from oasst_inference_server import auth, database, deps, admin
-
+from oasst_inference_server import admin, auth, database, deps
 
 router = fastapi.APIRouter(
     prefix="/account",
     tags=["account"],
 )
+
 
 @router.delete("/")
 async def handle_account_deletion(

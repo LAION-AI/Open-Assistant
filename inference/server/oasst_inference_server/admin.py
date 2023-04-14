@@ -2,6 +2,7 @@ from loguru import logger
 from oasst_inference_server import database, models
 from oasst_shared import utils as shared_utils
 
+
 async def delete_user_from_db(session: database.AsyncSession, user_id: str):
     """Deletes a user."""
     logger.info(f"Deleting user {user_id}")

@@ -7,7 +7,7 @@ import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_inference_server import database, deps, models
-from oasst_inference_server.routes import admin, auth, chats, configs, workers, account
+from oasst_inference_server.routes import account, admin, auth, chats, configs, workers
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from prometheus_fastapi_instrumentator import Instrumentator
