@@ -6,10 +6,9 @@ import { useFormContext } from "react-hook-form";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
-import { API_ROUTES, ROUTES } from "src/lib/routes";
+import { API_ROUTES } from "src/lib/routes";
 import {
   ChatConfigFormData,
-  ChatItem,
   InferenceMessage,
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
@@ -22,10 +21,10 @@ import { ChatForm } from "./ChatForm";
 import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
 
 interface ChatConversationProps {
-  chatId: string | null; // will be null when render on chat list page (/chat)
+  chatId: string;
 }
 
-export const ChatConversation = memo(function ChatConversation({ chatId: chatIdProps }: ChatConversationProps) {
+export const ChatConversation = memo(function ChatConversation({ chatId }: ChatConversationProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>(useChatContext().messages);
 
@@ -35,7 +34,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
 
   const { getValues: getFormValues } = useFormContext<ChatConfigFormData>();
 
-  const initiate_assistant_message = useCallback(
+  const createAndFetchAssistantMessage = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
       const { model_config_name, ...sampling_parameters } = getFormValues();
       const assistant_arg: InferencePostAssistantMessageParams = {
@@ -79,19 +78,15 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
     [getFormValues, setIsSending]
   );
   const toast = useToast();
-  const send = useCallback(async () => {
+  const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
     if (!content) {
       return;
     }
     setIsSending.on();
     inputRef.current!.value = "";
-    let currentChatId = chatIdProps;
-    if (currentChatId === null) {
-      const chat: ChatItem = await post(API_ROUTES.LIST_CHAT);
-      currentChatId = chat.id;
-    }
 
+    // TODO: maybe at some point we won't need to access the rendered HTML directly, but use react state
     const parentId = document.getElementById(LAST_ASSISTANT_MESSAGE_ID)?.dataset.id ?? null;
     if (parentId !== null) {
       const parent = messages.find((m) => m.id === parentId);
@@ -108,18 +103,21 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
     }
 
     const prompter_arg: InferencePostPrompterMessageParams = {
-      chat_id: currentChatId,
+      chat_id: chatId,
       content,
       parent_id: parentId,
     };
 
     const prompter_message: InferenceMessage = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
-    mutate(API_ROUTES.LIST_CHAT); // revalidte chat list after create prompter message to make sure the message already has title
+    if (messages.length === 0) {
+      // revalidte chat list after creating the first prompter message to make sure the message already has title
+      mutate(API_ROUTES.LIST_CHAT);
+    }
     setMessages((messages) => [...messages, prompter_message]);
 
-    await initiate_assistant_message({ parentId: prompter_message.id, chatId: currentChatId });
-    router.push(ROUTES.CHAT(currentChatId));
-  }, [setIsSending, chatIdProps, initiate_assistant_message, messages, toast]);
+    // after creating the prompters message, handle the assistant's case
+    await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
+  }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast]);
 
   const sendVote = useMessageVote();
 
@@ -129,10 +127,10 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
     async (params: { parentId: string; chatId: string }) => {
       setIsSending.on();
       setReytryingParentId(params.parentId);
-      await initiate_assistant_message(params);
+      await createAndFetchAssistantMessage(params);
       setReytryingParentId(null);
     },
-    [initiate_assistant_message, setIsSending]
+    [createAndFetchAssistantMessage, setIsSending]
   );
   const handleOnVote: ChatMessageEntryProps["onVote"] = useCallback(
     async ({ chatId, messageId, newScore, oldScore }) => {
@@ -195,12 +193,12 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
       }
 
       if (prompter_message) {
-        await initiate_assistant_message({ parentId: prompter_message.id, chatId: chatId });
+        await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId: chatId });
       }
 
       setReytryingParentId(null);
     },
-    [initiate_assistant_message, isSending, setIsSending]
+    [createAndFetchAssistantMessage, isSending, setIsSending]
   );
 
   return (
@@ -215,7 +213,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
       ></ChatConversationTree>
       {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
 
-      <ChatForm ref={inputRef} isSending={isSending} onSubmit={send} queueInfo={queueInfo}></ChatForm>
+      <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
     </Flex>
   );
 });
