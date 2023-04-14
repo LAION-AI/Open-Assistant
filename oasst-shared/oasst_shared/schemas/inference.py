@@ -161,6 +161,7 @@ class MessageRead(pydantic.BaseModel):
     id: str
     parent_id: str | None
     content: str | None
+    chat_id: str
     created_at: datetime
     role: Literal["prompter", "assistant"]
     state: MessageState
