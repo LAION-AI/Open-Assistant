@@ -72,12 +72,23 @@ MODEL_CONFIGS = {
     "OA_SFT_Llama_30B_2": ModelConfig(
         model_id="OpenAssistant/llama_30b_oasst_latcyr_400",
         max_input_length=1024,
-        max_total_length=2048,
+        max_total_length=1792,
     ),
     "OA_SFT_Llama_30Bq_2": ModelConfig(
         model_id="OpenAssistant/llama_30b_oasst_latcyr_400",
         max_input_length=1024,
         max_total_length=1792,  # an a100 40GB can't handle 2048
+        quantized=True,
+    ),
+    "OA_SFT_Llama_30B_5": ModelConfig(
+        model_id="OpenAssistant/oasst-sft-5-llama-30b-epoch-1",
+        max_input_length=1024,
+        max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
+    ),
+    "OA_SFT_Llama_30Bq_5": ModelConfig(
+        model_id="OpenAssistant/oasst-sft-5-llama-30b-epoch-1",
+        max_input_length=1024,
+        max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
         quantized=True,
     ),
 }

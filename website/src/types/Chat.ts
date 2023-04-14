@@ -98,7 +98,7 @@ export interface SamplingParameters {
   top_p: number | null;
 }
 
-export interface ChatConfigForm extends SamplingParameters {
+export interface ChatConfigFormData extends SamplingParameters {
   model_config_name: string; // this is the same as ModelParameterConfig.name
 }
 

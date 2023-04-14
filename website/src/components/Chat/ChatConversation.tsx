@@ -8,7 +8,7 @@ import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
 import { API_ROUTES, ROUTES } from "src/lib/routes";
 import {
-  ChatConfigForm,
+  ChatConfigFormData,
   ChatItem,
   InferenceMessage,
   InferencePostAssistantMessageParams,
@@ -33,7 +33,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
 
-  const { getValues: getFormValues } = useFormContext<ChatConfigForm>();
+  const { getValues: getFormValues } = useFormContext<ChatConfigFormData>();
 
   const initiate_assistant_message = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
