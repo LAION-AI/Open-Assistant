@@ -91,4 +91,15 @@ MODEL_CONFIGS = {
         max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
         quantized=True,
     ),
+    "OA_SFT_Llama_30B_6": ModelConfig(
+        model_id="OpenAssistant/oasst-sft-6-llama-30b",
+        max_input_length=1024,
+        max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
+    ),
+    "OA_SFT_Llama_30Bq_6": ModelConfig(
+        model_id="OpenAssistant/oasst-sft-6-llama-30b",
+        max_input_length=1024,
+        max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
+        quantized=True,
+    ),
 }
