@@ -21,11 +21,12 @@ import {
   SliderTrack,
   Stack,
   Switch,
+  Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
 import { Settings } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, memo, useCallback } from "react";
+import { ChangeEvent, memo, useCallback, useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { ChatConfigFormData, SamplingParameters } from "src/types/Chat";
 
@@ -118,7 +119,10 @@ const ChatConfigForm = () => {
   const { control, register, reset, getValues } = useFormContext<ChatConfigFormData>();
   const selectedModel = useWatch({ name: "model_config_name", control: control });
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
-
+  const [selectedPresetName, setSelectedPresetName] = useState(
+    () =>
+      presets.find((preset) => areParametersEqual(preset.sampling_parameters, getValues()))?.name ?? customPresetName
+  );
   const handlePresetChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const newPresetName = e.target.value;
@@ -127,12 +131,10 @@ const ChatConfigForm = () => {
           ? customPresetDefaultValue
           : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
       reset({ ...config, model_config_name: selectedModel });
+      setSelectedPresetName(newPresetName);
     },
     [presets, reset, selectedModel]
   );
-
-  const selectedPresetName =
-    presets.find((preset) => areParametersEqual(preset.sampling_parameters, getValues()))?.name ?? customPresetName;
 
   return (
     <Stack gap="4">
@@ -169,6 +171,7 @@ const ChatConfigForm = () => {
               onChange={onChange}
               name={name}
               isDisabled={selectedPresetName !== customPresetName}
+              description={t(("parameter_description." + name) as any)}
             />
           )}
         ></Controller>
@@ -186,10 +189,11 @@ type NumberInputSliderProps = {
   value: number | null;
   isDisabled: boolean;
   name: keyof SamplingParameters;
+  description?: string;
 };
 
 const ChatParameterField = memo(function ChatParameterField(props: NumberInputSliderProps) {
-  const { max = 1, precision = 2, step = 0.01, min = 0, value, isDisabled, name, onChange } = props;
+  const { max = 1, precision = 2, step = 0.01, min = 0, value, isDisabled, description, name, onChange } = props;
 
   const handleChange = useCallback(
     (val: string | number) => {
@@ -211,7 +215,9 @@ const ChatParameterField = memo(function ChatParameterField(props: NumberInputSl
   return (
     <FormControl isDisabled={isDisabled}>
       <Flex justifyContent="space-between" mb="2">
-        <FormLabel mb="0">{label}</FormLabel>
+        <FormLabel mb="0">
+          <Tooltip label={description}>{label}</Tooltip>
+        </FormLabel>
         <Switch isChecked={showSlider} onChange={handleShowSliderChange}></Switch>
       </Flex>
       {showSlider && (

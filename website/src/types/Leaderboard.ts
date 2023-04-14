@@ -1,3 +1,5 @@
+import { AuthMethod } from "./Providers";
+
 export interface LeaderboardEntry {
   display_name: string;
   ranking: number;
@@ -20,7 +22,7 @@ export interface LeaderboardEntity {
   rank: number;
   user_id: string;
   username: string;
-  auth_method: string;
+  auth_method: AuthMethod;
   display_name: string;
   leader_score: number;
   level: number; // between 0 and 100

@@ -1,3 +1,5 @@
+import { AuthMethod } from "./Providers";
+
 export enum TrollboardTimeFrame {
   day = "day",
   week = "week",
@@ -16,7 +18,7 @@ export type TrollboardEntity = {
   user_id: string;
   highlighted: boolean;
   username: string;
-  auth_method: string;
+  auth_method: AuthMethod;
   display_name: string;
   last_activity_date: string | null;
   troll_score: number;
