@@ -15,6 +15,8 @@ type ChatConversationTreeProps = { messages: InferenceMessage[]; retryingParentI
   "message"
 >;
 
+export const LAST_ASSISTANT_MESSAGE_ID = "last_assistant_message";
+
 export const ChatConversationTree = memo(function ChatConversationTree({
   messages,
   ...props
@@ -64,11 +66,16 @@ const TreeChildren = ({
     return null; // this node is being regenerated, so we skip render
   }
 
+  const isLeaf = currentTree.children.length === 0;
+  console.log(isLeaf && currentTree.role === "assistant" ? LAST_ASSISTANT_MESSAGE_ID : undefined, currentTree.content);
   const node = (
     <ChatMessageEntry
       message={currentTree}
       {...props}
-      canRetry={currentTree.children.length === 0}
+      canRetry={isLeaf}
+      // TODO refacor away from this dirty hack
+      id={isLeaf && currentTree.role === "assistant" ? LAST_ASSISTANT_MESSAGE_ID : undefined}
+      data-id={currentTree.id}
       pagingSlot={
         hasSibling ? (
           <>

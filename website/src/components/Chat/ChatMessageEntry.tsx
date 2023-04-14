@@ -32,6 +32,8 @@ export type ChatMessageEntryProps = {
   pagingSlot?: ReactNode;
   onEditPromtp?: (params: EditPromptParams) => void;
   canRetry?: boolean;
+  id?: string;
+  "data-id"?: string;
 };
 
 export const ChatMessageEntry = memo(function ChatMessageEntry({
@@ -42,6 +44,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   pagingSlot,
   onEditPromtp,
   canRetry,
+  ...props
 }: ChatMessageEntryProps) {
   const { t } = useTranslation("common");
   const { chat_id: chatId, parent_id: parentId, id: messageId, content, score, state, work_parameters } = message;
@@ -97,7 +100,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   );
 
   return (
-    <PendingMessageEntry ref={ref} isAssistant={isAssistant} content={isEditing ? "" : content!}>
+    <PendingMessageEntry ref={ref} {...props} isAssistant={isAssistant} content={isEditing ? "" : content!}>
       {!isAssistant && parentId !== null && (
         <Box position="absolute" top={{ base: "4", md: 0 }} style={{ insetInlineEnd: `0.5rem` }}>
           {isEditing ? (
@@ -159,10 +162,12 @@ type PendingMessageEntryProps = {
   isAssistant: boolean;
   content: string;
   children?: ReactNode;
+  id?: string;
+  "data-id"?: string;
 };
 
 export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntryProps>(function PendingMessageEntry(
-  { content, isAssistant, children },
+  { content, isAssistant, children, ...props },
   ref
 ) {
   const bgUser = useColorModeValue("white", "gray.700");
@@ -183,6 +188,7 @@ export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntr
       content={content || ""}
       width="full"
       maxWidth="full"
+      {...props}
     >
       {children}
     </BaseMessageEntry>
