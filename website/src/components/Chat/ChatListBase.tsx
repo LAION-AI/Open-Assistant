@@ -3,7 +3,7 @@ import "simplebar-react/dist/simplebar.min.css";
 import { Card, CardProps } from "@chakra-ui/react";
 import { Plus } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { memo, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import SimpleBar from "simplebar-react";
 import { get } from "src/lib/api";
 import { API_ROUTES } from "src/lib/routes";
@@ -19,9 +19,13 @@ export const ChatListBase = memo(function ChatListBase({
   chats,
   ...props
 }: CardProps & { isSideBar: boolean; chats?: GetChatsResponse }) {
-  const { data: response } = useSWR<GetChatsResponse>(chats ? null : API_ROUTES.LIST_CHAT, get, {
-    fallbackData: chats,
-  });
+  const { data: response, mutate: mutateChatResponse } = useSWR<GetChatsResponse>(
+    chats ? null : API_ROUTES.LIST_CHAT,
+    get,
+    {
+      fallbackData: chats,
+    }
+  );
   const { t } = useTranslation(["common", "chat"]);
 
   const sideProps: CardProps = useMemo(
@@ -33,6 +37,19 @@ export const ChatListBase = memo(function ChatListBase({
           }
         : {},
     [isSideBar]
+  );
+
+  const handleUpdateTitle = useCallback(
+    ({ chatId, title }: { chatId: string; title: string }) => {
+      mutateChatResponse(
+        (chatResponse) => ({
+          ...chatResponse,
+          chats: chatResponse?.chats.map((chat) => (chat.id === chatId ? { ...chat, title } : chat)) || [],
+        }),
+        false
+      );
+    },
+    [mutateChatResponse]
   );
 
   return (
@@ -67,13 +84,13 @@ export const ChatListBase = memo(function ChatListBase({
         {t("create_chat")}
       </CreateChatButton>
       <SimpleBar
-        style={{ maxHeight: "100%" }}
+        style={{ maxHeight: "100%", padding: "2px 0" }}
         classNames={{
           contentEl: "space-y-2 mx-3",
         }}
       >
         {response?.chats.map((chat) => (
-          <ChatListItem key={chat.id} chat={chat}></ChatListItem>
+          <ChatListItem key={chat.id} chat={chat} onUpdateTitle={handleUpdateTitle}></ChatListItem>
         ))}
       </SimpleBar>
     </Card>

@@ -95,6 +95,10 @@ export class OasstInferenceClient {
   get_models() {
     return this.request<ModelInfo[]>("/configs/model_configs");
   }
+
+  update_chat_title({ chat_id, title }: { chat_id: string; title: string }) {
+    return this.request(`/chats/${chat_id}/title`, { method: "PUT", data: { title } });
+  }
 }
 
 export const createInferenceClient = (jwt: JWT) => {
