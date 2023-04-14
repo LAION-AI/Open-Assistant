@@ -1,4 +1,4 @@
-"""Add safe_prompt to message
+"""Add safe_content to message
 
 Revision ID: ea19bbc743f9
 Revises: b66fd8f9da1f
