@@ -36,7 +36,6 @@ export const MessageEmojiButton = ({
 
   return (
     <BaseMessageEmojiButton onClick={onClick} isDisabled={isDisabled} emoji={EmojiIcon} checked={checked} sx={sx}>
-      <EmojiIcon style={{ height: "1em" }} />
       {showCount && <span style={{ marginInlineEnd: "0.25em" }}>{emoji.count}</span>}
     </BaseMessageEmojiButton>
   );
