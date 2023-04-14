@@ -1,6 +1,6 @@
-import datetime
 import gzip
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Iterable, TextIO
 
@@ -22,7 +22,9 @@ def open_jsonl_write(file_name: str | Path) -> TextIO:
         return file_name.open("w", encoding="UTF-8")
 
 
-def write_tree(file: TextIO, tree: ExportMessageTree, exclude_none: bool = False) -> None:
+def write_tree(
+    file: TextIO, tree: ExportMessageTree, exclude_none: bool = False
+) -> None:
     json.dump(tree.dict(exclude_none=exclude_none), file, default=default_serializer)
     file.write("\n")
 
@@ -38,7 +40,9 @@ def write_message_trees(
             write_tree(file, tree)
 
 
-def write_message(file: TextIO, message: ExportMessageNode, exclude_none: bool = False) -> None:
+def write_message(
+    file: TextIO, message: ExportMessageNode, exclude_none: bool = False
+) -> None:
     message = message.copy(deep=False, exclude={"replies"})
     json.dump(
         message.dict(exclude_none=exclude_none),
