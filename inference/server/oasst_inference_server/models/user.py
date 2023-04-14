@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+import sqlalchemy as sa
 from sqlmodel import Field, Index, SQLModel
 
 
@@ -14,7 +15,7 @@ class DbUser(SQLModel, table=True):
 
     display_name: str = Field(nullable=False, max_length=256)
 
-    deleted: bool = Field(default=False)
+    deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
 
 
 class DbRefreshToken(SQLModel, table=True):
