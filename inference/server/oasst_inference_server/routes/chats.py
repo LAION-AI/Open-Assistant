@@ -19,11 +19,12 @@ router = fastapi.APIRouter(
 
 @router.get("")
 async def list_chats(
+    include_hidden: bool = True,
     ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
 ) -> chat_schema.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
-    chats = await ucr.get_chats()
+    chats = await ucr.get_chats(include_hidden=include_hidden)
     chats_list = [chat.to_list_read() for chat in chats]
     return chat_schema.ListChatsResponse(chats=chats_list)
 
@@ -270,3 +271,12 @@ async def handle_update_title(
     except Exception:
         logger.exception("Error when updating chat title")
         return fastapi.Response(status_code=500)
+
+
+@router.put("/{chat_id}/hide")
+async def hide_chat(
+    chat_id: str,
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+):
+    await ucr.hide_chat(chat_id)
+    return fastapi.Response(status_code=200)
