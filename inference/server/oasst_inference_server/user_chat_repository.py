@@ -235,9 +235,9 @@ class UserChatRepository(pydantic.BaseModel):
         chat.title = title
         await self.session.commit()
 
-    async def hide_chat(self, chat_id: str) -> None:
-        logger.info(f"Setting chat {chat_id=} to hidden")
+    async def update_visibility(self, chat_id: str, hidden: bool) -> None:
+        logger.info(f"Setting chat {chat_id=} to {'hidden' if hidden else 'visible'}")
         chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
 
-        chat.hidden = True
+        chat.hidden = hidden
         await self.session.commit()

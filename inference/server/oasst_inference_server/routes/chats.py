@@ -274,9 +274,10 @@ async def handle_update_title(
 
 
 @router.put("/{chat_id}/hide")
-async def hide_chat(
+async def update_visibility(
     chat_id: str,
+    hidden: bool,
     ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
 ):
-    await ucr.hide_chat(chat_id)
+    await ucr.update_visibility(chat_id, hidden)
     return fastapi.Response(status_code=200)
