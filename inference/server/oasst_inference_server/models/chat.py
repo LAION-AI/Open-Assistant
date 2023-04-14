@@ -74,7 +74,7 @@ class DbChat(SQLModel, table=True):
 
     messages: list[DbMessage] = Relationship(back_populates="chat")
 
-    hidden: bool = Field(False, index=True)
+    hidden: bool = Field(False)
 
     def to_list_read(self) -> chat_schema.ChatListRead:
         return chat_schema.ChatListRead(
