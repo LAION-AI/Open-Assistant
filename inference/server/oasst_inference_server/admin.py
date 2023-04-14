@@ -3,10 +3,12 @@ from oasst_inference_server import database, models
 from oasst_shared import utils as shared_utils
 
 
-async def delete_user_from_db(session: database.AsyncSession, user_id: str):
+async def delete_user_from_db(session: database.AsyncSession, user_id: str) -> bool:
     """Deletes a user."""
     logger.info(f"Deleting user {user_id}")
     user = await session.get(models.DbUser, user_id)
+    if not user:
+        return False
     user.deleted = True
 
     # Anonymise user data
@@ -15,3 +17,4 @@ async def delete_user_from_db(session: database.AsyncSession, user_id: str):
     user.provider_account_id = f"{shared_utils.DELETED_USER_ID_PREFIX}{user.id}"
 
     await session.commit()
+    return True

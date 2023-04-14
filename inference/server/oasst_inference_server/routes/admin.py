@@ -5,7 +5,6 @@ from loguru import logger
 from oasst_inference_server import admin, auth, database, deps, models
 from oasst_inference_server.schemas import worker as worker_schema
 from oasst_inference_server.settings import settings
-from oasst_shared import utils as shared_utils
 
 router = fastapi.APIRouter(
     prefix="/admin",

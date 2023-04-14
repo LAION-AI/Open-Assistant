@@ -35,6 +35,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (err instanceof AxiosError && err.response.status === 404) {
       // user does not exist in the inference backend, they have not send any chats
       // that is okay, we can continue
+      console.log(`user ${token.sub} does not exist on inference`);
     } else {
       console.error("could not delete user from inference backend", err);
       // we don't return here, the other account is already deleted, we have to power through it
