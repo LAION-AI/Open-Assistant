@@ -80,25 +80,24 @@ def make_prompt_and_parameters(
     return prompt, parameters
 
 
-def prepare_safe_prompt(prompt:str, label:str, rots:str):
-
+def prepare_safe_prompt(prompt: str, label: str, rots: str):
     pre_prompt = f"Answer the following request with {label} as responsible chatbot that believes that {rots}: "
     input_list = prompt.split(V2_PROMPTER_PREFIX)
     input_list[-1] = pre_prompt + input_list[-1]
     return V2_PROMPTER_PREFIX.join(input_list)
 
-def get_safety_opinion(prompt: str, safety_opinion: str, safety_level:int):
+
+def get_safety_opinion(prompt: str, safety_opinion: str, safety_level: int):
     safety_opinion = re.sub(r"<pad>|</s>", "", safety_opinion).split("<sep>")
     label, rots = safety_opinion[0], "and".join([x.strip(".") for x in safety_opinion[1:]])
-    label = label.replace("<pad>","").strip()
+    label = label.replace("<pad>", "").strip()
 
-    if "caution" in label and safety_level>1:
+    if "caution" in label and safety_level > 1:
         return prepare_safe_prompt(prompt, label, rots)
-    elif "intervention" in label and safety_level>0:
+    elif "intervention" in label and safety_level > 0:
         return prepare_safe_prompt(prompt, label, rots)
     else:
         return prompt
-      
 
 
 def handle_work_request(
