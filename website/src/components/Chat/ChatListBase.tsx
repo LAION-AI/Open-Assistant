@@ -52,6 +52,19 @@ export const ChatListBase = memo(function ChatListBase({
     [mutateChatResponse]
   );
 
+  const handleHide = useCallback(
+    ({ chatId }: { chatId: string }) => {
+      mutateChatResponse(
+        (chatResponse) => ({
+          ...chatResponse,
+          chats: chatResponse?.chats.filter((chat) => chat.id !== chatId) || [],
+        }),
+        false
+      );
+    },
+    [mutateChatResponse]
+  );
+
   return (
     <Card
       py="3"
@@ -90,7 +103,7 @@ export const ChatListBase = memo(function ChatListBase({
         }}
       >
         {response?.chats.map((chat) => (
-          <ChatListItem key={chat.id} chat={chat} onUpdateTitle={handleUpdateTitle}></ChatListItem>
+          <ChatListItem key={chat.id} chat={chat} onUpdateTitle={handleUpdateTitle} onHide={handleHide}></ChatListItem>
         ))}
       </SimpleBar>
     </Card>

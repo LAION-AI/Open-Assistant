@@ -61,4 +61,5 @@ export const API_ROUTES = {
     createRoute(`/api/chat/events`, { chat_id, message_id }),
   GET_CHAT_MODELS: "/api/chat/models",
   UPDATE_CHAT_TITLE: (id: string) => `/api/chat/title`,
+  HIDE_CHAT: (id: string) => `/api/chat/hide`,
 };
