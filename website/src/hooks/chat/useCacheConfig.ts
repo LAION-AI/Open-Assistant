@@ -1,14 +1,20 @@
-import { useChatContext } from "src/components/Chat/ChatContext";
-import { useLocalStorage } from "usehooks-ts";
+import { ChatConfigFormData } from "src/types/Chat";
 
 const CHAT_CONFIG_KEY = "CHAT_CONFIG";
 
-export const useCacheConfig = () => {
-  const { modelInfos } = useChatContext();
-  //NOTE: we should at some point validate the cache, in case models were added or deleted
-  // or certain parameters disabled
-  return useLocalStorage(CHAT_CONFIG_KEY, {
-    ...modelInfos[0].parameter_configs[0].sampling_parameters,
-    model_config_name: modelInfos[0].name,
-  });
+export const setConfigCache = (config: ChatConfigFormData) => {
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(CHAT_CONFIG_KEY, JSON.stringify(config));
+  }
+};
+
+export const getConfigCache = () => {
+  if (typeof localStorage !== "undefined") {
+    const oldConfig = localStorage.getItem(CHAT_CONFIG_KEY);
+    if (oldConfig) {
+      return JSON.parse(oldConfig);
+    }
+    return null;
+  }
+  return null;
 };
