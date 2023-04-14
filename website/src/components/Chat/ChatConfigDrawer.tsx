@@ -21,6 +21,7 @@ import {
   SliderTrack,
   Stack,
   Switch,
+  Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
 import { Settings } from "lucide-react";
@@ -170,6 +171,7 @@ const ChatConfigForm = () => {
               onChange={onChange}
               name={name}
               isDisabled={selectedPresetName !== customPresetName}
+              description={t(("parameter_description." + name) as any)}
             />
           )}
         ></Controller>
@@ -187,10 +189,11 @@ type NumberInputSliderProps = {
   value: number | null;
   isDisabled: boolean;
   name: keyof SamplingParameters;
+  description?: string;
 };
 
 const ChatParameterField = memo(function ChatParameterField(props: NumberInputSliderProps) {
-  const { max = 1, precision = 2, step = 0.01, min = 0, value, isDisabled, name, onChange } = props;
+  const { max = 1, precision = 2, step = 0.01, min = 0, value, isDisabled, description, name, onChange } = props;
 
   const handleChange = useCallback(
     (val: string | number) => {
@@ -212,7 +215,9 @@ const ChatParameterField = memo(function ChatParameterField(props: NumberInputSl
   return (
     <FormControl isDisabled={isDisabled}>
       <Flex justifyContent="space-between" mb="2">
-        <FormLabel mb="0">{label}</FormLabel>
+        <FormLabel mb="0">
+          <Tooltip label={description}>{label}</Tooltip>
+        </FormLabel>
         <Switch isChecked={showSlider} onChange={handleShowSliderChange}></Switch>
       </Flex>
       {showSlider && (
