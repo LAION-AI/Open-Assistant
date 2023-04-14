@@ -1,17 +1,30 @@
 import { Button, Divider, Flex, Grid, Icon, ListItem, Text, UnorderedList } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
-import React from "react";
+import React, { useCallback } from "react";
 export { getServerSideProps } from "src/lib/defaultServerSideProps";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { SurveyCard } from "src/components/Survey/SurveyCard";
+import { del } from "src/lib/api";
+import useSWRMutation from "swr/mutation";
 
 export default function DeleteAccount() {
   const { t } = useTranslation("account");
   const { data: session } = useSession();
   const router = useRouter();
+
+  const { trigger } = useSWRMutation("/api/account/delete", del);
+
+  const executeDelete = useCallback(async () => {
+    try {
+      await trigger();
+      signOut({ callbackUrl: "/" });
+    } catch (err) {
+      console.error(err);
+    }
+  }, [trigger]);
 
   if (!session) {
     return;
@@ -48,7 +61,9 @@ export default function DeleteAccount() {
           <Button colorScheme="blue" onClick={() => router.push("/dashboard")}>
             {t("go_to_dashboard")}
           </Button>
-          <Button colorScheme="red">{t("yes_delete")}</Button>
+          <Button colorScheme="red" onClick={executeDelete}>
+            {t("yes_delete")}
+          </Button>
         </Flex>
       </SurveyCard>
     </>
