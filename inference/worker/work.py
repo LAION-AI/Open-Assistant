@@ -115,7 +115,7 @@ def handle_work_request(
     if settings.enable_safety and work_request.safety_parameters.level:
         safety_request = inference.SafetyRequest(inputs=prompt, parameters=work_request.safety_parameters)
         safety_response = get_safety_server_response(safety_request)
-        prompt = get_safety_opinion(prompt, safety_response.outputs, settings.safety_level)
+        prompt = get_safety_opinion(prompt, safety_response.outputs, work_request.safety_parameters.level)
         logger.debug(f"Safe prompt: {prompt}")
 
     stream_response = None
