@@ -276,7 +276,7 @@ async def handle_update_title(
 @router.put("/{chat_id}/hide")
 async def update_visibility(
     chat_id: str,
-    hidden: bool,
+    hidden: bool = True,
     ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
 ):
     await ucr.update_visibility(chat_id, hidden)
