@@ -1,8 +1,8 @@
 import { Card, CardBody, Divider } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import { FormProvider, useForm } from "react-hook-form";
-import { getConfigCache } from "src/hooks/chat/useCacheConfig";
 import { ChatConfigFormData } from "src/types/Chat";
+import { getConfigCache } from "src/utils/chat";
 
 import { ChatConfigSaver } from "./ChatConfigSaver";
 import { useChatContext } from "./ChatContext";
