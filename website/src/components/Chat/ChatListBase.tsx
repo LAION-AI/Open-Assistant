@@ -19,9 +19,13 @@ export const ChatListBase = memo(function ChatListBase({
   chats,
   ...props
 }: CardProps & { isSideBar: boolean; chats?: GetChatsResponse }) {
-  const { data: response, mutate: mutateChatResponse } = useSWR<GetChatsResponse>(chats ? null : API_ROUTES.LIST_CHAT, get, {
-    fallbackData: chats,
-  });
+  const { data: response, mutate: mutateChatResponse } = useSWR<GetChatsResponse>(
+    chats ? null : API_ROUTES.LIST_CHAT,
+    get,
+    {
+      fallbackData: chats,
+    }
+  );
   const { t } = useTranslation(["common", "chat"]);
 
   const sideProps: CardProps = useMemo(
