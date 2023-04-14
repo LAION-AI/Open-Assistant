@@ -19,6 +19,7 @@ export const LAST_ASSISTANT_MESSAGE_ID = "last_assistant_message";
 
 export const ChatConversationTree = memo(function ChatConversationTree({
   messages,
+  retryingParentId,
   ...props
 }: ChatConversationTreeProps) {
   const tree = useMemo(() => buildTree(messages), [messages]);
@@ -27,7 +28,9 @@ export const ChatConversationTree = memo(function ChatConversationTree({
   return (
     <>
       <ChatMessageEntry message={tree} {...props}></ChatMessageEntry>
-      {tree.children.length > 0 && <TreeChildren trees={tree.children} {...props} />}
+      {tree.children.length > 0 && (
+        <TreeChildren trees={tree.children} {...props} retryingParentId={retryingParentId} />
+      )}
     </>
   );
 });
