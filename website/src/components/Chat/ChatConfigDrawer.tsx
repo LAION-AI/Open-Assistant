@@ -119,7 +119,8 @@ const ChatConfigForm = () => {
   const selectedModel = useWatch({ name: "model_config_name", control: control });
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
   const [selectedPresetName, setSelectedPresetName] = useState(
-    () => presets.find((preset) => areParametersEqual(preset.sampling_parameters, getValues()))?.name ?? presets[0].name
+    () =>
+      presets.find((preset) => areParametersEqual(preset.sampling_parameters, getValues()))?.name ?? customPresetName
   );
   const handlePresetChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
