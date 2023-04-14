@@ -21,6 +21,7 @@ import {
   SliderTrack,
   Stack,
   Switch,
+  Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
 import { Settings } from "lucide-react";
@@ -111,21 +112,6 @@ const parameterLabel: Record<keyof SamplingParameters, string> = {
   typical_p: "Typical P",
 };
 
-const parameterLabelExplanation: Record<keyof SamplingParameters, string> = {
-  max_new_tokens:
-    "Max new tokens: This parameter tells the model how many new tokens it should generate at most for the response.",
-  top_k:
-    'Top-k: This is similar to top-p sampling, but instead of taking the top tokens until their cumulative probability exceeds "p", it only takes the K most probable tokens. Top-p is usually preferred since it allows the model to "tune" the search radius, but top-k can be useful as an emergency break when the model has no idea what to generate next and assigns a very uniform distribution to many tokens.',
-  top_p:
-    "Top-p (also known as nucleus) sampling: This method reduces the probability distribution to only look at the top-p percent of tokens. By discarding low probability tokens, it helps to bound the generation and prevent the model from generating grammatically incorrect sentences.",
-  temperature:
-    'Temperature: Each token you generate is sampled from a distribution p(next_token|previous_tokens). The temperature parameter can "sharpen" or dampen this distribution. Setting it to 1 means that the model generates tokens based on their predicted probability (i.e., if the model predicts that "XYZ" has a probability of 12.3%, it will generate it with a 12.3% likelihood). Lowering the temperature towards zero makes the model more greedy, causing high probabilities to get even higher and low probabilities to get even lower (note that this is not a linear relationship!). Increasing the temperature makes all probabilities more similar. Intuitively, a low temperature means that the model generates responses that align closely with its beliefs, while a high temperature allows for more creative and diverse responses.',
-  repetition_penalty:
-    "Repetition Penalty: This parameter reduces the probability of repeating the same tokens again and again by making repeated tokens less likely than the model would ordinarily predict.",
-  typical_p:
-    'Typical p: Typical sampling is an information-theoretic technique that, in addition to the probability, also considers the sequence entropy (i.e., the information content according to the probability). This means that typical sampling "overweights" some of the tokens with lower probability because they are deemed "interesting," and underweights high probability tokens because they are deemed "boring."',
-};
-
 const ChatConfigForm = () => {
   const { t } = useTranslation("chat");
   const { modelInfos } = useChatContext();
@@ -184,6 +170,7 @@ const ChatConfigForm = () => {
               onChange={onChange}
               name={name}
               isDisabled={selectedPresetName !== customPresetName}
+              description={t(("parameter_description." + name) as any)}
             />
           )}
         ></Controller>
@@ -201,10 +188,11 @@ type NumberInputSliderProps = {
   value: number | null;
   isDisabled: boolean;
   name: keyof SamplingParameters;
+  description?: string;
 };
 
 const ChatParameterField = memo(function ChatParameterField(props: NumberInputSliderProps) {
-  const { max = 1, precision = 2, step = 0.01, min = 0, value, isDisabled, name, onChange } = props;
+  const { max = 1, precision = 2, step = 0.01, min = 0, value, isDisabled, description, name, onChange } = props;
 
   const handleChange = useCallback(
     (val: string | number) => {
@@ -221,14 +209,13 @@ const ChatParameterField = memo(function ChatParameterField(props: NumberInputSl
     [onChange, name]
   );
   const label = parameterLabel[name];
-  const labelExplanation = parameterLabelExplanation[name];
   const showSlider = value !== null;
 
   return (
     <FormControl isDisabled={isDisabled}>
       <Flex justifyContent="space-between" mb="2">
-        <FormLabel mb="0" title={labelExplanation}>
-          {label}
+        <FormLabel mb="0">
+          <Tooltip label={description}>{label}</Tooltip>
         </FormLabel>
         <Switch isChecked={showSlider} onChange={handleShowSliderChange}></Switch>
       </Flex>
