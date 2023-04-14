@@ -19,7 +19,7 @@ router = fastapi.APIRouter(
 
 @router.get("")
 async def list_chats(
-    include_hidden: bool = True,
+    include_hidden: bool = False,
     ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
 ) -> chat_schema.ListChatsResponse:
     """Lists all chats."""

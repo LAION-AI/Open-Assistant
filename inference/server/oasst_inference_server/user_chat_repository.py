@@ -14,7 +14,7 @@ class UserChatRepository(pydantic.BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    async def get_chats(self, include_hidden: bool = True) -> list[models.DbChat]:
+    async def get_chats(self, include_hidden: bool = False) -> list[models.DbChat]:
         query = sqlmodel.select(models.DbChat)
         query = query.where(models.DbChat.user_id == self.user_id)
         if not include_hidden:
