@@ -38,6 +38,16 @@ class ExportMessageEventRanking(ExportMessageEvent):
     not_rankable: Optional[bool]  # flawed, factually incorrect or unacceptable
 
 
+class DetoxifyRating(BaseModel):
+    toxicity: float
+    severe_toxicity: float
+    obscene: float
+    identity_attack: float
+    insult: float
+    threat: float
+    sexual_explicit: float
+
+
 class ExportMessageNode(BaseModel):
     message_id: str
     parent_id: str | None
@@ -56,6 +66,7 @@ class ExportMessageNode(BaseModel):
     replies: list[ExportMessageNode] | None
     labels: LabelValues | None
     events: dict[str, list[ExportMessageEvent]] | None
+    detoxify: DetoxifyRating | None
     # the following fields are always None in message tree exports (see outer tree there)
     message_tree_id: str | None
     tree_state: str | None

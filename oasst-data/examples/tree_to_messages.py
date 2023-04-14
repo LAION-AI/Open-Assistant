@@ -1,6 +1,7 @@
 import argparse
 import gzip
 import json
+from datetime import datetime
 from pathlib import Path
 
 from oasst_data import ExportMessageNode, load_trees, visit_messages_depth_first
@@ -34,11 +35,21 @@ def write_messages_file(
     else:
         file = output_file_name.open("w", encoding="UTF-8")
 
+    def default_serializer(obj):
+        """JSON serializer for objects not serializable by default json code"""
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        raise TypeError("Type %s not serializable" % type(obj))
+
     with file:
         # write one message per line
         for message in messages:
             message = message.copy(deep=False, exclude={"replies"})
-            json.dump(message.dict(exclude_none=exclude_none), file)
+            json.dump(
+                message.dict(exclude_none=exclude_none),
+                file,
+                default=default_serializer,
+            )
             file.write("\n")
 
 
