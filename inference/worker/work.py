@@ -80,16 +80,24 @@ def make_prompt_and_parameters(
     return prompt, parameters
 
 
-def prepare_safe_prompt(prompt: str, safety_opinion: str):
+def prepare_safe_prompt(prompt: str, label: str, rots: str):
+    pre_prompt = f"Answer the following request with {label} as responsible chatbot that believes that {rots}: "
+    input_list = prompt.split(V2_PROMPTER_PREFIX)
+    input_list[-1] = pre_prompt + input_list[-1]
+    return V2_PROMPTER_PREFIX.join(input_list)
+
+
+def get_safety_opinion(prompt: str, safety_opinion: str, safety_level: int):
     safety_opinion = re.sub(r"<pad>|</s>", "", safety_opinion).split("<sep>")
     label, rots = safety_opinion[0], "and".join([x.strip(".") for x in safety_opinion[1:]])
-    if label.strip() == "__casual__":
-        return prompt
+    label = label.replace("<pad>", "").strip()
+
+    if "caution" in label and safety_level > 1:
+        return prepare_safe_prompt(prompt, label, rots)
+    elif "intervention" in label and safety_level > 0:
+        return prepare_safe_prompt(prompt, label, rots)
     else:
-        pre_prompt = f"Answer the following request with {label} as responsible chatbot that believes that {rots}: "
-        input_list = prompt.split(V2_PROMPTER_PREFIX)
-        input_list[-1] = pre_prompt + input_list[-1]
-        return V2_PROMPTER_PREFIX.join(input_list)
+        return prompt
 
 
 def handle_work_request(
@@ -107,7 +115,7 @@ def handle_work_request(
     if settings.enable_safety and work_request.safety_parameters.level:
         safety_request = inference.SafetyRequest(inputs=prompt, parameters=work_request.safety_parameters)
         safety_response = get_safety_server_response(safety_request)
-        prompt = prepare_safe_prompt(prompt, safety_response.outputs)
+        prompt = get_safety_opinion(prompt, safety_response.outputs, work_request.safety_parameters.level)
         logger.debug(f"Safe prompt: {prompt}")
 
     stream_response = None

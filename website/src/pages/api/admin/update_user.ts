@@ -2,7 +2,7 @@ import { ROLES } from "src/components/RoleSelect";
 import { withAnyRole } from "src/lib/auth";
 import { createApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
-import { getFrontendUserIdForDiscordUser } from "src/lib/users";
+import { getFrontendUserIdForUser } from "src/lib/users";
 
 /**
  * Update's the user's data in the database.  Accessible only to admins.
@@ -17,8 +17,8 @@ const handler = withAnyRole(["admin", "moderator"], async (req, res, token) => {
   }
 
   let frontendUserId = id;
-  if (auth_method === "discord") {
-    frontendUserId = await getFrontendUserIdForDiscordUser(id);
+  if (auth_method === "discord" || auth_method === "google") {
+    frontendUserId = await getFrontendUserIdForUser(id, auth_method);
   }
 
   const oasstApiClient = await createApiClient(token);
