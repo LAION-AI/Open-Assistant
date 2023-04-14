@@ -38,7 +38,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
   const initiate_assistant_message = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
       const { model_config_name, ...sampling_parameters } = getFormValues();
-      console.log(`chatId`, chatId);
       const assistant_arg: InferencePostAssistantMessageParams = {
         chat_id: chatId,
         parent_id: parentId,
@@ -97,6 +96,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId: chatIdP
     if (parentId !== null) {
       const parent = messages.find((m) => m.id === parentId);
       if (!parent) {
+        // we should never reach here
         return console.error("Parent message not found", parentId);
       }
       if (parent!.state !== "complete") {

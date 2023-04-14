@@ -67,7 +67,7 @@ const TreeChildren = ({
   }
 
   const isLeaf = currentTree.children.length === 0;
-  console.log(isLeaf && currentTree.role === "assistant" ? LAST_ASSISTANT_MESSAGE_ID : undefined, currentTree.content);
+
   const node = (
     <ChatMessageEntry
       message={currentTree}
