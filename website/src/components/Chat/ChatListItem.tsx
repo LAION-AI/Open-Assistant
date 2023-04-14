@@ -35,7 +35,7 @@ export const ChatListItem = ({
     put
   );
   const handleConfirmEdit = useCallback(async () => {
-    const title = inputRef.current?.value;
+    const title = inputRef.current?.value.trim();
     if (!title) return;
     await updateChatTitle({ title, chat_id: chat.id });
     setIsEditing.off();
