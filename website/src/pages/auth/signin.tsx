@@ -9,9 +9,10 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
+import { SiDiscord, SiGoogle } from "@icons-pack/react-simple-icons";
 import { TurnstileInstance } from "@marsidev/react-turnstile";
 import { boolean } from "boolean";
-import { Bug, Github, Mail } from "lucide-react";
+import { Bug, Mail } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
@@ -23,7 +24,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthLayout } from "src/components/AuthLayout";
 import { CloudFlareCaptcha } from "src/components/CloudflareCaptcha";
-import { Discord } from "src/components/Icons/Discord";
 import { Role, RoleSelect } from "src/components/RoleSelect";
 
 export type SignInErrorTypes =
@@ -64,7 +64,7 @@ interface SigninProps {
 
 function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudflareCaptchaSiteKey }: SigninProps) {
   const router = useRouter();
-  const { discord, email, github, credentials } = providers;
+  const { discord, email, google, credentials } = providers;
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -101,31 +101,26 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
             <Button
               bg={buttonBgColor}
               _hover={{ bg: "#4A57E3" }}
-              _active={{
-                bg: "#454FBF",
-              }}
+              _active={{ bg: "#454FBF" }}
               size="lg"
-              leftIcon={<Discord />}
               color="white"
+              leftIcon={<SiDiscord />}
               onClick={() => signIn(discord.id, { callbackUrl: "/" })}
-              // isDisabled="false"
             >
               Continue with Discord
             </Button>
           )}
-          {github && (
+          {google && (
             <Button
-              bg="#333333"
-              _hover={{ bg: "#181818" }}
-              _active={{
-                bg: "#101010",
-              }}
-              size={"lg"}
-              leftIcon={<Github />}
-              colorScheme="blue"
-              // isDisabled="false"
+              bg={buttonBgColor}
+              _hover={{ bg: "#4A57E3" }}
+              _active={{ bg: "#454FBF" }}
+              size="lg"
+              color="white"
+              leftIcon={<SiGoogle />}
+              onClick={() => signIn(google.id, { callbackUrl: "/" })}
             >
-              Continue with Github
+              Continue with Google
             </Button>
           )}
         </Stack>
