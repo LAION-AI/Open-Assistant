@@ -53,7 +53,7 @@ export const ChatListBase = memo(function ChatListBase({
   );
 
   const handleHide = useCallback(
-    ({ chatId }: { chatId: string; hidden: boolean }) => {
+    ({ chatId }: { chatId: string }) => {
       mutateChatResponse(
         (chatResponse) => ({
           ...chatResponse,
