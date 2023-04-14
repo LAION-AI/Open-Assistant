@@ -60,6 +60,7 @@ class DbMessage(SQLModel, table=True):
             score=self.score,
             work_parameters=self.work_parameters,
             reports=[r.to_read() for r in self.reports],
+            safe_content=self.safe_content,
         )
 
 
