@@ -269,7 +269,6 @@ pythia-70m-deduped:
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 4
   output_dir: pythia_model
-  dtype: float32
 
 pythia-1B:
   learning_rate: 8e-6
