@@ -1,10 +1,6 @@
 import argparse
-import gzip
-import json
-from datetime import datetime
-from pathlib import Path
 
-from oasst_data import ExportMessageNode, load_trees, visit_messages_depth_first
+from oasst_data import ExportMessageNode, read_message_trees, visit_messages_depth_first, write_messages
 
 
 def parse_args():
@@ -24,35 +20,6 @@ def parse_args():
     return args
 
 
-def write_messages_file(
-    output_file_name: str | Path,
-    messages: list[ExportMessageNode],
-    exclude_none: bool,
-) -> None:
-    output_file_name = Path(output_file_name)
-    if output_file_name.suffix == ".gz":
-        file = gzip.open(str(output_file_name), mode="wt", encoding="UTF-8")
-    else:
-        file = output_file_name.open("w", encoding="UTF-8")
-
-    def default_serializer(obj):
-        """JSON serializer for objects not serializable by default json code"""
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        raise TypeError("Type %s not serializable" % type(obj))
-
-    with file:
-        # write one message per line
-        for message in messages:
-            message = message.copy(deep=False, exclude={"replies"})
-            json.dump(
-                message.dict(exclude_none=exclude_none),
-                file,
-                default=default_serializer,
-            )
-            file.write("\n")
-
-
 def main():
     """Read oasst message-trees from input file and generate a flat messages table output file."""
     args = parse_args()
@@ -61,7 +28,7 @@ def main():
     messages: list[ExportMessageNode] = []
     print(f"reading: {args.input_file_name}")
     tree_count = 0
-    for message_tree in load_trees(args.input_file_name):
+    for message_tree in read_message_trees(args.input_file_name):
 
         def append_with_tree_state(msg: ExportMessageNode):
             msg.tree_state = message_tree.tree_state
@@ -74,7 +41,7 @@ def main():
 
     # write messages file
     print(f"writing: {args.output_file_name}")
-    write_messages_file(args.output_file_name, messages, args.exclude_nulls)
+    write_messages(args.output_file_name, messages, args.exclude_nulls)
     print(f"{len(messages)} messages written.")
 
 

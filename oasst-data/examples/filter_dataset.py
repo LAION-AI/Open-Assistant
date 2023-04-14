@@ -1,40 +1,9 @@
 import argparse
-import gzip
-import json
 from collections import OrderedDict
-from datetime import datetime
-from pathlib import Path
-from typing import Iterable
 
 import pandas
-from oasst_data import ExportMessageNode, load_trees, visit_messages_depth_first
+from oasst_data import ExportMessageNode, read_message_trees, visit_messages_depth_first, write_message_trees
 from oasst_data.schemas import ExportMessageTree
-
-
-def write_message_trees(
-    output_file_name: str | Path,
-    trees: Iterable[ExportMessageTree],
-    exclude_none: bool,
-) -> None:
-    output_file_name = Path(output_file_name)
-    if output_file_name.suffix == ".gz":
-        file = gzip.open(str(output_file_name), mode="wt", encoding="UTF-8")
-    else:
-        file = output_file_name.open("w", encoding="UTF-8")
-
-    def default_serializer(obj):
-        """JSON serializer for objects not serializable by default json code"""
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        raise TypeError("Type %s not serializable" % type(obj))
-
-    with file:
-        # write one tree per line
-        for tree in trees:
-            json.dump(
-                tree.dict(exclude_none=exclude_none), file, default=default_serializer
-            )
-            file.write("\n")
 
 
 def parse_args():
@@ -65,7 +34,7 @@ def main():
     message_by_id: dict[str, ExportMessageNode] = {}
 
     print(f"Reading: {args.input_file_name}")
-    for message_tree in load_trees(args.input_file_name):
+    for message_tree in read_message_trees(args.input_file_name):
         tree_by_id[message_tree.message_tree_id] = message_tree
 
         def index_message(msg: ExportMessageNode):
@@ -89,9 +58,7 @@ def main():
         else:
             parent_msg = message_by_id[msg.parent_id]
             parent_msg.replies.remove(msg)
-            print(
-                f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)"
-            )
+            print(f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)")
 
     # cleaning
     print("Cleaning...")
@@ -126,9 +93,7 @@ def main():
 
     # write cleaned dataset to output file
     print(f"Writing: {args.output_file_name}")
-    write_message_trees(
-        args.output_file_name, tree_by_id.values(), exclude_none=args.exclude_nulls
-    )
+    write_message_trees(args.output_file_name, tree_by_id.values(), exclude_none=args.exclude_nulls)
 
 
 if __name__ == "__main__":

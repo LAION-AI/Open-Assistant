@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterable
 
-from oasst_data import load_trees, visit_messages_depth_first
+from oasst_data import read_message_trees, visit_messages_depth_first
 from oasst_data.schemas import ExportMessageTree
 
 
@@ -29,9 +29,7 @@ def write_message_trees(
     with file:
         # write one tree per line
         for tree in trees:
-            json.dump(
-                tree.dict(exclude_none=exclude_none), file, default=default_serializer
-            )
+            json.dump(tree.dict(exclude_none=exclude_none), file, default=default_serializer)
             file.write("\n")
 
 
@@ -69,12 +67,10 @@ def main():
     allow_synth = args.allow_synth
 
     print(f"Reading: {args.input_file_name}")
-    for message_tree in load_trees(args.input_file_name):
+    for message_tree in read_message_trees(args.input_file_name):
         msgs = []
         visit_messages_depth_first(message_tree.prompt, msgs.append)
-        if message_tree.tree_state in states and (
-            allow_synth or not any(x.synthetic for x in msgs)
-        ):
+        if message_tree.tree_state in states and (allow_synth or not any(x.synthetic for x in msgs)):
             trees.append(message_tree)
 
     print(f"Found {len(trees)} matching trees.")
