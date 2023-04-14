@@ -256,3 +256,17 @@ async def handle_create_report(
     except Exception:
         logger.exception("Error adding report")
         return fastapi.Response(status_code=500)
+
+
+@router.put("/{chat_id}/title")
+async def handle_update_title(
+    chat_id: str,
+    request: chat_schema.ChatUpdateTitleRequest,
+    ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
+) -> fastapi.Response:
+    """Allows the client to update a chat title."""
+    try:
+        await ucr.update_title(chat_id=chat_id, title=request.title)
+    except Exception:
+        logger.exception("Error when updating chat title")
+        return fastapi.Response(status_code=500)

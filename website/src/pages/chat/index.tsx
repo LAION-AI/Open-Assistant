@@ -4,18 +4,17 @@ import { getToken } from "next-auth/jwt";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import React from "react";
-import { ChatContextProvider } from "src/components/Chat/ChatContext";
-import { ChatSection } from "src/components/Chat/ChatSection";
-import { getChatLayout } from "src/components/Layout/ChatLayout";
+import { ChatListBase } from "src/components/Chat/ChatListBase";
+import { getDashboardLayout } from "src/components/Layout";
 import { isChatEnable } from "src/lib/isChatEnable";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
-import { ModelInfo } from "src/types/Chat";
+import { GetChatsResponse } from "src/types/Chat";
 
 type ChatListProps = {
-  modelInfos: ModelInfo[];
+  chatResponse: GetChatsResponse;
 };
 
-const ChatList = ({ modelInfos }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const ChatList = ({ chatResponse }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { t } = useTranslation(["chat"]);
 
   return (
@@ -23,14 +22,12 @@ const ChatList = ({ modelInfos }: InferGetServerSidePropsType<typeof getServerSi
       <Head>
         <title>{t("chat")}</title>
       </Head>
-      <ChatContextProvider modelInfos={modelInfos} messages={[]}>
-        <ChatSection chatId={null} />
-      </ChatContextProvider>
+      <ChatListBase chats={chatResponse} isSideBar={false} className="max-w-5xl mx-auto" />
     </>
   );
 };
 
-ChatList.getLayout = getChatLayout;
+ChatList.getLayout = getDashboardLayout;
 
 export const getServerSideProps: GetServerSideProps<ChatListProps> = async ({ locale = "en", req }) => {
   if (!isChatEnable()) {
@@ -41,11 +38,11 @@ export const getServerSideProps: GetServerSideProps<ChatListProps> = async ({ lo
 
   const token = await getToken({ req });
   const client = createInferenceClient(token!);
-  const modelInfos = await client.get_models();
+  const chats = await client.get_my_chats();
 
   return {
     props: {
-      modelInfos,
+      chatResponse: chats,
       ...(await serverSideTranslations(locale)),
     },
   };

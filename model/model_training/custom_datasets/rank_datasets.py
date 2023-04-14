@@ -117,7 +117,7 @@ class HFDataset(Dataset):
 
     def _handle_comparisons(self, dataset):
         for data in dataset:
-            for item in dataset:
+            for item in data:
                 choice = item["choice"]  # indicates the preferred summary
                 full_post = item["info"]["post"]
                 summaries = [item["summaries"][choice]["text"], item["summaries"][1 - choice]["text"]]
@@ -125,7 +125,7 @@ class HFDataset(Dataset):
 
     def _handle_axis(self, dataset):
         for data in dataset:
-            for item in dataset:
+            for item in data:
                 if item["summary"].get("axes").get("overall") is not None:
                     post_id = item.get("info")["id"]
                     if post_id not in self.axis_post_ids:

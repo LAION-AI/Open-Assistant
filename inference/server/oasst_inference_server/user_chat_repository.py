@@ -20,17 +20,16 @@ class UserChatRepository(pydantic.BaseModel):
         query = query.order_by(models.DbChat.created_at.desc())
         return (await self.session.exec(query)).all()
 
-    async def get_chat_by_id(self, chat_id: str) -> models.DbChat:
-        query = (
-            sqlmodel.select(models.DbChat)
-            .options(
+    async def get_chat_by_id(self, chat_id: str, include_messages: bool = True) -> models.DbChat:
+        query = sqlmodel.select(models.DbChat).where(
+            models.DbChat.id == chat_id,
+            models.DbChat.user_id == self.user_id,
+        )
+        if include_messages:
+            query = query.options(
                 sqlalchemy.orm.selectinload(models.DbChat.messages).selectinload(models.DbMessage.reports),
             )
-            .where(
-                models.DbChat.id == chat_id,
-                models.DbChat.user_id == self.user_id,
-            )
-        )
+
         chat = (await self.session.exec(query)).one()
         return chat
 
@@ -226,3 +225,10 @@ class UserChatRepository(pydantic.BaseModel):
         await self.session.commit()
         await self.session.refresh(report)
         return report
+
+    async def update_title(self, chat_id: str, title: str) -> models.DbChat:
+        logger.info(f"Updating title of chat {chat_id=}: {title=}")
+        chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
+
+        chat.title = title
+        await self.session.commit()

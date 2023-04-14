@@ -1,12 +1,13 @@
 import { Grid, Text } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import React from "react";
-import { useCacheConfig } from "src/hooks/chat/useCacheConfig";
+import { useFormContext } from "react-hook-form";
+import { ChatConfigFormData } from "src/types/Chat";
 
 export default function ChatConfigSummary() {
-  const [config] = useCacheConfig();
   const { t } = useTranslation("chat");
-
+  const { watch } = useFormContext<ChatConfigFormData>();
+  const config = watch();
   return (
     <Grid gridTemplateColumns="repeat(2, max-content)" columnGap={4} fontSize="sm">
       <Text>{t("model")}</Text>

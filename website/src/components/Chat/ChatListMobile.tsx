@@ -47,7 +47,7 @@ export function ChatListMobile() {
             _dark={{ bg: "gray.600" }}
             bg="white"
           />
-          <ChatListBase position="relative" h="100vh" />
+          <ChatListBase isSideBar position="relative" h="100vh" />
         </DrawerContent>
       </Drawer>
     </>

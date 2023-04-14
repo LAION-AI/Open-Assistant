@@ -1,4 +1,4 @@
-# OpenAssitant Workers
+# OpenAssistant Workers
 
 ## Running the worker
 
