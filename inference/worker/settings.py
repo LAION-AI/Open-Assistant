@@ -25,6 +25,7 @@ class Settings(pydantic.BaseSettings):
     basic_auth_password: str | None = None
 
     enable_safety: bool = False
+    safety_level: int = 1
 
 
 settings = Settings()
