@@ -203,6 +203,10 @@
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_ID') }}"
           DISCORD_CLIENT_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_SECRET') }}"
+          GOOGLE_CLIENT_ID:
+            "{{ lookup('ansible.builtin.env', 'WEB_GOOGLE_CLIENT_ID') }}"
+          GOOGLE_CLIENT_SECRET:
+            "{{ lookup('ansible.builtin.env', 'WEB_GOOGLE_CLIENT_SECRET') }}"
           EMAIL_FROM: open-assistent@laion.ai
           EMAIL_SERVER_HOST:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_HOST') }}"
