@@ -1,13 +1,12 @@
 // jest.setup.js
 import "@testing-library/jest-dom/extend-expect";
+
+// polyfill for node
+import { TextDecoderStream } from "@stardazed/streams-text-encoding";
 import { TextDecoder, TextEncoder } from "util";
 import { ReadableStream } from "web-streams-polyfill/es6";
-import { TextDecoderStream } from "@stardazed/streams-text-encoding";
-// import {  } from 'stream';
-// import * as stream from 'stream';
-// global.stream = stream;
+
 global.TextEncoder = TextEncoder;
-// global.TextDecoder = TextDecoder;
 global.TextDecoderStream = TextDecoderStream;
 global.TextDecoder = TextDecoder;
 global.ReadableStream = ReadableStream;
