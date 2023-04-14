@@ -99,28 +99,29 @@ pretrain:
   use_custom_sampler: true
   sort_by_length: false
   datasets:
-    - joke
-    - webgpt:
-        val_split: 0.1
-    - gpt4all:
-        val_split: 0.01
-    - alpaca:
-        val_split: 0.025
-    - code_alpaca:
-        val_split: 0.05
-    - minimath
-    - humaneval_mbpp_codegen_qa
-    - humaneval_mbpp_testgen_qa
-    - grade_school_math_instructions
-    - recipes
-    - cmu_wiki_qa
-    #- youtube_subs_howto100m # uses incompatible column names
-    #- ubuntu_dialogue_qa # fails to load
-    - oa_wiki_qa_bart_10000row
-    - prosocial_dialogue:
-        fraction: 0.1
-    - explain_prosocial:
-        fraction: 0.05
+    - databricks_dolly15k
+    - vicuna
+    # - webgpt:
+    #     val_split: 0.1
+    # - gpt4all:
+    #     val_split: 0.01
+    # - alpaca:
+    #     val_split: 0.025
+    # - code_alpaca:
+    #     val_split: 0.05
+    # - minimath
+    # - humaneval_mbpp_codegen_qa
+    # - humaneval_mbpp_testgen_qa
+    # - grade_school_math_instructions
+    # - recipes
+    # - cmu_wiki_qa
+    # #- youtube_subs_howto100m # uses incompatible column names
+    # #- ubuntu_dialogue_qa # fails to load
+    # - oa_wiki_qa_bart_10000row
+    # - prosocial_dialogue:
+    #     fraction: 0.1
+    # - explain_prosocial:
+    #     fraction: 0.05
 
 oasst_only:
   save_strategy: epoch
@@ -269,9 +270,7 @@ pythia-70m-deduped:
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 4
   output_dir: pythia_model
-  datasets:
-    - vicuna
-    - soda
+  dtype: float32
 
 pythia-1B:
   learning_rate: 8e-6

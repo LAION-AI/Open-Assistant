@@ -4,7 +4,13 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
-from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs, format_system_prefix
+from model_training.custom_datasets.formatting import (
+    QA_SPECIAL_TOKENS,
+    DatasetEntry,
+    Mode,
+    format_pairs,
+    format_system_prefix,
+)
 from torch.nn import functional as F
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase, TruncationStrategy
 
@@ -41,8 +47,6 @@ class DialogueDataCollator:
 
     def process_one(self, messages, return_length=False):
         total_short_context_one = 0
-        messages = list(messages)
-
         if random.random() < self.random_offset_probability:
             truncation = TruncationStrategy.DO_NOT_TRUNCATE
             max_length = None
@@ -50,7 +54,11 @@ class DialogueDataCollator:
             truncation = TruncationStrategy.LONGEST_FIRST
             max_length = self.max_length
 
-        messages = format_pairs(messages, self.tokenizer.eos_token)
+        if isinstance(messages, DatasetEntry):
+            messages = messages.get_formatted(mode=Mode.sft, eos_token=self.tokenizer.eos_token)
+        else:
+            messages = list(messages)
+            messages = format_pairs(messages, self.tokenizer.eos_token)
 
         flatten_message = self.tokenizer(
             "".join(messages),
