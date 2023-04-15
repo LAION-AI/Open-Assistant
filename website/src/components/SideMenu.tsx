@@ -28,18 +28,21 @@ export const SIDE_MENU_WIDTH = {
 export function SideMenu({ items, collapsed }: SideMenuProps) {
   const router = useRouter();
   const { t } = useTranslation();
-
+  const desktopBreakpoint = collapsed ? "lg" : "md";
   return (
     <Card
-      position={{ base: "relative", md: "fixed" }}
+      position={{ base: "relative", [desktopBreakpoint]: "fixed" }}
       p={{ base: 4, md: 3, lg: collapsed ? 3 : 4 }}
-      width={{ base: "100%", ...(collapsed ? { md: `100px` } : { md: SIDE_MENU_WIDTH.MD, lg: SIDE_MENU_WIDTH.LG }) }}
-      height={{ base: "auto", md: `calc(100vh - ${HEADER_HEIGHT} - ${1.5 * 2}rem)` }}
+      width={{
+        base: "100%",
+        ...(collapsed ? { [desktopBreakpoint]: `100px` } : { md: SIDE_MENU_WIDTH.MD, lg: SIDE_MENU_WIDTH.LG }),
+      }}
+      height={{ base: "auto", [desktopBreakpoint]: `calc(100vh - ${HEADER_HEIGHT} - ${1.5 * 2}rem)` }}
     >
       <Box
         as="nav"
         gap="2"
-        display={{ base: "grid", md: "flex" }}
+        display={{ base: "grid", [desktopBreakpoint]: "flex" }}
         flexDirection="column"
         className="grid-cols-3 col-span-3"
       >

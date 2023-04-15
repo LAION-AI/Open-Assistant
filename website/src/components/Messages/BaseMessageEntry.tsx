@@ -25,7 +25,6 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
       gap={0.5}
       flexDirection={{ base: "column", md: "row" }}
       alignItems="start"
-      maxWidth="full"
       position="relative"
       p={{ base: 3, md: 0 }}
       borderRadius={{ base: "18px", md: 0 }}
