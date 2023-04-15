@@ -1,5 +1,5 @@
 import { Avatar, Badge, Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
-import { Github } from "lucide-react";
+import { Github } from "@icons-pack/react-simple-icons";
 import Link from "next/link";
 
 export interface TeamMemberProps {

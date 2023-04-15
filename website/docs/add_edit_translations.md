@@ -35,4 +35,9 @@ When editing existing translations, follow these rules:
 A script can be used to find missing and potentially untranslated locale files. Run the script from the root dir using
 `python scripts/frontend-development/find-missing-locales.py`.
 
+You may pass any languages you want to include in the search to the script like so:\
+`python scripts/frontend-development/find-missing-locales.py de ja`\
+This would only show missing/untranslated strings in the German (de) and Japanese (ja) locale files.\
+Passing nothing will default to searching all locales instead.
+
 If you have any questions or need further assistance, please reach out.

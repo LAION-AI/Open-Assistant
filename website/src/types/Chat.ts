@@ -24,6 +24,7 @@ export interface ChatItem {
 
   // those are not available when you first create a chat
   title?: string;
+  hidden?: boolean;
 }
 
 export interface InferenceMessage {

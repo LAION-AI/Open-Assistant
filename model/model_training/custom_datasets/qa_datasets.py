@@ -546,3 +546,36 @@ class Vicuna(Dataset):
             return dialogue
         elif self.mode == "rl":
             return tuple(dialogue[:-1])
+
+
+class DatabricksDolly15k(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        self.rows = []
+        self.citation_regex = re.compile(r"\[[a-zA-Z]\]")  # removes citations in the form of e.g. [a] or [A]
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        data = load_dataset("OllieStanley/oa_dolly_15k", cache_dir=cache_dir)
+        for line in data["train"]:
+            if (conv := self._process_instruction(line, input_max_length)) is not None:
+                self.rows.append(conv)
+
+    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> list[str] | None:
+        if context := re_reference_remove.sub("", row["METADATA"]["CONTEXT"]):
+            # further remove references
+            context = context.replace("[citation needed]", "")
+            context = self.citation_regex.sub("", context)
+            return [f"{context} {row['INSTRUCTION']}"[:input_max_length], row["RESPONSE"][:input_max_length]]
+        else:
+            return [row["INSTRUCTION"][:input_max_length], row["RESPONSE"][:input_max_length]]
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+        dialogue: list[str] = self.rows[index]
+        if self.mode == "sft":
+            return dialogue
+        elif self.mode == "rl":
+            return tuple(dialogue[:-1])

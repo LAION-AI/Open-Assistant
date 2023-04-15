@@ -450,4 +450,9 @@ export class OasstApiClient {
       before: direction === "back" ? cursor : undefined,
     });
   }
+
+  async delete_account(user: BackendUserCore) {
+    const backendUser = await this.fetch_frontend_user(user);
+    return this.delete<void>(`/api/v1/users/${backendUser.user_id}`);
+  }
 }

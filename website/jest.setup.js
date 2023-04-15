@@ -1,6 +1,16 @@
 // jest.setup.js
 import "@testing-library/jest-dom/extend-expect";
 
+// polyfill for node
+import { TextDecoderStream } from "@stardazed/streams-text-encoding";
+import { TextDecoder, TextEncoder } from "util";
+import { ReadableStream } from "web-streams-polyfill/es6";
+
+global.TextEncoder = TextEncoder;
+global.TextDecoderStream = TextDecoderStream;
+global.TextDecoder = TextDecoder;
+global.ReadableStream = ReadableStream;
+
 const CONSOLE_FAIL_TYPES = ["error", "warn"];
 
 // Throw errors when a `console.error` or `console.warn` happens

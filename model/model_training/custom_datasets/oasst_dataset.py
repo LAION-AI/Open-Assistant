@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal, Optional
 
-from oasst_data import ExportMessageNode, load_trees, visit_threads_depth_first
+from oasst_data import ExportMessageNode, read_message_trees, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
 
@@ -43,7 +43,7 @@ def load_oasst_export(
         input_file_path = data_path / input_file_path
 
     threads_per_tree = []
-    for tree in load_trees(input_file_path):
+    for tree in read_message_trees(input_file_path):
         if tree.tree_state != "ready_for_export" or not tree.prompt.review_result or tree.prompt.lang not in lang_codes:
             continue
 
