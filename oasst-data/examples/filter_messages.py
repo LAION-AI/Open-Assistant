@@ -123,12 +123,14 @@ def main():
             or (prompts_only and msg.parent_id)
             or (langs is not None and msg.lang not in langs)
             or (states is not None and msg.tree_state not in states)
-            or (
-                exclude_normal is True
-                and not msg.deleted
-                and not msg.synthetic
-                and msg.review_result
-            )
+        ):
+            return False
+
+        if (
+            exclude_normal is True
+            and not msg.deleted
+            and not msg.synthetic
+            and msg.review_result
         ):
             return False
 
