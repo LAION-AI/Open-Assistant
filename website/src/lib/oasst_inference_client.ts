@@ -104,7 +104,7 @@ export class OasstInferenceClient {
     return this.request(`/chats/${chat_id}/hide`, { method: "PUT", data: { hidden: false } });
   }
 
-  delete_account(tokenSub: string) {
+  delete_account() {
     return this.request(`/account/`, { method: "DELETE" });
   }
 }

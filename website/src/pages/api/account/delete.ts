@@ -29,7 +29,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const client = createInferenceClient(token);
-    await client.delete_account(token.sub);
+    await client.delete_account();
     console.log(`user ${token.sub} deleted from inference`);
   } catch (err) {
     if (err instanceof AxiosError && err.response.status === 404) {
