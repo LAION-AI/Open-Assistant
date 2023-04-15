@@ -1,6 +1,6 @@
 import { Button, Grid, Textarea } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { forwardRef, SyntheticEvent, useCallback } from "react";
+import { forwardRef, KeyboardEvent, SyntheticEvent, useCallback } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { QueueInfo } from "src/lib/chat_stream";
 
@@ -24,6 +24,14 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
     },
     [onSubmit]
   );
+  const handleKeydown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        onSubmit();
+      }
+    },
+    [onSubmit]
+  );
   return (
     <form onSubmit={handleSubmit}>
       <Textarea
@@ -32,6 +40,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
         bg="gray.100"
         borderRadius="xl"
         isDisabled={isSending}
+        onKeyDown={handleKeydown}
         _dark={{
           bg: "gray.800",
         }}
