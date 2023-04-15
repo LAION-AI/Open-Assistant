@@ -29,7 +29,7 @@ DEFAULT_PARAMETER_CONFIGS = [
         sampling_parameters=inference.SamplingParameters(
             top_k=50,
             top_p=0.95,
-            temperature=1.0,
+            temperature=0.9,
             repetition_penalty=1.2,
         ),
     ),
