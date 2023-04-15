@@ -51,7 +51,9 @@ export const RenderedCodeblock = ({
           </Box>
         }
       >
-        <SyntaxHighlighter language={lang}>{String(children).replace(/\n$/, "")}</SyntaxHighlighter>
+        <SyntaxHighlighter language={lang} wrapLongLines>
+          {String(children).replace(/\n$/, "")}
+        </SyntaxHighlighter>
       </Suspense>
       <IconButton
         size="sm"
