@@ -187,7 +187,6 @@ export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntr
       bg={isAssistant ? bgAssistant : bgUser}
       content={content || ""}
       width="full"
-      overflowX="auto"
       maxWidth="full"
       {...props}
     >
