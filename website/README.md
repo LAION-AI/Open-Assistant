@@ -32,7 +32,8 @@ This website is built using:
 
 To contribute to the website, make sure you have the following setup and installed:
 
-1.  Node 16: if you are on windows, you can [download node from their website](https://nodejs.org/en/download/releases), if you are on linux, use [NVM](https://github.com/nvm-sh/nvm) (Once installed, run `nvm use 16`)
+1.  Node 16: if you are on windows, you can [download node from their website](https://nodejs.org/en/download/releases),
+    if you are on linux, use [NVM](https://github.com/nvm-sh/nvm) (Once installed, run `nvm use 16`)
 1.  [Docker](https://www.docker.com/): We use docker to simplify running dependent services.
 
 ### Getting everything up and running
