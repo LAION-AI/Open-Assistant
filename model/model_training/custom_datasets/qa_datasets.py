@@ -506,6 +506,14 @@ class Vicuna(Dataset):
         for line in data["conversations"]:
             speaker = line["from"]  # 'human' or 'gpt'
             message = line["value"]
+
+            # remove markdown escaping in revision 192ab2185289094fc556ec8ce5ce1e8e587154ca
+            # python-markdownify with escape_asterisks & escape_underscores True is used
+            # for pre-processing the dataset.
+            # See also https://github.com/LAION-AI/Open-Assistant/issues/2510
+            message = message.replace(r"\_", "_")
+            message = message.replace(r"\*", "*")
+
             if role != speaker:
                 if role is not None:
                     dialogue.append("\n".join(messages))
@@ -528,7 +536,7 @@ class Vicuna(Dataset):
         dataset = load_dataset(
             "anon8231489123/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
-            data_files=["ShareGPT_V3_unfiltered_cleaned_split.json"],
+            data_files=["ShareGPT_V3_unfiltered_cleaned_split_no_imsorry.json"],
             revision="192ab2185289094fc556ec8ce5ce1e8e587154ca",
         )["train"]
         for data in dataset:
