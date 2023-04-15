@@ -2,8 +2,10 @@ import argparse
 from collections import OrderedDict
 
 import pandas
-from oasst_data import ExportMessageNode, read_message_trees, visit_messages_depth_first, write_message_trees
-from oasst_data.schemas import ExportMessageTree
+from oasst_data.reader import read_message_trees
+from oasst_data.schemas import ExportMessageNode, ExportMessageTree
+from oasst_data.traversal import visit_messages_depth_first
+from oasst_data.writer import write_message_trees
 
 
 def parse_args():
@@ -58,7 +60,9 @@ def main():
         else:
             parent_msg = message_by_id[msg.parent_id]
             parent_msg.replies.remove(msg)
-            print(f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)")
+            print(
+                f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)"
+            )
 
     # cleaning
     print("Cleaning...")
@@ -93,7 +97,11 @@ def main():
 
     # write cleaned dataset to output file
     print(f"Writing: {args.output_file_name}")
-    write_message_trees(args.output_file_name, tree_by_id.values(), exclude_none=args.exclude_nulls)
+    write_message_trees(
+        args.output_file_name,
+        tree_by_id.values(),
+        exclude_none=args.exclude_nulls,
+    )
 
 
 if __name__ == "__main__":
