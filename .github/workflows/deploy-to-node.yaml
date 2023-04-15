@@ -100,6 +100,7 @@ jobs:
         ${{ vars.INFERENCE_ASSISTANT_MESSAGE_TIMEOUT }}
       INFERENCE_MESSAGE_QUEUE_EXPIRE: ${{ vars.INFERENCE_MESSAGE_QUEUE_EXPIRE }}
       INFERENCE_WORK_QUEUE_MAX_SIZE: ${{ vars.INFERENCE_WORK_QUEUE_MAX_SIZE }}
+      INFERENCE_ENABLE_SAFETY: ${{ vars.INFERENCE_ENABLE_SAFETY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
