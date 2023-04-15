@@ -1,4 +1,4 @@
-import { Card, CardBody, Divider, useBreakpointValue } from "@chakra-ui/react";
+import { Card, CardBody, Divider } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import { FormProvider, useForm } from "react-hook-form";
 import { ChatConfigFormData } from "src/types/Chat";
@@ -22,7 +22,6 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
       model_config_name: modelInfos[0].name,
     },
   });
-  console.log(useBreakpointValue({ base: "base", md: "md", lg: "lg", xl: "xl" }));
   return (
     <FormProvider {...form}>
       <Card className="mx-auto" maxW={{ base: "min(64rem, 90vw)", lg: "36rem", xl: "3xl", "2xl": "5xl" }}>
