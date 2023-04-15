@@ -9,7 +9,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
-import { SiDiscord, SiGoogle } from "@icons-pack/react-simple-icons";
+import { Discord, Google } from "@icons-pack/react-simple-icons";
 import { TurnstileInstance } from "@marsidev/react-turnstile";
 import { boolean } from "boolean";
 import { Bug, Mail } from "lucide-react";
@@ -104,7 +104,7 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
               _active={{ bg: "#454FBF" }}
               size="lg"
               color="white"
-              leftIcon={<SiDiscord />}
+              leftIcon={<Discord />}
               onClick={() => signIn(discord.id, { callbackUrl: "/" })}
             >
               Continue with Discord
@@ -117,7 +117,7 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
               _active={{ bg: "#454FBF" }}
               size="lg"
               color="white"
-              leftIcon={<SiGoogle />}
+              leftIcon={<Google />}
               onClick={() => signIn(google.id, { callbackUrl: "/" })}
             >
               Continue with Google
