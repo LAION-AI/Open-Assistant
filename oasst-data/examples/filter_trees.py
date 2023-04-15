@@ -1,36 +1,8 @@
 import argparse
-import gzip
-import json
-from datetime import datetime
-from pathlib import Path
-from typing import Iterable
 
-from oasst_data import read_message_trees, visit_messages_depth_first
+from oasst_data import read_message_trees, write_message_trees
 from oasst_data.schemas import ExportMessageTree
-
-
-def write_message_trees(
-    output_file_name: str | Path,
-    trees: Iterable[ExportMessageTree],
-    exclude_none: bool,
-) -> None:
-    output_file_name = Path(output_file_name)
-    if output_file_name.suffix == ".gz":
-        file = gzip.open(str(output_file_name), mode="wt", encoding="UTF-8")
-    else:
-        file = output_file_name.open("w", encoding="UTF-8")
-
-    def default_serializer(obj):
-        """JSON serializer for objects not serializable by default json code"""
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        raise TypeError("Type %s not serializable" % type(obj))
-
-    with file:
-        # write one tree per line
-        for tree in trees:
-            json.dump(tree.dict(exclude_none=exclude_none), file, default=default_serializer)
-            file.write("\n")
+from oasst_data.traversal import visit_messages_depth_first
 
 
 def parse_args():
@@ -70,7 +42,9 @@ def main():
     for message_tree in read_message_trees(args.input_file_name):
         msgs = []
         visit_messages_depth_first(message_tree.prompt, msgs.append)
-        if message_tree.tree_state in states and (allow_synth or not any(x.synthetic for x in msgs)):
+        if message_tree.tree_state in states and (
+            allow_synth or not any(x.synthetic for x in msgs)
+        ):
             trees.append(message_tree)
 
     print(f"Found {len(trees)} matching trees.")
