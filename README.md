@@ -65,7 +65,7 @@ in and start taking on tasks! We want to collect a high volume of quality data.
 By submitting, ranking, and labelling model prompts and responses you will be
 directly helping to improve the capabilities of Open Assistant.
 
-### Running Locally
+### Running the Development Setup Locally (without chat)
 
 **You do not need to run the project locally unless you are contributing to the
 development process. The website link above will take you to the public website
