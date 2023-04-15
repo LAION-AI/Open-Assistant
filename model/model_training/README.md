@@ -107,7 +107,7 @@ We can know launch the container instance that runs the RM on a specified GPU
 
 ```bash
 SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind model_store_rm:/model_store_rm tritonserver-pyt.sif tritonserver --model-repository=/model_store_rm
-SINGULARITYENV_CUDA_VISIBLE_DEVICES=6 singularity run --nv --bind model_store_sft:/model_store_sft tritonserver-pyt.sif tritonserver --model-repository=/model_store_sft --http-port 8003 --grpc-port 8004 --metrics-port 8005
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=6 singularity run --nv --bind model_store_sft:/model_store_sft tritonserver-pyt.sif tritonserver --model-repository=/model_store_sft --http-port 8006 --grpc-port 8004 --metrics-port 8005
 ```
 
 FInally, we can train using PPO:
@@ -196,3 +196,4 @@ Experimental results in wandb
 
 - recreate init in trainer that does not load the ref_model, currently hard
   coded
+- same for not loading the self.tokenizer in AccelerateRLTrainer

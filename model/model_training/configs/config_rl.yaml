@@ -37,7 +37,9 @@ pythia_rlhf:
 
   sft_config:
     is_reward_model: false
-    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5 #andreaskoepf/pythia-1.4b-gpt4all-pretrain # OpenAssistant/llama_30b_sft-2_test
+    model_name: andreaskoepf/oasst-sft-4-pythia-12b-epoch-3.5
+    # model_name: andreaskoepf/pythia-1.4b-gpt4all-pretrain
+    # model_name: OpenAssistant/llama_30b_sft-2_test
     cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
     quantization: false
     seq2seqmodel: false
@@ -56,7 +58,8 @@ llama_rlhf:
     pooling: last
     residual_dropout: 0.0
     use_flash_attention: false
-    half: false
+    half: true
+    batch_size: 8
     mode: "rm"
 
   sft_config:
@@ -70,7 +73,6 @@ llama_rlhf:
     use_flash_attention: true
     half: true
     mode: "rl"
-  batch_size: 1
 
 debug_rlhf:
   rank_model: pythia_reward_model/checkpoint-50

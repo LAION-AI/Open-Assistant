@@ -129,12 +129,12 @@ def llama_forward_with_flash_attn_rl(
             )
         attention_mask = attention_mask[:, 0, -1]
 
-    flash_attn.train(self.training)
-    out_dtype = value_states.dtype
-
-    q, k, v = query_states.transpose(1, 2), key_states.transpose(1, 2), value_states.transpose(1, 2)
     # If shape requirement is met we can use flash attention
-    if q.shape == k.shape:
+    if query_states.shape == key_states.shape:
+        flash_attn.train(self.training)
+        out_dtype = value_states.dtype
+
+        q, k, v = query_states.transpose(1, 2), key_states.transpose(1, 2), value_states.transpose(1, 2)
         attn_output = compute_flash_attention(flash_attn, q, k, v, attention_mask)
         attn_output = attn_output.transpose(1, 2).to(out_dtype)
 
