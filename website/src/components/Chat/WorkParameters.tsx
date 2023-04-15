@@ -24,12 +24,11 @@ export const WorkParametersDisplay = memo(function WorkParametersDisplay({
   parameters: NonNullable<InferenceMessage["work_parameters"]>;
 }) {
   const { seed: _, ...rest } = parameters;
-  const model_id = parameters.model_config.model_id;
+  const model_id = parameters.model_config.model_id.replace("OpenAssistant/", "");
   const { t } = useTranslation("chat");
   const { modelInfos } = useChatContext();
-  const modelInfo = modelInfos.find((modelInfo) => modelInfo.name === model_id);
   const presetName =
-    modelInfo?.parameter_configs.find((preset) =>
+    modelInfos[0].parameter_configs.find((preset) =>
       areParametersEqual(preset.sampling_parameters, parameters.sampling_parameters)
     )?.name ?? t("preset_custom");
 
