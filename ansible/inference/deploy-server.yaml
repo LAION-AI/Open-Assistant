@@ -152,5 +152,8 @@
           ENABLE_SAFETY:
             "{{ lookup('ansible.builtin.env', 'INFERENCE_ENABLE_SAFETY') |
             default('False', true) }}"
+          GUNICORN_WORKERS:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_GUNICORN_WORKERS') |
+            default(1, true) }}"
         ports:
           - "{{ server_port }}:8080"
