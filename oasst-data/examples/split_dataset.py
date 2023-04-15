@@ -5,7 +5,7 @@ from oasst_data import read_message_list, write_messages
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="filter_messages")
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--val_percent",
         type=int,
@@ -34,6 +34,7 @@ def parse_args():
 
 
 def main():
+    """Split messages file into train and validation set based on message_tree_id."""
     args = parse_args()
 
     print(f"Reading: {args.input_file_name}")
