@@ -101,7 +101,7 @@ export class OasstInferenceClient {
   }
 
   hide_chat({ chat_id }: { chat_id: string }) {
-    return this.request(`/chats/${chat_id}/hide`, { method: "PUT", data: { hidden: false } });
+    return this.request(`/chats/${chat_id}/hide`, { method: "PUT", data: { hidden: true } });
   }
 
   delete_account() {
