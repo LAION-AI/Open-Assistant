@@ -552,7 +552,7 @@ class DatabricksDolly15k(Dataset):
     def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
         super().__init__()
         self.rows = []
-        self.citation_regex = re.compile(r"\[[a-z]\]")  # removes citations in the form of e.g. [a]
+        self.citation_regex = re.compile(r"\[[a-zA-Z]\]")  # removes citations in the form of e.g. [a] or [A]
         if mode not in ("sft", "rl"):
             raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
         self.mode = mode
