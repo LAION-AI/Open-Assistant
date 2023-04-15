@@ -16,12 +16,21 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
 
   console.assert(modelInfos.length > 0, "No model config was found");
 
-  const form = useForm<ChatConfigFormData>({
-    defaultValues: getConfigCache() ?? {
+  let defaultValues = getConfigCache();
+  if (defaultValues) {
+    const model = modelInfos.find((model) => model.name === defaultValues.model_config_name);
+    if (!model) {
+      defaultValues = null;
+    }
+  }
+  if (!defaultValues) {
+    defaultValues = {
       ...modelInfos[0].parameter_configs[0].sampling_parameters,
       model_config_name: modelInfos[0].name,
-    },
-  });
+    };
+  }
+
+  const form = useForm<ChatConfigFormData>({ defaultValues });
   return (
     <FormProvider {...form}>
       <Card className="mx-auto" maxW={{ base: "min(64rem, 90vw)", lg: "36rem", xl: "3xl", "2xl": "5xl" }}>
