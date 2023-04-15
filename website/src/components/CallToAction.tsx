@@ -1,5 +1,5 @@
 import { Box, Link, Text, useColorMode } from "@chakra-ui/react";
-import { SiDiscord, SiGithub } from "@icons-pack/react-simple-icons";
+import { Discord, Github } from "@icons-pack/react-simple-icons";
 import { Users } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { useId } from "react";
@@ -73,7 +73,7 @@ export function CallToAction() {
                 type="button"
                 className="mb-2 flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                <SiDiscord size={20} />
+                <Discord size={20} />
                 <Text as="span" className="ml-3" fontSize={["sm", "md", "lg"]}>
                   {t("discord")}
                 </Text>
@@ -84,7 +84,7 @@ export function CallToAction() {
                 type="button"
                 className="mb-2 flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                <SiGithub size={20} />
+                <Github size={20} />
                 <Text as="span" className="ml-3" fontSize={["sm", "md", "lg"]}>
                   {t("github")}
                 </Text>
