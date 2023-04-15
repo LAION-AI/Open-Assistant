@@ -4,15 +4,27 @@ const msgType = {
   type: "message",
   load: async (msg) => {
     await msg.react("<a:loading:1051419341914132554>");
+    try {
+      await msg.channel.sendTyping();
+    } catch (err) {}
   },
   reply: async (msg, content) => {
     try {
-      await msg.reply(content);
-    } catch (err) {}
+      const userReactions = msg.reactions.cache.filter((reaction) =>
+        reaction.users.cache.has(process.env.CLIENT_ID)
+      );
+      try {
+        for (const reaction of userReactions.values()) {
+          reaction.users.remove(process.env.CLIENT_ID);
+        }
+      } catch (error) {
+        console.error("Failed to remove reactions:", error);
+      }
 
-    try {
-      await msg.reactions.removeAll();
-    } catch (err) {}
+      return await msg.reply(content);
+    } catch (err) {
+      console.log(err);
+    }
   },
 };
 
@@ -22,6 +34,13 @@ export default {
   async execute(message, client) {
     if (message.mentions.has(client.user) && !message.author.bot) {
       var content = message.content;
+      // if is ping by @everyone or @here or @role ignore
+      if (
+        message.content.includes("@everyone") ||
+        message.content.includes("@here") ||
+        message.content.includes("<@&")
+      )
+        return;
       if (message.content.includes(`<@${client.user.id}>`)) {
         if (!message.content.startsWith(`<@${client.user.id}>`)) return;
         content = message.content.split(`<@${client.user.id}> `)[1];
@@ -35,8 +54,11 @@ export default {
       message.user = message.author;
 
       if (!command) {
-        commandName = "help";
+        commandName = "chat";
         command = client.commands.get(commandName);
+      }
+      if (commandName == "chat" || content.startsWith("chat ")) {
+        options.message = content.replace("chat ", "");
       }
       if (command.disablePing) return;
       var guildId;

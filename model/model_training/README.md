@@ -98,6 +98,17 @@ python trainer_sft.py --configs oasst_export_eu galactica-125m
 Change the `input_file_path` in the `oasst_export_eu` from the
 `configs/config.yaml` file to the correct path.
 
+## Training the Reward Model
+
+To experiment with the reward model run:
+
+```bash
+python trainer_rm.py --configs defaults_rm oasst-rm-1-pythia-1b
+```
+
+Since the model configs are kept quite minimal it is important to overwrite the
+other default options (as given by `defaults_rm`) with the model specific ones.
+
 ## Training with RL
 
 To train using trlx try:

@@ -20,14 +20,16 @@ export interface ChatItem {
   id: string;
   created_at: string; //timestamp
   modified_at: string; //timestamp
+  messages: InferenceMessage[];
 
   // those are not available when you first create a chat
   title?: string;
-  messages?: InferenceMessage[];
+  hidden?: boolean;
 }
 
 export interface InferenceMessage {
   id: string;
+  chat_id: string;
   parent_id: string | null;
   created_at: string; //timestamp
   content: string | null;
@@ -97,7 +99,7 @@ export interface SamplingParameters {
   top_p: number | null;
 }
 
-export interface ChatConfigForm extends SamplingParameters {
+export interface ChatConfigFormData extends SamplingParameters {
   model_config_name: string; // this is the same as ModelParameterConfig.name
 }
 

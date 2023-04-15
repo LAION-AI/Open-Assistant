@@ -19,27 +19,22 @@
 
 </div>
 
-# Here is our website to collect data:
-
-[open-assistant.io](https://open-assistant.io)
-
-(project documentation lives [here](https://laion-ai.github.io/Open-Assistant/))
-
 # Table of Contents
 
 - [What is Open Assistant?](#what-is-open-assistant)
-- [Do you want to try it out?](#do-you-want-to-try-it-out)
-- [The Plan](#the-plan)
+- [Useful Links](#useful-links)
+- [How To Try It Out](#how-to-try-it-out)
 - [The Vision](#the-vision)
-- [How can you help?](#how-can-you-help)
-- [I’m in! How do I contribute?](CONTRIBUTING.md)
+- [The Plan](#the-plan)
+- [How You Can Help](#how-you-can-help)
 
 ---
 
 ## What is Open Assistant?
 
 <p align="center">
-    Open Assistant is a project meant to give everyone access to a great chat based large language model.
+Open Assistant is a project meant to give everyone access to a great chat based
+large language model.
 </p>
 
 We believe that by doing this we will create a revolution in innovation in
@@ -47,7 +42,21 @@ language. In the same way that stable-diffusion helped the world make art and
 images in new ways we hope Open Assistant can help improve the world by
 improving language itself.
 
-## Do you want to try it out?
+# Useful Links
+
+- [Data Collection](https://open-assistant.io)
+
+- [Chat](https://open-assistant.io/chat)
+
+- [Project Documentation](https://projects.laion.ai/Open-Assistant/)
+
+## How To Try It Out
+
+### Chatting with the AI
+
+The chat frontend is now live [here](https://open-assistant.io/chat). Log in and
+start chatting! Please try to react with a thumbs up or down for the assistant's
+responses when chatting.
 
 ### Contributing to Data Collection
 
@@ -93,9 +102,19 @@ interact with the website.
 > [GitHub Codespaces](https://github.com/features/codespaces), you can use the
 > provided [`.devcontainer`](.devcontainer/) folder.
 
+## The Vision
+
+We are not going to stop at replicating ChatGPT. We want to build the assistant
+of the future, able to not only write email and cover letters, but do meaningful
+work, use APIs, dynamically research information, and much more, with the
+ability to be personalized and extended by anyone. And we want to do this in a
+way that is open and accessible, which means we must not only build a great
+assistant, but also make it small and efficient enough to run on consumer
+hardware.
+
 ## The Plan
 
-##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the [InstructGPT paper](https://arxiv.org/abs/2203.02155).
+##### We want to get to an initial MVP as fast as possible, by following the 3-steps outlined in the [InstructGPT paper](https://arxiv.org/abs/2203.02155)
 
 1. Collect high-quality human generated Instruction-Fulfillment samples
    (prompt + response), goal >50k. We design a crowdsourced process to collect
@@ -115,23 +134,13 @@ interact with the website.
 We can then take the resulting model and continue with completion sampling step
 2 for a next iteration.
 
-## The Vision
-
-We are not going to stop at replicating ChatGPT. We want to build the assistant
-of the future, able to not only write email and cover letters, but do meaningful
-work, use APIs, dynamically research information, and much more, with the
-ability to be personalized and extended by anyone. And we want to do this in a
-way that is open and accessible, which means we must not only build a great
-assistant, but also make it small and efficient enough to run on consumer
-hardware.
-
 ### Slide Decks
 
 [Vision & Roadmap](https://docs.google.com/presentation/d/1n7IrAOVOqwdYgiYrXc8Sj0He8krn5MVZO_iLkCjTtu0/edit?usp=sharing)
 
 [Important Data Structures](https://docs.google.com/presentation/d/1iaX_nxasVWlvPiSNs0cllR9L_1neZq0RJxd6MFEalUY/edit?usp=sharing)
 
-## How can you help?
+## How You Can Help
 
 All open source projects begin with people like you. Open source is the belief
 that if we collaborate we can together gift our knowledge and technology to the

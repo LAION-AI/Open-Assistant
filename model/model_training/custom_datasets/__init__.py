@@ -10,6 +10,7 @@ from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
 from model_training.custom_datasets.qa_datasets import (
     SODA,
+    DatabricksDolly15k,
     JokeExplaination,
     QADataset,
     SODADialogue,
@@ -128,7 +129,7 @@ def get_one_dataset(
         train = ProsocialDialogueExplaination(cache_dir=data_path, split="train")
         eval = ProsocialDialogueExplaination(cache_dir=data_path, split="validation")
     elif dataset_name == "soda":
-        dataset = SODA(data_path)
+        dataset = SODA(data_path, **kwargs)
     elif dataset_name == "soda_dialogue":
         dataset = SODADialogue(data_path)
     elif dataset_name == "joke":
@@ -159,6 +160,8 @@ def get_one_dataset(
         train, eval = load_shp()
     elif dataset_name == "hellaswag":
         train, eval = load_hellaswag()
+    elif dataset_name == "dolly15k":
+        dataset = DatabricksDolly15k(cache_dir=data_path)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 

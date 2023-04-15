@@ -14,7 +14,7 @@
   "open_new_tab_action": "Άνοιγμα σε νέα καρτέλα",
   "parent": "Πατέρας",
   "reactions": "Αντιδράσεις",
-  "recent_messages": "Πρόσφατα μηνύματα στην {{γλώσσα}}",
+  "recent_messages": "Πρόσφατα μηνύματα στα {{language}}",
   "report_action": "Αναφορά",
   "report_placeholder": "Γιατί πρέπει αυτό το μήνυμα να ελεγθεί;",
   "report_title": "Αναφορά",

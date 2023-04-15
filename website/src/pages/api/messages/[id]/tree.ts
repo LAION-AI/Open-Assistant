@@ -1,7 +1,7 @@
 import { ROLES } from "src/components/RoleSelect";
 import { withoutRole } from "src/lib/auth";
 import { createApiClient } from "src/lib/oasst_client_factory";
-import { buildTree } from "src/pages/api/admin/messages/[id]/tree";
+import { buildTree } from "src/utils/buildTree";
 
 export default withoutRole("banned", async (req, res, token) => {
   const client = await createApiClient(token);

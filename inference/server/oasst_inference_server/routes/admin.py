@@ -2,7 +2,7 @@ import fastapi
 import sqlmodel
 from fastapi import Depends, HTTPException, Security
 from loguru import logger
-from oasst_inference_server import auth, database, deps, models
+from oasst_inference_server import admin, auth, database, deps, models
 from oasst_inference_server.schemas import worker as worker_schema
 from oasst_inference_server.settings import settings
 
@@ -86,4 +86,14 @@ async def revoke_refresh_tokens(
     for refresh_token in refresh_tokens:
         refresh_token.enabled = False
     await session.commit()
+    return fastapi.Response(status_code=200)
+
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    root_token: str = Depends(get_root_token),
+    session: database.AsyncSession = Depends(deps.create_session),
+):
+    await admin.delete_user_from_db(session, user_id)
     return fastapi.Response(status_code=200)

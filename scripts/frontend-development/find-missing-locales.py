@@ -1,3 +1,4 @@
+import sys
 from collections import defaultdict
 from glob import glob
 from json import load
@@ -46,9 +47,10 @@ def main():
     for en_file in glob(path.join(DIR, EN_PATH)):
         for file in glob(path.join(DIR, ALL_PATH)):
             if path.basename(en_file) == path.basename(file) and file != en_file:
-                file_info = audit(file, en_file)
                 lang = path.basename(path.dirname(file))
-                per_language_dict[lang].append(file_info)
+                if len(sys.argv) == 0 or lang in sys.argv:
+                    file_info = audit(file, en_file)
+                    per_language_dict[lang].append(file_info)
     for results in per_language_dict.values():
         list(map(lambda args: print_result(*args), results))
         print()
