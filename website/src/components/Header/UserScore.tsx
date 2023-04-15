@@ -1,14 +1,16 @@
 import { HStack } from "@chakra-ui/react";
 import { Icon } from "@chakra-ui/react";
 import { Star } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useUserScore } from "src/hooks/ui/useUserScore";
 
 export const UserScore = () => {
+  const { status } = useSession();
   const { score } = useUserScore();
   const { t } = useTranslation("leaderboard");
 
-  if (!Number.isFinite(score)) {
+  if (status !== "authenticated" || !Number.isFinite(score)) {
     return null;
   }
 
