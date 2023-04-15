@@ -5,6 +5,38 @@
     "description": "Home of the OpenAssistant blog.",
     "items": [
         {
+            "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/15/open-assistant-released",
+            "content_html": "<p>We're excited to announce the release of OpenAssistant!</p><p>The future of AI development depends heavily on high quality datasets and models\nbeing made publicly available, and that's exactly what this project does.</p><p>Our team has worked tirelessly over the past several months collecting large\namounts of text-based input and feedback to create an incredibly diverse and\nunique dataset designed specifically for training language models or other AI\napplications.</p><p>With over 600k human-generated data points covering a wide range of topics and\nstyles of writing, our dataset will be an invaluable tool for any developer\nlooking to create state-of-the-art instruction models!</p><p>To make things even better, we are making this entire dataset free and\naccessible to all who wish to use it. Check it out today at our HF org:\n<a href=\"https://huggingface.co/OpenAssistant\" target=\"_blank\" rel=\"noopener noreferrer\">OpenAssistant</a></p><p>On top of that, we've trained very powerful models that you can try right now\nat:</p><p><a href=\"https://open-assistant.io/chat\" target=\"_blank\" rel=\"noopener noreferrer\">open-assistant.io/chat</a></p><p>Watch the annoucement video:</p><div style=\"width:100%;height:360px\"></div>",
+            "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/15/open-assistant-released",
+            "title": "OpenAssistant RELEASED! The world's best open-source Chat AI!",
+            "summary": "OpenAssistant RELEASED! The world's best open-source Chat AI!",
+            "date_modified": "2023-04-15T00:00:00.000Z",
+            "author": {
+                "name": "Yannic Kilcher",
+                "url": "https://www.ykilcher.com/"
+            },
+            "tags": [
+                "open-assistant",
+                "youtube"
+            ]
+        },
+        {
+            "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/10/open-assistant-livestream-just-chatting",
+            "content_html": "<p>Livestream playing around with Open Assistant and AI allignement :)</p><p><a href=\"https://open-assistant.io/chat\" target=\"_blank\" rel=\"noopener noreferrer\">https://open-assistant.io/chat</a></p><div style=\"width:100%;height:360px\"></div>",
+            "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/10/open-assistant-livestream-just-chatting",
+            "title": "AI Alignment Livestream (aka OpenAssistant \"Just Chatting\")",
+            "summary": "AI Alignment Livestream (aka OpenAssistant \"Just Chatting\")",
+            "date_modified": "2023-04-10T00:00:00.000Z",
+            "author": {
+                "name": "Yannic Kilcher",
+                "url": "https://www.ykilcher.com/"
+            },
+            "tags": [
+                "open-assistant",
+                "youtube"
+            ]
+        },
+        {
             "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/06/open-assistant-first-models-are-here",
             "content_html": "<p>Hello hello! we're finally here the first models of open Assistant are out and\nI'm going to show you a little bit of what you can do with them!</p><p><a href=\"https://open-assistant.io/chat\" target=\"_blank\" rel=\"noopener noreferrer\">https://open-assistant.io/chat</a></p><div style=\"width:100%;height:360px\"></div>",
             "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/06/open-assistant-first-models-are-here",

@@ -2,12 +2,49 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://LAION-AI.github.io/Open-Assistant/blog</id>
     <title>OpenAssistant Blog</title>
-    <updated>2023-04-06T00:00:00.000Z</updated>
+    <updated>2023-04-15T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://LAION-AI.github.io/Open-Assistant/blog"/>
     <subtitle>Home of the OpenAssistant blog.</subtitle>
     <icon>https://LAION-AI.github.io/Open-Assistant/img/logo.svg</icon>
     <rights>Copyright © 2023 OpenAssistant.</rights>
+    <entry>
+        <title type="html"><![CDATA[OpenAssistant RELEASED! The world's best open-source Chat AI!]]></title>
+        <id>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/15/open-assistant-released</id>
+        <link href="https://LAION-AI.github.io/Open-Assistant/blog/2023/04/15/open-assistant-released"/>
+        <updated>2023-04-15T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[OpenAssistant RELEASED! The world's best open-source Chat AI!]]></summary>
+        <content type="html"><![CDATA[<p>We're excited to announce the release of OpenAssistant!</p><p>The future of AI development depends heavily on high quality datasets and models
+being made publicly available, and that's exactly what this project does.</p><p>Our team has worked tirelessly over the past several months collecting large
+amounts of text-based input and feedback to create an incredibly diverse and
+unique dataset designed specifically for training language models or other AI
+applications.</p><p>With over 600k human-generated data points covering a wide range of topics and
+styles of writing, our dataset will be an invaluable tool for any developer
+looking to create state-of-the-art instruction models!</p><p>To make things even better, we are making this entire dataset free and
+accessible to all who wish to use it. Check it out today at our HF org:
+<a href="https://huggingface.co/OpenAssistant" target="_blank" rel="noopener noreferrer">OpenAssistant</a></p><p>On top of that, we've trained very powerful models that you can try right now
+at:</p><p><a href="https://open-assistant.io/chat" target="_blank" rel="noopener noreferrer">open-assistant.io/chat</a></p><p>Watch the annoucement video:</p><div style="width:100%;height:360px"></div>]]></content>
+        <author>
+            <name>Yannic Kilcher</name>
+            <uri>https://www.ykilcher.com/</uri>
+        </author>
+        <category label="open-assistant" term="open-assistant"/>
+        <category label="youtube" term="youtube"/>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[AI Alignment Livestream (aka OpenAssistant "Just Chatting")]]></title>
+        <id>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/10/open-assistant-livestream-just-chatting</id>
+        <link href="https://LAION-AI.github.io/Open-Assistant/blog/2023/04/10/open-assistant-livestream-just-chatting"/>
+        <updated>2023-04-10T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[AI Alignment Livestream (aka OpenAssistant "Just Chatting")]]></summary>
+        <content type="html"><![CDATA[<p>Livestream playing around with Open Assistant and AI allignement :)</p><p><a href="https://open-assistant.io/chat" target="_blank" rel="noopener noreferrer">https://open-assistant.io/chat</a></p><div style="width:100%;height:360px"></div>]]></content>
+        <author>
+            <name>Yannic Kilcher</name>
+            <uri>https://www.ykilcher.com/</uri>
+        </author>
+        <category label="open-assistant" term="open-assistant"/>
+        <category label="youtube" term="youtube"/>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Open Assistant First Models are here!]]></title>
         <id>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/06/open-assistant-first-models-are-here</id>
