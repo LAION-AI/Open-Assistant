@@ -103,12 +103,12 @@ if __name__ == "__main__":
     init_rng(training_conf)
 
     rank_config = Namespace(**training_conf.rank_config)
+    sft_config = Namespace(**training_conf.sft_config)
     eos_token = transformers.AutoTokenizer.from_pretrained(
-        rank_config.model_name, cache_dir=rank_config.cache_dir
+        sft_config.model_name, cache_dir=sft_config.cache_dir
     ).eos_token
 
     # Load pretrained SFT model
-    sft_config = Namespace(**training_conf.sft_config)
 
     # override model_name to be the same as sft_model
     trlx_config = TRLConfig.load_yaml("configs/ppo_config.yaml")
@@ -147,7 +147,6 @@ if __name__ == "__main__":
         for item in eval_prompts:
             # write each item on a new line
             fp.write("Prompt For RL: %s\n" % item)
-    print("Done")
 
     trlx_config.tokenizer.tokenizer_path = sft_config.model_name
     trlx_config.model.model_path = sft_config.model_name
@@ -155,12 +154,14 @@ if __name__ == "__main__":
     trlx_config.method.chunk_size = int(training_conf.chunk_size)
     trlx_config.method.num_rollouts = int(training_conf.num_rollouts)
     trlx_config.train.total_steps = int(training_conf.total_steps)
-
+    
     if training_conf.debug:
         print("Continuing in debug mode")
-        prompts = prompts[:100]
-        eval_prompts = eval_prompts[:100]
+        prompts = prompts[:10]
+        eval_prompts = eval_prompts[:10]
         trlx_config.method.num_rollouts = 1
+        trlx_config.method.gen_kwargs['max_new_tokens'] = 12
+        trlx_config.train.seq_length = 48
 
     trainer = trlx.train(
         sft_config.model_name,
