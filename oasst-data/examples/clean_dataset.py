@@ -60,9 +60,7 @@ def main():
         else:
             parent_msg = message_by_id[msg.parent_id]
             parent_msg.replies.remove(msg)
-            print(
-                f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)"
-            )
+            print(f"Branch deleted: {msg.message_id} ({count_descendants(msg)} messages)")
 
     # cleaning
     print("Cleaning...")
