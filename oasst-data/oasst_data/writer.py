@@ -23,7 +23,9 @@ def open_jsonl_write(file_name: str | Path) -> TextIO:
 
 
 def write_tree(
-    file: TextIO, tree: ExportMessageTree, exclude_none: bool = False
+    file: TextIO,
+    tree: ExportMessageTree,
+    exclude_none: bool = False,
 ) -> None:
     json.dump(tree.dict(exclude_none=exclude_none), file, default=default_serializer)
     file.write("\n")
@@ -41,7 +43,9 @@ def write_message_trees(
 
 
 def write_message(
-    file: TextIO, message: ExportMessageNode, exclude_none: bool = False
+    file: TextIO,
+    message: ExportMessageNode,
+    exclude_none: bool = False,
 ) -> None:
     message = message.copy(deep=False, exclude={"replies"})
     json.dump(
