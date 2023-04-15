@@ -5,7 +5,7 @@ import { ChatListBase } from "./ChatListBase";
 
 export const ChatListDesktop = memo(function ChatListDesktop() {
   return (
-    <Box pe="260px" display={{ base: "none", md: "block" }}>
+    <Box pe="260px" display={{ base: "none", lg: "block" }}>
       <ChatListBase isSideBar />
     </Box>
   );

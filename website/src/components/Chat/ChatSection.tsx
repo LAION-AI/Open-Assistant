@@ -22,10 +22,9 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
       model_config_name: modelInfos[0].name,
     },
   });
-
   return (
     <FormProvider {...form}>
-      <Card className="max-w-5xl mx-auto">
+      <Card className="mx-auto" maxW={{ base: "min(64rem, 90vw)", lg: "36rem", xl: "3xl", "2xl": "5xl" }}>
         <CardBody display="flex" flexDirection="column" gap="2">
           <ChatConversation chatId={chatId} key={chatId} />
           <ChatConfigSummary />

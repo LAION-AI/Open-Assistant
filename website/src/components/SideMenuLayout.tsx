@@ -1,12 +1,21 @@
-import { Box } from "@chakra-ui/react";
+import { Box, BoxProps } from "@chakra-ui/react";
 import { PropsWithChildren } from "react";
 import { SIDE_MENU_WIDTH, SideMenu, SideMenuProps } from "src/components/SideMenu";
 
-export const SideMenuLayout = ({ items, children, collapsed }: PropsWithChildren<SideMenuProps>) => {
+export const SideMenuLayout = ({
+  items,
+  children,
+  collapsed,
+  innerBoxProps,
+}: PropsWithChildren<SideMenuProps> & {
+  innerBoxProps?: BoxProps;
+}) => {
+  const desktopBreakpoint = collapsed ? "lg" : "md";
+
   return (
     <Box
       display="flex"
-      flexDirection={{ base: "column", md: "row" }}
+      flexDirection={{ base: "column", [desktopBreakpoint]: "row" }}
       h="full"
       px={{ base: 3, lg: 6 }}
       py="6"
@@ -14,14 +23,16 @@ export const SideMenuLayout = ({ items, children, collapsed }: PropsWithChildren
     >
       <SideMenu items={items} collapsed={collapsed} />
       <Box
+        className="innerBox"
         display="block"
         w="full"
         ms={{ md: 4, lg: 6 }}
         ps={{
-          md: SIDE_MENU_WIDTH.MD,
+          [desktopBreakpoint]: SIDE_MENU_WIDTH.MD,
           lg: collapsed ? SIDE_MENU_WIDTH.MD : SIDE_MENU_WIDTH.LG,
         }}
-        mt={{ base: 6, md: 0 }}
+        mt={{ base: 6, [desktopBreakpoint]: 0 }}
+        {...innerBoxProps}
       >
         {children}
       </Box>
