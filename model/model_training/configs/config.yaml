@@ -95,32 +95,59 @@ math:
 
 pretrain:
   num_train_epochs: 1
-  weight_decay: 0.01
+  weight_decay: 0.0
   use_custom_sampler: true
   sort_by_length: false
   datasets:
-    - joke
+    - joke:
+        val_split: 0.05
     - webgpt:
-        val_split: 0.1
+        val_split: 0.05
+        max_val_set: 250
     - gpt4all:
         val_split: 0.01
+        max_val_set: 250
     - alpaca:
         val_split: 0.025
+        max_val_set: 250
     - code_alpaca:
         val_split: 0.05
-    - minimath
-    - humaneval_mbpp_codegen_qa
-    - humaneval_mbpp_testgen_qa
-    - grade_school_math_instructions
-    - recipes
-    - cmu_wiki_qa
-    #- youtube_subs_howto100m # uses incompatible column names
-    #- ubuntu_dialogue_qa # fails to load
-    - oa_wiki_qa_bart_10000row
+        max_val_set: 250
+    - vicuna:
+        max_val_set: 250
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
+        max_count: 10000
+        min_length: 250
+        val_split: 0.05
+        max_val_set: 250
+    - minimath:
+        val_split: 0.05
+    - humaneval_mbpp_codegen_qa:
+        val_split: 0.05
+    - humaneval_mbpp_testgen_qa:
+        val_split: 0.05
+    - grade_school_math_instructions:
+        val_split: 0.05
+    - recipes:
+        val_split: 0.05
+    - cmu_wiki_qa:
+        val_split: 0.05
+    - oa_wiki_qa_bart_10000row:
+        val_split: 0.05
+        max_val_set: 250
     - prosocial_dialogue:
         fraction: 0.1
+        max_val_set: 250
     - explain_prosocial:
         fraction: 0.05
+        max_val_set: 250
+    - soda:
+        fraction: 0.2
+        max_val_set: 250
+    - oa_leet10k:
+        val_split: 0.05
+        max_val_set: 250
 
 oasst_only:
   save_strategy: epoch
@@ -256,6 +283,69 @@ llama-30b:
   num_train_epochs: 16
   save_total_limit: 4
   use_flash_attention: true
+
+llama-30b-sft-6:
+  dtype: fp16
+  log_dir: "llama_log_30b"
+  learning_rate: 1e-5
+  #model_name: /home/ubuntu/Open-Assistant/model/model_training/.saved/llama-30b-super-pretrain/checkpoint-3500
+  model_name: OpenAssistant/llama-30b-super-pretrain
+  output_dir: llama_model_30b
+  deepspeed_config: configs/zero3_config_sft.json
+  weight_decay: 0.0
+  residual_dropout: 0.0
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 20
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 3
+  eval_steps: 101
+  save_steps: 485
+  num_train_epochs: 8
+  save_total_limit: 3
+  use_custom_sampler: true
+  sort_by_length: false
+  save_strategy: steps
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-04-12_oasst_release_ready_synth.jsonl.gz
+        val_split: 0.05
+    - vicuna:
+        val_split: 0.05
+        max_val_set: 800
+        fraction: 0.8
+    - dolly15k:
+        val_split: 0.05
+        max_val_set: 300
+    - grade_school_math_instructions:
+        val_split: 0.05
+    - code_alpaca:
+        val_split: 0.05
+        max_val_set: 250
+
+llama-30b-pretrain:
+  dtype: fp16
+  log_dir: "llama_log_30b"
+  learning_rate: 1e-5
+  model_name: /home/ubuntu/llama_hf/30B
+  output_dir: llama_model_30b
+  deepspeed_config: configs/zero3_config_pretrain.json
+  weight_decay: 0.0
+  residual_dropout: 0.0
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 3
+  eval_steps: 251
+  save_steps: 500
+  num_train_epochs: 1
+  save_total_limit: 2
 
 pythia-70m-deduped:
   learning_rate: 8e-6
