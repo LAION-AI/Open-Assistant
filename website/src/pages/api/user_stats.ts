@@ -1,6 +1,5 @@
 import { ROLES } from "src/components/RoleSelect";
 import { withoutRole } from "src/lib/auth";
-import { OasstError } from "src/lib/oasst_api_client";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import { getBackendUserCore } from "src/lib/users";
 import { BackendUserCore } from "src/types/Users";
