@@ -304,6 +304,7 @@ WorkerResponse = Annotated[
         PongResponse,
         InternalFinishedMessageResponse,
         InternalErrorResponse,
+        SafePromptResponse,
     ],
     pydantic.Field(discriminator="response_type"),
 ]

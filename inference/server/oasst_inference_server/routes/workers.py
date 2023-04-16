@@ -212,6 +212,7 @@ async def handle_worker(
                                 )
                                 await _update_session(worker_response.metrics)
                             case "safe_prompt":
+                                logger.info("Received safe prompt response")
                                 worker_response = cast(inference.SafePromptResponse, worker_response)
                                 await handle_safe_prompt_response(
                                     response=worker_response,
