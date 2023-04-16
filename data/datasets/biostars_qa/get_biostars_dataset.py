@@ -20,7 +20,7 @@ def get_biostars_dataset(start_idx=9557161, accept_threshold=1000000, sleep=0.1,
     Returns:
         Nothing. Content is saved to individual JSON files for each post.
     """
-    
+
     headers = {"Content-Type": "application/json"}
 
     has_accepted_count = 0
