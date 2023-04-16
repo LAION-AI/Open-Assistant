@@ -37,7 +37,7 @@
     "@marsidev/react-turnstile": "^0.0.7",
     "@next-auth/prisma-adapter": "^1.0.5",
     "@next/bundle-analyzer": "^13.2.4",
-    "@next/font": "^13.2.4",
+    "@next/font": "13.0.6",
     "@nikolovlazar/chakra-ui-prose": "^1.2.1",
     "@prisma/client": "^4.11.0",
     "@tailwindcss/forms": "^0.5.3",
