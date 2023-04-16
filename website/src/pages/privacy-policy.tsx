@@ -168,7 +168,7 @@ const PrivacyPolicy = () => {
         <title>Privacy Policy - Open Assistant</title>
         <meta name="description" content="Open Assistant's Privacy Policy" />
       </Head>
-      <Box fontFamily="Inter" p="6" className="oa-basic-theme">
+      <Box p="6" className="oa-basic-theme">
         <Box className="max-w-4xl mx-auto">
           <Stack spacing="6" mb="6">
             <Heading as="h1" size="xl" color="blue.500">
