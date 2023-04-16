@@ -111,7 +111,7 @@ where you can use the data collection app and the chat.**
 **Also note that the local setup is only for development and is not meant to be
 used as a local chatbot, unless you know what you are doing.**
 
-If you _do_ know what you are doing, then see the `iniference` folder for
+If you _do_ know what you are doing, then see the `inference` folder for
 getttng the inference system up and running, or have a look at
 `--profile inference` in addition to `--profile ci` in the above command.
 
