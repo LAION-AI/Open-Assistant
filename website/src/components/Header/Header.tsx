@@ -64,7 +64,15 @@ export function Header({ preLogoSlot }: HeaderProps) {
   return (
     <>
       {initialShowAnnouncement && showAnnouncement && (
-        <Box backgroundColor="yellow.400" display="flex" justifyContent="center" alignItems="center" p={3}>
+        <Box
+          zIndex={30}
+          position="fixed"
+          backgroundColor="yellow.400"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          p={3}
+        >
           <Text fontSize="lg" mx={4}>
             {announcement}
           </Text>
