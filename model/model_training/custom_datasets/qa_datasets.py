@@ -1,17 +1,18 @@
 """
     Open / close book QA datasets
 """
-import copy
 import glob
 import json
 import os
 import re
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 from urllib.request import urlopen
 
 import numpy as np
 from datasets import load_dataset
+from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator
 from torch.utils.data import Dataset, Subset, random_split
 
@@ -193,8 +194,9 @@ class WebGPT(Dataset):
             question = row["question"]["full_text"]
             answer_0 = re_reference_remove.sub("", row["answer_0"])
             answer_1 = re_reference_remove.sub("", row["answer_1"])
-            question_answer_dict[question][answer_0] = row["score_0"]
-            question_answer_dict[question][answer_1] = row["score_1"]
+            if answer_0 != "" and answer_1 != "" and answer_0 != answer_1:
+                question_answer_dict[question][answer_0] = row["score_0"]
+                question_answer_dict[question][answer_1] = row["score_1"]
 
         for question, answers in question_answer_dict.items():
             self.questions.append(question)
@@ -221,58 +223,56 @@ class WebGPT(Dataset):
 class SODA(Dataset):
     name = "soda"
 
-    def process_soda_convo(self, data):
-        pairs = []
+    def process_soda_convo(self, data: dict[str, Any], input_max_length: int) -> list[list[str]] | None:
         play_as = data["speakers"][1]
-        question, answer = "", ""
-        prefix, postfix = "", ""
         dialogue_bg = "{}{}".format(
             # QA_SPECIAL_TOKENS["StartPrefix"],
             data["narrative"],
-            "your are {}".format(play_as),
+            " You are {}.".format(play_as),
             # QA_SPECIAL_TOKENS["EndPrefix"],
         )
-        previous_chat = []
 
-        for idx, convo in enumerate(data["dialogue"]):
-            if idx % 2 == 0:
-                question = convo
-                prefix = data["speakers"][idx]
-            else:
-                answer = convo
-                postfix = data["speakers"][idx]
+        # Perform some sanity checks, if these fail return None
+        # ignore data with more than 2 speakers for now
+        if len(set(data["speakers"])) != 2:
+            return None
+        speaker1 = data["speakers"][0]
+        speaker2 = data["speakers"][1]
+        # make sure that the speakers are in correct order [S1, S2, S1, S2, S1, S2], otherwise return None
+        speaker1_idx = [idx % 2 == 0 for idx, k in enumerate(data["speakers"]) if k == speaker1]
+        speaker2_idx = [idx % 2 == 1 for idx, k in enumerate(data["speakers"]) if k == speaker2]
+        if all(speaker1_idx) and all(speaker2_idx):
+            # add dialog background to first question.
+            # [Q1, A1, Q2, A2] -> [B + Q1, A1, Q2, A2]
+            data["dialogue"][0] = f"{dialogue_bg} {data['dialogue'][0]}"
+            # Use only input_max_length characters
+            truncated_dialogue = [k[:input_max_length] for k in data["dialogue"]]
+            return truncated_dialogue
 
-            if len(question) and len(answer) and prefix != postfix and postfix == play_as:
-                history = copy.deepcopy(previous_chat)
-                history[0] = dialogue_bg + history[0]
-
-                # if len(history):
-                #     history += "<sep>"
-                # prompt = QA_SPECIAL_TOKENS["Question"] + question + QA_SPECIAL_TOKENS["Answer"]
-                pairs.append(history + [question, answer])
-                # pairs.append((dialogue_bg + history + prompt, answer))
-                previous_chat.append(question)
-                previous_chat.append(answer)
-
-        return pairs
-
-    def __init__(self, cache_dir, input_max_length=1024) -> None:
+    def __init__(self, cache_dir, mode="sft", input_max_length=1024) -> None:
         super().__init__()
-
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
         self.pairs = []
         dataset = load_dataset("allenai/soda", cache_dir=cache_dir)["train"]
         for data in dataset:
-            self.pairs.append(self.process_soda_convo(data))
+            if (processed_data := self.process_soda_convo(data, input_max_length=input_max_length)) is not None:
+                self.pairs.append(processed_data)
             # for prompt, answer in data_pair:
             #     if len(prompt) < input_max_length:
             #         self.pairs.append((prompt, answer))
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.pairs)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> list[str] | tuple[str]:
         # special token added during preprocess
-        return self.pairs[index]
+        if self.mode == "sft":
+            return self.pairs[index]
+        elif self.mode == "rl":
+            # add prefix + first human question
+            return (self.pairs[index][0] + " " + self.pairs[index][1],)
 
 
 class SODADialogue(Dataset):
@@ -464,6 +464,8 @@ def load_alpaca_dataset(
                 input_ = "{}\n{}".format(question, row["input"])
             else:
                 input_ = question
+            if (_filter_by_words(input_) is None) or (_filter_by_words(row["output"]) is None):
+                continue
             if reverse_augmentation:
                 data.append((row["output"], input_))
                 # in case of reverse augmentation we just keep both, reversed and unreversed data
@@ -504,6 +506,14 @@ class Vicuna(Dataset):
         for line in data["conversations"]:
             speaker = line["from"]  # 'human' or 'gpt'
             message = line["value"]
+
+            # remove markdown escaping in revision 192ab2185289094fc556ec8ce5ce1e8e587154ca
+            # python-markdownify with escape_asterisks & escape_underscores True is used
+            # for pre-processing the dataset.
+            # See also https://github.com/LAION-AI/Open-Assistant/issues/2510
+            message = message.replace(r"\_", "_")
+            message = message.replace(r"\*", "*")
+
             if role != speaker:
                 if role is not None:
                     dialogue.append("\n".join(messages))
@@ -526,7 +536,8 @@ class Vicuna(Dataset):
         dataset = load_dataset(
             "anon8231489123/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
-            data_files=["ShareGPT_unfiltered_cleaned_split.json"],
+            data_files=["ShareGPT_V3_unfiltered_cleaned_split_no_imsorry.json"],
+            revision="192ab2185289094fc556ec8ce5ce1e8e587154ca",
         )["train"]
         for data in dataset:
             if (
@@ -539,6 +550,39 @@ class Vicuna(Dataset):
 
     def __getitem__(self, index: int) -> list[str] | tuple[str]:
         dialogue: list[str] = self.pairs[index]
+        if self.mode == "sft":
+            return dialogue
+        elif self.mode == "rl":
+            return tuple(dialogue[:-1])
+
+
+class DatabricksDolly15k(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        self.rows = []
+        self.citation_regex = re.compile(r"\[[a-zA-Z]\]")  # removes citations in the form of e.g. [a] or [A]
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        data = load_dataset("OllieStanley/oa_dolly_15k", cache_dir=cache_dir)
+        for line in data["train"]:
+            if (conv := self._process_instruction(line, input_max_length)) is not None:
+                self.rows.append(conv)
+
+    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> list[str] | None:
+        if context := re_reference_remove.sub("", row["METADATA"]["CONTEXT"]):
+            # further remove references
+            context = context.replace("[citation needed]", "")
+            context = self.citation_regex.sub("", context)
+            return [f"{context} {row['INSTRUCTION']}"[:input_max_length], row["RESPONSE"][:input_max_length]]
+        else:
+            return [row["INSTRUCTION"][:input_max_length], row["RESPONSE"][:input_max_length]]
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+        dialogue: list[str] = self.rows[index]
         if self.mode == "sft":
             return dialogue
         elif self.mode == "rl":

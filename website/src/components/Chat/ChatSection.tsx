@@ -1,30 +1,47 @@
+import { Card, CardBody, Divider } from "@chakra-ui/react";
+import dynamic from "next/dynamic";
 import { FormProvider, useForm } from "react-hook-form";
-import { getCachedChatForm, useCacheChatForm } from "src/hooks/chat/useCacheConfig";
-import { ChatConfigForm } from "src/types/Chat";
+import { ChatConfigFormData } from "src/types/Chat";
+import { getConfigCache } from "src/utils/chat";
 
-import { ChatConfigSummary } from "./ChatConfigSummary";
+import { ChatConfigSaver } from "./ChatConfigSaver";
 import { useChatContext } from "./ChatContext";
 import { ChatConversation } from "./ChatConversation";
+import { InferencePoweredBy } from "./InferencePoweredBy";
 
-export const ChatSection = ({ chatId }: { chatId: string }) => {
+const ChatConfigSummary = dynamic(() => import("./ChatConfigSummary"), { ssr: false });
+
+export const ChatSection = ({ chatId }: { chatId: string | null }) => {
   const { modelInfos } = useChatContext();
 
   console.assert(modelInfos.length > 0, "No model config was found");
-  const form = useForm<ChatConfigForm>({
-    //NOTE: we should at some point validate the cache, in case models were added or deleted
-    // or certain parameters disabled
-    defaultValues: getCachedChatForm() ?? {
+
+  let defaultValues = getConfigCache();
+  if (defaultValues) {
+    const model = modelInfos.find((model) => model.name === defaultValues.model_config_name);
+    if (!model) {
+      defaultValues = null;
+    }
+  }
+  if (!defaultValues) {
+    defaultValues = {
       ...modelInfos[0].parameter_configs[0].sampling_parameters,
       model_config_name: modelInfos[0].name,
-    },
-  });
+    };
+  }
 
-  useCacheChatForm(form);
-
+  const form = useForm<ChatConfigFormData>({ defaultValues });
   return (
     <FormProvider {...form}>
-      <ChatConversation chatId={chatId} />
-      <ChatConfigSummary />
+      <Card className="mx-auto" maxW={{ base: "min(64rem, 90vw)", lg: "36rem", xl: "3xl", "2xl": "5xl" }}>
+        <CardBody display="flex" flexDirection="column" gap="2">
+          <ChatConversation chatId={chatId} key={chatId} getConfigValues={form.getValues} />
+          <ChatConfigSummary />
+          <Divider />
+          <InferencePoweredBy />
+        </CardBody>
+      </Card>
+      <ChatConfigSaver />
     </FormProvider>
   );
 };

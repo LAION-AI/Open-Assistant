@@ -51,6 +51,7 @@ class DbMessage(SQLModel, table=True):
         return inference.MessageRead(
             id=self.id,
             parent_id=self.parent_id,
+            chat_id=self.chat_id,
             content=self.content,
             created_at=self.created_at,
             role=self.role,
@@ -73,12 +74,15 @@ class DbChat(SQLModel, table=True):
 
     messages: list[DbMessage] = Relationship(back_populates="chat")
 
+    hidden: bool = Field(False, sa_column=sa.Column(sa.Boolean, nullable=False, server_default=sa.false()))
+
     def to_list_read(self) -> chat_schema.ChatListRead:
         return chat_schema.ChatListRead(
             id=self.id,
             created_at=self.created_at,
             modified_at=self.modified_at,
             title=self.title,
+            hidden=self.hidden,
         )
 
     def to_read(self) -> chat_schema.ChatRead:
@@ -88,6 +92,7 @@ class DbChat(SQLModel, table=True):
             modified_at=self.modified_at,
             title=self.title,
             messages=[m.to_read() for m in self.messages],
+            hidden=self.hidden,
         )
 
     def get_msg_dict(self) -> dict[str, DbMessage]:

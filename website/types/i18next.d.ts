@@ -1,3 +1,4 @@
+import type account from "public/locales/en/account.json";
 import type chat from "public/locales/en/chat.json";
 import type common from "public/locales/en/common.json";
 import type dashboard from "public/locales/en/dashboard.json";
@@ -13,6 +14,7 @@ import type tos from "public/locales/en/tos.json";
 declare module "i18next" {
   interface CustomTypeOptions {
     resources: {
+      account: typeof account;
       chat: typeof chat;
       common: typeof common;
       dashboard: typeof dashboard;

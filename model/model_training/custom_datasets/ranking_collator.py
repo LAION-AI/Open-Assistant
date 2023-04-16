@@ -17,9 +17,15 @@ class RankingDataCollator:
     max_length: Optional[int] = None
     min_prefix_length: int = 256
     pad_to_multiple_of: Optional[int] = None
+    max_replies: Optional[int] = 5
 
     def process_one(self, example, return_length=False):
         messages, replies = example
+
+        if self.max_replies:
+            assert self.max_replies > 1, "max_replies parameter must be > 1 or None"
+            if len(replies) > self.max_replies:
+                replies = replies[: self.max_replies]
 
         assert self.tokenizer.eos_token
         eos = self.tokenizer.eos_token
