@@ -10,6 +10,7 @@ import utils
 import websocket
 import work
 from loguru import logger
+from oasst_shared import model_configs
 from oasst_shared.schemas import inference
 from settings import settings
 
@@ -23,19 +24,39 @@ def main():
     signal.signal(signal.SIGINT, terminate_worker)
     logger.info(f"Inference protocol version: {inference.INFERENCE_PROTOCOL_VERSION}")
 
-    if settings.model_id != "_lorem":
-        if "llama" in settings.model_id:
-            tokenizer: transformers.PreTrainedTokenizer = transformers.LlamaTokenizer.from_pretrained(settings.model_id)
-        else:
-            tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(settings.model_id)
-    else:
+    model_config = model_configs.MODEL_CONFIGS.get(settings.model_config_name)
+    logger.warning(f"Model config: {model_config}")
+    if model_config is None:
+        logger.error(f"Unknown model config name: {settings.model_config_name}")
+        sys.exit(2)
+
+    if model_config.is_lorem:
         tokenizer = None
+    else:
+        tokenizer: transformers.PreTrainedTokenizer = transformers.AutoTokenizer.from_pretrained(model_config.model_id)
+        logger.warning(f"Tokenizer {tokenizer.name_or_path} vocab size: {tokenizer.vocab_size}")
+
+    inference_http = utils.HttpClient(
+        base_url=settings.inference_server_url,
+        basic_auth_username=settings.basic_auth_username,
+        basic_auth_password=settings.basic_auth_password,
+    )
 
     while True:
         try:
-            if settings.model_id != "_lorem":
-                utils.wait_for_inference_server(settings.inference_server_url)
+            if not model_config.is_lorem:
+                utils.wait_for_inference_server(inference_http)
 
+            if settings.perform_oom_test:
+                work.perform_oom_test(tokenizer)
+                sys.exit(0)
+
+            worker_config = inference.WorkerConfig(
+                model_config=model_config,
+                max_parallel_requests=settings.max_parallel_requests,
+            )
+
+            logger.warning(f"connecting to {settings.backend_url}...")
             with closing(
                 websocket.create_connection(
                     f"{settings.backend_url}/workers/work",
@@ -46,10 +67,6 @@ def main():
                 )
             ) as ws:
                 logger.warning("Connected to backend, sending config...")
-                worker_config = inference.WorkerConfig(
-                    model_name=settings.model_id,
-                    max_parallel_requests=settings.max_parallel_requests,
-                )
                 worker_info = inference.WorkerInfo(
                     config=worker_config,
                     hardware_info=inference.WorkerHardwareInfo(),
@@ -66,6 +83,9 @@ def main():
                             for ftr in done:
                                 ftr.result()
                         message = ws.recv()
+                        if not message:
+                            logger.warning("Connection closed, reconnecting...")
+                            break
                         worker_request = pydantic.parse_raw_as(inference.WorkerRequest, message)
                         match worker_request.request_type:
                             case "work":
@@ -75,7 +95,12 @@ def main():
                                 )
                                 ftrs.append(ftr)
                             case "ping":
-                                utils.send_response(ws, inference.PongResponse(request_id=worker_request.id))
+                                utils.send_response(
+                                    ws,
+                                    inference.PongResponse(
+                                        request_id=worker_request.id, metrics=inference.WorkerMetricsInfo()
+                                    ),
+                                )
                             case "wrong_api_key":
                                 logger.error("Your API Key seems to be wrong, please check it!")
                                 raise RuntimeError("Your API Key seems to be wrong, please check it!")

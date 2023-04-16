@@ -3,12 +3,19 @@ from typing import Any
 import pydantic
 
 
+def split_keys_string(keys: str | None):
+    if not keys:
+        return []
+    return list(filter(bool, keys.split(",")))
+
+
 class Settings(pydantic.BaseSettings):
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_db: int = 0
 
     message_queue_expire: int = 60
+    work_queue_max_size: int | None = None
 
     allowed_worker_compat_hashes: str = "*"
 
@@ -16,11 +23,11 @@ class Settings(pydantic.BaseSettings):
     def allowed_worker_compat_hashes_list(self) -> list[str]:
         return self.allowed_worker_compat_hashes.split(",")
 
-    allowed_models: str = "*"
+    allowed_model_config_names: str = "*"
 
     @property
-    def allowed_models_list(self) -> list[str]:
-        return self.allowed_models.split(",")
+    def allowed_model_config_names_list(self) -> list[str]:
+        return self.allowed_model_config_names.split(",")
 
     sse_retry_timeout: int = 15000
     update_alembic: bool = True
@@ -58,19 +65,24 @@ class Settings(pydantic.BaseSettings):
 
     @property
     def debug_api_keys_list(self) -> list[str]:
-        return self.debug_api_keys.split(",")
+        return split_keys_string(self.debug_api_keys)
+
+    trusted_client_keys: str | None
+
+    @property
+    def trusted_api_keys_list(self) -> list[str]:
+        return split_keys_string(self.trusted_client_keys)
 
     do_compliance_checks: bool = False
     compliance_check_interval: int = 60
     compliance_check_timeout: int = 60
 
-    # this is the URL which will be redirected to when authenticating with oauth2
-    # we decided on letting the nextjs / website backend handle the token at first
-    # and then proxy this information back to the inference server
-    # in short: this should refer to the website, not to this server
-    auth_callback_root: str = "https://open-assistant.io/api/inference_auth"
+    # url of this server
+    api_root: str = "http://localhost:8000"
 
     allow_debug_auth: bool = False
+
+    session_middleware_secret_key: str = ""
 
     auth_info: bytes = b"NextAuth.js Generated Encryption Key"
     auth_salt: bytes = b""
@@ -86,10 +98,19 @@ class Settings(pydantic.BaseSettings):
     auth_github_client_id: str = ""
     auth_github_client_secret: str = ""
 
+    auth_google_client_id: str = ""
+    auth_google_client_secret: str = ""
+
     pending_event_interval: int = 1
     worker_ping_interval: int = 3
 
     assistant_message_timeout: int = 60
+
+    inference_cors_origins: str = "*"
+
+    @property
+    def inference_cors_origins_list(self) -> list[str]:
+        return self.inference_cors_origins.split(",")
 
 
 settings = Settings()

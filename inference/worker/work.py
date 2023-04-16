@@ -1,4 +1,6 @@
+import re
 import threading
+from concurrent import futures
 
 import interface
 import requests
@@ -22,8 +24,8 @@ def truncate_prompt(
     with tokenizer_lock:
         ids = tokenizer.encode(prompt)
 
-    max_input_length = worker_config.model_max_input_length
-    max_total_tokens = worker_config.model_max_total_length
+    max_input_length = worker_config.model_config.max_input_length
+    max_total_tokens = worker_config.model_config.max_total_length
     if len(ids) > max_input_length:
         logger.warning(f"Prompt too long, left-truncating to {max_input_length} tokens")
         ids = ids[-(max_input_length - 1) :]
@@ -78,6 +80,26 @@ def make_prompt_and_parameters(
     return prompt, parameters
 
 
+def prepare_safe_prompt(prompt: str, label: str, rots: str):
+    pre_prompt = f"Answer the following request with {label} as responsible chatbot that believes that {rots}: "
+    input_list = prompt.split(V2_PROMPTER_PREFIX)
+    input_list[-1] = pre_prompt + input_list[-1]
+    return V2_PROMPTER_PREFIX.join(input_list)
+
+
+def get_safety_opinion(prompt: str, safety_opinion: str, safety_level: int):
+    safety_opinion = re.sub(r"<pad>|</s>", "", safety_opinion).split("<sep>")
+    label, rots = safety_opinion[0], "and".join([x.strip(".") for x in safety_opinion[1:]])
+    label = label.replace("<pad>", "").strip()
+
+    if "caution" in label and safety_level > 1:
+        return prepare_safe_prompt(prompt, label, rots)
+    elif "intervention" in label and safety_level > 0:
+        return prepare_safe_prompt(prompt, label, rots)
+    else:
+        return prompt
+
+
 def handle_work_request(
     ws: websocket.WebSocket,
     tokenizer: transformers.PreTrainedTokenizer,
@@ -87,19 +109,25 @@ def handle_work_request(
     prompt, parameters = make_prompt_and_parameters(tokenizer=tokenizer, work_request=work_request)
     logger.debug(f"Prompt: {prompt}")
 
+    model_config = worker_config.model_config
+
+    # Only send safety request if work request safety level is not 0
+    if settings.enable_safety and work_request.safety_parameters.level:
+        safety_request = inference.SafetyRequest(inputs=prompt, parameters=work_request.safety_parameters)
+        safety_response = get_safety_server_response(safety_request)
+        prompt = get_safety_opinion(prompt, safety_response.outputs, work_request.safety_parameters.level)
+        logger.debug(f"Safe prompt: {prompt}")
+
     stream_response = None
     token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)
-    stream_request = interface.GenerateStreamRequest(
-        inputs=prompt,
-        parameters=parameters,
-    )
-    if settings.model_id == "_lorem":
+    if model_config.is_lorem:
         stream_events = utils.lorem_events(parameters.seed)
-    # elif "llama" in settings.model_id:
-    #     prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
-    #     stream_events = get_hf_stream_events(stream_request)
     else:
         prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
+        stream_request = interface.GenerateStreamRequest(
+            inputs=prompt,
+            parameters=parameters,
+        )
         stream_events = get_inference_server_stream_events(stream_request)
 
     generated_ids = []
@@ -112,18 +140,23 @@ def handle_work_request(
                 inference.ErrorResponse(
                     request_id=work_request.id,
                     error=stream_response.error,
+                    metrics=inference.WorkerMetricsInfo(),
                 ),
             )
             raise RuntimeError(f"Error from inference server: {stream_response.error}")
         token = stream_response.token
 
-        if "llama" in settings.model_id:
+        if model_config.is_llama:
             generated_ids.append(token.id)
-            with tokenizer_lock:
-                text = tokenizer.decode(generated_ids)
-            new_text = text[len(decoded_text) :]
-            if not decoded_text:
-                new_text = new_text.lstrip()
+            try:
+                with tokenizer_lock:
+                    text = tokenizer.decode(generated_ids, skip_special_tokens=True)
+                new_text = text[len(decoded_text) :]
+                if not decoded_text:
+                    new_text = new_text.lstrip()
+            except Exception:
+                text = decoded_text
+                new_text = ""
             token.text = new_text
             decoded_text = text
 
@@ -139,7 +172,7 @@ def handle_work_request(
             send_token.to_token_response(request_id=work_request.id),
         )
 
-    if "llama" in settings.model_id:
+    if model_config.is_llama:
         stream_response.generated_text = stream_response.generated_text.strip()
     logger.info(f"Done. {stream_response=}")
     utils.send_response(
@@ -148,30 +181,32 @@ def handle_work_request(
             request_id=work_request.id,
             text=stream_response.generated_text,
             finish_reason=stream_response.details.finish_reason,
+            metrics=inference.WorkerMetricsInfo(),
         ),
     )
     logger.debug("Work complete. Waiting for more work...")
 
 
-def get_hf_stream_events(request: interface.GenerateStreamRequest):
-    response = requests.post(
-        f"{settings.inference_server_url}/generate",
-        json=request.dict(),
-    )
+def get_safety_server_response(request: inference.SafetyRequest) -> inference.SafetyResponse:
+    http = utils.HttpClient(base_url=settings.safety_server_url)
+    response = http.post("/safety", json=request.dict())
     try:
         response.raise_for_status()
     except requests.HTTPError:
-        logger.exception("Failed to get response from inference server")
+        logger.exception("Failed to get response from safety server")
         logger.error(f"Response: {response.text}")
         raise
-    data = response.json()
-    output = data["text"]
-    yield from utils.text_to_events(output, pause=settings.hf_pause)
+    return inference.SafetyResponse(**response.json())
 
 
 def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
-    response = requests.post(
-        f"{settings.inference_server_url}/generate_stream",
+    http = utils.HttpClient(
+        base_url=settings.inference_server_url,
+        basic_auth_username=settings.basic_auth_username,
+        basic_auth_password=settings.basic_auth_password,
+    )
+    response = http.post(
+        "/generate_stream",
         json=request.dict(),
         stream=True,
         headers={"Accept": "text/event-stream"},
@@ -185,5 +220,82 @@ def get_inference_server_stream_events(request: interface.GenerateStreamRequest)
 
     client = sseclient.SSEClient(response)
     for event in client.events():
+        if event.event == "error":
+            logger.error(f"Error from inference server: {event.data}")
+            yield interface.GenerateStreamResponse(error=event.data)
+            raise RuntimeError(f"Error from inference server: {event.data}")
+        if event.event == "ping":
+            continue
         stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
         yield stream_response
+
+
+def perform_oom_test(tokenizer: transformers.PreTrainedTokenizer):
+    logger.warning("Performing OOM test")
+    prompt = ("This is a test prompt. " * 10000).strip()
+    parameters = interface.GenerateStreamParameters(
+        max_new_tokens=4,
+        temperature=1.5,
+        top_p=0.95,
+        repetition_penalty=1.0,
+        do_sample=True,
+        stop=[],
+    )
+
+    class OOMError(Exception):
+        pass
+
+    if settings.oom_test_max_length is None:
+        try:
+            for length in range(256, 2**15, 256):
+                prompt_ids = tokenizer.encode(prompt, max_length=length - 4, truncation=True)
+                short_prompt = tokenizer.decode(prompt_ids)
+                stream_request = interface.GenerateStreamRequest(
+                    inputs=short_prompt,
+                    parameters=parameters,
+                )
+                stream_events = get_inference_server_stream_events(stream_request)
+                for stream_response in stream_events:
+                    if stream_response.is_error:
+                        logger.error(f"Error from inference server: {stream_response.error}")
+                        raise OOMError()
+        except OOMError:
+            length = length - 256
+        logger.warning(f"Max length: {length}")
+    else:
+        length = settings.oom_test_max_length
+
+    with futures.ThreadPoolExecutor() as executor:
+        try:
+            for batch_size in range(1, 32, 1):
+                prompt_ids = tokenizer.encode(prompt, max_length=length - 4, truncation=True)
+                short_prompt = tokenizer.decode(prompt_ids)
+                stream_request = interface.GenerateStreamRequest(
+                    inputs=short_prompt,
+                    parameters=parameters,
+                )
+                ftrs: list[futures.Future] = []
+                try:
+                    for _ in range(batch_size):
+                        stream_events = get_inference_server_stream_events(stream_request)
+                        ftrs.append(executor.submit(list, stream_events))
+                    for ftr in ftrs:
+                        for stream_response in ftr.result():
+                            if stream_response.is_error:
+                                logger.error(f"Error from inference server: {stream_response.error}")
+                                raise OOMError()
+                except Exception:
+                    logger.exception("OOM")
+                    try:
+                        for ftr in ftrs:
+                            ftr.cancel()
+                    except Exception:
+                        pass
+                    raise OOMError()
+        except OOMError:
+            batch_size = batch_size - 1
+        logger.warning(f"Batch size: {batch_size}")
+
+    logger.warning("OOM test complete")
+    logger.warning(f"Max length: {length}")
+    logger.warning(f"Batch size: {batch_size}")

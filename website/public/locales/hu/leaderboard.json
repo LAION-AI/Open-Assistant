@@ -9,6 +9,7 @@
   "labels_simple": "Címkék (egyszerű)",
   "last_updated_at": "Legutóbb frissítve: {{val, datetime}}",
   "leaderboard": "Ranglista",
+  "level_progress_message": "Összesen {{score}} ponttal, {{level,number,integer}} szintű vagy!",
   "month": "Hónap",
   "monthly": "Havi",
   "next": "Következő",
@@ -19,6 +20,7 @@
   "prompt": "Nyitóüzenetek",
   "rank": "Helyezés",
   "rankings": "Helyezések",
+  "reached_max_level": "Elérted a maximális szintet! Hálásak vagyunk a kemény munkádért!",
   "replies_assistant": "Válaszok asszistensként",
   "replies_prompter": "Válaszok kérdezőként",
   "reply": "Válaszok",
@@ -31,6 +33,7 @@
   "view_all": "Összes megtekintése",
   "week": "Hét",
   "weekly": "Heti",
+  "xp_progress_message": "You need {{need, number, integer}} more points to reach the next level!",
   "your_account": "Saját fiók",
   "your_stats": "Saját statisztika"
 }

@@ -130,7 +130,8 @@ async def handle_worker(
 
         async def _update_session(metrics: inference.WorkerMetricsInfo):
             worker_session.requests_in_flight = len(work_request_map)
-            worker_session.metrics = metrics
+            if metrics:
+                worker_session.metrics = metrics
             await worker_utils.store_worker_session(worker_session)
 
         def _add_dequeue(ftrs: set):
@@ -173,8 +174,8 @@ async def handle_worker(
                     except chat_schema.MessageCancelledException as e:
                         logger.warning(f"Message was cancelled before work could be initiated: {e.message_id=}")
                     except chat_schema.MessageTimeoutException as e:
-                        logger.warning(f"Message timed out before work could be initiated: {e.message_id=}")
-                        await handle_timeout(message_id=message_id)
+                        logger.warning(f"Message timed out before work could be initiated: {e.message.id=}")
+                        await handle_timeout(message=e.message)
                     finally:
                         _add_dequeue(pending_futures)
                 else:
@@ -229,11 +230,10 @@ async def handle_worker(
                     logger.warning(f"Marking {message_id=} as pending since no work was done.")
                     async with deps.manual_chat_repository() as cr:
                         await cr.reset_work(message_id)
-                    await work_queue.enqueue(message_id)
+                    await work_queue.enqueue(message_id, enforce_max_size=False)
                 else:
                     logger.warning(f"Aborting {message_id=}")
-                    internal_error = inference.InternalErrorResponse(error="Aborted due to worker error.")
-                    await abort_message(message_id=message_id, response=internal_error)
+                    await abort_message(message_id=message_id, error="Aborted due to worker error.")
             except Exception as e:
                 logger.exception(f"Error while trying to reset work for {message_id=}: {str(e)}")
     finally:
@@ -312,7 +312,7 @@ async def initiate_work_for_message(
         logger.exception(f"Error while sending work request to worker: {str(e)}")
         async with deps.manual_create_session() as session:
             await cr.reset_work(message_id)
-        await work_queue.enqueue(message_id)
+        await work_queue.enqueue(message_id, enforce_max_size=False)
         raise
 
     return work_request
@@ -327,7 +327,7 @@ async def handle_token_response(
         deps.redis_client,
         message_id=work_response_container.message_id,
     )
-    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
+    await message_queue.enqueue(response.json())
     work_response_container.num_responses += 1
 
 
@@ -352,19 +352,20 @@ async def handle_generated_text_response(
             deps.redis_client,
             message_id=message_id,
         )
-        await message_queue.enqueue(message_packet.json(), expire=settings.message_queue_expire)
+        await message_queue.enqueue(message_packet.json())
     finally:
         del work_request_map[response.request_id]
 
 
-async def abort_message(message_id: str, response: inference.ErrorResponse | inference.InternalErrorResponse):
+async def abort_message(message_id: str, error: str):
     async with deps.manual_chat_repository() as cr:
-        await cr.abort_work(message_id, reason=str(response.error))
+        message = await cr.abort_work(message_id, reason=error)
+    response = inference.InternalErrorResponse(error=error, message=message.to_read())
     message_queue = queueing.message_queue(
         deps.redis_client,
         message_id=message_id,
     )
-    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
+    await message_queue.enqueue(response.json())
 
 
 async def handle_error_response(
@@ -375,7 +376,7 @@ async def handle_error_response(
     try:
         work_response_container = get_work_request_container(work_request_map, response.request_id)
         message_id = work_response_container.message_id
-        await abort_message(message_id, response)
+        await abort_message(message_id, response.error)
     finally:
         del work_request_map[response.request_id]
 
@@ -386,12 +387,13 @@ async def handle_general_error_response(
     logger.warning(f"Got general error {response=}")
 
 
-async def handle_timeout(message_id: str):
+async def handle_timeout(message: inference.MessageRead):
     response = inference.InternalErrorResponse(
         error="Timeout",
+        message=message,
     )
     message_queue = queueing.message_queue(
         deps.redis_client,
-        message_id=message_id,
+        message_id=message.id,
     )
-    await message_queue.enqueue(response.json(), expire=settings.message_queue_expire)
+    await message_queue.enqueue(response.json())

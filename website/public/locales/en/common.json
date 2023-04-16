@@ -22,6 +22,7 @@
   "faq": "FAQ",
   "guidelines": "Guidelines",
   "github": "GitHub",
+  "hide": "Hide",
   "leaderboard": "Leaderboard",
   "legal": "Legal",
   "light_mode": "Light Mode",
@@ -35,6 +36,7 @@
   "privacy_policy": "Privacy Policy",
   "prompt": "Prompt",
   "report_a_bug": "Report a Bug",
+  "retry": "Retry",
   "review": "Review",
   "send": "Send",
   "sorry_404": "Sorry, the page you are looking for does not exist.",
@@ -56,5 +58,6 @@
   "users_dashboard": "Users Dashboard",
   "yes": "Yes",
   "who_are_we": "Who are we?",
-  "team": "Team"
+  "team": "Team",
+  "hugging_face": "HuggingFace"
 }

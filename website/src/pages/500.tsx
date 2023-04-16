@@ -2,12 +2,10 @@ import { Box, Button, Center, Link, Text, useColorMode } from "@chakra-ui/react"
 import { AlertTriangle } from "lucide-react";
 import Head from "next/head";
 import { EmptyState } from "src/components/EmptyState";
-import { getTransparentHeaderLayout } from "src/components/Layout";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServerSideProps";
 
 function ServerError() {
   const { colorMode } = useColorMode();
-  const backgroundColor = colorMode === "light" ? "white" : "gray.700";
   const titleColor = colorMode === "light" ? "blue.500" : "blue.300";
   return (
     <>
@@ -41,7 +39,5 @@ function ServerError() {
     </>
   );
 }
-
-ServerError.getLayout = getTransparentHeaderLayout;
 
 export default ServerError;

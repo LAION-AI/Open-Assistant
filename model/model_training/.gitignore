@@ -2,8 +2,8 @@
 wandb
 saved_model
 saved_model*
-.saved_models
-.saved_models_rm
+.saved_model*
+.save_model*
 llama_model
 models-*
 model_store_*
@@ -11,3 +11,4 @@ singularity
 tritonserver-pyt.sif
 ckpts_pythia12b
 model_rl
+.saved

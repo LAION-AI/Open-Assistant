@@ -1,0 +1,15 @@
+## python 3.10.8
+# basic
+pandas==1.5.3
+# PyYAML==6.0
+
+# embedding
+matplotlib==3.7.1
+seaborn
+
+# misc
+psutil==5.9.4
+
+# huggingface
+datasets
+transformers

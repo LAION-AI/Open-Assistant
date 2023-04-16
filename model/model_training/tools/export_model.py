@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument("--max_shard_size", type=str, default="10GB")
     parser.add_argument("--cache_dir", type=str)
     parser.add_argument("--reward_model", action="store_true", default=False)
-    parser.add_argument("--rl_checkpoint", type=str, help="load RL finetuning checkpoint")
+    parser.add_argument("--rl_checkpoint", type=str, help="load RL fine-tuning checkpoint")
     return parser.parse_args()
 
 

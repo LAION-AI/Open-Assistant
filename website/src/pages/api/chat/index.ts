@@ -1,8 +1,13 @@
 import { withoutRole } from "src/lib/auth";
-import { OasstInferenceClient } from "src/lib/oasst_inference_client";
+import { isChatEnable } from "src/lib/isChatEnable";
+import { createInferenceClient } from "src/lib/oasst_inference_client";
 
 const handler = withoutRole("banned", async (req, res, token) => {
-  const client = new OasstInferenceClient(req, res, token);
+  if (!isChatEnable()) {
+    return res.status(404).end();
+  }
+  const client = createInferenceClient(token);
+
   let data;
   if (req.method === "GET") {
     if (req.query.chat_id) {
@@ -12,6 +17,10 @@ const handler = withoutRole("banned", async (req, res, token) => {
     }
   } else if (req.method === "POST") {
     data = await client.create_chat();
+  } else if (req.method === "DELETE") {
+    // TODO: re-activate later
+    // await client.delete_chat(req.query.chat_id as string);
+    data = {};
   }
 
   if (data) {

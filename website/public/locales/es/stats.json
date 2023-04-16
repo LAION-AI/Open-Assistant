@@ -9,6 +9,7 @@
   "human_messages_by_lang": "Mensajes de humanos por idioma",
   "human_messages_by_role": "Mensajes de humanos por rol",
   "initial_prompt_review": "Revisión de instrucciones iniciales",
+  "language_stats": "Idioma",
   "message_trees_by_state": "Árboles de mensaje por estado",
   "message_trees_states_by_lang": "Árboles de mensaje por idioma",
   "prompt_lottery_waiting": "Esperando a la lotería de instrucciones",

@@ -9,8 +9,9 @@ import torch
 import transformers
 import tritonclient.grpc as client_util
 import trlx
-from custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
-from models.reward_model import GPTNeoXRewardModel
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs
+from model_training.models import get_specific_model
+from model_training.utils.utils import _strtobool, get_dataset, init_rng, read_yamls
 from tritonclient.utils import np_to_triton_dtype
 from trlx.data.configs import TRLConfig
 
@@ -24,6 +25,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     parser.add_argument("--configs", nargs="+", required=True)
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--wandb-entity", type=str, default="open-assistant")
+    parser.add_argument("--rng_seed", type=int, help="rng seed")
 
     if notebook:
         args, remaining = parser.parse_known_args(notebook_args)
@@ -41,6 +43,8 @@ def argument_parsing(notebook=False, notebook_args=None):
             conf.update(configs[name])
 
     conf["local_rank"] = args.local_rank
+    if args.rng_seed is not None:
+        conf["rng_seed"] = args.rng_seed
 
     # Override config from command-line
     parser = argparse.ArgumentParser()
@@ -97,10 +101,12 @@ def create_reward_fn(rank_config, sft_config):  # noqa:  C901
     return reward_fn
 
 
-if __name__ == "__main__":
+def main():
     training_conf = argument_parsing()
 
     init_rng(training_conf)
+
+    assert training_conf.rank_model != training_conf.dataset, "One of rank model or dataset must be different"
 
     rank_config = Namespace(**training_conf.rank_config)
     sft_config = Namespace(**training_conf.sft_config)
@@ -154,7 +160,7 @@ if __name__ == "__main__":
     trlx_config.method.chunk_size = int(training_conf.chunk_size)
     trlx_config.method.num_rollouts = int(training_conf.num_rollouts)
     trlx_config.train.total_steps = int(training_conf.total_steps)
-    
+
     if training_conf.debug:
         print("Continuing in debug mode")
         prompts = prompts[:10]
@@ -175,3 +181,7 @@ if __name__ == "__main__":
     training_conf.output_dir = training_conf.output_dir if training_conf.output_dir else training_conf.model_name
 
     trainer.save_pretrained(training_conf.output_dir)
+
+
+if __name__ == "__main__":
+    main()

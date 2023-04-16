@@ -7,5 +7,6 @@ you to interact with Open Assistant.
 
 1. Install the dependencies with `npm install`
 2. Change .env.sample to .env and fill in the values
-3. Run the bot with `npm start` for development mode remember to restart the bot
+3. Start redis database with `npm run redis:start`
+4. Run the bot with `npm start` for development mode remember to restart the bot
    after every change.

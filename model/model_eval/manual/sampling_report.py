@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import argparse
 import gzip
 import json
@@ -11,15 +10,23 @@ from typing import Any, Optional
 import pydantic
 import torch
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer
+from transformers import AutoTokenizer, PreTrainedTokenizer
 
 QA_SPECIAL_TOKENS = {"Question": "<human>", "Answer": "<bot>", "StartPrefix": "<prefix>", "EndPrefix": "</prefix>"}
+QA_SPECIAL_TOKENS_V2_5 = {
+    "prompter": "<|prompter|>",
+    "assistant": "<|assistant|>",
+    "system": "<|system|>",
+    "prefix_begin": "<|prefix_begin|>",
+    "prefix_end": "<|prefix_end|>",
+}
 
 
 class SamplingConfig(pydantic.BaseModel):
     name: Optional[str]
     generate_args: dict[str, Any] = {}
     pre_text: Optional[str]
+    add_prefix_tokens: Optional[bool] = False
 
     # for legacy mode
     human_name: Optional[str]
@@ -76,31 +83,46 @@ def sample(
     mode: str,
     sampling_config: SamplingConfig,
     device: torch.DeviceObjType,
+    skip_input_tokens: bool,
+    max_input_len: Optional[int] = None,
 ):
     assert sampling_config.name, "'name' must be specified for sampling configuration"
     sc = sampling_config
     prefix = ""
     if sampling_config.pre_text:
-        if mode == "v2":
+        if mode == "v2" and sampling_config.add_prefix_tokens:
             prefix = f"<prefix>{sampling_config.pre_text}</prefix>"
+        if mode == "v2_5" and sampling_config.add_prefix_tokens:
+            prefix = f"{QA_SPECIAL_TOKENS_V2_5['prefix_begin']}{sampling_config.pre_text}{QA_SPECIAL_TOKENS_V2_5['prefix_end']}"
         else:
             prefix = sampling_config.pre_text
 
     if mode == "v2":
         input_text = f"{prefix}{QA_SPECIAL_TOKENS['Question']}{prompt}{QA_SPECIAL_TOKENS['Answer']}"
+    elif mode == "v2_5":
+        input_text = f"{prefix}{QA_SPECIAL_TOKENS_V2_5['prompter']}{prompt}{tokenizer.eos_token}{QA_SPECIAL_TOKENS_V2_5['assistant']}"
     else:
         assert sc.human_name and sc.bot_name, "'human_name' and 'bot_name' parameters must be specified in config "
         input_text = f"{prefix}\n{sc.human_name}: {prompt}\n\n{sc.bot_name}: "
 
     sampling_params = sampling_config.generate_args
-    inputs = tokenizer(input_text, return_tensors="pt", padding=True).to(device)
+    inputs = tokenizer(
+        input_text,
+        return_tensors="pt",
+        max_length=max_input_len,
+        pad_to_max_length=False,
+        truncation=True,
+    ).to(device)
     input_ids = inputs.input_ids
     outputs = model.generate(
         input_ids,
         **sampling_params,
         pad_token_id=tokenizer.eos_token_id,
     )
-    output_tokens = outputs[0, input_ids.size(1) :]
+    if skip_input_tokens:
+        output_tokens = outputs[0, input_ids.size(1) :]
+    else:
+        output_tokens = outputs[0]
     return output_tokens, sampling_params
 
 
@@ -112,7 +134,7 @@ def merge_configs(*configs: tuple[Optional[SamplingConfig]]) -> Optional[Samplin
                 merged = c.copy(deep=True)
         else:
             # simple fields
-            fields = ["name", "pre_text", "human_name", "bot_name"]
+            fields = ["name", "pre_text", "human_name", "bot_name", "add_prefix_tokens"]
             for field_name in fields:
                 v = getattr(c, field_name)
                 if v:
@@ -133,7 +155,10 @@ def sample_prompt_continuations(
     config: Configuration,
     device: torch.DeviceObjType,
     num_samples: int = 1,
+    skip_special_tokens: bool = False,
+    skip_input_tokens: bool = False,
     verbose: bool = False,
+    max_input_len: Optional[int] = None,
 ) -> list[PromptResults]:
     prompt_results: list[PromptResults] = []
     for p in tqdm(prompts):
@@ -150,9 +175,13 @@ def sample_prompt_continuations(
                     mode=mode,
                     sampling_config=merge_configs(config.default, sc),
                     device=device,
+                    skip_input_tokens=skip_input_tokens,
+                    max_input_len=max_input_len,
                 )
                 output = tokenizer.decode(
-                    output_tokens, truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"], skip_special_tokens=True
+                    output_tokens,
+                    truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"],  # only used for codegen model
+                    skip_special_tokens=skip_special_tokens,
                 )
 
                 if verbose:
@@ -193,10 +222,16 @@ def parse_args():
     parser.add_argument("--report", type=str, help="json sampling report output file name")
     parser.add_argument("--seed", type=int, default="42", help="psoudo random number generator seed")
     parser.add_argument("--verbose", action="store_true", default=False)
-    parser.add_argument("-n", type=int)
-    parser.add_argument("--num-samples", type=int, default=2)
-    parser.add_argument("--config", type=str, default="config/default.json")
+    parser.add_argument("-n", type=int, help="number of promtps to use (default: all)")
+    parser.add_argument("--num-samples", type=int, default=2, help="number of sampling runs per configuration")
+    parser.add_argument("--config", type=str, default="config/default.json", help="configuration file path")
     parser.add_argument("--half", action="store_true", default=False, help="use float16")
+    parser.add_argument("--skip-special-tokens", action="store_true", default=False)
+    parser.add_argument("--model-type", type=str, default="CausalLM", help="CausalLM, T5Conditional, LLaMA")
+    parser.add_argument("--max-input-len", type=int, help="max token counts for input")
+    parser.add_argument("--auth-token", type=str)
+    parser.add_argument("--num-threads", type=int, default=8)
+
     return parser.parse_args()
 
 
@@ -214,6 +249,9 @@ def main():
     args = parse_args()
     print("Args:", args)
 
+    torch.set_num_threads(args.num_threads)
+    torch.set_num_interop_threads(args.num_threads)
+
     device = torch.device(args.device, args.device_index)
     print("Device:", device)
 
@@ -226,10 +264,33 @@ def main():
 
     model_name = args.model_name
     print(f"Loading model: {model_name}")
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    tokenizer.add_special_tokens({"pad_token": "<|endoftext|>"})
-    model = AutoModelForCausalLM.from_pretrained(model_name).eval()
-    tokenizer.eos_token_id = model.config.eos_token_id
+
+    if args.model_type.lower() == "causallm" or args.model_type.lower() == "llama":
+        from transformers import AutoModelForCausalLM
+
+        tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=args.auth_token)
+        model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=args.auth_token)
+        skip_input_tokens = True
+    elif args.model_type.lower() == "t5conditional":
+        from transformers import T5ForConditionalGeneration
+
+        tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=args.auth_token)
+        model = T5ForConditionalGeneration.from_pretrained(model_name, use_auth_token=args.auth_token)
+        skip_input_tokens = False
+    else:
+        raise RuntimeError("Invalid model_type specified")
+
+    print("special_tokens_map:", tokenizer.special_tokens_map)
+    print(f"eos_token='{tokenizer.eos_token}', eos_token_id={tokenizer.eos_token_id}")
+
+    print("Tokenizer check:")
+    input_text = f"{QA_SPECIAL_TOKENS_V2_5['prompter']}Hi!{tokenizer.eos_token}{QA_SPECIAL_TOKENS_V2_5['assistant']}"
+    tr = tokenizer(input_text)
+    print(tr)
+    decoded = tokenizer.decode(tr.input_ids, skip_special_tokens=False)
+    print("decoded:", decoded)
+
+    model.eval()
     if args.half:
         model = model.half()
     model = model.to(device)
@@ -251,19 +312,24 @@ def main():
             tokenizer=tokenizer,
             mode=args.mode,
             config=config,
-            num_samples=args.num_samples,
-            verbose=args.verbose,
             device=device,
+            num_samples=args.num_samples,
+            skip_special_tokens=args.skip_special_tokens,
+            skip_input_tokens=skip_input_tokens,
+            verbose=args.verbose,
+            max_input_len=args.max_input_len,
         ),
     )
 
-    preport_filename = args.report
-    if not preport_filename:
+    report_filename = args.report
+    if not report_filename:
         save_model_name = re.sub(r"[^\w\d-]", "_", model_name)
-        preport_filename = f"{save_model_name}_sampling.json"
-    print("preport_filename", preport_filename)
+        config_name = Path(args.config).stem
+        date = report.date.split("T")[0]
+        report_filename = f"{date}_{save_model_name}_sampling_{config_name}.json"
+    print("report_filename", report_filename)
 
-    report_path = Path(preport_filename)
+    report_path = Path(report_filename)
     print(f"writing report: {str(report_path)}")
     with report_path.open(mode="wt", encoding="UTF-8") as rf:
         x = report.dict(exclude_none=True)

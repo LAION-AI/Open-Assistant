@@ -190,11 +190,14 @@ or run with:
             )
             exit(1)
     if (resid_pdrop is None or resid_pdrop == 0.0) and not flash_attention:
-        print('Continuing without patching')
+        print("Continuing without patching")
         return
 
     if resid_pdrop is not None and (resid_pdrop < 0 or resid_pdrop > 1.0):
         raise ValueError("Invalid argument: `resid_pdrop` must be between 0.0 and 1.0")
+
+    if not flash_attention and (resid_pdrop is None or resid_pdrop == 0.0):
+        return
 
     if not any(isinstance(model, model_class) for model_class in SUPPORTED_MODELS):
         if not flash_attention and (resid_pdrop is None or resid_pdrop == 0.0):

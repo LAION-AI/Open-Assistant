@@ -7,8 +7,7 @@ import { useEffect } from "react";
 import { CallToAction } from "src/components/CallToAction";
 import { Faq } from "src/components/Faq";
 import { Hero } from "src/components/Hero";
-import { getTransparentHeaderLayout } from "src/components/Layout";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServerSideProps";
 
 const Home = () => {
   const router = useRouter();
@@ -33,7 +32,5 @@ const Home = () => {
     </>
   );
 };
-
-Home.getLayout = getTransparentHeaderLayout;
 
 export default Home;

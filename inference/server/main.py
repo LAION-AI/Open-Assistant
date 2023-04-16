@@ -7,10 +7,11 @@ import sqlmodel
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from oasst_inference_server import database, deps, models
-from oasst_inference_server.routes import admin, auth, chats, configs, workers
+from oasst_inference_server.routes import account, admin, auth, chats, configs, workers
 from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 from prometheus_fastapi_instrumentator import Instrumentator
+from starlette.middleware.sessions import SessionMiddleware
 
 app = fastapi.FastAPI()
 
@@ -18,11 +19,13 @@ app = fastapi.FastAPI()
 # Allow CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.inference_cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Session middleware for authlib
+app.add_middleware(SessionMiddleware, secret_key=settings.session_middleware_secret_key)
 
 
 @app.middleware("http")
@@ -103,6 +106,7 @@ async def maybe_add_debug_api_keys():
 
 
 # add routes
+app.include_router(account.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(chats.router)

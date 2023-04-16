@@ -32,9 +32,8 @@ This website is built using:
 
 To contribute to the website, make sure you have the following setup and installed:
 
-1.  [NVM](https://github.com/nvm-sh/nvm): The Node Version Manager makes it easy to ensure you have the right NodeJS
-    version installed. Once installed, run `nvm use 16` to use Node 16.x. The website is known to be stable with NodeJS
-    version 16.x. This will install both Node and NPM.
+1.  Node 16: if you are on windows, you can [download node from their website](https://nodejs.org/en/download/releases),
+    if you are on linux, use [NVM](https://github.com/nvm-sh/nvm) (Once installed, run `nvm use 16`)
 1.  [Docker](https://www.docker.com/): We use docker to simplify running dependent services.
 
 ### Getting everything up and running
@@ -65,6 +64,25 @@ You can use the debug credentials provider to log in without fancy emails or OAu
    `DEBUG_LOGIN=true`.
 1. Use the `Login` button in the top right to go to the login page.
 1. You should see a section for debug credentials. Enter any username you wish, you will be logged in as that user.
+
+### Testing Oauth login to the inference server
+
+Create a `docker-compose.override.yml` in the root of the repo, and add the following to it
+
+```yml
+services:
+  inference-server:
+    environment:
+      # fill out these variables, you would need to create an app from the corresponding provider(s)
+      # you can fill only one of them if you want to
+      AUTH_DISCORD_CLIENT_ID:
+      AUTH_DISCORD_CLIENT_SECRET:
+
+      AUTH_GITHUB_CLIENT_ID:
+      AUTH_GITHUB_CLIENT_SECRET:
+```
+
+And now when you start all containers, the possibility to login to inference through these providers will be available.
 
 ### Using Storybook
 

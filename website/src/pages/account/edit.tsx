@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import React from "react";
 import { Control, useForm, useWatch } from "react-hook-form";
 import { validDisplayNameRegex } from "src/lib/display_name_validation";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+export { getServerSideProps } from "src/lib/defaultServerSideProps";
 
 export default function Account() {
   const { data: session } = useSession();
@@ -22,12 +22,10 @@ export default function Account() {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <div className="oa-basic-theme">
-        <main className="h-3/4 z-0 flex flex-col items-center justify-center">
-          <p>{session.user.name || "No username"}</p>
-          <EditForm></EditForm>
-        </main>
-      </div>
+      <main className="oa-basic-theme h-3/4 z-0 flex flex-col items-center justify-center">
+        <p>{session.user.name || "No username"}</p>
+        <EditForm />
+      </main>
     </>
   );
 }

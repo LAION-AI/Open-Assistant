@@ -1,17 +1,33 @@
 """
     High level functions for model training
 """
-from custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
-from custom_datasets.oasst_dataset import load_oasst_export
-from custom_datasets.prompt_dialogue import OAPrivate  # , PrivateInstructionTuning
-from custom_datasets.qa_datasets import SODA, JokeExplaination, QADataset, SODADialogue, TranslatedQA, WebGPT
-from custom_datasets.summarization import SummarizationDataset
-from custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
-from custom_datasets.translation import WMT2019, DiveMT, TEDTalk
+from typing import Optional
+
+import numpy as np
+from model_training.custom_datasets.extra_rm_datasets import load_anthropic_rlhf, load_hellaswag, load_shp
+from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
+from model_training.custom_datasets.oasst_dataset import load_oasst_export
+from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
+from model_training.custom_datasets.qa_datasets import (
+    SODA,
+    DatabricksDolly15k,
+    JokeExplaination,
+    QADataset,
+    SODADialogue,
+    TranslatedQA,
+    Vicuna,
+    WebGPT,
+    load_alpaca_dataset,
+)
+from model_training.custom_datasets.rank_datasets import AugmentedOA
+from model_training.custom_datasets.summarization import HFSummary, HFSummaryPairs, SummarizationDataset
+from model_training.custom_datasets.toxic_conversation import ProsocialDialogue, ProsocialDialogueExplaination
+from model_training.custom_datasets.translation import WMT2019, DiveMT, TEDTalk
 from sklearn.model_selection import train_test_split
-from torch.utils.data import Subset
+from torch.utils.data import Dataset, Subset
 
 QA_DATASETS = list(QADataset.DATASET_FORMAT_MAPPING.keys())
+
 SUMMARIZATION_DATASETS = [
     "xsum",
     "cnn_dailymail",
@@ -22,14 +38,37 @@ SUMMARIZATION_DATASETS = [
     "debate_sum",
     "tldr_news",
 ]
-OTHER = ["prosocial_dialogue", "explain_prosocial", "private_tuning", "oa_translated", "oa_private"]
 
-RL_DATASETS = ["oasst_export", "webgpt", "private_tuning"]
+OTHER = [
+    "prosocial_dialogue",
+    "explain_prosocial",
+    "private_tuning",
+    "oa_translated",
+]
 
-RM_DATASETS = ["oasst_export"]
+RL_DATASETS = [
+    "oasst_export",
+    "webgpt",
+    "private_tuning",
+    "alpaca",
+    "hf_summary",
+    "hf_summary_pairs",
+    "vicuna",
+]
+
+RM_DATASETS = [
+    "oasst_export",
+    "augment_oasst",
+    "anthropic_rlhf",
+    "hf_summary",
+    "hf_summary_pairs",
+    "shp",
+    "hellaswag",
+    "webgpt",
+]
 
 
-def train_val_dataset(dataset, val_split=0.2):
+def train_val_dataset(dataset, val_split=0.2) -> tuple[Dataset, Dataset | None]:
     if val_split == 0:
         return dataset, None
 
@@ -39,7 +78,15 @@ def train_val_dataset(dataset, val_split=0.2):
     return Subset(dataset, train_idx), Subset(dataset, val_idx)
 
 
-def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft", **kwargs):
+def get_one_dataset(
+    conf,
+    dataset_name: str,
+    val_split: float = 0.2,
+    data_path: str = None,
+    mode: str = "sft",
+    max_val_set: Optional[int] = None,
+    **kwargs,
+) -> tuple[Dataset, Dataset | None]:
     if mode == "rl":
         assert dataset_name in RL_DATASETS, f"Dataset {dataset_name} not supported for RL"
 
@@ -71,7 +118,11 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
     elif dataset_name == "dive_mt":
         dataset = DiveMT()
     elif dataset_name == "webgpt":
-        dataset = WebGPT()
+        dataset = WebGPT(mode=mode)
+    elif dataset_name in ("alpaca", "code_alpaca"):
+        train, eval = load_alpaca_dataset(dataset_name, val_split=val_split, cache_dir=data_path, **kwargs)
+    elif dataset_name == "gpt4all":
+        dataset = Gpt4All(mode=mode, cache_dir=data_path)
     elif dataset_name == "prosocial_dialogue":
         train = ProsocialDialogue(cache_dir=data_path, split="train")
         eval = ProsocialDialogue(cache_dir=data_path, split="validation")
@@ -79,25 +130,48 @@ def get_one_dataset(conf, dataset_name, val_split=0.2, data_path=None, mode="sft
         train = ProsocialDialogueExplaination(cache_dir=data_path, split="train")
         eval = ProsocialDialogueExplaination(cache_dir=data_path, split="validation")
     elif dataset_name == "soda":
-        dataset = SODA(data_path)
+        dataset = SODA(data_path, **kwargs)
     elif dataset_name == "soda_dialogue":
         dataset = SODADialogue(data_path)
     elif dataset_name == "joke":
         dataset = JokeExplaination(data_path)
-    # elif dataset_name == "private_tuning":
-    #     dataset = PrivateInstructionTuning(data_path)
     elif dataset_name == "oa_translated":
         # TODO make val_split lower..? by saganos
         dataset = TranslatedQA(data_path)
-    elif dataset_name == "oa_private":
-        dataset = OAPrivate(data_path, **kwargs)
+    elif dataset_name == "vicuna":
+        dataset = Vicuna(cache_dir=data_path, **kwargs)
     elif dataset_name == "oasst_export":
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
+    elif dataset_name == "hf_summary":
+        train = HFSummary(split="train", mode=mode)
+        eval = HFSummary(split="valid1", mode=mode)
+    elif dataset_name == "hf_summary_pairs":
+        train = HFSummaryPairs(split="train", mode=mode)
+        eval = HFSummaryPairs(split="valid1", mode=mode)
+    elif dataset_name == "augment_oasst":
+        # reward model mode only
+        assert mode == "rm"
+        train = AugmentedOA(data_path + "/" + kwargs["input_file_path"], split="train")
+        eval = AugmentedOA(data_path + "/" + kwargs["input_file_path"], split="val")
+    elif dataset_name == "oig_file":
+        train, eval = load_oig_file(val_split=val_split, **kwargs)
+    elif dataset_name == "anthropic_rlhf":
+        train, eval = load_anthropic_rlhf()
+    elif dataset_name == "shp":
+        train, eval = load_shp()
+    elif dataset_name == "hellaswag":
+        train, eval = load_hellaswag()
+    elif dataset_name == "dolly15k":
+        dataset = DatabricksDolly15k(cache_dir=data_path)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
     # if eval not already defined
     if not ("eval" in locals() and "train" in locals()):
         train, eval = train_val_dataset(dataset, val_split=val_split)
+
+    if eval and max_val_set and len(eval) > max_val_set:
+        subset_indices = np.random.choice(len(eval), max_val_set)
+        eval = Subset(eval, subset_indices)
 
     return train, eval

@@ -1,4 +1,4 @@
-import { Box, Card, CardBody, CardHeader, Divider, Flex, Heading } from "@chakra-ui/react";
+import { Card, CardBody, CardHeader, Grid, Heading } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import React from "react";
 import { getTypeSafei18nKey } from "src/lib/i18n";
@@ -36,49 +36,38 @@ export const Stats = ({ data }: StatsProps) => {
   }
 
   return (
-    <>
-      <Heading size="lg" className="pb-4">
+    <Grid gridTemplateColumns="repeat(2, minmax(0, 1fr))" gap={4}>
+      <Heading size="lg" gridColumn="span 2">
         {t("stats")}
       </Heading>
-      <Flex flexWrap="wrap" justifyContent="space-between">
-        {charts.map((key) => {
-          const stat = getStatByName(key);
-          const component = statComponents[key];
-          return (
-            <Box key={key} w={["100%", "100%", "50%", "50%"]} pr={2} pb={2}>
-              <Card minH={580}>
-                <CardHeader>
-                  <Heading size="md">{t(getTypeSafei18nKey(stat.name))}</Heading>
-                </CardHeader>
-                <Divider />
-                <CardBody>{component?.({ stat })}</CardBody>
-              </Card>
-            </Box>
-          );
-        })}
-      </Flex>
-      <Flex>
-        <Box>
-          <Card minH={500}>
+      {charts.map((key) => {
+        const stat = getStatByName(key);
+        const component = statComponents[key];
+        return (
+          <Card key={key} minH={500} gridColumn={["span 2", "span 2", "span 1"]}>
             <CardHeader>
-              <Heading size="md">{t(getTypeSafei18nKey(messageTreeStats.name))}</Heading>
+              <Heading size="md">{t(getTypeSafei18nKey(stat.name))}</Heading>
             </CardHeader>
-            <Divider />
-            <CardBody>
-              <MessageTreeStateStatsTable stat={messageTreeStats} />
-            </CardBody>
+            <CardBody>{component?.({ stat })}</CardBody>
           </Card>
-          <Card minH={500} mt={2}>
-            <CardHeader>
-              <Heading size="md">{t(getTypeSafei18nKey(messageTreeStats.name))}</Heading>
-            </CardHeader>
-            <Divider />
-            <CardBody>
-              <MessageTreeStateStatsStacked stat={messageTreeStats} />
-            </CardBody>
-          </Card>
-        </Box>
-      </Flex>
-    </>
+        );
+      })}
+      <Card minH={500} gridColumn="span 2">
+        <CardHeader>
+          <Heading size="md">{t(getTypeSafei18nKey(messageTreeStats.name))}</Heading>
+        </CardHeader>
+        <CardBody>
+          <MessageTreeStateStatsTable stat={messageTreeStats} />
+        </CardBody>
+      </Card>
+      <Card minH={500} gridColumn="span 2">
+        <CardHeader>
+          <Heading size="md">{t(getTypeSafei18nKey(messageTreeStats.name))}</Heading>
+        </CardHeader>
+        <CardBody>
+          <MessageTreeStateStatsStacked stat={messageTreeStats} />
+        </CardBody>
+      </Card>
+    </Grid>
   );
 };

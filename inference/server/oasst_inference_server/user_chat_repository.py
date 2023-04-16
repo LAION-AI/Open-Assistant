@@ -14,22 +14,24 @@ class UserChatRepository(pydantic.BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    async def get_chats(self) -> list[models.DbChat]:
+    async def get_chats(self, include_hidden: bool = False) -> list[models.DbChat]:
         query = sqlmodel.select(models.DbChat)
         query = query.where(models.DbChat.user_id == self.user_id)
+        if not include_hidden:
+            query = query.where(models.DbChat.hidden.is_(False))
+        query = query.order_by(models.DbChat.created_at.desc())
         return (await self.session.exec(query)).all()
 
-    async def get_chat_by_id(self, chat_id: str) -> models.DbChat:
-        query = (
-            sqlmodel.select(models.DbChat)
-            .options(
+    async def get_chat_by_id(self, chat_id: str, include_messages: bool = True) -> models.DbChat:
+        query = sqlmodel.select(models.DbChat).where(
+            models.DbChat.id == chat_id,
+            models.DbChat.user_id == self.user_id,
+        )
+        if include_messages:
+            query = query.options(
                 sqlalchemy.orm.selectinload(models.DbChat.messages).selectinload(models.DbMessage.reports),
             )
-            .where(
-                models.DbChat.id == chat_id,
-                models.DbChat.user_id == self.user_id,
-            )
-        )
+
         chat = (await self.session.exec(query)).one()
         return chat
 
@@ -56,6 +58,22 @@ class UserChatRepository(pydantic.BaseModel):
         self.session.add(chat)
         await self.session.commit()
         return chat
+
+    async def delete_chat(self, chat_id: str) -> models.DbChat:
+        chat = await self.get_chat_by_id(chat_id)
+        if chat is None:
+            raise fastapi.HTTPException(status_code=403)
+        logger.debug(f"Deleting {chat_id=}")
+        # delete messages
+        await self.session.exec(sqlmodel.delete(models.DbMessage).where(models.DbMessage.chat_id == chat_id))
+        # delete chat
+        await self.session.exec(
+            sqlmodel.delete(models.DbChat).where(
+                models.DbChat.id == chat_id,
+                models.DbChat.user_id == self.user_id,
+            )
+        )
+        await self.session.commit()
 
     async def add_prompter_message(self, chat_id: str, parent_id: str | None, content: str) -> models.DbMessage:
         logger.info(f"Adding prompter message {len(content)=} to chat {chat_id}")
@@ -110,7 +128,7 @@ class UserChatRepository(pydantic.BaseModel):
         return message
 
     async def initiate_assistant_message(
-        self, parent_id: str, work_parameters: inference.WorkParameters
+        self, parent_id: str, work_parameters: inference.WorkParameters, worker_compat_hash: str
     ) -> models.DbMessage:
         logger.info(f"Adding stub assistant message to {parent_id=}")
 
@@ -154,6 +172,7 @@ class UserChatRepository(pydantic.BaseModel):
             parent_id=parent_id,
             state=inference.MessageState.pending,
             work_parameters=work_parameters,
+            worker_compat_hash=worker_compat_hash,
         )
         self.session.add(message)
         await self.session.commit()
@@ -208,3 +227,17 @@ class UserChatRepository(pydantic.BaseModel):
         await self.session.commit()
         await self.session.refresh(report)
         return report
+
+    async def update_title(self, chat_id: str, title: str) -> None:
+        logger.info(f"Updating title of chat {chat_id=}: {title=}")
+        chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
+
+        chat.title = title
+        await self.session.commit()
+
+    async def update_visibility(self, chat_id: str, hidden: bool) -> None:
+        logger.info(f"Setting chat {chat_id=} to {'hidden' if hidden else 'visible'}")
+        chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
+
+        chat.hidden = hidden
+        await self.session.commit()
