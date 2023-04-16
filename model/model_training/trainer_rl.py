@@ -160,8 +160,8 @@ if __name__ == "__main__":
         prompts = prompts[:10]
         eval_prompts = eval_prompts[:10]
         trlx_config.method.num_rollouts = 1
-        trlx_config.method.gen_kwargs['max_new_tokens'] = 12
-        trlx_config.train.seq_length = 48
+        # trlx_config.method.gen_kwargs['max_new_tokens'] = 12
+        # trlx_config.train.seq_length = 48
 
     trainer = trlx.train(
         sft_config.model_name,

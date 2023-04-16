@@ -24,6 +24,8 @@ def llama_forward_with_flash_attn(
         warnings.warn("Output attentions is not supported for patched `LlamaAttention`, returning `None` instead.")
     bsz, q_len, _ = hidden_states.size()
 
+    print(f"shape in fwd: {hidden_states.shape}")
+
     query_states = self.q_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
     key_states = self.k_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
     value_states = self.v_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
@@ -127,10 +129,12 @@ def llama_forward_with_flash_attn_rl(
             raise ValueError(
                 f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
             )
-        attention_mask = attention_mask[:, 0, -1]
 
     # If shape requirement is met we can use flash attention
     if query_states.shape == key_states.shape:
+        if attention_mask is not None:
+            attention_mask = attention_mask[:, 0, -1]
+
         flash_attn.train(self.training)
         out_dtype = value_states.dtype
 

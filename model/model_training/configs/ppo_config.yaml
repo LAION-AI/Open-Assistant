@@ -1,5 +1,5 @@
 train:
-  seq_length: 2016
+  seq_length: 768
   epochs: 10000
   total_steps: 10000
   batch_size: 18
@@ -54,7 +54,7 @@ method:
   ref_std: null
   cliprange_reward: 4
   gen_kwargs:
-    max_new_tokens: 512
+    max_new_tokens: 256
     top_k: 0
     top_p: 0.7
     do_sample: True

@@ -14,15 +14,7 @@
     "overlap_comm": false,
     "reduce_scatter": true,
     "reduce_bucket_size": 2e8,
-    "contiguous_gradients": true,
-    "offload_optimizer": {
-      "device": "cpu",
-      "pin_memory": true
-    },
-    "offload_param": {
-      "device": "cpu",
-      "pin_memory": true
-    }
+    "contiguous_gradients": true
   },
   "gradient_accumulation_steps": "8",
   "train_micro_batch_size_per_gpu": "auto",

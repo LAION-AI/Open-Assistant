@@ -43,7 +43,7 @@ def _get_logits_processor(
     This class returns a [`LogitsProcessorList`] list object that contains all relevant [`LogitsProcessor`]
     instances used to modify the scores of the language model head.
     """
-    print('generation_config', generation_config)
+    # print('generation_config', generation_config)
     # instantiate processors list
     processors = LogitsProcessorList()
 
@@ -455,7 +455,7 @@ class CustomCausalLMHydraWithValueHead(AutoModelForCausalLMWithHydraValueHead):
         #     funcType = type(base_model.sample)
         #     base_model.sample = funcType(sample, base_model)
 
-        model = cls(base_model)
+        model = cls(base_model, num_layers_unfrozen=config.num_layers_unfrozen)
         # model.ds_zero3 = config.ds_zero3
 
         pretrained_model_name_or_path = config.model_name
@@ -517,8 +517,13 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
         if self.tokenizer.pad_token_id == self.tokenizer.eos_token_id:
             self.tokenizer.add_special_tokens({"pad_token": "<|padding|>"})
 
+        # self.tokenizer.pad_token = self.tokenizer.eos_token
+        # self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+
         self.tokenizer.padding_side = config.tokenizer.padding_side
         self.tokenizer.truncation_side = config.tokenizer.truncation_side
+
+        # print('len tokenizer', len(self.tokenizer))
         
         super().__init__(*args, config=config, **kwargs)
 
@@ -568,6 +573,8 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
             str_output = self.tokenizer.decode(
                 sample[output_start_ix:][sample[output_start_ix:] != PAD_TOKEN_ID], skip_special_tokens=False
             )
+            # print('sample', self.tokenizer.decode(sample))
+            # print('prompt', self.tokenizer.decode(prompt))
             # str_output = str_output.replace(PAD_TOKEN, "")
 
             trimmed = False
@@ -637,14 +644,15 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
 
         # self.model.eval()
 
+        # print('generation', self.tokenizer.decode(input_ids[0]))
+
+        kwargs['forced_eos_token_id'] = self.tokenizer.eos_token_id
+
         preds = super().generate(input_ids, *args, **kwargs)
 
         # self.model.train()
 
         # print('Done generation', self.accelerator.device)
-
-        # make sure the last token is the EOS token
-        preds[:, -1] = self.tokenizer.eos_token_id
 
         return preds
 
@@ -661,6 +669,14 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
         #     self.generate_kwargs['pad_token_id'] = self.tokenizer.pad_token_id
         
         # self.model.train()
+
+        # print('generation_eval', self.tokenizer.decode(input_ids[0]))
+
+        # print('input_ids', input_ids[0])
+        # if 'attention_mask' in kwargs:
+        #     print('attention_mask', kwargs['attention_mask'][0])
+
+        kwargs['forced_eos_token_id'] = self.tokenizer.eos_token_id
 
         preds = super().generate(input_ids, *args, **kwargs)
 
@@ -961,15 +977,25 @@ class CustomPromptPipeline(BasePipeline):
         prompts_tokens_ = model_inputs["input_ids"]
         attention_mask = model_inputs["attention_mask"]
 
-        prompts_tokens = []
+        # prompts_tokens = []
 
-        assistant_token_id = tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Answer"])
-        eos_token_id = tokenizer.eos_token_id
+        # assistant_token_id = tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Answer"])
+        # eos_token_id = tokenizer.eos_token_id
 
+        # print('input', prompts[0])
+        # print('ids', model_inputs["input_ids"][0])
+        # print('masks', model_inputs["attention_mask"])
+        # print('before', tokenizer.decode(prompts_tokens_[0]))
+
+        # If we truncate left this should not be a problem. Also for bpe this does not work...
         # Due to truncation, special tokens may not be present ... so we add them (context is still incomplete)
         # not need to update attention_mask since it iw always 1
-        for prompt_tokens in prompts_tokens_:
-            prompts_tokens.append(prompt_tokens[:-2] + [eos_token_id, assistant_token_id])
+        # for prompt_tokens in prompts_tokens_:
+        #     prompts_tokens.append(prompt_tokens[:-2] + [eos_token_id, assistant_token_id])
+
+        prompts_tokens = prompts_tokens_
+
+        # print('after', tokenizer.decode(prompts_tokens[0]))
 
         self.tokenizer = tokenizer
         self.prompts = [

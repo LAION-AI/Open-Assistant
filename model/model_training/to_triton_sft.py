@@ -16,14 +16,18 @@ device = torch.device("cuda:0")
 
 sft_tokenizer = transformers.AutoTokenizer.from_pretrained(sft_config.model_name)
 
-sft_model = get_model(sft_config, sft_tokenizer)
+# For llama ...
+if sft_tokenizer.pad_token_id == sft_tokenizer.eos_token_id:
+    sft_tokenizer.add_special_tokens({"pad_token": "<|padding|>"})
+
+sft_model = get_model(sft_config, sft_tokenizer, pad_vocab_size_to_multiple_of=1)
+print('len tokenizer', len(sft_tokenizer))
 
 model_name = model_name.replace("/", "-")
 
 if sft_config.half:
     sft_model = sft_model.half()
 
-sft_model.to(device)
 
 sft_model.to(device)
 sft_model.eval()
@@ -42,8 +46,9 @@ class LogitsModel(nn.Module):
 sft_model = LogitsModel(sft_model)
 
 inputs = sft_tokenizer("reward model's hash", return_tensors="pt")
-inputs = {k: v.to(device) for k, v in inputs.items()}
-print(f"{sft_model(**inputs)=}")
+inputs = {k: v.to(device) for k, v in inputs.items() if k != 'token_type_ids'}
+outputs = sft_model(**inputs)
+print(f"{outputs.shape}")
 
 traced_script_module = torch.jit.trace(sft_model, (inputs["input_ids"], inputs["attention_mask"]))
 
