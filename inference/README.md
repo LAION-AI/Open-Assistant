@@ -26,31 +26,37 @@ docker compose --profile inference up -d
 Tail the logs:
 
 ```shell
+# cd /root/of/this/repository
 docker compose logs -f    \
     inference-server      \
     inference-worker      \
-    inference-text-client \
-    inference-text-generation-server
+    inference-safety
 ```
-
-Attach to the text-client, and start chatting:
-
-```shell
-docker attach open-assistant-inference-text-client-1
-```
-
-> **Note:** In the last step, `open-assistant-inference-text-client-1` refers to
-> the name of the `text-client` container started in step 2.
 
 > **Note:** The compose file contains the bind mounts enabling you to develop on
 > the modules of the inference stack, and the `oasst-shared` package, without
 > rebuilding.
 
-> **Note:** You can spin up any number of workers by adjusting the number of
-> replicas of the `inference-worker` service to your liking.
+> **Note:** You can change the model by editing variable `MODEL_CONFIG_NAME`
+> in the `docker-compose.yaml` file.  Valid model names can be found at
+> https://huggingface.co/OpenAssistant .
 
-> **Note:** Please wait for the `inference-text-generation-server` service to
-> output `{"message":"Connected"}` before starting to chat.
+> **Note:** You can spin up any number of workers by adjusting the number of
+> replicas of the `inference-worker` service (in the `docker-compose.yaml` file)
+> to your liking.
+
+> **Note:** Please wait for the `open-assistant-inference-worker` services to
+> finish downloading models before continuing to the next step.
+
+Spin up the text-client, and start chatting:
+
+```shell
+# cd /root/of/this/repository
+cd inference/text-client
+pip3 install --user -r requirements.txt
+python __main__.py
+# You'll soon see a `User:` prompt, where you can type your prompts.
+```
 
 ## Development Variant 2 (tmux terminal multiplexing)
 
