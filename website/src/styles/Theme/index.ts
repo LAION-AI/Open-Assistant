@@ -7,9 +7,9 @@ import { badgeTheme } from "./components/Badge";
 import { cardTheme } from "./components/Card";
 import { containerTheme } from "./components/Container";
 import { tableTheme } from "./components/Table";
-import { Inter } from '@next/font/google';
+import { Inter } from "@next/font/google";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 const config: ThemeConfig = {
   initialColorMode: "light",
