@@ -22,6 +22,7 @@
   "faq": "FAQ",
   "guidelines": "Guidelines",
   "github": "GitHub",
+  "hide": "Hide",
   "leaderboard": "Leaderboard",
   "legal": "Legal",
   "light_mode": "Light Mode",
@@ -57,5 +58,6 @@
   "users_dashboard": "Users Dashboard",
   "yes": "Yes",
   "who_are_we": "Who are we?",
-  "team": "Team"
+  "team": "Team",
+  "hugging_face": "HuggingFace"
 }

@@ -10,8 +10,10 @@ ARG SERVICE="worker"
 ARG APP_RELATIVE_PATH="${MODULE}/${SERVICE}"
 
 WORKDIR /worker
-COPY ./oasst-shared /tmp/oasst-shared
+
 RUN conda create -n worker python=3.10 -y
+
+COPY ./oasst-shared /tmp/oasst-shared
 RUN /opt/miniconda/envs/worker/bin/pip install /tmp/oasst-shared
 
 COPY ./${APP_RELATIVE_PATH}/requirements.txt .

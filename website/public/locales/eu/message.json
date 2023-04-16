@@ -1,5 +1,8 @@
 {
+  "confirm_open_link_body": "Esteka hau ireki nahu duzu?",
+  "confirm_open_link_header": "Konfirmatu esteka irekitzea",
   "copy_message_id": "Kopiatu mezuaren IDa",
+  "copy_message_text": "Kopiatu mezuaren testua",
   "copy_message_link": "Kopiatu mezuaren esteka",
   "label_action": "Etiketatu",
   "label_title": "Etiketa",
@@ -20,5 +23,7 @@
   "submit_labels": "Bidali",
   "tree_stopped": "Zuhaitza gelditu da {{id}}",
   "view_user": "Ikusi erabiltzailea",
-  "your_recent_messages": "Zure azken mezuak"
+  "your_recent_messages": "Zure azken mezuak",
+  "synthetic": "Sintetikoa",
+  "synthetic_explain": "Mezu hau AAk sortua da"
 }

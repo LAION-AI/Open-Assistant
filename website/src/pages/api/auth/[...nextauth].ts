@@ -8,6 +8,7 @@ import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
+import GoogleProvider from "next-auth/providers/google";
 import { checkCaptcha } from "src/lib/captcha";
 import { discordAvatarRefresh } from "src/lib/discord_avatar_refresh";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
@@ -36,6 +37,24 @@ if (process.env.DISCORD_CLIENT_ID) {
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID,
       clientSecret: process.env.DISCORD_CLIENT_SECRET,
+    })
+  );
+}
+
+if (process.env.GOOGLE_CLIENT_ID) {
+  providers.push(
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        // NOTE: adding this will case the app to ask the user
+        // to login everytime, might be a bit annoying
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     })
   );
 }

@@ -161,11 +161,14 @@ class MessageRead(pydantic.BaseModel):
     id: str
     parent_id: str | None
     content: str | None
+    chat_id: str
     created_at: datetime
     role: Literal["prompter", "assistant"]
     state: MessageState
     score: int
     reports: list[Report] = []
+    # work parameters will be None on user prompts
+    work_parameters: WorkParameters | None
 
     @property
     def is_assistant(self) -> bool:
@@ -174,6 +177,25 @@ class MessageRead(pydantic.BaseModel):
 
 class Thread(pydantic.BaseModel):
     messages: list[MessageRead]
+
+
+class SafetyParameters(pydantic.BaseModel):
+    level: int = 0
+
+    @pydantic.validator("level")
+    def level_must_be_in_range(cls, v):
+        if v < 0 or v > 9:
+            raise ValueError("level must be in range [0, 9]")
+        return v
+
+
+class SafetyRequest(pydantic.BaseModel):
+    inputs: str
+    parameters: SafetyParameters
+
+
+class SafetyResponse(pydantic.BaseModel):
+    outputs: str
 
 
 class WorkerRequestBase(pydantic.BaseModel):
@@ -185,6 +207,7 @@ class WorkRequest(WorkerRequestBase):
     thread: Thread = pydantic.Field(..., repr=False)
     created_at: datetime = pydantic.Field(default_factory=datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
+    safety_parameters: SafetyParameters = pydantic.Field(default_factory=SafetyParameters)
 
 
 class PingRequest(WorkerRequestBase):

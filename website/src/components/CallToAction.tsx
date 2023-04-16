@@ -1,10 +1,10 @@
 import { Box, Link, Text, useColorMode } from "@chakra-ui/react";
-import { Github, Users } from "lucide-react";
+import { Discord, Github } from "@icons-pack/react-simple-icons";
+import { Users } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { useId } from "react";
 
 import { Container } from "./Container";
-import { Discord } from "./Icons/Discord";
 
 const CIRCLE_HEIGHT = 558;
 const CIRCLE_WIDTH = 558;

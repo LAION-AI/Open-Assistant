@@ -1,0 +1,19 @@
+{
+  "back_to_chat_list": "Volver a la lista de chat",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Configuración del chat",
+  "empty": "(vacío)",
+  "login_message": "Para usar esta función, debe iniciar sesión nuevamente. Inicie sesión con uno de estos proveedores:",
+  "max_new_tokens": "Número máximo de tokens nuevos",
+  "model": "Modelo",
+  "preset": "Preestablecido",
+  "preset_custom": "Personalizado",
+  "queue_info": "Tu mensaje está en cola, estás en la posición {{ queuePosition, number, integer }} en la cola.",
+  "repetition_penalty": "Penalización por repetición",
+  "temperature": "Temperatura",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "P típico",
+  "you_are_logged_in": "Ha iniciado sesión en el servicio de chat",
+  "your_chats": "Tus chats"
+}

@@ -366,7 +366,7 @@ export class OasstApiClient {
       username: user.id,
       auth_method: user.auth_method,
     });
-    return this.get<Message[]>(`/api/v1/messages?${params}`);
+    return this.get<Message[]>(`/api/v1/messages/?${params}`);
   }
 
   fetch_my_messages_cursor(
@@ -387,7 +387,7 @@ export class OasstApiClient {
   }
 
   fetch_recent_messages(lang: string) {
-    return this.get<Message[]>(`/api/v1/messages`, { lang });
+    return this.get<Message[]>(`/api/v1/messages/`, { lang });
   }
 
   fetch_message_children(messageId: string) {
@@ -449,5 +449,10 @@ export class OasstApiClient {
       after: direction === "forward" ? cursor : undefined,
       before: direction === "back" ? cursor : undefined,
     });
+  }
+
+  async delete_account(user: BackendUserCore) {
+    const backendUser = await this.fetch_frontend_user(user);
+    return this.delete<void>(`/api/v1/users/${backendUser.user_id}`);
   }
 }

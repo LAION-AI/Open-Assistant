@@ -1,6 +1,6 @@
 import argparse
 
-from oasst_data import ExportMessageTree, load_tree_list, visit_messages_depth_first
+from oasst_data import ExportMessageTree, read_message_tree_list, visit_messages_depth_first
 
 
 def parse_args():
@@ -31,7 +31,7 @@ def main():
             and (lang_codes is None or tree.prompt.lang in lang_codes)
         )
 
-    trees = load_tree_list(args.input_file_path, filter=tree_filter)
+    trees = read_message_tree_list(args.input_file_path, filter=tree_filter)
     print(f"{len(trees)} trees")
 
     all_messages = []

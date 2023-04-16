@@ -25,6 +25,16 @@ loguru_level=${LOGURU_LEVEL:-INFO}
 OAHF_HOME=${OAHF_HOME:-$HOME/.oasst_cache/huggingface}
 mkdir -p $OAHF_HOME
 
+container_mount_path=/data
+
+hf_home_arg=""
+hf_transfer_arg="-e HF_HUB_ENABLE_HF_TRANSFER=\"\""
+# if image_type is hf, then set HF_HOME to container mount path
+if [ "$image_type" = "hf" ]; then
+    hf_home_arg="-e HF_HOME=$container_mount_path"
+    hf_transfer_arg=""
+fi
+
 while true; do
     docker pull $image_name
     docker run -it --rm --privileged --runtime=nvidia --gpus=all \
@@ -35,7 +45,8 @@ while true; do
     -e BACKEND_URL=$backend_url \
     -e HF_TOKEN=$HF_TOKEN \
     -e MAX_PARALLEL_REQUESTS=$max_parallel_requests \
-    -e HF_HUB_ENABLE_HF_TRANSFER= \
+    $hf_transfer_arg \
+    $hf_home_arg \
     -v $OAHF_HOME:/data \
     $image_name
 done
