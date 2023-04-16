@@ -52,12 +52,6 @@ export function Header({ preLogoSlot }: HeaderProps) {
   const initialShowAnnouncement = session && announcement && announcementIsNotInCache;
 
   const [showAnnouncement, setShowAnnouncement] = React.useState(true);
-  console.log({
-    session,
-    announcement,
-    showAnnouncement,
-    initial: session && announcement && announcementIsNotInCache,
-  });
 
   // function to handle button click
   const handleHideAnnouncement = () => {
