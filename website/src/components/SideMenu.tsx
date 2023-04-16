@@ -51,7 +51,6 @@ export function SideMenu({ items, collapsed }: SideMenuProps) {
           return (
             <Tooltip
               key={item.labelID}
-              fontFamily="inter"
               label={label}
               placement="right"
               className={clsx("hidden sm:block", { "lg:hidden": !collapsed })}
