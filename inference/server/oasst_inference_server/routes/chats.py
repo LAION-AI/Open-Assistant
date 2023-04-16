@@ -19,11 +19,12 @@ router = fastapi.APIRouter(
 
 @router.get("")
 async def list_chats(
+    include_hidden: bool = False,
     ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
 ) -> chat_schema.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
-    chats = await ucr.get_chats()
+    chats = await ucr.get_chats(include_hidden=include_hidden)
     chats_list = [chat.to_list_read() for chat in chats]
     return chat_schema.ListChatsResponse(chats=chats_list)
 
@@ -47,6 +48,15 @@ async def get_chat(
     """Allows a client to get the current state of a chat."""
     chat = await ucr.get_chat_by_id(chat_id)
     return chat.to_read()
+
+
+@router.delete("/{chat_id}")
+async def delete_chat(
+    chat_id: str,
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+):
+    await ucr.delete_chat(chat_id)
+    return fastapi.Response(status_code=200)
 
 
 @router.post("/{chat_id}/prompter_message")
@@ -247,3 +257,27 @@ async def handle_create_report(
     except Exception:
         logger.exception("Error adding report")
         return fastapi.Response(status_code=500)
+
+
+@router.put("/{chat_id}/title")
+async def handle_update_title(
+    chat_id: str,
+    request: chat_schema.ChatUpdateTitleRequest,
+    ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
+) -> fastapi.Response:
+    """Allows the client to update a chat title."""
+    try:
+        await ucr.update_title(chat_id=chat_id, title=request.title)
+    except Exception:
+        logger.exception("Error when updating chat title")
+        return fastapi.Response(status_code=500)
+
+
+@router.put("/{chat_id}/hide")
+async def update_visibility(
+    chat_id: str,
+    request: chat_schema.ChatUpdateVisibilityRequest,
+    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+):
+    await ucr.update_visibility(chat_id, request.hidden)
+    return fastapi.Response(status_code=200)

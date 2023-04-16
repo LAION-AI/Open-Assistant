@@ -77,8 +77,6 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
     const { isOpen: reportPopupOpen, onOpen: showReportPopup, onClose: closeReportPopup } = useDisclosure();
     const { isOpen: labelPopupOpen, onOpen: showLabelPopup, onClose: closeLabelPopup } = useDisclosure();
 
-    const highlightColor = useColorModeValue(colors.light.active, colors.dark.active);
-
     const { trigger: sendEmojiChange } = useSWRMutation(`/api/messages/${message.id}/emoji`, post, {
       onSuccess: (data) => {
         data.emojis["+1"] = data.emojis["+1"] || 0;
@@ -107,11 +105,10 @@ export const MessageTableEntry = forwardRef<HTMLDivElement, MessageTableEntryPro
           name: `${boolean(message.is_assistant) ? "Assistant" : "User"}`,
           src: `${boolean(message.is_assistant) ? "/images/logos/logo.png" : "/images/temp-avatars/av1.jpg"}`,
         }}
-        outline={highlight ? "2px solid black" : undefined}
-        outlineColor={highlightColor}
         cursor={enabled ? "pointer" : undefined}
         overflowX="auto"
         onClick={handleOnClick}
+        highlight={highlight}
       >
         <Flex justifyContent="space-between" mt="2" alignItems="center">
           {showCreatedDate ? (

@@ -1,3 +1,5 @@
+import { AuthMethod } from "./Providers";
+
 export interface BackendUserCore {
   /**
    * The user's unique ID according to the `auth_method`.
@@ -10,11 +12,9 @@ export interface BackendUserCore {
   display_name: string;
 
   /**
-   * The authorization method.  One of:
-   *   - discord
-   *   - local
+   * The authorization method.
    */
-  auth_method: string;
+  auth_method: AuthMethod;
 }
 
 /**

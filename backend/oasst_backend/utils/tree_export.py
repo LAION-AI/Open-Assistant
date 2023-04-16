@@ -92,6 +92,7 @@ def prepare_export_message_node(
         message_id=message_id,
         parent_id=parent_id,
         user_id=user_id,
+        created_date=message.created_date,
         text=str(message.payload.payload.text),
         role=message.role,
         lang=message.lang,

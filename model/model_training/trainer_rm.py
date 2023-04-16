@@ -195,11 +195,13 @@ def main():
         tokenizer,
         max_length=training_conf.max_length,
         pad_to_multiple_of=16,
+        max_replies=training_conf.max_replies,
     )
     eval_collate_fn = RankingDataCollator(
         tokenizer,
         max_length=training_conf.max_length,
         pad_to_multiple_of=16,
+        max_replies=training_conf.max_replies,
     )
 
     show_dataset_stats = (training_conf.verbose or training_conf.show_dataset_stats) and (

@@ -9,6 +9,9 @@ single high-end consumer GPU. With some modifications, Open Assistant should
 also be able to interface with other third-party applications easily as well as
 retrieve information from databases and the Internet.
 
+You can play with our current best model
+[here](https://www.open-assistant.io/chat)!
+
 You should join the
 [Open Assistant discord server](https://ykilcher.com/open-assistant-discord)
 and/or comment on Github issues before making any major changes. Most dev

@@ -6,6 +6,7 @@ from typing import Iterable, Literal
 
 import interface
 import lorem
+import pydantic
 import requests
 import websocket
 from loguru import logger
@@ -57,12 +58,11 @@ class TokenBuffer:
             yield from self.tokens
 
 
-def wait_for_inference_server(inference_server_url: str, timeout: int = 600):
-    health_url = f"{inference_server_url}/health"
+def wait_for_inference_server(http: "HttpClient", timeout: int = 600):
     time_limit = time.time() + timeout
     while True:
         try:
-            response = requests.get(health_url)
+            response = http.get("/health")
             response.raise_for_status()
         except (requests.HTTPError, requests.ConnectionError):
             if time.time() > time_limit:
@@ -118,3 +118,22 @@ def send_response(
     msg = repsonse.json()
     with ws_lock:
         ws.send(msg)
+
+
+class HttpClient(pydantic.BaseModel):
+    base_url: str
+    basic_auth_username: str | None = None
+    basic_auth_password: str | None = None
+
+    @property
+    def auth(self):
+        if self.basic_auth_username and self.basic_auth_password:
+            return (self.basic_auth_username, self.basic_auth_password)
+        else:
+            return None
+
+    def get(self, path: str, **kwargs):
+        return requests.get(self.base_url + path, auth=self.auth, **kwargs)
+
+    def post(self, path: str, **kwargs):
+        return requests.post(self.base_url + path, auth=self.auth, **kwargs)

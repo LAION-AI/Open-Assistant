@@ -1,0 +1,16 @@
+{
+  "default": "¡Algo salió mal!",
+  "err_1000": "Tipo de tarea no válido",
+  "err_1001": "Error al confirmar la tarea",
+  "err_1002": "Error al no confirmar la tarea",
+  "err_1003": "Tipo de respuesta inválido",
+  "err_1004": "Solicitud de interacción fallida",
+  "err_1005": "Error al generar la tarea",
+  "err_1006": "No hay tareas de tipo {{task_type}} disponibles actualmente.",
+  "err_1007": "Falló la consulta de disponibilidad de la tarea",
+  "err_1008": "Tamaño del mensaje demasiado largo",
+  "err_1009": "Tus mensajes recientes tienen duplicados",
+  "err_1010": "El texto del mensaje está vacío",
+  "err_1011": "No puedes responder dos veces al mismo mensaje",
+  "err_1012": "Tienes demasiadas tareas pendientes. Vuelve a intentarlo en minutos."
+}

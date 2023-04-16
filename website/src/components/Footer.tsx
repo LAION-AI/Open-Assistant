@@ -58,6 +58,7 @@ export function Footer() {
                 </Text>
                 <FooterLink href="https://github.com/LAION-AI/Open-Assistant" label={t("github")} />
                 <FooterLink href="https://ykilcher.com/open-assistant-discord" label={t("discord")} />
+                <FooterLink href="https://huggingface.co/OpenAssistant" label={t("hugging_face")} />
               </Flex>
               <Flex direction="column" alignItems={["center", "start"]}>
                 <Text fontWeight="bold" color={textColor}>
