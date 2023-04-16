@@ -1,6 +1,6 @@
 name: pre-commit
 
-on:
+on: [![Create PR staging branch](https://github.com/github/advisory-database/actions/workflows/create_staging_branch.yaml/badge.svg)](https://github.com/github/advisory-database/actions/workflows/create_staging_branch.yaml)
   workflow_call:
   pull_request_target:
 
