@@ -27,7 +27,6 @@ interface ChatConversationProps {
 export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>(useChatContext().messages);
-  console.log("ChatConversation rendered");
 
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
