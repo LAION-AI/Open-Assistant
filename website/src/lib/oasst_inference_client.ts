@@ -24,6 +24,7 @@ export class OasstInferenceClient {
         TrustedClient: this.clientToken,
       },
     });
+
     return data;
   }
 
@@ -48,7 +49,6 @@ export class OasstInferenceClient {
 
         // this is maybe not the cleanest solution, but otherwise we would have to sign up all users of the website
         // to inference automatically, which is maybe an overkill
-        console.log("here");
         await this.inference_login();
         return create();
       } else {
@@ -98,6 +98,14 @@ export class OasstInferenceClient {
 
   update_chat_title({ chat_id, title }: { chat_id: string; title: string }) {
     return this.request(`/chats/${chat_id}/title`, { method: "PUT", data: { title } });
+  }
+
+  hide_chat({ chat_id }: { chat_id: string }) {
+    return this.request(`/chats/${chat_id}/hide`, { method: "PUT", data: { hidden: true } });
+  }
+
+  delete_account() {
+    return this.request(`/account/`, { method: "DELETE" });
   }
 }
 

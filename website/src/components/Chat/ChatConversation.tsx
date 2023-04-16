@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Flex, useBoolean, useToast } from "@chakra-ui/react";
-import router from "next/router";
 import { memo, useCallback, useRef, useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { UseFormGetValues } from "react-hook-form";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
@@ -22,9 +21,10 @@ import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./
 
 interface ChatConversationProps {
   chatId: string;
+  getConfigValues: UseFormGetValues<ChatConfigFormData>;
 }
 
-export const ChatConversation = memo(function ChatConversation({ chatId }: ChatConversationProps) {
+export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>(useChatContext().messages);
 
@@ -32,11 +32,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId }: ChatC
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
 
-  const { getValues: getFormValues } = useFormContext<ChatConfigFormData>();
-
   const createAndFetchAssistantMessage = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
-      const { model_config_name, ...sampling_parameters } = getFormValues();
+      const { model_config_name, ...sampling_parameters } = getConfigValues();
       const assistant_arg: InferencePostAssistantMessageParams = {
         chat_id: chatId,
         parent_id: parentId,
@@ -75,7 +73,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId }: ChatC
       setResponse(null);
       setIsSending.off();
     },
-    [getFormValues, setIsSending]
+    [getConfigValues, setIsSending]
   );
   const toast = useToast();
   const sendPrompterMessage = useCallback(async () => {

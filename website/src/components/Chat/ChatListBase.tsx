@@ -16,16 +16,12 @@ import { CreateChatButton } from "./CreateChatButton";
 
 export const ChatListBase = memo(function ChatListBase({
   isSideBar,
-  chats,
+  chats, // TODO: can we remove this?
   ...props
 }: CardProps & { isSideBar: boolean; chats?: GetChatsResponse }) {
-  const { data: response, mutate: mutateChatResponse } = useSWR<GetChatsResponse>(
-    chats ? null : API_ROUTES.LIST_CHAT,
-    get,
-    {
-      fallbackData: chats,
-    }
-  );
+  const { data: response, mutate: mutateChatResponse } = useSWR<GetChatsResponse>(API_ROUTES.LIST_CHAT, get, {
+    fallbackData: chats,
+  });
   const { t } = useTranslation(["common", "chat"]);
 
   const sideProps: CardProps = useMemo(
@@ -45,6 +41,19 @@ export const ChatListBase = memo(function ChatListBase({
         (chatResponse) => ({
           ...chatResponse,
           chats: chatResponse?.chats.map((chat) => (chat.id === chatId ? { ...chat, title } : chat)) || [],
+        }),
+        false
+      );
+    },
+    [mutateChatResponse]
+  );
+
+  const handleHide = useCallback(
+    ({ chatId }: { chatId: string }) => {
+      mutateChatResponse(
+        (chatResponse) => ({
+          ...chatResponse,
+          chats: chatResponse?.chats.filter((chat) => chat.id !== chatId) || [],
         }),
         false
       );
@@ -90,7 +99,7 @@ export const ChatListBase = memo(function ChatListBase({
         }}
       >
         {response?.chats.map((chat) => (
-          <ChatListItem key={chat.id} chat={chat} onUpdateTitle={handleUpdateTitle}></ChatListItem>
+          <ChatListItem key={chat.id} chat={chat} onUpdateTitle={handleUpdateTitle} onHide={handleHide}></ChatListItem>
         ))}
       </SimpleBar>
     </Card>

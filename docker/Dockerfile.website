@@ -46,5 +46,7 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT 3000
+# allow the heap to grow larger than the default
+ENV NODE_OPTIONS "--max-old-space-size=4096"
 
 CMD ["node", "server.js"]

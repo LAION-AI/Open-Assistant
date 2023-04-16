@@ -11,7 +11,13 @@ import { ToSWrapper } from "../ToSWrapper";
 export const getChatLayout = (page: React.ReactElement) => (
   <HeaderLayout preLogoSlot={<ChatListMobile />}>
     <ToSWrapper>
-      <SideMenuLayout collapsed items={getDashBoardLayoutSidebarItem()}>
+      <SideMenuLayout
+        collapsed
+        items={getDashBoardLayoutSidebarItem()}
+        innerBoxProps={{
+          ms: { base: 0, lg: 6 },
+        }}
+      >
         <Flex gap={{ md: 4, lg: 6 }}>
           <ChatListDesktop></ChatListDesktop>
           <Box flexGrow="1">

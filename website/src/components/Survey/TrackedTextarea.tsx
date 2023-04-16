@@ -25,7 +25,7 @@ export const TrackedTextarea = (props: TrackedTextboxProps) => {
   const wordLimitForLangDetection = 4;
   const backgroundColor = useColorModeValue("gray.100", "gray.900");
   const currentLanguage = useCurrentLocale();
-  const wordCount = (props.text.match(/\w+/g) || []).length;
+  const wordCount = (props.text.match(/\S+/g) || []).length;
 
   const detectLang = (text: string) => {
     try {

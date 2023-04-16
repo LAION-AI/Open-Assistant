@@ -7,6 +7,7 @@ fastapi[all]==0.88.0
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
+gunicorn
 loguru
 nvidia-ml-py
 prometheus-fastapi-instrumentator
@@ -18,4 +19,5 @@ redis
 sqlmodel
 sse-starlette
 uuid7==0.1.0
+uvicorn[standard]
 websockets

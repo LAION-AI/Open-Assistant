@@ -506,6 +506,14 @@ class Vicuna(Dataset):
         for line in data["conversations"]:
             speaker = line["from"]  # 'human' or 'gpt'
             message = line["value"]
+
+            # remove markdown escaping in revision 192ab2185289094fc556ec8ce5ce1e8e587154ca
+            # python-markdownify with escape_asterisks & escape_underscores True is used
+            # for pre-processing the dataset.
+            # See also https://github.com/LAION-AI/Open-Assistant/issues/2510
+            message = message.replace(r"\_", "_")
+            message = message.replace(r"\*", "*")
+
             if role != speaker:
                 if role is not None:
                     dialogue.append("\n".join(messages))
@@ -528,7 +536,7 @@ class Vicuna(Dataset):
         dataset = load_dataset(
             "anon8231489123/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
-            data_files=["ShareGPT_V3_unfiltered_cleaned_split.json"],
+            data_files=["ShareGPT_V3_unfiltered_cleaned_split_no_imsorry.json"],
             revision="192ab2185289094fc556ec8ce5ce1e8e587154ca",
         )["train"]
         for data in dataset:
@@ -552,6 +560,7 @@ class DatabricksDolly15k(Dataset):
     def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
         super().__init__()
         self.rows = []
+        self.citation_regex = re.compile(r"\[[a-zA-Z]\]")  # removes citations in the form of e.g. [a] or [A]
         if mode not in ("sft", "rl"):
             raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
         self.mode = mode
@@ -561,8 +570,11 @@ class DatabricksDolly15k(Dataset):
                 self.rows.append(conv)
 
     def _process_instruction(self, row: dict[str, str], input_max_length: int) -> list[str] | None:
-        if c := row["METADATA"]["CONTEXT"]:
-            return [f"{c} {row['INSTRUCTION']}"[:input_max_length], row["RESPONSE"][:input_max_length]]
+        if context := re_reference_remove.sub("", row["METADATA"]["CONTEXT"]):
+            # further remove references
+            context = context.replace("[citation needed]", "")
+            context = self.citation_regex.sub("", context)
+            return [f"{context} {row['INSTRUCTION']}"[:input_max_length], row["RESPONSE"][:input_max_length]]
         else:
             return [row["INSTRUCTION"][:input_max_length], row["RESPONSE"][:input_max_length]]
 

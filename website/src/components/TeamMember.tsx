@@ -1,5 +1,5 @@
 import { Avatar, Badge, Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
-import { SiGithub } from "@icons-pack/react-simple-icons";
+import { Github } from "@icons-pack/react-simple-icons";
 import Link from "next/link";
 
 export interface TeamMemberProps {
@@ -26,7 +26,7 @@ export function TeamMember({ name, url, imageURL, githubURL, title }: TeamMember
           {githubURL && (
             <Link href={githubURL} target="_default" rel="noreferrer" title="github">
               <Badge mb="1">
-                <SiGithub size={12} />
+                <Github size={12} />
               </Badge>
             </Link>
           )}
