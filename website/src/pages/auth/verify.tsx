@@ -16,7 +16,7 @@ export default function Verify() {
       </Head>
       <div className={`flex h-full justify-center items-center ${bgColorClass}`}>
         <div className={bgColorClass}>
-          <h1 className="text-lg">A sign-in link has been sent to your email address.</h1>
+          <h1 className="text-lg">A sign-in link has been sent to your email address (likely going to spam).</h1>
         </div>
       </div>
     </>
