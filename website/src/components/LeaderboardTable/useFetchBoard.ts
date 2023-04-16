@@ -1,4 +1,3 @@
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
 import { get } from "src/lib/api";
@@ -6,9 +5,7 @@ import useSWRImmutable from "swr/immutable";
 
 export const useFetchBoard = <T extends { last_updated: string }>(url: string) => {
   const { t } = useTranslation("leaderboard");
-  const { status } = useSession();
-  const isLoggedIn = status === "authenticated";
-  const res = useSWRImmutable<T>(isLoggedIn && url, get);
+  const res = useSWRImmutable<T>(url, get);
 
   const lastUpdated = useMemo(() => {
     const val = res.data ? new Date(res.data.last_updated) : new Date();
