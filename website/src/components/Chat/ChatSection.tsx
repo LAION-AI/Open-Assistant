@@ -35,7 +35,7 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
     <FormProvider {...form}>
       <Card className="mx-auto" maxW={{ base: "min(64rem, 90vw)", lg: "36rem", xl: "3xl", "2xl": "5xl" }}>
         <CardBody display="flex" flexDirection="column" gap="2">
-          <ChatConversation chatId={chatId} key={chatId} />
+          <ChatConversation chatId={chatId} key={chatId} getConfigValues={form.getValues} />
           <ChatConfigSummary />
           <Divider />
           <InferencePoweredBy />
