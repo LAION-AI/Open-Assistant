@@ -65,6 +65,7 @@ MyApp.getInitialProps = ({ ctx: { req } }: AppContext): AppInitialProps => {
       ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
       ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA),
       CLOUDFLARE_CAPTCHA_SITE_KEY: process.env.CLOUDFLARE_CAPTCHA_SITE_KEY,
+      CURRENT_ANNOUNCEMENT: process.env.CURRENT_ANNOUNCEMENT,
       NODE_ENV: process.env.NODE_ENV,
     },
     cookie: req?.headers.cookie || "",
