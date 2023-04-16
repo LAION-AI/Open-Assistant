@@ -54,7 +54,7 @@ Spin up the text-client, and start chatting:
 # cd /root/of/this/repository
 cd inference/text-client
 pip3 install --user -r requirements.txt
-python __main__.py
+python3 __main__.py
 # You'll soon see a `User:` prompt, where you can type your prompts.
 ```
 
