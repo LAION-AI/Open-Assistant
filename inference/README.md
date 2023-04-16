@@ -37,8 +37,8 @@ docker compose logs -f    \
 > the modules of the inference stack, and the `oasst-shared` package, without
 > rebuilding.
 
-> **Note:** You can change the model by editing variable `MODEL_CONFIG_NAME`
-> in the `docker-compose.yaml` file.  Valid model names can be found at
+> **Note:** You can change the model by editing variable `MODEL_CONFIG_NAME` in
+> the `docker-compose.yaml` file. Valid model names can be found at
 > https://huggingface.co/OpenAssistant .
 
 > **Note:** You can spin up any number of workers by adjusting the number of
