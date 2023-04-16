@@ -102,4 +102,26 @@ MODEL_CONFIGS = {
         max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
         quantized=True,
     ),
+    "OA_SFT_Llama_30B_7": ModelConfig(
+        model_id="OpenAssistant/oasst-sft-7-llama-30b",
+        max_input_length=1024,
+        max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
+    ),
+    "OA_SFT_Llama_30Bq_7": ModelConfig(
+        model_id="OpenAssistant/oasst-sft-7-llama-30b",
+        max_input_length=1024,
+        max_total_length=1792,  # seeing OOMs on 2048 on an A100 80GB
+        quantized=True,
+    ),
+    "Carper_RLHF_13B_1": ModelConfig(
+        model_id="CarperAI/vicuna-13b-fine-tuned-rlhf",
+        max_input_length=1024,
+        max_total_length=2048,
+    ),
+    "Carper_RLHF_13Bq_1": ModelConfig(
+        model_id="CarperAI/vicuna-13b-fine-tuned-rlhf",
+        max_input_length=1024,
+        max_total_length=2048,
+        quantized=True,
+    ),
 }
