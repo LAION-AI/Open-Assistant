@@ -1,5 +1,5 @@
 {
-  "fails_task.question": "对于这个聊天对话而言，此回复是否是一个好的回复？",
+  "fails_task.question": "作为对于该提示任务的回答，这是一个糟糕的回复吗？",
   "hate_speech": "仇恨言论",
   "hate_speech.explanation": "内容涉及辱骂、威胁、仇恨言论、或是对受保护族群带有偏见。偏见是指非理性的先入为主的观点，受保护族群则包括性别、种族、宗教、性取向和类似特征。",
   "label_highlighted_flag_instruction": "以上言论是否符合以下选项：",

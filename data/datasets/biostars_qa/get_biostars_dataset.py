@@ -13,19 +13,13 @@ def get_biostars_dataset(start_idx=9557161, accept_threshold=1000000, sleep=0.1,
     Download BioStarts data set from the official API using GET requests
 
     Args:
-        start_idx (int): The identifier (UID) of the post to retrieve
+        start_idx (int): The identifier (UID) of the post to retrieve; 9557161 was the last post included in the dataset
         accept_threshold (int): stop if this many posts with "has_accepted" true are retrieved
         sleep (float): Amount of time to sleep between requests
         folder (string): folder to store responses as JSON files
     Returns:
         Nothing. Content is saved to individual JSON files for each post.
     """
-
-    # There is a large number gap in post IDs the numbers skip from 9463943 to 494831
-    # Post ID: 9557161 was the last post included in the dataset
-    start_idx = 9557161
-    accept_threshold = 1000000
-    sleep = 0.1
 
     headers = {"Content-Type": "application/json"}
 

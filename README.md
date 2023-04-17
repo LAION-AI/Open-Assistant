@@ -65,11 +65,11 @@ in and start taking on tasks! We want to collect a high volume of quality data.
 By submitting, ranking, and labelling model prompts and responses you will be
 directly helping to improve the capabilities of Open Assistant.
 
-### Running Locally
+### Running the Development Setup Locally (without chat)
 
 **You do not need to run the project locally unless you are contributing to the
 development process. The website link above will take you to the public website
-where you can use the data collection app.**
+where you can use the data collection app and the chat.**
 
 If you would like to run the data collection app locally for development, you
 can set up an entire stack needed to run **Open-Assistant**, including the
@@ -101,6 +101,19 @@ interact with the website.
 > or in a web browser using
 > [GitHub Codespaces](https://github.com/features/codespaces), you can use the
 > provided [`.devcontainer`](.devcontainer/) folder.
+
+### Running the Development Setup Locally for Chat
+
+**You do not need to run the project locally unless you are contributing to the
+development process. The website link above will take you to the public website
+where you can use the data collection app and the chat.**
+
+**Also note that the local setup is only for development and is not meant to be
+used as a local chatbot, unless you know what you are doing.**
+
+If you _do_ know what you are doing, then see the `inference` folder for getting
+the inference system up and running, or have a look at `--profile inference` in
+addition to `--profile ci` in the above command.
 
 ## The Vision
 

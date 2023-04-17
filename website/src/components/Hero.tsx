@@ -29,7 +29,7 @@ export function Hero() {
             </Text>
             <Text className={`mt-6 text-lg ${pTextColor}`}>{t("blurb")}</Text>
             <Text className={`mt-6 text-lg ${pTextColor}`}>{t("blurb1")}</Text>
-            <Box className={`mt-6 flex gap-6 ${pTextColor}`}>
+            <Box className={`mt-6 flex gap-6 ${pTextColor} flex-wrap`}>
               {getEnv().ENABLE_CHAT && (
                 <Link href="/chat" aria-label="Chat">
                   <Button variant="solid" colorScheme="blue" px={5} py={6}>
@@ -40,6 +40,11 @@ export function Hero() {
               <Link href="/dashboard" aria-label="Dashboard">
                 <Button variant="outline" px={5} py={6}>
                   {t("index:help_us_improve")}
+                </Button>
+              </Link>
+              <Link href="https://huggingface.co/OpenAssistant" aria-label="Hugging face">
+                <Button variant="outline" px={5} py={6}>
+                  {t("index:hugging_face_link")}
                 </Button>
               </Link>
             </Box>

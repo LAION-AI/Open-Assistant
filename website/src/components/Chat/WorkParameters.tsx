@@ -5,8 +5,6 @@ import { memo } from "react";
 import { JsonCard } from "src/components/JsonCard";
 import { InferenceMessage, SamplingParameters } from "src/types/Chat";
 
-import { useChatContext } from "./ChatContext";
-
 export const areParametersEqual = (a: SamplingParameters, b: SamplingParameters) => {
   return (
     a.top_k === b.top_k &&
@@ -24,14 +22,8 @@ export const WorkParametersDisplay = memo(function WorkParametersDisplay({
   parameters: NonNullable<InferenceMessage["work_parameters"]>;
 }) {
   const { seed: _, ...rest } = parameters;
-  const model_id = parameters.model_config.model_id;
+  const model_id = parameters.model_config.model_id.replace("OpenAssistant/", "");
   const { t } = useTranslation("chat");
-  const { modelInfos } = useChatContext();
-  const modelInfo = modelInfos.find((modelInfo) => modelInfo.name === model_id);
-  const presetName =
-    modelInfo?.parameter_configs.find((preset) =>
-      areParametersEqual(preset.sampling_parameters, parameters.sampling_parameters)
-    )?.name ?? t("preset_custom");
 
   return (
     <>
@@ -57,12 +49,6 @@ export const WorkParametersDisplay = memo(function WorkParametersDisplay({
                 {t("model")}:{" "}
                 <Text as="span" fontWeight="medium">
                   {model_id}
-                </Text>
-              </span>
-              <span>
-                {t("preset")}:{" "}
-                <Text as="span" fontWeight="medium">
-                  {presetName}
                 </Text>
               </span>
             </Flex>
