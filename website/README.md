@@ -32,9 +32,8 @@ This website is built using:
 
 To contribute to the website, make sure you have the following setup and installed:
 
-1.  [NVM](https://github.com/nvm-sh/nvm): The Node Version Manager makes it easy to ensure you have the right NodeJS
-    version installed. Once installed, run `nvm use 16` to use Node 16.x. The website is known to be stable with NodeJS
-    version 16.x. This will install both Node and NPM.
+1.  Node 16: if you are on windows, you can [download node from their website](https://nodejs.org/en/download/releases),
+    if you are on linux, use [NVM](https://github.com/nvm-sh/nvm) (Once installed, run `nvm use 16`)
 1.  [Docker](https://www.docker.com/): We use docker to simplify running dependent services.
 
 ### Getting everything up and running

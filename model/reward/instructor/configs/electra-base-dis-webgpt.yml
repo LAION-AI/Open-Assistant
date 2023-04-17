@@ -1,3 +1,0 @@
-model_name: google/electra-large-discriminator
-learning_rate: 3e-5
-max_length: 300

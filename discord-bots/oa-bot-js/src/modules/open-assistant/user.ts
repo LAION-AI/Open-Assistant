@@ -1,36 +1,28 @@
 import axios from "axios";
-import supabase from "../supabase.js";
+import Database from "../db.js";
+let db = new Database();
 
 export async function getUserLang(userId: string) {
-  var { data: user } = await supabase
-    .from("open_assistant_users")
-    .select("*")
-    .eq("id", userId);
-  if (user && user[0]) {
-    return user[0].lang;
+  let user = await db.get("users", userId);
+  if (user) {
+    return user.lang;
   } else {
     return null;
   }
 }
 
 export async function setUserLang(userId: string, lang: string) {
-  var { data: user } = await supabase
-    .from("open_assistant_users")
-    .select("*")
-    .eq("id", userId);
-  if (user && user[0]) {
-    await supabase
-      .from("open_assistant_users")
-      .update({ lang: lang })
-      .eq("id", userId);
+  let user = await db.get("users", userId);
+  if (user && user) {
+    await db.set("users", userId, {
+      ...user,
+      lang: lang,
+    });
     return true;
   } else {
-    await supabase.from("open_assistant_users").insert([
-      {
-        id: userId,
-        lang: lang,
-      },
-    ]);
+    await db.set("users", userId, {
+      lang: lang,
+    });
     return true;
   }
 }
