@@ -39,7 +39,6 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
         ref={ref}
         bg="gray.100"
         borderRadius="xl"
-        isDisabled={isSending}
         onKeyDown={handleKeydown}
         _dark={{
           bg: "gray.800",
