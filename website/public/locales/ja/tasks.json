@@ -4,7 +4,8 @@
   "default": {
     "unchanged_title": "変更なし",
     "unchanged_message": "継続しますか？",
-    "continue_anyway": "続ける"
+    "continue_anyway": "続ける",
+    "markdownguide": "Styling with markdown supported"
   },
   "no_more_tasks": "タスクが無かったようです。",
   "random": {
@@ -16,20 +17,23 @@
     "desc": "Open Assistantに様々なメッセージへの返答を学ばせるため、最初のプロンプトを作成します。（抽選に参加）",
     "overview": "アシスタントに送る最初のメッセージを作成します。",
     "instruction": "最初のメッセージをどうぞ",
-    "response_placeholder": "プロンプトはこちらへ..."
+    "response_placeholder": "プロンプトはこちらへ...",
+    "shotcut_tip": "Tip: You can use a keyboard shortcut to Review and Submit responses:"
   },
   "reply_as_user": {
     "label": "ユーザとして返信",
     "desc": "チャットを通して、Open Assistantの応答力を鍛えます。",
     "overview": "会話の流れを見て、適切に返信してください。",
     "instruction": "ユーザの返信をどうぞ",
-    "response_placeholder": "返信はこちらへ..."
+    "response_placeholder": "返信はこちらへ...",
+    "shotcut_tip": "Tip: You can use a keyboard shortcut to Review and Submit responses:"
   },
   "reply_as_assistant": {
     "label": "アシスタントとして返信",
     "desc": "他のユーザとの会話で、Open Assistantの応答力を鍛えます。",
     "overview": "次の会話に、適切な返信をしてください。",
-    "response_placeholder": "返信はこちらへ..."
+    "response_placeholder": "返信はこちらへ...",
+    "shotcut_tip": "Tip: You can use a keyboard shortcut to Review and Submit responses:"
   },
   "rank_user_replies": {
     "label": "ユーザの返答を順位付け",
@@ -88,5 +92,6 @@
   "submitted_as": "{{submit_lang}}で登録されます。",
   "tab_write": "書き込み",
   "tab_preview": "プレビュー",
-  "writing_wrong_langauge_a_b": "{{detected_lang}}でお書きのようですが、{{submit_lang}}として登録されます。"
+  "writing_wrong_langauge_a_b": "{{detected_lang}}でお書きのようですが、{{submit_lang}}として登録されます。",
+  "not_rankable": "All answers are factually incorrect and cannot be ranked"
 }

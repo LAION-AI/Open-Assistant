@@ -17,7 +17,10 @@
     "a5": "ゆくゆくは、一般消費者のハードウェアで動かせるバージョンが出ます。"
   },
   "faq_title": "よくある質問",
+  "help_us_improve": "Help us improve",
+  "hugging_face_link": "Checkout our HuggingFace organization",
   "join_us_description": "全てのオープンソース・プロジェクトは、あなたのような人から始まります。オープンソースとは、「一人一人の知恵と技術を人間世界への贈り物に」という信念です。来ますか？　どうぞこちらへ。：",
   "join_us_title": "参加する",
-  "subtitle": "全員のための対話ＡＩ"
+  "subtitle": "全員のための対話ＡＩ",
+  "try_our_assistant": "Try our assistant"
 }

@@ -1,0 +1,27 @@
+{
+  "back_to_chat_list": "Back to chat list",
+  "chat_date": "{{val, datetime}}",
+  "config_title": "Chat configuration",
+  "empty": "Untitled",
+  "login_message": "To use this feature, you need to login again. Login using one of these providers:",
+  "max_new_tokens": "Max new tokens",
+  "model": "Model",
+  "parameter_description": {
+    "max_new_tokens": "Max new tokens: This parameter tells the model how many new tokens it should generate at most for the response.",
+    "repetition_penalty": "Repetition Penalty: This parameter reduces the probability of repeating the same tokens again and again by making repeated tokens less likely than the model would ordinarily predict.",
+    "temperature": "Temperature: Each token you generate is sampled from a distribution p(next_token|previous_tokens). The temperature parameter can \"sharpen\" or dampen this distribution. Setting it to 1 means that the model generates tokens based on their predicted probability (i.e., if the model predicts that \"XYZ\" has a probability of 12.3%, it will generate it with a 12.3% likelihood). Lowering the temperature towards zero makes the model more greedy, causing high probabilities to get even higher and low probabilities to get even lower (note that this is not a linear relationship!). Increasing the temperature makes all probabilities more similar. Intuitively, a low temperature means that the model generates responses that align closely with its beliefs, while a high temperature allows for more creative and diverse responses.",
+    "top_k": "Top-k: This is similar to top-p sampling, but instead of taking the top tokens until their cumulative probability exceeds 'p', it only takes the K most probable tokens. Top-p is usually preferred since it allows the model to 'tune' the search radius, but top-k can be useful as an emergency break when the model has no idea what to generate next and assigns a very uniform distribution to many tokens.",
+    "top_p": "Top-p (also known as nucleus) sampling: This method reduces the probability distribution to only look at the top-p percent of tokens. By discarding low probability tokens, it helps to bound the generation and prevent the model from generating grammatically incorrect sentences.",
+    "typical_p": "Typical p: Typical sampling is an information-theoretic technique that, in addition to the probability, also considers the sequence entropy (i.e., the information content according to the probability). This means that typical sampling \"overweights\" some of the tokens with lower probability because they are deemed \"interesting,\" and underweights high probability tokens because they are deemed \"boring.\""
+  },
+  "preset": "Preset",
+  "preset_custom": "Custom",
+  "queue_info": "Your message is queued, you are at position {{ queuePosition, number, integer }} in the queue.",
+  "repetition_penalty": "Repetition penalty",
+  "temperature": "Temperature",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "typical_p": "Typical P",
+  "you_are_logged_in": "You are logged in to the chat service",
+  "your_chats": "Your Chats"
+}
