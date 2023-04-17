@@ -83,7 +83,7 @@ if you have problems):
 docker compose --profile ci up --build --attach-dependencies
 ```
 
-Then, navigate to `http://localhost:3000` (It may take some time to boot up) and
+Then, navigate to `http://localhost:3000` (it may take some time to boot up) and
 interact with the website.
 
 > **Note:** If an issue occurs with the build, please head to the
@@ -111,8 +111,8 @@ where you can use the data collection app and the chat.**
 **Also note that the local setup is only for development and is not meant to be
 used as a local chatbot, unless you know what you are doing.**
 
-If you _do_ know what you are doing, then see the `iniference` folder for
-getttng the inference system up and running, or have a look at
+If you _do_ know what you are doing, then see the `inference` folder for
+getting the inference system up and running, or have a look at
 `--profile inference` in addition to `--profile ci` in the above command.
 
 ## The Vision
