@@ -19,12 +19,12 @@ Code example:
 
 ```python
 # parsing OA data files with oasst_data helpers
-from oasst_data import load_trees, visit_messages_depth_first, ExportMessageNode
+from oasst_data import read_message_trees, visit_messages_depth_first, ExportMessageNode
 
 messages: list[ExportMessageNode] = []
 
 input_file_path = "data_file.jsonl.gz"
-for tree in load_trees(input_file_path):
+for tree in read_message_trees(input_file_path):
     if tree.prompt.lang not in ["en","es"]:     # filtering by language tag (optional)
         continue
 
