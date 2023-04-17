@@ -125,25 +125,28 @@ singularity build --sandbox tritonserver-pyt.sif docker://nvcr.io/nvidia/tritons
 Process a trained RM model to use in a tritonserver
 
 ```bash
-python to_triton.py --configs pythia_rlhf
+python to_triton.py --configs pythia_rlhf --triton_mode rm
+python to_triton.py --configs pythia_rlhf --triton_mode sft
 ```
 
 We can know launch the container instance that runs the RM on a specified GPU
 
 ```bash
-SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind model_store_rm:/model_store_rm tritonserver-pyt.sif tritonserver --model-repository=/model_store_rm
-SINGULARITYENV_CUDA_VISIBLE_DEVICES=6 singularity run --nv --bind model_store_sft:/model_store_sft tritonserver-pyt.sif tritonserver --model-repository=/model_store_sft --http-port 8006 --grpc-port 8004 --metrics-port 8005
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind model_store_rm:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store --http-port 8001 --grpc-port 8002 --metrics-port 8003
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=6 singularity run --nv --bind model_store_sft:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store --http-port 8004 --grpc-port 8005 --metrics-port 8006
 ```
 
 FInally, we can train using PPO:
 
 ```bash
-export TRITON_HOST_RM=localhost:8001/<RM_MODEL_NAME>
-export TRITON_HOST_REF=localhost:8004/<REF_MODEL_NAME>
+export TRITON_HOST_RM=localhost:8002/<RM_MODEL_NAME>
+export TRITON_HOST_REF=localhost:8005/<REF_MODEL_NAME>
 
 
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5 OMP_NUM_THREADS=1 accelerate launch --main_process_port 29501 --config_file configs/accelerate_config.yaml --num_processes 6 trainer_rl.py --configs defaults defaults_rlhf pythia_rlhf oasst_export_latin_cyrillic_rlhf
 ```
+
+Note: `--num_processes` must be equal to the number of GPUs used for training.
 
 ## Test your model
 
