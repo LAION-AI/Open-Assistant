@@ -32,13 +32,13 @@ export const LabelMessagePopup = ({ message, show, onClose }: LabelMessagePopupP
     <Modal isOpen={show} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <LabelPopupContent onClose={onClose} message={message}></LabelPopupContent>
+        <LabelMessagePopupContent onClose={onClose} message={message}></LabelMessagePopupContent>
       </ModalContent>
     </Modal>
   );
 };
 
-const LabelPopupContent = ({ message, onClose }: Omit<LabelMessagePopupProps, "show">) => {
+const LabelMessagePopupContent = ({ message, onClose }: Omit<LabelMessagePopupProps, "show">) => {
   const { t } = useTranslation();
 
   const { data: response } = useSWRImmutable<ValidLabelsResponse>(`/api/valid_labels?message_id=${message.id}`, get);
