@@ -78,7 +78,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const toast = useToast();
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
-    if (!content) {
+    if (!content || isSending) {
       return;
     }
     setIsSending.on();
@@ -115,7 +115,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
     // after creating the prompters message, handle the assistant's case
     await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
-  }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast]);
+  }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast, isSending]);
 
   const sendVote = useMessageVote();
 
