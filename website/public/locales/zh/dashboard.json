@@ -1,8 +1,14 @@
 {
-  "grab_a_task": "选择任务！",
-  "create": "新建",
+  "grab_a_task": "获取任务!",
+  "create": "创建",
   "evaluate": "评估",
   "label": "标注",
-  "dashboard": "概览",
-  "go": "开始"
+  "dashboard": "面板",
+  "go": "前往",
+  "welcome_message": {
+    "label": "欢迎您, {{username}}!",
+    "contributor": "贡献者",
+    "description": "Open Assistant 是一个开源的 AI 助手, 使用和训练先进的语言模型来理解和回应人类.",
+    "instruction": "完成任务来帮助训练模型并获得积分."
+  }
 }
