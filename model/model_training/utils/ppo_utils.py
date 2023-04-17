@@ -1,14 +1,14 @@
 import json
 import math
 import os
+import warnings
 from time import time
-from typing import List, Tuple
+from typing import List, Tuple, Optional, Callable, Union
 
 import numpy as np
 import torch
 import tritonclient.grpc as client_util
 import trlx.utils.logging as logging
-from custom_datasets.formatting import QA_SPECIAL_TOKENS
 from huggingface_hub import hf_hub_download
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
@@ -22,14 +22,38 @@ from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
 from trlx.utils import Clock
 from trlx.utils.modeling import logprobs_of_labels
 
-from transformers.generation.utils import *
-
-# from trlx.utils.modeling import hf_get_causal_base_model, hf_get_hidden_size, hf_get_lm_head, make_head
+from transformers.generation.utils import (
+    GenerationConfig,
+    LogitsProcessorList,
+    HammingDiversityLogitsProcessor,
+    EncoderRepetitionPenaltyLogitsProcessor,
+    RepetitionPenaltyLogitsProcessor,
+    NoRepeatNGramLogitsProcessor,
+    EncoderNoRepeatNGramLogitsProcessor,
+    NoBadWordsLogitsProcessor,
+    MinLengthLogitsProcessor,
+    PrefixConstrainedLogitsProcessor,
+    ForcedBOSTokenLogitsProcessor,
+    ForcedEOSTokenLogitsProcessor,
+    InfNanRemoveLogitsProcessor,
+    ExponentialDecayLengthPenalty,
+    SuppressTokensAtBeginLogitsProcessor,
+    SuppressTokensLogitsProcessor,
+    ForceTokensLogitsProcessor,
+    LogitNormalization,
+    StoppingCriteriaList,
+    SampleOutput,
+    validate_stopping_criteria,
+    SampleEncoderDecoderOutput,
+    SampleDecoderOnlyOutput,
+    BaseStreamer,
+)
 from utils.utils import get_model
 
 from .utils import prepare_tensor
 
 logger = logging.get_logger(__name__)
+
 
 def _get_logits_processor(
     self,
@@ -57,10 +81,7 @@ def _get_logits_processor(
                 num_beam_groups=generation_config.num_beam_groups,
             )
         )
-    if (
-        generation_config.encoder_repetition_penalty is not None
-        and generation_config.encoder_repetition_penalty != 1.0
-    ):
+    if generation_config.encoder_repetition_penalty is not None and generation_config.encoder_repetition_penalty != 1.0:
         processors.append(
             EncoderRepetitionPenaltyLogitsProcessor(
                 penalty=generation_config.encoder_repetition_penalty, encoder_input_ids=encoder_input_ids
@@ -76,18 +97,12 @@ def _get_logits_processor(
     ):
         if self.config.is_encoder_decoder:
             processors.append(
-                EncoderNoRepeatNGramLogitsProcessor(
-                    generation_config.encoder_no_repeat_ngram_size, encoder_input_ids
-                )
+                EncoderNoRepeatNGramLogitsProcessor(generation_config.encoder_no_repeat_ngram_size, encoder_input_ids)
             )
         else:
-            raise ValueError(
-                "It's impossible to use `encoder_no_repeat_ngram_size` with decoder-only architecture"
-            )
+            raise ValueError("It's impossible to use `encoder_no_repeat_ngram_size` with decoder-only architecture")
     if generation_config.bad_words_ids is not None:
-        processors.append(
-            NoBadWordsLogitsProcessor(generation_config.bad_words_ids, generation_config.eos_token_id)
-        )
+        processors.append(NoBadWordsLogitsProcessor(generation_config.bad_words_ids, generation_config.eos_token_id))
     if (
         generation_config.min_length is not None
         and generation_config.eos_token_id is not None
@@ -101,7 +116,7 @@ def _get_logits_processor(
         and generation_config.min_new_tokens > 0
     ):
         # To do override eos token here ...
-        pass 
+        pass
         # processors.append(
         #     MinNewTokensLengthLogitsProcessor(
         #         input_ids_seq_length, generation_config.min_new_tokens, generation_config.eos_token_id
@@ -141,16 +156,14 @@ def _get_logits_processor(
         if generation_config.forced_decoder_ids is not None:
             # generation starts after the last token that is forced
             begin_index += generation_config.forced_decoder_ids[-1][0]
-        processors.append(
-            SuppressTokensAtBeginLogitsProcessor(generation_config.begin_suppress_tokens, begin_index)
-        )
+        processors.append(SuppressTokensAtBeginLogitsProcessor(generation_config.begin_suppress_tokens, begin_index))
     if generation_config.forced_decoder_ids is not None:
         processors.append(ForceTokensLogitsProcessor(generation_config.forced_decoder_ids))
     processors = self._merge_criteria_processor_list(processors, logits_processor)
     # `LogitNormalization` should always be the last logit processor, when present
     if generation_config.renormalize_logits is True:
         processors.append(LogitNormalization())
-        
+
     return processors
 
 
@@ -298,9 +311,7 @@ def sample(
         eos_token_id = [eos_token_id]
     eos_token_id_tensor = torch.tensor(eos_token_id).to(input_ids.device) if eos_token_id is not None else None
     output_scores = output_scores if output_scores is not None else self.generation_config.output_scores
-    output_attentions = (
-        output_attentions if output_attentions is not None else self.generation_config.output_attentions
-    )
+    output_attentions = output_attentions if output_attentions is not None else self.generation_config.output_attentions
     output_hidden_states = (
         output_hidden_states if output_hidden_states is not None else self.generation_config.output_hidden_states
     )
@@ -319,9 +330,7 @@ def sample(
     # if model is an encoder-decoder, retrieve encoder attention weights and hidden states
     if return_dict_in_generate and self.config.is_encoder_decoder:
         encoder_attentions = model_kwargs["encoder_outputs"].get("attentions") if output_attentions else None
-        encoder_hidden_states = (
-            model_kwargs["encoder_outputs"].get("hidden_states") if output_hidden_states else None
-        )
+        encoder_hidden_states = model_kwargs["encoder_outputs"].get("hidden_states") if output_hidden_states else None
 
     # keep track of which sequences are already finished
     unfinished_sequences = torch.ones(input_ids.shape[0], dtype=torch.long, device=input_ids.device)
@@ -372,9 +381,7 @@ def sample(
 
             if output_hidden_states:
                 decoder_hidden_states += (
-                    (outputs.decoder_hidden_states,)
-                    if self.config.is_encoder_decoder
-                    else (outputs.hidden_states,)
+                    (outputs.decoder_hidden_states,) if self.config.is_encoder_decoder else (outputs.hidden_states,)
                 )
 
         # sample
@@ -524,12 +531,11 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
         self.tokenizer.truncation_side = config.tokenizer.truncation_side
 
         # print('len tokenizer', len(self.tokenizer))
-        
+
         super().__init__(*args, config=config, **kwargs)
 
         # del self.ref_model
         self.ref_model = triton_server_ref_model()
-
 
     def decode(
         self,
@@ -615,7 +621,6 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
         return model
 
     def generate(self, input_ids, *args, **kwargs):
-
         # if self.model.ds_zero3:
         #     max_new_tokens = self.config.method.gen_kwargs['max_new_tokens']
 
@@ -637,7 +642,6 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
         #             self.generate_kwargs['eos_token_id'] = self.tokenizer.eos_token_id
         #             self.generate_kwargs['pad_token_id'] = self.tokenizer.pad_token_id
 
-
         # print('---> Generate', input_ids, args, kwargs)
         # print('self.generate_experience_kwargs', self.generate_experience_kwargs)
         # print('self.generate_kwargs', self.generate_kwargs)
@@ -646,7 +650,7 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
 
         # print('generation', self.tokenizer.decode(input_ids[0]))
 
-        kwargs['forced_eos_token_id'] = self.tokenizer.eos_token_id
+        kwargs["forced_eos_token_id"] = self.tokenizer.eos_token_id
 
         preds = super().generate(input_ids, *args, **kwargs)
 
@@ -657,17 +661,16 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
         return preds
 
     def generate_eval(self, input_ids, *args, **kwargs):
-
         # if self.model.ds_zero3:
         #     if 'max_length' in self.generate_kwargs:
         #         self.generate_kwargs.pop('max_length')
-                
+
         #     max_new_tokens = self.config.method.gen_kwargs['max_new_tokens']
         #     self.generate_kwargs['max_new_tokens'] = max_new_tokens
         #     self.generate_kwargs['min_new_tokens'] = max_new_tokens
         #     self.generate_kwargs['eos_token_id'] = self.tokenizer.eos_token_id
         #     self.generate_kwargs['pad_token_id'] = self.tokenizer.pad_token_id
-        
+
         # self.model.train()
 
         # print('generation_eval', self.tokenizer.decode(input_ids[0]))
@@ -676,7 +679,7 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
         # if 'attention_mask' in kwargs:
         #     print('attention_mask', kwargs['attention_mask'][0])
 
-        kwargs['forced_eos_token_id'] = self.tokenizer.eos_token_id
+        kwargs["forced_eos_token_id"] = self.tokenizer.eos_token_id
 
         preds = super().generate(input_ids, *args, **kwargs)
 
@@ -984,7 +987,9 @@ class CustomPromptPipeline(BasePipeline):
         # make sure that every prompt has an EOS token
         for prompt_tokens in prompts_tokens_:
             if not tokenizer.eos_token_id in prompt_tokens:
-                warnings.warn(f"Found a prompt without an EOS token, which means it was truncated. Consider increasing the context size (`seq_len`)")
+                warnings.warn(
+                    f"Found a prompt without an EOS token, which means it was truncated. Consider increasing the context size (`seq_len`)"
+                )
                 break
 
         # prompts_tokens = []

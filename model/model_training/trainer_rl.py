@@ -48,7 +48,7 @@ def argument_parsing(notebook=False, notebook_args=None, **kwargs):
 
     # Override config from command-line
     parser = argparse.ArgumentParser()
-    
+
     for key, value in kwargs.items():
         type_ = type(value) if value is not None else str
         parser.add_argument(f"--{key}", type=type_, default=value)
@@ -156,7 +156,7 @@ def main():
     ] + eval_prompts
 
     if training_conf.num_eval_prompts is not None and training_conf.num_eval_prompts > 0:
-        eval_prompts = eval_prompts[:training_conf.num_eval_prompts]
+        eval_prompts = eval_prompts[: training_conf.num_eval_prompts]
 
     random.shuffle(prompts)
     # Sanity Check for prompts to make sure it's loading properly
