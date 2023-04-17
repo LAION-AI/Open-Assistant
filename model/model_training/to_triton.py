@@ -27,7 +27,7 @@ class RMLogitsModel(nn.Module):
         return self.model(*args, **kwargs).logits[:, 0]
 
 
-def load_model_and_tokenizer(config, device="cuda:0"):
+def load_model_and_tokenizer(triton_mode, config, device="cuda:0"):
     tokenizer = transformers.AutoTokenizer.from_pretrained(config.model_name)
 
     # For llama ...
@@ -39,12 +39,12 @@ def load_model_and_tokenizer(config, device="cuda:0"):
     model.to(device)
     model.eval()
 
-    if config.mode == "sft":
+    if triton_mode == "sft":
         model = SFTLogitsModel(model)
-    elif config.mode == "rm":
+    elif triton_mode == "rm":
         model = RMLogitsModel(model)
     else:
-        raise ValueError(f"Unknown mode {config.mode}")
+        raise ValueError(f"Unknown mode {triton_mode}")
 
     return model, tokenizer
 
@@ -102,12 +102,18 @@ def main():
 
     device = torch.device("cuda:0")
 
-    model, tokenizer = load_model_and_tokenizer(config, device=device)
+    model, tokenizer = load_model_and_tokenizer(conf.triton_mode, config, device=device)
 
     traced_script_module = trace_model(model, tokenizer, device=device)
 
     model_name = config.model_name.replace("/", "-")
-    write_traced_module(traced_script_module, model_name, config.cache_dir)
+    write_traced_module(
+        traced_script_module,
+        model_name,
+        config.dtype,
+        config_template=f"configs/triton_config_{conf.triton_mode}.pbtxt",
+        output_dir=f"model_store_{conf.triton_mode}",
+    )
 
 
 if __name__ == "__main__":
