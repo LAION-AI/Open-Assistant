@@ -1,7 +1,7 @@
 import requests
 from loguru import logger
 from oasst_backend.config import settings
-from oasst_backend.models.message import Message, User
+from oasst_backend.models.message import Message
 
 ROOT_ENDPOINT = "https://discord.com/api/v10"
 
@@ -9,7 +9,6 @@ ROOT_ENDPOINT = "https://discord.com/api/v10"
 def send_new_report_message(
     message: Message,
     label_text: str,
-    user: User | None = None,
 ) -> None:
     if settings.DISCORD_API_KEY is None or settings.DISCORD_CHANNEL_ID is None:
         return
