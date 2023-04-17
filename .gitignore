@@ -21,3 +21,5 @@ backend/openapi.json
 .pytest_cache/
 
 /docker-compose.override.yml
+
+UsefulForMe/
