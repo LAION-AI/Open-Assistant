@@ -26,7 +26,7 @@ dependencies = [
     "PyYAML>=6.0",
     "sentencepiece>=0.1.97",
     "scikit-learn>=1.2.0",
-    "tokenizers>=0.13.2",
+    "tokenizers>=0.13.3",
     "torch>=2.0.0",
     "tqdm>=4.65.0",
     "transformers @ git+https://github.com/huggingface/transformers.git@6fc44656b43f1de939a1e62dd59c45d1fec9f1aa",
