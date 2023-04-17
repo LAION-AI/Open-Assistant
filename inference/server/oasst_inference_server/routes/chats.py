@@ -259,7 +259,7 @@ async def handle_create_report(
         return fastapi.Response(status_code=500)
 
 
-@router.put("/{chat_id}/update")
+@router.put("/{chat_id}")
 async def handle_update_chat(
     chat_id: str,
     request: chat_schema.ChatUpdateRequest,
