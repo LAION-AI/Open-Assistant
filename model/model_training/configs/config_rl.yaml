@@ -37,7 +37,6 @@ pythia_rlhf:
     residual_dropout: 0.01
     use_flash_attention: false
     dtype: fp16
-    mode: "rm"
     batch_size: 8
 
   sft_config:
@@ -53,7 +52,6 @@ pythia_rlhf:
     residual_dropout: 0.2
     use_flash_attention: false
     dtype: fp16
-    mode: "rl"
     batch_size: 1
 
 llama_rlhf:
@@ -66,7 +64,6 @@ llama_rlhf:
     use_flash_attention: false
     dtype: fp16
     batch_size: 8
-    mode: "rm"
 
   sft_config:
     is_reward_model: false
@@ -79,7 +76,6 @@ llama_rlhf:
     residual_dropout: 0.0
     use_flash_attention: true
     dtype: fp16
-    mode: "rl"
 
 debug_rlhf:
   rank_model: pythia_reward_model/checkpoint-50
