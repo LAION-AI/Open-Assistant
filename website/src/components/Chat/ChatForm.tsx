@@ -27,6 +27,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
   const handleKeydown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault(); // Prevents the addition of a new line
         onSubmit();
       }
     },
