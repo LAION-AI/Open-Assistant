@@ -7,6 +7,9 @@ import { badgeTheme } from "./components/Badge";
 import { cardTheme } from "./components/Card";
 import { containerTheme } from "./components/Container";
 import { tableTheme } from "./components/Table";
+import { Inter } from "@next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 const config: ThemeConfig = {
   initialColorMode: "light",
@@ -30,8 +33,8 @@ const breakpoints = {
 };
 
 const fonts = {
-  heading: "Inter",
-  body: "Inter",
+  heading: inter.style.fontFamily,
+  body: inter.style.fontFamily,
 };
 
 const styles: Styles = {

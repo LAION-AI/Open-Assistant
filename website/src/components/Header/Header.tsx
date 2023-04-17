@@ -64,7 +64,15 @@ export function Header({ preLogoSlot }: HeaderProps) {
   return (
     <>
       {initialShowAnnouncement && showAnnouncement && (
-        <Box backgroundColor="yellow.400" display="flex" justifyContent="center" alignItems="center" p={3}>
+        <Box
+          zIndex={30}
+          position="fixed"
+          backgroundColor="yellow.400"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          p={3}
+        >
           <Text fontSize="lg" mx={4}>
             {announcement}
           </Text>
@@ -90,7 +98,7 @@ export function Header({ preLogoSlot }: HeaderProps) {
           {preLogoSlot}
           <Flex as={Link} gap="3" href={homeURL} aria-label="Home" alignItems="center">
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
-            <Text fontFamily="inter" fontSize={["lg", "2xl"]} fontWeight="bold" className="hidden sm:block">
+            <Text fontSize={["lg", "2xl"]} fontWeight="bold" className="hidden sm:block">
               {t("title")}
             </Text>
           </Flex>
