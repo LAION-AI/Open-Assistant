@@ -15,8 +15,8 @@ def send_new_report_message(
 
     try:
         logger.debug("Sending flagged message to Discord")
-        message_text = message.text[:200] + "..." if len(message.text) > 200 else message.text
-        label_text = label_text[:200] + "..." if len(label_text) > 200 else label_text
+        message_text = message.text[:500] + "..." if len(message.text) > 500 else message.text
+        label_text = label_text[:4096] # 4096 is the max length of discord embed description
         message_content_embed = {
             "title": "Message content",
             "description": f"{message_text}",
