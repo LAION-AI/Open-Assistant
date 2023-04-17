@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Flex, useBoolean, useToast } from "@chakra-ui/react";
-import { memo, useCallback, useEffect,useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
@@ -200,7 +200,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   );
 
   useEffect(() => {
-    if(!isSending && !streamedResponse) {
+    if (!isSending && !streamedResponse) {
       inputRef.current?.focus();
     }
   }, [isSending, streamedResponse]);
