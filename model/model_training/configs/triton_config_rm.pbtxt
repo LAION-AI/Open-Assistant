@@ -34,7 +34,7 @@ input [
 output [
   {
     name: "rewards"
-    data_type: TYPE_FP16
+    data_type: ${output_type}
     dims: [-1]
   }
 ]
@@ -42,7 +42,7 @@ output [
 parameters {
   key: "data_type"
   value: {
-    string_value: "fp16"
+    string_value: "${dtype}"
   }
 }
 

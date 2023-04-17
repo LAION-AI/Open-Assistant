@@ -1,5 +1,5 @@
 train:
-  seq_length: 768
+  seq_length: 2048
   epochs: 10000
   total_steps: 10000
   batch_size: 18
@@ -33,7 +33,7 @@ scheduler:
   kwargs:
     #T_max: 10000 # train.total_steps
     #eta_min: 1.0e-4
-    T_max: 100000000
+    T_max: 10000
     eta_min: 1.0e-6
 
 method:
@@ -54,7 +54,7 @@ method:
   ref_std: null
   cliprange_reward: 4
   gen_kwargs:
-    max_new_tokens: 256
+    max_new_tokens: 512
     top_k: 0
     top_p: 0.7
     do_sample: True

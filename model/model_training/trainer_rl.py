@@ -20,7 +20,7 @@ from utils.ppo_utils import CustomPPOTrainer
 from utils.utils import _strtobool, get_dataset, get_model, init_rng, prepare_tensor, read_yamls
 
 
-def argument_parsing(notebook=False, notebook_args=None):
+def argument_parsing(notebook=False, notebook_args=None, **kwargs):
     parser = argparse.ArgumentParser()
     parser.add_argument("--configs", nargs="+", required=True)
     parser.add_argument("--local_rank", type=int, default=-1)
@@ -48,6 +48,11 @@ def argument_parsing(notebook=False, notebook_args=None):
 
     # Override config from command-line
     parser = argparse.ArgumentParser()
+    
+    for key, value in kwargs.items():
+        type_ = type(value) if value is not None else str
+        parser.add_argument(f"--{key}", type=type_, default=value)
+
     for key, value in conf.items():
         type_ = type(value) if value is not None else str
         if type_ == bool:
@@ -60,7 +65,7 @@ def argument_parsing(notebook=False, notebook_args=None):
 # Taken from https://github.com/CarperAI/trlx/blob/b7db6f9e74c7d8dc719255b27968d2994836957a/examples/hh/ppo_hh.py#L114
 def create_reward_fn(rank_config, sft_config):  # noqa:  C901
     triton_host = os.environ.get("TRITON_HOST_RM")
-    assert triton_host is not None, "Specify reward mode in the TRITON_HOST environmental variable"
+    assert triton_host is not None, "Specify reward model in the TRITON_HOST_RM environmental variable"
 
     triton_url, triton_model = triton_host.split("/")
     client = client_util.InferenceServerClient(url=triton_url, verbose=False)
@@ -103,13 +108,16 @@ def create_reward_fn(rank_config, sft_config):  # noqa:  C901
 
 def main():
     training_conf = argument_parsing()
+    rank_config = Namespace(**training_conf.rank_config)
+    sft_config = Namespace(**training_conf.sft_config)
+
+    triton_host_rm = os.getenv("TRITON_HOST_RM", training_conf.triton_host_rm)
+    triton_host_sft = os.getenv("TRITON_HOST_REF", training_conf.triton_host_sft)
+    os.environ["TRITON_HOST_RM"] = triton_host_rm
+    os.environ["TRITON_HOST_REF"] = triton_host_sft
 
     init_rng(training_conf)
 
-    assert training_conf.rank_model != training_conf.dataset, "One of rank model or dataset must be different"
-
-    rank_config = Namespace(**training_conf.rank_config)
-    sft_config = Namespace(**training_conf.sft_config)
     eos_token = transformers.AutoTokenizer.from_pretrained(
         sft_config.model_name, cache_dir=sft_config.cache_dir
     ).eos_token
@@ -146,6 +154,9 @@ def main():
             )
         ),
     ] + eval_prompts
+
+    if training_conf.num_eval_prompts is not None and training_conf.num_eval_prompts > 0:
+        eval_prompts = eval_prompts[:training_conf.num_eval_prompts]
 
     random.shuffle(prompts)
     # Sanity Check for prompts to make sure it's loading properly

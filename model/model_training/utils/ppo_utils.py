@@ -682,8 +682,6 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
 
         # print('Done generation', self.accelerator.device)
 
-        preds[:, -1] = self.tokenizer.eos_token_id
-
         return preds
 
     def make_experience(self, num_rollouts: int = 1024, iter_count: int = 0):  # noqa:
@@ -923,7 +921,7 @@ class CustomPPOTrainer(AcceleratePPOTrainer, AccelerateRLTrainer):
 
 def triton_server_ref_model():  # noqa:  C901
     triton_host = os.environ.get("TRITON_HOST_REF")
-    assert triton_host is not None, "Specify reward mode in the TRITON_HOST environmental variable"
+    assert triton_host is not None, "Specify reference model in the TRITON_HOST_REF environmental variable"
 
     triton_url, triton_model = triton_host.split("/")
     client = client_util.InferenceServerClient(url=triton_url, verbose=False)
@@ -966,6 +964,12 @@ class CustomPromptPipeline(BasePipeline):
     def __init__(self, prompts: List[str], max_prompt_length: int, tokenizer: PreTrainedTokenizer):
         super().__init__()
 
+        if max_prompt_length < 16:  # sanity check
+            raise ValueError(
+                f"`max_prompt_length` is {max_prompt_length}, this is too small (less than 16). "
+                "Make sure all the config values are correct, when in doubt increase `seq_len` or decrease `max_new_tokens`."
+            )
+
         model_inputs = tokenizer(
             prompts,
             truncation=True,
@@ -976,6 +980,12 @@ class CustomPromptPipeline(BasePipeline):
 
         prompts_tokens_ = model_inputs["input_ids"]
         attention_mask = model_inputs["attention_mask"]
+
+        # make sure that every prompt has an EOS token
+        for prompt_tokens in prompts_tokens_:
+            if not tokenizer.eos_token_id in prompt_tokens:
+                warnings.warn(f"Found a prompt without an EOS token, which means it was truncated. Consider increasing the context size (`seq_len`)")
+                break
 
         # prompts_tokens = []
 

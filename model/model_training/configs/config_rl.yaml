@@ -9,9 +9,11 @@ defaults_rlhf:
   cache_dir: /home/ubuntu/data_cache
   output_dir: model_rl
   eval_size: 500
+  num_eval_prompts: 64
   rank_config:
   sft_config:
   debug: false
+  dtype: fp16
 
 oasst_export_latin_cyrillic_rlhf:
   datasets:
@@ -25,6 +27,8 @@ oasst_export_latin_cyrillic_rlhf:
   use_custom_sampler: false
 
 pythia_rlhf:
+  triton_host_rm: localhost:8002/andreaskoepf-oasst-rm-2-pythia-1.4b-10000
+  triton_host_sft: localhost:8005/andreaskoepf-oasst-sft-4-pythia-12b-epoch-3.5
   rank_config:
     is_reward_model: true
     model_name: andreaskoepf/oasst-rm-2-pythia-1.4b-10000 # just for tokenizer...andreaskoepf/oasst-rm-1-pythia-1b
@@ -32,8 +36,9 @@ pythia_rlhf:
     pooling: last
     residual_dropout: 0.01
     use_flash_attention: false
-    half: false
+    dtype: fp16
     mode: "rm"
+    batch_size: 8
 
   sft_config:
     is_reward_model: false
@@ -44,11 +49,12 @@ pythia_rlhf:
     quantization: false
     seq2seqmodel: false
     freeze_layer:
+    num_layers_unfrozen: -1
     residual_dropout: 0.2
     use_flash_attention: false
-    half: true
+    dtype: fp16
     mode: "rl"
-  batch_size: 1
+    batch_size: 1
 
 llama_rlhf:
   rank_config:
@@ -58,7 +64,7 @@ llama_rlhf:
     pooling: last
     residual_dropout: 0.0
     use_flash_attention: false
-    half: true
+    dtype: fp16
     batch_size: 8
     mode: "rm"
 
@@ -72,7 +78,7 @@ llama_rlhf:
     num_layers_unfrozen: -1
     residual_dropout: 0.0
     use_flash_attention: true
-    half: true
+    dtype: fp16
     mode: "rl"
 
 debug_rlhf:
