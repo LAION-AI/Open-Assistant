@@ -179,6 +179,10 @@
             true) }}"
           BACKEND_CORS_ORIGINS_CSV:
             "{{ lookup('ansible.builtin.env', 'BACKEND_CORS_ORIGINS') }}"
+          DISCORD_API_KEY:
+            "{{ lookup('ansible.builtin.env', 'DISCORD_API_KEY') }}"
+          DISCORD_CHANNEL_ID:
+            "{{ lookup('ansible.builtin.env', 'DISCORD_CHANNEL_ID') }}"
         ports:
           - "{{ backend_port }}:8080"
 
