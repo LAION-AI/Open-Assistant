@@ -3,16 +3,44 @@ import math
 import os
 import warnings
 from time import time
-from typing import List, Tuple, Optional, Callable, Union
+from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
+import torch.distributed as dist
 import tritonclient.grpc as client_util
 import trlx.utils.logging as logging
 from huggingface_hub import hf_hub_download
+from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, DataCollatorWithPadding, PreTrainedTokenizer
+from transformers.generation.utils import (
+    BaseStreamer,
+    EncoderNoRepeatNGramLogitsProcessor,
+    EncoderRepetitionPenaltyLogitsProcessor,
+    ExponentialDecayLengthPenalty,
+    ForcedBOSTokenLogitsProcessor,
+    ForcedEOSTokenLogitsProcessor,
+    ForceTokensLogitsProcessor,
+    GenerationConfig,
+    HammingDiversityLogitsProcessor,
+    InfNanRemoveLogitsProcessor,
+    LogitNormalization,
+    LogitsProcessorList,
+    MinLengthLogitsProcessor,
+    NoBadWordsLogitsProcessor,
+    NoRepeatNGramLogitsProcessor,
+    PrefixConstrainedLogitsProcessor,
+    RepetitionPenaltyLogitsProcessor,
+    SampleDecoderOnlyOutput,
+    SampleEncoderDecoderOutput,
+    SampleOutput,
+    StoppingCriteriaList,
+    SuppressTokensAtBeginLogitsProcessor,
+    SuppressTokensLogitsProcessor,
+    validate_stopping_criteria,
+)
 from trlx.data.ppo_types import PPORLElement
 from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
 from trlx.pipeline import BasePipeline, register_datapipeline
@@ -21,33 +49,6 @@ from trlx.trainer.accelerate_base_trainer import AccelerateRLTrainer
 from trlx.trainer.accelerate_ppo_trainer import AcceleratePPOTrainer
 from trlx.utils import Clock
 from trlx.utils.modeling import logprobs_of_labels
-
-from transformers.generation.utils import (
-    GenerationConfig,
-    LogitsProcessorList,
-    HammingDiversityLogitsProcessor,
-    EncoderRepetitionPenaltyLogitsProcessor,
-    RepetitionPenaltyLogitsProcessor,
-    NoRepeatNGramLogitsProcessor,
-    EncoderNoRepeatNGramLogitsProcessor,
-    NoBadWordsLogitsProcessor,
-    MinLengthLogitsProcessor,
-    PrefixConstrainedLogitsProcessor,
-    ForcedBOSTokenLogitsProcessor,
-    ForcedEOSTokenLogitsProcessor,
-    InfNanRemoveLogitsProcessor,
-    ExponentialDecayLengthPenalty,
-    SuppressTokensAtBeginLogitsProcessor,
-    SuppressTokensLogitsProcessor,
-    ForceTokensLogitsProcessor,
-    LogitNormalization,
-    StoppingCriteriaList,
-    SampleOutput,
-    validate_stopping_criteria,
-    SampleEncoderDecoderOutput,
-    SampleDecoderOnlyOutput,
-    BaseStreamer,
-)
 from utils.utils import get_model
 
 from .utils import prepare_tensor
@@ -986,9 +987,9 @@ class CustomPromptPipeline(BasePipeline):
 
         # make sure that every prompt has an EOS token
         for prompt_tokens in prompts_tokens_:
-            if not tokenizer.eos_token_id in prompt_tokens:
+            if tokenizer.eos_token_id not in prompt_tokens:
                 warnings.warn(
-                    f"Found a prompt without an EOS token, which means it was truncated. Consider increasing the context size (`seq_len`)"
+                    "Found a prompt without an EOS token, which means it was truncated. Consider increasing the context size (`seq_len`)"
                 )
                 break
 
