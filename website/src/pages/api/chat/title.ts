@@ -9,7 +9,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   const client = createInferenceClient(token);
   const { chat_id, title } = req.body as { chat_id: string; title: string };
 
-  await client.update_chat_title({ chat_id, title });
+  await client.update_chat({ chat_id, title });
 
   res.status(200).end();
 });
