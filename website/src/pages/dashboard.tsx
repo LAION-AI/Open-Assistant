@@ -38,6 +38,7 @@ const Dashboard = () => {
         <WelcomeCard />
 
         {getEnv().ENABLE_CHAT && (
+          // Used Box instead of Flex
           <Box mb={6}>
             <Heading as="h2" size="lg" mb={2}>
               {t("index:try_our_assistant")}
