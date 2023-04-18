@@ -1,3 +1,5 @@
+English | [简体中文](./README_CN.md)
+
 <h1 align="center">
     <span>Open-Assistant</span>
   <img width="auto" height="50px" src="https://github.com/LAION-AI/Open-Assistant/blob/main/assets/logo_crop.png"/>
