@@ -137,7 +137,7 @@ const authOptions: AuthOptions = {
      * Update the user's role after they have successfully signed in
      */
     async signIn({ user, account, isNewUser }) {
-      if (isNewUser && account.provider === "email") {
+      if (isNewUser && account.provider === "email" && !user.name) {
         await prisma.user.update({
           data: {
             name: generateUsername(),
