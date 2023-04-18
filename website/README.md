@@ -54,6 +54,7 @@ If you're doing active development we suggest the following workflow:
 1.  Run `npm run dev`. Now the website is up and running locally at `http://localhost:3000`.
 1.  To create an account, login via the user using email authentication and navigate to `http://localhost:1080`. Check
     the email listed and click the log in link. You're now logged in and authenticated.
+    > **Note:** when running on MacOS with an M1 chip you have to use: `DB_PLATFORM=linux/x86_64 docker compose ...`
 
 ### Using debug user credentials
 

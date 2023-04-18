@@ -11,6 +11,9 @@ database at `localhost:5432`. (See
 [FAQ](https://projects.laion.ai/Open-Assistant/docs/faq#enable-dockers-buildkit-backend)
 if you face any docker problems).
 
+> **Note:** when running on MacOS with an M1 chip you have to use:
+> `DB_PLATFORM=linux/x86_64 docker compose ...`
+
 Python 3.10 is required. It is recommended to use `pyenv` which will recognise
 the `.python-version` in the project root directory.
 
