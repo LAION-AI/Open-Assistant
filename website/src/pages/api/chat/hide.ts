@@ -9,7 +9,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   const client = createInferenceClient(token);
   const { chat_id } = req.body as { chat_id: string };
 
-  await client.hide_chat({ chat_id });
+  await client.update_chat({ chat_id, hidden: true });
 
   res.status(200).end();
 });
