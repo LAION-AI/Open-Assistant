@@ -4,7 +4,7 @@ import pandas as pd
 from datasets import load_dataset
 import json
 
-# Load the datasets from Hugging Face
+# Load the datasets from Hugging Face. The datasets are licensed under CC-BY-4.0.
 datasets = [
   'camel-ai/biology', 'camel-ai/physics', 'camel-ai/chemistry', 'camel-ai/math'
 ]
