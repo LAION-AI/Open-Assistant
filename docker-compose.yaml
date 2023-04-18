@@ -266,7 +266,7 @@ services:
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/safety:/opt/inference/safety"
-    profiles: ["inference"]
+    profiles: ["inference-safety"]
 
   prometheus:
     image: prom/prometheus
