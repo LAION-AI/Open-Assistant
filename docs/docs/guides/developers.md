@@ -243,12 +243,15 @@ website directory.
 
 - `inference`. It includes these containers:
 
-  - `inference-db`, `inference-server`, `inference-worker`, `inference-redis`,
-    `inference-safety`
+  - `inference-db`, `inference-server`, `inference-worker`, `inference-redis`
 
 - `inference-dev`. It includes these containers:
 
   - `db`, `web-db`, `backend`
+
+- `inference-safety`. It includes these containers:
+
+  - `inference-safety`
 
 - `observability`. It includes tools to monitor the application. It includes
   these containers:
