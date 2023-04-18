@@ -205,6 +205,19 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
           throw new Error("User not found");
         }
 
+        // TODO avoid duplicate logic with the signIn event
+        if (frontendUser.isNew && !frontendUser.name) {
+          frontendUser.name = generateUsername();
+          await prisma.user.update({
+            data: {
+              name: frontendUser.name,
+            },
+            where: {
+              id: frontendUser.id,
+            },
+          });
+        }
+
         const backendUser = convertToBackendUserCore(frontendUser);
         if (backendUser.auth_method === "discord") {
           const discordAccount = frontendUser.accounts.find((a) => a.provider === "discord");
