@@ -28,7 +28,7 @@ for dataset_id in datasets:
 df = pd.DataFrame(transformed_data)
 
 # Save the DataFrame to disk in the Parquet format
-df.to_parquet('output.parquet', row_group_size=100)
+df.to_parquet("output.parquet", row_group_size=100, engine="pyarrow", index=False)
 
 # Print the amount of entries in the final converted dataset
 print(f'Converted {len(df)} entries')
