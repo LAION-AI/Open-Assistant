@@ -4,6 +4,7 @@
 import glob
 import json
 import os
+import random
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -18,6 +19,9 @@ from torch.utils.data import Dataset, Subset, random_split
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
+
+
+LINKING_CHARS = ["\n", "\n\n", " "]
 
 
 def index_squad_v2(example):
@@ -616,7 +620,8 @@ class AlpacaGpt4(Dataset):
             return [row["instruction"], row["output"]]
         # Concatenate the instruction and input.
         else:
-            return [f"{row['instruction']} {row['input']}", row["output"]]
+            linking_char = random.choice(LINKING_CHARS)
+            return [f"{row['instruction']}{linking_char}{row['input']}", row["output"]]
 
     def __len__(self) -> int:
         return len(self.rows)
