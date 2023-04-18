@@ -275,7 +275,7 @@ class SODA(Dataset):
             return (self.pairs[index][0] + " " + self.pairs[index][1],)
 
 
-class SODADialogue:
+class SODADialogue(Dataset):
     def __init__(self, cache_dir, verbose=True):
         dataset = load_dataset("emozilla/soda_synthetic_dialogue", cache_dir=cache_dir)
 
