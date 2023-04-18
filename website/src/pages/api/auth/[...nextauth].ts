@@ -200,6 +200,11 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
           select: { name: true, role: true, isNew: true, accounts: true, id: true },
         });
 
+        if (!frontendUser) {
+          // should never reach here
+          throw new Error("User not found");
+        }
+
         const backendUser = convertToBackendUserCore(frontendUser);
         if (backendUser.auth_method === "discord") {
           const discordAccount = frontendUser.accounts.find((a) => a.provider === "discord");
@@ -222,9 +227,9 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
              * in the frontend, when the user accepts the tos, we do a full refresh
              * which means this function will be called again.
              */
-            const { user_id, tos_acceptance_date } = await oasstApiClient.fetch_frontend_user(backendUser);
-            token.backendUserId = user_id;
-            token.tosAcceptanceDate = tos_acceptance_date;
+            const frontendUser = await oasstApiClient.upsert_frontend_user(backendUser);
+            token.backendUserId = frontendUser.user_id;
+            token.tosAcceptanceDate = frontendUser.tos_acceptance_date;
           } catch (err) {
             if (err.httpStatusCode !== 404) {
               throw err;
