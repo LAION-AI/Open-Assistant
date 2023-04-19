@@ -49,6 +49,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
           borderRadius="md"
           rows={1}
           maxRows={10}
+          py={{ base: 2, md: 3 }}
           onKeyDown={handleKeydown}
           placeholder={t("input_placeholder")}
           _dark={{
