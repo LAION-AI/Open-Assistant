@@ -18,7 +18,7 @@ import { mutate } from "swr";
 import { useChatContext } from "./ChatContext";
 import { ChatConversationTree, LAST_ASSISTANT_MESSAGE_ID } from "./ChatConversationTree";
 import { ChatForm } from "./ChatForm";
-import { ChatMessageEntryProps, EditPromptParams } from "./ChatMessageEntry";
+import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
 
 interface ChatConversationProps {
   chatId: string;
@@ -237,6 +237,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
           retryingParentId={retryingParentId}
           onEditPromtp={handleEditPrompt}
         ></ChatConversationTree>
+        {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
       </SimpleBar>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
     </Box>
