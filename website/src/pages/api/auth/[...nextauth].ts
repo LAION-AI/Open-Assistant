@@ -232,22 +232,9 @@ export default function auth(req: NextApiRequest, res: NextApiResponse) {
         if (!token.tosAcceptanceDate || !token.backendUserId) {
           const oasstApiClient = createApiClientFromUser(backendUser);
 
-          try {
-            /**
-             * when first creating a new user, the python backend is not informed about it
-             * so this call will return a 404
-             *
-             * in the frontend, when the user accepts the tos, we do a full refresh
-             * which means this function will be called again.
-             */
-            const frontendUser = await oasstApiClient.upsert_frontend_user(backendUser);
-            token.backendUserId = frontendUser.user_id;
-            token.tosAcceptanceDate = frontendUser.tos_acceptance_date;
-          } catch (err) {
-            if (err.httpStatusCode !== 404) {
-              throw err;
-            }
-          }
+          const frontendUser = await oasstApiClient.upsert_frontend_user(backendUser);
+          token.backendUserId = frontendUser.user_id;
+          token.tosAcceptanceDate = frontendUser.tos_acceptance_date;
         }
         return token;
       },
