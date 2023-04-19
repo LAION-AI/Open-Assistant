@@ -54,6 +54,16 @@ DEFAULT_PARAMETER_CONFIGS = [
         ),
     ),
     ParameterConfig(
+        name="k50-Original",
+        description="Top-k sampling with k=50, highest temperature",
+        sampling_parameters=inference.SamplingParameters(
+            top_k=50,
+            top_p=0.95,
+            temperature=0.9,
+            repetition_penalty=1.2,
+        ),
+    ),
+    ParameterConfig(
         name="nucleus9",
         description="Nucleus sampling with p=0.9",
         sampling_parameters=inference.SamplingParameters(
