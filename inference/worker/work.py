@@ -7,6 +7,7 @@ import requests
 import sseclient
 import transformers
 import utils
+import chat_chain
 import websocket
 from loguru import logger
 from oasst_shared.schemas import inference
@@ -106,8 +107,23 @@ def handle_work_request(
     work_request: inference.WorkRequest,
     worker_config: inference.WorkerConfig,
 ):
-    prompt, parameters = make_prompt_and_parameters(tokenizer=tokenizer, work_request=work_request)
+    parameters = interface.GenerateStreamParameters.from_work_parameters(work_request.parameters)
+    prompt = ""
+    used_plugin = None
+
+    # prompt, parameters = make_prompt_and_parameters(tokenizer=tokenizer, work_request=work_request)
+
+    prompt, used_plugin = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer)
     logger.debug(f"Prompt: {prompt}")
+
+    # If plugin was used, lockup sampling parameters to "best" known values for plugins
+    if used_plugin:
+        parameters.top_k = 50
+        parameters.top_p = None
+        parameters.typical_p = None
+        parameters.temperature = 0.2
+        parameters.repetition_penalty = (1 / 0.83)
+        # parameters.seed = 42
 
     model_config = worker_config.model_config
 
@@ -182,6 +198,7 @@ def handle_work_request(
             text=stream_response.generated_text,
             finish_reason=stream_response.details.finish_reason,
             metrics=inference.WorkerMetricsInfo(),
+            used_plugin=used_plugin,
         ),
     )
     logger.debug("Work complete. Waiting for more work...")

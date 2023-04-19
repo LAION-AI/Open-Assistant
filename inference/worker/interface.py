@@ -15,6 +15,7 @@ class GenerateStreamParameters(pydantic.BaseModel):
     seed: int | None = None
     stop: list[str] = []
     details: bool = True
+    plugins: list[inference.PluginEntry] = pydantic.Field(default_factory=list[inference.PluginEntry])
 
     @staticmethod
     def from_work_parameters(params: inference.WorkParameters) -> "GenerateStreamParameters":
@@ -27,6 +28,7 @@ class GenerateStreamParameters(pydantic.BaseModel):
             temperature=params.sampling_parameters.temperature,
             repetition_penalty=params.sampling_parameters.repetition_penalty,
             seed=params.seed,
+            plugins=params.plugins,
         )
 
 

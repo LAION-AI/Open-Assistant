@@ -2,7 +2,7 @@ import { Avatar, AvatarProps, Box, BoxProps, Flex, useColorModeValue } from "@ch
 import { forwardRef, lazy, Suspense } from "react";
 import { colors } from "src/styles/Theme/colors";
 import { StrictOmit } from "ts-essentials";
-
+import { PluginUsageDetails } from "./PluginUsageDetails";
 const RenderedMarkdown = lazy(() => import("./RenderedMarkdown"));
 
 export type BaseMessageEntryProps = StrictOmit<BoxProps, "bg" | "backgroundColor"> & {
@@ -10,10 +10,12 @@ export type BaseMessageEntryProps = StrictOmit<BoxProps, "bg" | "backgroundColor
   avatarProps: Pick<AvatarProps, "name" | "src">;
   bg?: string;
   highlight?: boolean;
+  usedPlugin?: object;
+  isAssistant?: boolean;
 };
 
 export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps>(function BaseMessageEntry(
-  { content, avatarProps, children, highlight, ...props },
+  { content, avatarProps, children, highlight, usedPlugin, isAssistant, ...props },
   ref
 ) {
   const bg = useColorModeValue("#DFE8F1", "#42536B");
@@ -58,6 +60,7 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
         _dark={{ outlineColor: { md: colors.dark.active }, ...props._dark }}
       >
         <Suspense fallback={content}>
+          {isAssistant ? <PluginUsageDetails usedPlugin={usedPlugin} /> : null}
           <RenderedMarkdown markdown={content}></RenderedMarkdown>
         </Suspense>
         {children}

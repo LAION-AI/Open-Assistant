@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "Simple calculator",
+  "name_for_human": "Calculator",
+  "description_for_human": "Simple calculator based on numexpr python library",
+  "description_for_model": "Useful for when you need to answer questions about math, calculations, and other things that require numbers.\nWhen you providing final answer to the user, please describe operations used in the process",
+  "api": {
+    "type": "openapi",
+    "url": "http://192.168.0.35:8085/openapi.json",
+    "has_user_authentication": false
+  },
+  "auth": {
+    "type": "none"
+  },
+  "logo_url": "http://192.168.0.35:8085/icon.png",
+  "contact_email": "ai-plugins@open-assistant.io",
+  "legal_info_url": "https://open-assistant.io/legal"
+}

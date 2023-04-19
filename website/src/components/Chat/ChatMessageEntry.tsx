@@ -100,7 +100,13 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   );
 
   return (
-    <PendingMessageEntry ref={ref} {...props} isAssistant={isAssistant} content={isEditing ? "" : content!}>
+    <PendingMessageEntry
+      ref={ref}
+      {...props}
+      isAssistant={isAssistant}
+      usedPlugin={work_parameters?.used_plugin}
+      content={isEditing ? "" : content!}
+    >
       {!isAssistant && parentId !== null && (
         <Box position="absolute" top={{ base: "4", md: 0 }} style={{ insetInlineEnd: `0.5rem` }}>
           {isEditing ? (
@@ -167,7 +173,7 @@ type PendingMessageEntryProps = {
 };
 
 export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntryProps>(function PendingMessageEntry(
-  { content, isAssistant, children, ...props },
+  { content, isAssistant, children, usedPlugin, ...props },
   ref
 ) {
   const bgUser = useColorModeValue("white", "gray.700");
@@ -188,6 +194,8 @@ export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntr
       content={content || ""}
       width="full"
       maxWidth="full"
+      usedPlugin={usedPlugin}
+      isAssistant={isAssistant}
       {...props}
     >
       {children}

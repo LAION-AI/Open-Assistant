@@ -47,6 +47,8 @@ export interface InferenceMessage {
       max_total_length: number;
       quantized: boolean;
     };
+    plugins: PluginEntry[];
+    used_plugin: object | null;
   };
 }
 
@@ -101,6 +103,7 @@ export interface SamplingParameters {
 
 export interface ChatConfigFormData extends SamplingParameters {
   model_config_name: string; // this is the same as ModelParameterConfig.name
+  plugins: PluginEntry[];
 }
 
 export interface InferencePostPrompterMessageParams {
@@ -114,10 +117,18 @@ export interface InferencePostAssistantMessageParams {
   parent_id: string;
   model_config_name: string;
   sampling_parameters: SamplingParameters;
+  plugins: PluginEntry[];
 }
 
 export interface InferenceUpdateChatParams {
   chat_id: string;
   title?: string;
   hidden?: boolean;
+}
+
+export interface PluginEntry {
+  url: string;
+  enabled?: boolean;
+  trusted?: boolean;
+  spec?: object | null;
 }

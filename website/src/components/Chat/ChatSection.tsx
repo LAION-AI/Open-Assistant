@@ -12,7 +12,7 @@ import { InferencePoweredBy } from "./InferencePoweredBy";
 const ChatConfigSummary = dynamic(() => import("./ChatConfigSummary"), { ssr: false });
 
 export const ChatSection = ({ chatId }: { chatId: string | null }) => {
-  const { modelInfos } = useChatContext();
+  const { modelInfos, plugins } = useChatContext();
 
   console.assert(modelInfos.length > 0, "No model config was found");
 
@@ -27,6 +27,7 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
     defaultValues = {
       ...modelInfos[0].parameter_configs[0].sampling_parameters,
       model_config_name: modelInfos[0].name,
+      plugins: plugins,
     };
   }
 

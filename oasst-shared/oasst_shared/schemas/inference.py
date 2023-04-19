@@ -3,7 +3,7 @@ import platform
 import random
 import uuid
 from datetime import datetime
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal, Union, List, Any
 
 import psutil
 import pydantic
@@ -117,6 +117,82 @@ class SamplingParameters(pydantic.BaseModel):
     max_new_tokens: int = 1024
 
 
+class PluginApiType(pydantic.BaseModel):
+    type: str
+    url: str
+    has_user_authentication: bool | None = False
+    # NOTE: Some plugins using this field,
+    # instead of has_user_authentication
+    is_user_authenticated: bool | None = False
+
+
+class PluginAuthType(pydantic.BaseModel):
+    type: str
+
+
+class PluginOpenAPIParameter(pydantic.BaseModel):
+    name: str
+    in_: str
+    description: str
+    required: bool
+    schema_: object
+
+
+class PluginOpenAPIEndpoint(pydantic.BaseModel):
+    path: str
+    type: str
+    summary: str
+    operation_id: str
+    url: str
+    params: List[PluginOpenAPIParameter]
+
+
+class PluginConfig(pydantic.BaseModel):
+    schema_version: str
+    name_for_model: str
+    name_for_human: str
+    description_for_human: str
+    description_for_model: str
+    api: PluginApiType
+    auth: PluginAuthType
+    logo_url: str | None = None
+    contact_email: str | None = None
+    legal_info_url: str | None = None
+    endpoints: List[PluginOpenAPIEndpoint] | None = None
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        setattr(self, key, value)
+
+
+class PluginEntry(pydantic.BaseModel):
+    url: str
+    enabled: bool = True
+    plugin_config: PluginConfig | None = None
+    # NOTE: Idea, is to have OA internal plugins as trusted,
+    # and all other plugins as untrusted by default(until proven otherwise)
+    trusted: bool | None = False
+
+
+class PluginExecutionDetails(pydantic.BaseModel):
+    inner_monologue: List[str]
+    final_tool_output: str
+    final_prompt: str
+    final_generation_assisted: bool
+    achieved_depth: int | None = None
+    error_message: str | None = None
+    status: Literal["success", "failure"]
+
+
+class PluginUsed(pydantic.BaseModel):
+    name: str | None = None
+    url: str | None = None
+    trusted: bool | None = None
+    execution_details: PluginExecutionDetails
+
+
 def make_seed() -> int:
     return random.randint(0, 0xFFFF_FFFF_FFFF_FFFF - 1)
 
@@ -128,6 +204,8 @@ class WorkParameters(pydantic.BaseModel):
     seed: int = pydantic.Field(
         default_factory=make_seed,
     )
+    plugins: list[PluginEntry] = pydantic.Field(default_factory=list[PluginEntry])
+    used_plugin: PluginUsed | None = None
 
 
 class ReportType(str, enum.Enum):
@@ -252,6 +330,7 @@ class GeneratedTextResponse(WorkerResponseBase):
     text: str
     finish_reason: Literal["length", "eos_token", "stop_sequence"]
     metrics: WorkerMetricsInfo | None = None
+    used_plugin: PluginUsed | None = None
 
 
 class InternalFinishedMessageResponse(WorkerResponseBase):

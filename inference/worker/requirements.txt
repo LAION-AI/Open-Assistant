@@ -10,3 +10,6 @@ sentencepiece
 sseclient-py
 git+https://github.com/huggingface/transformers@main#egg=transformers
 websocket-client
+langchain==0.0.142
+text-generation
+numexpr

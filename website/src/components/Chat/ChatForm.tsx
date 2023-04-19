@@ -1,4 +1,4 @@
-import { Button, Grid, Textarea } from "@chakra-ui/react";
+import { Button, Grid, Textarea, Box, useBreakpointValue } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { forwardRef, KeyboardEvent, SyntheticEvent, useCallback } from "react";
 import TextareaAutosize from "react-textarea-autosize";
@@ -6,6 +6,7 @@ import { QueueInfo } from "src/lib/chat_stream";
 
 import { ChatConfigDrawer } from "./ChatConfigDrawer";
 import { QueueInfoMessage } from "./QueueInfoMessage";
+import { PluginsChooser } from "./PluginsChooser";
 
 type ChatFormProps = {
   isSending: boolean;
@@ -45,7 +46,12 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
           bg: "gray.800",
         }}
       />
-      <Grid gridTemplateColumns="1fr 50px" gap={2} mt="4">
+      <Grid
+        gridTemplateColumns="1fr 350px"
+        gap={2}
+        mt="4"
+        gridTemplateColumns={useBreakpointValue({ base: "1fr", md: "1fr 350px" })}
+      >
         <Button
           type="submit"
           onClick={handleSubmit}
@@ -57,7 +63,10 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
         >
           {t("submit")}
         </Button>
-        <ChatConfigDrawer />
+        <Box display="flex" justifyContent="flex-end" gap={2}>
+          <PluginsChooser />
+          <ChatConfigDrawer />
+        </Box>
       </Grid>
     </form>
   );

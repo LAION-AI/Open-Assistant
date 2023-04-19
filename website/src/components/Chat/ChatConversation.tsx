@@ -2,6 +2,8 @@
 import { Flex, useBoolean, useToast } from "@chakra-ui/react";
 import { memo, useCallback, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
+import { useChatContext } from "src/components/Chat/ChatContext";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
@@ -14,7 +16,6 @@ import {
 } from "src/types/Chat";
 import { mutate } from "swr";
 
-import { useChatContext } from "./ChatContext";
 import { ChatConversationTree, LAST_ASSISTANT_MESSAGE_ID } from "./ChatConversationTree";
 import { ChatForm } from "./ChatForm";
 import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
@@ -34,13 +35,15 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
   const createAndFetchAssistantMessage = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
-      const { model_config_name, ...sampling_parameters } = getConfigValues();
+      const { model_config_name, plugins, ...sampling_parameters } = getConfigValues();
       const assistant_arg: InferencePostAssistantMessageParams = {
         chat_id: chatId,
         parent_id: parentId,
         model_config_name,
         sampling_parameters,
+        plugins,
       };
+      console.log("assistant_arg", assistant_arg);
 
       const assistant_message: InferenceMessage = await post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, {
         arg: assistant_arg,
@@ -105,6 +108,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       content,
       parent_id: parentId,
     };
+    console.log("prompter_arg", prompter_arg);
 
     const prompter_message: InferenceMessage = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
     if (messages.length === 0) {
@@ -112,6 +116,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       mutate(API_ROUTES.LIST_CHAT);
     }
     setMessages((messages) => [...messages, prompter_message]);
+    console.log("prompter_message", prompter_message);
 
     // after creating the prompters message, handle the assistant's case
     await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });

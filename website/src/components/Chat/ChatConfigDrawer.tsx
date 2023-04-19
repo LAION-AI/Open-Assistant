@@ -114,7 +114,7 @@ const parameterLabel: Record<keyof SamplingParameters, string> = {
 
 const ChatConfigForm = () => {
   const { t } = useTranslation("chat");
-  const { modelInfos } = useChatContext();
+  const { modelInfos, plugins } = useChatContext();
 
   const { control, register, reset, getValues } = useFormContext<ChatConfigFormData>();
   const selectedModel = useWatch({ name: "model_config_name", control: control });
@@ -130,7 +130,7 @@ const ChatConfigForm = () => {
         newPresetName === customPresetName
           ? customPresetDefaultValue
           : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
-      reset({ ...config, model_config_name: selectedModel });
+      reset({ ...config, model_config_name: selectedModel, plugins });
       setSelectedPresetName(newPresetName);
     },
     [presets, reset, selectedModel]

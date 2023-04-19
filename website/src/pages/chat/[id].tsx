@@ -9,14 +9,16 @@ import { ChatSection } from "src/components/Chat/ChatSection";
 import { getChatLayout } from "src/components/Layout/ChatLayout";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
 import { InferenceMessage, ModelInfo } from "src/types/Chat";
+import { ModelInfo, PluginEntry } from "src/types/Chat";
 
 interface ChatProps {
   id: string;
   modelInfos: ModelInfo[];
   messages: InferenceMessage[];
+  plugins: PluginEntry[];
 }
 
-const Chat = ({ id, modelInfos, messages }: ChatProps) => {
+const Chat = ({ id, modelInfos, messages, plugins }: ChatProps) => {
   const { t } = useTranslation(["common", "chat"]);
 
   return (
@@ -25,7 +27,7 @@ const Chat = ({ id, modelInfos, messages }: ChatProps) => {
         <title>{t("chat")}</title>
       </Head>
 
-      <ChatContextProvider modelInfos={modelInfos} messages={messages}>
+      <ChatContextProvider modelInfos={modelInfos} messages={messages} plugins={plugins}>
         <ChatSection chatId={id} />
       </ChatContextProvider>
     </>
@@ -48,13 +50,18 @@ export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> =
 
   const token = await getToken({ req });
   const client = createInferenceClient(token!);
-  const [modelInfos, chat] = await Promise.all([client.get_models(), client.get_chat(query.id as string)]);
+  const [modelInfos, chat, plugins] = await Promise.all([
+    client.get_models(),
+    client.get_chat(query.id as string),
+    client.get_plugins(),
+  ]);
 
   return {
     props: {
       id: params!.id,
       modelInfos,
       messages: chat.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)),
+      plugins,
       ...(await serverSideTranslations(locale)),
     },
   };

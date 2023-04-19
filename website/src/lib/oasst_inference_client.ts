@@ -8,6 +8,7 @@ import {
   InferencePostPrompterMessageParams,
   InferenceUpdateChatParams,
   ModelInfo,
+  PluginEntry,
   TrustedClient,
 } from "src/types/Chat";
 import type { Readable } from "stream";
@@ -103,6 +104,24 @@ export class OasstInferenceClient {
 
   delete_account() {
     return this.request(`/account/`, { method: "DELETE" });
+  }
+
+  get_plugins() {
+    try {
+      return this.request<PluginEntry[]>("/configs/builtin_plugins");
+    } catch (err) {
+      console.log(err);
+      return [];
+    }
+  }
+
+  get_plugin_config({ plugin }: { plugin: PluginEntry }) {
+    try {
+      return this.request<PluginEntry>("/configs/plugin_config", { method: "POST", data: plugin });
+    } catch (err) {
+      console.log(err);
+      return {};
+    }
   }
 }
 
