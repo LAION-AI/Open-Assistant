@@ -211,15 +211,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       flexDirection="column"
       flexGrow="1"
       _light={{
-        ".simplebar-scrollbar::before": {
-          bg: "gray.300",
-        },
         bg: "gray.50",
       }}
       _dark={{
-        ".simplebar-scrollbar::before": {
-          bg: "gray.500",
-        },
         bg: "blackAlpha.300",
       }}
     >

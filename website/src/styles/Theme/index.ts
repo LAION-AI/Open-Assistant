@@ -52,6 +52,9 @@ const styles: Styles = {
       position: "relative",
       // bg: props.colorMode === "light" ? "gray.100" : colors.dark.bg,
     },
+    ".simplebar-scrollbar::before": {
+      bg: props.colorMode === "light" ? "gray.300" : "gray.500",
+    },
   }),
 };
 

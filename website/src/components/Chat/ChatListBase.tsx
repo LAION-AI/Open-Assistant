@@ -58,15 +58,9 @@ export const ChatListBase = memo(function ChatListBase({
       display="flex"
       flexDirection="column"
       _light={{
-        ".simplebar-scrollbar::before": {
-          bg: "gray.300",
-        },
         bg: "whiteAlpha.400",
       }}
       _dark={{
-        ".simplebar-scrollbar::before": {
-          bg: "gray.500",
-        },
         bg: "blackAlpha.400",
       }}
       {...props}

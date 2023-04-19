@@ -16,15 +16,7 @@ export const ChatConfigDesktop = () => {
       flexDirection="column"
       w="270px"
       display={{ base: "none", xl: "flex" }}
-      _light={{
-        ".simplebar-scrollbar::before": {
-          bg: "gray.300",
-        },
-      }}
       _dark={{
-        ".simplebar-scrollbar::before": {
-          bg: "gray.500",
-        },
         bg: "blackAlpha.400",
       }}
     >
