@@ -1,5 +1,6 @@
 import { type ThemeConfig, extendTheme } from "@chakra-ui/react";
 import { Styles } from "@chakra-ui/theme-tools";
+import { Inter } from "@next/font/google";
 import { withProse } from "@nikolovlazar/chakra-ui-prose";
 
 import { colors } from "./colors";
@@ -7,7 +8,6 @@ import { badgeTheme } from "./components/Badge";
 import { cardTheme } from "./components/Card";
 import { containerTheme } from "./components/Container";
 import { tableTheme } from "./components/Table";
-import { Inter } from "@next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -50,7 +50,7 @@ const styles: Styles = {
     },
     body: {
       position: "relative",
-      bg: props.colorMode === "light" ? "gray.100" : colors.dark.bg,
+      // bg: props.colorMode === "light" ? "gray.100" : colors.dark.bg,
     },
   }),
 };

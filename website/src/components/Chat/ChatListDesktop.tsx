@@ -1,12 +1,7 @@
-import { Box } from "@chakra-ui/react";
 import { memo } from "react";
 
 import { ChatListBase } from "./ChatListBase";
 
 export const ChatListDesktop = memo(function ChatListDesktop() {
-  return (
-    <Box pe="260px" display={{ base: "none", lg: "block" }}>
-      <ChatListBase isSideBar />
-    </Box>
-  );
+  return <ChatListBase pt="4" display={{ base: "none", lg: "flex" }} w="full" maxW="270px"></ChatListBase>;
 });

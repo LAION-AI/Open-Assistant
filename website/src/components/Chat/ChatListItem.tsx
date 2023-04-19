@@ -1,10 +1,10 @@
 import { Box, Button, CircularProgress, Flex, Input, Tooltip, useBoolean, useOutsideClick } from "@chakra-ui/react";
-import { Check, LucideIcon, Pencil, EyeOff, X } from "lucide-react";
+import { Check, EyeOff, LucideIcon, Pencil, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { KeyboardEvent, MouseEvent, useCallback, useRef } from "react";
-import { del, put } from "src/lib/api";
+import { put } from "src/lib/api";
 import { API_ROUTES, ROUTES } from "src/lib/routes";
 import { ChatItem } from "src/types/Chat";
 import useSWRMutation from "swr/mutation";

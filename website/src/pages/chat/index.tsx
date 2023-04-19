@@ -22,7 +22,7 @@ const ChatList = ({ chatResponse }: InferGetServerSidePropsType<typeof getServer
       <Head>
         <title>{t("chat")}</title>
       </Head>
-      <ChatListBase chats={chatResponse} isSideBar={false} className="max-w-5xl mx-auto" />
+      <ChatListBase chats={chatResponse} className="max-w-5xl mx-auto" />
     </>
   );
 };

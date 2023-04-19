@@ -6,7 +6,7 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { ChatContextProvider } from "src/components/Chat/ChatContext";
 import { ChatSection } from "src/components/Chat/ChatSection";
-import { getChatLayout } from "src/components/Layout/ChatLayout";
+import { getNewChatLayout } from "src/components/Layout/ChatLayout";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
 import { InferenceMessage, ModelInfo } from "src/types/Chat";
 
@@ -32,7 +32,7 @@ const Chat = ({ id, modelInfos, messages }: ChatProps) => {
   );
 };
 
-Chat.getLayout = getChatLayout;
+Chat.getLayout = getNewChatLayout;
 
 export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> = async ({
   locale = "en",
