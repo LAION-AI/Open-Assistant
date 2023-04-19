@@ -1,7 +1,10 @@
-Dataset Description 
-This dataset contains around 14,000 poems from the PoetryFoundation.org site. They are converted to question:response pairs, usingthe tags as topics. 5% of the dataset is titling requests -- the user provides apoem and asks the assistant to title it.
+Dataset Description This dataset contains around 14,000 poems from the
+PoetryFoundation.org site. They are converted to question:response pairs,
+usingthe tags as topics. 5% of the dataset is titling requests -- the user
+provides apoem and asks the assistant to title it.
 
-It can be found here, on my HuggingFace - https://huggingface.co/datasets/checkai/instruction-poems
+It can be found here, on my HuggingFace -
+https://huggingface.co/datasets/checkai/instruction-poems
 
 Languages English
 
@@ -22,7 +25,5 @@ METADATA (JSON String): {"author": "author of the original poem", "title":
 Preparing the Dataset The dataset can be created with prepare.py. Make sure to
 install the required libraries in requirements.txt!
 
-Contributions
-Created by Check 
-Original dataset source -
+Contributions Created by Check Original dataset source -
 https://www.kaggle.com/datasets/tgdivy/poetry-foundation-poems

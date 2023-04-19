@@ -1,18 +1,19 @@
 import json
 import os
 import random
-import pandas as pd
+
 import kaggle
+import pandas as pd
 
 # Authenticate the Kaggle API client
 kaggle.api.authenticate()
 
 # Download and extract the dataset to the download_path directory
-download_path = os.path.join(os.getcwd(), 'data', 'datasets', 'poetry_instruction')
-kaggle.api.dataset_download_files('tgdivy/poetry-foundation-poems', path=download_path, unzip=True)
+download_path = os.path.join(os.getcwd(), "data", "datasets", "poetry_instruction")
+kaggle.api.dataset_download_files("tgdivy/poetry-foundation-poems", path=download_path, unzip=True)
 
 # Read the CSV file into a pandas dataframe
-csv_file = os.path.join(download_path, 'PoetryFoundationData.csv')
+csv_file = os.path.join(download_path, "PoetryFoundationData.csv")
 df = pd.read_csv(csv_file)
 
 # The data in the CSV file is not formatted correctly, so we need to clean it up.
