@@ -9,6 +9,7 @@ class DebugClient:
     def __init__(self, backend_url, http_client=requests):
         self.backend_url = backend_url
         self.http_client = http_client
+        self.available_models = self.get_available_models()
 
     def login(self, username):
         auth_data = self.http_client.get(f"{self.backend_url}/auth/callback/debug", params={"code": username}).json()
