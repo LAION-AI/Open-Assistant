@@ -38,8 +38,8 @@ docker compose logs -f    \
 > rebuilding.
 
 > **Note:** You can change the model by editing variable `MODEL_CONFIG_NAME` in
-> the `docker-compose.yaml` file. Valid model names can be found at
-> https://huggingface.co/OpenAssistant .
+> the `docker-compose.yaml` file. Valid model names can be found in
+> [model_configs.py](../oasst-shared/oasst_shared/model_configs.py).
 
 > **Note:** You can spin up any number of workers by adjusting the number of
 > replicas of the `inference-worker` service (in the `docker-compose.yaml` file)
