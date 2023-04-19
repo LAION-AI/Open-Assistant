@@ -1,5 +1,5 @@
 import { Flex, Link, Tooltip } from "@chakra-ui/react";
-import { SiDiscord, SiGoogle } from "@icons-pack/react-simple-icons";
+import { Discord, Google } from "@icons-pack/react-simple-icons";
 import { Mail } from "lucide-react";
 import NextLink from "next/link";
 import { useHasAnyRole } from "src/hooks/auth/useHasAnyRole";
@@ -10,8 +10,8 @@ import { UserAvatar } from "./UserAvatar";
 
 const AUTH_METHOD_TO_ICON: Record<AuthMethod, JSX.Element> = {
   local: <Mail size="20" />,
-  discord: <SiDiscord size="20" />,
-  google: <SiGoogle size="20" />,
+  discord: <Discord size="20" />,
+  google: <Google size="20" />,
 };
 
 export const UserDisplayNameCell = ({

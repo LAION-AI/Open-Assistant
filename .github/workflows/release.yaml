@@ -89,7 +89,6 @@ jobs:
       - build-web
       - build-bot
       - build-inference-server
-      - build-inference-safety
     uses: ./.github/workflows/deploy-to-node.yaml
     secrets: inherit
     with:

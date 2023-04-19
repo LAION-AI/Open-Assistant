@@ -160,7 +160,7 @@ def get_one_dataset(
         train, eval = load_shp()
     elif dataset_name == "hellaswag":
         train, eval = load_hellaswag()
-    elif dataset_name == "databricks_dolly15k":
+    elif dataset_name == "dolly15k":
         dataset = DatabricksDolly15k(cache_dir=data_path)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")

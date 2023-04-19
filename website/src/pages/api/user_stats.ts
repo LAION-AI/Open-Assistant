@@ -13,6 +13,12 @@ export default withoutRole("banned", async (req, res, token) => {
     const { id, auth_method, display_name } = req.query;
     user = { id, auth_method, display_name } as BackendUserCore;
   } else {
+    if (!token.backendUserId) {
+      // user has not yet accepted the terms of service, and therefor does not yet exist in the backend
+      /// skip the request entirely
+      return res.status(200).json({});
+    }
+
     user = await getBackendUserCore(token.sub);
   }
 

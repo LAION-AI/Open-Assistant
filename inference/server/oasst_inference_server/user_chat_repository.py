@@ -14,9 +14,11 @@ class UserChatRepository(pydantic.BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    async def get_chats(self) -> list[models.DbChat]:
+    async def get_chats(self, include_hidden: bool = False) -> list[models.DbChat]:
         query = sqlmodel.select(models.DbChat)
         query = query.where(models.DbChat.user_id == self.user_id)
+        if not include_hidden:
+            query = query.where(models.DbChat.hidden.is_(False))
         query = query.order_by(models.DbChat.created_at.desc())
         return (await self.session.exec(query)).all()
 
@@ -226,9 +228,21 @@ class UserChatRepository(pydantic.BaseModel):
         await self.session.refresh(report)
         return report
 
-    async def update_title(self, chat_id: str, title: str) -> models.DbChat:
-        logger.info(f"Updating title of chat {chat_id=}: {title=}")
+    async def update_chat(
+        self,
+        chat_id: str,
+        title: str | None = None,
+        hidden: bool | None = None,
+    ) -> None:
+        logger.info(f"Updating chat {chat_id=}: {title=} {hidden=}")
         chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
 
-        chat.title = title
+        if title is not None:
+            logger.info(f"Updating title of chat {chat_id=}: {title=}")
+            chat.title = title
+
+        if hidden is not None:
+            logger.info(f"Setting chat {chat_id=} to {'hidden' if hidden else 'visible'}")
+            chat.hidden = hidden
+
         await self.session.commit()

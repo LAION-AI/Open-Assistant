@@ -89,16 +89,15 @@ can create their own custom assistants.
 ## The tools
 
 A web application, usually referred to as **"the web frontend"**, has been
-created. Initially, it supports the first two steps of the process outlined in
-the previous section, which require humans creating conversations (step 1) and
-ranking answers (step 2).
+created. It supports the first two steps of the process outlined in the previous
+section, which require humans creating conversations (step 1) and ranking
+answers (step 2). It also supports the inference step, creating a chat
+interface.
 
-For this same goal, data gathering, a discord bot is being created. We'll call
-it **"the data gathering discord bot"**.
+For data gathering, two discord bots were created, one using Python and the
+other using Javascript. The latter also supports the inference process.
 
-For doing the inference, once the final model is ready, an **"inference
-service"** is being created. Another section will be added to the web frontend,
-so that the assistant can be used from the web.
+For doing the inference, an **"inference service"** has been created.
 
 In addition, for collecting the instruction dataset, a set of **scripts and
 notebooks** is being developed.
@@ -134,10 +133,10 @@ When you run `npm run dev` in the website directory, it starts the Next.js
 application in the node server. The Next.js application is available at
 `http://localhost:3000`.
 
-In the Dockerfile, there's also a `maildev` container that is used during to be
-able to sent emails for registration, although for local development there are
-fake users pre-created and this is not required. There is a fake user called
-`dev` and it can be assigned a role during log in.
+In the Dockerfile, there's also a `maildev` container that is used to be able to
+sent emails for registration, although for local development there are fake
+users pre-created and this is not required. There is a fake user called `dev`
+and it can be assigned a role during log in.
 
 There are other scripts related to the frontend in the directory
 [scripts/frontend-development](https://github.com/LAION-AI/Open-Assistant/tree/main/scripts/frontend-development).
@@ -146,16 +145,15 @@ Another included tool that can be interesting during development is
 [storybook](https://storybook.js.org/): it allows you to test UI components
 without having to run the whole application.
 
-### The data gathering Discord bot
+### The Discord bots
 
-This is a Discord bot that is used to gather data for the assistant, as a
-complement to the web data gathering application. Its source code is in the
-[discord-bot](https://github.com/LAION-AI/Open-Assistant/tree/main/discord-bot)
-directory and it's written in Python.
+These are the Discord bots mentioned above. Their source code is in the
+[discord-bots](https://github.com/LAION-AI/Open-Assistant/tree/main/discord-bots)
+directory.
 
 ### The FastAPI backend
 
-This provides an API that's used by the web frontend and the Discord bot to
+This provides an API that's used by the web frontend and the Discord bots to
 store conversation trees and their metadata. It's written in Python using
 FastAPI as framework and its source code is in the
 [backend directory](https://github.com/LAION-AI/Open-Assistant/tree/main/backend).
@@ -168,7 +166,7 @@ There's also a Redis database, called `redis` in the Dockerfile, for caching API
 requets.
 
 In the Dockerfile, there are also two containers with development support tools
-for the databases: `adminer`, that can be used to inspect the Postgres
+for the databases: `adminer`, which can be used to inspect the Postgres
 databases, and `redis-insights` to inspect the Redis database.
 
 Although there's some data already in the Postgres backend database, more can be
@@ -182,12 +180,13 @@ conversation tree and the work package.
 
 ### The inference service
 
-The inference service will be the component that answers prompts when the model
-is ready, i.e., the assistant. It's written in Python and its source code is in
-the [inference](https://github.com/LAION-AI/Open-Assistant/tree/main/inference)
+The inference service is the component that answers prompts using a model, i.e.,
+it is the assistant itself. It's written in Python and its source code is in the
+[inference](https://github.com/LAION-AI/Open-Assistant/tree/main/inference)
 directory. It has a server and several workers. It also has its own Postgres
 database in a container called `inference-db` in the Dockerfile, and a Redis
-database in the `redis-inference` container.
+database in the `redis-inference` container. There's another container for
+safety called `inference-safety`.
 
 The server is a FastAPI application that communicates via websockets with the
 workers, which are the ones that use the model to carry out the inference.
@@ -208,7 +207,9 @@ explains how to contribute a new dataset.
 
 There's also a
 [notebooks](https://github.com/LAION-AI/Open-Assistant/tree/main/notebooks)
-directory with different notebooks to process the data.
+directory with different notebooks for data scraping and augmentation, but it's
+being deprecated in favor of the directory
+[data/datasets](https://github.com/LAION-AI/Open-Assistant/blob/main/data/datasets).
 
 ### The docs
 
@@ -244,8 +245,17 @@ website directory.
 
   - `inference-db`, `inference-server`, `inference-worker`, `inference-redis`
 
+- `inference-dev`. It includes these containers:
+
+  - `db`, `web-db`, `backend`
+
+- `inference-safety`. It includes these containers:
+
+  - `inference-safety`
+
 - `observability`. It includes tools to monitor the application. It includes
   these containers:
+
   - `prometheus`, `grafana`, `netdata`
 
 Notice that you can combine profiles, for example, `ci` and `observability`.
@@ -277,12 +287,12 @@ flowchart TD
         infworker1((inference-worker <br> 1))
         infworker2((inference-worker <br> ...))
         infworkerN((inference-worker <br> n))
-        infserv(("inference-server <br> (FastAPI)"))
-        infserv --> infdb(("inference-db <br> (Postgres)"))
-        infserv --> infredis(("inference-redis"))
+        infserv(("inference-server <br> (FastAPI)")) --> infdb(("inference-db <br> (Postgres)"))
+        infsafety((inference-safety))
         infserv --> infworker1
         infserv --> infworker2
         infserv --> infworkerN
+        infserv --> infsafety
     end
     subgraph support[Dev support tools]
         adminer((adminer))
@@ -312,7 +322,7 @@ Lead, [Christoph Schumann](https://github.com/christophschuhmann), who is the
 Organizational Lead and a founder of [LAION](https://laion.ai/), and Huu Nguyen,
 from [Ontocord](https://github.com/ontocord).
 
-There's a
+There's a [Teams page](https://open-assistant.io/team) and a
 [CODEOWNERS](https://github.com/LAION-AI/Open-Assistant/blob/main/CODEOWNERS)
 file that lists the code owners of different parts of the project. However,
 there are many

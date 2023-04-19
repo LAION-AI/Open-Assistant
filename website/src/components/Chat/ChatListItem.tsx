@@ -1,5 +1,5 @@
 import { Box, Button, CircularProgress, Flex, Input, Tooltip, useBoolean, useOutsideClick } from "@chakra-ui/react";
-import { Check, LucideIcon, Pencil, Trash2, X } from "lucide-react";
+import { Check, LucideIcon, Pencil, EyeOff, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
@@ -12,9 +12,11 @@ import useSWRMutation from "swr/mutation";
 export const ChatListItem = ({
   chat,
   onUpdateTitle,
+  onHide,
 }: {
   chat: ChatItem;
   onUpdateTitle: (params: { chatId: string; title: string }) => void;
+  onHide: (params: { chatId: string }) => void;
 }) => {
   const { query } = useRouter();
   const { t } = useTranslation("chat");
@@ -31,13 +33,13 @@ export const ChatListItem = ({
     },
   });
   const { trigger: updateChatTitle, isMutating: isUpdatingTitle } = useSWRMutation(
-    API_ROUTES.UPDATE_CHAT_TITLE(chat.id),
+    API_ROUTES.UPDATE_CHAT(chat.id),
     put
   );
   const handleConfirmEdit = useCallback(async () => {
     const title = inputRef.current?.value.trim();
     if (!title) return;
-    await updateChatTitle({ title, chat_id: chat.id });
+    await updateChatTitle({ chat_id: chat.id, title });
     setIsEditing.off();
     onUpdateTitle({ chatId: chat.id, title });
   }, [chat.id, onUpdateTitle, setIsEditing, updateChatTitle]);
@@ -128,7 +130,7 @@ export const ChatListItem = ({
         {!isEditing && (
           <>
             <EditChatButton onClick={setIsEditing.on} />
-            <DeleteChatButton chatId={chat.id} />
+            <HideChatButton chatId={chat.id} onHide={onHide} />
           </>
         )}
       </Flex>
@@ -142,17 +144,17 @@ const EditChatButton = ({ onClick }: { onClick: () => void }) => {
   return <ChatListItemIconButton label={t("edit")} icon={Pencil} onClick={onClick}></ChatListItemIconButton>;
 };
 
-const DeleteChatButton = ({ chatId, onDelete }: { chatId: string; onDelete?: () => unknown }) => {
-  const { trigger: triggerDelete } = useSWRMutation(`/api/chat?chat_id=${chatId}`, del);
+const HideChatButton = ({ chatId, onHide }: { chatId: string; onHide?: (params: { chatId: string }) => void }) => {
+  const { trigger: triggerHide } = useSWRMutation(API_ROUTES.UPDATE_CHAT(chatId), put);
 
   const onClick = useCallback(async () => {
-    await triggerDelete();
-    onDelete?.();
-  }, [onDelete, triggerDelete]);
+    await triggerHide({ chat_id: chatId, hidden: true });
+    onHide?.({ chatId });
+  }, [onHide, triggerHide, chatId]);
 
   const { t } = useTranslation("common");
 
-  return <ChatListItemIconButton label={t("delete")} icon={Trash2} onClick={onClick} />;
+  return <ChatListItemIconButton label={t("hide")} icon={EyeOff} onClick={onClick} />;
 };
 
 type ChatListItemIconButtonProps = {

@@ -18,7 +18,11 @@ import { memo, MouseEvent, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { ReactMarkdownOptions } from "react-markdown/lib/react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { RenderedCodeblock } from "src/components/Messages/RenderedCodeblock";
+
+import "katex/dist/katex.min.css";
 
 interface RenderedMarkdownProps {
   markdown: string;
@@ -83,7 +87,8 @@ const sx: SystemStyleObject = {
   },
 };
 
-const plugins = [remarkGfm];
+const remarkPlugins = [remarkGfm, remarkMath];
+const rehypePlugins = [rehypeKatex];
 
 const disallowedElements = ["img"];
 
@@ -158,7 +163,12 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
 const MemorizedMarkdown = memo(function MemorizedMarkdown(props: ReactMarkdownOptions) {
   return (
     <Prose as="div" sx={sx}>
-      <ReactMarkdown {...props} disallowedElements={disallowedElements} remarkPlugins={plugins} />
+      <ReactMarkdown
+        {...props}
+        disallowedElements={disallowedElements}
+        remarkPlugins={remarkPlugins}
+        rehypePlugins={rehypePlugins}
+      />
     </Prose>
   );
 });

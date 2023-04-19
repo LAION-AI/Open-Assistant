@@ -1,0 +1,35 @@
+# This image is for development/model-training (e.g. sweeps) and will not be deployed on production machines.
+
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
+
+WORKDIR /workspace
+SHELL ["/bin/bash", "-c"]
+
+# install git, python & torch
+RUN apt update && \
+    apt install -y vim git python3.10 python3.10-venv && \
+    python3.10 -m venv venv
+
+RUN source venv/bin/activate && \
+    pip install torch==1.13.1
+
+# clone OA repo & install dependencies
+RUN apt install -y python3.10-dev && \
+    git clone https://github.com/LAION-AI/Open-Assistant.git && \
+    source venv/bin/activate && \
+    pip install -e /workspace/Open-Assistant/oasst-data \
+    pip install -e /workspace/Open-Assistant/model
+
+ENV PATH=/workspace/venv/bin:$PATH
+
+WORKDIR /workspace/Open-Assistant/model/model_training
+
+CMD ["/bin/bash"]
+
+# In the ./Open-Assistant repository root folder:
+
+# ... build the container:
+# nvidia-docker build -f docker/Dockerfile.model-training . -t oasst-model-training
+
+# ... run with the OA repository mounted:
+# nvidia-docker run -v `pwd`:/workspace/Open-Assistant -it --rm --env CUDA_VISIBLE_DEVICES=0 oasst-model-training

@@ -6,6 +6,7 @@ import {
   InferenceMessage,
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
+  InferenceUpdateChatParams,
   ModelInfo,
   TrustedClient,
 } from "src/types/Chat";
@@ -24,6 +25,7 @@ export class OasstInferenceClient {
         TrustedClient: this.clientToken,
       },
     });
+
     return data;
   }
 
@@ -48,7 +50,6 @@ export class OasstInferenceClient {
 
         // this is maybe not the cleanest solution, but otherwise we would have to sign up all users of the website
         // to inference automatically, which is maybe an overkill
-        console.log("here");
         await this.inference_login();
         return create();
       } else {
@@ -96,8 +97,12 @@ export class OasstInferenceClient {
     return this.request<ModelInfo[]>("/configs/model_configs");
   }
 
-  update_chat_title({ chat_id, title }: { chat_id: string; title: string }) {
-    return this.request(`/chats/${chat_id}/title`, { method: "PUT", data: { title } });
+  update_chat({ chat_id, ...data }: InferenceUpdateChatParams) {
+    return this.request(`/chats/${chat_id}`, { method: "PUT", data: data });
+  }
+
+  delete_account() {
+    return this.request(`/account/`, { method: "DELETE" });
   }
 }
 

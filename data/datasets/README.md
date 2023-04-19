@@ -180,7 +180,7 @@ import pandas as pd
 df = pd.read_json(...) # or any other way
 
 # Save the file in the Parquet format
-df.to_parquet("dataset.parquet", row_group_size=100, engine="pyarrow")
+df.to_parquet("dataset.parquet", row_group_size=100, engine="pyarrow", index=False)
 ```
 
 #### 2. Install Hugging Face Hub

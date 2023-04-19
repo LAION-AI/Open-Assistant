@@ -9,7 +9,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useColorMode } from "@chakra-ui/react";
-import { SiDiscord, SiGoogle } from "@icons-pack/react-simple-icons";
+import { Discord, Google } from "@icons-pack/react-simple-icons";
 import { TurnstileInstance } from "@marsidev/react-turnstile";
 import { boolean } from "boolean";
 import { Bug, Mail } from "lucide-react";
@@ -54,6 +54,8 @@ const errorMessages: Record<SignInErrorTypes, string> = {
   InvalidCaptcha: "Invalid captcha",
   default: "Unable to sign in.",
 };
+
+const REDIRECT_AFTER_LOGIN = "/chat";
 
 interface SigninProps {
   providers: Record<BuiltInProviderType, ClientSafeProvider>;
@@ -104,8 +106,8 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
               _active={{ bg: "#454FBF" }}
               size="lg"
               color="white"
-              leftIcon={<SiDiscord />}
-              onClick={() => signIn(discord.id, { callbackUrl: "/" })}
+              leftIcon={<Discord />}
+              onClick={() => signIn(discord.id, { callbackUrl: REDIRECT_AFTER_LOGIN })}
             >
               Continue with Discord
             </Button>
@@ -117,8 +119,8 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
               _active={{ bg: "#454FBF" }}
               size="lg"
               color="white"
-              leftIcon={<SiGoogle />}
-              onClick={() => signIn(google.id, { callbackUrl: "/" })}
+              leftIcon={<Google />}
+              onClick={() => signIn(google.id, { callbackUrl: REDIRECT_AFTER_LOGIN })}
             >
               Continue with Google
             </Button>
@@ -166,7 +168,7 @@ const EmailSignInForm = ({
   const [captchaSuccess, setCaptchaSuccess] = useState(false);
   const signinWithEmail = (data: { email: string }) => {
     signIn(providerId, {
-      callbackUrl: "/dashboard",
+      callbackUrl: REDIRECT_AFTER_LOGIN,
       email: data.email,
       captcha: captcha.current?.getResponse(),
     });
@@ -240,7 +242,7 @@ const DebugSigninForm = ({ providerId }: { providerId: string }) => {
 
   function signinWithDebugCredentials(data: DebugSigninFormData) {
     signIn(providerId, {
-      callbackUrl: "/dashboard",
+      callbackUrl: REDIRECT_AFTER_LOGIN,
       ...data,
     });
   }

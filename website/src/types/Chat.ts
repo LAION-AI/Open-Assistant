@@ -24,6 +24,7 @@ export interface ChatItem {
 
   // those are not available when you first create a chat
   title?: string;
+  hidden?: boolean;
 }
 
 export interface InferenceMessage {
@@ -113,4 +114,10 @@ export interface InferencePostAssistantMessageParams {
   parent_id: string;
   model_config_name: string;
   sampling_parameters: SamplingParameters;
+}
+
+export interface InferenceUpdateChatParams {
+  chat_id: string;
+  title?: string;
+  hidden?: boolean;
 }

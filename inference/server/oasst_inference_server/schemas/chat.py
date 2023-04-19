@@ -61,6 +61,7 @@ class ChatListRead(pydantic.BaseModel):
     created_at: datetime.datetime
     modified_at: datetime.datetime
     title: str | None
+    hidden: bool = False
 
 
 class ChatRead(ChatListRead):
@@ -83,5 +84,6 @@ class MessageTimeoutException(Exception):
         self.message = message
 
 
-class ChatUpdateTitleRequest(pydantic.BaseModel):
-    title: pydantic.constr(max_length=100)
+class ChatUpdateRequest(pydantic.BaseModel):
+    title: pydantic.constr(max_length=100) | None = None
+    hidden: bool | None = None

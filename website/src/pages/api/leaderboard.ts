@@ -5,6 +5,12 @@ import { getBackendUserCore } from "src/lib/users";
 import { LeaderboardTimeFrame } from "src/types/Leaderboard";
 
 export default withoutRole("banned", async (req, res, token) => {
+  if (!token.backendUserId) {
+    // user has not yet accepted the terms of service, and therefor does not yet exist in the backend
+    /// skip the request entirely
+    return res.status(200).json(null);
+  }
+
   const oasstApiClient = await createApiClient(token);
   const backendUser = await getBackendUserCore(token.sub);
   const time_frame = (req.query.time_frame as LeaderboardTimeFrame) ?? LeaderboardTimeFrame.day;
