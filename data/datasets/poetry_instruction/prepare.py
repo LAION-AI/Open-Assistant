@@ -1,13 +1,19 @@
 import json
 import os
 import random
-
 import pandas as pd
+import kaggle
 
-# Read the CSV file into a pandas DataFrame. The CSV file was downloaded from Kaggle, and the source is linked in the README.
+# Authenticate the Kaggle API client
+kaggle.api.authenticate()
 
-CURRENT_DIR = os.path.dirname(__file__)  # Gets directory path of the current python module
-df = pd.read_csv(os.path.join(CURRENT_DIR, "PoetryFoundationData.csv"))
+# Download and extract the dataset to the download_path directory
+download_path = os.path.join(os.getcwd(), 'data', 'datasets', 'poetry_instruction')
+kaggle.api.dataset_download_files('tgdivy/poetry-foundation-poems', path=download_path, unzip=True)
+
+# Read the CSV file into a pandas dataframe
+csv_file = os.path.join(download_path, 'PoetryFoundationData.csv')
+df = pd.read_csv(csv_file)
 
 # The data in the CSV file is not formatted correctly, so we need to clean it up.
 df["Title"] = df["Title"].replace("\n", "", regex=True).replace("\r", "", regex=True)
@@ -114,11 +120,12 @@ for index, row in writing_tasks.iterrows():
     source = "PoetryFoundation.org" + " - " + author
     metadata = {"author": author, "title": title, "tags": str(topics), "task_type": "writing"}
 
-    # If the entry has "nan" as a topic, change the prompts to the non-topic ones.
-    if " nan" in instruction:
+    # If the entry has an empty value for the topic, use the non-topic prompts and replies.
+    if pd.isna(topics):
         instruction = random.choice(writing_prompts_notTopic)
         reply = random.choice(replies_notTopic).replace("$title", title).replace("$poem", poem)
 
+    # Create a dictionary entry for the entry and append it to the list.
     entry = {"INSTRUCTION": instruction, "RESPONSE": reply, "SOURCE": source, "METADATA": json.dumps(metadata)}
     prepared_data.append(entry)
 
@@ -136,8 +143,7 @@ for index, row in titling_tasks.iterrows():
     source = "PoetryFoundation.org" + " - " + author
     metadata = {"author": author, "title": title, "tags": str(topics), "task_type": "titling"}
 
-    # If the entry has a topic, use the topic to generate a writing prompt and a reply.
-
+    # Create a dictionary entry for the entry and append it to the list.
     entry = {"INSTRUCTION": instruction, "RESPONSE": reply, "SOURCE": source, "METADATA": json.dumps(metadata)}
     prepared_data.append(entry)
 
