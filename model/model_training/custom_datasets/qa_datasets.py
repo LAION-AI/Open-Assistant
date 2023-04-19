@@ -552,9 +552,6 @@ class DatabricksDolly15k(Dataset):
         self.mode = mode
         data = load_dataset("OllieStanley/oa_dolly_15k", cache_dir=cache_dir)
         for line in data["train"]:
-            kk = self._process_instruction(line, input_max_length)
-            if not isinstance(kk, DatasetEntry):
-                self._process_instruction(line, input_max_length)
             self.rows.append(self._process_instruction(line, input_max_length))
 
     def _process_instruction(self, row: dict[str, str], input_max_length: int) -> DatasetEntry | None:
