@@ -31,7 +31,8 @@ writing_prompts_notTopic = [
     "I want a poem.",
     "Can you write a poem?",
     "Compose a poem.",
-    "Make a poem." "Generate a poem.",
+    "Make a poem.",
+    "Generate a poem.",
 ]
 
 # These are replies that the assistant can give to the user.
@@ -108,18 +109,15 @@ for index, row in writing_tasks.iterrows():
     author = row["Poet"]
 
     # Variables to store to instruction, reply, source, and metadata.
-    instruction = ""
-    reply = ""
+    instruction = random.choice(writing_prompts_topic).replace("$topic", str(topics))
+    reply = (
+            random.choice(replies_topic).replace("$topic", str(topics)).replace("$title", title).replace("$poem", poem)
+        )    
     source = "PoetryFoundation.org" + " - " + author
     metadata = {"author": author, "title": title, "tags": str(topics), "task_type": "writing"}
 
-    # If the entry has a topic, use the topic to generate a writing prompt and a reply.
-    if topics != "nan":
-        instruction = random.choice(writing_prompts_topic).replace("$topic", str(topics))
-        reply = (
-            random.choice(replies_topic).replace("$topic", str(topics)).replace("$title", title).replace("$poem", poem)
-        )
-    else:
+    # If the entry has "nan" as a topic, change the prompts to the non-topic ones.
+    if " nan" in instruction:
         instruction = random.choice(writing_prompts_notTopic)
         reply = random.choice(replies_notTopic).replace("$title", title).replace("$poem", poem)
 
