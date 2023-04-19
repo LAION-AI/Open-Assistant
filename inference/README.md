@@ -1,6 +1,9 @@
 # OpenAssistant Inference
 
 Preliminary implementation of the inference engine for OpenAssistant.
+This is strictly for local development, although you might find limited
+success for your self-hosting OA plan.  There is no warranty that this
+will not change in the future — in fact, expect it to change.
 
 ## Development Variant 1 (docker compose)
 
