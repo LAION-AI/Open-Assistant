@@ -17,7 +17,7 @@ type ChatFormProps = {
 // eslint-disable-next-line react/display-name
 export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, ref) => {
   const { isSending, onSubmit: onSubmit, queueInfo } = props;
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("chat");
   const handleSubmit = useCallback(
     (e: SyntheticEvent) => {
       e.preventDefault();
@@ -50,7 +50,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
           rows={1}
           maxRows={10}
           onKeyDown={handleKeydown}
-          placeholder="Ask the assistant anything"
+          placeholder={t("input_placeholder")}
           _dark={{
             bg: "whiteAlpha.100",
           }}
