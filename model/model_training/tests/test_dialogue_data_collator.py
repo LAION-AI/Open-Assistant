@@ -26,6 +26,34 @@ def pythia_tokenizer():
     return tokenizer
 
 
+def test_dataset_entry_no_context(pythia_tokenizer):
+    d = DialogueDataCollator(
+        tokenizer=pythia_tokenizer,
+        padding=True,
+    )
+    features = [
+        DatasetEntry(
+            questions=["Dummy Question?"],
+            answers=["Dummy Answer."],
+        )
+    ]
+    batch = d(features)
+    expected_decoded_input_ids = [
+        "<|prompter|>Dummy Question?<|endoftext|>" + "<|assistant|>Dummy Answer.<|endoftext|>"
+    ]
+    expected_decoded_targets = [
+        expected_decoded_input_ids[0][len("<|prompter|>") :] + expected_decoded_input_ids[0][: len("<|prompter|>")],
+    ]
+
+    expected_masked = ["<|assistant|>Dummy Answer."]
+    assert pythia_tokenizer.decode(batch.input_ids[0]) == expected_decoded_input_ids[0]
+    # check if targets are as expected
+    assert pythia_tokenizer.decode(batch.targets[0]) == expected_decoded_targets[0]
+
+    # check if masking is correct. Note that we mask the system aswell
+    assert pythia_tokenizer.decode(batch.input_ids[0][batch.label_masks[0]]) == expected_masked[0]
+
+
 def test_dataset_entry(pythia_tokenizer):
     d = DialogueDataCollator(
         tokenizer=pythia_tokenizer,

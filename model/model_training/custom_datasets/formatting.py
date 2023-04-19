@@ -240,7 +240,9 @@ class DatasetEntry(BaseModel):
 
     def system_tag(self, eos_token: str) -> str | None:
         relevant_system_infos = [
-            (k, v) for k, v in self.__dict__.items() if k not in ["questions", "answers"] and v is not None
+            (k, v)
+            for k, v in self.__dict__.items()
+            if k not in ["questions", "answers"] and v is not None and v.replace("\n", "")
         ]
         if len(relevant_system_infos) > 0:
             shuffle(relevant_system_infos)

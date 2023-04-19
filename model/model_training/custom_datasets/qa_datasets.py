@@ -551,21 +551,28 @@ class DatabricksDolly15k(Dataset):
             raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
         self.mode = mode
         data = load_dataset("OllieStanley/oa_dolly_15k", cache_dir=cache_dir)
+        import pdb
+
+        pdb.set_trace()
         for line in data["train"]:
+            kk = self._process_instruction(line, input_max_length)
+            if not isinstance(kk, DatasetEntry):
+                import pdb
+
+                pdb.set_trace()
+                self._process_instruction(line, input_max_length)
             self.rows.append(self._process_instruction(line, input_max_length))
 
-    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> list[str] | None:
-        if context := re_reference_remove.sub("", row["METADATA"]["CONTEXT"]):
-            # further remove references
-            context = context.replace("[citation needed]", "")
-            context = self.citation_regex.sub("", context)
-            return [f"{context} {row['INSTRUCTION']}"[:input_max_length], row["RESPONSE"][:input_max_length]]
-        else:
-            return DatasetEntry(
-                context=None,
-                questions=[row["INSTRUCTION"][:input_max_length]],
-                answers=[row["RESPONSE"][:input_max_length]],
-            )
+    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> DatasetEntry | None:
+        context = re_reference_remove.sub("", row["METADATA"]["CONTEXT"])
+        # further remove references
+        context = context.replace("[citation needed]", "")
+        context = self.citation_regex.sub("", context)
+        return DatasetEntry(
+            context=context,
+            questions=[row["INSTRUCTION"][:input_max_length]],
+            answers=[row["RESPONSE"][:input_max_length]],
+        )
 
     def __len__(self) -> int:
         return len(self.rows)
