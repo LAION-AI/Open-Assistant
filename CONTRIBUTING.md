@@ -1,3 +1,6 @@
+# Readme translations:
+<kbd>[<img title="Russian" alt="Russian" src="https://cdn.staticaly.com/gh/hjnilsson/country-flags/master/svg/ru.svg" width="22">](./docs/CONTRIBUTING-ru.md)</kbd>
+
 # I’m in! Now what?
 
 [Join the OpenAssistant Contributors Discord Server!](https://ykilcher.com/open-assistant-discord),
