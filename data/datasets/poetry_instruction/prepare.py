@@ -110,9 +110,7 @@ for index, row in writing_tasks.iterrows():
 
     # Variables to store to instruction, reply, source, and metadata.
     instruction = random.choice(writing_prompts_topic).replace("$topic", str(topics))
-    reply = (
-            random.choice(replies_topic).replace("$topic", str(topics)).replace("$title", title).replace("$poem", poem)
-        )    
+    reply = random.choice(replies_topic).replace("$topic", str(topics)).replace("$title", title).replace("$poem", poem)
     source = "PoetryFoundation.org" + " - " + author
     metadata = {"author": author, "title": title, "tags": str(topics), "task_type": "writing"}
 
