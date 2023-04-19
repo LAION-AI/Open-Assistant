@@ -32,8 +32,7 @@ Tail the logs:
 # cd /root/of/this/repository
 docker compose logs -f    \
     inference-server      \
-    inference-worker      \
-    inference-safety
+    inference-worker
 ```
 
 > **Note:** The compose file contains the bind mounts enabling you to develop on
