@@ -551,15 +551,9 @@ class DatabricksDolly15k(Dataset):
             raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
         self.mode = mode
         data = load_dataset("OllieStanley/oa_dolly_15k", cache_dir=cache_dir)
-        import pdb
-
-        pdb.set_trace()
         for line in data["train"]:
             kk = self._process_instruction(line, input_max_length)
             if not isinstance(kk, DatasetEntry):
-                import pdb
-
-                pdb.set_trace()
                 self._process_instruction(line, input_max_length)
             self.rows.append(self._process_instruction(line, input_max_length))
 
