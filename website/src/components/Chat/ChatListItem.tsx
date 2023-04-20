@@ -95,7 +95,7 @@ export const ChatListItem = ({
             pe="50px"
             borderRadius="lg"
             maxLength={100}
-            autoFocus 
+            autoFocus
           ></Input>
           <Flex
             position="absolute"
