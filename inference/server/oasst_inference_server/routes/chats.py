@@ -18,9 +18,6 @@ router = fastapi.APIRouter(
 )
 
 
-
-
-
 @router.get("")
 async def list_chats(
     include_hidden: bool = False,
@@ -41,13 +38,13 @@ async def list_chats(
         return base64.b64decode(cursor.encode()).decode()
 
     chats = await ucr.get_chats(
-        include_hidden=include_hidden, limit=limit+1, after=decode_cursor(after), before=decode_cursor(before)
+        include_hidden=include_hidden, limit=limit + 1, after=decode_cursor(after), before=decode_cursor(before)
     )
 
     num_rows = len(chats)
-    chats = chats if num_rows <= limit else chats[:-1] # remove extra item
-    chats = chats if before is None else chats[::-1] # reverse if query in backward direction
-    
+    chats = chats if num_rows <= limit else chats[:-1]  # remove extra item
+    chats = chats if before is None else chats[::-1]  # reverse if query in backward direction
+
     def get_cursors():
         prev, next = None, None
         if num_rows > 0:
@@ -62,7 +59,7 @@ async def list_chats(
                 next = before
         return prev, next
 
-    prev,next = get_cursors()
+    prev, next = get_cursors()
 
     chats_list = [chat.to_list_read() for chat in chats]
     return chat_schema.ListChatsResponse(chats=chats_list, next=next, prev=prev)
