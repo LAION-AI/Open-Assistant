@@ -18,14 +18,7 @@ router = fastapi.APIRouter(
 )
 
 
-def encode_cursor(id: str):
-    return base64.b64encode(id.encode()).decode()
 
-
-def decode_cursor(cursor: str | None):
-    if cursor is None:
-        return None
-    return base64.b64decode(cursor.encode()).decode()
 
 
 @router.get("")
@@ -39,15 +32,37 @@ async def list_chats(
     """Lists all chats."""
     logger.info("Listing all chats.")
 
+    def encode_cursor(chat: models.DbChat):
+        return base64.b64encode(chat.id.encode()).decode()
+
+    def decode_cursor(cursor: str | None):
+        if cursor is None:
+            return None
+        return base64.b64decode(cursor.encode()).decode()
+
     chats = await ucr.get_chats(
-        include_hidden=include_hidden, limit=limit, after=decode_cursor(after), before=decode_cursor(before)
+        include_hidden=include_hidden, limit=limit+1, after=decode_cursor(after), before=decode_cursor(before)
     )
 
-    last = chats[-1 if before is None else 0] if len(chats) > 0 else None
-    next = None if last is None else encode_cursor(last.id)
+    num_rows = len(chats)
+    chats = chats if num_rows <= limit else chats[:-1] # remove extra item
+    chats = chats if before is None else chats[::-1] # reverse if query in backward direction
+    
+    def get_cursors():
+        prev, next = None, None
+        if num_rows > 0:
+            if (num_rows > limit and before) or after:
+                prev = encode_cursor(chats[0])
+            if num_rows > limit or before:
+                next = encode_cursor(chats[-1])
+        else:
+            if after:
+                prev = after
+            if before:
+                next = before
+        return prev, next
 
-    first = chats[-1 if after is None else 0] if len(chats) > 0 else None
-    prev = None if first is None else encode_cursor(first.id)
+    prev,next = get_cursors()
 
     chats_list = [chat.to_list_read() for chat in chats]
     return chat_schema.ListChatsResponse(chats=chats_list, next=next, prev=prev)
