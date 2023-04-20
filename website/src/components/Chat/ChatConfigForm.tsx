@@ -81,7 +81,7 @@ const parameterLabel: Record<keyof SamplingParameters, string> = {
   typical_p: "Typical P",
 };
 
-export const ChatConfigForm = () => {
+export const ChatConfigForm = memo(function ChatConfigForm() {
   const { t } = useTranslation("chat");
   const { modelInfos } = useChatContext();
 
@@ -147,7 +147,7 @@ export const ChatConfigForm = () => {
       ))}
     </Stack>
   );
-};
+});
 
 type NumberInputSliderProps = {
   max?: number;

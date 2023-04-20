@@ -1,10 +1,11 @@
 import { Box } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
+import { memo } from "react";
 import SimpleBar from "simplebar-react";
 
 import { ChatConfigForm } from "./ChatConfigForm";
 
-export const ChatConfigDesktop = () => {
+export const ChatConfigDesktop = memo(function ChatConfigDesktop() {
   const { t } = useTranslation("chat");
   return (
     <Box
@@ -34,4 +35,4 @@ export const ChatConfigDesktop = () => {
       </SimpleBar>
     </Box>
   );
-};
+});

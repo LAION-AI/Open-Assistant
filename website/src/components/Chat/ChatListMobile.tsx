@@ -10,13 +10,13 @@ import {
 import { AlignJustify } from "lucide-react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 
 import { getDashBoardLayoutSidebarItem } from "../Layout";
 import { SideMenuItem } from "../SideMenu";
 import { ChatListBase } from "./ChatListBase";
 
-export function ChatListMobile() {
+export const ChatListMobile = memo(function ChatListMobile() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { t } = useTranslation("chat");
   const { events } = useRouter();
@@ -87,4 +87,4 @@ export function ChatListMobile() {
       </Drawer>
     </>
   );
-}
+});
