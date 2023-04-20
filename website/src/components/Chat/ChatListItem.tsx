@@ -73,7 +73,12 @@ export const ChatListItem = ({
       borderRadius="lg"
       bg={isEditing ? "transparent" : undefined}
       _hover={{
-        bg: isEditing ? "transparent" : undefined,
+        bg: isEditing ? "transparent" : isActive ? "gray.200" : "gray.100",
+      }}
+      _dark={{
+        _hover: {
+          bg: isEditing ? "transparent" : isActive ? "whiteAlpha.300" : "whiteAlpha.200",
+        },
       }}
     >
       {!isEditing ? (

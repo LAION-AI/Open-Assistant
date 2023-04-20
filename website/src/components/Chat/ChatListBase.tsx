@@ -16,7 +16,6 @@ import { InferencePoweredBy } from "./InferencePoweredBy";
 
 export const ChatListBase = memo(function ChatListBase({
   chats, // TODO: can we remove this?
-  children,
   ...props
 }: CardProps & { chats?: GetChatsResponse }) {
   const { data: response, mutate: mutateChatResponse } = useSWR<GetChatsResponse>(API_ROUTES.LIST_CHAT, get, {
@@ -57,9 +56,7 @@ export const ChatListBase = memo(function ChatListBase({
       minH="0"
       display="flex"
       flexDirection="column"
-      _light={{
-        bg: "whiteAlpha.400",
-      }}
+      bg="whiteAlpha.400"
       _dark={{
         bg: "blackAlpha.400",
       }}

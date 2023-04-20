@@ -41,8 +41,6 @@ const styles: Styles = {
   global: (props) => ({
     "*": {
       transition: "background-color 200ms cubic-bezier(0.4, 0, 1, 1)",
-      // bg: props.colorMode === "light" ? colors.light.bg : colors.dark.bg,
-      // color: props.colorMode === "light" ? colors.light.text : colors.dark.text,
     },
     ".oa-basic-theme": {
       bg: props.colorMode === "light" ? colors.light.bg : colors.dark.bg,
@@ -50,7 +48,6 @@ const styles: Styles = {
     },
     body: {
       position: "relative",
-      // bg: props.colorMode === "light" ? "gray.100" : colors.dark.bg,
     },
     ".simplebar-scrollbar::before": {
       bg: props.colorMode === "light" ? "gray.300" : "gray.500",

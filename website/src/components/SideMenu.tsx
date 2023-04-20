@@ -66,7 +66,12 @@ export const SideMenuItem = ({
   const label = t(getTypeSafei18nKey(item.labelID));
   const isActive = active ?? router.pathname === item.pathname;
   return (
-    <Tooltip key={item.labelID} label={label} placement="right" className={clsx("hidden sm:block")}>
+    <Tooltip
+      key={item.labelID}
+      label={label}
+      placement="right"
+      className={clsx("hidden sm:block", { "lg:hidden": !isChat })}
+    >
       <Button
         as={Link}
         key={item.labelID}

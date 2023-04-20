@@ -1,16 +1,20 @@
 import { Box } from "@chakra-ui/react";
 import { PropsWithChildren } from "react";
 import { SIDE_MENU_WIDTH, SideMenu, SideMenuProps } from "src/components/SideMenu";
+import { colors } from "src/styles/Theme/colors";
 
 export const SideMenuLayout = ({ items, children }: PropsWithChildren<SideMenuProps>) => {
   return (
     <Box
       display="flex"
       flexDirection={{ base: "column", md: "row" }}
-      h="full"
       px={{ base: 3, lg: 6 }}
       py="6"
       position="relative"
+      bg="gray.100"
+      _dark={{
+        bg: colors.dark.bg,
+      }}
     >
       <SideMenu items={items} />
       <Box
