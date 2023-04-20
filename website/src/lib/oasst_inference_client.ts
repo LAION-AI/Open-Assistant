@@ -6,6 +6,7 @@ import {
   InferenceMessage,
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
+  InferenceUpdateChatParams,
   ModelInfo,
   TrustedClient,
 } from "src/types/Chat";
@@ -96,12 +97,8 @@ export class OasstInferenceClient {
     return this.request<ModelInfo[]>("/configs/model_configs");
   }
 
-  update_chat_title({ chat_id, title }: { chat_id: string; title: string }) {
-    return this.request(`/chats/${chat_id}/title`, { method: "PUT", data: { title } });
-  }
-
-  hide_chat({ chat_id }: { chat_id: string }) {
-    return this.request(`/chats/${chat_id}/hide`, { method: "PUT", data: { hidden: true } });
+  update_chat({ chat_id, ...data }: InferenceUpdateChatParams) {
+    return this.request(`/chats/${chat_id}`, { method: "PUT", data: data });
   }
 
   delete_account() {

@@ -33,13 +33,13 @@ export const ChatListItem = ({
     },
   });
   const { trigger: updateChatTitle, isMutating: isUpdatingTitle } = useSWRMutation(
-    API_ROUTES.UPDATE_CHAT_TITLE(chat.id),
+    API_ROUTES.UPDATE_CHAT(chat.id),
     put
   );
   const handleConfirmEdit = useCallback(async () => {
     const title = inputRef.current?.value.trim();
     if (!title) return;
-    await updateChatTitle({ title, chat_id: chat.id });
+    await updateChatTitle({ chat_id: chat.id, title });
     setIsEditing.off();
     onUpdateTitle({ chatId: chat.id, title });
   }, [chat.id, onUpdateTitle, setIsEditing, updateChatTitle]);
@@ -145,10 +145,10 @@ const EditChatButton = ({ onClick }: { onClick: () => void }) => {
 };
 
 const HideChatButton = ({ chatId, onHide }: { chatId: string; onHide?: (params: { chatId: string }) => void }) => {
-  const { trigger: triggerHide } = useSWRMutation(API_ROUTES.HIDE_CHAT(chatId), put);
+  const { trigger: triggerHide } = useSWRMutation(API_ROUTES.UPDATE_CHAT(chatId), put);
 
   const onClick = useCallback(async () => {
-    await triggerHide({ chat_id: chatId });
+    await triggerHide({ chat_id: chatId, hidden: true });
     onHide?.({ chatId });
   }, [onHide, triggerHide, chatId]);
 

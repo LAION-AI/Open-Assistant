@@ -259,25 +259,19 @@ async def handle_create_report(
         return fastapi.Response(status_code=500)
 
 
-@router.put("/{chat_id}/title")
-async def handle_update_title(
+@router.put("/{chat_id}")
+async def handle_update_chat(
     chat_id: str,
-    request: chat_schema.ChatUpdateTitleRequest,
+    request: chat_schema.ChatUpdateRequest,
     ucr: deps.UserChatRepository = fastapi.Depends(deps.create_user_chat_repository),
 ) -> fastapi.Response:
-    """Allows the client to update a chat title."""
+    """Allows the client to update a chat."""
     try:
-        await ucr.update_title(chat_id=chat_id, title=request.title)
+        await ucr.update_chat(
+            chat_id=chat_id,
+            title=request.title,
+            hidden=request.hidden,
+        )
     except Exception:
-        logger.exception("Error when updating chat title")
+        logger.exception("Error when updating chat")
         return fastapi.Response(status_code=500)
-
-
-@router.put("/{chat_id}/hide")
-async def update_visibility(
-    chat_id: str,
-    request: chat_schema.ChatUpdateVisibilityRequest,
-    ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
-):
-    await ucr.update_visibility(chat_id, request.hidden)
-    return fastapi.Response(status_code=200)

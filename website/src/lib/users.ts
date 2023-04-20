@@ -95,7 +95,10 @@ export const getBatchFrontendUserIdFromBackendUser = async (users: { username: s
     const account = externalAccounts.find(
       (a) => a.provider === users[userIdx].auth_method && a.providerAccountId === users[userIdx].username
     );
-    outputIds[userIdx] = account.userId;
+    // TODO check why the account is undefined
+    if (account) {
+      outputIds[userIdx] = account.userId;
+    }
   });
 
   return outputIds;

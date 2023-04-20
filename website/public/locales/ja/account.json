@@ -1,0 +1,9 @@
+{
+  "delete_account": "アカウントを削除する",
+  "delete_account_data": "Open Assistantによって解決されたタスク、メッセージのランキング、およびチャットサービスを使用して行われたすべての会話に貢献したデータは保持されます。ただし、元のユーザーに関するすべての参照は匿名化されます。",
+  "delete_account_intro": "アカウントの削除には、以下のことが含まれます：",
+  "delete_account_leaderboard": "削除されたユーザーのアカウントは、リーダーボードに表示されません",
+  "delete_account_permanent": "この動作は永続的であり、元に戻すことはできません",
+  "go_to_dashboard": "ダッシュボードに戻る",
+  "yes_delete": "はい、私のアカウントを永久に削除してください"
+}

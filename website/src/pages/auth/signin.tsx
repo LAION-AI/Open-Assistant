@@ -55,6 +55,8 @@ const errorMessages: Record<SignInErrorTypes, string> = {
   default: "Unable to sign in.",
 };
 
+const REDIRECT_AFTER_LOGIN = "/chat";
+
 interface SigninProps {
   providers: Record<BuiltInProviderType, ClientSafeProvider>;
   enableEmailSignin: boolean;
@@ -105,7 +107,7 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
               size="lg"
               color="white"
               leftIcon={<Discord />}
-              onClick={() => signIn(discord.id, { callbackUrl: "/" })}
+              onClick={() => signIn(discord.id, { callbackUrl: REDIRECT_AFTER_LOGIN })}
             >
               Continue with Discord
             </Button>
@@ -118,7 +120,7 @@ function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudf
               size="lg"
               color="white"
               leftIcon={<Google />}
-              onClick={() => signIn(google.id, { callbackUrl: "/" })}
+              onClick={() => signIn(google.id, { callbackUrl: REDIRECT_AFTER_LOGIN })}
             >
               Continue with Google
             </Button>
@@ -166,7 +168,7 @@ const EmailSignInForm = ({
   const [captchaSuccess, setCaptchaSuccess] = useState(false);
   const signinWithEmail = (data: { email: string }) => {
     signIn(providerId, {
-      callbackUrl: "/dashboard",
+      callbackUrl: REDIRECT_AFTER_LOGIN,
       email: data.email,
       captcha: captcha.current?.getResponse(),
     });
@@ -240,7 +242,7 @@ const DebugSigninForm = ({ providerId }: { providerId: string }) => {
 
   function signinWithDebugCredentials(data: DebugSigninFormData) {
     signIn(providerId, {
-      callbackUrl: "/dashboard",
+      callbackUrl: REDIRECT_AFTER_LOGIN,
       ...data,
     });
   }
