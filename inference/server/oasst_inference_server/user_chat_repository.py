@@ -14,12 +14,30 @@ class UserChatRepository(pydantic.BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    async def get_chats(self, include_hidden: bool = False) -> list[models.DbChat]:
+    async def get_chats(
+        self,
+        include_hidden: bool = False,
+        limit: int | None = None,
+        before: str | None = None,
+        after: str | None = None,
+    ) -> list[models.DbChat]:
+        if after is not None and before is not None:
+            raise fastapi.HTTPException(status_code=400, detail="Cannot specify both after and before.")
+
         query = sqlmodel.select(models.DbChat)
         query = query.where(models.DbChat.user_id == self.user_id)
+
         if not include_hidden:
             query = query.where(models.DbChat.hidden.is_(False))
-        query = query.order_by(models.DbChat.created_at.desc())
+        if limit is not None:
+            query = query.limit(limit)
+        if before is not None:
+            query = query.where(models.DbChat.id > before)
+        if after is not None:
+            query = query.where(models.DbChat.id < after)
+
+        query = query.order_by(models.DbChat.created_at.desc() if before is None else models.DbChat.created_at)
+
         return (await self.session.exec(query)).all()
 
     async def get_chat_by_id(self, chat_id: str, include_messages: bool = True) -> models.DbChat:

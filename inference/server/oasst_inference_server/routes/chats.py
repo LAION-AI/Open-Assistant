@@ -1,8 +1,9 @@
 import asyncio
+import base64
 
 import fastapi
 import pydantic
-from fastapi import Depends
+from fastapi import Depends, Query
 from loguru import logger
 from oasst_inference_server import auth, chat_utils, deps, models, queueing
 from oasst_inference_server.schemas import chat as chat_schema
@@ -17,16 +18,39 @@ router = fastapi.APIRouter(
 )
 
 
+def encode_cursor(id: str):
+    return base64.b64encode(id.encode()).decode()
+
+
+def decode_cursor(cursor: str | None):
+    if cursor is None:
+        return None
+    return base64.b64decode(cursor.encode()).decode()
+
+
 @router.get("")
 async def list_chats(
     include_hidden: bool = False,
     ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+    limit: int | None = Query(10, gt=0, le=100),
+    after: str | None = None,
+    before: str | None = None,
 ) -> chat_schema.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
-    chats = await ucr.get_chats(include_hidden=include_hidden)
+
+    chats = await ucr.get_chats(
+        include_hidden=include_hidden, limit=limit, after=decode_cursor(after), before=decode_cursor(before)
+    )
+
+    last = chats[-1 if before is None else 0] if len(chats) > 0 else None
+    next = None if last is None else encode_cursor(last.id)
+
+    first = chats[-1 if after is None else 0] if len(chats) > 0 else None
+    prev = None if first is None else encode_cursor(first.id)
+
     chats_list = [chat.to_list_read() for chat in chats]
-    return chat_schema.ListChatsResponse(chats=chats_list)
+    return chat_schema.ListChatsResponse(chats=chats_list, next=next, prev=prev)
 
 
 @router.post("")
