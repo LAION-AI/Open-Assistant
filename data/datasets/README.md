@@ -23,8 +23,8 @@ To see the datasets people are currently working on, please refer to
 
 ## **Dataset Formats**
 
-To simplify the training process, all datasets must be `UTF-8` encoded
-and stored in either one of these two formats:
+To simplify the training process, all datasets must be `UTF-8` encoded and
+stored in either one of these two formats:
 
 - parquet with the option `row_group_size=100` and `index=False`
 - jsonl or jsonl.gz

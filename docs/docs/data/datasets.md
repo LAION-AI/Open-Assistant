@@ -28,8 +28,8 @@ To see the datasets people are currently working on, please refer to
 ## **Dataset Formats**
 
 To simplify the training process, all datasets must be stored as Parquet files
-with the option `row_group_size=100` and `index=False`.<br/> There are two 
-types of datasets accepted: instruction and text-only.
+with the option `row_group_size=100` and `index=False`.<br/> There are two types
+of datasets accepted: instruction and text-only.
 
 ### **Instruction format**
 
