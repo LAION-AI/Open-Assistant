@@ -44,7 +44,6 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
         _dark={{
           bg: "gray.800",
         }}
-        autoFocus
       />
       <Grid gridTemplateColumns="1fr 50px" gap={2} mt="4">
         <Button
