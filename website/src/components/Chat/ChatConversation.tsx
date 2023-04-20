@@ -112,10 +112,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     }
     setMessages((messages) => [...messages, prompter_message]);
 
+    inputRef.current!.value = "";
     // after creating the prompters message, handle the assistant's case
     await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
-
-    inputRef.current!.value = "";
   }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast, isSending]);
 
   const sendVote = useMessageVote();
