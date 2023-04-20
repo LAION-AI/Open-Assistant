@@ -1,5 +1,6 @@
 import pytest
-from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, DatasetEntry, Language, Mode
+from model_training.custom_datasets.entities import Language, Mode
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, DatasetEntry
 
 
 def test_dataset_entry_formatting_missing_lang():
