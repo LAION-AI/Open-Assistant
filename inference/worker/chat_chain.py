@@ -28,17 +28,20 @@ MAX_DEPTH = 4
 # NOTE: If we want to exclude tools description from final prompt,
 # to save ctx token space, but it can hurt output quality, especially if
 # truncation kicks in!
-REMOVE_TOOLS_FROM_FINAL_PROMPT = False
+# I keep switching this on/off, depending on the model used.
+REMOVE_TOOLS_FROM_FINAL_PROMPT = True
 
 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 llm = HFInference(
     inference_server_url=settings.inference_server_url,
-    max_new_tokens=512,
+    max_new_tokens=256,
     stop_sequences=[],
     top_k=50,
-    temperature=0.2,
-    repetition_penalty=(1 / 0.83),
+    temperature=0.21,
+    # NOTE: It seems to me like it's better without repetition_penalty for
+    # llama-sft7e3 model
+    # repetition_penalty=(1 / 0.83),
     seed=43,
 )
 

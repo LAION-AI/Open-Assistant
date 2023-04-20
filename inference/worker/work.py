@@ -117,13 +117,14 @@ def handle_work_request(
     logger.debug(f"Prompt: {prompt}")
 
     # If plugin was used, lockup sampling parameters to "best" known values for plugins
+    # and llama sft-7e3 model for now...
     if used_plugin:
         parameters.top_k = 50
         parameters.top_p = None
         parameters.typical_p = None
-        parameters.temperature = 0.2
-        parameters.repetition_penalty = 1 / 0.83
-        # parameters.seed = 42
+        parameters.temperature = 0.21
+        # parameters.repetition_penalty = 1 / 0.83
+        parameters.seed = 43
 
     model_config = worker_config.model_config
 

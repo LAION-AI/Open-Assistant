@@ -9,9 +9,8 @@ from fastapi.openapi.utils import get_openapi
 
 app = FastAPI()
 
-# expression query parameter description for model
-PROMPT = """Solves a math equation but you need to provide an expression\
-that can be executed using Python's numexpr library."""
+# calculate endpoint description for model
+PROMPT = """Solves a math equation but you need to provide an expression that can be evaluated using Python's numexpr library."""
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,9 +41,10 @@ def _evaluate_expression(expression: str) -> str:
 # NOTE: operation_id is used to identify the endpoint in the LLM, and
 # camelCase works better than snake_case for that
 # .e.g. "webSearch" > "web_search"
-# another important thing is parameter descriptions
-@app.get("/calculate/", operation_id="calculate", tags=["Calculator"])
-async def calculate(expression: str = Query(..., description=PROMPT)):
+# Another important thing are parameter descriptions  and endpoint summary,
+# as those parts will be used in prompt composition for the LLM
+@app.get("/calculate/", operation_id="calculate", tags=["Calculator"], summary=PROMPT)
+async def calculate(expression: str = Query(description="numexpr expression input")):
     return {"result": _evaluate_expression(expression)}
 
 

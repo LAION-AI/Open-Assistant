@@ -42,13 +42,13 @@ Thought: Should I use a tool? No
 """
 
 SUFFIX = f"""
-Begin!
 CHAT HISTORY:
 {{chat_history}}
 
 Current system date/time: {{current_time}}
 Knowledge date cutoff: {KNOWLEDGE_DATE_CUTOFF}
 
+Begin!
 When answering a question, you MUST use the following language: {{language}}{TALKING_STYLE}
 New Input: {{input}}
 """

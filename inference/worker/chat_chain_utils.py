@@ -119,7 +119,7 @@ class RequestsForLLM:
             # NOTE: We don't want to truncate this, but we also don't have
             # infinite context space for some of the plugin responses,
             # this truncation also degrades LLM continuation... but...
-            return truncate_str(res.text)
+            return truncate_str(res.text, 1248)
         except Exception as e:
             return f"ERROR! That didn't work, try modifying Action Input.\n{e}. Try again!"
 
@@ -143,10 +143,9 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> Tuple[str
     # to use. Modifying this part of the prompt, we can degrade or improve
     # performance of tool usage.
     for endpoint in llm_plugin["endpoints"]:
-        params = ", ".join(
-            [  # NOTE: "name":-> excluded on purpose, because llama most of the
-                # times chooses to use that instead of the actual parameter name
-                f""" "{param.name}", "in":"{param.in_}", "description": "{truncate_str(param.description, 128)}", "schema":"{param.schema_}\""""
+        params = "\n\n".join(
+            [
+                f""" name: "{param.name}",\n in: "{param.in_}",\n description: "{truncate_str(param.description, 128)}",\n schema: {param.schema_},\n required: {param.required}"""
                 for param in endpoint.params
             ]
         )
@@ -209,6 +208,15 @@ def prepare_prompt(
     # soft truncation
     while len(ids) > max_input_length and len(memory.chat_memory.messages) > 0:
         memory.chat_memory.messages.pop(0)
+        args = {
+            "input": input_prompt,
+            "language": language,
+            "current_time": current_time,
+            "chat_history": memory.buffer,
+        }
+
+        if tools_names:
+            args["tools_names"] = tools_names
         out_prompt = prompt_template.format(**args)
 
         with tokenizer_lock:
