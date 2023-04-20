@@ -1,6 +1,7 @@
 import { FormProvider, useForm } from "react-hook-form";
 import { ChatConfigFormData } from "src/types/Chat";
 import { getConfigCache } from "src/utils/chat";
+import { useIsomorphicLayoutEffect } from "usehooks-ts";
 
 import { ChatConfigDesktop } from "./ChatConfigDesktop";
 import { ChatConfigSaver } from "./ChatConfigSaver";
@@ -12,21 +13,21 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
 
   console.assert(modelInfos.length > 0, "No model config was found");
 
-  let defaultValues = getConfigCache();
-  if (defaultValues) {
-    const model = modelInfos.find((model) => model.name === defaultValues.model_config_name);
-    if (!model) {
-      defaultValues = null;
-    }
-  }
-  if (!defaultValues) {
-    defaultValues = {
+  const form = useForm<ChatConfigFormData>({
+    defaultValues: {
       ...modelInfos[0].parameter_configs[0].sampling_parameters,
       model_config_name: modelInfos[0].name,
-    };
-  }
+    },
+  });
 
-  const form = useForm<ChatConfigFormData>({ defaultValues });
+  useIsomorphicLayoutEffect(() => {
+    const cache = getConfigCache();
+    const model = modelInfos.find((model) => model.name === cache?.model_config_name);
+    if (model && cache) {
+      form.reset(cache);
+    }
+  }, [form.reset, modelInfos]);
+
   return (
     <FormProvider {...form}>
       <ChatConversation chatId={chatId} key={chatId} getConfigValues={form.getValues} />
