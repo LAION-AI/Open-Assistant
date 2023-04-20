@@ -11,7 +11,7 @@ export const getChatLayout = (page: React.ReactElement) => (
   <div className="min-h-screen h-screen max-h-screen flex flex-col overflow-hidden">
     <Header fixed={false} preLogoSlot={<ChatListMobile />}></Header>
     <ToSWrapper>
-      <div className="flex min-h-0">
+      <div className="flex min-h-0 h-full">
         <Flex
           direction="column"
           gap="2"

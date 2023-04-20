@@ -6,25 +6,17 @@ import data from "../../data/team.json";
 
 const sponsors = ["hf", "stability", "redmond", "wandb"] as const;
 
+const rootProps = {
+  bg: "transparent",
+  borderRadius: 0,
+};
+
 export const InferencePoweredBy = () => {
   return (
-    <Flex
-      direction="column"
-      bg="blackAlpha.50"
-      _dark={{
-        bg: "whiteAlpha.50",
-      }}
-      justifyContent="center"
-    >
+    <Flex direction="column" justifyContent="center" borderTopWidth="1px" p="2">
       {sponsors.map((id) => (
         <Fragment key={id}>
-          <TeamMember
-            {...data.people[id]}
-            rootProps={{
-              bg: "transparent",
-              borderRadius: 0,
-            }}
-          ></TeamMember>
+          <TeamMember {...data.people[id]} rootProps={rootProps}></TeamMember>
         </Fragment>
       ))}
       <Flex justifyContent="center" pb="2" fontSize="sm" color="gray.500">

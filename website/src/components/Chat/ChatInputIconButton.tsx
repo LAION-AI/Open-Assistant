@@ -12,6 +12,7 @@ export const ChatInputIconButton = ({ icon: Icon, ...props }: { icon: LucideIcon
       _hover: { color: "white" },
     }}
     {...props}
+    type="button"
   >
     <Icon size="20px"></Icon>
   </Box>
