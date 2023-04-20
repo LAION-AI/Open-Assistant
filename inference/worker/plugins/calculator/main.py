@@ -1,8 +1,9 @@
 import json
-import numexpr
-import re
 import math
-from fastapi import FastAPI, Response, Query
+import re
+
+import numexpr
+from fastapi import FastAPI, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
@@ -33,9 +34,10 @@ def _evaluate_expression(expression: str) -> str:
             )
         )
     except Exception as e:
-        return (f"{e}. Please try again with a valid numerical expression")
+        return f"{e}. Please try again with a valid numerical expression"
 
     return re.sub(r"^\[|\]$", "", output)
+
 
 # NOTE: operation_id is used to identify the endpoint in the LLM, and
 # camelCase works better than snake_case for that
@@ -57,8 +59,7 @@ async def api_icon():
 async def api_ai_plugin():
     with open("ai-plugin.json", "r") as f:
         ai_plugin_json = json.load(f)
-    return Response(content=json.dumps(ai_plugin_json),
-                    media_type="application/json")
+    return Response(content=json.dumps(ai_plugin_json), media_type="application/json")
 
 
 def custom_openapi():

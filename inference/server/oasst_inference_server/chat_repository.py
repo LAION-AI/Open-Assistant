@@ -79,7 +79,9 @@ class ChatRepository(pydantic.BaseModel):
         await self.session.refresh(message)
         return message
 
-    async def complete_work(self, message_id: str, content: str, work_parameters: inference.WorkParameters) -> models.DbMessage:
+    async def complete_work(
+        self, message_id: str, content: str, work_parameters: inference.WorkParameters
+    ) -> models.DbMessage:
         logger.debug(f"Completing work on message {message_id}")
         message = await self.get_assistant_message_by_id(message_id)
         message.state = inference.MessageState.complete

@@ -34,7 +34,7 @@ import { AttachmentIcon, WarningIcon, CheckCircleIcon, CloseIcon } from "@chakra
 import { ChangeEvent, useCallback, useEffect, useState, useRef } from "react";
 import { useTranslation } from "next-i18next";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { ChatConfigForm } from "src/types/Chat";
+import { ChatConfigFormData } from "src/types/Chat";
 import { useChatContext } from "./ChatContext";
 import { PluginEntry } from "src/types/Chat";
 import { get, post } from "src/lib/api";
@@ -42,7 +42,7 @@ import { API_ROUTES } from "src/lib/routes";
 
 export const PluginsChooser = () => {
   const { t } = useTranslation("common");
-  const { control, register, reset, setValue } = useFormContext<ChatConfigForm>();
+  const { control, register, reset, setValue } = useFormContext<ChatConfigFormData>();
   const [selectedPluginIndex, setSelectedPluginIndex] = useState<number | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 

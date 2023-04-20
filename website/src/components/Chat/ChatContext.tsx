@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useContext, useMemo } from "react";
-import { InferenceMessage, ModelInfo } from "src/types/Chat";
+import { InferenceMessage, ModelInfo, PluginEntry } from "src/types/Chat";
 
 export type ChatContext = {
   modelInfos: ModelInfo[];

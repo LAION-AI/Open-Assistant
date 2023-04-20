@@ -2,12 +2,12 @@ import re
 import threading
 from concurrent import futures
 
+import chat_chain
 import interface
 import requests
 import sseclient
 import transformers
 import utils
-import chat_chain
 import websocket
 from loguru import logger
 from oasst_shared.schemas import inference
@@ -122,7 +122,7 @@ def handle_work_request(
         parameters.top_p = None
         parameters.typical_p = None
         parameters.temperature = 0.2
-        parameters.repetition_penalty = (1 / 0.83)
+        parameters.repetition_penalty = 1 / 0.83
         # parameters.seed = 42
 
     model_config = worker_config.model_config

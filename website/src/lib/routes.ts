@@ -1,6 +1,6 @@
 import { CursorPaginationState } from "src/components/DataTable/useCursorPagination";
 import { TaskType } from "src/types/Task";
-import { PluginEntry } from "src/chat/types";
+import { PluginEntry } from "src/types/Chat";
 
 export type RouteQuery = Record<string, string | number | boolean | undefined>;
 

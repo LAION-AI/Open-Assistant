@@ -1,6 +1,8 @@
 from typing import List, Optional
+
 from langchain.llms.base import LLM
 from text_generation import Client
+
 
 class HFInference(LLM):
     max_new_tokens: int = 512
@@ -39,8 +41,6 @@ class HFInference(LLM):
         # remove stop sequences from the end of the generated text
         for stop_seq in stop:
             if stop_seq in res.generated_text:
-                res.generated_text = res.generated_text[
-                    : res.generated_text.index(stop_seq)
-                ]
+                res.generated_text = res.generated_text[: res.generated_text.index(stop_seq)]
 
         return res.generated_text

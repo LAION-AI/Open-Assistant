@@ -10,7 +10,7 @@ OBSERVATION_SEQ = "Observation:"
 # Assistant is constantly learning and improving, and its capabilities are constantly evolving.
 KNOWLEDGE_DATE_CUTOFF = "2021-09-01"
 
-TALKING_STYLE=""
+TALKING_STYLE = ""
 
 PREFIX = """Open Assistant is a large language model trained by LAION.
 Assistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics.
@@ -52,4 +52,3 @@ Knowledge date cutoff: {KNOWLEDGE_DATE_CUTOFF}
 When answering a question, you MUST use the following language: {{language}}{TALKING_STYLE}
 Question: {{input}}
 """
-

@@ -1,22 +1,26 @@
 import datetime
+from typing import Tuple
+
 import interface
 import transformers
-from typing import Tuple
+from chat_chain_prompts import (
+    ASSISTANT_PREFIX,
+    HUMAN_PREFIX,
+    OBSERVATION_SEQ,
+    PREFIX,
+    SUFFIX,
+    V2_ASST_PREFIX,
+    V2_PROMPTER_PREFIX,
+)
+from chat_chain_utils import compose_tools_from_plugin, extract_tool_and_input, prepare_prompt, use_tool
+from hf_langchain_inference import HFInference
 from langchain.agents import Tool
+from langchain.memory import ConversationBufferMemory
+from langchain.prompts import PromptTemplate
+from loguru import logger
 from oasst_shared.model_configs import ModelConfig
 from oasst_shared.schemas import inference
-from langchain.prompts import PromptTemplate
-from langchain.memory import ConversationBufferMemory
-from hf_langchain_inference import HFInference
 from settings import settings
-from chat_chain_utils import (extract_tool_and_input, use_tool,
-                              prepare_prompt, compose_tools_from_plugin)
-from chat_chain_prompts import (
-    PREFIX, SUFFIX, V2_PROMPTER_PREFIX,
-    V2_ASST_PREFIX, HUMAN_PREFIX, ASSISTANT_PREFIX, OBSERVATION_SEQ
-)
-from loguru import logger
-
 
 # NOTE: Max depth of retries for tool usage
 MAX_DEPTH = 4
@@ -40,28 +44,25 @@ llm = HFInference(
 )
 
 
-def populate_memory(memory: ConversationBufferMemory,
-                    work_request: inference.WorkRequest) -> None:
+def populate_memory(memory: ConversationBufferMemory, work_request: inference.WorkRequest) -> None:
     for message in work_request.thread.messages[:-1]:
-        if (message.role == "prompter" and
-           message.state == inference.MessageState.manual and message.content):
+        if message.role == "prompter" and message.state == inference.MessageState.manual and message.content:
             memory.chat_memory.add_user_message(message.content)
-        elif (message.role == "assistant" and
-              message.state == inference.MessageState.complete and
-              message.content):
+        elif message.role == "assistant" and message.state == inference.MessageState.complete and message.content:
             memory.chat_memory.add_ai_message(message.content)
 
 
-def handle_plugin_usage(input_prompt: str,
-                        prompt_template: PromptTemplate,
-                        language: str,
-                        tools: list[Tool],
-                        memory: ConversationBufferMemory,
-                        plugin: inference.PluginEntry | None,
-                        parameters: interface.GenerateStreamParameters,
-                        worker_config: inference.WorkerConfig,
-                        tokenizer: transformers.PreTrainedTokenizer,
-                        ) -> Tuple[str, inference.PluginUsed]:
+def handle_plugin_usage(
+    input_prompt: str,
+    prompt_template: PromptTemplate,
+    language: str,
+    tools: list[Tool],
+    memory: ConversationBufferMemory,
+    plugin: inference.PluginEntry | None,
+    parameters: interface.GenerateStreamParameters,
+    worker_config: inference.WorkerConfig,
+    tokenizer: transformers.PreTrainedTokenizer,
+) -> Tuple[str, inference.PluginUsed]:
     execution_details = inference.PluginExecutionDetails(
         inner_monologue=[],
         final_tool_output="",
@@ -92,23 +93,18 @@ def handle_plugin_usage(input_prompt: str,
     tools_names = [tool.name for tool in tools]
 
     init_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}"
-    memory, init_prompt = prepare_prompt(init_prompt,
-                                         prompt_template,
-                                         memory,
-                                         tools_names,
-                                         current_time,
-                                         language,
-                                         tokenizer,
-                                         worker_config)
+    memory, init_prompt = prepare_prompt(
+        init_prompt, prompt_template, memory, tools_names, current_time, language, tokenizer, worker_config
+    )
 
     # NOTE: Do not strip() any of the outputs ever, as it will degrade the
     # instruction following performance, at least with
     # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
-    logger.info(f"#################### init_prompt: {init_prompt}")
-    chain_response = llm.generate(prompts=[init_prompt],
-                                  stop=[ASSISTANT_PREFIX,
-                                  OBSERVATION_SEQ,
-                                  f"\n{OBSERVATION_SEQ}"]).generations[0][0].text
+    chain_response = (
+        llm.generate(prompts=[init_prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])
+        .generations[0][0]
+        .text
+    )
     chain_response = chain_response.replace("\n\n", "\n")
 
     inner_monologue.append("In: " + str(init_prompt))
@@ -116,8 +112,7 @@ def handle_plugin_usage(input_prompt: str,
 
     # out_1 -> tool name/assistant prefix
     # out_2 -> tool input/assistant response
-    out_1, out_2 = extract_tool_and_input(llm_output=chain_response,
-                                          ai_prefix=ASSISTANT_PREFIX)
+    out_1, out_2 = extract_tool_and_input(llm_output=chain_response, ai_prefix=ASSISTANT_PREFIX)
 
     # whether model decided to use Plugin or not
     assisted = False if ASSISTANT_PREFIX in out_1 else True
@@ -131,23 +126,18 @@ def handle_plugin_usage(input_prompt: str,
         prev_chain_response = chain_response
 
         new_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{chain_response}{OBSERVATION_SEQ} {tool_response}"
-        memory, new_prompt = prepare_prompt(new_prompt,
-                                            prompt_template,
-                                            memory,
-                                            tools_names,
-                                            current_time,
-                                            language,
-                                            tokenizer,
-                                            worker_config)
+        memory, new_prompt = prepare_prompt(
+            new_prompt, prompt_template, memory, tools_names, current_time, language, tokenizer, worker_config
+        )
 
         # NOTE: Do not strip() any of the outputs ever, as it will degrade the
         # instruction following performance, at least with
         # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
-        logger.info(f"#################### new_prompt: {new_prompt}")
-        chain_response = llm.generate(prompts=[new_prompt],
-                                      stop=[ASSISTANT_PREFIX,
-                                      OBSERVATION_SEQ,
-                                      f"\n{OBSERVATION_SEQ}"]).generations[0][0].text
+        chain_response = (
+            llm.generate(prompts=[new_prompt], stop=[ASSISTANT_PREFIX, OBSERVATION_SEQ, f"\n{OBSERVATION_SEQ}"])
+            .generations[0][0]
+            .text
+        )
         chain_response = chain_response.replace("\n\n", "\n")
 
         inner_monologue.append("In: " + str(new_prompt))
@@ -162,7 +152,7 @@ def handle_plugin_usage(input_prompt: str,
         # help them with this...
         # for now models, sometime decides to retry, when tool usage reports
         # error, but sometime it just ignore error...
-        if (tool_response.find("ERROR") != -1 and assisted is False):
+        if tool_response.find("ERROR") != -1 and assisted is False:
             chain_response = prev_chain_response
             assisted = True
 
@@ -173,27 +163,17 @@ def handle_plugin_usage(input_prompt: str,
 
             if REMOVE_TOOLS_FROM_FINAL_PROMPT:
                 TEMPLATE = f"""{V2_PROMPTER_PREFIX}{PREFIX}{SUFFIX}"""
-                input_variables = [
-                    "input",
-                    "chat_history",
-                    "language",
-                    "current_time"
-                ]
+                input_variables = ["input", "chat_history", "language", "current_time"]
 
-                prompt_template = PromptTemplate(
-                    input_variables=input_variables, template=TEMPLATE
-                )
+                prompt_template = PromptTemplate(input_variables=input_variables, template=TEMPLATE)
                 tools_names = None
 
-            final_input = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
-            memory, inner_prompt = prepare_prompt(final_input,
-                                                  prompt_template,
-                                                  memory,
-                                                  tools_names,
-                                                  current_time,
-                                                  language,
-                                                  tokenizer,
-                                                  worker_config)
+            final_input = (
+                f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
+            )
+            memory, inner_prompt = prepare_prompt(
+                final_input, prompt_template, memory, tools_names, current_time, language, tokenizer, worker_config
+            )
 
             inner_prompt = f"{inner_prompt}\nThought: Should I use a tool? No\n{ASSISTANT_PREFIX}:  "
 
@@ -203,16 +183,16 @@ def handle_plugin_usage(input_prompt: str,
             plugin_used.execution_details.final_generation_assisted = True
             plugin_used.execution_details.achieved_depth = achieved_depth + 1
             plugin_used.execution_details.status = "success"
-            plugin_used.name = getattr(plugin.plugin_config, 'name_for_human', None)
-            plugin_used.trusted = getattr(plugin, 'trusted', None)
-            plugin_used.url = getattr(plugin, 'url', None)
+            plugin_used.name = getattr(plugin.plugin_config, "name_for_human", None)
+            plugin_used.trusted = getattr(plugin, "trusted", None)
+            plugin_used.url = getattr(plugin, "url", None)
 
             return inner_prompt, plugin_used
         achieved_depth += 1
 
-    plugin_used.name = getattr(plugin.plugin_config, 'name_for_human', None)
-    plugin_used.trusted = getattr(plugin, 'trusted', None)
-    plugin_used.url = getattr(plugin, 'url', None)
+    plugin_used.name = getattr(plugin.plugin_config, "name_for_human", None)
+    plugin_used.trusted = getattr(plugin, "trusted", None)
+    plugin_used.url = getattr(plugin, "url", None)
     plugin_used.execution_details.inner_monologue = inner_monologue
 
     # bring back ASSISTANT_PREFIX to chain_response,
@@ -236,13 +216,15 @@ def handle_plugin_usage(input_prompt: str,
         plugin_used.execution_details.status = "failure"
         plugin_used.execution_details.error_message = f"Max depth reached: {MAX_DEPTH}"
         init_prompt = f"{init_prompt}Thought: Should I use a tool? No\n{ASSISTANT_PREFIX}:  "
-        return init_prompt , plugin_used
+        return init_prompt, plugin_used
 
 
-def handle_conversation(work_request: inference.WorkRequest,
-                        worker_config: inference.WorkerConfig,
-                        parameters: interface.GenerateStreamParameters,
-                        tokenizer: transformers.PreTrainedTokenizer) -> Tuple[str, inference.PluginUsed | None]:
+def handle_conversation(
+    work_request: inference.WorkRequest,
+    worker_config: inference.WorkerConfig,
+    parameters: interface.GenerateStreamParameters,
+    tokenizer: transformers.PreTrainedTokenizer,
+) -> Tuple[str, inference.PluginUsed | None]:
     try:
         original_prompt = work_request.thread.messages[-1].content
         if not original_prompt:
@@ -264,11 +246,13 @@ def handle_conversation(work_request: inference.WorkRequest,
         if hasattr(tokenizer, "eos_token"):
             eos_token = tokenizer.eos_token
 
-        memory = ConversationBufferMemory(memory_key="chat_history",
-                                          input_key="input",
-                                          output_key='output',
-                                          ai_prefix=ASSISTANT_PREFIX,
-                                          human_prefix=HUMAN_PREFIX)
+        memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            input_key="input",
+            output_key="output",
+            ai_prefix=ASSISTANT_PREFIX,
+            human_prefix=HUMAN_PREFIX,
+        )
 
         populate_memory(memory, work_request)
 
@@ -281,37 +265,24 @@ def handle_conversation(work_request: inference.WorkRequest,
         ] + (["tools_names"] if plugin_enabled else [])
 
         # NOTE: Should we pass language from the UI here?
-        prompt_template = PromptTemplate(
-            input_variables=input_variables, template=TEMPLATE
-        )
+        prompt_template = PromptTemplate(input_variables=input_variables, template=TEMPLATE)
 
         # Run trough plugin chain. Returns PluginUsed and final prompt
         # that will be passed to worker for final completion with LLM
         # using sampling settings derived from frontend UI
         if plugin_enabled:
-            return handle_plugin_usage(original_prompt,
-                                       prompt_template,
-                                       language,
-                                       tools,
-                                       memory,
-                                       plugin,
-                                       parameters,
-                                       worker_config,
-                                       tokenizer)
+            return handle_plugin_usage(
+                original_prompt, prompt_template, language, tools, memory, plugin, parameters, worker_config, tokenizer
+            )
 
         # Just regular prompt template without plugin chain.
         # Here is prompt in format of a template, that includes some
         # external/ "realtime" data, such as current date&time and language
         # that can be passed from frontend here.
         input = f"{original_prompt}{eos_token}{V2_ASST_PREFIX}"
-        memory, init_prompt = prepare_prompt(input,
-                                             prompt_template,
-                                             memory,
-                                             None,
-                                             current_time,
-                                             language,
-                                             tokenizer,
-                                             worker_config)
+        memory, init_prompt = prepare_prompt(
+            input, prompt_template, memory, None, current_time, language, tokenizer, worker_config
+        )
         return init_prompt, None
 
     except Exception as e:
@@ -336,11 +307,9 @@ if __name__ == "__main__":
             description_for_model="Local dev plugin",
             description_for_human="Local dev plugin",
             schema_version="0.0.1",
-            api={"type": "openapi",
-                 "url": "http://localhost:8082/openapi.json",
-                 "has_user_authentication": False},
+            api={"type": "openapi", "url": "http://localhost:8082/openapi.json", "has_user_authentication": False},
             auth={"type": "none"},
-        )
+        ),
     )
 
     model_config = ModelConfig(
@@ -349,12 +318,7 @@ if __name__ == "__main__":
         max_total_length=2048,
     )
 
-    work_parameters = inference.WorkParameters(
-        model_config=model_config,
-        do_sample=True,
-        seed=42,
-        plugins=[plugin]
-    )
+    work_parameters = inference.WorkParameters(model_config=model_config, do_sample=True, seed=42, plugins=[plugin])
     parameters = interface.GenerateStreamParameters.from_work_parameters(work_parameters)
 
     worker_config = inference.WorkerConfig(

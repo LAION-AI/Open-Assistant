@@ -8,8 +8,7 @@ import { ChatContextProvider } from "src/components/Chat/ChatContext";
 import { ChatSection } from "src/components/Chat/ChatSection";
 import { getChatLayout } from "src/components/Layout/ChatLayout";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
-import { InferenceMessage, ModelInfo } from "src/types/Chat";
-import { ModelInfo, PluginEntry } from "src/types/Chat";
+import { InferenceMessage, ModelInfo, PluginEntry } from "src/types/Chat";
 
 interface ChatProps {
   id: string;

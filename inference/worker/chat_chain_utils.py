@@ -1,17 +1,17 @@
-import re
 import json
-import requests
+import re
 import threading
-import transformers
 from typing import Tuple
-from langchain.prompts import PromptTemplate
+
+import requests
+import transformers
+from chat_chain_prompts import INSTRUCTIONS, OBSERVATION_SEQ, TOOLS_PREFIX
 from langchain.agents import Tool
-from opeanapi_parser import prepare_plugin_for_llm
-from chat_chain_prompts import OBSERVATION_SEQ
-from chat_chain_prompts import TOOLS_PREFIX, INSTRUCTIONS
 from langchain.memory import ConversationBufferMemory
-from oasst_shared.schemas import inference
+from langchain.prompts import PromptTemplate
 from loguru import logger
+from oasst_shared.schemas import inference
+from opeanapi_parser import prepare_plugin_for_llm
 
 tokenizer_lock = threading.Lock()
 
@@ -142,58 +142,58 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> Tuple[str
     # performance of tool usage.
     for endpoint in llm_plugin["endpoints"]:
         params = ", ".join(
-            [   # NOTE: "name":-> excluded on purpose, because llama most of the
+            [  # NOTE: "name":-> excluded on purpose, because llama most of the
                 # times chooses to use that instead of the actual parameter name
                 f""" "{param.name}", "in":"{param.in_}", "description": "{param.description}, "schema":"{param.schema_}\""""
                 for param in endpoint.params
-            ])
+            ]
+        )
 
         # NOTE: LangChain is using internaly {input_name} for templating
         # and some OA/ChatGPT plugins of course, can have {some_word} in theirs
         # descriptions
         params = params.replace("{", "{{").replace("}", "}}")
 
-        param_location = endpoint.params[0].in_ if len(endpoint.params) > 0 else 'query'
+        param_location = endpoint.params[0].in_ if len(endpoint.params) > 0 else "query"
         tool = Tool(
             name=endpoint.operation_id,  # Could be path, e.g /api/v1/endpoint
-                                         # but it can lead LLM to makeup some URLs
-                                         # and problem with EP description is that
-                                         # it can be too long for some plugins
-            func=lambda req_params: request_tool.run(url=endpoint.url,
-                                                     params=req_params,
-                                                     param_location=param_location,
-                                                     type=endpoint.type),
-            description=f"\nOpenAPI specification params:\n{params}")
+            # but it can lead LLM to makeup some URLs
+            # and problem with EP description is that
+            # it can be too long for some plugins
+            func=lambda req_params: request_tool.run(
+                url=endpoint.url, params=req_params, param_location=param_location, type=endpoint.type
+            ),
+            description=f"\nOpenAPI specification params:\n{params}",
+        )
         tools.append(tool)
 
     tools_string = "\n".join([f"> {tool.name}{tool.description}" for tool in tools])
     # NOTE: This can be super long for some plugins, that I tested so far.
     # and because we don't have 32k CTX size, we need to truncate it.
     plugin_description_for_model = truncate_str(llm_plugin["description_for_model"])
-    return f"{TOOLS_PREFIX}{tools_string}\n\n{llm_plugin['name_for_model']} plugin description:\n{plugin_description_for_model}\n\n{INSTRUCTIONS}", tools
+    return (
+        f"{TOOLS_PREFIX}{tools_string}\n\n{llm_plugin['name_for_model']} plugin description:\n{plugin_description_for_model}\n\n{INSTRUCTIONS}",
+        tools,
+    )
 
 
 # TODO:
 # here we will not be not truncating per token, but will be deleting messages
 # from the history, and we will leave hard truncation to work.py which if
 # occurs it will degrade quality of the output.
-def prepare_prompt(input_prompt: str,
-                   prompt_template: PromptTemplate,
-                   memory: ConversationBufferMemory,
-                   tools_names: list[str] | None,
-                   current_time: str,
-                   language: str,
-                   tokenizer: transformers.PreTrainedTokenizer,
-                   worker_config: inference.WorkerConfig) -> Tuple[ConversationBufferMemory, str]:
-
+def prepare_prompt(
+    input_prompt: str,
+    prompt_template: PromptTemplate,
+    memory: ConversationBufferMemory,
+    tools_names: list[str] | None,
+    current_time: str,
+    language: str,
+    tokenizer: transformers.PreTrainedTokenizer,
+    worker_config: inference.WorkerConfig,
+) -> Tuple[ConversationBufferMemory, str]:
     max_input_length = worker_config.model_config.max_input_length
 
-    args = {
-        "input": input_prompt,
-        "language": language,
-        "current_time": current_time,
-        "chat_history": memory.buffer
-    }
+    args = {"input": input_prompt, "language": language, "current_time": current_time, "chat_history": memory.buffer}
 
     if tools_names:
         args["tools_names"] = tools_names

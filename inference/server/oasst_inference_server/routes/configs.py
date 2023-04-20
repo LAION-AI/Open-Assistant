@@ -1,20 +1,20 @@
+import json
+
 import fastapi
 import pydantic
 import requests
-import json
 import yaml
 from loguru import logger
 from oasst_inference_server.settings import settings
 from oasst_shared import model_configs
 from oasst_shared.schemas import inference
 
-
 # NOTE: Replace this with plugins that we will provide out of the box
 DUMMY_PLUGINS = [
-  inference.PluginEntry(
-      url="http://192.168.0.35:8085/ai-plugin.json",
-      enabled=False,
-      trusted=True,
+    inference.PluginEntry(
+        url="http://192.168.0.35:8085/ai-plugin.json",
+        enabled=False,
+        trusted=True,
     ),
 ]
 
@@ -88,6 +88,7 @@ async def get_model_configs() -> list[ModelConfigInfo]:
         if (settings.allowed_model_config_names == "*" or model_config_name in settings.allowed_model_config_names_list)
     ]
 
+
 @router.post("/plugin_config")
 async def get_plugin_config(plugin: inference.PluginEntry) -> inference.PluginEntry | fastapi.HTTPException:
     plugin_config = None
@@ -99,10 +100,15 @@ async def get_plugin_config(plugin: inference.PluginEntry) -> inference.PluginEn
 
     config = {}
     try:
-        content_type = response.headers.get('Content-Type')
-        if 'application/json' in content_type or plugin.url.endswith('.json'):
+        content_type = response.headers.get("Content-Type")
+        if "application/json" in content_type or plugin.url.endswith(".json"):
             config = json.loads(response.text)
-        elif 'application/yaml' in content_type or 'application/x-yaml' in content_type or plugin.url.endswith('.yaml') or plugin.url.endswith('.yml'):
+        elif (
+            "application/yaml" in content_type
+            or "application/x-yaml" in content_type
+            or plugin.url.endswith(".yaml")
+            or plugin.url.endswith(".yml")
+        ):
             config = yaml.safe_load(response.text)
         else:
             raise Exception(f"Unsupported content type: {content_type}. Only JSON and YAML are supported.")
@@ -112,6 +118,7 @@ async def get_plugin_config(plugin: inference.PluginEntry) -> inference.PluginEn
         return fastapi.HTTPException(status_code=404, detail="Failed to parse plugin config, error: " + str(e))
 
     return inference.PluginEntry(url=plugin.url, enabled=plugin.enabled, plugin_config=plugin_config)
+
 
 @router.get("/builtin_plugins")
 async def get_builtin_plugins() -> list[inference.PluginEntry] | fastapi.HTTPException:

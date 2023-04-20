@@ -46,12 +46,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
           bg: "gray.800",
         }}
       />
-      <Grid
-        gridTemplateColumns="1fr 350px"
-        gap={2}
-        mt="4"
-        gridTemplateColumns={useBreakpointValue({ base: "1fr", md: "1fr 350px" })}
-      >
+      <Grid gap={2} mt="4" gridTemplateColumns={useBreakpointValue({ base: "1fr", md: "1fr 350px" })}>
         <Button
           type="submit"
           onClick={handleSubmit}

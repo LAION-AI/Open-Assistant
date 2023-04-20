@@ -170,6 +170,7 @@ type PendingMessageEntryProps = {
   children?: ReactNode;
   id?: string;
   "data-id"?: string;
+  usedPlugin?: object;
 };
 
 export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntryProps>(function PendingMessageEntry(
