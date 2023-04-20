@@ -25,6 +25,7 @@ export const InferencePoweredBy = () => {
     <>
       <SponsorGroup heading="Inference powered by" members={["hf", "stability"]} />
       <SponsorGroup heading="Model training supported by" members={["redmond", "wandb"]} />
+      <SponsorGroup heading="Usage warning" members={["warning"]} />
     </>
   );
 };
