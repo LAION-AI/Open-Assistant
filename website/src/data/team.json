@@ -192,7 +192,9 @@
       "imageURL": "https://platform.stability.ai/assets/HexagonTextLong.4501db27.png"
     },
     "warning": {
-      "name": "Although there are safeguards in place, the system may occasionally generate incorrect or misleading information.  It is not intended to give advice.",
+      "name": "Hallucination warning",
+      "title": "Although there are safeguards in place, the system may occasionally generate incorrect or misleading information.  It is not intended to give advice.",
+      "url": "https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence)",
       "imageURL": "https://assets.stickpng.com/images/5a81af7d9123fa7bcc9b0793.png"
     }
   },
