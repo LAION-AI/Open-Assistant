@@ -1,7 +1,7 @@
 from itertools import zip_longest
 from random import shuffle
 
-from entities import Language, Mode
+from model_training.custom_datasets.entities import Language, Mode
 from pydantic import BaseModel, validator
 from pydantic.fields import ModelField
 
@@ -42,13 +42,13 @@ class DatasetEntry(BaseModel):
     def between_0_1(cls, v, field: ModelField) -> float:
         if v is not None and not (0 <= v <= 1):
             raise ValueError(f"Field {field.name} must be between 0 and 1. Received {v}.")
-        return v
+        return round(v, 1)
 
     def system_tag(self, eos_token: str) -> str | None:
         relevant_system_infos = [
             (k, v)
             for k, v in self.__dict__.items()
-            if k not in ["questions", "answers"] and v is not None and v.replace("\n", "")
+            if k not in ["questions", "answers"] and v is not None and str(v).replace("\n", "")
         ]
         if len(relevant_system_infos) > 0:
             shuffle(relevant_system_infos)
