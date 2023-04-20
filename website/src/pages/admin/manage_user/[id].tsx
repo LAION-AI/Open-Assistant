@@ -173,7 +173,7 @@ export const getServerSideProps: GetServerSideProps<{ user: User<Role> }, { id: 
 
   const local_user = await prisma.user.findUnique({
     where: { id: frontendUserId },
-    select: { role: true },
+    select: { role: true, accounts: true, email: true },
   });
 
   if (!local_user) {
@@ -184,9 +184,12 @@ export const getServerSideProps: GetServerSideProps<{ user: User<Role> }, { id: 
 
   const user = {
     ...backend_user,
-    role: (local_user?.role || "general") as Role,
+    role: (local_user.role || "general") as Role,
+    accounts: local_user.accounts || [],
+    email: local_user.email,
   };
   user.display_name = getValidDisplayName(user.display_name, user.id);
+
   return {
     props: {
       user,
