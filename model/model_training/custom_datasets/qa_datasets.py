@@ -13,6 +13,7 @@ from urllib.request import urlopen
 
 import numpy as np
 from datasets import load_dataset
+from model_training.custom_datasets.formatting import DatasetEntry
 from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator
 from torch.utils.data import Dataset, Subset, random_split
@@ -555,27 +556,25 @@ class DatabricksDolly15k(Dataset):
         self.mode = mode
         data = load_dataset("OllieStanley/oa_dolly_15k", cache_dir=cache_dir)
         for line in data["train"]:
-            if (conv := self._process_instruction(line, input_max_length)) is not None:
-                self.rows.append(conv)
+            self.rows.append(self._process_instruction(line, input_max_length))
 
-    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> list[str] | None:
-        if context := re_reference_remove.sub("", row["METADATA"]["CONTEXT"]):
-            # further remove references
-            context = context.replace("[citation needed]", "")
-            context = self.citation_regex.sub("", context)
-            return [f"{context} {row['INSTRUCTION']}"[:input_max_length], row["RESPONSE"][:input_max_length]]
-        else:
-            return [row["INSTRUCTION"][:input_max_length], row["RESPONSE"][:input_max_length]]
+    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> DatasetEntry | None:
+        context = re_reference_remove.sub("", row["METADATA"]["CONTEXT"])
+        # further remove references
+        context = context.replace("[citation needed]", "")
+        context = self.citation_regex.sub("", context)
+        return DatasetEntry(
+            context=context,
+            questions=[row["INSTRUCTION"][:input_max_length]],
+            answers=[row["RESPONSE"][:input_max_length]],
+        )
 
     def __len__(self) -> int:
         return len(self.rows)
 
-    def __getitem__(self, index: int) -> list[str] | tuple[str]:
-        dialogue: list[str] = self.rows[index]
-        if self.mode == "sft":
-            return dialogue
-        elif self.mode == "rl":
-            return tuple(dialogue[:-1])
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
 
 
 class AlpacaGpt4(Dataset):

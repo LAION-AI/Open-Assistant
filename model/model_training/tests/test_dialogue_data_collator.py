@@ -1,11 +1,13 @@
+import pytest
 import torch
-from custom_datasets.dialogue_collator import DialogueDataCollator
-from custom_datasets.formatting import QA_SPECIAL_TOKENS
+from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, DatasetEntry
 from model_training.utils import match_tokenizer_name
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 
-def test_dialogue_data_collator():
+@pytest.fixture
+def pythia_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained("tests/resources/data_collator", local_files_only=True)
     # for this test we use the pythia special tokens but note that this test is model agnostic
     tokenizer_config = match_tokenizer_name("pythia")
@@ -21,9 +23,96 @@ def test_dialogue_data_collator():
     additional_special_tokens = list(QA_SPECIAL_TOKENS.values())
 
     tokenizer.add_special_tokens({"additional_special_tokens": additional_special_tokens})
+    return tokenizer
 
+
+def test_dataset_entry_no_context(pythia_tokenizer):
     d = DialogueDataCollator(
-        tokenizer=tokenizer,
+        tokenizer=pythia_tokenizer,
+        padding=True,
+    )
+    features = [
+        DatasetEntry(
+            questions=["Dummy Question?"],
+            answers=["Dummy Answer."],
+        )
+    ]
+    batch = d(features)
+    expected_decoded_input_ids = [
+        "<|prompter|>Dummy Question?<|endoftext|>" + "<|assistant|>Dummy Answer.<|endoftext|>"
+    ]
+    expected_decoded_targets = [
+        expected_decoded_input_ids[0][len("<|prompter|>") :] + expected_decoded_input_ids[0][: len("<|prompter|>")],
+    ]
+
+    expected_masked = ["<|assistant|>Dummy Answer."]
+    assert pythia_tokenizer.decode(batch.input_ids[0]) == expected_decoded_input_ids[0]
+    # check if targets are as expected
+    assert pythia_tokenizer.decode(batch.targets[0]) == expected_decoded_targets[0]
+
+    # check if masking is correct. Note that we mask the system aswell
+    assert pythia_tokenizer.decode(batch.input_ids[0][batch.label_masks[0]]) == expected_masked[0]
+
+
+def test_dataset_entry(pythia_tokenizer):
+    d = DialogueDataCollator(
+        tokenizer=pythia_tokenizer,
+        padding=True,
+    )
+    features = [
+        DatasetEntry(
+            questions=["What are the risks of untreated type 1 diabetes?"],
+            answers=[
+                "Untreated type 1 diabetes can rapidly result in diabetic ketoacidosis which may lead to loss of consciousness, coma and death."
+            ],
+            context="Prolonged lack of insulin can also result in diabetic ketoacidosis, characterized by persistent fatigue, dry or flushed skin, abdominal pain, nausea or vomiting, confusion, trouble breathing, and a fruity breath odor. Blood and urine tests reveal unusually high glucose and ketones in the blood and urine. Untreated ketoacidosis can rapidly progress to loss of consciousness, coma, and death. The percentage of children whose type 1 diabetes begins with an episode of diabetic ketoacidosis varies widely by geography, as low as 15% in parts of Europe and North America, and as high as 80% in the developing world.",
+        ),
+        DatasetEntry(
+            questions=["Find all of the Amsterdam museums mentioned in the text and put them in a numbered list."],
+            answers=[
+                "The Amsterdam museums mentioned in this text are:\n1. Rijksmuseum\n2. Van Gogh Museum\n3. Amsterdam Museum\n4. Stedelijk Museum\n5. Hermitage Amsterdam\n6. Anne Frank House\n7. Het Scheepvaartmuseum\n8. NEMO"
+            ],
+            context="Amsterdam's main attractions include its historic canals; the Rijksmuseum, the state museum with a vast collection of Dutch Golden Age art; the Van Gogh Museum; the Dam Square, where the Royal Palace of Amsterdam and former city hall (stadhuis) are located; the Amsterdam Museum; Stedelijk Museum, with modern art; Hermitage Amsterdam, the Concertgebouw concert hall; the Anne Frank House; the Het Scheepvaartmuseum, the Heineken Experience, the Natura Artis Magistra; Hortus Botanicus, NEMO, the red-light district and many cannabis coffee shops. The city is also well known for its nightlife and festival activity; with several of its nightclubs (Melkweg, Paradiso) among the world's most famous. Primarily known for its artistic heritage, elaborate canal system and narrow canal houses with gabled façades; well-preserved legacies of the city's 17th-century Golden Age, and the establishment of the Van Gogh Museum, displaying the work of the famous Dutch modern artist, have attracted millions of visitors to Amsterdam annually.",
+        ),
+    ]
+    batch = d(features)
+    expected_decoded_input_ids = [
+        "<|system|>context: Prolonged lack of insulin can also result in diabetic ketoacidosis, characterized by persistent fatigue, dry or flushed skin, abdominal pain, nausea or vomiting, confusion, trouble breathing, and a fruity breath odor. Blood and urine tests reveal unusually high glucose and ketones in the blood and urine. Untreated ketoacidosis can rapidly progress to loss of consciousness, coma, and death. The percentage of children whose type 1 diabetes begins with an episode of diabetic ketoacidosis varies widely by geography, as low as 15% in parts of Europe and North America, and as high as 80% in the developing world.\n<|endoftext|>"
+        + "<|prompter|>What are the risks of untreated type 1 diabetes?<|endoftext|>"
+        + "<|assistant|>Untreated type 1 diabetes can rapidly result in diabetic ketoacidosis which may lead to loss of consciousness, coma and death.<|endoftext|>"
+        + 346 * "<|padding|>",
+        "<|system|>context: Amsterdam's main attractions include its historic canals; the Rijksmuseum, the state museum with a vast collection of Dutch Golden Age art; the Van Gogh Museum; the Dam Square, where the Royal Palace of Amsterdam and former city hall (stadhuis) are located; the Amsterdam Museum; Stedelijk Museum, with modern art; Hermitage Amsterdam, the Concertgebouw concert hall; the Anne Frank House; the Het Scheepvaartmuseum, the Heineken Experience, the Natura Artis Magistra; Hortus Botanicus, NEMO, the red-light district and many cannabis coffee shops. The city is also well known for its nightlife and festival activity; with several of its nightclubs (Melkweg, Paradiso) among the world's most famous. Primarily known for its artistic heritage, elaborate canal system and narrow canal houses with gabled façades; well-preserved legacies of the city's 17th-century Golden Age, and the establishment of the Van Gogh Museum, displaying the work of the famous Dutch modern artist, have attracted millions of visitors to Amsterdam annually.\n<|endoftext|>"
+        + "<|prompter|>Find all of the Amsterdam museums mentioned in the text and put them in a numbered list.<|endoftext|>"
+        + "<|assistant|>The Amsterdam museums mentioned in this text are:\n1. Rijksmuseum\n2. Van Gogh Museum\n3. Amsterdam Museum\n4. Stedelijk Museum\n5. Hermitage Amsterdam\n6. Anne Frank House\n7. Het Scheepvaartmuseum\n8. NEMO<|endoftext|>",
+    ]
+    expected_masked = [
+        "<|assistant|>Untreated type 1 diabetes can rapidly result in diabetic ketoacidosis which may lead to loss of consciousness, coma and death.",
+        "<|assistant|>The Amsterdam museums mentioned in this text are:\n1. Rijksmuseum\n2. Van Gogh Museum\n3. Amsterdam Museum\n4. Stedelijk Museum\n5. Hermitage Amsterdam\n6. Anne Frank House\n7. Het Scheepvaartmuseum\n8. NEMO",
+    ]
+
+    expected_decoded_targets = [
+        expected_decoded_input_ids[0][len("<|system|>") :] + expected_decoded_input_ids[0][: len("<|system|>")],
+        expected_decoded_input_ids[1][len("<|system|>") :] + expected_decoded_input_ids[1][: len("<|system|>")],
+    ]
+    # this is trivial, since input_ids is a tensor
+    assert batch.input_ids[0].shape == batch.input_ids[1].shape
+    # since we want to check things in a human readable way
+    # we decode the encoded ids back and check if they match the expected text
+    assert pythia_tokenizer.decode(batch.input_ids[0]) == expected_decoded_input_ids[0]
+    assert pythia_tokenizer.decode(batch.input_ids[1]) == expected_decoded_input_ids[1]
+
+    # check if targets are as expected
+    assert pythia_tokenizer.decode(batch.targets[0]) == expected_decoded_targets[0]
+    assert pythia_tokenizer.decode(batch.targets[1]) == expected_decoded_targets[1]
+
+    # check if masking is correct. Note that we mask the system aswell
+    assert pythia_tokenizer.decode(batch.input_ids[0][batch.label_masks[0]]) == expected_masked[0]
+    assert pythia_tokenizer.decode(batch.input_ids[1][batch.label_masks[1]]) == expected_masked[1]
+
+
+def test_dialogue_data_collator(pythia_tokenizer):
+    d = DialogueDataCollator(
+        tokenizer=pythia_tokenizer,
         padding=True,
     )
     input_features = [
@@ -96,8 +185,8 @@ def test_dialogue_data_collator():
     assert batch.input_ids[0].shape == batch.input_ids[1].shape
     # since we want to check things in a human readable way
     # we decode the encoded ids back and check if they match the expected text
-    assert tokenizer.decode(batch.input_ids[0]) == expected_decoded_input_ids[0]
-    assert tokenizer.decode(batch.input_ids[1]) == expected_decoded_input_ids[1]
+    assert pythia_tokenizer.decode(batch.input_ids[0]) == expected_decoded_input_ids[0]
+    assert pythia_tokenizer.decode(batch.input_ids[1]) == expected_decoded_input_ids[1]
     # check if the attention mask is correct we mask only the padding
     assert (
         torch.argwhere(batch.attention_mask == 0) == torch.stack([torch.zeros(21), torch.arange(217, 238)], dim=1)
@@ -112,13 +201,13 @@ def test_dialogue_data_collator():
         )
     ).all()
     # Check that the attention mask is only applied to padding tokens
-    padding_token = tokenizer.get_vocab()[tokenizer_config.special_tokens.pad_token]
+    padding_token = pythia_tokenizer.get_vocab()[pythia_tokenizer.pad_token]
     assert (torch.argwhere(batch.attention_mask == 0) == torch.argwhere(batch.input_ids == padding_token)).all()
     # check if the masking works correctly, we mask everything between <|assistant|> and <|endoftext|>
     # todo: we mask the last <|endoftext|> but I don't see a reason why???
-    assert tokenizer.decode(batch.input_ids[0][batch.label_masks[0]]) == expected_masked[0]
-    assert tokenizer.decode(batch.input_ids[1][batch.label_masks[1]]) == expected_masked[1]
+    assert pythia_tokenizer.decode(batch.input_ids[0][batch.label_masks[0]]) == expected_masked[0]
+    assert pythia_tokenizer.decode(batch.input_ids[1][batch.label_masks[1]]) == expected_masked[1]
 
     # check if targets are as expected
-    assert tokenizer.decode(batch.targets[0]) == expected_decoded_targets[0]
-    assert tokenizer.decode(batch.targets[1]) == expected_decoded_targets[1]
+    assert pythia_tokenizer.decode(batch.targets[0]) == expected_decoded_targets[0]
+    assert pythia_tokenizer.decode(batch.targets[1]) == expected_decoded_targets[1]

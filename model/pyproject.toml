@@ -29,6 +29,7 @@ dependencies = [
     "tokenizers==0.13.2",
     "torch==1.13.1",
     "tqdm==4.65.0",
+    "pydantic==1.10.7",
     "transformers @ git+https://github.com/huggingface/transformers.git@6fc44656b43f1de939a1e62dd59c45d1fec9f1aa",
     "wandb==0.14.0",
 ]
