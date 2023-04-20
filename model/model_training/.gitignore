@@ -12,3 +12,6 @@ tritonserver-pyt.sif
 ckpts_pythia12b
 model_rl
 .saved
+.triton_models
+triton_models
+ckpts

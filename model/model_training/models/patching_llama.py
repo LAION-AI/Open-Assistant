@@ -48,9 +48,10 @@ def llama_forward_with_flash_attn(
             raise ValueError(
                 f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
             )
-        attention_mask = attention_mask[:, 0, -1]
 
-    if query_states.shape == key_states.shape:
+    if (
+        query_states.shape == key_states.shape
+    ):  # and (attention_mask is None or attention_mask[:, 0, -1, 0].min() >= 0):
         if attention_mask is not None:
             attention_mask = attention_mask[:, 0, -1]
 
@@ -65,7 +66,6 @@ def llama_forward_with_flash_attn(
                 f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
                 f" {attn_output.size()}"
             )
-
     else:
         attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 

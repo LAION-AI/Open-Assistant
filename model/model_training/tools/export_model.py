@@ -49,7 +49,6 @@ def main():
 
     if args.rl_checkpoint:
         model = AutoModelForCausalLM.from_pretrained(args.model_name, torch_dtype=torch_dtype, cache_dir=args.cache_dir)
-        tokenizer = AutoTokenizer.from_pretrained(args.model_name)
 
         print(f"Loading RL checkpoint: {args.rl_checkpoint}...")
         checkpoint_state = torch.load(args.rl_checkpoint, map_location="cpu")["module"]
@@ -58,7 +57,11 @@ def main():
         for param_name in ("v_head.0.weight", "v_head.0.bias", "v_head.2.weight", "v_head.2.bias"):
             checkpoint_state.pop(param_name, None)
 
-        model.load_state_dict(checkpoint_state)
+        # resolve inconsistencies in the vocab size
+        target_size = checkpoint_state[list(filter(lambda x: "embed" in x, list(checkpoint_state.keys())))[0]].shape[0]
+        model.resize_token_embeddings(target_size)
+
+        print(model.load_state_dict(checkpoint_state))
 
     elif args.reward_model:
         model = AutoModelForSequenceClassification.from_pretrained(

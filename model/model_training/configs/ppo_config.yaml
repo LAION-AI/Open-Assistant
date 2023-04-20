@@ -1,5 +1,5 @@
 train:
-  seq_length: 2048
+  seq_length: 2032
   epochs: 10000
   total_steps: 10000
   batch_size: 18
@@ -41,7 +41,7 @@ method:
   num_rollouts: 1024
   chunk_size: 4
   ppo_epochs: 4
-  init_kl_coef: 0.04
+  init_kl_coef: 0.1
   target: 6
   horizon: 10000
   gamma: 1

@@ -299,7 +299,7 @@ def get_metrics(conf, tokenizer):
     return metrics, preprocess_fns
 
 
-def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
+def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16, check_freeze_layer=True):
     dtype = torch.float32
     if conf.dtype in ["fp16", "float16"]:
         dtype = torch.float16
@@ -328,12 +328,13 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16):
         )
 
         n_embs = model.get_input_embeddings().num_embeddings
-        if len(tokenizer) != n_embs:
+        if len(tokenizer) != n_embs and check_freeze_layer:
             assert not conf.freeze_layer, "Cannot change the number of embeddings if the model is frozen."
 
-        if (len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of) and not conf.freeze_layer:
+        if len(tokenizer) != n_embs or pad_vocab_size_to_multiple_of:
             p = pad_vocab_size_to_multiple_of
             target_size = len(tokenizer) if not p else math.ceil(len(tokenizer) / p) * p
+            print("Resizing embeddings to", target_size)
             model.resize_token_embeddings(target_size)
 
         if conf.freeze_layer:

@@ -132,8 +132,8 @@ python to_triton.py --configs pythia_rlhf --triton_mode sft
 We can know launch the container instance that runs the RM on a specified GPU
 
 ```bash
-SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind model_store_rm:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store --http-port 8001 --grpc-port 8002 --metrics-port 8003
-SINGULARITYENV_CUDA_VISIBLE_DEVICES=6 singularity run --nv --bind model_store_sft:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store --http-port 8004 --grpc-port 8005 --metrics-port 8006
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind .triton_models/model_store_rm:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store --http-port 8001 --grpc-port 8002 --metrics-port 8003
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=6 singularity run --nv --bind .triton_models/model_store_sft:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store --http-port 8004 --grpc-port 8005 --metrics-port 8006
 ```
 
 FInally, we can train using PPO:

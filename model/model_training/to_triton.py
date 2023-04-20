@@ -33,9 +33,13 @@ def load_model_and_tokenizer(triton_mode, config, device="cuda:0"):
     # For llama ...
     if tokenizer.pad_token_id == tokenizer.eos_token_id:
         tokenizer.add_special_tokens({"pad_token": "<|padding|>"})
+
     print("len tokenizer", len(tokenizer))
 
-    model = get_model(config, tokenizer, pad_vocab_size_to_multiple_of=1)
+    # disable flash attention for triton
+    config.use_flash_attention = False
+
+    model = get_model(config, tokenizer, pad_vocab_size_to_multiple_of=1, check_freeze_layer=False)
     model.to(device)
     model.eval()
 
@@ -82,8 +86,8 @@ def write_traced_module(
         f.write(config)
 
 
-def trace_model(model, tokenizer, device="cuda:0", trace_example="reward model's hash"):
-    inputs = tokenizer(trace_example, return_tensors="pt")
+def trace_model(model, tokenizer, device="cuda:0", trace_example="reward model's hash", max_length=512):
+    inputs = tokenizer(trace_example, padding="max_length", max_length=max_length, return_tensors="pt")
     inputs = {k: v.to(device) for k, v in inputs.items() if k != "token_type_ids"}
     outputs = model(**inputs)
     print(f"Output shape: {outputs.shape}")
@@ -93,7 +97,7 @@ def trace_model(model, tokenizer, device="cuda:0", trace_example="reward model's
 
 
 def main():
-    conf = argument_parsing(triton_mode=None)
+    conf = argument_parsing(triton_mode=None, triton_output_dir=None)
 
     if conf.triton_mode == "sft":
         config = Namespace(**conf.sft_config)
@@ -112,7 +116,7 @@ def main():
         model_name,
         config.dtype,
         config_template=f"configs/triton_config_{conf.triton_mode}.pbtxt",
-        output_dir=f"model_store_{conf.triton_mode}",
+        output_dir=f".triton_models/model_store_{conf.triton_mode}",
     )
 
 

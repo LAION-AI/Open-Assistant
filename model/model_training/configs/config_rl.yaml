@@ -55,6 +55,8 @@ pythia_rlhf:
     batch_size: 1
 
 llama_rlhf:
+  triton_host_rm: localhost:8002/OpenAssistant-oasst-rm-2-pythia-6.9b-epoch-1
+  triton_host_sft: localhost:8005/OpenAssistant-oasst-sft-7e2-llama-30b
   rank_config:
     is_reward_model: true
     model_name: OpenAssistant/oasst-rm-2-pythia-6.9b-epoch-1
@@ -67,12 +69,12 @@ llama_rlhf:
 
   sft_config:
     is_reward_model: false
-    model_name: OpenAssistant/llama-30b-sft-oa-only
+    model_name: OpenAssistant/oasst-sft-7e2-llama-30b
     cache_dir: /mnt/data/Open-Assistant-RLHF/model/model_training/.cache
     quantization: false
     seq2seqmodel: false
-    freeze_layer:
-    num_layers_unfrozen: -1
+    freeze_layer: 52
+    num_layers_unfrozen: -1 # we dont use this, trlx has its own implementation
     residual_dropout: 0.0
     use_flash_attention: true
     dtype: fp16
