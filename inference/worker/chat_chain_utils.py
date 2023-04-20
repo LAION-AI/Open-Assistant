@@ -93,7 +93,7 @@ def truncate_str(output: str, max_length: int = 1024) -> str:
 
 def use_tool(tool_name: str, tool_input: str, tools: list) -> str:
     for tool in tools:
-        if similarity(tool.name, tool_name) > 0.9:
+        if similarity(tool.name, tool_name) > 0.75:
             return tool.func(tool_input)
     return f"ERROR! {tool_name} is not a valid tool. Try again with different tool!"
 
@@ -165,7 +165,7 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> Tuple[str
             func=lambda req_params: request_tool.run(
                 url=endpoint.url, params=req_params, param_location=param_location, type=endpoint.type
             ),
-            description=f"\nOpenAPI specification params:\n{params}",
+            description=f"\nOpenAPI specification params:\n{params}\n\n{endpoint.summary}",
         )
         tools.append(tool)
 

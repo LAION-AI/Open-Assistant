@@ -24,7 +24,6 @@ from settings import settings
 
 # NOTE: Max depth of retries for tool usage
 MAX_DEPTH = 4
-MAX_TOOL_RESPONSE_TOKENS = 256
 
 # NOTE: If we want to exclude tools description from final prompt,
 # to save ctx token space, but it can hurt output quality, especially if
@@ -40,7 +39,7 @@ llm = HFInference(
     top_k=50,
     temperature=0.2,
     repetition_penalty=(1 / 0.83),
-    seed=42,
+    seed=43,
 )
 
 
@@ -59,7 +58,6 @@ def handle_plugin_usage(
     tools: list[Tool],
     memory: ConversationBufferMemory,
     plugin: inference.PluginEntry | None,
-    parameters: interface.GenerateStreamParameters,
     worker_config: inference.WorkerConfig,
     tokenizer: transformers.PreTrainedTokenizer,
 ) -> Tuple[str, inference.PluginUsed]:
@@ -208,7 +206,7 @@ def handle_plugin_usage(
             return init_prompt, plugin_used
 
         plugin_used.execution_details.status = "success"
-        return init_prompt + chain_response + ASSISTANT_PREFIX + ": ", plugin_used
+        return init_prompt + chain_response + ASSISTANT_PREFIX + ":  ", plugin_used
     else:
         # Max depth reached, just try to answer without using a tool
         plugin_used.execution_details.final_prompt = init_prompt
@@ -272,7 +270,7 @@ def handle_conversation(
         # using sampling settings derived from frontend UI
         if plugin_enabled:
             return handle_plugin_usage(
-                original_prompt, prompt_template, language, tools, memory, plugin, parameters, worker_config, tokenizer
+                original_prompt, prompt_template, language, tools, memory, plugin, worker_config, tokenizer
             )
 
         # Just regular prompt template without plugin chain.

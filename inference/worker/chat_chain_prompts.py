@@ -11,16 +11,16 @@ KNOWLEDGE_DATE_CUTOFF = "2021-09-01"
 TALKING_STYLE = ""
 
 PREFIX = """Open Assistant is a large language model trained by LAION.
-Assistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics.
-Assistant is constantly learning and improving, and its capabilities are constantly evolving.
-Overall, Assistant is a powerful tool that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics.
+Open Assistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics.
+Open Assistant is constantly learning and improving, and its capabilities are constantly evolving.
+Overall, Open Assistant is a powerful tool that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics.
 """
 
 TOOLS_PREFIX = """
 TOOLS:
 -----
 
-Assistant has access to the following tools:
+Open Assistant has access to the following tools:
 """
 
 INSTRUCTIONS = f"""
@@ -50,5 +50,5 @@ Current system date/time: {{current_time}}
 Knowledge date cutoff: {KNOWLEDGE_DATE_CUTOFF}
 
 When answering a question, you MUST use the following language: {{language}}{TALKING_STYLE}
-Question: {{input}}
+New Input: {{input}}
 """
