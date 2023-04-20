@@ -10,6 +10,7 @@ from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
 from model_training.custom_datasets.qa_datasets import (
     SODA,
+    AlpacaGpt4,
     DatabricksDolly15k,
     JokeExplaination,
     QADataset,
@@ -162,6 +163,8 @@ def get_one_dataset(
         train, eval = load_hellaswag()
     elif dataset_name == "dolly15k":
         dataset = DatabricksDolly15k(cache_dir=data_path)
+    elif dataset_name == "alpaca_gpt4":
+        dataset = AlpacaGpt4(cache_dir=data_path, **kwargs)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
