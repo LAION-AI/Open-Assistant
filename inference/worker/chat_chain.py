@@ -29,7 +29,7 @@ MAX_TOOL_RESPONSE_TOKENS = 256
 # NOTE: If we want to exclude tools description from final prompt,
 # to save ctx token space, but it can hurt output quality, especially if
 # truncation kicks in!
-REMOVE_TOOLS_FROM_FINAL_PROMPT = True
+REMOVE_TOOLS_FROM_FINAL_PROMPT = False
 
 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -169,7 +169,7 @@ def handle_plugin_usage(
                 tools_names = None
 
             final_input = (
-                f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
+                f"{input_prompt}{eos_token}{V2_ASST_PREFIX}\n{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
             )
             memory, inner_prompt = prepare_prompt(
                 final_input, prompt_template, memory, tools_names, current_time, language, tokenizer, worker_config

@@ -81,11 +81,13 @@ def extract_tool_and_input(llm_output: str, ai_prefix: str) -> Tuple[str, str]:
 def truncate_str(output: str, max_length: int = 1024) -> str:
     if len(output) > max_length:
         if output[0] == "(":
-            return output[:max_length] + ")"
-        if output[0] == "[":
-            return output[:max_length] + "]"
-        if output[0] == "{":
-            return output[:max_length] + "}"
+            return output[:max_length] + "...)"
+        elif output[0] == "[":
+            return output[:max_length] + "...]"
+        elif output[0] == "{":
+            return output[:max_length] + "...}"
+        else:
+            return output[:max_length] + "..."
     return output
 
 
@@ -144,7 +146,7 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> Tuple[str
         params = ", ".join(
             [  # NOTE: "name":-> excluded on purpose, because llama most of the
                 # times chooses to use that instead of the actual parameter name
-                f""" "{param.name}", "in":"{param.in_}", "description": "{param.description}, "schema":"{param.schema_}\""""
+                f""" "{param.name}", "in":"{param.in_}", "description": "{truncate_str(param.description, 128)}", "schema":"{param.schema_}\""""
                 for param in endpoint.params
             ]
         )
@@ -170,7 +172,7 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> Tuple[str
     tools_string = "\n".join([f"> {tool.name}{tool.description}" for tool in tools])
     # NOTE: This can be super long for some plugins, that I tested so far.
     # and because we don't have 32k CTX size, we need to truncate it.
-    plugin_description_for_model = truncate_str(llm_plugin["description_for_model"])
+    plugin_description_for_model = truncate_str(llm_plugin["description_for_model"], 512)
     return (
         f"{TOOLS_PREFIX}{tools_string}\n\n{llm_plugin['name_for_model']} plugin description:\n{plugin_description_for_model}\n\n{INSTRUCTIONS}",
         tools,
