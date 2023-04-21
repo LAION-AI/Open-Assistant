@@ -506,7 +506,7 @@ class Vicuna(Dataset):
                     return None
                 elif speaker == "human":
                     # replace empty messages with one of the following
-                    message = random.choice(["...", "Please continue", ""])
+                    message = random.choice(["...", "Please continue", "Go on", ""])
             # remove markdown escaping in revision 192ab2185289094fc556ec8ce5ce1e8e587154ca
             # python-markdownify with escape_asterisks & escape_underscores True is used
             # for pre-processing the dataset.
