@@ -450,9 +450,7 @@ def load_alpaca_dataset(
         dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
     ) -> list[tuple[str, str]]:
         data = []
-        import pdb
 
-        pdb.set_trace()
         for row in dataset:
             question = row["instruction"]
             if len(row["input"]) > 0:
