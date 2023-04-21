@@ -501,10 +501,6 @@ class Vicuna(Dataset):
         for line in data["conversations"]:
             speaker = line["from"]  # 'human' or 'gpt'
             message = line["value"]
-            # if "You are a profesional software development assistant." in message:
-            #     import pdb; pdb.set_trace()
-            # if re_reference_remove.match(message):
-            #     import pdb; pdb.set_trace()
             if message is None or message == "":
                 if speaker == "gpt":
                     return None
