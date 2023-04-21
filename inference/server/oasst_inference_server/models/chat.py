@@ -24,6 +24,7 @@ class DbMessage(SQLModel, table=True):
     error: str | None = Field(None)
 
     safe_content: str | None = Field(None)
+    safety_level: int | None = Field(None)
     safety_label: str | None = Field(None)
     safety_rots: str | None = Field(None)
 

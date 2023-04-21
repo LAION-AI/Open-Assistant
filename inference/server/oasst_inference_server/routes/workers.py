@@ -409,6 +409,9 @@ async def handle_safe_prompt_response(
         message = await cr.get_assistant_message_by_id(message_id)
         prompt = await cr.get_prompter_message_by_id(message.parent_id)
         prompt.safe_content = response.safe_prompt
+        prompt.safety_level = response.safety_parameters.level
+        prompt.safety_label = response.safety_label
+        prompt.safety_rots = response.safety_rots
         await session.commit()
 
 
