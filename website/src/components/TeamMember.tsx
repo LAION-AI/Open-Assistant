@@ -1,4 +1,4 @@
-import { Avatar, Badge, Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
+import { Avatar, Badge, Box, Flex, FlexProps, Text, useColorModeValue } from "@chakra-ui/react";
 import { Github } from "@icons-pack/react-simple-icons";
 import Link from "next/link";
 
@@ -8,11 +8,13 @@ export interface TeamMemberProps {
   url?: string;
   githubURL?: string;
   title: string;
+  rootProps?: FlexProps;
 }
-export function TeamMember({ name, url, imageURL, githubURL, title }: TeamMemberProps) {
+
+export function TeamMember({ name, url, imageURL, githubURL, title, rootProps }: TeamMemberProps) {
   const contributorBackgroundColor = useColorModeValue("gray.200", "gray.700");
   return (
-    <Flex gap="3" bg={contributorBackgroundColor} borderRadius="md" p="2">
+    <Flex gap="3" bg={contributorBackgroundColor} borderRadius="md" p="2" {...rootProps}>
       <Avatar src={imageURL} loading="lazy" name={name} />
       <Box>
         <Flex gap={3} fontWeight="bold">

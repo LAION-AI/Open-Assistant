@@ -73,7 +73,8 @@ export default {
       model = interaction.options.getString("model");
       preset = interaction.options.getString("preset");
     }
-    if (!model) model = "OA_SFT_Llama_30Bq";
+    if (!model)
+      model = process.env.OPEN_ASSISTANT_DEFAULT_MODEL || "OA_SFT_Llama_30B";
     if (!preset) preset = "k50";
     // sleep for  30s
 
