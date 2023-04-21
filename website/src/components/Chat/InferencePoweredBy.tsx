@@ -37,7 +37,6 @@ const Warning = ({ heading, members }) => {
   );
 };
 
-
 export const InferencePoweredBy = () => {
   return (
     <>
