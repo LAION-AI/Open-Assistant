@@ -1,5 +1,5 @@
 import { Box, Button, CircularProgress, Flex, Input, Tooltip, useBoolean, useOutsideClick } from "@chakra-ui/react";
-import { Check, LucideIcon, Pencil, EyeOff, X } from "lucide-react";
+import { Check, EyeOff, LucideIcon, Pencil, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
@@ -95,6 +95,7 @@ export const ChatListItem = ({
             pe="50px"
             borderRadius="lg"
             maxLength={100}
+            autoFocus
           ></Input>
           <Flex
             position="absolute"
