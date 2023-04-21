@@ -8,6 +8,7 @@ from typing import Annotated, Literal, Union
 import psutil
 import pydantic
 import pynvml
+from loguru import logger
 from oasst_shared.model_configs import ModelConfig
 
 INFERENCE_PROTOCOL_VERSION = "1"
@@ -54,8 +55,8 @@ class WorkerHardwareInfo(pydantic.BaseModel):
                 name = pynvml.nvmlDeviceGetName(handle)
                 total_memory = pynvml.nvmlDeviceGetMemoryInfo(handle).total
                 data["gpus"].append(WorkerGpuInfo(name=name, total_memory=total_memory))
-        except Exception:
-            pass
+        except Exception as error:
+            logger.warning(f"No GPU's detected, are you missing a dependency? Error was: {error}")
         super().__init__(**data)
 
 
