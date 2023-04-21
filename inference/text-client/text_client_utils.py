@@ -9,6 +9,7 @@ class DebugClient:
     def __init__(self, backend_url, http_client=requests):
         self.backend_url = backend_url
         self.http_client = http_client
+        self.auth_headers = None
         self.available_models = self.get_available_models()
 
     def login(self, username):
@@ -31,7 +32,7 @@ class DebugClient:
 
     def get_available_models(self):
         response = self.http_client.get(
-            f"{self.backend_url}/models",
+            f"{self.backend_url}/configs/model_configs",
             headers=self.auth_headers,
         )
         response.raise_for_status()

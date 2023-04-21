@@ -87,7 +87,7 @@ class UserChatRepository(pydantic.BaseModel):
 
         if settings.message_max_length is not None:
             if len(content) > settings.message_max_length:
-                raise fastapi.HTTPException(status_code=400, detail="Message content exceeds max length")
+                raise fastapi.HTTPException(status_code=413, detail="Message content exceeds max length")
 
         chat: models.DbChat = (
             await self.session.exec(
@@ -101,7 +101,7 @@ class UserChatRepository(pydantic.BaseModel):
         ).one()
         if settings.chat_max_messages is not None:
             if len(chat.messages) >= settings.chat_max_messages:
-                raise fastapi.HTTPException(status_code=400, detail="Maximum number of messages reached for this chat")
+                raise fastapi.HTTPException(status_code=413, detail="Maximum number of messages reached for this chat")
         if parent_id is None:
             if len(chat.messages) > 0:
                 raise fastapi.HTTPException(status_code=400, detail="Trying to add first message to non-empty chat")
@@ -187,7 +187,7 @@ class UserChatRepository(pydantic.BaseModel):
             num_msgs: int = (await self.session.exec(count_query)).one()
 
             if num_msgs >= settings.chat_max_messages:
-                raise fastapi.HTTPException(status_code=400, detail="Maximum number of messages reached for this chat")
+                raise fastapi.HTTPException(status_code=413, detail="Maximum number of messages reached for this chat")
 
         message = models.DbMessage(
             role="assistant",
