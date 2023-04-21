@@ -244,6 +244,9 @@ class PongResponse(WorkerResponseBase):
 class SafePromptResponse(WorkerResponseBase):
     response_type: Literal["safe_prompt"] = "safe_prompt"
     safe_prompt: str
+    safety_parameters: SafetyParameters
+    safety_label: str
+    safety_rots: str
 
 
 class TokenResponse(WorkerResponseBase):

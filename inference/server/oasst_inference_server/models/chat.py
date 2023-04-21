@@ -22,7 +22,10 @@ class DbMessage(SQLModel, table=True):
 
     content: str | None = Field(None)
     error: str | None = Field(None)
+
     safe_content: str | None = Field(None)
+    safety_label: str | None = Field(None)
+    safety_rots: str | None = Field(None)
 
     state: inference.MessageState = Field(inference.MessageState.manual)
     work_parameters: inference.WorkParameters = Field(None, sa_column=sa.Column(pg.JSONB))
