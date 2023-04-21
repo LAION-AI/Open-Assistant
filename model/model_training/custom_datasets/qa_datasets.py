@@ -4,6 +4,7 @@
 import glob
 import json
 import os
+import random
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -12,12 +13,16 @@ from urllib.request import urlopen
 
 import numpy as np
 from datasets import load_dataset
+from model_training.custom_datasets.formatting import DatasetEntry
 from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator
 from torch.utils.data import Dataset, Subset, random_split
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
+
+
+LINKING_CHARS = ["\n", "\n\n", " "]
 
 
 def index_squad_v2(example):
@@ -551,17 +556,56 @@ class DatabricksDolly15k(Dataset):
         self.mode = mode
         data = load_dataset("OllieStanley/oa_dolly_15k", cache_dir=cache_dir)
         for line in data["train"]:
+            self.rows.append(self._process_instruction(line, input_max_length))
+
+    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> DatasetEntry | None:
+        context = re_reference_remove.sub("", row["METADATA"]["CONTEXT"])
+        # further remove references
+        context = context.replace("[citation needed]", "")
+        context = self.citation_regex.sub("", context)
+        return DatasetEntry(
+            context=context,
+            questions=[row["INSTRUCTION"][:input_max_length]],
+            answers=[row["RESPONSE"][:input_max_length]],
+        )
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
+
+
+class AlpacaGpt4(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        self.rows = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        data = load_dataset("vicgalle/alpaca-gpt4", cache_dir=cache_dir)
+        for line in data["train"]:
             if (conv := self._process_instruction(line, input_max_length)) is not None:
                 self.rows.append(conv)
 
     def _process_instruction(self, row: dict[str, str], input_max_length: int) -> list[str] | None:
-        if context := re_reference_remove.sub("", row["METADATA"]["CONTEXT"]):
-            # further remove references
-            context = context.replace("[citation needed]", "")
-            context = self.citation_regex.sub("", context)
-            return [f"{context} {row['INSTRUCTION']}"[:input_max_length], row["RESPONSE"][:input_max_length]]
+        # discard items that are too long: when checked on 2023-04-17 this was just one item in the whole dataset with length above 2048.
+        # And 12 above 1024.
+        if len(row["input"]) + len(row["instruction"]) > input_max_length:
+            return None
+        # filter all appearing variants of "no input" or empty input or cases where the input is already in the instruction.
+        # In this cases we don't add the input
+        if (
+            any([k in row["input"].lower() for k in ["no input", "noinput", "n/a"]])
+            or (not row["input"])
+            or (row["input"].lower() in row["instruction"].lower())
+        ):
+            return [row["instruction"], row["output"]]
+        # Concatenate the instruction and input.
         else:
-            return [row["INSTRUCTION"][:input_max_length], row["RESPONSE"][:input_max_length]]
+            linking_char = random.choice(LINKING_CHARS)
+            return [f"{row['instruction']}{linking_char}{row['input']}", row["output"]]
 
     def __len__(self) -> int:
         return len(self.rows)
