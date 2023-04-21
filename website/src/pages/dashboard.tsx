@@ -1,4 +1,4 @@
-import { Card, CardBody, Flex } from "@chakra-ui/react";
+import { Button, Card, CardBody, Flex, Heading } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
@@ -7,9 +7,11 @@ import { getDashboardLayout } from "src/components/Layout";
 import { get } from "src/lib/api";
 import { AvailableTasks, TaskCategory } from "src/types/Task";
 export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServerSideProps";
+import Link from "next/link";
 import { XPBar } from "src/components/Account/XPBar";
 import { TaskCategoryItem } from "src/components/Dashboard/TaskOption";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
+import { getEnv } from "src/lib/browserEnv";
 import { API_ROUTES } from "src/lib/routes";
 import useSWR from "swr";
 
@@ -33,6 +35,18 @@ const Dashboard = () => {
       </Head>
       <Flex direction="column" gap="10">
         <WelcomeCard />
+
+        {getEnv().ENABLE_CHAT && (
+          <Flex direction="column" gap={4}>
+            <Heading size="lg">{t("index:try_our_assistant")}</Heading>
+            <Link href="/chat" aria-label="Chat">
+              <Button variant="solid" colorScheme="blue" px={5} py={6}>
+                {t("index:try_our_assistant")}
+              </Button>
+            </Link>
+          </Flex>
+        )}
+
         <TaskOption content={availableTaskTypes} />
         <Card>
           <CardBody>

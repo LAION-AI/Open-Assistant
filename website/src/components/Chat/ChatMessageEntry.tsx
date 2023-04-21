@@ -124,6 +124,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
             _dark={{
               bg: "gray.800",
             }}
+            autoFocus
           ></Textarea>
         </Box>
       )}
@@ -166,11 +167,16 @@ type PendingMessageEntryProps = {
   "data-id"?: string;
 };
 
+const messageEntryContainerProps = {
+  maxWidth: { base: "3xl", "2xl": "4xl" },
+  w: "full",
+};
+
 export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntryProps>(function PendingMessageEntry(
   { content, isAssistant, children, ...props },
   ref
 ) {
-  const bgUser = useColorModeValue("white", "gray.700");
+  const bgUser = "transparent";
   const bgAssistant = useColorModeValue("#DFE8F1", "#42536B");
   const { data: session } = useSession();
   const image = session?.user?.image;
@@ -187,7 +193,8 @@ export const PendingMessageEntry = forwardRef<HTMLDivElement, PendingMessageEntr
       bg={isAssistant ? bgAssistant : bgUser}
       content={content || ""}
       width="full"
-      maxWidth="full"
+      maxWidth={messageEntryContainerProps.maxWidth}
+      containerProps={messageEntryContainerProps}
       {...props}
     >
       {children}

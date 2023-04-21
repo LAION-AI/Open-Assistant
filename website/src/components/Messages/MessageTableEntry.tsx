@@ -275,7 +275,7 @@ const MessageActions = ({
   const isAdminOrMod = useHasAnyRole(["admin", "moderator"]);
   const { locale } = useRouter();
   return (
-    <Menu>
+    <Menu isLazy>
       <MenuButton>
         <MoreHorizontal />
       </MenuButton>
