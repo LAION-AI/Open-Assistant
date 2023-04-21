@@ -15,10 +15,12 @@ In this page, there are some of the most frequently asked questions.
 
 </summary>
 
-We are in the early stages of development, generally following the process
-outlined in the InstructGPT paper. We have candidate supervised finetuning (SFT)
-models using both Pythia and LLaMa, which you can try, and are beginning the
-process of applying reinforcement learning from human feedback (RLHF).
+We have released candidate supervised finetuning (SFT) models using both Pythia
+and LLaMa, as well as candidate reward models for reinforcement learning from
+human feedback training using Pythia, which you can try, and are beginning the
+process of applying (RLHF). We have also released the first version of the
+OpenAssistant Conversations dataset
+[here](https://huggingface.co/datasets/OpenAssistant/oasst1).
 
 </details>
 
@@ -49,6 +51,9 @@ them with sufficient hardware. There are also spaces on HF which can be used to
 chat with the OA candidate without your own hardware. However, these models are
 not final and can produce poor or undesirable outputs.
 
+LLaMa SFT models cannot be released directly due to Meta's license but XOR
+weights will be released soon.
+
 </details>
 
 <details>
@@ -60,20 +65,8 @@ not final and can produce poor or undesirable outputs.
 
 The `docker compose` command in the README is for setting up the project for
 local development on the website or data collection backend. It does not launch
-an AI model or the inference server.
-
-</details>
-
-<details>
-<summary>
-
-### Can I download the data?
-
-</summary>
-
-You will be able to download the data from the
-[HuggingFace account](https://huggingface.co/OpenAssistant) once it is released
-on April 15th.
+an AI model or the inference server. There is likely no point in running the
+inference setup and UI locally unless you wish to assist in development.
 
 </details>
 
@@ -87,15 +80,15 @@ on April 15th.
 All Open Assistant code is licensed under Apache 2.0. This means it is available
 for a wide range of uses including commercial use.
 
-The Open Assistant Pythia based models will be released as full weights and will
-be licensed under the Apache 2.0 license.
+The Open Assistant Pythia based models are released as full weights and will be
+licensed under the Apache 2.0 license.
 
 The Open Assistant LLaMa based models will be released only as delta weights
 meaning you will need the original LLaMa weights to use them, and the license
 restrictions will therefore be those placed on the LLaMa weights.
 
-The Open Assistant data will be released under a Creative Commons license
-allowing a wide range of uses including commercial use.
+The Open Assistant data is released under a Creative Commons license allowing a
+wide range of uses including commercial use.
 
 </details>
 
@@ -123,8 +116,9 @@ you to everyone who has taken part!
 
 </summary>
 
-The model code, weights, and data will be released for free. We are additionally
-hosting a free public instance of our best current model for as long as we can.
+The model code, weights, and data are free. We are additionally hosting a free
+public instance of our best current model for as long as we can thanks to
+compute donation from Stability AI via LAION!
 
 </details>
 
@@ -135,9 +129,9 @@ hosting a free public instance of our best current model for as long as we can.
 
 </summary>
 
-The current smallest model is 12B parameters and is challenging to run on
-consumer hardware, but can run on a single professional GPU. In future there may
-be smaller models and we hope to make progress on methods like integer
+The current smallest (Pythia) model is 12B parameters and is challenging to run
+on consumer hardware, but can run on a single professional GPU. In future there
+may be smaller models and we hope to make progress on methods like integer
 quantisation which can help run the model on smaller hardware.
 
 </details>

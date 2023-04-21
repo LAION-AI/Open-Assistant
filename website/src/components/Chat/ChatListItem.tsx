@@ -1,5 +1,5 @@
 import { Box, Button, CircularProgress, Flex, Input, Tooltip, useBoolean, useOutsideClick } from "@chakra-ui/react";
-import { Check, LucideIcon, Pencil, EyeOff, X } from "lucide-react";
+import { Check, EyeOff, LucideIcon, Pencil, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
@@ -33,13 +33,13 @@ export const ChatListItem = ({
     },
   });
   const { trigger: updateChatTitle, isMutating: isUpdatingTitle } = useSWRMutation(
-    API_ROUTES.UPDATE_CHAT_TITLE(chat.id),
+    API_ROUTES.UPDATE_CHAT(chat.id),
     put
   );
   const handleConfirmEdit = useCallback(async () => {
     const title = inputRef.current?.value.trim();
     if (!title) return;
-    await updateChatTitle({ title, chat_id: chat.id });
+    await updateChatTitle({ chat_id: chat.id, title });
     setIsEditing.off();
     onUpdateTitle({ chatId: chat.id, title });
   }, [chat.id, onUpdateTitle, setIsEditing, updateChatTitle]);
@@ -95,6 +95,7 @@ export const ChatListItem = ({
             pe="50px"
             borderRadius="lg"
             maxLength={100}
+            autoFocus
           ></Input>
           <Flex
             position="absolute"
@@ -145,10 +146,10 @@ const EditChatButton = ({ onClick }: { onClick: () => void }) => {
 };
 
 const HideChatButton = ({ chatId, onHide }: { chatId: string; onHide?: (params: { chatId: string }) => void }) => {
-  const { trigger: triggerHide } = useSWRMutation(API_ROUTES.HIDE_CHAT(chatId), put);
+  const { trigger: triggerHide } = useSWRMutation(API_ROUTES.UPDATE_CHAT(chatId), put);
 
   const onClick = useCallback(async () => {
-    await triggerHide({ chat_id: chatId });
+    await triggerHide({ chat_id: chatId, hidden: true });
     onHide?.({ chatId });
   }, [onHide, triggerHide, chatId]);
 

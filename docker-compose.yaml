@@ -246,7 +246,7 @@ services:
     image: oasst-inference-worker:dev
     environment:
       API_KEY: "0000"
-      MODEL_CONFIG_NAME: distilgpt2
+      MODEL_CONFIG_NAME: ${MODEL_CONFIG_NAME:-distilgpt2}
       BACKEND_URL: "ws://inference-server:8000"
       PARALLELISM: 2
     volumes:
@@ -266,7 +266,7 @@ services:
     volumes:
       - "./oasst-shared:/opt/inference/lib/oasst-shared"
       - "./inference/safety:/opt/inference/safety"
-    profiles: ["inference"]
+    profiles: ["inference-safety"]
 
   prometheus:
     image: prom/prometheus

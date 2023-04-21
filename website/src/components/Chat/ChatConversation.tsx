@@ -78,11 +78,10 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const toast = useToast();
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
-    if (!content) {
+    if (!content || isSending) {
       return;
     }
     setIsSending.on();
-    inputRef.current!.value = "";
 
     // TODO: maybe at some point we won't need to access the rendered HTML directly, but use react state
     const parentId = document.getElementById(LAST_ASSISTANT_MESSAGE_ID)?.dataset.id ?? null;
@@ -113,9 +112,10 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     }
     setMessages((messages) => [...messages, prompter_message]);
 
+    inputRef.current!.value = "";
     // after creating the prompters message, handle the assistant's case
     await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
-  }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast]);
+  }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast, isSending]);
 
   const sendVote = useMessageVote();
 

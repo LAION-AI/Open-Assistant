@@ -124,6 +124,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
             _dark={{
               bg: "gray.800",
             }}
+            autoFocus
           ></Textarea>
         </Box>
       )}

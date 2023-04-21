@@ -4,5 +4,4 @@ fastapi
 huggingface_hub
 sse-starlette
 torch
-git+https://github.com/huggingface/transformers@main#egg=transformers
 uvicorn
