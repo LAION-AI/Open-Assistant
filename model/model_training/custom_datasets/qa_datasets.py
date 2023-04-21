@@ -20,6 +20,8 @@ from torch.utils.data import Dataset, Subset, random_split
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
+re_single_reference_remove = re.compile(r"\[\s?\d+\s?\]")
+re_whitespace_newline_match = re.compile(r"^[\s\n]*$")
 
 
 LINKING_CHARS = ["\n", "\n\n", " "]
@@ -486,35 +488,49 @@ class Vicuna(Dataset):
     name = "vicuna"
 
     @staticmethod
-    def process_vicuna_conversations(data: list[dict[str, None | str]], input_max_length: int) -> list[str] | None:
-        dialogue = []
+    def process_vicuna_conversations(
+        data: list[dict[str, None | str]], input_max_length: int
+    ) -> tuple[list[str], list[str]] | None:
         role = None
         messages = []
         # drop conversations that start with Bot
         if len(data["conversations"]) == 0 or data["conversations"][0]["from"] != "human":
             return None
+        questions = []
+        answers = []
         for line in data["conversations"]:
             speaker = line["from"]  # 'human' or 'gpt'
             message = line["value"]
-
+            if message is None or message == "":
+                if speaker == "gpt":
+                    return None
+                elif speaker == "human":
+                    # replace empty messages with one of the following
+                    message = random.choice(["...", "Please continue", "Go on", ""])
             # remove markdown escaping in revision 192ab2185289094fc556ec8ce5ce1e8e587154ca
             # python-markdownify with escape_asterisks & escape_underscores True is used
             # for pre-processing the dataset.
             # See also https://github.com/LAION-AI/Open-Assistant/issues/2510
             message = message.replace(r"\_", "_")
             message = message.replace(r"\*", "*")
+            message = re_single_reference_remove.sub("", message)
 
             if role != speaker:
                 if role is not None:
-                    dialogue.append("\n".join(messages))
+                    if role == "human":
+                        questions.append("\n".join(messages)[:input_max_length])
+                    if role == "gpt":
+                        answers.append("\n".join(messages)[:input_max_length])
                     messages = []
                 role = speaker
             messages.append(message.strip())
 
         if role is not None and len(messages) > 0:
-            dialogue.append("\n".join(messages))
-        dialogue_truncated = [k[:input_max_length] for k in dialogue]
-        return dialogue_truncated
+            if role == "human":
+                questions.append("\n".join(messages)[:input_max_length])
+            if role == "gpt":
+                answers.append("\n".join(messages)[:input_max_length])
+        return questions, answers
 
     def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
         super().__init__()
@@ -530,20 +546,15 @@ class Vicuna(Dataset):
             revision="192ab2185289094fc556ec8ce5ce1e8e587154ca",
         )["train"]
         for data in dataset:
-            if (
-                processed_data := self.process_vicuna_conversations(data, input_max_length=input_max_length)
-            ) is not None:
-                self.pairs.append(processed_data)
+            if (qa := self.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
+                self.pairs.append(DatasetEntry(questions=qa[0], answers=qa[1]))
 
     def __len__(self) -> int:
         return len(self.pairs)
 
-    def __getitem__(self, index: int) -> list[str] | tuple[str]:
-        dialogue: list[str] = self.pairs[index]
-        if self.mode == "sft":
-            return dialogue
-        elif self.mode == "rl":
-            return tuple(dialogue[:-1])
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.pairs[index]
+        return dialogue
 
 
 class DatabricksDolly15k(Dataset):
