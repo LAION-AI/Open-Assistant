@@ -34,8 +34,8 @@ const sliderItems: Readonly<
 > = [
   {
     key: "temperature",
-    min: 0,
-    max: 1.5,
+    min: 0.01,
+    max: 2,
   },
   {
     key: "max_new_tokens",
