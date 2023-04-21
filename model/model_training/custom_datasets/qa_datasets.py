@@ -21,6 +21,8 @@ from torch.utils.data import Dataset, Subset, random_split
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
 re_single_reference_remove = re.compile(r"\[\s?\d+\s?\]")
+
+# check if the whole string is just a combination of (multiple) whitespaces and newlines
 re_whitespace_newline_match = re.compile(r"^[\s\n]*$")
 
 
@@ -450,6 +452,7 @@ def load_alpaca_dataset(
         dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
     ) -> list[tuple[str, str]]:
         data = []
+
         for row in dataset:
             question = row["instruction"]
             if len(row["input"]) > 0:
