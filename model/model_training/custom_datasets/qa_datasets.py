@@ -20,6 +20,8 @@ from torch.utils.data import Dataset, Subset, random_split
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
+# check if the whole string is just a combination of (multiple) whitespaces and newlines
+re_whitespace_newline_match = re.compile(r"^[\s\n]*$")
 
 
 LINKING_CHARS = ["\n", "\n\n", " "]
@@ -448,6 +450,9 @@ def load_alpaca_dataset(
         dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
     ) -> list[tuple[str, str]]:
         data = []
+        import pdb
+
+        pdb.set_trace()
         for row in dataset:
             question = row["instruction"]
             if len(row["input"]) > 0:
@@ -606,6 +611,32 @@ class AlpacaGpt4(Dataset):
         else:
             linking_char = random.choice(LINKING_CHARS)
             return [f"{row['instruction']}{linking_char}{row['input']}", row["output"]]
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+        dialogue: list[str] = self.rows[index]
+        if self.mode == "sft":
+            return dialogue
+        elif self.mode == "rl":
+            return tuple(dialogue[:-1])
+
+
+class InstructionPoems(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        self.rows = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        data = load_dataset("checkai/instruction-poems", cache_dir=cache_dir)
+        for line in data["train"]:
+            if (conv := self._process_instruction(line, input_max_length)) is not None:
+                self.rows.append(conv)
+
+    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> list[str] | None:
+        return [row["INSTRUCTION"], row["RESPONSE"]]
 
     def __len__(self) -> int:
         return len(self.rows)

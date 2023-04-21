@@ -12,6 +12,7 @@ from model_training.custom_datasets.qa_datasets import (
     SODA,
     AlpacaGpt4,
     DatabricksDolly15k,
+    InstructionPoems,
     JokeExplaination,
     QADataset,
     SODADialogue,
@@ -162,9 +163,11 @@ def get_one_dataset(
     elif dataset_name == "hellaswag":
         train, eval = load_hellaswag()
     elif dataset_name == "dolly15k":
-        dataset = DatabricksDolly15k(cache_dir=data_path)
+        dataset = DatabricksDolly15k(cache_dir=data_path, mode=mode, **kwargs)
     elif dataset_name == "alpaca_gpt4":
-        dataset = AlpacaGpt4(cache_dir=data_path, **kwargs)
+        dataset = AlpacaGpt4(cache_dir=data_path, mode=mode, **kwargs)
+    elif dataset_name == "instruction_poems":
+        dataset = InstructionPoems(cache_dir=data_path, mode=mode, **kwargs)
     else:
         raise ValueError(f"Unknown dataset {dataset_name}")
 
