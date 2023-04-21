@@ -54,8 +54,7 @@ class UserChatRepository(pydantic.BaseModel):
         return message
 
     async def create_chat(self) -> models.DbChat:
-
-        # Try to find the user
+        # Try to find the user first
         user: models.DbUser = (
             await self.session.execute(sqlmodel.select(models.DbUser).where(models.DbUser.id == self.user_id))
         ).one_or_none()
