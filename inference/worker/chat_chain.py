@@ -198,7 +198,7 @@ def handle_plugin_usage(
 
     # bring back ASSISTANT_PREFIX to chain_response,
     # that was omitted with stop=[ASSISTANT_PREFIX]
-    chain_response = f"{chain_response}{ASSISTANT_PREFIX}: "
+    chain_response = f"{chain_response}{ASSISTANT_PREFIX}:  "
 
     # Return non-assisted response
     if chain_finished:
@@ -209,7 +209,7 @@ def handle_plugin_usage(
             return init_prompt, plugin_used
 
         plugin_used.execution_details.status = "success"
-        return init_prompt + chain_response + ASSISTANT_PREFIX + ":  ", plugin_used
+        return f"{init_prompt}{chain_response}", plugin_used
     else:
         # Max depth reached, just try to answer without using a tool
         plugin_used.execution_details.final_prompt = init_prompt

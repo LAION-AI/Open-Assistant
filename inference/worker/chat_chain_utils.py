@@ -64,7 +64,7 @@ def similarity(ts1: str, ts2: str) -> float:
 def extract_tool_and_input(llm_output: str, ai_prefix: str) -> Tuple[str, str]:
     if f"{ai_prefix}:" in llm_output:
         return ai_prefix, llm_output.split(f"{ai_prefix}:")[-1].strip()
-    regex = r"Action: (.*?)[\n]*Action Input: (.*)"
+    regex = r"Action: (.*?)[\n]*Action Input:\n?(.*)"
     match = re.search(regex, llm_output, re.MULTILINE | re.DOTALL)
     if not match:
         if OBSERVATION_SEQ in llm_output:

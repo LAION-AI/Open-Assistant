@@ -122,8 +122,8 @@ def handle_work_request(
         parameters.top_k = 50
         parameters.top_p = None
         parameters.typical_p = None
-        parameters.temperature = 0.21
-        # parameters.repetition_penalty = 1 / 0.83
+        parameters.temperature = 0.35
+        parameters.repetition_penalty = 1  # /0.83
         parameters.seed = 43
 
     model_config = worker_config.model_config
