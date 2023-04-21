@@ -2,12 +2,29 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://LAION-AI.github.io/Open-Assistant/blog</id>
     <title>OpenAssistant Blog</title>
-    <updated>2023-04-15T00:00:00.000Z</updated>
+    <updated>2023-04-21T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://LAION-AI.github.io/Open-Assistant/blog"/>
     <subtitle>Home of the OpenAssistant blog.</subtitle>
     <icon>https://LAION-AI.github.io/Open-Assistant/img/logo.svg</icon>
     <rights>Copyright © 2023 OpenAssistant.</rights>
+    <entry>
+        <title type="html"><![CDATA[OpenAssistant Storms YouTube!]]></title>
+        <id>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/21/open-assistant-storms-youtube</id>
+        <link href="https://LAION-AI.github.io/Open-Assistant/blog/2023/04/21/open-assistant-storms-youtube"/>
+        <updated>2023-04-21T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[OpenAssistant Storms YouTube!]]></summary>
+        <content type="html"><![CDATA[<p><img loading="lazy" alt="Open Assistant" src="/Open-Assistant/assets/images/img-e7661ee1cb91a60efe2130b8cc402f7e.png" width="1783" height="1198" class="img_ev3q"></p><p>Following the release of the OpenAssistant dataset, models and chat
+capabilities, YouTube has been on fire (almost as much as our servers) with
+OpenAssistant videos.</p><p>Below are some to check out.</p><p>If you want more, here is a
+<a href="https://youtube.com/playlist?list=PL6Zhl9mK2r0L9h90uBaIKrHBQQEEPrsxq" target="_blank" rel="noopener noreferrer">playlist</a>
+of all the recent videos we could find.</p><div style="width:100%;height:360px"></div> <br> <div style="width:100%;height:360px"></div> <br> <div style="width:100%;height:360px"></div> <br> <div style="width:100%;height:360px"></div> <br> <div style="width:100%;height:360px"></div> <br> <div style="width:100%;height:360px"></div>]]></content>
+        <author>
+            <name>Andrew Maguire</name>
+        </author>
+        <category label="open-assistant" term="open-assistant"/>
+        <category label="youtube" term="youtube"/>
+    </entry>
     <entry>
         <title type="html"><![CDATA[OpenAssistant RELEASED! The world's best open-source Chat AI!]]></title>
         <id>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/15/open-assistant-released</id>

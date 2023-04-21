@@ -5,6 +5,21 @@
     "description": "Home of the OpenAssistant blog.",
     "items": [
         {
+            "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/21/open-assistant-storms-youtube",
+            "content_html": "<p><img loading=\"lazy\" alt=\"Open Assistant\" src=\"/Open-Assistant/assets/images/img-e7661ee1cb91a60efe2130b8cc402f7e.png\" width=\"1783\" height=\"1198\" class=\"img_ev3q\"></p><p>Following the release of the OpenAssistant dataset, models and chat\ncapabilities, YouTube has been on fire (almost as much as our servers) with\nOpenAssistant videos.</p><p>Below are some to check out.</p><p>If you want more, here is a\n<a href=\"https://youtube.com/playlist?list=PL6Zhl9mK2r0L9h90uBaIKrHBQQEEPrsxq\" target=\"_blank\" rel=\"noopener noreferrer\">playlist</a>\nof all the recent videos we could find.</p><div style=\"width:100%;height:360px\"></div> <br> <div style=\"width:100%;height:360px\"></div> <br> <div style=\"width:100%;height:360px\"></div> <br> <div style=\"width:100%;height:360px\"></div> <br> <div style=\"width:100%;height:360px\"></div> <br> <div style=\"width:100%;height:360px\"></div>",
+            "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/21/open-assistant-storms-youtube",
+            "title": "OpenAssistant Storms YouTube!",
+            "summary": "OpenAssistant Storms YouTube!",
+            "date_modified": "2023-04-21T00:00:00.000Z",
+            "author": {
+                "name": "Andrew Maguire"
+            },
+            "tags": [
+                "open-assistant",
+                "youtube"
+            ]
+        },
+        {
             "id": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/15/open-assistant-released",
             "content_html": "<p>We're excited to announce the release of OpenAssistant!</p><p>The future of AI development depends heavily on high quality datasets and models\nbeing made publicly available, and that's exactly what this project does.</p><p>Our team has worked tirelessly over the past several months collecting large\namounts of text-based input and feedback to create an incredibly diverse and\nunique dataset designed specifically for training language models or other AI\napplications.</p><p>With over 600k human-generated data points covering a wide range of topics and\nstyles of writing, our dataset will be an invaluable tool for any developer\nlooking to create state-of-the-art instruction models!</p><p>To make things even better, we are making this entire dataset free and\naccessible to all who wish to use it. Check it out today at our HF org:\n<a href=\"https://huggingface.co/OpenAssistant\" target=\"_blank\" rel=\"noopener noreferrer\">OpenAssistant</a></p><p>On top of that, we've trained very powerful models that you can try right now\nat:</p><p><a href=\"https://open-assistant.io/chat\" target=\"_blank\" rel=\"noopener noreferrer\">open-assistant.io/chat</a></p><p>Watch the annoucement video:</p><div style=\"width:100%;height:360px\"></div>",
             "url": "https://LAION-AI.github.io/Open-Assistant/blog/2023/04/15/open-assistant-released",

@@ -4,11 +4,25 @@
         <title>OpenAssistant Blog</title>
         <link>https://LAION-AI.github.io/Open-Assistant/blog</link>
         <description>Home of the OpenAssistant blog.</description>
-        <lastBuildDate>Sat, 15 Apr 2023 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 21 Apr 2023 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
         <copyright>Copyright © 2023 OpenAssistant.</copyright>
+        <item>
+            <title><![CDATA[OpenAssistant Storms YouTube!]]></title>
+            <link>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/21/open-assistant-storms-youtube</link>
+            <guid>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/21/open-assistant-storms-youtube</guid>
+            <pubDate>Fri, 21 Apr 2023 00:00:00 GMT</pubDate>
+            <description><![CDATA[OpenAssistant Storms YouTube!]]></description>
+            <content:encoded><![CDATA[<p><img loading="lazy" alt="Open Assistant" src="/Open-Assistant/assets/images/img-e7661ee1cb91a60efe2130b8cc402f7e.png" width="1783" height="1198" class="img_ev3q"></p><p>Following the release of the OpenAssistant dataset, models and chat
+capabilities, YouTube has been on fire (almost as much as our servers) with
+OpenAssistant videos.</p><p>Below are some to check out.</p><p>If you want more, here is a
+<a href="https://youtube.com/playlist?list=PL6Zhl9mK2r0L9h90uBaIKrHBQQEEPrsxq" target="_blank" rel="noopener noreferrer">playlist</a>
+of all the recent videos we could find.</p><div style="width:100%;height:360px"></div> <br> <div style="width:100%;height:360px"></div> <br> <div style="width:100%;height:360px"></div> <br> <div style="width:100%;height:360px"></div> <br> <div style="width:100%;height:360px"></div> <br> <div style="width:100%;height:360px"></div>]]></content:encoded>
+            <category>open-assistant</category>
+            <category>youtube</category>
+        </item>
         <item>
             <title><![CDATA[OpenAssistant RELEASED! The world's best open-source Chat AI!]]></title>
             <link>https://LAION-AI.github.io/Open-Assistant/blog/2023/04/15/open-assistant-released</link>

@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkopen_assistant=self.webpackChunkopen_assistant||[]).push([[8335],{35784:s=>{s.exports=JSON.parse('{"label":"youtube","permalink":"/Open-Assistant/blog/tags/youtube","allTagsPath":"/Open-Assistant/blog/tags","count":5}')}}]);
