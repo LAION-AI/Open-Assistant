@@ -156,7 +156,9 @@ export const PluginsChooser = () => {
                       height="25px"
                       marginRight="5px"
                     />
-                    {plugins[index]?.plugin_config?.name_for_human}
+                    <Tooltip label={plugins[index]?.plugin_config.description_for_human}>
+                      {plugins[index]?.plugin_config?.name_for_human}
+                    </Tooltip>
                     {!plugins[index]?.trusted ? (
                       <Tooltip label={t("unverified_plugin_description")}>
                         <Box display="flex" alignItems="center" marginLeft="2">
@@ -203,10 +205,14 @@ export const PluginsChooser = () => {
           <ModalCloseButton />
           <ModalBody>
             <Textarea
-              minHeight="480px"
+              minHeight="40px"
               defaultValue={selectedPluginIndex !== null ? plugins[selectedPluginIndex!].url : ""}
               ref={textareaRef}
+              mb={4}
             />
+            <Box as="pre" whiteSpace="pre-wrap" fontSize="xs">
+              {JSON.stringify(plugins[selectedPluginIndex!], null, 4)}
+            </Box>
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" onClick={handlePluginSave}>

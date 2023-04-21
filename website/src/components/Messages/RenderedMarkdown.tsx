@@ -163,12 +163,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
 const MemorizedMarkdown = memo(function MemorizedMarkdown(props: ReactMarkdownOptions) {
   return (
     <Prose as="div" sx={sx}>
-      <ReactMarkdown
-        {...props}
-        disallowedElements={disallowedElements}
-        remarkPlugins={remarkPlugins}
-        rehypePlugins={rehypePlugins}
-      />
+      <ReactMarkdown {...props} remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} />
     </Prose>
   );
 });
