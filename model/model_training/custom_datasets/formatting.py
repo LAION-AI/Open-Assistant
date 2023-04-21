@@ -1,7 +1,8 @@
 from itertools import zip_longest
 from random import shuffle
 
-from model_training.custom_datasets.entities import Language, Mode
+from langcodes import Language
+from model_training.custom_datasets.entities import Mode
 from pydantic import BaseModel, validator
 from pydantic.fields import ModelField
 
@@ -25,12 +26,19 @@ def format_system_prefix(prefix, eos_token):
 class DatasetEntry(BaseModel):
     questions: list[str]
     answers: list[str]
-    context: str | None
-    lang: Language | None
-    length: int | None
-    quality: float | None
-    humor: float | None
-    creativity: float | None
+    context: str | None = None
+    lang: str | None = None
+    length: int | None = None
+    quality: float | None = None
+    humor: float | None = None
+    creativity: float | None = None
+
+    @validator("lang")
+    def valid_lang(cls, v) -> str | None:
+        if v is not None:
+            if not (lang := Language.get(v)).is_valid():
+                raise ValueError(f"Language {v} is not valid. Please provide BCP 47 compatible language codes.")
+            return str(lang)
 
     @validator("length")
     def above_zero(cls, v) -> int:

@@ -1,5 +1,6 @@
 import pytest
-from model_training.custom_datasets.entities import Language, Mode
+from langcodes import Language
+from model_training.custom_datasets.entities import Mode
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, DatasetEntry
 
 
@@ -29,7 +30,7 @@ def test_dataset_entry():
         questions=["What is the capital of France?"],
         answers=["The capital of France is Paris."],
         context="Some context",
-        lang=Language("en"),
+        lang="en",
         length=100,
         quality=1.0,
         humor=0.0,
