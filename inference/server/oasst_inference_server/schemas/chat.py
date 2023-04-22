@@ -84,9 +84,6 @@ class MessageTimeoutException(Exception):
         self.message = message
 
 
-class ChatUpdateTitleRequest(pydantic.BaseModel):
-    title: pydantic.constr(max_length=100)
-
-
-class ChatUpdateVisibilityRequest(pydantic.BaseModel):
-    hidden: bool
+class ChatUpdateRequest(pydantic.BaseModel):
+    title: pydantic.constr(max_length=100) | None = None
+    hidden: bool | None = None

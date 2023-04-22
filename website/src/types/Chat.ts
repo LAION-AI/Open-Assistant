@@ -115,3 +115,9 @@ export interface InferencePostAssistantMessageParams {
   model_config_name: string;
   sampling_parameters: SamplingParameters;
 }
+
+export interface InferenceUpdateChatParams {
+  chat_id: string;
+  title?: string;
+  hidden?: boolean;
+}

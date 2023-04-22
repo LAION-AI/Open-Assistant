@@ -23,5 +23,6 @@
   "top_p": "Top P",
   "typical_p": "Typical P",
   "you_are_logged_in": "You are logged in to the chat service",
-  "your_chats": "Your Chats"
+  "your_chats": "Your Chats",
+  "input_placeholder": "Ask the assistant anything"
 }

@@ -17,7 +17,7 @@ const Team = () => {
         <title>{`${t("who_are_we")} - Open Assistant`}</title>
         <meta name="description" content="The team behind Open Assistant" />
       </Head>
-      <Box fontFamily="Inter" p="6" className="oa-basic-theme">
+      <Box p="6" className="oa-basic-theme">
         <Stack className="max-w-6xl mx-auto" spacing="6" mb="6">
           <Heading as="h1" size="xl" color="blue.500">
             {t("who_are_we")}

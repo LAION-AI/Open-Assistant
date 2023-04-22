@@ -33,11 +33,11 @@ function AccountButton() {
 
 export const HEADER_HEIGHT = "82px";
 
-export type HeaderProps = { preLogoSlot?: ReactNode };
+export type HeaderProps = { preLogoSlot?: ReactNode; fixed?: boolean };
 
 const ANNOUNCEMENT_CACHE_KEY = "announcement";
 
-export function Header({ preLogoSlot }: HeaderProps) {
+export function Header({ preLogoSlot, fixed = true }: HeaderProps) {
   const { t } = useTranslation();
   const { data: session } = useSession();
   const homeURL = session ? "/dashboard" : "/";
@@ -66,7 +66,7 @@ export function Header({ preLogoSlot }: HeaderProps) {
       {initialShowAnnouncement && showAnnouncement && (
         <Box
           zIndex={30}
-          position="fixed"
+          position={fixed ? "fixed" : "relative"}
           backgroundColor="yellow.400"
           display="flex"
           justifyContent="center"
@@ -87,7 +87,7 @@ export function Header({ preLogoSlot }: HeaderProps) {
         display="flex"
         justifyContent="space-between"
         p="4"
-        position="fixed"
+        position={fixed ? "fixed" : "relative"}
         zIndex={20}
         w="full"
         height={HEADER_HEIGHT}
@@ -98,12 +98,11 @@ export function Header({ preLogoSlot }: HeaderProps) {
           {preLogoSlot}
           <Flex as={Link} gap="3" href={homeURL} aria-label="Home" alignItems="center">
             <Image src="/images/logos/logo.svg" className="mx-auto object-fill" width="50" height="50" alt="logo" />
-            <Text fontFamily="inter" fontSize={["lg", "2xl"]} fontWeight="bold" className="hidden sm:block">
+            <Text fontSize={["lg", "2xl"]} fontWeight="bold" className="hidden sm:block">
               {t("title")}
             </Text>
           </Flex>
         </Flex>
-
         <Flex alignItems="center" gap={["2", "4"]}>
           <LanguageSelector />
           <AccountButton />

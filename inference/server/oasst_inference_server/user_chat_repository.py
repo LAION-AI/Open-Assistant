@@ -54,6 +54,12 @@ class UserChatRepository(pydantic.BaseModel):
         return message
 
     async def create_chat(self) -> models.DbChat:
+        # Try to find the user first
+        user: models.DbUser = (
+            await self.session.execute(sqlmodel.select(models.DbUser).where(models.DbUser.id == self.user_id))
+        ).one_or_none()
+        if not user:
+            raise fastapi.HTTPException(status_code=404, detail="User not found")
         chat = models.DbChat(user_id=self.user_id)
         self.session.add(chat)
         await self.session.commit()
@@ -228,16 +234,21 @@ class UserChatRepository(pydantic.BaseModel):
         await self.session.refresh(report)
         return report
 
-    async def update_title(self, chat_id: str, title: str) -> None:
-        logger.info(f"Updating title of chat {chat_id=}: {title=}")
+    async def update_chat(
+        self,
+        chat_id: str,
+        title: str | None = None,
+        hidden: bool | None = None,
+    ) -> None:
+        logger.info(f"Updating chat {chat_id=}: {title=} {hidden=}")
         chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
 
-        chat.title = title
-        await self.session.commit()
+        if title is not None:
+            logger.info(f"Updating title of chat {chat_id=}: {title=}")
+            chat.title = title
 
-    async def update_visibility(self, chat_id: str, hidden: bool) -> None:
-        logger.info(f"Setting chat {chat_id=} to {'hidden' if hidden else 'visible'}")
-        chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
+        if hidden is not None:
+            logger.info(f"Setting chat {chat_id=} to {'hidden' if hidden else 'visible'}")
+            chat.hidden = hidden
 
-        chat.hidden = hidden
         await self.session.commit()

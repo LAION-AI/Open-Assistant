@@ -8,13 +8,12 @@ export const setConfigCache = (config: ChatConfigFormData) => {
   }
 };
 
-export const getConfigCache = () => {
+export const getConfigCache = (): ChatConfigFormData | null => {
   if (typeof localStorage !== "undefined") {
     const oldConfig = localStorage.getItem(CHAT_CONFIG_KEY);
     if (oldConfig) {
       return JSON.parse(oldConfig);
     }
-    return null;
   }
   return null;
 };

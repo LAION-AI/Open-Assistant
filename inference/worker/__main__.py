@@ -122,9 +122,9 @@ def main():
             time.sleep(5)
         except Exception:
             logger.exception("Error in websocket")
-            logger.warning("Retrying in 5 seconds...")
             if not settings.retry_on_error:
                 sys.exit(1)
+            logger.warning("Retrying in 5 seconds...")
             time.sleep(5)
 
 
