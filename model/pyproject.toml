@@ -28,6 +28,7 @@ dependencies = [
     "scikit-learn>=1.2.0",
     "tokenizers>=0.13.3",
     "torch>=2.0.0",
+    "langcodes==3.3.0",
     "tqdm>=4.65.0",
     "pydantic==1.10.7",
     "transformers @ git+https://github.com/huggingface/transformers.git@6fc44656b43f1de939a1e62dd59c45d1fec9f1aa",
