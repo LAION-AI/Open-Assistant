@@ -2,9 +2,68 @@ from argparse import Namespace
 
 import pytest
 from model_training.custom_datasets import get_one_dataset
+from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS  # , DatasetEntry
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
-from model_training.utils import get_tokenizer
+from model_training.utils import get_tokenizer, match_tokenizer_name
 from torch.utils.data import DataLoader
+from transformers.models.auto.tokenization_auto import AutoTokenizer
+
+
+@pytest.fixture
+def pythia_tokenizer():
+    tokenizer = AutoTokenizer.from_pretrained("tests/resources/data_collator", local_files_only=True)
+    # for this test we use the pythia special tokens but note that this test is model agnostic
+    tokenizer_config = match_tokenizer_name("pythia")
+
+    tokenizer.add_special_tokens(
+        {
+            "pad_token": tokenizer_config.special_tokens.pad_token,
+            "eos_token": tokenizer_config.special_tokens.eos_token,
+            "sep_token": tokenizer_config.special_tokens.sep_token,
+        }
+    )
+
+    additional_special_tokens = list(QA_SPECIAL_TOKENS.values())
+
+    tokenizer.add_special_tokens({"additional_special_tokens": additional_special_tokens})
+    return tokenizer
+
+
+def test_ranking_collator_local(pythia_tokenizer):
+    first_messages = ["First Instruction."]
+    first_replies = [
+        "Response A to First Instruction",
+        "Response B to First Instruction",
+        "First Response C to First Instruction",
+    ]
+    second_messages = ["Second Instruction."]
+    second_replies = ["Response A to Second Instruction", "Response B to Second Instruction"]
+    examples = [(first_messages, first_replies), (second_messages, second_replies)]
+    rdc = RankingDataCollator(tokenizer=pythia_tokenizer, padding=True)
+    batch, cu_lens = rdc(examples=examples)
+    eos = pythia_tokenizer.eos_token
+    pad = pythia_tokenizer.pad_token
+    assert len(batch) == 2
+    assert cu_lens == [0, len(first_replies), len(first_replies) + len(second_replies)]
+    assert batch.data["attention_mask"].shape[0] == 5  # we have 5 replies in total
+    assert batch.data["input_ids"].shape == batch.data["attention_mask"].shape
+    # check each instruction
+    assert (
+        pythia_tokenizer.decode(batch.data["input_ids"][0])
+        == f"{QA_SPECIAL_TOKENS['Question']}{first_messages[0]}{eos}{QA_SPECIAL_TOKENS['Answer']}{first_replies[0]}{eos}"
+        + 5 * pad
+    )
+    assert (
+        pythia_tokenizer.decode(batch.data["input_ids"][1])
+        == f"{QA_SPECIAL_TOKENS['Question']}{first_messages[0]}{eos}{QA_SPECIAL_TOKENS['Answer']}{first_replies[1]}{eos}"
+        + 5 * pad
+    )
+    assert (
+        pythia_tokenizer.decode(batch.data["input_ids"][2])
+        == f"{QA_SPECIAL_TOKENS['Question']}{first_messages[0]}{eos}{QA_SPECIAL_TOKENS['Answer']}{first_replies[2]}{eos}"
+    )
+
+    # todo: add masking
 
 
 @pytest.mark.skip(reason="manual")
