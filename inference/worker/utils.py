@@ -103,7 +103,6 @@ def text_to_events(text: str, seed: int | None = None, pause: float = 0.0):
 
 
 def lorem_events(seed):
-    logger.debug(lorem.paragraph())
     sentence = lorem.paragraph()
     yield from text_to_events(sentence, seed=seed, pause=0.2)
 
