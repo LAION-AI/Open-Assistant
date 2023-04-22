@@ -48,7 +48,7 @@
     "chart.js": "^4.2.1",
     "clsx": "^1.2.1",
     "date-fns": "^2.29.3",
-    "eslint": "8.29.0",
+    "eslint": "8.39.0",
     "eslint-config-next": "13.0.6",
     "eslint-plugin-simple-import-sort": "^8.0.0",
     "focus-visible": "^5.2.0",
