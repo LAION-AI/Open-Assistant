@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Box, useBoolean, useToast } from "@chakra-ui/react";
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
 import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
@@ -200,6 +200,22 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     [createAndFetchAssistantMessage, isSending, setIsSending]
   );
 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!chatContainerRef.current || !messagesEndRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const threshold = 100;
+    const scrollBottom = scrollHeight - scrollTop - clientHeight;
+
+    if (scrollBottom > threshold) {
+      return;
+    }
+
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  }, [messages, streamedResponse]);
+
   return (
     <Box
       pt="4"
@@ -218,7 +234,10 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       }}
     >
       <SimpleBar
-        style={{ padding: "4px 0", maxHeight: "100%", height: "100%", minHeight: "0" }}
+        scrollableNodeProps={{
+          ref: chatContainerRef,
+        }}
+        style={{ maxHeight: "100%", height: "100%", minHeight: "0" }}
         classNames={{
           contentEl: "space-y-4 mx-4 flex flex-col overflow-y-auto items-center",
         }}
@@ -232,6 +251,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
           onEditPromtp={handleEditPrompt}
         ></ChatConversationTree>
         {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
+        <div ref={messagesEndRef} style={{ height: 0 }}></div>
       </SimpleBar>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
     </Box>
