@@ -68,7 +68,7 @@
     "react-feature-flags": "^1.0.0",
     "react-hook-form": "^7.43.8",
     "react-i18next": "^12.2.0",
-    "react-markdown": "^8.0.6",
+    "react-markdown": "^8.0.7",
     "react-syntax-highlighter": "^15.5.0",
     "react-textarea-autosize": "^8.4.1",
     "rehype-katex": "^6.0.2",
