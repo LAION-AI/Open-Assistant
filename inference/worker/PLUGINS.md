@@ -28,9 +28,17 @@ Here is OpenAI plugins
 [specification](https://platform.openai.com/docs/plugins/getting-started) that
 is currently partially supported with this system.
 
-For now, only non-authentication-based plugins are supported. Some of them
-are: - https://www.klarna.com/.well-known/ai-plugin.json -
-https://www.joinmilo.com/.well-known/ai-plugin.json
+For now, only non-authentication-based and only (**GET** request) plugins are
+supported. Some of them are:
+
+- https://www.klarna.com/.well-known/ai-plugin.json
+- https://www.joinmilo.com/.well-known/ai-plugin.json
+
+Adding support for all other request types would be quite tricky with the
+current approach. It would be best to drop current “mansplaining” of the API to
+LLM and just show it complete json/yaml content. But unfortunately for that to
+be reliable and to work as close as current approach we would need larger
+context size and a bit more capable models.
 
 And quite a few of them can be found on this website
 [plugin "store" wellknown.ai](https://www.wellknown.ai/)
