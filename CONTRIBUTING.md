@@ -46,7 +46,7 @@ contributions smoothly we recommend the following:
 1.  Package up a small bit of work that solves part of the problem
     [into a Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork)
     and
-    [send it out for review](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/requesting-a-pull-request-review).
+    [send it out for review](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/requesting-a-pull-request-review) to the main branch of [Open-Assistant](https://github.com/LAION-AI/Open-Assistant) (not your forked one).
     [Here](https://github.com/LAION-AI/Open-Assistant/pull/658) is an example PR
     for this project to illustrate this flow.
 1.  If you're lucky, we can merge your change into `main` without any problems.
