@@ -4,6 +4,7 @@ import sqlalchemy.orm
 import sqlmodel
 from loguru import logger
 from oasst_inference_server import database, models
+from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 
 
@@ -102,6 +103,10 @@ class UserChatRepository(pydantic.BaseModel):
     async def add_prompter_message(self, chat_id: str, parent_id: str | None, content: str) -> models.DbMessage:
         logger.info(f"Adding prompter message {len(content)=} to chat {chat_id}")
 
+        if settings.message_max_length is not None:
+            if len(content) > settings.message_max_length:
+                raise fastapi.HTTPException(status_code=413, detail="Message content exceeds max length")
+
         chat: models.DbChat = (
             await self.session.exec(
                 sqlmodel.select(models.DbChat)
@@ -112,6 +117,9 @@ class UserChatRepository(pydantic.BaseModel):
                 )
             )
         ).one()
+        if settings.chat_max_messages is not None:
+            if len(chat.messages) >= settings.chat_max_messages:
+                raise fastapi.HTTPException(status_code=413, detail="Maximum number of messages reached for this chat")
         if parent_id is None:
             if len(chat.messages) > 0:
                 raise fastapi.HTTPException(status_code=400, detail="Trying to add first message to non-empty chat")
@@ -189,6 +197,16 @@ class UserChatRepository(pydantic.BaseModel):
         parent: models.DbMessage = (await self.session.exec(query)).one()
         if parent.chat.user_id != self.user_id:
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
+
+        if settings.chat_max_messages is not None:
+            count_query = sqlmodel.select(sqlmodel.func.count(models.DbMessage.id)).where(
+                models.DbMessage.chat_id == parent.chat.id
+            )
+            num_msgs: int = (await self.session.exec(count_query)).one()
+
+            if num_msgs >= settings.chat_max_messages:
+                raise fastapi.HTTPException(status_code=413, detail="Maximum number of messages reached for this chat")
+
         message = models.DbMessage(
             role="assistant",
             chat_id=parent.chat_id,
