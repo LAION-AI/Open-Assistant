@@ -88,7 +88,7 @@
     "@stardazed/streams-text-encoding": "^1.0.2",
     "@storybook/addon-actions": "^7.0.5",
     "@storybook/addon-essentials": "^7.0.5",
-    "@storybook/addon-interactions": "^7.0.5",
+    "@storybook/addon-interactions": "^7.0.6",
     "@storybook/addon-links": "^7.0.5",
     "@storybook/nextjs": "^7.0.5",
     "@storybook/react": "^7.0.5",
