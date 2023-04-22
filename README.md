@@ -83,6 +83,9 @@ if you have problems):
 docker compose --profile ci up --build --attach-dependencies
 ```
 
+> **Note:** when running on MacOS with an M1 chip you have to use:
+> `DB_PLATFORM=linux/x86_64 docker compose ...`
+
 Then, navigate to `http://localhost:3000` (It may take some time to boot up) and
 interact with the website.
 
