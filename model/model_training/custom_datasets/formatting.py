@@ -25,7 +25,7 @@ def format_system_prefix(prefix, eos_token):
 
 class DatasetEntry(BaseModel):
     questions: list[str]
-    answers: list[str] | list[list[str]]
+    answers: list[str]
     context: str | None = None
     lang: str | None = None
     length: int | None = None
