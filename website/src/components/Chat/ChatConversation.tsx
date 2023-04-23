@@ -204,14 +204,14 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!chatContainerRef.current || !messagesEndRef.current) return;
+    // if (!chatContainerRef.current || !messagesEndRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-    const threshold = 100;
-    const scrollBottom = scrollHeight - scrollTop - clientHeight;
+    // const threshold = 100;
+    // const scrollBottom = scrollHeight - scrollTop - clientHeight;
 
-    if (scrollBottom > threshold) {
-      return;
-    }
+    // if (scrollBottom > threshold) {
+    //   return;
+    // }
 
     messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamedResponse]);
@@ -254,6 +254,14 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         <div ref={messagesEndRef} style={{ height: 0 }}></div>
       </SimpleBar>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
+      <button
+        onClick={() => {
+          const element = chatContainerRef.current;
+          console.log(Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1);
+        }}
+      >
+        click
+      </button>
     </Box>
   );
 });
