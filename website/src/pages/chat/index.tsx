@@ -9,7 +9,7 @@ import { getDashboardLayout } from "src/components/Layout";
 import { isChatEnable } from "src/lib/isChatEnable";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
 import { GetChatsResponse } from "src/types/Chat";
-import { PAGE_SIZE } from "src/components/Chat/useListChatPagination";
+import { PAGE_SIZE } from "src/pages/api/chat";
 
 type ChatListProps = {
   chatResponse: GetChatsResponse;

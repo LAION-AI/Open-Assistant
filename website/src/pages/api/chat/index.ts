@@ -2,7 +2,7 @@ import { withoutRole } from "src/lib/auth";
 import { isChatEnable } from "src/lib/isChatEnable";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
 
-const PAGE_SIZE = 20;
+export const PAGE_SIZE = 20;
 
 const handler = withoutRole("banned", async (req, res, token) => {
   if (!isChatEnable()) {
