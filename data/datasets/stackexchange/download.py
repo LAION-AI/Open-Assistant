@@ -8,12 +8,12 @@
 # webtorrent https://archive.org/download/stackexchange/stackexchange_archive.torrent --select 658
 #
 
-import requests
 import concurrent.futures
 import os
-from bs4 import BeautifulSoup as bs
-import pandas as pd
 import re
+
+import requests
+from bs4 import BeautifulSoup as bs
 
 BASE_URL = "https://ia600107.us.archive.org/view_archive.php?archive=/27/items/stackexchange/{0}&file=Posts.xml"
 DOWNLOAD_DIR = "xml/"

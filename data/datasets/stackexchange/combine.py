@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # Combine (and shorten) parquet files into a single file
 
-import os, glob, sys, re
+import glob
+
 import pandas as pd
 from merge_parquets import merge_parquet_dir
 
@@ -15,18 +16,12 @@ for file in glob.glob("full/*.parquet"):
     df["METADATA"] = df["METADATA"].apply(
         lambda meta: {
             "tags": meta["tags"],
-            "answer_score": int(meta["answer_score"])
-            if "answer_score" in meta and meta["answer_score"]
-            else 0,
-            "question_score": int(meta["question_score"])
-            if "question_score" in meta and meta["question_score"]
-            else 0,
+            "answer_score": int(meta["answer_score"]) if "answer_score" in meta and meta["answer_score"] else 0,
+            "question_score": int(meta["question_score"]) if "question_score" in meta and meta["question_score"] else 0,
         }
     )
     df.to_parquet(file)
     after = len(df)
-    print(
-        f"Shortened {file} from {before} to {after} rows ({100 * after / before:.2f})"
-    )
+    print(f"Shortened {file} from {before} to {after} rows ({100 * after / before:.2f})")
 
 merge_parquet_dir("full", "stackexchange.parquet")

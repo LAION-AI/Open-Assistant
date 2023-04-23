@@ -2,16 +2,17 @@
 # Simple script to convert StackExchange XML to Open Assistant format
 # Original code by https://github.com/b-mc2
 
-import os, gc, glob, sys, re
-from bs4 import BeautifulSoup as bs
+import gc
+import glob
+import os
+import re
+import subprocess
+import sys
+
 import pandas as pd
 from html2text import html2text
-from datasets import load_dataset
 from lxml import etree
 from tqdm import tqdm
-import subprocess
-from merge_parquets import merge_parquet_dir
-
 
 XML_DIR = "./xml"
 SOURCE = "stackexchange-{0}"

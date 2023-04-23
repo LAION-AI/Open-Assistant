@@ -1,4 +1,6 @@
-import re, glob
+import glob
+import re
+
 from pyarrow.parquet import ParquetDataset
 
 
