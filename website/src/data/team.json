@@ -223,7 +223,7 @@
     },
     {
       "name": "Sponsors",
-      "members": ["redmond", "hf", "wandb", "stability", "warning"]
+      "members": ["redmond", "hf", "wandb", "stability"]
     },
     {
       "name": "And also...",
