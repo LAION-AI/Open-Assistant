@@ -199,7 +199,7 @@ const DataTableRow = <T,>({ row }: { row: Row<T> }) => {
       {renderCells.map((cell) => {
         const props = cell.column.columnDef.meta?.cellProps?.(cell);
         return (
-          <Td key={cell.id} {...props} colSpan={cell.span}>
+          <Td key={cell.id} {...props} colSpan={cell.span} style={{ overflow: "hidden" }}>
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
           </Td>
         );
