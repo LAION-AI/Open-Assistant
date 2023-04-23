@@ -3,6 +3,8 @@ import { get } from "src/lib/api";
 import { GetChatsResponse } from "src/types/Chat";
 import useSWRInfinite from "swr/infinite";
 
+export const PAGE_SIZE = 20;
+
 export function useListChatPagination(initialChats?: GetChatsResponse) {
   const {
     data: responses,
@@ -11,9 +13,9 @@ export function useListChatPagination(initialChats?: GetChatsResponse) {
     isLoading,
   } = useSWRInfinite<GetChatsResponse>(
     (pageIndex, previousPageData: GetChatsResponse) => {
-      if (!previousPageData && pageIndex === 0) return `/api/chat?limit=20`; // initial call
+      if (!previousPageData && pageIndex === 0) return `/api/chat?limit=${PAGE_SIZE}`; // initial call
       if (previousPageData && !previousPageData.next) return null; // reached the end
-      return `/api/chat?limit=20&after=${previousPageData.next}`; // paginated call
+      return `/api/chat?limit=${PAGE_SIZE}&after=${previousPageData.next}`; // paginated call
     },
     get,
     {
