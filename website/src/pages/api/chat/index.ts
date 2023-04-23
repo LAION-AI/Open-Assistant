@@ -2,6 +2,8 @@ import { withoutRole } from "src/lib/auth";
 import { isChatEnable } from "src/lib/isChatEnable";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
 
+const PAGE_SIZE = 20;
+
 const handler = withoutRole("banned", async (req, res, token) => {
   if (!isChatEnable()) {
     return res.status(404).end();
@@ -13,10 +15,9 @@ const handler = withoutRole("banned", async (req, res, token) => {
     if (req.query.chat_id) {
       data = await client.get_chat(req.query.chat_id as string);
     } else {
-      const params = {};
-      if (req.query.limit) {
-        params["limit"] = req.query.limit;
-      }
+      const params = {
+        limit: PAGE_SIZE,
+      };
       if (req.query.before) {
         params["before"] = req.query.before;
       }
