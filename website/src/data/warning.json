@@ -10,7 +10,7 @@
   "groups": [
     {
       "name": "Usage notes",
-      "memebers": ["warning"]
+      "members": ["warning"]
     }
   ]
 }

@@ -13,6 +13,7 @@ import useSWR from "swr";
 import { ChatListItem } from "./ChatListItem";
 import { CreateChatButton } from "./CreateChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
+import { ChatWarning } from "./ChatWarning";
 
 export const ChatListBase = memo(function ChatListBase({
   chats, // TODO: can we remove this?
@@ -84,6 +85,7 @@ export const ChatListBase = memo(function ChatListBase({
           <ChatListItem key={chat.id} chat={chat} onUpdateTitle={handleUpdateTitle} onHide={handleHide}></ChatListItem>
         ))}
       </SimpleBar>
+      <ChatWarning />
       <InferencePoweredBy />
     </Box>
   );

@@ -1,29 +1,27 @@
-import { Grid, Heading } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
+import { Fragment } from "react";
 import { TeamMember } from "src/components/TeamMember";
 
 import data from "../../data/warning.json";
 
-const Warning = ({ heading, members }) => {
-  const { panels } = data;
-  return (
-    <>
-      <Heading size="sm" mt={3} mb={1} textAlign="center">
-        {heading}
-      </Heading>
-      <Grid gap="6" gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))" alignItems="center">
-        {members.map((id) => {
-          const info = panels[id] ?? {};
-          return <TeamMember {...info} key={id} />;
-        })}
-      </Grid>
-    </>
-  );
+const warn = ["warning"] as const;
+
+const rootProps = {
+  bg: "transparent",
+  borderRadius: 0,
 };
 
 export const ChatWarning = () => {
   return (
-    <>
-      <Warning heading="Usage warning" members={["warning"]} />
-    </>
+    <Flex direction="column" justifyContent="center" borderTopWidth="1px" p="2">
+      {warn.map((id) => (
+        <Fragment key={id}>
+          <TeamMember {...data.panels[id]} rootProps={rootProps}></TeamMember>
+        </Fragment>
+      ))}
+      <Flex justifyContent="center" pb="2" fontSize="sm" color="gray.500">
+        Usage Warning
+      </Flex>
+    </Flex>
   );
 };
