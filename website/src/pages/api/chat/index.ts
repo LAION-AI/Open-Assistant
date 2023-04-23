@@ -13,7 +13,17 @@ const handler = withoutRole("banned", async (req, res, token) => {
     if (req.query.chat_id) {
       data = await client.get_chat(req.query.chat_id as string);
     } else {
-      data = await client.get_my_chats();
+      const params = {};
+      if (req.query.limit) {
+        params["limit"] = req.query.limit;
+      }
+      if (req.query.before) {
+        params["before"] = req.query.before;
+      }
+      if (req.query.after) {
+        params["after"] = req.query.after;
+      }
+      data = await client.get_my_chats(params);
     }
   } else if (req.method === "POST") {
     data = await client.create_chat();

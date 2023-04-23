@@ -9,6 +9,7 @@ import {
   InferenceUpdateChatParams,
   ModelInfo,
   TrustedClient,
+  GetChatsParams,
 } from "src/types/Chat";
 import type { Readable } from "stream";
 
@@ -33,8 +34,10 @@ export class OasstInferenceClient {
     return this.request("/auth/trusted", { method: "POST" });
   }
 
-  get_my_chats(): Promise<GetChatsResponse> {
-    return this.request("/chats");
+  get_my_chats(params: GetChatsParams): Promise<GetChatsResponse> {
+    const searchParams = new URLSearchParams(params as Record<string, string>);
+
+    return this.request(`/chats?${searchParams.toString()}`);
   }
 
   async create_chat(): Promise<ChatItem> {

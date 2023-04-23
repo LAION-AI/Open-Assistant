@@ -23,7 +23,7 @@ const ChatList = ({ chatResponse }: InferGetServerSidePropsType<typeof getServer
         <title>{t("chat")}</title>
       </Head>
       <ChatListBase
-        chats={chatResponse}
+        initialChats={chatResponse}
         className="max-w-5xl mx-auto"
         pt="4"
         px="4"
@@ -51,7 +51,9 @@ export const getServerSideProps: GetServerSideProps<ChatListProps> = async ({ lo
 
   const token = await getToken({ req });
   const client = createInferenceClient(token!);
-  const chats = await client.get_my_chats();
+  const chats = await client.get_my_chats({
+    limit: 20,
+  });
 
   return {
     props: {
