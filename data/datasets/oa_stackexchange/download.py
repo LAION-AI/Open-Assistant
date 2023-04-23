@@ -64,7 +64,10 @@ def download_all():
 
     # Wait for all downloads to complete
     concurrent.futures.wait(futures)
-    print("All downloads complete")
+    print("All downloads complete, except for the large stackoverflow XML file")
+    print("Use torrent to download this one much quicker, then uncompress the 7z file")
+    print("and move the extracted stackoverflow.com-Posts.xml to xml/stackoverflow.xml")
+    print("webtorrent https://archive.org/download/stackexchange/stackexchange_archive.torrent --select 658")
 
 
 if __name__ == "__main__":

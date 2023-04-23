@@ -52,6 +52,31 @@ Each row consists of
 
 Original extraction code by https://github.com/b-mc2
 
+
+## How to Reproduce this Dataset
+
+1. Download all XML files from the stackexchange archive into the xml/ folder
+```
+./download.py
+```
+2. Process the XML, filter conversations and convert to OA format into parquet/ folder
+
+```
+./process.py
+```
+3. Run stats on all files in the parquet/ folder
+```
+./stats.py
+```
+4. Combine all parquet files into one large stackexchange.parquet file
+```
+./combine.py
+```
+5. Upload to huggingface hub, you'll first need use huggingface-cli login
+```
+./upload.py
+```
+
 ## Statistics
 
 - 3dprinting: 1,006
