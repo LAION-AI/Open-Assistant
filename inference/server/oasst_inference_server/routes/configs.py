@@ -1,9 +1,11 @@
-import json
+import asyncio
 
+import aiohttp
 import fastapi
 import pydantic
-import requests
 import yaml
+from aiohttp.client_exceptions import ClientConnectorError, ServerTimeoutError
+from fastapi import HTTPException
 from loguru import logger
 from oasst_inference_server.settings import settings
 from oasst_shared import model_configs
@@ -77,6 +79,44 @@ DEFAULT_PARAMETER_CONFIGS = [
 ]
 
 
+async def fetch_plugin(url: str, retries: int = 3, timeout: float = 5.0) -> inference.PluginConfig:
+    async with aiohttp.ClientSession() as session:
+        for attempt in range(retries):
+            try:
+                async with session.get(url, timeout=timeout) as response:
+                    content_type = response.headers.get("Content-Type")
+
+                    if response.status == 200:
+                        if "application/json" in content_type or url.endswith(".json"):
+                            config = await response.json()
+                        elif (
+                            "application/yaml" in content_type
+                            or "application/x-yaml" in content_type
+                            or url.endswith(".yaml")
+                            or url.endswith(".yml")
+                        ):
+                            config = yaml.safe_load(await response.text())
+                        else:
+                            raise HTTPException(
+                                status_code=400,
+                                detail=f"Unsupported content type: {content_type}. Only JSON and YAML are supported.",
+                            )
+
+                        return inference.PluginConfig(**config)
+                    elif response.status == 404:
+                        raise HTTPException(status_code=404, detail="Plugin not found")
+                    else:
+                        raise HTTPException(status_code=response.status, detail="Unexpected status code")
+            except (ClientConnectorError, ServerTimeoutError) as e:
+                if attempt == retries - 1:  # last attempt
+                    raise HTTPException(status_code=500, detail=f"Request failed after {retries} retries: {e}")
+                await asyncio.sleep(2**attempt)  # exponential backoff
+
+            except aiohttp.ClientError as e:
+                raise HTTPException(status_code=500, detail=f"Request failed: {e}")
+    raise HTTPException(status_code=500, detail="Failed to fetch plugin")
+
+
 @router.get("/model_configs")
 async def get_model_configs() -> list[ModelConfigInfo]:
     return [
@@ -90,52 +130,25 @@ async def get_model_configs() -> list[ModelConfigInfo]:
 
 
 @router.post("/plugin_config")
-async def get_plugin_config(plugin: inference.PluginEntry) -> inference.PluginEntry | fastapi.HTTPException:
-    plugin_config = None
+async def get_plugin_config(plugin: inference.PluginEntry) -> inference.PluginEntry:
     try:
-        response = requests.get(plugin.url)
-        response.raise_for_status()
-    except requests.exceptions.RequestException:
-        return fastapi.HTTPException(status_code=404, detail="Plugin not found")
-
-    config = {}
-    try:
-        content_type = response.headers.get("Content-Type")
-        if "application/json" in content_type or plugin.url.endswith(".json"):
-            config = json.loads(response.text)
-        elif (
-            "application/yaml" in content_type
-            or "application/x-yaml" in content_type
-            or plugin.url.endswith(".yaml")
-            or plugin.url.endswith(".yml")
-        ):
-            config = yaml.safe_load(response.text)
-        else:
-            raise Exception(f"Unsupported content type: {content_type}. Only JSON and YAML are supported.")
-
-        plugin_config = inference.PluginConfig(**config)
-    except Exception as e:
-        return fastapi.HTTPException(status_code=404, detail="Failed to parse plugin config, error: " + str(e))
+        plugin_config = await fetch_plugin(plugin.url)
+    except HTTPException as e:
+        logger.warning(f"Failed to fetch plugin config from {plugin.url}: {e.detail}")
+        raise fastapi.HTTPException(status_code=e.status_code, detail=e.detail)
 
     return inference.PluginEntry(url=plugin.url, enabled=plugin.enabled, plugin_config=plugin_config)
 
 
 @router.get("/builtin_plugins")
-async def get_builtin_plugins() -> list[inference.PluginEntry] | fastapi.HTTPException:
+async def get_builtin_plugins() -> list[inference.PluginEntry]:
     plugins = []
 
     for plugin in DUMMY_PLUGINS:
         try:
-            response = requests.get(plugin.url)
-            response.raise_for_status()
-        except requests.exceptions.RequestException:
-            logger.warning(f"Failed to fetch plugin config from {plugin.url}")
-            continue
-
-        try:
-            plugin_config = inference.PluginConfig(**response.json())
-        except ValueError:
-            logger.warning(f"Failed to parse plugin config from {plugin.url}")
+            plugin_config = await fetch_plugin(plugin.url)
+        except HTTPException as e:
+            logger.warning(f"Failed to fetch plugin config from {plugin.url}: {e.detail}")
             continue
 
         final_plugin: inference.PluginEntry = inference.PluginEntry(

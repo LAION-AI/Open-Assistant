@@ -1,7 +1,6 @@
 import json
 import re
 import threading
-from typing import Tuple
 
 import requests
 import transformers
@@ -61,10 +60,11 @@ def similarity(ts1: str, ts2: str) -> float:
 # TODO: Can be improved, like... try to use another pass trough LLM
 # with custom tuned prompt for fixing the formatting.
 # e.g. "This is malformed text, please fix it: {malformed text} -> FIX magic :)"
-def extract_tool_and_input(llm_output: str, ai_prefix: str) -> Tuple[str, str]:
+def extract_tool_and_input(llm_output: str, ai_prefix: str) -> tuple[str, str]:
     if f"{ai_prefix}:" in llm_output:
         return ai_prefix, llm_output.split(f"{ai_prefix}:")[-1].strip()
     regex = r"Action: (.*?)[\n]*Action Input:\n?(.*)"
+    # match = re.search(regex, llm_output) # this is for 65B llama :(
     match = re.search(regex, llm_output, re.MULTILINE | re.DOTALL)
     if not match:
         if OBSERVATION_SEQ in llm_output:
@@ -102,29 +102,53 @@ def use_tool(tool_name: str, tool_input: str, tools: list) -> str:
 # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
 # TODO: Add POST, PUT etc... methods
 class RequestsForLLM:
-    def run(self, params: str, url: str, param_location: str, type: str) -> str:
+    def run(self, params: str, url: str, param_location: str, type: str, payload: str | None = None) -> str:
+        return self.run_request(params, url, param_location, type, payload)
+
+    def run_request(self, params: str, url: str, param_location: str, type: str, payload: str = None) -> str:
+        logger.warning(
+            f"Running {type} request on {url} with params: {params}, param_location: {param_location}, payload: {payload}"
+        )
         try:
-            print(f"Running {type} request on {url} with params: {params}, param_location: {param_location}")
+            print(
+                f"Running {type} request on {url} with params: {params}, param_location: {param_location}, payload: {payload}"
+            )
 
             query_params = json.loads(params)
             if param_location == "path":
-                for _, value in query_params.items():
-                    url += f"/{value}"
+                for key, value in query_params.items():
+                    url = url.replace(f"{{{key}}}", value)
                 query_params = {}
 
-            res = requests.get(url, params=query_params)
-            if res.status_code != 200:
-                return f"ERROR! That didn't work, try modifying Action Input.\n{res.text}. Try again!"
+            headers = {"Content-Type": "application/json"} if payload else None
 
-            # NOTE: We don't want to truncate this, but we also don't have
-            # infinite context space for some of the plugin responses,
-            # this truncation also degrades LLM continuation... but...
-            return truncate_str(res.text, 1248)
+            if type.lower() == "get":
+                res = requests.get(url, params=query_params, headers=headers)
+            elif type.lower() == "post":
+                data = json.dumps(json.loads(payload)) if payload else json.dumps(json.loads(params))
+                res = requests.post(url, params=query_params, data=data, headers=headers)
+            else:
+                return f"ERROR! Unsupported request type: {type}. Only GET and POST are supported. Try again!"
+
+            return self.process_response(res)
+
         except Exception as e:
             return f"ERROR! That didn't work, try modifying Action Input.\n{e}. Try again!"
 
+    def process_response(self, res):
+        if res.status_code != 200:
+            return f"ERROR! That didn't work, try modifying Action Input.\n{res.text}. Try again!"
 
-def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> Tuple[str, list[Tool]]:
+        if res.text is None or len(res.text) == 0:
+            return "ERROR! That didn't work, try modifying Action Input.\nEmpty response. Try again!"
+
+        if "null" in res.text.lower() and len(res.text) < 10:
+            return "ERROR! That didn't work, try modifying Action Input.\nEmpty response. Try again!"
+
+        return truncate_str(res.text, 1548)
+
+
+def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str, list[Tool]]:
     if not plugin:
         return "", []
 
@@ -134,6 +158,19 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> Tuple[str
 
     tools = []
     request_tool = RequestsForLLM()
+
+    def create_tool_func(endpoint, param_location):
+        def func(req_params):
+            # extract payload from req_params {"q": "elon musk", "payload": {}}
+            payload = None
+            if "payload" in req_params:
+                payload = req_params["payload"]
+                del req_params["payload"]
+            return request_tool.run(
+                url=endpoint.url, params=req_params, param_location=param_location, type=endpoint.type, payload=payload
+            )
+
+        return func
 
     # Generate tool for each endpoint of the plugin
     # NOTE: This approach is a bit weird, but it is a good way to help LLM
@@ -154,6 +191,18 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> Tuple[str
         # and some OA/ChatGPT plugins of course, can have {some_word} in theirs
         # descriptions
         params = params.replace("{", "{{").replace("}", "}}")
+        payload_description = ""
+        if endpoint.payload:
+            try:
+                payload_description = "payload: " + truncate_str(json.dumps(endpoint.payload, indent=4), 256)
+                payload_description = payload_description.replace("{", "{{").replace("}", "}}")
+            except Exception as e:
+                logger.warning(f"Failed to convert payload to json string: {e}")
+
+        parameters_description = f"parameters:\n{params}\n" if params else "\n"
+        openapi_specification_title = (
+            "\nOpenAPI specification\n" if len(payload_description) > 0 or len(params) > 0 else ""
+        )
 
         param_location = endpoint.params[0].in_ if len(endpoint.params) > 0 else "query"
         tool = Tool(
@@ -161,10 +210,8 @@ def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> Tuple[str
             # but it can lead LLM to makeup some URLs
             # and problem with EP description is that
             # it can be too long for some plugins
-            func=lambda req_params: request_tool.run(
-                url=endpoint.url, params=req_params, param_location=param_location, type=endpoint.type
-            ),
-            description=f"\nOpenAPI specification params:\n{params}\n\n{endpoint.summary}",
+            func=create_tool_func(endpoint, param_location),
+            description=f"{openapi_specification_title}{parameters_description}{payload_description}tool description: {endpoint.summary}\n",
         )
         tools.append(tool)
 
@@ -191,7 +238,7 @@ def prepare_prompt(
     language: str,
     tokenizer: transformers.PreTrainedTokenizer,
     worker_config: inference.WorkerConfig,
-) -> Tuple[ConversationBufferMemory, str]:
+) -> tuple[ConversationBufferMemory, str]:
     max_input_length = worker_config.model_config.max_input_length
 
     args = {"input": input_prompt, "language": language, "current_time": current_time, "chat_history": memory.buffer}
@@ -203,7 +250,6 @@ def prepare_prompt(
 
     with tokenizer_lock:
         ids = tokenizer.encode(out_prompt)
-    print(len(ids))
 
     # soft truncation
     while len(ids) > max_input_length and len(memory.chat_memory.messages) > 0:

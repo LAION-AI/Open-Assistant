@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from langchain.llms.base import LLM
 from text_generation import Client
 
@@ -11,7 +9,7 @@ class HFInference(LLM):
     typical_p: float | None = None
     temperature: float = 0.8
     repetition_penalty: float | None = None
-    stop_sequences: List[str] = []
+    stop_sequences: list[str] = []
     seed: int = 42
     inference_server_url: str = ""
 
@@ -19,7 +17,7 @@ class HFInference(LLM):
     def _llm_type(self) -> str:
         return "hf-inference"
 
-    def _call(self, prompt: str, stop: Optional[List[str]] = []) -> str:
+    def _call(self, prompt: str, stop: list[str] | None = None) -> str:
         if stop is None:
             stop = self.stop_sequences
         else:

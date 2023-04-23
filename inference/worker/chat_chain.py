@@ -1,5 +1,4 @@
 import datetime
-from typing import Tuple
 
 import interface
 import transformers
@@ -23,13 +22,13 @@ from oasst_shared.schemas import inference
 from settings import settings
 
 # NOTE: Max depth of retries for tool usage
-MAX_DEPTH = 4
+MAX_DEPTH = 8
 
 # NOTE: If we want to exclude tools description from final prompt,
 # to save ctx token space, but it can hurt output quality, especially if
 # truncation kicks in!
 # I keep switching this on/off, depending on the model used.
-REMOVE_TOOLS_FROM_FINAL_PROMPT = True
+REMOVE_TOOLS_FROM_FINAL_PROMPT = False
 
 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -38,11 +37,11 @@ llm = HFInference(
     max_new_tokens=256,
     stop_sequences=[],
     top_k=50,
-    temperature=0.21,
+    temperature=0.20,
     # NOTE: It seems to me like it's better without repetition_penalty for
     # llama-sft7e3 model
-    # repetition_penalty=(1 / 0.83),
     seed=43,
+    repetition_penalty=(1 / 0.97),  # works with good with > 0.88
 )
 
 
@@ -63,7 +62,7 @@ def handle_plugin_usage(
     plugin: inference.PluginEntry | None,
     worker_config: inference.WorkerConfig,
     tokenizer: transformers.PreTrainedTokenizer,
-) -> Tuple[str, inference.PluginUsed]:
+) -> tuple[str, inference.PluginUsed]:
     execution_details = inference.PluginExecutionDetails(
         inner_monologue=[],
         final_tool_output="",
@@ -106,7 +105,10 @@ def handle_plugin_usage(
         .generations[0][0]
         .text
     )
-    chain_response = chain_response.replace("\n\n", "\n")
+    if chain_response is not None and chain_response != "":
+        chain_response = chain_response.replace("\n\n", "\n")
+        if chain_response[0] != "\n":
+            chain_response = f"\n{chain_response}"
 
     inner_monologue.append("In: " + str(init_prompt))
     inner_monologue.append("Out: " + str(chain_response))
@@ -139,7 +141,11 @@ def handle_plugin_usage(
             .generations[0][0]
             .text
         )
-        chain_response = chain_response.replace("\n\n", "\n")
+
+        if chain_response is not None and chain_response != "":
+            chain_response = chain_response.replace("\n\n", "\n")
+            if chain_response[0] != "\n":
+                chain_response = f"\n{chain_response}"
 
         inner_monologue.append("In: " + str(new_prompt))
         inner_monologue.append("Out: " + str(chain_response))
@@ -176,7 +182,7 @@ def handle_plugin_usage(
                 final_input, prompt_template, memory, tools_names, current_time, language, tokenizer, worker_config
             )
 
-            inner_prompt = f"{inner_prompt}\nThought: Should I use a tool? No\n{ASSISTANT_PREFIX}:  "
+            inner_prompt = f"{inner_prompt}\nThought: I now know the final answer\n{ASSISTANT_PREFIX}:  "
 
             plugin_used.execution_details.inner_monologue = inner_monologue
             plugin_used.execution_details.final_tool_output = tool_response
@@ -209,14 +215,14 @@ def handle_plugin_usage(
             return init_prompt, plugin_used
 
         plugin_used.execution_details.status = "success"
-        return f"{init_prompt}{chain_response}", plugin_used
+        return f"{init_prompt}Thought: I now know the final answer\n{ASSISTANT_PREFIX}:  ", plugin_used
     else:
         # Max depth reached, just try to answer without using a tool
         plugin_used.execution_details.final_prompt = init_prompt
         plugin_used.execution_details.achieved_depth = achieved_depth
         plugin_used.execution_details.status = "failure"
         plugin_used.execution_details.error_message = f"Max depth reached: {MAX_DEPTH}"
-        init_prompt = f"{init_prompt}Thought: Should I use a tool? No\n{ASSISTANT_PREFIX}:  "
+        init_prompt = f"{init_prompt}Thought: I now know the final answer\n{ASSISTANT_PREFIX}:  "
         return init_prompt, plugin_used
 
 
@@ -225,7 +231,7 @@ def handle_conversation(
     worker_config: inference.WorkerConfig,
     parameters: interface.GenerateStreamParameters,
     tokenizer: transformers.PreTrainedTokenizer,
-) -> Tuple[str, inference.PluginUsed | None]:
+) -> tuple[str, inference.PluginUsed | None]:
     try:
         original_prompt = work_request.thread.messages[-1].content
         if not original_prompt:
@@ -301,7 +307,7 @@ def handle_conversation(
 if __name__ == "__main__":
     plugin = inference.PluginEntry(
         enabled=True,
-        url="https://www.joinmilo.com/.well-known/ai-plugin.json",
+        url="https://gptweather.skirano.repl.co/.well-known/ai-plugin.json",
         plugin_config=inference.PluginConfig(
             name_for_human="Local dev plugin",
             name_for_model="Local dev plugin",

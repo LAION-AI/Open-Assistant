@@ -156,8 +156,8 @@ export const PluginsChooser = () => {
                       height="25px"
                       marginRight="5px"
                     />
-                    <Tooltip label={plugins[index]?.plugin_config.description_for_human}>
-                      {plugins[index]?.plugin_config?.name_for_human}
+                    <Tooltip label={plugins[index]?.plugin_config?.description_for_human}>
+                      <Text fontSize="sm">{plugins[index]?.plugin_config?.name_for_human}</Text>
                     </Tooltip>
                     {!plugins[index]?.trusted ? (
                       <Tooltip label={t("unverified_plugin_description")}>
@@ -206,7 +206,7 @@ export const PluginsChooser = () => {
           <ModalBody>
             <Textarea
               minHeight="40px"
-              defaultValue={selectedPluginIndex !== null ? plugins[selectedPluginIndex!].url : ""}
+              defaultValue={selectedPluginIndex !== null ? plugins[selectedPluginIndex!]?.url : ""}
               ref={textareaRef}
               mb={4}
             />

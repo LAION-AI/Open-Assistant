@@ -1,7 +1,9 @@
 import json
+from urllib.parse import urlsplit
 
 import requests
 import yaml
+from loguru import logger
 from oasst_shared.schemas import inference
 
 
@@ -32,8 +34,22 @@ def get_plugin_config(url: str) -> inference.PluginConfig | None:
         plugin_dict = response.json()
         return plugin_dict
     except (requests.RequestException, ValueError) as e:
-        print(f"Error downloading or parsing Plugin config: {e}")
+        logger.warning(f"Error downloading or parsing Plugin config: {e}")
         return None
+
+
+def resolve_schema_reference(ref, openapi_dict):
+    if not ref.startswith("#/"):
+        raise ValueError(f"Invalid reference format: {ref}")
+
+    components = ref.split("/")
+    schema = openapi_dict
+    for component in components[1:]:
+        if component not in schema:
+            raise ValueError(f"Reference component not found: {component}")
+        schema = schema[component]
+
+    return schema
 
 
 # TODO: Extract endpoints from this function to separate one!
@@ -43,38 +59,56 @@ def prepare_plugin_for_llm(plugin_url: str) -> inference.PluginConfig | None:
     if not plugin_config:
         return None
 
-    openapi_dict = fetch_openapi_spec(plugin_config["api"]["url"])
+    api_dict = plugin_config.get("api")
+    api_url = api_dict.get("url") if api_dict else None
+    if not api_url:
+        return None
+    openapi_dict = fetch_openapi_spec(api_url)
+
     if not openapi_dict:
         return None
 
     endpoints = []
 
-    base_url = ""
-    if "servers" in openapi_dict:
-        base_url = openapi_dict["servers"][0]["url"]
-
-    paths = openapi_dict["paths"]
+    base_url = openapi_dict.get("servers", [{}])[0].get("url")
+    paths = openapi_dict.get("paths", {})
 
     for path, methods in paths.items():
         for method, details in methods.items():
+            split_result = urlsplit(plugin_config["api"]["url"])
+            backup_url = f"{split_result.scheme}://{split_result.netloc}"
+            params_list = []
+            parameters = details.get("parameters", [])
+            if parameters is not None:
+                for param in parameters:
+                    params_list.append(
+                        inference.PluginOpenAPIParameter(
+                            name=param.get("name", ""),
+                            in_=param.get("in", "query"),
+                            description=param.get("description", ""),
+                            required=param.get("required", False),
+                            schema_=param.get("schema", {}),
+                        )
+                    )
+            # Check if the method is POST and extract request body schema
+            payload = None
+            if "requestBody" in details:
+                content = details["requestBody"].get("content", {})
+                for media_type, media_schema in content.items():
+                    if media_type == "application/json":
+                        if "$ref" in media_schema["schema"]:
+                            payload = resolve_schema_reference(media_schema["schema"]["$ref"], openapi_dict)
+                        else:
+                            payload = media_schema["schema"]
+
             endpoint_data = {
                 "type": method,
                 "summary": details.get("summary", ""),
                 "operation_id": details.get("operationId", ""),
-                "url": f"{base_url}{path}"
-                if base_url
-                else plugin_config["api"]["url"].replace("/openapi.json", "") + path,
+                "url": f"{base_url}{path}" if base_url is not None else f"{backup_url}{path}",
                 "path": path,
-                "params": [
-                    inference.PluginOpenAPIParameter(
-                        name=param["name"],
-                        in_=param["in"],
-                        description=param.get("description", ""),
-                        required=param["required"],
-                        schema_=param["schema"],
-                    )
-                    for param in details.get("parameters", [])
-                ],
+                "params": params_list,
+                "payload": payload,
             }
 
             if "tags" in details:

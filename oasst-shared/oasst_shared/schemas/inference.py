@@ -3,7 +3,7 @@ import platform
 import random
 import uuid
 from datetime import datetime
-from typing import Annotated, Any, List, Literal, Union
+from typing import Annotated, Any, Literal, Union
 
 import psutil
 import pydantic
@@ -144,7 +144,8 @@ class PluginOpenAPIEndpoint(pydantic.BaseModel):
     summary: str
     operation_id: str
     url: str
-    params: List[PluginOpenAPIParameter]
+    params: list[PluginOpenAPIParameter]
+    payload: dict | None = None
 
 
 class PluginConfig(pydantic.BaseModel):
@@ -158,7 +159,7 @@ class PluginConfig(pydantic.BaseModel):
     logo_url: str | None = None
     contact_email: str | None = None
     legal_info_url: str | None = None
-    endpoints: List[PluginOpenAPIEndpoint] | None = None
+    endpoints: list[PluginOpenAPIEndpoint] | None = None
 
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
@@ -177,7 +178,7 @@ class PluginEntry(pydantic.BaseModel):
 
 
 class PluginExecutionDetails(pydantic.BaseModel):
-    inner_monologue: List[str]
+    inner_monologue: list[str]
     final_tool_output: str
     final_prompt: str
     final_generation_assisted: bool

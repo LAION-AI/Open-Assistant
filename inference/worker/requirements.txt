@@ -1,9 +1,9 @@
+aiohttp
 hf_transfer
 huggingface_hub
 langchain==0.0.142
 loguru
 lorem
-numexpr
 nvidia-ml-py
 psutil
 pydantic

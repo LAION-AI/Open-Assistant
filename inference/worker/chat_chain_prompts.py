@@ -31,17 +31,19 @@ INSTRUCTIONS = f"""
 To use a tool, please use the following format:
 
 ```
-Thought: Should I use a tool? Yes
+Thought: I should always think about what to do
 Action: the action to take, should be one of {{tools_names}}
-Action Input: the input to the action, should be in json format.
-Observation: the result of the action you use this to answer the question!
+Action Input: the input to the action, should be in json format
 ```
 
-When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
+Observation: the result of the action, I should extract relevant information from this
+... (this Thought/Action/Observation can repeat N times)
+
+When I have a response to say to the {HUMAN_PREFIX}, or if I do not need to use a tool, I MUST use the format:
 
 ```
-Thought: Should I use a tool? No
-{ASSISTANT_PREFIX}: [your response here]
+Thought: I now know the final answer
+{ASSISTANT_PREFIX}: [my response here]
 ```
 """
 
@@ -51,6 +53,6 @@ Begin!
 Previous conversation history:
 {{chat_history}}
 
-When answering a question, you MUST use the following language: {{language}}{TALKING_STYLE}
+When answering a question, I MUST use the following language: {{language}}{TALKING_STYLE}
 New input: {{input}}
 """
