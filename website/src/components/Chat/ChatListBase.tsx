@@ -45,17 +45,24 @@ export const ChatListBase = memo(function ChatListBase({
 
   const handleHide = useCallback(
     ({ chatId }: { chatId: string }) => {
-      mutateChatResponses((chatResponses) => [
-        ...(chatResponses?.map((chatResponse) => ({
-          ...chatResponse,
-          chats: chatResponse.chats.filter((chat) => {
-            return chat.id !== chatId;
-          }),
-        })) || []),
-      ]);
+      mutateChatResponses(
+        (chatResponses) => [
+          ...(chatResponses?.map((chatResponse) => ({
+            ...chatResponse,
+            chats: chatResponse.chats.filter((chat) => {
+              return chat.id !== chatId;
+            }),
+          })) || []),
+        ],
+        false
+      );
     },
     [mutateChatResponses]
   );
+
+  const handleCreateChat = useCallback(() => {
+    mutateChatResponses();
+  }, [mutateChatResponses]);
 
   return (
     <Box
@@ -79,6 +86,7 @@ export const ChatListBase = memo(function ChatListBase({
         borderRadius="lg"
         mx="3"
         mb="2"
+        onUpdated={handleCreateChat}
       >
         {t("create_chat")}
       </CreateChatButton>
