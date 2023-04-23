@@ -226,7 +226,7 @@ def parse_args():
     parser.add_argument("--num-samples", type=int, default=2, help="number of sampling runs per configuration")
     parser.add_argument("--config", type=str, default="config/default.json", help="configuration file path")
     parser.add_argument("--half", action="store_true", default=False, help="use float16")
-    parser.add_argument("--quantize", action="store_true", default=False, help="use 8bit quantization")
+    parser.add_argument("--int8", action="store_true", default=False, help="use int8 quantization")
     parser.add_argument("--skip-special-tokens", action="store_true", default=False)
     parser.add_argument("--model-type", type=str, default="CausalLM", help="CausalLM, T5Conditional, LLaMA")
     parser.add_argument("--max-input-len", type=int, help="max token counts for input")
@@ -248,9 +248,9 @@ def main():
     print("Using pytorch version {}".format(torch.__version__))
 
     args = parse_args()
-    if args.quantize and not torch.cuda.is_available():
-        print("Warning: --quantize argument passed but cuda is not available. Ignoring --quantize.")
-        args.quantize = False
+    if args.int8 and not torch.cuda.is_available():
+        print("Warning: --int8 argument passed but cuda is not available. Ignoring --int8.")
+        args.int8 = False
 
     print("Args:", args)
 
@@ -271,9 +271,9 @@ def main():
     print(f"Loading model: {model_name}")
 
     model_args = {}
-    if args.quantize:
+    if args.int8:
         # these will break model.to(device) later in the script so a conditional check is needed
-        model_args["load_in_8bit"] = args.quantize
+        model_args["load_in_8bit"] = args.int8
         model_args["device_map"] = "auto"
 
     if args.model_type.lower() == "causallm" or args.model_type.lower() == "llama":
@@ -305,8 +305,8 @@ def main():
     if args.half:
         model = model.half()
 
-    # quantized models (load_in_8bit = True + device_map = auto): will cause this method to error
-    if not args.quantize:
+    # int8 models (load_in_8bit = True + device_map = auto): will cause this method to error
+    if not args.int8:
         model = model.to(device)
 
     print(f"Loading prompts file: {args.prompts}")
