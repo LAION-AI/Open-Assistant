@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import requests
 from loguru import logger
 from oasst_backend.config import settings
@@ -6,10 +8,7 @@ from oasst_backend.models.message import Message
 ROOT_ENDPOINT = "https://discord.com/api/v10"
 
 
-def send_new_report_message(
-    message: Message,
-    label_text: str,
-) -> None:
+def send_new_report_message(message: Message, label_text: str, user_id: UUID) -> None:
     if settings.DISCORD_API_KEY is None or settings.DISCORD_CHANNEL_ID is None:
         return
 
@@ -29,6 +28,10 @@ def send_new_report_message(
             "title": "Report content",
             "description": f"{label_text}",
             "color": 0xE74C3C,  # Red
+            "author": {
+                "name": f"User ID: {user_id}",
+                "url": f"https://open-assistant.io/admin/manage_user/{user_id}",
+            },
         }
         res = requests.post(
             f"{ROOT_ENDPOINT}/channels/{settings.DISCORD_CHANNEL_ID}/messages",

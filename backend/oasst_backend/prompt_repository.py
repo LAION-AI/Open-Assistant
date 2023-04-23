@@ -547,7 +547,7 @@ class PromptRepository:
                         message_id, protocol_schema.EmojiOp.add, protocol_schema.EmojiCode.red_flag
                     )
 
-                    discord.send_new_report_message(message=message, label_text=text_labels.text)
+                    discord.send_new_report_message(message=message, label_text=text_labels.text, user_id=self.user_id)
 
                 # update existing record for repeated updates (same user no task associated)
                 existing_text_label = self.fetch_non_task_text_labels(message_id, self.user_id)
