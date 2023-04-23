@@ -8,6 +8,7 @@ import { ChatConfigSaver } from "./ChatConfigSaver";
 import { useChatContext } from "./ChatContext";
 import { ChatConversation } from "./ChatConversation";
 import { InferencePoweredBy } from "./InferencePoweredBy";
+import { ChatWarning } from "./ChatWarning";
 
 const ChatConfigSummary = dynamic(() => import("./ChatConfigSummary"), { ssr: false });
 
@@ -38,6 +39,7 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
           <ChatConversation chatId={chatId} key={chatId} getConfigValues={form.getValues} />
           <ChatConfigSummary />
           <Divider />
+          <ChatWarning />
           <InferencePoweredBy />
         </CardBody>
       </Card>
