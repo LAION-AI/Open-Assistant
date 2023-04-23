@@ -155,5 +155,11 @@
           GUNICORN_WORKERS:
             "{{ lookup('ansible.builtin.env', 'INFERENCE_GUNICORN_WORKERS') |
             default(1, true) }}"
+          CHAT_MAX_MESSAGES:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_CHAT_MAX_MESSAGES') |
+            default('', true) }}"
+          MESSAGE_MAX_LENGTH:
+            "{{ lookup('ansible.builtin.env', 'INFERENCE_MESSAGE_MAX_LENGTH') |
+            default('', true) }}"
         ports:
           - "{{ server_port }}:8080"

@@ -4,7 +4,13 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
-from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs, format_system_prefix
+from model_training.custom_datasets.formatting import (
+    QA_SPECIAL_TOKENS,
+    DatasetEntry,
+    Mode,
+    format_pairs,
+    format_system_prefix,
+)
 from torch.nn import functional as F
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase, TruncationStrategy
 
@@ -41,8 +47,6 @@ class DialogueDataCollator:
 
     def process_one(self, messages, return_length=False):
         total_short_context_one = 0
-        messages = list(messages)
-
         if random.random() < self.random_offset_probability:
             truncation = TruncationStrategy.DO_NOT_TRUNCATE
             max_length = None
@@ -50,7 +54,11 @@ class DialogueDataCollator:
             truncation = TruncationStrategy.LONGEST_FIRST
             max_length = self.max_length
 
-        messages = format_pairs(messages, self.tokenizer.eos_token)
+        if isinstance(messages, DatasetEntry):
+            messages = messages.get_formatted(mode=Mode.sft, eos_token=self.tokenizer.eos_token)
+        else:
+            messages = list(messages)
+            messages = format_pairs(messages, self.tokenizer.eos_token)
 
         flatten_message = self.tokenizer(
             "".join(messages),
@@ -63,6 +71,7 @@ class DialogueDataCollator:
             return min(len(flatten_message.input_ids), self.max_length)
 
         message_indices: Optional[list[int]] = None
+        system_token_present = False
         if self.label_masking:
             # message_change_indices = np.cumsum([len(x) for x in messages])
             # for each token an integer indicating the index of the message it belongs to. Just to create the label mask.
@@ -81,12 +90,15 @@ class DialogueDataCollator:
 
             prompter_token_id = self.tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Question"])
             assistant_token_id = self.tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Answer"])
-            assert prompter_token_id >= 0 and assistant_token_id >= 0
+            system_token_id = self.tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["System"])
+            assert prompter_token_id >= 0 and assistant_token_id >= 0 and system_token_id >= 0
 
             message_indices = []
             i = -1
+            # assume that system token is the very first token
+            system_token_present = flatten_message.input_ids[0] == system_token_id
             for x in flatten_message.input_ids:
-                if x in (prompter_token_id, assistant_token_id):
+                if x in (prompter_token_id, assistant_token_id, system_token_id):
                     i += 1
                 message_indices.append(i)
 
@@ -101,7 +113,11 @@ class DialogueDataCollator:
                 message_indices = message_indices[offset : offset + self.max_length]
 
         if self.label_masking:
-            label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
+            if system_token_present:
+                # assume system is before first prompter token
+                label_mask = np.array([(idx > 0) and (idx % 2 == 0) for idx in message_indices])
+            else:
+                label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
         else:
             label_mask = np.ones(len(flatten_message.input_ids), dtype=bool)
 

@@ -168,11 +168,12 @@ You can edit the configs/zero_config.json and use any stage you wish. The
 current config uses zero-stage 3. For more details on how to setup the config
 checkout [this page](https://www.deepspeed.ai/tutorials/zero/).
 
-Once you are satisfy with your deepzero config, you can add --deepspeed flag at
-the end to trigger deepspeed
+Once you are satisfied with your deepzero config, you can add the --deepspeed
+flag at the end to trigger deepspeed. You should typically use the deepspeed
+launcher to train
 
 ```
-python trainer_sft.py --configs defaults your-model-name --deepspeed
+deepspeed trainer_sft.py --configs defaults your-model-name --deepspeed
 ```
 
 ### Datasets

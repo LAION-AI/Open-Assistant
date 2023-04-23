@@ -1,0 +1,14 @@
+{
+  "additional_special_tokens": [
+    "<|prompter|>",
+    "<|assistant|>",
+    "<|system|>",
+    "<|prefix_begin|>",
+    "<|prefix_end|>"
+  ],
+  "bos_token": "<|endoftext|>",
+  "eos_token": "<|endoftext|>",
+  "pad_token": "<|padding|>",
+  "sep_token": "<|endoftext|>",
+  "unk_token": "<|endoftext|>"
+}
