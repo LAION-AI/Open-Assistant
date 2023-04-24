@@ -211,7 +211,7 @@ class WebGPT(Dataset):
             # Then take only the first `max_answers` elements (usually there are just
             # 2, but there are examples where we have more)
             answers_sorted = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
-            self.rows.append(DatasetEntry(questions=[question], answers=[answers_sorted[:max_answers]]))
+            self.rows.append(DatasetEntry(questions=[question], answers=[answers_sorted[:max_answers]], lang="en"))
 
     def __len__(self) -> int:
         return len(self.rows)
@@ -435,7 +435,7 @@ def load_alpaca_dataset(
     generator = Generator()
     generator.manual_seed(manual_seed)
 
-    def process_split(dataset: Subset) -> list[tuple[str, str]]:
+    def process_split(dataset: Subset, set_lang_as_eng: bool = False) -> list[tuple[str, str]]:
         data = []
 
         for row in dataset:
@@ -447,7 +447,11 @@ def load_alpaca_dataset(
             if (_filter_by_words(input_) is None) or (_filter_by_words(row["output"]) is None):
                 continue
 
-            data.append(DatasetEntry(questions=[input_], answers=[row["output"]]))
+            if set_lang_as_eng is True:
+                ds_entry = DatasetEntry(questions=[input_], answers=[row["output"]], lang="en")
+            else:
+                ds_entry = DatasetEntry(questions=[input_], answers=[row["output"]])
+            data.append(ds_entry)
         return data
 
     if dataset_name == "alpaca":
@@ -526,7 +530,7 @@ class Vicuna(Dataset):
         )["train"]
         for data in dataset:
             if (qa := self.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
-                self.pairs.append(DatasetEntry(questions=qa[0], answers=qa[1]))
+                self.pairs.append(DatasetEntry(questions=qa[0], answers=qa[1], lang="en"))
 
     def __len__(self) -> int:
         return len(self.pairs)
