@@ -154,7 +154,7 @@ oasst_only:
   datasets:
     - oasst_export:
         lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
-        input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
+        input_file_path: 2023-04-04_oasst_ready.jsonl.gz
         val_split: 0.05
   sort_by_length: false
   use_custom_sampler: false
@@ -175,20 +175,6 @@ oasst_export_eu:
     - oasst_export:
         lang: "en,es,de,fr"
         input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
-    - gpt4all
-    - alpaca
-    - code_alpaca
-    - oig_file:
-        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
-        max_count: 10000
-        min_length: 100
-        val_split: 0.1
-    - oig_file:
-        source_url: https://huggingface.co/datasets/laion/OIG/raw/main/unified_grade_school_math_instructions.jsonl
-        val_split: 0.1
-        min_length: 100
-  sort_by_length: false
-  use_custom_sampler: false
 
 oasst_export_latin_cyrillic:
   save_strategy: epoch
@@ -258,12 +244,33 @@ llama-13b:
   gradient_checkpointing: true
   gradient_accumulation_steps: 2
   per_device_train_batch_size: 4
-  per_device_eval_batch_size: 4
-  eval_steps: 500
+  per_device_eval_batch_size: 8
+  eval_steps: 50
   save_steps: 1000
   num_train_epochs: 8
   save_total_limit: 4
   use_flash_attention: true
+
+llama-13b-pretrain:
+  dtype: fp16
+  log_dir: "llama_log_13b"
+  learning_rate: 1e-5
+  model_name: /home/ubuntu/llama_hf/13B
+  output_dir: llama_model_13b
+  deepspeed_config: configs/zero_config_pretrain.json
+  weight_decay: 0.0
+  residual_dropout: 0.0
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 8
+  eval_steps: 200
+  save_steps: 500
+  num_train_epochs: 1
+  save_total_limit: 2
 
 llama-30b:
   dtype: fp16

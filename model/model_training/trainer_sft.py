@@ -350,7 +350,7 @@ def main():
         not training_conf.deepspeed or training_conf.local_rank == 0
     )
     if show_dataset_stats:
-        print("Dataset stats before sampling:")
+        print("Training dataset sizes (before sampling):")
         total = len(train)
         for d in train.datasets:
             if isinstance(d, Subset):
@@ -361,8 +361,15 @@ def main():
                 name = type(d).__name__
                 if hasattr(d, "name"):
                     name += f" ({d.name})"
-            print(f"{name}: {len(d)} ({len(d) / total:%})")
-        print(f"Total train: {total}")
+            print(f"{name}: {len(d)} ({len(d) / total:.2%})")
+        print(f"\nTotal train: {total}")
+        print("-" * 80)
+        print("Evaluation set sizes:")
+        total_eval = sum(len(x) for x in evals.values())
+        for k, d in evals.items():
+            print(f"{k}: {len(d)} ({len(d) / total_eval:.2%})")
+        print(f"\nTotal eval: {total_eval}")
+        print("-" * 80)
 
     if training_conf.use_custom_sampler:
         samples_length = None
