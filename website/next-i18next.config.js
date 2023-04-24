@@ -31,6 +31,7 @@ module.exports = {
       "ro",
       "ru",
       "sk",
+      "sr",
       "sv",
       "uk-UA",
       "vi",
