@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, memo, SyntheticEvent, useCallback, useState } from "react";
+import { ChangeEvent, memo, useCallback, useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { ChatConfigFormData, SamplingParameters } from "src/types/Chat";
 
@@ -85,7 +85,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   const { t } = useTranslation("chat");
   const { modelInfos } = useChatContext();
 
-  const { control, register, reset, getValues, setValue } = useFormContext<ChatConfigFormData>();
+  const { control, reset, getValues } = useFormContext<ChatConfigFormData>();
   const selectedModel = useWatch({ name: "model_config_name", control: control });
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
   const [selectedPresetName, setSelectedPresetName] = useState(
