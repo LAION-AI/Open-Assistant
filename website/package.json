@@ -113,7 +113,7 @@
     "msw-storybook-addon": "^1.8.0",
     "path-browserify": "^1.0.1",
     "prettier": "2.8.1",
-    "prisma": "^4.11.0",
+    "prisma": "^4.13.0",
     "storybook": "^7.0.5",
     "ts-essentials": "^9.3.1",
     "ts-node": "^10.9.1",
