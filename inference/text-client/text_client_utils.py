@@ -9,6 +9,8 @@ class DebugClient:
     def __init__(self, backend_url, http_client=requests):
         self.backend_url = backend_url
         self.http_client = http_client
+        self.auth_headers = None
+        self.available_models = self.get_available_models()
 
     def login(self, username):
         auth_data = self.http_client.get(f"{self.backend_url}/auth/callback/debug", params={"code": username}).json()
@@ -28,7 +30,18 @@ class DebugClient:
         self.message_id = None
         return self.chat_id
 
+    def get_available_models(self):
+        response = self.http_client.get(
+            f"{self.backend_url}/configs/model_configs",
+            headers=self.auth_headers,
+        )
+        response.raise_for_status()
+        return [model["name"] for model in response.json()]
+
     def send_message(self, message, model_config_name):
+        available_models = self.get_available_models()
+        if model_config_name not in available_models:
+            raise ValueError(f"Invalid model config name: {model_config_name}")
         response = self.http_client.post(
             f"{self.backend_url}/chats/{self.chat_id}/prompter_message",
             json={

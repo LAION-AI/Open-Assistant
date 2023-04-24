@@ -17,6 +17,9 @@ class Settings(pydantic.BaseSettings):
     message_queue_expire: int = 60
     work_queue_max_size: int | None = None
 
+    chat_max_messages: int | None = None
+    message_max_length: int | None = None
+
     allowed_worker_compat_hashes: str = "*"
 
     @property

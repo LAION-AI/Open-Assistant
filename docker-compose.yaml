@@ -9,6 +9,7 @@ services:
 
   # This DB is for the FastAPI Backend.
   db:
+    platform: "${DB_PLATFORM:-}"
     image: ghcr.io/laion-ai/open-assistant/oasst-postgres
     pull_policy: always
     restart: always

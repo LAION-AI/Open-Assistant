@@ -22,6 +22,8 @@ INSTRUCTION_DATASETS = {
     "oa_leet10k": "ehartford/oa_leet10k",
     "LogicInference_OA": "KK04/LogicInference_OA",
     "oa_dolly_15k": "OllieStanley/oa_dolly_15k",
+    "poetry_instruction": "checkai/instruction-poems",
+    "oa_stackexchange": "donfu/oa-stackexchange",
 }
 
 SAFETY_DATASETS = {

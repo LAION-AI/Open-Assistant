@@ -18,7 +18,6 @@ def freeze_top_n_layers(model, target_layers):
                 if token.isdigit():
                     layer_ = int(token)
                     break
-
             if layer_ is not None and layer_ < target_layers:
                 # print('freeze ', layer_, name)
                 param.requires_grad = False
