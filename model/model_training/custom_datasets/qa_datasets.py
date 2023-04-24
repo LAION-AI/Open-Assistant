@@ -425,15 +425,12 @@ class AlpacaBaseDataset(Dataset):
             )
         self.mode = mode
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.data)
 
-    def __getitem__(self, index):
-        question, answer = self.data[index]
-        if self.mode == "sft":
-            return (question, answer)
-        elif self.mode == "rl":
-            return (question,)
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.data[index]
+        return dialogue
 
 
 def load_alpaca_dataset(
@@ -442,15 +439,11 @@ def load_alpaca_dataset(
     cache_dir: str,
     mode: str = "sft",
     manual_seed: int = 287631038922,
-    reverse_augmentation: bool = False,
-    keep_unreversed: bool = True,
 ) -> tuple[AlpacaBaseDataset, AlpacaBaseDataset]:
     generator = Generator()
     generator.manual_seed(manual_seed)
 
-    def process_split(
-        dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
-    ) -> list[tuple[str, str]]:
+    def process_split(dataset: Subset) -> list[tuple[str, str]]:
         data = []
 
         for row in dataset:
@@ -461,13 +454,8 @@ def load_alpaca_dataset(
                 input_ = question
             if (_filter_by_words(input_) is None) or (_filter_by_words(row["output"]) is None):
                 continue
-            if reverse_augmentation:
-                data.append((row["output"], input_))
-                # in case of reverse augmentation we just keep both, reversed and unreversed data
-                if keep_unreversed:
-                    data.append((input_, row["output"]))
-            else:
-                data.append((input_, row["output"]))
+
+            data.append(DatasetEntry(questions=[input_], answers=[row["output"]]))
         return data
 
     if dataset_name == "alpaca":
@@ -478,12 +466,8 @@ def load_alpaca_dataset(
         raise ValueError(f"Expected dataset_name to be 'alapaca' or 'code_alpaca'. Received {dataset_name}.")
 
     splits = random_split(dataset["train"], lengths=[1.0 - val_split, val_split], generator=generator)
-    train = AlpacaBaseDataset(
-        process_split(splits[0], reverse_augmentation=reverse_augmentation, keep_unreversed=keep_unreversed), mode=mode
-    )
-    val = AlpacaBaseDataset(
-        process_split(splits[1], reverse_augmentation=False, keep_unreversed=keep_unreversed), mode=mode
-    )
+    train = AlpacaBaseDataset(process_split(splits[0]), mode=mode)
+    val = AlpacaBaseDataset(process_split(splits[1]), mode=mode)
     return train, val
 
 
