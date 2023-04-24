@@ -95,7 +95,29 @@ export const getBatchFrontendUserIdFromBackendUser = async (users: { username: s
     const account = externalAccounts.find(
       (a) => a.provider === users[userIdx].auth_method && a.providerAccountId === users[userIdx].username
     );
-    // TODO check why the account is undefined
+    //NOTE: This part gives feedback to understand why user is undefined 
+    // Check if users array is empty
+    if (!users.length) {
+      console.log("Error: users array is empty.");
+      return;
+    }
+
+    // Check if userIdx is out of bounds for users array
+    if (userIdx >= users.length) {
+      console.log(`Error: userIdx ${userIdx} is out of bounds for users array.`);
+      return;
+    }
+
+    const user = users[userIdx];
+    console.log("user:", user);
+
+    // Check if auth_method or username is undefined or null for the user
+    if (!user.auth_method || !user.username) {
+      console.log(`Error: auth_method or username is undefined or null for user at userIdx ${userIdx}.`);
+      return;
+    }
+
+
     if (account) {
       outputIds[userIdx] = account.userId;
     }
