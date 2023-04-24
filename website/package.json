@@ -50,7 +50,7 @@
     "date-fns": "^2.29.3",
     "eslint": "8.39.0",
     "eslint-config-next": "13.0.6",
-    "eslint-plugin-simple-import-sort": "^8.0.0",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
     "focus-visible": "^5.2.0",
     "framer-motion": "^6.5.1",
     "friendly-username-generator": "^2.0.4",
