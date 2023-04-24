@@ -136,7 +136,7 @@ SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind .triton_models
 SINGULARITYENV_CUDA_VISIBLE_DEVICES=6 singularity run --nv --bind .triton_models/model_store_sft:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store --http-port 8004 --grpc-port 8005 --metrics-port 8006
 ```
 
-FInally, we can train using PPO:
+Finally, we can train using PPO:
 
 ```bash
 export TRITON_HOST_RM=localhost:8002/<RM_MODEL_NAME>
