@@ -1,3 +1,4 @@
+import math
 import warnings
 from typing import Optional, Tuple
 
@@ -8,6 +9,7 @@ from transformers.models.llama.modeling_llama import LlamaAttention, apply_rotar
 from .patching_utils import compute_flash_attention
 
 
+# adapted from https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/modeling_llama.py#L185
 def llama_forward_with_flash_attn(
     self: LlamaAttention,
     flash_attn: nn.Module,  # flash_attn.modules.mha.FlashSelfAttention
@@ -41,44 +43,45 @@ def llama_forward_with_flash_attn(
 
     past_key_value = (key_states, value_states) if use_cache else None
 
-    # attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-
-    # if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-    #     raise ValueError(
-    #         f"Attention weights should be of size {(bsz * self.num_heads, q_len, kv_seq_len)}, but is"
-    #         f" {attn_weights.size()}"
-    #     )
-
-    # if attention_mask is not None:
-    #     if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-    #         raise ValueError(
-    #             f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
-    #         )
-    #     attn_weights = attn_weights + attention_mask
-    #     attn_weights = torch.max(attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min))
-
-    # # upcast attention to fp32
-    # attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-    # attn_output = torch.matmul(attn_weights, value_states)
-
     if attention_mask is not None:
         if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
             raise ValueError(
                 f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
             )
-        attention_mask = attention_mask[:, 0, -1]
 
-    flash_attn.train(self.training)
-    out_dtype = value_states.dtype
-    q, k, v = query_states.transpose(1, 2), key_states.transpose(1, 2), value_states.transpose(1, 2)
-    attn_output = compute_flash_attention(flash_attn, q, k, v, attention_mask)
-    attn_output = attn_output.transpose(1, 2).to(out_dtype)
+    if (
+        query_states.shape == key_states.shape
+    ):  # and (attention_mask is None or attention_mask[:, 0, -1, 0].min() >= 0):
+        if attention_mask is not None:
+            attention_mask = attention_mask[:, 0, -1]
 
-    if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        raise ValueError(
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-            f" {attn_output.size()}"
-        )
+        flash_attn.train(self.training)
+        out_dtype = value_states.dtype
+        q, k, v = query_states.transpose(1, 2), key_states.transpose(1, 2), value_states.transpose(1, 2)
+        attn_output = compute_flash_attention(flash_attn, q, k, v, attention_mask)
+        attn_output = attn_output.transpose(1, 2).to(out_dtype)
+
+        if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
+            raise ValueError(
+                f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
+                f" {attn_output.size()}"
+            )
+    else:
+        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+            raise ValueError(
+                f"Attention weights should be of size {(bsz * self.num_heads, q_len, kv_seq_len)}, but is"
+                f" {attn_weights.size()}"
+            )
+
+        if attention_mask is not None:
+            attn_weights = attn_weights + attention_mask
+            attn_weights = torch.max(attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min))
+
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+        attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)

@@ -158,6 +158,12 @@
       "githubURL": "https://github.com/GravermanDev",
       "imageURL": "https://avatars.githubusercontent.com/u/76252605?v=4"
     },
+    "mrcabbage972": {
+      "name": "Victor May",
+      "title": "ML Engineer",
+      "githubURL": "https://github.com/mrcabbage972",
+      "imageURL": "https://avatars.githubusercontent.com/u/11806181?v=4"
+    },
     "you": {
       "name": "You!",
       "title": "It wouldn't have happened without you, thanks!",
@@ -203,7 +209,7 @@
     },
     {
       "name": "ML engineers",
-      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette", "karan4d", "jordiclive"]
+      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette", "karan4d", "jordiclive", "mrcabbage972"]
     },
     {
       "name": "Data Team",
