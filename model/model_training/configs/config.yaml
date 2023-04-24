@@ -108,7 +108,6 @@ pretrain:
         val_split: 0.01
         max_val_set: 250
     - alpaca:
-        reverse_augmentation: true
         val_split: 0.025
         max_val_set: 250
     - code_alpaca:
