@@ -20,10 +20,10 @@ const handler = withoutRole("banned", async (req, res, token) => {
         limit: PAGE_SIZE,
       };
       if (req.query.before) {
-        params["before"] = req.query.before;
+        params["before"] = req.query.before as string;
       }
       if (req.query.after) {
-        params["after"] = req.query.after;
+        params["after"] = req.query.after as string;
       }
       data = await client.get_my_chats(params);
     }
