@@ -1,3 +1,5 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/model/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 ## Reproduction directions
 
 Here are some minimal commands to tun to whole pipeline on the collected data.

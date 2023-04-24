@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Flex, useBoolean, useToast } from "@chakra-ui/react";
+import { Box, useBoolean, useToast } from "@chakra-ui/react";
 import { memo, useCallback, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
+import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
@@ -200,18 +201,39 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   );
 
   return (
-    <Flex flexDir="column" gap={4}>
-      <ChatConversationTree
-        messages={messages}
-        onVote={handleOnVote}
-        onRetry={handleOnRetry}
-        isSending={isSending}
-        retryingParentId={retryingParentId}
-        onEditPromtp={handleEditPrompt}
-      ></ChatConversationTree>
-      {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-
+    <Box
+      pt="4"
+      px="2"
+      gap="1"
+      height="full"
+      minH="0"
+      display="flex"
+      flexDirection="column"
+      flexGrow="1"
+      _light={{
+        bg: "gray.50",
+      }}
+      _dark={{
+        bg: "blackAlpha.300",
+      }}
+    >
+      <SimpleBar
+        style={{ padding: "4px 0", maxHeight: "100%", height: "100%", minHeight: "0" }}
+        classNames={{
+          contentEl: "space-y-4 mx-4 flex flex-col overflow-y-auto items-center",
+        }}
+      >
+        <ChatConversationTree
+          messages={messages}
+          onVote={handleOnVote}
+          onRetry={handleOnRetry}
+          isSending={isSending}
+          retryingParentId={retryingParentId}
+          onEditPromtp={handleEditPrompt}
+        ></ChatConversationTree>
+        {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
+      </SimpleBar>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
-    </Flex>
+    </Box>
   );
 });

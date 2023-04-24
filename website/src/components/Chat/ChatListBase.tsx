@@ -1,39 +1,27 @@
 import "simplebar-react/dist/simplebar.min.css";
 
-import { Card, CardProps } from "@chakra-ui/react";
+import { Box, CardProps } from "@chakra-ui/react";
 import { Plus } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback } from "react";
 import SimpleBar from "simplebar-react";
 import { get } from "src/lib/api";
 import { API_ROUTES } from "src/lib/routes";
 import { GetChatsResponse } from "src/types/Chat";
 import useSWR from "swr";
 
-import { HEADER_HEIGHT } from "../Header/Header";
 import { ChatListItem } from "./ChatListItem";
 import { CreateChatButton } from "./CreateChatButton";
+import { InferencePoweredBy } from "./InferencePoweredBy";
 
 export const ChatListBase = memo(function ChatListBase({
-  isSideBar,
   chats, // TODO: can we remove this?
   ...props
-}: CardProps & { isSideBar: boolean; chats?: GetChatsResponse }) {
+}: CardProps & { chats?: GetChatsResponse }) {
   const { data: response, mutate: mutateChatResponse } = useSWR<GetChatsResponse>(API_ROUTES.LIST_CHAT, get, {
     fallbackData: chats,
   });
   const { t } = useTranslation(["common", "chat"]);
-
-  const sideProps: CardProps = useMemo(
-    () =>
-      isSideBar
-        ? {
-            w: "260px",
-            position: "fixed",
-          }
-        : {},
-    [isSideBar]
-  );
 
   const handleUpdateTitle = useCallback(
     ({ chatId, title }: { chatId: string; title: string }) => {
@@ -62,22 +50,16 @@ export const ChatListBase = memo(function ChatListBase({
   );
 
   return (
-    <Card
-      py="3"
+    <Box
       gap="1"
-      height={`calc(100vh - ${HEADER_HEIGHT} - ${1.5 * 2}rem)`}
-      overflowY="hidden"
-      _light={{
-        ".simplebar-scrollbar::before": {
-          bg: "gray.300",
-        },
-      }}
+      height="full"
+      minH="0"
+      display="flex"
+      flexDirection="column"
+      bg="whiteAlpha.400"
       _dark={{
-        ".simplebar-scrollbar::before": {
-          bg: "gray.500",
-        },
+        bg: "blackAlpha.400",
       }}
-      {...sideProps}
       {...props}
     >
       <CreateChatButton
@@ -93,15 +75,16 @@ export const ChatListBase = memo(function ChatListBase({
         {t("create_chat")}
       </CreateChatButton>
       <SimpleBar
-        style={{ maxHeight: "100%", padding: "2px 0" }}
+        style={{ padding: "4px 0", maxHeight: "100%", height: "100%", minHeight: "0" }}
         classNames={{
-          contentEl: "space-y-2 mx-3",
+          contentEl: "space-y-2 mx-3 flex flex-col overflow-y-auto",
         }}
       >
         {response?.chats.map((chat) => (
           <ChatListItem key={chat.id} chat={chat} onUpdateTitle={handleUpdateTitle} onHide={handleHide}></ChatListItem>
         ))}
       </SimpleBar>
-    </Card>
+      <InferencePoweredBy />
+    </Box>
   );
 });

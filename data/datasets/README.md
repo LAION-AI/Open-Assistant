@@ -1,3 +1,5 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/data/datasets/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 ## **Overview**
 
 This repository aims to provide a diverse and accessible collection of datasets
@@ -19,13 +21,14 @@ To see the datasets people are currently working on, please refer to
   datasets
 - The final version of each dataset is pushed to the
   [OpenAssisstant Hugging Face](https://huggingface.co/OpenAssistant)
+- All data **must** be `UTF-8` encoded to simplify training!
 
 ## **Dataset Formats**
 
-To simplify the training process, all datasets must be stored in one of the two
-formats:
+To simplify the training process, all datasets must be `UTF-8` encoded and
+stored in either one of these two formats:
 
-- parquet with the option `row_group_size=100`
+- parquet with the option `row_group_size=100` and `index=False`
 - jsonl or jsonl.gz
 
 ## **Dataset Types**
@@ -182,6 +185,8 @@ df = pd.read_json(...) # or any other way
 # Save the file in the Parquet format
 df.to_parquet("dataset.parquet", row_group_size=100, engine="pyarrow", index=False)
 ```
+
+Make sure the text data in the dataframe is properly encoded as `UTF-8`!
 
 #### 2. Install Hugging Face Hub
 
