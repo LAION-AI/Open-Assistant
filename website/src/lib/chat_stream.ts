@@ -46,6 +46,7 @@ export async function handleChatEventStream({
       console.error(`Error parsing data: ${data}, error: ${e}`);
     }
   }
+  return null;
 }
 
 export async function* iteratorSSE(stream: ReadableStream<Uint8Array>) {
@@ -53,6 +54,7 @@ export async function* iteratorSSE(stream: ReadableStream<Uint8Array>) {
 
   let done = false,
     value: string | undefined = "";
+  let unfinished_line = "";
   while (!done) {
     ({ value, done } = await reader.read());
     if (done) {
@@ -61,15 +63,21 @@ export async function* iteratorSSE(stream: ReadableStream<Uint8Array>) {
     if (!value) {
       continue;
     }
-
-    const fields = value
-      .split(/\r?\n/)
-      .filter(Boolean)
-      .map((line) => {
-        const colonIdx = line.indexOf(":");
-        return [line.slice(0, colonIdx), line.slice(colonIdx + 1).trimStart()];
-      });
-
-    yield Object.fromEntries(fields);
+    const full_value = unfinished_line + value;
+    const lines = full_value.split(/\r?\n/).filter(Boolean);
+    // do line buffering - otherwise leads to parsing errors
+    if (full_value[full_value.length - 1] !== "\n") {
+      unfinished_line = lines.pop();
+    } else {
+      unfinished_line = "";
+    }
+    const fields = lines.map((line) => {
+      const colonIdx = line.indexOf(":");
+      return [line.slice(0, colonIdx), line.slice(colonIdx + 1).trimStart()];
+    });
+    // yield multiple messages distinctly
+    for (const field of fields) {
+      yield Object.fromEntries([field]);
+    }
   }
 }

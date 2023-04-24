@@ -144,6 +144,15 @@
           TREE_MANAGER__P_ACTIVATE_BACKLOG_TREE:
             "{{ lookup('ansible.builtin.env', 'P_ACTIVATE_BACKLOG_TREE') |
             default('0.1', true) }}"
+          TREE_MANAGER__NUM_REQUIRED_RANKINGS:
+            "{{ lookup('ansible.builtin.env', 'NUM_REQUIRED_RANKINGS') |
+            default('3', true) }}"
+          TREE_MANAGER__NUM_REVIEWS_REPLY:
+            "{{ lookup('ansible.builtin.env', 'NUM_REVIEWS_REPLY') |
+            default('3', true) }}"
+          TREE_MANAGER__NUM_REVIEWS_INITIAL_PROMPT:
+            "{{ lookup('ansible.builtin.env', 'NUM_REVIEWS_INITIAL_PROMPT') |
+            default('3', true) }}"
           TREE_MANAGER__MIN_ACTIVE_RANKINGS_PER_LANG:
             "{{ lookup('ansible.builtin.env', 'MIN_ACTIVE_RANKINGS_PER_LANG') |
             default('0', true) }}"
@@ -194,6 +203,10 @@
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_ID') }}"
           DISCORD_CLIENT_SECRET:
             "{{ lookup('ansible.builtin.env', 'WEB_DISCORD_CLIENT_SECRET') }}"
+          GOOGLE_CLIENT_ID:
+            "{{ lookup('ansible.builtin.env', 'WEB_GOOGLE_CLIENT_ID') }}"
+          GOOGLE_CLIENT_SECRET:
+            "{{ lookup('ansible.builtin.env', 'WEB_GOOGLE_CLIENT_SECRET') }}"
           EMAIL_FROM: open-assistent@laion.ai
           EMAIL_SERVER_HOST:
             "{{ lookup('ansible.builtin.env', 'WEB_EMAIL_SERVER_HOST') }}"
@@ -229,6 +242,8 @@
           INFERENCE_SERVER_API_KEY:
             "{{ lookup('ansible.builtin.env', 'WEB_INFERENCE_SERVER_API_KEY') }}"
           ENABLE_CHAT: "{{ lookup('ansible.builtin.env', 'WEB_ENABLE_CHAT') }}"
+          CURRENT_ANNOUNCEMENT:
+            "{{ lookup('ansible.builtin.env', 'WEB_CURRENT_ANNOUNCEMENT') }}"
         ports:
           - "{{ website_port }}:3000"
         command: bash wait-for-postgres.sh node server.js

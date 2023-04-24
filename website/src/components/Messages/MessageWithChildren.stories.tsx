@@ -33,7 +33,7 @@ export default {
 
 const Template: Story<MessageWithChildrenProps> = (args) => (
   <SessionProvider>
-    <MessageWithChildren {...args} />;
+    <MessageWithChildren {...args} />
   </SessionProvider>
 );
 

@@ -1,12 +1,12 @@
 * @yk @andreaskoepf
-/website/ @AbdBarho @notmd
-/website/data/team.json @yk @andreaskoepf @fozziethebeat @AbdBarho @notmd @theblackcat102 @sanagno @olliestanley @andrewm4894
+/website/ @AbdBarho @notmd @yk @andreaskoepf
+/website/src/data/team.json @yk @andreaskoepf @fozziethebeat @AbdBarho @notmd @theblackcat102 @sanagno @olliestanley @andrewm4894
 /model/ @theblackcat102 @sanagno @dvruette @andreaskoepf @yk
 /copilot/ @andreaskoepf @yk
 /docs/ @andrewm4894 @olliestanley @andreaskoepf @yk
 /.devcontainer/ @andrewm4894 @andreaskoepf @yk
 /notebooks/ @andrewm4894 @olliestanley @andreaskoepf @yk
-/data @Vechtomov @bitplane @ontocord @olliestanley
+/data @Vechtomov @bitplane @ontocord @olliestanley @sedthh
 /safety @SummerSigh @shahules786
 /inference/ @yk @andreaskoepf @olliestanley @AbdBarho
 /backend/ @andreaskoepf @melvinebenezer @yk

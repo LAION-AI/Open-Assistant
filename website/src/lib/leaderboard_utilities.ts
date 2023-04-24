@@ -1,6 +1,7 @@
 import { getValidDisplayName } from "src/lib/display_name_validation";
 import prisma from "src/lib/prismadb";
 import { getBatchFrontendUserIdFromBackendUser } from "src/lib/users";
+import { AuthMethod } from "src/types/Providers";
 
 export const updateUsersDisplayNames = <T extends { display_name: string; username: string }>(entries: T[]) => {
   return entries.map((entry) => ({
@@ -9,7 +10,9 @@ export const updateUsersDisplayNames = <T extends { display_name: string; userna
   }));
 };
 
-export const updateUsersProfilePictures = async <T extends { auth_method: string; username: string }>(entires: T[]) => {
+export const updateUsersProfilePictures = async <T extends { auth_method: AuthMethod; username: string }>(
+  entires: T[]
+) => {
   const frontendUserIds = await getBatchFrontendUserIdFromBackendUser(entires);
 
   const items = await prisma.user.findMany({

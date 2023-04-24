@@ -4,6 +4,9 @@ from functools import wraps
 
 from loguru import logger
 
+DELETED_USER_DISPLAY_NAME = "Deleted User"
+DELETED_USER_ID_PREFIX = "deleted_"
+
 
 def utcnow() -> datetime:
     """Return the current utc date and time with tzinfo set to UTC."""

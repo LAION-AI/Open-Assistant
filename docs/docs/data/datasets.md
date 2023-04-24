@@ -7,6 +7,8 @@ github repository aims to provide a diverse and accessible collection of
 datasets that can be used to train OpenAssistant models.<br/> Our goal is to
 cover a wide range of topics, languages and tasks.
 
+To simplify the training process, all data must be `UTF-8` encoded.
+
 ### **Current Progress**
 
 To see the datasets people are currently working on, please refer to
@@ -26,8 +28,8 @@ To see the datasets people are currently working on, please refer to
 ## **Dataset Formats**
 
 To simplify the training process, all datasets must be stored as Parquet files
-with the option `row_group_size=100`.<br/> There are two types of datasets
-accepted: instruction and text-only.
+with the option `row_group_size=100` and `index=False`.<br/> There are two types
+of datasets accepted: instruction and text-only.
 
 ### **Instruction format**
 
@@ -91,6 +93,8 @@ df = pd.read_json(...) # or any other way
 # Save the file in the Parquet format
 df.to_parquet("dataset.parquet", row_group_size=100, engine="pyarrow", index=False)
 ```
+
+Make sure the text data in the dataframe is properly encoded as `UTF-8`!
 
 #### 2. Install Hugging Face Hub
 

@@ -1,3 +1,5 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/website/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 # Open-Assistant NextJS Website
 
 ## Purpose
@@ -32,9 +34,8 @@ This website is built using:
 
 To contribute to the website, make sure you have the following setup and installed:
 
-1.  [NVM](https://github.com/nvm-sh/nvm): The Node Version Manager makes it easy to ensure you have the right NodeJS
-    version installed. Once installed, run `nvm use 16` to use Node 16.x. The website is known to be stable with NodeJS
-    version 16.x. This will install both Node and NPM.
+1.  Node 16: if you are on windows, you can [download node from their website](https://nodejs.org/en/download/releases),
+    if you are on linux, use [NVM](https://github.com/nvm-sh/nvm) (Once installed, run `nvm use 16`)
 1.  [Docker](https://www.docker.com/): We use docker to simplify running dependent services.
 
 ### Getting everything up and running
@@ -55,6 +56,7 @@ If you're doing active development we suggest the following workflow:
 1.  Run `npm run dev`. Now the website is up and running locally at `http://localhost:3000`.
 1.  To create an account, login via the user using email authentication and navigate to `http://localhost:1080`. Check
     the email listed and click the log in link. You're now logged in and authenticated.
+    > **Note:** when running on MacOS with an M1 chip you have to use: `DB_PLATFORM=linux/x86_64 docker compose ...`
 
 ### Using debug user credentials
 

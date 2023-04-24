@@ -210,6 +210,7 @@ def delete_user(
 ):
     """
     Delete a user by global user ID. Only trusted clients can delete users.
+    User deletion anonymises the data of the user.
     """
     ur = UserRepository(db, api_client)
     ur.mark_user_deleted(user_id)

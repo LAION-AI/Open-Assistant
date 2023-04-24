@@ -1,9 +1,8 @@
 TEXT_DATASETS = {
-    "gutenberg_english": "sedthh/gutenberg_english",
-    "gutenberg_multilang": "sedthh/gutenberg_multilang",
     "gutenberg_english": "sedthh/gutenberg_english",  # Gutenberg eBooks in English
-    "gutenberg_multilang": "sedthh/gutenberg_multilang",  # Gutenber eBooks in foreign languages
+    "gutenberg_multilang": "sedthh/gutenberg_multilang",  # Gutenberg eBooks in foreign languages
     "tv_dialogue": "sedthh/tv_dialogue",  # TV and Movie dialogues and transcripts
+    "fd_dialogue": "sedthh/fd_dialogue",  # TV and Movie dialogues and transcripts from ForeverDreaming
     "tlcv2.0_oa": "pythainlp/tlcv2.0_oa",  # Thai classical literature texts
 }
 
@@ -19,7 +18,12 @@ INSTRUCTION_DATASETS = {
     "zhihu-kol": "wangrui6/zhihu-kol",
     "tell_a_joke": "mikegarts/oa_tell_a_joke_20000",
     "oa_wiki_qa_bart_10000row": "michaelthwan/oa_wiki_qa_bart_10000row",
+    "biostars_qa": "cannin/biostars_qa",
     "oa_leet10k": "ehartford/oa_leet10k",
+    "LogicInference_OA": "KK04/LogicInference_OA",
+    "oa_dolly_15k": "OllieStanley/oa_dolly_15k",
+    "poetry_instruction": "checkai/instruction-poems",
+    "oa_stackexchange": "donfu/oa-stackexchange",
 }
 
 SAFETY_DATASETS = {

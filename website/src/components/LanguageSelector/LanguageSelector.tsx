@@ -42,7 +42,7 @@ const LanguageSelector = () => {
 
   const { language: currentLanguage } = i18n;
   return (
-    <Select onChange={languageChanged} defaultValue={currentLanguage}>
+    <Select onChange={languageChanged} defaultValue={currentLanguage} maxW="fit-content">
       {localesAndNames.map(({ locale, name }) => (
         <option key={locale} value={locale}>
           {name}

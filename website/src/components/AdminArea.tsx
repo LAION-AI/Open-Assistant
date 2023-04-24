@@ -1,6 +1,11 @@
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { ReactNode, useEffect } from "react";
+import { SWRConfig, SWRConfiguration } from "swr";
+const swrConfig: SWRConfiguration = {
+  revalidateOnFocus: true,
+  revalidateOnMount: true,
+};
 
 export const AdminArea = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
@@ -18,5 +23,10 @@ export const AdminArea = ({ children }: { children: ReactNode }) => {
 
     router.push("/");
   }, [router, session, status]);
-  return <main>{status === "loading" ? "loading..." : children}</main>;
+
+  return (
+    <SWRConfig value={swrConfig}>
+      <main>{status === "loading" ? "loading..." : children}</main>;
+    </SWRConfig>
+  );
 };

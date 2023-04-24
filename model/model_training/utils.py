@@ -404,6 +404,9 @@ def read_yamls(dir):
 
 
 def train_val_dataset(dataset, val_split=0.2):
+    if val_split == 0:
+        return dataset, None
+
     train_idx, val_idx = train_test_split(
         list(range(len(dataset))), test_size=val_split, random_state=666, shuffle=True
     )
