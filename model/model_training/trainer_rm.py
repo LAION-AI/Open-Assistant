@@ -8,7 +8,7 @@ import torch
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
 from model_training.efficiency_utils import fuse_gelu
 from model_training.metrics import RewardMetrics
-from model_training.utils import (
+from model_training.utils.utils import (
     PerDatasetSampler,
     _strtobool,
     get_dataset,

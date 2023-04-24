@@ -3,7 +3,7 @@ from argparse import Namespace
 import pytest
 from model_training.custom_datasets import get_one_dataset
 from model_training.custom_datasets.ranking_collator import RankingDataCollator
-from model_training.utils import get_tokenizer
+from model_training.utils.utils import get_tokenizer
 from torch.utils.data import DataLoader
 
 

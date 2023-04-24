@@ -2,7 +2,7 @@ from argparse import Namespace
 
 import model_training.models.reward_model  # noqa: F401
 from model_training.models.reward_model import GPTNeoXRewardModel
-from model_training.utils import get_tokenizer
+from model_training.utils.utils import get_tokenizer
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 

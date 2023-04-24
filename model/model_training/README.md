@@ -111,11 +111,42 @@ other default options (as given by `defaults_rm`) with the model specific ones.
 
 ## Training with RL
 
-To train using trlx try:
+To train using trlx you first need to install singularity from
+https://github.com/sylabs/singularity/blob/main/INSTALL.md.
+
+Assumes access to a server with 8 GPUs.
+
+Then:
 
 ```bash
-python trainer_rl.py --configs defaults_rlhf
+singularity build --sandbox tritonserver-pyt.sif docker://nvcr.io/nvidia/tritonserver:22.08-pyt-python-py3
 ```
+
+Process a trained RM model to use in a tritonserver
+
+```bash
+python to_triton.py --configs pythia_rlhf --triton_mode rm
+python to_triton.py --configs pythia_rlhf --triton_mode sft
+```
+
+We can know launch the container instance that runs the RM on a specified GPU
+
+```bash
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=7 singularity run --nv --bind .triton_models/model_store_rm:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store --http-port 8001 --grpc-port 8002 --metrics-port 8003
+SINGULARITYENV_CUDA_VISIBLE_DEVICES=6 singularity run --nv --bind .triton_models/model_store_sft:/model_store tritonserver-pyt.sif tritonserver --model-repository=/model_store --http-port 8004 --grpc-port 8005 --metrics-port 8006
+```
+
+Finally, we can train using PPO:
+
+```bash
+export TRITON_HOST_RM=localhost:8002/<RM_MODEL_NAME>
+export TRITON_HOST_REF=localhost:8005/<REF_MODEL_NAME>
+
+
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5 OMP_NUM_THREADS=1 accelerate launch --main_process_port 29501 --config_file configs/accelerate_config.yaml --num_processes 6 trainer_rl.py --configs defaults defaults_rlhf pythia_rlhf oasst_export_latin_cyrillic_rlhf
+```
+
+Note: `--num_processes` must be equal to the number of GPUs used for training.
 
 ## Test your model
 
@@ -225,9 +256,8 @@ python check_dataset_counts.py --datasets webgpt squad_v2 --mode sft
 Experimental results in wandb
 [here](https://wandb.ai/sanagnos/supervised-finetuning?workspace=user-sanagnos).
 
-## TODOS
+## TODOs
 
-- Decide on a model
-- Merge utils etc with reward model
-- Casual Modelling for GPT-JT does not leverage the bidirectional mask for the
-  prompt? (https://huggingface.co/togethercomputer/GPT-JT-6B-v1)
+- recreate init in trainer that does not load the ref_model, currently hard
+  coded
+- same for not loading the self.tokenizer in AccelerateRLTrainer

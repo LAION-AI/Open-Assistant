@@ -9,7 +9,7 @@ import datasets
 import torch
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
 from model_training.efficiency_utils import fuse_gelu
-from model_training.utils import (
+from model_training.utils.utils import (
     PerDatasetSampler,
     _strtobool,
     get_dataset,
