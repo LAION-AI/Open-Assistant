@@ -1,7 +1,7 @@
 {
   "back_to_chat_list": "Nazad na listu za ćaskanje",
   "chat_date": "{{val, datetime}}",
-  "config_title": "Konfiguracija ćaskanja",
+  "config_title": "Konfiguracija",
   "empty": "Bez naslova",
   "login_message": "Da biste koristili ovu funkciju, morate se ponovo prijaviti. Prijavite se pomoću jednog od ovih provajdera:",
   "max_new_tokens": "Max novih tokena",

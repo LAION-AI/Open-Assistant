@@ -1,97 +1,97 @@
 {
   "any_feedback_on_this_task": "Bilo kakve povratne informacije o ovom zadatku?",
-  "available_task_count": "{{count}} tasks available",
+  "available_task_count": "{{count}} dostupnih zadataka",
   "default": {
-    "unchanged_title": "No changes",
-    "unchanged_message": "Are you sure you would like to continue?",
-    "continue_anyway": "Continue anyway",
-    "markdownguide": "Styling with markdown supported"
+    "unchanged_title": "Bez promena",
+    "unchanged_message": "Da li ste sigurni da želite da nastavite?",
+    "continue_anyway": "Nastavi svejedno",
+    "markdownguide": "Stilizovanje sa podrškom za markdown"
   },
-  "no_more_tasks": "Looks like no tasks were found.",
+  "no_more_tasks": "Izgleda da nema pronađenih zadataka.",
   "random": {
-    "label": "I'm feeling lucky",
-    "desc": "Help us improve Open Assistant by starting a random task."
+    "label": "Osećam se srećno",
+    "desc": "Pomozite nam da poboljšamo Open Assistant tako što ćete započeti nasumični zadatak."
   },
   "create_initial_prompt": {
-    "label": "Create Initial Prompts",
-    "desc": "Write initial prompts to help Open Assistant to try replying to diverse messages. (enter into lottery)",
-    "overview": "Create an initial message to send to the assistant",
-    "instruction": "Provide the initial prompts",
-    "response_placeholder": "Write your prompt here...",
-    "shotcut_tip": "Tip: You can use a keyboard shortcut to Review and Submit responses:"
+    "label": "Kreirajte početne zadatke",
+    "desc": "Napišite početne zadatke kako biste pomogli Open Assistant-u da pokuša da odgovori na različite poruke. (uđite u lutriju)",
+    "overview": "Kreirajte početnu poruku za slanje asistentu",
+    "instruction": "Navedite početne zadatke",
+    "response_placeholder": "Napišite svoj zadatak ovde...",
+    "shotcut_tip": "Savet: Možete koristiti prečicu na tastaturi za pregledanje i slanje odgovora:"
   },
   "reply_as_user": {
-    "label": "Reply as User",
-    "desc": "Chat with Open Assistant and help improve its responses as you interact with it.",
-    "overview": "Given the following conversation, provide an adequate reply",
-    "instruction": "Provide the user's reply",
-    "response_placeholder": "Write your reply here...",
-    "shotcut_tip": "Tip: You can use a keyboard shortcut to Review and Submit responses:"
+    "label": "Odgovori kao korisnik",
+    "desc": "Čavrljajte sa Open Assistant-om i pomozite u poboljšanju njegovih odgovora dok komunicirate sa njim.",
+    "overview": "Imajući u vidu sledeći razgovor, pružite adekvatan odgovor",
+    "instruction": "Navedite odgovor korisnika",
+    "response_placeholder": "Napišite svoj odgovor ovde...",
+    "shotcut_tip": "Savet: Možete koristiti prečicu na tastaturi za pregledanje i slanje odgovora:"
   },
   "reply_as_assistant": {
-    "label": "Reply as Assistant",
-    "desc": "Help Open Assistant improve its responses to conversations with other users.",
-    "overview": "Given the following conversation, provide an adequate reply",
-    "response_placeholder": "Write your reply here...",
-    "shotcut_tip": "Tip: You can use a keyboard shortcut to Review and Submit responses:"
+    "label": "Odgovori kao asistent",
+    "desc": "Pomozite Open Assistant-u da poboljša svoje odgovore na razgovore sa drugim korisnicima.",
+    "overview": "Imajući u vidu sledeći razgovor, pružite adekvatan odgovor",
+    "response_placeholder": "Napišite svoj odgovor ovde...",
+    "shotcut_tip": "Savet: Možete koristiti prečicu na tastaturi za pregledanje i slanje odgovora:"
   },
   "rank_user_replies": {
-    "label": "Rank User Replies",
-    "desc": "Help Open Assistant improve its responses to conversations with other users.",
-    "overview": "Given the following User replies, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?",
-    "continue_anyway": "Continue anyway"
+    "label": "Rangirajte odgovore korisnika",
+    "desc": "Pomozite Open Assistant-u da poboljša svoje odgovore na razgovore sa drugim korisnicima.",
+    "overview": "Imajući u vidu sledeće korisničke odgovore, sortirajte ih od najboljeg do najgoreg, najbolji prvi, najgori poslednji.",
+    "unchanged_title": "Redosled nepromenjen",
+    "unchanged_message": "Niste promenili redosled zadatka. Da li ste sigurni da želite da nastavite?",
+    "continue_anyway": "Nastavi svejedno"
   },
   "rank_assistant_replies": {
-    "label": "Rank Assistant Replies",
-    "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
-    "overview": "Given the following Assistant replies, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?",
-    "continue_anyway": "Continue anyway"
+    "label": "Rangirajte odgovore asistenta",
+    "desc": "Ocenite zadatke koje je dao Open Assistant na osnovu njihove tačnosti i čitljivosti.",
+    "overview": "Imajući u vidu sledeće odgovore asistenta, sortirajte ih od najboljeg do najgoreg, najbolji prvi, najgori poslednji.",
+    "unchanged_title": "Redosled nepromenjen",
+    "unchanged_message": "Niste promenili redosled zadatka. Da li ste sigurni da želite da nastavite?",
+    "continue_anyway": "Nastavi svejedno"
   },
   "rank_initial_prompts": {
-    "label": "Rank Initial Prompts",
-    "desc": "Score prompts given by Open Assistant based on their accuracy and readability.",
-    "overview": "Given the following initial prompts, sort them from best to worst, best being first, worst being last.",
-    "unchanged_title": "Order Unchanged",
-    "unchanged_message": "You have not changed the order of the prompts. Are you sure you would like to continue?",
-    "continue_anyway": "Continue anyway"
+    "label": "Rangirajte početne zadatke",
+    "desc": "Ocenite zadatke koje je dao Open Assistant na osnovu njihove tačnosti i čitljivosti.",
+    "overview": "Imajući u vidu sledeće početne zadatke, sortirajte ih od najboljeg do najgoreg, najbolji prvi, najgori poslednji.",
+    "unchanged_title": "Redosled nepromenjen",
+    "unchanged_message": "Niste promenili redosled zadatka. Da li ste sigurni da želite da nastavite?",
+    "continue_anyway": "Nastavi svejedno"
   },
   "label_initial_prompt": {
-    "label": "Label Initial Prompt",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Provide labels for the following prompt"
+    "label": "Označite početni zadatak",
+    "desc": "Navedite oznake za zadatak.",
+    "overview": "Navedite oznake za sledeći zadatak"
   },
   "label_prompter_reply": {
-    "label": "Label Prompter Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Given the following discussion, provide labels for the final prompt."
+    "label": "Označite odgovor asistenta",
+    "desc": "Navedite oznake za zadatak.",
+    "overview": "Imajući u vidu sledeću diskusiju, navedite oznake za poslednji zadatak."
   },
   "label_assistant_reply": {
-    "label": "Label Assistant Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Given the following discussion, provide labels for the final prompt."
+    "label": "Označite odgovor asistenta",
+    "desc": "Navedite oznake za zadatak.",
+    "overview": "Imajući u vidu sledeću diskusiju, navedite oznake za poslednji zadatak."
   },
   "classify_initial_prompt": {
-    "label": "Classify Initial Prompt",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following prompt and then answer the question about it."
+    "label": "Klasifikujte početni zadatak",
+    "desc": "Navedite oznake za zadatak.",
+    "overview": "Pročitajte sledeći zadatak, a zatim odgovorite na pitanje o njemu."
   },
   "classify_prompter_reply": {
-    "label": "Classify Prompter Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
+    "label": "Klasifikujte odgovor asistenta",
+    "desc": "Navedite oznake zazadatak.",
+    "overview": "Pročitajte sledeći razgovor, a zatim odgovorite na pitanje o poslednjem odgovoru u diskusiji."
   },
   "classify_assistant_reply": {
-    "label": "Classify Assistant Reply",
-    "desc": "Provide labels for a prompt.",
-    "overview": "Read the following conversation and then answer the question about the last reply in the discussion."
+    "label": "Klasifikujte odgovor asistenta",
+    "desc": "Navedite oznake za zadatak.",
+    "overview": "Pročitajte sledeći razgovor, a zatim odgovorite na pitanje o poslednjem odgovoru u diskusiji."
   },
-  "submitted_as": "This will be submitted as {{submit_lang}}",
-  "tab_write": "Write",
-  "tab_preview": "Preview",
-  "writing_wrong_langauge_a_b": "You appear to be writing in {{detected_lang}} but this will be submitted as {{submit_lang}}.",
-  "not_rankable": "All answers are factually incorrect and cannot be ranked"
+  "submitted_as": "Ovo će biti poslato kao {{submit_lang}}",
+  "tab_write": "Napiši",
+  "tab_preview": "Pregled",
+  "writing_wrong_langauge_a_b": "Izgleda da pišete na {{detected_lang}} jeziku, ali ovo će biti poslato kao {{submit_lang}}.",
+  "not_rankable": "Svi odgovori su faktički netačni i ne mogu se rangirati"
 }
