@@ -25,7 +25,7 @@ def format_system_prefix(prefix, eos_token):
 
 class DatasetEntry(BaseModel):
     questions: list[str]
-    answers: list[str]
+    answers: list[str] | list[list[str]]
     context: str | None = None
     lang: str | None = None
     length: int | None = None
@@ -64,9 +64,13 @@ class DatasetEntry(BaseModel):
             system_tag = f"{QA_SPECIAL_TOKENS['System']}{system_tag_key_values}\n{eos_token}"
             return system_tag
 
-    def _get_formatted_rm(self, eos_token: str, max_replies: str, system_tag: None | str):
-        assert len(self.answers) > 1
-        answers = self.answers[:max_replies]
+    def _get_formatted_rm(self, eos_token: str, max_replies: int, system_tag: None | str):
+        if isinstance(self.answers[0], list):
+            answers = self.answers[0]
+        else:
+            answers = self.answers
+        assert len(answers) > 1 and max_replies > 1
+        answers = answers[:max_replies]
         match len(self.questions):
             case 0:
                 question = ""
@@ -79,7 +83,7 @@ class DatasetEntry(BaseModel):
                 raise ValueError("Received more than one question in RM mode. This is unexpected. Aborting")
         if system_tag is not None:
             question = f"{system_tag}{question}"
-        return (question, answers)  # NotImplementedError("This is currently not implemented.")
+        return (question, answers)
 
     def get_formatted(self, mode: Mode, eos_token: str, **kwargs) -> str | list[str] | tuple[str, list[str]]:
         system_tag = self.system_tag(eos_token)
@@ -97,7 +101,13 @@ class DatasetEntry(BaseModel):
                 qa_list = [system_tag]
             else:
                 qa_list = list()
-            for q, a in zip_longest(self.questions, self.answers):
+            # check if this is a RM capable dataset (so it has multiple answers to the same question)
+            # and if so, extract just the highest scoring answer
+            if isinstance(self.answers[0], list):
+                answers = [answer[0] for answer in self.answers]
+            else:
+                answers = self.answers
+            for q, a in zip_longest(self.questions, answers):
                 match (q, a):
                     case (str(), str()):
                         qa_list.extend(

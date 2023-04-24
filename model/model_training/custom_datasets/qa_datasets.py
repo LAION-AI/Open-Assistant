@@ -194,8 +194,7 @@ class WebGPT(Dataset):
 
         dataset = load_dataset("openai/webgpt_comparisons")
 
-        self.questions = []
-        self.answers = []
+        self.rows = []
 
         question_answer_dict = defaultdict(dict)
 
@@ -208,25 +207,18 @@ class WebGPT(Dataset):
                 question_answer_dict[question][answer_1] = row["score_1"]
 
         for question, answers in question_answer_dict.items():
-            self.questions.append(question)
             # Sort answer dict with the highest score first (hence the prefactor -1).
             # Then take only the first `max_answers` elements (usually there are just
             # 2, but there are examples where we have more)
             answers_sorted = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
-            self.answers.append(answers_sorted[:max_answers])
+            self.rows.append(DatasetEntry(questions=[question], answers=[answers_sorted[:max_answers]]))
 
     def __len__(self) -> int:
-        return len(self.questions)
+        return len(self.rows)
 
-    def __getitem__(self, index) -> list[str] | tuple[list[str], list[str]]:
-        question = self.questions[index]
-        answers = self.answers[index]
-        if self.mode == "sft":
-            return [question, answers[0]]
-        elif self.mode == "rm":
-            return ([question], answers)
-        elif self.mode == "rl":
-            return (question,)
+    def __getitem__(self, index) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
 
 
 class SODA(Dataset):
