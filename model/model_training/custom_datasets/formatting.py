@@ -64,36 +64,55 @@ class DatasetEntry(BaseModel):
             system_tag = f"{QA_SPECIAL_TOKENS['System']}{system_tag_key_values}\n{eos_token}"
             return system_tag
 
-    def get_formatted(self, mode: Mode, eos_token: str) -> str | list[str]:
+    def _get_formatted_rm(self, eos_token: str, max_replies: str, system_tag: None | str):
+        assert len(self.answers) > 1
+        answers = self.answers[:max_replies]
+        match len(self.questions):
+            case 0:
+                question = ""
+                # todo: not sure if this case is correct but it is equivalent to current non-dataset entry behaviour
+                answers = [f"{a}{eos_token}" for a in answers]
+            case 1:
+                question = f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0]}{eos_token}"
+                answers = [f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}" for a in answers]
+            case _:
+                raise ValueError("Received more than one question in RM mode. This is unexpected. Aborting")
+        if system_tag is not None:
+            question = f"{system_tag}{question}"
+        return (question, answers)  # NotImplementedError("This is currently not implemented.")
+
+    def get_formatted(self, mode: Mode, eos_token: str, **kwargs) -> str | list[str] | tuple[str, list[str]]:
         system_tag = self.system_tag(eos_token)
         if mode == Mode.rl:
             if system_tag is not None:
                 return f"{system_tag}{QA_SPECIAL_TOKENS['Question']}{self.questions[0]}{QA_SPECIAL_TOKENS['Answer']}"
             else:
                 return f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0]}{QA_SPECIAL_TOKENS['Answer']}"
-        if system_tag is not None:
-            qa_list = [system_tag]
-        else:
-            qa_list = list()
-        for q, a in zip_longest(self.questions, self.answers):
-            match (q, a):
-                case (str(), str()):
-                    qa_list.extend(
-                        [
-                            f"{QA_SPECIAL_TOKENS['Question']}{q}{eos_token}",
-                            f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}",
-                        ]
-                    )
-                case (str(), None):
-                    qa_list.append(f"{QA_SPECIAL_TOKENS['Question']}{q}{eos_token}")
-                case (None, None):
-                    break
-                case (None, str()):
-                    raise ValueError("Received answer without getting corresponding question. Aborting")
-        if mode == Mode.sft:
-            return qa_list
         elif mode == Mode.rm:
-            raise NotImplementedError("This is currently not implemented.")
+            return self._get_formatted_rm(
+                eos_token=eos_token, max_replies=kwargs.get("max_replies", 5), system_tag=system_tag
+            )
+        else:
+            if system_tag is not None:
+                qa_list = [system_tag]
+            else:
+                qa_list = list()
+            for q, a in zip_longest(self.questions, self.answers):
+                match (q, a):
+                    case (str(), str()):
+                        qa_list.extend(
+                            [
+                                f"{QA_SPECIAL_TOKENS['Question']}{q}{eos_token}",
+                                f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}",
+                            ]
+                        )
+                    case (str(), None):
+                        qa_list.append(f"{QA_SPECIAL_TOKENS['Question']}{q}{eos_token}")
+                    case (None, None):
+                        break
+                    case (None, str()):
+                        raise ValueError("Received answer without getting corresponding question. Aborting")
+            return qa_list
 
     @classmethod
     def create_from_prompter_assistant_interplay(cls, qa: dict[str, str]):
