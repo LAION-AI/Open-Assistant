@@ -99,30 +99,28 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
         newPresetName === customPresetName
           ? customPresetDefaultValue
           : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
-      reset({ ...config, model_config_name: selectedModel });
+      reset({ ...config, model_config_name: selectedModel }, { keepDirty: true });
       setSelectedPresetName(newPresetName);
     },
     [presets, reset, selectedModel]
-  );
-
-  // I have no idea why we need to do this manually, it seems that the model name keeps resetting if we are just using
-  // react-form default "register"
-  const handleModelChange = useCallback(
-    (e: SyntheticEvent<HTMLSelectElement>) => setValue("model_config_name", e.currentTarget.value),
-    [setValue]
   );
 
   return (
     <Stack gap="4">
       <FormControl>
         <FormLabel>{t("model")}</FormLabel>
-        <Select {...register("model_config_name")} onChange={handleModelChange}>
-          {modelInfos.map(({ name }) => (
-            <option value={name} key={name}>
-              {name}
-            </option>
-          ))}
-        </Select>
+        <Controller
+          name="model_config_name"
+          render={({ field: { value, onChange } }) => (
+            <Select value={value} onChange={onChange}>
+              {modelInfos.map(({ name }) => (
+                <option value={name} key={name}>
+                  {name}
+                </option>
+              ))}
+            </Select>
+          )}
+        />
       </FormControl>
       <FormControl>
         <FormLabel>{t("preset")}</FormLabel>
