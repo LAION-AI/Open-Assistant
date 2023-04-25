@@ -163,7 +163,7 @@ It has another Postgres database, the "backend database", called just `db` in
 the Dockerfile.
 
 There's also a Redis database, called `redis` in the Dockerfile, for caching API
-requets.
+requests.
 
 In the Dockerfile, there are also two containers with development support tools
 for the databases: `adminer`, which can be used to inspect the Postgres

@@ -108,7 +108,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
     const prompter_message: InferenceMessage = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
     if (messages.length === 0) {
-      // revalidte chat list after creating the first prompter message to make sure the message already has title
+      // revalidate chat list after creating the first prompter message to make sure the message already has title
       mutate(API_ROUTES.LIST_CHAT);
     }
     setMessages((messages) => [...messages, prompter_message]);
