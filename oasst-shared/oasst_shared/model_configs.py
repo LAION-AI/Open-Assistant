@@ -42,6 +42,17 @@ MODEL_CONFIGS = {
         max_total_length=2048,
         quantized=True,
     ),
+    "OA_SFT_Pythia_12B_4": ModelConfig(
+        model_id="OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",
+        max_input_length=1024,
+        max_total_length=2048,
+    ),
+    "OA_SFT_Pythia_12Bq_4": ModelConfig(
+        model_id="OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",
+        max_input_length=1024,
+        max_total_length=2048,
+        quantized=True,
+    ),
     "OA_SFT_Llama_7B": ModelConfig(
         model_id="OpenAssistant/oasst_sft_llama_7b_mask_1000",
         max_input_length=1024,
