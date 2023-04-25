@@ -333,8 +333,6 @@ class JokeExplaination(Dataset):
             with open(joke_explain_filename, "w") as fout:
                 fout.write(content)
 
-        question = ""
-        answer = ""
         self.pairs = []
         with open(joke_explain_filename, "r") as f:
             for line in f:
@@ -343,11 +341,7 @@ class JokeExplaination(Dataset):
                 # DO NOT change this
                 # its the data that had syntax error
                 explanation = data["explaination"]
-                self.pairs.append(DatasetEntry([joke], [explanation]))
-
-        if len(question) > 0 and len(answer) > 0:
-            self.pairs.append(DatasetEntry([question], [answer]))
-        self.length = len(self.pairs)
+                self.pairs.append(DatasetEntry(questions=[joke], answers=[explanation]))
 
     def __len__(self) -> int:
         return self.length
