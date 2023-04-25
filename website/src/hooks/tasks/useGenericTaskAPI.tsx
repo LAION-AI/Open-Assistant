@@ -17,7 +17,7 @@ export const useGenericTaskAPI = <TaskType extends BaseTask, ResponseContent = A
 ): TaskApiHook<TaskType, ResponseContent> => {
   const [response, setResponse] = useState<TaskResponse<TaskType>>({ taskAvailability: "AWAITING_INITIAL" });
   const locale = useCurrentLocale();
-  // Note: We use isValidating to indicate we are loading because it signals eash load, not just the first one.
+  // Note: We use isValidating to indicate we are loading because it signals each load, not just the first one.
   const { isValidating: isLoading, mutate: requestNewTask } = useSWRImmutable<ServerTaskResponse<TaskType>>(
     API_ROUTES.NEW_TASK(taskType, { lang: locale }),
     get,

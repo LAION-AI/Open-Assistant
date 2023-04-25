@@ -14,7 +14,7 @@ You can play with our current best model [here](https://open-assistant.io/chat)!
 You should join the
 [Open Assistant discord server](https://ykilcher.com/open-assistant-discord)
 and/or comment on Github issues before making any major changes. Most dev
-communcations take place on the Discord server. There are four main areas that
+communications take place on the Discord server. There are four main areas that
 you can work on:
 
 1. Ranking, labelling and making responses in
