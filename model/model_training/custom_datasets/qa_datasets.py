@@ -343,16 +343,16 @@ class JokeExplaination(Dataset):
                 # DO NOT change this
                 # its the data that had syntax error
                 explanation = data["explaination"]
-                self.pairs.append((joke, explanation))
+                self.pairs.append(DatasetEntry([joke], [explanation]))
 
         if len(question) > 0 and len(answer) > 0:
-            self.pairs.append((question, answer))
+            self.pairs.append(DatasetEntry([question], [answer]))
         self.length = len(self.pairs)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.length
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> DatasetEntry:
         return self.pairs[index]
 
 
