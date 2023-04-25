@@ -170,6 +170,9 @@ class MessageRead(pydantic.BaseModel):
     # work parameters will be None on user prompts
     work_parameters: WorkParameters | None
     safe_content: str | None
+    safety_level: int | None
+    safety_label: str | None
+    safety_rots: str | None
 
     @property
     def is_assistant(self) -> bool:
