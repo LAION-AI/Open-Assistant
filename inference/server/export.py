@@ -67,6 +67,7 @@ def prepare_export_message_node(message: DbMessage) -> ExportMessageNode:
         role=message.role,
         synthetic=synthetic,
         model_name=model_name,
+        # TODO: include reports
         # TODO: include thumbs up/down rating somehow?
     )
 
