@@ -7,7 +7,6 @@ export const ChatConfigSaver = () => {
   const { watch, formState } = useFormContext<ChatConfigFormData>();
   const config = watch();
   useEffect(() => {
-    // only update when form is changed
     if (formState.isDirty) {
       setConfigCache(config);
     }

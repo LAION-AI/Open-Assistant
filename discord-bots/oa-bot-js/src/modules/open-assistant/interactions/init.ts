@@ -13,7 +13,7 @@ export async function initInteraction(interaction, translation, lang) {
     .setFooter({ text: `${getLocaleDisplayName(lang)}` })
     .setTitle("Open assistant")
     .setDescription(`${translation["conversational"]}`)
-    .setURL("https://open-assistant.io/?ref=turing")
+    .setURL("https://open-assistant.io/?ref=discordbot")
     .setThumbnail("https://open-assistant.io/images/logos/logo.png");
 
   const row = new ActionRowBuilder().addComponents(
@@ -25,7 +25,7 @@ export async function initInteraction(interaction, translation, lang) {
       .setLabel(translation.grab_a_task)
       .setCustomId(`oa_tasks_n_${interaction.user.id}`)
       .setStyle(ButtonStyle.Primary)
-      .setDisabled(false),
+      .setDisabled(true),
     new ButtonBuilder()
       .setLabel("Change language")
       .setCustomId(`oa_lang-btn_n_${interaction.user.id}`)

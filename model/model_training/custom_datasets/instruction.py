@@ -18,6 +18,7 @@ INSTRUCTION_DATASETS = {
     "zhihu-kol": "wangrui6/zhihu-kol",
     "minimath": "kentsui/minimath",
     "oa_wiki_qa_bart_10000row": "michaelthwan/oa_wiki_qa_bart_10000row",
+    "oa_leet10k": "ehartford/oa_leet10k",
     "poem_instructions": "checkai/instruction-poems",
 }
 

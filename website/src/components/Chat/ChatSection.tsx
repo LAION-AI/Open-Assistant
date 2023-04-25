@@ -24,6 +24,7 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
     const cache = getConfigCache();
     const model = modelInfos.find((model) => model.name === cache?.model_config_name);
     if (model && cache) {
+      console.log(`resseting form`);
       form.reset(cache);
     }
   }, [form.reset, modelInfos]);

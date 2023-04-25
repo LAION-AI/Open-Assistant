@@ -10,6 +10,7 @@ import { ChatListItem } from "./ChatListItem";
 import { CreateChatButton } from "./CreateChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 import { useListChatPagination } from "./useListChatPagination";
+import { ChatWarning } from "./ChatWarning";
 
 export const ChatListBase = memo(function ChatListBase({
   initialChats, // TODO: can we remove this?
@@ -101,6 +102,7 @@ export const ChatListBase = memo(function ChatListBase({
         ))}
         <div ref={loadMoreRef} />
       </SimpleBar>
+      <ChatWarning />
       <InferencePoweredBy />
     </Box>
   );

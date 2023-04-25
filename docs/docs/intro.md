@@ -9,8 +9,7 @@ single high-end consumer GPU. With some modifications, Open Assistant should
 also be able to interface with other third-party applications easily as well as
 retrieve information from databases and the Internet.
 
-You can play with our current best model
-[here](https://www.open-assistant.io/chat)!
+You can play with our current best model [here](https://open-assistant.io/chat)!
 
 You should join the
 [Open Assistant discord server](https://ykilcher.com/open-assistant-discord)
@@ -19,7 +18,7 @@ communcations take place on the Discord server. There are four main areas that
 you can work on:
 
 1. Ranking, labelling and making responses in
-   [open-assistant.io](https://www.open-assistant.io). You can take a look at
+   [open-assistant.io](https://open-assistant.io). You can take a look at
    [tasks docs section](https://projects.laion.ai/Open-Assistant/docs/tasks) for
    more information.
 2. Curating datasets and performing data augmentation. This includes scraping,
@@ -31,7 +30,7 @@ you can work on:
 3. Creating and fine-tuning Open Assistant itself. For that, you should pay
    special attention to
    [`/model`](https://github.com/LAION-AI/Open-Assistant/tree/main/model).
-4. [open-assistant.io](https://www.open-assistant.io) dev. Take a close look at
+4. [open-assistant.io](https://open-assistant.io) dev. Take a close look at
    [`/website`](https://github.com/LAION-AI/Open-Assistant/tree/main/website) as
    well as
    [`/backend`](https://github.com/LAION-AI/Open-Assistant/tree/main/backend).
