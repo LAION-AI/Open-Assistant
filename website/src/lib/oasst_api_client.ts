@@ -319,10 +319,11 @@ export class OasstApiClient {
     user_id: string,
     is_enabled: boolean,
     notes: string,
-    show_on_leaderboard: boolean
+    show_on_leaderboard: boolean,
+    display_name: string
   ): Promise<void> {
     await this.put(
-      `/api/v1/users/${user_id}?enabled=${is_enabled}&notes=${notes}&show_on_leaderboard=${show_on_leaderboard}`
+      `/api/v1/users/${user_id}?enabled=${is_enabled}&notes=${notes}&show_on_leaderboard=${show_on_leaderboard}&display_name=${display_name}`
     );
   }
 

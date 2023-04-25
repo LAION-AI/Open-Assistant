@@ -103,7 +103,7 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
                 <input type="hidden" {...register("auth_method")}></input>
                 <FormControl>
                   <FormLabel>Display Name</FormLabel>
-                  <Input {...register("display_name")} isDisabled />
+                  <Input {...register("display_name")} />
                 </FormControl>
                 <FormControl mt="2">
                   <FormLabel>Role</FormLabel>
