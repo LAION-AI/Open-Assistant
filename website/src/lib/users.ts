@@ -21,7 +21,7 @@ export const getBackendUserCore = async (id: string): Promise<BackendUserCore> =
 };
 
 /**
- * convert a user object to a canoncial representation used for interacting with the backend
+ * convert a user object to a canonical representation used for interacting with the backend
  * @param user frontend user object, from prisma db
  */
 export const convertToBackendUserCore = <T extends { accounts: Account[]; id: string; name: string }>(
@@ -95,7 +95,10 @@ export const getBatchFrontendUserIdFromBackendUser = async (users: { username: s
     const account = externalAccounts.find(
       (a) => a.provider === users[userIdx].auth_method && a.providerAccountId === users[userIdx].username
     );
-    outputIds[userIdx] = account.userId;
+    // TODO check why the account is undefined
+    if (account) {
+      outputIds[userIdx] = account.userId;
+    }
   });
 
   return outputIds;

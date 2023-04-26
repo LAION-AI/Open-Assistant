@@ -32,13 +32,13 @@ export const UserDisplayNameCell = ({
       <UserAvatar displayName={displayName} avatarUrl={avatarUrl} />
       {isAdminOrMod ? (
         <>
-          <Link as={NextLink} href={ROUTES.ADMIN_USER_DETAIL(userId)}>
+          <Link as={NextLink} href={ROUTES.ADMIN_USER_DETAIL(userId)} style={{ overflow: "hidden" }}>
             {displayName}
           </Link>
           <Tooltip label={`Signed in with ${authMethod}`}>{AUTH_METHOD_TO_ICON[authMethod]}</Tooltip>
         </>
       ) : (
-        displayName
+        <div style={{ overflow: "hidden" }}>{displayName}</div>
       )}
     </Flex>
   );

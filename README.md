@@ -16,6 +16,7 @@
 <a href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/production-deploy.yaml">![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/production-deploy.yaml?label=deploy-production)</a>
 <a href="https://github.com/LAION-AI/Open-Assistant/actions/workflows/release.yaml">![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LAION-AI/Open-Assistant/release.yaml?label=deploy-release)</a>
 <a href="https://github.com/LAION-AI/Open-Assistant/releases">![GitHub release (latest by date)](https://img.shields.io/github/v/release/LAION-AI/Open-Assistant)</a>
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
 
 </div>
 
@@ -65,11 +66,11 @@ in and start taking on tasks! We want to collect a high volume of quality data.
 By submitting, ranking, and labelling model prompts and responses you will be
 directly helping to improve the capabilities of Open Assistant.
 
-### Running Locally
+### Running the Development Setup Locally (without chat)
 
 **You do not need to run the project locally unless you are contributing to the
 development process. The website link above will take you to the public website
-where you can use the data collection app.**
+where you can use the data collection app and the chat.**
 
 If you would like to run the data collection app locally for development, you
 can set up an entire stack needed to run **Open-Assistant**, including the
@@ -82,6 +83,9 @@ if you have problems):
 ```sh
 docker compose --profile ci up --build --attach-dependencies
 ```
+
+> **Note:** when running on MacOS with an M1 chip you have to use:
+> `DB_PLATFORM=linux/x86_64 docker compose ...`
 
 Then, navigate to `http://localhost:3000` (It may take some time to boot up) and
 interact with the website.
@@ -101,6 +105,19 @@ interact with the website.
 > or in a web browser using
 > [GitHub Codespaces](https://github.com/features/codespaces), you can use the
 > provided [`.devcontainer`](.devcontainer/) folder.
+
+### Running the Development Setup Locally for Chat
+
+**You do not need to run the project locally unless you are contributing to the
+development process. The website link above will take you to the public website
+where you can use the data collection app and the chat.**
+
+**Also note that the local setup is only for development and is not meant to be
+used as a local chatbot, unless you know what you are doing.**
+
+If you _do_ know what you are doing, then see the `inference` folder for getting
+the inference system up and running, or have a look at `--profile inference` in
+addition to `--profile ci` in the above command.
 
 ## The Vision
 

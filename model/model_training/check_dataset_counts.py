@@ -5,7 +5,7 @@ from typing import Any
 
 import pandas as pd
 import yaml
-from model_training.utils import _strtobool, get_dataset
+from model_training.utils.utils import _strtobool, get_dataset
 
 
 class Mode(Enum):

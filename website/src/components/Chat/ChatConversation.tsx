@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Flex, useBoolean, useToast } from "@chakra-ui/react";
-import router from "next/router";
+import { Box, useBoolean, useToast } from "@chakra-ui/react";
 import { memo, useCallback, useRef, useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { UseFormGetValues } from "react-hook-form";
+import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
@@ -22,9 +22,10 @@ import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./
 
 interface ChatConversationProps {
   chatId: string;
+  getConfigValues: UseFormGetValues<ChatConfigFormData>;
 }
 
-export const ChatConversation = memo(function ChatConversation({ chatId }: ChatConversationProps) {
+export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>(useChatContext().messages);
 
@@ -32,11 +33,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId }: ChatC
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
 
-  const { getValues: getFormValues } = useFormContext<ChatConfigFormData>();
-
   const createAndFetchAssistantMessage = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
-      const { model_config_name, ...sampling_parameters } = getFormValues();
+      const { model_config_name, ...sampling_parameters } = getConfigValues();
       const assistant_arg: InferencePostAssistantMessageParams = {
         chat_id: chatId,
         parent_id: parentId,
@@ -75,16 +74,15 @@ export const ChatConversation = memo(function ChatConversation({ chatId }: ChatC
       setResponse(null);
       setIsSending.off();
     },
-    [getFormValues, setIsSending]
+    [getConfigValues, setIsSending]
   );
   const toast = useToast();
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
-    if (!content) {
+    if (!content || isSending) {
       return;
     }
     setIsSending.on();
-    inputRef.current!.value = "";
 
     // TODO: maybe at some point we won't need to access the rendered HTML directly, but use react state
     const parentId = document.getElementById(LAST_ASSISTANT_MESSAGE_ID)?.dataset.id ?? null;
@@ -110,14 +108,15 @@ export const ChatConversation = memo(function ChatConversation({ chatId }: ChatC
 
     const prompter_message: InferenceMessage = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
     if (messages.length === 0) {
-      // revalidte chat list after creating the first prompter message to make sure the message already has title
+      // revalidate chat list after creating the first prompter message to make sure the message already has title
       mutate(API_ROUTES.LIST_CHAT);
     }
     setMessages((messages) => [...messages, prompter_message]);
 
+    inputRef.current!.value = "";
     // after creating the prompters message, handle the assistant's case
     await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
-  }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast]);
+  }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast, isSending]);
 
   const sendVote = useMessageVote();
 
@@ -202,18 +201,39 @@ export const ChatConversation = memo(function ChatConversation({ chatId }: ChatC
   );
 
   return (
-    <Flex flexDir="column" gap={4}>
-      <ChatConversationTree
-        messages={messages}
-        onVote={handleOnVote}
-        onRetry={handleOnRetry}
-        isSending={isSending}
-        retryingParentId={retryingParentId}
-        onEditPromtp={handleEditPrompt}
-      ></ChatConversationTree>
-      {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-
+    <Box
+      pt="4"
+      px="2"
+      gap="1"
+      height="full"
+      minH="0"
+      display="flex"
+      flexDirection="column"
+      flexGrow="1"
+      _light={{
+        bg: "gray.50",
+      }}
+      _dark={{
+        bg: "blackAlpha.300",
+      }}
+    >
+      <SimpleBar
+        style={{ padding: "4px 0", maxHeight: "100%", height: "100%", minHeight: "0" }}
+        classNames={{
+          contentEl: "space-y-4 mx-4 flex flex-col overflow-y-auto items-center",
+        }}
+      >
+        <ChatConversationTree
+          messages={messages}
+          onVote={handleOnVote}
+          onRetry={handleOnRetry}
+          isSending={isSending}
+          retryingParentId={retryingParentId}
+          onEditPromtp={handleEditPrompt}
+        ></ChatConversationTree>
+        {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
+      </SimpleBar>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
-    </Flex>
+    </Box>
   );
 });

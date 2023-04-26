@@ -13,7 +13,7 @@ export default {
 const Template: Story<any> = ({ messages, enableLink, highlightLastMessage }: MessageConversationProps) => {
   return (
     <SessionProvider>
-      <MessageConversation messages={messages} enableLink={enableLink} highlightLastMessage={highlightLastMessage} />;
+      <MessageConversation messages={messages} enableLink={enableLink} highlightLastMessage={highlightLastMessage} />
     </SessionProvider>
   );
 };

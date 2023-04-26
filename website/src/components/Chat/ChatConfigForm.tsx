@@ -1,14 +1,7 @@
 import {
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
   Flex,
   FormControl,
   FormLabel,
-  IconButton,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -22,38 +15,14 @@ import {
   Stack,
   Switch,
   Tooltip,
-  useDisclosure,
 } from "@chakra-ui/react";
-import { Settings } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, memo, useCallback, useState } from "react";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { ChatConfigFormData, SamplingParameters } from "src/types/Chat";
+import { ChangeEvent, memo, useCallback, useEffect, useState } from "react";
+import { Controller, useFormContext } from "react-hook-form";
+import { ChatConfigFormData, ModelParameterConfig, SamplingParameters } from "src/types/Chat";
 
 import { useChatContext } from "./ChatContext";
 import { areParametersEqual } from "./WorkParameters";
-
-export const ChatConfigDrawer = memo(function ChatConfigDrawer() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const { t } = useTranslation("chat");
-  return (
-    <>
-      <IconButton aria-label={t("config_title")} icon={<Settings />} onClick={onOpen} size="lg" borderRadius="xl" />
-      <Drawer placement="right" onClose={onClose} isOpen={isOpen}>
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader borderBottomWidth="1px">{t("config_title")}</DrawerHeader>
-          <DrawerBody>
-            <ChatConfigForm />
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-    </>
-  );
-});
-
 const sliderItems: Readonly<
   Array<{
     key: keyof SamplingParameters;
@@ -65,8 +34,8 @@ const sliderItems: Readonly<
 > = [
   {
     key: "temperature",
-    min: 0,
-    max: 1.5,
+    min: 0.01,
+    max: 2,
   },
   {
     key: "max_new_tokens",
@@ -112,17 +81,19 @@ const parameterLabel: Record<keyof SamplingParameters, string> = {
   typical_p: "Typical P",
 };
 
-const ChatConfigForm = () => {
+const findPresetName = (presets: ModelParameterConfig[], config: SamplingParameters) => {
+  return presets.find((preset) => areParametersEqual(preset.sampling_parameters, config))?.name ?? customPresetName;
+};
+
+export const ChatConfigForm = memo(function ChatConfigForm() {
   const { t } = useTranslation("chat");
   const { modelInfos } = useChatContext();
 
-  const { control, register, reset, getValues } = useFormContext<ChatConfigFormData>();
-  const selectedModel = useWatch({ name: "model_config_name", control: control });
+  const { control, getValues, register, setValue } = useFormContext<ChatConfigFormData>();
+  const selectedModel = getValues("model_config_name"); // have to use getValues to here to access latest value
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
-  const [selectedPresetName, setSelectedPresetName] = useState(
-    () =>
-      presets.find((preset) => areParametersEqual(preset.sampling_parameters, getValues()))?.name ?? customPresetName
-  );
+  const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
+
   const handlePresetChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const newPresetName = e.target.value;
@@ -130,11 +101,20 @@ const ChatConfigForm = () => {
         newPresetName === customPresetName
           ? customPresetDefaultValue
           : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
-      reset({ ...config, model_config_name: selectedModel });
+
+      for (const [key, value] of Object.entries(config) as Array<[keyof SamplingParameters, number]>) {
+        setValue(key, value, { shouldDirty: true }); // force dirty so the ChatConfigSaver will update the cache
+      }
       setSelectedPresetName(newPresetName);
     },
-    [presets, reset, selectedModel]
+    [presets, setValue]
   );
+
+  const config = getValues(); // have to use getValues to here to access latest value
+
+  useEffect(() => {
+    setSelectedPresetName(findPresetName(presets, config as SamplingParameters));
+  }, [config, presets]);
 
   return (
     <Stack gap="4">
@@ -178,7 +158,7 @@ const ChatConfigForm = () => {
       ))}
     </Stack>
   );
-};
+});
 
 type NumberInputSliderProps = {
   max?: number;
@@ -216,7 +196,9 @@ const ChatParameterField = memo(function ChatParameterField(props: NumberInputSl
     <FormControl isDisabled={isDisabled}>
       <Flex justifyContent="space-between" mb="2">
         <FormLabel mb="0">
-          <Tooltip label={description}>{label}</Tooltip>
+          <Tooltip label={description} placement="left">
+            {label}
+          </Tooltip>
         </FormLabel>
         <Switch isChecked={showSlider} onChange={handleShowSliderChange}></Switch>
       </Flex>

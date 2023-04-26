@@ -4,6 +4,7 @@
 import glob
 import json
 import os
+import random
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -12,12 +13,20 @@ from urllib.request import urlopen
 
 import numpy as np
 from datasets import load_dataset
+from model_training.custom_datasets.formatting import DatasetEntry
 from model_training.custom_datasets.utils import _filter_by_words
 from torch import Generator
 from torch.utils.data import Dataset, Subset, random_split
 
 # @agoryuno contributed this
 re_reference_remove = re.compile(r"\[\d+(?:,\s*\d+)*?\]")
+re_single_reference_remove = re.compile(r"\[\s?\d+\s?\]")
+
+# check if the whole string is just a combination of (multiple) whitespaces and newlines
+re_whitespace_newline_match = re.compile(r"^[\s\n]*$")
+
+
+LINKING_CHARS = ["\n", "\n\n", " "]
 
 
 def index_squad_v2(example):
@@ -276,31 +285,16 @@ class SODA(Dataset):
 
 
 class SODADialogue(Dataset):
-    url = "https://drive.google.com/uc?id=1TOGQfr419n8wpzJpYLLw4nB3tSKD8zXV"
-
     def __init__(self, cache_dir, verbose=True):
-        path = os.path.join(cache_dir, "soda_dialog.jsonl")
-
-        if not os.path.exists(path):
-            import gzip
-            import shutil
-
-            import gdown
-
-            gdown.download(self.url, output=os.path.join(cache_dir, "soda_dialog.jsonl.gz"))
-
-            with gzip.open(os.path.join(cache_dir, "soda_dialog.jsonl.gz"), "rb") as f_in:
-                with open(path, "wb") as f_out:
-                    shutil.copyfileobj(f_in, f_out)
+        dataset = load_dataset("emozilla/soda_synthetic_dialogue", cache_dir=cache_dir)
 
         self.pairs = []
         faulty = 0
-        with open(path) as fin:
-            for line in fin:
-                conversation = json.loads(line)
+        for split in dataset:
+            for row in dataset[split]:
                 question_answer_pairs = ()
 
-                question_answers = conversation["text"].split("User: ")
+                question_answers = row["conversation"].split("User: ")
                 for question_answer in question_answers[1:]:  # first element is empty
                     try:
                         question, answer = question_answer.split("\nAssistant: ")
@@ -431,15 +425,12 @@ class AlpacaBaseDataset(Dataset):
             )
         self.mode = mode
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.data)
 
-    def __getitem__(self, index):
-        question, answer = self.data[index]
-        if self.mode == "sft":
-            return (question, answer)
-        elif self.mode == "rl":
-            return (question,)
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.data[index]
+        return dialogue
 
 
 def load_alpaca_dataset(
@@ -448,16 +439,13 @@ def load_alpaca_dataset(
     cache_dir: str,
     mode: str = "sft",
     manual_seed: int = 287631038922,
-    reverse_augmentation: bool = False,
-    keep_unreversed: bool = True,
 ) -> tuple[AlpacaBaseDataset, AlpacaBaseDataset]:
     generator = Generator()
     generator.manual_seed(manual_seed)
 
-    def process_split(
-        dataset: Subset, reverse_augmentation: bool = False, keep_unreversed: bool = True
-    ) -> list[tuple[str, str]]:
+    def process_split(dataset: Subset) -> list[tuple[str, str]]:
         data = []
+
         for row in dataset:
             question = row["instruction"]
             if len(row["input"]) > 0:
@@ -466,13 +454,8 @@ def load_alpaca_dataset(
                 input_ = question
             if (_filter_by_words(input_) is None) or (_filter_by_words(row["output"]) is None):
                 continue
-            if reverse_augmentation:
-                data.append((row["output"], input_))
-                # in case of reverse augmentation we just keep both, reversed and unreversed data
-                if keep_unreversed:
-                    data.append((input_, row["output"]))
-            else:
-                data.append((input_, row["output"]))
+
+            data.append(DatasetEntry(questions=[input_], answers=[row["output"]]))
         return data
 
     if dataset_name == "alpaca":
@@ -483,12 +466,8 @@ def load_alpaca_dataset(
         raise ValueError(f"Expected dataset_name to be 'alapaca' or 'code_alpaca'. Received {dataset_name}.")
 
     splits = random_split(dataset["train"], lengths=[1.0 - val_split, val_split], generator=generator)
-    train = AlpacaBaseDataset(
-        process_split(splits[0], reverse_augmentation=reverse_augmentation, keep_unreversed=keep_unreversed), mode=mode
-    )
-    val = AlpacaBaseDataset(
-        process_split(splits[1], reverse_augmentation=False, keep_unreversed=keep_unreversed), mode=mode
-    )
+    train = AlpacaBaseDataset(process_split(splits[0]), mode=mode)
+    val = AlpacaBaseDataset(process_split(splits[1]), mode=mode)
     return train, val
 
 
@@ -496,35 +475,49 @@ class Vicuna(Dataset):
     name = "vicuna"
 
     @staticmethod
-    def process_vicuna_conversations(data: list[dict[str, None | str]], input_max_length: int) -> list[str] | None:
-        dialogue = []
+    def process_vicuna_conversations(
+        data: list[dict[str, None | str]], input_max_length: int
+    ) -> tuple[list[str], list[str]] | None:
         role = None
         messages = []
         # drop conversations that start with Bot
         if len(data["conversations"]) == 0 or data["conversations"][0]["from"] != "human":
             return None
+        questions = []
+        answers = []
         for line in data["conversations"]:
             speaker = line["from"]  # 'human' or 'gpt'
             message = line["value"]
-
+            if message is None or message == "":
+                if speaker == "gpt":
+                    return None
+                elif speaker == "human":
+                    # replace empty messages with one of the following
+                    message = random.choice(["...", "Please continue", "Go on", ""])
             # remove markdown escaping in revision 192ab2185289094fc556ec8ce5ce1e8e587154ca
             # python-markdownify with escape_asterisks & escape_underscores True is used
             # for pre-processing the dataset.
             # See also https://github.com/LAION-AI/Open-Assistant/issues/2510
             message = message.replace(r"\_", "_")
             message = message.replace(r"\*", "*")
+            message = re_single_reference_remove.sub("", message)
 
             if role != speaker:
                 if role is not None:
-                    dialogue.append("\n".join(messages))
+                    if role == "human":
+                        questions.append("\n".join(messages)[:input_max_length])
+                    if role == "gpt":
+                        answers.append("\n".join(messages)[:input_max_length])
                     messages = []
                 role = speaker
             messages.append(message.strip())
 
         if role is not None and len(messages) > 0:
-            dialogue.append("\n".join(messages))
-        dialogue_truncated = [k[:input_max_length] for k in dialogue]
-        return dialogue_truncated
+            if role == "human":
+                questions.append("\n".join(messages)[:input_max_length])
+            if role == "gpt":
+                answers.append("\n".join(messages)[:input_max_length])
+        return questions, answers
 
     def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
         super().__init__()
@@ -540,20 +533,15 @@ class Vicuna(Dataset):
             revision="192ab2185289094fc556ec8ce5ce1e8e587154ca",
         )["train"]
         for data in dataset:
-            if (
-                processed_data := self.process_vicuna_conversations(data, input_max_length=input_max_length)
-            ) is not None:
-                self.pairs.append(processed_data)
+            if (qa := self.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
+                self.pairs.append(DatasetEntry(questions=qa[0], answers=qa[1]))
 
     def __len__(self) -> int:
         return len(self.pairs)
 
-    def __getitem__(self, index: int) -> list[str] | tuple[str]:
-        dialogue: list[str] = self.pairs[index]
-        if self.mode == "sft":
-            return dialogue
-        elif self.mode == "rl":
-            return tuple(dialogue[:-1])
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.pairs[index]
+        return dialogue
 
 
 class DatabricksDolly15k(Dataset):
@@ -566,24 +554,62 @@ class DatabricksDolly15k(Dataset):
         self.mode = mode
         data = load_dataset("OllieStanley/oa_dolly_15k", cache_dir=cache_dir)
         for line in data["train"]:
+            self.rows.append(self._process_instruction(line, input_max_length))
+
+    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> DatasetEntry | None:
+        context = re_reference_remove.sub("", row["METADATA"]["CONTEXT"])
+        # further remove references
+        context = context.replace("[citation needed]", "")
+        context = self.citation_regex.sub("", context)
+        return DatasetEntry(
+            context=context,
+            questions=[row["INSTRUCTION"][:input_max_length]],
+            answers=[row["RESPONSE"][:input_max_length]],
+        )
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
+
+
+class AlpacaGpt4(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        self.rows = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        data = load_dataset("vicgalle/alpaca-gpt4", cache_dir=cache_dir)
+        for line in data["train"]:
             if (conv := self._process_instruction(line, input_max_length)) is not None:
                 self.rows.append(conv)
 
-    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> list[str] | None:
-        if context := re_reference_remove.sub("", row["METADATA"]["CONTEXT"]):
-            # further remove references
-            context = context.replace("[citation needed]", "")
-            context = self.citation_regex.sub("", context)
-            return [f"{context} {row['INSTRUCTION']}"[:input_max_length], row["RESPONSE"][:input_max_length]]
+    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> DatasetEntry | None:
+        # discard items that are too long: when checked on 2023-04-17 this was just one item in the whole dataset with length above 2048.
+        # And 12 above 1024.
+        if len(row["input"]) + len(row["instruction"]) > input_max_length:
+            return None
+        # filter all appearing variants of "no input" or empty input or cases where the input is already in the instruction.
+        # In this cases we don't add the input
+        if (
+            any([k in row["input"].lower() for k in ["no input", "noinput", "n/a"]])
+            or (not row["input"])
+            or (row["input"].lower() in row["instruction"].lower())
+        ):
+            return DatasetEntry(questions=[row["instruction"]], answers=[row["output"]])
+        # Concatenate the instruction and input.
         else:
-            return [row["INSTRUCTION"][:input_max_length], row["RESPONSE"][:input_max_length]]
+            linking_char = random.choice(LINKING_CHARS)
+            return DatasetEntry(
+                questions=[f"{row['instruction']}{linking_char}{row['input']}"], answers=[row["output"]]
+            )
 
     def __len__(self) -> int:
         return len(self.rows)
 
     def __getitem__(self, index: int) -> list[str] | tuple[str]:
-        dialogue: list[str] = self.rows[index]
-        if self.mode == "sft":
-            return dialogue
-        elif self.mode == "rl":
-            return tuple(dialogue[:-1])
+        dialogue = self.rows[index]
+        return dialogue
