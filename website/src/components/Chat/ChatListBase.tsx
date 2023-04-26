@@ -6,11 +6,12 @@ import { useTranslation } from "next-i18next";
 import { memo, useCallback } from "react";
 import SimpleBar from "simplebar-react";
 import { GetChatsResponse } from "src/types/Chat";
+
 import { ChatListItem } from "./ChatListItem";
+import { ChatWarning } from "./ChatWarning";
 import { CreateChatButton } from "./CreateChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 import { useListChatPagination } from "./useListChatPagination";
-import { ChatWarning } from "./ChatWarning";
 
 export const ChatListBase = memo(function ChatListBase({
   initialChats, // TODO: can we remove this?

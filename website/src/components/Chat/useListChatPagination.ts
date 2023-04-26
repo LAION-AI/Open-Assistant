@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { get } from "src/lib/api";
 import { GetChatsResponse } from "src/types/Chat";
 import useSWRInfinite from "swr/infinite";
@@ -26,8 +26,8 @@ export function useListChatPagination(initialChats?: GetChatsResponse) {
   const isEnd = useMemo(() => !responses?.[responses.length - 1]?.next, [responses]);
 
   useEffect(() => {
-    const handleObserver = (entities) => {
-      const target = entities[0];
+    const handleObserver: IntersectionObserverCallback = (entries) => {
+      const target = entries[0];
       if (target.isIntersecting && !isLoading && !isEnd) {
         setSize((size) => {
           return size + 1;
@@ -38,10 +38,8 @@ export function useListChatPagination(initialChats?: GetChatsResponse) {
 
     if (loadMoreRef.current) observer.observe(loadMoreRef.current);
 
-    return () => {
-      if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
-    };
-  }, [isLoading, isEnd]);
+    return () => observer.disconnect();
+  }, [isLoading, isEnd, setSize]);
 
   return { loadMoreRef, responses, mutateChatResponses };
 }
