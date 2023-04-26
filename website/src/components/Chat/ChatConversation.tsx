@@ -19,6 +19,7 @@ import { useChatContext } from "./ChatContext";
 import { ChatConversationTree, LAST_ASSISTANT_MESSAGE_ID } from "./ChatConversationTree";
 import { ChatForm } from "./ChatForm";
 import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
+import { ChatWarning } from "./ChatWarning";
 
 interface ChatConversationProps {
   chatId: string;
@@ -234,6 +235,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
       </SimpleBar>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
+      <ChatWarning />
     </Box>
   );
 });
