@@ -52,7 +52,7 @@
     - name: Create postgres containers
       community.docker.docker_container:
         name: "oasst-inference-{{ stack_name }}-postgres"
-        image: postgres
+        image: ghcr.io/laion-ai/open-assistant/oasst-postgres
         state: started
         pull: true
         recreate: "{{ (stack_name == 'dev') | bool }}"
