@@ -67,7 +67,7 @@ Here's a list of first-level folders at
   website!
 - [`/inference`](https://github.com/LAION-AI/Open-Assistant/tree/main/inference) -
   inference pipeline for Open Assistant model
-- [`/model`](https://github.com/LAION-AI/Open-Assistant/tree/main/inference) -
+- [`/model`](https://github.com/LAION-AI/Open-Assistant/tree/main/model) -
   currently contains scripts and tools for training/fine-tuning Open Assistant
   and other neural networks
 - [\*`/notebooks`](https://github.com/LAION-AI/Open-Assistant/tree/main/inference) -
