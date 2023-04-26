@@ -116,8 +116,7 @@ export const getBatchFrontendUserIdFromBackendUser = async (users: { username: s
       console.log(`Error: auth_method or username is undefined or null for user at userIdx ${userIdx}.`);
       return;
     }
-
-
+    
     if (account) {
       outputIds[userIdx] = account.userId;
     }
