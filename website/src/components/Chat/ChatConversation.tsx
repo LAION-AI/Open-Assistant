@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Box, useBoolean, useToast } from "@chakra-ui/react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
 import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
@@ -200,21 +200,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     [createAndFetchAssistantMessage, isSending, setIsSending]
   );
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // if (!chatContainerRef.current || !messagesEndRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-    // const threshold = 100;
-    // const scrollBottom = scrollHeight - scrollTop - clientHeight;
-
-    // if (scrollBottom > threshold) {
-    //   return;
-    // }
-
-    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamedResponse]);
+  const { messagesEndRef, scrollableNodeProps } = useAutoScroll(messages, streamedResponse);
 
   return (
     <Box
@@ -234,9 +220,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       }}
     >
       <SimpleBar
-        scrollableNodeProps={{
-          ref: chatContainerRef,
-        }}
+        scrollableNodeProps={scrollableNodeProps}
         style={{ maxHeight: "100%", height: "100%", minHeight: "0" }}
         classNames={{
           contentEl: "space-y-4 mx-4 flex flex-col overflow-y-auto items-center",
@@ -254,14 +238,45 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         <div ref={messagesEndRef} style={{ height: 0 }}></div>
       </SimpleBar>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
-      <button
-        onClick={() => {
-          const element = chatContainerRef.current;
-          console.log(Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1);
-        }}
-      >
-        click
-      </button>
     </Box>
   );
 });
+
+const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string) => {
+  const enableAutoScroll = useRef(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const handleOnScroll = useCallback(() => {
+    const container = chatContainerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const isEnable = Math.abs(container.scrollHeight - container.scrollTop - container.clientHeight) < 10;
+    enableAutoScroll.current = isEnable;
+  }, []);
+
+  useEffect(() => {
+    if (!enableAutoScroll.current) {
+      return;
+    }
+
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  }, [messages, streamedResponse]);
+
+  const scrollableNodeProps = useMemo(
+    () => ({
+      ref: chatContainerRef,
+      onWheel: handleOnScroll,
+      onKeyDown: (e: KeyboardEvent) => {
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+          handleOnScroll();
+        }
+      },
+      onTouchMove: handleOnScroll,
+    }),
+    [handleOnScroll]
+  );
+
+  return { messagesEndRef, scrollableNodeProps };
+};
