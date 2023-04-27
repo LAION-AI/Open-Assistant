@@ -1,27 +1,11 @@
-import { Flex } from "@chakra-ui/react";
-import { Fragment } from "react";
-import { TeamMember } from "src/components/TeamMember";
-
-import data from "../../data/warning.json";
-
-const warn = ["warning"] as const;
-
-const rootProps = {
-  bg: "transparent",
-  borderRadius: 0,
-};
+import { Box } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 
 export const ChatWarning = () => {
+  const { t } = useTranslation("chat");
   return (
-    <Flex direction="column" justifyContent="center" borderTopWidth="1px" p="2">
-      {warn.map((id) => (
-        <Fragment key={id}>
-          <TeamMember {...data.panels[id]} rootProps={rootProps}></TeamMember>
-        </Fragment>
-      ))}
-      <Flex justifyContent="center" pb="2" fontSize="sm" color="gray.500">
-        Usage Warning
-      </Flex>
-    </Flex>
+    <Box fontSize="sm" textAlign="center" mb="2" className="max-w-5xl mx-auto">
+      {t("warning")}
+    </Box>
   );
 };
