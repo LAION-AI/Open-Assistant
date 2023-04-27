@@ -8,7 +8,6 @@ import SimpleBar from "simplebar-react";
 import { GetChatsResponse } from "src/types/Chat";
 
 import { ChatListItem } from "./ChatListItem";
-import { ChatWarning } from "./ChatWarning";
 import { CreateChatButton } from "./CreateChatButton";
 import { InferencePoweredBy } from "./InferencePoweredBy";
 import { useListChatPagination } from "./useListChatPagination";
@@ -103,7 +102,6 @@ export const ChatListBase = memo(function ChatListBase({
         ))}
         <div ref={loadMoreRef} />
       </SimpleBar>
-      <ChatWarning />
       <InferencePoweredBy />
     </Box>
   );
