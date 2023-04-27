@@ -232,7 +232,7 @@ class WebGPT(Dataset):
 class SODA(Dataset):
     name = "soda"
 
-    def process_soda_convo(self, data: dict[str, Any], input_max_length: int) -> list[list[str]] | None:
+    def process_soda_convo(self, data: dict[str, Any], input_max_length: int) -> DatasetEntry | None:
         play_as = data["speakers"][1]
         dialogue_bg = "{}{}".format(
             # QA_SPECIAL_TOKENS["StartPrefix"],
@@ -256,7 +256,9 @@ class SODA(Dataset):
             data["dialogue"][0] = f"{dialogue_bg} {data['dialogue'][0]}"
             # Use only input_max_length characters
             truncated_dialogue = [k[:input_max_length] for k in data["dialogue"]]
-            return truncated_dialogue
+            questions = [q for idx, q in enumerate(truncated_dialogue) if idx % 2 == 0]
+            answers = [a for idx, a in enumerate(truncated_dialogue) if idx % 2 == 1]
+            return DatasetEntry(questions=questions, answers=answers)
 
     def __init__(self, cache_dir, mode="sft", input_max_length=1024) -> None:
         super().__init__()
@@ -275,13 +277,10 @@ class SODA(Dataset):
     def __len__(self) -> int:
         return len(self.pairs)
 
-    def __getitem__(self, index) -> list[str] | tuple[str]:
+    def __getitem__(self, index) -> DatasetEntry:
         # special token added during preprocess
-        if self.mode == "sft":
-            return self.pairs[index]
-        elif self.mode == "rl":
-            # add prefix + first human question
-            return (self.pairs[index][0] + " " + self.pairs[index][1],)
+        dialogue = self.pairs[index]
+        return dialogue
 
 
 class SODADialogue(Dataset):
