@@ -34,7 +34,7 @@ const MessagesDashboard = () => {
               language: getLocaleDisplayName(currentLanguage),
             })}
           </Text>
-          <Text style={{fontSize: 15, fontStyle: 'italic'}}>The messages originate from datasets and not from users' inputs.</Text>
+          <Text style={{fontSize: 15, fontStyle: 'italic'}}>The messages originate from datasets and not from users inputs.</Text>
           <Box
             backgroundColor={boxBgColor}
             boxShadow="base"
