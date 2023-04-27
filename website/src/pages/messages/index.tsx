@@ -33,6 +33,7 @@ const MessagesDashboard = () => {
             {t("recent_messages", {
               language: getLocaleDisplayName(currentLanguage),
             })}
+            <Text style={{fontSize: 15, fontStyle: 'italic'}}>The messages originate from datasets and not from users' inputs.</Text>
           </Text>
           <Box
             backgroundColor={boxBgColor}
@@ -51,6 +52,8 @@ const MessagesDashboard = () => {
         <Box>
           <Text className="text-2xl font-bold" pb="4">
             {t("your_recent_messages")}
+          </Text>
+          <Text className="text-2xl font-bold" pb="4">
           </Text>
           <Box
             backgroundColor={boxBgColor}
