@@ -33,6 +33,7 @@ module.exports = {
       "ru",
       "sk",
       "sv",
+      "swg",
       "uk-UA",
       "vi",
       "zh",
