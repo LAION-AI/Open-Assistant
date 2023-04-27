@@ -1,10 +1,11 @@
 import { Box } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 
 export const ChatWarning = () => {
+  const { t } = useTranslation("chat");
   return (
     <Box fontSize="sm" textAlign="center" mb="2" className="max-w-5xl mx-auto">
-      This Assistant is a demonstration version that does not have internet access. It may generate incorrect or
-      misleading information. It is not suitable for important use cases or for giving advice.
+      {t("warning")}
     </Box>
   );
 };
