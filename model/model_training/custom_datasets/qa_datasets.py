@@ -333,8 +333,6 @@ class JokeExplaination(Dataset):
             with open(joke_explain_filename, "w") as fout:
                 fout.write(content)
 
-        question = ""
-        answer = ""
         self.pairs = []
         with open(joke_explain_filename, "r") as f:
             for line in f:
@@ -343,16 +341,12 @@ class JokeExplaination(Dataset):
                 # DO NOT change this
                 # its the data that had syntax error
                 explanation = data["explaination"]
-                self.pairs.append((joke, explanation))
+                self.pairs.append(DatasetEntry(questions=[joke], answers=[explanation]))
 
-        if len(question) > 0 and len(answer) > 0:
-            self.pairs.append((question, answer))
-        self.length = len(self.pairs)
-
-    def __len__(self):
+    def __len__(self) -> int:
         return self.length
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> DatasetEntry:
         return self.pairs[index]
 
 
@@ -610,6 +604,6 @@ class AlpacaGpt4(Dataset):
     def __len__(self) -> int:
         return len(self.rows)
 
-    def __getitem__(self, index: int) -> list[str] | tuple[str]:
+    def __getitem__(self, index: int) -> DatasetEntry:
         dialogue = self.rows[index]
         return dialogue
