@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Box, useBoolean, useToast } from "@chakra-ui/react";
+import { Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
 import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
 import SimpleBar from "simplebar-react";
@@ -214,7 +214,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     [createAndFetchAssistantMessage, isSending, setIsSending]
   );
 
-  const { messagesEndRef, scrollableNodeProps } = useAutoScroll(messages, streamedResponse);
+  const { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll } = useAutoScroll(messages, streamedResponse);
 
   return (
     <Box
@@ -235,6 +235,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     >
       {isLoadingMessages && <CircularProgress isIndeterminate size="20px" mx="auto" />}
       <SimpleBar
+        onMouseDown={updateEnableAutoScroll}
         scrollableNodeProps={scrollableNodeProps}
         style={{ maxHeight: "100%", height: "100%", minHeight: "0" }}
         classNames={{
@@ -262,13 +263,13 @@ const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string) =
   const enableAutoScroll = useRef(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const handleOnScroll = useCallback(() => {
+  const updateEnableAutoScroll = useCallback(() => {
     const container = chatContainerRef.current;
     if (!container) {
       return;
     }
 
-    const isEnable = Math.abs(container.scrollHeight - container.scrollTop - container.clientHeight) < 10;
+    const isEnable = container.scrollHeight - container.scrollTop - container.clientHeight < 10;
     enableAutoScroll.current = isEnable;
   }, []);
 
@@ -283,16 +284,18 @@ const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string) =
   const scrollableNodeProps = useMemo(
     () => ({
       ref: chatContainerRef,
-      onWheel: handleOnScroll,
+      onWheel: updateEnableAutoScroll,
+      // onScroll: handleOnScroll,
       onKeyDown: (e: KeyboardEvent) => {
         if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-          handleOnScroll();
+          updateEnableAutoScroll();
         }
       },
-      onTouchMove: handleOnScroll,
+      onTouchMove: updateEnableAutoScroll,
+      onMouseDown: updateEnableAutoScroll(),
     }),
-    [handleOnScroll]
+    [updateEnableAutoScroll]
   );
 
-  return { messagesEndRef, scrollableNodeProps };
+  return { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll };
 };
