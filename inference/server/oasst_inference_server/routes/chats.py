@@ -156,6 +156,8 @@ async def create_assistant_message(
             status_code=fastapi.status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="The server is currently busy. Please try again later.",
         )
+    except fastapi.HTTPException:
+        raise
     except Exception:
         logger.exception("Error adding prompter message")
         return fastapi.Response(status_code=500)
