@@ -182,7 +182,7 @@ def handle_plugin_usage(
                 final_input, prompt_template, memory, tools_names, current_time, language, tokenizer, worker_config
             )
 
-            inner_prompt = f"{inner_prompt}\nThought: I now know the final answer\n{ASSISTANT_PREFIX}:\n"
+            inner_prompt = f"{inner_prompt}\nThought: I now know the final answer\n{ASSISTANT_PREFIX}:  "
 
             plugin_used.execution_details.inner_monologue = inner_monologue
             plugin_used.execution_details.final_tool_output = tool_response
@@ -215,14 +215,14 @@ def handle_plugin_usage(
             return init_prompt, plugin_used
 
         plugin_used.execution_details.status = "success"
-        return f"{init_prompt}Thought: I now know the final answer\n{ASSISTANT_PREFIX}:\n", plugin_used
+        return f"{init_prompt}Thought: I now know the final answer\n{ASSISTANT_PREFIX}:  ", plugin_used
     else:
         # Max depth reached, just try to answer without using a tool
         plugin_used.execution_details.final_prompt = init_prompt
         plugin_used.execution_details.achieved_depth = achieved_depth
         plugin_used.execution_details.status = "failure"
         plugin_used.execution_details.error_message = f"Max depth reached: {MAX_DEPTH}"
-        init_prompt = f"{init_prompt}Thought: I now know the final answer\n{ASSISTANT_PREFIX}:\n"
+        init_prompt = f"{init_prompt}Thought: I now know the final answer\n{ASSISTANT_PREFIX}:  "
         return init_prompt, plugin_used
 
 
