@@ -1,9 +1,9 @@
 import { BarChart2, ExternalLink, Layout, MessageCircle, MessageSquare, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
-import { useBrowserEnv } from "src/hooks/env/BrowserEnv";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 
 export const useSidebarItems = () => {
-  const { ENABLE_CHAT } = useBrowserEnv();
+  const { ENABLE_CHAT } = useBrowserConfig();
 
   const items = useMemo(
     () => [

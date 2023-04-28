@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-export interface BrowserEnv {
+export interface BrowserConfig {
   ENABLE_CHAT: boolean;
   ENABLE_EMAIL_SIGNIN: boolean;
   ENABLE_EMAIL_SIGNIN_CAPTCHA: boolean;
@@ -8,6 +8,6 @@ export interface BrowserEnv {
   CURRENT_ANNOUNCEMENT: string;
 }
 
-export const BrowserEnvContext = createContext<BrowserEnv>({} as any);
+export const BrowserConfigContext = createContext<BrowserConfig>({} as any);
 
-export const useBrowserEnv = () => useContext(BrowserEnvContext);
+export const useBrowserConfig = () => useContext(BrowserConfigContext);

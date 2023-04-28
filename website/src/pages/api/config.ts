@@ -1,7 +1,8 @@
 import { boolean } from "boolean";
-import { withoutRole } from "src/lib/auth";
+import type { NextApiRequest, NextApiResponse } from "next";
 import { BrowserConfig } from "src/types/Config";
 
+// don't put sensitive information here
 const config: BrowserConfig = {
   ENABLE_CHAT: boolean(process.env.ENABLE_CHAT),
   ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
@@ -10,8 +11,9 @@ const config: BrowserConfig = {
   CURRENT_ANNOUNCEMENT: process.env.CURRENT_ANNOUNCEMENT,
 };
 
-const handler = withoutRole("banned", async (req, res, token) => {
+// don't check for auth
+const handler = (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(200).json(config);
-});
+};
 
 export default handler;

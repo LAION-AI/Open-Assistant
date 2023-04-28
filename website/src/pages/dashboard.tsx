@@ -10,13 +10,14 @@ export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServ
 import Link from "next/link";
 import { XPBar } from "src/components/Account/XPBar";
 import { TaskCategoryItem } from "src/components/Dashboard/TaskOption";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 import { useCurrentLocale } from "src/hooks/locale/useCurrentLocale";
-import { getEnv } from "src/lib/browserEnv";
 import { API_ROUTES } from "src/lib/routes";
 import useSWR from "swr";
 
 const Dashboard = () => {
   const { t } = useTranslation(["dashboard", "common", "tasks"]);
+  const { ENABLE_CHAT } = useBrowserConfig();
   const lang = useCurrentLocale();
   const { data } = useSWR<AvailableTasks>(API_ROUTES.AVAILABLE_TASK({ lang }), get, {
     refreshInterval: 2 * 60 * 1000, //2 minutes
@@ -35,8 +36,7 @@ const Dashboard = () => {
       </Head>
       <Flex direction="column" gap="10">
         <WelcomeCard />
-
-        {getEnv().ENABLE_CHAT && (
+        {ENABLE_CHAT && (
           <Flex direction="column" gap={4}>
             <Heading size="lg">{t("index:try_our_assistant")}</Heading>
             <Link href="/chat" aria-label="Chat">

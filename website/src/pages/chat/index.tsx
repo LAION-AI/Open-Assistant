@@ -1,12 +1,9 @@
-import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import React from "react";
 import { ChatListBase } from "src/components/Chat/ChatListBase";
 import { DashboardLayout } from "src/components/Layout";
-import { isChatEnable } from "src/lib/isChatEnable";
-export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 const ChatList = () => {
   const { t } = useTranslation(["chat"]);

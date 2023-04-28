@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-export { getStaticProps } from "src/lib/defaultServerSideProps";
+export { getServerSideProps } from "src/lib/defaultServerSideProps";
 import { AdminArea } from "src/components/AdminArea";
 import { JsonCard } from "src/components/JsonCard";
 import { AdminLayout } from "src/components/Layout";

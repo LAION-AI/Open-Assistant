@@ -8,7 +8,7 @@ import { useTranslation } from "next-i18next";
 import React from "react";
 import { ReactNode } from "react";
 import { LanguageSelector } from "src/components/LanguageSelector";
-import { getEnv } from "src/lib/browserEnv";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 
 import { ColorModeToggler } from "./ColorModeToggler";
 import { UserMenu } from "./UserMenu";
@@ -40,9 +40,9 @@ const ANNOUNCEMENT_CACHE_KEY = "announcement";
 export function Header({ preLogoSlot, fixed = true }: HeaderProps) {
   const { t } = useTranslation();
   const { data: session } = useSession();
+  const { CURRENT_ANNOUNCEMENT: announcement } = useBrowserConfig();
   const homeURL = session ? "/dashboard" : "/";
 
-  const announcement = getEnv().CURRENT_ANNOUNCEMENT;
   let announcementInCache = "";
   if (typeof localStorage !== "undefined") {
     announcementInCache = localStorage.getItem(ANNOUNCEMENT_CACHE_KEY);
