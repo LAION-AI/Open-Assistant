@@ -31,7 +31,7 @@ INSTRUCTIONS = f"""
 To use a tool, please use the following format:
 
 ```
-Thought: I should always think about what to do
+Thought: here always think about what to do
 Action: the action to take, should be one of {{tools_names}}
 Action Input: the input to the action, should be in json format
 ```

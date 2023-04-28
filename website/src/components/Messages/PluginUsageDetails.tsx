@@ -6,7 +6,8 @@ import { useTranslation } from "next-i18next";
 const SyntaxHighlighter = lazy(() => import("./SyntaxHighlighter"));
 
 // TODO: Delete me!
-const measureDivWidth = (div) => {
+const measureDivWidth = (div: HTMLDivElement | null) => {
+  if (!div) return 0;
   const width = div?.parentElement?.offsetWidth - 15;
   return width;
 };
@@ -18,7 +19,7 @@ const DropdownItem = ({ plugin }) => {
   const [finalPromptCollapser, setFinalPromptCollapser] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
   const { t } = useTranslation("common");
-  const divRef = useRef(null);
+  const divRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <Box ref={divRef}>

@@ -54,6 +54,8 @@ export interface InferenceMessage {
 
 export interface GetChatsResponse {
   chats: ChatItem[];
+  next?: string;
+  prev?: string;
 }
 
 // message events sent by the inference server
@@ -176,4 +178,10 @@ export interface PluginConfig {
   contact_email: string | null;
   legal_info_url: string | null;
   endpoints: PluginOpenAPIEndpoint[] | null;
+}
+
+export interface GetChatsParams {
+  limit?: number;
+  before?: string;
+  after?: string;
 }

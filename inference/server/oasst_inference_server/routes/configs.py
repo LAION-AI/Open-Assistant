@@ -83,6 +83,7 @@ DEFAULT_PARAMETER_CONFIGS = [
         name="k50-Plugins",
         description="Top-k sampling with k=50 and temperature=0.35",
         sampling_parameters=inference.SamplingParameters(
+            max_new_tokens=512,
             temperature=0.35,
             top_k=50,
             repetition_penalty=1,

@@ -103,7 +103,7 @@ def use_tool(tool_name: str, tool_input: str, tools: list) -> str:
 
 # Needs more work for errors, error-prompt tweaks are currently based on
 # `OpenAssistant/oasst-sft-6-llama-30b-epoch-1 model`
-# TODO: Add POST, PUT etc... methods
+# TODO: Add other missing methods and data types
 class RequestsForLLM:
     def run(self, params: str, url: str, param_location: str, type: str, payload: str | None = None) -> str:
         return self.run_request(params, url, param_location, type, payload)

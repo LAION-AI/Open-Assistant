@@ -40,6 +40,13 @@ import { PluginEntry } from "src/types/Chat";
 import { get, post } from "src/lib/api";
 import { API_ROUTES } from "src/lib/routes";
 
+// TODO: Delete me!
+const measureDivWidth = (div: HTMLDivElement | null) => {
+  if (!div) return 0;
+  const width = div?.parentElement?.offsetWidth - 15;
+  return width;
+};
+
 export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
   const { t } = useTranslation("common");
   const { control, register, reset, setValue } = useFormContext<ChatConfigFormData>();
@@ -47,6 +54,7 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const findSelectedPluginIndex = useCallback(() => {
     return plugins.findIndex((plugin) => plugin.enabled);
@@ -59,7 +67,8 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
         ...plugin,
         enabled: selectedIndex === index ? false : i === index,
       }));
-      setValue("plugins", newPlugins);
+      setValue("plugins", newPlugins, { shouldDirty: true });
+      // onPluginActivated(newPlugins[index].enabled);
     },
     [setValue, plugins]
   );
@@ -75,7 +84,7 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
   const handlePluginRemove = useCallback(
     (index) => {
       const updatedPlugins = plugins.filter((_, idx) => idx !== index);
-      setValue("plugins", updatedPlugins);
+      setValue("plugins", updatedPlugins, { shouldDirty: true });
     },
     [setValue, plugins]
   );
@@ -88,9 +97,12 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
       const plugin: PluginEntry = await post(API_ROUTES.GET_PLUGIN_CONFIG, {
         arg: { plugin: newPlugins[selectedPluginIndex!] },
       });
-
+      // disable all existing plugins and enable new one
+      newPlugins.forEach((plugin) => (plugin.enabled = false));
+      newPlugins[selectedPluginIndex!].enabled = true;
       newPlugins[selectedPluginIndex!].plugin_config = plugin.plugin_config;
-      setValue("plugins", newPlugins);
+      setValue("plugins", newPlugins, { shouldDirty: true });
+      //onPluginActivated(newPlugins[selectedPluginIndex!].enabled);
     }
     onClose();
   }, [onClose, control, plugins, selectedPluginIndex]);
@@ -115,111 +127,131 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
   };
 
   return (
-    <FormControl>
-      <Menu placement="auto">
-        <MenuButton as={Button} rightIcon={<Cog />} w="100%" size="lg">
-          {plugins && plugins[findSelectedPluginIndex()]?.enabled ? (
-            <Box display="flex" justifyContent="center" gap={2}>
-              <Image
-                src={plugins[findSelectedPluginIndex()]?.plugin_config?.logo_url}
-                alt="Plugins"
-                width="25px"
-                height="25px"
-                marginRight="5px"
+    <FormControl mb="40px" ref={containerRef}>
+      <Box position="fixed" zIndex="1">
+        <Menu placement="auto">
+          <MenuButton as={Button} pr="3" rightIcon={<Cog />} w={measureDivWidth(containerRef.current) + 15} size="lg">
+            {plugins && plugins[findSelectedPluginIndex()]?.enabled ? (
+              <Box display="flex" justifyContent="flex-start" gap={2}>
+                <Image
+                  src={plugins[findSelectedPluginIndex()]?.plugin_config?.logo_url}
+                  alt="Plugins"
+                  width="25px"
+                  height="25px"
+                  marginRight="5px"
+                />
+                <Text mt="4px" fontSize="15px">
+                  {limitPluginNameLength(plugins[findSelectedPluginIndex()]?.plugin_config?.name_for_human)}
+                </Text>
+              </Box>
+            ) : (
+              <Box display="flex" justifyContent="center" gap={2}>
+                <AttachmentIcon boxSize="5" />
+                {t("plugins")}
+              </Box>
+            )}
+          </MenuButton>
+          <MenuList left="-150px" position="absolute" w="280px">
+            <RadioGroup value={plugins?.findIndex((plugin) => plugin.enabled).toString()}>
+              {plugins?.map((plugin, index) => (
+                <MenuItem key={index}>
+                  <Radio value={index.toString()} onClick={() => handlePluginSelect(index)}>
+                    <Box
+                      display="flex"
+                      justifyContent="flex-start"
+                      gap={2}
+                      mr="4"
+                      onClick={() => handlePluginSelect(index)}
+                    >
+                      <Image
+                        src={plugins[index]?.plugin_config?.logo_url}
+                        alt="Plugins"
+                        width="25px"
+                        height="25px"
+                        marginRight="5px"
+                      />
+                      <Box position="absolute" top="-2px" left="33px">
+                        {!plugins[index]?.trusted ? (
+                          <Tooltip label={t("unverified_plugin_description")}>
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              marginLeft="2"
+                              bg="red.100"
+                              borderRadius="100%"
+                              p="0"
+                            >
+                              <WarningIcon boxSize="3" color="red.600" />
+                            </Box>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip label={t("verified_plugin_description")}>
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              marginLeft="2"
+                              bg="gray.100"
+                              borderRadius="100%"
+                              p="0"
+                            >
+                              <CheckCircleIcon boxSize="3" color="green.400" />
+                            </Box>
+                          </Tooltip>
+                        )}
+                      </Box>
+                      <Tooltip label={plugins[index]?.plugin_config?.description_for_human}>
+                        <Text fontSize="sm">{plugins[index]?.plugin_config?.name_for_human}</Text>
+                      </Tooltip>
+                    </Box>
+                  </Radio>
+                  <IconButton
+                    aria-label={t("edit_plugin")}
+                    icon={<Edit />}
+                    onClick={() => handlePluginEdit(index)}
+                    size="sm"
+                    marginLeft="auto"
+                  />
+                  <IconButton
+                    aria-label={t("remove_plugin")}
+                    icon={<CloseIcon />}
+                    onClick={() => handlePluginRemove(index)}
+                    size="sm"
+                    marginLeft="2"
+                  />
+                </MenuItem>
+              ))}
+            </RadioGroup>
+            <MenuItem onClick={handlePluginAdd}>
+              <Box w="100%" display="flex" justifyContent="center">
+                <IconButton aria-label={t("add_plugin")} icon={<Plus />} size="sm" />
+              </Box>
+            </MenuItem>
+          </MenuList>
+        </Menu>
+        <Modal isOpen={isOpen} onClose={onClose} size="xl">
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>{t("edit_plugin")}</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Textarea
+                minHeight="40px"
+                defaultValue={selectedPluginIndex !== null ? plugins[selectedPluginIndex!]?.url : ""}
+                ref={textareaRef}
+                mb={4}
               />
-              <Text>{limitPluginNameLength(plugins[findSelectedPluginIndex()]?.plugin_config?.name_for_human)}</Text>
-            </Box>
-          ) : (
-            <Box display="flex" justifyContent="center" gap={2}>
-              <AttachmentIcon boxSize="5" />
-              {t("plugins")}
-            </Box>
-          )}
-        </MenuButton>
-        <MenuList width={1}>
-          <RadioGroup value={plugins?.findIndex((plugin) => plugin.enabled).toString()}>
-            {plugins?.map((plugin, index) => (
-              <MenuItem key={index}>
-                <Radio value={index.toString()} onClick={() => handlePluginSelect(index)}>
-                  <Box
-                    display="flex"
-                    justifyContent="flex-start"
-                    gap={2}
-                    mr="4"
-                    onClick={() => handlePluginSelect(index)}
-                  >
-                    <Image
-                      src={plugins[index]?.plugin_config?.logo_url}
-                      alt="Plugins"
-                      width="25px"
-                      height="25px"
-                      marginRight="5px"
-                    />
-                    <Tooltip label={plugins[index]?.plugin_config?.description_for_human}>
-                      <Text fontSize="sm">{plugins[index]?.plugin_config?.name_for_human}</Text>
-                    </Tooltip>
-                    {!plugins[index]?.trusted ? (
-                      <Tooltip label={t("unverified_plugin_description")}>
-                        <Box display="flex" alignItems="center" marginLeft="2">
-                          <WarningIcon boxSize="4" color="red.600" />
-                        </Box>
-                      </Tooltip>
-                    ) : (
-                      <Tooltip label={t("verified_plugin_description")}>
-                        <Box display="flex" alignItems="center" marginLeft="2">
-                          <CheckCircleIcon boxSize="4" color="green.400" />
-                        </Box>
-                      </Tooltip>
-                    )}
-                  </Box>
-                </Radio>
-                <IconButton
-                  aria-label={t("edit_plugin")}
-                  icon={<Edit />}
-                  onClick={() => handlePluginEdit(index)}
-                  size="sm"
-                  marginLeft="auto"
-                />
-                <IconButton
-                  aria-label={t("remove_plugin")}
-                  icon={<CloseIcon />}
-                  onClick={() => handlePluginRemove(index)}
-                  size="sm"
-                  marginLeft="2"
-                />
-              </MenuItem>
-            ))}
-          </RadioGroup>
-          <MenuItem onClick={handlePluginAdd}>
-            <Box w="100%" display="flex" justifyContent="center">
-              <IconButton aria-label={t("add_plugin")} icon={<Plus />} size="sm" />
-            </Box>
-          </MenuItem>
-        </MenuList>
-      </Menu>
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{t("edit_plugin")}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Textarea
-              minHeight="40px"
-              defaultValue={selectedPluginIndex !== null ? plugins[selectedPluginIndex!]?.url : ""}
-              ref={textareaRef}
-              mb={4}
-            />
-            <Box as="pre" whiteSpace="pre-wrap" fontSize="xs">
-              {JSON.stringify(plugins[selectedPluginIndex!], null, 4)}
-            </Box>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" onClick={handlePluginSave}>
-              {t("save")}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+              <Box as="pre" whiteSpace="pre-wrap" fontSize="xs">
+                {JSON.stringify(plugins[selectedPluginIndex!], null, 4)}
+              </Box>
+            </ModalBody>
+            <ModalFooter>
+              <Button colorScheme="blue" onClick={handlePluginSave}>
+                {t("save")}
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </Box>
     </FormControl>
   );
 };

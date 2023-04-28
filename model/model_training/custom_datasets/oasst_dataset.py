@@ -25,9 +25,9 @@ def load_oasst_export(
     top_k: Optional[int] = None,
     manual_seed: int = 287631038922,
     data_path: str | Path = None,
-    mode: Literal["sft", "rm"] = "sft",
+    mode: Literal["sft", "rm", "rl"] = "sft",
 ) -> tuple[ListDataset, ListDataset]:
-    if mode not in ("sft", "rm"):
+    if mode not in ("sft", "rm", "rl"):
         raise ValueError(f"Unknown dataset mode: {mode}")
 
     lang_codes = lang.split(",")
@@ -46,6 +46,13 @@ def load_oasst_export(
     for tree in read_message_trees(input_file_path):
         if tree.tree_state != "ready_for_export" or not tree.prompt.review_result or tree.prompt.lang not in lang_codes:
             continue
+
+        if mode in ("sft", "rm"):
+            if tree.tree_state != "ready_for_export":
+                continue
+        elif mode == "rl":
+            if tree.tree_state not in ("ready_for_export", "prompt_lottery_waiting"):
+                continue
 
         # extract all threads up to last asssitant reply
         threads: list[list[ExportMessageNode]] = []
@@ -79,11 +86,16 @@ def load_oasst_export(
                     and thread_filter(thread)
                 )
             elif mode == "rm":
+                # for reward models we use thread-fragments ending on prompter messages as prefix and
+                # their (ranked) replies as possible continuations.
                 return (
                     thread[-1].role == "prompter"
                     and len([r for r in thread[-1].replies if r.rank is not None]) > 1
                     and thread_filter(thread)
                 )
+            elif mode == "rl":
+                # during rl we are interested in all possible prefixes ending in prompter messages
+                return thread[-1].role == "prompter" and not any(m.deleted or m.synthetic for m in thread)
 
             raise RuntimeError()
 
@@ -104,6 +116,8 @@ def load_oasst_export(
             replies = sorted(replies, key=lambda r: r.rank)
             replies = [r.text for r in replies]
             return (prefix, replies)
+        elif mode == "rl":
+            return ([m.text for m in thread],)
 
         raise RuntimeError()
 

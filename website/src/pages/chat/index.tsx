@@ -9,6 +9,7 @@ import { getDashboardLayout } from "src/components/Layout";
 import { isChatEnable } from "src/lib/isChatEnable";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
 import { GetChatsResponse } from "src/types/Chat";
+import { PAGE_SIZE } from "src/pages/api/chat";
 
 type ChatListProps = {
   chatResponse: GetChatsResponse;
@@ -23,7 +24,7 @@ const ChatList = ({ chatResponse }: InferGetServerSidePropsType<typeof getServer
         <title>{t("chat")}</title>
       </Head>
       <ChatListBase
-        chats={chatResponse}
+        initialChats={chatResponse}
         className="max-w-5xl mx-auto"
         pt="4"
         px="4"
@@ -51,7 +52,9 @@ export const getServerSideProps: GetServerSideProps<ChatListProps> = async ({ lo
 
   const token = await getToken({ req });
   const client = createInferenceClient(token!);
-  const chats = await client.get_my_chats();
+  const chats = await client.get_my_chats({
+    limit: PAGE_SIZE,
+  });
 
   return {
     props: {

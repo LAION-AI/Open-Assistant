@@ -26,12 +26,19 @@ def truncate_prompt(
         ids = tokenizer.encode(prompt)
 
     max_input_length = worker_config.model_config.max_input_length
+    # make room for prompter prefix
+    if V2_PROMPTER_PREFIX not in prompt:
+        max_input_length = max_input_length - 1
+
     max_total_tokens = worker_config.model_config.max_total_length
     if len(ids) > max_input_length:
         logger.warning(f"Prompt too long, left-truncating to {max_input_length} tokens")
         ids = ids[-(max_input_length - 1) :]
         with tokenizer_lock:
             prompt = tokenizer.decode(ids)
+            # If there is no prompter prefix, due to truncation, add it back.
+            if V2_PROMPTER_PREFIX not in prompt:
+                prompt = V2_PROMPTER_PREFIX + prompt
 
     input_length = len(ids)
     spare = max_total_tokens - input_length - 1
