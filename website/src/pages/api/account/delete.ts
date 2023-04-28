@@ -1,6 +1,7 @@
 import { AxiosError } from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getToken } from "next-auth/jwt";
+import { logger } from "src/lib/logger";
 import { createApiClientFromUser } from "src/lib/oasst_client_factory";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
 import prisma from "src/lib/prismadb";
@@ -16,35 +17,35 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).end();
   }
 
-  console.log("deleting user", token.sub);
+  logger.info("deleting user", token.sub);
   try {
     const backendUserCore = await getBackendUserCore(token.sub);
     const client = createApiClientFromUser(backendUserCore);
     await client.delete_account(backendUserCore);
-    console.log(`user ${token.sub} deleted from data backend`);
+    logger.info(`user ${token.sub} deleted from data backend`);
   } catch (err) {
-    console.error("could not delete user from data backend", err);
+    logger.info("could not delete user from data backend", err);
     return res.status(500).end();
   }
 
   try {
     const client = createInferenceClient(token);
     await client.delete_account();
-    console.log(`user ${token.sub} deleted from inference`);
+    logger.info(`user ${token.sub} deleted from inference`);
   } catch (err) {
     if (err instanceof AxiosError && err.response.status === 404) {
       // user does not exist in the inference backend, they have not send any chats
       // that is okay, we can continue
-      console.log(`user ${token.sub} does not exist on inference`);
+      logger.info(`user ${token.sub} does not exist on inference`);
     } else {
-      console.error("could not delete user from inference backend", err);
+      logger.info("could not delete user from inference backend", err);
       // we don't return here, the other account is already deleted, we have to power through it
     }
   }
 
   try {
     await prisma.user.delete({ where: { id: token.sub } });
-    console.log(`user ${token.sub} deleted from webdb`);
+    logger.info(`user ${token.sub} deleted from webdb`);
   } catch (err) {
     console.error("could not delete user from webdb", err);
     // we don't return here, the other account is already deleted, we have to power through
