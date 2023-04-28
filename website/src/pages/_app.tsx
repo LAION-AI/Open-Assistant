@@ -3,8 +3,10 @@ import "focus-visible";
 
 import { boolean } from "boolean";
 import type { AppContext, AppProps } from "next/app";
+import App from "next/app";
 import Head from "next/head";
-import { SessionProvider } from "next-auth/react";
+import { Session } from "next-auth";
+import { getSession, SessionProvider } from "next-auth/react";
 import { appWithTranslation, useTranslation } from "next-i18next";
 import React, { useEffect } from "react";
 import { FlagsProvider } from "react-feature-flags";
@@ -56,10 +58,15 @@ function MyApp({ Component, pageProps: { session, ...pageProps }, cookie, env }:
   );
 }
 
-type AppInitialProps = { env: BrowserEnv; cookie: string };
+type AppInitialProps = { env: BrowserEnv; cookie: string; session: Session };
 
-MyApp.getInitialProps = ({ ctx: { req } }: AppContext): AppInitialProps => {
+MyApp.getInitialProps = async (context: AppContext): Promise<AppInitialProps> => {
+  const appProps = await App.getInitialProps(context);
+  const session = await getSession();
+
   return {
+    ...appProps,
+    session,
     env: {
       ENABLE_CHAT: boolean(process.env.ENABLE_CHAT),
       ENABLE_EMAIL_SIGNIN: boolean(process.env.ENABLE_EMAIL_SIGNIN),
@@ -68,7 +75,7 @@ MyApp.getInitialProps = ({ ctx: { req } }: AppContext): AppInitialProps => {
       CURRENT_ANNOUNCEMENT: process.env.CURRENT_ANNOUNCEMENT,
       NODE_ENV: process.env.NODE_ENV,
     },
-    cookie: req?.headers.cookie || "",
+    cookie: context.ctx.req?.headers.cookie || "",
   };
 };
 
