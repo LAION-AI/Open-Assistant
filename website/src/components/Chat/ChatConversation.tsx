@@ -67,7 +67,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       } catch (e) {
         if (e instanceof OasstError) {
           toast({
-            title: e.message ?? "Something went wrong",
+            title: e.message,
             status: "error",
           });
         }
@@ -140,7 +140,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       console.log(e);
       if (e instanceof OasstError) {
         toast({
-          title: e.message ?? "Something went wrong",
+          title: e.message,
           status: "error",
         });
       }
