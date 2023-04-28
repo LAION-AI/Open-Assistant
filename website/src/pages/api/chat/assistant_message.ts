@@ -17,6 +17,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
     if (!(e instanceof AxiosError)) {
       return res.status(500).end();
     }
+    console.log(e);
     return res.status(e.response?.status ?? 500).json({ message: e.response?.data.detail ?? "Something went wrong" });
   }
 });

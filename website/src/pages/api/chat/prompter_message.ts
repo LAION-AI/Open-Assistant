@@ -14,10 +14,10 @@ const handler = withoutRole("banned", async (req, res, token) => {
     const data = await client.post_prompter_message(req.body as InferencePostPrompterMessageParams);
     return res.status(200).json(data);
   } catch (e) {
-    console.log(e);
     if (!(e instanceof AxiosError)) {
       return res.status(500).end();
     }
+    console.log(e);
     return res.status(e.response?.status ?? 500).json({ message: e.response?.data.detail ?? "Something went wrong" });
   }
 });
