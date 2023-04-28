@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import { withoutRole } from "src/lib/auth";
 import { isChatEnable } from "src/lib/isChatEnable";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
@@ -9,12 +10,16 @@ const handler = withoutRole("banned", async (req, res, token) => {
   }
   const client = createInferenceClient(token);
 
-  const data = await client.post_prompter_message(req.body as InferencePostPrompterMessageParams);
-
-  if (data) {
+  try {
+    const data = await client.post_prompter_message(req.body as InferencePostPrompterMessageParams);
     return res.status(200).json(data);
+  } catch (e) {
+    console.log(e);
+    if (!(e instanceof AxiosError)) {
+      return res.status(500).end();
+    }
+    return res.status(e.response?.status ?? 500).json({ message: e.response?.data.detail });
   }
-  res.status(400).end();
 });
 
 export default handler;
