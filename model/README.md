@@ -16,7 +16,9 @@ export DATA_PATH=$PWD/.cache
 export MODEL_PATH=$PWD/.saved_models
 ```
 
-2. Then download the OA data.
+2. Then download the OA data or declare the HuggingFace dataset.
+
+- Use local data
 
 ```bash
 cp /path/to/<oa.jsonl> $DATA_PATH
@@ -25,6 +27,17 @@ cp /path/to/<oa.jsonl> $DATA_PATH
 Change the `<oa.jsonl>` file used in the `model_training/configs/config.yaml`,
 `model_training/configs/config_rl.yaml` and `reward/instructor/rank_datasets.py`
 files.
+
+- Use HuggingFace dataset.
+
+Declare the dataset name on configs `hf_dataset_name` and set `use_hf_dataset` to `true`.
+
+Example:
+```yaml
+hf_dataset_name: OpenAssistant/oasst1
+use_hf_dataset: true
+```
+See more [here](https://huggingface.co/datasets/OpenAssistant/oasst1)
 
 - (TODO) add better parsing of the config files that is consistent for sft, rm
   and rl training.
