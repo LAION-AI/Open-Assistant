@@ -25,6 +25,7 @@ import { useForm } from "react-hook-form";
 import { AuthLayout } from "src/components/AuthLayout";
 import { CloudFlareCaptcha } from "src/components/CloudflareCaptcha";
 import { Role, RoleSelect } from "src/components/RoleSelect";
+import { useBrowserConfig } from "src/hooks/env/BrowserEnv";
 
 export type SignInErrorTypes =
   | "Signin"
@@ -59,13 +60,15 @@ const REDIRECT_AFTER_LOGIN = "/chat";
 
 interface SigninProps {
   providers: Record<BuiltInProviderType, ClientSafeProvider>;
-  enableEmailSignin: boolean;
-  enableEmailSigninCaptcha: boolean;
-  cloudflareCaptchaSiteKey: string;
 }
 
-function Signin({ providers, enableEmailSignin, enableEmailSigninCaptcha, cloudflareCaptchaSiteKey }: SigninProps) {
+function Signin({ providers }: SigninProps) {
   const router = useRouter();
+  const {
+    ENABLE_EMAIL_SIGNIN: enableEmailSignin,
+    ENABLE_EMAIL_SIGNIN_CAPTCHA: enableEmailSigninCaptcha,
+    CLOUDFLARE_CAPTCHA_SITE_KEY: cloudflareCaptchaSiteKey,
+  } = useBrowserConfig();
   const { discord, email, google, credentials } = providers;
   const [error, setError] = useState("");
 
@@ -273,16 +276,10 @@ const DebugSigninForm = ({ providerId }: { providerId: string }) => {
 
 export const getServerSideProps: GetServerSideProps<SigninProps> = async ({ locale = "en" }) => {
   const providers = (await getProviders())!;
-  const enableEmailSignin = boolean(process.env.ENABLE_EMAIL_SIGNIN);
-  const enableEmailSigninCaptcha = boolean(process.env.ENABLE_EMAIL_SIGNIN_CAPTCHA);
-  const cloudflareCaptchaSiteKey = process.env.CLOUDFLARE_CAPTCHA_SITE_KEY;
   return {
     props: {
       providers,
-      enableEmailSignin,
-      enableEmailSigninCaptcha,
-      cloudflareCaptchaSiteKey,
-      ...(await serverSideTranslations(locale, ["common"])),
+      ...(await serverSideTranslations(locale)),
     },
   };
 };

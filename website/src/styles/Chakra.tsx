@@ -3,7 +3,7 @@ import { PropsWithChildren } from "react";
 
 import { theme } from "./Theme";
 
-export function Chakra({ cookie, children }: PropsWithChildren<{ cookie: string }>) {
+export function Chakra({ cookie, children }: PropsWithChildren<{ cookie?: string }>) {
   const colorModeManager = typeof cookie === "string" ? cookieStorageManagerSSR(cookie) : localStorageManager;
 
   return (

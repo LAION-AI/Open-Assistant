@@ -1,60 +1,36 @@
-import { boolean } from "boolean";
-import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { getToken } from "next-auth/jwt";
+import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { ChatContextProvider } from "src/components/Chat/ChatContext";
 import { ChatSection } from "src/components/Chat/ChatSection";
-import { getChatLayout } from "src/components/Layout/ChatLayout";
-import { createInferenceClient } from "src/lib/oasst_inference_client";
+import { ChatLayout } from "src/components/Layout/ChatLayout";
+import { get } from "src/lib/api";
 import { ModelInfo } from "src/types/Chat";
+export { getServerSideProps } from "src/lib/defaultServerSideProps";
+import useSWRImmutable from "swr/immutable";
 
-interface ChatProps {
-  id: string;
-  modelInfos: ModelInfo[];
-}
-
-const Chat = ({ id, modelInfos }: ChatProps) => {
+const Chat = () => {
+  const { query } = useRouter();
+  const id = query.id as string;
   const { t } = useTranslation(["common", "chat"]);
+  const { data: modelInfos } = useSWRImmutable<ModelInfo[]>("/api/chat/models", get, {
+    keepPreviousData: true,
+  });
 
   return (
     <>
       <Head>
         <title>{t("chat")}</title>
       </Head>
-
-      <ChatContextProvider modelInfos={modelInfos}>
-        <ChatSection chatId={id} />
-      </ChatContextProvider>
+      {modelInfos && (
+        <ChatContextProvider modelInfos={modelInfos}>
+          <ChatSection chatId={id} />
+        </ChatContextProvider>
+      )}
     </>
   );
 };
 
-Chat.getLayout = getChatLayout;
-
-export const getServerSideProps: GetServerSideProps<ChatProps, { id: string }> = async ({
-  locale = "en",
-  params,
-  req,
-}) => {
-  if (!boolean(process.env.ENABLE_CHAT)) {
-    return {
-      notFound: true,
-    };
-  }
-
-  const token = await getToken({ req });
-  const client = createInferenceClient(token!);
-  const modelInfos = await client.get_models();
-
-  return {
-    props: {
-      id: params!.id,
-      modelInfos,
-      ...(await serverSideTranslations(locale)),
-    },
-  };
-};
+Chat.getLayout = ChatLayout;
 
 export default Chat;
