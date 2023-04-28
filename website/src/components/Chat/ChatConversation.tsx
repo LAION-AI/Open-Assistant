@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Box, useBoolean, useToast } from "@chakra-ui/react";
+import { Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
 import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
 import SimpleBar from "simplebar-react";
@@ -9,13 +9,14 @@ import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
 import { API_ROUTES } from "src/lib/routes";
 import {
   ChatConfigFormData,
+  ChatItem,
   InferenceMessage,
   InferencePostAssistantMessageParams,
   InferencePostPrompterMessageParams,
 } from "src/types/Chat";
 import { mutate } from "swr";
+import useSWR from "swr";
 
-import { useChatContext } from "./ChatContext";
 import { ChatConversationTree, LAST_ASSISTANT_MESSAGE_ID } from "./ChatConversationTree";
 import { ChatForm } from "./ChatForm";
 import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
@@ -28,11 +29,24 @@ interface ChatConversationProps {
 
 export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [messages, setMessages] = useState<InferenceMessage[]>(useChatContext().messages);
+  const [messages, setMessages] = useState<InferenceMessage[]>([]);
 
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
+
+  const toast = useToast();
+  const { isLoading: isLoadingMessages } = useSWR<ChatItem>(chatId ? API_ROUTES.GET_CHAT(chatId) : null, get, {
+    onSuccess(data) {
+      setMessages(data.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
+    },
+    onError: () => {
+      toast({
+        title: "Failed to load chat",
+        status: "error",
+      });
+    },
+  });
 
   const createAndFetchAssistantMessage = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
@@ -77,7 +91,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     },
     [getConfigValues, setIsSending]
   );
-  const toast = useToast();
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
     if (!content || isSending) {
@@ -201,7 +214,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     [createAndFetchAssistantMessage, isSending, setIsSending]
   );
 
-  const { messagesEndRef, scrollableNodeProps } = useAutoScroll(messages, streamedResponse);
+  const { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll } = useAutoScroll(messages, streamedResponse);
 
   return (
     <Box
@@ -220,7 +233,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         bg: "blackAlpha.300",
       }}
     >
+      {isLoadingMessages && <CircularProgress isIndeterminate size="20px" mx="auto" />}
       <SimpleBar
+        onMouseDown={updateEnableAutoScroll}
         scrollableNodeProps={scrollableNodeProps}
         style={{ maxHeight: "100%", height: "100%", minHeight: "0" }}
         classNames={{
@@ -248,13 +263,13 @@ const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string) =
   const enableAutoScroll = useRef(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const handleOnScroll = useCallback(() => {
+  const updateEnableAutoScroll = useCallback(() => {
     const container = chatContainerRef.current;
     if (!container) {
       return;
     }
 
-    const isEnable = Math.abs(container.scrollHeight - container.scrollTop - container.clientHeight) < 10;
+    const isEnable = container.scrollHeight - container.scrollTop - container.clientHeight < 10;
     enableAutoScroll.current = isEnable;
   }, []);
 
@@ -269,16 +284,18 @@ const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string) =
   const scrollableNodeProps = useMemo(
     () => ({
       ref: chatContainerRef,
-      onWheel: handleOnScroll,
+      onWheel: updateEnableAutoScroll,
+      // onScroll: handleOnScroll,
       onKeyDown: (e: KeyboardEvent) => {
         if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-          handleOnScroll();
+          updateEnableAutoScroll();
         }
       },
-      onTouchMove: handleOnScroll,
+      onTouchMove: updateEnableAutoScroll,
+      onMouseDown: updateEnableAutoScroll(),
     }),
-    [handleOnScroll]
+    [updateEnableAutoScroll]
   );
 
-  return { messagesEndRef, scrollableNodeProps };
+  return { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll };
 };
