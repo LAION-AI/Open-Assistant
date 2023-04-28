@@ -36,4 +36,14 @@ scrape_configs:
     scheme: http
     static_configs:
       - targets:
-          - inference-server:8080
+          - inference-server:8000
+  - job_name: cadvisor
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - cadvisor:8080
+  - job_name: nvidia-dcgm-exporter
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - nvidia-dcgm-exporter:9400

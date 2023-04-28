@@ -282,6 +282,15 @@ services:
       - prom_data:/prometheus
     profiles: ["observability"]
 
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -297,6 +306,17 @@ services:
       - ${PWD}/docker/grafana/dashboards/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
       - ${PWD}/docker/grafana/dashboards:/var/lib/grafana/dashboards
     profiles: ["observability"]
+
+  nvidia-dcgm-exporter:
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:${DCGM_EXPORTER_VERSION-2.1.4-2.3.1}-ubuntu20.04
+    container_name: dcgm-exporter
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    profiles: ["observability-gpu"]
 
   netdata:
     image: netdata/netdata
