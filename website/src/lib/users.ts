@@ -107,7 +107,9 @@ export const getBatchFrontendUserIdFromBackendUser = async (users: { username: s
 
       // Check if userIdx is out of bounds for users array
       if (userIdx >= users.length) {
-        console.log(`[getBatchFrontendUserIdFromBackendUser, Undefined account] Error: userIdx ${userIdx} is out of bounds for users array.`);
+        console.log(
+          `[getBatchFrontendUserIdFromBackendUser, Undefined account] Error: userIdx ${userIdx} is out of bounds for users array.`
+        );
         return;
       }
 
@@ -116,7 +118,9 @@ export const getBatchFrontendUserIdFromBackendUser = async (users: { username: s
 
       // Check if auth_method or username is undefined or null for the user
       if (!user.auth_method || !user.username) {
-        console.log(`[getBatchFrontendUserIdFromBackendUser, Undefined account] Error: auth_method or username is undefined or null for user at userIdx ${userIdx}.`);
+        console.log(
+          `[getBatchFrontendUserIdFromBackendUser, Undefined account] Error: auth_method or username is undefined or null for user at userIdx ${userIdx}.`
+        );
         return;
       }
 
