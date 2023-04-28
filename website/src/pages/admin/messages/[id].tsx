@@ -4,20 +4,19 @@ import {
   CardHeader,
   CircularProgress,
   Grid,
-  Text,
-  TableContainer,
   Table,
   TableCaption,
-  Thead,
-  Tr,
-  Th,
+  TableContainer,
   Tbody,
   Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
 } from "@chakra-ui/react";
-import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { AdminArea } from "src/components/AdminArea";
 import { JsonCard } from "src/components/JsonCard";
 import { getAdminLayout } from "src/components/Layout";
@@ -122,10 +121,3 @@ MessageDetail.getLayout = getAdminLayout;
 
 export default MessageDetail;
 
-export const getServerSideProps: GetServerSideProps = async ({ locale = "en" }) => {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale, ["common", "labelling", "message"])),
-    },
-  };
-};
