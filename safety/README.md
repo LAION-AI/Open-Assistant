@@ -8,7 +8,7 @@ This is the Open Assistant Safety Folder and contains the following:
 - Model inference scripts
 - Data processing scripts
 
-## Mission Statment
+## Mission Statement
 
 Our mission at LAION-AI OpenAssistant safety team is to create a safety pipeline
 that is not only compatible with the OpenAssistant model and project but can

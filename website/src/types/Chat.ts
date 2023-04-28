@@ -52,6 +52,8 @@ export interface InferenceMessage {
 
 export interface GetChatsResponse {
   chats: ChatItem[];
+  next?: string;
+  prev?: string;
 }
 
 // message events sent by the inference server
@@ -120,4 +122,10 @@ export interface InferenceUpdateChatParams {
   chat_id: string;
   title?: string;
   hidden?: boolean;
+}
+
+export interface GetChatsParams {
+  limit?: number;
+  before?: string;
+  after?: string;
 }

@@ -1,10 +1,13 @@
 import argparse
+from collections import Counter
 from enum import Enum
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 import yaml
+from langdetect import DetectorFactory, detect
+from model_training.custom_datasets.formatting import DatasetEntry
 from model_training.utils.utils import _strtobool, get_dataset
 
 
@@ -54,6 +57,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     )
     parser.add_argument("--mode", dest="mode", type=Mode, choices=list(Mode))
     parser.add_argument("--output_path", dest="output_path", default="dataset_counts.csv")
+    parser.add_argument("--detect_language", default=False, action="store_true")
 
     if notebook:
         args, remaining = parser.parse_known_args(notebook_args)
@@ -93,6 +97,7 @@ def argument_parsing(notebook=False, notebook_args=None):
     conf["output_path"] = args.output_path
     conf["datasets_extra"] = []
     conf["datasets"] = datasets_list
+    conf["detect_language"] = args.detect_language
     # Override config from command-line
     parser = argparse.ArgumentParser()
     for key, value in conf.items():
@@ -111,9 +116,37 @@ def argument_parsing(notebook=False, notebook_args=None):
 if __name__ == "__main__":
     args = argument_parsing()
 
-    train, evals = get_dataset(args, mode=args.mode)
+    train, evals = get_dataset(args, mode=args.mode.value)
     overview_df = pd.DataFrame(columns=["dataset_name", "train_counts", "eval_counts", "total_counts"])
-    for idx, dataset_name in enumerate(args.datasets):
+    language_df = pd.DataFrame()
+    if args.detect_language:
+        DetectorFactory.seed = 0
+    for idx, (dataset_name, dataset) in enumerate(evals.items()):
+        train_lang = Counter()
+        if args.detect_language:
+            length = len(dataset)
+            for idx1, row in enumerate(dataset):
+                if idx1 % 1000 == 0:
+                    print(f"{idx1} of {length} of ds {dataset_name}.")
+                try:
+                    if isinstance(row, (list, tuple)):
+                        train_lang += Counter([detect(k) for k in row])
+                    elif isinstance(row, DatasetEntry):
+                        train_lang += Counter([detect(k) for k in row.questions if k])
+                        if isinstance(row.answers[0], list):
+                            for answers in row.answers:
+                                train_lang += Counter([detect(k) for k in answers if k])
+                        else:
+                            train_lang += Counter([detect(k) for k in row.answers if k])
+                    else:
+                        raise ValueError(
+                            f"Did not expect the type {type(row)}. Should be either list, tuple or DatasetEntry."
+                        )
+                except Exception as e:
+                    print(e)
+        train_lang = dict(train_lang)
+        train_lang["dataset_name"] = dataset_name
+        language_df = pd.concat([language_df, pd.DataFrame([train_lang])])
         eval_count = len(evals.get(dataset_name, []))
         overview_df.loc[idx] = [
             dataset_name,
@@ -122,4 +155,10 @@ if __name__ == "__main__":
             len(train.datasets[idx]) + eval_count,
         ]
     print(overview_df)
+    print(language_df)
     overview_df.to_csv(args.output_path, index=False)
+    language_df.to_csv("language_counts.csv", index=False)
+
+# python check_dataset_counts.py --datasets joke webgpt gpt4all alpaca code_alpaca vicuna minimath humaneval_mbpp_codegen_qa humaneval_mbpp_testgen_qa grade_school_math_instructions recipes cmu_wiki_qa oa_wiki_qa_bart_10000row prosocial_dialogue explain_prosocial soda oa_leet10k --mode sft
+# python check_dataset_counts.py --datasets joke webgpt alpaca code_alpaca vicuna minimath humaneval_mbpp_codegen_qa humaneval_mbpp_testgen_qa grade_school_math_instructions recipes cmu_wiki_qa oa_wiki_qa_bart_10000row prosocial_dialogue oa_leet10k --mode sft
+# python check_dataset_counts.py --datasets joke webgpt --mode sft

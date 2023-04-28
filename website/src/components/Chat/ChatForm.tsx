@@ -35,12 +35,7 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
     [onSubmit]
   );
   return (
-    <Box
-      as="form"
-      maxWidth={{ base: "3xl", "2xl": "4xl" }}
-      onSubmit={handleSubmit}
-      className="pt-2 pb-4 w-full mx-auto"
-    >
+    <Box as="form" maxWidth={{ base: "3xl", "2xl": "4xl" }} onSubmit={handleSubmit} className="py-2 w-full mx-auto">
       <div className="relative">
         <Textarea
           as={TextareaAutosize}
