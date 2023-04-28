@@ -143,3 +143,7 @@ automatically deploy the built release to the dev machine.
 
 See
 [here](https://github.com/LAION-AI/Open-Assistant/blob/main/data/datasets/README.md)
+
+
+## Star History <a name="star-history"></a>
+[![Star History Chart](https://api.star-history.com/svg?repos=LAION-AI/Open-Assistant&type=Date)](https://star-history.com/#LAION-AI/Open-Assistant)
