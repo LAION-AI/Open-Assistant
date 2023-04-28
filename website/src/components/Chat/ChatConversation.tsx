@@ -137,7 +137,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     try {
       prompter_message = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
     } catch (e) {
-      console.log(e);
       if (e instanceof OasstError) {
         toast({
           title: e.message,
