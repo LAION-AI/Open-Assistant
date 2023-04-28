@@ -1,4 +1,4 @@
-import { Button, Card, CardBody, Flex, Heading } from "@chakra-ui/react";
+import { Box, Button, Card, CardBody, Flex, Heading } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
@@ -37,14 +37,24 @@ const Dashboard = () => {
         <WelcomeCard />
 
         {getEnv().ENABLE_CHAT && (
-          <Flex direction="column" gap={4}>
-            <Heading size="lg">{t("index:try_our_assistant")}</Heading>
-            <Link href="/chat" aria-label="Chat">
-              <Button variant="solid" colorScheme="blue" px={5} py={6}>
-                {t("index:try_our_assistant")}
+          <Box mb={6}>
+            <Heading as="h2" size="lg" mb={2}>
+              {t("index:try_our_assistant")}
+            </Heading>
+            <Link href="/chat" passHref>
+              <Button
+                as="a"
+                colorScheme="blue"
+                px={5}
+                py={6}
+                fontWeight="bold"
+                fontSize="xl"
+                _hover={{ bg: "blue.500" }}
+              >
+                {t("index:chat 🤖")}
               </Button>
             </Link>
-          </Flex>
+          </Box>
         )}
 
         <TaskOption content={availableTaskTypes} />
