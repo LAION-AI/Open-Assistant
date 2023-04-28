@@ -20,34 +20,22 @@
     }
   },
   "scheduler": {
-    "type": "WarmupDecayLR",
+    "type": "WarmupLR",
     "params": {
       "warmup_min_lr": "auto",
       "warmup_max_lr": "auto",
       "warmup_num_steps": "auto",
-      "warmup_type": "linear",
-      "total_num_steps": "auto"
+      "warmup_type": "linear"
     }
   },
   "zero_optimization": {
-    "stage": 3,
-    "overlap_comm": true,
-    "contiguous_gradients": true,
-    "sub_group_size": 2e9,
-    "reduce_bucket_size": "auto",
-    "stage3_prefetch_bucket_size": "auto",
-    "stage3_param_persistence_threshold": "auto",
-    "stage3_max_live_parameters": 2e9,
-    "stage3_max_reuse_distance": 2e9,
-    "stage3_gather_16bit_weights_on_model_save": true,
-    "offload_param": {
-      "device": "cpu",
-      "pin_memory": true
-    },
-    "offload_optimizer": {
-      "device": "cpu",
-      "pin_memory": true
-    }
+    "stage": 2,
+    "allgather_partitions": true,
+    "allgather_bucket_size": 1e9,
+    "overlap_comm": false,
+    "reduce_scatter": true,
+    "reduce_bucket_size": 1e9,
+    "contiguous_gradients": true
   },
   "gradient_accumulation_steps": "auto",
   "gradient_clipping": "auto",

@@ -17,6 +17,7 @@ def parse_args():
     parser.add_argument("--cache_dir", type=str)
     parser.add_argument("--reward_model", action="store_true", default=False)
     parser.add_argument("--rl_checkpoint", type=str, help="load RL fine-tuning checkpoint")
+    parser.add_argument("--safetensors", action="store_true", default=False, help="Export model using SafeTensors")
     return parser.parse_args()
 
 
@@ -73,14 +74,21 @@ def main():
 
     if args.output_folder:
         print(f"Saving model to: {args.output_folder}")
-        model.save_pretrained(args.output_folder, max_shard_size=args.max_shard_size)
+        model.save_pretrained(
+            args.output_folder, max_shard_size=args.max_shard_size, safe_serialization=args.safetensors
+        )
 
         print(f"Saving tokenizer to: {args.output_folder}")
         tokenizer.save_pretrained(args.output_folder)
 
     if args.hf_repo_name:
         print("Uploading model to HF...")
-        model.push_to_hub(args.hf_repo_name, use_auth_token=args.auth_token, max_shard_size=args.max_shard_size)
+        model.push_to_hub(
+            args.hf_repo_name,
+            use_auth_token=args.auth_token,
+            max_shard_size=args.max_shard_size,
+            safe_serialization=args.safetensors,
+        )
 
         print("Uploading tokenizer to HF...")
         tokenizer.push_to_hub(args.hf_repo_name, use_auth_token=args.auth_token)
