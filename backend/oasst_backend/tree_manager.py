@@ -286,17 +286,17 @@ class TreeManager:
                     .distinct(Message.user_id)
                 )
 
-                author_data: list[tuple[UUID, int]] = authors_qry.all()
+                author_data = authors_qry.all()
                 if len(author_data) == 0:
                     logger.info(
                         f"No prompts for prompt lottery available ({num_missing_growing=}, trees missing for {lang=})."
                     )
                     return False
 
-                author_ids = [data[0] for data in author_data]
+                author_ids = [data["user_id"] for data in author_data]
                 # add one to avoid any scenario where all weights are 0
                 # this also means inactive users can still occasionally be selected
-                weights = [data[1] + 1 for data in author_data]
+                weights = [data["reply_ranked_1"] + 1 for data in author_data]
 
                 # first select an author
                 prompt_author_id: UUID = random.choices(author_ids, weights=weights)[0]
