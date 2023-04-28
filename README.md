@@ -157,6 +157,10 @@ We can then take the resulting model and continue with completion sampling step
 
 [Important Data Structures](https://docs.google.com/presentation/d/1iaX_nxasVWlvPiSNs0cllR9L_1neZq0RJxd6MFEalUY/edit?usp=sharing)
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=LAION-AI/Open-Assistant&type=Date)](https://star-history.com/#LAION-AI/Open-Assistant)
+
 ## How You Can Help
 
 All open source projects begin with people like you. Open source is the belief
