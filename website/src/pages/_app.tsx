@@ -11,13 +11,14 @@ import { getSession, SessionProvider } from "next-auth/react";
 import { appWithTranslation, useTranslation } from "next-i18next";
 import React, { useEffect } from "react";
 import { FlagsProvider } from "react-feature-flags";
-import { getDefaultLayout, NextPageWithLayout } from "src/components/Layout";
+import { DefaultLayout, NextPageWithLayout } from "src/components/Layout";
 import flags from "src/flags";
 import { BrowserEnvContext } from "src/hooks/env/BrowserEnv";
 import { get } from "src/lib/api";
 import { BrowserEnv } from "src/lib/browserEnv";
 import { BrowserConfig } from "src/types/Config";
-import useSWR, { SWRConfig, SWRConfiguration } from "swr";
+import { SWRConfig, SWRConfiguration } from "swr";
+import useSWRImmutable from "swr/immutable"
 
 import nextI18NextConfig from "../../next-i18next.config.js";
 import { Chakra } from "../styles/Chakra";
@@ -37,12 +38,9 @@ function MyApp({ Component, pageProps: { session, ...pageProps }, cookie, env }:
     (window as unknown as { __env: BrowserEnv }).__env = env;
   }
 
-  const { data } = useSWR<BrowserConfig>("/api/config", get, {
-    refreshInterval: minutesToMilliseconds(15),
-  });
+  const { data } = useSWRImmutable<BrowserConfig>("/api/config", get);
 
-  const getLayout = Component.getLayout ?? getDefaultLayout;
-  const page = getLayout(<Component {...pageProps} />);
+  const Layout = Component.getLayout ?? DefaultLayout;
   const { t, i18n } = useTranslation();
 
   const direction = i18n.dir();
@@ -59,7 +57,11 @@ function MyApp({ Component, pageProps: { session, ...pageProps }, cookie, env }:
         <Chakra cookie={cookie}>
           <SWRConfig value={swrConfig}>
             <SessionProvider session={session}>
-              <BrowserEnvContext.Provider value={(data ?? {}) as any}>{page}</BrowserEnvContext.Provider>
+              <BrowserEnvContext.Provider value={(data ?? {}) as any}>
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </BrowserEnvContext.Provider>
             </SessionProvider>
           </SWRConfig>
         </Chakra>

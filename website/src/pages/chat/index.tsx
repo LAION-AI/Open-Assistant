@@ -4,7 +4,7 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import React from "react";
 import { ChatListBase } from "src/components/Chat/ChatListBase";
-import { getDashboardLayout } from "src/components/Layout";
+import { DashboardLayout } from "src/components/Layout";
 import { isChatEnable } from "src/lib/isChatEnable";
 export { getDefaultServerSideProps as getStaticProps } from "src/lib/defaultServerSideProps";
 
@@ -33,6 +33,6 @@ const ChatList = () => {
   );
 };
 
-ChatList.getLayout = getDashboardLayout;
+ChatList.getLayout = DashboardLayout;
 
 export default ChatList;
