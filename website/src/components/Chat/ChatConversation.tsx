@@ -6,6 +6,7 @@ import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
 import { handleChatEventStream, QueueInfo } from "src/lib/chat_stream";
+import { OasstError } from "src/lib/oasst_api_client";
 import { API_ROUTES } from "src/lib/routes";
 import {
   ChatConfigFormData,
@@ -34,8 +35,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
-
   const toast = useToast();
+
   const { isLoading: isLoadingMessages } = useSWR<ChatItem>(chatId ? API_ROUTES.GET_CHAT(chatId) : null, get, {
     onSuccess(data) {
       setMessages(data.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
@@ -58,9 +59,21 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         sampling_parameters,
       };
 
-      const assistant_message: InferenceMessage = await post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, {
-        arg: assistant_arg,
-      });
+      let assistant_message: InferenceMessage;
+      try {
+        assistant_message = await post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, {
+          arg: assistant_arg,
+        });
+      } catch (e) {
+        if (e instanceof OasstError) {
+          toast({
+            title: e.message,
+            status: "error",
+          });
+        }
+        setIsSending.off();
+        return;
+      }
 
       // we have to do this manually since we want to stream the chunks
       // there is also EventSource, but it is callback based
@@ -89,7 +102,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       setResponse(null);
       setIsSending.off();
     },
-    [getConfigValues, setIsSending]
+    [getConfigValues, setIsSending, toast]
   );
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
@@ -120,7 +133,19 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       parent_id: parentId,
     };
 
-    const prompter_message: InferenceMessage = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
+    let prompter_message: InferenceMessage;
+    try {
+      prompter_message = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
+    } catch (e) {
+      if (e instanceof OasstError) {
+        toast({
+          title: e.message,
+          status: "error",
+        });
+      }
+      setIsSending.off();
+      return;
+    }
     if (messages.length === 0) {
       // revalidate chat list after creating the first prompter message to make sure the message already has title
       mutate(API_ROUTES.LIST_CHAT);
@@ -259,7 +284,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   );
 });
 
-const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string) => {
+const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string | null) => {
   const enableAutoScroll = useRef(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -278,7 +303,7 @@ const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string) =
       return;
     }
 
-    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamedResponse]);
 
   const scrollableNodeProps = useMemo(
