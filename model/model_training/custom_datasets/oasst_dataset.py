@@ -4,6 +4,7 @@ from typing import Literal, Optional
 from oasst_data import ExportMessageNode, read_message_trees, visit_threads_depth_first
 from torch import Generator
 from torch.utils.data import Dataset, random_split
+from datasets import load_dataset
 
 
 class ListDataset(Dataset):
@@ -20,11 +21,13 @@ class ListDataset(Dataset):
 
 def load_oasst_export(
     input_file_path: str | Path,
+    hf_dataset_name: str,
     val_split: float = 0.2,
     lang: str = "en",
     top_k: Optional[int] = None,
     manual_seed: int = 287631038922,
     data_path: str | Path = None,
+    use_hf_dataset: bool = True,
     mode: Literal["sft", "rm", "rl"] = "sft",
 ) -> tuple[ListDataset, ListDataset]:
     if mode not in ("sft", "rm", "rl"):
@@ -34,6 +37,10 @@ def load_oasst_export(
 
     generator = Generator()
     generator.manual_seed(manual_seed)
+
+    if use_hf_dataset and hf_dataset_name:
+        hf_dataset = load_dataset(hf_dataset_name)
+        return hf_dataset['train'], hf_dataset['validation']
 
     if not isinstance(input_file_path, Path):
         input_file_path = Path(input_file_path)
