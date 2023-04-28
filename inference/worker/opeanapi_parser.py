@@ -32,6 +32,7 @@ def get_plugin_config(url: str) -> inference.PluginConfig | None:
         response = requests.get(url)
         response.raise_for_status()
         plugin_dict = response.json()
+        logger.info(f"Plugin config downloaded {plugin_dict}")
         return plugin_dict
     except (requests.RequestException, ValueError) as e:
         logger.warning(f"Error downloading or parsing Plugin config: {e}")

@@ -72,6 +72,8 @@ class ChatRead(ChatListRead):
 
 class ListChatsResponse(pydantic.BaseModel):
     chats: list[ChatListRead]
+    next: str | None = None
+    prev: str | None = None
 
 
 class MessageCancelledException(Exception):

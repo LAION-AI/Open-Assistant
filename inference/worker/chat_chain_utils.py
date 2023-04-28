@@ -14,6 +14,8 @@ from opeanapi_parser import prepare_plugin_for_llm
 
 tokenizer_lock = threading.Lock()
 
+RESPONSE_MAX_LENGTH = 2048
+
 
 # NOTE: https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance
 # We are using plugin API-s endpoint/paths as tool names,
@@ -61,6 +63,7 @@ def similarity(ts1: str, ts2: str) -> float:
 # with custom tuned prompt for fixing the formatting.
 # e.g. "This is malformed text, please fix it: {malformed text} -> FIX magic :)"
 def extract_tool_and_input(llm_output: str, ai_prefix: str) -> tuple[str, str]:
+    llm_output = llm_output.strip().replace("```", "")
     if f"{ai_prefix}:" in llm_output:
         return ai_prefix, llm_output.split(f"{ai_prefix}:")[-1].strip()
     regex = r"Action: (.*?)[\n]*Action Input:\n?(.*)"
@@ -145,7 +148,7 @@ class RequestsForLLM:
         if "null" in res.text.lower() and len(res.text) < 10:
             return "ERROR! That didn't work, try modifying Action Input.\nEmpty response. Try again!"
 
-        return truncate_str(res.text, 1548)
+        return truncate_str(res.text, RESPONSE_MAX_LENGTH)
 
 
 def compose_tools_from_plugin(plugin: inference.PluginEntry | None) -> tuple[str, list[Tool]]:

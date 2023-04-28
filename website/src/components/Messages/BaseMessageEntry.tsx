@@ -12,10 +12,11 @@ export type BaseMessageEntryProps = StrictOmit<BoxProps, "bg" | "backgroundColor
   highlight?: boolean;
   usedPlugin?: object;
   isAssistant?: boolean;
+  containerProps?: BoxProps;
 };
 
 export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps>(function BaseMessageEntry(
-  { content, avatarProps, children, highlight, usedPlugin, isAssistant, ...props },
+  { content, avatarProps, children, highlight, usedPlugin, isAssistant, containerProps, ...props },
   ref
 ) {
   const bg = useColorModeValue("#DFE8F1", "#42536B");
@@ -35,6 +36,7 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
       outline={highlight ? { base: `2px solid black`, md: "0px" } : undefined}
       outlineColor={colors.light.active}
       _dark={{ outlineColor: colors.dark.active }}
+      {...containerProps}
     >
       <Avatar
         borderColor="blackAlpha.200"

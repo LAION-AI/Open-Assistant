@@ -52,7 +52,8 @@ chat with the OA candidate without your own hardware. However, these models are
 not final and can produce poor or undesirable outputs.
 
 LLaMa SFT models cannot be released directly due to Meta's license but XOR
-weights will be released soon.
+weights are released on the HuggingFace org. Follow the process in the README
+there to obtain a full model from these XOR weights.
 
 </details>
 

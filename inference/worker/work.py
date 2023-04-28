@@ -111,20 +111,17 @@ def handle_work_request(
     prompt = ""
     used_plugin = None
 
-    # prompt, parameters = make_prompt_and_parameters(tokenizer=tokenizer, work_request=work_request)
+    # Check if any plugin is enabled, if so, use it.
+    for plugin in parameters.plugins:
+        if plugin.enabled:
+            prompt, used_plugin = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer)
+            break
 
-    prompt, used_plugin = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer)
+    # If no plugin was "used", use the default prompt generation.
+    if not used_plugin:
+        prompt, parameters = make_prompt_and_parameters(tokenizer=tokenizer, work_request=work_request)
+
     logger.debug(f"Prompt: {prompt}")
-
-    # If plugin was used, lockup sampling parameters to "best" known values for plugins
-    # and llama sft-7e3 model for now...
-    if used_plugin:
-        parameters.top_k = 50
-        parameters.top_p = None
-        parameters.typical_p = None
-        parameters.temperature = 0.35
-        parameters.repetition_penalty = 1  # /0.83
-        parameters.seed = 43
 
     model_config = worker_config.model_config
 

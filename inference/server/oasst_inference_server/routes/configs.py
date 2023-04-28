@@ -45,8 +45,47 @@ DEFAULT_PARAMETER_CONFIGS = [
         sampling_parameters=inference.SamplingParameters(
             top_k=50,
             top_p=0.95,
+            temperature=0.75,
+            repetition_penalty=1.2,
+        ),
+    ),
+    ParameterConfig(
+        name="k50-Creative",
+        description="Top-k sampling with k=50, higher temperature",
+        sampling_parameters=inference.SamplingParameters(
+            top_k=50,
+            top_p=0.95,
+            temperature=0.85,
+            repetition_penalty=1.2,
+        ),
+    ),
+    ParameterConfig(
+        name="k50-Precise",
+        description="Top-k sampling with k=50, low temperature",
+        sampling_parameters=inference.SamplingParameters(
+            top_k=50,
+            top_p=0.95,
+            temperature=0.1,
+            repetition_penalty=1.2,
+        ),
+    ),
+    ParameterConfig(
+        name="k50-Original",
+        description="Top-k sampling with k=50, highest temperature",
+        sampling_parameters=inference.SamplingParameters(
+            top_k=50,
+            top_p=0.95,
             temperature=0.9,
             repetition_penalty=1.2,
+        ),
+    ),
+    ParameterConfig(
+        name="k50-Plugins",
+        description="Top-k sampling with k=50 and temperature=0.35",
+        sampling_parameters=inference.SamplingParameters(
+            temperature=0.35,
+            top_k=50,
+            repetition_penalty=1,
         ),
     ),
     ParameterConfig(

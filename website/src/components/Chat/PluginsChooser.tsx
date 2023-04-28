@@ -33,21 +33,20 @@ import { Cog, Edit, Plus } from "lucide-react";
 import { AttachmentIcon, WarningIcon, CheckCircleIcon, CloseIcon } from "@chakra-ui/icons";
 import { ChangeEvent, useCallback, useEffect, useState, useRef } from "react";
 import { useTranslation } from "next-i18next";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import { ChatConfigFormData } from "src/types/Chat";
 import { useChatContext } from "./ChatContext";
 import { PluginEntry } from "src/types/Chat";
 import { get, post } from "src/lib/api";
 import { API_ROUTES } from "src/lib/routes";
 
-export const PluginsChooser = () => {
+export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
   const { t } = useTranslation("common");
   const { control, register, reset, setValue } = useFormContext<ChatConfigFormData>();
   const [selectedPluginIndex, setSelectedPluginIndex] = useState<number | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const plugins = useWatch({ name: "plugins", control: control });
 
   const findSelectedPluginIndex = useCallback(() => {
     return plugins.findIndex((plugin) => plugin.enabled);
@@ -117,7 +116,7 @@ export const PluginsChooser = () => {
 
   return (
     <FormControl>
-      <Menu>
+      <Menu placement="auto">
         <MenuButton as={Button} rightIcon={<Cog />} w="100%" size="lg">
           {plugins && plugins[findSelectedPluginIndex()]?.enabled ? (
             <Box display="flex" justifyContent="center" gap={2}>
@@ -137,7 +136,7 @@ export const PluginsChooser = () => {
             </Box>
           )}
         </MenuButton>
-        <MenuList>
+        <MenuList width={1}>
           <RadioGroup value={plugins?.findIndex((plugin) => plugin.enabled).toString()}>
             {plugins?.map((plugin, index) => (
               <MenuItem key={index}>

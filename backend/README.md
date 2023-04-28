@@ -1,3 +1,5 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/backend/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 # Open-Assistant REST Backend
 
 ## Backend Development Setup
@@ -10,6 +12,9 @@ a database. The default settings are already configured to connect to the
 database at `localhost:5432`. (See
 [FAQ](https://projects.laion.ai/Open-Assistant/docs/faq#enable-dockers-buildkit-backend)
 if you face any docker problems).
+
+> **Note:** when running on MacOS with an M1 chip you have to use:
+> `DB_PLATFORM=linux/x86_64 docker compose ...`
 
 Python 3.10 is required. It is recommended to use `pyenv` which will recognise
 the `.python-version` in the project root directory.
