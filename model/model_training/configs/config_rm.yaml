@@ -91,6 +91,8 @@ oasst-rm-1-pythia-2.8b:
     - oasst_export:
         lang: "en,es,de,fr"
         input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+        hf_dataset_name: OpenAssistant/oasst1
+        use_hf_dataset: true
         val_split: 0.1
     - augment_oasst:
         #input_file_path: augmented_latin_cyrillic_oasst_2023-03-27.jsonl
@@ -135,6 +137,8 @@ oasst-rm-1-pythia-1.4b:
     - oasst_export:
         lang: "en,es,de,fr"
         input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+        hf_dataset_name: OpenAssistant/oasst1
+        use_hf_dataset: true
         val_split: 0.1
     - augment_oasst:
         input_file_path: augmented_latin_cyrillic_oasst_2023-03-27.jsonl
