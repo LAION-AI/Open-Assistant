@@ -11,7 +11,7 @@ from typing import List, Tuple
 
 import torch
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
-from model_training.utils import _strtobool
+from model_training.utils.utils import _strtobool
 from tokenizers import pre_tokenizers
 from transformers import AutoModelForCausalLM, AutoTokenizer
 

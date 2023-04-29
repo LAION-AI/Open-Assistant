@@ -79,6 +79,33 @@
       "env": {
         "CUDA_VISIBLE_DEVICES": "0"
       }
+    },
+    {
+      "name": "Debug RLHF",
+      "type": "python",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/model/model_training",
+      "module": "accelerate.commands.launch",
+      "args": [
+        "--main_process_port",
+        "29506",
+        "--config_file",
+        "configs/accelerate_config.yaml",
+        "--num_processes",
+        "5",
+        "trainer_rl.py",
+        "--configs",
+        "defaults",
+        "defaults_rlhf",
+        "pythia_rlhf",
+        "oasst_export_latin_cyrillic_rlhf"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "1,2,3,4,5",
+        "OMP_NUM_THREADS": "1"
+      }
     }
   ]
 }

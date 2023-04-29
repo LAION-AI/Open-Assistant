@@ -4,13 +4,13 @@ import warnings
 from functools import partial
 from typing import Callable, Optional
 
-import torch
 import torch.nn as nn
 import transformers
 from transformers import GPTNeoXForCausalLM, GPTNeoXModel, LlamaForCausalLM, LlamaModel
+from trlx.models.modeling_ppo import AutoModelForCausalLMWithHydraValueHead
 
 from .patching_llama import llama_forward_with_flash_attn
-from .patching_utils import compute_flash_attention
+from .patching_neox import neox_forward_with_flash_attn
 from .reward_model import GPTNeoXRewardModel
 
 SUPPORTED_MODELS = [
@@ -19,6 +19,8 @@ SUPPORTED_MODELS = [
     LlamaForCausalLM,
     LlamaModel,
     GPTNeoXRewardModel,
+    # Currently only supported by NeoX models; Will work on LLaMa models
+    AutoModelForCausalLMWithHydraValueHead,
 ]
 
 
@@ -34,26 +36,6 @@ def _patched_attn_forward(post_module: nn.Module, module: nn.Module, *args, **kw
     out = module.old_forward(*args, **kwargs)
     hiddens = post_module(out[0])
     return (hiddens,) + out[1:]
-
-
-def _patched_gpt_neox_attn(
-    self: transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXAttention,
-    flash_attn: FlashSelfAttention,
-    query: torch.Tensor,
-    key: torch.Tensor,
-    value: torch.Tensor,
-    attention_mask=None,
-    head_mask=None,
-):
-    # query, key, value: [bs, num_attention_heads, seq_len, attn_head_size]
-    flash_attn.train(self.training)
-    out_dtype = value.dtype
-    q, k, v = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
-    if attention_mask is not None:
-        attention_mask = attention_mask[:, 0, 0, :]
-    out = compute_flash_attention(flash_attn, q, k, v, attention_mask)
-    out = out.transpose(1, 2).to(out_dtype)
-    return out, None
 
 
 def add_dropout(module: nn.Module, patched_fwd: Callable, p_dropout: float = 0.1):
@@ -81,13 +63,16 @@ def add_flash_attn(module: nn.Module, causal: bool = True):
     elif isinstance(module, transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXAttention):
         if not hasattr(module, "_attn"):
             warnings.warn("Provided module doesn't have a _attn() function to be patched.")
-        module._attn = partial(_patched_gpt_neox_attn, module, flash_attn)
+        module._attn = partial(neox_forward_with_flash_attn, module, flash_attn)
     else:
         raise NotImplementedError(f"Flash attention is not implemented for {module.__class__.__name__}.")
 
 
 def patch_model(
-    model: nn.Module, resid_pdrop: Optional[float] = 0.1, flash_attention: bool = True, patch_unsupported: bool = False
+    model: nn.Module,
+    resid_pdrop: Optional[float] = 0.1,
+    flash_attention: bool = True,
+    patch_unsupported: bool = False,
 ):
     """
     Helper function for patching HF language models.
@@ -110,6 +95,7 @@ or run with:
             )
             exit(1)
     if (resid_pdrop is None or resid_pdrop == 0.0) and not flash_attention:
+        print("Continuing without patching")
         return
 
     if resid_pdrop is not None and (resid_pdrop < 0 or resid_pdrop > 1.0):
@@ -141,6 +127,19 @@ or run with:
 
     if isinstance(model, LlamaForCausalLM):
         model = model.model
+
+    if isinstance(model, AutoModelForCausalLMWithHydraValueHead):
+        if isinstance(model.base_model, GPTNeoXForCausalLM):
+            model = model.base_model.gpt_neox
+        elif isinstance(model.base_model, LlamaForCausalLM):
+            model = model.base_model.model
+        else:
+            warnings.warn(
+                "Unfortunately there is currently only support for NeoX models and LLaMa models "
+                f"Please make sure that `{model.__class__.__name__}` is one of those model.\n"
+                "Or disable flash_attention and residual_dropout with:\n"
+                "--use_flash_attention=false  --no-residual_dropout"
+            )
 
     attention_key_lookup = {
         GPTNeoXModel: "attention",

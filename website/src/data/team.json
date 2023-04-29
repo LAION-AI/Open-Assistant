@@ -158,6 +158,12 @@
       "githubURL": "https://github.com/GravermanDev",
       "imageURL": "https://avatars.githubusercontent.com/u/76252605?v=4"
     },
+    "mrcabbage972": {
+      "name": "Victor May",
+      "title": "ML Engineer",
+      "githubURL": "https://github.com/mrcabbage972",
+      "imageURL": "https://avatars.githubusercontent.com/u/11806181?v=4"
+    },
     "you": {
       "name": "You!",
       "title": "It wouldn't have happened without you, thanks!",
@@ -190,6 +196,12 @@
       "url": "https://stability.ai/",
       "githubURL": "https://github.com/stability-ai",
       "imageURL": "https://images.squarespace-cdn.com/content/6213c340453c3f502425776e/cfbf5bc5-47d4-4f4a-b133-23bd12a7d7c2/S_AI_Favicon.png"
+    },
+    "evobits": {
+      "name": "EvobitsIT",
+      "title": " OA servers",
+      "url": "https://evobitsit.com",
+      "imageURL": "https://evobitsit.com/img/favicon/favicon.ico"
     }
   },
   "groups": [
@@ -203,7 +215,7 @@
     },
     {
       "name": "ML engineers",
-      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette", "karan4d", "jordiclive"]
+      "members": ["theblackcat102", "sanagno", "johnflux", "dvruette", "karan4d", "jordiclive", "mrcabbage972"]
     },
     {
       "name": "Data Team",
@@ -223,7 +235,7 @@
     },
     {
       "name": "Sponsors",
-      "members": ["redmond", "hf", "wandb", "stability"]
+      "members": ["redmond", "hf", "wandb", "stability", "evobits"]
     },
     {
       "name": "And also...",

@@ -1,7 +1,6 @@
 import { boolean } from "boolean";
 
-import { getEnv } from "./browserEnv";
-
-export const isChatEnable = () => {
-  return boolean(getEnv().ENABLE_CHAT);
+// only works server side
+export const isSSRChatEnabled = () => {
+  return boolean(process.env.ENABLE_CHAT);
 };

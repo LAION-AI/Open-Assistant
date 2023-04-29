@@ -52,7 +52,29 @@ chat with the OA candidate without your own hardware. However, these models are
 not final and can produce poor or undesirable outputs.
 
 LLaMa SFT models cannot be released directly due to Meta's license but XOR
-weights will be released soon.
+weights are released on the HuggingFace org. Follow the process in the README
+there to obtain a full model from these XOR weights.
+
+</details>
+
+<details>
+<summary>
+
+### Is there an API available?
+
+</summary>
+
+There is no API currently available for Open Assistant. Any mention of an API in
+documentation is referencing the website's internal API. We understand that an
+API is a highly requested feature, but unfortunately, we can't provide one at
+this time due to a couple of reasons. Firstly, the inference system is already
+under high load and running off of compute from our sponsors. Secondly, the
+project's primary goal is currently data collection and model training, not
+providing a product.
+
+However, if you're looking to run inference, you can host the model yourself
+either on your own hardware or with a cloud provider. We appreciate your
+understanding and patience as we continue to develop this project.
 
 </details>
 

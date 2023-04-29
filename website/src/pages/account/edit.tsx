@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import React from "react";
 import { Control, useForm, useWatch } from "react-hook-form";
 import { validDisplayNameRegex } from "src/lib/display_name_validation";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 export default function Account() {
   const { data: session } = useSession();

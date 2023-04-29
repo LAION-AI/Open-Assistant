@@ -71,6 +71,7 @@ class UserRepository:
     def update_user(
         self,
         id: UUID,
+        display_name: Optional[str] = None,
         enabled: Optional[bool] = None,
         notes: Optional[str] = None,
         show_on_leaderboard: Optional[bool] = None,
@@ -86,7 +87,6 @@ class UserRepository:
             raise OasstError("Forbidden", OasstErrorCode.API_CLIENT_NOT_AUTHORIZED, HTTP_403_FORBIDDEN)
 
         user: User = self.db.query(User).filter(User.id == id).first()
-
         if user is None:
             raise OasstError("User not found", OasstErrorCode.USER_NOT_FOUND, HTTP_404_NOT_FOUND)
 
@@ -98,8 +98,11 @@ class UserRepository:
             user.show_on_leaderboard = show_on_leaderboard
         if tos_acceptance:
             user.tos_acceptance_date = utcnow()
+        if display_name is not None:
+            user.display_name = display_name
 
         self.db.add(user)
+
         return user
 
     @managed_tx_method(CommitMode.COMMIT)

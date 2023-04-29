@@ -1,8 +1,9 @@
 import asyncio
+import base64
 
 import fastapi
 import pydantic
-from fastapi import Depends
+from fastapi import Depends, Query
 from loguru import logger
 from oasst_inference_server import auth, chat_utils, deps, models, queueing
 from oasst_inference_server.schemas import chat as chat_schema
@@ -21,12 +22,47 @@ router = fastapi.APIRouter(
 async def list_chats(
     include_hidden: bool = False,
     ucr: UserChatRepository = Depends(deps.create_user_chat_repository),
+    limit: int | None = Query(10, gt=0, le=100),
+    after: str | None = None,
+    before: str | None = None,
 ) -> chat_schema.ListChatsResponse:
     """Lists all chats."""
     logger.info("Listing all chats.")
-    chats = await ucr.get_chats(include_hidden=include_hidden)
+
+    def encode_cursor(chat: models.DbChat):
+        return base64.b64encode(chat.id.encode()).decode()
+
+    def decode_cursor(cursor: str | None):
+        if cursor is None:
+            return None
+        return base64.b64decode(cursor.encode()).decode()
+
+    chats = await ucr.get_chats(
+        include_hidden=include_hidden, limit=limit + 1, after=decode_cursor(after), before=decode_cursor(before)
+    )
+
+    num_rows = len(chats)
+    chats = chats if num_rows <= limit else chats[:-1]  # remove extra item
+    chats = chats if before is None else chats[::-1]  # reverse if query in backward direction
+
+    def get_cursors():
+        prev, next = None, None
+        if num_rows > 0:
+            if (num_rows > limit and before) or after:
+                prev = encode_cursor(chats[0])
+            if num_rows > limit or before:
+                next = encode_cursor(chats[-1])
+        else:
+            if after:
+                prev = after
+            if before:
+                next = before
+        return prev, next
+
+    prev, next = get_cursors()
+
     chats_list = [chat.to_list_read() for chat in chats]
-    return chat_schema.ListChatsResponse(chats=chats_list)
+    return chat_schema.ListChatsResponse(chats=chats_list, next=next, prev=prev)
 
 
 @router.post("")
@@ -74,6 +110,8 @@ async def create_prompter_message(
                 chat_id=chat_id, parent_id=request.parent_id, content=request.content
             )
         return prompter_message.to_read()
+    except fastapi.HTTPException:
+        raise
     except Exception:
         logger.exception("Error adding prompter message")
         return fastapi.Response(status_code=500)
@@ -118,6 +156,8 @@ async def create_assistant_message(
             status_code=fastapi.status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="The server is currently busy. Please try again later.",
         )
+    except fastapi.HTTPException:
+        raise
     except Exception:
         logger.exception("Error adding prompter message")
         return fastapi.Response(status_code=500)
@@ -279,6 +319,7 @@ async def handle_update_chat(
             chat_id=chat_id,
             title=request.title,
             hidden=request.hidden,
+            allow_data_use=request.allow_data_use,
         )
     except Exception:
         logger.exception("Error when updating chat")

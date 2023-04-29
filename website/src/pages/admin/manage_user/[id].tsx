@@ -23,7 +23,7 @@ import { useForm } from "react-hook-form";
 import { UserStats } from "src/components/Account/UserStats";
 import { AdminArea } from "src/components/AdminArea";
 import { JsonCard } from "src/components/JsonCard";
-import { getAdminLayout } from "src/components/Layout";
+import { AdminLayout } from "src/components/Layout";
 import { AdminMessageTable } from "src/components/Messages/AdminMessageTable";
 import { Role, RoleSelect } from "src/components/RoleSelect";
 import { post } from "src/lib/api";
@@ -103,7 +103,7 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
                 <input type="hidden" {...register("auth_method")}></input>
                 <FormControl>
                   <FormLabel>Display Name</FormLabel>
-                  <Input {...register("display_name")} isDisabled />
+                  <Input {...register("display_name")} />
                 </FormControl>
                 <FormControl mt="2">
                   <FormLabel>Role</FormLabel>
@@ -198,6 +198,6 @@ export const getServerSideProps: GetServerSideProps<{ user: User<Role> }, { id: 
   };
 };
 
-ManageUser.getLayout = getAdminLayout;
+ManageUser.getLayout = AdminLayout;
 
 export default ManageUser;

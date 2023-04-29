@@ -1,25 +1,29 @@
 train:
-  seq_length: 500
-  epochs: 100
+  seq_length: 2032
+  epochs: 10000
   total_steps: 10000
   batch_size: 18
-  checkpoint_interval: 10000
-  eval_interval: 500
-  pipeline: "PromptPipeline"
-  trainer: "AcceleratePPOTrainer"
+  checkpoint_interval: 1000
+  eval_interval: 250
+  pipeline: "CustomPromptPipeline"
+  trainer: "CustomPPOTrainer"
+  tracker: wandb
+  project_name: rlhf
+  entity_name: open-assistant
 
 model:
-  model_path: "EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-500"
-  num_layers_unfrozen: 2
+  model_path:
+  model_arch_type: causal
 
 tokenizer:
-  tokenizer_path: "EleutherAI/pythia-1b-deduped-base-finetuned/checkpoint-500"
-  truncation_side: "right"
+  tokenizer_path:
+  truncation_side: "left" # AKo: changed this to "left", otherwise it sees only the beginning of conversations
+  padding_side: "left" # use with rotary positional embedidngs
 
 optimizer:
   name: "adamw"
   kwargs:
-    lr: 1.0e-5
+    lr: 1.0e-6
     betas: [0.9, 0.95]
     eps: 1.0e-8
     weight_decay: 1.0e-6
@@ -27,28 +31,31 @@ optimizer:
 scheduler:
   name: "cosine_annealing"
   kwargs:
-    T_max: 10000 # train.total_steps
-    eta_min: 1.0e-4
+    #T_max: 10000 # train.total_steps
+    #eta_min: 1.0e-4
+    T_max: 10000
+    eta_min: 1.0e-6
 
 method:
   name: "ppoconfig"
-  num_rollouts: 384
-  chunk_size: 8
+  num_rollouts: 1024
+  chunk_size: 4
   ppo_epochs: 4
-  init_kl_coef: 0.05
+  init_kl_coef: 0.1
   target: 6
   horizon: 10000
   gamma: 1
   lam: 0.95
-  cliprange: 0.2
-  cliprange_value: 0.2
+  cliprange: 0.4
+  cliprange_value: 0.4
   vf_coef: 1
   scale_reward: False
   ref_mean: null
   ref_std: null
-  cliprange_reward: 10
+  cliprange_reward: 4
   gen_kwargs:
-    max_new_tokens: 40
+    max_new_tokens: 512
     top_k: 0
-    top_p: 1.0
+    top_p: 0.7
     do_sample: True
+    temperature: 1.0

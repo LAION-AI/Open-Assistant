@@ -77,6 +77,8 @@ class ChatRead(ChatListRead):
 
 class ListChatsResponse(pydantic.BaseModel):
     chats: list[ChatListRead]
+    next: str | None = None
+    prev: str | None = None
 
 
 class MessageCancelledException(Exception):
@@ -94,3 +96,4 @@ class MessageTimeoutException(Exception):
 class ChatUpdateRequest(pydantic.BaseModel):
     title: pydantic.constr(max_length=100) | None = None
     hidden: bool | None = None
+    allow_data_use: bool | None = None

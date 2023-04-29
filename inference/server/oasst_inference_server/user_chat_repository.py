@@ -4,6 +4,7 @@ import sqlalchemy.orm
 import sqlmodel
 from loguru import logger
 from oasst_inference_server import database, models
+from oasst_inference_server.settings import settings
 from oasst_shared.schemas import inference
 
 
@@ -14,12 +15,30 @@ class UserChatRepository(pydantic.BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    async def get_chats(self, include_hidden: bool = False) -> list[models.DbChat]:
+    async def get_chats(
+        self,
+        include_hidden: bool = False,
+        limit: int | None = None,
+        before: str | None = None,
+        after: str | None = None,
+    ) -> list[models.DbChat]:
+        if after is not None and before is not None:
+            raise fastapi.HTTPException(status_code=400, detail="Cannot specify both after and before.")
+
         query = sqlmodel.select(models.DbChat)
         query = query.where(models.DbChat.user_id == self.user_id)
+
         if not include_hidden:
             query = query.where(models.DbChat.hidden.is_(False))
-        query = query.order_by(models.DbChat.created_at.desc())
+        if limit is not None:
+            query = query.limit(limit)
+        if before is not None:
+            query = query.where(models.DbChat.id > before)
+        if after is not None:
+            query = query.where(models.DbChat.id < after)
+
+        query = query.order_by(models.DbChat.created_at.desc() if before is None else models.DbChat.created_at)
+
         return (await self.session.exec(query)).all()
 
     async def get_chat_by_id(self, chat_id: str, include_messages: bool = True) -> models.DbChat:
@@ -84,6 +103,10 @@ class UserChatRepository(pydantic.BaseModel):
     async def add_prompter_message(self, chat_id: str, parent_id: str | None, content: str) -> models.DbMessage:
         logger.info(f"Adding prompter message {len(content)=} to chat {chat_id}")
 
+        if settings.message_max_length is not None:
+            if len(content) > settings.message_max_length:
+                raise fastapi.HTTPException(status_code=413, detail="Message content exceeds max length")
+
         chat: models.DbChat = (
             await self.session.exec(
                 sqlmodel.select(models.DbChat)
@@ -94,6 +117,9 @@ class UserChatRepository(pydantic.BaseModel):
                 )
             )
         ).one()
+        if settings.chat_max_messages is not None:
+            if len(chat.messages) >= settings.chat_max_messages:
+                raise fastapi.HTTPException(status_code=413, detail="Maximum number of messages reached for this chat")
         if parent_id is None:
             if len(chat.messages) > 0:
                 raise fastapi.HTTPException(status_code=400, detail="Trying to add first message to non-empty chat")
@@ -171,6 +197,16 @@ class UserChatRepository(pydantic.BaseModel):
         parent: models.DbMessage = (await self.session.exec(query)).one()
         if parent.chat.user_id != self.user_id:
             raise fastapi.HTTPException(status_code=400, detail="Message not found")
+
+        if settings.chat_max_messages is not None:
+            count_query = sqlmodel.select(sqlmodel.func.count(models.DbMessage.id)).where(
+                models.DbMessage.chat_id == parent.chat.id
+            )
+            num_msgs: int = (await self.session.exec(count_query)).one()
+
+            if num_msgs >= settings.chat_max_messages:
+                raise fastapi.HTTPException(status_code=413, detail="Maximum number of messages reached for this chat")
+
         message = models.DbMessage(
             role="assistant",
             chat_id=parent.chat_id,
@@ -239,6 +275,7 @@ class UserChatRepository(pydantic.BaseModel):
         chat_id: str,
         title: str | None = None,
         hidden: bool | None = None,
+        allow_data_use: bool | None = None,
     ) -> None:
         logger.info(f"Updating chat {chat_id=}: {title=} {hidden=}")
         chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
@@ -250,5 +287,9 @@ class UserChatRepository(pydantic.BaseModel):
         if hidden is not None:
             logger.info(f"Setting chat {chat_id=} to {'hidden' if hidden else 'visible'}")
             chat.hidden = hidden
+
+        if allow_data_use is not None:
+            logger.info(f"Updating allow_data_use of chat {chat_id=}: {allow_data_use=}")
+            chat.allow_data_use = allow_data_use
 
         await self.session.commit()

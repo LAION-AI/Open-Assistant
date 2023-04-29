@@ -1,9 +1,9 @@
 import { Card, CardBody } from "@chakra-ui/react";
 import Head from "next/head";
 import { AdminArea } from "src/components/AdminArea";
-import { getAdminLayout } from "src/components/Layout";
+import { AdminLayout } from "src/components/Layout";
 import { AdminMessageTable } from "src/components/Messages/AdminMessageTable";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 const MessageList = () => {
   return (
@@ -22,6 +22,6 @@ const MessageList = () => {
   );
 };
 
-MessageList.getLayout = getAdminLayout;
+MessageList.getLayout = AdminLayout;
 
 export default MessageList;

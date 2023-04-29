@@ -3,7 +3,7 @@ from argparse import Namespace
 import pytest
 from model_training.custom_datasets import QA_DATASETS, SUMMARIZATION_DATASETS, get_one_dataset
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
-from model_training.utils import get_tokenizer
+from model_training.utils.utils import get_tokenizer
 from torch.utils.data import ConcatDataset, DataLoader
 
 

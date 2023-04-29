@@ -1,19 +1,8 @@
-// https://nextjs.org/docs/basic-features/layouts
-
 import { Box } from "@chakra-ui/react";
-import {
-  Activity,
-  BarChart2,
-  ExternalLink,
-  Layout,
-  MessageCircle,
-  MessageSquare,
-  Settings,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import { Activity, BarChart2, MessageSquare, Settings, Users } from "lucide-react";
 import type { NextPage } from "next";
-import { getEnv } from "src/lib/browserEnv";
+import { PropsWithChildren } from "react";
+import { useSidebarItems } from "src/hooks/layout/sidebarItems";
 
 import { SlimFooter } from "./Dashboard/SlimFooter";
 import { Footer } from "./Footer";
@@ -22,70 +11,33 @@ import { SideMenuLayout } from "./SideMenuLayout";
 import { ToSWrapper } from "./ToSWrapper";
 
 export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
-  getLayout?: (page: React.ReactElement) => React.ReactNode;
+  getLayout?: (props: PropsWithChildren) => JSX.Element;
 };
 
-export const getDefaultLayout = (page: React.ReactElement) => (
+export const DefaultLayout = ({ children }: PropsWithChildren) => (
   <HeaderLayout>
-    {page}
+    {children}
     <Footer />
   </HeaderLayout>
 );
 
-export const getDashBoardLayoutSidebarItem = () => {
-  return [
-    ...(getEnv().ENABLE_CHAT
-      ? [
-          {
-            labelID: "chat",
-            pathname: "/chat",
-            icon: MessageCircle,
-          },
-        ]
-      : []),
-    {
-      labelID: "dashboard",
-      pathname: "/dashboard",
-      icon: Layout,
-    },
-    {
-      labelID: "messages",
-      pathname: "/messages",
-      icon: MessageSquare,
-    },
-    {
-      labelID: "leaderboard",
-      pathname: "/leaderboard",
-      icon: BarChart2,
-    },
-    {
-      labelID: "stats",
-      pathname: "/stats",
-      icon: TrendingUp,
-    },
-    {
-      labelID: "guidelines",
-      pathname: "https://projects.laion.ai/Open-Assistant/docs/guides/guidelines",
-      icon: ExternalLink,
-      target: "_blank",
-    },
-  ];
+export const DashboardLayout = ({ children }: PropsWithChildren) => {
+  const items = useSidebarItems();
+  return (
+    <HeaderLayout>
+      <ToSWrapper>
+        <SideMenuLayout items={items}>
+          <Box>{children}</Box>
+          <Box mt="10">
+            <SlimFooter />
+          </Box>
+        </SideMenuLayout>
+      </ToSWrapper>
+    </HeaderLayout>
+  );
 };
 
-export const getDashboardLayout = (page: React.ReactElement) => (
-  <HeaderLayout>
-    <ToSWrapper>
-      <SideMenuLayout items={getDashBoardLayoutSidebarItem()}>
-        <Box>{page}</Box>
-        <Box mt="10">
-          <SlimFooter />
-        </Box>
-      </SideMenuLayout>
-    </ToSWrapper>
-  </HeaderLayout>
-);
-
-export const getAdminLayout = (page: React.ReactElement) => (
+export const AdminLayout = ({ children }: PropsWithChildren) => (
   <HeaderLayout>
     <SideMenuLayout
       items={[
@@ -116,9 +68,7 @@ export const getAdminLayout = (page: React.ReactElement) => (
         },
       ]}
     >
-      <Box>{page}</Box>
+      <Box>{children}</Box>
     </SideMenuLayout>
   </HeaderLayout>
 );
-
-export const noLayout = (page: React.ReactElement) => page;

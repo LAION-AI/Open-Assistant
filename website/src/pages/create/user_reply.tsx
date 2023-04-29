@@ -1,10 +1,10 @@
-import { getDashboardLayout } from "src/components/Layout";
+import { DashboardLayout } from "src/components/Layout";
 import { TaskPage } from "src/components/TaskPage/TaskPage";
 import { TaskType } from "src/types/Task";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 const PrompterReply = () => <TaskPage type={TaskType.prompter_reply} />;
 
-PrompterReply.getLayout = getDashboardLayout;
+PrompterReply.getLayout = DashboardLayout;
 
 export default PrompterReply;

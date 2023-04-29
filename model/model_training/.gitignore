@@ -6,4 +6,12 @@ saved_model*
 .save_model*
 llama_model
 models-*
+model_store_*
+singularity
+tritonserver-pyt.sif
+ckpts_pythia12b
+model_rl
 .saved
+.triton_models
+triton_models
+ckpts
