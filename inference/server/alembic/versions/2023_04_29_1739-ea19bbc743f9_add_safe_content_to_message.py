@@ -1,7 +1,7 @@
 """Add safe_content to message
 
 Revision ID: ea19bbc743f9
-Revises: b66fd8f9da1f
+Revises: 401eef162771
 Create Date: 2023-04-14 22:37:41.373382
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "ea19bbc743f9"
-down_revision = "b66fd8f9da1f"
+down_revision = "401eef162771"
 branch_labels = None
 depends_on = None
 
