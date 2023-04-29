@@ -80,24 +80,22 @@ def make_prompt_and_parameters(
     return prompt, parameters
 
 
-def prepare_safe_prompt(prompt: str, label: str, rots: str):
+def prepare_safe_prompt(prompt: str, label: str, rots: str) -> str:
     pre_prompt = f"Answer the following request with {label} as responsible chatbot that believes that {rots}: "
     input_list = prompt.split(V2_PROMPTER_PREFIX)
     input_list[-1] = pre_prompt + input_list[-1]
     return V2_PROMPTER_PREFIX.join(input_list)
 
 
-def get_safety_opinion(prompt: str, safety_opinion: str, safety_level: int):
+def is_safety_triggered(safety_label: str, safety_level: int) -> bool:
+    return ("caution" in safety_label and safety_level > 1) or ("intervention" in safety_label and safety_level > 0)
+
+
+def parse_safety_response(safety_opinion: str) -> tuple[str, str]:
     safety_opinion = re.sub(r"<pad>|</s>", "", safety_opinion).split("<sep>")
     label, rots = safety_opinion[0], "and".join([x.strip(".") for x in safety_opinion[1:]])
     label = label.replace("<pad>", "").strip()
-
-    if "caution" in label and safety_level > 1:
-        return prepare_safe_prompt(prompt, label, rots)
-    elif "intervention" in label and safety_level > 0:
-        return prepare_safe_prompt(prompt, label, rots)
-    else:
-        return prompt
+    return label, rots
 
 
 def handle_work_request(
@@ -115,8 +113,23 @@ def handle_work_request(
     if settings.enable_safety and work_request.safety_parameters.level:
         safety_request = inference.SafetyRequest(inputs=prompt, parameters=work_request.safety_parameters)
         safety_response = get_safety_server_response(safety_request)
-        prompt = get_safety_opinion(prompt, safety_response.outputs, work_request.safety_parameters.level)
-        logger.debug(f"Safe prompt: {prompt}")
+        safety_label, safety_rots = parse_safety_response(safety_response.outputs)
+
+        if is_safety_triggered(safety_label, work_request.safety_parameters.level):
+            prompt = prepare_safe_prompt(prompt, safety_label, safety_rots)
+
+            utils.send_response(
+                ws,
+                inference.SafePromptResponse(
+                    request_id=work_request.id,
+                    safe_prompt=prompt,
+                    safety_parameters=work_request.safety_parameters,
+                    safety_label=safety_label,
+                    safety_rots=safety_rots,
+                ),
+            )
+
+            logger.debug(f"Safe prompt: {prompt}")
 
     stream_response = None
     token_buffer = utils.TokenBuffer(stop_sequences=parameters.stop)

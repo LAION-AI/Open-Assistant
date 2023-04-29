@@ -55,7 +55,7 @@ COPY --chown="${APP_USER}:${APP_USER}" --from=build /build/lib                  
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/*.py .
 
 
-CMD python3 __main__.py
+CMD python3 main.py
 
 FROM base-env as prod
 ARG APP_USER

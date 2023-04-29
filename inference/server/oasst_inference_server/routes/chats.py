@@ -234,6 +234,14 @@ async def message_events(
                     )
                     break
 
+                if response_packet.response_type == "safe_prompt":
+                    logger.info(f"Received safety intervention for {chat_id}")
+                    yield {
+                        "data": chat_schema.SafePromptResponseEvent(
+                            safe_prompt=response_packet.safe_prompt,
+                        ).json(),
+                    }
+
                 if response_packet.response_type == "internal_error":
                     yield {
                         "data": chat_schema.ErrorResponseEvent(
