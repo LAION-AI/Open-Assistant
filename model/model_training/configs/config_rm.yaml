@@ -33,7 +33,7 @@ defaults_rm:
   fuse_gelu: true
   log_wandb: true
   verbose: false
-  output_dir: .saved_models_rm
+  output_dir: .saved_models_rm_large
   use_custom_sampler: false
   residual_dropout: 0.0
   use_flash_attention: false
@@ -49,8 +49,8 @@ test_rm_labeling:
   pooling: last
   sort_by_length: false
   use_custom_sampler: true
-  model_name: microsoft/deberta-v3-base
-  learning_rate: 1e-5
+  model_name: microsoft/deberta-v3-large
+  learning_rate: 3e-5
   residual_dropout: 0.0
   weight_decay: 0.0
   max_length: 2048
@@ -58,8 +58,8 @@ test_rm_labeling:
   gradient_checkpointing: true
   warmup_steps: 50
   dtype: float16
-  gradient_accumulation_steps: 4
-  per_device_train_batch_size: 5
+  gradient_accumulation_steps: 20
+  per_device_train_batch_size: 1
   per_device_eval_batch_size: 4
   num_train_epochs: 3
   eval_steps: 251
@@ -67,7 +67,7 @@ test_rm_labeling:
   loss_fn: HybridRMLoss
   datasets:
     - oasst_export_w_label:
-        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk,zh,ja,th,vi"
         input_file_path: 2023-04-12_oasst_release_ready_synth.jsonl.gz
         input_label_path: 2023-04-12_oasst_all.messages.jsonl.gz
         val_split: 0.1

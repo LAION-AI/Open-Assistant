@@ -96,6 +96,7 @@ class HybridRMLoss(nn.Module):
             cu_lengths = [0, logits.size(0)]
         rm_logits = logits[:, 0]
         device = rm_logits.device
+        labels = labels.to(device)
         losses = []
         for start, end in zip(cu_lengths[:-1], cu_lengths[1:]):
             pairs = torch.combinations(torch.arange(end - start, device=device), 2)
