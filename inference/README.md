@@ -2,7 +2,10 @@
 
 # OpenAssistant Inference
 
-Preliminary implementation of the inference engine for OpenAssistant.
+Preliminary implementation of the inference engine for OpenAssistant. This is
+strictly for local development, although you might find limited success for your
+self-hosting OA plan. There is no warranty that this will not change in the
+future — in fact, expect it to change.
 
 ## Development Variant 1 (docker compose)
 
@@ -38,6 +41,10 @@ docker compose logs -f    \
 > the modules of the inference stack, and the `oasst-shared` package, without
 > rebuilding.
 
+> **Note:** You can change the model by editing variable `MODEL_CONFIG_NAME` in
+> the `docker-compose.yaml` file. Valid model names can be found in
+> [model_configs.py](../oasst-shared/oasst_shared/model_configs.py).
+
 > **Note:** You can spin up any number of workers by adjusting the number of
 > replicas of the `inference-worker` service to your liking.
 
@@ -45,12 +52,13 @@ docker compose logs -f    \
 > output `{"message":"Connected"}` before starting to chat.
 
 
-Run the text client:
+Run the text client and start chatting:
 
 ```bash
 cd text-client
 pip install -r requirements.txt
 python __main__.py
+# You'll soon see a `User:` prompt, where you can type your prompts.
 ```
 
 ## Distributed Testing

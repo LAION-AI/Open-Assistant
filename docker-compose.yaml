@@ -5,6 +5,8 @@ services:
 
   # Use `docker compose --profile frontend-dev up --build --attach-dependencies` to start the services needed to work on the frontend. If you want to also run the inference, add a second `--profile inference` argument.
 
+  # If you update the containers used by the inference profile, please update inference/README.md. Thank you
+
   # The profile ci is used by CI automations. (i.e E2E testing)
 
   # This DB is for the FastAPI Backend.
