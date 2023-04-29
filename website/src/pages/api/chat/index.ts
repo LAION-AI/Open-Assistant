@@ -1,9 +1,12 @@
 import { withoutRole } from "src/lib/auth";
-import { isChatEnable } from "src/lib/isChatEnable";
+import { isSSRChatEnabled } from "src/lib/isChatEnable";
 import { createInferenceClient } from "src/lib/oasst_inference_client";
+import { GetChatsParams } from "src/types/Chat";
+
+export const PAGE_SIZE = 20;
 
 const handler = withoutRole("banned", async (req, res, token) => {
-  if (!isChatEnable()) {
+  if (!isSSRChatEnabled()) {
     return res.status(404).end();
   }
   const client = createInferenceClient(token);
@@ -13,7 +16,16 @@ const handler = withoutRole("banned", async (req, res, token) => {
     if (req.query.chat_id) {
       data = await client.get_chat(req.query.chat_id as string);
     } else {
-      data = await client.get_my_chats();
+      const params: GetChatsParams = {
+        limit: PAGE_SIZE,
+      };
+      if (req.query.before) {
+        params["before"] = req.query.before as string;
+      }
+      if (req.query.after) {
+        params["after"] = req.query.after as string;
+      }
+      data = await client.get_my_chats(params);
     }
   } else if (req.method === "POST") {
     data = await client.create_chat();

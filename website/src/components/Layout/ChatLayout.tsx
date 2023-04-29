@@ -1,13 +1,14 @@
 import { Flex } from "@chakra-ui/react";
+import { PropsWithChildren } from "react";
+import { useSidebarItems } from "src/hooks/layout/sidebarItems";
 
 import { ChatListDesktop } from "../Chat/ChatListDesktop";
 import { ChatListMobile } from "../Chat/ChatListMobile";
 import { Header } from "../Header/Header";
-import { getDashBoardLayoutSidebarItem } from "../Layout";
 import { SideMenuItem } from "../SideMenu";
 import { ToSWrapper } from "../ToSWrapper";
 
-export const getChatLayout = (page: React.ReactElement) => (
+export const ChatLayout = ({ children }: PropsWithChildren) => (
   <div className="min-h-screen h-screen max-h-screen flex flex-col overflow-hidden">
     <Header fixed={false} preLogoSlot={<ChatListMobile />}></Header>
     <ToSWrapper>
@@ -26,12 +27,12 @@ export const getChatLayout = (page: React.ReactElement) => (
           height="full"
           pt="4"
         >
-          {getDashBoardLayoutSidebarItem().map((item) => (
+          {useSidebarItems().map((item) => (
             <SideMenuItem key={item.labelID} item={item} variant="chat" active={item.labelID === "chat"}></SideMenuItem>
           ))}
         </Flex>
-        <ChatListDesktop></ChatListDesktop>
-        {page}
+        <ChatListDesktop />
+        {children}
       </div>
     </ToSWrapper>
   </div>

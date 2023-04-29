@@ -1,8 +1,8 @@
 import Head from "next/head";
 import { TaskOption } from "src/components/Dashboard";
 import { allTaskOptions } from "src/components/Dashboard/TaskOption";
-import { getDashboardLayout } from "src/components/Layout";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+import { DashboardLayout } from "src/components/Layout";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 const AllTasks = () => {
   return (
@@ -16,6 +16,6 @@ const AllTasks = () => {
   );
 };
 
-AllTasks.getLayout = getDashboardLayout;
+AllTasks.getLayout = DashboardLayout;
 
 export default AllTasks;

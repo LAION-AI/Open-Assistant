@@ -212,21 +212,27 @@ deepspeed trainer_sft.py --configs defaults your-model-name --deepspeed
 Here is an uncomplete overview of datasets for sft:
 
 <!-- prettier-ignore -->
-dataset_name        | train_counts | eval_counts | total_counts
+dataset_name                    | train_counts | eval_counts | total_counts
 ----------------------------------------------------------------
 
 <!-- prettier-ignore -->
-webgpt              |     15662    |     3916    |     19578
-squad_v2            |    130319    |    11873    |    142192
-adversarial_qa      |     30000    |     3000    |     33000
-trivia_qa_nocontext |    138384    |    17944    |    156328
-xsum                |    204045    |    11332    |    215377
-cnn_dailymail       |    287113    |    13368    |    300481
-multi_news          |     44972    |     5622    |     50594
-scitldr             |      1992    |      619    |      2611
-joke                |       301    |       76    |       377
-gsm8k               |      7473    |     1319    |      8792
-dive_mt             |      6192    |     1548    |      7740
+joke                            |       301    |      76     |       377
+webgpt                          |     14251    |    3563     |     17814
+gpt4all                         |    313552    |   78388     |    391940
+alpaca                          |     41361    |   10346     |     51707
+code_alpaca                     |     16017    |    4004     |     20021
+vicuna                          |     46939    |   11735     |     58674
+minimath                        |      2304    |     576     |      2880
+humaneval_mbpp_codegen_qa       |       472    |     119     |       591
+humaneval_mbpp_testgen_qa       |       472    |     119     |       591
+grade_school_math_instructions  |      7033    |    1759     |      8792
+recipes                         |      3797    |     950     |      4747
+cmu_wiki_qa                     |      1288    |     322     |      1610
+oa_wiki_qa_bart_10000row        |      8000    |    2000     |     10000
+prosocial_dialogue              |    157160    |   26983     |    184143
+explain_prosocial               |    360708    |   61248     |    421956
+soda                            |    924102    |  231026     |   1155128
+oa_leet10k                      |     18728    |    4683     |     23411
 
 This list can be generated with the following command, but beware that this
 downloads all available datasets (>100GB):

@@ -17,9 +17,9 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { ChangeEvent, memo, useCallback, useState } from "react";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { ChatConfigFormData, SamplingParameters } from "src/types/Chat";
+import { ChangeEvent, memo, useCallback, useEffect, useState } from "react";
+import { Controller, useFormContext } from "react-hook-form";
+import { ChatConfigFormData, ModelParameterConfig, SamplingParameters } from "src/types/Chat";
 
 import { useChatContext } from "./ChatContext";
 import { areParametersEqual } from "./WorkParameters";
@@ -81,17 +81,19 @@ const parameterLabel: Record<keyof SamplingParameters, string> = {
   typical_p: "Typical P",
 };
 
+const findPresetName = (presets: ModelParameterConfig[], config: SamplingParameters) => {
+  return presets.find((preset) => areParametersEqual(preset.sampling_parameters, config))?.name ?? customPresetName;
+};
+
 export const ChatConfigForm = memo(function ChatConfigForm() {
   const { t } = useTranslation("chat");
   const { modelInfos } = useChatContext();
 
-  const { control, register, reset, getValues } = useFormContext<ChatConfigFormData>();
-  const selectedModel = useWatch({ name: "model_config_name", control: control });
+  const { control, getValues, register, setValue } = useFormContext<ChatConfigFormData>();
+  const selectedModel = getValues("model_config_name"); // have to use getValues to here to access latest value
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
-  const [selectedPresetName, setSelectedPresetName] = useState(
-    () =>
-      presets.find((preset) => areParametersEqual(preset.sampling_parameters, getValues()))?.name ?? customPresetName
-  );
+  const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
+
   const handlePresetChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const newPresetName = e.target.value;
@@ -99,11 +101,20 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
         newPresetName === customPresetName
           ? customPresetDefaultValue
           : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
-      reset({ ...config, model_config_name: selectedModel });
+
+      for (const [key, value] of Object.entries(config) as Array<[keyof SamplingParameters, number]>) {
+        setValue(key, value, { shouldDirty: true }); // force dirty so the ChatConfigSaver will update the cache
+      }
       setSelectedPresetName(newPresetName);
     },
-    [presets, reset, selectedModel]
+    [presets, setValue]
   );
+
+  const config = getValues(); // have to use getValues to here to access latest value
+
+  useEffect(() => {
+    setSelectedPresetName(findPresetName(presets, config as SamplingParameters));
+  }, [config, presets]);
 
   return (
     <Stack gap="4">
