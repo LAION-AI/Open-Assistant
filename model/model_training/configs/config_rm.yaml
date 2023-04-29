@@ -44,6 +44,34 @@ defaults_rm:
   deepspeed_config: configs/zero_config.json
   max_replies: 5
 
+test_rm_labeling:
+  is_reward_model: true
+  pooling: last
+  sort_by_length: false
+  use_custom_sampler: true
+  model_name: microsoft/deberta-v3-base
+  learning_rate: 1e-5
+  residual_dropout: 0.0
+  weight_decay: 0.0
+  max_length: 2048
+  use_flash_attention: true
+  gradient_checkpointing: true
+  warmup_steps: 50
+  dtype: float16
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 5
+  per_device_eval_batch_size: 4
+  num_train_epochs: 3
+  eval_steps: 251
+  save_steps: 500
+  loss_fn: HybridRMLoss
+  datasets:
+    - oasst_export_w_label:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-04-12_oasst_release_ready_synth.jsonl.gz
+        input_label_path: 2023-04-12_oasst_all.messages.jsonl.gz
+        val_split: 0.1
+
 oasst-rm-1-pythia-6.9b:
   is_reward_model: true
   pooling: last

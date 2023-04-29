@@ -17,12 +17,13 @@ from model_training.models import freeze_top_n_layers, get_specific_model
 from model_training.models.patching import patch_model
 from model_training.models.reward_model import GPTNeoXRewardModel
 from sklearn.model_selection import train_test_split
-from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Dataset, Subset
 from torch.utils.data.distributed import DistributedSampler
 from tritonclient.utils import np_to_triton_dtype
 
-from .losses import CrossEntropyLoss, PolyLoss, RMCLSLoss, RMLoss
+from tokenizers import pre_tokenizers
+
+from .losses import CrossEntropyLoss, HybridRMLoss, PolyLoss, RMCLSLoss, RMLoss
 
 
 def _strtobool(x):
@@ -315,7 +316,7 @@ def get_model(conf, tokenizer, pad_vocab_size_to_multiple_of=16, check_freeze_la
                 model.config.pooling = conf.pooling
         else:
             model = transformers.AutoModelForSequenceClassification.from_pretrained(
-                conf.model_name, cache_dir=conf.cache_dir, num_labels=1, torch_dtype=dtype
+                conf.model_name, cache_dir=conf.cache_dir, num_labels=9, torch_dtype=dtype
             )
     else:
         model = get_specific_model(
@@ -389,6 +390,8 @@ def get_loss(loss, poly_eps: float = 1.0, score_l2_reg: float = 0.001):
         return PolyLoss(epsilon=poly_eps)
     elif loss == "RMLoss":
         return RMLoss(beta=score_l2_reg)
+    elif loss == "HybridRMLoss":
+        return HybridRMLoss(beta=score_l2_reg)
     elif loss == "RMCLSLoss":
         return RMCLSLoss()
     else:

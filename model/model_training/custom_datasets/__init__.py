@@ -6,7 +6,7 @@ from typing import Optional
 import numpy as np
 from model_training.custom_datasets.extra_rm_datasets import load_anthropic_rlhf, load_hellaswag, load_shp
 from model_training.custom_datasets.instruction import INSTRUCTION_DATASETS, InstructionDataset
-from model_training.custom_datasets.oasst_dataset import load_oasst_export
+from model_training.custom_datasets.oasst_dataset import load_oasst_export, load_oasst_export_w_label
 from model_training.custom_datasets.prompt_dialogue import Gpt4All, load_oig_file
 from model_training.custom_datasets.qa_datasets import (
     SODA,
@@ -58,6 +58,7 @@ RL_DATASETS = [
 ]
 
 RM_DATASETS = [
+    "oasst_export_w_label",
     "oasst_export",
     "augment_oasst",
     "anthropic_rlhf",
@@ -143,6 +144,8 @@ def get_one_dataset(
         dataset = Vicuna(cache_dir=data_path, **kwargs)
     elif dataset_name == "oasst_export":
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
+    elif dataset_name == "oasst_export_w_label":
+        train, eval = load_oasst_export_w_label(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     elif dataset_name == "hf_summary":
         train = HFSummary(split="train", mode=mode)
         eval = HFSummary(split="valid1", mode=mode)

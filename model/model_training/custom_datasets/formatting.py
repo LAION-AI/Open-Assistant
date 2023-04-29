@@ -6,6 +6,17 @@ from model_training.custom_datasets.entities import Mode
 from pydantic import BaseModel, validator
 from pydantic.fields import ModelField
 
+ATTRIBUTE_KEYS = [
+    "not_appropriate",
+    "hate_speech",
+    "sexual_content",
+    "quality",
+    "toxicity",
+    "humor",
+    "creativity",
+    "violence",
+]
+
 SYSTEM_PROPERTY_DROP_PROBA = 0.5
 
 QA_SPECIAL_TOKENS = {
