@@ -24,6 +24,7 @@ INSTRUCTION_DATASETS = {
     "oa_dolly_15k": "OllieStanley/oa_dolly_15k",
     "poetry_instruction": "checkai/instruction-poems",
     "oa_stackexchange": "donfu/oa-stackexchange",
+    "multilingual_wikihow_qa_8k": "0x22almostEvil/multilingual-wikihow-qa-8k",
 }
 
 SAFETY_DATASETS = {
