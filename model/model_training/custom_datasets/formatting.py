@@ -25,9 +25,8 @@ def format_system_prefix(prefix, eos_token):
     )
 
 
-class DatasetEntry(BaseModel):
-    questions: list[str]
-    answers: list[str] | list[list[str]]
+class Sentence(BaseModel):
+    content: str
     context: str | None = None
     lang: str | None = None
     length: int | None = None
@@ -69,7 +68,11 @@ class DatasetEntry(BaseModel):
             system_tag = f"{QA_SPECIAL_TOKENS['System']}{system_tag_key_values}\n{eos_token}"
             return system_tag
 
-    def _get_formatted_rm(self, eos_token: str, max_replies: int, system_tag: None | str):
+class DatasetEntry(BaseModel):
+    questions: list[Sentence]
+    answers: list[str] | list[list[str]]
+
+    def _get_formatted_rm(self, eos_token: str, max_replies: int):
         if isinstance(self.answers[0], list):
             answers = self.answers[0]
         else:
@@ -82,30 +85,28 @@ class DatasetEntry(BaseModel):
                 # todo: not sure if this case is correct but it is equivalent to current non-dataset entry behaviour
                 answers = [f"{a}{eos_token}" for a in answers]
             case 1:
-                question = f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0]}{eos_token}"
+                system_tag = self.questions[0].system_tag(eos_token=eos_token)
+                question = f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0].context}{eos_token}{system_tag}"
                 answers = [f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}" for a in answers]
             case _:
+                # todo: implement, especially oasst actually needs this
                 raise ValueError("Received more than one question in RM mode. This is unexpected. Aborting")
-        if system_tag is not None:
-            question = f"{system_tag}{question}"
         return (question, answers)
 
     def get_formatted(self, mode: Mode, eos_token: str, **kwargs) -> str | list[str] | tuple[str, list[str]]:
-        system_tag = self.system_tag(eos_token)
         if mode == Mode.rl:
+            q = self.questions[0]
+            system_tag = q.system_tag(eos_token=eos_token)
             if system_tag is not None:
-                return f"{system_tag}{QA_SPECIAL_TOKENS['Question']}{self.questions[0]}{QA_SPECIAL_TOKENS['Answer']}"
+                return f"{QA_SPECIAL_TOKENS['Question']}{q.content}{QA_SPECIAL_TOKENS['Answer']}{system_tag}"
             else:
-                return f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0]}{QA_SPECIAL_TOKENS['Answer']}"
+                return f"{QA_SPECIAL_TOKENS['Question']}{q.content}{QA_SPECIAL_TOKENS['Answer']}"
         elif mode == Mode.rm:
             return self._get_formatted_rm(
-                eos_token=eos_token, max_replies=kwargs.get("max_replies", 5), system_tag=system_tag
+                eos_token=eos_token, max_replies=kwargs.get("max_replies", 5)
             )
         else:
-            if system_tag is not None:
-                qa_list = [system_tag]
-            else:
-                qa_list = list()
+            qa_list = list()
             # check if this is a RM capable dataset (so it has multiple answers to the same question)
             # and if so, extract just the highest scoring answer
             if isinstance(self.answers[0], list):
@@ -115,14 +116,16 @@ class DatasetEntry(BaseModel):
             for q, a in zip_longest(self.questions, answers):
                 match (q, a):
                     case (str(), str()):
+                        system_tag = q.system_tag(eos_token=eos_token)
                         qa_list.extend(
                             [
-                                f"{QA_SPECIAL_TOKENS['Question']}{q}{eos_token}",
+                                f"{QA_SPECIAL_TOKENS['Question']}{q.content}{eos_token}{system_tag}",
                                 f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}",
                             ]
                         )
                     case (str(), None):
-                        qa_list.append(f"{QA_SPECIAL_TOKENS['Question']}{q}{eos_token}")
+                        system_tag = q.system_tag(eos_token=eos_token)
+                        qa_list.append(f"{QA_SPECIAL_TOKENS['Question']}{q.content}{eos_token}{system_tag}")
                     case (None, None):
                         break
                     case (None, str()):
