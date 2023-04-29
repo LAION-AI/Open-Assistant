@@ -311,6 +311,7 @@ async def handle_update_chat(
             chat_id=chat_id,
             title=request.title,
             hidden=request.hidden,
+            allow_data_use=request.allow_data_use,
         )
     except Exception:
         logger.exception("Error when updating chat")

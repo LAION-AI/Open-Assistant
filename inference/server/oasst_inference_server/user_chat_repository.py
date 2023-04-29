@@ -275,6 +275,7 @@ class UserChatRepository(pydantic.BaseModel):
         chat_id: str,
         title: str | None = None,
         hidden: bool | None = None,
+        allow_data_use: bool | None = None,
     ) -> None:
         logger.info(f"Updating chat {chat_id=}: {title=} {hidden=}")
         chat = await self.get_chat_by_id(chat_id=chat_id, include_messages=False)
@@ -286,5 +287,9 @@ class UserChatRepository(pydantic.BaseModel):
         if hidden is not None:
             logger.info(f"Setting chat {chat_id=} to {'hidden' if hidden else 'visible'}")
             chat.hidden = hidden
+
+        if allow_data_use is not None:
+            logger.info(f"Updating allow_data_use of chat {chat_id=}: {allow_data_use=}")
+            chat.allow_data_use = allow_data_use
 
         await self.session.commit()
