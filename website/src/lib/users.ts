@@ -98,7 +98,6 @@ export const getBatchFrontendUserIdFromBackendUser = async (users: { username: s
       (a) => a.provider === users[userIdx].auth_method && a.providerAccountId === users[userIdx].username
     );
 
-    //NOTE: This part gives feedback to understand why account is undefined
     if (account) {
       outputIds[userIdx] = account.userId;
     } else {
