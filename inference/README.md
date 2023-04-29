@@ -33,7 +33,7 @@ Tail the logs:
 ```shell
 docker compose logs -f    \
     inference-server      \
-    inference-worker      
+    inference-worker
 
 ```
 
@@ -50,7 +50,6 @@ docker compose logs -f    \
 
 > **Note:** Please wait for the `inference-text-generation-server` service to
 > output `{"message":"Connected"}` before starting to chat.
-
 
 Run the text client and start chatting:
 
@@ -73,4 +72,3 @@ locust
 ```
 
 Navigate to http://0.0.0.0:8089/ to view the locust UI.
-
