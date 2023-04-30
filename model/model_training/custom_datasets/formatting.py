@@ -1,5 +1,6 @@
 from itertools import zip_longest
 from random import random, shuffle
+from typing import Optional
 
 from langcodes import Language
 from model_training.custom_datasets.entities import Mode
@@ -29,14 +30,15 @@ class PretrainDatasetEntry(BaseModel):
     text: str | None = None
 
 
-class Sentence(BaseModel):
+class Utterance(BaseModel):
     content: str
-    context: str | None = None
-    lang: str | None = None
+
     length: int | None = None
+    lang: str | None = None
     quality: float | None = None
     humor: float | None = None
     creativity: float | None = None
+    context: str | None = None
 
     @validator("lang")
     def valid_lang(cls, v) -> str | None:
@@ -61,7 +63,7 @@ class Sentence(BaseModel):
         relevant_system_infos = [
             (k, v)
             for k, v in self.__dict__.items()
-            if k not in ["questions", "answers"]
+            if k not in ["content"]
             and v is not None
             and str(v).replace("\n", "")
             and random() > SYSTEM_PROPERTY_DROP_PROBA
@@ -74,10 +76,14 @@ class Sentence(BaseModel):
 
 
 class DatasetEntry(BaseModel):
-    questions: list[Sentence]
-    answers: list[str] | list[list[str]]
+    # For a dialouge with [Q1, A1, Q2, A2]
+    # questions: [Q1, Q2]
+    # answers: [A1, A2]
+    # the list[list[Utterance]] case is used for reward model datasets (which have replies answers per prompt)
+    questions: list[Utterance]
+    answers: list[Utterance] | list[list[Utterance]]
 
-    def _get_formatted_rm(self, eos_token: str, max_replies: int):
+    def _get_formatted_rm(self, eos_token: str, max_replies: int = 5):
         if isinstance(self.answers[0], list):
             answers = self.answers[0]
         else:
@@ -107,40 +113,52 @@ class DatasetEntry(BaseModel):
             else:
                 return f"{QA_SPECIAL_TOKENS['Question']}{q.content}{QA_SPECIAL_TOKENS['Answer']}"
         elif mode == Mode.rm:
-            return self._get_formatted_rm(
-                eos_token=eos_token, max_replies=kwargs.get("max_replies", 5)
-            )
+            return self._get_formatted_rm(eos_token=eos_token, max_replies=kwargs.get("max_replies", 5))
         else:
-            qa_list = list()
+            qa_list: list[str] = list()
+
+            answers: list[Utterance]
             # check if this is a RM capable dataset (so it has multiple answers to the same question)
             # and if so, extract just the highest scoring answer
             if isinstance(self.answers[0], list):
                 answers = [answer[0] for answer in self.answers]
-            else:
+            else: 
                 answers = self.answers
+
             for q, a in zip_longest(self.questions, answers):
-                match (q, a):
-                    case (str(), str()):
-                        system_tag = q.system_tag(eos_token=eos_token)
-                        qa_list.extend(
-                            [
-                                f"{QA_SPECIAL_TOKENS['Question']}{q.content}{eos_token}{system_tag}",
-                                f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}",
-                            ]
-                        )
-                    case (str(), None):
-                        system_tag = q.system_tag(eos_token=eos_token)
-                        qa_list.append(f"{QA_SPECIAL_TOKENS['Question']}{q.content}{eos_token}{system_tag}")
-                    case (None, None):
-                        break
-                    case (None, str()):
-                        raise ValueError("Received answer without getting corresponding question. Aborting")
+                if q is None or q.content is None:
+                    raise ValueError("Incomplete dialog step: prompt in None")
+                if a is None or a.content is None:
+                    raise ValueError("Incomplete dialog step: reply is None")
+
+                system_tag = a.system_tag(eos_token=eos_token)
+                qa_list.extend(
+                    [
+                        f"{QA_SPECIAL_TOKENS['Question']}{q.content}{eos_token}{system_tag}",
+                        f"{QA_SPECIAL_TOKENS['Answer']}{a.content}{eos_token}",
+                    ]
+                )
+
             return qa_list
+
+    @classmethod
+    def from_strings(
+        cls,
+        questions: list[str],
+        answers: list[str] | list[list[str]],
+        context: Optional[str] = None,
+        lang: Optional[str] = None,
+    ):
+        if isinstance(answers[0], list):
+            answers = [[Utterance(content=a, length=len(a), lang=lang, context=context) for a in l] for l in answers]
+        else:
+            answers = [Utterance(content=a, length=len(a), lang=lang, context=context) for a in answers]
+
+        return cls(questions=[Utterance(content=q) for q in questions], answers=answers)
 
     @classmethod
     def create_from_prompter_assistant_interplay(cls, qa: dict[str, str]):
         """Creates a DatasetEntry from a qa of given structure. Even if qa contains consecutative assistant or prompter phrases.
-
 
         Returns:
             self: DatasetEntry class

@@ -32,7 +32,7 @@ def test_dataset_entry_no_context(pythia_tokenizer):
         padding=True,
     )
     features = [
-        DatasetEntry(
+        DatasetEntry.from_strings(
             questions=["Dummy Question?"],
             answers=["Dummy Answer."],
         )
@@ -60,14 +60,14 @@ def test_dataset_entry(pythia_tokenizer):
         padding=True,
     )
     features = [
-        DatasetEntry(
+        DatasetEntry.from_strings(
             questions=["What are the risks of untreated type 1 diabetes?"],
             answers=[
                 "Untreated type 1 diabetes can rapidly result in diabetic ketoacidosis which may lead to loss of consciousness, coma and death."
             ],
             context="Prolonged lack of insulin can also result in diabetic ketoacidosis, characterized by persistent fatigue, dry or flushed skin, abdominal pain, nausea or vomiting, confusion, trouble breathing, and a fruity breath odor. Blood and urine tests reveal unusually high glucose and ketones in the blood and urine. Untreated ketoacidosis can rapidly progress to loss of consciousness, coma, and death. The percentage of children whose type 1 diabetes begins with an episode of diabetic ketoacidosis varies widely by geography, as low as 15% in parts of Europe and North America, and as high as 80% in the developing world.",
         ),
-        DatasetEntry(
+        DatasetEntry.from_strings(
             questions=["Find all of the Amsterdam museums mentioned in the text and put them in a numbered list."],
             answers=[
                 "The Amsterdam museums mentioned in this text are:\n1. Rijksmuseum\n2. Van Gogh Museum\n3. Amsterdam Museum\n4. Stedelijk Museum\n5. Hermitage Amsterdam\n6. Anne Frank House\n7. Het Scheepvaartmuseum\n8. NEMO"

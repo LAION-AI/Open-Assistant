@@ -46,8 +46,12 @@ class InstructionDataset(Dataset):
         num_invalid = 0
         for i in range(len(ds)):
             data = ds[i]
-            if (data[self.instruction_column] is not None and len(data[self.instruction_column].strip()) > 0 
-                and data[self.response_column] is not None and len(data[self.response_column].strip()) > 0):
+            if (
+                data[self.instruction_column] is not None
+                and len(data[self.instruction_column].strip()) > 0
+                and data[self.response_column] is not None
+                and len(data[self.response_column].strip()) > 0
+            ):
                 self.dataset.append(data)
             else:
                 num_invalid += 1
@@ -63,4 +67,6 @@ class InstructionDataset(Dataset):
         # these datasets have been found to have above 95% english sentences.
         if self.name in ["grade_school_math_instructions"]:
             lang = "en"
-        return DatasetEntry(questions=[data[self.instruction_column]], answers=[data[self.response_column]], lang=lang)
+        return DatasetEntry.from_strings(
+            questions=[data[self.instruction_column]], answers=[data[self.response_column]], lang=lang
+        )

@@ -211,7 +211,9 @@ class WebGPT(Dataset):
             # Then take only the first `max_answers` elements (usually there are just
             # 2, but there are examples where we have more)
             answers_sorted = [x[0] for x in sorted(answers.items(), key=lambda x: -1 * x[1])]
-            self.rows.append(DatasetEntry(questions=[question], answers=[answers_sorted[:max_answers]], lang="en"))
+            self.rows.append(
+                DatasetEntry.from_strings(questions=[question], answers=[answers_sorted[:max_answers]], lang="en")
+            )
 
     def __len__(self) -> int:
         return len(self.rows)
@@ -254,7 +256,7 @@ class SODA(Dataset):
                 return None
             else:
                 print("[WARNING] SODA entry empty..")
-            return DatasetEntry(questions=questions, answers=answers)
+            return DatasetEntry.from_strings(questions=questions, answers=answers)
 
     def __init__(self, cache_dir, mode="sft", input_max_length=1024) -> None:
         super().__init__()
@@ -336,7 +338,7 @@ class JokeExplaination(Dataset):
                 # DO NOT change this
                 # its the data that had syntax error
                 explanation = data["explaination"]
-                self.pairs.append(DatasetEntry(questions=[joke], answers=[explanation]))
+                self.pairs.append(DatasetEntry.from_strings(questions=[joke], answers=[explanation]))
 
     def __len__(self) -> int:
         return len(self.pairs)
@@ -445,9 +447,9 @@ def load_alpaca_dataset(
                 continue
 
             if set_lang_as_eng is True:
-                ds_entry = DatasetEntry(questions=[input_], answers=[row["output"]], lang="en")
+                ds_entry = DatasetEntry.from_strings(questions=[input_], answers=[row["output"]], lang="en")
             else:
-                ds_entry = DatasetEntry(questions=[input_], answers=[row["output"]])
+                ds_entry = DatasetEntry.from_strings(questions=[input_], answers=[row["output"]])
             data.append(ds_entry)
         return data
 
@@ -528,7 +530,7 @@ class Vicuna(Dataset):
         for data in dataset:
             if (qa := self.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
                 if len(qa[0]) > 0 and len(qa[1]) > 0:
-                    self.pairs.append(DatasetEntry(questions=qa[0], answers=qa[1], lang="en"))
+                    self.pairs.append(DatasetEntry.from_strings(questions=qa[0], answers=qa[1], lang="en"))
                 else:
                     print("[WARNING] ignoring row")
 
@@ -541,7 +543,7 @@ class Vicuna(Dataset):
 
 
 class DatabricksDolly15k(Dataset):
-    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+    def __init__(self, cache_dir: str | Path, mode: str = "sft") -> None:
         super().__init__()
         self.rows = []
         self.citation_regex = re.compile(r"\[[a-zA-Z]\]")  # removes citations in the form of e.g. [a] or [A]
@@ -550,17 +552,17 @@ class DatabricksDolly15k(Dataset):
         self.mode = mode
         data = load_dataset("OllieStanley/oa_dolly_15k", cache_dir=cache_dir)
         for line in data["train"]:
-            self.rows.append(self._process_instruction(line, input_max_length))
+            self.rows.append(self._process_instruction(line))
 
-    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> DatasetEntry | None:
+    def _process_instruction(self, row: dict[str, str]) -> DatasetEntry | None:
         context = re_reference_remove.sub("", row["METADATA"]["CONTEXT"])
         # further remove references
         context = context.replace("[citation needed]", "")
         context = self.citation_regex.sub("", context)
-        return DatasetEntry(
+        return DatasetEntry.from_strings(
             context=context,
-            questions=[row["INSTRUCTION"][:input_max_length]],
-            answers=[row["RESPONSE"][:input_max_length]],
+            questions=[row["INSTRUCTION"]],
+            answers=[row["RESPONSE"]],
         )
 
     def __len__(self) -> int:
@@ -572,7 +574,7 @@ class DatabricksDolly15k(Dataset):
 
 
 class AlpacaGpt4(Dataset):
-    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+    def __init__(self, cache_dir: str | Path, mode: str = "sft") -> None:
         super().__init__()
         self.rows = []
         if mode not in ("sft", "rl"):
@@ -580,14 +582,10 @@ class AlpacaGpt4(Dataset):
         self.mode = mode
         data = load_dataset("vicgalle/alpaca-gpt4", cache_dir=cache_dir)
         for line in data["train"]:
-            if (conv := self._process_instruction(line, input_max_length)) is not None:
+            if (conv := self._process_instruction(line)) is not None:
                 self.rows.append(conv)
 
-    def _process_instruction(self, row: dict[str, str], input_max_length: int) -> DatasetEntry | None:
-        # discard items that are too long: when checked on 2023-04-17 this was just one item in the whole dataset with length above 2048.
-        # And 12 above 1024.
-        if len(row["input"]) + len(row["instruction"]) > input_max_length:
-            return None
+    def _process_instruction(self, row: dict[str, str]) -> DatasetEntry | None:
         # filter all appearing variants of "no input" or empty input or cases where the input is already in the instruction.
         # In this cases we don't add the input
         if (
@@ -595,11 +593,11 @@ class AlpacaGpt4(Dataset):
             or (not row["input"])
             or (row["input"].lower() in row["instruction"].lower())
         ):
-            return DatasetEntry(questions=[row["instruction"]], answers=[row["output"]])
+            return DatasetEntry.from_strings(questions=[row["instruction"]], answers=[row["output"]])
         # Concatenate the instruction and input.
         else:
             linking_char = random.choice(LINKING_CHARS)
-            return DatasetEntry(
+            return DatasetEntry.from_strings(
                 questions=[f"{row['instruction']}{linking_char}{row['input']}"], answers=[row["output"]]
             )
 
