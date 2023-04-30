@@ -250,6 +250,10 @@ class SODA(Dataset):
             truncated_dialogue = [k[:input_max_length] for k in data["dialogue"]]
             questions = [q for idx, q in enumerate(truncated_dialogue) if idx % 2 == 0]
             answers = [a for idx, a in enumerate(truncated_dialogue) if idx % 2 == 1]
+            if len(questions) == 0 or len(answers) == 0:
+                return None
+            else:
+                print("[WARNING] SODA entry empty..")
             return DatasetEntry(questions=questions, answers=answers)
 
     def __init__(self, cache_dir, mode="sft", input_max_length=1024) -> None:
@@ -335,7 +339,7 @@ class JokeExplaination(Dataset):
                 self.pairs.append(DatasetEntry(questions=[joke], answers=[explanation]))
 
     def __len__(self) -> int:
-        return self.length
+        return len(self.pairs)
 
     def __getitem__(self, index) -> DatasetEntry:
         return self.pairs[index]
@@ -523,7 +527,10 @@ class Vicuna(Dataset):
         )["train"]
         for data in dataset:
             if (qa := self.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
-                self.pairs.append(DatasetEntry(questions=qa[0], answers=qa[1], lang="en"))
+                if len(qa[0]) > 0 and len(qa[1]) > 0:
+                    self.pairs.append(DatasetEntry(questions=qa[0], answers=qa[1], lang="en"))
+                else:
+                    print("[WARNING] ignoring row")
 
     def __len__(self) -> int:
         return len(self.pairs)

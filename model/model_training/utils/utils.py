@@ -9,7 +9,7 @@ from typing import List, NamedTuple
 import evaluate
 import torch
 import transformers
-import tritonclient.grpc as client_util
+#import tritonclient.grpc as client_util
 import yaml
 from model_training.custom_datasets import get_one_dataset
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS
@@ -20,7 +20,7 @@ from sklearn.model_selection import train_test_split
 from tokenizers import pre_tokenizers
 from torch.utils.data import ConcatDataset, Dataset, Subset
 from torch.utils.data.distributed import DistributedSampler
-from tritonclient.utils import np_to_triton_dtype
+#from tritonclient.utils import np_to_triton_dtype
 
 from .losses import CrossEntropyLoss, PolyLoss, RMCLSLoss, RMLoss
 
@@ -36,10 +36,10 @@ def init_rng(conf: argparse.Namespace) -> None:
         transformers.set_seed(seed)
 
 
-def prepare_tensor(name: str, input):
-    t = client_util.InferInput(name, input.shape, np_to_triton_dtype(input.dtype))
-    t.set_data_from_numpy(input)
-    return t
+# def prepare_tensor(name: str, input):
+#     t = client_util.InferInput(name, input.shape, np_to_triton_dtype(input.dtype))
+#     t.set_data_from_numpy(input)
+#     return t
 
 
 class PerDatasetSampler(DistributedSampler):

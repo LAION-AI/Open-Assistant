@@ -21,17 +21,38 @@ INSTRUCTION_DATASETS = {
     "oa_wiki_qa_bart_10000row": "michaelthwan/oa_wiki_qa_bart_10000row",
     "oa_leet10k": "ehartford/oa_leet10k",
     "poem_instructions": "checkai/instruction-poems",
+    "oa_stackexchange": "donfu/oa-stackexchange",
+    "tell_a_joke": "mikegarts/oa_tell_a_joke_20000",
+    "wizardlm_70k": "ehartford/WizardLM_alpaca_evol_instruct_70k_unfiltered",
 }
 
 
 class InstructionDataset(Dataset):
-    def __init__(self, dataset, cache_dir, split, max_words=512, mode="sft"):
+    def __init__(self, dataset, cache_dir, split, mode="sft"):
         assert mode in ("sft", "rl")
         self.name = dataset
-        self.dataset = load_dataset(INSTRUCTION_DATASETS[dataset], cache_dir=cache_dir, split=split)
-        self.instruction_column = "INSTRUCTION" if dataset != "minimath" else "question"
-        self.response_column = "RESPONSE" if dataset != "minimath" else "answer"
-        self.max_words = max_words
+        if dataset == "minimath":
+            self.instruction_column = "question"
+            self.response_column = "answer"
+        elif dataset == "wizardlm_70k":
+            self.instruction_column = "instruction"
+            self.response_column = "output"
+        else:
+            self.instruction_column = "INSTRUCTION"
+            self.response_column = "RESPONSE"
+
+        ds = load_dataset(INSTRUCTION_DATASETS[dataset], cache_dir=cache_dir, split=split)
+        self.dataset = []
+        num_invalid = 0
+        for i in range(len(ds)):
+            data = ds[i]
+            if (data[self.instruction_column] is not None and len(data[self.instruction_column].strip()) > 0 
+                and data[self.response_column] is not None and len(data[self.response_column].strip()) > 0):
+                self.dataset.append(data)
+            else:
+                num_invalid += 1
+        if num_invalid > 0:
+            print(f"[Warning] {num_invalid} entries of {dataset} were invalid.")
 
     def __len__(self):
         return len(self.dataset)
