@@ -1,4 +1,0 @@
-fastapi
-httptools
-numexpr
-uvicorn

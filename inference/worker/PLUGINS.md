@@ -47,10 +47,6 @@ One of the ideas of the plugin system is that we can have some internal OA
 plugins, which will be like out-of-the-box plugins, and there could be endless
 third-party community-developed plugins as well.
 
-There is one python based plugin called **calculator**, included in this system
-for now, as a proof of concept and as a learning material of how one could
-create own plugins.
-
 ### Notes regarding the reliability and performance and the limitations of the plugin system
 
 Performance can vary a lot depending on the models and plugins used. Some of

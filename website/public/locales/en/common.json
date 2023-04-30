@@ -59,15 +59,5 @@
   "users_dashboard": "Users Dashboard",
   "yes": "Yes",
   "who_are_we": "Who are we?",
-  "team": "Team",
-  "plugins": "Plugins",
-  "edit_plugin": "Edit Plugin",
-  "add_plugin": "Add Plugin",
-  "remove_plugin": "Remove Plugin",
-  "save": "Save",
-  "used": "Used",
-  "unverified_plugin": "UNVERIFIED",
-  "verified_plugin": "VERIFIED",
-  "unverified_plugin_description": "This plugin has not been verified by the Open Assistant team. Use at your own risk.",
-  "verified_plugin_description": "This plugin has been verified by the Open Assistant team."
+  "team": "Team"
 }

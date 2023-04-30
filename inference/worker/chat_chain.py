@@ -5,9 +5,12 @@ import transformers
 from chat_chain_prompts import (
     ASSISTANT_PREFIX,
     HUMAN_PREFIX,
+    JSON_FORMAT_NO_PAYLOAD,
+    JSON_FORMAT_PAYLOAD,
     OBSERVATION_SEQ,
     PREFIX,
     SUFFIX,
+    THOUGHT_SEQ,
     V2_ASST_PREFIX,
     V2_PROMPTER_PREFIX,
 )
@@ -22,7 +25,7 @@ from oasst_shared.schemas import inference
 from settings import settings
 
 # NOTE: Max depth of retries for tool usage
-MAX_DEPTH = 8
+MAX_DEPTH = 6
 
 # NOTE: If we want to exclude tools description from final prompt,
 # to save ctx token space, but it can hurt output quality, especially if
@@ -41,7 +44,7 @@ llm = HFInference(
     # NOTE: It seems to me like it's better without repetition_penalty for
     # llama-sft7e3 model
     seed=43,
-    repetition_penalty=(1 / 0.97),  # works with good with > 0.88
+    repetition_penalty=(1 / 0.92),  # works with good with > 0.88
 )
 
 
@@ -86,6 +89,10 @@ def handle_plugin_usage(
     inner_prompt = ""
     inner_monologue = []
 
+    action_input_format = (
+        JSON_FORMAT_PAYLOAD if prompt_template.template.find("payload") != -1 else JSON_FORMAT_NO_PAYLOAD
+    )
+
     eos_token = ""
     if hasattr(tokenizer, "eos_token"):
         eos_token = tokenizer.eos_token
@@ -94,7 +101,15 @@ def handle_plugin_usage(
 
     init_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}"
     memory, init_prompt = prepare_prompt(
-        init_prompt, prompt_template, memory, tools_names, current_time, language, tokenizer, worker_config
+        init_prompt,
+        prompt_template,
+        memory,
+        tools_names,
+        current_time,
+        language,
+        tokenizer,
+        worker_config,
+        action_input_format,
     )
 
     # NOTE: Do not strip() any of the outputs ever, as it will degrade the
@@ -130,7 +145,15 @@ def handle_plugin_usage(
 
         new_prompt = f"{input_prompt}{eos_token}{V2_ASST_PREFIX}{chain_response}{OBSERVATION_SEQ} {tool_response}"
         memory, new_prompt = prepare_prompt(
-            new_prompt, prompt_template, memory, tools_names, current_time, language, tokenizer, worker_config
+            new_prompt,
+            prompt_template,
+            memory,
+            tools_names,
+            current_time,
+            language,
+            tokenizer,
+            worker_config,
+            action_input_format,
         )
 
         # NOTE: Do not strip() any of the outputs ever, as it will degrade the
@@ -179,10 +202,18 @@ def handle_plugin_usage(
                 f"{input_prompt}{eos_token}{V2_ASST_PREFIX}\n{prev_chain_response}{OBSERVATION_SEQ} {tool_response}"
             )
             memory, inner_prompt = prepare_prompt(
-                final_input, prompt_template, memory, tools_names, current_time, language, tokenizer, worker_config
+                final_input,
+                prompt_template,
+                memory,
+                tools_names,
+                current_time,
+                language,
+                tokenizer,
+                worker_config,
+                action_input_format,
             )
 
-            inner_prompt = f"{inner_prompt}\nThought: I now know the final answer\n{ASSISTANT_PREFIX}:  "
+            inner_prompt = f"{inner_prompt}\n{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  "
 
             plugin_used.execution_details.inner_monologue = inner_monologue
             plugin_used.execution_details.final_tool_output = tool_response
@@ -215,14 +246,14 @@ def handle_plugin_usage(
             return init_prompt, plugin_used
 
         plugin_used.execution_details.status = "success"
-        return f"{init_prompt}Thought: I now know the final answer\n{ASSISTANT_PREFIX}:  ", plugin_used
+        return f"{init_prompt}{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  ", plugin_used
     else:
         # Max depth reached, just try to answer without using a tool
         plugin_used.execution_details.final_prompt = init_prompt
         plugin_used.execution_details.achieved_depth = achieved_depth
         plugin_used.execution_details.status = "failure"
         plugin_used.execution_details.error_message = f"Max depth reached: {MAX_DEPTH}"
-        init_prompt = f"{init_prompt}Thought: I now know the final answer\n{ASSISTANT_PREFIX}:  "
+        init_prompt = f"{init_prompt}{THOUGHT_SEQ} I now know the final answer\n{ASSISTANT_PREFIX}:  "
         return init_prompt, plugin_used
 
 
@@ -269,6 +300,7 @@ def handle_conversation(
             "chat_history",
             "language",
             "current_time",
+            "action_input_format",
         ] + (["tools_names"] if plugin_enabled else [])
 
         # NOTE: Should we pass language from the UI here?
@@ -286,9 +318,12 @@ def handle_conversation(
         # Here is prompt in format of a template, that includes some
         # external/ "realtime" data, such as current date&time and language
         # that can be passed from frontend here.
+        action_input_format = (
+            JSON_FORMAT_PAYLOAD if prompt_template.template.find("payload") != -1 else JSON_FORMAT_NO_PAYLOAD
+        )
         input = f"{original_prompt}{eos_token}{V2_ASST_PREFIX}"
         memory, init_prompt = prepare_prompt(
-            input, prompt_template, memory, None, current_time, language, tokenizer, worker_config
+            input, prompt_template, memory, None, current_time, language, tokenizer, worker_config, action_input_format
         )
         return init_prompt, None
 
@@ -307,7 +342,7 @@ def handle_conversation(
 if __name__ == "__main__":
     plugin = inference.PluginEntry(
         enabled=True,
-        url="https://gptweather.skirano.repl.co/.well-known/ai-plugin.json",
+        url="http://localhost:8082/ai-plugin.json",
         plugin_config=inference.PluginConfig(
             name_for_human="Local dev plugin",
             name_for_model="Local dev plugin",

@@ -44,7 +44,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         sampling_parameters,
         plugins,
       };
-      console.log("assistant_arg", assistant_arg);
 
       const assistant_message: InferenceMessage = await post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, {
         arg: assistant_arg,
@@ -108,7 +107,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       content,
       parent_id: parentId,
     };
-    console.log("prompter_arg", prompter_arg);
 
     const prompter_message: InferenceMessage = await post(API_ROUTES.CREATE_PROMPTER_MESSAGE, { arg: prompter_arg });
     if (messages.length === 0) {
@@ -116,7 +114,6 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
       mutate(API_ROUTES.LIST_CHAT);
     }
     setMessages((messages) => [...messages, prompter_message]);
-    console.log("prompter_message", prompter_message);
 
     inputRef.current!.value = "";
     // after creating the prompters message, handle the assistant's case

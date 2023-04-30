@@ -9,6 +9,7 @@ import sseclient
 import transformers
 import utils
 import websocket
+from chat_chain_prompts import ASSISTANT_PREFIX, END_SEQ, OBSERVATION_SEQ, START_SEQ, THOUGHT_SEQ
 from loguru import logger
 from oasst_shared.schemas import inference
 from settings import settings
@@ -122,6 +123,11 @@ def handle_work_request(
     for plugin in parameters.plugins:
         if plugin.enabled:
             prompt, used_plugin = chat_chain.handle_conversation(work_request, worker_config, parameters, tokenizer)
+            # When using plugins, and final prompt being truncated due to the input
+            # length limit, LLaMA llm has tendency to leak internal promptings,
+            # and generate undesirable continuations, so here we will be adding
+            # some plugin keywords/sequences to the stop sequences to try preventing it
+            parameters.stop.extend([END_SEQ, START_SEQ, THOUGHT_SEQ, ASSISTANT_PREFIX])
             break
 
     # If no plugin was "used", use the default prompt generation.
@@ -195,6 +201,19 @@ def handle_work_request(
 
     if model_config.is_llama:
         stream_response.generated_text = stream_response.generated_text.strip()
+        # Get the generated text up to the first occurrence of any of:
+        # START_SEQ, END_SEQ, ASSISTANT_PREFIX, THOUGHT_SEQ, OBSERVATION_SEQ
+        end_seq_index = min(
+            [
+                stream_response.generated_text.find(seq)
+                for seq in [START_SEQ, END_SEQ, ASSISTANT_PREFIX, THOUGHT_SEQ, OBSERVATION_SEQ]
+                if seq in stream_response.generated_text
+            ]
+            + [len(stream_response.generated_text)]
+        )
+        if end_seq_index != -1 and used_plugin is not None:
+            stream_response.generated_text = stream_response.generated_text[:end_seq_index]
+
     logger.info(f"Done. {stream_response=}")
     utils.send_response(
         ws,

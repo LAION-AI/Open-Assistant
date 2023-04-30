@@ -28,7 +28,7 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
       console.log(`resseting form`);
       form.reset(cache);
     }
-  }, [form.reset, modelInfos, plugins]);
+  }, [form.reset, modelInfos]);
 
   return (
     <FormProvider {...form}>

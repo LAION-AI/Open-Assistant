@@ -63,7 +63,7 @@ export const BaseMessageEntry = forwardRef<HTMLDivElement, BaseMessageEntryProps
       >
         <Suspense fallback={content}>
           {isAssistant ? <PluginUsageDetails usedPlugin={usedPlugin} /> : null}
-          <RenderedMarkdown markdown={content}></RenderedMarkdown>
+          <RenderedMarkdown markdown={content} disallowedElements={[]}></RenderedMarkdown>
         </Suspense>
         {children}
       </Box>

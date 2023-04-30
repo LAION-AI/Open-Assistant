@@ -18,7 +18,7 @@ const DropdownItem = ({ plugin }) => {
   const [finalPluginOutputCollapser, setFinalPluginOutputCollapser] = useState(true);
   const [finalPromptCollapser, setFinalPromptCollapser] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("chat");
   const divRef = useRef<HTMLDivElement | null>(null);
 
   return (

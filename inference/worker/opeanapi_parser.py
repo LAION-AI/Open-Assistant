@@ -82,13 +82,17 @@ def prepare_plugin_for_llm(plugin_url: str) -> inference.PluginConfig | None:
             parameters = details.get("parameters", [])
             if parameters is not None:
                 for param in parameters:
+                    schema = None
+                    if "$ref" in param["schema"]:
+                        schema = resolve_schema_reference(param["schema"]["$ref"], openapi_dict)
+
                     params_list.append(
                         inference.PluginOpenAPIParameter(
                             name=param.get("name", ""),
                             in_=param.get("in", "query"),
                             description=param.get("description", ""),
                             required=param.get("required", False),
-                            schema_=param.get("schema", {}),
+                            schema_=schema,
                         )
                     )
             # Check if the method is POST and extract request body schema

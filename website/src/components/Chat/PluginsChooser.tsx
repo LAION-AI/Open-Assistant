@@ -29,9 +29,8 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { Cog, Edit, Plus } from "lucide-react";
-// i need
 import { AttachmentIcon, WarningIcon, CheckCircleIcon, CloseIcon } from "@chakra-ui/icons";
-import { ChangeEvent, useCallback, useEffect, useState, useRef } from "react";
+import { ChangeEvent, useCallback, useMemo, useEffect, useState, useRef } from "react";
 import { useTranslation } from "next-i18next";
 import { Controller, useFormContext } from "react-hook-form";
 import { ChatConfigFormData } from "src/types/Chat";
@@ -48,15 +47,15 @@ const measureDivWidth = (div: HTMLDivElement | null) => {
 };
 
 export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("chat");
   const { control, register, reset, setValue } = useFormContext<ChatConfigFormData>();
-  const [selectedPluginIndex, setSelectedPluginIndex] = useState<number | null>(null);
+  const [selectedForEditPluginIndex, setSelectedForEditPluginIndex] = useState<number | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const findSelectedPluginIndex = useCallback(() => {
+  const activePluginIndex = useMemo(() => {
     return plugins.findIndex((plugin) => plugin.enabled);
   }, [plugins]);
 
@@ -68,14 +67,13 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
         enabled: selectedIndex === index ? false : i === index,
       }));
       setValue("plugins", newPlugins, { shouldDirty: true });
-      // onPluginActivated(newPlugins[index].enabled);
     },
     [setValue, plugins]
   );
 
   const handlePluginEdit = useCallback(
     (index: number) => {
-      setSelectedPluginIndex(index);
+      setSelectedForEditPluginIndex(index);
       onOpen();
     },
     [onOpen]
@@ -92,20 +90,19 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
   const handlePluginSave = useCallback(async () => {
     if (textareaRef.current) {
       const newPlugins = [...plugins];
-      newPlugins[selectedPluginIndex!].url = textareaRef.current.value;
+      newPlugins[selectedForEditPluginIndex!].url = textareaRef.current.value;
 
       const plugin: PluginEntry = await post(API_ROUTES.GET_PLUGIN_CONFIG, {
-        arg: { plugin: newPlugins[selectedPluginIndex!] },
+        arg: { plugin: newPlugins[selectedForEditPluginIndex!] },
       });
       // disable all existing plugins and enable new one
       newPlugins.forEach((plugin) => (plugin.enabled = false));
-      newPlugins[selectedPluginIndex!].enabled = true;
-      newPlugins[selectedPluginIndex!].plugin_config = plugin.plugin_config;
+      newPlugins[selectedForEditPluginIndex!].enabled = true;
+      newPlugins[selectedForEditPluginIndex!].plugin_config = plugin.plugin_config;
       setValue("plugins", newPlugins, { shouldDirty: true });
-      //onPluginActivated(newPlugins[selectedPluginIndex!].enabled);
     }
     onClose();
-  }, [onClose, control, plugins, selectedPluginIndex]);
+  }, [onClose, control, plugins, selectedForEditPluginIndex]);
 
   const handlePluginAdd = useCallback(() => {
     const newPlugin: PluginEntry = {
@@ -116,32 +113,22 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
     handlePluginEdit(plugins.length);
   }, [setValue, plugins, handlePluginEdit]);
 
-  const limitPluginNameLength = (name: string) => {
-    if (!name) {
-      return "";
-    }
-    if (name.length > 15) {
-      return name.substring(0, 15) + "...";
-    }
-    return name;
-  };
-
   return (
     <FormControl mb="40px" ref={containerRef}>
       <Box position="fixed" zIndex="1">
         <Menu placement="auto">
           <MenuButton as={Button} pr="3" rightIcon={<Cog />} w={measureDivWidth(containerRef.current) + 15} size="lg">
-            {plugins && plugins[findSelectedPluginIndex()]?.enabled ? (
+            {plugins && plugins[activePluginIndex]?.enabled ? (
               <Box display="flex" justifyContent="flex-start" gap={2}>
                 <Image
-                  src={plugins[findSelectedPluginIndex()]?.plugin_config?.logo_url}
+                  src={plugins[activePluginIndex]?.plugin_config?.logo_url}
                   alt="Plugins"
                   width="25px"
                   height="25px"
                   marginRight="5px"
                 />
-                <Text mt="4px" fontSize="15px">
-                  {limitPluginNameLength(plugins[findSelectedPluginIndex()]?.plugin_config?.name_for_human)}
+                <Text mt="4px" fontSize="sm" isTruncated>
+                  {plugins[activePluginIndex]?.plugin_config?.name_for_human}
                 </Text>
               </Box>
             ) : (
@@ -236,12 +223,12 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
             <ModalBody>
               <Textarea
                 minHeight="40px"
-                defaultValue={selectedPluginIndex !== null ? plugins[selectedPluginIndex!]?.url : ""}
+                defaultValue={selectedForEditPluginIndex !== null ? plugins[selectedForEditPluginIndex!]?.url : ""}
                 ref={textareaRef}
                 mb={4}
               />
               <Box as="pre" whiteSpace="pre-wrap" fontSize="xs">
-                {JSON.stringify(plugins[selectedPluginIndex!], null, 4)}
+                {JSON.stringify(plugins[selectedForEditPluginIndex!], null, 4)}
               </Box>
             </ModalBody>
             <ModalFooter>

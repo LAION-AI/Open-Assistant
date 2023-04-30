@@ -4,11 +4,17 @@ V2_PROMPTER_PREFIX = "<|prompter|>"
 ASSISTANT_PREFIX = "Open Assistant"
 HUMAN_PREFIX = "Human"
 OBSERVATION_SEQ = "Observation:"
+THOUGHT_SEQ = "Thought:"
+START_SEQ = "Begin!"
+END_SEQ = "End!"
 
 # Adjust according to the training dates and datasets used
 KNOWLEDGE_DATE_CUTOFF = "2021-09-01"
 
 TALKING_STYLE = ""
+
+JSON_FORMAT_NO_PAYLOAD = """{\n"request": {\n"params": {...}}\n}"""
+JSON_FORMAT_PAYLOAD = """{\n"request": {\n"params": {...},\n"payload": {...}}\n}"""
 
 PREFIX = f"""Open Assistant is a large language model trained by LAION.
 Open Assistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics.
@@ -31,28 +37,27 @@ INSTRUCTIONS = f"""
 To use a tool, please use the following format:
 
 ```
-Thought: here always think about what to do
-Action: the action to take, should be one of {{tools_names}}
-Action Input: the input to the action, should be in json format
+{THOUGHT_SEQ} [here always think about what to do]
+Action: the action to take, MUST be one of {{tools_names}}
+Action Input: the input to the action, MUST be in JSON format: {{action_input_format}}
 ```
 
-Observation: the result of the action, I should extract relevant information from this
+{OBSERVATION_SEQ} the result of the action
 ... (this Thought/Action/Observation can repeat N times)
 
-When I have a response to say to the {HUMAN_PREFIX}, or if I do not need to use a tool, I MUST use the format:
-
+When you have a response to say to the {HUMAN_PREFIX}, or if you do not need to use a tool, you MUST use the format:
 ```
-Thought: I now know the final answer
-{ASSISTANT_PREFIX}: [my response here]
+{THOUGHT_SEQ} I now know the final answer
+{ASSISTANT_PREFIX}: [my response here]{END_SEQ}
 ```
 """
 
 SUFFIX = f"""
-Begin!
+{START_SEQ}
 
 Previous conversation history:
 {{chat_history}}
 
-When answering a question, I MUST use the following language: {{language}}{TALKING_STYLE}
+When answering a question, you MUST use the following language: {{language}}{TALKING_STYLE}
 New input: {{input}}
 """

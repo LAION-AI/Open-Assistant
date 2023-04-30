@@ -11,14 +11,8 @@ from oasst_inference_server.settings import settings
 from oasst_shared import model_configs
 from oasst_shared.schemas import inference
 
-# NOTE: Replace this with plugins that we will provide out of the box
-DUMMY_PLUGINS = [
-    inference.PluginEntry(
-        url="http://192.168.0.35:8085/ai-plugin.json",
-        enabled=False,
-        trusted=True,
-    ),
-]
+# NOTE: Populate this with plugins that we will provide out of the box
+OA_PLUGINS = []
 
 router = fastapi.APIRouter(
     prefix="/configs",
@@ -83,10 +77,10 @@ DEFAULT_PARAMETER_CONFIGS = [
         name="k50-Plugins",
         description="Top-k sampling with k=50 and temperature=0.35",
         sampling_parameters=inference.SamplingParameters(
-            max_new_tokens=512,
+            max_new_tokens=1024,
             temperature=0.35,
             top_k=50,
-            repetition_penalty=1,
+            repetition_penalty=(1 / 0.90),
         ),
     ),
     ParameterConfig(
@@ -184,7 +178,7 @@ async def get_plugin_config(plugin: inference.PluginEntry) -> inference.PluginEn
 async def get_builtin_plugins() -> list[inference.PluginEntry]:
     plugins = []
 
-    for plugin in DUMMY_PLUGINS:
+    for plugin in OA_PLUGINS:
         try:
             plugin_config = await fetch_plugin(plugin.url)
         except HTTPException as e:
