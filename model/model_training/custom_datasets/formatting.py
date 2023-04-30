@@ -25,6 +25,10 @@ def format_system_prefix(prefix, eos_token):
     )
 
 
+class PretrainDatasetEntry(BaseModel):
+    text: str | None = None
+
+
 class DatasetEntry(BaseModel):
     questions: list[str]
     answers: list[str] | list[list[str]]
