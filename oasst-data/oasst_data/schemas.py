@@ -38,6 +38,12 @@ class ExportMessageEventRanking(ExportMessageEvent):
     not_rankable: Optional[bool]  # flawed, factually incorrect or unacceptable
 
 
+class ExportMessageEventReport(ExportMessageEvent):
+    type: Literal["report"] = "report"
+    report_type: str
+    reason: str
+
+
 class DetoxifyRating(BaseModel):
     toxicity: float
     severe_toxicity: float

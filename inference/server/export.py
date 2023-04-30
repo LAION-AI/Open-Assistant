@@ -9,7 +9,7 @@ from typing import TextIO
 import sqlalchemy
 import sqlmodel
 from fastapi.encoders import jsonable_encoder
-from oasst_data import ExportMessageNode, ExportMessageTree
+from oasst_data import ExportMessageEvent, ExportMessageEventReport, ExportMessageNode, ExportMessageTree
 from oasst_inference_server.models import DbChat, DbMessage
 from oasst_inference_server.settings import settings
 from sqlmodel import Session
@@ -44,6 +44,19 @@ def smart_open(filename: str = None) -> TextIO:
             fh.close()
 
 
+def prepare_export_events(message: DbMessage) -> dict[str, list[ExportMessageEvent]]:
+    export_events: dict[str, list[ExportMessageEvent]] = []
+
+    export_events["report"] = [
+        ExportMessageEventReport(report_type=str(db_report.report_type), reason=db_report.reason)
+        for db_report in message.reports
+    ]
+
+    # TODO: thumbs up/down ratings as events? e.g. emoji event
+
+    return export_events
+
+
 def prepare_export_message_tree(chat: DbChat) -> ExportMessageTree:
     # TODO
     pass
@@ -58,6 +71,8 @@ def prepare_export_message_node(message: DbMessage) -> ExportMessageNode:
     # Chat prompts are human-written, responses are synthetic
     synthetic = message.role == "assistant"
 
+    events: dict[str, list[ExportMessageEvent]] = prepare_export_events(message)
+
     return ExportMessageNode(
         message_id=str(message.id),
         parent_id=str(message.parent_id),
@@ -67,8 +82,7 @@ def prepare_export_message_node(message: DbMessage) -> ExportMessageNode:
         role=message.role,
         synthetic=synthetic,
         model_name=model_name,
-        # TODO: include reports
-        # TODO: include thumbs up/down rating somehow?
+        events=events,
     )
 
 

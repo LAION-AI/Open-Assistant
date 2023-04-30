@@ -46,6 +46,8 @@ RUN adduser               \
 
 USER ${APP_USER}
 
+RUN mkdir -p "${PROMETHEUS_MULTIPROC_DIR}"
+
 WORKDIR ${APP_ROOT}
 
 
