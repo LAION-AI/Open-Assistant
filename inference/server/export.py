@@ -3,6 +3,7 @@ import contextlib
 import gzip
 import json
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import TextIO
 
@@ -58,8 +59,21 @@ def prepare_export_events(message: DbMessage) -> dict[str, list[ExportMessageEve
 
 
 def prepare_export_message_tree(chat: DbChat) -> ExportMessageTree:
-    # TODO
-    pass
+    messages: list[DbMessage] = chat.messages
+    export_messages: list[ExportMessageNode] = list(map(prepare_export_message_node, messages))
+
+    messages_by_parent = defaultdict(list)
+    for message in export_messages:
+        messages_by_parent[message.parent_id].append(message)
+
+    def assign_replies(node: ExportMessageNode) -> ExportMessageNode:
+        node.replies = messages_by_parent[node.message_id]
+        for child in node.replies:
+            assign_replies(child)
+        return node
+
+    prompt = assign_replies(messages_by_parent[None][0])
+    return ExportMessageTree(message_tree_id=str(chat.id), tree_state="not_applicable", prompt=prompt)
 
 
 def prepare_export_message_node(message: DbMessage) -> ExportMessageNode:
