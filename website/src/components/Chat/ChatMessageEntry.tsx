@@ -9,8 +9,9 @@ import {
   useBoolean,
   useColorModeValue,
   useOutsideClick,
+  useToast,
 } from "@chakra-ui/react";
-import { Check, Edit, RotateCcw, ThumbsUp, X, XCircle } from "lucide-react";
+import { Check, Edit, RotateCcw, ThumbsUp, X, XCircle, Copy} from "lucide-react";
 import { ThumbsDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
@@ -46,6 +47,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   canRetry,
   ...props
 }: ChatMessageEntryProps) {
+  const toast = useToast();
   const { t } = useTranslation("common");
   const { chat_id: chatId, parent_id: parentId, id: messageId, content, score, state, work_parameters } = message;
   const handleVote = useCallback(
@@ -69,6 +71,21 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
       onRetry({ parentId, chatId });
     }
   }, [chatId, onRetry, parentId]);
+
+  const handleCopy = useCallback((text: string) => () => {
+    navigator.clipboard.writeText(text);
+
+    const displayId = text.length < 20 ? text : text.slice(0, 10) + "..." + text.slice(-10);
+
+    toast({
+      title: t("copied"),
+      description: displayId,
+      status: "info",
+      duration: 5000,
+      isClosable: true,
+    });
+  }, []);
+
   const isAssistant = message.role === "assistant";
   const [isEditing, setIsEditing] = useBoolean(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -146,6 +163,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
               {state === "complete" && (
                 <>
                   {canRetry && <BaseMessageEmojiButton emoji={RotateCcw} onClick={handleRetry} />}
+                  <BaseMessageEmojiButton emoji={Copy} onClick={handleCopy(message.content)} />
                   <BaseMessageEmojiButton emoji={ThumbsUp} checked={score === 1} onClick={handleThumbsUp} />
                   <BaseMessageEmojiButton emoji={ThumbsDown} checked={score === -1} onClick={handleThumbsDown} />
                 </>
