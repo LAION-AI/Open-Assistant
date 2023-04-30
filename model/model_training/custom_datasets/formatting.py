@@ -65,14 +65,17 @@ class Utterance(BaseModel):
             for k, v in self.__dict__.items()
             if k not in ["content"]
             and v is not None
-            and str(v).replace("\n", "")
+            and str(v).replace("\n", " ")
             and random() > SYSTEM_PROPERTY_DROP_PROBA
         ]
-        if len(relevant_system_infos) > 0:
-            shuffle(relevant_system_infos)
-            system_tag_key_values = "\n".join([f"{k}: {v}" for k, v in relevant_system_infos])
-            system_tag = f"{QA_SPECIAL_TOKENS['System']}{system_tag_key_values}\n{eos_token}"
-            return system_tag
+
+        if len(relevant_system_infos) == 0:
+            return None
+
+        shuffle(relevant_system_infos)
+        system_tag_key_values = "\n".join([f"{k}: {v}" for k, v in relevant_system_infos])
+        system_tag = f"{QA_SPECIAL_TOKENS['System']}{system_tag_key_values}\n{eos_token}"
+        return system_tag
 
 
 class DatasetEntry(BaseModel):
@@ -115,21 +118,21 @@ class DatasetEntry(BaseModel):
         elif mode == Mode.rm:
             return self._get_formatted_rm(eos_token=eos_token, max_replies=kwargs.get("max_replies", 5))
         else:
-            qa_list: list[str] = list()
+            qa_list: list[str] = []
 
-            answers: list[Utterance]
             # check if this is a RM capable dataset (so it has multiple answers to the same question)
             # and if so, extract just the highest scoring answer
+            answers: list[Utterance]
             if isinstance(self.answers[0], list):
                 answers = [answer[0] for answer in self.answers]
-            else: 
+            else:
                 answers = self.answers
 
             for q, a in zip_longest(self.questions, answers):
                 if q is None or q.content is None:
-                    raise ValueError("Incomplete dialog step: prompt in None")
+                    raise ValueError("Incomplete dialogue step in DatasetEntry: prompt in None")
                 if a is None or a.content is None:
-                    raise ValueError("Incomplete dialog step: reply is None")
+                    raise ValueError("Incomplete dialogue step in DatasetEntry: reply is None")
 
                 system_tag = a.system_tag(eos_token=eos_token)
                 qa_list.extend(

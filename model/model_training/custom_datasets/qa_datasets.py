@@ -258,7 +258,7 @@ class SODA(Dataset):
                 print("[WARNING] SODA entry empty..")
             return DatasetEntry.from_strings(questions=questions, answers=answers)
 
-    def __init__(self, cache_dir, mode="sft", input_max_length=1024) -> None:
+    def __init__(self, cache_dir, mode="sft", input_max_length=32 * 1024) -> None:
         super().__init__()
         if mode not in ("sft", "rl"):
             raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
@@ -268,9 +268,6 @@ class SODA(Dataset):
         for data in dataset:
             if (processed_data := self.process_soda_convo(data, input_max_length=input_max_length)) is not None:
                 self.pairs.append(processed_data)
-            # for prompt, answer in data_pair:
-            #     if len(prompt) < input_max_length:
-            #         self.pairs.append((prompt, answer))
 
     def __len__(self) -> int:
         return len(self.pairs)
@@ -514,7 +511,7 @@ class Vicuna(Dataset):
                 answers.append("\n".join(messages)[:input_max_length])
         return questions, answers
 
-    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 32 * 1024) -> None:
         super().__init__()
 
         self.pairs = []
@@ -598,7 +595,8 @@ class AlpacaGpt4(Dataset):
         else:
             linking_char = random.choice(LINKING_CHARS)
             return DatasetEntry.from_strings(
-                questions=[f"{row['instruction']}{linking_char}{row['input']}"], answers=[row["output"]]
+                questions=[f"{row['instruction']}{linking_char}{row['input']}"],
+                answers=[row["output"]],
             )
 
     def __len__(self) -> int:
