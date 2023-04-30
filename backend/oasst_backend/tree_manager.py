@@ -271,11 +271,11 @@ class TreeManager:
             def activate_one(db: Session) -> int:
                 # select among distinct users
                 authors_qry = (
-                    db.query(Message.user_id, UserStats.reply_ranked_1)
+                    db.query(Message.user_id, func.coalesce(UserStats.reply_ranked_1, 0).label("reply_ranked_1"))
                     .select_from(MessageTreeState)
                     .join(Message, MessageTreeState.message_tree_id == Message.id)
                     .join(User, Message.user_id == User.id)
-                    .join(
+                    .outerjoin(
                         UserStats, and_(UserStats.user_id == User.id, UserStats.time_frame == UserStatsTimeFrame.month)
                     )
                     .filter(
