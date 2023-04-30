@@ -51,12 +51,15 @@ COPY --chown="${APP_USER}:${APP_USER}" --from=build /build/lib   ${APP_LIBS}
 COPY --chown="${APP_USER}:${APP_USER}"              ./${APP_RELATIVE_PATH}/*.py .
 
 COPY --chown="${APP_USER}:${APP_USER}" ./oasst-shared /tmp/lib/oasst-shared
+
+USER root
 RUN --mount=type=cache,target=/var/cache/pip \
     pip install                  \
       --cache-dir=/var/cache/pip \
       --target="${APP_LIBS}"     \
       /tmp/lib/oasst-shared && \
     rm -rf /tmp/lib/oasst-shared
+USER ${APP_USER}
 
 COPY --chown="${APP_USER}:${APP_USER}" ./inference/safety/safety_main.sh /entrypoint.sh
 
