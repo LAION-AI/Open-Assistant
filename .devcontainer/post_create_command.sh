@@ -1,11 +1,6 @@
 #!/bin/bash
 
-# Run both backend-dev and frontend-dev post_create scripts
+# do as little as possible in this script to keep the container creation fast.
+# for more specific devcontainer use cases use the different devcontainer subfolders.
 
-./.devcontainer/backend-dev/post_create_command.sh
-./.devcontainer/frontend-dev/post_create_command.sh
-
-# run yarn install in docs folder
-cd docs
-yarn install
-cd ..
+echo "done"
