@@ -1,0 +1,87 @@
+{
+  "default": {
+    "unchanged_title": "Tidak ada perubahan",
+    "unchanged_message": "Apakah Anda yakin ingin melanjutkan?"
+  },
+  "random": {
+    "label": "Saya merasa beruntung",
+    "desc": "Bantu kami memperbaiki Open Assistant dengan memilih tugas secara acak."
+  },
+  "create_initial_prompt": {
+    "label": "Buat Prompt Awal",
+    "desc": "Tulis prompt awal untuk membantu Open Assistant mencoba membalas pesan yang beragam. (masuk ke undian)",
+    "overview": "Buat pesan awal untuk dikirimkan ke asisten",
+    "instruction": "Berikan prompt awal",
+    "response_placeholder": "Tulis prompt Anda di sini..."
+  },
+  "reply_as_user": {
+    "label": "Balas sebagai Pengguna",
+    "desc": "Berbicara dengan Open Assistant dan bantu meningkatkan respons dengan berinteraksi dengannya.",
+    "overview": "Berdasarkan percakapan berikut, berikan balasan yang sesuai",
+    "instruction": "Berikan balasan pengguna",
+    "response_placeholder": "Tulis balasan Anda di sini..."
+  },
+  "reply_as_assistant": {
+    "label": "Balas sebagai Asisten",
+    "desc": "Bantu Open Assistant memperbaiki respons terhadap percakapan dengan pengguna lain.",
+    "overview": "Berdasarkan percakapan berikut, berikan balasan yang sesuai",
+    "response_placeholder": "Tulis balasan Anda di sini..."
+  },
+  "rank_user_replies": {
+    "label": "Urutkan Balasan Pengguna",
+    "desc": "Bantu Open Assistant memperbaiki respons terhadap percakapan dengan pengguna lain.",
+    "overview": "Berdasarkan Balasan Pengguna berikut, urutkan dari yang terbaik ke yang terburuk, yang terbaik pertama dan yang terburuk terakhir.",
+    "unchanged_title": "Urutan Tidak Berubah",
+    "unchanged_message": "Anda belum mengubah urutan prompt. Apakah Anda yakin ingin melanjutkan?"
+  },
+  "rank_assistant_replies": {
+    "label": "Urutkan Balasan Asisten",
+    "desc": "Skor prompt yang diberikan oleh Open Assistant berdasarkan akurasi dan keterbacaan.",
+    "overview": "Berdasarkan Balasan Asisten berikut, urutkan dari yang terbaik ke yang terburuk, yang terbaik",
+    "rank_assistant_replies": {
+      "label": "Peringkat Balasan Asisten",
+      "desc": "Penilaian pernyataan oleh Open Assistant berdasarkan akurasi dan kemudahan dibaca.",
+      "overview": "Berdasarkan balasan Asisten berikut, urutkan dari terbaik ke terburuk, terbaik ada di pertama, terburuk ada di terakhir.",
+      "unchanged_title": "Urutan Tak Berubah",
+      "unchanged_message": "Anda belum mengubah urutan pernyataan. Apakah Anda yakin ingin melanjutkan?"
+    },
+    "rank_initial_prompts": {
+      "label": "Peringkat Pernyataan Awal",
+      "desc": "Penilaian pernyataan oleh Open Assistant berdasarkan akurasi dan kemudahan dibaca.",
+      "overview": "Berdasarkan pernyataan awal berikut, urutkan dari terbaik ke terburuk, terbaik ada di pertama, terburuk ada di terakhir.",
+      "unchanged_title": "Urutan Tak Berubah",
+      "unchanged_message": "Anda belum mengubah urutan pernyataan. Apakah Anda yakin ingin melanjutkan?"
+    },
+    "label_initial_prompt": {
+      "label": "Label Pernyataan Awal",
+      "desc": "Berikan label untuk pernyataan.",
+      "overview": "Berikan label untuk pernyataan berikut"
+    },
+    "label_prompter_reply": {
+      "label": "Label Balasan Prompter",
+      "desc": "Berikan label untuk pernyataan.",
+      "overview": "Berdasarkan diskusi berikut, berikan label untuk pernyataan akhir."
+    },
+    "label_assistant_reply": {
+      "label": "Label Balasan Asisten",
+      "desc": "Berikan label untuk pernyataan.",
+      "overview": "Berdasarkan diskusi berikut, berikan label untuk pernyataan akhir."
+    },
+    "classify_initial_prompt": {
+      "label": "Klasifikasi Pernyataan Awal",
+      "desc": "Berikan label untuk pernyataan.",
+      "overview": "Baca pernyataan berikut dan kemudian jawab pertanyaan tentang itu."
+    },
+    "classify_prompter_reply": {
+      "label": "Klasifikasi Balasan Prompter",
+      "desc": "Berikan label untuk pernyataan.",
+      "overview": "Baca percakapan berikut dan kemudian jawab pertanyaan tentang balasan terakhir dalam diskusi."
+    },
+    "classify_assistant_reply": {
+      "label": "Klasifikasi Balasan Asisten",
+      "desc": "Berikan label untuk pernyataan.",
+      "overview": "Baca percakapan berikut dan kemudian jawab pertanyaan tentang balasan terakhir dalam diskusi."
+    },
+    "available_task_count": "{{count}} tugas tersedia"
+  }
+}

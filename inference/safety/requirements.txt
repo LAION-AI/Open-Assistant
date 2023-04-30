@@ -1,0 +1,5 @@
+blade2blade
+fastapi
+loguru
+pydantic
+uvicorn

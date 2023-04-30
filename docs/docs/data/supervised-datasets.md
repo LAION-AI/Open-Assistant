@@ -6,7 +6,7 @@ For discussion about usage of supervised data see issue
 ## Motivation
 
 An important part of making the assistant useful is to teach it to understand
-and follow instructions, and to perform large set of tasks well.
+and follow instructions, and to perform a large set of tasks well.
 
 While RLHF seems like the main ingredient, using existing supervised data might
 help.
@@ -14,16 +14,16 @@ help.
 There are two large-scale projects in the area of instruction-following /
 multitask learning: Promptsource and Natural Instructions - these projects
 crowdsourced templates and turned existing NLP datasets into
-instruction-following seq2seq form in natural langauge. They include both
+instruction-following seq2seq form in natural language. They include both
 long-output training examples like generating a sentence that is a likely
 consequence of sentence in the prompt, and short-output, like rating prediction
 from review. (Pre-)training on such datasets should help model understand and
-follow instructions and teach it many abilities neccessary to perform a large
-set of tasks correctly. However, these data are not dialog-like - they do not
-look like a normal conversation.
+follow instructions and teach it many abilities necessary to perform a large set
+of tasks correctly. However, these data are not dialog-like - they do not look
+like a normal conversation.
 
 There are also supervised dialog datasets such as Blended Skill Talk or SODA. In
-constrast to instruction-following datasets, dialog data is not as focused on
+contrast to instruction-following datasets, dialog data is not as focused on
 "academic tasks" or correctness, but encourage the model to respond naturally
 like a person would.
 

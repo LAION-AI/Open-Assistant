@@ -1,0 +1,21 @@
+{
+  "aborted_low_grade": "Остановлено из-за низкой оценки",
+  "assistant": "Ассистент",
+  "backlog_ranking": "Оцениваются (В резерве)",
+  "choose_a_language": "Выбрать язык",
+  "count": "Количество",
+  "growing": "В процессе",
+  "halted_by_moderator": "Отклонено модератором",
+  "human_messages_by_lang": "Сообщения по языковому признаку (Человеческие)",
+  "human_messages_by_role": "Сообщения по ролям (Человеческие)",
+  "initial_prompt_review": "Оценено изначальных запросов",
+  "language_stats": "Язык",
+  "message_trees_by_state": "Состояние деревьев сообщений",
+  "message_trees_states_by_lang": "Состояние деревьев сообщений по языковому признаку",
+  "prompt_lottery_waiting": "Запросов участвуют в лотерее",
+  "prompter": "Человек",
+  "ranking": "Оцениваются",
+  "ready_for_export": "Готовы для экспорта",
+  "stats": "Статистика",
+  "users_accepted_tos": "Пользователей, принявших лицензионное соглашение"
+}

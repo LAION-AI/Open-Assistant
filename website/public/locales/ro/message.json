@@ -1,0 +1,20 @@
+{
+  "copy_message_id": "Copiați ID-ul mesajului",
+  "label_action": "Eticheta",
+  "label_title": "Eticheta",
+  "message_deleted": "Mesaj sters",
+  "message": "Mesaj",
+  "open_new_tab_action": "Deschide într-o filă nouă",
+  "parent": "părinte",
+  "reactions": "Reacții",
+  "recent_messages": "Mesaje recente",
+  "report_action": "Raport",
+  "report_placeholder": "De ce ar trebui revizuit acest mesaj?",
+  "report_title": "Raport",
+  "send_report": "Trimite",
+  "stop_tree": "Opriți copac",
+  "submit_labels": "Trimite",
+  "tree_stopped": "Arborele sa oprit {{id}}",
+  "view_user": "Vizualizați utilizatorul",
+  "your_recent_messages": "Mesajele tale recente"
+}

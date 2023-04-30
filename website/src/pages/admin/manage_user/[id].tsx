@@ -1,53 +1,70 @@
-import { Button, Card, CardBody, Container, FormControl, FormLabel, Input, Stack, useToast } from "@chakra-ui/react";
-import { InferGetServerSidePropsType } from "next";
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Box,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Checkbox,
+  FormControl,
+  FormLabel,
+  Input,
+  Stack,
+  useToast,
+} from "@chakra-ui/react";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
-import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { getAdminLayout } from "src/components/Layout";
+import { UserStats } from "src/components/Account/UserStats";
+import { AdminArea } from "src/components/AdminArea";
+import { JsonCard } from "src/components/JsonCard";
+import { AdminLayout } from "src/components/Layout";
+import { AdminMessageTable } from "src/components/Messages/AdminMessageTable";
 import { Role, RoleSelect } from "src/components/RoleSelect";
-import { UserMessagesCell } from "src/components/UserMessagesCell";
 import { post } from "src/lib/api";
+import { get } from "src/lib/api";
+import { getValidDisplayName } from "src/lib/display_name_validation";
 import { userlessApiClient } from "src/lib/oasst_client_factory";
 import prisma from "src/lib/prismadb";
+import { getFrontendUserIdForUser } from "src/lib/users";
+import { LeaderboardEntity, LeaderboardTimeFrame } from "src/types/Leaderboard";
+import { AuthMethod } from "src/types/Providers";
+import { User } from "src/types/Users";
+import uswSWRImmutable from "swr/immutable";
 import useSWRMutation from "swr/mutation";
 
 interface UserForm {
   user_id: string;
   id: string;
-  auth_method: string;
+  auth_method: AuthMethod;
   display_name: string;
   role: Role;
   notes: string;
+  show_on_leaderboard: boolean;
 }
 
 const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const toast = useToast();
-  const router = useRouter();
-  const { data: session, status } = useSession();
 
-  // Check when the user session is loaded and re-route if the user is not an
-  // admin.  This follows the suggestion by NextJS for handling private pages:
-  //   https://nextjs.org/docs/api-reference/next/router#usage
-  //
-  // All admin pages should use the same check and routing steps.
-  useEffect(() => {
-    if (status === "loading") {
-      return;
+  const { data: stats } = uswSWRImmutable<Partial<{ [time in LeaderboardTimeFrame]: LeaderboardEntity }>>(
+    "/api/user_stats?" +
+      new URLSearchParams({ id: user.id, auth_method: user.auth_method, display_name: user.display_name }),
+    get,
+    {
+      fallbackData: {},
     }
-    if (session?.user?.role === "admin") {
-      return;
-    }
-    router.push("/");
-  }, [router, session, status]);
+  );
 
   // Trigger to let us update the user's role.  Triggers a toast when complete.
   const { trigger } = useSWRMutation("/api/admin/update_user", post, {
     onSuccess: () => {
       toast({
-        title: "User Role Updated",
+        title: "Updated user",
         status: "success",
         duration: 1000,
         isClosable: true,
@@ -76,8 +93,8 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <Stack gap="4">
-        <Container>
+      <AdminArea>
+        <Stack gap="4">
           <Card>
             <CardBody>
               <form onSubmit={handleSubmit((data) => trigger(data))}>
@@ -86,25 +103,51 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
                 <input type="hidden" {...register("auth_method")}></input>
                 <FormControl>
                   <FormLabel>Display Name</FormLabel>
-                  <Input {...register("display_name")} isDisabled />
+                  <Input {...register("display_name")} />
                 </FormControl>
-                <FormControl>
+                <FormControl mt="2">
                   <FormLabel>Role</FormLabel>
                   <RoleSelect {...register("role")}></RoleSelect>
                 </FormControl>
-                <FormControl>
+                <FormControl mt="2">
                   <FormLabel>Notes</FormLabel>
                   <Input {...register("notes")} />
+                </FormControl>
+                <FormControl mt="2">
+                  <FormLabel>Show on leaderboard</FormLabel>
+                  <Checkbox {...register("show_on_leaderboard")}></Checkbox>
                 </FormControl>
                 <Button mt={4} type="submit">
                   Update
                 </Button>
               </form>
+              <Accordion allowToggle mt="4">
+                <AccordionItem>
+                  <AccordionButton>
+                    <Box as="span" flex="1" textAlign="left">
+                      Raw JSON
+                    </Box>
+                    <AccordionIcon />
+                  </AccordionButton>
+                  <AccordionPanel pb={4}>
+                    <JsonCard>{user}</JsonCard>
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
             </CardBody>
           </Card>
-        </Container>
-        <UserMessagesCell path={`/api/admin/user_messages?user=${user.user_id}`} />
-      </Stack>
+          <Card>
+            <CardHeader pb="0" fontWeight="medium" fontSize="xl">
+              {`User's messages`}
+            </CardHeader>
+            <CardBody>
+              <AdminMessageTable userId={user.user_id}></AdminMessageTable>
+            </CardBody>
+          </Card>
+
+          <UserStats title="Statistic" stats={stats}></UserStats>
+        </Stack>
+      </AdminArea>
     </>
   );
 };
@@ -112,26 +155,49 @@ const ManageUser = ({ user }: InferGetServerSidePropsType<typeof getServerSidePr
 /**
  * Fetch the user's data on the server side when rendering.
  */
-export async function getServerSideProps({ query, locale }) {
-  const backend_user = await userlessApiClient.fetch_user(query.id);
+export const getServerSideProps: GetServerSideProps<{ user: User<Role> }, { id: string }> = async ({
+  params,
+  locale = "en",
+}) => {
+  const backend_user = await userlessApiClient.fetch_user(params!.id as string);
+  if (!backend_user) {
+    return {
+      notFound: true,
+    };
+  }
+
+  let frontendUserId = backend_user.id;
+  if (backend_user.auth_method === "discord" || backend_user.auth_method === "google") {
+    frontendUserId = await getFrontendUserIdForUser(backend_user.id, backend_user.auth_method);
+  }
+
   const local_user = await prisma.user.findUnique({
-    where: { id: backend_user.id },
-    select: {
-      role: true,
-    },
+    where: { id: frontendUserId },
+    select: { role: true, accounts: true, email: true },
   });
+
+  if (!local_user) {
+    return {
+      notFound: true,
+    };
+  }
+
   const user = {
     ...backend_user,
-    role: (local_user?.role || "general") as Role,
+    role: (local_user.role || "general") as Role,
+    accounts: local_user.accounts || [],
+    email: local_user.email,
   };
+  user.display_name = getValidDisplayName(user.display_name, user.id);
+
   return {
     props: {
       user,
-      ...(await serverSideTranslations(locale, ["common"])),
+      ...(await serverSideTranslations(locale, ["common", "message", "leaderboard"])),
     },
   };
-}
+};
 
-ManageUser.getLayout = getAdminLayout;
+ManageUser.getLayout = AdminLayout;
 
 export default ManageUser;

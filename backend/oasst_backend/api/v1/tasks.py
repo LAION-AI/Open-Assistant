@@ -34,6 +34,24 @@ router = APIRouter()
                 minutes=settings.RATE_LIMIT_TASK_API_MINUTES,
             )
         ),
+        Depends(
+            deps.UserTaskTypeRateLimiter(
+                [
+                    protocol_schema.TaskRequestType.assistant_reply,
+                ],
+                times=settings.RATE_LIMIT_ASSISTANT_USER_TIMES,
+                minutes=settings.RATE_LIMIT_ASSISTANT_USER_MINUTES,
+            )
+        ),
+        Depends(
+            deps.UserTaskTypeRateLimiter(
+                [
+                    protocol_schema.TaskRequestType.prompter_reply,
+                ],
+                times=settings.RATE_LIMIT_PROMPTER_USER_TIMES,
+                minutes=settings.RATE_LIMIT_PROMPTER_USER_MINUTES,
+            )
+        ),
     ],
 )  # work with Union once more types are added
 def request_task(

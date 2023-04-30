@@ -1,11 +1,19 @@
 {
-  "default": {
-    "unchanged_title": "변경사항 없음",
-    "unchanged_message": "계속 하시겠습니까?"
+  "available_task_count": "{{count}} 작업 가능",
+  "classify_assistant_reply": {
+    "label": "어시스턴트 대답 분류",
+    "desc": "프롬프트에 레이블을 제공합니다.",
+    "overview": "다음 대화를 읽고 토론의 마지막 답변에 대한 질문에 답하십시오."
   },
-  "random": {
-    "label": "행운이 느껴진다!",
-    "desc": "무작위 작업을 시작하여 Open Assistant를 개선할 수 있도록 도와주세요."
+  "classify_initial_prompt": {
+    "label": "초기 프롬프트 분류",
+    "desc": "프롬프트에 레이블을 제공합니다.",
+    "overview": "다음 프롬프트를 읽고 이에 대한 질문에 답하십시오."
+  },
+  "classify_prompter_reply": {
+    "label": "프롬프터 대답 분류",
+    "desc": "프롬프트에 레이블을 제공합니다.",
+    "overview": "다음 대화를 읽고 토론의 마지막 답변에 대한 질문에 답하십시오."
   },
   "create_initial_prompt": {
     "label": "초기 프롬프트 생성",
@@ -14,25 +22,28 @@
     "instruction": "초기 프롬프트 제공",
     "response_placeholder": "여기에 프롬프트를 작성하세요..."
   },
-  "reply_as_user": {
-    "label": "사용자로 회신",
-    "desc": "Open Assistant와 채팅하고 상호 작용할 때 응답을 개선하는 데 도움을 줍니다.",
-    "overview": "다음 대화가 주어지면 적절한 답변을 제공하십시오.",
-    "instruction": "사용자의 답장 제공",
-    "response_placeholder": "여기에 답장을 쓰세요..."
+  "default": {
+    "unchanged_title": "변경사항 없음",
+    "unchanged_message": "계속 하시겠습니까?"
   },
-  "reply_as_assistant": {
-    "label": "어시스턴트로 답장",
-    "desc": "Open Assistant가 다른 사용자와의 대화에 대한 응답을 개선하도록 도와주세요.",
-    "overview": "다음 대화가 주어지면 적절한 답변을 제공하십시오.",
-    "response_placeholder": "여기에 답장을 쓰세요..."
+  "label_assistant_reply": {
+    "label": "어시스턴트 답장에 대한 레이블링",
+    "desc": "프롬프트에 레이블을 제공합니다.",
+    "overview": "다음 논의가 주어지면 최종 프롬프트에 대한 레이블을 제공하십시오."
   },
-  "rank_user_replies": {
-    "label": "사용자 답글 순위 지정",
-    "desc": "Open Assistant가 다른 사용자와의 대화에 대한 응답을 개선하도록 도와주세요.",
-    "overview": "다음 사용자 응답이 주어지면 가장 좋은 것부터 가장 나쁜 것까지 정렬하세요. 가장 좋은 것이 첫 번째, 가장 나쁜 것이 마지막입니다.",
-    "unchanged_title": "변경되지 않은 순서",
-    "unchanged_message": "프롬프트의 순서를 변경하지 않았습니다. 계속하시겠습니까?"
+  "label_initial_prompt": {
+    "label": "초기 프롬프트 레이블링",
+    "desc": "프롬프트에 레이블을 제공합니다.",
+    "overview": "다음 프롬프트에 대한 레이블 제공"
+  },
+  "label_prompter_reply": {
+    "label": "프롬프터 대답에 대한 레이블링",
+    "desc": "프롬프트에 레이블을 제공합니다.",
+    "overview": "다음 논의가 주어지면 최종 프롬프트에 대한 레이블을 제공하십시오."
+  },
+  "random": {
+    "label": "행운이 느껴진다!",
+    "desc": "무작위 작업을 시작하여 Open Assistant를 개선할 수 있도록 도와주세요."
   },
   "rank_assistant_replies": {
     "label": "순위 보조 답변",
@@ -48,35 +59,24 @@
     "unchanged_title": "변경되지 않은 순서",
     "unchanged_message": "프롬프트의 순서를 변경하지 않았습니다. 계속하시겠습니까?"
   },
-  "label_initial_prompt": {
-    "label": "초기 프롬프트 레이블링",
-    "desc": "프롬프트에 레이블을 제공합니다.",
-    "overview": "다음 프롬프트에 대한 레이블 제공"
+  "rank_user_replies": {
+    "label": "사용자 답글 순위 지정",
+    "desc": "Open Assistant가 다른 사용자와의 대화에 대한 응답을 개선하도록 도와주세요.",
+    "overview": "다음 사용자 응답이 주어지면 가장 좋은 것부터 가장 나쁜 것까지 정렬하세요. 가장 좋은 것이 첫 번째, 가장 나쁜 것이 마지막입니다.",
+    "unchanged_title": "변경되지 않은 순서",
+    "unchanged_message": "프롬프트의 순서를 변경하지 않았습니다. 계속하시겠습니까?"
   },
-  "label_prompter_reply": {
-    "label": "프롬프터 대답에 대한 레이블링",
-    "desc": "프롬프트에 레이블을 제공합니다.",
-    "overview": "다음 논의가 주어지면 최종 프롬프트에 대한 레이블을 제공하십시오."
+  "reply_as_assistant": {
+    "label": "어시스턴트로 답장",
+    "desc": "Open Assistant가 다른 사용자와의 대화에 대한 응답을 개선하도록 도와주세요.",
+    "overview": "다음 대화가 주어지면 적절한 답변을 제공하십시오.",
+    "response_placeholder": "여기에 답장을 쓰세요..."
   },
-  "label_assistant_reply": {
-    "label": "어시스턴트 답장에 대한 레이블링",
-    "desc": "프롬프트에 레이블을 제공합니다.",
-    "overview": "다음 논의가 주어지면 최종 프롬프트에 대한 레이블을 제공하십시오."
-  },
-  "classify_initial_prompt": {
-    "label": "초기 프롬프트 분류",
-    "desc": "프롬프트에 레이블을 제공합니다.",
-    "overview": "다음 프롬프트를 읽고 이에 대한 질문에 답하십시오."
-  },
-  "classify_prompter_reply": {
-    "label": "프롬프터 대답 분류",
-    "desc": "프롬프트에 레이블을 제공합니다.",
-    "overview": "다음 대화를 읽고 토론의 마지막 답변에 대한 질문에 답하십시오."
-  },
-  "classify_assistant_reply": {
-    "label": "어시스턴트 대답 분류",
-    "desc": "프롬프트에 레이블을 제공합니다.",
-    "overview": "다음 대화를 읽고 토론의 마지막 답변에 대한 질문에 답하십시오."
-  },
-  "available_task_count": "{{count}} 작업 가능"
+  "reply_as_user": {
+    "label": "사용자로 회신",
+    "desc": "Open Assistant와 채팅하고 상호 작용할 때 응답을 개선하는 데 도움을 줍니다.",
+    "overview": "다음 대화가 주어지면 적절한 답변을 제공하십시오.",
+    "instruction": "사용자의 답장 제공",
+    "response_placeholder": "여기에 답장을 쓰세요..."
+  }
 }

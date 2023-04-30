@@ -1,7 +1,8 @@
+import { Story } from "@storybook/react";
 import { rest } from "msw";
 import { SessionProvider } from "next-auth/react";
 
-import { MessageWithChildren } from "./MessageWithChildren";
+import { MessageWithChildren, MessageWithChildrenProps } from "./MessageWithChildren";
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
@@ -30,9 +31,9 @@ export default {
   },
 };
 
-const Template = (args) => (
+const Template: Story<MessageWithChildrenProps> = (args) => (
   <SessionProvider>
-    <MessageWithChildren {...args} />;
+    <MessageWithChildren {...args} />
   </SessionProvider>
 );
 

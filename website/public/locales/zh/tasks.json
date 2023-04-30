@@ -1,0 +1,97 @@
+{
+  "any_feedback_on_this_task": "对于这个任务有任何反馈吗?",
+  "available_task_count": "可用的任务数量为 {{count}}",
+  "default": {
+    "unchanged_title": "没有变化",
+    "unchanged_message": "您确定要继续吗?",
+    "continue_anyway": "仍要继续",
+    "markdownguide": "支持使用 Markdown 进行格式化"
+  },
+  "no_more_tasks": "似乎没有更多任务了",
+  "random": {
+    "label": "随机任务",
+    "desc": "通过开始一个随机的任务来帮助我们改进 Open Assistant"
+  },
+  "create_initial_prompt": {
+    "label": "创建初始提示",
+    "desc": "编写初始提示帮助 Open Assistant 回答不同的问题. (进入随机抽奖)",
+    "overview": "创建一个初始消息以发送给助手",
+    "instruction": "提供初始提示",
+    "response_placeholder": "在此处编写您的提示...",
+    "shotcut_tip": "提示: 您可以使用快捷键来查看并提交:"
+  },
+  "reply_as_user": {
+    "label": "以用户身份回复",
+    "desc": "与Open Assistant聊天, 并在与之互动时帮助改进它的响应.",
+    "overview": "根据以下对话提供适当的回复",
+    "instruction": "提供用户的回复",
+    "response_placeholder": "在此处编写您的回复...",
+    "shotcut_tip": "提示: 您可以使用快捷键来查看并提交:"
+  },
+  "reply_as_assistant": {
+    "label": "以助手身份回复",
+    "desc": "帮助 Open Assistant 改进其对其他用户的响应。",
+    "overview": "根据以下对话提供适当的回复",
+    "response_placeholder": "在此处编写您的回复...",
+    "shotcut_tip": "提示: 您可以使用快捷键来查看并提交:"
+  },
+  "rank_user_replies": {
+    "label": "对用户的回复进行排名",
+    "desc": "帮助 Open Assistant 改进其对其他用户的响应.",
+    "overview": "根据以下用户回复, 对它们进行排序, 好的在前, 差的在后.",
+    "unchanged_title": "顺序未更改",
+    "unchanged_message": "您未更改顺序, 确定要继续吗?",
+    "continue_anyway": "仍要继续"
+  },
+  "rank_assistant_replies": {
+    "label": "对助手的回复进行排序",
+    "desc": "根据准确性和可读性对 Open Assistant 的回复进行评分.",
+    "overview": "根据以下助手回复, 对它们进行排序, 好的在前, 差的在后.",
+    "unchanged_title": "顺序未更改",
+    "unchanged_message": "您未更改顺序, 确定要继续吗?",
+    "continue_anyway": "仍要继续"
+  },
+  "rank_initial_prompts": {
+    "label": "对初始提示进行排序",
+    "desc": "根据准确性和可读性对 Open Assistant 的提示进行评分.",
+    "overview": "根据以下初始提示, 对它们进行排序, 好的在前, 差的在后.",
+    "unchanged_title": "顺序未更改",
+    "unchanged_message": "您未更改顺序, 确定要继续吗?",
+    "continue_anyway": "仍要继续"
+  },
+  "label_initial_prompt": {
+    "label": "为初始提示标注",
+    "desc": "为初始提示标注.",
+    "overview": "标注以下提示"
+  },
+  "label_prompter_reply": {
+    "label": "标注提示词工程师的回复",
+    "desc": "标注提示词工程师的回复.",
+    "overview": "根据以下讨论, 标注最终的提示."
+  },
+  "label_assistant_reply": {
+    "label": "标注助手的回复",
+    "desc": "标注助手的回复.",
+    "overview": "根据以下讨论, 标注最终的提示."
+  },
+  "classify_initial_prompt": {
+    "label": "对初始提示进行分类",
+    "desc": "为提示标注.",
+    "overview": "阅读以下提示, 然后回答关于它的问题."
+  },
+  "classify_prompter_reply": {
+    "label": "对提示工程师的回复进行分类",
+    "desc": "为提示标注.",
+    "overview": "根据以下讨论, 然后回答最后一条评论中的问题."
+  },
+  "classify_assistant_reply": {
+    "label": "对助手的回复进行分类",
+    "desc": "为提示标注.",
+    "overview": "根据以下讨论, 然后回答最后一条评论中的问题."
+  },
+  "submitted_as": "这将被提交为 {{submit_lang}}",
+  "tab_write": "编写",
+  "tab_preview": "预览",
+  "writing_wrong_langauge_a_b": "您似乎正在 {{detected_lang}} 中编写, 却提交为 {{submit_lang}}.",
+  "not_rankable": "所有答案都存在事实错误, 无法排名"
+}

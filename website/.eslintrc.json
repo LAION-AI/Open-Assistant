@@ -1,15 +1,28 @@
 {
   "root": true,
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "next/core-web-vitals"
-  ],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "next/core-web-vitals"],
+  "plugins": ["simple-import-sort", "unused-imports"],
   "rules": {
     "unused-imports/no-unused-imports": "warn",
     "simple-import-sort/imports": "warn",
     "simple-import-sort/exports": "warn",
-    "eqeqeq": "warn"
-  },
-  "plugins": ["simple-import-sort", "unused-imports"]
+    "eqeqeq": "warn",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "no-restricted-imports": [
+      "error",
+      {
+        "name": "react-i18next",
+        "message": "please import from 'next-i18next'"
+      }
+    ]
+  }
 }

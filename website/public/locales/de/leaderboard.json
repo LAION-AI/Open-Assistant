@@ -1,14 +1,18 @@
 {
   "daily": "Täglich",
+  "label": "Labels",
   "last_updated_at": "Zuletzt aktualisiert: {{val, datetime}}",
   "leaderboard": "Bestenliste",
   "monthly": "Monatlich",
+  "next": "Nächste",
   "overall": "Gesamt",
-  "rank": "Rang",
-  "score": "Punktzahl",
-  "user": "Benutzer",
-  "weekly": "Wöchentlich",
+  "previous": "Vorherige",
   "prompt": "Prompts",
+  "rank": "Rang",
   "reply": "Antworten",
-  "label": "Labels"
+  "score": "Punktzahl",
+  "top_5_contributors_today": "Top 5 Benutzer heute",
+  "user": "Benutzer",
+  "view_all": "Alle anzeigen",
+  "weekly": "Wöchentlich"
 }

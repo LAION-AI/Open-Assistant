@@ -1,94 +1,74 @@
-// https://nextjs.org/docs/basic-features/layouts
-
-import { Box, Grid } from "@chakra-ui/react";
-import { Activity, BarChart2, Layout, MessageSquare, Settings, Users } from "lucide-react";
+import { Box } from "@chakra-ui/react";
+import { Activity, BarChart2, MessageSquare, Settings, Users } from "lucide-react";
 import type { NextPage } from "next";
-import { Header } from "src/components/Header";
+import { PropsWithChildren } from "react";
+import { useSidebarItems } from "src/hooks/layout/sidebarItems";
 
 import { SlimFooter } from "./Dashboard/SlimFooter";
 import { Footer } from "./Footer";
+import { HeaderLayout } from "./Header/Header";
 import { SideMenuLayout } from "./SideMenuLayout";
 import { ToSWrapper } from "./ToSWrapper";
 
 export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
-  getLayout?: (page: React.ReactElement) => React.ReactNode;
+  getLayout?: (props: PropsWithChildren) => JSX.Element;
 };
 
-export const getDefaultLayout = (page: React.ReactElement) => (
-  <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
-    <Header />
-    {page}
+export const DefaultLayout = ({ children }: PropsWithChildren) => (
+  <HeaderLayout>
+    {children}
     <Footer />
-  </div>
+  </HeaderLayout>
 );
 
-export const getTransparentHeaderLayout = (page: React.ReactElement) => (
-  <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
-    <Header />
-    {page}
-    <Footer />
-  </div>
-);
-
-export const getDashboardLayout = (page: React.ReactElement) => (
-  <Grid templateRows="min-content 1fr" h="full">
-    <Header />
-    <ToSWrapper>
-      <SideMenuLayout
-        menuButtonOptions={[
-          {
-            label: "Dashboard",
-            pathname: "/dashboard",
-            icon: Layout,
-          },
-          {
-            label: "Messages",
-            pathname: "/messages",
-            icon: MessageSquare,
-          },
-          {
-            label: "Leaderboard",
-            pathname: "/leaderboard",
-            icon: BarChart2,
-          },
-        ]}
-      >
-        <Grid templateRows="1fr min-content" h="full">
-          <Box>{page}</Box>
+export const DashboardLayout = ({ children }: PropsWithChildren) => {
+  const items = useSidebarItems();
+  return (
+    <HeaderLayout>
+      <ToSWrapper>
+        <SideMenuLayout items={items}>
+          <Box>{children}</Box>
           <Box mt="10">
             <SlimFooter />
           </Box>
-        </Grid>
-      </SideMenuLayout>
-    </ToSWrapper>
-  </Grid>
-);
+        </SideMenuLayout>
+      </ToSWrapper>
+    </HeaderLayout>
+  );
+};
 
-export const getAdminLayout = (page: React.ReactElement) => (
-  <div className="grid grid-rows-[min-content_1fr_min-content] h-full justify-items-stretch">
-    <Header />
+export const AdminLayout = ({ children }: PropsWithChildren) => (
+  <HeaderLayout>
     <SideMenuLayout
-      menuButtonOptions={[
+      items={[
         {
-          label: "Users",
+          labelID: "users",
           pathname: "/admin",
           icon: Users,
         },
         {
-          label: "Status",
+          labelID: "Messages",
+          pathname: "/admin/messages",
+          icon: MessageSquare,
+        },
+        {
+          labelID: "trollboard",
+          pathname: "/admin/trollboard",
+          icon: BarChart2,
+        },
+        {
+          labelID: "status",
           pathname: "/admin/status",
           icon: Activity,
         },
         {
-          label: "Parameters",
+          labelID: "parameters",
           pathname: "/admin/parameters",
           icon: Settings,
         },
       ]}
     >
-      {page}
+      <Box>{children}</Box>
     </SideMenuLayout>
-  </div>
+  </HeaderLayout>
 );
-
-export const noLayout = (page: React.ReactElement) => page;

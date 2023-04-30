@@ -27,8 +27,8 @@ export interface TaskInfo {
   id: string;
   mode?: string;
   pathname: string;
-  type: string;
-  update_type: string;
+  type: TaskType;
+  update_type: TaskUpdateType;
 }
 
 export enum TaskUpdateType {

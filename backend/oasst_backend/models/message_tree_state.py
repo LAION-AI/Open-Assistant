@@ -5,14 +5,14 @@ from uuid import UUID
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Index, SQLModel
 
 
 class State(str, Enum):
     """States of the Open-Assistant message tree state machine."""
 
     INITIAL_PROMPT_REVIEW = "initial_prompt_review"
-    """In this state the message tree consists only of a single inital prompt root node.
+    """In this state the message tree consists only of a single initial prompt root node.
     Initial prompt labeling tasks will determine if the tree goes into `growing` or
     `aborted_low_grade` state."""
 
@@ -30,14 +30,14 @@ class State(str, Enum):
 
     READY_FOR_SCORING = "ready_for_scoring"
     """Required ranking responses have been collected and the scoring algorithm can now
-    compute the aggergated ranking scores that will appear in the dataset."""
+    compute the aggregated ranking scores that will appear in the dataset."""
 
     READY_FOR_EXPORT = "ready_for_export"
-    """The Scoring algorithm computed rankings scores for all childern. The message tree can be
+    """The Scoring algorithm computed rankings scores for all children. The message tree can be
     exported as part of an Open-Assistant message tree dataset."""
 
     SCORING_FAILED = "scoring_failed"
-    """An exception occured in the scoring algorithm."""
+    """An exception occurred in the scoring algorithm."""
 
     ABORTED_LOW_GRADE = "aborted_low_grade"
     """The system received too many bad reviews and stopped handing out tasks for this message tree."""
@@ -74,6 +74,7 @@ TERMINAL_STATES = (
 
 class MessageTreeState(SQLModel, table=True):
     __tablename__ = "message_tree_state"
+    __table_args__ = (Index("ix_message_tree_state__lang__state", "state", "lang", unique=False),)
 
     message_tree_id: UUID = Field(
         sa_column=sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey("message.id"), primary_key=True)
@@ -81,7 +82,8 @@ class MessageTreeState(SQLModel, table=True):
     goal_tree_size: int = Field(nullable=False)
     max_depth: int = Field(nullable=False)
     max_children_count: int = Field(nullable=False)
-    state: str = Field(nullable=False, max_length=128, index=True)
+    state: str = Field(nullable=False, max_length=128)
     active: bool = Field(nullable=False, index=True)
     origin: str = Field(sa_column=sa.Column(sa.String(1024), nullable=True))
     won_prompt_lottery_date: Optional[datetime] = Field(sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True))
+    lang: str = Field(sa_column=sa.Column(sa.String(32), nullable=False))

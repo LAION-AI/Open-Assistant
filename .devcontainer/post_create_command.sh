@@ -1,7 +1,6 @@
-# ensure pre-commit is installed
-pre-commit install
+#!/bin/bash
 
-# run yarn install in docs folder
-cd docs
-yarn install
-cd ..
+# do as little as possible in this script to keep the container creation fast.
+# for more specific devcontainer use cases use the different devcontainer subfolders.
+
+echo "done"

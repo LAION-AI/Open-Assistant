@@ -1,0 +1,82 @@
+{
+  "available_task_count": "{{count}} tarefas disponiveis",
+  "classify_assistant_reply": {
+    "label": "Classificar a resposta do assistente",
+    "desc": "Forneça etiquetas para o prompt inicial.",
+    "overview": "Leia a conversa a seguir e depois responda à pergunta sobre a última resposta na discussão."
+  },
+  "classify_initial_prompt": {
+    "label": "Classificar o prompt inicial",
+    "desc": "Forneça etiquetas para o prompt inicial.",
+    "overview": "Leia o seguinte prompt e responda à pergunta sobre o assunto."
+  },
+  "classify_prompter_reply": {
+    "label": "Classificar a resposta do prompter",
+    "desc": "Forneça etiquetas para o prompt inicial.",
+    "overview": "Leia a conversa a seguir e depois responda à pergunta sobre a última resposta na discussão."
+  },
+  "create_initial_prompt": {
+    "label": "Criar prompts iniciais",
+    "desc": "Escreva prompts iniciais para ajudar o Open Assistant a tentar responder a uma variedade de mensagens.",
+    "overview": "Criar uma mensagem inicial para enviar ao assistente",
+    "instruction": "Forneça os prompts iniciais",
+    "response_placeholder": "Escreva aqui seu prompt..."
+  },
+  "default": {
+    "unchanged_title": "Sem alterações",
+    "unchanged_message": "Tem certeza que quer continuar?"
+  },
+  "label_assistant_reply": {
+    "label": "Etiquetar resposta do assistente",
+    "desc": "Forneça etiquetas para o prompt inicial.",
+    "overview": "Dada a discussão a seguir, forneça etiquetas para o último prompt."
+  },
+  "label_initial_prompt": {
+    "label": "Etiquetar o prompt inicial",
+    "desc": "Forneça etiquetas para o prompt inicial.",
+    "overview": "Forneça etiquetas para o prompt a seguir"
+  },
+  "label_prompter_reply": {
+    "label": "Etiquetar resposta do prompter",
+    "desc": "Forneça etiquetas para o prompt inicial.",
+    "overview": "Dada a discussão a seguir, forneça etiquetas para o último prompt."
+  },
+  "random": {
+    "label": "Estou me sentindo com sorte",
+    "desc": "Ajude-nos a melhorar o Open Assistant, inicie uma tarefa aleatória."
+  },
+  "rank_assistant_replies": {
+    "label": "Ordenar as respostas do assistente",
+    "desc": "Avalie as respostas dadas pelo Open Assistant com base em sua precisão e legibilidade.",
+    "overview": "Dadas as seguintes respostas do assistente, ordene-as da melhor para a pior, sendo a primeira a melhor e a última a pior.",
+    "unchanged_title": "Ordem inalterada",
+    "unchanged_message": "Você não mudou a ordem dos prompts - você tem certeza de que quer continuar?"
+  },
+  "rank_initial_prompts": {
+    "label": "Ordenar prompts iniciais",
+    "desc": "Avalie as respostas dadas pelo Open Assistant com base em sua precisão e legibilidade.",
+    "overview": "Dados os seguintes prompts iniciais, ordene-os do melhor para o pior, sendo o primeiro o melhor e o último o pior.",
+    "unchanged_title": "Ordem inalterada",
+    "unchanged_message": "Você não mudou a ordem dos prompts - você tem certeza de que quer continuar?"
+  },
+  "rank_user_replies": {
+    "label": "Ordenar as respostas dos usuários",
+    "desc": "Ajude o Open Assistant a melhorar suas respostas às conversas com outros usuários.",
+    "overview": "Dadas as seguintes respostas dos usuários, ordene-as em ordem da melhor para a pior, sendo a primeira a melhor e a última a pior.",
+    "unchanged_title": "Ordem inalterada",
+    "unchanged_message": "Você não mudou a ordem dos prompts - você tem certeza de que quer continuar?"
+  },
+  "reply_as_assistant": {
+    "label": "Responder como assistente",
+    "desc": "Ajude o Open Assistant a melhorar suas respostas às conversas com outros usuários.",
+    "overview": "Dada a seguinte conversa, dê uma resposta apropriada",
+    "response_placeholder": "Escreva aqui sua resposta..."
+  },
+  "reply_as_user": {
+    "label": "Responder como usuário",
+    "desc": "Fale com o Open Assistant e tente melhorar suas respostas à medida que você interage com ele.",
+    "overview": "Dada a seguinte conversa, dê uma resposta apropriada",
+    "instruction": "Forneça feedback do usuário",
+    "response_placeholder": "Escreva aqui sua resposta..."
+  }
+}

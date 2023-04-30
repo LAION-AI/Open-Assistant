@@ -58,7 +58,7 @@ def score_update_votes(new_vote: int, consensus: npt.ArrayLike, voter_data: Vote
     after that voter cast a vote on a question.
 
     This function is only to be run when archiving a question
-    i.e. the question has had sufficiently many votes, or we cann't get more than "K" bits of information
+    i.e. the question has had sufficiently many votes, or we can't get more than "K" bits of information
 
     The consensus is the array of all votes cast by all voters for that question
     We then update the voter data using the new information
@@ -88,7 +88,7 @@ def score_update_prompts(consensus: npt.ArrayLike, voter_data: Voter) -> Voter:
     This function returns the gain of points for a given prompt's votes
 
     In contrast to the other score updating functions, we can run this online as new votes come in.
-    i.e. the question has had sufficiently many votes, or we cann't get more than "K" bits of information.
+    i.e. the question has had sufficiently many votes, or we can't get more than "K" bits of information.
 
 
     Parameters:
@@ -122,7 +122,7 @@ def score_update_ranking(user_ranking: npt.ArrayLike, consensus_ranking: npt.Arr
     This function returns the gain of points for a given ranking's votes
 
     This function is only to be run when archiving a question
-    i.e. the question has had sufficiently many votes, or we cann't get more than "K" bits of information
+    i.e. the question has had sufficiently many votes, or we can't get more than "K" bits of information
 
     we use the bubble-sort distance (or "kendall-tau" distance) to compare the two rankings
     we use this over spearman correlation since:

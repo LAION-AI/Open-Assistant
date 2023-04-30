@@ -43,6 +43,7 @@ class OasstErrorCode(IntEnum):
     TASK_MESSAGE_DUPLICATED = 1009
     TASK_MESSAGE_TEXT_EMPTY = 1010
     TASK_MESSAGE_DUPLICATE_REPLY = 1011
+    TASK_TOO_MANY_PENDING = 1012
 
     # 2000-3000: prompt_repository
     INVALID_FRONTEND_MESSAGE_ID = 2000
@@ -55,7 +56,7 @@ class OasstErrorCode(IntEnum):
     NO_REPLIES_FOUND = 2007
     INVALID_MESSAGE = 2008
     BROKEN_CONVERSATION = 2009
-    TREE_NOT_IN_GROWING_STATE = 2010
+    TREE_IN_ABORTED_STATE = 2010
     CORRUPT_RANKING_RESULT = 2011
     AUTH_AND_USERNAME_REQUIRED = 2012
 
@@ -86,6 +87,8 @@ class OasstErrorCode(IntEnum):
 
     EMOJI_OP_UNSUPPORTED = 5000
 
+    CACHED_STATS_NOT_AVAILABLE = 6000
+
 
 class OasstError(Exception):
     """Base class for Open-Assistant exceptions."""
@@ -95,7 +98,7 @@ class OasstError(Exception):
     http_status_code: HTTPStatus
 
     def __init__(self, message: str, error_code: OasstErrorCode, http_status_code: HTTPStatus = HTTPStatus.BAD_REQUEST):
-        super().__init__(message, error_code, http_status_code)  # make excetpion picklable (fill args member)
+        super().__init__(message, error_code, http_status_code)  # make exception picklable (fill args member)
         self.message = message
         self.error_code = error_code
         self.http_status_code = http_status_code

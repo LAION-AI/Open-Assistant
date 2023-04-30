@@ -1,9 +1,11 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/copilot/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 # Deploying on AWS
 
 ## Introduction
 
 [Copilot](https://aws.github.io/copilot-cli/) helps simplify AWS resources and
-automate deploymnents for projects.
+automate deployments for projects.
 
 This sample configuration runs the Open Assistant web app as an ECS Fargate
 services backed by a Serverless Aurora Postgres database.
@@ -29,7 +31,7 @@ This will create a variety of aws roles and services needed for deployment.
 copilot deploy
 ```
 
-This will depoy the services but it won't be 100% ready for usage. Before being
+This will deploy the services but it won't be 100% ready for usage. Before being
 ready, we have to inspect the AWS Secrets manager and extract out the database
 credentials. Read those credentials then put them, and a few other secrets, in a
 `secrets.yml` file like the following:

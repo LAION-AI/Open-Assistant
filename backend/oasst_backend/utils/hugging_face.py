@@ -27,7 +27,6 @@ class HuggingFaceAPI:
         self,
         api_url: str,
     ):
-
         # The API endpoint we want to access
         self.api_url: str = api_url
 
@@ -37,7 +36,7 @@ class HuggingFaceAPI:
         # Headers going to be used
         self.headers: Dict[str, str] = {"Authorization": f"Bearer {self.api_key}"}
 
-    async def post(self, input: str) -> Any:
+    async def post(self, input: str, wait_for_model: bool = True) -> Any:
         """Post request to the endpoint to get an inference
 
         Args:
@@ -51,7 +50,7 @@ class HuggingFaceAPI:
         """
 
         async with aiohttp.ClientSession() as session:
-            payload: Dict[str, str] = {"inputs": input}
+            payload: Dict[str, str] = {"inputs": input, "wait_for_model": wait_for_model}
 
             async with session.post(self.api_url, headers=self.headers, json=payload) as response:
                 # If we get a bad response

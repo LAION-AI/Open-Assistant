@@ -1,73 +1,101 @@
-import { Button, Card, Text, Tooltip, useColorMode } from "@chakra-ui/react";
-import { useTranslation } from "next-i18next";
-import { LucideIcon, Sun } from "lucide-react";
+import { Box, Button, Card, Text, Tooltip } from "@chakra-ui/react";
+import clsx from "clsx";
+import { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useTranslation } from "next-i18next";
+import { getTypeSafei18nKey } from "src/lib/i18n";
 
-export interface MenuButtonOption {
-  label: string;
+import { HEADER_HEIGHT } from "./Header/Header";
+
+export interface SideMenuItemType {
+  labelID: string;
   pathname: string;
   icon: LucideIcon;
+  target?: HTMLAnchorElement["target"];
 }
 
 export interface SideMenuProps {
-  buttonOptions: MenuButtonOption[];
+  items: SideMenuItemType[];
 }
 
-export function SideMenu(props: SideMenuProps) {
-  const router = useRouter();
-  const { colorMode, toggleColorMode } = useColorMode();
-  const { t } = useTranslation(["side_menu", "common"]);
+export const SIDE_MENU_WIDTH = {
+  MD: `100px`,
+  LG: `280px`,
+};
 
+export function SideMenu({ items }: SideMenuProps) {
   return (
-    <main className="sticky top-0 sm:h-full">
-      <Card
-        display={{ base: "grid", sm: "flex" }}
-        width={["100%", "100%", "100px", "280px"]}
-        className="grid-cols-4 gap-2 sm:flex-col sm:justify-between p-4 h-full"
+    <Card
+      position={{ base: "relative", md: "fixed" }}
+      p={{ base: 4, md: 3, lg: 4 }}
+      width={{
+        base: "100%",
+        md: SIDE_MENU_WIDTH.MD,
+        lg: SIDE_MENU_WIDTH.LG,
+      }}
+      height={{ base: "auto", md: `calc(100vh - ${HEADER_HEIGHT} - ${1.5 * 2}rem)` }}
+    >
+      <Box
+        as="nav"
+        gap="2"
+        display={{ base: "grid", md: "flex" }}
+        flexDirection="column"
+        className="grid-cols-3 col-span-3"
       >
-        <nav className="grid grid-cols-3 col-span-3 sm:flex sm:flex-col gap-2">
-          {props.buttonOptions.map((item, itemIndex) => (
-            <Tooltip
-              key={itemIndex}
-              fontFamily="inter"
-              label={item.label}
-              placement="right"
-              className="hidden lg:hidden sm:block"
-            >
-              <Link key={`${item.label}-${itemIndex}`} href={item.pathname} style={{ textDecoration: "none" }}>
-                <Button
-                  justifyContent={["center", "center", "center", "left"]}
-                  gap="3"
-                  size="lg"
-                  width="full"
-                  bg={router.pathname === item.pathname ? "blue.500" : null}
-                  _hover={router.pathname === item.pathname ? { bg: "blue.600" } : null}
-                >
-                  <item.icon size={"1em"} className={router.pathname === item.pathname ? "text-blue-200" : null} />
-                  <Text
-                    fontWeight="normal"
-                    color={router.pathname === item.pathname ? "white" : null}
-                    className="hidden lg:block"
-                  >
-                    {item.label}
-                  </Text>
-                </Button>
-              </Link>
-            </Tooltip>
-          ))}
-        </nav>
-        <div>
-          <Tooltip fontFamily="inter" label="Toggle Dark Mode" placement="right" className="hidden lg:hidden sm:block">
-            <Button size="lg" width="full" justifyContent="center" onClick={toggleColorMode} gap="2">
-              <Sun size={"1em"} />
-              <Text fontWeight="normal" className="hidden lg:block">
-                {colorMode === "light" ? t("common:dark_mode") : t("common:light_mode")}
-              </Text>
-            </Button>
-          </Tooltip>
-        </div>
-      </Card>
-    </main>
+        {items.map((item) => (
+          <SideMenuItem item={item} key={item.labelID} variant="default"></SideMenuItem>
+        ))}
+      </Box>
+    </Card>
   );
 }
+
+export const SideMenuItem = ({
+  item,
+  variant = "default",
+  active,
+}: {
+  item: SideMenuItemType;
+  variant: "default" | "chat";
+  active?: boolean;
+}) => {
+  const isChat = variant === "chat";
+  const router = useRouter();
+  const { t } = useTranslation();
+  const label = t(getTypeSafei18nKey(item.labelID));
+  const isActive = active ?? router.pathname === item.pathname;
+  return (
+    <Tooltip
+      key={item.labelID}
+      label={label}
+      placement="right"
+      className={clsx("hidden sm:block", { "lg:hidden": !isChat })}
+    >
+      <Button
+        as={Link}
+        key={item.labelID}
+        href={item.pathname}
+        target={item.target}
+        className="no-underline"
+        gap={3}
+        borderRadius={isChat ? "2xl" : "lg"}
+        size="lg"
+        justifyContent={{ base: "center", lg: isChat ? "center" : "start" }}
+        width="full"
+        p={isChat ? 2 : undefined}
+        bg={isActive ? "blue.500" : undefined}
+        _hover={isActive ? { bg: "blue.600" } : undefined}
+      >
+        <item.icon size={"1em"} className={isActive ? "text-blue-200" : undefined} />
+        <Text
+          fontWeight="normal"
+          color={isActive ? "white" : undefined}
+          className={clsx("hidden", { "lg:block": !isChat })}
+        >
+          {label}
+        </Text>
+      </Button>
+    </Tooltip>
+  );
+};

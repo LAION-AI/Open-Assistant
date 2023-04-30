@@ -1,0 +1,23 @@
+{
+  "blurb": "Wij geloven dat we een revolutie kunnen creëren.",
+  "blurb1": "Stable Diffusion heeft de artistieke en visuele creatie veranderd door nieuwe benaderingen aan te bieden. Op dezelfde manier streven we ernaar de wereld te veranderen door een uitzonderlijk kwalitatieve conversationale AI aan te bieden.",
+  "description": "Ons doel is conversationale AI voor iedereen toegankelijk te maken. Om dit te bereiken, lanceren we een open-source project om een GPT LLM (taalmodel) voor chat te ontwikkelen, geleid door LAION en ondersteund door bijdragers over de hele wereld.",
+  "faq_items": {
+    "q0": "Hoe ver staat dit project?",
+    "a0": "Wij bevinden ons in de vroege ontwikkelingsfase en baseren ons op op bestaand onderzoek bij het toepassen van RLHF (reinforcement learning from human feedback) op grote taalmodellen.",
+    "q1": "Wie heeft Open Assistant opgericht?",
+    "a1": "Open Assistant is een project georganiseerd door LAION en mensen over de hele wereld die geïnteresseerd zijn in het beschikbaar maken van technologie voor iedereen.",
+    "q2": "Welk type licentie wordt gebruikt door Open Assistant?",
+    "a2": "De code en modellen hebben een Apache 2.0-licentie.",
+    "q3": "Zullen de trainingsgegevens ook worden gepubliceerd?",
+    "a3": "Ja, onder CC BY 4.0-licentie.",
+    "q4": "Is Open Assistant gratis?",
+    "a4": "Ja, Open Assistant is gratis om te gebruiken en te wijzigen.",
+    "q5": "Welke hardware is nodig om de modellen te laten werken?",
+    "a5": "Er zullen versies worden uitgebracht die op consumentenhardware kunnen worden uitgevoerd."
+  },
+  "faq_title": "Veelgestelde vragen",
+  "join_us_description": "Alle open source-projecten beginnen met mensen zoals jij. Open source is de overtuiging dat als we samenwerken, we onze kennis en technologie samen aan de wereld kunnen aanbieden ten bate van de mensheid. Ben je klaar om ons te vervoegen? Je vindt ons hier:",
+  "join_us_title": "Sluit je bij ons aan",
+  "subtitle": "Conversationale AI voor iedereen."
+}

@@ -1,0 +1,26 @@
+{
+  "blurb": "我们相信我们即将创造一场革命",
+  "blurb1": "正如 Stable Diffusion 改变了现代艺术的创作过程, 我们将透过对话式 AI 来改变世界.",
+  "description": "面向所有人的对话式 AI, 这是一个由 LAION 和全球贡献者共同开发的 GPT LLM 项目.",
+  "faq_items": {
+    "q0": "这个项目进展如何?",
+    "a0": "我们处于研发的初期阶段, 目前正参照现有研究将 RLHF 应用于 LLM.",
+    "q1": "谁在支持 Open Assistant?",
+    "a1": "Open Assistant 是由 LAION 和全球贡献者组织的项目.",
+    "q2": "Open Assistant 使用什么开源协议?",
+    "a2": "代码和模型均使用 Apache 2.0 许可证.",
+    "q3": "训练数据也会公开吗?",
+    "a3": "是的, 训练数据将以 CC BY 4.0 许可证发布.",
+    "q4": "Open Assistant 会是免费的吗？",
+    "a4": "没错, Open Assistant 将开放免费使用.",
+    "q5": "运行这些模型需要什么样的硬件?",
+    "a5": "我们的最终目标是希望这些模型能在消费级的硬件上运行."
+  },
+  "faq_title": "常见问题",
+  "help_us_improve": "帮助我们改进",
+  "hugging_face_link": "查看我们的 HuggingFace",
+  "join_us_description": "所有开源项目都始于像您这样的人. 开源是一种信念, 我们可以共同将知识和技术奉献给全世界, 从而帮助人类. 你愿意加入我们吗? 联系方式:",
+  "join_us_title": "加入我们",
+  "subtitle": "面向所有人的对话式 AI",
+  "try_our_assistant": "试用我们的 AI 助手"
+}

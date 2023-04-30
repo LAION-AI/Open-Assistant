@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from oasst_backend.models.db_payload import MessagePayload
+from oasst_backend.models.user import User
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from pydantic import PrivateAttr
 from sqlalchemy import false
@@ -52,7 +53,7 @@ class Message(SQLModel, table=True):
     deleted: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
 
     review_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
-    review_result: bool = Field(sa_column=sa.Column(sa.Boolean, default=False, server_default=false(), nullable=False))
+    review_result: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=True))
     ranking_count: int = Field(sa_column=sa.Column(sa.Integer, default=0, server_default=sa.text("0"), nullable=False))
 
     rank: Optional[int] = Field(nullable=True)
@@ -64,6 +65,8 @@ class Message(SQLModel, table=True):
 
     emojis: Optional[dict[str, int]] = Field(default=None, sa_column=sa.Column(pg.JSONB), nullable=False)
     _user_emojis: Optional[list[str]] = PrivateAttr(default=None)
+    _user_is_author: Optional[bool] = PrivateAttr(default=None)
+    _user: Optional[bool] = PrivateAttr(default=None)
 
     def ensure_is_message(self) -> None:
         if not self.payload or not isinstance(self.payload.payload, MessagePayload):
@@ -83,3 +86,11 @@ class Message(SQLModel, table=True):
     @property
     def user_emojis(self) -> str:
         return self._user_emojis
+
+    @property
+    def user_is_author(self) -> str:
+        return self._user_is_author
+
+    @property
+    def user(self) -> User:
+        return self._user

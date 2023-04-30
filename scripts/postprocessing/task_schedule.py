@@ -56,7 +56,7 @@ def next_answer_task(possible_prompts, answers_per_prompt):
     This helps to not have too much close-to-finished prompts in the active set.
 
         Parameters:
-            possible_prompts (dict[prompt_id, num_answers]): a dictonary containing all open prompts and the number of answers these prompts currently have.
+            possible_prompts (dict[prompt_id, num_answers]): a dictionary containing all open prompts and the number of answers these prompts currently have.
             answers_per_prompt (int): number of answers we per prompt to target
         Returns:
             prompt_id (int): the prompt_id corresponding to the next prompt that should get a new answer

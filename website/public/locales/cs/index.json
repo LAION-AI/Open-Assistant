@@ -1,0 +1,23 @@
+{
+  "blurb": "Věříme, že dokážeme vytvořit revoluci.",
+  "blurb1": "Stejně jako Stable Diffusion pomohla světu tvořit umění a obrázky novými způsoby, my chceme zlepšit svět poskytnutím úžasné konverzační AI.",
+  "description": "Konverzační umělá inteligence pro každého. Open source projekt, který má za cíl zprovoznit GPT LLM s podporou chatu, od LAION a přispěvatelů z celého světa.",
+  "faq_items": {
+    "q0": "Jak daleko je tento projekt?",
+    "a0": "Jsme v ranné fázi vývoje, vycházíme ze zavedeného výzkumu v oblasti aplikace RLHF na velké jazykové modely.",
+    "q1": "Kdo tvoří Open Assistant?",
+    "a1": "Open Assistant je projekt organizovaný společností LAION a jednotlivci z celého světa, kteří mají zájem zpřístupnit tuto technologii všem.",
+    "q2": "Jakou licenci používá Open Assistant?",
+    "a2": "Kód a modely jsou licencovány pod licencí Apache 2.0.",
+    "q3": "Budou zpřístupněna i trénovací data?",
+    "a3": "Ano, pod licencí CC BY 4.0.",
+    "q4": "Bude Open Assistant zdarma?",
+    "a4": "Ano, Open Assistant bude možné používat a upravovat zdarma.",
+    "q5": "Jaký hardware bude potřeba k provozování modelů?",
+    "a5": "Budoucí verze bude možné spustit i na běžném domácím hardwaru."
+  },
+  "faq_title": "Časté dotazy",
+  "join_us_description": "Všechny open source projekty začínají u lidí, jako jste vy. Open source je víra, že pokud budeme spolupracovat, můžeme společně darovat své znalosti a technologie světu ve prospěch lidstva. Jste pro? Najdete nás zde:",
+  "join_us_title": "Přidejte se k nám",
+  "subtitle": "Konverzační AI pro každého."
+}

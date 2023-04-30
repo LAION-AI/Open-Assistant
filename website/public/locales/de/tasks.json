@@ -1,11 +1,19 @@
 {
-  "default": {
-    "unchanged_title": "Keine Änderungen",
-    "unchanged_message": "Möchten Sie wirklich fortfahren?"
+  "available_task_count": "{{count}} Aufgaben verfügbar",
+  "classify_assistant_reply": {
+    "label": "Antwort des Assistenten klassifizieren",
+    "desc": "Labeln Sie die Antwort.",
+    "overview": "Lesen Sie das folgende Gespräch und beantworten Sie die Frage zur letzten Antwort in der Diskussion."
   },
-  "random": {
-    "label": "Auf gut Glück",
-    "desc": "Helfen Sie uns, Open Assistant zu verbessern, indem Sie eine zufällige Aufgabe starten."
+  "classify_initial_prompt": {
+    "label": "Initialen Prompt klassifizieren",
+    "desc": "Labeln Sie den initialen Prompt.",
+    "overview": "Lesen Sie den folgenden Prompt und beantworten Sie dann die Frage dazu."
+  },
+  "classify_prompter_reply": {
+    "label": "Prompter-Antwort klassifizieren",
+    "desc": "Labeln Sie die Antwort.",
+    "overview": "Lesen Sie das folgende Gespräch und beantworten Sie die Frage zur letzten Antwort in der Diskussion."
   },
   "create_initial_prompt": {
     "label": "Initialer Prompt",
@@ -14,25 +22,28 @@
     "instruction": "Geben Sie den initialen Prompt ein",
     "response_placeholder": "Schreiben Sie hier Ihren Prompt..."
   },
-  "reply_as_user": {
-    "label": "Als Benutzer antworten",
-    "desc": "Chatten Sie mit Open Assistant und helfen Sie, seine Antworten zu verbessern, während Sie damit interagieren.",
-    "overview": "Geben Sie angesichts des folgenden Gesprächs eine angemessene Antwort.",
-    "instruction": "Geben Sie die Antwort des Benutzers an",
-    "response_placeholder": "Schreiben Sie hier Ihre Antwort..."
+  "default": {
+    "unchanged_title": "Keine Änderungen",
+    "unchanged_message": "Möchten Sie wirklich fortfahren?"
   },
-  "reply_as_assistant": {
-    "label": "Als Assistent antworten",
-    "desc": "Helfen Sie Open Assistant dabei, seine Antworten auf Gespräche mit anderen Benutzern zu verbessern.",
-    "overview": "Geben Sie angesichts des folgenden Gesprächs eine angemessene Antwort.",
-    "response_placeholder": "Schreiben Sie hier Ihre Antwort..."
+  "label_assistant_reply": {
+    "label": "Antwort des Assistenten labeln",
+    "desc": "Labeln Sie die Antwort.",
+    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachricht."
   },
-  "rank_user_replies": {
-    "label": "Benutzerantworten einstufen",
-    "desc": "Helfen Sie Open Assistant dabei, seine Antworten auf Gespräche mit anderen Benutzern zu verbessern.",
-    "overview": "Sortieren Sie die folgenden Benutzerantworten von der Besten zur Schlechtesten, wobei die Beste zuerst und die Schlechteste zuletzt kommt.",
-    "unchanged_title": "Reihenfolge unverändert",
-    "unchanged_message": "Sie haben die Reihenfolge nicht geändert. Möchten Sie wirklich fortfahren?"
+  "label_initial_prompt": {
+    "label": "Initiale Prompts labeln",
+    "desc": "Labeln Sie die initialen Prompts.",
+    "overview": "Wählen Sie Labels für den folgenden Prompt."
+  },
+  "label_prompter_reply": {
+    "label": "Prompter-Antwort labeln",
+    "desc": "Labeln Sie die Antwort.",
+    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachricht."
+  },
+  "random": {
+    "label": "Auf gut Glück",
+    "desc": "Helfen Sie uns, Open Assistant zu verbessern, indem Sie eine zufällige Aufgabe starten."
   },
   "rank_assistant_replies": {
     "label": "Assistentenantworten einstufen",
@@ -48,34 +59,24 @@
     "unchanged_title": "Reihenfolge unverändert",
     "unchanged_message": "Sie haben die Reihenfolge nicht geändert. Möchten Sie wirklich fortfahren?"
   },
-  "label_initial_prompt": {
-    "label": "Initiale Prompts labeln",
-    "desc": "Labeln Sie die initialen Prompts.",
-    "overview": "Wählen Sie Labels für den folgenden Prompt."
+  "rank_user_replies": {
+    "label": "Benutzerantworten einstufen",
+    "desc": "Helfen Sie Open Assistant dabei, seine Antworten auf Gespräche mit anderen Benutzern zu verbessern.",
+    "overview": "Sortieren Sie die folgenden Benutzerantworten von der Besten zur Schlechtesten, wobei die Beste zuerst und die Schlechteste zuletzt kommt.",
+    "unchanged_title": "Reihenfolge unverändert",
+    "unchanged_message": "Sie haben die Reihenfolge nicht geändert. Möchten Sie wirklich fortfahren?"
   },
-  "label_prompter_reply": {
-    "label": "Prompter-Antwort labeln",
-    "desc": "Labeln Sie die Antwort.",
-    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht."
+  "reply_as_assistant": {
+    "label": "Als Assistent antworten",
+    "desc": "Helfen Sie Open Assistant dabei, seine Antworten auf Gespräche mit anderen Benutzern zu verbessern.",
+    "overview": "Geben Sie angesichts des folgenden Gesprächs eine angemessene Antwort.",
+    "response_placeholder": "Schreiben Sie hier Ihre Antwort..."
   },
-  "label_assistant_reply": {
-    "label": "Antwort des Assistenten labeln",
-    "desc": "Labeln Sie die Antwort.",
-    "overview": "Wählen Sie angesichts der folgenden Diskussion Labels für die letzte Nachticht."
-  },
-  "classify_initial_prompt": {
-    "label": "Initialen Prompt klassifizieren",
-    "desc": "Labeln Sie den initialen Prompt.",
-    "overview": "Lesen Sie den folgenden Prompt und beantworten Sie dann die Frage dazu."
-  },
-  "classify_prompter_reply": {
-    "label": "Prompter-Antwort klassifizieren",
-    "desc": "Labeln Sie die Antwort.",
-    "overview": "Lesen Sie das folgende Gespräch und beantworten Sie die Frage zur letzten Antwort in der Diskussion."
-  },
-  "classify_assistant_reply": {
-    "label": "Antwort des Assistenten klassifizieren",
-    "desc": "Labeln Sie die Antwort.",
-    "overview": "Lesen Sie das folgende Gespräch und beantworten Sie die Frage zur letzten Antwort in der Diskussion."
+  "reply_as_user": {
+    "label": "Als Benutzer antworten",
+    "desc": "Chatten Sie mit Open Assistant und helfen Sie, seine Antworten zu verbessern, während Sie damit interagieren.",
+    "overview": "Geben Sie angesichts des folgenden Gesprächs eine angemessene Antwort.",
+    "instruction": "Geben Sie die Antwort des Benutzers an",
+    "response_placeholder": "Schreiben Sie hier Ihre Antwort..."
   }
 }

@@ -1,0 +1,18 @@
+{
+  "daily": "Dzienny",
+  "label": "Etykiety",
+  "last_updated_at": "Ostatnia aktualizacja: {{val, datetime}}",
+  "leaderboard": "Ranking",
+  "monthly": "Miesięczny",
+  "next": "Następna",
+  "overall": "Ogólny",
+  "previous": "Poprzednia",
+  "prompt": "Polecenia",
+  "rank": "Pozycja",
+  "reply": "Odpowiedzi",
+  "score": "Wynik",
+  "top_5_contributors_today": "Top 5 Dzisiejszych Uczestników",
+  "user": "Użytkownik",
+  "view_all": "Wyświetl wszystkich",
+  "weekly": "Tygodniowy"
+}

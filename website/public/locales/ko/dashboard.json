@@ -1,8 +1,8 @@
 {
-  "grab_a_task": "작업을 선택하세요!",
   "create": "만들다",
-  "evaluate": "평가하다",
-  "label": "레이블",
   "dashboard": "대시보드",
-  "go": "시작"
+  "evaluate": "평가하다",
+  "go": "시작",
+  "grab_a_task": "작업을 선택하세요!",
+  "label": "레이블"
 }

@@ -188,6 +188,7 @@ def get_user(
 @router.put("/{user_id}", status_code=HTTP_204_NO_CONTENT)
 def update_user(
     user_id: UUID,
+    display_name: Optional[str] = None,
     enabled: Optional[bool] = None,
     notes: Optional[str] = None,
     show_on_leaderboard: Optional[bool] = None,
@@ -199,7 +200,7 @@ def update_user(
     Update a user by global user ID. Only trusted clients can update users.
     """
     ur = UserRepository(db, api_client)
-    ur.update_user(user_id, enabled, notes, show_on_leaderboard, tos_acceptance)
+    ur.update_user(user_id, display_name, enabled, notes, show_on_leaderboard, tos_acceptance)
 
 
 @router.delete("/{user_id}", status_code=HTTP_204_NO_CONTENT)
@@ -210,6 +211,7 @@ def delete_user(
 ):
     """
     Delete a user by global user ID. Only trusted clients can delete users.
+    User deletion anonymises the data of the user.
     """
     ur = UserRepository(db, api_client)
     ur.mark_user_deleted(user_id)

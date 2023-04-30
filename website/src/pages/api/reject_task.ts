@@ -5,7 +5,7 @@ import prisma from "src/lib/prismadb";
 
 const handler = withoutRole("banned", async (req, res, token) => {
   // Parse out the local task ID and the interaction contents.
-  const { id: frontendId, reason } = req.body;
+  const { id: frontendId } = req.body;
 
   const [oasstApiClient, registeredTask] = await Promise.all([
     createApiClient(token),
@@ -15,7 +15,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   const taskId = (registeredTask.task as Prisma.JsonObject).id as string;
 
   // Update the backend with the rejection
-  await oasstApiClient.nackTask(taskId, reason);
+  await oasstApiClient.nackTask(taskId);
 
   // Send the results to the client.
   res.status(200).json({});

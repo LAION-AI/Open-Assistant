@@ -4,6 +4,7 @@ export interface CreateTaskReply {
 
 export interface EvaluateTaskReply {
   ranking: number[];
+  not_rankable: boolean;
 }
 
 export interface LabelTaskReply {

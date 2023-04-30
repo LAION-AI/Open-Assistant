@@ -1,3 +1,5 @@
+<a href="https://github-com.translate.goog/LAION-AI/Open-Assistant/blob/main/website/README.md?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=wapp">![Translate](https://img.shields.io/badge/Translate-blue)</a>
+
 # Open-Assistant NextJS Website
 
 ## Purpose
@@ -32,24 +34,29 @@ This website is built using:
 
 To contribute to the website, make sure you have the following setup and installed:
 
-1.  [NVM](https://github.com/nvm-sh/nvm): The Node Version Manager makes it easy to ensure you have the right NodeJS
-    version installed. Once installed, run `nvm use 16` to use Node 16.x. The website is known to be stable with NodeJS
-    version 16.x. This will install both Node and NPM.
+1.  Node 16: if you are on windows, you can [download node from their website](https://nodejs.org/en/download/releases),
+    if you are on linux, use [NVM](https://github.com/nvm-sh/nvm) (Once installed, run `nvm use 16`)
 1.  [Docker](https://www.docker.com/): We use docker to simplify running dependent services.
 
 ### Getting everything up and running
 
 If you're doing active development we suggest the following workflow:
 
-1.  In one tab, navigate to the project root.
-1.  Run `docker compose up frontend-dev --build --attach-dependencies`. You can optionally include `-d` to detach and
-    later track the logs if desired.
-1.  In another tab navigate to `${OPEN_ASSISTANT_ROOT/website`.
+1.  Open the terminal, navigate to the project root.
+1.  Run `docker compose --profile frontend-dev up --build --attach-dependencies`. You can optionally include `-d` to
+    detach and later track the logs if desired.
+    - If you want to work on the chat api, you need to run the inference profile as well. Your new command would look
+      like: `docker compose --profile frontend-dev --profile inference up --build --attach-dependencies`
+    - See [FAQ](https://projects.laion.ai/Open-Assistant/docs/faq#enable-dockers-buildkit-backend) if you face any
+      docker problems.
+    - Leave this running in the background and continue:
+1.  Open another terminal tab, navigate to `${OPEN_ASSISTANT_ROOT/website`.
 1.  Run `npm ci`
 1.  Run `npx prisma db push` (This is also needed when you restart the docker stack from scratch).
 1.  Run `npm run dev`. Now the website is up and running locally at `http://localhost:3000`.
 1.  To create an account, login via the user using email authentication and navigate to `http://localhost:1080`. Check
     the email listed and click the log in link. You're now logged in and authenticated.
+    > **Note:** when running on MacOS with an M1 chip you have to use: `DB_PLATFORM=linux/x86_64 docker compose ...`
 
 ### Using debug user credentials
 
@@ -61,13 +68,32 @@ You can use the debug credentials provider to log in without fancy emails or OAu
 1. Use the `Login` button in the top right to go to the login page.
 1. You should see a section for debug credentials. Enter any username you wish, you will be logged in as that user.
 
+### Testing Oauth login to the inference server
+
+Create a `docker-compose.override.yml` in the root of the repo, and add the following to it
+
+```yml
+services:
+  inference-server:
+    environment:
+      # fill out these variables, you would need to create an app from the corresponding provider(s)
+      # you can fill only one of them if you want to
+      AUTH_DISCORD_CLIENT_ID:
+      AUTH_DISCORD_CLIENT_SECRET:
+
+      AUTH_GITHUB_CLIENT_ID:
+      AUTH_GITHUB_CLIENT_SECRET:
+```
+
+And now when you start all containers, the possibility to login to inference through these providers will be available.
+
 ### Using Storybook
 
 To develop components using [Storybook](https://storybook.js.org/) run `npm run storybook`. Then navigate to in your
 browser to `http://localhost:6006`.
 
-To create a new story create a file named `[componentName].stories.js`. An example how such a story could look like, see
-`Header.stories.jsx`.
+To create a new story create a file named `[componentName].stories.tsx`. An example how such a story could look like,
+see `Header.stories.tsx`.
 
 ## Code Layout
 
@@ -100,7 +126,7 @@ Cypress is used for end-to-end (e2e) and component testing and is configured in 
 folder is used for supporting configuration files etc.
 
 - Store e2e tests in the `./cypress/e2e` folder.
-- Store component tests adjacent to the component being tested. If you want to wriite a test for
+- Store component tests adjacent to the component being tested. If you want to write a test for
   `./src/components/Layout.tsx` then store the test file at `./src/components/Layout.cy.tsx`.
 
 A few npm scripts are available for convenience:

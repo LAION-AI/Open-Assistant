@@ -1,0 +1,85 @@
+{
+  "any_feedback_on_this_task": "Enige feedback op deze taak?",
+  "available_task_count": "{{count}} taken beschikbaar",
+  "default": {
+    "unchanged_title": "Geen veranderingen",
+    "unchanged_message": "Weet je zeker dat je door wilt gaan?"
+  },
+  "random": {
+    "label": "Ik doe een gok",
+    "desc": "Help ons Open Assistant te verbeteren door een willekeurige taak te starten."
+  },
+  "create_initial_prompt": {
+    "label": "Maak eerste prompt",
+    "desc": "Schrijf eerste prompts om Open Assistant te helpen te antwoorden op diverse berichten. (meedoen aan loting)",
+    "overview": "Maak een initiëel bericht om naar de assistent te sturen",
+    "instruction": "Geef de initiële prompts",
+    "response_placeholder": "Schrijf je prompt hier..."
+  },
+  "reply_as_user": {
+    "label": "Antwoord als gebruiker",
+    "desc": "Chat met Open Assistant en help bij het verbeteren van de antwoorden terwijl je ermee communiceert.",
+    "overview": "Gegeven het volgende gesprek, geef een geschikt antwoord",
+    "instruction": "Geef het antwoord van de gebruiker",
+    "response_placeholder": "Schrijf je antwoord hier..."
+  },
+  "reply_as_assistant": {
+    "label": "Antwoord als Assistent",
+    "desc": "Help Open Assistant zijn antwoorden op gesprekken met andere gebruikers te verbeteren.",
+    "overview": "Geef een gepast antwoord op het volgende gesprek",
+    "response_placeholder": "Schrijf hier je antwoord..."
+  },
+  "rank_user_replies": {
+    "label": "Rangschik gebruikersantwoorden",
+    "desc": "Help Open Assistant zijn antwoorden op gesprekken met andere gebruikers te verbeteren.",
+    "overview": "Sorteer de volgende gebruikersantwoorden van beste naar slechtste, het beste eerst, het slechtste laatst.",
+    "unchanged_title": "Volgorde onveranderd",
+    "unchanged_message": "Je hebt de volgorde van de prompts niet veranderd. Weet je zeker dat je wilt doorgaan?"
+  },
+  "rank_assistant_replies": {
+    "label": "Rangschik antwoorden Assistent",
+    "desc": "Beoordeel prompts gegeven door Open Assistant op hun nauwkeurigheid en leesbaarheid.",
+    "overview": "Sorteer de volgende antwoorden van de Assistent van beste naar slechtste, het beste eerst, het slechtste laatst.",
+    "unchanged_title": "Volgorde onveranderd",
+    "unchanged_message": "Je hebt de volgorde van de prompts niet veranderd. Weet je zeker dat je wilt doorgaan?"
+  },
+  "rank_initial_prompts": {
+    "label": "Rangschik initiële prompts",
+    "desc": "Beoordeel prompts gegeven door Open Assistant op hun nauwkeurigheid en leesbaarheid.",
+    "overview": "Gegeven de volgende initiële prompts, sorteer ze van beste naar slechtste, het beste eerst, het slechtste laatst.",
+    "unchanged_title": "Volgorde onveranderd",
+    "unchanged_message": "Je hebt de volgorde van de prompts niet veranderd. Weet je zeker dat je wilt doorgaan?"
+  },
+  "label_initial_prompt": {
+    "label": "Label Initiële Prompt",
+    "desc": "Geef labels voor een prompt.",
+    "overview": "Geef labels voor de volgende prompt"
+  },
+  "label_prompter_reply": {
+    "label": "Label Prompter Antwoord",
+    "desc": "Geef labels voor een prompt.",
+    "overview": "Geef labels voor de laatste prompt van de volgende discussie."
+  },
+  "label_assistant_reply": {
+    "label": "Label Assistent Antwoord",
+    "desc": "Geef labels voor een prompt.",
+    "overview": "Geef labels voor de laatste prompt van de volgende discussie."
+  },
+  "classify_initial_prompt": {
+    "label": "Classificeer Initiële Prompt",
+    "desc": "Geef labels voor een prompt.",
+    "overview": "Lees de volgende prompt en beantwoord daarna de vraag over de prompt."
+  },
+  "classify_prompter_reply": {
+    "label": "Classificeer Prompter Antwoord",
+    "desc": "Geef labels voor een prompt.",
+    "overview": "Lees de volgende discussie en beantwoord daarna de vraag over het laatste antwoord in de discussie."
+  },
+  "classify_assistant_reply": {
+    "label": "Classificeer Assistent Antwoord",
+    "desc": "Geef labels voor een prompt.",
+    "overview": "Lees de volgende discussie en beantwoord daarna de vraag over het laatste antwoord in de discussie."
+  },
+  "submitted_as": "Dit zal ingediend worden als {{submit_lang}}",
+  "writing_wrong_langauge_a_b": "Je schrijft in {{detected_lang}} maar dit zal ingediend worden als {{submit_lang}}."
+}

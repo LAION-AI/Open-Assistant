@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from oasst_shared.schemas.protocol import TextLabel
 from pydantic import AnyHttpUrl, BaseModel, BaseSettings, FilePath, PostgresDsn, validator
@@ -14,7 +14,7 @@ class TreeManagerConfiguration(BaseModel):
     number is reached."""
 
     max_initial_prompt_review: int = 100
-    """Maximum number of initial prompts under review before no more inital prompt tasks will be handed out."""
+    """Maximum number of initial prompts under review before no more initial prompt tasks will be handed out."""
 
     max_tree_depth: int = 3
     """Maximum depth of message tree."""
@@ -54,7 +54,7 @@ class TreeManagerConfiguration(BaseModel):
     p_full_labeling_review_prompt: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for initial prompts."""
 
-    p_full_labeling_review_reply_assistant: float = 0.5
+    p_full_labeling_review_reply_assistant: float = 1.0
     """Probability of full text-labeling (instead of mandatory only) for assistant replies."""
 
     p_full_labeling_review_reply_prompter: float = 0.25
@@ -75,7 +75,7 @@ class TreeManagerConfiguration(BaseModel):
 
     min_active_rankings_per_lang: int = 0
     """When the number of active ranking tasks is below this value when a tree enters a terminal
-    state an available trees in BACKLOG_RANKING will be actived (i.e. enters the RANKING state)."""
+    state an available trees in BACKLOG_RANKING will be activated (i.e. enters the RANKING state)."""
 
     labels_initial_prompt: list[TextLabel] = [
         TextLabel.spam,
@@ -111,8 +111,8 @@ class TreeManagerConfiguration(BaseModel):
         TextLabel.spam,
         TextLabel.lang_mismatch,
         TextLabel.quality,
-        TextLabel.humor,
         TextLabel.creativity,
+        TextLabel.humor,
         TextLabel.toxicity,
         TextLabel.violence,
         TextLabel.not_appropriate,
@@ -138,8 +138,22 @@ class TreeManagerConfiguration(BaseModel):
     p_lonely_child_extension: float = 0.75
     """Probability to select a prompter message parent with less than lonely_children_count children."""
 
-    recent_tasks_span_sec: int = 3 * 60  # 3 min
+    recent_tasks_span_sec: int = 5 * 60  # 5 min
     """Time in seconds of recent tasks to consider for exclusion during task selection."""
+
+    max_pending_tasks_per_user: int = 8
+    """Maximum number of pending tasks (neither canceled nor completed) by a single user within
+    the time span defined by `recent_tasks_span_sec`."""
+
+    max_prompt_lottery_waiting: int = 250
+    """Maximum number of prompts in prompt_lottery_waiting state per language. If this value
+    is exceeded no new initial prompt tasks for that language are generated."""
+
+    init_prompt_disabled_langs: str = ""
+
+    @property
+    def init_prompt_disabled_langs_list(self) -> list[str]:
+        return self.init_prompt_disabled_langs.split(",")
 
 
 class Settings(BaseSettings):
@@ -182,6 +196,7 @@ class Settings(BaseSettings):
         Path(__file__).parent.parent / "test_data/realistic/realistic_seed_data.json"
     )
     DEBUG_ALLOW_SELF_LABELING: bool = False  # allow users to label their own messages
+    DEBUG_ALLOW_SELF_RANKING: bool = False  # allow users to rank their own messages
     DEBUG_ALLOW_DUPLICATE_TASKS: bool = False  # offer users tasks to which they already responded
     DEBUG_SKIP_EMBEDDING_COMPUTATION: bool = False
     DEBUG_SKIP_TOXICITY_CALCULATION: bool = False
@@ -196,6 +211,8 @@ class Settings(BaseSettings):
 
     ROOT_TOKENS: List[str] = ["1234"]  # supply a string that can be parsed to a json list
 
+    ENABLE_PROM_METRICS: bool = True  # enable prometheus metrics at /metrics
+
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
@@ -209,16 +226,18 @@ class Settings(BaseSettings):
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 
+    BACKEND_CORS_ORIGINS_CSV: Optional[str]  # allow setting CORS origins as comma separated values
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-    UPDATE_ALEMBIC: bool = True
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
+    def assemble_cors_origins(cls, v: Optional[List[str]], values: Dict[str, Any]) -> List[str]:
+        s = values.get("BACKEND_CORS_ORIGINS_CSV")
+        if isinstance(s, str):
+            v = [i.strip() for i in s.split(",")]
             return v
-        raise ValueError(v)
+        return v
+
+    UPDATE_ALEMBIC: bool = True
 
     tree_manager: Optional[TreeManagerConfiguration] = TreeManagerConfiguration()
 
@@ -240,10 +259,18 @@ class Settings(BaseSettings):
             raise ValueError(v)
         return v
 
-    RATE_LIMIT_TASK_USER_TIMES: int = 60
-    RATE_LIMIT_TASK_USER_MINUTES: int = 5
+    CACHED_STATS_UPDATE_INTERVAL: int = 60  # minutes
+
+    RATE_LIMIT_TASK_USER_TIMES: int = 30
+    RATE_LIMIT_TASK_USER_MINUTES: int = 4
     RATE_LIMIT_TASK_API_TIMES: int = 10_000
     RATE_LIMIT_TASK_API_MINUTES: int = 1
+
+    RATE_LIMIT_ASSISTANT_USER_TIMES: int = 4
+    RATE_LIMIT_ASSISTANT_USER_MINUTES: int = 2
+
+    RATE_LIMIT_PROMPTER_USER_TIMES: int = 8
+    RATE_LIMIT_PROMPTER_USER_MINUTES: int = 2
 
     TASK_VALIDITY_MINUTES: int = 60 * 24 * 2  # tasks expire after 2 days
 

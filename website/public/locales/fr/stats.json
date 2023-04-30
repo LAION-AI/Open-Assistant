@@ -1,0 +1,17 @@
+{
+  "aborted_low_grade": "Aborted low grade",
+  "backlog_ranking": "Backlog ranking",
+  "choose_a_language": "Choississez une langue",
+  "count": "Count",
+  "growing": "Growing",
+  "halted_by_moderator": "Interrompu par un modérateur",
+  "human_messages_by_lang": "Messages humain par langues",
+  "human_messages_by_role": "Messages humain par rôles",
+  "initial_prompt_review": "Initial prompt review",
+  "message_trees_by_state": "Arbres de messages par état",
+  "message_trees_states_by_lang": "Arbre de message par langue",
+  "prompter": "Prompteur",
+  "ranking": "Classement",
+  "ready_for_export": "Prêt à l'export",
+  "stats": "Statistiques"
+}

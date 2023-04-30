@@ -15,7 +15,7 @@ trained on
 | multilingual | xlm-roberta-base  | Multilingual Toxic Comment Classification  |
 
 Unbiased and original models also have a 'small' version - but since normal
-models are not memory heavy, and small models perform noticably worse, they are
+models are not memory heavy, and small models perform noticeably worse, they are
 only described in the notebook
 
 ## All tests below were ran on a 3090TI

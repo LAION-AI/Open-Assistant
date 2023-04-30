@@ -1,0 +1,481 @@
+defaults:
+  rng_seed: 0xa1221f97
+  learning_rate: 1e-5
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 32
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1e-12
+  weight_decay: 0.00
+  warmup_steps: 600
+  eval_steps: 200
+  save_strategy: steps
+  save_steps: 1000
+  max_length: 512
+  val_max_length:
+  num_train_epochs: 3
+  logging_steps: 10
+  max_grad_norm: 2.0
+  save_total_limit: 4
+  dtype: fp16
+  eval_accumulation_steps:
+  freeze_layer:
+  datasets:
+    - webgpt
+    - squad_v2
+    - adversarial_qa
+    - trivia_qa_nocontext
+    - xsum
+    - cnn_dailymail
+    - multi_news
+    - scitldr
+    - soda:
+        input_max_length: 1024
+    - joke
+    - gsm8k
+    - dive_mt
+    - wmt2019_zh-en
+    - wmt2019_ru-en
+    - wmt2019_de-en
+    - ted_trans_nl-en
+    - ted_trans_de-ja
+    - wmt2019_de-en
+    - samsum
+    - soda_dialogue
+  # instructional_datasets:
+  #  - humaneval_mbpp_codegen_qa
+  #  - humaneval_mbpp_testgen_qa
+  #  - grade_school_math_instructions
+  #  - recipes
+  #  - ubuntu_dialogue_qa
+  #  - cmu_wiki_qa
+  #  - youtube_subs_howto100M
+  #  - iapp_wiki_qa_squad
+  #  - zhihu-kol
+  datasets_extra: [] # For config options to add additional datasets, since yaml doesn't let us extend arrays
+  cache_dir: .cache
+  loss_fn: CrossEntropyLoss
+  eval_size:
+  log_dir: "base"
+  quantization: false
+  seq2seqmodel: false
+  poly_eps: 1.0
+  fuse_gelu: true
+  log_wandb: true
+  samples_mixing: false # uses collator that mixes samples in the batch to create a single sample with possible multiple tasks within
+  verbose: false
+  output_dir: saved_model
+  use_custom_sampler: false
+  random_offset_probability: 0.8 # probability for random message offsets
+  label_masking: true
+  residual_dropout: 0.0
+  use_flash_attention: false
+  sort_by_length: false
+  use_system_prefix: false
+  system_prefix:
+    "You are Joi, a large language model trained by Open-Assistant. Answer as
+    concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date:
+    2023-03-12"
+  per_digit_tokens: false
+  is_reward_model: false
+  deepspeed_config: configs/zero_config.json
+
+webgpt_dataset_only:
+  datasets:
+    - webgpt
+
+per_digit_tokens:
+  per_digit_tokens: true
+
+math:
+  datasets_extra: # Will get merged with datasets
+    - minimath
+
+pretrain:
+  num_train_epochs: 1
+  weight_decay: 0.0
+  use_custom_sampler: true
+  sort_by_length: false
+  datasets:
+    - joke:
+        val_split: 0.05
+    - webgpt:
+        val_split: 0.05
+        max_val_set: 250
+    - gpt4all:
+        val_split: 0.01
+        max_val_set: 250
+    - alpaca:
+        val_split: 0.025
+        max_val_set: 250
+    - code_alpaca:
+        val_split: 0.05
+        max_val_set: 250
+    - vicuna:
+        max_val_set: 250
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
+        max_count: 10000
+        min_length: 250
+        val_split: 0.05
+        max_val_set: 250
+    - minimath:
+        val_split: 0.05
+    - humaneval_mbpp_codegen_qa:
+        val_split: 0.05
+    - humaneval_mbpp_testgen_qa:
+        val_split: 0.05
+    - grade_school_math_instructions:
+        val_split: 0.05
+    - recipes:
+        val_split: 0.05
+    - cmu_wiki_qa:
+        val_split: 0.05
+    - oa_wiki_qa_bart_10000row:
+        val_split: 0.05
+        max_val_set: 250
+    - prosocial_dialogue:
+        fraction: 0.1
+        max_val_set: 250
+    - explain_prosocial:
+        fraction: 0.05
+        max_val_set: 250
+    - soda:
+        fraction: 0.2
+        max_val_set: 250
+    - oa_leet10k:
+        val_split: 0.05
+        max_val_set: 250
+
+oasst_only:
+  save_strategy: epoch
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-04-04_oasst_ready.jsonl.gz
+        val_split: 0.05
+  sort_by_length: false
+  use_custom_sampler: false
+
+reference-data:
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-03-25_oasst_research_ready_synth_labels.jsonl.gz
+        val_split: 0.05
+    - alpaca
+  sort_by_length: false
+  use_custom_sampler: false
+
+oasst_export_eu:
+  save_strategy: epoch
+  datasets:
+    - oasst_export:
+        lang: "en,es,de,fr"
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+
+oasst_export_latin_cyrillic:
+  save_strategy: epoch
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-03-27_oasst_research_ready_synth.jsonl.gz
+    - alpaca
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
+        max_count: 10000
+        min_length: 1000
+        val_split: 0.2
+    - oig_file:
+        source_url: https://huggingface.co/datasets/laion/OIG/raw/main/unified_grade_school_math_instructions.jsonl
+        val_split: 0.1
+        min_length: 1000
+  sort_by_length: false
+  use_custom_sampler: false
+
+reference-pythia-12b:
+  dtype: fp16
+  log_dir: "pythia_log_12b"
+  learning_rate: 6e-6
+  model_name: EleutherAI/pythia-12b-deduped
+  output_dir: pythia_model_12b
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  eval_steps: 100
+  save_steps: 1000
+  num_train_epochs: 8
+  save_total_limit: 4
+
+llama-7b:
+  dtype: fp16
+  log_dir: "llama_log_7b"
+  learning_rate: 1e-5
+  model_name: /home/ubuntu/llama_hf/7B
+  output_dir: llama_model_7b
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  eval_steps: 100
+  save_steps: 500
+  num_train_epochs: 8
+  save_total_limit: 4
+  use_flash_attention: true
+
+llama-13b:
+  dtype: fp16
+  log_dir: "llama_log_13b"
+  learning_rate: 1e-5
+  model_name: /home/ubuntu/llama_hf/13B
+  output_dir: llama_model_13b
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 8
+  eval_steps: 50
+  save_steps: 1000
+  num_train_epochs: 8
+  save_total_limit: 4
+  use_flash_attention: true
+
+llama-13b-pretrain:
+  dtype: fp16
+  log_dir: "llama_log_13b"
+  learning_rate: 1e-5
+  model_name: /home/ubuntu/llama_hf/13B
+  output_dir: llama_model_13b
+  deepspeed_config: configs/zero_config_pretrain.json
+  weight_decay: 0.0
+  residual_dropout: 0.0
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 8
+  eval_steps: 200
+  save_steps: 500
+  num_train_epochs: 1
+  save_total_limit: 2
+
+llama-30b:
+  dtype: fp16
+  log_dir: "llama_log_30b"
+  learning_rate: 2e-5
+  model_name: /home/ubuntu/llama_hf/30B
+  output_dir: llama_model_30b
+  weight_decay: 0.0
+  max_length: 512
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 16
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 5
+  eval_steps: 100
+  save_steps: 500
+  num_train_epochs: 16
+  save_total_limit: 4
+  use_flash_attention: true
+
+llama-30b-sft-6:
+  dtype: fp16
+  log_dir: "llama_log_30b"
+  learning_rate: 1e-5
+  #model_name: /home/ubuntu/Open-Assistant/model/model_training/.saved/llama-30b-super-pretrain/checkpoint-3500
+  model_name: OpenAssistant/llama-30b-super-pretrain
+  output_dir: llama_model_30b
+  deepspeed_config: configs/zero3_config_sft.json
+  weight_decay: 0.0
+  residual_dropout: 0.0
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 20
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 3
+  eval_steps: 101
+  save_steps: 485
+  num_train_epochs: 8
+  save_total_limit: 3
+  use_custom_sampler: true
+  sort_by_length: false
+  save_strategy: steps
+  datasets:
+    - oasst_export:
+        lang: "bg,ca,cs,da,de,en,es,fr,hr,hu,it,nl,pl,pt,ro,ru,sl,sr,sv,uk"
+        input_file_path: 2023-04-12_oasst_release_ready_synth.jsonl.gz
+        val_split: 0.05
+    - vicuna:
+        val_split: 0.05
+        max_val_set: 800
+        fraction: 0.8
+    - dolly15k:
+        val_split: 0.05
+        max_val_set: 300
+    - grade_school_math_instructions:
+        val_split: 0.05
+    - code_alpaca:
+        val_split: 0.05
+        max_val_set: 250
+
+llama-30b-pretrain:
+  dtype: fp16
+  log_dir: "llama_log_30b"
+  learning_rate: 1e-5
+  model_name: /home/ubuntu/llama_hf/30B
+  output_dir: llama_model_30b
+  deepspeed_config: configs/zero3_config_pretrain.json
+  weight_decay: 0.0
+  residual_dropout: 0.0
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 3
+  eval_steps: 251
+  save_steps: 500
+  num_train_epochs: 1
+  save_total_limit: 2
+
+pythia-70m-deduped:
+  learning_rate: 8e-6
+  # model_name: EleutherAI/pythia-1b-deduped
+  model_name: EleutherAI/pythia-70m-deduped
+  weight_decay: 0.0
+  max_length: 520
+  warmup_steps: 1000
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 9
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 4
+  output_dir: pythia_model
+
+pythia-1B:
+  learning_rate: 8e-6
+  model_name: EleutherAI/pythia-1b-deduped
+  weight_decay: 0.0
+  max_length: 520
+  warmup_steps: 10
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 16
+
+pythia-6.9B:
+  learning_rate: 8e-6
+  model_name: EleutherAI/pythia-6.9b-deduped
+  weight_decay: 0.0
+  max_length: 2048
+  warmup_steps: 20
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+
+pythia-12B:
+  learning_rate: 6e-6
+  model_name: EleutherAI/pythia-12b-deduped
+  weight_decay: 0.0
+  max_length: 2048
+  use_flash_attention: true
+  warmup_steps: 100
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 5
+  eval_steps: 200
+  save_steps: 500
+  num_train_epochs: 16
+  save_total_limit: 4
+
+gpt-neox:
+  model_name: EleutherAI/gpt-neox-20b
+  deepspeed_config: configs/zero3_config_sft.json
+  dtype: bf16
+  learning_rate: 8e-6
+  weight_decay: 0.0
+  max_length: 1024
+  warmup_steps: 1000
+  eval_steps: 100
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 8
+  residual_dropout: 0.0
+  use_flash_attention: false
+
+galactica-125m:
+  learning_rate: 5e-5
+  model_name: facebook/galactica-125m
+  weight_decay: 0.0
+  warmup_steps: 600
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 2
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+
+gpt-jt:
+  learning_rate: 8e-6
+  model_name: togethercomputer/GPT-JT-6B-v1
+  weight_decay: 0.0
+  max_length: 1024
+  warmup_steps: 600
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+
+cerebras_13B:
+  learning_rate: 6e-6
+  model_name: cerebras/Cerebras-GPT-13B
+  weight_decay: 0.0
+  max_length: 2048
+  output_dir: cerebras_gpt_13b
+
+cerebras_6.7B:
+  learning_rate: 8e-6
+  model_name: cerebras/Cerebras-GPT-6.7B
+  weight_decay: 0.0
+  max_length: 2048
+  output_dir: cerebras_gpt_6_7b
+
+codegen:
+  learning_rate: 8e-6
+  model_name: Salesforce/codegen-2B-multi
+  weight_decay: 0.0
+  max_length: 520
+  warmup_steps: 1000
+  gradient_checkpointing: false
+  gradient_accumulation_steps: 9
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 4
+
+debug:
+  model_name: EleutherAI/pythia-70m-deduped
+  eval_steps: 20
+  eval_size: 20
+  save_steps: 20
+  gradient_accumulation_steps: 1
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  quantization: false
+  log_wandb: false
+  verbose: true
+  num_train_epochs: 0.2

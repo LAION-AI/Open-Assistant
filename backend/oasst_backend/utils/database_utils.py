@@ -140,14 +140,14 @@ def async_managed_tx_method(
     return decorator
 
 
-def default_session_factor() -> Session:
+def default_session_factory() -> Session:
     return Session(engine)
 
 
 def managed_tx_function(
     auto_commit: CommitMode = CommitMode.COMMIT,
     num_retries=settings.DATABASE_MAX_TX_RETRY_COUNT,
-    session_factory: Callable[..., Session] = default_session_factor,
+    session_factory: Callable[..., Session] = default_session_factory,
 ):
     """Passes Session object as first argument to wrapped function."""
 
@@ -208,7 +208,7 @@ def managed_tx_function(
 def async_managed_tx_function(
     auto_commit: CommitMode = CommitMode.COMMIT,
     num_retries=settings.DATABASE_MAX_TX_RETRY_COUNT,
-    session_factory: Callable[..., Session] = default_session_factor,
+    session_factory: Callable[..., Session] = default_session_factory,
 ):
     """Passes Session object as first argument to wrapped function."""
 

@@ -26,7 +26,7 @@ class TaskRequestType(str, enum.Enum):
 class User(BaseModel):
     id: str
     display_name: str
-    auth_method: Literal["discord", "local", "system"]
+    auth_method: Literal["discord", "google", "local", "system"]
 
 
 class Account(BaseModel):
@@ -38,6 +38,11 @@ class Account(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class TokenPair(BaseModel):
+    access_token: Token
+    refresh_token: Token
 
 
 class FrontEndUser(User):
@@ -68,14 +73,16 @@ class FrontEndUserPage(PageResult):
 class ConversationMessage(BaseModel):
     """Represents a message in a conversation between the user and the assistant."""
 
-    id: Optional[UUID] = None
+    id: Optional[UUID]
     user_id: Optional[UUID]
-    frontend_message_id: Optional[str] = None
+    frontend_message_id: Optional[str]
     text: str
     lang: Optional[str]  # BCP 47
     is_assistant: bool
-    emojis: Optional[dict[str, int]] = None
-    user_emojis: Optional[list[str]] = None
+    emojis: Optional[dict[str, int]]
+    user_emojis: Optional[list[str]]
+    user_is_author: Optional[bool]
+    synthetic: Optional[bool]
 
 
 class Conversation(BaseModel):
@@ -101,6 +108,12 @@ class Message(ConversationMessage):
     created_date: Optional[datetime]
     review_result: Optional[bool]
     review_count: Optional[int]
+    deleted: Optional[bool]
+    model_name: Optional[str]
+    message_tree_id: Optional[UUID]
+    ranking_count: Optional[int]
+    rank: Optional[int]
+    user: Optional[FrontEndUser]
 
 
 class MessagePage(PageResult):
@@ -134,7 +147,7 @@ class TaskAck(BaseModel):
 class TaskNAck(BaseModel):
     """The frontend acknowledges that it has received a task but cannot create a message."""
 
-    reason: str
+    reason: str | None = Field(None, nullable=True)
 
 
 class TaskClose(BaseModel):
@@ -222,6 +235,7 @@ class RankConversationRepliesTask(Task):
     reply_messages: list[ConversationMessage]
     message_tree_id: UUID
     ranking_parent_id: UUID
+    reveal_synthetic: bool
 
 
 class RankPrompterRepliesTask(RankConversationRepliesTask):
@@ -347,8 +361,9 @@ class MessageRanking(Interaction):
     """A user has given a ranking for a message."""
 
     type: Literal["message_ranking"] = "message_ranking"
-    message_id: str
+    message_id: str  # parent message of replies that were ranked
     ranking: conlist(item_type=int, min_items=1)
+    not_rankable: Optional[bool]  # all options flawed, factually incorrect or unacceptable
 
 
 class LabelWidget(str, enum.Enum):
@@ -436,6 +451,7 @@ AnyInteraction = Union[
 class SystemStats(BaseModel):
     all: int = 0
     active: int = 0
+    active_by_lang: dict[str, int] = {}
     deleted: int = 0
     message_trees: int = 0
 
@@ -449,6 +465,7 @@ class UserScore(BaseModel):
     display_name: str
 
     leader_score: int = 0
+    level: int = 0  # between 0 and 100
 
     base_date: Optional[datetime]
     modified_date: Optional[datetime]
@@ -488,6 +505,9 @@ class TrollScore(BaseModel):
     auth_method: str
     display_name: str
     last_activity_date: Optional[datetime]
+    enabled: bool
+    deleted: bool
+    show_on_leaderboard: bool
 
     troll_score: int = 0
 
@@ -564,3 +584,21 @@ class CreateFrontendUserRequest(User):
     enabled: bool = True
     tos_acceptance: Optional[bool] = None
     notes: Optional[str] = None
+
+
+class CachedStatsName(str, enum.Enum):
+    human_messages_by_lang = "human_messages_by_lang"
+    human_messages_by_role = "human_messages_by_role"
+    message_trees_by_state = "message_trees_by_state"
+    message_trees_states_by_lang = "message_trees_states_by_lang"
+    users_accepted_tos = "users_accepted_tos"
+
+
+class CachedStatsResponse(BaseModel):
+    name: CachedStatsName | str
+    last_updated: datetime
+    stats: dict | list
+
+
+class AllCachedStatsResponse(BaseModel):
+    stats_by_name: dict[CachedStatsName | str, CachedStatsResponse]

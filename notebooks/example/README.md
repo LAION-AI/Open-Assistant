@@ -7,7 +7,7 @@ this project. Please try and follow this structure as closely as possible. While
 things will not exactly be the same for each notebook some principles we would
 like to try ensure are:
 
-1. Each notebook or collection of related or dependant notebooks should live in
+1. Each notebook or collection of related or dependent notebooks should live in
    its own folder.
 1. Each notebook should have a markdown file with the same name as the notebook
    (or README.md if it's a single notebook folder) that explains what the

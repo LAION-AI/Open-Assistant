@@ -1,0 +1,23 @@
+{
+  "blurb": "Kami percaya kita dapat memulai revolusi.",
+  "blurb1": "Dengan cara yang sama Stable Diffusion membantu dunia membuat seni dan gambar dengan cara baru, kami ingin meningkatkan dunia dengan menyediakan AI percakapan yang luar biasa.",
+  "description": "AI Percakapan untuk semua orang. Proyek sumber terbuka untuk membuat model bahasa yang didukung chat oleh LAION dan kontributor di seluruh dunia.",
+  "faq_items": {
+    "q0": "Sampai tahap seperti apa proyek ini?",
+    "a0": "Kami masih berada pada tahap awal pengembangan, bekerja dengan melakukan penelitian yang sudah ada tentang penerapan RLHF pada model bahasa besar.",
+    "q1": "Siapa yang berada di belakang Open Assistant?",
+    "a1": "Open Assistant adalah sebuah proyek yang didirikan oleh LAION dan individu di seluruh dunia yang tertarik untuk membawa teknologi ini kepada semua orang.",
+    "q2": "Lisensi apa yang digunakan Open Assistant?",
+    "a2": "Kode dan model dilisensikan di bawah lisensi Apache 2.0.",
+    "q3": "Apakah data pelatihan juga akan dirilis?",
+    "a3": "Ya, di bawah CC BY 4.0.",
+    "q4": "Apakah Open Assistant gratis?",
+    "a4": "Ya, Open Assistant akan gratis digunakan dan dimodifikasi.",
+    "q5": "Perangkat keras apa yang dibutuhkan untuk menjalankan model?",
+    "a5": "Akan ada versi yang dapat dijalankan pada perangkat konsumen."
+  },
+  "faq_title": "Pertanyaan yang Sering Ditanyakan",
+  "join_us_description": "Semua proyek sumber terbuka dimulai dari orang-orang seperti Anda. Sumber terbuka adalah keyakinan bahwa jika kita bekerja sama, kita bisa bersama-sama memberikan pengetahuan dan teknologi kita kepada dunia demi kebaikan umat manusia. Mau bergabung? Temukan kami di sini:",
+  "join_us_title": "Bergabunglah bersama kami",
+  "subtitle": "AI Percakapan untuk semua orang."
+}

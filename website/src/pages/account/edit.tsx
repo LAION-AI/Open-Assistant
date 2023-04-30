@@ -1,10 +1,11 @@
-import { Button, Input, InputGroup } from "@chakra-ui/react";
+import { Button, FormControl, FormErrorMessage, Input, InputGroup } from "@chakra-ui/react";
 import Head from "next/head";
 import Router from "next/router";
 import { useSession } from "next-auth/react";
 import React from "react";
 import { Control, useForm, useWatch } from "react-hook-form";
-export { getDefaultStaticProps as getStaticProps } from "src/lib/default_static_props";
+import { validDisplayNameRegex } from "src/lib/display_name_validation";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 export default function Account() {
   const { data: session } = useSession();
@@ -21,12 +22,10 @@ export default function Account() {
           content="Conversational AI for everyone. An open source project to create a chat enabled GPT LLM run by LAION and contributors around the world."
         />
       </Head>
-      <div className="oa-basic-theme">
-        <main className="h-3/4 z-0 flex flex-col items-center justify-center">
-          <p>{session.user.name || "No username"}</p>
-          <EditForm></EditForm>
-        </main>
-      </div>
+      <main className="oa-basic-theme h-3/4 z-0 flex flex-col items-center justify-center">
+        <p>{session.user.name || "No username"}</p>
+        <EditForm />
+      </main>
     </>
   );
 }
@@ -49,7 +48,12 @@ const EditForm = () => {
     }
   };
 
-  const { register, handleSubmit, control } = useForm<{ username: string }>({
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+    control,
+  } = useForm<{ username: string }>({
     defaultValues: {
       username: session?.user.name,
     },
@@ -58,7 +62,17 @@ const EditForm = () => {
   return (
     <form onSubmit={handleSubmit(updateUser)}>
       <InputGroup>
-        <Input placeholder="Edit Username" type="text" {...register("username")}></Input>
+        <FormControl isInvalid={errors.username ? true : false}>
+          <Input
+            placeholder="Edit Username"
+            type="text"
+            {...register("username", { required: true, pattern: validDisplayNameRegex })}
+          ></Input>
+          <FormErrorMessage>
+            {errors.username?.type === "required" && "Username is required"}
+            {errors.username?.type === "pattern" && "Username is invalid"}
+          </FormErrorMessage>
+        </FormControl>
         <SubmitButton control={control}></SubmitButton>
       </InputGroup>
     </form>
@@ -68,7 +82,7 @@ const EditForm = () => {
 const SubmitButton = ({ control }: { control: Control<{ username: string }> }) => {
   const username = useWatch({ control, name: "username" });
   return (
-    <Button disabled={!username} type="submit" value="Change">
+    <Button isDisabled={!username} type="submit" value="Change">
       Submit
     </Button>
   );

@@ -1,0 +1,20 @@
+{
+  "copy_message_id": "Salin ID Pesan",
+  "label_action": "Label",
+  "label_title": "Label",
+  "message_deleted": "Pesan dihapus",
+  "message": "Pesan",
+  "open_new_tab_action": "Buka di tab baru",
+  "parent": "Induk",
+  "reactions": "Reaksi",
+  "recent_messages": "Pesan Terbaru",
+  "report_action": "Laporkan",
+  "report_placeholder": "Tuliskan alasan Anda",
+  "report_title": "Laporkan",
+  "send_report": "Kirim laporan",
+  "stop_tree": "Hentikan struktur pohon",
+  "submit_labels": "Simpan label",
+  "tree_stopped": "Struktur pohon dihentikan {{id}}",
+  "view_user": "Lihat pengguna",
+  "your_recent_messages": "Pesan terbaru Anda"
+}

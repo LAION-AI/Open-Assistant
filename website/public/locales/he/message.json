@@ -1,0 +1,21 @@
+{
+  "copy_message_id": "העתק את מזהה ההודעה",
+  "copy_message_link": "העתק את קישור להודעה",
+  "label_action": "תייג",
+  "label_title": "תווית",
+  "message_deleted": "הודעה נמחקה",
+  "message": "הודעה",
+  "open_new_tab_action": "פתח בכרטיסייה חדשה",
+  "parent": "הורה",
+  "reactions": "תגובות",
+  "recent_messages": "הודעות אחרונות ב{{language}}",
+  "report_action": "דווח",
+  "report_placeholder": "מדוע צריך לבדוק את ההודעה הזו?",
+  "report_title": "דיווח",
+  "send_report": "שלח",
+  "stop_tree": "עצור עץ",
+  "submit_labels": "שלח",
+  "tree_stopped": "עץ נעצר {{id}}",
+  "view_user": "הצג משתמש",
+  "your_recent_messages": "ההודעות האחרונות שלך"
+}

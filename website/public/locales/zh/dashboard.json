@@ -1,0 +1,14 @@
+{
+  "grab_a_task": "任务: 请您以扮演AI和提示者的方式，帮助我们建立一套自然的对话数据集。",
+  "create": "创建",
+  "evaluate": "评估",
+  "label": "标注",
+  "dashboard": "面板",
+  "go": "前往",
+  "welcome_message": {
+    "label": "欢迎您, {{username}}!",
+    "contributor": "贡献者",
+    "description": "Open Assistant 是一个开源的人工智能助理平台，目标是训练大型语言模型，使它学会怎样理解和回复人类。",
+    "instruction": "以完成任务的形式，帮助我们建立用于训练模型的对话数据集，并获得积分。"
+  }
+}

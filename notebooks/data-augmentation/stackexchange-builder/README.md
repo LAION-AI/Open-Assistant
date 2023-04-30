@@ -86,7 +86,7 @@ Each question and all related answers are on a single line in JSONL format.
 #### Table/CSV/Parquet Format
 
 There are a lot more columns left over in the table format. `_q` and `_a` are
-suffixes indiciating if the column came from the question or answer table as
+suffixes indicating if the column came from the question or answer table as
 leftover from a join statement.
 
 ```

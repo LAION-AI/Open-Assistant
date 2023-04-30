@@ -1,6 +1,6 @@
 import { Card, CardBody, Link, Text } from "@chakra-ui/react";
-import { useTranslation } from "next-i18next";
 import NextLink from "next/link";
+import { useTranslation } from "next-i18next";
 import { LeaderboardTable } from "src/components/LeaderboardTable";
 import { LeaderboardTimeFrame } from "src/types/Leaderboard";
 
@@ -19,7 +19,7 @@ export function LeaderboardWidget() {
         </div>
         <Card>
           <CardBody>
-            <LeaderboardTable timeFrame={LeaderboardTimeFrame.day} limit={5} rowPerPage={5} />
+            <LeaderboardTable timeFrame={LeaderboardTimeFrame.day} limit={5} rowPerPage={5} hideCurrentUserRanking />
           </CardBody>
         </Card>
       </div>
