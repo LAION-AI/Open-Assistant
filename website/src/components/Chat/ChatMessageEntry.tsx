@@ -11,7 +11,7 @@ import {
   useOutsideClick,
   useToast,
 } from "@chakra-ui/react";
-import { Check, Edit, RotateCcw, ThumbsUp, X, XCircle, Copy} from "lucide-react";
+import { Check, Edit, RotateCcw, ThumbsUp, X, XCircle, Copy } from "lucide-react";
 import { ThumbsDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
@@ -72,19 +72,22 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
     }
   }, [chatId, onRetry, parentId]);
 
-  const handleCopy = useCallback((text: string) => () => {
-    navigator.clipboard.writeText(text);
+  const handleCopy = useCallback(
+    (text: string) => () => {
+      navigator.clipboard.writeText(text);
 
-    const displayId = text.length < 20 ? text : text.slice(0, 10) + "..." + text.slice(-10);
+      const displayId = text.length < 20 ? text : text.slice(0, 10) + "..." + text.slice(-10);
 
-    toast({
-      title: t("copied"),
-      description: displayId,
-      status: "info",
-      duration: 5000,
-      isClosable: true,
-    });
-  }, []);
+      toast({
+        title: t("copied"),
+        description: displayId,
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+    },
+    []
+  );
 
   const isAssistant = message.role === "assistant";
   const [isEditing, setIsEditing] = useBoolean(false);
