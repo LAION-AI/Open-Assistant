@@ -20,6 +20,7 @@ from oasst_backend.models import (
     TextLabels,
     User,
     UserStats,
+    UserStatsTimeFrame,
     message_tree_state,
 )
 from oasst_backend.prompt_repository import PromptRepository
@@ -274,7 +275,9 @@ class TreeManager:
                     .select_from(MessageTreeState)
                     .join(Message, MessageTreeState.message_tree_id == Message.id)
                     .join(User, Message.user_id == User.id)
-                    .join(UserStats, and_(UserStats.user_id == User.id, UserStats.time_frame == "week"))
+                    .join(
+                        UserStats, and_(UserStats.user_id == User.id, UserStats.time_frame == UserStatsTimeFrame.month)
+                    )
                     .filter(
                         MessageTreeState.state == message_tree_state.State.PROMPT_LOTTERY_WAITING,
                         Message.lang == lang,
