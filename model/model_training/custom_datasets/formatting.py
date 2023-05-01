@@ -59,14 +59,11 @@ class Utterance(BaseModel):
             raise ValueError(f"Field {field.name} must be between 0 and 1. Received {v}.")
         return round(v, 1)
 
-    def system_tag(self, eos_token: str) -> str | None:
+    def system_tag(self, eos_token: str, property_dropout: float = 0) -> str | None:
         relevant_system_infos = [
             (k, v)
             for k, v in self.__dict__.items()
-            if k not in ["content"]
-            and v is not None
-            and str(v).replace("\n", " ")
-            and random() > SYSTEM_PROPERTY_DROP_PROBA
+            if k not in ["content"] and v is not None and str(v).replace("\n", " ") and random() >= property_dropout
         ]
 
         if len(relevant_system_infos) == 0:
@@ -85,6 +82,7 @@ class DatasetEntry(BaseModel):
     # the list[list[Utterance]] case is used for reward model datasets (which have replies answers per prompt)
     questions: list[Utterance]
     answers: list[Utterance] | list[list[Utterance]]
+    property_dropout: float = SYSTEM_PROPERTY_DROP_PROBA
 
     def _get_formatted_rm(self, eos_token: str, max_replies: int = 5):
         if isinstance(self.answers[0], list):
@@ -99,7 +97,7 @@ class DatasetEntry(BaseModel):
                 # todo: not sure if this case is correct but it is equivalent to current non-dataset entry behaviour
                 answers = [f"{a}{eos_token}" for a in answers]
             case 1:
-                system_tag = self.questions[0].system_tag(eos_token=eos_token)
+                system_tag = self.questions[0].system_tag(eos_token=eos_token, property_dropout=self.property_dropout)
                 question = f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0].context}{eos_token}{system_tag}"
                 answers = [f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}" for a in answers]
             case _:
@@ -110,11 +108,8 @@ class DatasetEntry(BaseModel):
     def get_formatted(self, mode: Mode, eos_token: str, **kwargs) -> str | list[str] | tuple[str, list[str]]:
         if mode == Mode.rl:
             q = self.questions[0]
-            system_tag = q.system_tag(eos_token=eos_token)
-            if system_tag is not None:
-                return f"{QA_SPECIAL_TOKENS['Question']}{q.content}{QA_SPECIAL_TOKENS['Answer']}{system_tag}"
-            else:
-                return f"{QA_SPECIAL_TOKENS['Question']}{q.content}{QA_SPECIAL_TOKENS['Answer']}"
+            system_tag = q.system_tag(eos_token=eos_token, property_dropout=self.property_dropout) or ""
+            return f"{QA_SPECIAL_TOKENS['Question']}{q.content}{QA_SPECIAL_TOKENS['Answer']}{system_tag}"
         elif mode == Mode.rm:
             return self._get_formatted_rm(eos_token=eos_token, max_replies=kwargs.get("max_replies", 5))
         else:
@@ -134,7 +129,7 @@ class DatasetEntry(BaseModel):
                 if a is None or a.content is None:
                     raise ValueError("Incomplete dialogue step in DatasetEntry: reply is None")
 
-                system_tag = a.system_tag(eos_token=eos_token)
+                system_tag = a.system_tag(eos_token=eos_token) or ""
                 qa_list.extend(
                     [
                         f"{QA_SPECIAL_TOKENS['Question']}{q.content}{eos_token}{system_tag}",
@@ -151,13 +146,22 @@ class DatasetEntry(BaseModel):
         answers: list[str] | list[list[str]],
         context: Optional[str] = None,
         lang: Optional[str] = None,
+        add_length: bool = True,
+        property_dropout: float = SYSTEM_PROPERTY_DROP_PROBA,
     ):
         if isinstance(answers[0], list):
-            answers = [[Utterance(content=a, length=len(a), lang=lang, context=context) for a in l] for l in answers]
+            answers = [
+                [Utterance(content=a, length=len(a) if add_length else None, lang=lang, context=context) for a in l]
+                for l in answers
+            ]
         else:
-            answers = [Utterance(content=a, length=len(a), lang=lang, context=context) for a in answers]
+            answers = [
+                Utterance(content=a, length=len(a) if add_length else None, lang=lang, context=context) for a in answers
+            ]
 
-        return cls(questions=[Utterance(content=q) for q in questions], answers=answers)
+        return cls(
+            questions=[Utterance(content=q) for q in questions], answers=answers, property_dropout=property_dropout
+        )
 
     @classmethod
     def create_from_prompter_assistant_interplay(cls, qa: dict[str, str]):

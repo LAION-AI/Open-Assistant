@@ -80,7 +80,6 @@ class DialogueDataCollator:
             return min(len(flatten_message.input_ids), self.max_length)
 
         message_indices: Optional[list[int]] = None
-        system_token_present = False
         if self.label_masking:
             # message_change_indices = np.cumsum([len(x) for x in messages])
             # for each token an integer indicating the index of the message it belongs to. Just to create the label mask.
@@ -99,15 +98,12 @@ class DialogueDataCollator:
 
             prompter_token_id = self.tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Question"])
             assistant_token_id = self.tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["Answer"])
-            system_token_id = self.tokenizer.convert_tokens_to_ids(QA_SPECIAL_TOKENS["System"])
-            assert prompter_token_id >= 0 and assistant_token_id >= 0 and system_token_id >= 0
+            assert prompter_token_id >= 0 and assistant_token_id >= 0
 
             message_indices = []
             i = -1
-            # assume that system token is the very first token
-            system_token_present = flatten_message.input_ids[0] == system_token_id
             for x in flatten_message.input_ids:
-                if x in (prompter_token_id, assistant_token_id, system_token_id):
+                if x in (prompter_token_id, assistant_token_id):
                     i += 1
                 message_indices.append(i)
 
@@ -122,11 +118,7 @@ class DialogueDataCollator:
                 message_indices = message_indices[offset : offset + self.max_length]
 
         if self.label_masking:
-            if system_token_present:
-                # assume system is before first prompter token
-                label_mask = np.array([(idx > 0) and (idx % 2 == 0) for idx in message_indices])
-            else:
-                label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
+            label_mask = np.array(list(map(lambda x: x % 2 == 1, message_indices)))
         else:
             label_mask = np.ones(len(flatten_message.input_ids), dtype=bool)
 

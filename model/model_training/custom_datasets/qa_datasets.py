@@ -254,8 +254,6 @@ class SODA(Dataset):
             answers = [a for idx, a in enumerate(truncated_dialogue) if idx % 2 == 1]
             if len(questions) == 0 or len(answers) == 0:
                 return None
-            else:
-                print("[WARNING] SODA entry empty..")
             return DatasetEntry.from_strings(questions=questions, answers=answers)
 
     def __init__(self, cache_dir, mode="sft", input_max_length=32 * 1024) -> None:
@@ -273,7 +271,6 @@ class SODA(Dataset):
         return len(self.pairs)
 
     def __getitem__(self, index) -> DatasetEntry:
-        # special token added during preprocess
         dialogue = self.pairs[index]
         return dialogue
 
@@ -518,18 +515,18 @@ class Vicuna(Dataset):
         if mode not in ("sft", "rl"):
             raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
         self.mode = mode
+
         dataset = load_dataset(
             "anon8231489123/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
             data_files=["ShareGPT_V3_unfiltered_cleaned_split_no_imsorry.json"],
             revision="192ab2185289094fc556ec8ce5ce1e8e587154ca",
         )["train"]
+
         for data in dataset:
             if (qa := self.process_vicuna_conversations(data, input_max_length=input_max_length)) is not None:
-                if len(qa[0]) > 0 and len(qa[1]) > 0:
+                if len(qa[0]) > 0 and len(qa[0]) == len(qa[1]):
                     self.pairs.append(DatasetEntry.from_strings(questions=qa[0], answers=qa[1], lang="en"))
-                else:
-                    print("[WARNING] ignoring row")
 
     def __len__(self) -> int:
         return len(self.pairs)

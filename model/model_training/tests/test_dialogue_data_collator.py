@@ -2,7 +2,7 @@ import pytest
 import torch
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, DatasetEntry
-from model_training.utils import match_tokenizer_name
+from model_training.utils.utils import match_tokenizer_name
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 
@@ -31,12 +31,7 @@ def test_dataset_entry_no_context(pythia_tokenizer):
         tokenizer=pythia_tokenizer,
         padding=True,
     )
-    features = [
-        DatasetEntry.from_strings(
-            questions=["Dummy Question?"],
-            answers=["Dummy Answer."],
-        )
-    ]
+    features = [DatasetEntry.from_strings(questions=["Dummy Question?"], answers=["Dummy Answer."], add_length=False)]
     batch = d(features)
     expected_decoded_input_ids = [
         "<|prompter|>Dummy Question?<|endoftext|>" + "<|assistant|>Dummy Answer.<|endoftext|>"
@@ -46,6 +41,7 @@ def test_dataset_entry_no_context(pythia_tokenizer):
     ]
 
     expected_masked = ["<|assistant|>Dummy Answer."]
+
     assert pythia_tokenizer.decode(batch.input_ids[0]) == expected_decoded_input_ids[0]
     # check if targets are as expected
     assert pythia_tokenizer.decode(batch.targets[0]) == expected_decoded_targets[0]
@@ -66,6 +62,8 @@ def test_dataset_entry(pythia_tokenizer):
                 "Untreated type 1 diabetes can rapidly result in diabetic ketoacidosis which may lead to loss of consciousness, coma and death."
             ],
             context="Prolonged lack of insulin can also result in diabetic ketoacidosis, characterized by persistent fatigue, dry or flushed skin, abdominal pain, nausea or vomiting, confusion, trouble breathing, and a fruity breath odor. Blood and urine tests reveal unusually high glucose and ketones in the blood and urine. Untreated ketoacidosis can rapidly progress to loss of consciousness, coma, and death. The percentage of children whose type 1 diabetes begins with an episode of diabetic ketoacidosis varies widely by geography, as low as 15% in parts of Europe and North America, and as high as 80% in the developing world.",
+            add_length=False,
+            property_dropout=0,
         ),
         DatasetEntry.from_strings(
             questions=["Find all of the Amsterdam museums mentioned in the text and put them in a numbered list."],
@@ -73,16 +71,18 @@ def test_dataset_entry(pythia_tokenizer):
                 "The Amsterdam museums mentioned in this text are:\n1. Rijksmuseum\n2. Van Gogh Museum\n3. Amsterdam Museum\n4. Stedelijk Museum\n5. Hermitage Amsterdam\n6. Anne Frank House\n7. Het Scheepvaartmuseum\n8. NEMO"
             ],
             context="Amsterdam's main attractions include its historic canals; the Rijksmuseum, the state museum with a vast collection of Dutch Golden Age art; the Van Gogh Museum; the Dam Square, where the Royal Palace of Amsterdam and former city hall (stadhuis) are located; the Amsterdam Museum; Stedelijk Museum, with modern art; Hermitage Amsterdam, the Concertgebouw concert hall; the Anne Frank House; the Het Scheepvaartmuseum, the Heineken Experience, the Natura Artis Magistra; Hortus Botanicus, NEMO, the red-light district and many cannabis coffee shops. The city is also well known for its nightlife and festival activity; with several of its nightclubs (Melkweg, Paradiso) among the world's most famous. Primarily known for its artistic heritage, elaborate canal system and narrow canal houses with gabled façades; well-preserved legacies of the city's 17th-century Golden Age, and the establishment of the Van Gogh Museum, displaying the work of the famous Dutch modern artist, have attracted millions of visitors to Amsterdam annually.",
+            add_length=False,
+            property_dropout=0,
         ),
     ]
     batch = d(features)
     expected_decoded_input_ids = [
-        "<|system|>context: Prolonged lack of insulin can also result in diabetic ketoacidosis, characterized by persistent fatigue, dry or flushed skin, abdominal pain, nausea or vomiting, confusion, trouble breathing, and a fruity breath odor. Blood and urine tests reveal unusually high glucose and ketones in the blood and urine. Untreated ketoacidosis can rapidly progress to loss of consciousness, coma, and death. The percentage of children whose type 1 diabetes begins with an episode of diabetic ketoacidosis varies widely by geography, as low as 15% in parts of Europe and North America, and as high as 80% in the developing world.\n<|endoftext|>"
-        + "<|prompter|>What are the risks of untreated type 1 diabetes?<|endoftext|>"
+        "<|prompter|>What are the risks of untreated type 1 diabetes?<|endoftext|>"
+        + "<|system|>context: Prolonged lack of insulin can also result in diabetic ketoacidosis, characterized by persistent fatigue, dry or flushed skin, abdominal pain, nausea or vomiting, confusion, trouble breathing, and a fruity breath odor. Blood and urine tests reveal unusually high glucose and ketones in the blood and urine. Untreated ketoacidosis can rapidly progress to loss of consciousness, coma, and death. The percentage of children whose type 1 diabetes begins with an episode of diabetic ketoacidosis varies widely by geography, as low as 15% in parts of Europe and North America, and as high as 80% in the developing world.\n<|endoftext|>"
         + "<|assistant|>Untreated type 1 diabetes can rapidly result in diabetic ketoacidosis which may lead to loss of consciousness, coma and death.<|endoftext|>"
         + 346 * "<|padding|>",
-        "<|system|>context: Amsterdam's main attractions include its historic canals; the Rijksmuseum, the state museum with a vast collection of Dutch Golden Age art; the Van Gogh Museum; the Dam Square, where the Royal Palace of Amsterdam and former city hall (stadhuis) are located; the Amsterdam Museum; Stedelijk Museum, with modern art; Hermitage Amsterdam, the Concertgebouw concert hall; the Anne Frank House; the Het Scheepvaartmuseum, the Heineken Experience, the Natura Artis Magistra; Hortus Botanicus, NEMO, the red-light district and many cannabis coffee shops. The city is also well known for its nightlife and festival activity; with several of its nightclubs (Melkweg, Paradiso) among the world's most famous. Primarily known for its artistic heritage, elaborate canal system and narrow canal houses with gabled façades; well-preserved legacies of the city's 17th-century Golden Age, and the establishment of the Van Gogh Museum, displaying the work of the famous Dutch modern artist, have attracted millions of visitors to Amsterdam annually.\n<|endoftext|>"
-        + "<|prompter|>Find all of the Amsterdam museums mentioned in the text and put them in a numbered list.<|endoftext|>"
+        "<|prompter|>Find all of the Amsterdam museums mentioned in the text and put them in a numbered list.<|endoftext|>"
+        + "<|system|>context: Amsterdam's main attractions include its historic canals; the Rijksmuseum, the state museum with a vast collection of Dutch Golden Age art; the Van Gogh Museum; the Dam Square, where the Royal Palace of Amsterdam and former city hall (stadhuis) are located; the Amsterdam Museum; Stedelijk Museum, with modern art; Hermitage Amsterdam, the Concertgebouw concert hall; the Anne Frank House; the Het Scheepvaartmuseum, the Heineken Experience, the Natura Artis Magistra; Hortus Botanicus, NEMO, the red-light district and many cannabis coffee shops. The city is also well known for its nightlife and festival activity; with several of its nightclubs (Melkweg, Paradiso) among the world's most famous. Primarily known for its artistic heritage, elaborate canal system and narrow canal houses with gabled façades; well-preserved legacies of the city's 17th-century Golden Age, and the establishment of the Van Gogh Museum, displaying the work of the famous Dutch modern artist, have attracted millions of visitors to Amsterdam annually.\n<|endoftext|>"
         + "<|assistant|>The Amsterdam museums mentioned in this text are:\n1. Rijksmuseum\n2. Van Gogh Museum\n3. Amsterdam Museum\n4. Stedelijk Museum\n5. Hermitage Amsterdam\n6. Anne Frank House\n7. Het Scheepvaartmuseum\n8. NEMO<|endoftext|>",
     ]
     expected_masked = [
@@ -91,8 +91,8 @@ def test_dataset_entry(pythia_tokenizer):
     ]
 
     expected_decoded_targets = [
-        expected_decoded_input_ids[0][len("<|system|>") :] + expected_decoded_input_ids[0][: len("<|system|>")],
-        expected_decoded_input_ids[1][len("<|system|>") :] + expected_decoded_input_ids[1][: len("<|system|>")],
+        expected_decoded_input_ids[0][len("<|prompter|>") :] + expected_decoded_input_ids[0][: len("<|prompter|>")],
+        expected_decoded_input_ids[1][len("<|prompter|>") :] + expected_decoded_input_ids[1][: len("<|prompter|>")],
     ]
     # this is trivial, since input_ids is a tensor
     assert batch.input_ids[0].shape == batch.input_ids[1].shape
