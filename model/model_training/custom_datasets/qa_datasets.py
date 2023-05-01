@@ -12,6 +12,7 @@ from typing import Any
 from urllib.request import urlopen
 
 import numpy as np
+import requests
 from datasets import load_dataset
 from model_training.custom_datasets.formatting import DatasetEntry
 from model_training.custom_datasets.utils import _filter_by_words
@@ -600,5 +601,51 @@ class AlpacaGpt4(Dataset):
         return len(self.rows)
 
     def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
+
+
+class GPTeacher_Roleplay(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft") -> None:
+        super().__init__()
+        self.rows = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        saved_path = Path(cache_dir) / "gpteacher_roleplay__json"
+        file_name = "gpteacher_roleplay.json"
+        if os.path.exists(saved_path):
+            with open(saved_path / file_name, "r") as f:
+                data = json.load(f)
+        else:
+            req = requests.get(
+                "https://raw.githubusercontent.com/teknium1/GPTeacher/main/Roleplay/roleplay-simple-deduped-roleplay-instruct.json"
+            )
+            data = json.loads(req.text)
+            os.makedirs(saved_path, exist_ok=True)
+            with open(saved_path / file_name, "w+") as f:
+                json.dump(data, f)
+
+        for line in data:
+            if (conv := self._process_qa(line)) is not None:
+                self.rows.append(conv)
+
+    def _process_qa(self, row: dict[str, str]) -> list[str] | None:
+        if c := row["input"]:
+            return DatasetEntry.from_strings(
+                context=c,
+                questions=[row["instruction"]],
+                answers=[row["response"]],
+            )
+        else:
+            return DatasetEntry.from_strings(
+                questions=[row["instruction"]],
+                answers=[row["response"]],
+            )
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> list[str] | tuple[str]:
         dialogue = self.rows[index]
         return dialogue
