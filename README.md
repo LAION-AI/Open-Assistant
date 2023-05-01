@@ -81,7 +81,7 @@ To start the demo, run this in the root directory of the repository (check
 if you have problems):
 
 ```sh
-docker compose --profile ci up --build --attach-dependencies
+docker-compose --profile ci up --build --attach-dependencies
 ```
 
 > **Note:** when running on MacOS with an M1 chip you have to use:
