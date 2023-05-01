@@ -19,6 +19,7 @@ from oasst_data import (
 )
 from oasst_inference_server.models import DbChat, DbMessage
 from oasst_inference_server.settings import settings
+from oasst_shared.utils import Anonymizer
 from sqlmodel import Session
 
 
@@ -51,23 +52,47 @@ def smart_open(filename: str = None) -> TextIO:
             fh.close()
 
 
-def prepare_export_events(message: DbMessage) -> dict[str, list[ExportMessageEvent]]:
+def maybe_anonymize(anonymizer: Anonymizer | None, collection: str, key: str) -> str:
+    if anonymizer:
+        return anonymizer.anonymize(collection, key)
+    else:
+        return key
+
+
+def prepare_export_events(
+    message: DbMessage,
+    anonymizer: Anonymizer | None = None,
+) -> dict[str, list[ExportMessageEvent]]:
     export_events: dict[str, list[ExportMessageEvent]] = []
 
-    export_events["report"] = [
-        ExportMessageEventReport(report_type=str(db_report.report_type), reason=db_report.reason)
-        for db_report in message.reports
-    ]
+    if message.reports:
+        export_events["report"] = [
+            ExportMessageEventReport(
+                user_id=maybe_anonymize(anonymizer, "user", str(message.chat.user_id)),
+                report_type=str(db_report.report_type),
+                reason=db_report.reason,
+            )
+            for db_report in message.reports
+        ]
 
-    if message.score != 0:
-        export_events["score"] = [ExportMessageEventScore(score=message.score)]
+    if message.score:
+        export_events["score"] = [
+            ExportMessageEventScore(
+                user_id=maybe_anonymize(anonymizer, "user", str(message.chat.user_id)),
+                score=message.score,
+            )
+        ]
 
     return export_events
 
 
-def prepare_export_message_tree(chat: DbChat) -> ExportMessageTree:
+def prepare_export_message_tree(
+    chat: DbChat,
+    anonymizer: Anonymizer | None = None,
+) -> ExportMessageTree:
     messages: list[DbMessage] = chat.messages
-    export_messages: list[ExportMessageNode] = list(map(prepare_export_message_node, messages))
+
+    export_messages: list[ExportMessageNode] = [prepare_export_message_node(m, anonymizer=anonymizer) for m in messages]
 
     messages_by_parent = defaultdict(list)
     for message in export_messages:
@@ -83,7 +108,10 @@ def prepare_export_message_tree(chat: DbChat) -> ExportMessageTree:
     return ExportMessageTree(message_tree_id=str(chat.id), tree_state="not_applicable", prompt=prompt)
 
 
-def prepare_export_message_node(message: DbMessage) -> ExportMessageNode:
+def prepare_export_message_node(
+    message: DbMessage,
+    anonymizer: Anonymizer | None = None,
+) -> ExportMessageNode:
     if message.worker_config:
         model_name = message.worker_config.model_config.model_id
     else:
@@ -94,10 +122,14 @@ def prepare_export_message_node(message: DbMessage) -> ExportMessageNode:
 
     events: dict[str, list[ExportMessageEvent]] = prepare_export_events(message)
 
+    message_id = maybe_anonymize(anonymizer, "message", message.id)
+    parent_id = maybe_anonymize(anonymizer, "message", message.parent_id)
+    user_id = maybe_anonymize(anonymizer, "user", message.chat.user_id)
+
     return ExportMessageNode(
-        message_id=str(message.id),
-        parent_id=str(message.parent_id),
-        user_id=str(message.chat.user_id),
+        message_id=message_id,
+        parent_id=parent_id,
+        user_id=user_id,
         created_date=message.created_at,
         text=message.content,
         role=message.role,
@@ -112,6 +144,7 @@ def write_messages_to_file(
     chats: list[DbChat],
     use_compression: bool = True,
     write_trees: bool = True,
+    anonymizer: Anonymizer | None = None,
 ) -> None:
     out_buff: TextIO
 
@@ -125,13 +158,13 @@ def write_messages_to_file(
     with out_buff as f:
         for c in chats:
             if write_trees:
-                export_chat = prepare_export_message_tree(c)
+                export_chat = prepare_export_message_tree(c, anonymizer=anonymizer)
                 file_data = jsonable_encoder(export_chat, exclude_none=True)
                 json.dump(file_data, f)
                 f.write("\n")
             else:
                 for m in c.messages:
-                    export_message = prepare_export_message_node(m)
+                    export_message = prepare_export_message_node(m, anonymizer=anonymizer)
                     file_data = jsonable_encoder(export_message, exclude_none=True)
                     json.dump(file_data, f)
                     f.write("\n")
@@ -155,14 +188,17 @@ def export_chats(
     export_path: Path,
     use_compression: bool = True,
     write_trees: bool = True,
+    anonymizer_seed: str | None = None,
 ) -> None:
     eligible_chats: list[DbChat] = fetch_eligible_chats(session)
+    anonymizer = Anonymizer(anonymizer_seed) if anonymizer_seed else None
 
     write_messages_to_file(
         export_path,
         eligible_chats,
         write_trees=write_trees,
         use_compression=use_compression,
+        anonymizer=anonymizer,
     )
 
 
@@ -183,9 +219,12 @@ def parse_args() -> argparse.Namespace:
         action="store_false",
         help="Whether to write chats as trees rather than individual messages. Defaults to True.",
     )
-    # TODO: filters: reported, score, user ID, chat ID, lang, etc
-    # TODO: limit
-    # TODO: user ID anonymization
+    parser.add_argument(
+        "--anonymizer-seed",
+        type=int,
+        help="Seed for the anonymizer. If not specified, no anonymization will be performed.",
+    )
+    # TODO: filters: reported, score, user ID, chat ID, etc
     # TODO: date range?
     return parser.parse_args()
 
@@ -201,6 +240,7 @@ def main():
             export_path,
             use_compression=args.use_compression,
             write_trees=args.write_trees,
+            anonymizer_seed=args.anonymizer_seed,
         )
 
 
