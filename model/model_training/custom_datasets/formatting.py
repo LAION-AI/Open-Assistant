@@ -152,7 +152,7 @@ class DatasetEntry(BaseModel):
         add_length: bool = True,
         property_dropout: float = SYSTEM_PROPERTY_DROP_PROBA,
     ):
-        def length_indicator(s):
+        def length_indicator(s: str) -> int:
             return len(re.findall(r"\w+", s)) // 5 + 1
 
         if isinstance(answers[0], list):
