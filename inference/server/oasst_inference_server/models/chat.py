@@ -70,6 +70,7 @@ class DbMessage(SQLModel, table=True):
             safety_level=self.safety_level,
             safety_label=self.safety_label,
             safety_rots=self.safety_rots,
+            used_plugin=self.used_plugin,
         )
 
 

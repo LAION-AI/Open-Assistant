@@ -206,7 +206,6 @@ class WorkParameters(pydantic.BaseModel):
         default_factory=make_seed,
     )
     plugins: list[PluginEntry] = pydantic.Field(default_factory=list[PluginEntry])
-    used_plugin: PluginUsed | None = None
 
 
 class ReportType(str, enum.Enum):
@@ -252,6 +251,7 @@ class MessageRead(pydantic.BaseModel):
     safety_level: int | None
     safety_label: str | None
     safety_rots: str | None
+    used_plugin: PluginUsed | None = None
 
     @property
     def is_assistant(self) -> bool:

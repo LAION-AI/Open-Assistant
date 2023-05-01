@@ -48,8 +48,8 @@ export interface InferenceMessage {
       quantized: boolean;
     };
     plugins: PluginEntry[];
-    used_plugin: object | null;
   };
+  used_plugin?: object | null;
 }
 
 export interface GetChatsResponse {

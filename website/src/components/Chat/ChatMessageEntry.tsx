@@ -48,7 +48,16 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
   ...props
 }: ChatMessageEntryProps) {
   const { t } = useTranslation("common");
-  const { chat_id: chatId, parent_id: parentId, id: messageId, content, score, state, work_parameters } = message;
+  const {
+    chat_id: chatId,
+    parent_id: parentId,
+    id: messageId,
+    content,
+    score,
+    state,
+    work_parameters,
+    used_plugin,
+  } = message;
   const handleVote = useCallback(
     (emoji: "+1" | "-1") => {
       const newScore = getNewScore(emoji, score);
@@ -108,7 +117,7 @@ export const ChatMessageEntry = memo(function ChatMessageEntry({
       ref={ref}
       {...props}
       isAssistant={isAssistant}
-      usedPlugin={work_parameters?.used_plugin}
+      usedPlugin={used_plugin}
       content={isEditing ? "" : content!}
     >
       {!isAssistant && parentId !== null && (

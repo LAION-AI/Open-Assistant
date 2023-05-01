@@ -13,8 +13,8 @@ KNOWLEDGE_DATE_CUTOFF = "2021-09-01"
 
 TALKING_STYLE = ""
 
-JSON_FORMAT_NO_PAYLOAD = """{\n"request": {\n"params": {...}}\n}"""
-JSON_FORMAT_PAYLOAD = """{\n"request": {\n"params": {...},\n"payload": {...}}\n}"""
+JSON_FORMAT_NO_PAYLOAD = """{"request": {"params": {query or url parameters}}}"""
+JSON_FORMAT_PAYLOAD = """{"request": {"params": {query or url parameters}, "payload": {...payload}}}"""
 
 PREFIX = f"""Open Assistant is a large language model trained by LAION.
 Open Assistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics.

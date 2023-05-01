@@ -4,9 +4,8 @@ import { PluginEntry } from "src/types/Chat";
 
 const handler = withoutRole("banned", async (req, res, token) => {
   const client = createInferenceClient(token);
-  const { plugin } = req.body as { plugin: PluginEntry };
 
-  const data = await client.get_plugin_config({ plugin });
+  const data = await client.get_plugins();
   if (data) {
     return res.status(200).json(data);
   }

@@ -347,12 +347,10 @@ async def handle_generated_text_response(
         message_id = work_response_container.message_id
         async with deps.manual_create_session() as session:
             cr = chat_repository.ChatRepository(session=session)
-            work_parameters = work_response_container.work_request.parameters
-            work_parameters = work_parameters.copy(update={"used_plugin": response.used_plugin})
             message = await cr.complete_work(
                 message_id=message_id,
                 content=response.text,
-                work_parameters=work_parameters,
+                used_plugin=response.used_plugin,
             )
             logger.info(f"Completed work for {message_id=}")
         message_packet = inference.InternalFinishedMessageResponse(
