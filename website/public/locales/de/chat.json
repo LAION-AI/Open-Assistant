@@ -6,14 +6,24 @@
   "login_message": "Um dieses Feature zu nutzen müssen Sie dich erneut anmelden. Melden Sie sich durch einen dieser Provider an:",
   "max_new_tokens": "Maximale Anzahl neuer Token",
   "model": "Model",
+  "parameter_description": {
+    "max_new_tokens": "Max new tokens: Dieser Parameter teilt dem Modell mit, wie viele neue Token es maximal für die Antwort generieren soll.",
+    "repetition_penalty": "Wiederholungsstrafe: Dieser Parameter verringert die Wahrscheinlichkeit, dass dieselben Token immer wieder wiederholt werden, indem er wiederholte Token weniger wahrscheinlich macht, als das Modell normalerweise vorhersagen würde.",
+    "temperature": "Temperatur: Jedes von Ihnen generierte Token wird aus einer Verteilung p(nächstes_Token|vorheriges_Tokens) abgetastet. Der Temperaturparameter kann diese Verteilung „schärfen“ oder dämpfen. Das Festlegen auf 1 bedeutet, dass das Modell Token basierend auf ihrer vorhergesagten Wahrscheinlichkeit generiert (d. h. wenn das Modell vorhersagt, dass „XYZ“ eine Wahrscheinlichkeit von 12,3 % hat, wird es es mit einer Wahrscheinlichkeit von 12,3 % generieren). Das Absenken der Temperatur in Richtung Null macht das Modell gieriger, was dazu führt, dass hohe Wahrscheinlichkeiten noch höher und niedrige Wahrscheinlichkeiten noch niedriger werden (beachten Sie, dass dies keine lineare Beziehung ist!). Eine Erhöhung der Temperatur macht alle Wahrscheinlichkeiten ähnlicher. Intuitiv bedeutet eine niedrige Temperatur, dass das Modell Antworten generiert, die eng mit seinen Überzeugungen übereinstimmen, während eine hohe Temperatur kreativere und vielfältigere Antworten ermöglicht.",
+    "top_k": "Top-k: Dies ähnelt dem Top-p-Sampling, aber anstatt die Top-Token zu nehmen, bis ihre kumulative Wahrscheinlichkeit 'p' überschreitet, werden nur die K wahrscheinlichsten Token genommen. Top-p wird normalerweise bevorzugt, da es dem Modell ermöglicht, den Suchradius zu „tunen“, aber top-k kann als Notbremse nützlich sein, wenn das Modell keine Ahnung hat, was es als nächstes generieren soll, und vielen Token eine sehr gleichmäßige Verteilung zuweist.",
+    "top_p": "Top-p-Sampling (auch bekannt als Nucleus-Sampling): Diese Methode reduziert die Wahrscheinlichkeitsverteilung, um nur die Top-p-Prozent von Token zu betrachten. Durch das Verwerfen von Token mit geringer Wahrscheinlichkeit hilft es, die Generation zu begrenzen und zu verhindern, dass das Modell grammatikalisch falsche Sätze generiert.",
+    "typical_p": "Typisches p: Typisches Sampling ist ein informationstheoretisches Verfahren, das neben der Wahrscheinlichkeit auch die Sequenzentropie (also den Informationsgehalt gemäß der Wahrscheinlichkeit) berücksichtigt. Dies bedeutet, dass beim typischen Sampling einige der Token mit geringerer Wahrscheinlichkeit  \"übergewichtet\" werden, weil sie als \"interessant\" gelten, und Token mit hoher Wahrscheinlichkeit untergewichtet werden, weil sie als \"langweilig\" gelten."
+  },
   "preset": "Vorlage",
   "preset_custom": "Benutzerdefiniert",
   "queue_info": "Ihre Nachricht ist in der Warteschlange, Sie sind an {{ queuePosition, number, integer }}. Stelle in der Warteschlange.",
-  "repetition_penalty": "Wiederholungs-Penalty",
+  "repetition_penalty": "Wiederholungsstrafe",
   "temperature": "Temperatur",
   "top_k": "Top K",
   "top_p": "Top P",
   "typical_p": "Typisches P",
   "you_are_logged_in": "Sie sind am Chatservice angemeldet",
-  "your_chats": "Ihre Chats"
+  "your_chats": "Ihre Chats",
+  "input_placeholder": "Frag den Assistenten irgendetwas",
+  "warning": "Dieser Assistent ist eine Demoversion ohne Internetzugang. Es können falsche oder irreführende Informationen generiert werden. Es ist nicht für wichtige Anwendungsfälle oder zur Beratung geeignet."
 }
