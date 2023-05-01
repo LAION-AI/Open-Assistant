@@ -23,6 +23,8 @@ class DbMessage(SQLModel, table=True):
     content: str | None = Field(None)
     error: str | None = Field(None)
 
+    used_plugin: inference.PluginUsed | None = Field(None, sa_column=sa.Column(pg.JSONB))
+
     state: inference.MessageState = Field(inference.MessageState.manual)
     work_parameters: inference.WorkParameters = Field(None, sa_column=sa.Column(pg.JSONB))
     work_begin_at: datetime.datetime | None = Field(None)
