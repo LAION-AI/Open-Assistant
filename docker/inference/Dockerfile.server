@@ -37,6 +37,7 @@ ENV PATH="${PATH}:${APP_LIBS}/bin"
 ENV PYTHONPATH="${PYTHONPATH}:${APP_LIBS}"
 
 ENV PORT="8080"
+ENV PROMETHEUS_MULTIPROC_DIR="/tmp/oasst-inference-prometheus-metrics"
 
 RUN adduser               \
       --disabled-password \
@@ -44,6 +45,8 @@ RUN adduser               \
       "${APP_USER}"
 
 USER ${APP_USER}
+
+RUN mkdir -p "${PROMETHEUS_MULTIPROC_DIR}"
 
 WORKDIR ${APP_ROOT}
 

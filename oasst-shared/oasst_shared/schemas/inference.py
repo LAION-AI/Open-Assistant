@@ -248,6 +248,10 @@ class MessageRead(pydantic.BaseModel):
     reports: list[Report] = []
     # work parameters will be None on user prompts
     work_parameters: WorkParameters | None
+    safe_content: str | None
+    safety_level: int | None
+    safety_label: str | None
+    safety_rots: str | None
 
     @property
     def is_assistant(self) -> bool:
@@ -319,6 +323,14 @@ class PongResponse(WorkerResponseBase):
     metrics: WorkerMetricsInfo | None = None
 
 
+class SafePromptResponse(WorkerResponseBase):
+    response_type: Literal["safe_prompt"] = "safe_prompt"
+    safe_prompt: str
+    safety_parameters: SafetyParameters
+    safety_label: str
+    safety_rots: str
+
+
 class TokenResponse(WorkerResponseBase):
     response_type: Literal["token"] = "token"
     text: str
@@ -378,6 +390,7 @@ WorkerResponse = Annotated[
         PongResponse,
         InternalFinishedMessageResponse,
         InternalErrorResponse,
+        SafePromptResponse,
     ],
     pydantic.Field(discriminator="response_type"),
 ]

@@ -11,8 +11,8 @@ import { AlignJustify } from "lucide-react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { memo, useEffect } from "react";
+import { useSidebarItems } from "src/hooks/layout/sidebarItems";
 
-import { getDashBoardLayoutSidebarItem } from "../Layout";
 import { SideMenuItem } from "../SideMenu";
 import { ChatListBase } from "./ChatListBase";
 
@@ -20,6 +20,7 @@ export const ChatListMobile = memo(function ChatListMobile() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { t } = useTranslation("chat");
   const { events } = useRouter();
+  const items = useSidebarItems();
 
   useEffect(() => {
     const handleRouteChange = () => {
@@ -72,13 +73,8 @@ export const ChatListMobile = memo(function ChatListMobile() {
               height="full"
               pt="4"
             >
-              {getDashBoardLayoutSidebarItem().map((item) => (
-                <SideMenuItem
-                  key={item.labelID}
-                  item={item}
-                  variant="chat"
-                  active={item.labelID === "chat"}
-                ></SideMenuItem>
+              {items.map((item) => (
+                <SideMenuItem key={item.labelID} item={item} variant="chat" active={item.labelID === "chat"} />
               ))}
             </Flex>
             <ChatListBase w="full" py="4"></ChatListBase>

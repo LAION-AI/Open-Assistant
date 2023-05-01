@@ -1,8 +1,8 @@
 import { Box, Card, CardBody, Heading, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
 import Head from "next/head";
 import { useTranslation } from "next-i18next";
-import { getDashboardLayout } from "src/components/Layout";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+import { DashboardLayout } from "src/components/Layout";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 import { LeaderboardTable } from "src/components/LeaderboardTable";
 import { LeaderboardTimeFrame } from "src/types/Leaderboard";
 
@@ -49,6 +49,6 @@ const Leaderboard = () => {
   );
 };
 
-Leaderboard.getLayout = getDashboardLayout;
+Leaderboard.getLayout = DashboardLayout;
 
 export default Leaderboard;

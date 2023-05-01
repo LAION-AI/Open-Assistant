@@ -13,6 +13,7 @@ export const config = {
     "/admin/:path*",
     "/tasks/:path*",
     "/leaderboard",
+    "/stats",
     "/messages/:path*",
     "/chat",
     "/chat/:path*",

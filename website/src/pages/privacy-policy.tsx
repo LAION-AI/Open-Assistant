@@ -2,7 +2,7 @@ import { Box, Heading, Link, Stack, Text, useColorModeValue } from "@chakra-ui/r
 import Head from "next/head";
 import { PolicyChapterCard } from "src/components/PolicyCards/PolicyChapterCard";
 import { PolicySectionCard } from "src/components/PolicyCards/PolicySectionCard";
-export { getServerSideProps } from "src/lib/defaultServerSideProps";
+export { getStaticProps } from "src/lib/defaultServerSideProps";
 
 const PrivacyPolicy = () => {
   const backgroundColor = useColorModeValue("gray.100", "gray.800");

@@ -40,8 +40,15 @@ class MessageResponseEvent(pydantic.BaseModel):
     message: inference.MessageRead
 
 
+class SafePromptResponseEvent(pydantic.BaseModel):
+    event_type: Literal["safe_prompt"] = "safe_prompt"
+    safe_prompt: str
+    message: inference.MessageRead
+
+
 ResponseEvent = Annotated[
-    Union[TokenResponseEvent, ErrorResponseEvent, MessageResponseEvent], pydantic.Field(discriminator="event_type")
+    Union[TokenResponseEvent, ErrorResponseEvent, MessageResponseEvent, SafePromptResponseEvent],
+    pydantic.Field(discriminator="event_type"),
 ]
 
 
@@ -91,3 +98,4 @@ class MessageTimeoutException(Exception):
 class ChatUpdateRequest(pydantic.BaseModel):
     title: pydantic.constr(max_length=100) | None = None
     hidden: bool | None = None
+    allow_data_use: bool | None = None
