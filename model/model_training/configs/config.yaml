@@ -158,7 +158,7 @@ pretrain:
         fraction: 0.075
         max_val_set: 250
     - soda:
-        fraction: 0.5
+        fraction: 0.25
         max_val_set: 1000
     - oa_leet10k:
         val_split: 0.05

@@ -48,7 +48,7 @@ class DialogueDataCollator:
 
     def process_one(self, messages, return_length=False):
         total_short_context_one = 0
-        if random.random() < self.random_offset_probability:
+        if random.random() < self.random_offset_probability and not isinstance(messages, PretrainDatasetEntry):
             truncation = TruncationStrategy.DO_NOT_TRUNCATE
             max_length = None
         else:
