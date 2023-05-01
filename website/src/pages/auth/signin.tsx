@@ -11,7 +11,6 @@ import {
 import { useColorMode } from "@chakra-ui/react";
 import { Discord, Google } from "@icons-pack/react-simple-icons";
 import { TurnstileInstance } from "@marsidev/react-turnstile";
-import { boolean } from "boolean";
 import { Bug, Mail } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -64,11 +63,8 @@ interface SigninProps {
 
 function Signin({ providers }: SigninProps) {
   const router = useRouter();
-  const {
-    ENABLE_EMAIL_SIGNIN: enableEmailSignin,
-    ENABLE_EMAIL_SIGNIN_CAPTCHA: enableEmailSigninCaptcha,
-    CLOUDFLARE_CAPTCHA_SITE_KEY: cloudflareCaptchaSiteKey,
-  } = useBrowserConfig();
+  const { ENABLE_EMAIL_SIGNIN: enableEmailSignin, ENABLE_EMAIL_SIGNIN_CAPTCHA: enableEmailSigninCaptcha } =
+    useBrowserConfig();
   const { discord, email, google, credentials } = providers;
   const [error, setError] = useState("");
 
@@ -96,11 +92,7 @@ function Signin({ providers }: SigninProps) {
         <Stack spacing="2">
           {credentials && <DebugSigninForm providerId={credentials.id} />}
           {email && enableEmailSignin && (
-            <EmailSignInForm
-              providerId={email.id}
-              enableEmailSigninCaptcha={enableEmailSigninCaptcha}
-              cloudflareCaptchaSiteKey={cloudflareCaptchaSiteKey}
-            />
+            <EmailSignInForm providerId={email.id} enableEmailSigninCaptcha={enableEmailSigninCaptcha} />
           )}
           {discord && (
             <Button
@@ -156,11 +148,9 @@ export default Signin;
 const EmailSignInForm = ({
   providerId,
   enableEmailSigninCaptcha,
-  cloudflareCaptchaSiteKey,
 }: {
   providerId: string;
   enableEmailSigninCaptcha: boolean;
-  cloudflareCaptchaSiteKey: string;
 }) => {
   const {
     register,
@@ -196,7 +186,6 @@ const EmailSignInForm = ({
         </FormControl>
         {enableEmailSigninCaptcha && (
           <CloudFlareCaptcha
-            siteKey={cloudflareCaptchaSiteKey}
             options={{ size: "invisible" }}
             ref={captcha}
             onSuccess={() => setCaptchaSuccess(true)}
