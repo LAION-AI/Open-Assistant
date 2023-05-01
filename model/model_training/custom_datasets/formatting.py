@@ -1,6 +1,6 @@
+import re
 from itertools import zip_longest
 from random import random, shuffle
-import re
 from typing import Optional
 
 from langcodes import Language
@@ -158,9 +158,7 @@ class DatasetEntry(BaseModel):
         if isinstance(answers[0], list):
             answers = [
                 [
-                    Utterance(
-                        content=a, length=length_indicator(a) if add_length else None, lang=lang, context=context
-                    )
+                    Utterance(content=a, length=length_indicator(a) if add_length else None, lang=lang, context=context)
                     for a in l
                 ]
                 for l in answers
@@ -168,9 +166,7 @@ class DatasetEntry(BaseModel):
         else:
             # todo: this does not yet support RM case
             answers = [
-                Utterance(
-                    content=a, length=length_indicator(a) if add_length else None, lang=lang, context=context
-                )
+                Utterance(content=a, length=length_indicator(a) if add_length else None, lang=lang, context=context)
                 for a in answers
             ]
 
