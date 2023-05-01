@@ -1,8 +1,9 @@
-import { Box, CircularProgress, Flex, Textarea } from "@chakra-ui/react";
+import { Box, CircularProgress, Flex, Textarea, useBreakpointValue } from "@chakra-ui/react";
 import { Send } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { forwardRef, KeyboardEvent, SyntheticEvent, useCallback } from "react";
+import { forwardRef, KeyboardEvent, SyntheticEvent, useCallback, useEffect } from "react";
 import TextareaAutosize from "react-textarea-autosize";
+import { useFallbackRef } from "src/hooks/ui/useFallbackRef";
 import { QueueInfo } from "src/lib/chat_stream";
 
 import { ChatConfigDrawer } from "./ChatConfigMobile";
@@ -15,7 +16,7 @@ type ChatFormProps = {
 };
 
 // eslint-disable-next-line react/display-name
-export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, ref) => {
+export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, forwardedRef) => {
   const { isSending, onSubmit: onSubmit, queueInfo } = props;
   const { t } = useTranslation("chat");
   const handleSubmit = useCallback(
@@ -34,6 +35,16 @@ export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, r
     },
     [onSubmit]
   );
+
+  const ref = useFallbackRef(forwardedRef);
+  const isDeskTop = useBreakpointValue({ base: false, md: true });
+
+  useEffect(() => {
+    if (isDeskTop) {
+      ref.current?.focus();
+    }
+  }, [isDeskTop, ref]);
+
   return (
     <Box as="form" maxWidth={{ base: "3xl", "2xl": "4xl" }} onSubmit={handleSubmit} className="py-2 w-full mx-auto">
       <div className="relative">
