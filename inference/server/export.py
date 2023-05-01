@@ -10,7 +10,13 @@ from typing import TextIO
 import sqlalchemy
 import sqlmodel
 from fastapi.encoders import jsonable_encoder
-from oasst_data import ExportMessageEvent, ExportMessageEventReport, ExportMessageNode, ExportMessageTree
+from oasst_data import (
+    ExportMessageEvent,
+    ExportMessageEventReport,
+    ExportMessageEventScore,
+    ExportMessageNode,
+    ExportMessageTree,
+)
 from oasst_inference_server.models import DbChat, DbMessage
 from oasst_inference_server.settings import settings
 from sqlmodel import Session
@@ -53,7 +59,8 @@ def prepare_export_events(message: DbMessage) -> dict[str, list[ExportMessageEve
         for db_report in message.reports
     ]
 
-    # TODO: thumbs up/down ratings as events? e.g. emoji event
+    if message.score != 0:
+        export_events["score"] = [ExportMessageEventScore(score=message.score)]
 
     return export_events
 
@@ -176,7 +183,7 @@ def parse_args() -> argparse.Namespace:
         action="store_false",
         help="Whether to write chats as trees rather than individual messages. Defaults to True.",
     )
-    # TODO: filters: reported, thumbs up/downed, specific user ID, specific chat ID, lang, etc
+    # TODO: filters: reported, score, user ID, chat ID, lang, etc
     # TODO: limit
     # TODO: user ID anonymization
     # TODO: date range?
