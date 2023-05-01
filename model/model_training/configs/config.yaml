@@ -99,6 +99,8 @@ pretrain:
   use_custom_sampler: true
   sort_by_length: false
   datasets:
+    - gpteacher_roleplay:
+        val_split: 0.05
     - red_pajama:
         fraction: 0.25
         max_val_set: 1000
