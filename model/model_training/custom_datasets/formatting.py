@@ -1,5 +1,6 @@
 from itertools import zip_longest
 from random import random, shuffle
+import re
 from typing import Optional
 
 from langcodes import Language
@@ -151,15 +152,26 @@ class DatasetEntry(BaseModel):
         add_length: bool = True,
         property_dropout: float = SYSTEM_PROPERTY_DROP_PROBA,
     ):
+        def length_indicator(s):
+            return len(re.findall(r"\w+", s)) // 5 + 1
+
         if isinstance(answers[0], list):
             answers = [
-                [Utterance(content=a, length=len(a) if add_length else None, lang=lang, context=context) for a in l]
+                [
+                    Utterance(
+                        content=a, length=length_indicator(a) if add_length else None, lang=lang, context=context
+                    )
+                    for a in l
+                ]
                 for l in answers
             ]
         else:
             # todo: this does not yet support RM case
             answers = [
-                Utterance(content=a, length=len(a) if add_length else None, lang=lang, context=context) for a in answers
+                Utterance(
+                    content=a, length=length_indicator(a) if add_length else None, lang=lang, context=context
+                )
+                for a in answers
             ]
 
         return cls(
