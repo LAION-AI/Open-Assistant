@@ -15,9 +15,6 @@ def test_dataset_entry_rm_mode():
     )
 
     eos = "<|endofline|>"
-    import pdb
-
-    pdb.set_trace()
     formatted_rm = ds_entry.get_formatted(mode=Mode.rm, eos_token=eos)
     expected_rm = (
         ["<|prompter|>Instruction A.<|endofline|>"],
