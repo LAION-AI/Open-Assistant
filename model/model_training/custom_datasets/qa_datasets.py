@@ -252,7 +252,7 @@ class SODA(Dataset):
             truncated_dialogue = [k[:input_max_length] for k in data["dialogue"]]
             questions = [q for idx, q in enumerate(truncated_dialogue) if idx % 2 == 0]
             answers = [a for idx, a in enumerate(truncated_dialogue) if idx % 2 == 1]
-            if len(questions) == 0 or len(answers) == 0:
+            if len(questions) == 0 or len(questions) != len(answers):
                 return None
             return DatasetEntry.from_strings(questions=questions, answers=answers)
 

@@ -100,7 +100,7 @@ pretrain:
   sort_by_length: false
   datasets:
     - red_pajama:
-        fraction: 0.1
+        fraction: 0.25
         max_val_set: 1000
     - wizardlm_70k:
         val_split: 0.05
