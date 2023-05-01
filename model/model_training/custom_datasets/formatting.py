@@ -79,7 +79,7 @@ class DatasetEntry(BaseModel):
     # For a dialouge with [Q1, A1, Q2, A2]
     # questions: [Q1, Q2]
     # answers: [A1, A2]
-    # the list[list[Utterance]] case is used for reward model datasets (which have replies answers per prompt)
+    # the list[list[Utterance]] case is used for reward model datasets (which have multiple answers per prompt)
     questions: list[Utterance]
     answers: list[Utterance] | list[list[Utterance]]
     property_dropout: float = SYSTEM_PROPERTY_DROP_PROBA
