@@ -72,7 +72,6 @@ def test_dataset_entry_formatting_missing_lang():
     assert f"{QA_SPECIAL_TOKENS['Answer']}The capital of France is Paris.<|endofline|>" == formatted[1]
 
 
-# AKo: TODO: Needs to be adapted to new Utterance class
 def test_dataset_entry():
     ds_entry = DatasetEntry(
         questions=[Utterance(content="What is the capital of France?")],
