@@ -35,9 +35,9 @@ class Utterance(BaseModel):
 
     length: int | None = None
     lang: str | None = None
-    quality: float | None = None
-    humor: float | None = None
-    creativity: float | None = None
+    quality: int | None = None
+    humor: int | None = None
+    creativity: int | None = None
     context: str | None = None
 
     @validator("lang")
@@ -54,12 +54,12 @@ class Utterance(BaseModel):
         return v
 
     @validator("quality", "humor", "creativity")
-    def between_0_1(cls, v, field: ModelField) -> float:
-        if v is not None and not (0 <= v <= 1):
-            raise ValueError(f"Field {field.name} must be between 0 and 1. Received {v}.")
+    def between_0_10(cls, v, field: ModelField) -> float:
+        if v is not None and not (0 <= v <= 10):
+            raise ValueError(f"Field {field.name} must be between 0 and 10. Received {v}.")
         return round(v, 1)
 
-    def system_tag(self, eos_token: str, property_dropout: float = 0) -> str | None:
+    def system_tag(self, eos_token: str, property_dropout: float = 0.0) -> str | None:
         relevant_system_infos = [
             (k, v)
             for k, v in self.__dict__.items()
@@ -97,6 +97,8 @@ class DatasetEntry(BaseModel):
                 # todo: not sure if this case is correct but it is equivalent to current non-dataset entry behaviour
                 answers = [f"{a}{eos_token}" for a in answers]
             case 1:
+                # todo: how to handle different system tags for the answers since the tag should be part of the question
+                # answer_system_tags = [a.system_tag(eos_token=eos_token, property_dropout=self.property_dropout) or "" for a in answers]
                 system_tag = self.questions[0].system_tag(eos_token=eos_token, property_dropout=self.property_dropout)
                 question = f"{QA_SPECIAL_TOKENS['Question']}{self.questions[0].context}{eos_token}{system_tag}"
                 answers = [f"{QA_SPECIAL_TOKENS['Answer']}{a}{eos_token}" for a in answers]
@@ -125,9 +127,9 @@ class DatasetEntry(BaseModel):
 
             for q, a in zip_longest(self.questions, answers):
                 if q is None or q.content is None:
-                    raise ValueError("Incomplete dialogue step in DatasetEntry: prompt in None")
+                    raise ValueError("Received answer without corresponding question.")
                 if a is None or a.content is None:
-                    raise ValueError("Incomplete dialogue step in DatasetEntry: reply is None")
+                    raise ValueError("Received question without corresponding answer.")
 
                 system_tag = a.system_tag(eos_token=eos_token) or ""
                 qa_list.extend(
@@ -155,6 +157,7 @@ class DatasetEntry(BaseModel):
                 for l in answers
             ]
         else:
+            # todo: this does not yet support RM case
             answers = [
                 Utterance(content=a, length=len(a) if add_length else None, lang=lang, context=context) for a in answers
             ]
