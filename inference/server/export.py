@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import contextlib
 import gzip
 import json
@@ -17,24 +18,10 @@ from oasst_data import (
     ExportMessageNode,
     ExportMessageTree,
 )
+from oasst_inference_server import deps
+from oasst_inference_server.database import AsyncSession
 from oasst_inference_server.models import DbChat, DbMessage
-from oasst_inference_server.settings import settings
 from oasst_shared.utils import Anonymizer
-from sqlmodel import Session
-
-
-@contextlib.contextmanager
-def create_session():
-    engine = sqlmodel.create_engine(
-        settings.database_uri,
-        echo=settings.db_echo,
-        isolation_level="REPEATABLE READ",
-        pool_size=settings.db_pool_size,
-        max_overflow=settings.db_max_overflow,
-    )
-
-    with Session(engine) as db:
-        yield db
 
 
 # see https://stackoverflow.com/questions/17602878/how-to-handle-both-with-open-and-sys-stdout-nicely
@@ -92,7 +79,10 @@ def prepare_export_message_tree(
 ) -> ExportMessageTree:
     messages: list[DbMessage] = chat.messages
 
-    export_messages: list[ExportMessageNode] = [prepare_export_message_node(m, anonymizer=anonymizer) for m in messages]
+    # Exclude messages without content (e.g. work still in progress or aborted)
+    export_messages: list[ExportMessageNode] = [
+        prepare_export_message_node(chat, message, anonymizer=anonymizer) for message in messages if message.content
+    ]
 
     messages_by_parent = defaultdict(list)
     for message in export_messages:
@@ -109,6 +99,7 @@ def prepare_export_message_tree(
 
 
 def prepare_export_message_node(
+    chat: DbChat,
     message: DbMessage,
     anonymizer: Anonymizer | None = None,
 ) -> ExportMessageNode:
@@ -124,7 +115,7 @@ def prepare_export_message_node(
 
     message_id = maybe_anonymize(anonymizer, "message", message.id)
     parent_id = maybe_anonymize(anonymizer, "message", message.parent_id)
-    user_id = maybe_anonymize(anonymizer, "user", message.chat.user_id)
+    user_id = maybe_anonymize(anonymizer, "user", chat.user_id)
 
     return ExportMessageNode(
         message_id=message_id,
@@ -156,41 +147,44 @@ def write_messages_to_file(
         out_buff = smart_open(file)
 
     with out_buff as f:
-        for c in chats:
+        for chat in chats:
             if write_trees:
-                export_chat = prepare_export_message_tree(c, anonymizer=anonymizer)
+                export_chat = prepare_export_message_tree(chat, anonymizer=anonymizer)
                 file_data = jsonable_encoder(export_chat, exclude_none=True)
                 json.dump(file_data, f)
                 f.write("\n")
             else:
-                for m in c.messages:
-                    export_message = prepare_export_message_node(m, anonymizer=anonymizer)
+                # Exclude messages without content (e.g. work still in progress or aborted)
+                for message in filter(lambda m: m.content, chat.messages):
+                    export_message = prepare_export_message_node(chat, message, anonymizer=anonymizer)
                     file_data = jsonable_encoder(export_message, exclude_none=True)
                     json.dump(file_data, f)
                     f.write("\n")
 
 
-def fetch_eligible_chats(session: Session) -> list[DbChat]:
+async def fetch_eligible_chats(session_generator) -> list[DbChat]:
     """Fetch chats which are not opted out of data collection."""
-    query = (
-        session.query(DbChat)
-        .filter(DbChat.allow_data_use)
-        .options(
-            sqlalchemy.orm.selectinload(DbChat.messages).selectinload(DbMessage.reports),
+    session: AsyncSession
+    async with session_generator() as session:
+        query = (
+            sqlmodel.select(DbChat)
+            .filter(DbChat.allow_data_use)
+            .options(
+                sqlalchemy.orm.joinedload("*"),
+            )
         )
-    )
-    chats: list[DbChat] = query.all()
-    return chats
+        chats: list[DbChat] = (await session.exec(query)).unique().all()
+        return chats
 
 
 def export_chats(
-    session: Session,
+    session_generator,
     export_path: Path,
     use_compression: bool = True,
     write_trees: bool = True,
     anonymizer_seed: str | None = None,
 ) -> None:
-    eligible_chats: list[DbChat] = fetch_eligible_chats(session)
+    eligible_chats: list[DbChat] = asyncio.run(fetch_eligible_chats(session_generator))
     anonymizer = Anonymizer(anonymizer_seed) if anonymizer_seed else None
 
     write_messages_to_file(
@@ -210,14 +204,14 @@ def parse_args() -> argparse.Namespace:
         help="Name of file to export chats to. If not provided, output will be sent to STDOUT",
     )
     parser.add_argument(
-        "--use-compression",
-        action="store_false",
-        help="Whether to use compression when writing to file. Defaults to True.",
+        "--no-compression",
+        action="store_true",
+        help="Disable compression when writing to file.",
     )
     parser.add_argument(
-        "--write-trees",
-        action="store_false",
-        help="Whether to write chats as trees rather than individual messages. Defaults to True.",
+        "--write-flat",
+        action="store_true",
+        help="Write chats as individual messages rather than trees.",
     )
     parser.add_argument(
         "--anonymizer-seed",
@@ -234,14 +228,13 @@ def main():
 
     export_path = Path(args.export_file) if args.export_file else None
 
-    with create_session() as session:
-        export_chats(
-            session,
-            export_path,
-            use_compression=args.use_compression,
-            write_trees=args.write_trees,
-            anonymizer_seed=args.anonymizer_seed,
-        )
+    export_chats(
+        deps.manual_create_session,
+        export_path,
+        use_compression=not args.no_compression,
+        write_trees=not args.write_flat,
+        anonymizer_seed=args.anonymizer_seed,
+    )
 
 
 if __name__ == "__main__":
