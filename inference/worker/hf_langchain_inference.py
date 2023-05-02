@@ -58,13 +58,11 @@ class HFInference(LLM):
             logger.error(f"Response: {response.text}")
             raise
 
-        response_json = response.json()
+        generated_text = response.json()["generated_text"]
 
         # remove stop sequences from the end of the generated text
         for stop_seq in stop:
-            if stop_seq in response_json.generated_text:
-                response_json.generated_text = response_json.generated_text[
-                    : response_json.generated_text.index(stop_seq)
-                ]
+            if stop_seq in generated_text:
+                generated_text = generated_text[: generated_text.index(stop_seq)]
 
-        return response_json.generated_text
+        return generated_text
