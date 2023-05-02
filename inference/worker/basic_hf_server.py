@@ -62,6 +62,7 @@ def model_thread():
             seed = params.pop("seed")
             params.pop("stop")
             params.pop("details")
+            params.pop("plugins")
 
             last_token_id = None  # need to delay by 1 to simulate tgi
 
