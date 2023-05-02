@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:analyze": "cross-env ANALYZE=true next build",
-    "start": "next start",
+    "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
