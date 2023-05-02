@@ -6,8 +6,8 @@ import torch
 import transformers
 from model_training.custom_datasets.formatting import QA_SPECIAL_TOKENS, format_pairs, format_system_prefix
 from model_training.models import get_specific_model
-from tokenizers import pre_tokenizers
 from model_training.utils.utils import _strtobool
+from tokenizers import pre_tokenizers
 
 if __name__ == "__main__":
     import warnings
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
-    
+
     model.gradient_checkpointing_enable()  # reduce number of stored activations
     tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_path)
     # tokenizer = transformers.AutoTokenizer.from_pretrained("dvruette/oasst-pythia-6.9b-4000-steps")
