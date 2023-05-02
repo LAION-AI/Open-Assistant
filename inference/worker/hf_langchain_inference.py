@@ -57,6 +57,8 @@ class HFInference(LLM):
         for line in response.iter_lines():
             if line:
                 data = json.loads(line.decode("utf-8").lstrip("data: "))
+                if data["error"]:
+                    raise Exception(data["error"])
                 if data["generated_text"]:
                     break
 
