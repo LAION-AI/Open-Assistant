@@ -49,7 +49,7 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const activePluginIndex = useMemo(() => {
-    return plugins?.findIndex((plugin) => plugin.enabled) ?? -1;
+    return plugins.findIndex((plugin) => plugin.enabled);
   }, [plugins]);
 
   const handlePluginSelect = useCallback(
