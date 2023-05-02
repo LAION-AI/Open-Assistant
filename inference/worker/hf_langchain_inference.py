@@ -56,7 +56,7 @@ class HFInference(LLM):
 
         for line in response.iter_lines():
             if line:
-                data = json.loads(line)
+                data = json.loads(line.decode("utf-8").lstrip("data: "))
                 if data["is_end"]:
                     break
 
