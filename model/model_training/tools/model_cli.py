@@ -56,8 +56,8 @@ if __name__ == "__main__":
             model = get_specific_model(args.model_path, cache_dir=args.cache_dir, torch_dtype=torch.float16)
 
     model.gradient_checkpointing_enable()  # reduce number of stored activations
-    # tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_path)
-    tokenizer = transformers.AutoTokenizer.from_pretrained("dvruette/oasst-pythia-6.9b-4000-steps")
+    tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_path)
+    # tokenizer = transformers.AutoTokenizer.from_pretrained("dvruette/oasst-pythia-6.9b-4000-steps")
     if args.per_digit_tokens:
         tokenizer._tokenizer.pre_processor = pre_tokenizers.Digits(True)
 
