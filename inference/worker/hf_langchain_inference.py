@@ -56,10 +56,14 @@ class HFInference(LLM):
 
         for line in response.iter_lines():
             if line:
-                data = json.loads(line.decode("utf-8").lstrip("data: "))
-                if data["error"]:
+                decoded_line: str = line.decode("utf-8")
+                if not decoded_line.startswith("data: {"):
+                    continue
+                stripped = decoded_line.lstrip("data: ")
+                data = json.loads(stripped)
+                if "error" in data and data["error"]:
                     raise Exception(data["error"])
-                if data["generated_text"]:
+                if "generated_text" in data and data["generated_text"]:
                     break
 
         generated_text = data["generated_text"]
