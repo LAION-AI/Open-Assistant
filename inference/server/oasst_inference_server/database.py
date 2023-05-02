@@ -43,6 +43,8 @@ def custom_json_deserializer(s):
             return chat_schema.CreateMessageRequest.parse_obj(d)
         case "WorkRequest":
             return inference.WorkRequest.parse_obj(d)
+        case "PluginUsed":
+            return inference.PluginUsed.parse_obj(d)
         case None:
             return d
         case _:

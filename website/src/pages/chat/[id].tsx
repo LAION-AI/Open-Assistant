@@ -5,7 +5,7 @@ import { ChatContextProvider } from "src/components/Chat/ChatContext";
 import { ChatSection } from "src/components/Chat/ChatSection";
 import { ChatLayout } from "src/components/Layout/ChatLayout";
 import { get } from "src/lib/api";
-import { ModelInfo } from "src/types/Chat";
+import { ModelInfo, PluginEntry } from "src/types/Chat";
 export { getServerSideProps } from "src/lib/defaultServerSideProps";
 import useSWRImmutable from "swr/immutable";
 
@@ -16,14 +16,17 @@ const Chat = () => {
   const { data: modelInfos } = useSWRImmutable<ModelInfo[]>("/api/chat/models", get, {
     keepPreviousData: true,
   });
+  const { data: plugins } = useSWRImmutable<PluginEntry[]>("/api/chat/plugins", get, {
+    keepPreviousData: true,
+  });
 
   return (
     <>
       <Head>
         <title>{t("chat")}</title>
       </Head>
-      {modelInfos && (
-        <ChatContextProvider modelInfos={modelInfos}>
+      {modelInfos && plugins && (
+        <ChatContextProvider modelInfos={modelInfos} plugins={plugins}>
           <ChatSection chatId={id} />
         </ChatContextProvider>
       )}

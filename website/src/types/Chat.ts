@@ -47,7 +47,9 @@ export interface InferenceMessage {
       max_total_length: number;
       quantized: boolean;
     };
+    plugins: PluginEntry[];
   };
+  used_plugin?: object | null;
 }
 
 export interface GetChatsResponse {
@@ -103,6 +105,7 @@ export interface SamplingParameters {
 
 export interface ChatConfigFormData extends SamplingParameters {
   model_config_name: string; // this is the same as ModelParameterConfig.name
+  plugins: PluginEntry[];
 }
 
 export interface InferencePostPrompterMessageParams {
@@ -116,12 +119,65 @@ export interface InferencePostAssistantMessageParams {
   parent_id: string;
   model_config_name: string;
   sampling_parameters: SamplingParameters;
+  plugins: PluginEntry[];
 }
 
 export interface InferenceUpdateChatParams {
   chat_id: string;
   title?: string;
   hidden?: boolean;
+}
+
+export interface PluginEntry {
+  url: string;
+  enabled?: boolean;
+  trusted?: boolean;
+  spec?: object | null;
+  plugin_config?: PluginConfig | null;
+}
+
+export interface PluginApiType {
+  type: string;
+  url: string;
+  has_user_authentication: boolean | null;
+  // NOTE: Some plugins using this field,
+  // instead of has_user_authentication
+  is_user_authenticated: boolean | null;
+}
+
+export interface PluginAuthType {
+  type: string;
+}
+
+export interface PluginOpenAPIEndpoint {
+  path: string;
+  type: string;
+  summary: string;
+  operation_id: string;
+  url: string;
+  params: PluginOpenAPIParameter[];
+}
+
+export interface PluginOpenAPIParameter {
+  name: string;
+  in_: string;
+  description: string;
+  required: boolean;
+  schema_: object;
+}
+
+export interface PluginConfig {
+  schema_version: string;
+  name_for_model: string;
+  name_for_human: string;
+  description_for_human: string;
+  description_for_model: string;
+  api: PluginApiType;
+  auth: PluginAuthType;
+  logo_url?: string | null;
+  contact_email: string | null;
+  legal_info_url: string | null;
+  endpoints: PluginOpenAPIEndpoint[] | null;
 }
 
 export interface GetChatsParams {

@@ -22,6 +22,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { ChatConfigFormData, ModelParameterConfig, SamplingParameters } from "src/types/Chat";
 
 import { useChatContext } from "./ChatContext";
+import { PluginsChooser } from "./PluginsChooser";
 import { areParametersEqual } from "./WorkParameters";
 const sliderItems: Readonly<
   Array<{
@@ -91,8 +92,10 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
 
   const { control, getValues, register, setValue } = useFormContext<ChatConfigFormData>();
   const selectedModel = getValues("model_config_name"); // have to use getValues to here to access latest value
+  const plugins = getValues("plugins") || [];
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
   const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
+  const [lockPresetSelection, setLockPresetSelection] = useState(false);
 
   const handlePresetChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
@@ -110,6 +113,18 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
     [presets, setValue]
   );
 
+  // Lock preset selection if any plugin is enabled
+  useEffect(() => {
+    const activated = plugins.some((plugin) => plugin.enabled);
+    if (activated) {
+      handlePresetChange({ target: { value: "k50-Plugins" } } as any);
+      setSelectedPresetName(findPresetName(presets, getValues() as SamplingParameters));
+      setLockPresetSelection(true);
+    } else {
+      setLockPresetSelection(false);
+    }
+  }, [presets, plugins]);
+
   const config = getValues(); // have to use getValues to here to access latest value
 
   useEffect(() => {
@@ -118,6 +133,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
 
   return (
     <Stack gap="4">
+      <PluginsChooser plugins={plugins} />
       <FormControl>
         <FormLabel>{t("model")}</FormLabel>
         <Select {...register("model_config_name")}>
@@ -130,7 +146,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
       </FormControl>
       <FormControl>
         <FormLabel>{t("preset")}</FormLabel>
-        <Select value={selectedPresetName} onChange={handlePresetChange}>
+        <Select value={selectedPresetName} onChange={handlePresetChange} isDisabled={lockPresetSelection}>
           {presets.map(({ name }) => (
             <option value={name} key={name}>
               {name}

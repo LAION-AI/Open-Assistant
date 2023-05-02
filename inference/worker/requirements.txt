@@ -1,5 +1,7 @@
+aiohttp
 hf_transfer
 huggingface_hub
+langchain==0.0.142
 loguru
 lorem
 nvidia-ml-py
@@ -8,5 +10,6 @@ pydantic
 requests
 sentencepiece
 sseclient-py
+text-generation
 git+https://github.com/huggingface/transformers@main#egg=transformers
 websocket-client

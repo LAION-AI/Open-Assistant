@@ -123,7 +123,8 @@ class UserChatRepository(pydantic.BaseModel):
         if parent_id is None:
             if len(chat.messages) > 0:
                 raise fastapi.HTTPException(status_code=400, detail="Trying to add first message to non-empty chat")
-            chat.title = content
+            if chat.title is None:
+                chat.title = content
         else:
             msg_dict = chat.get_msg_dict()
             if parent_id not in msg_dict:

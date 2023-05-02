@@ -14,6 +14,8 @@ class CreateAssistantMessageRequest(pydantic.BaseModel):
     parent_id: str
     model_config_name: str
     sampling_parameters: inference.SamplingParameters = pydantic.Field(default_factory=inference.SamplingParameters)
+    plugins: list[inference.PluginEntry] = pydantic.Field(default_factory=list[inference.PluginEntry])
+    used_plugin: inference.PluginUsed | None = None
 
 
 class PendingResponseEvent(pydantic.BaseModel):

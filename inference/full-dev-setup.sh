@@ -13,10 +13,12 @@ else
     INFERENCE_TAG=latest
 fi
 
+POSTGRES_PORT=${POSTGRES_PORT:-5432}
+
 # Creates a tmux window with splits for the individual services
 
 tmux new-session -d -s "inference-dev-setup"
-tmux send-keys "docker run --rm -it -p 5732:5432 -e POSTGRES_PASSWORD=postgres --name postgres postgres" C-m
+tmux send-keys "docker run --rm -it -p $POSTGRES_PORT:5432 -e POSTGRES_PASSWORD=postgres --name postgres postgres" C-m
 tmux split-window -h
 tmux send-keys "docker run --rm -it -p 6779:6379 --name redis redis" C-m
 
@@ -30,7 +32,7 @@ fi
 
 tmux split-window -h
 tmux send-keys "cd server" C-m
-tmux send-keys "LOGURU_LEVEL=$LOGLEVEL POSTGRES_PORT=5732 REDIS_PORT=6779 DEBUG_API_KEYS='0000,0001' ALLOW_DEBUG_AUTH=True TRUSTED_CLIENT_KEYS=6969 uvicorn main:app" C-m
+tmux send-keys "LOGURU_LEVEL=$LOGLEVEL POSTGRES_PORT=$POSTGRES_PORT REDIS_PORT=6779 DEBUG_API_KEYS='0000,0001' ALLOW_DEBUG_AUTH=True TRUSTED_CLIENT_KEYS=6969 uvicorn main:app" C-m
 tmux split-window -h
 tmux send-keys "cd text-client" C-m
 tmux send-keys "sleep 5" C-m

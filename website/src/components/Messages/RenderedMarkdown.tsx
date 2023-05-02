@@ -26,6 +26,7 @@ import "katex/dist/katex.min.css";
 
 interface RenderedMarkdownProps {
   markdown: string;
+  disallowedElements?: string[];
 }
 
 const sx: SystemStyleObject = {
@@ -90,9 +91,7 @@ const sx: SystemStyleObject = {
 const remarkPlugins = [remarkGfm, remarkMath];
 const rehypePlugins = [rehypeKatex];
 
-const disallowedElements = ["img"];
-
-const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
+const RenderedMarkdown = ({ markdown, disallowedElements = ["img"] }: RenderedMarkdownProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [link, setLink] = useState<string | undefined>();
 
@@ -134,7 +133,9 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
 
   return (
     <>
-      <MemorizedMarkdown components={components}>{markdown}</MemorizedMarkdown>
+      <MemorizedMarkdown disallowedElements={disallowedElements} components={components}>
+        {markdown}
+      </MemorizedMarkdown>
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
         <ModalContent>
@@ -161,6 +162,7 @@ const RenderedMarkdown = ({ markdown }: RenderedMarkdownProps) => {
 };
 
 const MemorizedMarkdown = memo(function MemorizedMarkdown(props: ReactMarkdownOptions) {
+  const { disallowedElements } = props;
   return (
     <Prose as="div" sx={sx}>
       <ReactMarkdown

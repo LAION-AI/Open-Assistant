@@ -140,6 +140,7 @@ async def create_assistant_message(
             work_parameters = inference.WorkParameters(
                 model_config=model_config,
                 sampling_parameters=request.sampling_parameters,
+                plugins=request.plugins,
             )
             assistant_message = await ucr.initiate_assistant_message(
                 parent_id=request.parent_id,
