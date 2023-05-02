@@ -28,6 +28,8 @@ class DbMessage(SQLModel, table=True):
     safety_label: str | None = Field(None)
     safety_rots: str | None = Field(None)
 
+    used_plugin: inference.PluginUsed | None = Field(None, sa_column=sa.Column(pg.JSONB))
+
     state: inference.MessageState = Field(inference.MessageState.manual)
     work_parameters: inference.WorkParameters = Field(None, sa_column=sa.Column(pg.JSONB))
     work_begin_at: datetime.datetime | None = Field(None)
@@ -68,6 +70,7 @@ class DbMessage(SQLModel, table=True):
             safety_level=self.safety_level,
             safety_label=self.safety_label,
             safety_rots=self.safety_rots,
+            used_plugin=self.used_plugin,
         )
 
 

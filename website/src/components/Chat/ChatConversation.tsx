@@ -2,6 +2,7 @@
 import { Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
 import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
+import { useChatContext } from "src/components/Chat/ChatContext";
 import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
@@ -51,12 +52,13 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
   const createAndFetchAssistantMessage = useCallback(
     async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
-      const { model_config_name, ...sampling_parameters } = getConfigValues();
+      const { model_config_name, plugins, ...sampling_parameters } = getConfigValues();
       const assistant_arg: InferencePostAssistantMessageParams = {
         chat_id: chatId,
         parent_id: parentId,
         model_config_name,
         sampling_parameters,
+        plugins,
       };
 
       let assistant_message: InferenceMessage;

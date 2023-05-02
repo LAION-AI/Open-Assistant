@@ -5,7 +5,6 @@ import { forwardRef, KeyboardEvent, SyntheticEvent, useCallback, useEffect } fro
 import TextareaAutosize from "react-textarea-autosize";
 import { useFallbackRef } from "src/hooks/ui/useFallbackRef";
 import { QueueInfo } from "src/lib/chat_stream";
-
 import { ChatConfigDrawer } from "./ChatConfigMobile";
 import { ChatInputIconButton } from "./ChatInputIconButton";
 

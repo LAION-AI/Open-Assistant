@@ -31,7 +31,7 @@ export const ChatConfigDesktop = memo(function ChatConfigDesktop() {
           contentEl: "mr-4 flex flex-col overflow-y-auto items-center",
         }}
       >
-        <ChatConfigForm></ChatConfigForm>
+        <ChatConfigForm />
       </SimpleBar>
     </Box>
   );

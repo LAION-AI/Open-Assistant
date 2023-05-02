@@ -4,13 +4,15 @@ import { ChatConfigFormData } from "src/types/Chat";
 import { setConfigCache } from "src/utils/chat";
 
 export const ChatConfigSaver = () => {
-  const { watch, formState } = useFormContext<ChatConfigFormData>();
+  const { watch, formState, reset } = useFormContext<ChatConfigFormData>();
   const config = watch();
   useEffect(() => {
     if (formState.isDirty) {
       setConfigCache(config);
+      // unset isDirty
+      reset(config);
     }
-  }, [config, formState.isDirty]);
+  }, [config, formState.isDirty, reset]);
 
   return null;
 };

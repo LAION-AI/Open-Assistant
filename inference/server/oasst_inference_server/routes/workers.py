@@ -350,6 +350,7 @@ async def handle_generated_text_response(
             message = await cr.complete_work(
                 message_id=message_id,
                 content=response.text,
+                used_plugin=response.used_plugin,
             )
             logger.info(f"Completed work for {message_id=}")
         message_packet = inference.InternalFinishedMessageResponse(

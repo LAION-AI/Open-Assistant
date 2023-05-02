@@ -9,7 +9,7 @@ import { useChatContext } from "./ChatContext";
 import { ChatConversation } from "./ChatConversation";
 
 export const ChatSection = ({ chatId }: { chatId: string | null }) => {
-  const { modelInfos } = useChatContext();
+  const { modelInfos, plugins } = useChatContext();
 
   console.assert(modelInfos.length > 0, "No model config was found");
 
@@ -17,6 +17,7 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
     defaultValues: {
       ...modelInfos[0].parameter_configs[0].sampling_parameters,
       model_config_name: modelInfos[0].name,
+      plugins: plugins,
     },
   });
 
@@ -31,8 +32,7 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
   return (
     <FormProvider {...form}>
       <ChatConversation chatId={chatId} key={chatId} getConfigValues={form.getValues} />
-
-      <ChatConfigDesktop></ChatConfigDesktop>
+      <ChatConfigDesktop />
       <ChatConfigSaver />
     </FormProvider>
   );

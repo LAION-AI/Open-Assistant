@@ -25,5 +25,15 @@
   "you_are_logged_in": "You are logged in to the chat service",
   "your_chats": "Your Chats",
   "input_placeholder": "Ask the assistant anything",
-  "warning": "This Assistant is a demonstration version that does not have internet access. It may generate incorrect or misleading information. It is not suitable for important use cases or for giving advice."
+  "warning": "This Assistant is a demonstration version that does not have internet access. It may generate incorrect or misleading information. It is not suitable for important use cases or for giving advice.",
+  "plugins": "Plugins",
+  "edit_plugin": "Edit Plugin",
+  "add_plugin": "Add Plugin",
+  "remove_plugin": "Remove Plugin",
+  "save": "Save",
+  "used": "Used",
+  "unverified_plugin": "UNVERIFIED",
+  "verified_plugin": "VERIFIED",
+  "unverified_plugin_description": "This plugin has not been verified by the Open Assistant team. Use at your own risk.",
+  "verified_plugin_description": "This plugin has been verified by the Open Assistant team."
 }
