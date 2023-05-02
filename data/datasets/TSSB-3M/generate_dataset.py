@@ -2,11 +2,11 @@
 """
 
 import json
+import random
 import re
 from os.path import join
-from tqdm import tqdm
-import random
 
+from tqdm import tqdm
 
 INSTRUCTIONS_LIST = [
     "Find the bug in the following code:",
@@ -212,7 +212,7 @@ def create(input_file, output_file, output_json=True):
 
 if __name__ == "__main__":
     """
-    # get source data
+    # get source data from huggingface repository
      !wget https://huggingface.co/datasets/zirui3/TSSB-3M-ext/blob/main/data.jsonl.gz
      !gzip -d data.jsonl.gz
     """
