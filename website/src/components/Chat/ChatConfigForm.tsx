@@ -92,7 +92,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
 
   const { control, getValues, register, setValue } = useFormContext<ChatConfigFormData>();
   const selectedModel = getValues("model_config_name"); // have to use getValues to here to access latest value
-  const plugins = getValues("plugins");
+  const plugins = getValues("plugins") || [];
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
   const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
   const [lockPresetSelection, setLockPresetSelection] = useState(false);

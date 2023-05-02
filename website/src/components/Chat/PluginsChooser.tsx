@@ -39,13 +39,6 @@ import { PluginEntry } from "src/types/Chat";
 import { get, post } from "src/lib/api";
 import { API_ROUTES } from "src/lib/routes";
 
-// TODO: Delete me!
-const measureDivWidth = (div: HTMLDivElement | null) => {
-  if (!div) return 0;
-  const width = div?.parentElement?.offsetWidth - 15;
-  return width;
-};
-
 export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
   const { t } = useTranslation("chat");
   const { control, register, reset, setValue } = useFormContext<ChatConfigFormData>();
@@ -114,30 +107,30 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
   }, [setValue, plugins, handlePluginEdit]);
 
   return (
-    <FormControl mb="40px" ref={containerRef}>
-      <Box position="fixed" zIndex="1">
-        <Menu placement="auto">
-          <MenuButton as={Button} pr="3" rightIcon={<Cog />} w={measureDivWidth(containerRef.current) + 15} size="lg">
-            {plugins && plugins[activePluginIndex]?.enabled ? (
-              <Box display="flex" justifyContent="flex-start" gap={2}>
-                <Image
-                  src={plugins[activePluginIndex]?.plugin_config?.logo_url}
-                  alt="Plugins"
-                  width="25px"
-                  height="25px"
-                  marginRight="5px"
-                />
-                <Text mt="4px" fontSize="sm" isTruncated>
-                  {plugins[activePluginIndex]?.plugin_config?.name_for_human}
-                </Text>
-              </Box>
-            ) : (
-              <Box display="flex" justifyContent="center" gap={2}>
-                <AttachmentIcon boxSize="5" />
-                {t("plugins")}
-              </Box>
-            )}
-          </MenuButton>
+    <FormControl ref={containerRef}>
+      <Menu placement="auto">
+        <MenuButton as={Button} pr="3" rightIcon={<Cog />} size="lg" width="100%">
+          {activePluginIndex > -1 && plugins[activePluginIndex]?.enabled ? (
+            <Box display="flex" justifyContent="flex-start" gap={2}>
+              <Image
+                src={plugins[activePluginIndex]?.plugin_config?.logo_url}
+                alt="Plugins"
+                width="25px"
+                height="25px"
+                marginRight="5px"
+              />
+              <Text mt="4px" fontSize="sm" isTruncated>
+                {plugins[activePluginIndex]?.plugin_config?.name_for_human}
+              </Text>
+            </Box>
+          ) : (
+            <Box display="flex" justifyContent="center" gap={2}>
+              <AttachmentIcon boxSize="5" />
+              {t("plugins")}
+            </Box>
+          )}
+        </MenuButton>
+        <Box position="fixed" zIndex="1">
           <MenuList left="-150px" position="absolute" w="280px">
             <RadioGroup value={plugins?.findIndex((plugin) => plugin.enabled).toString()}>
               {plugins?.map((plugin, index) => (
@@ -214,31 +207,31 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
               </Box>
             </MenuItem>
           </MenuList>
-        </Menu>
-        <Modal isOpen={isOpen} onClose={onClose} size="xl">
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>{t("edit_plugin")}</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <Textarea
-                minHeight="40px"
-                defaultValue={selectedForEditPluginIndex !== null ? plugins[selectedForEditPluginIndex!]?.url : ""}
-                ref={textareaRef}
-                mb={4}
-              />
-              <Box as="pre" whiteSpace="pre-wrap" fontSize="xs">
-                {JSON.stringify(plugins[selectedForEditPluginIndex!], null, 4)}
-              </Box>
-            </ModalBody>
-            <ModalFooter>
-              <Button colorScheme="blue" onClick={handlePluginSave}>
-                {t("save")}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      </Box>
+        </Box>
+      </Menu>
+      <Modal isOpen={isOpen} onClose={onClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{t("edit_plugin")}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Textarea
+              minHeight="40px"
+              defaultValue={selectedForEditPluginIndex !== null ? plugins[selectedForEditPluginIndex!]?.url : ""}
+              ref={textareaRef}
+              mb={4}
+            />
+            <Box as="pre" whiteSpace="pre-wrap" fontSize="xs">
+              {JSON.stringify(plugins[selectedForEditPluginIndex!], null, 4)}
+            </Box>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" onClick={handlePluginSave}>
+              {t("save")}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </FormControl>
   );
 };
