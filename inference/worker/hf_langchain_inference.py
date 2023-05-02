@@ -1,8 +1,9 @@
-import json
-
 import interface
+import requests
+import sseclient
 import utils
 from langchain.llms.base import LLM
+from loguru import logger
 from settings import settings
 
 
@@ -54,19 +55,23 @@ class HFInference(LLM):
             headers={"Accept": "text/event-stream"},
         )
 
-        for line in response.iter_lines():
-            if line:
-                decoded_line: str = line.decode("utf-8")
-                if not decoded_line.startswith("data: {"):
-                    continue
-                stripped = decoded_line.lstrip("data: ")
-                data = json.loads(stripped)
-                if "error" in data and data["error"]:
-                    raise Exception(data["error"])
-                if "generated_text" in data and data["generated_text"]:
-                    break
+        try:
+            response.raise_for_status()
+        except requests.HTTPError:
+            logger.exception("Failed to get response from inference server")
+            logger.error(f"Response: {response.text}")
+            raise
 
-        generated_text = data["generated_text"]
+        client = sseclient.SSEClient(response)
+        for event in client.events():
+            if event.event == "error":
+                logger.error(f"Error from inference server: {event.data}")
+                raise RuntimeError(f"Error from inference server: {event.data}")
+            if event.event == "ping":
+                continue
+            stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
+
+        generated_text = stream_response.generated_text
 
         # remove stop sequences from the end of the generated text
         for stop_seq in stop:
