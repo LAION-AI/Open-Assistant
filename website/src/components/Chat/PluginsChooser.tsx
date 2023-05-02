@@ -110,7 +110,7 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
     <FormControl ref={containerRef}>
       <Menu placement="auto">
         <MenuButton as={Button} pr="3" rightIcon={<Cog />} size="lg" width="100%">
-          {plugins && activePluginIndex > -1 && plugins[activePluginIndex]?.enabled ? (
+          {activePluginIndex > -1 && plugins[activePluginIndex]?.enabled ? (
             <Box display="flex" justifyContent="flex-start" gap={2}>
               <Image
                 src={plugins[activePluginIndex]?.plugin_config?.logo_url}
