@@ -5,7 +5,6 @@ from concurrent import futures
 import chat_chain
 import interface
 import requests
-import sseclient
 import transformers
 import utils
 import websocket
@@ -168,7 +167,7 @@ def handle_work_request(
             inputs=prompt,
             parameters=parameters,
         )
-        stream_events = get_inference_server_stream_events(stream_request)
+        stream_events = utils.get_inference_server_stream_events(stream_request)
 
     generated_ids = []
     decoded_text = ""
@@ -253,37 +252,6 @@ def get_safety_server_response(request: inference.SafetyRequest) -> inference.Sa
     return inference.SafetyResponse(**response.json())
 
 
-def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
-    http = utils.HttpClient(
-        base_url=settings.inference_server_url,
-        basic_auth_username=settings.basic_auth_username,
-        basic_auth_password=settings.basic_auth_password,
-    )
-    response = http.post(
-        "/generate_stream",
-        json=request.dict(),
-        stream=True,
-        headers={"Accept": "text/event-stream"},
-    )
-    try:
-        response.raise_for_status()
-    except requests.HTTPError:
-        logger.exception("Failed to get response from inference server")
-        logger.error(f"Response: {response.text}")
-        raise
-
-    client = sseclient.SSEClient(response)
-    for event in client.events():
-        if event.event == "error":
-            logger.error(f"Error from inference server: {event.data}")
-            yield interface.GenerateStreamResponse(error=event.data)
-            raise RuntimeError(f"Error from inference server: {event.data}")
-        if event.event == "ping":
-            continue
-        stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
-        yield stream_response
-
-
 def perform_oom_test(tokenizer: transformers.PreTrainedTokenizer):
     logger.warning("Performing OOM test")
     prompt = ("This is a test prompt. " * 10000).strip()
@@ -308,7 +276,7 @@ def perform_oom_test(tokenizer: transformers.PreTrainedTokenizer):
                     inputs=short_prompt,
                     parameters=parameters,
                 )
-                stream_events = get_inference_server_stream_events(stream_request)
+                stream_events = utils.get_inference_server_stream_events(stream_request)
                 for stream_response in stream_events:
                     if stream_response.is_error:
                         logger.error(f"Error from inference server: {stream_response.error}")
@@ -331,7 +299,7 @@ def perform_oom_test(tokenizer: transformers.PreTrainedTokenizer):
                 ftrs: list[futures.Future] = []
                 try:
                     for _ in range(batch_size):
-                        stream_events = get_inference_server_stream_events(stream_request)
+                        stream_events = utils.get_inference_server_stream_events(stream_request)
                         ftrs.append(executor.submit(list, stream_events))
                     for ftr in ftrs:
                         for stream_response in ftr.result():

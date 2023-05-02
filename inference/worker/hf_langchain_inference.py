@@ -1,10 +1,6 @@
 import interface
-import requests
-import sseclient
 import utils
 from langchain.llms.base import LLM
-from loguru import logger
-from settings import settings
 
 
 class HFInference(LLM):
@@ -42,34 +38,8 @@ class HFInference(LLM):
             ),
         )
 
-        http = utils.HttpClient(
-            base_url=settings.inference_server_url,
-            basic_auth_username=settings.basic_auth_username,
-            basic_auth_password=settings.basic_auth_password,
-        )
-
-        response = http.post(
-            "/generate_stream",
-            json=request.dict(),
-            stream=True,
-            headers={"Accept": "text/event-stream"},
-        )
-
-        try:
-            response.raise_for_status()
-        except requests.HTTPError:
-            logger.exception("Failed to get response from inference server")
-            logger.error(f"Response: {response.text}")
-            raise
-
-        client = sseclient.SSEClient(response)
-        for event in client.events():
-            if event.event == "error":
-                logger.error(f"Error from inference server: {event.data}")
-                raise RuntimeError(f"Error from inference server: {event.data}")
-            if event.event == "ping":
-                continue
-            stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
+        for event in utils.get_inference_server_stream_events(request):
+            stream_response = event
 
         generated_text = stream_response.generated_text
 

@@ -8,9 +8,11 @@ import interface
 import lorem
 import pydantic
 import requests
+import sseclient
 import websocket
 from loguru import logger
 from oasst_shared.schemas import inference
+from settings import settings
 
 
 class TokenBuffer:
@@ -136,3 +138,34 @@ class HttpClient(pydantic.BaseModel):
 
     def post(self, path: str, **kwargs):
         return requests.post(self.base_url + path, auth=self.auth, **kwargs)
+
+
+def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
+    http = HttpClient(
+        base_url=settings.inference_server_url,
+        basic_auth_username=settings.basic_auth_username,
+        basic_auth_password=settings.basic_auth_password,
+    )
+    response = http.post(
+        "/generate_stream",
+        json=request.dict(),
+        stream=True,
+        headers={"Accept": "text/event-stream"},
+    )
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        logger.exception("Failed to get response from inference server")
+        logger.error(f"Response: {response.text}")
+        raise
+
+    client = sseclient.SSEClient(response)
+    for event in client.events():
+        if event.event == "error":
+            logger.error(f"Error from inference server: {event.data}")
+            yield interface.GenerateStreamResponse(error=event.data)
+            raise RuntimeError(f"Error from inference server: {event.data}")
+        if event.event == "ping":
+            continue
+        stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
+        yield stream_response
