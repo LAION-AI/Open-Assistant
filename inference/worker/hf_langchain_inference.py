@@ -1,5 +1,8 @@
+import interface
+import utils
 from langchain.llms.base import LLM
-from text_generation import Client
+from loguru import logger
+from settings import settings
 
 
 class HFInference(LLM):
@@ -23,22 +26,45 @@ class HFInference(LLM):
         else:
             stop += self.stop_sequences
 
-        print(stop)
-        client = Client(self.inference_server_url, timeout=1000)
-        res = client.generate(
-            prompt,
-            stop_sequences=stop,
-            max_new_tokens=self.max_new_tokens,
-            top_k=self.top_k,
-            top_p=self.top_p,
-            typical_p=self.typical_p,
-            temperature=self.temperature,
-            repetition_penalty=self.repetition_penalty,
-            seed=self.seed,
+        request = interface.GenerateStreamRequest(
+            inputs=prompt,
+            parameters=interface.GenerateStreamParameters(
+                stop=stop,
+                max_new_tokens=self.max_new_tokens,
+                top_k=self.top_k,
+                top_p=self.top_p,
+                typical_p=self.typical_p,
+                temperature=self.temperature,
+                repetition_penalty=self.repetition_penalty,
+                seed=self.seed,
+            ),
         )
+
+        http = utils.HttpClient(
+            base_url=settings.inference_server_url,
+            basic_auth_username=settings.basic_auth_username,
+            basic_auth_password=settings.basic_auth_password,
+        )
+
+        response = http.post(
+            "/generate",
+            json=request.dict(),
+        )
+
+        try:
+            response.raise_for_status()
+        except Exception:
+            logger.exception("Failed to get response from inference server")
+            logger.error(f"Response: {response.text}")
+            raise
+
+        response_json = response.json()
+
         # remove stop sequences from the end of the generated text
         for stop_seq in stop:
-            if stop_seq in res.generated_text:
-                res.generated_text = res.generated_text[: res.generated_text.index(stop_seq)]
+            if stop_seq in response_json.generated_text:
+                response_json.generated_text = response_json.generated_text[
+                    : response_json.generated_text.index(stop_seq)
+                ]
 
-        return res.generated_text
+        return response_json.generated_text
