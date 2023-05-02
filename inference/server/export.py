@@ -47,6 +47,7 @@ def maybe_anonymize(anonymizer: Anonymizer | None, collection: str, key: str) ->
 
 
 def prepare_export_events(
+    chat: DbChat,
     message: DbMessage,
     anonymizer: Anonymizer | None = None,
 ) -> dict[str, list[ExportMessageEvent]]:
@@ -55,7 +56,7 @@ def prepare_export_events(
     if message.reports:
         export_events["report"] = [
             ExportMessageEventReport(
-                user_id=maybe_anonymize(anonymizer, "user", str(message.chat.user_id)),
+                user_id=maybe_anonymize(anonymizer, "user", str(chat.user_id)),
                 report_type=str(db_report.report_type),
                 reason=db_report.reason,
             )
@@ -65,7 +66,7 @@ def prepare_export_events(
     if message.score:
         export_events["score"] = [
             ExportMessageEventScore(
-                user_id=maybe_anonymize(anonymizer, "user", str(message.chat.user_id)),
+                user_id=maybe_anonymize(anonymizer, "user", str(chat.user_id)),
                 score=message.score,
             )
         ]
@@ -111,7 +112,7 @@ def prepare_export_message_node(
     # Chat prompts are human-written, responses are synthetic
     synthetic = message.role == "assistant"
 
-    events: dict[str, list[ExportMessageEvent]] = prepare_export_events(message)
+    events: dict[str, list[ExportMessageEvent]] = prepare_export_events(chat, message, anonymizer=anonymizer)
 
     message_id = maybe_anonymize(anonymizer, "message", message.id)
     parent_id = maybe_anonymize(anonymizer, "message", message.parent_id)
