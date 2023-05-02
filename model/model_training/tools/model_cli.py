@@ -55,6 +55,9 @@ if __name__ == "__main__":
         else:
             model = get_specific_model(args.model_path, cache_dir=args.cache_dir, torch_dtype=torch.float16)
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+    
     model.gradient_checkpointing_enable()  # reduce number of stored activations
     tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_path)
     # tokenizer = transformers.AutoTokenizer.from_pretrained("dvruette/oasst-pythia-6.9b-4000-steps")
