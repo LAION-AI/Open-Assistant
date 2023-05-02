@@ -169,7 +169,7 @@ async def welcome_message():
 
 
 @app.post("/generate_stream")
-async def generate_stream(
+async def generate(
     request: interface.GenerateStreamRequest,
 ):
     def event_stream():
