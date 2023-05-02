@@ -191,26 +191,6 @@ async def generate_stream(
     return EventSourceResponse(event_stream())
 
 
-@app.post("/generate", response_model=interface.GenerateStreamResponse)
-async def generate(
-    request: interface.GenerateStreamRequest,
-):
-    try:
-        output_queue: Queue = Queue()
-        model_input_queue.put_nowait((request, output_queue))
-        while True:
-            output = output_queue.get()  # type: interface.GenerateStreamResponse
-            if output.is_end:
-                break
-            if output.is_error:
-                raise Exception(output.error)
-        return output
-    except Exception as e:
-        logger.exception("Exception in event stream")
-        output_queue.put_nowait(interface.GenerateStreamResponse(error=str(e)))
-        raise
-
-
 @app.get("/health")
 async def health():
     if not (fully_loaded and model_loaded):

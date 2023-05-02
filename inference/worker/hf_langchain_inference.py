@@ -1,7 +1,8 @@
+import json
+
 import interface
 import utils
 from langchain.llms.base import LLM
-from loguru import logger
 from settings import settings
 
 
@@ -47,18 +48,19 @@ class HFInference(LLM):
         )
 
         response = http.post(
-            "/generate",
+            "/generate_stream",
             json=request.dict(),
+            stream=True,
+            headers={"Accept": "text/event-stream"},
         )
 
-        try:
-            response.raise_for_status()
-        except Exception:
-            logger.exception("Failed to get response from inference server")
-            logger.error(f"Response: {response.text}")
-            raise
+        for line in response.iter_lines():
+            if line:
+                data = json.loads(line)
+                if data["is_end"]:
+                    break
 
-        generated_text = response.json()["generated_text"]
+        generated_text = data["generated_text"]
 
         # remove stop sequences from the end of the generated text
         for stop_seq in stop:
