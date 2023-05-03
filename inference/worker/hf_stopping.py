@@ -15,7 +15,7 @@ class SequenceStoppingCriteria(StoppingCriteria):
         super().__init__(*args, **kwargs)
         self.stop_texts = stop_texts
         self.tokenizer = tokenizer
-        self.input_length = len(tokenizer.encode(input_prompt)[0])
+        self.input_length = len(tokenizer.encode(input_prompt))
 
     def __call__(
         self,
