@@ -3,14 +3,6 @@ from tokenizers import Tokenizer
 from transformers import StoppingCriteria
 
 
-# We could use a more efficient algorithm here but I don't think it matters too much
-def contains_sequence(whole: list[int], subsequence: list[int]) -> bool:
-    for i in range(len(whole) - len(subsequence) + 1):
-        if whole[i : i + len(subsequence)] == subsequence:
-            return True
-    return False
-
-
 class SequenceStoppingCriteria(StoppingCriteria):
     def __init__(
         self,
@@ -33,5 +25,7 @@ class SequenceStoppingCriteria(StoppingCriteria):
     ) -> bool:
         # Assumes batch size 1, sufficient for our use case
         generated_ids = input_ids[0, self.input_length :].tolist()
-        stop_sequences_ids = [self.tokenizer.encode(text, add_special_tokens=False) for text in self.stop_texts]
-        return any(contains_sequence(generated_ids, stop_sequence_ids) for stop_sequence_ids in stop_sequences_ids)
+        # TODO: optimise this. Inefficient to decode whole sequence every time
+        # but can't encode stop sequences as they don't always tokenize the same
+        generated_text = self.tokenizer.decode(generated_ids)
+        return any(text in generated_text for text in self.stop_texts)
