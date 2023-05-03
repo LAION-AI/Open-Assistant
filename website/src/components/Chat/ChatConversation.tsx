@@ -19,6 +19,7 @@ import {
 import { mutate } from "swr";
 import useSWR from "swr";
 
+import { ChatAssistantDraftViewer } from "./ChatAssistantDraftViewer";
 import { ChatConversationTree, LAST_ASSISTANT_MESSAGE_ID } from "./ChatConversationTree";
 import { ChatForm } from "./ChatForm";
 import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
@@ -278,6 +279,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
           onEditPromtp={handleEditPrompt}
         ></ChatConversationTree>
         {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
+        <ChatAssistantDraftViewer></ChatAssistantDraftViewer>
         <div ref={messagesEndRef} style={{ height: 0 }}></div>
       </SimpleBar>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
