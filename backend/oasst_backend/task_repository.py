@@ -53,6 +53,7 @@ class TaskRepository:
         message_tree_id: UUID = None,
         parent_message_id: UUID = None,
         collective: bool = False,
+        lang: str = "en",
     ) -> Task:
         payload: db_payload.TaskPayload
         match type(task):
@@ -141,6 +142,7 @@ class TaskRepository:
             parent_message_id=parent_message_id,
             collective=collective,
             expiry_date=expiry_date,
+            lang=lang,
         )
         assert task_model.id == task.id
         return task_model
@@ -198,6 +200,7 @@ class TaskRepository:
         parent_message_id: UUID = None,
         collective: bool = False,
         expiry_date: datetime = None,
+        lang: str = "en",
     ) -> Task:
         c = PayloadContainer(payload=payload)
         task = Task(
@@ -210,6 +213,7 @@ class TaskRepository:
             parent_message_id=parent_message_id,
             collective=collective,
             expiry_date=expiry_date,
+            lang=lang,
         )
         logger.debug(f"inserting {task=}")
         self.db.add(task)

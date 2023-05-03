@@ -1,15 +1,18 @@
 import random
+from abc import abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
 from http import HTTPStatus
-from typing import Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
 import numpy as np
 import pydantic
 import sqlalchemy as sa
+from asgiref.sync import async_to_sync
 from loguru import logger
 from oasst_backend.api.v1.utils import prepare_conversation, prepare_conversation_message_list
+from oasst_backend.api import deps
 from oasst_backend.config import TreeManagerConfiguration, settings
 from oasst_backend.models import (
     Message,
@@ -24,19 +27,25 @@ from oasst_backend.models import (
     message_tree_state,
 )
 from oasst_backend.prompt_repository import PromptRepository
-from oasst_backend.scheduled_tasks import hf_feature_extraction, toxicity
 from oasst_backend.utils.database_utils import (
     CommitMode,
     async_managed_tx_method,
     managed_tx_function,
     managed_tx_method,
 )
+from oasst_backend.utils.hugging_face import HfClassificationModel, HfEmbeddingModel, HfUrl, HuggingFaceAPI
 from oasst_backend.utils.ranking import ranked_pairs
 from oasst_shared.exceptions.oasst_api_error import OasstError, OasstErrorCode
 from oasst_shared.schemas import protocol as protocol_schema
 from oasst_shared.utils import utcnow
 from sqlalchemy.sql.functions import coalesce
 from sqlmodel import Session, and_, func, not_, or_, text, update
+
+
+async def useHFApi(text, url, model_name):
+    hugging_face_api: HuggingFaceAPI = HuggingFaceAPI(f"{url}/{model_name}")
+    result = await hugging_face_api.post(text)
+    return result
 
 
 class TaskType(Enum):
@@ -149,16 +158,54 @@ WHERE mts2.message_tree_id = cte.message_tree_id;
         logger.info(f"Halted {r.rowcount} prompts of disabled users.")
 
 
+class TaskResponder:
+    model: str
+
+    def __init__(self, model=None):
+        self.model = model
+
+    @abstractmethod
+    def complete(self, task: Task, user: User) -> str:
+        """Return the output of a model given a task and user."""
+
+
+class HuggingFaceResponder(TaskResponder):
+    def __init__(self, model="gpt2"):
+        self.model = model
+        self.hf_api = HuggingFaceAPI(f"{HfUrl.HUGGINGFACE_MODELS.value}/{model}")
+
+    async def complete(self, task: Task, user: User) -> str:
+        output = await self.hf_api.post(task.prompt)
+        return output
+
+
 class TreeManager:
     def __init__(
         self,
         db: Session,
-        prompt_repository: PromptRepository,
+        prompt_repository: PromptRepository = None,
         cfg: Optional[TreeManagerConfiguration] = None,
+        api_key: Optional[str] = None,
     ):
         self.db = db
         self.cfg = cfg or settings.tree_manager
         self.pr = prompt_repository
+        self.api_key = api_key
+
+        if len(self.cfg.task_responders) != 0:
+            supported_responders = {
+                "human": TaskResponder,
+                "gpt2": HuggingFaceResponder,
+                "OpenAssistant/oasst-sft-6-llama-30b-xor": HuggingFaceResponder,
+            }
+            self.responders = [
+                (r.ratio, supported_responders[r.model](model=r.model))
+                for r in self.cfg.task_responders
+                if r.model in supported_responders.keys()
+            ]
+
+            if sum([r[0] for r in self.responders]) > 1:
+                raise ValueError("Task responder ratios must sum to < 1")
 
     def _random_task_selection(
         self,
@@ -746,7 +793,7 @@ class TreeManager:
 
                 if not settings.DEBUG_SKIP_EMBEDDING_COMPUTATION:
                     try:
-                        hf_feature_extraction.delay(interaction.text, message.id, pr.api_client.dict())
+                        self.hf_feature_extraction.delay(interaction.text, message.id, pr.api_client.dict())
                         logger.debug("Extract Embedding")
                     except OasstError:
                         logger.error(
@@ -754,7 +801,7 @@ class TreeManager:
                         )
                 if not settings.DEBUG_SKIP_TOXICITY_CALCULATION:
                     try:
-                        toxicity.delay(interaction.text, message.id, pr.api_client.dict())
+                        self.toxicity.delay(interaction.text, message.id, pr.api_client.dict())
                         logger.debug("Sent Toxicity")
                     except OasstError:
                         logger.error(
@@ -824,6 +871,45 @@ class TreeManager:
                 raise OasstError("Invalid response type.", OasstErrorCode.TASK_INVALID_RESPONSE_TYPE)
 
         return protocol_schema.TaskDone()
+
+    def hf_feature_extraction(self, text, message_id):
+        try:
+            session = self.db
+            api_client = self.pr.api_client
+            model_name: str = HfEmbeddingModel.MINILM.value
+            url: str = HfUrl.HUGGINGFACE_FEATURE_EXTRACTION.value
+            embedding = async_to_sync(useHFApi)(text=text, url=url, model_name=model_name)
+            if embedding is not None:
+                logger.info(f"emmbedding from HF {len(embedding)}")
+                pr = PromptRepository(db=session, api_client=api_client)
+                pr.insert_message_embedding(
+                    message_id=message_id, model=HfEmbeddingModel.MINILM.value, embedding=embedding
+                )
+                session.commit()
+
+        except Exception as e:
+            logger.error(f"Could not extract embedding for text reply to {message_id=} with {text=} by.error {str(e)}")
+
+    def toxicity(self, text: str, message_id: int):
+        try:
+            api_client = self.pr.api_client
+            logger.info(f"checking toxicity : {api_client}")
+
+            session = self.db
+            model_name: str = HfClassificationModel.TOXIC_ROBERTA.value
+            url: str = HfUrl.HUGGINGFACE_TOXIC_CLASSIFICATION.value
+            toxicity: List[List[Dict[str, Any]]] = async_to_sync(useHFApi)(text=text, url=url, model_name=model_name)
+            toxicity = toxicity[0][0]
+            logger.info(f"toxicity from HF {toxicity}")
+            if toxicity is not None:
+                pr = PromptRepository(db=session, api_client=self.api_client)
+                pr.insert_toxicity(
+                    message_id=message_id, model=model_name, score=toxicity["score"], label=toxicity["label"]
+                )
+            session.commit()
+
+        except Exception as e:
+            logger.error(f"Could not compute toxicity for text reply to {message_id=} with {text=} by.error {str(e)}")
 
     def _enter_state(self, mts: MessageTreeState, state: message_tree_state.State):
         assert mts
@@ -1793,6 +1879,26 @@ DELETE FROM user_stats WHERE user_id = :user_id;
             self._reactivate_tree(mts)
 
         return mts
+
+    @staticmethod
+    def choose_responder(request: protocol_schema.TaskRequest, db: Session) -> User:
+        responders = settings.tree_manager.task_responders
+        if responders is None:
+            return request.user
+        if len(responders) == 0:
+            return request.user
+        rand = random.random()
+        cumulative_split = 0
+        for responder in responders:
+            cumulative_split += responder.ratio
+            if rand < cumulative_split:
+                return db.query(User).filter(User.ai_model == responder.model).one()
+    
+    def complete_task(self, request: protocol_schema.TaskRequest, user: User) -> None:
+        if user.ai_model is None:
+            raise ValueError("Cannot complete task for user without AI model")
+        responder = self.task_responders[user.ai_model]
+        return responder.complete(request, user)
 
 
 if __name__ == "__main__":

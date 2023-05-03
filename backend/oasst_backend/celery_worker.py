@@ -23,5 +23,9 @@ app.conf.beat_schedule = {
         "task": "update_user_streak",
         "schedule": 60.0 * 60.0 * 4,  # seconds
     },
+    "complete-pending-ai-tasks": {
+        "task": "complete_pending_ai_tasks",
+        "schedule": 60.0 * 10,  # seconds
+    },
 }
 app.conf.timezone = "UTC"

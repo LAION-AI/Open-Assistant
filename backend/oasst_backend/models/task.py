@@ -37,6 +37,7 @@ class Task(SQLModel, table=True):
     message_tree_id: Optional[UUID] = None
     parent_message_id: Optional[UUID] = None
     collective: bool = Field(sa_column=sa.Column(sa.Boolean, nullable=False, server_default=false()))
+    lang: Optional[str] = Field(nullable=True, max_length=25)
 
     @property
     def expired(self) -> bool:
