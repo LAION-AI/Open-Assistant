@@ -65,6 +65,9 @@ def model_thread():
             params.pop("details")
             params.pop("plugins")
 
+            if seed is not None:
+                torch.manual_seed(seed)
+
             last_token_id = None  # need to delay by 1 to simulate tgi
 
             def print_text(token_id: int):

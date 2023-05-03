@@ -8,50 +8,20 @@ import requests
 import transformers
 import utils
 import websocket
-from chat_chain_prompts import ASSISTANT_PREFIX, END_SEQ, OBSERVATION_SEQ, START_SEQ, THOUGHT_SEQ
+from chat_chain_prompts import (
+    ASSISTANT_PREFIX,
+    END_SEQ,
+    OBSERVATION_SEQ,
+    START_SEQ,
+    THOUGHT_SEQ,
+    V2_ASST_PREFIX,
+    V2_PROMPTER_PREFIX,
+)
 from loguru import logger
 from oasst_shared.schemas import inference
 from settings import settings
 
 tokenizer_lock = threading.Lock()
-
-
-def truncate_prompt(
-    tokenizer: transformers.PreTrainedTokenizer,
-    worker_config: inference.WorkerConfig,
-    parameters: interface.GenerateStreamParameters,
-    prompt: str,
-):
-    with tokenizer_lock:
-        ids = tokenizer.encode(prompt)
-
-    max_input_length = worker_config.model_config.max_input_length
-    # make room for prompter prefix
-    if V2_PROMPTER_PREFIX not in prompt:
-        max_input_length = max_input_length - 1
-
-    max_total_tokens = worker_config.model_config.max_total_length
-    if len(ids) > max_input_length:
-        logger.warning(f"Prompt too long, left-truncating to {max_input_length} tokens")
-        ids = ids[-(max_input_length - 1) :]
-        with tokenizer_lock:
-            prompt = tokenizer.decode(ids)
-            # If there is no prompter prefix, due to truncation, add it back.
-            if V2_PROMPTER_PREFIX not in prompt:
-                prompt = V2_PROMPTER_PREFIX + prompt
-
-    input_length = len(ids)
-    spare = max_total_tokens - input_length - 1
-    if not parameters.max_new_tokens:
-        parameters.max_new_tokens = spare
-    elif parameters.max_new_tokens > spare:
-        logger.warning(f"Max new tokens too high, reducing to {spare}")
-        parameters.max_new_tokens = spare
-    return prompt
-
-
-V2_ASST_PREFIX = "<|assistant|>"
-V2_PROMPTER_PREFIX = "<|prompter|>"
 
 
 def make_prompt_and_parameters(
@@ -162,7 +132,7 @@ def handle_work_request(
     if model_config.is_lorem:
         stream_events = utils.lorem_events(parameters.seed)
     else:
-        prompt = truncate_prompt(tokenizer, worker_config, parameters, prompt)
+        prompt = utils.truncate_prompt(tokenizer, worker_config, parameters, prompt, used_plugin is not None)
         stream_request = interface.GenerateStreamRequest(
             inputs=prompt,
             parameters=parameters,

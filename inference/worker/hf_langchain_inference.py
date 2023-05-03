@@ -42,6 +42,8 @@ class HFInference(LLM):
             stream_response = event
 
         generated_text = stream_response.generated_text
+        if generated_text is None:
+            generated_text = ""
 
         # remove stop sequences from the end of the generated text
         for stop_seq in stop:
