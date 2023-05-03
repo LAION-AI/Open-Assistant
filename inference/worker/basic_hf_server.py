@@ -11,6 +11,7 @@ import torch
 import transformers
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+from hf_stopping import SequenceStoppingCriteria
 from loguru import logger
 from oasst_shared import model_configs
 from settings import settings
@@ -60,7 +61,7 @@ def model_thread():
             prompt = request.inputs
             params = request.parameters.dict()
             seed = params.pop("seed")
-            params.pop("stop")
+            stop_sequences = params.pop("stop")
             params.pop("details")
             params.pop("plugins")
 
@@ -80,7 +81,18 @@ def model_thread():
                 ids = tokenizer.encode(prompt, return_tensors="pt", add_special_tokens=False)
                 streamer = hf_streamer.HFStreamer(input_ids=ids, printer=print_text)
                 ids = ids.to(model.device)
-                output = model.generate(ids, **params, streamer=streamer, eos_token_id=eos_token_id)
+                stopping_criteria = (
+                    transformers.StoppingCriteriaList([SequenceStoppingCriteria(tokenizer, stop_sequences, len(ids))])
+                    if stop_sequences
+                    else None
+                )
+                output = model.generate(
+                    ids,
+                    **params,
+                    streamer=streamer,
+                    eos_token_id=eos_token_id,
+                    stopping_criteria=stopping_criteria,
+                )
                 output = output.cpu()
                 output_ids = output[0][len(ids[0]) :]
                 decoded = tokenizer.decode(output_ids, skip_special_tokens=True)
