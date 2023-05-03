@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import datasets
 import torch
+#from model_training.custom_datasets.formatting import DatasetEntry
 from model_training.custom_datasets.dialogue_collator import DialogueDataCollator
 from model_training.efficiency_utils import fuse_gelu
 from model_training.utils.utils import (
@@ -362,6 +363,12 @@ def main():
                 if hasattr(d, "name"):
                     name += f" ({d.name})"
             print(f"{name}: {len(d)} ({len(d) / total:.2%})")
+
+            # ensure that all entries can be formatted
+            # for x in d:
+            #     if isinstance(x, DatasetEntry):
+            #         x.get_formatted("sft", "<eos>")
+
         print(f"\nTotal train: {total}")
         print("-" * 80)
         print("Evaluation set sizes:")

@@ -518,10 +518,16 @@ class Vicuna(Dataset):
         self.mode = mode
 
         dataset = load_dataset(
-            "OllieStanley/oa_Vicuna_V5",
+            "anon8231489123/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
-            data_files=["ShareGPT_V5_unfiltered_cleaned_split.jsonl"],
-            revision="7c40fa52f0394c31b9d1cec80175ac12ecafa8ed",
+            data_files=["ShareGPT_V3_unfiltered_cleaned_split_no_imsorry.json"],
+            revision="192ab2185289094fc556ec8ce5ce1e8e587154ca",
+
+            # currently cannot be loaded sucessfully:
+            #"OllieStanley/oa_Vicuna_V5",
+            #cache_dir=cache_dir,
+            # data_files=["ShareGPT_V5_unfiltered_cleaned_split.jsonl"],
+            # revision="7c40fa52f0394c31b9d1cec80175ac12ecafa8ed",
         )["train"]
 
         for data in dataset:
@@ -575,7 +581,7 @@ class AlpacaGpt4(Dataset):
         if mode not in ("sft", "rl"):
             raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
         self.mode = mode
-        data = load_dataset("vicgalle/alpaca-gpt4", cache_dir=cache_dir)
+        data = load_dataset("teknium/GPT4-LLM-Cleaned", cache_dir=cache_dir)    # alternative: vicgalle/alpaca-gpt4
         for line in data["train"]:
             if (conv := self._process_instruction(line)) is not None:
                 self.rows.append(conv)

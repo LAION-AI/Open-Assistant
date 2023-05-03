@@ -99,75 +99,76 @@ pretrain:
   use_custom_sampler: true
   sort_by_length: false
   datasets:
-    - gpteacher_roleplay:
-        val_split: 0.05
-    - red_pajama:
-        fraction: 0.25
-        max_val_set: 1000
-    - wizardlm_70k:
-        val_split: 0.05
-        max_val_set: 500
-    - joke:
-        val_split: 0.05
-    - poem_instructions:
-        val_split: 0.025
-    - oa_stackexchange:
-        val_split: 0.05
-        fraction: 0.1
-        max_val_set: 1000
-    - tell_a_joke:
-        val_split: 0.05
-        max_val_set: 250
-    - webgpt:
-        val_split: 0.05
-        max_val_set: 250
-    - gpt4all:
-        val_split: 0.01
-        max_val_set: 1000
     - alpaca_gpt4:
         val_split: 0.025
         max_val_set: 250
-    - code_alpaca:
-        val_split: 0.05
-        max_val_set: 250
     - vicuna:
+        val_split: 0.025
         max_val_set: 250
-    - oig_file:
-        source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
-        max_count: 10000
-        min_length: 250
-        val_split: 0.05
-        max_val_set: 250
-    - minimath:
-        val_split: 0.05
-    - humaneval_mbpp_codegen_qa:
-        val_split: 0.05
-    - humaneval_mbpp_testgen_qa:
-        val_split: 0.05
-    - grade_school_math_instructions:
-        val_split: 0.05
-    - recipes:
-        val_split: 0.05
-    - cmu_wiki_qa:
-        val_split: 0.05
-    - oa_wiki_qa_bart_10000row:
-        val_split: 0.05
-        max_val_set: 250
-    - prosocial_dialogue:
-        fraction: 0.1
-        max_val_set: 250
-    - explain_prosocial:
-        fraction: 0.075
-        max_val_set: 250
-    - soda:
-        fraction: 0.25
-        max_val_set: 1000
-    - oa_leet10k:
-        val_split: 0.05
-        max_val_set: 250
-    - dolly15k:
-        val_split: 0.05
-        max_val_set: 300
+    # - gpteacher_roleplay:
+    #     val_split: 0.05
+    # - red_pajama:
+    #     fraction: 0.25
+    #     max_val_set: 1000
+    # - wizardlm_70k:
+    #     val_split: 0.05
+    #     max_val_set: 500
+    # - joke:
+    #     val_split: 0.05
+    # - poem_instructions:
+    #     val_split: 0.025
+    # - oa_stackexchange:
+    #     val_split: 0.05
+    #     fraction: 0.1
+    #     max_val_set: 1000
+    # - tell_a_joke:
+    #     val_split: 0.05
+    #     max_val_set: 250
+    # - webgpt:
+    #     val_split: 0.05
+    #     max_val_set: 250
+    # - gpt4all:
+    #     val_split: 0.01
+    #     max_val_set: 1000
+    # - code_alpaca:
+    #     val_split: 0.05
+    #     max_val_set: 250
+    # - oig_file:
+    #     source_url: https://huggingface.co/datasets/laion/OIG/resolve/main/unified_chip2.jsonl
+    #     max_count: 10000
+    #     min_length: 250
+    #     val_split: 0.05
+    #     max_val_set: 250
+    # - minimath:
+    #     val_split: 0.05
+    # - humaneval_mbpp_codegen_qa:
+    #     val_split: 0.05
+    # - humaneval_mbpp_testgen_qa:
+    #     val_split: 0.05
+    # - grade_school_math_instructions:
+    #     val_split: 0.05
+    # - recipes:
+    #     val_split: 0.05
+    # - cmu_wiki_qa:
+    #     val_split: 0.05
+    # - oa_wiki_qa_bart_10000row:
+    #     val_split: 0.05
+    #     max_val_set: 250
+    # - prosocial_dialogue:
+    #     fraction: 0.1
+    #     max_val_set: 250
+    # - explain_prosocial:
+    #     fraction: 0.075
+    #     max_val_set: 250
+    # - soda:
+    #     fraction: 0.25
+    #     max_val_set: 1000
+    # - oa_leet10k:
+    #     val_split: 0.05
+    #     max_val_set: 250
+    # - dolly15k:
+    #     val_split: 0.05
+    #     max_val_set: 300
 
 oasst_only:
   save_strategy: epoch
