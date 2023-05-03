@@ -82,9 +82,7 @@ def model_thread():
                 streamer = hf_streamer.HFStreamer(input_ids=ids, printer=print_text)
                 ids = ids.to(model.device)
                 stopping_criteria = (
-                    transformers.StoppingCriteriaList(
-                        [SequenceStoppingCriteria(tokenizer, stop_sequences, len(ids[0]))]
-                    )
+                    transformers.StoppingCriteriaList([SequenceStoppingCriteria(tokenizer, stop_sequences, prompt)])
                     if stop_sequences
                     else None
                 )
