@@ -11,7 +11,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 from loguru import logger
 from oasst_shared.schemas import inference
-from opeanapi_parser import prepare_plugin_for_llm
+from openapi_parser import prepare_plugin_for_llm
 from settings import settings
 
 tokenizer_lock = threading.Lock()

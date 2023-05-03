@@ -82,7 +82,9 @@ def model_thread():
                 streamer = hf_streamer.HFStreamer(input_ids=ids, printer=print_text)
                 ids = ids.to(model.device)
                 stopping_criteria = (
-                    transformers.StoppingCriteriaList([SequenceStoppingCriteria(tokenizer, stop_sequences, len(ids))])
+                    transformers.StoppingCriteriaList(
+                        [SequenceStoppingCriteria(tokenizer, stop_sequences, len(ids[0]))]
+                    )
                     if stop_sequences
                     else None
                 )
@@ -143,7 +145,7 @@ def load_models():
         return result[special_decode_token_length:]
 
     config_dtype = hf_config.torch_dtype if hasattr(hf_config, "torch_dtype") else torch.float32
-    dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else config_dtype
+    dtype = torch.bfloat16 if torch.has_cuda and torch.cuda.is_bf16_supported() else config_dtype
 
     model = transformers.AutoModelForCausalLM.from_pretrained(
         model_config.model_id,
