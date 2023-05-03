@@ -518,16 +518,10 @@ class Vicuna(Dataset):
         self.mode = mode
 
         dataset = load_dataset(
-            "anon8231489123/ShareGPT_Vicuna_unfiltered",
+            "gozfarb/ShareGPT_Vicuna_unfiltered",
             cache_dir=cache_dir,
-            data_files=["ShareGPT_V3_unfiltered_cleaned_split_no_imsorry.json"],
-            revision="192ab2185289094fc556ec8ce5ce1e8e587154ca",
-
-            # currently cannot be loaded sucessfully:
-            #"OllieStanley/oa_Vicuna_V5",
-            #cache_dir=cache_dir,
-            # data_files=["ShareGPT_V5_unfiltered_cleaned_split.jsonl"],
-            # revision="7c40fa52f0394c31b9d1cec80175ac12ecafa8ed",
+            data_files=["ShareGPT_2023.05.02v0_unfiltered_cleaned_split.json"],
+            revision="7b8551404f3de5704d634e7516b9ff77be3e2700",
         )["train"]
 
         for data in dataset:
