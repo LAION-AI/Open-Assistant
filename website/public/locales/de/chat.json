@@ -26,7 +26,7 @@
   "your_chats": "Ihre Chats",
   "input_placeholder": "Frag den Assistenten irgendetwas",
   "warning": "Dieser Assistent ist eine Demoversion ohne Internetzugang. Es können falsche oder irreführende Informationen generiert werden. Es ist nicht für wichtige Anwendungsfälle oder zur Beratung geeignet.",
-   "plugins": "Plugins",
+  "plugins": "Plugins",
   "edit_plugin": "Plugin bearbeiten",
   "add_plugin": "Plugin hinzufügen",
   "remove_plugin": "Plugin löschen",
