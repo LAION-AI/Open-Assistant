@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
+import { Badge, Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
+import { useTranslation } from "next-i18next";
 import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
-import { useChatContext } from "src/components/Chat/ChatContext";
 import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
@@ -30,6 +30,7 @@ interface ChatConversationProps {
 }
 
 export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
+  const { t } = useTranslation("chat");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
 
@@ -260,27 +261,35 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         bg: "blackAlpha.300",
       }}
     >
-      {isLoadingMessages && <CircularProgress isIndeterminate size="20px" mx="auto" />}
-      <SimpleBar
-        onMouseDown={updateEnableAutoScroll}
-        scrollableNodeProps={scrollableNodeProps}
-        style={{ maxHeight: "100%", height: "100%", minHeight: "0" }}
-        classNames={{
-          contentEl: "space-y-4 mx-4 flex flex-col overflow-y-auto items-center",
-        }}
-      >
-        <ChatConversationTree
-          messages={messages}
-          onVote={handleOnVote}
-          onRetry={handleOnRetry}
-          isSending={isSending}
-          retryingParentId={retryingParentId}
-          onEditPromtp={handleEditPrompt}
-        ></ChatConversationTree>
-        {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-        <div ref={messagesEndRef} style={{ height: 0 }}></div>
-      </SimpleBar>
-      <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
+      <Box height="full" minH={0} position="relative">
+        {isLoadingMessages && <CircularProgress isIndeterminate size="20px" mx="auto" />}
+        <SimpleBar
+          onMouseDown={updateEnableAutoScroll}
+          scrollableNodeProps={scrollableNodeProps}
+          style={{ maxHeight: "100%", height: "100%", minHeight: "0", paddingBottom: "1rem" }}
+          classNames={{
+            contentEl: "space-y-4 mx-4 flex flex-col overflow-y-auto items-center",
+          }}
+        >
+          <ChatConversationTree
+            messages={messages}
+            onVote={handleOnVote}
+            onRetry={handleOnRetry}
+            isSending={isSending}
+            retryingParentId={retryingParentId}
+            onEditPromtp={handleEditPrompt}
+          ></ChatConversationTree>
+          {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
+          <div ref={messagesEndRef} style={{ height: 0 }}></div>
+        </SimpleBar>
+
+        {queueInfo && (
+          <Badge position="absolute" bottom="0" left="50%" transform="translate(-50%)">
+            {t("queue_info", queueInfo)}
+          </Badge>
+        )}
+      </Box>
+      <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage}></ChatForm>
       <ChatWarning />
     </Box>
   );
