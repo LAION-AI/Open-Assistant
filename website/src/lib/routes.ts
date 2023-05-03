@@ -36,11 +36,9 @@ export type QueryWithLang<T extends RouteQuery | undefined = undefined> = T exte
   ? { lang: string }
   : T & { lang: string };
 
-const withLang =
-  <T extends RouteQuery | undefined = undefined>(path: string, q?: T) =>
-  (query: QueryWithLang<T>) => {
-    return createRoute(path, { ...q, ...query });
-  };
+const withLang = <T extends RouteQuery | undefined = undefined>(path: string, q?: T) => (query: QueryWithLang<T>) => {
+  return createRoute(path, { ...q, ...query });
+};
 
 export const API_ROUTES = {
   NEW_TASK: (type: TaskType, query: QueryWithLang) => createRoute(`/api/new_task/${type}`, query),
@@ -65,4 +63,5 @@ export const API_ROUTES = {
   UPDATE_CHAT_TITLE: (id: string) => `/api/chat/title`,
   HIDE_CHAT: (id: string) => `/api/chat/hide`,
   GET_PLUGIN_CONFIG: `/api/chat/plugin_config`,
+  DELETE_CHAT: (chat_id: string) => createRoute(`/api/chat`, { chat_id }),
 };

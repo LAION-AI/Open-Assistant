@@ -1,10 +1,10 @@
 import { Box, Button, CircularProgress, Flex, Input, Tooltip, useBoolean, useOutsideClick } from "@chakra-ui/react";
-import { Check, EyeOff, LucideIcon, Pencil, X } from "lucide-react";
+import { Check, EyeOff, LucideIcon, Pencil, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { KeyboardEvent, MouseEvent, useCallback, useRef } from "react";
-import { put } from "src/lib/api";
+import { del, put } from "src/lib/api";
 import { API_ROUTES, ROUTES } from "src/lib/routes";
 import { ChatItem } from "src/types/Chat";
 import useSWRMutation from "swr/mutation";
@@ -13,10 +13,12 @@ export const ChatListItem = ({
   chat,
   onUpdateTitle,
   onHide,
+  onDelete,
 }: {
   chat: ChatItem;
   onUpdateTitle: (params: { chatId: string; title: string }) => void;
   onHide: (params: { chatId: string }) => void;
+  onDelete: (params: { chatId: string }) => void;
 }) => {
   const { query } = useRouter();
   const { t } = useTranslation("chat");
@@ -137,6 +139,7 @@ export const ChatListItem = ({
           <>
             <EditChatButton onClick={setIsEditing.on} />
             <HideChatButton chatId={chat.id} onHide={onHide} />
+            <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
           </>
         )}
       </Flex>
@@ -161,6 +164,25 @@ const HideChatButton = ({ chatId, onHide }: { chatId: string; onHide?: (params: 
   const { t } = useTranslation("common");
 
   return <ChatListItemIconButton label={t("hide")} icon={EyeOff} onClick={onClick} />;
+};
+
+const DeleteChatButton = ({
+  chatId,
+  onDelete,
+}: {
+  chatId: string;
+  onDelete?: (params: { chatId: string }) => void;
+}) => {
+  const { trigger: triggerDelete } = useSWRMutation(API_ROUTES.DELETE_CHAT(chatId), del);
+
+  const onClick = useCallback(async () => {
+    await triggerDelete({ chat_id: chatId });
+    onDelete?.({ chatId });
+  }, [onDelete, triggerDelete, chatId]);
+
+  const { t } = useTranslation("common");
+
+  return <ChatListItemIconButton label={t("delete")} icon={Trash} onClick={onClick} />;
 };
 
 type ChatListItemIconButtonProps = {
