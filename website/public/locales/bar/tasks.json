@@ -1,7 +1,7 @@
 {
-  "available_task_count": "{{count}} uffgaba verfügbar",
+  "available_task_count": "Soffl {{count}} Aufgoubm sein",
   "classify_assistant_reply": {
-    "label": "Antwort des Assistenten klassifiziera",
+    "label": "Ontwort von Aschischtent klassifiziern",
     "desc": "Labelschd dui Antwort.",
     "overview": "Guggsch dir des folgende Gespräch oa ond beantwortesch die Froag zur letzta Antwort in dr Diskussion."
   },
