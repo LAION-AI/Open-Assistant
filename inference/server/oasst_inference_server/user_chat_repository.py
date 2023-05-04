@@ -171,6 +171,7 @@ class UserChatRepository(pydantic.BaseModel):
             .where(
                 models.DbMessage.role == "assistant",
                 models.DbMessage.state == inference.MessageState.pending,
+                models.DbMessage.parent_id != parent_id,  # Prevent draft messages from cancelling each other
             )
             .join(models.DbChat)
             .where(

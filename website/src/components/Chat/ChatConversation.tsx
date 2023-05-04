@@ -34,6 +34,10 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
 
+  const [streamedDrafts, setStreamedDrafts] = useState<string[] | null>([]);
+  const [draftMessages, setDraftMessages] = useState<InferenceMessage[] | null>([]);
+  const [isAwaitingMessageSelect, setIsAwaitingMessageSelect] = useBoolean();
+
   const [streamedResponse, setResponse] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<QueueInfo | null>(null);
   const [isSending, setIsSending] = useBoolean();
@@ -107,11 +111,87 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     },
     [getConfigValues, setIsSending, toast]
   );
+  const createAssistantDrafts = useCallback(
+    async ({ parentId, chatId }: { parentId: string; chatId: string }) => {
+      const { model_config_name, plugins, ...sampling_parameters } = getConfigValues();
+
+      const assistant_arg: InferencePostAssistantMessageParams = {
+        chat_id: chatId,
+        parent_id: parentId,
+        model_config_name: model_config_name,
+        sampling_parameters: sampling_parameters,
+        plugins: plugins,
+      };
+
+      let draft_messages: InferenceMessage[];
+      try {
+        draft_messages = await Promise.all([
+          post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, { arg: assistant_arg }),
+          post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, { arg: assistant_arg }),
+          post(API_ROUTES.CREATE_ASSISTANT_MESSAGE, { arg: assistant_arg }),
+        ]);
+      } catch (err) {
+        if (err instanceof OasstError) {
+          toast({
+            title: err.message,
+            status: "error",
+          });
+        }
+        setIsSending.off();
+        return;
+      }
+
+      setStreamedDrafts(Array(3).fill(""));
+      const complete_draft_messages = await Promise.all(
+        draft_messages.map(async (draft_message, index) => {
+          const { body, status } = await fetch(API_ROUTES.STREAM_CHAT_MESSAGE(chatId, draft_message.id));
+
+          let inference_message: InferenceMessage | null;
+          if (status === 204) {
+            inference_message = await get(API_ROUTES.GET_MESSAGE(chatId, draft_message.id));
+          } else {
+            inference_message = await handleChatEventStream({
+              stream: body!,
+              onError: console.error,
+              onPending: setQueueInfo,
+              onToken: async (text) => {
+                setQueueInfo(null);
+                setStreamedDrafts((drafts) => [...drafts.slice(0, index), text, ...drafts.slice(index + 1)]);
+                await new Promise(requestAnimationFrame);
+              },
+            });
+          }
+
+          setStreamedDrafts((drafts) => [
+            ...drafts.slice(0, index),
+            inference_message.content,
+            ...drafts.slice(index + 1),
+          ]);
+          await new Promise(requestAnimationFrame);
+
+          return inference_message;
+        })
+      );
+
+      setDraftMessages(complete_draft_messages);
+      setQueueInfo(null);
+      setIsSending.off();
+      setIsAwaitingMessageSelect.on();
+    },
+    [getConfigValues, setIsSending, setStreamedDrafts, setDraftMessages, setQueueInfo, setIsAwaitingMessageSelect]
+  );
   const sendPrompterMessage = useCallback(async () => {
     const content = inputRef.current?.value.trim();
     if (!content || isSending) {
       return;
     }
+
+    if (isAwaitingMessageSelect) {
+      return toast({
+        title: "Please select a draft to continue.",
+      });
+    }
+
     setIsSending.on();
 
     // TODO: maybe at some point we won't need to access the rendered HTML directly, but use react state
@@ -157,8 +237,8 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
 
     inputRef.current!.value = "";
     // after creating the prompters message, handle the assistant's case
-    await createAndFetchAssistantMessage({ parentId: prompter_message.id, chatId });
-  }, [setIsSending, chatId, messages, createAndFetchAssistantMessage, toast, isSending]);
+    await createAssistantDrafts({ parentId: prompter_message.id, chatId });
+  }, [setIsSending, chatId, messages, createAssistantDrafts, toast, isSending, isAwaitingMessageSelect]);
 
   const sendVote = useMessageVote();
 
@@ -242,7 +322,12 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     [createAndFetchAssistantMessage, isSending, setIsSending]
   );
 
-  const { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll } = useAutoScroll(messages, streamedResponse);
+  const { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll } = useAutoScroll(
+    messages,
+    streamedResponse,
+    draftMessages,
+    streamedDrafts
+  );
 
   return (
     <Box
@@ -279,7 +364,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
           onEditPromtp={handleEditPrompt}
         ></ChatConversationTree>
         {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
-        <ChatAssistantDraftViewer></ChatAssistantDraftViewer>
+        {(isSending || isAwaitingMessageSelect) && streamedDrafts && (
+          <ChatAssistantDraftViewer streamedDrafts={streamedDrafts} draftMessages={draftMessages} />
+        )}
         <div ref={messagesEndRef} style={{ height: 0 }}></div>
       </SimpleBar>
       <ChatForm ref={inputRef} isSending={isSending} onSubmit={sendPrompterMessage} queueInfo={queueInfo}></ChatForm>
@@ -288,7 +375,12 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
   );
 });
 
-const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string | null) => {
+const useAutoScroll = (
+  messages: InferenceMessage[],
+  streamedResponse: string | null,
+  draftMessages: InferenceMessage[] | null,
+  streamedDrafts: string[] | null
+) => {
   const enableAutoScroll = useRef(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -308,7 +400,7 @@ const useAutoScroll = (messages: InferenceMessage[], streamedResponse: string | 
     }
 
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamedResponse]);
+  }, [messages, streamedResponse, draftMessages, streamedDrafts]);
 
   const scrollableNodeProps = useMemo(
     () => ({
