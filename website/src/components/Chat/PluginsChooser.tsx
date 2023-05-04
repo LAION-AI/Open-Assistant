@@ -1,18 +1,11 @@
+import { AttachmentIcon, CheckCircleIcon, CloseIcon, WarningIcon } from "@chakra-ui/icons";
 import {
-  Button,
-  Text,
-  Tooltip,
-  Radio,
-  RadioGroup,
   Box,
-  Editable,
-  EditableInput,
-  EditablePreview,
-  Image,
+  Button,
   FormControl,
-  FormLabel,
-  Icon,
   IconButton,
+  Image,
+  Input,
   Menu,
   MenuButton,
   MenuItem,
@@ -24,22 +17,27 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Stack,
-  Textarea,
+  Radio,
+  RadioGroup,
+  Text,
+  Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
 import { Cog, Edit, Plus } from "lucide-react";
-import { AttachmentIcon, WarningIcon, CheckCircleIcon, CloseIcon } from "@chakra-ui/icons";
-import { ChangeEvent, useCallback, useMemo, useEffect, useState, useRef } from "react";
 import { useTranslation } from "next-i18next";
-import { Controller, useFormContext } from "react-hook-form";
-import { ChatConfigFormData } from "src/types/Chat";
-import { useChatContext } from "./ChatContext";
-import { PluginEntry } from "src/types/Chat";
-import { get, post } from "src/lib/api";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useFormContext } from "react-hook-form";
+import { post } from "src/lib/api";
 import { API_ROUTES } from "src/lib/routes";
+import { ChatConfigFormData } from "src/types/Chat";
+import { PluginEntry } from "src/types/Chat";
 
-export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
+export type PluginsChooserProps = {
+  plugins: PluginEntry[];
+  onAddPlugin: (plugin: PluginEntry) => void;
+};
+
+export const PluginsChooser = ({ plugins, onAddPlugin }: PluginsChooserProps) => {
   const { t } = useTranslation("chat");
   const { control, register, reset, setValue } = useFormContext<ChatConfigFormData>();
   const [selectedForEditPluginIndex, setSelectedForEditPluginIndex] = useState<number | null>(null);
@@ -81,30 +79,32 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
   );
 
   const handlePluginSave = useCallback(async () => {
-    if (textareaRef.current) {
-      const newPlugins = [...plugins];
-      newPlugins[selectedForEditPluginIndex!].url = textareaRef.current.value;
-
-      const plugin: PluginEntry = await post(API_ROUTES.GET_PLUGIN_CONFIG, {
-        arg: { plugin: newPlugins[selectedForEditPluginIndex!] },
-      });
-      // disable all existing plugins and enable new one
-      newPlugins.forEach((plugin) => (plugin.enabled = false));
-      newPlugins[selectedForEditPluginIndex!].enabled = true;
-      newPlugins[selectedForEditPluginIndex!].plugin_config = plugin.plugin_config;
-      setValue("plugins", newPlugins, { shouldDirty: true });
+    const url = textareaRef.current?.value.trim();
+    if (!url) {
+      onClose();
+      return;
     }
-    onClose();
-  }, [onClose, control, plugins, selectedForEditPluginIndex]);
 
-  const handlePluginAdd = useCallback(() => {
-    const newPlugin: PluginEntry = {
-      url: "",
-      enabled: false,
-    };
-    setValue("plugins", [...plugins, newPlugin]);
-    handlePluginEdit(plugins.length);
-  }, [setValue, plugins, handlePluginEdit]);
+    const isPluginExists = plugins.some((plugin) => plugin.url === url);
+
+    if (isPluginExists) {
+      onClose();
+      return;
+    }
+
+    const plugin: PluginEntry = await post(API_ROUTES.GET_PLUGIN_CONFIG, {
+      arg: {
+        plugin: {
+          url,
+          enable: true,
+        },
+      },
+    });
+
+    onAddPlugin(plugin);
+
+    onClose();
+  }, [plugins, onClose, onAddPlugin]);
 
   return (
     <FormControl ref={containerRef}>
@@ -134,7 +134,7 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
           <MenuList left="-150px" position="absolute" w="280px">
             <RadioGroup value={plugins?.findIndex((plugin) => plugin.enabled).toString()}>
               {plugins?.map((plugin, index) => (
-                <MenuItem key={index}>
+                <MenuItem key={index} as="div">
                   <Radio value={index.toString()} onClick={() => handlePluginSelect(index)}>
                     <Box
                       display="flex"
@@ -201,7 +201,7 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
                 </MenuItem>
               ))}
             </RadioGroup>
-            <MenuItem onClick={handlePluginAdd}>
+            <MenuItem onClick={onOpen}>
               <Box w="100%" display="flex" justifyContent="center">
                 <IconButton aria-label={t("add_plugin")} icon={<Plus />} size="sm" />
               </Box>
@@ -215,8 +215,8 @@ export const PluginsChooser = ({ plugins }: { plugins: PluginEntry[] }) => {
           <ModalHeader>{t("edit_plugin")}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Textarea
-              minHeight="40px"
+            <Input
+              type="url"
               defaultValue={selectedForEditPluginIndex !== null ? plugins[selectedForEditPluginIndex!]?.url : ""}
               ref={textareaRef}
               mb={4}

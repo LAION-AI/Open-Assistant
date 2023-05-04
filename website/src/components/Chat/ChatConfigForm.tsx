@@ -19,10 +19,13 @@ import {
 import { useTranslation } from "next-i18next";
 import { ChangeEvent, memo, useCallback, useEffect, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-import { ChatConfigFormData, ModelParameterConfig, SamplingParameters } from "src/types/Chat";
+import { ChatConfigFormData, ModelParameterConfig, PluginEntry, SamplingParameters } from "src/types/Chat";
+import { getConfigCache } from "src/utils/chat";
+import { useIsomorphicLayoutEffect } from "usehooks-ts";
 
+import { ChatConfigSaver } from "./ChatConfigSaver";
 import { useChatContext } from "./ChatContext";
-import { PluginsChooser } from "./PluginsChooser";
+import { PluginsChooser, PluginsChooserProps } from "./PluginsChooser";
 import { areParametersEqual } from "./WorkParameters";
 const sliderItems: Readonly<
   Array<{
@@ -95,18 +98,19 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   const plugins = getValues("plugins") || [];
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
   const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
+  const { hyrated, setSavedPlugins, savedPlugins } = useHydrateChatConfig({ setSelectedPresetName });
+
   const [lockPresetSelection, setLockPresetSelection] = useState(false);
 
   const handlePresetChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const newPresetName = e.target.value;
-      const config =
-        newPresetName === customPresetName
-          ? customPresetDefaultValue
-          : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
+      if (newPresetName !== customPresetName) {
+        const config = presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
 
-      for (const [key, value] of Object.entries(config) as Array<[keyof SamplingParameters, number]>) {
-        setValue(key, value, { shouldDirty: true }); // force dirty so the ChatConfigSaver will update the cache
+        for (const [key, value] of Object.entries(config) as Array<[keyof SamplingParameters, number]>) {
+          setValue(key, value);
+        }
       }
       setSelectedPresetName(newPresetName);
     },
@@ -123,58 +127,127 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
     } else {
       setLockPresetSelection(false);
     }
-  }, [presets, plugins]);
+  }, [presets, plugins, handlePresetChange, getValues]);
 
   const config = getValues(); // have to use getValues to here to access latest value
+  console.log("config", config);
+  // useEffect(() => {
+  //   setSelectedPresetName(findPresetName(presets, config as SamplingParameters));
+  // }, [config, presets]);
 
-  useEffect(() => {
-    setSelectedPresetName(findPresetName(presets, config as SamplingParameters));
-  }, [config, presets]);
+  const handleOnAddPlugin: PluginsChooserProps["onAddPlugin"] = useCallback(
+    (newPlugin) => {
+      console.log("newPlugin", newPlugin);
+      setSavedPlugins((plugins) => [...plugins, newPlugin]);
+    },
+    [setSavedPlugins]
+  );
 
   return (
-    <Stack gap="4">
-      <PluginsChooser plugins={plugins} />
-      <FormControl>
-        <FormLabel>{t("model")}</FormLabel>
-        <Select {...register("model_config_name")}>
-          {modelInfos.map(({ name }) => (
-            <option value={name} key={name}>
-              {name}
-            </option>
-          ))}
-        </Select>
-      </FormControl>
-      <FormControl>
-        <FormLabel>{t("preset")}</FormLabel>
-        <Select value={selectedPresetName} onChange={handlePresetChange} isDisabled={lockPresetSelection}>
-          {presets.map(({ name }) => (
-            <option value={name} key={name}>
-              {name}
-            </option>
-          ))}
-          <option value={customPresetName}>{t("preset_custom")}</option>
-        </Select>
-      </FormControl>
-      {sliderItems.map((item) => (
-        <Controller
-          name={item.key}
-          key={item.key}
-          control={control}
-          render={({ field: { value, onChange, name } }) => (
-            <ChatParameterField
-              {...item}
-              value={value}
-              onChange={onChange}
-              name={name}
-              isDisabled={selectedPresetName !== customPresetName}
-              description={t(("parameter_description." + name) as any)}
-            />
-          )}
-        ></Controller>
-      ))}
-    </Stack>
+    <>
+      <Stack gap="4">
+        <PluginsChooser plugins={[...plugins, ...savedPlugins]} onAddPlugin={handleOnAddPlugin} />
+        <FormControl>
+          <FormLabel>{t("model")}</FormLabel>
+          <Select {...register("model_config_name")}>
+            {modelInfos.map(({ name }) => (
+              <option value={name} key={name}>
+                {name}
+              </option>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl>
+          <FormLabel>{t("preset")}</FormLabel>
+          <Select value={selectedPresetName} onChange={handlePresetChange} isDisabled={lockPresetSelection}>
+            {presets.map(({ name }) => (
+              <option value={name} key={name}>
+                {name}
+              </option>
+            ))}
+            <option value={customPresetName}>{t("preset_custom")}</option>
+          </Select>
+        </FormControl>
+        {sliderItems.map((item) => (
+          <Controller
+            name={item.key}
+            key={item.key}
+            control={control}
+            render={({ field: { value, onChange, name } }) => (
+              <ChatParameterField
+                {...item}
+                value={value}
+                onChange={onChange}
+                name={name}
+                isDisabled={selectedPresetName !== customPresetName}
+                description={t(("parameter_description." + name) as any)}
+              />
+            )}
+          ></Controller>
+        ))}
+      </Stack>
+      <ChatConfigSaver hyrated={hyrated} isCustomPreset selectedPresetName={selectedPresetName} />
+    </>
   );
 });
+
+const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName: (preset: string) => void }) => {
+  const { modelInfos } = useChatContext();
+  const [hyrated, setHyrated] = useState(false);
+  const { setValue } = useFormContext<ChatConfigFormData>();
+  const [savedPlugins, setSavedPlugins] = useState<PluginEntry[]>([]);
+
+  useIsomorphicLayoutEffect(() => {
+    if (hyrated) return;
+
+    setHyrated(true);
+    const cache = getConfigCache();
+    console.log("cache", cache);
+
+    if (!cache) {
+      return;
+    }
+
+    const { selectedPreset, model_config_name, custom_preset_config, selectedPlugins } = cache;
+    const model = modelInfos.find((model) => model.name === model_config_name);
+
+    if (model) {
+      setValue("model_config_name", model_config_name);
+    }
+    const resetParameters = (params: SamplingParameters) => {
+      for (const [key, value] of Object.entries(params) as Array<[keyof SamplingParameters, number]>) {
+        setValue(key, value); // call setValue instead of setValues to avoid reset unwanted fields
+      }
+    };
+
+    if (selectedPlugins && selectedPlugins.length > 0) {
+      console.log(`settings selected plugins`);
+      setValue("plugins", selectedPlugins);
+      const preset = (model || modelInfos[0]).parameter_configs.find(
+        (preset) => preset.name === "k50-Plugins"
+      )?.sampling_parameters;
+      if (preset) {
+        resetParameters(preset);
+      }
+    } else {
+      // only hydrate sampling params if there is no saved plugins
+      if (selectedPreset === customPresetName) {
+        console.log(`resetting custom preset`, custom_preset_config);
+        resetParameters(custom_preset_config);
+        setSelectedPresetName(customPresetName);
+      } else {
+        // built-in preset
+        const preset = (model || modelInfos[0]).parameter_configs.find((preset) => preset.name === selectedPreset);
+        if (preset) {
+          console.log(`resetting built-in preset`, custom_preset_config);
+          resetParameters(preset.sampling_parameters);
+        }
+      }
+    }
+  }, [modelInfos]);
+
+  return { hyrated, savedPlugins, setSavedPlugins };
+};
 
 type NumberInputSliderProps = {
   max?: number;
