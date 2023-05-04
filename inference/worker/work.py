@@ -1,5 +1,4 @@
 import re
-import threading
 from concurrent import futures
 
 import chat_chain
@@ -20,8 +19,7 @@ from chat_chain_prompts import (
 from loguru import logger
 from oasst_shared.schemas import inference
 from settings import settings
-
-tokenizer_lock = threading.Lock()
+from shared_lock import shared_tokenizer_lock
 
 
 def make_prompt_and_parameters(
@@ -158,7 +156,7 @@ def handle_work_request(
         if model_config.is_llama:
             generated_ids.append(token.id)
             try:
-                with tokenizer_lock:
+                with shared_tokenizer_lock:
                     text = tokenizer.decode(generated_ids, skip_special_tokens=True)
                 new_text = text[len(decoded_text) :]
                 if not decoded_text:

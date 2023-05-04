@@ -15,8 +15,7 @@ from chat_chain_prompts import V2_PROMPTER_PREFIX
 from loguru import logger
 from oasst_shared.schemas import inference
 from settings import settings
-
-tokenizer_lock = threading.Lock()
+from shared_lock import shared_tokenizer_lock
 
 
 class TokenBuffer:
@@ -71,7 +70,7 @@ def truncate_prompt(
     prompt: str,
     plugin_used: bool,
 ):
-    with tokenizer_lock:
+    with shared_tokenizer_lock:
         ids = tokenizer.encode(prompt)
 
     max_input_length = worker_config.model_config.max_input_length
@@ -84,7 +83,7 @@ def truncate_prompt(
     if len(ids) > max_input_length:
         logger.warning(f"Prompt too long, left-truncating to {max_input_length} tokens")
         ids = ids[-(max_input_length - 1) :]
-        with tokenizer_lock:
+        with shared_tokenizer_lock:
             prompt = tokenizer.decode(ids)
             # If there is no prompter prefix, due to truncation, add it back.
             if V2_PROMPTER_PREFIX not in prompt:
