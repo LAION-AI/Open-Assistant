@@ -8,9 +8,15 @@ import interface
 import lorem
 import pydantic
 import requests
+import sseclient
+import transformers
 import websocket
+from chat_chain_prompts import V2_PROMPTER_PREFIX
 from loguru import logger
 from oasst_shared.schemas import inference
+from settings import settings
+
+shared_tokenizer_lock = threading.Lock()
 
 
 class TokenBuffer:
@@ -56,6 +62,42 @@ class TokenBuffer:
             yield from self.tokens
         else:
             yield from self.tokens
+
+
+def truncate_prompt(
+    tokenizer: transformers.PreTrainedTokenizer,
+    worker_config: inference.WorkerConfig,
+    parameters: interface.GenerateStreamParameters,
+    prompt: str,
+    plugin_used: bool,
+):
+    with shared_tokenizer_lock:
+        ids = tokenizer.encode(prompt)
+
+    max_input_length = worker_config.model_config.max_input_length
+
+    # make room for prompter prefix
+    if plugin_used:
+        max_input_length = max_input_length - 1
+
+    max_total_tokens = worker_config.model_config.max_total_length
+    if len(ids) > max_input_length:
+        logger.warning(f"Prompt too long, left-truncating to {max_input_length} tokens")
+        ids = ids[-(max_input_length - 1) :]
+        with shared_tokenizer_lock:
+            prompt = tokenizer.decode(ids)
+            # If there is no prompter prefix, due to truncation, add it back.
+            if V2_PROMPTER_PREFIX not in prompt:
+                prompt = V2_PROMPTER_PREFIX + prompt
+
+    input_length = len(ids)
+    spare = max_total_tokens - input_length - 1
+    if not parameters.max_new_tokens:
+        parameters.max_new_tokens = spare
+    elif parameters.max_new_tokens > spare:
+        logger.warning(f"Max new tokens too high, reducing to {spare}")
+        parameters.max_new_tokens = spare
+    return prompt
 
 
 def wait_for_inference_server(http: "HttpClient", timeout: int = 600):
@@ -136,3 +178,34 @@ class HttpClient(pydantic.BaseModel):
 
     def post(self, path: str, **kwargs):
         return requests.post(self.base_url + path, auth=self.auth, **kwargs)
+
+
+def get_inference_server_stream_events(request: interface.GenerateStreamRequest):
+    http = HttpClient(
+        base_url=settings.inference_server_url,
+        basic_auth_username=settings.basic_auth_username,
+        basic_auth_password=settings.basic_auth_password,
+    )
+    response = http.post(
+        "/generate_stream",
+        json=request.dict(),
+        stream=True,
+        headers={"Accept": "text/event-stream"},
+    )
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        logger.exception("Failed to get response from inference server")
+        logger.error(f"Response: {response.text}")
+        raise
+
+    client = sseclient.SSEClient(response)
+    for event in client.events():
+        if event.event == "error":
+            logger.error(f"Error from inference server: {event.data}")
+            yield interface.GenerateStreamResponse(error=event.data)
+            raise RuntimeError(f"Error from inference server: {event.data}")
+        if event.event == "ping":
+            continue
+        stream_response = interface.GenerateStreamResponse.parse_raw(event.data)
+        yield stream_response
