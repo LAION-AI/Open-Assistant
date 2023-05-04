@@ -96,13 +96,19 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
   const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
   const [lockPresetSelection, setLockPresetSelection] = useState(false);
+  const [previousPresetParameters, setPreviousPresetParameters] = useState<SamplingParameters | null>(null);
 
   const handlePresetChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const newPresetName = e.target.value;
+
+      if (newPresetName !== customPresetName) {
+        setPreviousPresetName(newPresetName);
+      }
+
       const config =
         newPresetName === customPresetName
-          ? customPresetDefaultValue
+          ? presets.find((preset) => preset.name === previousPresetName)!.sampling_parameters
           : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
 
       for (const [key, value] of Object.entries(config) as Array<[keyof SamplingParameters, number]>) {
@@ -110,7 +116,7 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
       }
       setSelectedPresetName(newPresetName);
     },
-    [presets, setValue]
+    [presets, setValue, previousPresetName]
   );
 
   // Lock preset selection if any plugin is enabled
