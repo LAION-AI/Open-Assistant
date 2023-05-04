@@ -96,28 +96,28 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
   const presets = modelInfos.find((model) => model.name === selectedModel)!.parameter_configs;
   const [selectedPresetName, setSelectedPresetName] = useState(() => findPresetName(presets, getValues()));
   const [lockPresetSelection, setLockPresetSelection] = useState(false);
-  const [previousPresetParameters, setPreviousPresetParameters] = useState<SamplingParameters | null>(null);
+  const [previousPreset, setPreviousPreset] = useState(customPresetDefaultValue);
 
   const handlePresetChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const newPresetName = e.target.value;
-
-      if (newPresetName !== customPresetName) {
-        setPreviousPresetName(newPresetName);
-      }
-
       const config =
         newPresetName === customPresetName
-          ? presets.find((preset) => preset.name === previousPresetName)!.sampling_parameters
+          ? previousPreset
           : presets.find((preset) => preset.name === newPresetName)!.sampling_parameters;
+
+      if (newPresetName !== customPresetName) {
+        setPreviousPreset(config);
+      }
 
       for (const [key, value] of Object.entries(config) as Array<[keyof SamplingParameters, number]>) {
         setValue(key, value, { shouldDirty: true }); // force dirty so the ChatConfigSaver will update the cache
       }
       setSelectedPresetName(newPresetName);
     },
-    [presets, setValue, previousPresetName]
+    [presets, setValue, previousPreset]
   );
+
 
   // Lock preset selection if any plugin is enabled
   useEffect(() => {
