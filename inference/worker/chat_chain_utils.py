@@ -12,7 +12,7 @@ from loguru import logger
 from oasst_shared.schemas import inference
 from openapi_parser import prepare_plugin_for_llm
 from settings import settings
-from shared_lock import shared_tokenizer_lock
+from utils import shared_tokenizer_lock
 
 RESPONSE_MAX_LENGTH = 2048
 

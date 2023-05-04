@@ -15,7 +15,8 @@ from chat_chain_prompts import V2_PROMPTER_PREFIX
 from loguru import logger
 from oasst_shared.schemas import inference
 from settings import settings
-from shared_lock import shared_tokenizer_lock
+
+shared_tokenizer_lock = threading.Lock()
 
 
 class TokenBuffer:

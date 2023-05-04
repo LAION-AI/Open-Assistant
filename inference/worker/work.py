@@ -19,7 +19,7 @@ from chat_chain_prompts import (
 from loguru import logger
 from oasst_shared.schemas import inference
 from settings import settings
-from shared_lock import shared_tokenizer_lock
+from utils import shared_tokenizer_lock
 
 
 def make_prompt_and_parameters(
