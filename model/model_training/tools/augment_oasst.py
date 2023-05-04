@@ -9,7 +9,7 @@
 import json
 import os
 
-# so far load_oasst_export is pretty determinstic in thread order
+# so far load_oasst_export is pretty deterministic in thread order
 # means the train, val split stay the same
 from model_training.custom_datasets.oasst_dataset import load_oasst_export
 from model_training.models.reward_model import GPTNeoXRewardModel
