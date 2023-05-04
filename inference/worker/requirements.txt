@@ -10,6 +10,5 @@ pydantic
 requests
 sentencepiece
 sseclient-py
-text-generation
 git+https://github.com/huggingface/transformers@main#egg=transformers
 websocket-client

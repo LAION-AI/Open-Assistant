@@ -1,6 +1,5 @@
 import json
 import re
-import threading
 
 import requests
 import transformers
@@ -11,10 +10,9 @@ from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 from loguru import logger
 from oasst_shared.schemas import inference
-from opeanapi_parser import prepare_plugin_for_llm
+from openapi_parser import prepare_plugin_for_llm
 from settings import settings
-
-tokenizer_lock = threading.Lock()
+from utils import shared_tokenizer_lock
 
 RESPONSE_MAX_LENGTH = 2048
 
@@ -343,7 +341,7 @@ def prepare_prompt(
 
     out_prompt = prompt_template.format(**args)
 
-    with tokenizer_lock:
+    with shared_tokenizer_lock:
         ids = tokenizer.encode(out_prompt)
 
     # soft truncation
@@ -362,7 +360,7 @@ def prepare_prompt(
 
         out_prompt = prompt_template.format(**args)
 
-        with tokenizer_lock:
+        with shared_tokenizer_lock:
             ids = tokenizer.encode(out_prompt)
         logger.warning(f"Prompt too long, deleting chat history. New length: {len(ids)}")
 
