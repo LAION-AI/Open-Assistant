@@ -322,6 +322,21 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     [createAndFetchAssistantMessage, isSending, setIsSending]
   );
 
+  const handleDraftPicked = useCallback(
+    async (index) => {
+      if (!isAwaitingMessageSelect) {
+        return toast({
+          title: "Draft messages are still generating.",
+        });
+      }
+
+      setMessages((messages) => [...messages, draftMessages[index]!]);
+      setIsAwaitingMessageSelect.off();
+      setStreamedDrafts(null);
+      setDraftMessages(null);
+    }, [isAwaitingMessageSelect, setMessages, messages, draftMessages, setIsAwaitingMessageSelect, setStreamedDrafts, setDraftMessages]
+  );
+
   const { messagesEndRef, scrollableNodeProps, updateEnableAutoScroll } = useAutoScroll(
     messages,
     streamedResponse,
@@ -365,7 +380,7 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
         ></ChatConversationTree>
         {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
         {(isSending || isAwaitingMessageSelect) && streamedDrafts && (
-          <ChatAssistantDraftViewer streamedDrafts={streamedDrafts} draftMessages={draftMessages} />
+          <ChatAssistantDraftViewer streamedDrafts={streamedDrafts} draftMessages={draftMessages} onDraftPicked={handleDraftPicked} />
         )}
         <div ref={messagesEndRef} style={{ height: 0 }}></div>
       </SimpleBar>

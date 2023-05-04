@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 
 import { WorkParametersDisplay } from "./WorkParameters";
 
-export const ChatAssistantDraftViewer = ({ streamedDrafts = [], draftMessages = [] }) => {
+export const ChatAssistantDraftViewer = ({
+  streamedDrafts = [],
+  draftMessages = [],
+  onDraftPicked = (index) => {},
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -74,6 +78,7 @@ export const ChatAssistantDraftViewer = ({ streamedDrafts = [], draftMessages = 
                   width={"full"}
                   rounded="md"
                   cursor="pointer"
+                  onClick={() => onDraftPicked(index)}
                   _hover={{ backgroundColor: responseHoverBackgroundColor }}
                   transition="background-color 0.2 ease-in-out"
                 >
