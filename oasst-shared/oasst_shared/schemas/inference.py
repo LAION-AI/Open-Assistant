@@ -201,7 +201,7 @@ def make_seed() -> int:
 class WorkParameters(pydantic.BaseModel):
     model_config: ModelConfig
     sampling_parameters: SamplingParameters = pydantic.Field(
-        default_factory=SamplingParameters
+        default_factory=SamplingParameters,
     )
     do_sample: bool = True
     seed: int = pydantic.Field(
@@ -293,7 +293,7 @@ class WorkRequest(WorkerRequestBase):
     created_at: datetime = pydantic.Field(default_factory=datetime.utcnow)
     parameters: WorkParameters = pydantic.Field(default_factory=WorkParameters)
     safety_parameters: SafetyParameters = pydantic.Field(
-        default_factory=SafetyParameters
+        default_factory=SafetyParameters,
     )
 
 
