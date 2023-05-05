@@ -51,7 +51,9 @@ class UserChatRepository(pydantic.BaseModel):
                 sqlalchemy.orm.selectinload(models.DbChat.messages).selectinload(models.DbMessage.reports),
             )
 
-        chat = (await self.session.exec(query)).one()
+        chat = (await self.session.exec(query)).one_or_none()
+        if chat is None:
+            raise fastapi.HTTPException(status_code=404, detail="Chat not found")
         return chat
 
     async def get_message_by_id(self, chat_id: str, message_id: str) -> models.DbMessage:
