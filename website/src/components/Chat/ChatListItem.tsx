@@ -1,5 +1,25 @@
-import { Box, Button, CircularProgress, Flex, Input, Tooltip, useBoolean, useOutsideClick } from "@chakra-ui/react";
-import { Check, EyeOff, LucideIcon, Pencil, Trash, X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Box,
+  Button,
+  CircularProgress,
+  Flex,
+  Input,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Tooltip,
+  useBoolean,
+  useDisclosure,
+  useOutsideClick,
+} from "@chakra-ui/react";
+import { Check, EyeOff, LucideIcon, MoreHorizontal, Pencil, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
@@ -139,7 +159,9 @@ export const ChatListItem = ({
           <>
             <EditChatButton onClick={setIsEditing.on} />
             <HideChatButton chatId={chat.id} onHide={onHide} />
-            <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
+            <ChatListItemMoreActionsMenu>
+              <DeleteChatButton key={chat.id} chatId={chat.id} onDelete={onDelete} />
+            </ChatListItemMoreActionsMenu>
           </>
         )}
       </Flex>
@@ -173,20 +195,45 @@ const DeleteChatButton = ({
   chatId: string;
   onDelete?: (params: { chatId: string }) => void;
 }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = useRef();
+  const { t } = useTranslation("chat");
   const { trigger: triggerDelete } = useSWRMutation(API_ROUTES.DELETE_CHAT(chatId), del);
-
-  const onClick = useCallback(async () => {
+  const onDeleteCallback = useCallback(async () => {
     await triggerDelete({ chat_id: chatId });
     onDelete?.({ chatId });
   }, [onDelete, triggerDelete, chatId]);
+  const alert = (
+    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+      <AlertDialogOverlay>
+        <AlertDialogContent>
+          <AlertDialogHeader fontSize="lg" fontWeight="bold">
+            Delete chat
+          </AlertDialogHeader>
 
-  const { t } = useTranslation("common");
-
-  return <ChatListItemIconButton label={t("delete")} icon={Trash} onClick={onClick} />;
+          <AlertDialogBody>{t("Are you sure? You can't undo this action afterwards.")}</AlertDialogBody>
+          <AlertDialogFooter>
+            <Button ref={cancelRef} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button colorScheme="red" onClick={onDeleteCallback} ml={3}>
+              Delete
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogOverlay>
+    </AlertDialog>
+  );
+  return (
+    <>
+      <MoreActionsMenuItem label={t("delete")} onClick={onOpen} />
+      {alert}
+    </>
+  );
 };
 
 type ChatListItemIconButtonProps = {
-  onClick: () => void;
+  onClick?: () => void;
   label?: string;
   icon: LucideIcon;
 };
@@ -217,5 +264,61 @@ const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIconButton
         ></Box>
       </Box>
     </Tooltip>
+  );
+};
+
+type MoreActionsMenuItemProps = {
+  onClick: () => void;
+  label: string;
+};
+
+const MoreActionsMenuItem = ({ label, onClick }: MoreActionsMenuItemProps) => {
+  return (
+    <MenuItem
+      onClick={(e: MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        onClick();
+      }}
+    >
+      {label}
+    </MenuItem>
+  );
+};
+
+type ChatListItemMoreActionsMenuProps = {
+  children: JSX.Element | JSX.Element[];
+};
+
+const ChatListItemMoreActionsMenu = ({ children }: ChatListItemMoreActionsMenuProps) => {
+  const { t } = useTranslation("chat");
+  const label = t("More Actions");
+  return (
+    <Menu strategy={"fixed"}>
+      <Tooltip label={label}>
+        <Box
+          onClick={(e: MouseEvent) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+        >
+          <MenuButton as="button" aria-label={label}>
+            <Box
+              as={MoreHorizontal}
+              size="16px"
+              color="gray.500"
+              _hover={{ color: "gray.700" }}
+              _dark={{
+                color: "gray.400",
+                _hover: {
+                  color: "white",
+                },
+              }}
+            ></Box>
+          </MenuButton>
+        </Box>
+      </Tooltip>
+      <MenuList>{children}</MenuList>
+    </Menu>
   );
 };
