@@ -70,7 +70,7 @@ def add_prefix_to_prompt(prompt: str):
     return new_prompt
 
 
-def get_max_input_length(worker_config: interface.WorkerConfig, plugin_used: bool):
+def get_max_input_length(worker_config: inference.WorkerConfig, plugin_used: bool):
     max_input_length = worker_config.model_config.max_input_length
     if plugin_used:
         max_input_length = max_input_length - 1
