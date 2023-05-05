@@ -26,7 +26,7 @@ const Chat = () => {
         <title>{t("chat")}</title>
       </Head>
       {modelInfos && plugins && (
-        <ChatContextProvider modelInfos={modelInfos} plugins={plugins}>
+        <ChatContextProvider modelInfos={modelInfos} builtInPlugins={plugins}>
           <ChatSection chatId={id} />
         </ChatContextProvider>
       )}

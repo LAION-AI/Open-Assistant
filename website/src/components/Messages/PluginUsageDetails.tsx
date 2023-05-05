@@ -1,7 +1,7 @@
-import React, { useState, lazy, useRef } from "react";
-import { Box, Button, Tooltip, Collapse, VStack, HStack, Code, Text, useColorModeValue } from "@chakra-ui/react";
-import { ChevronDownIcon, ChevronUpIcon, AttachmentIcon, WarningIcon, CheckCircleIcon } from "@chakra-ui/icons";
+import { AttachmentIcon, CheckCircleIcon, ChevronDownIcon, ChevronUpIcon, WarningIcon } from "@chakra-ui/icons";
+import { Box, Button, Collapse, HStack, Text, Tooltip, useColorModeValue, VStack } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
+import React, { lazy, useRef, useState } from "react";
 
 const SyntaxHighlighter = lazy(() => import("./SyntaxHighlighter"));
 
@@ -27,7 +27,7 @@ const DropdownItem = ({ plugin }) => {
         <HStack spacing={2}>
           <Text>
             <Box as="b" fontWeight="normal">
-              {t("used")}
+              {t("common:used")}
             </Box>
             <Box as="b" fontWeight="bold">
               {` ${plugin.name}`}

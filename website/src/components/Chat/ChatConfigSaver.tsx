@@ -1,18 +1,19 @@
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
-import { ChatConfigFormData, PluginEntry } from "src/types/Chat";
+import { ChatConfigFormData } from "src/types/Chat";
 import { CachedChatConfig, setConfigCache } from "src/utils/chat";
+
+import { useChatPluginContext } from "./ChatPluginContext";
 
 export const ChatConfigSaver = ({
   selectedPresetName: selectedPreset,
   hyrated,
-  plugins,
 }: {
   selectedPresetName: string;
   isCustomPreset: boolean;
   hyrated: boolean;
-  plugins: PluginEntry[];
 }) => {
+  const { plugins } = useChatPluginContext();
   const { getValues, watch } = useFormContext<ChatConfigFormData>();
   const { model_config_name, plugins: selectedPlugins, ...preset_config } = { ...watch(), ...getValues() };
   console.log(`model_config_name: ${model_config_name}`);

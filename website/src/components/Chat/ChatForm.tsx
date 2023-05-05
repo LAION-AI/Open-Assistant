@@ -15,7 +15,7 @@ type ChatFormProps = {
 
 // eslint-disable-next-line react/display-name
 export const ChatForm = forwardRef<HTMLTextAreaElement, ChatFormProps>((props, forwardedRef) => {
-  const { isSending, onSubmit: onSubmit } = props;
+  const { isSending, onSubmit } = props;
   const { t } = useTranslation("chat");
   const handleSubmit = useCallback(
     (e: SyntheticEvent) => {

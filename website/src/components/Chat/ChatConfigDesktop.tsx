@@ -1,9 +1,11 @@
 import { Box } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
-import { memo, ReactNode } from "react";
+import { memo } from "react";
 import SimpleBar from "simplebar-react";
 
-export const ChatConfigDesktop = memo(function ChatConfigDesktop({ children }: { children: ReactNode }) {
+import { ChatConfigForm } from "./ChatConfigForm";
+
+export const ChatConfigDesktop = memo(function ChatConfigDesktop() {
   const { t } = useTranslation("chat");
   return (
     <Box
@@ -13,7 +15,7 @@ export const ChatConfigDesktop = memo(function ChatConfigDesktop({ children }: {
       height="full"
       minH="0"
       flexDirection="column"
-      w="270px"
+      minW="270px"
       display={{ base: "none", xl: "flex" }}
       _dark={{
         bg: "blackAlpha.400",
@@ -29,7 +31,7 @@ export const ChatConfigDesktop = memo(function ChatConfigDesktop({ children }: {
           contentEl: "mr-4 flex flex-col overflow-y-auto items-center",
         }}
       >
-        {children}
+        <ChatConfigForm />
       </SimpleBar>
     </Box>
   );

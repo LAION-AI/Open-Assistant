@@ -2,9 +2,9 @@ import { FormProvider, useForm } from "react-hook-form";
 import { ChatConfigFormData } from "src/types/Chat";
 
 import { ChatConfigDesktop } from "./ChatConfigDesktop";
-import { ChatConfigForm } from "./ChatConfigForm";
 import { useChatContext } from "./ChatContext";
 import { ChatConversation } from "./ChatConversation";
+import { ChatPluginContextProvider } from "./ChatPluginContext";
 
 export const ChatSection = ({ chatId }: { chatId: string | null }) => {
   const { modelInfos } = useChatContext();
@@ -19,12 +19,12 @@ export const ChatSection = ({ chatId }: { chatId: string | null }) => {
     },
   });
 
-  const chatConfigForm = <ChatConfigForm />;
-
   return (
     <FormProvider {...form}>
-      <ChatConversation chatId={chatId} key={chatId} getConfigValues={form.getValues} />
-      <ChatConfigDesktop>{chatConfigForm}</ChatConfigDesktop>
+      <ChatPluginContextProvider>
+        <ChatConversation chatId={chatId} key={chatId} getConfigValues={form.getValues} />
+        <ChatConfigDesktop />
+      </ChatPluginContextProvider>
       {/* <ChatConfigSaver /> */}
     </FormProvider>
   );

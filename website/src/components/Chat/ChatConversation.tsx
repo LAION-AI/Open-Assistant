@@ -2,7 +2,7 @@
 import { Badge, Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
 import { useTranslation } from "next-i18next";
 import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { UseFormGetValues } from "react-hook-form";
+import { useFormContext, UseFormGetValues } from "react-hook-form";
 import SimpleBar from "simplebar-react";
 import { useMessageVote } from "src/hooks/chat/useMessageVote";
 import { get, post } from "src/lib/api";
@@ -19,6 +19,7 @@ import {
 import { mutate } from "swr";
 import useSWR from "swr";
 
+import { JsonCard } from "../JsonCard";
 import { ChatConversationTree, LAST_ASSISTANT_MESSAGE_ID } from "./ChatConversationTree";
 import { ChatForm } from "./ChatForm";
 import { ChatMessageEntryProps, EditPromptParams, PendingMessageEntry } from "./ChatMessageEntry";
@@ -281,6 +282,9 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
           ></ChatConversationTree>
           {isSending && streamedResponse && <PendingMessageEntry isAssistant content={streamedResponse} />}
           <div ref={messagesEndRef} style={{ height: 0 }}></div>
+          <div className="max-w-3xl">
+            <JsonCard>{useFormContext<ChatConfigFormData>().getValues("plugins")}</JsonCard>
+          </div>
         </SimpleBar>
 
         {queueInfo && (
