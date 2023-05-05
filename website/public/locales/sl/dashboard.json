@@ -1,0 +1,14 @@
+{
+  "grab_a_task": "Zgrabite nalogo!",
+  "create": "Ustvarite",
+  "evaluate": "Ocenite",
+  "label": "Oznaka",
+  "dashboard": "Nadzorna plošča",
+  "go": "Pojdite",
+  "welcome_message": {
+    "label": "Dobrodošli, {{username}}!",
+    "contributor": "Darovalec",
+    "description": "Open Assistant je odprtokodni AI asistent, ki uporablja in usposablja napredne jezikovne modele za razumevanje ljudi in odzivanje na njihove ukaze.",
+    "instruction": "Dokončajte naloge za pomoč pri usposabljanju modela in osvojite točke."
+  }
+}
