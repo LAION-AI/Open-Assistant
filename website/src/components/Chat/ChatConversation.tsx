@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Badge, Box, CircularProgress, useBoolean, useToast } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UseFormGetValues } from "react-hook-form";
@@ -31,6 +32,7 @@ interface ChatConversationProps {
 
 export const ChatConversation = memo(function ChatConversation({ chatId, getConfigValues }: ChatConversationProps) {
   const { t } = useTranslation("chat");
+  const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<InferenceMessage[]>([]);
 
@@ -43,7 +45,11 @@ export const ChatConversation = memo(function ChatConversation({ chatId, getConf
     onSuccess(data) {
       setMessages(data.messages.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)));
     },
-    onError: () => {
+    onError: (err) => {
+      if (err instanceof OasstError && err.httpStatusCode === 404) {
+        // chat does not exist, probably deleted
+        return router.push("/chat");
+      }
       toast({
         title: "Failed to load chat",
         status: "error",

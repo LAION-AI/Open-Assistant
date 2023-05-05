@@ -40,7 +40,7 @@ const handler = withoutRole("banned", async (req, res, token) => {
   if (data) {
     return res.status(200).json(data);
   }
-  res.status(400).end();
+  res.status(404).end();
 });
 
 export default handler;
