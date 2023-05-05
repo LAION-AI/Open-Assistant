@@ -7,7 +7,7 @@
   "max_new_tokens": "Maksimalno število novih žetonov",
   "model": "Model",
   "parameter_description": {
-    "max_new_tokens": "Maksimalno število novih žetonov: Ta parameter pove modelu koliko žetonov lahko ustvari največ za odziv."
+    "max_new_tokens": "Maksimalno število novih žetonov: Ta parameter pove modelu koliko žetonov lahko ustvari največ za odziv.",
     "repetition_penalty": "Kazen za ponavljanje: Ta parameter zmanjšuje verjetnost ponavljanja enakih žetonov vedno znova in znova, kar pomeni zmanjšanje verjetnosti, ki bi jih model običajno predvidel.",
     "temperature": "Temperatura: vsak žeton, ki ga ustvarite je vzorčen iz distribucije p(next_token|previous_tokens). Parameter temperature lahko \"izostri\" ali zamegli to porazdelitev. Nastavitev na 1 pomeni, da model ustvari žetone, ki temeljijo na njihovi predvideni verjetnosti (tj., če model napoveduje, da ima \"XYZ\" verjetnost 12,3%, ga bo ustvaril z 12,3-odstotno verjetnostjo). Zniževanje temperature proti ničli naredi model bolj oster, kar povzroči, da postanejo visoke verjetnosti še večje in nizke še nižje (s tem, da to ni linearen odnos!). Zaradi povečanja temperature so si vse verjetnosti medsebojno bolj podobne. Intuitivno nizka temperatura pomeni, da model ustvarja odzive, ki se bolj ujemajo s prepričanji modela, medtem ko visoka temperatura omogoča bolj izvirne in raznolike odzive.",
     "top_k": "Top-k: To je podobno top-p vzorčenju, s tem, da dokler kumulativna verjetnost vrha žetonov presega 'p', vzame samo K najbolj verjetnih žetonov. Top-p ima običajno prednost, saj modelu omogoča 'uglasitev' iskalnega polmera, vendar je lahko top-k uporaben kot nujna omejitev, ko model ne razume kaj naj ustvari in zato dodeli enotno porazdelitev številnim žetonom.",
