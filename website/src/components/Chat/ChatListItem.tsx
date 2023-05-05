@@ -14,16 +14,18 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Portal,
+  Text,
   Tooltip,
   useBoolean,
   useDisclosure,
   useOutsideClick,
 } from "@chakra-ui/react";
-import { Check, EyeOff, LucideIcon, MoreHorizontal, Pencil, X } from "lucide-react";
+import { Check, EyeOff, LucideIcon, MoreHorizontal, Pencil, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { KeyboardEvent, MouseEvent, useCallback, useRef } from "react";
+import { KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useRef } from "react";
 import { del, put } from "src/lib/api";
 import { API_ROUTES, ROUTES } from "src/lib/routes";
 import { ChatItem } from "src/types/Chat";
@@ -46,14 +48,9 @@ export const ChatListItem = ({
   const [isEditing, setIsEditing] = useBoolean(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  useOutsideClick({
-    ref: rootRef,
-    handler: () => {
-      if (isEditing) {
-        setIsEditing.off();
-      }
-    },
-  });
+
+  useOutsideClick({ ref: rootRef, handler: setIsEditing.off });
+
   const { trigger: updateChatTitle, isMutating: isUpdatingTitle } = useSWRMutation(
     API_ROUTES.UPDATE_CHAT(chat.id),
     put
@@ -159,9 +156,20 @@ export const ChatListItem = ({
           <>
             <EditChatButton onClick={setIsEditing.on} />
             <HideChatButton chatId={chat.id} onHide={onHide} />
-            <ChatListItemMoreActionsMenu>
-              <DeleteChatButton key={chat.id} chatId={chat.id} onDelete={onDelete} />
-            </ChatListItemMoreActionsMenu>
+            {/* we have to stop the event, otherwise it would cause a navigation and close the sidebar on mobile */}
+            <div onClick={stopEvent}>
+              <Menu>
+                <MenuButton>
+                  <ChatListItemIconButton label={t("more_actions")} icon={MoreHorizontal} />
+                </MenuButton>
+                <Portal>
+                  {/* higher z-index so that it is displayed over the mobile sidebar */}
+                  <MenuList zIndex="var(--chakra-zIndices-popover)">
+                    <DeleteChatButton chatId={chat.id} onDelete={onDelete} />
+                  </MenuList>
+                </Portal>
+              </Menu>
+            </div>
           </>
         )}
       </Flex>
@@ -197,7 +205,7 @@ const DeleteChatButton = ({
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef();
-  const { t } = useTranslation("chat");
+  const { t } = useTranslation(["chat", "common"]);
   const { trigger: triggerDelete } = useSWRMutation(API_ROUTES.DELETE_CHAT(chatId), del);
   const onDeleteCallback = useCallback(async () => {
     await triggerDelete({ chat_id: chatId });
@@ -208,16 +216,20 @@ const DeleteChatButton = ({
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            Delete chat
+            {t("delete_chat")}
           </AlertDialogHeader>
-
-          <AlertDialogBody>{t("Are you sure? You can't undo this action afterwards.")}</AlertDialogBody>
+          <AlertDialogBody>
+            <Text fontWeight="bold" py="2">
+              {t("delete_confirmation")}
+            </Text>
+            <Text py="2">{t("delete_confirmation_detail")}</Text>
+          </AlertDialogBody>
           <AlertDialogFooter>
             <Button ref={cancelRef} onClick={onClose}>
-              Cancel
+              {t("common:cancel")}
             </Button>
             <Button colorScheme="red" onClick={onDeleteCallback} ml={3}>
-              Delete
+              {t("common:delete")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -226,7 +238,9 @@ const DeleteChatButton = ({
   );
   return (
     <>
-      <MoreActionsMenuItem label={t("delete")} onClick={onOpen} />
+      <MenuItem onClick={onOpen} icon={<Trash />}>
+        {t("common:delete")}
+      </MenuItem>
       {alert}
     </>
   );
@@ -245,9 +259,8 @@ const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIconButton
         as="button"
         aria-label={label}
         onClick={(e: MouseEvent) => {
-          e.stopPropagation();
-          e.preventDefault();
-          onClick();
+          stopEvent(e);
+          onClick?.();
         }}
       >
         <Box
@@ -267,58 +280,7 @@ const ChatListItemIconButton = ({ label, onClick, icon }: ChatListItemIconButton
   );
 };
 
-type MoreActionsMenuItemProps = {
-  onClick: () => void;
-  label: string;
-};
-
-const MoreActionsMenuItem = ({ label, onClick }: MoreActionsMenuItemProps) => {
-  return (
-    <MenuItem
-      onClick={(e: MouseEvent) => {
-        e.stopPropagation();
-        e.preventDefault();
-        onClick();
-      }}
-    >
-      {label}
-    </MenuItem>
-  );
-};
-
-type ChatListItemMoreActionsMenuProps = {
-  children: JSX.Element | JSX.Element[];
-};
-
-const ChatListItemMoreActionsMenu = ({ children }: ChatListItemMoreActionsMenuProps) => {
-  const { t } = useTranslation("chat");
-  const label = t("More Actions");
-  return (
-    <Menu strategy={"fixed"}>
-      <Tooltip label={label}>
-        <Box
-          onClick={(e: MouseEvent) => {
-            e.stopPropagation();
-            e.preventDefault();
-          }}
-        >
-          <MenuButton as="button" aria-label={label}>
-            <Box
-              as={MoreHorizontal}
-              size="16px"
-              color="gray.500"
-              _hover={{ color: "gray.700" }}
-              _dark={{
-                color: "gray.400",
-                _hover: {
-                  color: "white",
-                },
-              }}
-            ></Box>
-          </MenuButton>
-        </Box>
-      </Tooltip>
-      <MenuList>{children}</MenuList>
-    </Menu>
-  );
+const stopEvent = (e: SyntheticEvent) => {
+  e.stopPropagation();
+  e.preventDefault();
 };
