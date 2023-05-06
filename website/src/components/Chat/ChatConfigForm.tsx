@@ -176,23 +176,21 @@ export const ChatConfigForm = memo(function ChatConfigForm() {
 
 const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName: (preset: string) => void }) => {
   const { modelInfos, builtInPlugins } = useChatInitialData();
-  const [hyrated, setHyrated] = useState(false);
-  const a = useRef(false);
+  const hyrated = useRef(false);
   const { setValue } = useFormContext<ChatConfigFormData>();
   const [plugins, setPlugins] = useState<PluginEntry[]>(builtInPlugins);
 
   useIsomorphicLayoutEffect(() => {
-    if (hyrated) return;
+    if (hyrated.current) return;
 
-    setHyrated(true);
+    hyrated.current = true;
     const cache = getConfigCache();
-    console.log("cache", cache);
 
     if (!cache) {
       return;
     }
 
-    const { selectedPreset, model_config_name, custom_preset_config, selectedPlugins, plugins } = cache;
+    const { selectedPresetName, model_config_name, custom_preset_config, selectedPlugins, plugins } = cache;
     const model = modelInfos.find((model) => model.name === model_config_name);
 
     if (model) {
@@ -212,7 +210,6 @@ const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName
     }
 
     if (selectedPlugins && selectedPlugins.length > 0) {
-      console.log(`settings selected plugins`);
       setValue("plugins", selectedPlugins);
       const preset = (model || modelInfos[0]).parameter_configs.find(
         (preset) => preset.name === "k50-Plugins"
@@ -222,18 +219,17 @@ const useHydrateChatConfig = ({ setSelectedPresetName }: { setSelectedPresetName
       }
     } else {
       // only hydrate sampling params if there is no selected plugins
-      if (selectedPreset === customPresetName) {
-        console.log(`resetting custom preset`, custom_preset_config);
+      if (selectedPresetName === customPresetName) {
         resetParameters(setValue, custom_preset_config);
-        setSelectedPresetName(customPresetName);
+        setSelectedPresetName(selectedPresetName);
       } else {
         // built-in preset
         const preset = (model || modelInfos[0]).parameter_configs.find(
-          (preset) => preset.name === selectedPreset
+          (preset) => preset.name === selectedPresetName
         )?.sampling_parameters;
         if (preset) {
-          console.log(`resetting built-in preset`, custom_preset_config);
           resetParameters(setValue, preset);
+          setSelectedPresetName(selectedPresetName);
         }
       }
     }
