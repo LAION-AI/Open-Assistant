@@ -43,7 +43,7 @@ const config = {
           sidebarPath: require.resolve("./sidebars.js"),
         },
         api: {
-          path: "docs/api/openapi.json",
+          path: "docs/api/backend/openapi.json",
         },
         blog: {
           routeBasePath: "/blog",
