@@ -415,7 +415,7 @@ lora-llama-65b:
   warmup_steps: 300
   gradient_checkpointing: true
   gradient_accumulation_steps: 1
-  per_device_train_batch_size: 16
+  per_device_train_batch_size: 12
   per_device_eval_batch_size: 5
   eval_steps: 250
   num_train_epochs: 12
